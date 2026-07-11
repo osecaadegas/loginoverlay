@@ -86,37 +86,45 @@ ALTER TABLE overlay_widgets   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE overlay_state     ENABLE ROW LEVEL SECURITY;
 
 -- overlay_instances: owner can CRUD, anyone can SELECT by token (for OBS)
+DROP POLICY IF EXISTS "Users manage own instance" ON overlay_instances;
 CREATE POLICY "Users manage own instance"
   ON overlay_instances FOR ALL
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Public read by token" ON overlay_instances;
 CREATE POLICY "Public read by token"
   ON overlay_instances FOR SELECT
   USING (true);
 
 -- overlay_themes: owner only
+DROP POLICY IF EXISTS "Users manage own theme" ON overlay_themes;
 CREATE POLICY "Users manage own theme"
   ON overlay_themes FOR ALL
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Public read themes by overlay join" ON overlay_themes;
 CREATE POLICY "Public read themes by overlay join"
   ON overlay_themes FOR SELECT
   USING (true);
 
 -- overlay_widgets: owner manages, public reads for rendering
+DROP POLICY IF EXISTS "Users manage own widgets" ON overlay_widgets;
 CREATE POLICY "Users manage own widgets"
   ON overlay_widgets FOR ALL
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Public read widgets" ON overlay_widgets;
 CREATE POLICY "Public read widgets"
   ON overlay_widgets FOR SELECT
   USING (true);
 
 -- overlay_state: owner manages, public reads for overlay rendering
+DROP POLICY IF EXISTS "Users manage own state" ON overlay_state;
 CREATE POLICY "Users manage own state"
   ON overlay_state FOR ALL
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Public read state" ON overlay_state;
 CREATE POLICY "Public read state"
   ON overlay_state FOR SELECT
   USING (true);
@@ -124,9 +132,22 @@ CREATE POLICY "Public read state"
 -- =====================================================
 -- Realtime ÔÇö enable for overlay_state + overlay_widgets
 -- =====================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE overlay_state;
-ALTER PUBLICATION supabase_realtime ADD TABLE overlay_widgets;
-ALTER PUBLICATION supabase_realtime ADD TABLE overlay_themes;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'overlay_state') THEN
+      ALTER PUBLICATION supabase_realtime ADD TABLE overlay_state;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'overlay_widgets') THEN
+      ALTER PUBLICATION supabase_realtime ADD TABLE overlay_widgets;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'overlay_themes') THEN
+      ALTER PUBLICATION supabase_realtime ADD TABLE overlay_themes;
+    END IF;
+  END IF;
+END $$;
 
 -- =====================================================
 -- Helper function to auto-create overlay instance on signup
@@ -236,69 +257,85 @@ ALTER TABLE user_giveaways ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_random_slot ENABLE ROW LEVEL SECURITY;
 
 -- Policies for user_overlay_state
+DROP POLICY IF EXISTS "Users can view their own overlay state" ON user_overlay_state;
 CREATE POLICY "Users can view their own overlay state"
   ON user_overlay_state FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own overlay state" ON user_overlay_state;
 CREATE POLICY "Users can insert their own overlay state"
   ON user_overlay_state FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own overlay state" ON user_overlay_state;
 CREATE POLICY "Users can update their own overlay state"
   ON user_overlay_state FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own overlay state" ON user_overlay_state;
 CREATE POLICY "Users can delete their own overlay state"
   ON user_overlay_state FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Policies for user_tournaments
+DROP POLICY IF EXISTS "Users can view their own tournaments" ON user_tournaments;
 CREATE POLICY "Users can view their own tournaments"
   ON user_tournaments FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own tournaments" ON user_tournaments;
 CREATE POLICY "Users can insert their own tournaments"
   ON user_tournaments FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own tournaments" ON user_tournaments;
 CREATE POLICY "Users can update their own tournaments"
   ON user_tournaments FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own tournaments" ON user_tournaments;
 CREATE POLICY "Users can delete their own tournaments"
   ON user_tournaments FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Policies for user_giveaways
+DROP POLICY IF EXISTS "Users can view their own giveaways" ON user_giveaways;
 CREATE POLICY "Users can view their own giveaways"
   ON user_giveaways FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own giveaways" ON user_giveaways;
 CREATE POLICY "Users can insert their own giveaways"
   ON user_giveaways FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own giveaways" ON user_giveaways;
 CREATE POLICY "Users can update their own giveaways"
   ON user_giveaways FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own giveaways" ON user_giveaways;
 CREATE POLICY "Users can delete their own giveaways"
   ON user_giveaways FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Policies for user_random_slot
+DROP POLICY IF EXISTS "Users can view their own random slot state" ON user_random_slot;
 CREATE POLICY "Users can view their own random slot state"
   ON user_random_slot FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own random slot state" ON user_random_slot;
 CREATE POLICY "Users can insert their own random slot state"
   ON user_random_slot FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own random slot state" ON user_random_slot;
 CREATE POLICY "Users can update their own random slot state"
   ON user_random_slot FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own random slot state" ON user_random_slot;
 CREATE POLICY "Users can delete their own random slot state"
   ON user_random_slot FOR DELETE
   USING (auth.uid() = user_id);
@@ -313,23 +350,27 @@ END;
 $$ language 'plpgsql';
 
 -- Triggers for updated_at
+DROP TRIGGER IF EXISTS update_user_overlay_state_updated_at ON user_overlay_state;
 CREATE TRIGGER update_user_overlay_state_updated_at BEFORE UPDATE ON user_overlay_state
   FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_tournaments_updated_at ON user_tournaments;
 CREATE TRIGGER update_user_tournaments_updated_at BEFORE UPDATE ON user_tournaments
   FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_giveaways_updated_at ON user_giveaways;
 CREATE TRIGGER update_user_giveaways_updated_at BEFORE UPDATE ON user_giveaways
   FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_random_slot_updated_at ON user_random_slot;
 CREATE TRIGGER update_user_random_slot_updated_at BEFORE UPDATE ON user_random_slot
   FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
 -- Create indexes for performance
-CREATE INDEX idx_user_overlay_state_user_id ON user_overlay_state(user_id);
-CREATE INDEX idx_user_tournaments_user_id ON user_tournaments(user_id);
-CREATE INDEX idx_user_giveaways_user_id ON user_giveaways(user_id);
-CREATE INDEX idx_user_random_slot_user_id ON user_random_slot(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_overlay_state_user_id ON user_overlay_state(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_tournaments_user_id ON user_tournaments(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_giveaways_user_id ON user_giveaways(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_random_slot_user_id ON user_random_slot(user_id);
 
 -- ============================================================================
 -- Source: add_canvas_resolution.sql
@@ -366,11 +407,13 @@ CREATE TABLE IF NOT EXISTS shared_overlay_presets (
 -- Everyone can read shared presets
 ALTER TABLE shared_overlay_presets ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can read shared presets" ON shared_overlay_presets;
 CREATE POLICY "Anyone can read shared presets"
   ON shared_overlay_presets FOR SELECT
   USING (true);
 
 -- Only admins can insert
+DROP POLICY IF EXISTS "Admins can insert shared presets" ON shared_overlay_presets;
 CREATE POLICY "Admins can insert shared presets"
   ON shared_overlay_presets FOR INSERT
   WITH CHECK (
@@ -382,6 +425,7 @@ CREATE POLICY "Admins can insert shared presets"
   );
 
 -- Only admins can update
+DROP POLICY IF EXISTS "Admins can update shared presets" ON shared_overlay_presets;
 CREATE POLICY "Admins can update shared presets"
   ON shared_overlay_presets FOR UPDATE
   USING (
@@ -393,6 +437,7 @@ CREATE POLICY "Admins can update shared presets"
   );
 
 -- Only admins can delete
+DROP POLICY IF EXISTS "Admins can delete shared presets" ON shared_overlay_presets;
 CREATE POLICY "Admins can delete shared presets"
   ON shared_overlay_presets FOR DELETE
   USING (

@@ -8,6 +8,7 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import SlotImage from './SlotImage';
+import { subValue } from './shared/appearanceStyles';
 
 const FALLBACK_SR_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -143,29 +144,29 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
   /* ─── Style vars (same as classic v1) ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
-  const headerColor = c.headerColor || '#1e3a8a';
-  const headerAccent = c.headerAccent || '#60a5fa';
-  const countCardColor = c.countCardColor || '#1e3a8a';
-  const currentBonusColor = c.currentBonusColor || '#166534';
-  const currentBonusAccent = c.currentBonusAccent || '#86efac';
-  const listCardColor = c.listCardColor || '#581c87';
-  const listCardAccent = c.listCardAccent || '#cbd5e1';
-  const summaryColor = c.summaryColor || '#1e3a8a';
-  const totalPayColor = c.totalPayColor || '#eab308';
-  const totalPayText = c.totalPayText || '#ffffff';
-  const superBadgeColor = c.superBadgeColor || '#eab308';
-  const extremeBadgeColor = c.extremeBadgeColor || '#ef4444';
-  const textColor = c.textColor || '#ffffff';
-  const mutedTextColor = c.mutedTextColor || '#93c5fd';
-  const statValueColor = c.statValueColor || '#ffffff';
-  const cardOutlineColor = c.cardOutlineColor || 'transparent';
-  const cardOutlineWidth = c.cardOutlineWidth ?? 2;
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize ?? 15;
-  const cardRadius = c.cardRadius ?? 16;
-  const cardGap = c.cardGap ?? 12;
-  const cardPadding = c.cardPadding ?? 14;
-  const slotImageHeight = c.slotImageHeight ?? 180;
+  const headerColor = subValue(c, 'header', 'background', c.headerColor || '#1e3a8a');
+  const headerAccent = subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa');
+  const countCardColor = subValue(c, 'card', 'background', c.countCardColor || '#1e3a8a');
+  const currentBonusColor = subValue(c, 'highlight', 'background', c.currentBonusColor || '#166534');
+  const currentBonusAccent = subValue(c, 'highlight', 'accentColor', c.currentBonusAccent || '#86efac');
+  const listCardColor = subValue(c, 'bonusCard', 'background', c.listCardColor || '#581c87');
+  const listCardAccent = subValue(c, 'bonusCard', 'accentColor', c.listCardAccent || '#cbd5e1');
+  const summaryColor = subValue(c, 'value', 'background', c.summaryColor || '#1e3a8a');
+  const totalPayColor = subValue(c, 'profit', 'background', c.totalPayColor || '#eab308');
+  const totalPayText = subValue(c, 'profit', 'textColor', c.totalPayText || '#ffffff');
+  const superBadgeColor = subValue(c, 'openedState', 'accentColor', c.superBadgeColor || '#eab308');
+  const extremeBadgeColor = subValue(c, 'loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
+  const textColor = subValue(c, 'bonusCard', 'textColor', c.textColor || '#ffffff');
+  const mutedTextColor = subValue(c, 'label', 'textColor', c.mutedTextColor || '#93c5fd');
+  const statValueColor = subValue(c, 'value', 'textColor', c.statValueColor || '#ffffff');
+  const cardOutlineColor = subValue(c, 'bonusCard', 'borderColor', c.cardOutlineColor || 'transparent');
+  const cardOutlineWidth = subValue(c, 'bonusCard', 'borderWidth', c.cardOutlineWidth ?? 2);
+  const fontFamily = subValue(c, 'bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
+  const fontSize = subValue(c, 'bonusCard', 'fontSize', c.fontSize ?? 15);
+  const cardRadius = subValue(c, 'bonusCard', 'radius', c.cardRadius ?? 16);
+  const cardGap = subValue(c, 'bonusCard', 'gap', c.cardGap ?? 12);
+  const cardPadding = subValue(c, 'bonusCard', 'padding', c.cardPadding ?? 14);
+  const slotImageHeight = subValue(c, 'slotImage', 'height', c.slotImageHeight ?? 180);
   const listMaxHeight = c.listMaxHeight ?? 400;
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
@@ -208,6 +209,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
     '--bht-card-padding': `${cardPadding}px`,
     '--bht-slot-img-height': `${slotImageHeight}px`,
     '--bht-list-max-height': `${listMaxHeight}px`,
+    '--bht-progress-bg': subValue(c, 'progressBar', 'background', 'rgba(255,255,255,0.08)'),
+    '--bht-progress-fill': subValue(c, 'progressBar', 'fillColor', currentBonusAccent),
   };
 
   /* ─── SR auto-scroll ─── */

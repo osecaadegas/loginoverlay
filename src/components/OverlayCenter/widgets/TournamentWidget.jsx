@@ -9,6 +9,7 @@ import {
   MATCH_STATUS,
 } from './tournament/tournamentEngine';
 import ShatterEffect from './tournament/ShatterEffect';
+import { subValue } from './shared/appearanceStyles';
 
 /**
  * TournamentWidget — OBS overlay display for the unified tournament engine.
@@ -84,30 +85,30 @@ function TournamentWidget({ config, theme }) {
 
   /* ─── Style config ─── */
   const showBg = c.showBg !== false;
-  const bgColor = showBg ? (c.bgColor || (isArenaLayout ? '#1a1040' : isMinimalLayout ? '#0a0a10' : '#13151e')) : 'transparent';
-  const cardBg = c.cardBg || (isMinimalLayout ? 'rgba(255,255,255,0.03)' : '#1a1d2e');
-  const cardBorder = c.cardBorder || (isMinimalLayout ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.08)');
-  const cardRadius = c.cardRadius ?? (isMinimalLayout ? 4 : 10);
-  const cardBorderWidth = c.cardBorderWidth ?? 1;
-  const nameColor = c.nameColor || '#ffffff';
-  const nameSize = c.nameSize ?? (isMinimalLayout ? 11 : 12);
-  const accentColor = c.multiColor || '#facc15';
-  const resultSize = c.multiSize ?? 13;
-  const eliminatedOpacity = c.eliminatedOpacity ?? 0.35;
+  const bgColor = showBg ? subValue(c, 'container', 'background', c.bgColor || (isArenaLayout ? '#1a1040' : isMinimalLayout ? '#0a0a10' : '#13151e')) : 'transparent';
+  const cardBg = subValue(c, 'participantCard', 'background', c.cardBg || (isMinimalLayout ? 'rgba(255,255,255,0.03)' : '#1a1d2e'));
+  const cardBorder = subValue(c, 'participantCard', 'borderColor', c.cardBorder || (isMinimalLayout ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.08)'));
+  const cardRadius = subValue(c, 'participantCard', 'radius', c.cardRadius ?? (isMinimalLayout ? 4 : 10));
+  const cardBorderWidth = subValue(c, 'participantCard', 'borderWidth', c.cardBorderWidth ?? 1);
+  const nameColor = subValue(c, 'participantCard', 'textColor', c.nameColor || '#ffffff');
+  const nameSize = subValue(c, 'participantCard', 'fontSize', c.nameSize ?? (isMinimalLayout ? 11 : 12));
+  const accentColor = subValue(c, 'score', 'textColor', c.multiColor || '#facc15');
+  const resultSize = subValue(c, 'score', 'fontSize', c.multiSize ?? 13);
+  const eliminatedOpacity = subValue(c, 'eliminatedState', 'opacity', c.eliminatedOpacity ?? 0.35);
   const showSlotName = isMinimalLayout ? false : c.showSlotName !== false;
-  const slotNameColor = c.slotNameColor || '#ffffff';
+  const slotNameColor = subValue(c, 'label', 'textColor', c.slotNameColor || '#ffffff');
   const slotNameSize = c.slotNameSize ?? 10;
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const borderRadius = showBg ? (c.borderRadius ?? 12) : 0;
-  const borderWidth = showBg ? (c.borderWidth ?? 0) : 0;
-  const borderColor = showBg ? (c.borderColor || 'transparent') : 'transparent';
-  const gap = c.cardGap ?? 6;
-  const padding = c.containerPadding ?? 6;
-  const swordColor = c.swordColor || '#eab308';
-  const swordBg = c.swordBg || 'rgba(0,0,0,0.85)';
+  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
+  const borderRadius = showBg ? subValue(c, 'container', 'radius', c.borderRadius ?? 12) : 0;
+  const borderWidth = showBg ? subValue(c, 'container', 'borderWidth', c.borderWidth ?? 0) : 0;
+  const borderColor = showBg ? subValue(c, 'container', 'borderColor', c.borderColor || 'transparent') : 'transparent';
+  const gap = subValue(c, 'participantCard', 'gap', c.cardGap ?? 6);
+  const padding = subValue(c, 'container', 'padding', c.containerPadding ?? 6);
+  const swordColor = subValue(c, 'connector', 'textColor', c.swordColor || '#eab308');
+  const swordBg = subValue(c, 'connector', 'background', c.swordBg || 'rgba(0,0,0,0.85)');
   const swordSize = c.swordSize ?? 20;
-  const xIconColor = c.xIconColor || '#eab308';
-  const xIconBg = c.xIconBg || 'rgba(0,0,0,0.7)';
+  const xIconColor = subValue(c, 'eliminatedState', 'textColor', c.xIconColor || '#eab308');
+  const xIconBg = subValue(c, 'eliminatedState', 'background', c.xIconBg || 'rgba(0,0,0,0.7)');
   const currency = c.currency || c.arenaCurrency || '€';
 
   /* ─── Engine helpers ─── */

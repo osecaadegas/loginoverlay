@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchNowPlaying, serverRefreshToken } from '../../../utils/spotifyAuth';
+import { subValue } from './shared/appearanceStyles';
 
 /* ────────────── helpers ────────────── */
 function marquee(text, max = 28) {
@@ -7,6 +8,22 @@ function marquee(text, max = 28) {
 }
 
 const SPOTIFY_GREEN = '#1DB954';
+
+function spotifyAccent(c) {
+  return subValue(c, 'playbackState', 'accentColor', c.accentColor || SPOTIFY_GREEN);
+}
+
+function spotifyText(c, fallback = '#fff') {
+  return subValue(c, 'trackTitle', 'textColor', fallback);
+}
+
+function spotifyMuted(c, fallback = '#ffffffcc') {
+  return subValue(c, 'artistName', 'textColor', fallback);
+}
+
+function spotifyArtRadius(c, fallback = 12) {
+  return subValue(c, 'albumArt', 'radius', fallback);
+}
 
 /* ═══════════════════════════════════════════════════════
    Spotify Now Playing Widget — 6 embedded styles
@@ -100,11 +117,15 @@ function SpotifyWidget({ config, widgetId, userId }) {
    STYLE 1: Album Card — large art with info overlay
    ══════════════════════════════════════════════════════════ */
 function AlbumCard({ data, c }) {
-  const accent = c.accentColor || SPOTIFY_GREEN;
+  const accent = spotifyAccent(c);
+  const titleColor = spotifyText(c);
+  const artistColor = spotifyMuted(c);
+  const artRadius = spotifyArtRadius(c);
+  const bgColor = subValue(c, 'container', 'background', '#0a0a0f');
   return (
     <div className="oc-spotify oc-spotify--album-card" style={{
       width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
-      borderRadius: 16, background: '#0a0a0f',
+      borderRadius: subValue(c, 'container', 'radius', 16), background: bgColor,
       fontFamily: "'Inter', 'Segoe UI', sans-serif",
     }}>
       {data.albumArt && (
@@ -126,17 +147,17 @@ function AlbumCard({ data, c }) {
           <div style={{
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -60%)',
-            width: '42%', aspectRatio: '1', borderRadius: 12,
+            width: '42%', aspectRatio: '1', borderRadius: artRadius,
             boxShadow: `0 8px 32px rgba(0,0,0,0.6), 0 0 40px ${accent}33`,
             overflow: 'hidden',
           }}>
             <img src={data.albumArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         )}
-        <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', lineHeight: 1.2, textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+        <div style={{ fontSize: subValue(c, 'trackTitle', 'fontSize', 18), fontWeight: subValue(c, 'trackTitle', 'fontWeight', 700), color: titleColor, lineHeight: 1.2, textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
           {data.track}
         </div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#ffffffcc', marginTop: 3, textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
+        <div style={{ fontSize: subValue(c, 'artistName', 'fontSize', 14), fontWeight: subValue(c, 'artistName', 'fontWeight', 600), color: artistColor, marginTop: 3, textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
           {data.artist}
         </div>
         <div style={{
@@ -164,19 +185,23 @@ function AlbumCard({ data, c }) {
    STYLE 2: Mini Player — compact horizontal bar
    ══════════════════════════════════════════════════════════ */
 function MiniPlayer({ data, c }) {
-  const accent = c.accentColor || SPOTIFY_GREEN;
+  const accent = spotifyAccent(c);
+  const titleColor = spotifyText(c);
+  const artistColor = spotifyMuted(c, '#b3b3b3');
+  const artRadius = spotifyArtRadius(c, 6);
+  const bgColor = subValue(c, 'container', 'background', 'linear-gradient(135deg, #181818, #121212)');
   return (
     <div className="oc-spotify oc-spotify--mini" style={{
       width: '100%', height: '100%', display: 'flex', alignItems: 'center',
       gap: 10, padding: '6px 12px',
-      background: 'linear-gradient(135deg, #181818, #121212)',
+      background: bgColor,
       borderRadius: 12, border: '1px solid #ffffff12',
       fontFamily: "'Inter', 'Segoe UI', sans-serif",
       overflow: 'hidden',
     }}>
       {data.albumArt ? (
         <img src={data.albumArt} alt="" style={{
-          width: 44, height: 44, borderRadius: 6, objectFit: 'cover', flexShrink: 0,
+          width: 44, height: 44, borderRadius: artRadius, objectFit: 'cover', flexShrink: 0,
           boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
         }} />
       ) : (
@@ -189,12 +214,12 @@ function MiniPlayer({ data, c }) {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 15, fontWeight: 700, color: '#fff',
+          fontSize: subValue(c, 'trackTitle', 'fontSize', 15), fontWeight: subValue(c, 'trackTitle', 'fontWeight', 700), color: titleColor,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           textShadow: '0 1px 4px rgba(0,0,0,0.5)',
         }}>{data.track}</div>
         <div style={{
-          fontSize: 13, fontWeight: 600, color: '#b3b3b3',
+          fontSize: subValue(c, 'artistName', 'fontSize', 13), fontWeight: subValue(c, 'artistName', 'fontWeight', 600), color: artistColor,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           textShadow: '0 1px 3px rgba(0,0,0,0.4)',
         }}>{data.artist}</div>
@@ -218,7 +243,7 @@ function MiniPlayer({ data, c }) {
    STYLE 3: Vinyl — spinning record with album art center
    ══════════════════════════════════════════════════════════ */
 function VinylSpin({ data, c }) {
-  const accent = c.accentColor || SPOTIFY_GREEN;
+  const accent = spotifyAccent(c);
   const sz = '55%';
   return (
     <div className="oc-spotify oc-spotify--vinyl" style={{
@@ -283,7 +308,7 @@ function VinylSpin({ data, c }) {
    STYLE 4: Glass — frosted glass card
    ══════════════════════════════════════════════════════════ */
 function GlassCard({ data, c }) {
-  const accent = c.accentColor || SPOTIFY_GREEN;
+  const accent = spotifyAccent(c);
   return (
     <div className="oc-spotify oc-spotify--glass" style={{
       width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
@@ -359,7 +384,7 @@ function GlassCard({ data, c }) {
    STYLE 5: Wave — audio waveform bars behind track info
    ══════════════════════════════════════════════════════════ */
 function WaveStyle({ data, c }) {
-  const accent = c.accentColor || SPOTIFY_GREEN;
+  const accent = spotifyAccent(c);
   const bars = 24;
   return (
     <div className="oc-spotify oc-spotify--wave" style={{
@@ -431,7 +456,7 @@ function WaveStyle({ data, c }) {
    STYLE 6: Neon — glowing neon effect
    ══════════════════════════════════════════════════════════ */
 function NeonStyle({ data, c }) {
-  const accent = c.accentColor || SPOTIFY_GREEN;
+  const accent = spotifyAccent(c);
   return (
     <div className="oc-spotify oc-spotify--neon" style={{
       width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
@@ -563,7 +588,7 @@ function MetalPlayer({ data, c }) {
    Matches the "Still D.R.E." screenshot aesthetic.
    ══════════════════════════════════════════════════════════ */
 function CompactBar({ data, c }) {
-  const accent = c.accentColor || SPOTIFY_GREEN;
+  const accent = spotifyAccent(c);
 
   // Local progress ticker — advances every second while playing
   const [progress, setProgress] = useState(data.progressMs || 0);

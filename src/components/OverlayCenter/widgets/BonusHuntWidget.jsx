@@ -5,6 +5,7 @@ import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
 import BonusHuntWidgetV11 from './BonusHuntWidgetV11';
 import BonusHuntWidgetV12 from './BonusHuntWidgetV12';
 import SlotImage from './SlotImage';
+import { subValue } from './shared/appearanceStyles';
 
 function BonusHuntWidget({ config, theme, userId }) {
   const c = config || {};
@@ -122,31 +123,35 @@ function BonusHuntWidget({ config, theme, userId }) {
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
 
   /* ─── Custom style vars ─── */
-  const headerColor = c.headerColor || '#1e3a8a';
-  const headerAccent = c.headerAccent || '#60a5fa';
-  const countCardColor = c.countCardColor || '#1e3a8a';
-  const currentBonusColor = c.currentBonusColor || '#166534';
-  const currentBonusAccent = c.currentBonusAccent || '#86efac';
-  const listCardColor = c.listCardColor || '#581c87';
-  const listCardAccent = c.listCardAccent || '#cbd5e1';
-  const summaryColor = c.summaryColor || '#1e3a8a';
-  const totalPayColor = c.totalPayColor || '#eab308';
-  const totalPayText = c.totalPayText || '#ffffff';
-  const superBadgeColor = c.superBadgeColor || '#eab308';
-  const extremeBadgeColor = c.extremeBadgeColor || '#ef4444';
-  const textColor = c.textColor || '#ffffff';
-  const mutedTextColor = c.mutedTextColor || '#93c5fd';
-  const statValueColor = c.statValueColor || '#ffffff';
-  const cardOutlineColor = c.cardOutlineColor || 'transparent';
-  const cardOutlineWidth = c.cardOutlineWidth ?? 2;
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize ?? (isCompactBH ? 13 : 15);
-  const cardRadius = c.cardRadius ?? (isCompactBH ? 8 : 16);
-  const cardGap = c.cardGap ?? (isCompactBH ? 3 : 12);
+  const headerColor = subValue(c, 'header', 'background', c.headerColor || '#1e3a8a');
+  const headerAccent = subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa');
+  const countCardColor = subValue(c, 'card', 'background', c.countCardColor || '#1e3a8a');
+  const currentBonusColor = subValue(c, 'highlight', 'background', c.currentBonusColor || '#166534');
+  const currentBonusAccent = subValue(c, 'highlight', 'accentColor', c.currentBonusAccent || '#86efac');
+  const listCardColor = subValue(c, 'bonusCard', 'background', c.listCardColor || '#581c87');
+  const listCardAccent = subValue(c, 'bonusCard', 'accentColor', c.listCardAccent || '#cbd5e1');
+  const summaryColor = subValue(c, 'value', 'background', c.summaryColor || '#1e3a8a');
+  const totalPayColor = subValue(c, 'profit', 'background', c.totalPayColor || '#eab308');
+  const totalPayText = subValue(c, 'profit', 'textColor', c.totalPayText || '#ffffff');
+  const superBadgeColor = subValue(c, 'openedState', 'accentColor', c.superBadgeColor || '#eab308');
+  const extremeBadgeColor = subValue(c, 'loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
+  const textColor = subValue(c, 'bonusCard', 'textColor', c.textColor || '#ffffff');
+  const mutedTextColor = subValue(c, 'label', 'textColor', c.mutedTextColor || '#93c5fd');
+  const statValueColor = subValue(c, 'value', 'textColor', c.statValueColor || '#ffffff');
+  const cardOutlineColor = subValue(c, 'bonusCard', 'borderColor', c.cardOutlineColor || 'transparent');
+  const cardOutlineWidth = subValue(c, 'bonusCard', 'borderWidth', c.cardOutlineWidth ?? 2);
+  const fontFamily = subValue(c, 'bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
+  const fontSize = subValue(c, 'bonusCard', 'fontSize', c.fontSize ?? (isCompactBH ? 13 : 15));
+  const cardRadius = subValue(c, 'bonusCard', 'radius', c.cardRadius ?? (isCompactBH ? 8 : 16));
+  const cardGap = subValue(c, 'bonusCard', 'gap', c.cardGap ?? (isCompactBH ? 3 : 12));
   const widgetWidth = c.widgetWidth ?? 400;
-  const cardPadding = c.cardPadding ?? (isCompactBH ? 4 : 14);
-  const slotImageHeight = c.slotImageHeight ?? (isCompactBH ? 120 : 180);
+  const cardPadding = subValue(c, 'bonusCard', 'padding', c.cardPadding ?? (isCompactBH ? 4 : 14));
+  const slotImageHeight = subValue(c, 'slotImage', 'height', c.slotImageHeight ?? (isCompactBH ? 120 : 180));
   const listMaxHeight = c.listMaxHeight ?? (isCompactBH ? 250 : 400);
+  const progressBg = subValue(c, 'progressBar', 'background', 'rgba(255,255,255,0.08)');
+  const progressFill = subValue(c, 'progressBar', 'fillColor', currentBonusAccent);
+  const profitText = subValue(c, 'profit', 'textColor', '#4ade80');
+  const lossText = subValue(c, 'loss', 'textColor', '#f87171');
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -183,6 +188,10 @@ function BonusHuntWidget({ config, theme, userId }) {
     '--bht-card-padding': `${cardPadding}px`,
     '--bht-slot-img-height': `${slotImageHeight}px`,
     '--bht-list-max-height': `${listMaxHeight}px`,
+    '--bht-progress-bg': progressBg,
+    '--bht-progress-fill': progressFill,
+    '--bht-profit-text': profitText,
+    '--bht-loss-text': lossText,
   };
 
   /* ─── Find current bonus (first not-opened) ─── */
@@ -228,11 +237,11 @@ function BonusHuntWidget({ config, theme, userId }) {
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">BEx</span>
-              <span className="bhh-stat-val" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>{stats.breakEven.toFixed(2)}x</span>
+              <span className="bhh-stat-val" style={{ color: stats.breakEven >= 100 ? profitText : lossText }}>{stats.breakEven.toFixed(2)}x</span>
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">AVG</span>
-              <span className="bhh-stat-val" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(2)}x</span>
+              <span className="bhh-stat-val" style={{ color: stats.avgMulti >= 100 ? profitText : lossText }}>{stats.avgMulti.toFixed(2)}x</span>
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">PROFIT</span>

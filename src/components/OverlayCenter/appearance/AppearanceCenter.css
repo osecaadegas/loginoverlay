@@ -372,6 +372,13 @@
   align-items: start;
 }
 
+.ac-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .ac-section__header h3 {
   margin: 0;
   color: #ffffff;
@@ -386,6 +393,35 @@
 .ac-section__body {
   display: grid;
   gap: 12px;
+}
+
+.ac-sub-elements {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.ac-sub-elements h4 {
+  margin: 0;
+  color: #e5edf6;
+  font-size: 0.92rem;
+}
+
+.ac-sub-element {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.2);
+}
+
+.ac-sub-element summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  color: #f8fafc;
+  font-weight: 800;
+}
+
+.ac-sub-element .ac-control-grid {
+  padding: 0 12px 12px;
 }
 
 .ac-control-grid,

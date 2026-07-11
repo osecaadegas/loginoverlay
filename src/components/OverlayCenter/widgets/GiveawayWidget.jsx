@@ -3,6 +3,7 @@ import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { supabase } from '../../../config/supabaseClient';
+import { subValue } from './shared/appearanceStyles';
 
 /* ─── Confetti burst generator ─── */
 function ConfettiBurst({ count = 60, accentColor }) {
@@ -197,13 +198,13 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
 function GiveawayWidget({ config, widgetId }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
-  const bgColor = c.bgColor || '#0a0f1e';
-  const cardBg = c.cardBg || 'rgba(255,255,255,0.04)';
-  const borderColor = c.borderColor || 'rgba(255,255,255,0.12)';
-  const accentColor = c.accentColor || '#f59e0b';
-  const textColor = c.textColor || '#ffffff';
-  const mutedColor = c.mutedColor || '#94a3b8';
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const bgColor = subValue(c, 'container', 'background', c.bgColor || '#0a0f1e');
+  const cardBg = subValue(c, 'card', 'background', c.cardBg || 'rgba(255,255,255,0.04)');
+  const borderColor = subValue(c, 'card', 'borderColor', c.borderColor || 'rgba(255,255,255,0.12)');
+  const accentColor = subValue(c, 'celebration', 'accentColor', c.accentColor || '#f59e0b');
+  const textColor = subValue(c, 'container', 'textColor', c.textColor || '#ffffff');
+  const mutedColor = subValue(c, 'label', 'textColor', c.mutedColor || '#94a3b8');
+  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
   const participants = c.participants || [];
   const count = participants.length;
   const winner = c.winner || '';
@@ -214,7 +215,9 @@ function GiveawayWidget({ config, widgetId }) {
   const prize = c.prize || '';
   const isDone = !!winner;
   const statusLabel = isDone ? 'FIM' : isActive ? 'LIVE' : 'OFF';
-  const statusColor = isDone ? '#64748b' : isActive ? '#22c55e' : '#64748b';
+  const statusColor = isDone
+    ? subValue(c, 'emptyState', 'textColor', '#64748b')
+    : isActive ? subValue(c, 'timer', 'textColor', '#22c55e') : subValue(c, 'emptyState', 'textColor', '#64748b');
 
   /* ─── Chat listener: detect keyword → add participants ─── */
   const participantsRef = useRef(new Set(participants));
@@ -322,12 +325,12 @@ function GiveawayWidget({ config, widgetId }) {
   `;
 
   const isMetal = st === 'metal';
-  const mBg = 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)';
-  const mCardBg = 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)';
-  const mBorder = 'rgba(200,210,225,0.12)';
-  const mText = '#d4d8e0';
-  const mMuted = '#7a8090';
-  const mAccent = '#a8b0c0';
+  const mBg = subValue(c, 'container', 'background', 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)');
+  const mCardBg = subValue(c, 'card', 'background', 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)');
+  const mBorder = subValue(c, 'card', 'borderColor', 'rgba(200,210,225,0.12)');
+  const mText = subValue(c, 'container', 'textColor', '#d4d8e0');
+  const mMuted = subValue(c, 'label', 'textColor', '#7a8090');
+  const mAccent = subValue(c, 'celebration', 'accentColor', '#a8b0c0');
   const mShadow = '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)';
   const mInner = 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)';
 

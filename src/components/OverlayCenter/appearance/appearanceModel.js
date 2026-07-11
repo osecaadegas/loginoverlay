@@ -196,9 +196,13 @@ const VISUAL_CONFIG_KEYS = [
   'accentColor',
   'bgColor',
   'cardBg',
+  'headerBg',
+  'headerText',
   'textColor',
+  'mutedTextColor',
   'mutedColor',
   'borderColor',
+  'cardBorder',
   'fontFamily',
   'fontSize',
   'fontWeight',
@@ -207,34 +211,329 @@ const VISUAL_CONFIG_KEYS = [
   'borderWidth',
   'cardBorderWidth',
   'containerPadding',
+  'cardPadding',
   'cardGap',
+  'gap',
+  'padding',
   'paddingX',
   'paddingY',
+  'width',
+  'height',
+  'widgetWidth',
+  'barHeight',
+  'maxWidth',
+  'opacity',
   'brightness',
   'contrast',
   'saturation',
   'blur',
+  'overlayColor',
+  'overlayOpacity',
   'shadowSize',
   'shadowIntensity',
   'animSpeed',
+  'color1',
+  'color2',
+  'color3',
+  'gradientAngle',
+  'imageFit',
+  'imagePosition',
   'barBgFrom',
   'barBgVia',
   'barBgTo',
+  'barBg',
+  'barFill',
   'providerColor',
   'slotNameColor',
+  'slotNameSize',
   'labelColor',
   'dividerColor',
   'progressColor',
   'progressBgColor',
   'bestColor',
   'worstColor',
+  'rtpIconColor',
+  'potentialIconColor',
+  'volatilityIconColor',
+  'spinnerColor',
+  'nameColor',
+  'nameSize',
+  'multiColor',
+  'multiSize',
+  'subtextColor',
+  'captionColor',
+  'captionSize',
+  'captionFont',
+  'ctaColor',
+  'cryptoUpColor',
+  'cryptoDownColor',
+  'eliminatedOpacity',
+  'swordColor',
+  'swordBg',
+  'xIconColor',
+  'xIconBg',
   'headerBg',
   'headerText',
   'buttonBg',
   'buttonText',
+  'msgSpacing',
+  'msgPadH',
+  'msgLineHeight',
 ];
 
 const WIDGET_ONLY_KEYS = new Set(['displayStyle', 'layout', 'chatStyle']);
+
+const SCOPED_APPEARANCE_ROOTS = new Set([
+  'colors',
+  'typography',
+  'surfaces',
+  'borders',
+  'spacing',
+  'effects',
+  'controls',
+  'motion',
+]);
+
+const VISUAL_TO_APPEARANCE_PATH = {
+  accentColor: 'colors.accent',
+  bgColor: 'surfaces.containerBg',
+  cardBg: 'surfaces.cardBg',
+  headerBg: 'surfaces.headerBg',
+  headerText: 'colors.textSecondary',
+  textColor: 'colors.text',
+  mutedTextColor: 'colors.muted',
+  mutedColor: 'colors.muted',
+  borderColor: 'borders.color',
+  cardBorder: 'borders.color',
+  fontFamily: 'typography.bodyFont',
+  fontSize: 'typography.baseSize',
+  fontWeight: 'typography.bodyWeight',
+  borderRadius: 'borders.radius',
+  cardRadius: 'borders.radius',
+  borderWidth: 'borders.width',
+  cardBorderWidth: 'borders.width',
+  containerPadding: 'surfaces.padding',
+  cardPadding: 'surfaces.padding',
+  padding: 'spacing.padding',
+  paddingX: 'spacing.padding',
+  paddingY: 'spacing.padding',
+  cardGap: 'surfaces.gap',
+  gap: 'spacing.gap',
+  opacity: 'surfaces.opacity',
+  brightness: 'effects.brightness',
+  contrast: 'effects.contrast',
+  saturation: 'effects.saturation',
+  blur: 'effects.backdropBlur',
+  shadowSize: 'effects.shadowBlur',
+  shadowIntensity: 'effects.shadowOpacity',
+  animSpeed: 'motion.duration',
+  progressColor: 'colors.success',
+  progressBgColor: 'colors.divider',
+  barFill: 'colors.success',
+  barBg: 'colors.divider',
+  bestColor: 'colors.positive',
+  worstColor: 'colors.negative',
+  providerColor: 'colors.textSecondary',
+  slotNameColor: 'colors.text',
+  labelColor: 'colors.muted',
+  dividerColor: 'colors.divider',
+  buttonBg: 'controls.primaryBg',
+  buttonText: 'controls.primaryText',
+};
+
+const APPEARANCE_PATH_TO_VISUAL = Object.entries(VISUAL_TO_APPEARANCE_PATH).reduce((acc, [key, path]) => {
+  if (!acc[path]) acc[path] = key;
+  return acc;
+}, {});
+
+const COMMON_SUB_ELEMENT_DEFINITIONS = [
+  { id: 'container', label: 'Container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow'] },
+  { id: 'header', label: 'Header', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight', 'padding', 'radius'] },
+  { id: 'card', label: 'Card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
+  { id: 'label', label: 'Labels', properties: ['textColor', 'fontSize', 'fontWeight'] },
+  { id: 'value', label: 'Values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+];
+
+const WIDGET_SUB_ELEMENT_DEFINITIONS = {
+  bonus_hunt: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'progressBar', label: 'Progress bar', properties: ['background', 'fillColor', 'radius', 'height'] },
+    { id: 'bonusCard', label: 'Bonus card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
+    { id: 'openedState', label: 'Opened card', properties: ['background', 'textColor', 'borderColor', 'accentColor', 'opacity'] },
+    { id: 'unopenedState', label: 'Unopened card', properties: ['background', 'textColor', 'borderColor', 'opacity'] },
+    { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'height', 'opacity'] },
+    { id: 'profit', label: 'Profit values', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight'] },
+    { id: 'loss', label: 'Loss values', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight'] },
+    { id: 'highlight', label: 'Best-win highlight', properties: ['background', 'textColor', 'borderColor', 'accentColor', 'shadow'] },
+  ],
+  bets: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'question', label: 'Question text', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'optionCard', label: 'Option cards', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'selectedState', label: 'Selected option', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
+    { id: 'progressBar', label: 'Progress bars', properties: ['background', 'fillColor', 'radius', 'height'] },
+    { id: 'timer', label: 'Timer', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'winningState', label: 'Winning option', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
+    { id: 'losingState', label: 'Losing option', properties: ['background', 'textColor', 'opacity'] },
+  ],
+  slot_requests: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'requestCard', label: 'Request card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'position', label: 'Position number', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'viewerName', label: 'Viewer name', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'provider', label: 'Provider text', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'opacity'] },
+    { id: 'pendingState', label: 'Pending state', properties: ['background', 'textColor', 'borderColor'] },
+    { id: 'playingState', label: 'Playing state', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
+    { id: 'completedState', label: 'Completed state', properties: ['background', 'textColor', 'opacity'] },
+    { id: 'rejectedState', label: 'Rejected state', properties: ['background', 'textColor', 'opacity'] },
+  ],
+  giveaway: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'prize', label: 'Prize area', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'keyword', label: 'Keyword', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'counter', label: 'Counters', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'timer', label: 'Timer', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'winnerCard', label: 'Winner card', properties: ['background', 'textColor', 'borderColor', 'radius', 'shadow'] },
+    { id: 'participantList', label: 'Participant list', properties: ['background', 'textColor', 'borderColor', 'radius', 'padding', 'gap'] },
+    { id: 'celebration', label: 'Celebration visuals', properties: ['accentColor', 'fillColor', 'opacity', 'shadow'] },
+    { id: 'emptyState', label: 'Empty state', properties: ['background', 'textColor', 'opacity'] },
+  ],
+  rtp_stats: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'rtpValue', label: 'RTP value', properties: ['textColor', 'accentColor', 'fontSize', 'fontWeight'] },
+    { id: 'volatility', label: 'Volatility', properties: ['textColor', 'accentColor', 'fontSize', 'fontWeight'] },
+    { id: 'maxWin', label: 'Max win', properties: ['textColor', 'accentColor', 'fontSize', 'fontWeight'] },
+    { id: 'personalBest', label: 'Personal best', properties: ['textColor', 'accentColor', 'fontSize', 'fontWeight'] },
+    { id: 'statCard', label: 'Stat cards', properties: ['background', 'textColor', 'borderColor', 'radius', 'padding', 'gap'] },
+    { id: 'icon', label: 'Icons', properties: ['textColor', 'fontSize'] },
+    { id: 'spinner', label: 'Spinner', properties: ['accentColor', 'opacity'] },
+    { id: 'positive', label: 'Positive values', properties: ['textColor', 'fontWeight'] },
+    { id: 'negative', label: 'Negative values', properties: ['textColor', 'fontWeight'] },
+    { id: 'chart', label: 'Chart', properties: ['background', 'textColor', 'borderColor', 'accentColor'] },
+  ],
+  navbar: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'logo', label: 'Logo', properties: ['accentColor', 'imageSize', 'radius', 'opacity'] },
+    { id: 'avatar', label: 'Avatar', properties: ['imageSize', 'radius', 'borderColor', 'borderWidth'] },
+    { id: 'displayName', label: 'Display name', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'clock', label: 'Clock', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'music', label: 'Music information', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'sponsor', label: 'Sponsor area', properties: ['background', 'textColor', 'radius', 'padding'] },
+    { id: 'crypto', label: 'Crypto ticker', properties: ['textColor', 'accentColor', 'fillColor', 'fontSize', 'fontWeight'] },
+    { id: 'separator', label: 'Separators', properties: ['borderColor', 'borderWidth', 'opacity'] },
+  ],
+  background: [
+    { id: 'canvas', label: 'Background layer', properties: ['background', 'opacity', 'radius', 'blur', 'brightness', 'contrast', 'saturation'] },
+    { id: 'gradient', label: 'Gradient', properties: ['background', 'accentColor', 'fillColor'] },
+    { id: 'media', label: 'Image/video', properties: ['opacity', 'blur', 'brightness', 'contrast', 'saturation'] },
+    { id: 'tint', label: 'Tint', properties: ['background', 'opacity'] },
+    { id: 'vignette', label: 'Vignette', properties: ['background', 'opacity'] },
+    { id: 'texture', label: 'Texture', properties: ['background', 'opacity'] },
+  ],
+  bonus_buys: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'sessionCard', label: 'Session card', properties: ['background', 'textColor', 'borderColor', 'radius', 'padding', 'shadow'] },
+    { id: 'cost', label: 'Cost', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'payout', label: 'Payout', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'profit', label: 'Profit', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'loss', label: 'Loss', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'slotArtwork', label: 'Slot artwork', properties: ['radius', 'imageSize', 'opacity'] },
+    { id: 'status', label: 'Status', properties: ['background', 'textColor', 'radius', 'padding'] },
+    { id: 'progressBar', label: 'Progress', properties: ['background', 'fillColor', 'radius', 'height'] },
+  ],
+  tournament: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'bracket', label: 'Bracket background', properties: ['background', 'borderColor', 'radius', 'padding', 'gap'] },
+    { id: 'roundHeading', label: 'Round headings', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
+    { id: 'participantCard', label: 'Participant cards', properties: ['background', 'textColor', 'borderColor', 'radius', 'padding', 'gap'] },
+    { id: 'winnerHighlight', label: 'Winner highlight', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
+    { id: 'eliminatedState', label: 'Eliminated state', properties: ['background', 'textColor', 'opacity'] },
+    { id: 'connector', label: 'Match connector lines', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'opacity'] },
+    { id: 'score', label: 'Score text', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'timer', label: 'Timer', properties: ['background', 'textColor', 'radius'] },
+    { id: 'finalWinner', label: 'Final winner', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
+  ],
+  current_slot: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'borderColor', 'borderWidth', 'opacity'] },
+    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'provider', label: 'Provider', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'stake', label: 'Stake', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'stat', label: 'RTP and stats', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'imageFrame', label: 'Image frame', properties: ['background', 'borderColor', 'borderWidth', 'radius', 'shadow'] },
+    { id: 'fallback', label: 'Missing-image fallback', properties: ['background', 'textColor', 'radius'] },
+  ],
+  chat: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'message', label: 'Message', properties: ['background', 'textColor', 'borderColor', 'radius', 'padding', 'gap', 'shadow'] },
+    { id: 'username', label: 'Username', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'timestamp', label: 'Timestamp', properties: ['textColor', 'fontSize', 'opacity'] },
+    { id: 'avatar', label: 'Avatar', properties: ['imageSize', 'radius', 'borderColor', 'borderWidth'] },
+    { id: 'badge', label: 'Badges', properties: ['background', 'textColor', 'fontSize', 'radius', 'padding'] },
+    { id: 'emote', label: 'Emotes', properties: ['imageSize', 'opacity'] },
+    { id: 'highlightedMessage', label: 'Highlighted message', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
+    { id: 'botMessage', label: 'Bot message', properties: ['background', 'textColor', 'opacity'] },
+    { id: 'subscriberMessage', label: 'Subscriber message', properties: ['background', 'textColor', 'borderColor'] },
+    { id: 'moderatorMessage', label: 'Moderator message', properties: ['background', 'textColor', 'borderColor'] },
+  ],
+  image_slideshow: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'image', label: 'Image', properties: ['radius', 'borderColor', 'borderWidth', 'opacity', 'blur', 'brightness', 'contrast', 'saturation'] },
+    { id: 'caption', label: 'Caption', properties: ['background', 'textColor', 'fontFamily', 'fontSize', 'fontWeight', 'padding', 'radius'] },
+    { id: 'dots', label: 'Dots', properties: ['background', 'accentColor', 'imageSize', 'opacity'] },
+  ],
+  raid_shoutout: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'title', label: 'Title', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'clip', label: 'Clip', properties: ['radius', 'borderColor', 'borderWidth', 'shadow'] },
+    { id: 'game', label: 'Game', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'viewers', label: 'Viewers', properties: ['background', 'textColor', 'radius'] },
+  ],
+  spotify_now_playing: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'albumArt', label: 'Album art', properties: ['imageSize', 'radius', 'shadow'] },
+    { id: 'track', label: 'Track', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'artist', label: 'Artist', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'progressBar', label: 'Progress', properties: ['background', 'fillColor', 'radius', 'height'] },
+  ],
+  bh_stats: [
+    ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'progressBar', label: 'Progress', properties: ['background', 'fillColor', 'radius', 'height'] },
+    { id: 'best', label: 'Best result', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'worst', label: 'Worst result', properties: ['textColor', 'fontSize', 'fontWeight'] },
+  ],
+  container: [
+    { id: 'container', label: 'Container', properties: ['background', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow'] },
+    { id: 'children', label: 'Child spacing', properties: ['gap', 'padding'] },
+  ],
+};
+
+const SUB_ELEMENT_DEFAULT_PATHS = {
+  background: 'surfaces.cardBg',
+  textColor: 'colors.text',
+  mutedColor: 'colors.muted',
+  borderColor: 'borders.color',
+  fillColor: 'colors.success',
+  accentColor: 'colors.accent',
+  radius: 'borders.radius',
+  borderWidth: 'borders.width',
+  fontFamily: 'typography.bodyFont',
+  fontSize: 'typography.baseSize',
+  fontWeight: 'typography.bodyWeight',
+  padding: 'surfaces.padding',
+  gap: 'surfaces.gap',
+  opacity: 'surfaces.opacity',
+  shadow: 'effects.shadowBlur',
+  shadowColor: 'effects.shadowColor',
+  height: 'spacing.buttonHeight',
+  imageSize: 'spacing.statSize',
+  blur: 'effects.backdropBlur',
+  brightness: 'effects.brightness',
+  contrast: 'effects.contrast',
+  saturation: 'effects.saturation',
+};
 
 function isPlainObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value);
@@ -287,6 +586,102 @@ export function setByPath(source, path, value) {
 
 export function omitPath(source, path) {
   return setByPath(source, path, RESET_VALUE);
+}
+
+export function isScopedAppearancePath(path) {
+  const [root] = String(path || '').split('.');
+  return SCOPED_APPEARANCE_ROOTS.has(root);
+}
+
+export function getTargetOverrideRoot(target) {
+  if (!target || target.scope === 'overlay' || target.scope === 'all_widgets') return '';
+  if (target.scope === 'widget_type' && target.widgetType) return `widgetTypes.${target.widgetType}`;
+  if (target.scope === 'widget_instance' && target.widgetId) return `widgets.${target.widgetId}`;
+  return '';
+}
+
+export function getScopedAppearancePath(target, path) {
+  const root = getTargetOverrideRoot(target);
+  if (!root || !isScopedAppearancePath(path)) return path;
+  return `${root}.appearance.${path}`;
+}
+
+export function getScopedVisualPath(target, key) {
+  const root = getTargetOverrideRoot(target);
+  if (!root) return '';
+  return `${root}.visual.${key}`;
+}
+
+export function getAppearancePathForVisualKey(key) {
+  return VISUAL_TO_APPEARANCE_PATH[key] || '';
+}
+
+function stripScopedOverrides(appearance = {}) {
+  const { widgetTypes, widgets, ...rest } = appearance || {};
+  return rest;
+}
+
+function visualToAppearance(visual = {}) {
+  let next = {};
+  for (const [key, value] of Object.entries(visual || {})) {
+    const path = VISUAL_TO_APPEARANCE_PATH[key];
+    if (!path || value === undefined || value === RESET_VALUE) continue;
+    const normalizedValue = key === 'shadowIntensity'
+      ? clampNumber(value, 0, 100, 0) / 100
+      : key === 'animSpeed'
+        ? Math.round(clampNumber(value, 0, 10, 1) * 350)
+        : value;
+    next = setByPath(next, path, normalizedValue);
+  }
+  return next;
+}
+
+function appearanceToVisualOverride(appearance = {}) {
+  const visual = {};
+  for (const [path, key] of Object.entries(APPEARANCE_PATH_TO_VISUAL)) {
+    const value = getByPath(appearance, path);
+    if (value === undefined || value === RESET_VALUE) continue;
+    visual[key] = key === 'shadowIntensity'
+      ? Math.round(clampNumber(value, 0, 1, 0) * 100)
+      : key === 'animSpeed'
+        ? Math.max(0, Number(value) / 350)
+        : value;
+  }
+  return visual;
+}
+
+function readOverrideEntry(entry = {}) {
+  if (!isPlainObject(entry)) return { appearance: {}, visual: {} };
+  const visual = getVisualOverride({ current: entry }, 'current');
+  return {
+    appearance: deepMerge(visualToAppearance(visual), entry.appearance || {}),
+    visual,
+    subElements: isPlainObject(entry.subElements) ? entry.subElements : {},
+  };
+}
+
+export function getWidgetSubElementDefinitions(widgetType) {
+  return WIDGET_SUB_ELEMENT_DEFINITIONS[widgetType] || COMMON_SUB_ELEMENT_DEFINITIONS;
+}
+
+export function getSubElementPropertyDefault(property, appearance) {
+  const a = normalizeAppearance(appearance);
+  const path = SUB_ELEMENT_DEFAULT_PATHS[property];
+  if (!path) return undefined;
+  return getByPath(a, path);
+}
+
+export function buildSubElementDefaults(widgetType, appearance) {
+  const a = normalizeAppearance(appearance);
+  return getWidgetSubElementDefinitions(widgetType).reduce((acc, definition) => {
+    const values = {};
+    for (const property of definition.properties || []) {
+      const value = getSubElementPropertyDefault(property, a);
+      if (value !== undefined) values[property] = value;
+    }
+    acc[definition.id] = values;
+    return acc;
+  }, {});
 }
 
 export function clampNumber(value, min, max, fallback = min) {
@@ -571,6 +966,92 @@ export function appearanceToWidgetConfigDefaults(appearance) {
   };
 }
 
+export function resolveAppearance({
+  systemDefaults = SYSTEM_APPEARANCE,
+  theme = {},
+  globalAppearance = {},
+  widgetTypeAppearance = {},
+  widgetInstanceAppearance = {},
+  draftAppearance = {},
+} = {}) {
+  const themeAppearance = typeof theme === 'string'
+    ? getThemeAppearance(theme)
+    : theme;
+  const themeId = globalAppearance?.themeId
+    || themeAppearance?.themeId
+    || systemDefaults?.themeId
+    || 'classic';
+  return normalizeAppearance(deepMerge(
+    systemDefaults,
+    themeAppearance,
+    stripScopedOverrides(globalAppearance),
+    widgetTypeAppearance,
+    widgetInstanceAppearance,
+    draftAppearance,
+    { schemaVersion: APPEARANCE_SCHEMA_VERSION, themeId }
+  ));
+}
+
+export function resolveAppearanceForTarget(appearance, target, theme) {
+  const normalized = normalizeAppearance(appearance, { theme });
+  const typeEntry = target?.scope === 'widget_type'
+    ? normalized.widgetTypes?.[target.widgetType]
+    : target?.scope === 'widget_instance'
+      ? normalized.widgetTypes?.[target.widgetType]
+      : null;
+  const instanceEntry = target?.scope === 'widget_instance'
+    ? normalized.widgets?.[target.widgetId]
+    : null;
+  return resolveAppearance({
+    systemDefaults: SYSTEM_APPEARANCE,
+    theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
+    globalAppearance: normalized,
+    widgetTypeAppearance: readOverrideEntry(typeEntry).appearance,
+    widgetInstanceAppearance: readOverrideEntry(instanceEntry).appearance,
+  });
+}
+
+export function getAppearancePropertyState({ appearance, target, path, theme, draftAppearance } = {}) {
+  const normalized = normalizeAppearance(appearance, { theme });
+  const globalResolved = resolveAppearance({
+    systemDefaults: SYSTEM_APPEARANCE,
+    theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
+    globalAppearance: normalized,
+  });
+  const typeEntry = target?.scope === 'widget_type'
+    ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]).appearance
+    : target?.scope === 'widget_instance'
+      ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]).appearance
+      : {};
+  const instanceEntry = target?.scope === 'widget_instance'
+    ? readOverrideEntry(normalized.widgets?.[target.widgetId]).appearance
+    : {};
+  const typeValue = getByPath(typeEntry, path);
+  const instanceValue = getByPath(instanceEntry, path);
+  const draftValue = getByPath(draftAppearance, path);
+  const effective = resolveAppearance({
+    systemDefaults: SYSTEM_APPEARANCE,
+    theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
+    globalAppearance: normalized,
+    widgetTypeAppearance: typeEntry,
+    widgetInstanceAppearance: instanceEntry,
+    draftAppearance,
+  });
+  const source = draftValue !== undefined ? 'draft'
+    : instanceValue !== undefined ? 'widget-instance'
+      : typeValue !== undefined ? 'widget-type'
+        : getByPath(normalized, path) !== undefined ? 'global'
+          : getByPath(getThemeAppearance(normalized.themeId), path) !== undefined ? 'theme'
+            : 'system';
+  return {
+    inheritedValue: getByPath(globalResolved, path),
+    overrideValue: instanceValue ?? typeValue,
+    draftValue,
+    effectiveValue: getByPath(effective, path),
+    source,
+  };
+}
+
 function getVisualOverride(overrides = {}, typeOrId) {
   const target = overrides?.[typeOrId];
   if (!target) return {};
@@ -592,7 +1073,8 @@ function pickSupportedConfig(type, values) {
   const defaults = def?.defaults || {};
   const supportsKey = key => (
     Object.prototype.hasOwnProperty.call(defaults, key)
-    || ['accentColor', 'bgColor', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'borderRadius', 'borderWidth', 'custom_css'].includes(key)
+    || VISUAL_CONFIG_KEYS.includes(key)
+    || key === 'custom_css'
   );
   for (const [key, value] of Object.entries(values || {})) {
     if (value === undefined || value === RESET_VALUE) continue;
@@ -607,7 +1089,16 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme) {
   const defaults = def?.defaults || {};
   const base = widget.config || {};
   const normalized = normalizeAppearance(appearance, { theme });
-  const inherited = pickSupportedConfig(widget.widget_type, appearanceToWidgetConfigDefaults(normalized));
+  const typeEntry = readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]);
+  const instanceEntry = readOverrideEntry(normalized.widgets?.[widget.id]);
+  const resolved = resolveAppearance({
+    systemDefaults: SYSTEM_APPEARANCE,
+    theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
+    globalAppearance: normalized,
+    widgetTypeAppearance: typeEntry.appearance,
+    widgetInstanceAppearance: instanceEntry.appearance,
+  });
+  const inherited = pickSupportedConfig(widget.widget_type, appearanceToWidgetConfigDefaults(resolved));
   const next = { ...base };
 
   for (const [key, value] of Object.entries(inherited)) {
@@ -616,12 +1107,24 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme) {
     }
   }
 
-  const typeOverride = pickSupportedConfig(widget.widget_type, getVisualOverride(normalized.widgetTypes, widget.widget_type));
-  const instanceOverride = pickSupportedConfig(widget.widget_type, getVisualOverride(normalized.widgets, widget.id));
+  const typeOverride = pickSupportedConfig(widget.widget_type, {
+    ...appearanceToVisualOverride(typeEntry.appearance),
+    ...typeEntry.visual,
+  });
+  const instanceOverride = pickSupportedConfig(widget.widget_type, {
+    ...appearanceToVisualOverride(instanceEntry.appearance),
+    ...instanceEntry.visual,
+  });
   return {
     ...next,
     ...typeOverride,
     ...instanceOverride,
+    subElements: deepMerge(
+      buildSubElementDefaults(widget.widget_type, resolved),
+      base.subElements || {},
+      typeEntry.subElements,
+      instanceEntry.subElements
+    ),
   };
 }
 
@@ -630,6 +1133,35 @@ export function resolveWidgetsForAppearance(widgets = [], appearance, theme) {
     ...widget,
     config: resolveWidgetAppearanceConfig(widget, appearance, theme),
   }));
+}
+
+export function buildWidgetAppearanceVars(config = {}) {
+  const shadowSize = Number(config.shadowSize) || 0;
+  const shadowIntensity = Number(config.shadowIntensity) || 0;
+  const shadowOpacity = Math.max(0, Math.min(1, shadowIntensity / 100));
+  return {
+    '--widget-accent': config.accentColor || 'var(--overlay-color-accent)',
+    '--widget-surface': config.bgColor || 'var(--overlay-surface)',
+    '--widget-card-bg': config.cardBg || 'var(--overlay-card-bg)',
+    '--widget-header-bg': config.headerBg || config.bgColor || 'var(--overlay-surface-elevated)',
+    '--widget-text': config.textColor || 'var(--overlay-text-primary)',
+    '--widget-muted': config.mutedColor || config.mutedTextColor || 'var(--overlay-text-muted)',
+    '--widget-border-color': config.borderColor || config.cardBorder || 'var(--overlay-border-color)',
+    '--widget-border-width': `${Number(config.borderWidth ?? config.cardBorderWidth ?? 0) || 0}px`,
+    '--widget-radius': `${Number(config.borderRadius ?? config.cardRadius ?? 0) || 0}px`,
+    '--widget-font-family': config.fontFamily || 'var(--overlay-font-body)',
+    '--widget-font-size': `${Number(config.fontSize) || 14}px`,
+    '--widget-font-weight': config.fontWeight || 'var(--oc-font-weight)',
+    '--widget-padding': `${Number(config.containerPadding ?? config.padding ?? config.paddingX ?? 0) || 0}px`,
+    '--widget-gap': `${Number(config.cardGap ?? config.gap ?? 0) || 0}px`,
+    '--widget-progress': config.progressColor || 'var(--overlay-color-success)',
+    '--widget-progress-bg': config.progressBgColor || 'var(--overlay-divider)',
+    '--widget-positive': config.bestColor || 'var(--overlay-color-positive)',
+    '--widget-negative': config.worstColor || 'var(--overlay-color-negative)',
+    '--widget-shadow': shadowSize > 0 && shadowOpacity > 0
+      ? `0 ${Math.round(shadowSize * 0.35)}px ${Math.round(shadowSize * 0.7)}px rgba(0,0,0,${shadowOpacity.toFixed(2)})`
+      : 'none',
+  };
 }
 
 export function getWidgetOverrideCount(appearance, widgetId) {
@@ -714,9 +1246,11 @@ export function createAppearancePreset({ name, appearance, scope = 'overlay', wi
 export function getSupportedVisualKeys(widgetType) {
   const def = getWidgetDef(widgetType);
   const defaults = def?.defaults || {};
+  const declared = def?.appearanceCapabilities?.customTokens || def?.appearanceCapabilities?.widgetSpecific || [];
   return VISUAL_CONFIG_KEYS.filter(key => (
     Object.prototype.hasOwnProperty.call(defaults, key)
-    || ['accentColor', 'bgColor', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'borderRadius', 'borderWidth'].includes(key)
-  ));
+    || declared.includes(key)
+    || ['accentColor', 'bgColor', 'cardBg', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'fontSize', 'borderRadius', 'borderWidth', 'shadowSize', 'shadowIntensity', 'animSpeed'].includes(key)
+  )).filter((key, index, keys) => keys.indexOf(key) === index);
 }
 

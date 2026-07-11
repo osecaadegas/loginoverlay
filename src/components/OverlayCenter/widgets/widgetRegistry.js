@@ -26,6 +26,7 @@ const DEFAULT_APPEARANCE_CAPABILITIES = {
   controls: false,
   responsive: true,
   customTokens: [],
+  widgetSpecific: [],
 };
 
 function inferAppearanceCapabilities(definition) {
@@ -45,6 +46,13 @@ function inferAppearanceCapabilities(definition) {
     customTokens: [
       ...new Set([
         ...(definition.appearanceCapabilities?.customTokens || []),
+        ...(definition.appearanceCapabilities?.widgetSpecific || []),
+        ...tokenKeys,
+      ]),
+    ],
+    widgetSpecific: [
+      ...new Set([
+        ...(definition.appearanceCapabilities?.widgetSpecific || []),
         ...tokenKeys,
       ]),
     ],

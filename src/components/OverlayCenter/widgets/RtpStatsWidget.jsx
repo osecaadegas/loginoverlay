@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { findUserSlotRecord, getSlotIdentity, recordMatchesSlot } from '../../../services/slotRecordService';
+import { subValue } from './shared/appearanceStyles';
 
 /* ─── Fetch slot info from the database (slots table) ─── */
 async function fetchSlotFromDB(slotRef) {
@@ -351,22 +352,22 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const isNeon = displayStyle === 'neon';
   const isMinimal = displayStyle === 'minimal';
   const isGlassStyle = displayStyle === 'glass';
-  const barBgFrom = c.barBgFrom || (isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
+  const barBgFrom = subValue(c, 'container', 'background', c.barBgFrom || (isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827'));
   const barBgVia = c.barBgVia || (isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f');
   const barBgTo = c.barBgTo || (isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
-  const borderColor = c.borderColor || (isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8');
-  const borderWidth = c.borderWidth ?? (isMinimal ? 0 : isNeon ? 1 : isGlassStyle ? 1 : 1);
-  const borderRadius = c.borderRadius ?? (isMinimal ? 4 : isGlassStyle ? 16 : 8);
-  const textColor = c.textColor || '#ffffff';
-  const providerColor = c.providerColor || '#ffffff';
-  const slotNameColor = c.slotNameColor || '#ffffff';
-  const labelColor = c.labelColor || '#94a3b8';
-  const rtpIconColor = c.rtpIconColor || '#60a5fa';
-  const potentialIconColor = c.potentialIconColor || '#facc15';
-  const volatilityIconColor = c.volatilityIconColor || '#3b82f6';
-  const dividerColor = c.dividerColor || '#3b82f6';
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize ?? 14;
+  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8'));
+  const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMinimal ? 0 : isNeon ? 1 : isGlassStyle ? 1 : 1));
+  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMinimal ? 4 : isGlassStyle ? 16 : 8));
+  const textColor = subValue(c, 'statCard', 'textColor', c.textColor || '#ffffff');
+  const providerColor = subValue(c, 'provider', 'textColor', c.providerColor || '#ffffff');
+  const slotNameColor = subValue(c, 'slotTitle', 'textColor', c.slotNameColor || '#ffffff');
+  const labelColor = subValue(c, 'label', 'textColor', c.labelColor || '#94a3b8');
+  const rtpIconColor = subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || '#60a5fa');
+  const potentialIconColor = subValue(c, 'maxWin', 'accentColor', c.potentialIconColor || '#facc15');
+  const volatilityIconColor = subValue(c, 'volatility', 'accentColor', c.volatilityIconColor || '#3b82f6');
+  const dividerColor = subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6');
+  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
+  const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 14);
   const providerFontSize = c.providerFontSize ?? 16;
   const paddingX = c.paddingX ?? 16;
   const paddingY = c.paddingY ?? 8;
@@ -379,8 +380,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const showPotential = c.showPotential !== false;
   const showVolatility = c.showVolatility !== false;
   const showBestWin = c.showBestWin !== false;
-  const bestWinIconColor = c.bestWinIconColor || '#22c55e';
-  const spinnerColor = c.spinnerColor || '#60a5fa';
+  const bestWinIconColor = subValue(c, 'personalBest', 'accentColor', c.bestWinIconColor || '#22c55e');
+  const spinnerColor = subValue(c, 'spinner', 'accentColor', c.spinnerColor || '#60a5fa');
   const previewMode = c.previewMode === true;
   const currency = bhConfig.currency || c.currency || '€';
 

@@ -7,6 +7,7 @@
  */
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import SlotImage from './SlotImage';
+import { subValue } from './shared/appearanceStyles';
 
 export default function BHStatsWidget({ config, allWidgets }) {
   const c = config || {};
@@ -64,29 +65,29 @@ export default function BHStatsWidget({ config, allWidgets }) {
   }, [bonuses, startMoney, stopLoss]);
 
   /* ─── Style config ─── */
-  const fontFamily = c.fontFamily || (isMetal ? "'Inter', 'Poppins', sans-serif" : "'Poppins', sans-serif");
-  const fontSize = c.fontSize ?? 16;
-  const fontWeight = c.fontWeight || '600';
+  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isMetal ? "'Inter', 'Poppins', sans-serif" : "'Poppins', sans-serif"));
+  const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 16);
+  const fontWeight = subValue(c, 'container', 'fontWeight', c.fontWeight || '600');
 
   /* Metal palette — gold-accent metallic matching BH V10 Metallic */
   /* Glass palette — frosted translucent panels */
-  const bgColor = isMetal
+  const bgColor = subValue(c, 'container', 'background', isMetal
     ? 'linear-gradient(145deg, #1e1e22 0%, #1a1a1e 40%, #222226 100%)'
     : isGlass ? 'rgba(255, 255, 255, 0.04)'
-    : (c.bgColor || 'rgba(15, 23, 42, 0.9)');
-  const cardBg = isMetal
+    : (c.bgColor || 'rgba(15, 23, 42, 0.9)'));
+  const cardBg = subValue(c, 'statsCard', 'background', isMetal
     ? 'linear-gradient(160deg, rgba(232,160,32,0.08) 0%, rgba(200,180,120,0.04) 100%)'
     : isGlass ? 'rgba(255, 255, 255, 0.06)'
-    : (c.cardBg || 'rgba(255,255,255,0.04)');
-  const textColor = isMetal ? '#d4d4d8' : (c.textColor || '#f1f5f9');
-  const mutedColor = isMetal ? '#666666' : isGlass ? '#a1a8b8' : (c.mutedColor || '#64748b');
-  const accentColor = isMetal ? '#e8a020' : isGlass ? '#94a3b8' : (c.accentColor || '#818cf8');
-  const progressColor = isMetal ? '#e8a020' : isGlass ? '#94a3b8' : (c.progressColor || '#22c55e');
-  const progressBg = isMetal ? 'rgba(255,255,255,0.06)' : isGlass ? 'rgba(255,255,255,0.1)' : (c.progressBgColor || 'rgba(255,255,255,0.08)');
-  const bestColor = isMetal ? '#66bb6a' : (c.bestColor || '#22c55e');
-  const worstColor = isMetal ? '#ef5350' : (c.worstColor || '#f87171');
-  const borderColor = isMetal ? 'rgba(200,210,225,0.18)' : isGlass ? 'rgba(255,255,255,0.12)' : (c.borderColor || 'rgba(255,255,255,0.06)');
-  const borderRadius = c.borderRadius ?? (isMetal ? 10 : isGlass ? 16 : 14);
+    : (c.cardBg || 'rgba(255,255,255,0.04)'));
+  const textColor = subValue(c, 'value', 'textColor', isMetal ? '#d4d4d8' : (c.textColor || '#f1f5f9'));
+  const mutedColor = subValue(c, 'label', 'textColor', isMetal ? '#666666' : isGlass ? '#a1a8b8' : (c.mutedColor || '#64748b'));
+  const accentColor = subValue(c, 'statsCard', 'accentColor', isMetal ? '#e8a020' : isGlass ? '#94a3b8' : (c.accentColor || '#818cf8'));
+  const progressColor = subValue(c, 'progressBar', 'fillColor', isMetal ? '#e8a020' : isGlass ? '#94a3b8' : (c.progressColor || '#22c55e'));
+  const progressBg = subValue(c, 'progressBar', 'background', isMetal ? 'rgba(255,255,255,0.06)' : isGlass ? 'rgba(255,255,255,0.1)' : (c.progressBgColor || 'rgba(255,255,255,0.08)'));
+  const bestColor = subValue(c, 'bestStat', 'textColor', isMetal ? '#66bb6a' : (c.bestColor || '#22c55e'));
+  const worstColor = subValue(c, 'worstStat', 'textColor', isMetal ? '#ef5350' : (c.worstColor || '#f87171'));
+  const borderColor = subValue(c, 'statsCard', 'borderColor', isMetal ? 'rgba(200,210,225,0.18)' : isGlass ? 'rgba(255,255,255,0.12)' : (c.borderColor || 'rgba(255,255,255,0.06)'));
+  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 10 : isGlass ? 16 : 14));
   const showTitle = c.showTitle !== false;
   const layout = c.layout || 'vertical';
 

@@ -7,6 +7,7 @@
  */
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { hex2rgb } from './shared/colorUtils';
+import { subValue } from './shared/appearanceStyles';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -16,11 +17,15 @@ export default function SlotRequestsCardStack({ config, requests }) {
   const timerRef = useRef(null);
 
   /* ── Config ── */
-  const accent       = c.accentColor   || '#94a3b8';
-  const textColor    = c.textColor     || '#ffffff';
-  const mutedColor   = c.mutedColor    || '#94a3b8';
-  const containerBg  = c.bgColor       || 'rgba(15,17,28,0.82)';
-  const cardBg       = c.cardBg        || 'rgba(255,255,255,0.04)';
+  const accent       = subValue(c, 'position', 'accentColor', c.accentColor || '#94a3b8');
+  const textColor    = subValue(c, 'container', 'textColor', c.textColor || '#ffffff');
+  const mutedColor   = subValue(c, 'viewerName', 'mutedColor', c.mutedColor || '#94a3b8');
+  const containerBg  = subValue(c, 'container', 'background', c.bgColor || 'rgba(15,17,28,0.82)');
+  const cardBg       = subValue(c, 'requestCard', 'background', c.cardBg || 'rgba(255,255,255,0.04)');
+  const titleColor   = subValue(c, 'slotTitle', 'textColor', textColor);
+  const borderColor  = subValue(c, 'requestCard', 'borderColor', 'rgba(255,255,255,0.1)');
+  const imageRadius  = subValue(c, 'slotImage', 'radius', 12);
+  const cardRadius   = subValue(c, 'requestCard', 'radius', 18);
   const showRequester = c.showRequester !== false;
   const showNumbers   = c.showNumbers   !== false;
   const fontFamily   = c.fontFamily    || "'Inter', sans-serif";
@@ -106,6 +111,10 @@ export default function SlotRequestsCardStack({ config, requests }) {
     '--sr-cs-muted': mutedColor,
     '--sr-cs-bg': containerBg,
     '--sr-cs-card-bg': cardBg,
+    '--sr-cs-title': titleColor,
+    '--sr-cs-border': borderColor,
+    '--sr-cs-img-radius': `${imageRadius}px`,
+    '--sr-cs-card-radius': `${cardRadius}px`,
   };
 
   /* ── Empty state ── */

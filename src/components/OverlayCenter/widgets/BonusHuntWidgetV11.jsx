@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import SlotImage from './SlotImage';
+import { subValue } from './shared/appearanceStyles';
 
 /**
  * BonusHuntWidgetV11 — "Fever"
@@ -55,28 +56,30 @@ function BonusHuntWidgetV11({ config, theme }) {
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
 
   /* ─── Style vars ─── */
-  const headerColor = c.headerColor || '#0a0e27';
-  const headerAccent = c.headerAccent || '#60a5fa';
-  const countCardColor = c.countCardColor || '#0f1535';
-  const currentBonusColor = c.currentBonusColor || '#0d2818';
-  const currentBonusAccent = c.currentBonusAccent || '#4ade80';
-  const listCardColor = c.listCardColor || '#0f1535';
-  const listCardAccent = c.listCardAccent || '#eab308';
-  const summaryColor = c.summaryColor || '#0a0e27';
-  const totalPayColor = c.totalPayColor || '#eab308';
-  const totalPayText = c.totalPayText || '#ffffff';
-  const superBadgeColor = c.superBadgeColor || '#eab308';
-  const extremeBadgeColor = c.extremeBadgeColor || '#ef4444';
-  const textColor = c.textColor || '#ffffff';
-  const mutedTextColor = c.mutedTextColor || '#93c5fd';
-  const statValueColor = c.statValueColor || '#ffffff';
-  const cardOutlineColor = c.cardOutlineColor || 'rgba(96,165,250,0.2)';
-  const cardOutlineWidth = c.cardOutlineWidth ?? 1;
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize ?? 15;
-  const cardRadius = c.cardRadius ?? 16;
-  const cardGap = c.cardGap ?? 8;
-  const cardPadding = c.cardPadding ?? 10;
+  const headerColor = subValue(c, 'header', 'background', c.headerColor || '#0a0e27');
+  const headerAccent = subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa');
+  const countCardColor = subValue(c, 'card', 'background', c.countCardColor || '#0f1535');
+  const currentBonusColor = subValue(c, 'highlight', 'background', c.currentBonusColor || '#0d2818');
+  const currentBonusAccent = subValue(c, 'highlight', 'accentColor', c.currentBonusAccent || '#4ade80');
+  const listCardColor = subValue(c, 'bonusCard', 'background', c.listCardColor || '#0f1535');
+  const listCardAccent = subValue(c, 'bonusCard', 'accentColor', c.listCardAccent || '#eab308');
+  const summaryColor = subValue(c, 'value', 'background', c.summaryColor || '#0a0e27');
+  const totalPayColor = subValue(c, 'profit', 'background', c.totalPayColor || '#eab308');
+  const totalPayText = subValue(c, 'profit', 'textColor', c.totalPayText || '#ffffff');
+  const superBadgeColor = subValue(c, 'openedState', 'accentColor', c.superBadgeColor || '#eab308');
+  const extremeBadgeColor = subValue(c, 'loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
+  const textColor = subValue(c, 'bonusCard', 'textColor', c.textColor || '#ffffff');
+  const mutedTextColor = subValue(c, 'label', 'textColor', c.mutedTextColor || '#93c5fd');
+  const statValueColor = subValue(c, 'value', 'textColor', c.statValueColor || '#ffffff');
+  const cardOutlineColor = subValue(c, 'bonusCard', 'borderColor', c.cardOutlineColor || 'rgba(96,165,250,0.2)');
+  const cardOutlineWidth = subValue(c, 'bonusCard', 'borderWidth', c.cardOutlineWidth ?? 1);
+  const fontFamily = subValue(c, 'bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
+  const fontSize = subValue(c, 'bonusCard', 'fontSize', c.fontSize ?? 15);
+  const cardRadius = subValue(c, 'bonusCard', 'radius', c.cardRadius ?? 16);
+  const cardGap = subValue(c, 'bonusCard', 'gap', c.cardGap ?? 8);
+  const cardPadding = subValue(c, 'bonusCard', 'padding', c.cardPadding ?? 10);
+  const progressBg = subValue(c, 'progressBar', 'background', 'rgba(255,255,255,0.08)');
+  const progressFill = subValue(c, 'progressBar', 'fillColor', currentBonusAccent);
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -109,6 +112,8 @@ function BonusHuntWidgetV11({ config, theme }) {
     '--bht11-card-outline-width': `${cardOutlineWidth}px`,
     '--bht11-card-radius': `${cardRadius}px`,
     '--bht11-card-padding': `${cardPadding}px`,
+    '--bht-progress-bg': progressBg,
+    '--bht-progress-fill': progressFill,
   };
 
   return (

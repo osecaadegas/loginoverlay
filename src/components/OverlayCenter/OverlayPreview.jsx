@@ -5,7 +5,7 @@
 import React, { useMemo, memo, useRef, useState, useEffect } from 'react';
 import { getWidgetDef } from './widgets/widgetRegistry';
 import buildThemeVars from './themeVarsBuilder';
-import { buildCanvasBackground, normalizeAppearance, resolveWidgetsForAppearance } from './appearance/appearanceModel';
+import { buildCanvasBackground, buildWidgetAppearanceVars, normalizeAppearance, resolveWidgetsForAppearance } from './appearance/appearanceModel';
 
 // Register built-in widgets (idempotent)
 import './widgets/builtinWidgets';
@@ -25,7 +25,7 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   const hasShadow = ss > 0 && si > 0;
 
   return (
-    <div className={selectedWidgetId === widget.id ? 'oc-preview-selected-widget' : undefined} style={{
+    <div className={selectedWidgetId === widget.id ? 'oc-preview-selected-widget' : undefined} data-widget-id={widget.id} data-widget-type={widget.widget_type} style={{
       position: 'absolute',
       left: isBg ? 0 : widget.position_x,
       top: isBg ? 0 : widget.position_y,
@@ -33,6 +33,7 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
       height: isBg ? canvasHeight : widget.height,
       zIndex: widget.z_index || 1,
       overflow: 'visible',
+      ...buildWidgetAppearanceVars(cfg),
       ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
     }}>
       <Component config={widget.config} theme={theme} allWidgets={allWidgets} />

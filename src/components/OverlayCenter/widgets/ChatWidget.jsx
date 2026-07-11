@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import useTwitchChannel from '../../../hooks/useTwitchChannel';
+import { subValue } from './shared/appearanceStyles';
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -89,20 +90,27 @@ function ChatWidget({ config, theme }) {
   const isBH = chatStyle === 'bh_stats';
 
   /* Style config */
-  const textColor = isMetal ? '#d4d8e0' : isBH ? '#f1f5f9' : (c.textColor || '#e2e8f0');
-  const headerBg = isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isBH ? 'rgba(255,255,255,0.04)' : (c.headerBg || 'rgba(30,41,59,0.5)');
-  const headerText = isMetal ? '#a8b0c0' : isBH ? '#64748b' : (c.headerText || '#94a3b8');
-  const fontFamily = isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif");
-  const fontSize = c.fontSize || 15;
+  const textColor = subValue(c, 'message', 'textColor', isMetal ? '#d4d8e0' : isBH ? '#f1f5f9' : (c.textColor || '#e2e8f0'));
+  const headerBg = subValue(c, 'header', 'background', isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isBH ? 'rgba(255,255,255,0.04)' : (c.headerBg || 'rgba(30,41,59,0.5)'));
+  const headerText = subValue(c, 'header', 'textColor', isMetal ? '#a8b0c0' : isBH ? '#64748b' : (c.headerText || '#94a3b8'));
+  const fontFamily = subValue(c, 'message', 'fontFamily', isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif"));
+  const fontSize = subValue(c, 'message', 'fontSize', c.fontSize || 15);
   const msgSpacing = c.msgSpacing ?? 2;
-  const borderRadius = c.borderRadius ?? (isMetal ? 10 : isBH ? 14 : 12);
-  const borderWidth = c.borderWidth ?? 1;
-  const borderColor = isMetal ? 'rgba(200,210,225,0.18)' : isBH ? 'rgba(255,255,255,0.06)' : (c.borderColor || 'rgba(51,65,85,0.5)');
+  const borderRadius = subValue(c, 'message', 'radius', c.borderRadius ?? (isMetal ? 10 : isBH ? 14 : 12));
+  const borderWidth = subValue(c, 'message', 'borderWidth', c.borderWidth ?? 1);
+  const borderColor = subValue(c, 'message', 'borderColor', isMetal ? 'rgba(200,210,225,0.18)' : isBH ? 'rgba(255,255,255,0.06)' : (c.borderColor || 'rgba(51,65,85,0.5)'));
   const width = c.width || 350;
   const height = c.height || 500;
   const nameBold = c.nameBold ?? true;
   const msgLineHeight = c.msgLineHeight ?? 1.45;
   const msgPadH = c.msgPadH ?? 10;
+  const messageBg = subValue(c, 'message', 'background', 'transparent');
+  const usernameColor = subValue(c, 'username', 'textColor', headerText);
+  const avatarBg = subValue(c, 'avatar', 'background', 'rgba(255,255,255,0.04)');
+  const avatarText = subValue(c, 'avatar', 'textColor', usernameColor);
+  const avatarBorder = subValue(c, 'avatar', 'borderColor', borderColor);
+  const badgeBg = subValue(c, 'badge', 'background', 'rgba(129,140,248,0.15)');
+  const badgeText = subValue(c, 'badge', 'textColor', usernameColor);
 
   /* Style-specific bg defaults */
   const bgDefaults = {
@@ -181,7 +189,7 @@ function ChatWidget({ config, theme }) {
     borderRadius: isTransparent ? 0 : `${borderRadius}px`,
     fontFamily,
     fontSize: `${fontSize}px`,
-    color: isBH ? '#f1f5f9' : isMetal ? '#d4d8e0' : textColor,
+    color: textColor,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
@@ -199,10 +207,16 @@ function ChatWidget({ config, theme }) {
     '--chat-card-hover-bg': c.cardHoverBg || 'rgba(30,22,55,0.95)',
     '--chat-card-hover-border': c.cardHoverBorder || 'rgba(120,80,200,0.3)',
     '--chat-card-text': c.cardTextColor || textColor || '#e2e8f0',
-    '--chat-header-bg': c.headerBg || 'rgba(20,15,40,0.95)',
+    '--chat-header-bg': headerBg,
     '--chat-header-border': c.headerBorder || borderColor || 'rgba(100,70,180,0.15)',
-    '--chat-header-label': c.headerText || '#fff',
+    '--chat-header-label': headerText,
     '--chat-header-channel': c.headerChannelColor || '#d1d5db',
+    '--chat-message-bg': messageBg,
+    '--chat-message-text': textColor,
+    '--chat-message-radius': `${borderRadius}px`,
+    '--chat-username': usernameColor,
+    '--chat-badge-bg': badgeBg,
+    '--chat-badge-text': badgeText,
   };
 
   const modeClass = ` ov-chat-widget--${chatStyle}`;
@@ -232,24 +246,23 @@ function ChatWidget({ config, theme }) {
       {showHeader && chatStyle === 'metal' && (
         <div style={{
           padding: '8px 14px',
-          background: 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)',
-          borderBottom: '1px solid rgba(200,210,225,0.12)',
+          background: headerBg,
+          borderBottom: `1px solid ${borderColor}`,
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{
             fontSize: '0.85em', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase',
-            background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            color: headerText,
           }}>LIVE CHAT</span>
           <span style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5,
-            fontSize: '0.78em', fontWeight: 700, color: '#4ade80',
+            fontSize: '0.78em', fontWeight: 700, color: badgeText,
             letterSpacing: '0.06em', textTransform: 'uppercase',
           }}>
             <span style={{
               width: 8, height: 8, borderRadius: '50%',
-              background: '#22c55e',
-              boxShadow: '0 0 6px rgba(34,197,94,0.6)',
+              background: badgeText,
+              boxShadow: `0 0 6px ${badgeText}`,
               display: 'inline-block',
               animation: 'ov-live-pulse 2s ease-in-out infinite',
             }} />
@@ -261,24 +274,24 @@ function ChatWidget({ config, theme }) {
       {showHeader && chatStyle === 'bh_stats' && (
         <div style={{
           padding: '10px 14px',
-          background: 'rgba(255,255,255,0.04)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          background: headerBg,
+          borderBottom: `1px solid ${borderColor}`,
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <span style={{ fontSize: '1.1em' }}>💬</span>
           <span style={{
             fontSize: '0.88em', fontWeight: 800, letterSpacing: '0.03em',
-            color: '#f1f5f9',
+            color: headerText,
           }}>Live Chat</span>
           <span style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5,
             fontSize: '0.7em', fontWeight: 700,
-            background: '#818cf8', color: '#fff',
+            background: badgeBg, color: badgeText,
             borderRadius: 99, padding: '2px 10px',
           }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
-              background: '#fff',
+              background: badgeText,
               display: 'inline-block',
               animation: 'ov-live-pulse 2s ease-in-out infinite',
             }} />
@@ -307,7 +320,7 @@ function ChatWidget({ config, theme }) {
       <div className="ov-chat-messages" ref={scrollRef} style={{ lineHeight: msgLineHeight }}>
         {messages.map((msg, msgIdx) => {
           const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
-          const nameColor = c.useNativeColors && msg.color ? msg.color : plt.color;
+          const nameColor = c.useNativeColors && msg.color ? msg.color : usernameColor;
 
           /* ── Raid message ── */
           if (msg.isRaid) {
@@ -322,13 +335,13 @@ function ChatWidget({ config, theme }) {
               }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'flex-start', gap: 8,
-                  background: 'rgba(0,0,0,0.75)', borderRadius: 18, padding: '6px 14px',
+                  background: messageBg || 'rgba(0,0,0,0.75)', borderRadius: borderRadius, padding: '6px 14px',
                   maxWidth: '92%',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  border: `1px solid ${borderColor}`,
                 }}>
                   <span style={{
                     width: 22, height: 22, borderRadius: '50%',
-                    background: nameColor + '33', color: nameColor,
+                    background: avatarBg, color: avatarText,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '0.82em', fontWeight: 800, flexShrink: 0, marginTop: 1,
                   }}>{msg.username.charAt(0).toUpperCase()}</span>
@@ -350,19 +363,19 @@ function ChatWidget({ config, theme }) {
               }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0, marginTop: 2,
-                  background: `linear-gradient(135deg, ${nameColor}44, ${nameColor}22)`,
-                  border: `1.5px solid ${nameColor}55`,
+                    background: avatarBg,
+                    border: `1.5px solid ${avatarBorder}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: nameColor, fontSize: '0.85em', fontWeight: 800,
+                  color: avatarText, fontSize: '0.85em', fontWeight: 800,
                 }}>{msg.username.charAt(0).toUpperCase()}</div>
                 <div style={{ minWidth: 0, maxWidth: '85%' }}>
                   <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.88em', display: 'block', marginBottom: 2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                     {msg.username}
                   </span>
                   <div style={{
-                    background: 'rgba(255,255,255,0.06)', borderRadius: '14px 14px 14px 4px',
+                    background: messageBg || 'rgba(255,255,255,0.06)', borderRadius: `${borderRadius}px ${borderRadius}px ${borderRadius}px 4px`,
                     padding: '7px 12px', position: 'relative',
-                    border: '1px solid rgba(255,255,255,0.04)',
+                    border: `1px solid ${borderColor}`,
                   }}>
                     <span style={{ wordBreak: 'break-word', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
                   </div>
@@ -385,7 +398,7 @@ function ChatWidget({ config, theme }) {
                 <span style={{
                   color: nameColor, fontWeight: 700, fontSize: '0.95em', flexShrink: 0,
                 }}>{msg.username}</span>
-                <span style={{ color: 'rgba(255,255,255,0.25)', margin: '0 5px', flexShrink: 0 }}>›</span>
+                <span style={{ color: borderColor, margin: '0 5px', flexShrink: 0 }}>›</span>
                 <span style={{ wordBreak: 'break-word', opacity: 0.9, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
               </div>
             );
@@ -430,7 +443,7 @@ function ChatWidget({ config, theme }) {
 
           /* ── Style: Cards — dark card per message with Twitch badge pills ── */
           if (chatStyle === 'cards') {
-            const nameClr = c.useNativeColors && msg.color ? msg.color : plt.color;
+            const nameClr = c.useNativeColors && msg.color ? msg.color : usernameColor;
             const isRaider = !!msg.isRaidParticipant;
             return (
               <div key={msg.id} className="ov-cards-msg" style={{
@@ -462,21 +475,20 @@ function ChatWidget({ config, theme }) {
               }}>
                 {showBadges && (
                   <span style={{
-                    background: 'linear-gradient(135deg, #555a65, #3a3e48)',
-                    color: '#a8b0c0', fontSize: '0.82em', fontWeight: 800,
+                    background: badgeBg,
+                    color: badgeText, fontSize: '0.82em', fontWeight: 800,
                     padding: '2px 6px', borderRadius: 3, marginRight: 6,
-                    border: '1px solid rgba(200,210,225,0.15)',
+                    border: `1px solid ${borderColor}`,
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
                   }}>{plt.icon}</span>
                 )}
                 <div className="ov-chat-msg-body">
                   <span style={{
                     fontWeight: 700, fontSize: '0.95em',
-                    background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    color: nameColor,
                     marginRight: 6,
                   }}>{msg.username}</span>
-                  <span style={{ color: '#d4d8e0', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{msg.message}</span>
+                  <span style={{ color: textColor, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{msg.message}</span>
                 </div>
               </div>
             );
@@ -493,26 +505,26 @@ function ChatWidget({ config, theme }) {
                 {/* Avatar circle */}
                 <span style={{
                   width: 24, height: 24, borderRadius: '50%', flexShrink: 0, marginTop: 1,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: avatarBg,
+                  border: `1px solid ${avatarBorder}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#818cf8', fontSize: '0.78em', fontWeight: 800,
+                  color: avatarText, fontSize: '0.78em', fontWeight: 800,
                 }}>{msg.username.charAt(0).toUpperCase()}</span>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <span style={{
-                    color: '#818cf8', fontWeight: 700, fontSize: '0.88em',
+                    color: nameColor, fontWeight: 700, fontSize: '0.88em',
                     marginRight: 6,
                   }}>{msg.username}</span>
                   {showBadges && (
                     <span style={{
-                      background: 'rgba(129,140,248,0.15)', color: '#818cf8',
+                      background: badgeBg, color: badgeText,
                       fontSize: '0.68em', fontWeight: 700, padding: '1px 5px',
                       borderRadius: 4, marginRight: 4, verticalAlign: 'middle',
                       textTransform: 'uppercase', letterSpacing: '0.06em',
                     }}>{plt.icon}</span>
                   )}
                   <div style={{
-                    color: '#f1f5f9', wordBreak: 'break-word', lineHeight: 1.4,
+                    color: textColor, wordBreak: 'break-word', lineHeight: 1.4,
                     marginTop: 2, opacity: 0.92,
                   }}>{msg.message}</div>
                 </div>
@@ -556,9 +568,9 @@ function ChatWidget({ config, theme }) {
 
 /* ─── Raid message (shared across styles) ─── */
 function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
-  const raidBg = c.raidBgColor || '#7c3aed';
-  const raidBorder = c.raidBorderColor || '#64748b';
-  const raidText = c.raidTextColor || '#ffffff';
+  const raidBg = subValue(c, 'highlightedMessage', 'background', c.raidBgColor || '#7c3aed');
+  const raidBorder = subValue(c, 'highlightedMessage', 'borderColor', c.raidBorderColor || '#64748b');
+  const raidText = subValue(c, 'highlightedMessage', 'textColor', c.raidTextColor || '#ffffff');
   const showAvatar = c.showRaidAvatar !== false;
 
   /* ── Cards style raid ── */
@@ -592,16 +604,16 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
       }}>
         <div style={{
           display: 'inline-flex', flexDirection: 'column',
-          background: 'rgba(100,116,139,0.55)', borderRadius: 16,
+          background: raidBg, borderRadius: 16,
           padding: '8px 14px', maxWidth: '90%', backdropFilter: 'blur(4px)',
-          border: '1px solid rgba(168,85,247,0.5)',
+          border: `1px solid ${raidBorder}`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-            <span style={{ fontSize: '0.75em', fontWeight: 700, color: '#cbd5e1' }}>⚔️ RAID</span>
-            <span style={{ fontWeight: 700, color: '#e2e8f0' }}>{msg.username}</span>
+            <span style={{ fontSize: '0.75em', fontWeight: 700, color: raidText }}>⚔️ RAID</span>
+            <span style={{ fontWeight: 700, color: raidText }}>{msg.username}</span>
             {msg.raidViewers > 0 && <span style={{ fontSize: '0.8em', color: '#c4b5fd' }}>👥 {msg.raidViewers}</span>}
           </div>
-          <span style={{ color: '#f5f3ff' }}>{msg.message}</span>
+          <span style={{ color: raidText }}>{msg.message}</span>
         </div>
       </div>
     );
@@ -612,12 +624,12 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
       <div className="ov-chat-msg ov-chat-raid" style={{
         padding: `${msgSpacing + 2}px ${msgPadH}px`,
         fontFamily: "'Fira Code', monospace",
-        background: 'rgba(148,163,184,0.16)', borderLeft: '3px solid #64748b',
+        background: raidBg, borderLeft: `3px solid ${raidBorder}`,
         animation: 'ov-slide-left 0.25s ease-out',
       }}>
-        <span style={{ color: '#cbd5e1' }}>⚔️ [RAID]</span>
-        <span style={{ color: '#e2e8f0', fontWeight: 700, marginLeft: 6 }}>{msg.username}</span>
-        <span style={{ color: '#c4b5fd', marginLeft: 6 }}>{msg.message}</span>
+        <span style={{ color: raidText }}>⚔️ [RAID]</span>
+        <span style={{ color: raidText, fontWeight: 700, marginLeft: 6 }}>{msg.username}</span>
+        <span style={{ color: raidText, marginLeft: 6 }}>{msg.message}</span>
         {msg.raidViewers > 0 && <span style={{ color: '#94a3b8', marginLeft: 6 }}>({msg.raidViewers})</span>}
       </div>
     );

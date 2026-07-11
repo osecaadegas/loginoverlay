@@ -66,6 +66,16 @@ export const ANALYTICS_EVENTS = {
   APPEARANCE_PUBLISHED: 'appearance_published',
   APPEARANCE_VERSION_RESTORED: 'appearance_version_restored',
   APPEARANCE_RESET: 'appearance_reset',
+  WIDGET_APPEARANCE_TARGET_SELECTED: 'widget_appearance_target_selected',
+  WIDGET_APPEARANCE_CHANGED: 'widget_appearance_changed',
+  WIDGET_APPEARANCE_RESET: 'widget_appearance_reset',
+  WIDGET_APPEARANCE_COPIED: 'widget_appearance_copied',
+  WIDGET_APPEARANCE_PASTED: 'widget_appearance_pasted',
+  WIDGET_APPEARANCE_APPLIED_TO_TYPE: 'widget_appearance_applied_to_type',
+  WIDGET_APPEARANCE_PRESET_SAVED: 'widget_appearance_preset_saved',
+  WIDGET_APPEARANCE_PRESET_APPLIED: 'widget_appearance_preset_applied',
+  APPEARANCE_SAVE_FAILED: 'appearance_save_failed',
+  APPEARANCE_PREVIEW_MISMATCH_DETECTED: 'appearance_preview_mismatch_detected',
 };
 
 export const LEGACY_EVENT_NAME_MAP = {

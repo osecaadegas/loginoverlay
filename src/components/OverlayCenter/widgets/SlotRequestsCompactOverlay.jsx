@@ -8,6 +8,7 @@
  */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { hex2rgb } from './shared/colorUtils';
+import { subValue } from './shared/appearanceStyles';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -17,10 +18,14 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
   const timerRef = useRef(null);
 
   /* ── Config ── */
-  const accent       = c.accentColor   || '#94a3b8';
-  const textColor    = c.textColor     || '#ffffff';
-  const mutedColor   = c.mutedColor    || '#94a3b8';
-  const bgColor      = c.bgColor       || 'rgba(15,17,28,0.8)';
+  const accent       = subValue(c, 'position', 'accentColor', c.accentColor || '#94a3b8');
+  const textColor    = subValue(c, 'container', 'textColor', c.textColor || '#ffffff');
+  const mutedColor   = subValue(c, 'viewerName', 'mutedColor', c.mutedColor || '#94a3b8');
+  const bgColor      = subValue(c, 'container', 'background', c.bgColor || 'rgba(15,17,28,0.8)');
+  const cardBg       = subValue(c, 'requestCard', 'background', 'rgba(255,255,255,0.04)');
+  const titleColor   = subValue(c, 'slotTitle', 'textColor', textColor);
+  const cardRadius   = subValue(c, 'requestCard', 'radius', 16);
+  const imageRadius  = subValue(c, 'slotImage', 'radius', 10);
   const showRequester = c.showRequester !== false;
   const fontFamily   = c.fontFamily    || "'Inter', sans-serif";
   const fontSize     = c.fontSize      ? `${c.fontSize}px` : '14px';
@@ -59,6 +64,10 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
     '--sr-co-text': textColor,
     '--sr-co-muted': mutedColor,
     '--sr-co-bg': bgColor,
+    '--sr-co-card-bg': cardBg,
+    '--sr-co-title': titleColor,
+    '--sr-co-card-radius': `${cardRadius}px`,
+    '--sr-co-img-radius': `${imageRadius}px`,
   };
 
   /* ── Empty state ── */

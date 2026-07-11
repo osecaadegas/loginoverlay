@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { subValue } from './shared/appearanceStyles';
 
 /**
  * ImageSlideshowWidget — double-buffered crossfade.
@@ -15,15 +16,15 @@ function ImageSlideshowWidget({ config, theme }) {
   const images = (c.images || []).filter(url => url && url.trim());
   const interval = (c.interval || 5) * 1000;
   const fadeDuration = (c.fadeDuration || 1) * 1000;
-  const borderRadius = c.borderRadius ?? 12;
-  const borderColor = c.borderColor || 'rgba(51,65,85,0.5)';
-  const borderWidth = c.borderWidth ?? 1;
+  const borderRadius = subValue(c, 'image', 'radius', c.borderRadius ?? 12);
+  const borderColor = subValue(c, 'image', 'borderColor', c.borderColor || 'rgba(51,65,85,0.5)');
+  const borderWidth = subValue(c, 'image', 'borderWidth', c.borderWidth ?? 1);
   const showGradient = c.showGradient !== false;
-  const gradientColor = c.gradientColor || 'rgba(15,23,42,0.8)';
+  const gradientColor = subValue(c, 'caption', 'background', c.gradientColor || 'rgba(15,23,42,0.8)');
   const showCaption = c.showCaption && c.caption;
-  const captionColor = c.captionColor || '#e2e8f0';
-  const captionSize = c.captionSize || 14;
-  const captionFont = c.captionFont || "'Inter', sans-serif";
+  const captionColor = subValue(c, 'caption', 'textColor', c.captionColor || '#e2e8f0');
+  const captionSize = subValue(c, 'caption', 'fontSize', c.captionSize || 14);
+  const captionFont = subValue(c, 'caption', 'fontFamily', c.captionFont || "'Inter', sans-serif");
   const pauseOnHover = c.pauseOnHover || false;
   const animType = c.animationType || 'fade'; // fade | slide | zoom
   const displayStyle = c.displayStyle || 'v1';

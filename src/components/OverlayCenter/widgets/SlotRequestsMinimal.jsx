@@ -6,6 +6,7 @@
  * font sizing, and auto-scroll for long queues.
  */
 import React, { useRef, useEffect, useState, useMemo } from 'react';
+import { subValue } from './shared/appearanceStyles';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -17,12 +18,15 @@ export default function SlotRequestsMinimal({ config, requests }) {
   const prevCountRef = useRef(requests.length);
 
   /* ── Config ── */
-  const accent       = c.accentColor   || '#94a3b8';
-  const textColor    = c.textColor     || '#ffffff';
-  const mutedColor   = c.mutedColor    || '#94a3b8';
-  const bgColor      = c.bgColor       || 'rgba(15,17,28,0.75)';
-  const cardBg       = c.cardBg        || 'rgba(255,255,255,0.04)';
-  const borderColor  = c.borderColor   || 'rgba(255,255,255,0.07)';
+  const accent       = subValue(c, 'position', 'accentColor', c.accentColor || '#94a3b8');
+  const textColor    = subValue(c, 'container', 'textColor', c.textColor || '#ffffff');
+  const mutedColor   = subValue(c, 'viewerName', 'mutedColor', c.mutedColor || '#94a3b8');
+  const bgColor      = subValue(c, 'container', 'background', c.bgColor || 'rgba(15,17,28,0.75)');
+  const cardBg       = subValue(c, 'requestCard', 'background', c.cardBg || 'rgba(255,255,255,0.04)');
+  const borderColor  = subValue(c, 'requestCard', 'borderColor', c.borderColor || 'rgba(255,255,255,0.07)');
+  const titleColor   = subValue(c, 'slotTitle', 'textColor', textColor);
+  const imageRadius  = subValue(c, 'slotImage', 'radius', 8);
+  const cardRadius   = subValue(c, 'requestCard', 'radius', 12);
   const showRequester = c.showRequester !== false;
   const showNumbers   = c.showNumbers  !== false;
   const fontFamily   = c.fontFamily    || "'Inter', sans-serif";
@@ -72,6 +76,9 @@ export default function SlotRequestsMinimal({ config, requests }) {
       '--sr-min-bg': bgColor,
       '--sr-min-card-bg': cardBg,
       '--sr-min-border': borderColor,
+      '--sr-min-title': titleColor,
+      '--sr-min-img-radius': `${imageRadius}px`,
+      '--sr-min-card-radius': `${cardRadius}px`,
     }}>
       {/* ── Header ── */}
       <div className="sr-min-header">

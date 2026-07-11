@@ -21,6 +21,7 @@ import {
   markAlertDismissed,
   getPendingAlerts,
 } from '../../../services/shoutoutService';
+import { subValue } from './shared/appearanceStyles';
 
 /* ─── Sound Effect (separate from clip — OBS best practice) ─── */
 function playAlertSound(soundUrl) {
@@ -60,7 +61,25 @@ function RaidShoutoutWidget({ config, theme, allWidgets }) {
 
   const MAX_DURATION = c.alertDuration ?? 30;
   const soundUrl = c.soundUrl ?? '';
-  const borderRadius = c.borderRadius ?? 12;
+  const borderRadius = subValue(c, 'clip', 'radius', c.borderRadius ?? 12);
+  const accentColor = subValue(c, 'container', 'accentColor', c.accentColor || '#9146FF');
+  const bgColor = subValue(c, 'container', 'background', c.bgColor || 'transparent');
+  const textColor = subValue(c, 'title', 'textColor', c.textColor || '#ffffff');
+  const subtextColor = subValue(c, 'game', 'textColor', c.subtextColor || '#a0a0b4');
+  const clipBorder = subValue(c, 'clip', 'borderColor', accentColor);
+  const clipBorderWidth = subValue(c, 'clip', 'borderWidth', 3);
+  const wrapperStyle = {
+    '--rs-radius': `${borderRadius}px`,
+    '--rs-accent': accentColor,
+    '--rs-bg': bgColor,
+    '--rs-text': textColor,
+    '--rs-subtext': subtextColor,
+    '--rs-clip-border': clipBorder,
+    '--rs-clip-border-width': `${clipBorderWidth}px`,
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+  };
 
   const userId = useMemo(() => {
     const w = (allWidgets || []).find(w => w.user_id);
@@ -152,7 +171,7 @@ function RaidShoutoutWidget({ config, theme, allWidgets }) {
   /* ── Idle state ── */
   if (!currentAlert || phase === 'idle') {
     return (
-      <div className="rs-alert-wrapper rs-phase-visible" style={{ '--rs-radius': `${borderRadius}px`, width: '100%', height: '100%', overflow: 'hidden' }}>
+      <div className="rs-alert-wrapper rs-phase-visible" style={wrapperStyle}>
         <div className="rs-alert-card rs-alert-card--clip-only">
           <div className="rs-no-clip">
             <div className="rs-no-clip-avatar-large">
@@ -176,7 +195,7 @@ function RaidShoutoutWidget({ config, theme, allWidgets }) {
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={wrapperClass} style={{ '--rs-radius': `${borderRadius}px`, width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div className={wrapperClass} style={wrapperStyle}>
       <div className="rs-alert-card rs-alert-card--clip-only">
         {canPlayVideo ? (
           /* ── Proxied <video> — bypasses Twitch content warning entirely ── */

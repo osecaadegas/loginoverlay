@@ -27,19 +27,26 @@ import {
   RESET_VALUE,
   SYSTEM_APPEARANCE,
   buildOverlayAppearanceState,
+  buildSubElementDefaults,
   createAppearancePreset,
   createAppearanceVersion,
   deepMerge,
+  getAppearancePathForVisualKey,
   getAppearanceWarnings,
   getByPath,
   getPerformanceTone,
+  getScopedAppearancePath,
+  getScopedVisualPath,
   getSupportedVisualKeys,
+  getTargetOverrideRoot,
   getThemeAppearance,
+  getWidgetSubElementDefinitions,
   getWidgetOverrideCount,
   getWidgetTypeOverrideCount,
   normalizeAppearance,
   omitPath,
   projectAppearanceToThemePatch,
+  resolveAppearanceForTarget,
   resolveWidgetsForAppearance,
   setByPath,
 } from './appearanceModel';
@@ -110,6 +117,17 @@ function safeJson(value) {
 function countObjectKeys(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
   return Object.keys(value).length;
+}
+
+function targetToKey(target) {
+  if (!target) return 'overlay';
+  if (target.scope === 'widget_instance') return `widget:${target.widgetId || ''}`;
+  if (target.scope === 'widget_type') return `type:${target.widgetType || ''}`;
+  return target.scope || 'overlay';
+}
+
+function sameTarget(a, b) {
+  return targetToKey(a) === targetToKey(b);
 }
 
 function createClientId() {
@@ -211,6 +229,22 @@ function ToggleControl({ label, description, checked, inherited, onChange, onRes
   );
 }
 
+function isColorProperty(property) {
+  return /color|background|fill/i.test(property);
+}
+
+function getRangeMeta(property) {
+  if (/opacity/i.test(property)) return { min: 0, max: 1, step: 0.05, unit: '' };
+  if (/brightness|contrast|saturation/i.test(property)) return { min: 0, max: 200, step: 1, unit: '%' };
+  if (/fontWeight/i.test(property)) return { min: 100, max: 1000, step: 50, unit: '' };
+  if (/borderWidth|radius|padding|gap|fontSize|imageSize|height|blur|shadow/i.test(property)) return { min: 0, max: 120, step: 1, unit: 'px' };
+  return null;
+}
+
+function formatSubElementLabel(value) {
+  return String(value || '').replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
+}
+
 function Section({ title, description, children, actions }) {
   return (
     <section className="ac-section">
@@ -247,7 +281,7 @@ function StatusPill({ status }) {
 
 function TargetSelector({ widgets, selected, appearance, onChange }) {
   const defs = getAllWidgetDefs();
-  const installedTypes = [...new Set(widgets.map(widget => widget.widget_type))];
+  const installedTypes = new Set(widgets.map(widget => widget.widget_type));
   const selectedWidget = widgets.find(widget => widget.id === selected.widgetId);
   const selectedDef = defs.find(def => def.type === selected.widgetType);
   const label = selected.scope === 'widget_instance'
@@ -293,9 +327,9 @@ function TargetSelector({ widgets, selected, appearance, onChange }) {
         <option value="overlay">Entire overlay</option>
         <option value="all_widgets">All widgets</option>
         <optgroup label="Widget types">
-          {installedTypes.map(type => {
-            const def = defs.find(item => item.type === type);
-            return <option key={type} value={`type:${type}`}>{def?.label || type}</option>;
+          {defs.map(def => {
+            const activeSuffix = installedTypes.has(def.type) ? '' : ' (not active)';
+            return <option key={def.type} value={`type:${def.type}`}>{def.label || def.type}{activeSuffix}</option>;
           })}
         </optgroup>
         <optgroup label="Specific widgets">
@@ -359,6 +393,7 @@ export default function AppearanceCenter({
   const [search, setSearch] = useState('');
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [copiedAppearance, setCopiedAppearance] = useState(null);
   const [presetName, setPresetName] = useState('');
   const [compare, setCompare] = useState(false);
   const [previewSize, setPreviewSize] = useState('1080p');
@@ -414,6 +449,7 @@ export default function AppearanceCenter({
     } catch (err) {
       console.error('[AppearanceCenter] save draft failed', err);
       setSaveStatus('failed');
+      trackEvent(ANALYTICS_EVENTS.APPEARANCE_SAVE_FAILED, { reason });
     }
   }, [stateFromServer, theme, updateState]);
 
@@ -429,22 +465,29 @@ export default function AppearanceCenter({
   const updateDraft = useCallback((recipe, summary = 'Appearance setting changed') => {
     setDraft(prev => {
       const next = normalizeAppearance(typeof recipe === 'function' ? recipe(prev) : recipe, { theme });
-      setUndoStack(stack => [...stack.slice(-39), prev]);
+      setUndoStack(stack => [...stack.slice(-39), { target: selectedTarget, draft: prev }]);
       setRedoStack([]);
       setSaveStatus(themePreview ? 'previewing' : 'dirty');
       trackEvent(ANALYTICS_EVENTS.APPEARANCE_SETTING_CHANGED, { category: selectedCategory, summary });
+      if (selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') {
+        trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_CHANGED, {
+          category: selectedCategory,
+          scope: selectedTarget.scope,
+          widget_type: selectedTarget.widgetType || null,
+        });
+      }
       return next;
     });
-  }, [selectedCategory, theme, themePreview]);
+  }, [selectedCategory, selectedTarget, theme, themePreview]);
 
   const updatePath = useCallback((path, value) => {
-    updateDraft(prev => setByPath(prev, path, value), path);
-  }, [updateDraft]);
+    updateDraft(prev => setByPath(prev, getScopedAppearancePath(selectedTarget, path), value), path);
+  }, [selectedTarget, updateDraft]);
 
   const resetPath = useCallback((path) => {
-    updateDraft(prev => omitPath(prev, path), `Reset ${path}`);
+    updateDraft(prev => omitPath(prev, getScopedAppearancePath(selectedTarget, path)), `Reset ${path}`);
     trackEvent(ANALYTICS_EVENTS.APPEARANCE_RESET, { path });
-  }, [updateDraft]);
+  }, [selectedTarget, updateDraft]);
 
   const updateTargetVisual = useCallback((key, value) => {
     if (selectedTarget.scope === 'overlay' || selectedTarget.scope === 'all_widgets') {
@@ -475,33 +518,42 @@ export default function AppearanceCenter({
       updateTargetVisual(key, getByPath(SYSTEM_APPEARANCE, key) || RESET_VALUE);
       return;
     }
-    const root = selectedTarget.scope === 'widget_type'
-      ? `widgetTypes.${selectedTarget.widgetType}.visual.${key}`
-      : `widgets.${selectedTarget.widgetId}.visual.${key}`;
-    resetPath(root);
-  }, [resetPath, selectedTarget, updateTargetVisual]);
+    const visualPath = getScopedVisualPath(selectedTarget, key);
+    const canonicalPath = getAppearancePathForVisualKey(key);
+    updateDraft(prev => {
+      let next = visualPath ? omitPath(prev, visualPath) : prev;
+      if (canonicalPath) next = omitPath(next, getScopedAppearancePath(selectedTarget, canonicalPath));
+      return next;
+    }, `Reset ${key}`);
+    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_RESET, { path: key, scope: selectedTarget.scope });
+  }, [selectedTarget, updateDraft, updateTargetVisual]);
 
   const undo = useCallback(() => {
     setUndoStack(stack => {
       if (!stack.length) return stack;
-      const previous = stack[stack.length - 1];
-      setRedoStack(next => [draft, ...next].slice(0, 40));
-      setDraft(previous);
+      const index = [...stack].reverse().findIndex(entry => sameTarget(entry.target, selectedTarget));
+      if (index < 0) return stack;
+      const actualIndex = stack.length - 1 - index;
+      const entry = stack[actualIndex];
+      setRedoStack(next => [{ target: selectedTarget, draft }, ...next].slice(0, 40));
+      setDraft(entry.draft);
       setSaveStatus('dirty');
-      return stack.slice(0, -1);
+      return [...stack.slice(0, actualIndex), ...stack.slice(actualIndex + 1)];
     });
-  }, [draft]);
+  }, [draft, selectedTarget]);
 
   const redo = useCallback(() => {
     setRedoStack(stack => {
       if (!stack.length) return stack;
-      const nextDraft = stack[0];
-      setUndoStack(prev => [...prev.slice(-39), draft]);
-      setDraft(nextDraft);
+      const index = stack.findIndex(entry => sameTarget(entry.target, selectedTarget));
+      if (index < 0) return stack;
+      const entry = stack[index];
+      setUndoStack(prev => [...prev.slice(-39), { target: selectedTarget, draft }]);
+      setDraft(entry.draft);
       setSaveStatus('dirty');
-      return stack.slice(1);
+      return [...stack.slice(0, index), ...stack.slice(index + 1)];
     });
-  }, [draft]);
+  }, [draft, selectedTarget]);
 
   const publish = useCallback(async () => {
     clearTimeout(saveTimerRef.current);
@@ -604,6 +656,87 @@ export default function AppearanceCenter({
     if (selectedTarget.scope === 'widget_instance') resetPath(`widgets.${selectedTarget.widgetId}`);
   }, [resetPath, selectedTarget]);
 
+  const updateSubElement = useCallback((elementId, property, value) => {
+    const root = getTargetOverrideRoot(selectedTarget);
+    if (!root) return;
+    updateDraft(prev => setByPath(prev, `${root}.subElements.${elementId}.${property}`, value), `${elementId}.${property}`);
+  }, [selectedTarget, updateDraft]);
+
+  const resetSubElement = useCallback((elementId, property) => {
+    const root = getTargetOverrideRoot(selectedTarget);
+    if (!root) return;
+    updateDraft(prev => omitPath(prev, `${root}.subElements.${elementId}.${property}`), `Reset ${elementId}.${property}`);
+    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_RESET, {
+      scope: selectedTarget.scope,
+      widget_type: selectedTarget.widgetType || null,
+      path: `${elementId}.${property}`,
+    });
+  }, [selectedTarget, updateDraft]);
+
+  const copySelectedAppearance = useCallback(() => {
+    const root = getTargetOverrideRoot(selectedTarget);
+    const payload = root
+      ? getByPath(draft, root) || {}
+      : { appearance: draft };
+    setCopiedAppearance({
+      source: selectedTarget,
+      widgetType: selectedTarget.widgetType || null,
+      payload,
+    });
+    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_COPIED, { scope: selectedTarget.scope });
+  }, [draft, selectedTarget]);
+
+  const pasteSelectedAppearance = useCallback(() => {
+    if (!copiedAppearance?.payload) return;
+    const root = getTargetOverrideRoot(selectedTarget);
+    if (!root) return;
+    const supportedKeys = new Set(getSupportedVisualKeys(selectedTarget.widgetType));
+    const incomingVisual = copiedAppearance.payload.visual || copiedAppearance.payload.tokens || {};
+    const compatibleVisual = Object.fromEntries(Object.entries(incomingVisual).filter(([key]) => supportedKeys.has(key)));
+    const incomingAppearance = copiedAppearance.payload.appearance || {};
+    const targetSubElementDefs = getWidgetSubElementDefinitions(selectedTarget.widgetType);
+    const supportedSubElementProps = new Map(targetSubElementDefs.map(def => [def.id, new Set(def.properties || [])]));
+    const compatibleSubElements = Object.fromEntries(Object.entries(copiedAppearance.payload.subElements || {}).map(([elementId, values]) => {
+      const supportedProps = supportedSubElementProps.get(elementId);
+      if (!supportedProps) return [elementId, null];
+      return [elementId, Object.fromEntries(Object.entries(values || {}).filter(([prop]) => supportedProps.has(prop)))];
+    }).filter(([, values]) => values && Object.keys(values).length > 0));
+    updateDraft(prev => {
+      const current = getByPath(prev, root) || {};
+      return setByPath(prev, root, {
+        ...current,
+        appearance: deepMerge(current.appearance || {}, incomingAppearance),
+        visual: deepMerge(current.visual || {}, compatibleVisual),
+        subElements: deepMerge(current.subElements || {}, compatibleSubElements),
+      });
+    }, 'Paste widget appearance');
+    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_PASTED, {
+      scope: selectedTarget.scope,
+      widget_type: selectedTarget.widgetType || null,
+      applied_visual_count: Object.keys(compatibleVisual).length,
+    });
+  }, [copiedAppearance, selectedTarget, updateDraft]);
+
+  const applyInstanceAppearanceToType = useCallback(() => {
+    if (selectedTarget.scope !== 'widget_instance' || !selectedTarget.widgetType) return;
+    const source = getByPath(draft, `widgets.${selectedTarget.widgetId}`) || {};
+    updateDraft(prev => {
+      const root = `widgetTypes.${selectedTarget.widgetType}`;
+      const current = getByPath(prev, root) || {};
+      return setByPath(prev, root, {
+        ...current,
+        appearance: deepMerge(current.appearance || {}, source.appearance || {}),
+        visual: deepMerge(current.visual || {}, source.visual || source.tokens || {}),
+        subElements: deepMerge(current.subElements || {}, source.subElements || {}),
+      });
+    }, 'Apply widget appearance to type');
+    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_APPLIED_TO_TYPE, { widget_type: selectedTarget.widgetType });
+  }, [draft, selectedTarget, updateDraft]);
+
+  const targetAppearance = useMemo(
+    () => resolveAppearanceForTarget(draft, selectedTarget, theme),
+    [draft, selectedTarget, theme]
+  );
   const selectedPreviewSize = PREVIEW_SIZES.find(item => item.id === previewSize) || PREVIEW_SIZES[0];
   const previewAppearance = useMemo(() => normalizeAppearance(deepMerge(draft, {
     canvas: {
@@ -629,8 +762,17 @@ export default function AppearanceCenter({
       ? getAllWidgetDefs().find(def => def.type === selectedWidget.widget_type)
       : null;
 
+  const handleTargetChange = useCallback((next) => {
+    if (saveStatus === 'dirty') {
+      clearTimeout(saveTimerRef.current);
+      persistDraft(draft, 'target-switch');
+    }
+    setSelectedTarget(next);
+    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED, { scope: next.scope, widget_type: next.widgetType || null });
+  }, [draft, persistDraft, saveStatus]);
+
   const renderCategory = () => {
-    const a = draft;
+    const a = targetAppearance;
     if (selectedCategory === 'themes') {
       return (
         <>
@@ -844,17 +986,34 @@ export default function AppearanceCenter({
       const keys = selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance'
         ? getSupportedVisualKeys(selectedTarget.widgetType || selectedWidget?.widget_type).slice(0, 16)
         : ['accentColor', 'bgColor', 'cardBg', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'fontSize', 'borderRadius', 'borderWidth'];
-      const visualSource = selectedTarget.scope === 'widget_type'
-        ? a.widgetTypes?.[selectedTarget.widgetType]?.visual || {}
+      const overrideEntry = selectedTarget.scope === 'widget_type'
+        ? draft.widgetTypes?.[selectedTarget.widgetType] || {}
         : selectedTarget.scope === 'widget_instance'
-          ? a.widgets?.[selectedTarget.widgetId]?.visual || {}
+          ? draft.widgets?.[selectedTarget.widgetId] || {}
           : {};
+      const visualSource = overrideEntry.visual || overrideEntry.tokens || {};
+      const appearanceSource = overrideEntry.appearance || {};
+      const widgetTypeForSubElements = selectedTarget.widgetType || selectedWidget?.widget_type;
+      const subElementDefinitions = widgetTypeForSubElements ? getWidgetSubElementDefinitions(widgetTypeForSubElements) : [];
+      const typeSubElements = widgetTypeForSubElements ? draft.widgetTypes?.[widgetTypeForSubElements]?.subElements || {} : {};
+      const instanceSubElements = selectedTarget.scope === 'widget_instance' ? draft.widgets?.[selectedTarget.widgetId]?.subElements || {} : {};
+      const explicitSubElements = selectedTarget.scope === 'widget_type' ? typeSubElements : selectedTarget.scope === 'widget_instance' ? instanceSubElements : {};
+      const effectiveSubElements = widgetTypeForSubElements
+        ? deepMerge(buildSubElementDefaults(widgetTypeForSubElements, a), typeSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {})
+        : {};
       return (
         <Section
           title="Widget-specific appearance"
           description="Override inherited values for a widget type or a single widget instance."
           actions={(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && (
-            <button type="button" className="ac-small-button" onClick={resetSelectedWidget}>Reset selected widget</button>
+            <div className="ac-section-actions">
+              <button type="button" className="ac-small-button" onClick={copySelectedAppearance}>Copy</button>
+              <button type="button" className="ac-small-button" onClick={pasteSelectedAppearance} disabled={!copiedAppearance}>Paste</button>
+              {selectedTarget.scope === 'widget_instance' && (
+                <button type="button" className="ac-small-button" onClick={applyInstanceAppearanceToType}>Apply to type</button>
+              )}
+              <button type="button" className="ac-small-button" onClick={resetSelectedWidget}>Reset selected widget</button>
+            </div>
           )}
         >
           <div className="ac-widget-capabilities">
@@ -864,10 +1023,13 @@ export default function AppearanceCenter({
           </div>
           <div className="ac-control-grid">
             {keys.map(key => {
+              const canonicalPath = getAppearancePathForVisualKey(key);
               const value = visualSource[key] ?? getByPath(a, {
                 accentColor: 'colors.accent',
                 bgColor: 'surfaces.containerBg',
                 cardBg: 'surfaces.cardBg',
+                headerBg: 'surfaces.headerBg',
+                headerText: 'colors.textSecondary',
                 textColor: 'colors.text',
                 mutedColor: 'colors.muted',
                 borderColor: 'borders.color',
@@ -876,16 +1038,74 @@ export default function AppearanceCenter({
                 borderRadius: 'borders.radius',
                 borderWidth: 'borders.width',
               }[key] || '');
+              const inherited = visualSource[key] == null && (!canonicalPath || getByPath(appearanceSource, canonicalPath) == null);
               const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
               if (/color|bg/i.test(key)) {
-                return <ColorControl key={key} label={label} value={value} inherited={visualSource[key] == null} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
+                return <ColorControl key={key} label={label} value={value} inherited={inherited} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
               }
               if (/size|radius|width|padding|gap|blur|shadow|intensity/i.test(key)) {
-                return <RangeControl key={key} label={label} value={Number(value) || 0} min={0} max={key.toLowerCase().includes('font') ? 64 : 100} inherited={visualSource[key] == null} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
+                return <RangeControl key={key} label={label} value={Number(value) || 0} min={0} max={key.toLowerCase().includes('font') ? 64 : 100} inherited={inherited} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
               }
-              return <TextControl key={key} label={label} value={value || ''} inherited={visualSource[key] == null} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
+              return <TextControl key={key} label={label} value={value || ''} inherited={inherited} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
             })}
           </div>
+          {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && subElementDefinitions.length > 0 && (
+            <div className="ac-sub-elements">
+              <h4>Sub-elements</h4>
+              {subElementDefinitions.map(definition => (
+                <details key={definition.id} className="ac-sub-element" open={['container', 'header', 'card'].includes(definition.id)}>
+                  <summary>{definition.label}</summary>
+                  <div className="ac-control-grid">
+                    {(definition.properties || []).map(property => {
+                      const value = getByPath(effectiveSubElements, `${definition.id}.${property}`);
+                      const explicit = getByPath(explicitSubElements, `${definition.id}.${property}`);
+                      const inherited = explicit == null;
+                      const label = formatSubElementLabel(property);
+                      if (isColorProperty(property)) {
+                        return (
+                          <ColorControl
+                            key={`${definition.id}.${property}`}
+                            label={label}
+                            value={value}
+                            inherited={inherited}
+                            onChange={next => updateSubElement(definition.id, property, next)}
+                            onReset={() => resetSubElement(definition.id, property)}
+                          />
+                        );
+                      }
+                      const range = getRangeMeta(property);
+                      if (range) {
+                        return (
+                          <RangeControl
+                            key={`${definition.id}.${property}`}
+                            label={label}
+                            value={Number(value) || 0}
+                            min={range.min}
+                            max={range.max}
+                            step={range.step}
+                            unit={range.unit}
+                            inherited={inherited}
+                            onChange={next => updateSubElement(definition.id, property, next)}
+                            onReset={() => resetSubElement(definition.id, property)}
+                          />
+                        );
+                      }
+                      return (
+                        <TextControl
+                          key={`${definition.id}.${property}`}
+                          label={label}
+                          value={value || ''}
+                          inherited={inherited}
+                          onChange={next => updateSubElement(definition.id, property, next)}
+                          onReset={() => resetSubElement(definition.id, property)}
+                        />
+                      );
+                    })}
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
         </Section>
       );
     }
@@ -1097,10 +1317,7 @@ export default function AppearanceCenter({
         </main>
 
         <aside className="ac-inspector">
-          <TargetSelector widgets={widgets} selected={selectedTarget} appearance={draft} onChange={(next) => {
-            setSelectedTarget(next);
-            trackEvent(ANALYTICS_EVENTS.APPEARANCE_TARGET_SELECTED, { scope: next.scope, widget_type: next.widgetType || null });
-          }} />
+          <TargetSelector widgets={widgets} selected={selectedTarget} appearance={draft} onChange={handleTargetChange} />
           {renderCategory()}
         </aside>
       </div>

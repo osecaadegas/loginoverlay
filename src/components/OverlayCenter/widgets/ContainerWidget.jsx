@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { getWidgetDef } from './widgetRegistry';
+import { subValue } from './shared/appearanceStyles';
 
 /**
  * ContainerWidget — groups multiple child widgets inside a single slot.
@@ -21,12 +22,14 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
   const c = config || {};
   const childIds = c.children || [];
   const layout = c.layout || 'vertical';
-  const gap = c.gap ?? 8;
-  const padding = c.padding ?? 8;
+  const gap = subValue(c, 'container', 'gap', c.gap ?? 8);
+  const padding = subValue(c, 'container', 'padding', c.padding ?? 8);
   const scrollable = c.scrollable ?? false;
   const alignItems = c.alignItems || 'stretch';
-  const bgColor = c.bgColor || 'transparent';
+  const bgColor = subValue(c, 'container', 'background', c.bgColor || 'transparent');
   const bgOpacity = c.bgOpacity ?? 0;
+  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || 'transparent');
+  const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? 0);
 
   // Resolve child widgets from allWidgets array
   const childWidgets = useMemo(() => {
@@ -43,7 +46,8 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
         ? `rgba(${parseInt(bgColor.slice(1,3),16)},${parseInt(bgColor.slice(3,5),16)},${parseInt(bgColor.slice(5,7),16)},${bgOpacity/100})`
         : bgColor
       : 'transparent',
-    borderRadius: c.cardRadius ? `${c.cardRadius}px` : undefined,
+    borderRadius: `${subValue(c, 'container', 'radius', c.cardRadius ?? 0)}px`,
+    border: borderWidth > 0 ? `${borderWidth}px solid ${borderColor}` : undefined,
     overflow: scrollable ? 'auto' : 'hidden',
     display: layout === 'free' ? 'block' : 'flex',
     flexDirection: layout === 'horizontal' ? 'row' : 'column',

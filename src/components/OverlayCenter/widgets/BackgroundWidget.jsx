@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import './BackgroundWidget.css';
+import { subValue } from './shared/appearanceStyles';
 
 /* ─── Texture CSS generators ─── */
 const TEXTURES = {
@@ -88,17 +89,17 @@ function BackgroundWidget({ config, theme }) {
   const videoUrl = c.videoUrl || '';
   const imageFit = c.imageFit || 'cover';
   const imagePosition = c.imagePosition || 'center';
-  const opacity = c.opacity ?? 100;
-  const borderRadius = c.borderRadius ?? 0;
-  const brightness = c.brightness ?? 100;
-  const contrast = c.contrast ?? 100;
-  const saturation = c.saturation ?? 100;
-  const blur = c.blur ?? 0;
+  const opacity = subValue(c, 'canvas', 'opacity', c.opacity ?? 100);
+  const borderRadius = subValue(c, 'canvas', 'radius', c.borderRadius ?? 0);
+  const brightness = subValue(c, 'media', 'brightness', c.brightness ?? 100);
+  const contrast = subValue(c, 'media', 'contrast', c.contrast ?? 100);
+  const saturation = subValue(c, 'media', 'saturation', c.saturation ?? 100);
+  const blur = subValue(c, 'media', 'blur', c.blur ?? 0);
   const hueRotate = c.hueRotate ?? 0;
   const grayscale = c.grayscale ?? 0;
   const sepia = c.sepia ?? 0;
-  const overlayColor = c.overlayColor || '';
-  const overlayOpacity = c.overlayOpacity ?? 0;
+  const overlayColor = subValue(c, 'tint', 'background', c.overlayColor || '');
+  const overlayOpacity = subValue(c, 'tint', 'opacity', c.overlayOpacity ?? 0);
 
   /* ─── Effects config ─── */
   const fxParticles = c.fxParticles || 'none';     // none | orbs | fireflies | bokeh | snow | rain

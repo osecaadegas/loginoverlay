@@ -22,6 +22,7 @@ import { getWidgetDef } from './widgets/widgetRegistry';
 import buildThemeVars from './themeVarsBuilder';
 import {
   buildCanvasBackground,
+  buildWidgetAppearanceVars,
   buildOverlayAppearanceState,
   normalizeAppearance,
   resolveWidgetsForAppearance,
@@ -96,6 +97,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     filter: isNavbar ? undefined : shadowFilter,
     /* Only use overflow:hidden when there's no radius (clipPath handles radius) */
     overflow: isNavbar ? 'visible' : (needsVisible ? 'visible' : (needsClip ? 'visible' : 'hidden')),
+    ...buildWidgetAppearanceVars(cfg),
   };
 
   /* Inner clip wrapper — only rendered when we need clipPath rounding */
@@ -108,7 +110,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   } : null;
 
   return (
-    <div id={slotId} className={`or-widget-slot ${animClass}`} style={outerStyle}>
+    <div id={slotId} className={`or-widget-slot ${animClass}`} data-widget-id={widget.id} data-widget-type={widget.widget_type} style={outerStyle}>
       {mergedCSS && <style>{`#${slotId} { ${mergedCSS} }`}</style>}
       {(() => {
         const elCSS = widget.config?.elementCSS;

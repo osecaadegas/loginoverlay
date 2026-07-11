@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchNowPlaying, serverRefreshToken } from '../../../utils/spotifyAuth';
+import { subValue } from './shared/appearanceStyles';
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {
@@ -196,24 +197,24 @@ function NavbarWidget({ config, widgetId, userId }) {
   const isRetro = (c.displayStyle === 'retro');
   const isCarbon = (c.displayStyle === 'carbon');
   const isFuturistic = (c.displayStyle === 'futuristic');
-  const accentColor = c.accentColor || (isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b');
+  const accentColor = subValue(c, 'logo', 'accentColor', c.accentColor || (isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b'));
   const accentColorRGB = hexToRgb(accentColor);
-  const bgColor = c.bgColor || (isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318');
-  const textColor = c.textColor || (isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9');
-  const mutedColor = c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8');
-  const borderColor = c.borderColor || accentColor;
-  const fontFamily = c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif");
+  const bgColor = subValue(c, 'container', 'background', c.bgColor || (isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318'));
+  const textColor = subValue(c, 'displayName', 'textColor', c.textColor || (isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9'));
+  const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
+  const borderColor = subValue(c, 'separator', 'borderColor', c.borderColor || accentColor);
+  const fontFamily = subValue(c, 'displayName', 'fontFamily', c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
-  const borderWidth = c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3);
+  const borderWidth = subValue(c, 'separator', 'borderWidth', c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3));
   const barHeight = c.barHeight ?? 64;
-  const borderRadius = c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999);
-  const fontSize = c.fontSize ?? (isRetro ? 13 : 15);
+  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999));
+  const fontSize = subValue(c, 'displayName', 'fontSize', c.fontSize ?? (isRetro ? 13 : 15));
   const textShadow = '0 1px 4px rgba(0,0,0,0.6)';
-  const ctaColor = c.ctaColor || (isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e');
-  const cryptoUpColor = c.cryptoUpColor || '#34d399';
-  const cryptoDownColor = c.cryptoDownColor || '#f87171';
+  const ctaColor = subValue(c, 'sponsor', 'background', c.ctaColor || (isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e'));
+  const cryptoUpColor = subValue(c, 'crypto', 'fillColor', c.cryptoUpColor || '#34d399');
+  const cryptoDownColor = subValue(c, 'crypto', 'accentColor', c.cryptoDownColor || '#f87171');
   const bgColorRGB = hexToRgb(bgColor);
   const ctaColorRGB = hexToRgb(ctaColor);
 

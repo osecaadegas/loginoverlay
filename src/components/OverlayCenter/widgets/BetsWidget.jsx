@@ -6,6 +6,7 @@
  * Animations: entry stagger · bar shimmer · leading pulse · winner pop
  */
 import React, { useState, useEffect, useMemo } from 'react';
+import { subValue } from './shared/appearanceStyles';
 
 function getGridCols(count, layout) {
   if (layout === 'v3_grid_2x3') return 3;
@@ -77,13 +78,23 @@ function BetsWidget({ config }) {
   const barColorMode = c.barColorMode  || 'rainbow';
 
   const preset      = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
-  const bgColor     = c.bgColor     || preset.bgColor;
-  const headerBg    = c.headerBg    || preset.headerBg;
-  const headerText  = c.headerText  || preset.headerText;
-  const barBg       = c.barBg       || preset.barBg;
-  const barFill     = c.barFill     || preset.barFill;
-  const textColor   = c.textColor   || preset.textColor;
-  const accentColor = c.accentColor || preset.accentColor;
+  const bgColor     = subValue(c, 'container', 'background', c.bgColor || preset.bgColor);
+  const textColor   = subValue(c, 'container', 'textColor', c.textColor || preset.textColor);
+  const borderColor = subValue(c, 'container', 'borderColor', 'rgba(148,163,184,0.12)');
+  const headerBg    = subValue(c, 'question', 'background', subValue(c, 'header', 'background', c.headerBg || preset.headerBg));
+  const headerText  = subValue(c, 'question', 'textColor', subValue(c, 'header', 'textColor', c.headerText || preset.headerText));
+  const barBg       = subValue(c, 'progressBar', 'background', c.barBg || preset.barBg);
+  const barFill     = subValue(c, 'progressBar', 'fillColor', c.barFill || preset.barFill);
+  const accentColor = subValue(c, 'optionCard', 'accentColor', c.accentColor || preset.accentColor);
+  const optionBg    = subValue(c, 'optionCard', 'background', barBg);
+  const optionText  = subValue(c, 'optionCard', 'textColor', textColor);
+  const timerText   = subValue(c, 'timer', 'textColor', headerText);
+  const timerBg     = subValue(c, 'timer', 'background', 'rgba(99,102,241,0.18)');
+  const winText     = subValue(c, 'winningState', 'textColor', '#4ade80');
+  const winBg       = subValue(c, 'winningState', 'background', 'rgba(34,197,94,0.14)');
+  const loseText    = subValue(c, 'losingState', 'textColor', '#f87171');
+  const loseBg      = subValue(c, 'losingState', 'background', 'rgba(239,68,68,0.14)');
+  const radius      = subValue(c, 'optionCard', 'radius', 12);
 
   /* Countdown timer */
   const [countdown, setCountdown] = useState(0);
@@ -146,10 +157,20 @@ function BetsWidget({ config }) {
     '--bets-bg':       bgColor,
     '--bets-hdr-bg':   headerBg,
     '--bets-hdr-txt':  headerText,
+    '--bets-border':   borderColor,
     '--bets-bar-bg':   barBg,
     '--bets-bar-fill': barFill,
     '--bets-text':     textColor,
     '--bets-accent':   accentColor,
+    '--bets-card-bg':  optionBg,
+    '--bets-card-text': optionText,
+    '--bets-card-radius': `${radius}px`,
+    '--bets-timer-text': timerText,
+    '--bets-timer-bg': timerBg,
+    '--bets-win-bg':   winBg,
+    '--bets-win-text': winText,
+    '--bets-lose-bg':  loseBg,
+    '--bets-lose-text': loseText,
     '--bets-cols':     gridCols,
   };
 

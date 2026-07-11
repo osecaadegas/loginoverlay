@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { subValue } from './shared/appearanceStyles';
 
 /**
  * BonusBuysWidget — OBS overlay for tracking bonus buy sessions.
@@ -32,11 +33,11 @@ const fmtMulti = (v) => `${(Number(v) || 0).toFixed(1)}x`;
 function BonusBuysWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
-  const accent = c.accentColor || '#3b82f6';
-  const bg = c.bgColor || '#0a0e1a';
-  const text = c.textColor || '#ffffff';
-  const muted = c.mutedColor || '#64748b';
-  const font = c.fontFamily || "'Inter', sans-serif";
+  const accent = subValue(c, 'sessionCard', 'accentColor', c.accentColor || '#3b82f6');
+  const bg = subValue(c, 'sessionCard', 'background', c.bgColor || '#0a0e1a');
+  const text = subValue(c, 'sessionCard', 'textColor', c.textColor || '#ffffff');
+  const muted = subValue(c, 'label', 'textColor', c.mutedColor || '#64748b');
+  const font = subValue(c, 'sessionCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
   const currency = c.currency || '€';
 
   const name = c.slotName || 'No Slot Selected';
@@ -128,21 +129,26 @@ function BonusBuysWidget({ config }) {
   const isNeon = st === 'v2_neon';
   const isMinimal = st === 'v3_minimal';
 
-  const cardBg = isMinimal ? '#ffffff' : bg;
-  const cardText = isMinimal ? '#1e293b' : text;
-  const cardMuted = isMinimal ? '#94a3b8' : muted;
+  const cardBg = subValue(c, 'sessionCard', 'background', isMinimal ? '#ffffff' : bg);
+  const cardText = subValue(c, 'sessionCard', 'textColor', isMinimal ? '#1e293b' : text);
+  const cardMuted = subValue(c, 'label', 'textColor', isMinimal ? '#94a3b8' : muted);
   const cardBorder = isMinimal
-    ? '2px solid #e2e8f0'
-    : isNeon ? `2px solid rgba(${accentRgb}, 0.6)` : `2px solid rgba(${accentRgb}, 0.3)`;
+    ? `2px solid ${subValue(c, 'sessionCard', 'borderColor', '#e2e8f0')}`
+    : `${subValue(c, 'sessionCard', 'borderWidth', 2)}px solid ${subValue(c, 'sessionCard', 'borderColor', isNeon ? `rgba(${accentRgb}, 0.6)` : `rgba(${accentRgb}, 0.3)`)}`;
   const cardShadow = isNeon
     ? `0 0 24px rgba(${accentRgb}, 0.35), 0 8px 32px rgba(0,0,0,0.5)`
     : isMinimal ? '0 2px 8px rgba(0,0,0,0.08)' : `0 8px 32px rgba(0,0,0,0.5)`;
-  const headerBg = isMinimal
-    ? '#f8fafc' : isNeon ? `rgba(${accentRgb}, 0.18)` : `rgba(${accentRgb}, 0.1)`;
-  const rowStripe = isMinimal ? '#f1f5f9' : `rgba(${accentRgb}, 0.07)`;
-  const profitColor = profitLoss >= 0 ? '#22c55e' : '#ef4444';
-  const winColor = '#22c55e';
-  const lossColor = '#ef4444';
+  const headerBg = subValue(c, 'header', 'background', isMinimal
+    ? '#f8fafc' : isNeon ? `rgba(${accentRgb}, 0.18)` : `rgba(${accentRgb}, 0.1)`);
+  const rowStripe = subValue(c, 'status', 'background', isMinimal ? '#f1f5f9' : `rgba(${accentRgb}, 0.07)`);
+  const profitColor = profitLoss >= 0
+    ? subValue(c, 'profit', 'textColor', '#22c55e')
+    : subValue(c, 'loss', 'textColor', '#ef4444');
+  const winColor = subValue(c, 'payout', 'textColor', subValue(c, 'profit', 'textColor', '#22c55e'));
+  const lossColor = subValue(c, 'loss', 'textColor', '#ef4444');
+  const imageRadius = subValue(c, 'slotArtwork', 'radius', 0);
+  const progressColor = subValue(c, 'progressBar', 'fillColor', `rgba(${accentRgb}, 0.15)`);
+  const cardRadius = subValue(c, 'sessionCard', 'radius', undefined);
 
   /* ── Spacing / font helpers (all cqi-based) ── */
   const pad = 'clamp(8px, 4cqi, 22px)';
@@ -152,7 +158,7 @@ function BonusBuysWidget({ config }) {
     <div style={{
       width: '100%', height: '100%', fontFamily: font,
       display: 'flex', flexDirection: 'column',
-      background: cardBg, borderRadius: 'clamp(6px, 2.5cqi, 16px)',
+      background: cardBg, borderRadius: cardRadius != null ? `${cardRadius}px` : 'clamp(6px, 2.5cqi, 16px)',
       overflow: 'hidden', border: cardBorder,
       boxShadow: cardShadow, containerType: 'inline-size', color: cardText,
     }}>
@@ -202,6 +208,7 @@ function BonusBuysWidget({ config }) {
         {img ? (
           <img src={img} alt={name} style={{
             width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+            borderRadius: imageRadius ? `${imageRadius}px` : undefined,
           }} />
         ) : (
           <div style={{
@@ -222,7 +229,7 @@ function BonusBuysWidget({ config }) {
       {/* ─── DIVIDER BAR ─── */}
       <div style={{
         height: 'clamp(3px, 1cqi, 5px)',
-        background: `rgba(${accentRgb}, 0.15)`,
+        background: progressColor,
         flexShrink: 0,
       }} />
 
