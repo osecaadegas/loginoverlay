@@ -27,7 +27,7 @@ import './OverlayCenter.css';
 import './widgets/builtinWidgets';
 
 // ─── Single widget wrapper with animation + scale-to-fit ───
-const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting, userId }) {
+const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting, userId, suppressAnimations = false }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
 
@@ -36,8 +36,8 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const slotId = `ow-${widget.id}`;
   /* Backwards-compat: old 'slide' → 'slide-up' */
   const normalise = (v) => v === 'slide' ? 'slide-up' : (v || 'fade');
-  const enterAnim = normalise(widget.animation);
-  const exitAnim  = normalise(widget.exit_animation);
+  const enterAnim = suppressAnimations ? 'none' : normalise(widget.animation);
+  const exitAnim  = suppressAnimations ? 'none' : normalise(widget.exit_animation);
   const animClass = exiting
     ? `or-anim-out--${exitAnim}`
     : `or-anim-in--${enterAnim}`;
@@ -129,10 +129,12 @@ export default function OverlayRenderer() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const singleWidgetId = searchParams.get('widget');
+  const isPreviewMode = searchParams.get('preview') === '1';
   const [userId, setUserId] = useState(null);
   const [widgets, setWidgets] = useState([]);
   const [theme, setTheme] = useState(null);
   const [error, setError] = useState(null);
+  const [ready, setReady] = useState(false);
   const channelRef = useRef(null);
 
   // ── Force full-viewport transparent OBS mode ──
@@ -160,11 +162,11 @@ export default function OverlayRenderer() {
 
     async function init() {
       try {
+        setReady(false);
+        setError(null);
         const inst = await getInstanceByToken(token);
         if (!inst) { setError('Invalid overlay token'); return; }
         if (cancelled) return;
-
-        setUserId(inst.user_id);
 
         const [wdgs, th] = await Promise.all([
           getWidgets(inst.user_id),
@@ -174,6 +176,8 @@ export default function OverlayRenderer() {
         if (cancelled) return;
         setWidgets(wdgs);
         setTheme(th);
+        setUserId(inst.user_id);
+        setReady(true);
 
         // Subscribe to realtime
         channelRef.current = subscribeToOverlay(inst.user_id, {
@@ -190,6 +194,36 @@ export default function OverlayRenderer() {
     init();
     return () => { cancelled = true; unsubscribeOverlay(channelRef.current); };
   }, [token]);
+
+  useEffect(() => {
+    if (!isPreviewMode || !ready) return undefined;
+
+    let channel = null;
+    try {
+      channel = new BroadcastChannel('streamers-center-preview');
+      channel.postMessage({ type: 'overlay-preview-ready', token });
+    } catch {
+      return undefined;
+    }
+
+    const notifyClosed = () => {
+      try {
+        channel?.postMessage({ type: 'overlay-preview-closed', token });
+      } catch { /* ignore */ }
+    };
+
+    window.addEventListener('pagehide', notifyClosed);
+    window.addEventListener('beforeunload', notifyClosed);
+
+    return () => {
+      window.removeEventListener('pagehide', notifyClosed);
+      window.removeEventListener('beforeunload', notifyClosed);
+      try {
+        channel?.postMessage({ type: 'overlay-preview-disconnected', token });
+        channel?.close();
+      } catch { /* ignore */ }
+    };
+  }, [isPreviewMode, ready, token]);
 
   // ── Theme CSS variables ──
   const themeVars = useMemo(() => buildThemeVars(theme), [theme]);
@@ -261,25 +295,29 @@ export default function OverlayRenderer() {
   const canvasWidth = theme?.canvas_width || 1920;
   const canvasHeight = theme?.canvas_height || 1080;
 
-  const [scale, setScale] = useState(1);
+  const viewportScale = useCallback((width, height) => {
+    if (typeof window === 'undefined') return 1;
+    const vw = window.innerWidth || width;
+    const vh = window.innerHeight || height;
+    return Math.min(vw / width, vh / height);
+  }, []);
+
+  const [scale, setScale] = useState(() => viewportScale(1920, 1080));
 
   useEffect(() => {
     function calcScale() {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const s = Math.min(vw / canvasWidth, vh / canvasHeight);
-      setScale(s);
+      setScale(viewportScale(canvasWidth, canvasHeight));
     }
     calcScale();
     window.addEventListener('resize', calcScale);
     return () => window.removeEventListener('resize', calcScale);
-  }, [canvasWidth, canvasHeight]);
+  }, [canvasWidth, canvasHeight, viewportScale]);
 
   if (error) return null; // blank for OBS
-  if (!userId) return null; // still loading
+  if (!ready || !userId) return null; // still loading
 
   return (
-    <div className="or-canvas" data-theme={theme?.style_preset || 'classic'} style={{
+    <div className="or-canvas" data-theme={theme?.style_preset || 'classic'} data-preview={isPreviewMode ? 'true' : undefined} style={{
       ...themeVars,
       width: canvasWidth,
       height: canvasHeight,
@@ -304,6 +342,7 @@ export default function OverlayRenderer() {
           canvasHeight={canvasHeight}
           exiting={false}
           userId={userId}
+          suppressAnimations={isPreviewMode}
         />
       ))}
 
@@ -319,6 +358,7 @@ export default function OverlayRenderer() {
           canvasHeight={canvasHeight}
           exiting={true}
           userId={userId}
+          suppressAnimations={isPreviewMode}
         />
       ))}
     </div>

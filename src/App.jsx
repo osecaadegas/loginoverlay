@@ -272,13 +272,17 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
   return <AppContent isAdminOverlay={isAdminOverlay} />;
 }
 
-// Layout wrapper to show sidebar on all pages except overlay and widget display routes
-function LayoutWrapper({ children }) {
-  const location = useLocation();
+function AppRuntimeHooks() {
   useSlotRequestListener(); // persistent chat listener for !sr commands
   usePredictionListener(); // persistent chat listener for !bet commands
   useBetsListener();        // persistent chat listener for Bets widget
   useAnalytics(); // page view tracking + user identification
+  return null;
+}
+
+// Layout wrapper to show sidebar on all pages except overlay and widget display routes
+function LayoutWrapper({ children }) {
+  const location = useLocation();
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const isOverlayCenter = location.pathname.startsWith('/overlay-center');
@@ -292,6 +296,7 @@ function LayoutWrapper({ children }) {
 
   return (
     <div className="app-layout">
+      {!isOBSOverlay && <AppRuntimeHooks />}
       {showTopNavigation && <TopNavigation />}
       <div className="main-content main-content--no-sidebar">
         {children}

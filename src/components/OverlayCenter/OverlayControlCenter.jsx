@@ -8,23 +8,27 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  BadgeCheck,
+  AlertTriangle,
   Brush,
   CheckCircle2,
   Copy,
   ExternalLink,
-  Eye,
+  Filter,
+  FolderOpen,
   Grid3X3,
+  Layers,
   LayoutDashboard,
   Link2,
   Lock,
   MonitorPlay,
-  Play,
-  RefreshCw,
+  MoreVertical,
+  Palette,
+  PlugZap,
+  Power,
   Settings,
+  SlidersHorizontal,
   Shield,
   Sparkles,
-  Unplug,
   Wand2,
   X,
 } from 'lucide-react';
@@ -32,6 +36,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useOverlay } from '../../hooks/useOverlay';
 import { useAdmin } from '../../hooks/useAdmin';
 import { usePremium } from '../../hooks/usePremium';
+import { useStreamElements } from '../../context/StreamElementsContext';
+import useTwitchChannel from '../../hooks/useTwitchChannel';
 import usePresets from '../../hooks/usePresets';
 import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
@@ -46,7 +52,12 @@ import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
 import { themeMap } from '../../data/appThemes';
 import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
-import { GlowButton } from './ui';
+import {
+  RECOMMENDED_TOOLS,
+  TOOL_STATUS,
+  resolveToolStatus,
+  summarizeOverlayTools,
+} from './toolStatusResolver';
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
 
@@ -66,66 +77,62 @@ const SETUP_STEPS = [
 const FEATURE_COPY = {
   bonus_hunt: {
     title: 'Bonus Hunt',
-    description: 'Create and manage live bonus hunts, track payouts and show progress on stream.',
+    description: 'Track bonuses, payouts and hunt progress live.',
     action: 'Open Bonus Hunt',
-    recommended: true,
   },
   bets: {
     title: 'Viewer Bets',
-    description: 'Let viewers participate in live predictions and community betting events.',
+    description: 'Create predictions and community betting events.',
     action: 'Configure Bets',
-    recommended: true,
   },
   slot_requests: {
     title: 'Slot Requests',
-    description: 'Allow viewers to request slots using chat commands or connected loyalty points.',
+    description: 'Manage viewer slot requests from chat.',
     action: 'Manage Requests',
-    recommended: true,
   },
   giveaway: {
     title: 'Giveaways',
-    description: 'Create keyword or points-based giveaways and select winners live.',
+    description: 'Run keyword or points-based giveaways.',
     action: 'Create Giveaway',
   },
   rtp_stats: {
     title: 'RTP Stats',
-    description: 'Show slot RTP, volatility, maximum win and personal statistics.',
+    description: 'Display RTP, volatility and personal records.',
     action: 'Configure RTP Stats',
   },
   navbar: {
     title: 'Stream Navbar',
-    description: 'Display your name, stream information, music and selected branding.',
+    description: 'Show branding, music and live stream information.',
     action: 'Configure Navbar',
-    recommended: true,
   },
   background: {
     title: 'Overlay Background',
-    description: 'Choose an image, video, colour or animated background for your overlay.',
+    description: 'Choose the visual background for your overlay.',
     action: 'Change Background',
   },
   bonus_buys: {
     title: 'Bonus Buys',
-    description: 'Track bonus-buy sessions and show profit, cost and result data live.',
+    description: 'Track bonus-buy cost, payout and profit.',
     action: 'Configure Bonus Buys',
   },
   tournament: {
     title: 'Tournament',
-    description: 'Run slot battles, brackets and stream-ready tournament standings.',
+    description: 'Create brackets and live tournament standings.',
     action: 'Configure Tournament',
   },
   current_slot: {
     title: 'Current Slot',
-    description: 'Show the game you are playing with provider, stake and slot artwork.',
+    description: 'Show the active slot, provider and stake.',
     action: 'Configure Current Slot',
   },
   chat: {
     title: 'Chat',
-    description: 'Display Twitch, YouTube or Kick chat messages in a styled overlay.',
+    description: 'Display Twitch, Kick or YouTube chat.',
     action: 'Configure Chat',
   },
-  spotify: {
+  spotify_now_playing: {
     title: 'Spotify',
-    description: 'Show now-playing music information when Spotify is connected.',
+    description: 'Show now-playing music on stream.',
     action: 'Configure Spotify',
   },
 };
@@ -142,13 +149,13 @@ const PRIMARY_TOOLS = [
   'tournament',
   'current_slot',
   'chat',
-  'spotify',
+  'spotify_now_playing',
 ];
 
 const INTEGRATIONS = [
   { id: 'twitch', name: 'Twitch', requiredFor: ['slot_requests', 'chat', 'giveaway', 'bets'], detail: 'Used for chat commands, requests, giveaways and viewer activity.' },
   { id: 'streamelements', name: 'StreamElements', requiredFor: ['slot_requests', 'bets'], detail: 'Required when tools use loyalty points or StreamElements chat actions.' },
-  { id: 'spotify', name: 'Spotify', requiredFor: ['navbar', 'spotify'], detail: 'Optional music data for Navbar and Spotify widgets.' },
+  { id: 'spotify', name: 'Spotify', requiredFor: ['navbar', 'spotify_now_playing'], detail: 'Optional music data for Navbar and Spotify widgets.' },
   { id: 'slots', name: 'Slot Database', requiredFor: ['bonus_hunt', 'current_slot', 'rtp_stats', 'slot_requests'], detail: 'Used for slot images, RTP, provider and game metadata.' },
 ];
 
@@ -175,9 +182,11 @@ function fromSlug(slug) {
   return String(slug || '').replace(/-/g, '_');
 }
 
-function getOverlayUrl(instance) {
+function getOverlayUrl(instance, { preview = false } = {}) {
   if (!instance || typeof window === 'undefined') return '';
-  return `${window.location.origin}/overlay/${instance.overlay_token}`;
+  const url = new URL(`/overlay/${instance.overlay_token}`, window.location.origin);
+  if (preview) url.searchParams.set('preview', '1');
+  return url.toString();
 }
 
 function defaultSetupState(widgets = [], theme = null, instance = null) {
@@ -220,17 +229,6 @@ function mergeSetupState(raw, widgets, theme, instance) {
     };
   }
   return defaultSetupState(widgets, theme, instance);
-}
-
-function getWidgetStatus(widget, isPremiumLocked = false) {
-  if (isPremiumLocked) return 'Premium';
-  if (!widget) return 'Needs setup';
-  if (widget.is_visible === false) return 'Disabled';
-  return 'Ready';
-}
-
-function requiresIntegration(toolType) {
-  return INTEGRATIONS.filter(item => item.requiredFor.includes(toolType));
 }
 
 function validateOverlay({ instance, widgets, setup }) {
@@ -305,120 +303,310 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
   );
 }
 
-function OverlayHealthCard({ instance, widgets, setup, previewStatus, onCopy, copyState }) {
-  const errors = validateOverlay({ instance, widgets, setup });
-  const selected = setup.selectedTools || [];
-  const configured = selected.filter(type => widgets.some(widget => widget.widget_type === type)).length;
-  const ready = errors.length === 0;
+function StatusIcon({ status }) {
+  if (status === TOOL_STATUS.READY) return <CheckCircle2 size={15} />;
+  if (status === TOOL_STATUS.DISABLED) return <Power size={15} />;
+  if (status === TOOL_STATUS.CONNECTION_REQUIRED) return <PlugZap size={15} />;
+  if (status === TOOL_STATUS.PREMIUM) return <Lock size={15} />;
+  if (status === TOOL_STATUS.ERROR) return <AlertTriangle size={15} />;
+  return <Sparkles size={15} />;
+}
+
+function OverlaySetupSummary({ summary, previewStatus, onOpenPreview }) {
+  const ready = summary.issueCount === 0;
+  const firstIssue = summary.issues[0];
 
   return (
-    <section className={`oc2-health ${ready ? 'oc2-health--ready' : 'oc2-health--warning'}`}>
-      <div>
-        <span className="oc2-eyebrow">{ready ? 'Overlay ready' : 'Setup attention needed'}</span>
-        <h2>{ready ? 'Your overlay is ready to stream.' : errors[0]}</h2>
+    <section className={`oc2-setup-summary ${ready ? 'oc2-setup-summary--ready' : 'oc2-setup-summary--warning'}`}>
+      <div className="oc2-setup-summary__main">
+        <span className="oc2-eyebrow">Overlay setup</span>
+        <h2>
+          {summary.readyCount} of {summary.activeCount} active tools are ready
+        </h2>
         <p>
-          {configured} of {selected.length || widgets.length} selected tools configured.
-          {' '}Preview is {previewStatus}.
+          {ready ? 'Everything active has the required setup.' : firstIssue?.label || 'Some tools still need attention.'}
         </p>
       </div>
-      <div className="oc2-health-actions">
-        <button type="button" className="oc2-btn oc2-btn--primary" onClick={onCopy}>
-          <Copy size={16} />
-          {copyState || 'Copy OBS URL'}
+
+      <div className="oc2-setup-summary__stats" aria-label="Overlay readiness numbers">
+        <div><strong>{summary.activeCount}</strong><span>Active</span></div>
+        <div><strong>{summary.readyCount}</strong><span>Ready</span></div>
+        <div><strong>{summary.issueCount}</strong><span>Warnings</span></div>
+        <div><strong>{previewStatus}</strong><span>Preview</span></div>
+      </div>
+
+      {summary.issues.length > 0 && (
+        <div className="oc2-setup-summary__warnings">
+          {summary.issues.slice(0, 3).map(issue => (
+            <Link key={`${issue.toolType}-${issue.label}`} to={issue.to} className="oc2-warning-link">
+              <AlertTriangle size={14} />
+              <span>{FEATURE_COPY[issue.toolType]?.title || issue.toolType}: {issue.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <div className="oc2-setup-summary__actions">
+        <Link className="oc2-btn" to={firstIssue?.to || '/overlay-center/setup'}>
+          Continue setup
+        </Link>
+        <button type="button" className="oc2-btn oc2-btn--primary" onClick={onOpenPreview}>
+          <MonitorPlay size={16} />
+          Open preview
         </button>
-        {!ready && <Link to="/overlay-center/setup" className="oc2-btn">Fix setup</Link>}
       </div>
     </section>
   );
 }
 
-function ToolGrid({ widgets, onOpenTool, onToggleTool, onAddTool, isAdmin }) {
-  const definitions = getAllWidgetDefs();
-  const definitionMap = new Map(definitions.map(def => [def.type, def]));
-  const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
+function ToolCard({ tool, mode, onOpen, onAdd, onToggle, onRemove }) {
+  const { type, def, widget, copy, status } = tool;
+  const installed = !!widget;
+  const isDisabled = widget?.is_visible === false;
+  const primaryLabel = installed
+    ? (isDisabled ? 'Enable tool' : (copy.action || 'Open tool'))
+    : 'Add tool';
+
+  const handleCardOpen = () => {
+    if (installed && !isDisabled) onOpen(type);
+  };
+
+  const handleKeyDown = (event) => {
+    if ((event.key === 'Enter' || event.key === ' ') && installed && !isDisabled) {
+      event.preventDefault();
+      onOpen(type);
+    }
+  };
 
   return (
-    <section className="oc2-grid" aria-label="Overlay tools">
-      {toolTypes.map(type => {
-        const def = definitionMap.get(type);
-        const widget = widgets.find(item => item.widget_type === type);
-        const copy = FEATURE_COPY[type] || {};
-        const status = getWidgetStatus(widget);
-        const Icon = status === 'Ready' ? CheckCircle2 : status === 'Disabled' ? Eye : Sparkles;
+    <article
+      className={`oc2-tool-card oc2-tool-card--${status.type}${installed && !isDisabled ? ' oc2-tool-card--clickable' : ''}`}
+      role={installed && !isDisabled ? 'button' : undefined}
+      tabIndex={installed && !isDisabled ? 0 : undefined}
+      onClick={handleCardOpen}
+      onKeyDown={handleKeyDown}
+    >
+      <header className="oc2-tool-card__header">
+        <div className="oc2-tool-card__icon" aria-hidden="true">
+          <span>{String(def.icon || '').slice(0, 2) || 'SC'}</span>
+        </div>
+        <div className="oc2-tool-card__title">
+          <h3>{copy.title || def.label}</h3>
+          {RECOMMENDED_TOOLS.has(type) && <span className="oc2-pill oc2-pill--gold">Recommended</span>}
+        </div>
+        {installed && (
+          <label className="oc2-tool-toggle" onClick={event => event.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={!isDisabled}
+              onChange={() => onToggle(widget)}
+              aria-label={`${isDisabled ? 'Enable' : 'Disable'} ${copy.title || def.label}`}
+            />
+            <span aria-hidden="true" />
+          </label>
+        )}
+      </header>
 
-        return (
-          <article key={type} className="oc2-tool-tile">
-            <div className="oc2-tool-preview" aria-hidden="true">
-              <span>{String(def.icon || '').slice(0, 2) || 'SC'}</span>
+      <p className="oc2-tool-card__description">{copy.description || def.description || 'Configure this overlay feature.'}</p>
+
+      <div className="oc2-tool-card__spacer" />
+
+      <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
+        <StatusIcon status={status.type} />
+        <span>{status.label}</span>
+        {status.detail && <small>{status.detail}</small>}
+      </div>
+
+      <footer className="oc2-tool-card__actions" onClick={event => event.stopPropagation()}>
+        <button
+          type="button"
+          className="oc2-btn oc2-btn--primary"
+          onClick={() => {
+            if (installed) {
+              if (isDisabled) onToggle(widget);
+              else onOpen(type);
+            } else {
+              onAdd(type);
+            }
+          }}
+        >
+          {primaryLabel}
+        </button>
+
+        {installed && (
+          <details className="oc2-card-menu">
+            <summary aria-label={`More actions for ${copy.title || def.label}`}>
+              <MoreVertical size={18} />
+            </summary>
+            <div className="oc2-card-menu__panel">
+              <button type="button" onClick={() => onOpen(type)}>Open settings</button>
+              <button type="button" onClick={() => onToggle(widget)}>
+                {isDisabled ? 'Enable on overlay' : 'Disable on overlay'}
+              </button>
+              <button type="button" className="oc2-card-menu__danger" onClick={() => onRemove(widget.id)}>Remove tool</button>
             </div>
-            <div className="oc2-tool-main">
-              <div className="oc2-tool-heading">
-                <h3>{copy.title || def.label}</h3>
-                {copy.recommended && <span className="oc2-pill oc2-pill--gold">Recommended</span>}
-              </div>
-              <p>{copy.description || def.description || 'Configure this overlay feature.'}</p>
-              <div className="oc2-tool-status">
-                <Icon size={15} />
-                <span>{status}</span>
-              </div>
-            </div>
-            <div className="oc2-tool-actions">
-              {widget ? (
-                <>
-                  <button type="button" className="oc2-btn oc2-btn--primary" onClick={() => onOpenTool(type)}>
-                    {copy.action || 'Open'}
-                  </button>
-                  <button type="button" className="oc2-btn" onClick={() => onToggleTool(widget)}>
-                    {widget.is_visible === false ? 'Enable' : 'Disable'}
-                  </button>
-                </>
-              ) : (
-                <button type="button" className="oc2-btn oc2-btn--primary" onClick={() => onAddTool(type)}>
-                  Add tool
-                </button>
-              )}
-            </div>
-          </article>
-        );
-      })}
-      <article className="oc2-tool-tile oc2-tool-tile--utility">
-        <div className="oc2-tool-preview"><Brush size={34} /></div>
-        <div className="oc2-tool-main">
-          <h3>Themes</h3>
-          <p>Apply visual systems and canvas settings without opening every widget.</p>
-          <div className="oc2-tool-status"><BadgeCheck size={15} /><span>Global appearance</span></div>
+          </details>
+        )}
+      </footer>
+    </article>
+  );
+}
+
+function ToolSection({ title, subtitle, tools, emptyText, children }) {
+  return (
+    <section className="oc2-tool-section">
+      <div className="oc2-tool-section__header">
+        <div>
+          <h2>{title}</h2>
+          {subtitle && <p>{subtitle}</p>}
         </div>
-        <Link className="oc2-btn oc2-btn--primary" to="/overlay-center/appearance">Open themes</Link>
-      </article>
-      <article className="oc2-tool-tile oc2-tool-tile--utility">
-        <div className="oc2-tool-preview"><Link2 size={34} /></div>
-        <div className="oc2-tool-main">
-          <h3>Integrations</h3>
-          <p>Connect Twitch, StreamElements, Spotify and slot metadata where supported.</p>
-          <div className="oc2-tool-status"><Unplug size={15} /><span>Connection hub</span></div>
+        {children}
+      </div>
+      {tools.length > 0 ? (
+        <div className="oc2-tool-grid">
+          {tools}
         </div>
-        <Link className="oc2-btn oc2-btn--primary" to="/overlay-center/integrations">Open integrations</Link>
-      </article>
-      {isAdmin && (
-        <article className="oc2-tool-tile oc2-tool-tile--utility">
-          <div className="oc2-tool-preview"><Shield size={34} /></div>
-          <div className="oc2-tool-main">
-            <h3>Approvals</h3>
-            <p>Admin-only slot submission review and moderation queue.</p>
-            <div className="oc2-tool-status"><Lock size={15} /><span>Admin only</span></div>
-          </div>
-          <Link className="oc2-btn oc2-btn--primary" to="/overlay-center/approvals">Review</Link>
-        </article>
+      ) : (
+        <div className="oc2-empty-strip">{emptyText}</div>
       )}
     </section>
   );
 }
 
-function WidgetDetail({ widgetType, widgets, theme, saveWidget, addWidget, removeWidget }) {
+function ToolFilter({ value, onChange }) {
+  const options = [
+    ['all', 'All'],
+    [TOOL_STATUS.READY, 'Ready'],
+    [TOOL_STATUS.NEEDS_SETUP, 'Needs setup'],
+    [TOOL_STATUS.DISABLED, 'Disabled'],
+  ];
+
+  return (
+    <div className="oc2-filter" aria-label="Tool status filter">
+      <Filter size={15} />
+      {options.map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          className={value === id ? 'oc2-filter__button oc2-filter__button--active' : 'oc2-filter__button'}
+          onClick={() => onChange(id)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function QuickSettings({ isAdmin }) {
+  const settings = [
+    { title: 'Appearance', description: 'Canvas, colours and global theme.', to: '/overlay-center/appearance', icon: Palette },
+    { title: 'Themes', description: 'Apply visual presets quickly.', to: '/overlay-center/appearance', icon: Brush },
+    { title: 'Integrations', description: 'Connect chat, points and music.', to: '/overlay-center/integrations', icon: Link2 },
+    { title: 'Presets', description: 'Save and reuse overlay layouts.', to: '/overlay-center/presets', icon: SlidersHorizontal },
+    { title: 'Assets', description: 'Manage hunts, presets and media.', to: '/overlay-center/assets', icon: FolderOpen },
+    { title: 'Layout', description: 'Position and layer widgets.', to: '/overlay-center/layout', icon: Layers },
+  ];
+
+  if (isAdmin) {
+    settings.push({ title: 'Approvals', description: 'Review slot submissions.', to: '/overlay-center/approvals', icon: Shield, admin: true });
+  }
+
+  return (
+    <section className="oc2-quick-settings">
+      <div className="oc2-tool-section__header">
+        <div>
+          <h2>Quick settings</h2>
+          <p>Global controls that are not overlay widgets.</p>
+        </div>
+      </div>
+      <div className="oc2-settings-grid">
+        {settings.map(item => {
+          const Icon = item.icon;
+          return (
+            <Link key={item.title} to={item.to} className="oc2-setting-tile">
+              <Icon size={19} />
+              <span>
+                <strong>{item.title}</strong>
+                <small>{item.description}</small>
+              </span>
+              {item.admin && <Lock size={14} />}
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange, onOpenTool, onToggleTool, onAddTool, onRemoveTool }) {
+  const definitions = getAllWidgetDefs();
+  const definitionMap = new Map(definitions.map(def => [def.type, def]));
+  const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
+
+  const tools = toolTypes.map(type => {
+    const def = definitionMap.get(type);
+    const widget = widgets.find(item => item.widget_type === type);
+    const status = resolveToolStatus({ type, widget, integrations });
+    return {
+      type,
+      def,
+      widget,
+      status,
+      copy: FEATURE_COPY[type] || {},
+    };
+  });
+
+  const yourTools = tools.filter(tool => tool.widget && tool.widget.is_visible !== false);
+  const addMoreTools = tools.filter(tool => !tool.widget || tool.widget.is_visible === false);
+  const filteredYourTools = filter === 'all'
+    ? yourTools
+    : yourTools.filter(tool => tool.status.type === filter);
+
+  const renderCard = (tool, mode) => (
+    <ToolCard
+      key={`${mode}-${tool.type}`}
+      tool={tool}
+      mode={mode}
+      onOpen={onOpenTool}
+      onAdd={onAddTool}
+      onToggle={onToggleTool}
+      onRemove={onRemoveTool}
+    />
+  );
+
+  return (
+    <>
+      <ToolSection
+        title="Your tools"
+        subtitle="Enabled tools currently shown on your overlay."
+        emptyText="No tools match this filter yet."
+        tools={filteredYourTools.map(tool => renderCard(tool, 'active'))}
+      >
+        <ToolFilter value={filter} onChange={onFilterChange} />
+      </ToolSection>
+
+      <ToolSection
+        title="Add more tools"
+        subtitle="Install a new tool or re-enable one you disabled."
+        emptyText="All available tools are already active."
+        tools={addMoreTools.map(tool => renderCard(tool, 'add'))}
+      />
+
+      <QuickSettings isAdmin={isAdmin} />
+    </>
+  );
+}
+
+function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, addWidget, removeWidget }) {
   const def = getWidgetDef(widgetType);
   const widget = widgets.find(item => item.widget_type === widgetType);
   const ConfigComponent = def?.configPanel;
   const [activeTab, setActiveTab] = useState('setup');
+
+  useEffect(() => {
+    setActiveTab('setup');
+  }, [widgetType]);
 
   if (!def) {
     return (
@@ -437,9 +625,195 @@ function WidgetDetail({ widgetType, widgets, theme, saveWidget, addWidget, remov
 
   const handleToggle = async () => {
     if (!widget) return;
+    if (widget.is_visible !== false) {
+      const ok = window.confirm('Disabling this tool will hide it from the live overlay. Continue?');
+      if (!ok) return;
+    }
     await saveWidget({ ...widget, is_visible: widget.is_visible === false });
     trackEvent(widget.is_visible === false ? ANALYTICS_EVENTS.OVERLAY_TOOL_ENABLED : ANALYTICS_EVENTS.OVERLAY_TOOL_DISABLED, { widget_type: widgetType });
   };
+
+  const handleRemove = async () => {
+    if (!widget) return;
+    const ok = window.confirm(`Remove ${FEATURE_COPY[widgetType]?.title || def.label} from the overlay?`);
+    if (!ok) return;
+    await removeWidget(widget.id);
+  };
+
+  const updateWidget = (patch) => {
+    if (!widget) return;
+    saveWidget({ ...widget, ...patch });
+  };
+
+  const updateConfig = (patch) => {
+    if (!widget) return;
+    saveWidget({ ...widget, config: { ...(widget.config || {}), ...patch } });
+  };
+
+  const status = resolveToolStatus({ type: widgetType, widget, integrations });
+  const styleKey = def.styleConfigKey || 'displayStyle';
+  const styleOptions = Array.isArray(def.styles) ? def.styles : [];
+  const animationOptions = ['none', 'fade', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'scale', 'bounce', 'glow', 'blur'];
+
+  const tabPanel = (() => {
+    if (!widget) return null;
+
+    if (activeTab === 'setup') {
+      if (!ConfigComponent) {
+        return (
+          <div className="oc2-tab-panel">
+            <h2>No setup panel available</h2>
+            <p>This widget does not expose a custom setup form yet.</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="oc2-config-shell">
+          <div className="oc2-config-main">
+            <ConfigComponent
+              config={widget.config || {}}
+              onChange={(newConfig) => {
+                saveWidget({ ...widget, config: newConfig });
+                trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: activeTab });
+              }}
+              allWidgets={widgets}
+              mode="sidebar"
+            />
+          </div>
+          <aside className="oc2-config-side">
+            <h3>Status</h3>
+            <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
+              <StatusIcon status={status.type} />
+              <span>{status.label}</span>
+            </div>
+            {status.detail && <p>{status.detail}</p>}
+            <dl>
+              <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
+              <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
+              <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
+            </dl>
+            <Link className="oc2-btn" to="/overlay-center/layout">Open layout mode</Link>
+          </aside>
+        </div>
+      );
+    }
+
+    if (activeTab === 'appearance') {
+      return (
+        <div className="oc2-tab-panel">
+          <div>
+            <h2>Appearance</h2>
+            <p>Control the visual style for this tool. Detailed widget-specific styling still lives in Setup when the tool provides it.</p>
+          </div>
+          <div className="oc2-form-grid">
+            {styleOptions.length > 0 && (
+              <label className="oc2-field">
+                Style
+                <select value={widget.config?.[styleKey] || styleOptions[0]?.id || ''} onChange={event => updateConfig({ [styleKey]: event.target.value })}>
+                  {styleOptions.map(option => (
+                    <option key={option.id} value={option.id}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {['accentColor', 'bgColor', 'textColor', 'mutedColor', 'borderColor'].map(key => (
+              <label key={key} className="oc2-field">
+                {key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase())}
+                <input
+                  type="text"
+                  value={widget.config?.[key] || ''}
+                  placeholder={key === 'bgColor' ? 'rgba(15,23,42,0.85)' : '#ffffff'}
+                  onChange={event => updateConfig({ [key]: event.target.value })}
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'behavior') {
+      return (
+        <div className="oc2-tab-panel">
+          <div>
+            <h2>Behavior</h2>
+            <p>Control visibility and motion without opening Layout mode.</p>
+          </div>
+          <div className="oc2-form-grid">
+            <label className="oc2-field oc2-field--toggle">
+              <span>Visible on overlay</span>
+              <input
+                type="checkbox"
+                checked={widget.is_visible !== false}
+                onChange={handleToggle}
+              />
+            </label>
+            <label className="oc2-field">
+              Entrance animation
+              <select value={widget.animation || 'fade'} onChange={event => updateWidget({ animation: event.target.value })}>
+                {animationOptions.map(option => <option key={option} value={option}>{option}</option>)}
+              </select>
+            </label>
+            <label className="oc2-field">
+              Exit animation
+              <select value={widget.exit_animation || 'fade'} onChange={event => updateWidget({ exit_animation: event.target.value })}>
+                {animationOptions.map(option => <option key={option} value={option}>{option}</option>)}
+              </select>
+            </label>
+            <label className="oc2-field">
+              Layer
+              <input
+                type="number"
+                value={widget.z_index || 1}
+                min="0"
+                onChange={event => updateWidget({ z_index: Number(event.target.value) || 0 })}
+              />
+            </label>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="oc2-tab-panel">
+        <div>
+          <h2>Advanced</h2>
+          <p>Fine-tune placement and custom CSS. Use Layout mode for drag-and-drop positioning.</p>
+        </div>
+        <div className="oc2-form-grid">
+          {[
+            ['position_x', 'X position'],
+            ['position_y', 'Y position'],
+            ['width', 'Width'],
+            ['height', 'Height'],
+          ].map(([key, label]) => (
+            <label key={key} className="oc2-field">
+              {label}
+              <input
+                type="number"
+                value={Math.round(Number(widget[key]) || 0)}
+                min="0"
+                onChange={event => updateWidget({ [key]: Number(event.target.value) || 0 })}
+              />
+            </label>
+          ))}
+        </div>
+        <label className="oc2-field">
+          Custom CSS
+          <textarea
+            value={widget.config?.custom_css || ''}
+            onChange={event => updateConfig({ custom_css: event.target.value })}
+            placeholder=".my-widget { }"
+          />
+        </label>
+        <div className="oc2-advanced-actions">
+          <Link className="oc2-btn" to="/overlay-center/layout">Open layout mode</Link>
+          <button type="button" className="oc2-btn oc2-btn--danger" onClick={handleRemove}>Remove from overlay</button>
+        </div>
+      </div>
+    );
+  })();
 
   return (
     <section className="oc2-detail">
@@ -470,6 +844,8 @@ function WidgetDetail({ widgetType, widgets, theme, saveWidget, addWidget, remov
             key={tab}
             type="button"
             className={`oc2-tab${activeTab === tab ? ' oc2-tab--active' : ''}`}
+            role="tab"
+            aria-selected={activeTab === tab}
             onClick={() => setActiveTab(tab)}
           >
             {tab}
@@ -485,37 +861,7 @@ function WidgetDetail({ widgetType, widgets, theme, saveWidget, addWidget, remov
         </div>
       )}
 
-      {widget && ConfigComponent && (
-        <div className="oc2-config-shell">
-          <div className="oc2-config-main">
-            <ConfigComponent
-              config={widget.config || {}}
-              onChange={(newConfig) => {
-                saveWidget({ ...widget, config: newConfig });
-                trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: activeTab });
-              }}
-              allWidgets={widgets}
-              mode="sidebar"
-            />
-          </div>
-          <aside className="oc2-config-side">
-            <h3>Status</h3>
-            <p>{getWidgetStatus(widget)}</p>
-            <dl>
-              <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
-              <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
-              <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
-            </dl>
-            <Link className="oc2-btn" to="/overlay-center/layout">Open layout mode</Link>
-            <details className="oc2-danger">
-              <summary>Danger zone</summary>
-              <button type="button" className="oc2-btn oc2-btn--danger" onClick={() => removeWidget(widget.id)}>
-                Remove from overlay
-              </button>
-            </details>
-          </aside>
-        </div>
-      )}
+      {widget && tabPanel}
     </section>
   );
 }
@@ -849,6 +1195,8 @@ export default function OverlayControlCenter() {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
   const { isPremium } = usePremium();
+  const { seAccount } = useStreamElements();
+  const twitchChannel = useTwitchChannel();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -860,8 +1208,13 @@ export default function OverlayControlCenter() {
   const previewChannelRef = useRef(null);
   const [previewStatus, setPreviewStatus] = useState('closed');
   const [copyMsg, setCopyMsg] = useState('');
+  const [toolFilter, setToolFilter] = useState(() => {
+    if (typeof window === 'undefined') return 'all';
+    return sessionStorage.getItem('overlay-center:tool-filter') || 'all';
+  });
 
   const overlayUrl = useMemo(() => getOverlayUrl(instance), [instance]);
+  const previewUrl = useMemo(() => getOverlayUrl(instance, { preview: true }), [instance]);
   const setup = useMemo(() => mergeSetupState(overlayState?.overlaySetup, widgets, theme, instance), [overlayState?.overlaySetup, widgets, theme, instance]);
   const tutorial = overlayState?.overlayTutorial || { status: 'not_started', completed: false };
   const setupComplete = setup.status === 'completed';
@@ -870,6 +1223,30 @@ export default function OverlayControlCenter() {
     return PANEL_ROUTES[location.pathname] || 'home';
   }, [location.pathname]);
   const widgetTypeFromRoute = useMemo(() => fromSlug(location.pathname.split('/').pop()), [location.pathname]);
+  const integrations = useMemo(() => {
+    const spotifyWidget = widgets.find(widget => widget.widget_type === 'spotify_now_playing');
+    const navbarWidget = widgets.find(widget => widget.widget_type === 'navbar');
+    return {
+      twitchChannel,
+      streamelementsConnected: !!(seAccount?.se_channel_id && seAccount?.se_jwt_token),
+      spotifyConnected: !!(
+        spotifyWidget?.config?.spotify_access_token ||
+        navbarWidget?.config?.spotify_access_token
+      ),
+    };
+  }, [widgets, twitchChannel, seAccount]);
+  const overlaySummary = useMemo(() => summarizeOverlayTools({
+    toolTypes: PRIMARY_TOOLS,
+    widgets,
+    integrations,
+  }), [widgets, integrations]);
+
+  const updateToolFilter = useCallback((next) => {
+    setToolFilter(next);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('overlay-center:tool-filter', next);
+    }
+  }, []);
 
   const {
     globalPresets, sharedPresets, presetName, setPresetName, presetMsg,
@@ -918,7 +1295,7 @@ export default function OverlayControlCenter() {
   }, [overlayUrl]);
 
   const openPreview = useCallback(() => {
-    if (!overlayUrl) return;
+    if (!previewUrl) return;
     if (previewWindowRef.current && !previewWindowRef.current.closed) {
       previewWindowRef.current.focus();
       setPreviewStatus('connected');
@@ -926,7 +1303,7 @@ export default function OverlayControlCenter() {
     }
     setPreviewStatus('opening');
     const popup = window.open(
-      overlayUrl,
+      previewUrl,
       `streamers-center-preview-${instance?.id || 'overlay'}`,
       'popup=yes,width=1280,height=720,resizable=yes,scrollbars=no'
     );
@@ -937,7 +1314,7 @@ export default function OverlayControlCenter() {
     previewWindowRef.current = popup;
     setPreviewStatus('connecting');
     trackEvent(ANALYTICS_EVENTS.OVERLAY_PREVIEW_POPPED_OUT, { overlay_id: instance?.id });
-  }, [overlayUrl, instance?.id]);
+  }, [previewUrl, instance?.id]);
 
   const focusPreview = useCallback(() => {
     if (previewWindowRef.current && !previewWindowRef.current.closed) {
@@ -996,8 +1373,19 @@ export default function OverlayControlCenter() {
   };
 
   const handleToggleTool = async (widget) => {
+    if (widget.is_visible !== false) {
+      const title = FEATURE_COPY[widget.widget_type]?.title || widget.label || 'this tool';
+      const ok = window.confirm(`Disable ${title}? It will be hidden from the live overlay.`);
+      if (!ok) return;
+    }
     await saveWidget({ ...widget, is_visible: widget.is_visible === false });
     trackEvent(widget.is_visible === false ? ANALYTICS_EVENTS.OVERLAY_TOOL_ENABLED : ANALYTICS_EVENTS.OVERLAY_TOOL_DISABLED, { widget_type: widget.widget_type });
+  };
+
+  const handleRemoveTool = async (widgetId) => {
+    const ok = window.confirm('Remove this tool from the overlay? This cannot be undone.');
+    if (!ok) return;
+    await removeWidget(widgetId);
   };
 
   const restartSetup = async () => {
@@ -1057,31 +1445,32 @@ export default function OverlayControlCenter() {
 
         {currentPanel === 'home' && (
           <>
-            <OverlayHealthCard
-              instance={instance}
-              widgets={widgets}
-              setup={setup}
+            <OverlaySetupSummary
+              summary={overlaySummary}
               previewStatus={previewStatus}
-              onCopy={copyUrl}
-              copyState={copyMsg}
+              onOpenPreview={openPreview}
             />
             {previewStatus === 'blocked' && (
               <div className="oc2-warning">Your browser blocked the preview window. Allow pop-ups for Streamers Center and try again.</div>
             )}
             <div className="oc2-section-heading">
               <span className="oc2-eyebrow">Tools</span>
-              <h1>Choose what you want to manage</h1>
-              <p>Open one feature at a time. Layout controls live in Layout mode.</p>
+              <h1>Manage your overlay</h1>
+              <p>Active tools, setup warnings and global settings are separated so you can get to the right place fast.</p>
             </div>
-            <ToolGrid
+            <ToolWorkspace
               widgets={widgets}
+              integrations={integrations}
               isAdmin={isAdmin}
+              filter={toolFilter}
+              onFilterChange={updateToolFilter}
               onOpenTool={(type) => {
                 trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, { widget_type: type });
                 navigate(`/overlay-center/widgets/${toSlug(type)}`);
               }}
               onToggleTool={handleToggleTool}
               onAddTool={handleAddTool}
+              onRemoveTool={handleRemoveTool}
             />
             {!tutorial.completed && setupComplete && (
               <TutorialOverlay tutorial={tutorial} saveTutorial={saveTutorial} />
@@ -1096,12 +1485,16 @@ export default function OverlayControlCenter() {
               <h1>Overlay tools</h1>
               <p>Add or open a tool. Advanced ordering and placement are in Layout mode.</p>
             </div>
-            <ToolGrid
+            <ToolWorkspace
               widgets={widgets}
+              integrations={integrations}
               isAdmin={isAdmin}
+              filter={toolFilter}
+              onFilterChange={updateToolFilter}
               onOpenTool={(type) => navigate(`/overlay-center/widgets/${toSlug(type)}`)}
               onToggleTool={handleToggleTool}
               onAddTool={handleAddTool}
+              onRemoveTool={handleRemoveTool}
             />
           </>
         )}
@@ -1111,6 +1504,7 @@ export default function OverlayControlCenter() {
             widgetType={widgetTypeFromRoute}
             widgets={widgets}
             theme={theme}
+            integrations={integrations}
             saveWidget={saveWidget}
             addWidget={addWidget}
             removeWidget={removeWidget}
@@ -1162,7 +1556,7 @@ export default function OverlayControlCenter() {
 
         {currentPanel === 'preview' && (
           <PreviewWorkspace
-            overlayUrl={overlayUrl}
+            overlayUrl={previewUrl}
             instance={instance}
             previewStatus={previewStatus}
             onOpen={openPreview}
@@ -1218,7 +1612,23 @@ export default function OverlayControlCenter() {
         )}
 
         {currentPanel === 'slots' && (isPremium || isAdmin) && <SlotSubmissions />}
+        {currentPanel === 'slots' && !(isPremium || isAdmin) && (
+          <section className="oc2-empty-state">
+            <Lock size={22} />
+            <h1>Premium required</h1>
+            <p>Slot submissions are available to Premium users.</p>
+            <Link className="oc2-btn oc2-btn--primary" to="/premium">View Premium</Link>
+          </section>
+        )}
         {currentPanel === 'approvals' && isAdmin && <SlotApprovals />}
+        {currentPanel === 'approvals' && !isAdmin && (
+          <section className="oc2-empty-state">
+            <Shield size={22} />
+            <h1>Admin only</h1>
+            <p>You need administrator access to review slot submissions.</p>
+            <Link className="oc2-btn" to="/overlay-center">Back to Overlay Center</Link>
+          </section>
+        )}
         {currentPanel === 'tutorial' && <TutorialOverlay tutorial={{ ...tutorial, currentStep: 0 }} saveTutorial={saveTutorial} />}
       </main>
     </div>
