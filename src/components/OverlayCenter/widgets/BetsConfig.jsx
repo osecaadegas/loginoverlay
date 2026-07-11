@@ -8,22 +8,6 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import TabBar from './shared/TabBar';
 
-// Hex colour presets per theme (applied when user selects a theme from the dropdown)
-const THEME_PRESETS_CONFIG = {
-  dark: {
-    bgColor: '#0a0e14', headerBg: '#141a24', headerText: '#eef2f5',
-    barBg: '#1c2330', barFill: '#6366f1', textColor: '#d4dce8', accentColor: '#b8c8d8',
-  },
-  grey: {
-    bgColor: '#2a3040', headerBg: '#333b4d', headerText: '#f1f5f9',
-    barBg: '#3a4254', barFill: '#6366f1', textColor: '#e2e8f0', accentColor: '#cbd5e1',
-  },
-  white: {
-    bgColor: '#f8fafc', headerBg: '#f1f5f9', headerText: '#0f172a',
-    barBg: '#e2e8f0', barFill: '#6366f1', textColor: '#334155', accentColor: '#475569',
-  },
-};
-
 const DEFAULT_OPTIONS = [
   { label: '0 – 99' },
   { label: '100 – 199' },
@@ -173,12 +157,6 @@ export default function BetsConfig({ config, onChange }) {
       onChange({ ...c, ...missingTemplates });
     }
   }, [c, onChange]);
-
-  // Apply a theme preset — resets all colour fields to the theme defaults
-  const applyTheme = (theme) => {
-    const preset = THEME_PRESETS_CONFIG[theme] || THEME_PRESETS_CONFIG.dark;
-    onChange({ ...c, colorTheme: theme, ...preset });
-  };
 
   const status      = c.gameStatus  || 'idle';
   const options     = c.options     || DEFAULT_OPTIONS;
@@ -385,7 +363,6 @@ export default function BetsConfig({ config, onChange }) {
     { id: 'game',     label: '🎮 Game' },
     { id: 'brackets', label: '📋 Brackets' },
     { id: 'chat',     label: '💬 Chat' },
-    { id: 'style',    label: '🎨 Style' },
     { id: 'history',  label: '📜 History' },
   ];
 
@@ -669,93 +646,6 @@ export default function BetsConfig({ config, onChange }) {
                 />
               </label>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* ═══ STYLE TAB ═══ */}
-      {tab === 'style' && (
-        <div className="cg-config__section">
-
-          {/* ── Theme preset ── */}
-          <label className="cg-config__label">Color Theme</label>
-          <select
-            className="cg-config__select"
-            value={c.colorTheme || 'dark'}
-            onChange={e => applyTheme(e.target.value)}
-          >
-            <option value="dark">🌑 Dark Glass</option>
-            <option value="grey">🌫️ Grey</option>
-            <option value="white">☀️ White</option>
-          </select>
-
-          {/* ── Bar colour mode ── */}
-          <label className="cg-config__label" style={{ marginTop: 8 }}>Bar Colors</label>
-          <select
-            className="cg-config__select"
-            value={c.barColorMode || 'rainbow'}
-            onChange={e => set('barColorMode', e.target.value)}
-          >
-            <option value="rainbow">🌈 Colorful (per option)</option>
-            <option value="single">🔵 Single Color</option>
-          </select>
-
-          {/* ── Layout ── */}
-          <label className="cg-config__label" style={{ marginTop: 8 }}>Layout</label>
-          <select
-            className="cg-config__select"
-            value={c.displayStyle || 'v1_list'}
-            onChange={e => set('displayStyle', e.target.value)}
-          >
-            <option value="v1_list">List (horizontal bars)</option>
-            <option value="v2_grid">Grid (vertical fill cards)</option>
-            <option value="v3_grid_2x3">Grid (2 rows × 3 columns)</option>
-          </select>
-
-          <label className="cg-config__label" style={{ marginTop: 8 }}>Font Family</label>
-          <select
-            className="cg-config__select"
-            value={c.fontFamily || "'Inter', sans-serif"}
-            onChange={e => set('fontFamily', e.target.value)}
-          >
-            <option value="'Inter', sans-serif">Inter (default)</option>
-            <option value="'Rajdhani', sans-serif">Rajdhani</option>
-            <option value="'Oswald', sans-serif">Oswald</option>
-            <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
-            <option value="'Roboto', sans-serif">Roboto</option>
-          </select>
-
-          {/* ── Manual colour overrides ── */}
-          <p className="cg-config__hint" style={{ marginTop: 8 }}>
-            Manual overrides — selecting a theme above resets these.
-          </p>
-          <div className="cg-config__color-row">
-            <label className="cg-config__color">
-              <span>Background</span>
-              <input type="color" value={c.bgColor || '#0a0e14'} onChange={e => set('bgColor', e.target.value)} />
-            </label>
-            <label className="cg-config__color">
-              <span>Header BG</span>
-              <input type="color" value={c.headerBg || '#141a24'} onChange={e => set('headerBg', e.target.value)} />
-            </label>
-            <label className="cg-config__color">
-              <span>Header Text</span>
-              <input type="color" value={c.headerText || '#eef2f5'} onChange={e => set('headerText', e.target.value)} />
-            </label>
-          </div>
-          <div className="cg-config__color-row">
-            <label className="cg-config__color">
-              <span>Bar Track</span>
-              <input type="color" value={c.barBg || '#1c2330'} onChange={e => set('barBg', e.target.value)} />
-            </label>
-            <label className="cg-config__color">
-              <span>Bar Fill (single)</span>
-              <input type="color" value={c.barFill || '#6366f1'} onChange={e => set('barFill', e.target.value)} />
-            </label>
-            <label className="cg-config__color">
-              <span>Text</span>
-              <input type="color" value={c.textColor || '#d4dce8'} onChange={e => set('textColor', e.target.value)} />
-            </label>
           </div>
         </div>
       )}

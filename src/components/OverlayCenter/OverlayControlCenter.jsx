@@ -247,7 +247,6 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
     { id: 'integrations', label: 'Integrations', to: '/overlay-center/integrations', icon: Link2 },
     { id: 'tools', label: 'Tools', to: '/overlay-center/widgets', icon: Grid3X3 },
     { id: 'appearance', label: 'Appearance', to: '/overlay-center/appearance', icon: Brush },
-    { id: 'preview', label: 'Preview', to: '/overlay-center/preview', icon: MonitorPlay },
   ];
 
   return (
