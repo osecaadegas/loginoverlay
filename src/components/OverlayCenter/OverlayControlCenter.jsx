@@ -625,6 +625,22 @@ function BetsBracketShortcutTiles({ widget, saveWidget }) {
     });
   };
 
+  const deleteEntry = (entry, index, kind) => {
+    const key = kind === 'usage' ? 'bracketUsage' : 'bracketHistory';
+    const source = kind === 'usage' ? usage : history;
+    const nextEntries = source.filter((candidate, candidateIndex) => (
+      entry.id ? candidate.id !== entry.id : candidateIndex !== index
+    ));
+
+    saveWidget({
+      ...widget,
+      config: {
+        ...config,
+        [key]: nextEntries,
+      },
+    });
+  };
+
   const renderTile = (entry, index, kind) => {
     const options = normalizeBetsBracketOptions(entry.options);
     const question = entry.question || config.question || 'Place your bets!';
@@ -634,18 +650,32 @@ function BetsBracketShortcutTiles({ widget, saveWidget }) {
       : `${count} brackets · ${formatBetsSavedDate(entry.usedAt)}`;
 
     return (
-      <button
+      <article
         key={entry.id || `${kind}-${index}`}
-        type="button"
         className="oc2-bets-shortcut-tile"
-        onClick={() => loadEntry(entry)}
-        disabled={!canLoad}
-        title={canLoad ? 'Load bracket setup' : 'End the current round before loading a setup'}
       >
         <strong>{question}</strong>
         <span>{meta}</span>
         <small>{entry.summary || summarizeBetsBracketOptions(options)}</small>
-      </button>
+        <div className="oc2-bets-shortcut-actions">
+          <button
+            type="button"
+            className="oc2-bets-shortcut-btn"
+            onClick={() => loadEntry(entry)}
+            disabled={!canLoad}
+            title={canLoad ? 'Load bracket setup' : 'End the current round before loading a setup'}
+          >
+            Load
+          </button>
+          <button
+            type="button"
+            className="oc2-bets-shortcut-btn oc2-bets-shortcut-btn--danger"
+            onClick={() => deleteEntry(entry, index, kind)}
+          >
+            Delete
+          </button>
+        </div>
+      </article>
     );
   };
 
