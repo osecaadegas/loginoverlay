@@ -1,12 +1,25 @@
 /**
  * BetsConfig.jsx — Admin control panel for the Bets widget.
  *
- * Tabs: 🎮 Game | 📋 Brackets | 💬 Chat | 🎨 Style | 📜 History
+ * Tabs: 🎮 Game | 📋 Brackets | 💬 Chat | 📜 History
  * Follows the same pattern as PredictionsConfig + BonusHuntConfig.
  */
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import TabBar from './shared/TabBar';
+
+const BETS_OPTION_PALETTE = [
+  '#6366f1',
+  '#22c55e',
+  '#f97316',
+  '#64748b',
+  '#06b6d4',
+  '#ef4444',
+  '#eab308',
+  '#64748b',
+  '#14b8a6',
+  '#f59e0b',
+];
 
 const DEFAULT_OPTIONS = [
   { label: '0 – 99' },
@@ -67,6 +80,19 @@ const CHAT_TEMPLATE_FIELDS = [
 const DEFAULT_CHAT_TEMPLATES = Object.fromEntries(
   CHAT_TEMPLATE_FIELDS.map(({ key, placeholder }) => [key, placeholder])
 );
+
+function getChatTemplateValues(config = {}) {
+  return Object.fromEntries(
+    CHAT_TEMPLATE_FIELDS.map(({ key, placeholder }) => [
+      key,
+      typeof config[key] === 'string' ? config[key] : placeholder,
+    ])
+  );
+}
+
+function chatTemplateSignature(values = {}) {
+  return CHAT_TEMPLATE_FIELDS.map(({ key }) => values[key] || '').join('\u001f');
+}
 
 function normalizeBracketOptions(source = DEFAULT_OPTIONS) {
   const safeSource = Array.isArray(source) && source.length ? source : DEFAULT_OPTIONS;
@@ -139,6 +165,12 @@ export default function BetsConfig({ config, onChange }) {
   const set    = (k, v) => onChange({ ...c, [k]: v });
   const setMulti = (obj) => onChange({ ...c, ...obj });
   const [tab, setTab] = useState('game');
+  const [chatTemplateDrafts, setChatTemplateDrafts] = useState(() => getChatTemplateValues(c));
+  const [chatTemplateSaveMsg, setChatTemplateSaveMsg] = useState('');
+  const chatTemplateConfigValues = getChatTemplateValues(c);
+  const chatTemplateConfigSignature = chatTemplateSignature(chatTemplateConfigValues);
+  const chatTemplateDraftSignature = chatTemplateSignature(chatTemplateDrafts);
+  const chatTemplatesDirty = chatTemplateDraftSignature !== chatTemplateConfigSignature;
 
   useEffect(() => {
     const missingTemplates = Object.entries(DEFAULT_CHAT_TEMPLATES).reduce((acc, [key, template]) => {
@@ -150,6 +182,10 @@ export default function BetsConfig({ config, onChange }) {
       onChange({ ...c, ...missingTemplates });
     }
   }, [c, onChange]);
+
+  useEffect(() => {
+    setChatTemplateDrafts(getChatTemplateValues(c));
+  }, [chatTemplateConfigSignature]);
 
   const status      = c.gameStatus  || 'idle';
   const options     = c.options     || DEFAULT_OPTIONS;
@@ -164,6 +200,25 @@ export default function BetsConfig({ config, onChange }) {
   const customTimerActive = !TIMER_PRESETS.some(preset => preset.value === timerSeconds);
   const totalPool   = options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
   const totalBetters = Object.keys(betters).length;
+  const maxOptionPool = Math.max(1, ...options.map((_, i) => bets[`opt_${i}`] || 0));
+  const optionStats = options.map((opt, i) => {
+    const amount = bets[`opt_${i}`] || 0;
+    const percent = totalPool > 0 ? Math.round((amount / totalPool) * 100) : 0;
+    const betterCount = Object.values(betters).filter(better => better?.option === i).length;
+    return {
+      amount,
+      betterCount,
+      color: BETS_OPTION_PALETTE[i % BETS_OPTION_PALETTE.length],
+      fillHeight: maxOptionPool > 0 ? Math.round((amount / maxOptionPool) * 100) : 0,
+      label: (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, ''),
+      percent,
+    };
+  });
+
+  const saveChatTemplates = () => {
+    setMulti(chatTemplateDrafts);
+    setChatTemplateSaveMsg('Saved preset texts');
+  };
 
   /* ── Game actions ── */
   const openBets = () => {
@@ -401,24 +456,29 @@ export default function BetsConfig({ config, onChange }) {
                 </>
               )}
               {status === 'locked' && (
-                <>
+                <div className="cg-config__winner-picker">
                   <p className="cg-config__hint">Pick the winning bracket:</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {options.map((opt, i) => (
+                  <div className="cg-config__winner-grid">
+                    {optionStats.map((stat, i) => (
                       <button
-                        key={i}
-                        className="cg-config__btn cg-config__btn--primary"
+                        key={`${stat.label}-${i}`}
+                        type="button"
+                        className="cg-config__winner-tile"
                         onClick={() => resolveWinner(i)}
-                        style={{ fontSize: '0.82rem', padding: '6px 10px' }}
+                        style={{ '--winner-color': stat.color, '--winner-fill': `${stat.fillHeight}%` }}
                       >
-                        👑 {opt.label}
+                        <span className="cg-config__winner-fill" />
+                        <span className="cg-config__winner-num">{i + 1}</span>
+                        <strong>{stat.label}</strong>
+                        <span className="cg-config__winner-percent">{stat.percent}%</span>
+                        <small>{stat.amount.toLocaleString()} pts · {stat.betterCount} bet{stat.betterCount === 1 ? '' : 's'}</small>
                       </button>
                     ))}
                   </div>
                   <button className="cg-config__btn cg-config__btn--muted" onClick={resetBets} style={{ marginTop: 6 }}>
                     🗑️ Cancel
                   </button>
-                </>
+                </div>
               )}
               {status === 'result' && (
                 <button className="cg-config__btn cg-config__btn--primary" onClick={resetBets}>
@@ -576,9 +636,22 @@ export default function BetsConfig({ config, onChange }) {
 
           {/* ── Chat reply messages ── */}
           <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(16,185,129,0.07)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.2)' }}>
-            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6ee7b7', marginBottom: 4 }}>
-              Chat reply messages
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 4 }}>
+              <div>
+                <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6ee7b7', marginBottom: 4 }}>
+                  Chat reply messages
+                </p>
+                {chatTemplateSaveMsg && <p style={{ fontSize: '0.72rem', color: '#86efac', margin: 0 }}>{chatTemplateSaveMsg}</p>}
+              </div>
+              <button
+                type="button"
+                className="cg-config__btn cg-config__btn--primary"
+                onClick={saveChatTemplates}
+                style={{ flex: '0 0 auto', minWidth: 154, paddingInline: 14 }}
+              >
+                Save preset texts
+              </button>
+            </div>
             <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginBottom: 10 }}>
               Write the exact chat replies the bot should send. These words are replaced automatically: <code style={{ color: '#c7d2fe' }}>{'{user}'}</code> viewer name, <code style={{ color: '#c7d2fe' }}>{'{amount}'}</code> bet amount, <code style={{ color: '#c7d2fe' }}>{'{option}'}</code> bracket label, <code style={{ color: '#c7d2fe' }}>{'{balance}'}</code> viewer balance, <code style={{ color: '#c7d2fe' }}>{'{winners}'}</code> winners, <code style={{ color: '#c7d2fe' }}>{'{total}'}</code> paid points.
             </p>
@@ -589,8 +662,11 @@ export default function BetsConfig({ config, onChange }) {
                   <small style={{ display: 'block', color: '#94a3b8', fontSize: '0.68rem', fontWeight: 500 }}>{help}</small>
                 </span>
                 <input
-                  value={c[key] ?? placeholder}
-                  onChange={e => set(key, e.target.value)}
+                  value={chatTemplateDrafts[key] ?? placeholder}
+                  onChange={e => {
+                    setChatTemplateDrafts(prev => ({ ...prev, [key]: e.target.value }));
+                    setChatTemplateSaveMsg('');
+                  }}
                   placeholder={placeholder}
                   style={{ fontSize: '0.75rem' }}
                 />
