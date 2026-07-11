@@ -38,16 +38,19 @@ import {
   getScopedAppearancePath,
   getScopedVisualPath,
   getSupportedVisualKeys,
+  getTargetStyleId,
   getTargetOverrideRoot,
   getThemeAppearance,
+  getWidgetActiveStyleId,
   getWidgetSubElementDefinitions,
   getWidgetOverrideCount,
+  getWidgetStyleOptions,
+  getWidgetStyleRenderId,
   getWidgetTypeOverrideCount,
   normalizeAppearance,
   omitPath,
   projectAppearanceToThemePatch,
   resolveAppearanceForTarget,
-  resolveWidgetsForAppearance,
   setByPath,
 } from './appearanceModel';
 import './AppearanceCenter.css';
@@ -90,6 +93,20 @@ const PREVIEW_SIZES = [
   { id: 'vertical', label: 'Vertical 1080 x 1920', width: 1080, height: 1920 },
 ];
 
+const PREVIEW_MODES = [
+  { id: 'focus-widget', label: 'Focus selected widget' },
+  { id: 'full-overlay', label: 'Full overlay' },
+  { id: 'actual-scale', label: 'Actual scale' },
+  { id: 'fit-widget', label: 'Fit widget' },
+  { id: 'fit-canvas', label: 'Fit canvas' },
+];
+
+const PREVIEW_BACKGROUNDS = [
+  { id: 'dark', label: 'Dark' },
+  { id: 'light', label: 'Light' },
+  { id: 'checkerboard', label: 'Checkerboard' },
+];
+
 const SURFACE_PRESETS = {
   flat: { surfaces: { preset: 'flat', opacity: 1, glass: false, blur: 0 }, effects: { shadowEnabled: false, glowEnabled: false } },
   soft: { surfaces: { preset: 'soft', opacity: 0.92, glass: false, blur: 8 }, effects: { shadowEnabled: true, shadowBlur: 22, shadowOpacity: 0.28 } },
@@ -121,8 +138,8 @@ function countObjectKeys(value) {
 
 function targetToKey(target) {
   if (!target) return 'overlay';
-  if (target.scope === 'widget_instance') return `widget:${target.widgetId || ''}`;
-  if (target.scope === 'widget_type') return `type:${target.widgetType || ''}`;
+  if (target.scope === 'widget_instance') return `widget:${target.widgetId || ''}:${target.styleId || ''}`;
+  if (target.scope === 'widget_type') return `type:${target.widgetType || ''}:${target.styleId || ''}`;
   return target.scope || 'overlay';
 }
 
@@ -283,28 +300,32 @@ function TargetSelector({ widgets, selected, appearance, onChange }) {
   const defs = getAllWidgetDefs();
   const installedTypes = new Set(widgets.map(widget => widget.widget_type));
   const selectedWidget = widgets.find(widget => widget.id === selected.widgetId);
-  const selectedDef = defs.find(def => def.type === selected.widgetType);
+  const selectedType = selected.widgetType || selectedWidget?.widget_type;
+  const selectedDef = defs.find(def => def.type === selectedType);
+  const selectedStyleId = getTargetStyleId(selected, appearance, widgets);
+  const styleOptions = selectedType ? getWidgetStyleOptions(selectedType, appearance, selectedWidget?.id) : [];
+  const selectedStyle = styleOptions.find(style => style.id === selectedStyleId);
   const label = selected.scope === 'widget_instance'
-    ? `${selectedDef?.label || selectedWidget?.widget_type || 'Widget'} -> ${selectedWidget?.label || 'Instance'}`
+    ? selectedDef?.label || selectedWidget?.widget_type || 'Widget'
     : selected.scope === 'widget_type'
-      ? `All ${selectedDef?.label || selected.widgetType || 'widgets'}`
+      ? selectedDef?.label || selected.widgetType || 'Widget type'
       : selected.scope === 'all_widgets'
         ? 'All widgets'
         : 'Entire overlay';
   const overrideCount = selected.scope === 'widget_instance'
-    ? getWidgetOverrideCount(appearance, selected.widgetId)
+    ? getWidgetOverrideCount(appearance, selected.widgetId, selectedStyleId)
     : selected.scope === 'widget_type'
-      ? getWidgetTypeOverrideCount(appearance, selected.widgetType)
+      ? getWidgetTypeOverrideCount(appearance, selected.widgetType, selectedStyleId)
       : 0;
 
   return (
     <section className="ac-target">
       <div>
-        <span>Editing</span>
+        <span>{selected.scope === 'widget_instance' ? 'Editing widget' : selected.scope === 'widget_type' ? 'Editing widget type' : 'Editing'}</span>
         <strong>{label}</strong>
-        {selected.scope !== 'overlay' && (
-          <small>{overrideCount} custom override{overrideCount === 1 ? '' : 's'}</small>
-        )}
+        {selected.scope === 'widget_instance' && <small>Instance: {selectedWidget?.label || selectedWidget?.id || 'Unknown widget'}</small>}
+        {(selected.scope === 'widget_type' || selected.scope === 'widget_instance') && <small>Style: {selectedStyle?.label || selectedStyleId || 'Default'}</small>}
+        {selected.scope !== 'overlay' && <small>Appearance: {overrideCount} custom override{overrideCount === 1 ? '' : 's'}</small>}
       </div>
       <select
         value={
@@ -317,10 +338,19 @@ function TargetSelector({ widgets, selected, appearance, onChange }) {
         onChange={event => {
           const value = event.target.value;
           if (value === 'overlay' || value === 'all_widgets') onChange({ scope: value });
-          else if (value.startsWith('type:')) onChange({ scope: 'widget_type', widgetType: value.slice(5) });
+          else if (value.startsWith('type:')) {
+            const widgetType = value.slice(5);
+            const styleId = getWidgetStyleOptions(widgetType, appearance)[0]?.id || 'default';
+            onChange({ scope: 'widget_type', widgetType, styleId });
+          }
           else if (value.startsWith('widget:')) {
             const widget = widgets.find(item => item.id === value.slice(7));
-            onChange({ scope: 'widget_instance', widgetId: value.slice(7), widgetType: widget?.widget_type });
+            onChange({
+              scope: 'widget_instance',
+              widgetId: value.slice(7),
+              widgetType: widget?.widget_type,
+              styleId: getWidgetActiveStyleId(widget, appearance),
+            });
           }
         }}
       >
@@ -398,11 +428,36 @@ export default function AppearanceCenter({
   const [compare, setCompare] = useState(false);
   const [previewSize, setPreviewSize] = useState('1080p');
   const [previewZoom, setPreviewZoom] = useState('fit');
+  const [previewMode, setPreviewMode] = useState('focus-widget');
+  const [previewBackground, setPreviewBackground] = useState('dark');
+  const [previewSelectMode, setPreviewSelectMode] = useState(false);
   const [themePreview, setThemePreview] = useState(null);
   const themePreviewBackupRef = useRef(null);
   const saveTimerRef = useRef(null);
   const lastServerRevisionRef = useRef(stateFromServer.revision);
   const lastPersistedDraftRef = useRef(safeJson(stateFromServer.draft));
+  const selectedStyleId = getTargetStyleId(selectedTarget, draft, widgets);
+  const previewStyleSelections = useMemo(() => {
+    if (!selectedStyleId) return {};
+    if (selectedTarget.scope === 'widget_instance' && selectedTarget.widgetId) return { [selectedTarget.widgetId]: selectedStyleId };
+    if (selectedTarget.scope === 'widget_type' && selectedTarget.widgetType) {
+      return Object.fromEntries(widgets.filter(widget => widget.widget_type === selectedTarget.widgetType).map(widget => [widget.id, selectedStyleId]));
+    }
+    return {};
+  }, [selectedStyleId, selectedTarget, widgets]);
+  const selectedWidget = selectedTarget.scope === 'widget_instance'
+    ? widgets.find(widget => widget.id === selectedTarget.widgetId)
+    : null;
+  const selectedWidgetDef = selectedTarget.widgetType
+    ? getAllWidgetDefs().find(def => def.type === selectedTarget.widgetType)
+    : selectedWidget
+      ? getAllWidgetDefs().find(def => def.type === selectedWidget.widget_type)
+      : null;
+  const selectedStyleOptions = selectedTarget.widgetType ? getWidgetStyleOptions(selectedTarget.widgetType, draft, selectedTarget.widgetId) : [];
+  const selectedStyle = selectedStyleOptions.find(style => style.id === selectedStyleId);
+  const selectedRenderStyleId = selectedWidget
+    ? getWidgetStyleRenderId(selectedWidget, selectedStyleId, draft)
+    : selectedStyle?.baseStyleId || selectedStyleId;
 
   useEffect(() => {
     trackEvent(ANALYTICS_EVENTS.APPEARANCE_CENTER_OPENED, { route: '/overlay-center/appearance' });
@@ -423,10 +478,11 @@ export default function AppearanceCenter({
       type: 'appearance-preview-draft',
       token: instance?.overlay_token,
       appearance: draft,
+      styleSelections: previewStyleSelections,
       sourceClientId: clientIdRef.current,
     });
     return () => channel.close();
-  }, [draft, instance?.overlay_token]);
+  }, [draft, instance?.overlay_token, previewStyleSelections]);
 
   const persistDraft = useCallback(async (nextDraft, reason = 'autosave') => {
     if (!updateState) return;
@@ -507,11 +563,9 @@ export default function AppearanceCenter({
       return;
     }
 
-    const root = selectedTarget.scope === 'widget_type'
-      ? `widgetTypes.${selectedTarget.widgetType}.visual.${key}`
-      : `widgets.${selectedTarget.widgetId}.visual.${key}`;
-    updatePath(root, value);
-  }, [selectedTarget, updatePath]);
+    const visualPath = getScopedVisualPath(selectedTarget, key);
+    updateDraft(prev => setByPath(prev, visualPath, value), key);
+  }, [selectedTarget, updateDraft]);
 
   const resetTargetVisual = useCallback((key) => {
     if (selectedTarget.scope === 'overlay' || selectedTarget.scope === 'all_widgets') {
@@ -652,9 +706,10 @@ export default function AppearanceCenter({
   }, [draft.themeId, theme, updateDraft]);
 
   const resetSelectedWidget = useCallback(() => {
-    if (selectedTarget.scope === 'widget_type') resetPath(`widgetTypes.${selectedTarget.widgetType}`);
-    if (selectedTarget.scope === 'widget_instance') resetPath(`widgets.${selectedTarget.widgetId}`);
-  }, [resetPath, selectedTarget]);
+    const root = getTargetOverrideRoot(selectedTarget);
+    if (!root) return;
+    updateDraft(prev => omitPath(prev, root), 'Reset selected widget style');
+  }, [selectedTarget, updateDraft]);
 
   const updateSubElement = useCallback((elementId, property, value) => {
     const root = getTargetOverrideRoot(selectedTarget);
@@ -719,9 +774,11 @@ export default function AppearanceCenter({
 
   const applyInstanceAppearanceToType = useCallback(() => {
     if (selectedTarget.scope !== 'widget_instance' || !selectedTarget.widgetType) return;
-    const source = getByPath(draft, `widgets.${selectedTarget.widgetId}`) || {};
+    const source = getByPath(draft, getTargetOverrideRoot(selectedTarget)) || {};
     updateDraft(prev => {
-      const root = `widgetTypes.${selectedTarget.widgetType}`;
+      const root = selectedTarget.styleId
+        ? `widgetTypes.${selectedTarget.widgetType}.styles.${selectedTarget.styleId}`
+        : `widgetTypes.${selectedTarget.widgetType}`;
       const current = getByPath(prev, root) || {};
       return setByPath(prev, root, {
         ...current,
@@ -732,6 +789,52 @@ export default function AppearanceCenter({
     }, 'Apply widget appearance to type');
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_APPLIED_TO_TYPE, { widget_type: selectedTarget.widgetType });
   }, [draft, selectedTarget, updateDraft]);
+
+  const previewStyle = useCallback((styleId) => {
+    if (!(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance')) return;
+    setSelectedTarget(prev => ({ ...prev, styleId }));
+    setSelectedCategory('widgets');
+  }, [selectedTarget.scope]);
+
+  const applyStyle = useCallback(() => {
+    if (!selectedStyleId || !(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance')) return;
+    if (selectedTarget.scope === 'widget_instance') {
+      updateDraft(prev => setByPath(prev, `widgets.${selectedTarget.widgetId}.activeStyleId`, selectedStyleId), 'Apply widget style');
+      return;
+    }
+    const affected = widgets.filter(widget => widget.widget_type === selectedTarget.widgetType);
+    if (!window.confirm(`Apply ${selectedStyle?.label || selectedStyleId} to ${affected.length} widget${affected.length === 1 ? '' : 's'} of this type?`)) return;
+    updateDraft(prev => affected.reduce((next, widget) => setByPath(next, `widgets.${widget.id}.activeStyleId`, selectedStyleId), prev), 'Apply style to widget type');
+  }, [selectedStyleId, selectedStyle, selectedTarget, updateDraft, widgets]);
+
+  const saveAsCustomStyle = useCallback((duplicateOnly = false) => {
+    if (selectedTarget.scope !== 'widget_instance' || !selectedTarget.widgetId || !selectedStyleId) return;
+    const label = duplicateOnly
+      ? `${selectedStyle?.label || selectedStyleId} copy`
+      : window.prompt('Custom style name', `${selectedStyle?.label || selectedStyleId} custom`);
+    if (!label) return;
+    const customId = `custom_${Date.now().toString(36)}`;
+    const currentStyleRoot = getTargetOverrideRoot(selectedTarget);
+    const currentStyleEntry = getByPath(draft, currentStyleRoot) || {};
+    updateDraft(prev => {
+      let next = setByPath(prev, `widgets.${selectedTarget.widgetId}.customStyles.${customId}`, {
+        id: customId,
+        label,
+        baseStyleId: getWidgetStyleRenderId(selectedWidget, selectedStyleId, prev),
+        createdAt: new Date().toISOString(),
+      });
+      next = setByPath(next, `widgets.${selectedTarget.widgetId}.styles.${customId}`, currentStyleEntry);
+      return next;
+    }, duplicateOnly ? 'Duplicate widget style' : 'Save custom widget style');
+    setSelectedTarget(prev => ({ ...prev, styleId: customId }));
+  }, [draft, selectedStyle, selectedStyleId, selectedTarget, selectedWidget, updateDraft]);
+
+  const renameCustomStyle = useCallback(() => {
+    if (selectedTarget.scope !== 'widget_instance' || !selectedStyle?.custom) return;
+    const label = window.prompt('Rename custom style', selectedStyle.label || selectedStyleId);
+    if (!label) return;
+    updateDraft(prev => setByPath(prev, `widgets.${selectedTarget.widgetId}.customStyles.${selectedStyleId}.label`, label), 'Rename custom style');
+  }, [selectedStyle, selectedStyleId, selectedTarget, updateDraft]);
 
   const targetAppearance = useMemo(
     () => resolveAppearanceForTarget(draft, selectedTarget, theme),
@@ -745,7 +848,6 @@ export default function AppearanceCenter({
     },
   }), { theme }), [draft, selectedPreviewSize, theme]);
   const effectiveTheme = useMemo(() => ({ ...(theme || {}), ...projectAppearanceToThemePatch(previewAppearance) }), [theme, previewAppearance]);
-  const effectiveWidgets = useMemo(() => resolveWidgetsForAppearance(widgets, previewAppearance, theme), [widgets, previewAppearance, theme]);
   const warnings = useMemo(() => getAppearanceWarnings(draft), [draft]);
   const performance = useMemo(() => getPerformanceTone(draft), [draft]);
   const categories = useMemo(() => {
@@ -753,23 +855,27 @@ export default function AppearanceCenter({
     if (!term) return CATEGORY_GROUPS;
     return CATEGORY_GROUPS.filter(item => `${item.label} ${item.keywords}`.toLowerCase().includes(term));
   }, [search]);
-  const selectedWidget = selectedTarget.scope === 'widget_instance'
-    ? widgets.find(widget => widget.id === selectedTarget.widgetId)
-    : null;
-  const selectedWidgetDef = selectedTarget.widgetType
-    ? getAllWidgetDefs().find(def => def.type === selectedTarget.widgetType)
-    : selectedWidget
-      ? getAllWidgetDefs().find(def => def.type === selectedWidget.widget_type)
-      : null;
-
   const handleTargetChange = useCallback((next) => {
     if (saveStatus === 'dirty') {
       clearTimeout(saveTimerRef.current);
       persistDraft(draft, 'target-switch');
     }
-    setSelectedTarget(next);
-    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED, { scope: next.scope, widget_type: next.widgetType || null });
-  }, [draft, persistDraft, saveStatus]);
+    const normalizedTarget = (next.scope === 'widget_type' || next.scope === 'widget_instance') && !next.styleId
+      ? { ...next, styleId: getTargetStyleId(next, draft, widgets) }
+      : next;
+    setSelectedTarget(normalizedTarget);
+    trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED, { scope: normalizedTarget.scope, widget_type: normalizedTarget.widgetType || null });
+  }, [draft, persistDraft, saveStatus, widgets]);
+
+  const handlePreviewWidgetSelect = useCallback((widget) => {
+    handleTargetChange({
+      scope: 'widget_instance',
+      widgetType: widget.widget_type,
+      widgetId: widget.id,
+      styleId: getWidgetActiveStyleId(widget, draft),
+    });
+    setSelectedCategory('widgets');
+  }, [draft, handleTargetChange]);
 
   const renderCategory = () => {
     const a = targetAppearance;
@@ -952,7 +1058,7 @@ export default function AppearanceCenter({
 
     if (selectedCategory === 'sizing') {
       return (
-        <Section title="Sizes and spacing" description="Visual scale only. Positioning and dragging stay in Layout mode.">
+        <Section title="Sizes and spacing" description="Visual scale only. Positioning and dimensions live on each tool page.">
           <div className="ac-control-grid">
             <RangeControl label="Interface scale" value={a.spacing.scale} min={0.5} max={2} step={0.05} onChange={value => updatePath('spacing.scale', value)} onReset={() => resetPath('spacing.scale')} />
             <RangeControl label="Widget scale" value={a.spacing.widgetScale} min={0.5} max={2} step={0.05} onChange={value => updatePath('spacing.widgetScale', value)} onReset={() => resetPath('spacing.widgetScale')} />
@@ -986,20 +1092,18 @@ export default function AppearanceCenter({
       const keys = selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance'
         ? getSupportedVisualKeys(selectedTarget.widgetType || selectedWidget?.widget_type).slice(0, 16)
         : ['accentColor', 'bgColor', 'cardBg', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'fontSize', 'borderRadius', 'borderWidth'];
-      const overrideEntry = selectedTarget.scope === 'widget_type'
-        ? draft.widgetTypes?.[selectedTarget.widgetType] || {}
-        : selectedTarget.scope === 'widget_instance'
-          ? draft.widgets?.[selectedTarget.widgetId] || {}
-          : {};
+      const overrideEntry = getByPath(draft, getTargetOverrideRoot(selectedTarget)) || {};
       const visualSource = overrideEntry.visual || overrideEntry.tokens || {};
       const appearanceSource = overrideEntry.appearance || {};
       const widgetTypeForSubElements = selectedTarget.widgetType || selectedWidget?.widget_type;
       const subElementDefinitions = widgetTypeForSubElements ? getWidgetSubElementDefinitions(widgetTypeForSubElements) : [];
       const typeSubElements = widgetTypeForSubElements ? draft.widgetTypes?.[widgetTypeForSubElements]?.subElements || {} : {};
+      const typeStyleSubElements = widgetTypeForSubElements && selectedRenderStyleId ? draft.widgetTypes?.[widgetTypeForSubElements]?.styles?.[selectedRenderStyleId]?.subElements || {} : {};
       const instanceSubElements = selectedTarget.scope === 'widget_instance' ? draft.widgets?.[selectedTarget.widgetId]?.subElements || {} : {};
-      const explicitSubElements = selectedTarget.scope === 'widget_type' ? typeSubElements : selectedTarget.scope === 'widget_instance' ? instanceSubElements : {};
+      const instanceStyleSubElements = selectedTarget.scope === 'widget_instance' && selectedStyleId ? draft.widgets?.[selectedTarget.widgetId]?.styles?.[selectedStyleId]?.subElements || {} : {};
+      const explicitSubElements = overrideEntry.subElements || {};
       const effectiveSubElements = widgetTypeForSubElements
-        ? deepMerge(buildSubElementDefaults(widgetTypeForSubElements, a), typeSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {})
+        ? deepMerge(buildSubElementDefaults(widgetTypeForSubElements, a), typeSubElements, typeStyleSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {}, selectedTarget.scope === 'widget_instance' ? instanceStyleSubElements : {})
         : {};
       return (
         <Section
@@ -1016,6 +1120,34 @@ export default function AppearanceCenter({
             </div>
           )}
         >
+          {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && selectedStyleOptions.length > 0 && (
+            <div className="ac-style-editor">
+              <SelectControl
+                label="Style variant"
+                description={selectedTarget.scope === 'widget_instance' ? 'Preview a style for this widget instance before applying it.' : 'Preview this style across widgets of this type.'}
+                value={selectedStyleId}
+                options={selectedStyleOptions.map(style => ({ value: style.id, label: `${style.label}${style.custom ? ' (custom)' : ''}` }))}
+                onChange={previewStyle}
+              />
+              <div className="ac-style-summary">
+                <span>Active style: {selectedWidget ? (selectedStyleOptions.find(style => style.id === getWidgetActiveStyleId(selectedWidget, draft))?.label || getWidgetActiveStyleId(selectedWidget, draft)) : selectedStyle?.label || selectedStyleId}</span>
+                <span>Editing style: {selectedStyle?.label || selectedStyleId}</span>
+                <span>Render style: {selectedRenderStyleId}</span>
+              </div>
+              <div className="ac-section-actions">
+                <button type="button" className="ac-small-button" onClick={() => previewStyle(selectedStyleId)}>Preview style</button>
+                <button type="button" className="ac-small-button" onClick={applyStyle}>Apply style</button>
+                {selectedTarget.scope === 'widget_instance' && (
+                  <>
+                    <button type="button" className="ac-small-button" onClick={() => saveAsCustomStyle(true)}>Duplicate style</button>
+                    <button type="button" className="ac-small-button" onClick={() => saveAsCustomStyle(false)}>Save as new style</button>
+                    <button type="button" className="ac-small-button" onClick={renameCustomStyle} disabled={!selectedStyle?.custom}>Rename custom style</button>
+                  </>
+                )}
+                <button type="button" className="ac-small-button" onClick={resetSelectedWidget}>Reset style</button>
+              </div>
+            </div>
+          )}
           <div className="ac-widget-capabilities">
             {selectedWidgetDef?.appearanceCapabilities && Object.entries(selectedWidgetDef.appearanceCapabilities)
               .filter(([, value]) => value === true)
@@ -1293,25 +1425,48 @@ export default function AppearanceCenter({
               options={['fit', '25%', '50%', '75%', '100%']}
               onChange={setPreviewZoom}
             />
+            <SelectControl
+              label="Display"
+              value={previewMode}
+              options={PREVIEW_MODES.map(item => ({ value: item.id, label: item.label }))}
+              onChange={setPreviewMode}
+            />
+            <SelectControl
+              label="Background"
+              value={previewBackground}
+              options={PREVIEW_BACKGROUNDS.map(item => ({ value: item.id, label: item.label }))}
+              onChange={setPreviewBackground}
+            />
+            <ToggleControl label="Select widgets" checked={previewSelectMode} onChange={setPreviewSelectMode} />
             <ToggleControl label="Compare" checked={compare} onChange={setCompare} />
           </div>
           <div className={compare ? 'ac-compare ac-compare--on' : 'ac-compare'}>
             <OverlayPreview
-              widgets={effectiveWidgets}
+              widgets={widgets}
               theme={effectiveTheme}
               appearance={previewAppearance}
               selectedWidgetId={selectedTarget.widgetId}
               selectedTarget={selectedTarget}
+              styleSelections={previewStyleSelections}
               zoom={previewZoom}
+              previewMode={previewMode}
+              previewBackground={previewBackground}
+              selectMode={previewSelectMode}
+              onSelectWidget={handlePreviewWidgetSelect}
             />
             {compare && (
               <OverlayPreview
-                widgets={resolveWidgetsForAppearance(widgets, stateFromServer.published, theme)}
+                widgets={widgets}
                 theme={{ ...(theme || {}), ...projectAppearanceToThemePatch(stateFromServer.published) }}
                 appearance={stateFromServer.published}
                 selectedWidgetId={selectedTarget.widgetId}
                 selectedTarget={selectedTarget}
+                styleSelections={previewStyleSelections}
                 zoom={previewZoom}
+                previewMode={previewMode}
+                previewBackground={previewBackground}
+                selectMode={previewSelectMode}
+                onSelectWidget={handlePreviewWidgetSelect}
               />
             )}
           </div>

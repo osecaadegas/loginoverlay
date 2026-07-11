@@ -450,10 +450,11 @@
   color: #fff;
   flex-shrink: 0;
 }
-.bht-title {
-  font-size: 1.05em;
-  font-weight: 700;
-  color: var(--bht-text, #fff);
+.bht-title,
+.bhtc-title {
+  font-size: var(--bht-title-font-size, 1.05em);
+  font-weight: var(--bht-title-font-weight, 700);
+  color: var(--bht-title-text, var(--bht-text, #fff));
   line-height: 1.2;
   text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
@@ -1340,9 +1341,10 @@
 
 /* -- Total pay footer -- */
 .bht-footer {
-  background: var(--bht-summary-bg, #1e3a8a);
+  background: var(--bht-footer-bg, var(--bht-summary-bg, #1e3a8a));
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
-  padding: 10px 12px;
+  padding: var(--bht-footer-padding, 10px 12px);
+  border-radius: var(--bht-footer-radius, var(--bht-card-radius, 16px));
   perspective: 400px;
 }
 .bht-footer-flip-wrap {
@@ -1380,10 +1382,10 @@
   text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-footer-value {
-  font-size: 1.2em;
-  font-weight: 800;
-  color: var(--bht-total-pay-bg, #eab308);
-  text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
+  font-size: var(--bht-footer-font-size, 1.2em);
+  font-weight: var(--bht-footer-font-weight, 800);
+  color: var(--bht-footer-text, var(--bht-total-pay-bg, #eab308));
+  text-shadow: 0 0 12px color-mix(in srgb, var(--bht-footer-text, var(--bht-total-pay-bg, #eab308)) 30%, transparent);
 }
 
 /* --- V12: Classic + Slot Requests --- */
@@ -2114,16 +2116,16 @@
   gap: 2px;
 }
 .bhh-stat-label {
-  font-size: 0.78em;
-  font-weight: 700;
-  color: var(--bht-muted, #8baacf);
+  font-size: var(--bht-stat-label-font-size, 0.78em);
+  font-weight: var(--bht-stat-label-font-weight, 700);
+  color: var(--bht-stat-label-text, var(--bht-muted, #8baacf));
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 .bhh-stat-val {
-  font-size: 1.05em;
-  font-weight: 800;
-  color: var(--bht-stat-value, #fff);
+  font-size: var(--bht-stat-value-font-size, 1.05em);
+  font-weight: var(--bht-stat-value-font-weight, 800);
+  color: var(--bht-stat-value-text, var(--bht-stat-value, #fff));
 }
 .bhh-carousel-wrap {
   flex: 1;
@@ -2131,11 +2133,11 @@
   position: relative;
   mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
-  padding: 4px 0;
+  padding: var(--bht-carousel-padding, 4px 0);
 }
 .bhh-carousel-track {
   display: flex;
-  gap: 10px;
+  gap: var(--bht-carousel-gap, 10px);
   will-change: transform;
   animation: bhtc-slide calc(var(--bhtc-count, 5) * 4s) linear infinite;
   height: 100%;
@@ -5459,9 +5461,9 @@
   text-transform: uppercase;
 }
 .bhtc-card-bet {
-  font-size: 0.75em;
-  font-weight: 700;
-  color: var(--bht-list-accent, #93c5fd);
+  font-size: var(--bht-bet-font-size, 0.75em);
+  font-weight: var(--bht-bet-font-weight, 700);
+  color: var(--bht-bet-text, var(--bht-list-accent, #93c5fd));
   white-space: nowrap;
 }
 .bhtc-card-idx {
@@ -5496,14 +5498,14 @@
   min-height: 24px;
 }
 .bhtc-card-payout {
-  font-size: 0.7em;
-  font-weight: 700;
-  color: #4ade80;
+  font-size: var(--bht-payout-font-size, 0.7em);
+  font-weight: var(--bht-payout-font-weight, 700);
+  color: var(--bht-payout-text, #4ade80);
 }
 .bhtc-card-multi {
-  font-size: 0.75em;
-  font-weight: 700;
-  color: #fbbf24;
+  font-size: var(--bht-multiplier-font-size, 0.75em);
+  font-weight: var(--bht-multiplier-font-weight, 700);
+  color: var(--bht-multiplier-text, #fbbf24);
   background: rgba(0,0,0,0.4);
   padding: 1px 6px;
   border-radius: 4px;

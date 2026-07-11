@@ -7,6 +7,11 @@ import BonusHuntWidgetV12 from './BonusHuntWidgetV12';
 import SlotImage from './SlotImage';
 import { subValue } from './shared/appearanceStyles';
 
+function cssPx(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  return typeof value === 'number' ? `${value}px` : value;
+}
+
 function BonusHuntWidget({ config, theme, userId }) {
   const c = config || {};
 
@@ -152,6 +157,32 @@ function BonusHuntWidget({ config, theme, userId }) {
   const progressFill = subValue(c, 'progressBar', 'fillColor', currentBonusAccent);
   const profitText = subValue(c, 'profit', 'textColor', '#4ade80');
   const lossText = subValue(c, 'loss', 'textColor', '#f87171');
+  const titleTextColor = subValue(c, 'huntTitle', 'textColor', textColor);
+  const titleFontSize = subValue(c, 'huntTitle', 'fontSize', undefined);
+  const titleFontWeight = subValue(c, 'huntTitle', 'fontWeight', undefined);
+  const statLabelText = subValue(c, 'statLabel', 'textColor', mutedTextColor);
+  const statLabelSize = subValue(c, 'statLabel', 'fontSize', undefined);
+  const statLabelWeight = subValue(c, 'statLabel', 'fontWeight', undefined);
+  const statValueText = subValue(c, 'statValue', 'textColor', statValueColor);
+  const statValueSize = subValue(c, 'statValue', 'fontSize', undefined);
+  const statValueWeight = subValue(c, 'statValue', 'fontWeight', undefined);
+  const betValueText = subValue(c, 'betValue', 'textColor', mutedTextColor);
+  const betValueSize = subValue(c, 'betValue', 'fontSize', undefined);
+  const betValueWeight = subValue(c, 'betValue', 'fontWeight', undefined);
+  const payoutValueText = subValue(c, 'payoutValue', 'textColor', statValueColor);
+  const payoutValueSize = subValue(c, 'payoutValue', 'fontSize', undefined);
+  const payoutValueWeight = subValue(c, 'payoutValue', 'fontWeight', undefined);
+  const multiplierValueText = subValue(c, 'multiplierValue', 'textColor', statValueColor);
+  const multiplierValueSize = subValue(c, 'multiplierValue', 'fontSize', undefined);
+  const multiplierValueWeight = subValue(c, 'multiplierValue', 'fontWeight', undefined);
+  const footerBg = subValue(c, 'footer', 'background', summaryColor);
+  const footerText = subValue(c, 'footer', 'textColor', totalPayColor);
+  const footerFontSize = subValue(c, 'footer', 'fontSize', undefined);
+  const footerFontWeight = subValue(c, 'footer', 'fontWeight', undefined);
+  const footerPadding = subValue(c, 'footer', 'padding', undefined);
+  const footerRadius = subValue(c, 'footer', 'radius', undefined);
+  const carouselGap = subValue(c, 'carousel', 'gap', undefined);
+  const carouselPadding = subValue(c, 'carousel', 'padding', undefined);
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -192,6 +223,32 @@ function BonusHuntWidget({ config, theme, userId }) {
     '--bht-progress-fill': progressFill,
     '--bht-profit-text': profitText,
     '--bht-loss-text': lossText,
+    '--bht-title-text': titleTextColor,
+    '--bht-title-font-size': cssPx(titleFontSize),
+    '--bht-title-font-weight': titleFontWeight,
+    '--bht-stat-label-text': statLabelText,
+    '--bht-stat-label-font-size': cssPx(statLabelSize),
+    '--bht-stat-label-font-weight': statLabelWeight,
+    '--bht-stat-value-text': statValueText,
+    '--bht-stat-value-font-size': cssPx(statValueSize),
+    '--bht-stat-value-font-weight': statValueWeight,
+    '--bht-bet-text': betValueText,
+    '--bht-bet-font-size': cssPx(betValueSize),
+    '--bht-bet-font-weight': betValueWeight,
+    '--bht-payout-text': payoutValueText,
+    '--bht-payout-font-size': cssPx(payoutValueSize),
+    '--bht-payout-font-weight': payoutValueWeight,
+    '--bht-multiplier-text': multiplierValueText,
+    '--bht-multiplier-font-size': cssPx(multiplierValueSize),
+    '--bht-multiplier-font-weight': multiplierValueWeight,
+    '--bht-footer-bg': footerBg,
+    '--bht-footer-text': footerText,
+    '--bht-footer-font-size': cssPx(footerFontSize),
+    '--bht-footer-font-weight': footerFontWeight,
+    '--bht-footer-padding': cssPx(footerPadding),
+    '--bht-footer-radius': cssPx(footerRadius),
+    '--bht-carousel-gap': cssPx(carouselGap),
+    '--bht-carousel-padding': cssPx(carouselPadding),
   };
 
   /* ─── Find current bonus (first not-opened) ─── */

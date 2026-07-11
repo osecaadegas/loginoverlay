@@ -143,6 +143,7 @@ export default function OverlayRenderer() {
   const [theme, setTheme] = useState(null);
   const [overlayState, setOverlayState] = useState({});
   const [previewDraft, setPreviewDraft] = useState(null);
+  const [previewStyleSelections, setPreviewStyleSelections] = useState({});
   const [error, setError] = useState(null);
   const [ready, setReady] = useState(false);
   const channelRef = useRef(null);
@@ -230,6 +231,7 @@ export default function OverlayRenderer() {
       if (event.data?.token !== token) return;
       if (event.data?.type === 'appearance-preview-draft') {
         setPreviewDraft(event.data.appearance || null);
+        setPreviewStyleSelections(event.data.styleSelections || {});
       }
     };
 
@@ -253,8 +255,8 @@ export default function OverlayRenderer() {
     return isPreviewMode ? appearanceState.draft : appearanceState.published;
   }, [appearanceState, isPreviewMode, previewDraft, theme]);
   const renderedWidgets = useMemo(
-    () => resolveWidgetsForAppearance(widgets, activeAppearance, theme),
-    [widgets, activeAppearance, theme]
+    () => resolveWidgetsForAppearance(widgets, activeAppearance, theme, { styleSelections: isPreviewMode ? previewStyleSelections : {} }),
+    [widgets, activeAppearance, theme, isPreviewMode, previewStyleSelections]
   );
 
   const themeVars = useMemo(() => buildThemeVars(theme, activeAppearance), [theme, activeAppearance]);

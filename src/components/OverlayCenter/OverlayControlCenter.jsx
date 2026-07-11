@@ -16,7 +16,6 @@ import {
   Filter,
   FolderOpen,
   Grid3X3,
-  Layers,
   LayoutDashboard,
   Link2,
   Lock,
@@ -30,7 +29,6 @@ import {
   Shield,
   Sparkles,
   Wand2,
-  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useOverlay } from '../../hooks/useOverlay';
@@ -42,13 +40,14 @@ import usePresets from '../../hooks/usePresets';
 import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
 import AppearanceCenter from './appearance/AppearanceCenter';
-import WidgetManager, { buildSyncedConfig } from './WidgetManager';
+import { buildSyncedConfig } from './WidgetManager';
 import BonusHuntLibrary from './BonusHuntLibrary';
 import OverlayAssetLibrary from './OverlayAssetLibrary';
 import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
+import GuidedTutorial from './GuidedTutorial';
 import { themeMap } from '../../data/appThemes';
 import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
 import {
@@ -161,7 +160,6 @@ const INTEGRATIONS = [
 const PANEL_ROUTES = {
   '/overlay-center': 'home',
   '/overlay-center/widgets': 'tools',
-  '/overlay-center/layout': 'layout',
   '/overlay-center/appearance': 'appearance',
   '/overlay-center/integrations': 'integrations',
   '/overlay-center/preview': 'preview',
@@ -246,10 +244,9 @@ function validateOverlay({ instance, widgets, setup }) {
 function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, onOpenPreview }) {
   const navItems = [
     { id: 'home', label: 'Home', to: '/overlay-center', icon: LayoutDashboard },
-    { id: 'tools', label: 'Tools', to: '/overlay-center/widgets', icon: Grid3X3 },
-    { id: 'layout', label: 'Layout', to: '/overlay-center/layout', icon: Settings },
-    { id: 'appearance', label: 'Appearance', to: '/overlay-center/appearance', icon: Brush },
     { id: 'integrations', label: 'Integrations', to: '/overlay-center/integrations', icon: Link2 },
+    { id: 'tools', label: 'Tools', to: '/overlay-center/widgets', icon: Grid3X3 },
+    { id: 'appearance', label: 'Appearance', to: '/overlay-center/appearance', icon: Brush },
     { id: 'preview', label: 'Preview', to: '/overlay-center/preview', icon: MonitorPlay },
   ];
 
@@ -451,9 +448,9 @@ function ToolCard({ tool, mode, onOpen, onAdd, onToggle, onRemove }) {
   );
 }
 
-function ToolSection({ title, subtitle, tools, emptyText, children }) {
+function ToolSection({ title, subtitle, tools, emptyText, children, tourId }) {
   return (
-    <section className="oc2-tool-section">
+    <section className="oc2-tool-section" data-tour={tourId}>
       <div className="oc2-tool-section__header">
         <div>
           <h2>{title}</h2>
@@ -504,7 +501,6 @@ function QuickSettings({ isAdmin }) {
     { title: 'Integrations', description: 'Connect chat, points and music.', to: '/overlay-center/integrations', icon: Link2 },
     { title: 'Presets', description: 'Save and reuse overlay layouts.', to: '/overlay-center/presets', icon: SlidersHorizontal },
     { title: 'Assets', description: 'Manage hunts, presets and media.', to: '/overlay-center/assets', icon: FolderOpen },
-    { title: 'Layout', description: 'Position and layer widgets.', to: '/overlay-center/layout', icon: Layers },
   ];
 
   if (isAdmin) {
@@ -581,6 +577,7 @@ function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange,
         subtitle="Enabled tools currently shown on your overlay."
         emptyText="No tools match this filter yet."
         tools={filteredYourTools.map(tool => renderCard(tool, 'active'))}
+        tourId="your-tools"
       >
         <ToolFilter value={filter} onChange={onFilterChange} />
       </ToolSection>
@@ -590,6 +587,7 @@ function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange,
         subtitle="Install a new tool or re-enable one you disabled."
         emptyText="All available tools are already active."
         tools={addMoreTools.map(tool => renderCard(tool, 'add'))}
+        tourId="add-tools"
       />
 
       <QuickSettings isAdmin={isAdmin} />
@@ -692,7 +690,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
               <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
               <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
             </dl>
-            <Link className="oc2-btn" to="/overlay-center/layout">Open layout mode</Link>
+            <button type="button" className="oc2-btn" onClick={() => setActiveTab('advanced')}>Edit position and size</button>
           </aside>
         </div>
       );
@@ -737,7 +735,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
         <div className="oc2-tab-panel">
           <div>
             <h2>Behavior</h2>
-            <p>Control visibility and motion without opening Layout mode.</p>
+            <p>Control visibility, layer order and motion for this tool.</p>
           </div>
           <div className="oc2-form-grid">
             <label className="oc2-field oc2-field--toggle">
@@ -778,7 +776,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
       <div className="oc2-tab-panel">
         <div>
           <h2>Advanced</h2>
-          <p>Fine-tune placement and custom CSS. Use Layout mode for drag-and-drop positioning.</p>
+          <p>Fine-tune placement, size and custom CSS for this tool.</p>
         </div>
         <div className="oc2-form-grid">
           {[
@@ -807,7 +805,6 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
           />
         </label>
         <div className="oc2-advanced-actions">
-          <Link className="oc2-btn" to="/overlay-center/layout">Open layout mode</Link>
           <button type="button" className="oc2-btn oc2-btn--danger" onClick={handleRemove}>Remove from overlay</button>
         </div>
       </div>
@@ -815,7 +812,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
   })();
 
   return (
-    <section className="oc2-detail">
+    <section className="oc2-detail" data-tour="widget-detail-page">
       <div className="oc2-detail-header">
         <Link className="oc2-back-link" to="/overlay-center/widgets"><ArrowLeft size={16} /> Back to tools</Link>
         <div>
@@ -837,7 +834,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
         </div>
       </div>
 
-      <div className="oc2-tabs" role="tablist" aria-label="Widget configuration tabs">
+      <div className="oc2-tabs" role="tablist" aria-label="Widget configuration tabs" data-tour="widget-tabs">
         {['setup', 'appearance', 'behavior', 'advanced'].map(tab => (
           <button
             key={tab}
@@ -855,7 +852,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
       {!widget && (
         <div className="oc2-empty-state">
           <h2>Add this tool to configure it</h2>
-          <p>The widget will be created with safe defaults and can be positioned later in Layout mode.</p>
+          <p>The widget will be created with safe defaults and can be positioned from its Advanced tab.</p>
           <button type="button" className="oc2-btn oc2-btn--primary" onClick={handleAdd}>Add {def.label}</button>
         </div>
       )}
@@ -1097,47 +1094,9 @@ function Field({ label, children }) {
   );
 }
 
-function TutorialOverlay({ tutorial, saveTutorial }) {
-  const steps = [
-    ['Choose a tool', 'Start from the grid. Each feature opens one focused configuration screen.'],
-    ['Configure settings', 'Only the selected tool shows its setup, appearance, behavior and advanced options.'],
-    ['Use Layout mode', 'Move, resize, reorder, hide and lock widgets only when you need layout controls.'],
-    ['Open preview', 'Use inline preview for quick checks or pop out a live browser-source window.'],
-    ['Copy OBS URL', 'Use the copy action when you are ready to install the overlay in OBS.'],
-    ['Connect services', 'Twitch, StreamElements and Spotify live inside Integrations.'],
-  ];
-  const [step, setStep] = useState(tutorial?.currentStep || 0);
-  const current = steps[step] || steps[0];
-
-  const complete = async (status = 'completed') => {
-    await saveTutorial({ status, completed: status === 'completed', currentStep: step, updatedAt: new Date().toISOString() });
-    trackEvent(status === 'skipped' ? ANALYTICS_EVENTS.TUTORIAL_SKIPPED : ANALYTICS_EVENTS.TUTORIAL_COMPLETED, { step });
-  };
-
-  return (
-    <div className="oc2-tutorial" role="dialog" aria-modal="true" aria-labelledby="oc2-tutorial-title">
-      <div className="oc2-tutorial-card">
-        <button type="button" className="oc2-icon-btn" aria-label="Skip tutorial" onClick={() => complete('skipped')}><X size={18} /></button>
-        <span className="oc2-eyebrow">Tutorial {step + 1} of {steps.length}</span>
-        <h2 id="oc2-tutorial-title">{current[0]}</h2>
-        <p>{current[1]}</p>
-        <div className="oc2-setup-actions">
-          <button type="button" className="oc2-btn" disabled={step === 0} onClick={() => setStep(value => value - 1)}>Previous</button>
-          <button type="button" className="oc2-btn" onClick={() => complete('skipped')}>Skip</button>
-          {step < steps.length - 1 ? (
-            <button type="button" className="oc2-btn oc2-btn--primary" onClick={() => setStep(value => value + 1)}>Next</button>
-          ) : (
-            <button type="button" className="oc2-btn oc2-btn--primary" onClick={() => complete('completed')}>Finish</button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function PreviewWorkspace({ overlayUrl, instance, previewStatus, onOpen, onFocus, onClose, copyUrl, copyMsg }) {
   return (
-    <section className="oc2-preview-page">
+    <section className="oc2-preview-page" data-tour="preview-page">
       <div className="oc2-detail-header">
         <div>
           <span className="oc2-eyebrow">Live preview</span>
@@ -1148,7 +1107,7 @@ function PreviewWorkspace({ overlayUrl, instance, previewStatus, onOpen, onFocus
           <button type="button" className="oc2-btn oc2-btn--primary" onClick={onOpen}><ExternalLink size={16} /> Open in new window</button>
           <button type="button" className="oc2-btn" onClick={onFocus}>Focus preview</button>
           <button type="button" className="oc2-btn" onClick={onClose}>Close preview</button>
-          <button type="button" className="oc2-btn" onClick={copyUrl}><Copy size={16} /> {copyMsg || 'Copy OBS URL'}</button>
+          <button type="button" className="oc2-btn" onClick={copyUrl} data-tour="obs-url"><Copy size={16} /> {copyMsg || 'Copy OBS URL'}</button>
         </div>
       </div>
       <div className="oc2-preview-status">
@@ -1172,7 +1131,7 @@ function PreviewWorkspace({ overlayUrl, instance, previewStatus, onOpen, onFocus
 
 function IntegrationGrid({ selectedTools }) {
   return (
-    <div className="oc2-integration-grid">
+    <div className="oc2-integration-grid" data-tour="integrations-overview">
       {INTEGRATIONS.map(item => {
         const related = selectedTools.filter(type => item.requiredFor.includes(type));
         return (
@@ -1211,6 +1170,7 @@ export default function OverlayControlCenter() {
     if (typeof window === 'undefined') return 'all';
     return sessionStorage.getItem('overlay-center:tool-filter') || 'all';
   });
+  const [guidedTutorialActive, setGuidedTutorialActive] = useState(false);
 
   const overlayUrl = useMemo(() => getOverlayUrl(instance), [instance]);
   const previewUrl = useMemo(() => getOverlayUrl(instance, { preview: true }), [instance]);
@@ -1254,8 +1214,15 @@ export default function OverlayControlCenter() {
   } = usePresets({ user, isAdmin, overlayState, updateState, widgets, saveWidget, addWidget });
 
   useEffect(() => {
-    if (!loading && user && !setupComplete && widgets.length === 0 && currentPanel !== 'setup') {
-      navigate('/overlay-center/setup', { replace: true });
+    if (location.pathname === '/overlay-center/layout') {
+      navigate('/overlay-center/widgets', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  useEffect(() => {
+    const firstRunPanels = new Set(['integrations', 'setup', 'tutorial']);
+    if (!loading && user && !setupComplete && widgets.length === 0 && !firstRunPanels.has(currentPanel)) {
+      navigate('/overlay-center/integrations', { replace: true });
       trackEvent(ANALYTICS_EVENTS.OVERLAY_SETUP_STARTED, {});
     }
   }, [loading, user, setupComplete, widgets.length, currentPanel, navigate]);
@@ -1283,6 +1250,42 @@ export default function OverlayControlCenter() {
   const saveTutorial = useCallback(async (nextTutorial) => {
     await updateState({ overlayTutorial: nextTutorial });
   }, [updateState]);
+
+  const goToTutorialPage = useCallback((page) => {
+    const routeMap = {
+      home: '/overlay-center',
+      integrations: '/overlay-center/integrations',
+      tools: '/overlay-center/widgets',
+      appearance: '/overlay-center/appearance',
+      preview: '/overlay-center/preview',
+      assets: '/overlay-center/assets',
+      library: '/overlay-center/assets',
+      presets: '/overlay-center/presets',
+      slots: '/overlay-center/slots',
+      approvals: '/overlay-center/approvals',
+    };
+    const widgetTypes = new Set(PRIMARY_TOOLS);
+    const target = widgetTypes.has(page)
+      ? `/overlay-center/widgets/${toSlug(page)}`
+      : routeMap[page] || '/overlay-center/integrations';
+    if (location.pathname !== target) navigate(target);
+  }, [location.pathname, navigate]);
+
+  const closeGuidedTutorial = useCallback(async () => {
+    setGuidedTutorialActive(false);
+    await saveTutorial({ status: 'completed', completed: true, currentStep: 0, updatedAt: new Date().toISOString() });
+    if (location.pathname === '/overlay-center/tutorial') navigate('/overlay-center/integrations', { replace: true });
+  }, [location.pathname, navigate, saveTutorial]);
+
+  useEffect(() => {
+    if (currentPanel === 'tutorial') setGuidedTutorialActive(true);
+  }, [currentPanel]);
+
+  useEffect(() => {
+    if (setupComplete && !tutorial.completed && tutorial.status === 'in_progress') {
+      setGuidedTutorialActive(true);
+    }
+  }, [setupComplete, tutorial.completed, tutorial.status]);
 
   const copyUrl = useCallback(() => {
     if (!overlayUrl) return;
@@ -1437,7 +1440,8 @@ export default function OverlayControlCenter() {
             saveWidget={saveWidget}
             onFinish={() => {
               saveTutorial({ status: 'in_progress', completed: false, currentStep: 0, updatedAt: new Date().toISOString() });
-              navigate('/overlay-center');
+              setGuidedTutorialActive(true);
+              navigate('/overlay-center/integrations');
             }}
           />
         )}
@@ -1471,18 +1475,15 @@ export default function OverlayControlCenter() {
               onAddTool={handleAddTool}
               onRemoveTool={handleRemoveTool}
             />
-            {!tutorial.completed && setupComplete && (
-              <TutorialOverlay tutorial={tutorial} saveTutorial={saveTutorial} />
-            )}
           </>
         )}
 
         {currentPanel === 'tools' && (
           <>
-            <div className="oc2-section-heading">
+            <div className="oc2-section-heading" data-tour="tools-page">
               <span className="oc2-eyebrow">Tool grid</span>
               <h1>Overlay tools</h1>
-              <p>Add or open a tool. Advanced ordering and placement are in Layout mode.</p>
+              <p>Add or open a tool. Ordering, visibility and placement now live on each tool page.</p>
             </div>
             <ToolWorkspace
               widgets={widgets}
@@ -1510,43 +1511,26 @@ export default function OverlayControlCenter() {
           />
         )}
 
-        {currentPanel === 'layout' && (
-          <section>
-            <div className="oc2-section-heading">
-              <span className="oc2-eyebrow">Layout mode</span>
-              <h1>Position and layer widgets</h1>
-              <p>This is the advanced placement workspace for ordering, visibility, locks, position and size.</p>
-            </div>
-            <WidgetManager
-              widgets={widgets}
-              theme={theme}
-              onAdd={addWidget}
-              onSave={saveWidget}
-              onRemove={removeWidget}
-              availableWidgets={getAllWidgetDefs()}
-              overlayToken={instance?.overlay_token}
-            />
-          </section>
-        )}
-
         {currentPanel === 'appearance' && (
-          <AppearanceCenter
-            user={user}
-            instance={instance}
-            theme={theme}
-            widgets={widgets}
-            overlayState={overlayState}
-            saveTheme={saveTheme}
-            updateState={updateState}
-            onOpenPreview={openPreview}
-            onFocusPreview={focusPreview}
-            onClosePreview={closePreview}
-            previewStatus={previewStatus}
-          />
+          <div data-tour="appearance-page">
+            <AppearanceCenter
+              user={user}
+              instance={instance}
+              theme={theme}
+              widgets={widgets}
+              overlayState={overlayState}
+              saveTheme={saveTheme}
+              updateState={updateState}
+              onOpenPreview={openPreview}
+              onFocusPreview={focusPreview}
+              onClosePreview={closePreview}
+              previewStatus={previewStatus}
+            />
+          </div>
         )}
 
         {currentPanel === 'integrations' && (
-          <section>
+          <section data-tour="integrations-page">
             <div className="oc2-section-heading">
               <span className="oc2-eyebrow">Integrations</span>
               <h1>Connect services</h1>
@@ -1571,50 +1555,54 @@ export default function OverlayControlCenter() {
         )}
 
         {currentPanel === 'assets' && (
-          <OverlayAssetLibrary
-            widgets={widgets}
-            onAddWidget={addWidget}
-            onOpenPanel={(panel) => navigate(panel === 'presets' ? '/overlay-center/presets' : '/overlay-center/widgets')}
-            huntArchive={<BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />}
-            presetLibrary={(
-              <PresetLibrary
-                widgets={widgets}
-                theme={theme}
-                isAdmin={isAdmin}
-                globalPresets={globalPresets}
-                sharedPresets={sharedPresets}
-                onLoadPreset={loadGlobalPreset}
-                onDeletePreset={deleteGlobalPreset}
-                onSharePreset={sharePreset}
-                onUnsharePreset={unsharePreset}
-                onSavePreset={saveGlobalPreset}
-                presetName={presetName}
-                setPresetName={setPresetName}
-                presetMsg={presetMsg}
-              />
-            )}
-          />
+          <div data-tour="library-page">
+            <OverlayAssetLibrary
+              widgets={widgets}
+              onAddWidget={addWidget}
+              onOpenPanel={(panel) => navigate(panel === 'presets' ? '/overlay-center/presets' : '/overlay-center/widgets')}
+              huntArchive={<BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />}
+              presetLibrary={(
+                <PresetLibrary
+                  widgets={widgets}
+                  theme={theme}
+                  isAdmin={isAdmin}
+                  globalPresets={globalPresets}
+                  sharedPresets={sharedPresets}
+                  onLoadPreset={loadGlobalPreset}
+                  onDeletePreset={deleteGlobalPreset}
+                  onSharePreset={sharePreset}
+                  onUnsharePreset={unsharePreset}
+                  onSavePreset={saveGlobalPreset}
+                  presetName={presetName}
+                  setPresetName={setPresetName}
+                  presetMsg={presetMsg}
+                />
+              )}
+            />
+          </div>
         )}
 
         {currentPanel === 'presets' && (
-          <PresetLibrary
-            widgets={widgets}
-            theme={theme}
-            isAdmin={isAdmin}
-            globalPresets={globalPresets}
-            sharedPresets={sharedPresets}
-            onLoadPreset={loadGlobalPreset}
-            onDeletePreset={deleteGlobalPreset}
-            onSharePreset={sharePreset}
-            onUnsharePreset={unsharePreset}
-            onSavePreset={saveGlobalPreset}
-            presetName={presetName}
-            setPresetName={setPresetName}
-            presetMsg={presetMsg}
-          />
+          <div data-tour="presets-page">
+            <PresetLibrary
+              widgets={widgets}
+              theme={theme}
+              isAdmin={isAdmin}
+              globalPresets={globalPresets}
+              sharedPresets={sharedPresets}
+              onLoadPreset={loadGlobalPreset}
+              onDeletePreset={deleteGlobalPreset}
+              onSharePreset={sharePreset}
+              onUnsharePreset={unsharePreset}
+              onSavePreset={saveGlobalPreset}
+              presetName={presetName}
+              setPresetName={setPresetName}
+              presetMsg={presetMsg}
+            />
+          </div>
         )}
 
-        {currentPanel === 'slots' && (isPremium || isAdmin) && <SlotSubmissions />}
+        {currentPanel === 'slots' && (isPremium || isAdmin) && <div data-tour="slots-page"><SlotSubmissions /></div>}
         {currentPanel === 'slots' && !(isPremium || isAdmin) && (
           <section className="oc2-empty-state">
             <Lock size={22} />
@@ -1623,7 +1611,7 @@ export default function OverlayControlCenter() {
             <Link className="oc2-btn oc2-btn--primary" to="/premium">View Premium</Link>
           </section>
         )}
-        {currentPanel === 'approvals' && isAdmin && <SlotApprovals />}
+        {currentPanel === 'approvals' && isAdmin && <div data-tour="approvals-page"><SlotApprovals /></div>}
         {currentPanel === 'approvals' && !isAdmin && (
           <section className="oc2-empty-state">
             <Shield size={22} />
@@ -1632,8 +1620,19 @@ export default function OverlayControlCenter() {
             <Link className="oc2-btn" to="/overlay-center">Back to Overlay Center</Link>
           </section>
         )}
-        {currentPanel === 'tutorial' && <TutorialOverlay tutorial={{ ...tutorial, currentStep: 0 }} saveTutorial={saveTutorial} />}
+        {currentPanel === 'tutorial' && (
+          <section className="oc2-empty-state">
+            <Sparkles size={22} />
+            <h1>Starting guided tutorial</h1>
+            <p>The tour will move you through each Overlay Center page.</p>
+          </section>
+        )}
       </main>
+      <GuidedTutorial
+        active={guidedTutorialActive}
+        onClose={closeGuidedTutorial}
+        goToPage={goToTutorialPage}
+      />
     </div>
   );
 }

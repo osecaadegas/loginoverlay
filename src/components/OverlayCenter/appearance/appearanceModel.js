@@ -357,6 +357,14 @@ const COMMON_SUB_ELEMENT_DEFINITIONS = [
 const WIDGET_SUB_ELEMENT_DEFINITIONS = {
   bonus_hunt: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'huntTitle', label: 'Hunt title', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'statLabel', label: 'Stat labels', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'statValue', label: 'Stat values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'betValue', label: 'Bet values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'payoutValue', label: 'Payout values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'multiplierValue', label: 'Multiplier values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'footer', label: 'Footer totals', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'padding', 'radius'] },
+    { id: 'carousel', label: 'List and carousel', properties: ['gap', 'padding'] },
     { id: 'progressBar', label: 'Progress bar', properties: ['background', 'fillColor', 'radius', 'height'] },
     { id: 'bonusCard', label: 'Bonus card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
     { id: 'openedState', label: 'Opened card', properties: ['background', 'textColor', 'borderColor', 'accentColor', 'opacity'] },
@@ -595,8 +603,16 @@ export function isScopedAppearancePath(path) {
 
 export function getTargetOverrideRoot(target) {
   if (!target || target.scope === 'overlay' || target.scope === 'all_widgets') return '';
-  if (target.scope === 'widget_type' && target.widgetType) return `widgetTypes.${target.widgetType}`;
-  if (target.scope === 'widget_instance' && target.widgetId) return `widgets.${target.widgetId}`;
+  if (target.scope === 'widget_type' && target.widgetType) {
+    return target.styleId
+      ? `widgetTypes.${target.widgetType}.styles.${target.styleId}`
+      : `widgetTypes.${target.widgetType}`;
+  }
+  if (target.scope === 'widget_instance' && target.widgetId) {
+    return target.styleId
+      ? `widgets.${target.widgetId}.styles.${target.styleId}`
+      : `widgets.${target.widgetId}`;
+  }
   return '';
 }
 
@@ -658,6 +674,60 @@ function readOverrideEntry(entry = {}) {
     visual,
     subElements: isPlainObject(entry.subElements) ? entry.subElements : {},
   };
+}
+
+export function getWidgetStyleConfigKey(widgetType) {
+  const def = getWidgetDef(widgetType);
+  return def?.styleConfigKey || 'displayStyle';
+}
+
+export function getWidgetStyleOptions(widgetType, appearance, widgetId) {
+  const def = getWidgetDef(widgetType);
+  const registeredStyles = Array.isArray(def?.styles) ? def.styles : [];
+  const customStyles = widgetId
+    ? normalizeAppearance(appearance).widgets?.[widgetId]?.customStyles || {}
+    : {};
+  return [
+    ...registeredStyles.map(style => ({
+      id: style.id,
+      label: style.label || style.id,
+      icon: style.icon || '',
+      baseStyleId: style.id,
+      custom: false,
+    })),
+    ...Object.values(customStyles).filter(Boolean).map(style => ({
+      id: style.id,
+      label: style.label || style.id,
+      icon: style.icon || '*',
+      baseStyleId: style.baseStyleId || style.id,
+      custom: true,
+    })),
+  ];
+}
+
+export function getWidgetActiveStyleId(widget, appearance) {
+  if (!widget) return '';
+  const normalized = normalizeAppearance(appearance);
+  const entry = normalized.widgets?.[widget.id] || {};
+  const key = getWidgetStyleConfigKey(widget.widget_type);
+  return entry.activeStyleId || widget.config?.[key] || getWidgetDef(widget.widget_type)?.styles?.[0]?.id || 'default';
+}
+
+export function getWidgetStyleRenderId(widget, styleId, appearance) {
+  if (!widget) return styleId || 'default';
+  const normalized = normalizeAppearance(appearance);
+  const custom = normalized.widgets?.[widget.id]?.customStyles?.[styleId];
+  return custom?.baseStyleId || styleId || getWidgetActiveStyleId(widget, appearance);
+}
+
+export function getTargetStyleId(target, appearance, widgets = []) {
+  if (!target || target.scope === 'overlay' || target.scope === 'all_widgets') return '';
+  if (target.styleId) return target.styleId;
+  if (target.scope === 'widget_instance') {
+    const widget = widgets.find(item => item.id === target.widgetId) || { id: target.widgetId, widget_type: target.widgetType, config: {} };
+    return getWidgetActiveStyleId(widget, appearance);
+  }
+  return getWidgetDef(target.widgetType)?.styles?.[0]?.id || 'default';
 }
 
 export function getWidgetSubElementDefinitions(widgetType) {
@@ -994,25 +1064,43 @@ export function resolveAppearance({
 
 export function resolveAppearanceForTarget(appearance, target, theme) {
   const normalized = normalizeAppearance(appearance, { theme });
+  const styleId = target?.styleId || '';
+  const typeStyleId = target?.scope === 'widget_instance'
+    ? normalized.widgets?.[target.widgetId]?.customStyles?.[styleId]?.baseStyleId || styleId
+    : styleId;
   const typeEntry = target?.scope === 'widget_type'
     ? normalized.widgetTypes?.[target.widgetType]
     : target?.scope === 'widget_instance'
       ? normalized.widgetTypes?.[target.widgetType]
       : null;
+  const typeStyleEntry = styleId && (target?.scope === 'widget_type' || target?.scope === 'widget_instance')
+    ? normalized.widgetTypes?.[target.widgetType]?.styles?.[typeStyleId]
+    : null;
   const instanceEntry = target?.scope === 'widget_instance'
     ? normalized.widgets?.[target.widgetId]
+    : null;
+  const instanceStyleEntry = styleId && target?.scope === 'widget_instance'
+    ? normalized.widgets?.[target.widgetId]?.styles?.[styleId]
     : null;
   return resolveAppearance({
     systemDefaults: SYSTEM_APPEARANCE,
     theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
     globalAppearance: normalized,
     widgetTypeAppearance: readOverrideEntry(typeEntry).appearance,
-    widgetInstanceAppearance: readOverrideEntry(instanceEntry).appearance,
+    widgetInstanceAppearance: deepMerge(
+      readOverrideEntry(typeStyleEntry).appearance,
+      readOverrideEntry(instanceEntry).appearance,
+      readOverrideEntry(instanceStyleEntry).appearance
+    ),
   });
 }
 
 export function getAppearancePropertyState({ appearance, target, path, theme, draftAppearance } = {}) {
   const normalized = normalizeAppearance(appearance, { theme });
+  const styleId = target?.styleId || '';
+  const typeStyleId = target?.scope === 'widget_instance'
+    ? normalized.widgets?.[target.widgetId]?.customStyles?.[styleId]?.baseStyleId || styleId
+    : styleId;
   const globalResolved = resolveAppearance({
     systemDefaults: SYSTEM_APPEARANCE,
     theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
@@ -1023,29 +1111,39 @@ export function getAppearancePropertyState({ appearance, target, path, theme, dr
     : target?.scope === 'widget_instance'
       ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]).appearance
       : {};
+  const typeStyleEntry = styleId && (target?.scope === 'widget_type' || target?.scope === 'widget_instance')
+    ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]?.styles?.[typeStyleId]).appearance
+    : {};
   const instanceEntry = target?.scope === 'widget_instance'
     ? readOverrideEntry(normalized.widgets?.[target.widgetId]).appearance
     : {};
+  const instanceStyleEntry = styleId && target?.scope === 'widget_instance'
+    ? readOverrideEntry(normalized.widgets?.[target.widgetId]?.styles?.[styleId]).appearance
+    : {};
   const typeValue = getByPath(typeEntry, path);
+  const typeStyleValue = getByPath(typeStyleEntry, path);
   const instanceValue = getByPath(instanceEntry, path);
+  const instanceStyleValue = getByPath(instanceStyleEntry, path);
   const draftValue = getByPath(draftAppearance, path);
   const effective = resolveAppearance({
     systemDefaults: SYSTEM_APPEARANCE,
     theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
     globalAppearance: normalized,
-    widgetTypeAppearance: typeEntry,
-    widgetInstanceAppearance: instanceEntry,
+    widgetTypeAppearance: deepMerge(typeEntry, typeStyleEntry),
+    widgetInstanceAppearance: deepMerge(instanceEntry, instanceStyleEntry),
     draftAppearance,
   });
   const source = draftValue !== undefined ? 'draft'
-    : instanceValue !== undefined ? 'widget-instance'
-      : typeValue !== undefined ? 'widget-type'
+    : instanceStyleValue !== undefined ? 'style-instance'
+      : instanceValue !== undefined ? 'widget-instance'
+        : typeStyleValue !== undefined ? 'style-default'
+          : typeValue !== undefined ? 'widget-type'
         : getByPath(normalized, path) !== undefined ? 'global'
           : getByPath(getThemeAppearance(normalized.themeId), path) !== undefined ? 'theme'
             : 'system';
   return {
     inheritedValue: getByPath(globalResolved, path),
-    overrideValue: instanceValue ?? typeValue,
+    overrideValue: instanceStyleValue ?? instanceValue ?? typeStyleValue ?? typeValue,
     draftValue,
     effectiveValue: getByPath(effective, path),
     source,
@@ -1055,7 +1153,8 @@ export function getAppearancePropertyState({ appearance, target, path, theme, dr
 function getVisualOverride(overrides = {}, typeOrId) {
   const target = overrides?.[typeOrId];
   if (!target) return {};
-  return target.visual || target.tokens || target;
+  const source = target.visual || target.tokens || target;
+  return Object.fromEntries(Object.entries(source || {}).filter(([key]) => VISUAL_CONFIG_KEYS.includes(key) || key === 'custom_css'));
 }
 
 function shouldInheritVisualKey(key, config = {}, defaults = {}) {
@@ -1083,23 +1182,32 @@ function pickSupportedConfig(type, values) {
   return config;
 }
 
-export function resolveWidgetAppearanceConfig(widget, appearance, theme) {
+export function resolveWidgetAppearanceConfig(widget, appearance, theme, options = {}) {
   if (!widget) return {};
   const def = getWidgetDef(widget.widget_type);
   const defaults = def?.defaults || {};
   const base = widget.config || {};
   const normalized = normalizeAppearance(appearance, { theme });
+  const requestedStyleId = options.styleId || options.styleSelections?.[widget.id] || normalized.widgets?.[widget.id]?.activeStyleId || base[getWidgetStyleConfigKey(widget.widget_type)] || def?.styles?.[0]?.id || 'default';
+  const renderStyleId = getWidgetStyleRenderId(widget, requestedStyleId, normalized);
   const typeEntry = readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]);
+  const typeStyleEntry = readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]?.styles?.[renderStyleId]);
   const instanceEntry = readOverrideEntry(normalized.widgets?.[widget.id]);
+  const instanceStyleEntry = readOverrideEntry(normalized.widgets?.[widget.id]?.styles?.[requestedStyleId]);
   const resolved = resolveAppearance({
     systemDefaults: SYSTEM_APPEARANCE,
     theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
     globalAppearance: normalized,
-    widgetTypeAppearance: typeEntry.appearance,
-    widgetInstanceAppearance: instanceEntry.appearance,
+    widgetTypeAppearance: deepMerge(typeEntry.appearance, typeStyleEntry.appearance),
+    widgetInstanceAppearance: deepMerge(instanceEntry.appearance, instanceStyleEntry.appearance),
   });
   const inherited = pickSupportedConfig(widget.widget_type, appearanceToWidgetConfigDefaults(resolved));
-  const next = { ...base };
+  const next = {
+    ...base,
+    [getWidgetStyleConfigKey(widget.widget_type)]: renderStyleId,
+    __appearanceStyleId: requestedStyleId,
+    __appearanceRenderStyleId: renderStyleId,
+  };
 
   for (const [key, value] of Object.entries(inherited)) {
     if (shouldInheritVisualKey(key, base, defaults)) {
@@ -1110,10 +1218,14 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme) {
   const typeOverride = pickSupportedConfig(widget.widget_type, {
     ...appearanceToVisualOverride(typeEntry.appearance),
     ...typeEntry.visual,
+    ...appearanceToVisualOverride(typeStyleEntry.appearance),
+    ...typeStyleEntry.visual,
   });
   const instanceOverride = pickSupportedConfig(widget.widget_type, {
     ...appearanceToVisualOverride(instanceEntry.appearance),
     ...instanceEntry.visual,
+    ...appearanceToVisualOverride(instanceStyleEntry.appearance),
+    ...instanceStyleEntry.visual,
   });
   return {
     ...next,
@@ -1123,15 +1235,17 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme) {
       buildSubElementDefaults(widget.widget_type, resolved),
       base.subElements || {},
       typeEntry.subElements,
-      instanceEntry.subElements
+      typeStyleEntry.subElements,
+      instanceEntry.subElements,
+      instanceStyleEntry.subElements
     ),
   };
 }
 
-export function resolveWidgetsForAppearance(widgets = [], appearance, theme) {
+export function resolveWidgetsForAppearance(widgets = [], appearance, theme, options = {}) {
   return widgets.map(widget => ({
     ...widget,
-    config: resolveWidgetAppearanceConfig(widget, appearance, theme),
+    config: resolveWidgetAppearanceConfig(widget, appearance, theme, options),
   }));
 }
 
@@ -1164,16 +1278,33 @@ export function buildWidgetAppearanceVars(config = {}) {
   };
 }
 
-export function getWidgetOverrideCount(appearance, widgetId) {
-  const entry = normalizeAppearance(appearance).widgets?.[widgetId];
-  if (!entry) return 0;
-  return Object.keys(entry.visual || entry.tokens || entry).length;
+function countOverrideEntry(entry = {}) {
+  if (!isPlainObject(entry)) return 0;
+  return countPlainLeaves(entry.appearance)
+    + countPlainLeaves(entry.visual || entry.tokens)
+    + countPlainLeaves(entry.subElements);
 }
 
-export function getWidgetTypeOverrideCount(appearance, widgetType) {
+function countPlainLeaves(value) {
+  if (!isPlainObject(value)) return 0;
+  return Object.values(value).reduce((total, item) => {
+    if (isPlainObject(item)) return total + countPlainLeaves(item);
+    return item === undefined ? total : total + 1;
+  }, 0);
+}
+
+export function getWidgetOverrideCount(appearance, widgetId, styleId) {
+  const entry = normalizeAppearance(appearance).widgets?.[widgetId];
+  if (!entry) return 0;
+  if (styleId) return countOverrideEntry(entry.styles?.[styleId]);
+  return countOverrideEntry(entry) + countPlainLeaves(entry.styles);
+}
+
+export function getWidgetTypeOverrideCount(appearance, widgetType, styleId) {
   const entry = normalizeAppearance(appearance).widgetTypes?.[widgetType];
   if (!entry) return 0;
-  return Object.keys(entry.visual || entry.tokens || entry).length;
+  if (styleId) return countOverrideEntry(entry.styles?.[styleId]);
+  return countOverrideEntry(entry) + countPlainLeaves(entry.styles);
 }
 
 export function getAppearanceWarnings(appearance) {

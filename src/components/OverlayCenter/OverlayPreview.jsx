@@ -13,7 +13,7 @@ import './widgets/builtinWidgets';
 const DEFAULT_W = 1920;
 const DEFAULT_H = 1080;
 
-const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight, selectedWidgetId }) {
+const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight, selectedWidgetId, selectMode, onSelectWidget }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   if (!Component) return null;
@@ -25,7 +25,16 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   const hasShadow = ss > 0 && si > 0;
 
   return (
-    <div className={selectedWidgetId === widget.id ? 'oc-preview-selected-widget' : undefined} data-widget-id={widget.id} data-widget-type={widget.widget_type} style={{
+    <div
+      className={selectedWidgetId === widget.id ? 'oc-preview-selected-widget' : undefined}
+      data-widget-id={widget.id}
+      data-widget-type={widget.widget_type}
+      onClick={selectMode ? (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onSelectWidget?.(widget);
+      } : undefined}
+      style={{
       position: 'absolute',
       left: isBg ? 0 : widget.position_x,
       top: isBg ? 0 : widget.position_y,
@@ -33,6 +42,7 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
       height: isBg ? canvasHeight : widget.height,
       zIndex: widget.z_index || 1,
       overflow: 'visible',
+      cursor: selectMode ? 'crosshair' : undefined,
       ...buildWidgetAppearanceVars(cfg),
       ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
     }}>
@@ -41,31 +51,18 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   );
 });
 
-export default function OverlayPreview({ widgets, theme, appearance, selectedWidgetId, selectedTarget, zoom = 'fit' }) {
+export default function OverlayPreview({ widgets, theme, appearance, selectedWidgetId, selectedTarget, styleSelections, zoom = 'fit', previewMode = 'focus-widget', previewBackground = 'dark', selectMode = false, onSelectWidget }) {
   const wrapRef = useRef(null);
   const [scale, setScale] = useState(0.5);
   const resolvedAppearance = useMemo(() => normalizeAppearance(appearance || {}, { theme }), [appearance, theme]);
-  const resolvedWidgets = useMemo(() => resolveWidgetsForAppearance(widgets || [], resolvedAppearance, theme), [widgets, resolvedAppearance, theme]);
+  const resolvedWidgets = useMemo(() => resolveWidgetsForAppearance(widgets || [], resolvedAppearance, theme, { styleSelections: styleSelections || {} }), [widgets, resolvedAppearance, theme, styleSelections]);
 
   const CANVAS_W = resolvedAppearance?.canvas?.width || theme?.canvas_width || DEFAULT_W;
   const CANVAS_H = resolvedAppearance?.canvas?.height || theme?.canvas_height || DEFAULT_H;
 
-  /* Dynamic scale to fit container width */
-  useEffect(() => {
-    if (!wrapRef.current) return;
-    function calcScale() {
-      const availW = wrapRef.current.getBoundingClientRect().width - 32;
-      const fixedZoom = zoom !== 'fit' ? Number(String(zoom).replace('%', '')) / 100 : null;
-      setScale(fixedZoom || Math.min(availW / CANVAS_W, 0.65));
-    }
-    calcScale(); // recalc immediately on canvas size change
-    const ro = new ResizeObserver(() => calcScale());
-    ro.observe(wrapRef.current);
-    return () => ro.disconnect();
-  }, [CANVAS_W, CANVAS_H, zoom]);
-
   const visibleWidgets = useMemo(() => {
     const base = (resolvedWidgets || []).filter(w => w.is_visible);
+    if (previewMode === 'full-overlay' || selectMode) return base;
     if (selectedTarget?.scope === 'widget_instance' && selectedTarget.widgetId) {
       return base.filter(w => w.id === selectedTarget.widgetId);
     }
@@ -73,7 +70,46 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
       return base.filter(w => w.widget_type === selectedTarget.widgetType);
     }
     return base;
-  }, [resolvedWidgets, selectedTarget]);
+  }, [resolvedWidgets, selectedTarget, previewMode, selectMode]);
+
+  const focusWidget = useMemo(() => {
+    if (!selectedWidgetId) return null;
+    return visibleWidgets.find(widget => widget.id === selectedWidgetId) || null;
+  }, [selectedWidgetId, visibleWidgets]);
+
+  const focusActive = (previewMode === 'focus-widget' || previewMode === 'fit-widget') && focusWidget;
+  const viewportWidth = focusActive ? Math.max(1, Number(focusWidget.width) || 1) : CANVAS_W;
+  const viewportHeight = focusActive ? Math.max(1, Number(focusWidget.height) || 1) : CANVAS_H;
+  const focusLeft = focusActive ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_x) || 0) : 0;
+  const focusTop = focusActive ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_y) || 0) : 0;
+
+  /* Dynamic scale to fit container width */
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    function calcScale() {
+      const availW = wrapRef.current.getBoundingClientRect().width - 32;
+      const fixedZoom = zoom !== 'fit' ? Number(String(zoom).replace('%', '')) / 100 : null;
+      if (previewMode === 'actual-scale') {
+        setScale(fixedZoom || 1);
+        return;
+      }
+      const targetW = focusActive ? viewportWidth : CANVAS_W;
+      const maxScale = focusActive ? (previewMode === 'fit-widget' ? 2.5 : 1.8) : 0.65;
+      setScale(fixedZoom || Math.min(availW / targetW, maxScale));
+    }
+    calcScale();
+    const ro = new ResizeObserver(() => calcScale());
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, [CANVAS_W, CANVAS_H, zoom, previewMode, focusActive, viewportWidth]);
+
+  const previewBg = previewBackground === 'light'
+    ? '#f8fafc'
+    : previewBackground === 'checkerboard'
+      ? 'linear-gradient(45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,0.22) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,0.22) 75%)'
+      : '#020617';
+  const previewBgSize = previewBackground === 'checkerboard' ? '24px 24px' : undefined;
+  const previewBgPosition = previewBackground === 'checkerboard' ? '0 0, 0 12px, 12px -12px, -12px 0px' : undefined;
 
   return (
     <div className="oc-preview-panel" ref={wrapRef}>
@@ -83,21 +119,25 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
       </div>
 
       <div className="oc-preview-canvas-wrap" style={{
-        width: CANVAS_W * scale,
-        height: CANVAS_H * scale,
+        width: viewportWidth * scale,
+        height: viewportHeight * scale,
         margin: '0 auto',
         borderRadius: 10,
         overflow: 'hidden',
         border: '1px solid rgba(148,163,184,0.28)',
         position: 'relative',
-        background: buildCanvasBackground(resolvedAppearance.canvas) || '#0f0f1a',
+        background: previewBg,
+        backgroundSize: previewBgSize,
+        backgroundPosition: previewBgPosition,
       }}>
         <div className="wm-live-canvas" data-theme={theme?.style_preset || 'classic'} style={{
           width: CANVAS_W,
           height: CANVAS_H,
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
-          position: 'relative',
+          position: 'absolute',
+          left: -focusLeft * scale,
+          top: -focusTop * scale,
           background: buildCanvasBackground(resolvedAppearance.canvas),
           ...buildThemeVars(theme, resolvedAppearance),
         }}>
@@ -110,6 +150,8 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
               canvasWidth={CANVAS_W}
               canvasHeight={CANVAS_H}
               selectedWidgetId={selectedWidgetId}
+              selectMode={selectMode}
+              onSelectWidget={onSelectWidget}
             />
           ))}
           {visibleWidgets.length === 0 && (

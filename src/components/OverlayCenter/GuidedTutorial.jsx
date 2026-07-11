@@ -1,7 +1,7 @@
 /**
  * GuidedTutorial.jsx — Step-by-step onboarding tour with spotlight + tooltip.
  *
- * Shows once on first visit, or when triggered via the "🎓 Tutorial" sidebar button.
+ * Shows once on first visit, or when triggered from the Overlay Center menu.
  * Steps attach to DOM elements by `data-tour="stepKey"` attributes.
  * Steps can specify a `page` field — the tour will auto-navigate between pages.
  * Persists completion in localStorage.
@@ -11,225 +11,145 @@ import React, { useState, useEffect, useCallback } from 'react';
 const STORAGE_KEY = 'oc_tutorial_done';
 
 const STEPS = [
-  /* ── Welcome ── */
   {
     target: null,
-    title: 'Welcome to your Overlay Center! 🎉',
-    body: 'This quick tour walks you through every feature — from building your overlay to going live on OBS and Twitch. Takes about 3 minutes. Press Next to start!',
+    title: 'Start with integrations',
+    body: 'The first stop is Integrations. Connect identity, platforms, music, StreamElements and preferences before building the overlay tools.',
     position: 'center',
-    page: 'widgets',
+    page: 'integrations',
   },
-
-  /* ── Widgets page ── */
   {
-    target: '[data-tour="live-preview"]',
-    title: '1. Live Preview Canvas',
-    body: 'This is your real-time canvas — it mirrors exactly what your viewers see in OBS. Every change updates here instantly.',
+    target: '[data-tour="integrations-overview"]',
+    title: 'Required services',
+    body: 'This area shows which services matter for your selected tools, so you can set up only what the overlay actually needs.',
     position: 'bottom',
-    page: 'widgets',
+    page: 'integrations',
   },
-  {
-    target: '[data-tour="available-widgets"]',
-    title: '2. Add Widgets',
-    body: 'These grey tiles are all the widgets you can add. Click "+ Add" on any tile to activate it — it will appear on the preview above.',
-    position: 'top',
-    page: 'widgets',
-  },
-  {
-    target: '[data-tour="active-widgets"]',
-    title: '3. Active Widgets',
-    body: 'Your active widgets glow green here. Click LIVE/OFF to toggle visibility, click 🗑️ to remove, or drag to reorder layers.',
-    position: 'top',
-    page: 'widgets',
-  },
-  {
-    target: '[data-tour="tile-gear"]',
-    title: '4. Widget Settings ⚙️',
-    body: 'Click the gear icon on any active tile to open its settings — change colors, fonts, sizes, content, and even connect accounts like Spotify.',
-    position: 'left',
-    page: 'widgets',
-  },
-  {
-    target: '[data-tour="preview-drag"]',
-    title: '5. Drag & Resize',
-    body: 'Click a widget on the canvas to select it. Drag to move, use corner handles to resize. Arrow keys = 1px nudge, Shift+Arrow = 10px.',
-    position: 'bottom',
-    page: 'widgets',
-  },
-  {
-    target: '[data-tour="sync-colors"]',
-    title: '6. Sync Colors 🔗',
-    body: 'Set your Navbar\'s colors first, then hit "Sync Colors" to copy the same palette across every widget in one click. Keeps your overlay consistent.',
-    position: 'bottom',
-    page: 'widgets',
-  },
-  {
-    target: null,
-    title: '7. Background & Effects 🎨',
-    body: 'Add the "Background" widget and open its settings to pick gradients, images, video, particles, and blur effects for your overlay backdrop.',
-    position: 'center',
-    page: 'widgets',
-  },
-
-  /* ── Profile page ── */
   {
     target: '[data-tour="profile-identity"]',
-    title: '8. Your Identity 🪪',
-    body: 'Set your display name, motto, and avatar URL. This info is synced to your Navbar and other widgets so viewers always see your branding.',
+    title: 'Identity and branding',
+    body: 'Set the display name, avatar and identity information that widgets can reuse across the overlay.',
     position: 'bottom',
-    page: 'profile',
+    page: 'integrations',
   },
   {
     target: '[data-tour="profile-platforms"]',
-    title: '9. Connect Platforms 🔗',
-    body: 'Enter your Twitch, Kick, YouTube, and Discord usernames. The green dot shows which platforms are connected. These are pushed to your overlay widgets.',
+    title: 'Platform accounts',
+    body: 'Add your Twitch, Kick, YouTube and Discord details here. Connected platform data powers chat, requests and viewer-facing widgets.',
     position: 'right',
-    page: 'profile',
+    page: 'integrations',
   },
   {
     target: '[data-tour="profile-spotify"]',
-    title: '10. Spotify 🎵',
-    body: 'Click "Connect" to link your Spotify account. Once connected, your Navbar and Spotify Now Playing widgets auto-update with the song you\'re listening to.',
+    title: 'Spotify connection',
+    body: 'Connect Spotify when you want music data in Navbar or Spotify Now Playing widgets.',
     position: 'left',
-    page: 'profile',
+    page: 'integrations',
   },
   {
     target: '[data-tour="profile-streamelements"]',
-    title: '11. StreamElements 🎮',
-    body: 'Paste your StreamElements Channel ID and JWT Token, then hit "Test Connection" to verify. This powers the Community Games widget with live viewer data.',
+    title: 'StreamElements connection',
+    body: 'Add StreamElements credentials when chat commands, points or request tools need them.',
     position: 'left',
-    page: 'profile',
-  },
-  {
-    target: '[data-tour="profile-preferences"]',
-    title: '12. Preferences ⚙️',
-    body: 'Pick your default currency — it\'s used across Bonus Hunt, Tournament, and any widget that shows money values.',
-    position: 'left',
-    page: 'profile',
+    page: 'integrations',
   },
   {
     target: '[data-tour="profile-sync"]',
-    title: '13. Sync to Widgets 📡',
-    body: 'After filling in your profile, hit "Sync All" to push every field (name, avatar, platforms, tokens) into all matching widgets at once. No need to update them one by one.',
+    title: 'Sync connected information',
+    body: 'After updating profile and integration details, sync them into matching widgets so every tool uses the same source information.',
     position: 'top',
-    page: 'profile',
+    page: 'integrations',
   },
   {
-    target: '[data-tour="profile-autotracker"]',
-    title: '14. Slot Auto-Tracker 🔗',
-    body: 'Install our Chrome extension to automatically detect which slot you\'re playing. It syncs with your Bonus Hunt overlay in real-time — no manual input needed.',
-    position: 'top',
-    page: 'profile',
+    target: '[data-tour="tools-page"]',
+    title: 'Choose overlay tools',
+    body: 'Tools are the widgets that appear on stream. Open an existing tool or add a new one from this page.',
+    position: 'bottom',
+    page: 'tools',
   },
   {
-    target: '[data-tour="profile-obs-guide"]',
-    title: '15. OBS Setup Guide 🖥️',
-    body: 'Scroll down for a quick checklist to make your overlay pixel-perfect in OBS — browser source dimensions, canvas resolution, and common fixes for blurry overlays.',
-    position: 'top',
-    page: 'profile',
+    target: '[data-tour="your-tools"]',
+    title: 'Your active tools',
+    body: 'Enabled tools are listed here with readiness status. Use each card to open setup, enable, disable or remove that tool.',
+    position: 'bottom',
+    page: 'tools',
   },
-
-  /* ── Streamer Tools ── */
   {
-    target: '[data-tour="bonus-hunt-page"]',
-    title: '16. Bonus Hunt 🎯',
-    body: 'This is where you run your bonus hunts! Add bonuses with name, bet, and slot info. Start the hunt, open bonuses, record results — the overlay widget updates in real-time for your viewers.',
+    target: '[data-tour="add-tools"]',
+    title: 'Add more tools',
+    body: 'Install new overlay tools from this section. Any missing setup will show as a status warning after the tool is added.',
+    position: 'top',
+    page: 'tools',
+  },
+  {
+    target: '[data-tour="widget-detail-page"]',
+    title: 'Configure one tool at a time',
+    body: 'Each tool has its own setup page with setup, appearance, behavior and advanced positioning controls.',
     position: 'float-top',
     page: 'bonus_hunt',
   },
   {
-    target: '[data-tour="tournament-page"]',
-    title: '17. Tournament 🏆',
-    body: 'Set up slot battles and tournaments here. Add players, assign slots, track scores, and run brackets. The Tournament widget on your overlay shows the leaderboard live.',
-    position: 'float-top',
-    page: 'tournament',
+    target: '[data-tour="widget-tabs"]',
+    title: 'Tool tabs',
+    body: 'Use these tabs to move between setup, visual options, visibility, layer order, position, size and custom CSS.',
+    position: 'bottom',
+    page: 'bonus_hunt',
   },
   {
-    target: '[data-tour="bonus-buys-page"]',
-    title: '19. Bonus Buys 🛒',
-    body: 'Track your bonus buy sessions — log every purchase with slot name, bet size, and result. See your profit/loss stats over time.',
+    target: '[data-tour="appearance-page"]',
+    title: 'Appearance Center',
+    body: 'Use Appearance to edit exact widget instances and style variants without opening a separate Layout page.',
     position: 'float-top',
-    page: 'bonus_buys',
+    page: 'appearance',
   },
   {
-    target: '[data-tour="current-slot-page"]',
-    title: '20. Current Slot 🎰',
-    body: 'Set what slot you\'re currently playing. This updates your Current Slot widget on the overlay so viewers always know what game you\'re on.',
+    target: '[data-tour="preview-page"]',
+    title: 'Preview and OBS',
+    body: 'Preview uses the same browser-source route as OBS. Open it, focus it or copy the source URL from this page.',
     position: 'float-top',
-    page: 'current_slot',
+    page: 'preview',
   },
-
-  /* ── Community Tools ── */
   {
-    target: '[data-tour="slot-requests-page"]',
-    title: '21. Slot Requests 📋',
-    body: 'Viewers can request slots via the !sr chat command. Manage the queue here — accept, skip, or clear requests.',
-    position: 'float-top',
-    page: 'slot_requests',
+    target: '[data-tour="obs-url"]',
+    title: 'Copy OBS URL',
+    body: 'Copy this URL into OBS as a Browser Source when you are ready to go live.',
+    position: 'left',
+    page: 'preview',
   },
-
-  /* ── Collections ── */
   {
     target: '[data-tour="library-page"]',
-    title: '26. Library 📚',
-    body: 'Every bonus hunt you finish is saved here automatically. Browse your past hunts, view detailed stats and results, and see your full history.',
-    position: 'bottom',
-    page: 'library',
+    title: 'Assets and library',
+    body: 'Assets contains saved hunts, media and reusable resources connected to your overlay workflow.',
+    position: 'float-top',
+    page: 'assets',
   },
   {
     target: '[data-tour="presets-page"]',
-    title: '27. Presets — Save Layouts 💾',
-    body: 'Save your current widget layout as a preset. Give it a name and click Save — it captures all widget positions, sizes, colors, and styles.',
-    position: 'float-top',
-    page: 'presets',
-  },
-  {
-    target: '[data-tour="presets-shared"]',
-    title: '28. Presets — Load & Share',
-    body: 'Load any saved preset to instantly restore a layout. Admins can share presets so all users can pick from ready-made layouts in the Shared section.',
+    title: 'Presets',
+    body: 'Save and reuse complete overlay presets once you have a setup you want to keep.',
     position: 'float-top',
     page: 'presets',
   },
   {
     target: '[data-tour="slots-page"]',
-    title: '29. Submit Slots 🎰',
-    body: 'Add new slot games to the database. Fill in the name, provider, RTP, volatility, and max win — then use the 🔍 Search button to find an image. An admin will review your submission.',
+    title: 'Submit slots',
+    body: 'Submit missing slot metadata here so Bonus Hunt, Current Slot and request tools can use accurate game data.',
     position: 'bottom',
     page: 'slots',
   },
-
-  /* ── Admin review ── */
   {
     target: '[data-tour="approvals-page"]',
-    title: '30. Approvals 🛡️',
-    body: 'Admins review submitted slots here. Audit the backlog, edit metadata before approval, and deny weak submissions without leaving the moderation queue.',
+    title: 'Approvals',
+    body: 'Admins can review and approve submitted slot metadata from this page.',
     position: 'float-top',
     page: 'approvals',
   },
-
-  /* ── OBS setup ── */
-  {
-    target: '[data-tour="obs-url"]',
-    title: '31. OBS — Full Overlay',
-    body: 'Copy this URL and add it as a Browser Source in OBS (width: 1920, height: 1080). This loads your entire overlay with all widgets in one source.',
-    position: 'right',
-    page: 'widgets',
-  },
   {
     target: null,
-    title: '32. OBS — Single Widget',
-    body: 'Want just one widget in OBS? Open its settings ⚙️ → expand "OBS Browser Source URL" → copy the link. Add it as a separate Browser Source.',
+    title: 'Tutorial complete',
+    body: 'The tour has moved across the actual pages. Restart it any time from More, then Restart tutorial.',
     position: 'center',
-    page: 'widgets',
-  },
-
-  /* ── Finish ── */
-  {
-    target: null,
-    title: 'You\'re all set! 🚀',
-    body: 'You now know every feature. Restart this tour anytime from the 🎓 Tutorial button in the sidebar. Go build an awesome overlay!',
-    position: 'center',
-    page: 'widgets',
+    page: 'integrations',
   },
 ];
 
@@ -385,8 +305,8 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
   const handleSkip = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, 'true');
     onClose();
-    // Return to Widgets page on skip
-    if (goToPage) goToPage('widgets');
+    // Return to the onboarding start page on skip.
+    if (goToPage) goToPage('integrations');
   }, [onClose, goToPage]);
 
   /* Keyboard navigation */
@@ -409,8 +329,12 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
   if (!active || !current) return null;
 
   const pageLabels = {
-    widgets: 'Widgets',
-    profile: 'Profile',
+    home: 'Home',
+    integrations: 'Integrations',
+    tools: 'Tools',
+    appearance: 'Appearance',
+    preview: 'Preview',
+    assets: 'Assets',
     bonus_hunt: 'Bonus Hunt',
     tournament: 'Tournament',
     bonus_buys: 'Bonus Buys',
