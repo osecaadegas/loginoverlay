@@ -4,7 +4,7 @@
  * Tabs: 🎮 Game | 📋 Brackets | 💬 Chat | 🎨 Style | 📜 History
  * Follows the same pattern as PredictionsConfig + BonusHuntConfig.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import TabBar from './shared/TabBar';
 
@@ -80,6 +80,10 @@ const CHAT_TEMPLATE_FIELDS = [
   },
 ];
 
+const DEFAULT_CHAT_TEMPLATES = Object.fromEntries(
+  CHAT_TEMPLATE_FIELDS.map(({ key, placeholder }) => [key, placeholder])
+);
+
 function normalizeBracketOptions(source = DEFAULT_OPTIONS) {
   const safeSource = Array.isArray(source) && source.length ? source : DEFAULT_OPTIONS;
   return safeSource.map((option, index) => ({
@@ -108,15 +112,17 @@ function formatSavedDate(value) {
   return date.toLocaleString();
 }
 
-function createBracketMemory(options, history = [], usage = []) {
+function createBracketMemory(options, question, history = [], usage = []) {
   const snapshot = normalizeBracketOptions(options);
   const signature = bracketSignature(snapshot);
   if (!signature) return {};
 
   const now = new Date().toISOString();
   const summary = summarizeBracketSet(snapshot);
+  const title = question || 'Place your bets!';
   const recentEntry = {
     id: `${Date.now()}-recent`,
+    question: title,
     options: snapshot,
     summary,
     count: snapshot.length,
@@ -125,6 +131,7 @@ function createBracketMemory(options, history = [], usage = []) {
   const existingUsage = usage.find(entry => bracketSignature(entry.options) === signature);
   const usageEntry = {
     id: existingUsage?.id || `${Date.now()}-usage`,
+    question: title,
     options: snapshot,
     summary,
     count: snapshot.length,
@@ -156,6 +163,17 @@ export default function BetsConfig({ config, onChange }) {
   const setMulti = (obj) => onChange({ ...c, ...obj });
   const [tab, setTab] = useState('game');
 
+  useEffect(() => {
+    const missingTemplates = Object.entries(DEFAULT_CHAT_TEMPLATES).reduce((acc, [key, template]) => {
+      if (typeof c[key] !== 'string') acc[key] = template;
+      return acc;
+    }, {});
+
+    if (Object.keys(missingTemplates).length > 0) {
+      onChange({ ...c, ...missingTemplates });
+    }
+  }, [c, onChange]);
+
   // Apply a theme preset — resets all colour fields to the theme defaults
   const applyTheme = (theme) => {
     const preset = THEME_PRESETS_CONFIG[theme] || THEME_PRESETS_CONFIG.dark;
@@ -186,7 +204,7 @@ export default function BetsConfig({ config, onChange }) {
       betters: {},
       _openedAt: Date.now(),
       options: opts,
-      ...createBracketMemory(opts, bracketHistory, bracketUsage),
+      ...createBracketMemory(opts, c.question || 'Place your bets!', bracketHistory, bracketUsage),
     });
     const bracketList = opts
       .map((o, i) => `${o.label} → ${chatCommand} ${i + 1} <amount>`)
@@ -292,6 +310,77 @@ export default function BetsConfig({ config, onChange }) {
     set('options', normalizeBracketOptions(entry.options));
   };
 
+  const renderBracketMemoryEntry = (entry, index, kind) => {
+    const question = entry.question || c.question || 'Place your bets!';
+    const count = entry.count || normalizeBracketOptions(entry.options).length;
+    const meta = kind === 'usage'
+      ? `${count} brackets · used ${entry.uses || 1} time${(entry.uses || 1) === 1 ? '' : 's'}`
+      : `${count} brackets · ${formatSavedDate(entry.usedAt)}`;
+
+    return (
+      <div key={entry.id || `${kind}-${index}`} style={{ display: 'grid', gap: 8, padding: 10, border: '1px solid rgba(148,163,184,0.16)', borderRadius: 12, background: 'rgba(15,23,42,0.34)' }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ color: '#f8fafc', fontSize: '0.82rem', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{question}</div>
+          <div style={{ color: '#cbd5e1', fontSize: '0.74rem', fontWeight: 700, marginTop: 2 }}>{meta}</div>
+          <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.summary || summarizeBracketSet(entry.options)}</div>
+        </div>
+        <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => loadBracketSet(entry)} disabled={status !== 'idle'} style={{ justifyContent: 'center', width: '100%' }}>Load</button>
+      </div>
+    );
+  };
+
+  const bracketMemoryPanel = (bracketUsage.length > 0 || bracketHistory.length > 0) ? (
+    <div style={{ display: 'grid', gap: 10 }}>
+      {bracketUsage.length > 0 && (
+        <section style={{ display: 'grid', gap: 8 }}>
+          <strong style={{ color: '#e2e8f0', fontSize: '0.84rem' }}>Most used bracket setups</strong>
+          {bracketUsage.slice(0, 3).map((entry, index) => renderBracketMemoryEntry(entry, index, 'usage'))}
+        </section>
+      )}
+      {bracketHistory.length > 0 && (
+        <section style={{ display: 'grid', gap: 8 }}>
+          <strong style={{ color: '#e2e8f0', fontSize: '0.84rem' }}>Recent bracket history</strong>
+          {bracketHistory.slice(0, 3).map((entry, index) => renderBracketMemoryEntry(entry, index, 'history'))}
+        </section>
+      )}
+    </div>
+  ) : null;
+
+  const roundStatusCard = (
+    <div className="cg-config__status-card">
+      <div className="cg-config__status-row">
+        <span className="cg-config__status-label">Status</span>
+        <span className={`cg-config__status-badge cg-config__status-badge--${status}`}>
+          {status === 'idle'   ? '⏸ Idle'   :
+           status === 'open'   ? '🟢 Open'   :
+           status === 'locked' ? '🔒 Locked' : '🏆 Result'}
+        </span>
+      </div>
+      {status !== 'idle' && (
+        <>
+          <div className="cg-config__status-row">
+            <span>Total Pool</span>
+            <span style={{ fontWeight: 700, color: '#b8c8d8' }}>{totalPool.toLocaleString()}</span>
+          </div>
+          <div className="cg-config__status-row">
+            <span>Total Bets</span>
+            <span style={{ fontWeight: 700 }}>{totalBetters}</span>
+          </div>
+          {options.map((opt, i) => {
+            const amt = bets[`opt_${i}`] || 0;
+            if (amt === 0) return null;
+            return (
+              <div key={i} className="cg-config__status-row" style={{ fontSize: '0.82rem' }}>
+                <span>{opt.label}</span>
+                <span style={{ fontWeight: 600 }}>{amt.toLocaleString()}</span>
+              </div>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
+
   const tabs = [
     { id: 'game',     label: '🎮 Game' },
     { id: 'brackets', label: '📋 Brackets' },
@@ -306,216 +395,171 @@ export default function BetsConfig({ config, onChange }) {
 
       {/* ═══ GAME TAB ═══ */}
       {tab === 'game' && (
-        <div className="cg-config__section">
-          <label className="cg-config__field">
-            <span>Title / Question</span>
-            <input
-              value={c.question || ''}
-              onChange={e => set('question', e.target.value)}
-              placeholder="Place your bets!"
-            />
-          </label>
-
-          <div className="cg-config__field">
-            <span>Betting Timer</span>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {TIMER_PRESETS.map((preset) => (
-                <button
-                  key={preset.value}
-                  type="button"
-                  className={`cg-config__btn ${timerSeconds === preset.value ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
-                  onClick={() => set('timerSeconds', preset.value)}
-                >
-                  {preset.label}
-                </button>
-              ))}
-              <button
-                type="button"
-                className={`cg-config__btn ${customTimerActive ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
-                onClick={() => set('timerSeconds', customTimerActive ? timerSeconds : 0)}
-              >
-                Custom
-              </button>
-            </div>
-            <div className="cg-config__add-row" style={{ marginTop: 8 }}>
+        <div className="cg-config__section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 14, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <label className="cg-config__field">
+              <span>Title / Question</span>
               <input
-                type="number"
-                value={customTimerActive ? timerSeconds : ''}
-                onChange={e => set('timerSeconds', parseInt(e.target.value, 10) || 0)}
-                min={0}
-                placeholder="Custom seconds"
-                disabled={!customTimerActive}
+                value={c.question || ''}
+                onChange={e => set('question', e.target.value)}
+                placeholder="Place your bets!"
               />
-              <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>seconds</span>
+            </label>
+
+            <div className="cg-config__field">
+              <span>Betting Timer</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+                {TIMER_PRESETS.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    className={`cg-config__btn ${timerSeconds === preset.value ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
+                    onClick={() => set('timerSeconds', preset.value)}
+                    style={{ width: '100%', minHeight: 54, display: 'grid', placeItems: 'center', gap: 2, padding: '8px 10px', textAlign: 'center' }}
+                  >
+                    <strong style={{ fontSize: '0.86rem' }}>{preset.label}</strong>
+                    <small style={{ fontSize: '0.7rem', opacity: 0.82 }}>{preset.detail}</small>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={`cg-config__btn ${customTimerActive ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
+                  onClick={() => set('timerSeconds', customTimerActive ? timerSeconds : 0)}
+                  style={{ width: '100%', minHeight: 54, display: 'grid', placeItems: 'center', gap: 2, padding: '8px 10px', textAlign: 'center' }}
+                >
+                  <strong style={{ fontSize: '0.86rem' }}>Custom</strong>
+                  <small style={{ fontSize: '0.7rem', opacity: 0.82 }}>{customTimerActive ? `${timerSeconds} seconds` : 'Manual value'}</small>
+                </button>
+              </div>
+              <div className="cg-config__add-row" style={{ marginTop: 8 }}>
+                <input
+                  type="number"
+                  value={customTimerActive ? timerSeconds : ''}
+                  onChange={e => set('timerSeconds', parseInt(e.target.value, 10) || 0)}
+                  min={0}
+                  placeholder="Custom seconds"
+                  disabled={!customTimerActive}
+                />
+                <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>seconds</span>
+              </div>
+              <p className="cg-config__hint">Use a preset or enter a custom value. Set custom to 0 for no timer.</p>
             </div>
-            <p className="cg-config__hint">Use 600 seconds, 1200 seconds, or enter a custom value. Set custom to 0 for no timer.</p>
           </div>
 
-          {/* Status card */}
-          <div className="cg-config__status-card">
-            <div className="cg-config__status-row">
-              <span className="cg-config__status-label">Status</span>
-              <span className={`cg-config__status-badge cg-config__status-badge--${status}`}>
-                {status === 'idle'   ? '⏸ Idle'   :
-                 status === 'open'   ? '🟢 Open'   :
-                 status === 'locked' ? '🔒 Locked' : '🏆 Result'}
-              </span>
-            </div>
-            {status !== 'idle' && (
-              <>
-                <div className="cg-config__status-row">
-                  <span>Total Pool</span>
-                  <span style={{ fontWeight: 700, color: '#b8c8d8' }}>{totalPool.toLocaleString()}</span>
-                </div>
-                <div className="cg-config__status-row">
-                  <span>Total Bets</span>
-                  <span style={{ fontWeight: 700 }}>{totalBetters}</span>
-                </div>
-                {options.map((opt, i) => {
-                  const amt = bets[`opt_${i}`] || 0;
-                  if (amt === 0) return null;
-                  return (
-                    <div key={i} className="cg-config__status-row" style={{ fontSize: '0.82rem' }}>
-                      <span>{opt.label}</span>
-                      <span style={{ fontWeight: 600 }}>{amt.toLocaleString()}</span>
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </div>
+          <aside style={{ display: 'grid', gap: 12 }}>
+            {roundStatusCard}
 
-          {/* Action buttons */}
-          <div className="cg-config__actions">
-            {status === 'idle' && (
-              <button
-                className="cg-config__btn cg-config__btn--primary"
-                onClick={openBets}
-                disabled={options.length < 2}
-              >
-                🟢 Open Bets
-              </button>
-            )}
-            {status === 'open' && (
-              <>
-                <button className="cg-config__btn cg-config__btn--accent" onClick={lockBets}>
-                  🔒 Lock Bets
+            {bracketMemoryPanel}
+
+            {/* Action buttons */}
+            <div className="cg-config__actions">
+              {status === 'idle' && (
+                <button
+                  className="cg-config__btn cg-config__btn--primary"
+                  onClick={openBets}
+                  disabled={options.length < 2}
+                >
+                  🟢 Open Bets
                 </button>
-                <button className="cg-config__btn cg-config__btn--muted" onClick={resetBets}>
-                  ⏸ Cancel
+              )}
+              {status === 'open' && (
+                <>
+                  <button className="cg-config__btn cg-config__btn--accent" onClick={lockBets}>
+                    🔒 Lock Bets
+                  </button>
+                  <button className="cg-config__btn cg-config__btn--muted" onClick={resetBets}>
+                    ⏸ Cancel
+                  </button>
+                </>
+              )}
+              {status === 'locked' && (
+                <>
+                  <p className="cg-config__hint">Pick the winning bracket:</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {options.map((opt, i) => (
+                      <button
+                        key={i}
+                        className="cg-config__btn cg-config__btn--primary"
+                        onClick={() => resolveWinner(i)}
+                        style={{ fontSize: '0.82rem', padding: '6px 10px' }}
+                      >
+                        👑 {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button className="cg-config__btn cg-config__btn--muted" onClick={resetBets} style={{ marginTop: 6 }}>
+                    🗑️ Cancel
+                  </button>
+                </>
+              )}
+              {status === 'result' && (
+                <button className="cg-config__btn cg-config__btn--primary" onClick={resetBets}>
+                  🔄 New Round
                 </button>
-              </>
-            )}
-            {status === 'locked' && (
-              <>
-                <p className="cg-config__hint">Pick the winning bracket:</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {options.map((opt, i) => (
-                    <button
-                      key={i}
-                      className="cg-config__btn cg-config__btn--primary"
-                      onClick={() => resolveWinner(i)}
-                      style={{ fontSize: '0.82rem', padding: '6px 10px' }}
-                    >
-                      👑 {opt.label}
-                    </button>
-                  ))}
-                </div>
-                <button className="cg-config__btn cg-config__btn--muted" onClick={resetBets} style={{ marginTop: 6 }}>
-                  🗑️ Cancel
-                </button>
-              </>
-            )}
-            {status === 'result' && (
-              <button className="cg-config__btn cg-config__btn--primary" onClick={resetBets}>
-                🔄 New Round
-              </button>
-            )}
-          </div>
+              )}
+            </div>
+          </aside>
         </div>
       )}
 
       {/* ═══ BRACKETS TAB ═══ */}
       {tab === 'brackets' && (
-        <div className="cg-config__section">
-          <p className="cg-config__hint">
-            Each row is one bracket viewers can choose. The row number is the chat number: <code>{chatCommand} 1 &lt;amount&gt;</code>, <code>{chatCommand} 2 &lt;amount&gt;</code>, and so on.
-          </p>
+        <div className="cg-config__section" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 380px)', gap: 14, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <p className="cg-config__hint">
+              Each row is one bracket viewers can choose. The row number is the chat number: <code>{chatCommand} 1 &lt;amount&gt;</code>, <code>{chatCommand} 2 &lt;amount&gt;</code>, and so on.
+            </p>
 
-          {bracketUsage.length > 0 && (
-            <div style={{ display: 'grid', gap: 8, padding: 10, border: '1px solid rgba(148,163,184,0.18)', borderRadius: 12, background: 'rgba(15,23,42,0.38)' }}>
-              <strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>Most used bracket setups</strong>
-              {bracketUsage.map((entry, i) => (
-                <div key={entry.id || `usage-${i}`} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 8, alignItems: 'center' }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ color: '#cbd5e1', fontSize: '0.78rem', fontWeight: 700 }}>{entry.count || normalizeBracketOptions(entry.options).length} brackets · used {entry.uses || 1} time{(entry.uses || 1) === 1 ? '' : 's'}</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.summary || summarizeBracketSet(entry.options)}</div>
-                  </div>
-                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => loadBracketSet(entry)} disabled={status !== 'idle'}>Load</button>
+            {options.map((opt, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0, 1fr) auto', gap: 8, alignItems: 'end', padding: '8px 0', borderBottom: '1px solid rgba(148,163,184,0.1)' }}>
+                <div style={{ display: 'grid', gap: 4 }}>
+                  <span style={{ color: '#e2e8f0', fontSize: '0.8rem', fontWeight: 800 }}>Bracket {i + 1}</span>
+                  <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>{chatCommand} {i + 1}</span>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {bracketHistory.length > 0 && (
-            <div style={{ display: 'grid', gap: 8, padding: 10, border: '1px solid rgba(148,163,184,0.18)', borderRadius: 12, background: 'rgba(15,23,42,0.28)' }}>
-              <strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>Recent bracket history</strong>
-              {bracketHistory.slice(0, 5).map((entry, i) => (
-                <div key={entry.id || `history-${i}`} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 8, alignItems: 'center' }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ color: '#cbd5e1', fontSize: '0.78rem', fontWeight: 700 }}>{entry.count || normalizeBracketOptions(entry.options).length} brackets · {formatSavedDate(entry.usedAt)}</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.summary || summarizeBracketSet(entry.options)}</div>
+                <input
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 6,
+                    padding: '6px 8px',
+                    color: '#e5e7eb',
+                    fontSize: '0.85rem',
+                  }}
+                  value={opt.label}
+                  onChange={e => updateOption(i, e.target.value)}
+                  disabled={status !== 'idle'}
+                  placeholder={`Option ${i + 1}`}
+                />
+                {status === 'idle' && (
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, -1)} disabled={i === 0}>Up</button>
+                    <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, 1)} disabled={i === options.length - 1}>Down</button>
+                    <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => duplicateOption(i)}>Copy</button>
+                    {options.length > 2 && <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => removeOption(i)}>Remove</button>}
                   </div>
-                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => loadBracketSet(entry)} disabled={status !== 'idle'}>Load</button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {options.map((opt, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0, 1fr) auto', gap: 8, alignItems: 'end', padding: '8px 0', borderBottom: '1px solid rgba(148,163,184,0.1)' }}>
-              <div style={{ display: 'grid', gap: 4 }}>
-                <span style={{ color: '#e2e8f0', fontSize: '0.8rem', fontWeight: 800 }}>Bracket {i + 1}</span>
-                <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>{chatCommand} {i + 1}</span>
+                )}
               </div>
-              <input
-                style={{
-                  flex: 1,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: 6,
-                  padding: '6px 8px',
-                  color: '#e5e7eb',
-                  fontSize: '0.85rem',
-                }}
-                value={opt.label}
-                onChange={e => updateOption(i, e.target.value)}
-                disabled={status !== 'idle'}
-                placeholder={`Option ${i + 1}`}
-              />
-              {status === 'idle' && (
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, -1)} disabled={i === 0}>Up</button>
-                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, 1)} disabled={i === options.length - 1}>Down</button>
-                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => duplicateOption(i)}>Copy</button>
-                  {options.length > 2 && <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => removeOption(i)}>Remove</button>}
-                </div>
-              )}
-            </div>
-          ))}
-          {status === 'idle' && (
-            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-              <button className="cg-config__btn cg-config__btn--primary" onClick={addOption} style={{ fontSize: '0.82rem' }}>
-                + Add Bracket
-              </button>
-              <button className="cg-config__btn cg-config__btn--muted" onClick={loadDefaults} style={{ fontSize: '0.82rem' }}>
-                Load Defaults
-              </button>
-            </div>
-          )}
-          {status !== 'idle' && (
-            <p className="cg-config__hint" style={{ marginTop: 4 }}>End the current round before changing bracket labels or loading saved setups.</p>
-          )}
+            ))}
+            {status === 'idle' && (
+              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                <button className="cg-config__btn cg-config__btn--primary" onClick={addOption} style={{ fontSize: '0.82rem' }}>
+                  + Add Bracket
+                </button>
+                <button className="cg-config__btn cg-config__btn--muted" onClick={loadDefaults} style={{ fontSize: '0.82rem' }}>
+                  Load Defaults
+                </button>
+              </div>
+            )}
+            {status !== 'idle' && (
+              <p className="cg-config__hint" style={{ marginTop: 4 }}>End the current round before changing bracket labels or loading saved setups.</p>
+            )}
+          </div>
+
+          <aside style={{ display: 'grid', gap: 12 }}>
+            {roundStatusCard}
+            {bracketMemoryPanel}
+          </aside>
         </div>
       )}
 
@@ -618,7 +662,7 @@ export default function BetsConfig({ config, onChange }) {
                   <small style={{ display: 'block', color: '#94a3b8', fontSize: '0.68rem', fontWeight: 500 }}>{help}</small>
                 </span>
                 <input
-                  value={c[key] || ''}
+                  value={c[key] ?? placeholder}
                   onChange={e => set(key, e.target.value)}
                   placeholder={placeholder}
                   style={{ fontSize: '0.75rem' }}
