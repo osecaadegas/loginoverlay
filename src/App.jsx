@@ -317,7 +317,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<LandingPage mode="selector" />} />
                 <Route path="/player" element={<LandingPage mode="player" />} />
-                <Route path="/streamer" element={<LandingPage mode="streamer" />} />
+                <Route path="/streamer" element={<Navigate to="/overlay-center" replace />} />
                 <Route path="/offers" element={<OffersPage />} />
 
                 <Route path="/profile" element={<ProfilePage />} />

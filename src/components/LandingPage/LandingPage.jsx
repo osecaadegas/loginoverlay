@@ -322,118 +322,6 @@ function AudienceGateway({ previewAudience, selectingAudience, onPreview, onClea
   );
 }
 
-function DealsPreview() {
-  return (
-    <div className="lp-preview lp-preview--deals" aria-hidden="true">
-      <div className="lp-deals-preview__header">
-        <span>Partner opportunities</span>
-        <strong>5 live offers</strong>
-      </div>
-      {FEATURED_PARTNERS.slice(0, 3).map((partner) => (
-        <div key={partner.id} className="lp-deals-preview__row">
-          <span style={{ background: partner.logoBg }}>{partner.logo}</span>
-          <div>
-            <strong>{partner.name}</strong>
-            <em>{partner.model}</em>
-          </div>
-          <small style={{ color: partner.accent }}>{partner.tag}</small>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function StreamerPathPanel({ path, previewed, dimmed, selecting, locked, onPreview, onClearPreview, onSelect }) {
-  const isDeals = path === 'deals';
-  const label = isDeals ? 'DEALS' : 'OVERLAYS';
-  const title = isDeals ? 'Find deals for your stream' : 'Build your stream experience';
-  const description = isDeals
-    ? 'Explore casino partnerships, streamer offers and available collaboration opportunities.'
-    : 'Manage overlays, bonus hunts, slot requests, tournaments, giveaways and viewer interactions.';
-  const cta = isDeals ? 'Explore Deals' : 'Open Overlay Center';
-  const Preview = isDeals ? DealsPreview : StreamerPreview;
-
-  return (
-    <button
-      type="button"
-      className={[
-        'lp-audience-panel',
-        'lp-streamer-path-panel',
-        `lp-streamer-path-panel--${path}`,
-        previewed ? 'is-previewed' : '',
-        dimmed ? 'is-dimmed' : '',
-        selecting ? 'is-selecting' : '',
-      ].filter(Boolean).join(' ')}
-      onMouseEnter={() => !locked && onPreview(path)}
-      onMouseLeave={() => !locked && onClearPreview()}
-      onFocus={() => !locked && onPreview(path)}
-      onBlur={() => !locked && onClearPreview()}
-      onClick={() => onSelect(path)}
-      aria-label={cta}
-      disabled={locked && !selecting}
-    >
-      <span className="lp-audience-panel__shade" />
-      <span className="lp-audience-panel__content">
-        <span className="lp-eyebrow">{label}</span>
-        <span className="lp-audience-panel__title">{title}</span>
-        <span className="lp-audience-panel__desc">{description}</span>
-        <span className="lp-panel-cta lp-panel-cta--streamer-path">
-          {cta}
-          <ArrowRight size={18} />
-        </span>
-        <span className="lp-panel-explore">
-          Select <ChevronsRight size={16} />
-        </span>
-      </span>
-      <span className="lp-audience-panel__preview">
-        <Preview expanded={selecting} />
-      </span>
-    </button>
-  );
-}
-
-function StreamerPathGateway({ previewPath, selectingPath, onPreview, onClearPreview, onSelect }) {
-  const locked = !!selectingPath;
-
-  return (
-    <section
-      className={[
-        'lp-gateway',
-        'lp-streamer-path-gateway',
-        selectingPath ? `lp-streamer-path-gateway--selecting-${selectingPath}` : '',
-      ].filter(Boolean).join(' ')}
-      aria-labelledby="streamer-path-heading"
-    >
-      <h1 id="streamer-path-heading" className="lp-sr-only">
-        Choose Streamers Center streamer deals or overlays
-      </h1>
-      <StreamerPathPanel
-        path="deals"
-        previewed={previewPath === 'deals'}
-        dimmed={previewPath === 'overlays'}
-        selecting={selectingPath === 'deals'}
-        locked={locked}
-        onPreview={onPreview}
-        onClearPreview={onClearPreview}
-        onSelect={onSelect}
-      />
-      <div className="lp-audience-divider" aria-hidden="true">
-        <span />
-      </div>
-      <StreamerPathPanel
-        path="overlays"
-        previewed={previewPath === 'overlays'}
-        dimmed={previewPath === 'deals'}
-        selecting={selectingPath === 'overlays'}
-        locked={locked}
-        onPreview={onPreview}
-        onClearPreview={onClearPreview}
-        onSelect={onSelect}
-      />
-    </section>
-  );
-}
-
 function SectionHeading({ eyebrow, title, children }) {
   return (
     <div className="lp-section-heading">
@@ -711,8 +599,6 @@ export default function LandingPage({ mode = 'selector' }) {
   const [pricingPlans, setPricingPlans] = useState([]);
   const [previewAudience, setPreviewAudience] = useState(null);
   const [selectingAudience, setSelectingAudience] = useState(null);
-  const [previewStreamerPath, setPreviewStreamerPath] = useState(null);
-  const [selectingStreamerPath, setSelectingStreamerPath] = useState(null);
   const [switchingAudience, setSwitchingAudience] = useState(null);
   const { user } = useAuth();
   const { isPremium } = usePremium();
@@ -764,10 +650,15 @@ export default function LandingPage({ mode = 'selector' }) {
   useEffect(() => {
     return () => {
       setSelectingAudience(null);
-      setSelectingStreamerPath(null);
       setSwitchingAudience(null);
     };
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (mode !== 'streamer') return;
+    rememberAudience(user, 'streamer');
+    navigate('/overlay-center', { replace: true, state: { fromAudienceSelector: true } });
+  }, [mode, navigate, user]);
 
   const partners = useMemo(() => {
     if (casinoOffers.length) {
@@ -795,7 +686,7 @@ export default function LandingPage({ mode = 'selector' }) {
   };
 
   const navigateAudience = (audience) => {
-    const route = audience === 'player' ? '/player/bonus-hunt' : '/streamer';
+    const route = audience === 'player' ? '/player/bonus-hunt' : '/overlay-center';
     navigate(route, { state: { fromAudienceSelector: true } });
   };
 
@@ -825,26 +716,6 @@ export default function LandingPage({ mode = 'selector' }) {
     trackEvent('player_cta_clicked', { route: location.pathname });
     rememberAudience(user, 'player');
     navigate('/player/bonus-hunt');
-  };
-
-  const previewStreamerChoice = (path) => {
-    if (selectingStreamerPath) return;
-    setPreviewStreamerPath(path);
-    trackEvent(`audience_streamer_${path}_previewed`, { route: location.pathname });
-  };
-
-  const clearStreamerChoice = () => {
-    if (!selectingStreamerPath) setPreviewStreamerPath(null);
-  };
-
-  const selectStreamerPath = (path) => {
-    if (selectingStreamerPath) return;
-    setSelectingStreamerPath(path);
-    setPreviewStreamerPath(null);
-    rememberAudience(user, 'streamer');
-    const route = path === 'deals' ? '/offers' : '/overlay-center';
-    trackEvent(`audience_streamer_${path}_selected`, { route: location.pathname, destination: route });
-    navigate(route, { state: { fromAudienceSelector: true } });
   };
 
   const startStreamer = () => {
@@ -906,13 +777,7 @@ export default function LandingPage({ mode = 'selector' }) {
         ) : mode === 'player' ? (
           <PlayerLanding headingRef={headingRef} onPrimaryCta={startPlayerTrial} user={user} />
         ) : (
-          <StreamerPathGateway
-            previewPath={previewStreamerPath}
-            selectingPath={selectingStreamerPath}
-            onPreview={previewStreamerChoice}
-            onClearPreview={clearStreamerChoice}
-            onSelect={selectStreamerPath}
-          />
+          null
         )}
 
         {mode === 'player' && <Footer />}

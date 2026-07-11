@@ -252,7 +252,7 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
 
   return (
     <header className="oc2-topbar">
-      <Link to="/streamer" className="oc2-brand" aria-label="Streamers Center streamer home">
+      <Link to="/overlay-center" className="oc2-brand" aria-label="Overlay Center home">
         <img src="/newlogo.png" alt="" />
         <span>Overlay Center</span>
       </Link>
