@@ -767,6 +767,13 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
               <span>{status.label}</span>
             </div>
             {status.detail && <p>{status.detail}</p>}
+            {status.issues?.length > 1 && (
+              <ul className="oc2-status-issue-list">
+                {status.issues.slice(0, 4).map(issue => (
+                  <li key={`${issue.kind}-${issue.label}`}>{issue.label}</li>
+                ))}
+              </ul>
+            )}
             <dl>
               <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
               <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>

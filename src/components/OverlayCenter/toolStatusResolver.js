@@ -141,6 +141,12 @@ export function getToolSetupIssues(type, widget, integrations = {}) {
   return issues;
 }
 
+function formatIssueDetail(issues) {
+  if (!issues.length) return '';
+  if (issues.length === 1) return issues[0].label;
+  return `${issues.length} steps remaining: ${issues[0].label}`;
+}
+
 export function resolveToolStatus({ type, widget, integrations = {}, premiumLocked = false }) {
   if (premiumLocked) {
     return {
@@ -184,7 +190,7 @@ export function resolveToolStatus({ type, widget, integrations = {}, premiumLock
     return {
       type: TOOL_STATUS.NEEDS_SETUP,
       label: TOOL_STATUS_LABELS[TOOL_STATUS.NEEDS_SETUP],
-      detail: `${issues.length} step${issues.length === 1 ? '' : 's'} remaining`,
+      detail: formatIssueDetail(issues),
       issues,
     };
   }

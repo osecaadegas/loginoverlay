@@ -20220,6 +20220,33 @@ body.wm-resizing {
   color: #7f91a8;
 }
 
+.oc2-status-issue-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.oc2-status-issue-list li {
+  position: relative;
+  padding-left: 14px;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.oc2-status-issue-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.54em;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #facc15;
+}
+
 .oc2-danger summary {
   color: #fca5a5;
   cursor: pointer;
