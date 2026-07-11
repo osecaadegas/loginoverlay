@@ -14,7 +14,6 @@ import {
   Copy,
   ExternalLink,
   Filter,
-  FolderOpen,
   Grid3X3,
   LayoutDashboard,
   Link2,
@@ -41,8 +40,6 @@ import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
 import AppearanceCenter from './appearance/AppearanceCenter';
 import { buildSyncedConfig } from './WidgetManager';
-import BonusHuntLibrary from './BonusHuntLibrary';
-import OverlayAssetLibrary from './OverlayAssetLibrary';
 import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
@@ -163,7 +160,6 @@ const PANEL_ROUTES = {
   '/overlay-center/appearance': 'appearance',
   '/overlay-center/integrations': 'integrations',
   '/overlay-center/preview': 'preview',
-  '/overlay-center/assets': 'assets',
   '/overlay-center/presets': 'presets',
   '/overlay-center/slots': 'slots',
   '/overlay-center/approvals': 'approvals',
@@ -287,7 +283,6 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
           <div className="oc2-menu-panel">
             <Link to="/overlay-center/tutorial">Restart tutorial</Link>
             <button type="button" onClick={onRestartSetup}>Restart guided setup</button>
-            <Link to="/overlay-center/assets">Assets</Link>
             <Link to="/overlay-center/presets">Presets</Link>
             <Link to="/offers">Streamer home</Link>
             {isAdmin && <Link to="/overlay-center/approvals">Approvals</Link>}
@@ -499,7 +494,6 @@ function QuickSettings({ isAdmin }) {
     { title: 'Themes', description: 'Apply visual presets quickly.', to: '/overlay-center/appearance', icon: Brush },
     { title: 'Integrations', description: 'Connect chat, points and music.', to: '/overlay-center/integrations', icon: Link2 },
     { title: 'Presets', description: 'Save and reuse overlay layouts.', to: '/overlay-center/presets', icon: SlidersHorizontal },
-    { title: 'Assets', description: 'Manage hunts, presets and media.', to: '/overlay-center/assets', icon: FolderOpen },
   ];
 
   if (isAdmin) {
@@ -1188,8 +1182,6 @@ export default function OverlayControlCenter() {
       tools: '/overlay-center/widgets',
       appearance: '/overlay-center/appearance',
       preview: '/overlay-center/preview',
-      assets: '/overlay-center/assets',
-      library: '/overlay-center/assets',
       presets: '/overlay-center/presets',
       slots: '/overlay-center/slots',
       approvals: '/overlay-center/approvals',
@@ -1206,6 +1198,14 @@ export default function OverlayControlCenter() {
     await saveTutorial({ status: 'completed', completed: true, currentStep: 0, updatedAt: new Date().toISOString() });
     if (location.pathname === '/overlay-center/tutorial') navigate('/overlay-center/integrations', { replace: true });
   }, [location.pathname, navigate, saveTutorial]);
+
+  useEffect(() => {
+    const isWidgetDetailPath = location.pathname.startsWith('/overlay-center/widgets/');
+    const isKnownPanelPath = Boolean(PANEL_ROUTES[location.pathname]);
+    if (location.pathname.startsWith('/overlay-center/') && !isWidgetDetailPath && !isKnownPanelPath) {
+      navigate('/overlay-center/widgets', { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     if (currentPanel === 'tutorial') setGuidedTutorialActive(true);
@@ -1481,34 +1481,6 @@ export default function OverlayControlCenter() {
             copyUrl={copyUrl}
             copyMsg={copyMsg}
           />
-        )}
-
-        {currentPanel === 'assets' && (
-          <div data-tour="library-page">
-            <OverlayAssetLibrary
-              widgets={widgets}
-              onAddWidget={addWidget}
-              onOpenPanel={(panel) => navigate(panel === 'presets' ? '/overlay-center/presets' : '/overlay-center/widgets')}
-              huntArchive={<BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />}
-              presetLibrary={(
-                <PresetLibrary
-                  widgets={widgets}
-                  theme={theme}
-                  isAdmin={isAdmin}
-                  globalPresets={globalPresets}
-                  sharedPresets={sharedPresets}
-                  onLoadPreset={loadGlobalPreset}
-                  onDeletePreset={deleteGlobalPreset}
-                  onSharePreset={sharePreset}
-                  onUnsharePreset={unsharePreset}
-                  onSavePreset={saveGlobalPreset}
-                  presetName={presetName}
-                  setPresetName={setPresetName}
-                  presetMsg={presetMsg}
-                />
-              )}
-            />
-          </div>
         )}
 
         {currentPanel === 'presets' && (
