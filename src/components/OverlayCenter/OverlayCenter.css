@@ -454,6 +454,100 @@
 .cg-config__btn--muted { background: rgba(255,255,255,0.06); color: #94a3b8; flex: 0; }
 .cg-config__btn--muted:hover { background: rgba(255,255,255,0.1); }
 .cg-config__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cg-config__game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) minmax(300px, 0.72fr);
+  gap: 18px;
+  align-items: stretch;
+}
+.cg-config__game-card {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.26);
+}
+.cg-config__game-card--controls {
+  align-content: stretch;
+}
+.cg-config__game-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.cg-config__game-card-header div {
+  display: grid;
+  gap: 3px;
+}
+.cg-config__game-card-header strong {
+  color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+.cg-config__game-card-header span {
+  color: #8ba4b8;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+.cg-config__timer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.cg-config__timer-option {
+  width: 100%;
+  min-height: 68px;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.cg-config__timer-option strong {
+  font-size: 0.88rem;
+}
+.cg-config__timer-option small {
+  font-size: 0.72rem;
+  opacity: 0.82;
+}
+.cg-config__custom-timer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 260px) auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.cg-config__custom-timer-row input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+  font-size: 13.1px;
+  box-sizing: border-box;
+}
+.cg-config__custom-timer-row input:disabled {
+  opacity: 0.55;
+}
+.cg-config__custom-timer-row span {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+.cg-config__game-actions {
+  align-self: end;
+  margin-top: auto;
+}
+.cg-config__game-actions > .cg-config__btn {
+  min-height: 48px;
+}
 .cg-config__winner-picker {
   width: 100%;
   display: grid;
@@ -20461,6 +20555,10 @@ body.wm-resizing {
 }
 
 @media (max-width: 940px) {
+  .cg-config__game-layout {
+    grid-template-columns: 1fr;
+  }
+
   .oc2-tool-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -20492,6 +20590,14 @@ body.wm-resizing {
 
   .oc2-setup-summary__stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cg-config__timer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cg-config__custom-timer-row {
+    grid-template-columns: 1fr;
   }
 
   .oc2-tool-grid,

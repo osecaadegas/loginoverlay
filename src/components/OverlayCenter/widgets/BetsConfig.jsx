@@ -380,8 +380,15 @@ export default function BetsConfig({ config, onChange }) {
 
       {/* ═══ GAME TAB ═══ */}
       {tab === 'game' && (
-        <div className="cg-config__section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 14, alignItems: 'start' }}>
-          <div style={{ display: 'grid', gap: 10 }}>
+        <div className="cg-config__section cg-config__game-layout">
+          <section className="cg-config__game-card cg-config__game-card--setup">
+            <div className="cg-config__game-card-header">
+              <div>
+                <strong>Round setup</strong>
+                <span>Question and betting window</span>
+              </div>
+            </div>
+
             <label className="cg-config__field">
               <span>Title / Question</span>
               <input
@@ -393,30 +400,28 @@ export default function BetsConfig({ config, onChange }) {
 
             <div className="cg-config__field">
               <span>Betting Timer</span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+              <div className="cg-config__timer-grid">
                 {TIMER_PRESETS.map((preset) => (
                   <button
                     key={preset.value}
                     type="button"
-                    className={`cg-config__btn ${timerSeconds === preset.value ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
+                    className={`cg-config__btn cg-config__timer-option ${timerSeconds === preset.value ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
                     onClick={() => set('timerSeconds', preset.value)}
-                    style={{ width: '100%', minHeight: 54, display: 'grid', placeItems: 'center', gap: 2, padding: '8px 10px', textAlign: 'center' }}
                   >
-                    <strong style={{ fontSize: '0.86rem' }}>{preset.label}</strong>
-                    <small style={{ fontSize: '0.7rem', opacity: 0.82 }}>{preset.detail}</small>
+                    <strong>{preset.label}</strong>
+                    <small>{preset.detail}</small>
                   </button>
                 ))}
                 <button
                   type="button"
-                  className={`cg-config__btn ${customTimerActive ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
+                  className={`cg-config__btn cg-config__timer-option ${customTimerActive ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
                   onClick={() => set('timerSeconds', customTimerActive ? timerSeconds : 0)}
-                  style={{ width: '100%', minHeight: 54, display: 'grid', placeItems: 'center', gap: 2, padding: '8px 10px', textAlign: 'center' }}
                 >
-                  <strong style={{ fontSize: '0.86rem' }}>Custom</strong>
-                  <small style={{ fontSize: '0.7rem', opacity: 0.82 }}>{customTimerActive ? `${timerSeconds} seconds` : 'Manual value'}</small>
+                  <strong>Custom</strong>
+                  <small>{customTimerActive ? `${timerSeconds} seconds` : 'Manual value'}</small>
                 </button>
               </div>
-              <div className="cg-config__add-row" style={{ marginTop: 8 }}>
+              <div className="cg-config__custom-timer-row">
                 <input
                   type="number"
                   value={customTimerActive ? timerSeconds : ''}
@@ -425,17 +430,24 @@ export default function BetsConfig({ config, onChange }) {
                   placeholder="Custom seconds"
                   disabled={!customTimerActive}
                 />
-                <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>seconds</span>
+                <span>seconds</span>
               </div>
               <p className="cg-config__hint">Use a preset or enter a custom value. Set custom to 0 for no timer.</p>
             </div>
-          </div>
+          </section>
 
-          <aside style={{ display: 'grid', gap: 12 }}>
+          <aside className="cg-config__game-card cg-config__game-card--controls">
+            <div className="cg-config__game-card-header">
+              <div>
+                <strong>Round controls</strong>
+                <span>Current state and actions</span>
+              </div>
+            </div>
+
             {roundStatusCard}
 
             {/* Action buttons */}
-            <div className="cg-config__actions">
+            <div className="cg-config__actions cg-config__game-actions">
               {status === 'idle' && (
                 <button
                   className="cg-config__btn cg-config__btn--primary"
