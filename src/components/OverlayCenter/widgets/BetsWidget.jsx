@@ -69,8 +69,6 @@ function BetsWidget({ config }) {
   const bets         = c.bets          || {};
   const betters      = c.betters       || {};
   const timer        = c.timerSeconds  || 0;
-  const fund         = c.fundAmount    || 0;
-  const currency     = c.currency      || '€';
   const cmd          = c.chatCommand   || '!bet';
   const font         = c.fontFamily    || "'Inter', sans-serif";
   const layout       = c.displayStyle  || 'v1_list';
@@ -188,7 +186,7 @@ function BetsWidget({ config }) {
       {/* ── Header ── */}
       <div className="bets-ov__header">
         <span className="bets-ov__title">
-          {title}{fund > 0 ? ` · ${fund}${currency}` : ''}
+          {title}
         </span>
         {status === 'result' && <span className="bets-ov__trophy">🏆</span>}
         <span className={`bets-ov__status bets-ov__status--${status}`}>

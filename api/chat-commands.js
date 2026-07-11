@@ -998,7 +998,7 @@ async function handleBetPayout(req, res) {
     // Announce result in chat
     const winLabel    = options[winnerIdx]?.label || `Option ${winnerIdx + 1}`;
     const totalPayout = succeeded.reduce((s, w) => s + w.payout, 0);
-    const winnerMsg   = (cfg.betMsgWinner || '🏆 BETS PAID OUT! {option} wins! {winners} winners — {total} pts distributed!')
+    const winnerMsg   = (cfg.betMsgWinner || '{option} wins. {winners} winner(s), {total} points paid out.')
       .replace(/\{option\}/g,  winLabel)
       .replace(/\{winners\}/g, String(succeeded.length))
       .replace(/\{total\}/g,   totalPayout.toLocaleString());
@@ -1072,11 +1072,11 @@ async function handleBet(req, res) {
 
     // ── Configurable message templates ──
     const tpl = {
-      placed:     cfg.betMsgPlaced     || '@{user} ✅ Bet of {amount} pts registered on {option}!',
-      placedSe:   cfg.betMsgPlacedSe   || '@{user} ✅ Bet of {amount} pts registered on {option}! Points deducted.',
-      noPoints:   cfg.betMsgNoPoints   || '@{user} ❌ Not enough points — you have {balance} but tried to bet {amount}.',
-      alreadyBet: cfg.betMsgAlreadyBet || '@{user} ❌ You already placed a bet this round.',
-      notOpen:    cfg.betMsgNotOpen    || '@{user} ❌ Bets are not open right now.',
+      placed:     cfg.betMsgPlaced     || '@{user}, your {amount} point bet on {option} is in.',
+      placedSe:   cfg.betMsgPlacedSe   || '@{user}, your {amount} point bet on {option} is in. Points deducted.',
+      noPoints:   cfg.betMsgNoPoints   || '@{user}, you have {balance} points and tried to bet {amount}.',
+      alreadyBet: cfg.betMsgAlreadyBet || '@{user}, you already have a bet in this round.',
+      notOpen:    cfg.betMsgNotOpen    || '@{user}, bets are closed right now.',
     };
     const fill = (t, vars) => t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
     const { data: seConn } = await supabase

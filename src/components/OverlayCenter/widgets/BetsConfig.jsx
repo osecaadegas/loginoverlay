@@ -7,7 +7,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import TabBar from './shared/TabBar';
-import { MetricCard, SectionHeader, SetupChecklist, StatusBadge } from '../ui';
 
 // Hex colour presets per theme (applied when user selects a theme from the dropdown)
 const THEME_PRESETS_CONFIG = {
@@ -37,6 +36,110 @@ const DEFAULT_OPTIONS = [
   { label: '1000+' },
 ];
 
+const TIMER_PRESETS = [
+  { value: 600, label: '600 seconds', detail: '10 minutes' },
+  { value: 1200, label: '1200 seconds', detail: '20 minutes' },
+];
+
+const CHAT_TEMPLATE_FIELDS = [
+  {
+    key: 'betMsgPlaced',
+    label: 'Bet accepted',
+    help: 'Sent when a viewer bet is saved without deducting points.',
+    placeholder: '@{user}, your {amount} point bet on {option} is in.',
+  },
+  {
+    key: 'betMsgPlacedSe',
+    label: 'Bet accepted and points deducted',
+    help: 'Sent when StreamElements points are deducted successfully.',
+    placeholder: '@{user}, your {amount} point bet on {option} is in. Points deducted.',
+  },
+  {
+    key: 'betMsgNoPoints',
+    label: 'Not enough points',
+    help: 'Sent when a viewer tries to bet more than their balance.',
+    placeholder: '@{user}, you have {balance} points and tried to bet {amount}.',
+  },
+  {
+    key: 'betMsgAlreadyBet',
+    label: 'Viewer already has a bet',
+    help: 'Sent when the same viewer tries to bet again in the same round.',
+    placeholder: '@{user}, you already have a bet in this round.',
+  },
+  {
+    key: 'betMsgNotOpen',
+    label: 'Bets are closed',
+    help: 'Sent when someone tries to bet before opening or after locking the round.',
+    placeholder: '@{user}, bets are closed right now.',
+  },
+  {
+    key: 'betMsgWinner',
+    label: 'Winner and payout message',
+    help: 'Sent after you choose the winning bracket and payouts finish.',
+    placeholder: '{option} wins. {winners} winner(s), {total} points paid out.',
+  },
+];
+
+function normalizeBracketOptions(source = DEFAULT_OPTIONS) {
+  const safeSource = Array.isArray(source) && source.length ? source : DEFAULT_OPTIONS;
+  return safeSource.map((option, index) => ({
+    ...option,
+    label: String(option?.label || `Bracket ${index + 1}`).trim() || `Bracket ${index + 1}`,
+  }));
+}
+
+function bracketSignature(options) {
+  return normalizeBracketOptions(options).map(option => option.label.toLowerCase()).join('|');
+}
+
+function summarizeBracketSet(options) {
+  return normalizeBracketOptions(options).map((option, index) => `${index + 1}. ${option.label}`).join(' | ');
+}
+
+function dateScore(value) {
+  const time = new Date(value || 0).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function formatSavedDate(value) {
+  if (!value) return 'Saved recently';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Saved recently';
+  return date.toLocaleString();
+}
+
+function createBracketMemory(options, history = [], usage = []) {
+  const snapshot = normalizeBracketOptions(options);
+  const signature = bracketSignature(snapshot);
+  if (!signature) return {};
+
+  const now = new Date().toISOString();
+  const summary = summarizeBracketSet(snapshot);
+  const recentEntry = {
+    id: `${Date.now()}-recent`,
+    options: snapshot,
+    summary,
+    count: snapshot.length,
+    usedAt: now,
+  };
+  const existingUsage = usage.find(entry => bracketSignature(entry.options) === signature);
+  const usageEntry = {
+    id: existingUsage?.id || `${Date.now()}-usage`,
+    options: snapshot,
+    summary,
+    count: snapshot.length,
+    uses: (existingUsage?.uses || 0) + 1,
+    lastUsedAt: now,
+  };
+
+  return {
+    bracketHistory: [recentEntry, ...history.filter(entry => bracketSignature(entry.options) !== signature)].slice(0, 12),
+    bracketUsage: [usageEntry, ...usage.filter(entry => bracketSignature(entry.options) !== signature)]
+      .sort((a, b) => (b.uses || 0) - (a.uses || 0) || dateScore(b.lastUsedAt) - dateScore(a.lastUsedAt))
+      .slice(0, 6),
+  };
+}
+
 /** Fire-and-forget SE bot chat message */
 function seBotAnnounce(userId, message) {
   if (!userId || !message) return;
@@ -64,34 +167,18 @@ export default function BetsConfig({ config, onChange }) {
   const bets        = c.bets        || {};
   const betters     = c.betters     || {};
   const history     = c.betsHistory || [];
+  const bracketHistory = Array.isArray(c.bracketHistory) ? c.bracketHistory : [];
+  const bracketUsage = Array.isArray(c.bracketUsage) ? c.bracketUsage : [];
   const chatCommand = c.chatCommand || '!bet';
   const pointsEnabled = c.betSeEnabled !== false;
+  const timerSeconds = Number(c.timerSeconds || 0);
+  const customTimerActive = !TIMER_PRESETS.some(preset => preset.value === timerSeconds);
   const totalPool   = options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
   const totalBetters = Object.keys(betters).length;
-  const setupItems = [
-    {
-      key: 'question',
-      title: 'Set the bet question',
-      detail: c.question || 'Add the title viewers will see on stream',
-      ready: !!(c.question || '').trim(),
-    },
-    {
-      key: 'brackets',
-      title: 'Confirm brackets',
-      detail: `${options.length} bracket${options.length === 1 ? '' : 's'} configured`,
-      ready: options.length >= 2,
-    },
-    {
-      key: 'chat',
-      title: 'Chat command ready',
-      detail: `Viewers type ${chatCommand} <number> <amount>`,
-      ready: !!chatCommand,
-    },
-  ];
 
   /* ── Game actions ── */
   const openBets = () => {
-    const opts = options.length > 0 ? options : DEFAULT_OPTIONS;
+    const opts = normalizeBracketOptions(options.length > 0 ? options : DEFAULT_OPTIONS);
     setMulti({
       gameStatus: 'open',
       winnerOption: null,
@@ -99,6 +186,7 @@ export default function BetsConfig({ config, onChange }) {
       betters: {},
       _openedAt: Date.now(),
       options: opts,
+      ...createBracketMemory(opts, bracketHistory, bracketUsage),
     });
     const bracketList = opts
       .map((o, i) => `${o.label} → ${chatCommand} ${i + 1} <amount>`)
@@ -130,6 +218,8 @@ export default function BetsConfig({ config, onChange }) {
       betters:   totalBetters,
       time:      new Date().toLocaleTimeString(),
       date:      new Date().toLocaleDateString(),
+      brackets:  normalizeBracketOptions(options),
+      bracketSummary: summarizeBracketSet(options),
     };
     setMulti({
       gameStatus:   'result',
@@ -178,12 +268,29 @@ export default function BetsConfig({ config, onChange }) {
   /* ── Bracket management ── */
   const addOption    = () => set('options', [...options, { label: `Option ${options.length + 1}` }]);
   const removeOption = (idx) => set('options', options.filter((_, i) => i !== idx));
+  const duplicateOption = (idx) => {
+    const source = options[idx] || { label: `Bracket ${idx + 1}` };
+    const updated = [...options];
+    updated.splice(idx + 1, 0, { ...source, label: `${source.label || `Bracket ${idx + 1}`} copy` });
+    set('options', updated);
+  };
+  const moveOption = (idx, direction) => {
+    const nextIndex = idx + direction;
+    if (nextIndex < 0 || nextIndex >= options.length) return;
+    const updated = [...options];
+    [updated[idx], updated[nextIndex]] = [updated[nextIndex], updated[idx]];
+    set('options', updated);
+  };
   const updateOption = (idx, label) => {
     const updated = [...options];
     updated[idx]  = { ...updated[idx], label };
     set('options', updated);
   };
-  const loadDefaults = () => set('options', DEFAULT_OPTIONS);
+  const loadDefaults = () => set('options', normalizeBracketOptions(DEFAULT_OPTIONS));
+  const loadBracketSet = (entry) => {
+    if (status !== 'idle') return;
+    set('options', normalizeBracketOptions(entry.options));
+  };
 
   const tabs = [
     { id: 'game',     label: '🎮 Game' },
@@ -195,21 +302,6 @@ export default function BetsConfig({ config, onChange }) {
 
   return (
     <div className="cg-config cg-config--modern">
-      <div className="cg-config__hero">
-        <SectionHeader
-          eyebrow="Live Betting"
-          title="Bets control room"
-          description="Open a chat-powered betting round, lock entries, resolve the winning bracket, and keep the overlay state obvious before it hits OBS."
-          pill={<StatusBadge tone={status === 'open' ? 'live' : status === 'idle' ? 'neutral' : 'active'}>{status}</StatusBadge>}
-        />
-        <div className="cg-config__metrics">
-          <MetricCard label="Pool" value={totalPool.toLocaleString()} meta={`${totalBetters} viewer${totalBetters === 1 ? '' : 's'} in this round`} />
-          <MetricCard label="Brackets" value={options.length} meta="Available betting outcomes" />
-          <MetricCard label="Command" value={chatCommand} meta={c.twitchChannel || 'Uses profile channel when available'} />
-        </div>
-        <SetupChecklist items={setupItems} title="Round readiness" />
-      </div>
-
       <TabBar tabs={tabs} active={tab} onChange={setTab} variant="cg" />
 
       {/* ═══ GAME TAB ═══ */}
@@ -224,35 +316,40 @@ export default function BetsConfig({ config, onChange }) {
             />
           </label>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <label className="cg-config__field">
-              <span>Fund Amount</span>
+          <div className="cg-config__field">
+            <span>Betting Timer</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {TIMER_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  className={`cg-config__btn ${timerSeconds === preset.value ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
+                  onClick={() => set('timerSeconds', preset.value)}
+                >
+                  {preset.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={`cg-config__btn ${customTimerActive ? 'cg-config__btn--primary' : 'cg-config__btn--muted'}`}
+                onClick={() => set('timerSeconds', customTimerActive ? timerSeconds : 0)}
+              >
+                Custom
+              </button>
+            </div>
+            <div className="cg-config__add-row" style={{ marginTop: 8 }}>
               <input
                 type="number"
-                value={c.fundAmount || 0}
-                onChange={e => set('fundAmount', parseInt(e.target.value) || 0)}
+                value={customTimerActive ? timerSeconds : ''}
+                onChange={e => set('timerSeconds', parseInt(e.target.value, 10) || 0)}
                 min={0}
+                placeholder="Custom seconds"
+                disabled={!customTimerActive}
               />
-            </label>
-            <label className="cg-config__field">
-              <span>Currency</span>
-              <input
-                value={c.currency || '€'}
-                onChange={e => set('currency', e.target.value)}
-                placeholder="€"
-              />
-            </label>
+              <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>seconds</span>
+            </div>
+            <p className="cg-config__hint">Use 600 seconds, 1200 seconds, or enter a custom value. Set custom to 0 for no timer.</p>
           </div>
-
-          <label className="cg-config__field">
-            <span>Countdown Timer (seconds, 0 = off)</span>
-            <input
-              type="number"
-              value={c.timerSeconds || 0}
-              onChange={e => set('timerSeconds', parseInt(e.target.value) || 0)}
-              min={0}
-            />
-          </label>
 
           {/* Status card */}
           <div className="cg-config__status-card">
@@ -342,11 +439,45 @@ export default function BetsConfig({ config, onChange }) {
       {tab === 'brackets' && (
         <div className="cg-config__section">
           <p className="cg-config__hint">
-            Configure bracket labels. Viewers type <code>{chatCommand} &lt;number&gt; &lt;amount&gt;</code> to bet.
+            Each row is one bracket viewers can choose. The row number is the chat number: <code>{chatCommand} 1 &lt;amount&gt;</code>, <code>{chatCommand} 2 &lt;amount&gt;</code>, and so on.
           </p>
+
+          {bracketUsage.length > 0 && (
+            <div style={{ display: 'grid', gap: 8, padding: 10, border: '1px solid rgba(148,163,184,0.18)', borderRadius: 12, background: 'rgba(15,23,42,0.38)' }}>
+              <strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>Most used bracket setups</strong>
+              {bracketUsage.map((entry, i) => (
+                <div key={entry.id || `usage-${i}`} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 8, alignItems: 'center' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: '#cbd5e1', fontSize: '0.78rem', fontWeight: 700 }}>{entry.count || normalizeBracketOptions(entry.options).length} brackets · used {entry.uses || 1} time{(entry.uses || 1) === 1 ? '' : 's'}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.summary || summarizeBracketSet(entry.options)}</div>
+                  </div>
+                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => loadBracketSet(entry)} disabled={status !== 'idle'}>Load</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {bracketHistory.length > 0 && (
+            <div style={{ display: 'grid', gap: 8, padding: 10, border: '1px solid rgba(148,163,184,0.18)', borderRadius: 12, background: 'rgba(15,23,42,0.28)' }}>
+              <strong style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>Recent bracket history</strong>
+              {bracketHistory.slice(0, 5).map((entry, i) => (
+                <div key={entry.id || `history-${i}`} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 8, alignItems: 'center' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: '#cbd5e1', fontSize: '0.78rem', fontWeight: 700 }}>{entry.count || normalizeBracketOptions(entry.options).length} brackets · {formatSavedDate(entry.usedAt)}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.summary || summarizeBracketSet(entry.options)}</div>
+                  </div>
+                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => loadBracketSet(entry)} disabled={status !== 'idle'}>Load</button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {options.map((opt, i) => (
-            <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ color: '#8ba4b8', fontSize: '0.82rem', minWidth: 20 }}>{i + 1}.</span>
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0, 1fr) auto', gap: 8, alignItems: 'end', padding: '8px 0', borderBottom: '1px solid rgba(148,163,184,0.1)' }}>
+              <div style={{ display: 'grid', gap: 4 }}>
+                <span style={{ color: '#e2e8f0', fontSize: '0.8rem', fontWeight: 800 }}>Bracket {i + 1}</span>
+                <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>{chatCommand} {i + 1}</span>
+              </div>
               <input
                 style={{
                   flex: 1,
@@ -362,13 +493,13 @@ export default function BetsConfig({ config, onChange }) {
                 disabled={status !== 'idle'}
                 placeholder={`Option ${i + 1}`}
               />
-              {status === 'idle' && options.length > 2 && (
-                <button
-                  onClick={() => removeOption(i)}
-                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', padding: '2px 6px' }}
-                >
-                  ✕
-                </button>
+              {status === 'idle' && (
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, -1)} disabled={i === 0}>Up</button>
+                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, 1)} disabled={i === options.length - 1}>Down</button>
+                  <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => duplicateOption(i)}>Copy</button>
+                  {options.length > 2 && <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => removeOption(i)}>Remove</button>}
+                </div>
               )}
             </div>
           ))}
@@ -383,7 +514,7 @@ export default function BetsConfig({ config, onChange }) {
             </div>
           )}
           {status !== 'idle' && (
-            <p className="cg-config__hint" style={{ marginTop: 4 }}>⚠️ End the current round to edit brackets.</p>
+            <p className="cg-config__hint" style={{ marginTop: 4 }}>End the current round before changing bracket labels or loading saved setups.</p>
           )}
         </div>
       )}
@@ -472,24 +603,20 @@ export default function BetsConfig({ config, onChange }) {
             <span>SE Bot announcements (open / lock / result)</span>
           </label>
 
-          {/* ── Chat Message Templates ── */}
+          {/* ── Chat reply messages ── */}
           <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(16,185,129,0.07)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.2)' }}>
             <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6ee7b7', marginBottom: 4 }}>
-              💬 Chat Message Templates
+              Chat reply messages
             </p>
             <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginBottom: 10 }}>
-              Available variables: <code style={{ color: '#c7d2fe' }}>{'{user}'}</code> <code style={{ color: '#c7d2fe' }}>{'{amount}'}</code> <code style={{ color: '#c7d2fe' }}>{'{option}'}</code> <code style={{ color: '#c7d2fe' }}>{'{balance}'}</code> <code style={{ color: '#c7d2fe' }}>{'{winners}'}</code> <code style={{ color: '#c7d2fe' }}>{'{total}'}</code>
+              Write the exact chat replies the bot should send. These words are replaced automatically: <code style={{ color: '#c7d2fe' }}>{'{user}'}</code> viewer name, <code style={{ color: '#c7d2fe' }}>{'{amount}'}</code> bet amount, <code style={{ color: '#c7d2fe' }}>{'{option}'}</code> bracket label, <code style={{ color: '#c7d2fe' }}>{'{balance}'}</code> viewer balance, <code style={{ color: '#c7d2fe' }}>{'{winners}'}</code> winners, <code style={{ color: '#c7d2fe' }}>{'{total}'}</code> paid points.
             </p>
-            {[
-              { key: 'betMsgPlaced',    label: '✅ Bet placed',              placeholder: '@{user} ✅ Bet of {amount} pts registered on {option}!' },
-              { key: 'betMsgPlacedSe', label: '✅ Bet placed (SE deduct)',   placeholder: '@{user} ✅ Bet of {amount} pts registered on {option}! Points deducted.' },
-              { key: 'betMsgNoPoints', label: '❌ Not enough points',         placeholder: '@{user} ❌ Not enough points — you have {balance} but tried to bet {amount}.' },
-              { key: 'betMsgAlreadyBet',label: '❌ Already bet',              placeholder: '@{user} ❌ You already placed a bet this round.' },
-              { key: 'betMsgNotOpen',  label: '❌ Bets not open',             placeholder: '@{user} ❌ Bets are not open right now.' },
-              { key: 'betMsgWinner',   label: '🏆 Winner announced',          placeholder: '🏆 BETS PAID OUT! {option} wins! {winners} winners — {total} pts distributed!' },
-            ].map(({ key, label, placeholder }) => (
+            {CHAT_TEMPLATE_FIELDS.map(({ key, label, help, placeholder }) => (
               <label key={key} className="cg-config__field" style={{ marginBottom: 6 }}>
-                <span style={{ fontSize: '0.75rem' }}>{label}</span>
+                <span style={{ fontSize: '0.75rem' }}>
+                  <strong style={{ display: 'block', color: '#dbeafe' }}>{label}</strong>
+                  <small style={{ display: 'block', color: '#94a3b8', fontSize: '0.68rem', fontWeight: 500 }}>{help}</small>
+                </span>
                 <input
                   value={c[key] || ''}
                   onChange={e => set(key, e.target.value)}
@@ -607,6 +734,11 @@ export default function BetsConfig({ config, onChange }) {
                   <div style={{ fontSize: '0.78rem', color: '#8ba4b8', marginTop: 2 }}>
                     {entry.question} · {entry.betters} bets · {(entry.pool || 0).toLocaleString()} pts
                   </div>
+                  {entry.bracketSummary && (
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 3 }}>
+                      Brackets: {entry.bracketSummary}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
