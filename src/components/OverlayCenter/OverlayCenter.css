@@ -19849,37 +19849,6 @@ body.wm-resizing {
   grid-column: 1 / -1;
 }
 
-.oc2-tabs {
-  display: flex;
-  gap: 6px;
-  padding: 5px;
-  margin-bottom: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  border-radius: 8px;
-  background: rgba(2, 6, 23, 0.38);
-  overflow-x: auto;
-}
-
-.oc2-tab {
-  min-height: 44px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #9fb0c3;
-  text-transform: capitalize;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.oc2-tab--active,
-.oc2-tab:hover,
-.oc2-tab:focus-visible {
-  color: #ffffff;
-  background: rgba(20, 184, 166, 0.14);
-  outline: none;
-}
-
 .oc2-tab-panel {
   display: grid;
   gap: 16px;

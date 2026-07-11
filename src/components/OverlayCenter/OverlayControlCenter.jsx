@@ -595,15 +595,10 @@ function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange,
   );
 }
 
-function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, addWidget, removeWidget }) {
+function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, addWidget }) {
   const def = getWidgetDef(widgetType);
   const widget = widgets.find(item => item.widget_type === widgetType);
   const ConfigComponent = def?.configPanel;
-  const [activeTab, setActiveTab] = useState('setup');
-
-  useEffect(() => {
-    setActiveTab('setup');
-  }, [widgetType]);
 
   if (!def) {
     return (
@@ -630,183 +625,46 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
     trackEvent(widget.is_visible === false ? ANALYTICS_EVENTS.OVERLAY_TOOL_ENABLED : ANALYTICS_EVENTS.OVERLAY_TOOL_DISABLED, { widget_type: widgetType });
   };
 
-  const handleRemove = async () => {
-    if (!widget) return;
-    const ok = window.confirm(`Remove ${FEATURE_COPY[widgetType]?.title || def.label} from the overlay?`);
-    if (!ok) return;
-    await removeWidget(widget.id);
-  };
-
-  const updateWidget = (patch) => {
-    if (!widget) return;
-    saveWidget({ ...widget, ...patch });
-  };
-
-  const updateConfig = (patch) => {
-    if (!widget) return;
-    saveWidget({ ...widget, config: { ...(widget.config || {}), ...patch } });
-  };
-
   const status = resolveToolStatus({ type: widgetType, widget, integrations });
-  const styleKey = def.styleConfigKey || 'displayStyle';
-  const styleOptions = Array.isArray(def.styles) ? def.styles : [];
-  const animationOptions = ['none', 'fade', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'scale', 'bounce', 'glow', 'blur'];
 
-  const tabPanel = (() => {
+  const configPanel = (() => {
     if (!widget) return null;
 
-    if (activeTab === 'setup') {
-      if (!ConfigComponent) {
-        return (
-          <div className="oc2-tab-panel">
-            <h2>No setup panel available</h2>
-            <p>This widget does not expose a custom setup form yet.</p>
-          </div>
-        );
-      }
-
-      return (
-        <div className="oc2-config-shell">
-          <div className="oc2-config-main">
-            <ConfigComponent
-              config={widget.config || {}}
-              onChange={(newConfig) => {
-                saveWidget({ ...widget, config: newConfig });
-                trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: activeTab });
-              }}
-              allWidgets={widgets}
-              mode="sidebar"
-            />
-          </div>
-          <aside className="oc2-config-side">
-            <h3>Status</h3>
-            <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
-              <StatusIcon status={status.type} />
-              <span>{status.label}</span>
-            </div>
-            {status.detail && <p>{status.detail}</p>}
-            <dl>
-              <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
-              <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
-              <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
-            </dl>
-            <button type="button" className="oc2-btn" onClick={() => setActiveTab('advanced')}>Edit position and size</button>
-          </aside>
-        </div>
-      );
-    }
-
-    if (activeTab === 'appearance') {
+    if (!ConfigComponent) {
       return (
         <div className="oc2-tab-panel">
-          <div>
-            <h2>Appearance</h2>
-            <p>Control the visual style for this tool. Detailed widget-specific styling still lives in Setup when the tool provides it.</p>
-          </div>
-          <div className="oc2-form-grid">
-            {styleOptions.length > 0 && (
-              <label className="oc2-field">
-                Style
-                <select value={widget.config?.[styleKey] || styleOptions[0]?.id || ''} onChange={event => updateConfig({ [styleKey]: event.target.value })}>
-                  {styleOptions.map(option => (
-                    <option key={option.id} value={option.id}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-            )}
-            {['accentColor', 'bgColor', 'textColor', 'mutedColor', 'borderColor'].map(key => (
-              <label key={key} className="oc2-field">
-                {key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase())}
-                <input
-                  type="text"
-                  value={widget.config?.[key] || ''}
-                  placeholder={key === 'bgColor' ? 'rgba(15,23,42,0.85)' : '#ffffff'}
-                  onChange={event => updateConfig({ [key]: event.target.value })}
-                />
-              </label>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    if (activeTab === 'behavior') {
-      return (
-        <div className="oc2-tab-panel">
-          <div>
-            <h2>Behavior</h2>
-            <p>Control visibility, layer order and motion for this tool.</p>
-          </div>
-          <div className="oc2-form-grid">
-            <label className="oc2-field oc2-field--toggle">
-              <span>Visible on overlay</span>
-              <input
-                type="checkbox"
-                checked={widget.is_visible !== false}
-                onChange={handleToggle}
-              />
-            </label>
-            <label className="oc2-field">
-              Entrance animation
-              <select value={widget.animation || 'fade'} onChange={event => updateWidget({ animation: event.target.value })}>
-                {animationOptions.map(option => <option key={option} value={option}>{option}</option>)}
-              </select>
-            </label>
-            <label className="oc2-field">
-              Exit animation
-              <select value={widget.exit_animation || 'fade'} onChange={event => updateWidget({ exit_animation: event.target.value })}>
-                {animationOptions.map(option => <option key={option} value={option}>{option}</option>)}
-              </select>
-            </label>
-            <label className="oc2-field">
-              Layer
-              <input
-                type="number"
-                value={widget.z_index || 1}
-                min="0"
-                onChange={event => updateWidget({ z_index: Number(event.target.value) || 0 })}
-              />
-            </label>
-          </div>
+          <h2>No setup panel available</h2>
+          <p>This widget does not expose a custom setup form yet.</p>
         </div>
       );
     }
 
     return (
-      <div className="oc2-tab-panel">
-        <div>
-          <h2>Advanced</h2>
-          <p>Fine-tune placement, size and custom CSS for this tool.</p>
-        </div>
-        <div className="oc2-form-grid">
-          {[
-            ['position_x', 'X position'],
-            ['position_y', 'Y position'],
-            ['width', 'Width'],
-            ['height', 'Height'],
-          ].map(([key, label]) => (
-            <label key={key} className="oc2-field">
-              {label}
-              <input
-                type="number"
-                value={Math.round(Number(widget[key]) || 0)}
-                min="0"
-                onChange={event => updateWidget({ [key]: Number(event.target.value) || 0 })}
-              />
-            </label>
-          ))}
-        </div>
-        <label className="oc2-field">
-          Custom CSS
-          <textarea
-            value={widget.config?.custom_css || ''}
-            onChange={event => updateConfig({ custom_css: event.target.value })}
-            placeholder=".my-widget { }"
+      <div className="oc2-config-shell">
+        <div className="oc2-config-main">
+          <ConfigComponent
+            config={widget.config || {}}
+            onChange={(newConfig) => {
+              saveWidget({ ...widget, config: newConfig });
+              trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: 'setup' });
+            }}
+            allWidgets={widgets}
+            mode="sidebar"
           />
-        </label>
-        <div className="oc2-advanced-actions">
-          <button type="button" className="oc2-btn oc2-btn--danger" onClick={handleRemove}>Remove from overlay</button>
         </div>
+        <aside className="oc2-config-side">
+          <h3>Status</h3>
+          <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
+            <StatusIcon status={status.type} />
+            <span>{status.label}</span>
+          </div>
+          {status.detail && <p>{status.detail}</p>}
+          <dl>
+            <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
+            <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
+            <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
+          </dl>
+        </aside>
       </div>
     );
   })();
@@ -834,30 +692,15 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
         </div>
       </div>
 
-      <div className="oc2-tabs" role="tablist" aria-label="Widget configuration tabs" data-tour="widget-tabs">
-        {['setup', 'appearance', 'behavior', 'advanced'].map(tab => (
-          <button
-            key={tab}
-            type="button"
-            className={`oc2-tab${activeTab === tab ? ' oc2-tab--active' : ''}`}
-            role="tab"
-            aria-selected={activeTab === tab}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
       {!widget && (
         <div className="oc2-empty-state">
           <h2>Add this tool to configure it</h2>
-          <p>The widget will be created with safe defaults and can be positioned from its Advanced tab.</p>
+          <p>The widget will be created with safe defaults and can be configured here.</p>
           <button type="button" className="oc2-btn oc2-btn--primary" onClick={handleAdd}>Add {def.label}</button>
         </div>
       )}
 
-      {widget && tabPanel}
+      {widget && configPanel}
     </section>
   );
 }
@@ -1507,7 +1350,6 @@ export default function OverlayControlCenter() {
             integrations={integrations}
             saveWidget={saveWidget}
             addWidget={addWidget}
-            removeWidget={removeWidget}
           />
         )}
 

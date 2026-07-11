@@ -84,15 +84,8 @@ const STEPS = [
   {
     target: '[data-tour="widget-detail-page"]',
     title: 'Configure one tool at a time',
-    body: 'Each tool has its own setup page with setup, appearance, behavior and advanced positioning controls.',
+    body: 'Each tool opens directly to its setup page. Any extra tool-specific sections are shown inside that tool when needed.',
     position: 'float-top',
-    page: 'bonus_hunt',
-  },
-  {
-    target: '[data-tour="widget-tabs"]',
-    title: 'Tool tabs',
-    body: 'Use these tabs to move between setup, visual options, visibility, layer order, position, size and custom CSS.',
-    position: 'bottom',
     page: 'bonus_hunt',
   },
   {
