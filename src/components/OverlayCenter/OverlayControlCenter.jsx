@@ -594,6 +594,91 @@ function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange,
   );
 }
 
+function normalizeBetsBracketOptions(source = []) {
+  const safeSource = Array.isArray(source) ? source : [];
+  return safeSource.map((option, index) => ({
+    ...option,
+    label: String(option?.label || `Bracket ${index + 1}`).trim() || `Bracket ${index + 1}`,
+  }));
+}
+
+function summarizeBetsBracketOptions(options = []) {
+  return normalizeBetsBracketOptions(options).map((option, index) => `${index + 1}. ${option.label}`).join(' | ');
+}
+
+function formatBetsSavedDate(value) {
+  if (!value) return 'Saved recently';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Saved recently';
+  return date.toLocaleString();
+}
+
+function BetsBracketShortcutTiles({ widget, saveWidget }) {
+  const config = widget?.config || {};
+  const usage = Array.isArray(config.bracketUsage) ? config.bracketUsage : [];
+  const history = Array.isArray(config.bracketHistory) ? config.bracketHistory : [];
+  const canLoad = (config.gameStatus || 'idle') === 'idle';
+
+  if (widget?.widget_type !== 'bets' || (usage.length === 0 && history.length === 0)) return null;
+
+  const loadEntry = (entry) => {
+    if (!canLoad) return;
+    saveWidget({
+      ...widget,
+      config: {
+        ...config,
+        options: normalizeBetsBracketOptions(entry.options),
+      },
+    });
+  };
+
+  const renderTile = (entry, index, kind) => {
+    const options = normalizeBetsBracketOptions(entry.options);
+    const question = entry.question || config.question || 'Place your bets!';
+    const count = entry.count || options.length;
+    const meta = kind === 'usage'
+      ? `${count} brackets · used ${entry.uses || 1} time${(entry.uses || 1) === 1 ? '' : 's'}`
+      : `${count} brackets · ${formatBetsSavedDate(entry.usedAt)}`;
+
+    return (
+      <button
+        key={entry.id || `${kind}-${index}`}
+        type="button"
+        className="oc2-bets-shortcut-tile"
+        onClick={() => loadEntry(entry)}
+        disabled={!canLoad}
+        title={canLoad ? 'Load bracket setup' : 'End the current round before loading a setup'}
+      >
+        <strong>{question}</strong>
+        <span>{meta}</span>
+        <small>{entry.summary || summarizeBetsBracketOptions(options)}</small>
+      </button>
+    );
+  };
+
+  return (
+    <section className="oc2-bets-shortcuts">
+      {usage.length > 0 && (
+        <div className="oc2-bets-shortcut-section">
+          <h3>Most used bracket setups</h3>
+          <div className="oc2-bets-shortcut-grid">
+            {usage.slice(0, 4).map((entry, index) => renderTile(entry, index, 'usage'))}
+          </div>
+        </div>
+      )}
+
+      {history.length > 0 && (
+        <div className="oc2-bets-shortcut-section">
+          <h3>Recent bracket history</h3>
+          <div className="oc2-bets-shortcut-grid">
+            {history.slice(0, 4).map((entry, index) => renderTile(entry, index, 'history'))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, addWidget }) {
   const def = getWidgetDef(widgetType);
   const widget = widgets.find(item => item.widget_type === widgetType);
@@ -652,17 +737,20 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
           />
         </div>
         <aside className="oc2-config-side">
-          <h3>Status</h3>
-          <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
-            <StatusIcon status={status.type} />
-            <span>{status.label}</span>
+          <div className="oc2-config-side-card">
+            <h3>Status</h3>
+            <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
+              <StatusIcon status={status.type} />
+              <span>{status.label}</span>
+            </div>
+            {status.detail && <p>{status.detail}</p>}
+            <dl>
+              <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
+              <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
+              <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
+            </dl>
           </div>
-          {status.detail && <p>{status.detail}</p>}
-          <dl>
-            <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
-            <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
-            <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
-          </dl>
+          <BetsBracketShortcutTiles widget={widget} saveWidget={saveWidget} />
         </aside>
       </div>
     );

@@ -89,13 +89,6 @@ function dateScore(value) {
   return Number.isFinite(time) ? time : 0;
 }
 
-function formatSavedDate(value) {
-  if (!value) return 'Saved recently';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Saved recently';
-  return date.toLocaleString();
-}
-
 function createBracketMemory(options, question, history = [], usage = []) {
   const snapshot = normalizeBracketOptions(options);
   const signature = bracketSignature(snapshot);
@@ -283,46 +276,6 @@ export default function BetsConfig({ config, onChange }) {
     set('options', updated);
   };
   const loadDefaults = () => set('options', normalizeBracketOptions(DEFAULT_OPTIONS));
-  const loadBracketSet = (entry) => {
-    if (status !== 'idle') return;
-    set('options', normalizeBracketOptions(entry.options));
-  };
-
-  const renderBracketMemoryEntry = (entry, index, kind) => {
-    const question = entry.question || c.question || 'Place your bets!';
-    const count = entry.count || normalizeBracketOptions(entry.options).length;
-    const meta = kind === 'usage'
-      ? `${count} brackets · used ${entry.uses || 1} time${(entry.uses || 1) === 1 ? '' : 's'}`
-      : `${count} brackets · ${formatSavedDate(entry.usedAt)}`;
-
-    return (
-      <div key={entry.id || `${kind}-${index}`} style={{ display: 'grid', gap: 8, padding: 10, border: '1px solid rgba(148,163,184,0.16)', borderRadius: 12, background: 'rgba(15,23,42,0.34)' }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ color: '#f8fafc', fontSize: '0.82rem', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{question}</div>
-          <div style={{ color: '#cbd5e1', fontSize: '0.74rem', fontWeight: 700, marginTop: 2 }}>{meta}</div>
-          <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.summary || summarizeBracketSet(entry.options)}</div>
-        </div>
-        <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => loadBracketSet(entry)} disabled={status !== 'idle'} style={{ justifyContent: 'center', width: '100%' }}>Load</button>
-      </div>
-    );
-  };
-
-  const bracketMemoryPanel = (bracketUsage.length > 0 || bracketHistory.length > 0) ? (
-    <div style={{ display: 'grid', gap: 10 }}>
-      {bracketUsage.length > 0 && (
-        <section style={{ display: 'grid', gap: 8 }}>
-          <strong style={{ color: '#e2e8f0', fontSize: '0.84rem' }}>Most used bracket setups</strong>
-          {bracketUsage.slice(0, 3).map((entry, index) => renderBracketMemoryEntry(entry, index, 'usage'))}
-        </section>
-      )}
-      {bracketHistory.length > 0 && (
-        <section style={{ display: 'grid', gap: 8 }}>
-          <strong style={{ color: '#e2e8f0', fontSize: '0.84rem' }}>Recent bracket history</strong>
-          {bracketHistory.slice(0, 3).map((entry, index) => renderBracketMemoryEntry(entry, index, 'history'))}
-        </section>
-      )}
-    </div>
-  ) : null;
 
   const roundStatusCard = (
     <div className="cg-config__status-card">
@@ -425,8 +378,6 @@ export default function BetsConfig({ config, onChange }) {
 
           <aside style={{ display: 'grid', gap: 12 }}>
             {roundStatusCard}
-
-            {bracketMemoryPanel}
 
             {/* Action buttons */}
             <div className="cg-config__actions">
@@ -535,7 +486,6 @@ export default function BetsConfig({ config, onChange }) {
 
           <aside style={{ display: 'grid', gap: 12 }}>
             {roundStatusCard}
-            {bracketMemoryPanel}
           </aside>
         </div>
       )}
