@@ -5,8 +5,10 @@
 
 .ac-header,
 .ac-toolbar,
+.ac-workflow,
 .ac-footer,
 .ac-target,
+.ac-workflow-card,
 .ac-section,
 .ac-preview-column,
 .ac-categories {
@@ -211,6 +213,57 @@
   padding: 10px;
 }
 
+.ac-workflow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.ac-workflow__step {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(2, 6, 23, 0.26);
+  color: #9fb0c3;
+}
+
+.ac-workflow__step span {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.84);
+  color: #e5edf6;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.ac-workflow__step strong {
+  min-width: 0;
+  color: inherit;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.ac-workflow__step--ready {
+  color: #99f6e4;
+  border-color: rgba(45, 212, 191, 0.28);
+  background: rgba(20, 184, 166, 0.1);
+}
+
+.ac-workflow__step--current {
+  color: #ffffff;
+  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(120, 53, 15, 0.18);
+}
+
 .ac-search {
   flex: 1 1 260px;
   min-height: 44px;
@@ -259,6 +312,15 @@
   display: grid;
   gap: 4px;
   padding: 8px;
+}
+
+.ac-category-group-label {
+  padding: 8px 10px 4px;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .ac-category {
@@ -318,9 +380,38 @@
   padding: 14px;
 }
 
-.ac-target > div {
+.ac-target__summary {
   display: grid;
   gap: 3px;
+}
+
+.ac-target__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ac-target__facts span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(2, 6, 23, 0.24);
+}
+
+.ac-target__facts strong,
+.ac-target__facts code {
+  overflow: hidden;
+  color: #e5edf6;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-target__facts code {
+  font-family: Consolas, "Courier New", monospace;
 }
 
 .ac-target span,
@@ -363,6 +454,35 @@
   display: grid;
   gap: 12px;
   padding: 14px;
+}
+
+.ac-workflow-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.ac-workflow-card header {
+  display: grid;
+  gap: 3px;
+}
+
+.ac-workflow-card header span,
+.ac-workflow-card p {
+  margin: 0;
+  color: #9fb0c3;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.ac-workflow-card header strong {
+  color: #ffffff;
+}
+
+.ac-workflow-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .ac-section__header {
@@ -435,6 +555,37 @@
   font-size: 0.92rem;
 }
 
+.ac-sub-elements__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: start;
+}
+
+.ac-sub-elements__header p {
+  margin: 3px 0 0;
+  color: #9fb0c3;
+  font-size: 0.78rem;
+}
+
+.ac-sub-elements__header code {
+  color: #c4b5fd;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.ac-sub-elements__header > span {
+  flex: 0 0 auto;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  padding: 0 9px;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 850;
+}
+
 .ac-sub-element {
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 10px;
@@ -450,6 +601,10 @@
 
 .ac-sub-element .ac-control-grid {
   padding: 0 12px 12px;
+}
+
+.ac-sub-element--selected .ac-control-grid {
+  padding: 12px;
 }
 
 .ac-control-grid,
@@ -498,6 +653,11 @@
   background: rgba(2, 6, 23, 0.3);
   color: #cbd5e1;
   cursor: pointer;
+}
+
+.ac-control__meta .ac-control__source--custom {
+  color: #99f6e4;
+  border-color: rgba(45, 212, 191, 0.24);
 }
 
 .ac-color-row,
@@ -796,6 +956,10 @@
   outline-offset: 3px;
 }
 
+.oc-preview-dimmed-widget {
+  pointer-events: none;
+}
+
 @media (max-width: 1320px) {
   .ac-layout {
     grid-template-columns: 170px minmax(0, 1fr);
@@ -830,6 +994,7 @@
   }
 
   .ac-preview-toolbar,
+  .ac-workflow,
   .ac-compare--on {
     grid-template-columns: 1fr;
   }
@@ -862,6 +1027,14 @@
 
   .ac-range-row {
     flex-wrap: wrap;
+  }
+
+  .ac-target__facts {
+    grid-template-columns: 1fr;
+  }
+
+  .ac-sub-elements__header {
+    flex-direction: column;
   }
 
   .ac-range-row input[type="range"] {

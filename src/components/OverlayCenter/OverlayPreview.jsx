@@ -13,7 +13,17 @@ import './widgets/builtinWidgets';
 const DEFAULT_W = 1920;
 const DEFAULT_H = 1080;
 
-const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight, selectedWidgetId, selectMode, onSelectWidget }) {
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) {
+  if (selectedWidgetId) return widget.id === selectedWidgetId;
+  if (selectedTarget?.scope === 'widget_type' && selectedTarget.widgetType) return widget.widget_type === selectedTarget.widgetType;
+  return false;
+}
+
+const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight, selectedWidgetId, selectedTarget, dimmed, selectMode, onSelectWidget }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   if (!Component) return null;
@@ -26,7 +36,10 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
 
   return (
     <div
-      className={selectedWidgetId === widget.id ? 'oc-preview-selected-widget' : undefined}
+      className={[
+        isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) ? 'oc-preview-selected-widget' : '',
+        dimmed ? 'oc-preview-dimmed-widget' : '',
+      ].filter(Boolean).join(' ') || undefined}
       data-widget-id={widget.id}
       data-widget-type={widget.widget_type}
       onClick={selectMode ? (event) => {
@@ -43,6 +56,8 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
       zIndex: widget.z_index || 1,
       overflow: 'visible',
       cursor: selectMode ? 'crosshair' : undefined,
+      opacity: dimmed ? 0.24 : 1,
+      transition: 'opacity 140ms ease',
       ...buildWidgetAppearanceVars(cfg),
       ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
     }}>
@@ -60,28 +75,51 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
   const CANVAS_W = resolvedAppearance?.canvas?.width || theme?.canvas_width || DEFAULT_W;
   const CANVAS_H = resolvedAppearance?.canvas?.height || theme?.canvas_height || DEFAULT_H;
 
-  const visibleWidgets = useMemo(() => {
-    const base = (resolvedWidgets || []).filter(w => w.is_visible);
-    if (previewMode === 'full-overlay' || selectMode) return base;
-    if (selectedTarget?.scope === 'widget_instance' && selectedTarget.widgetId) {
-      return base.filter(w => w.id === selectedTarget.widgetId);
-    }
-    if (selectedTarget?.scope === 'widget_type' && selectedTarget.widgetType) {
-      return base.filter(w => w.widget_type === selectedTarget.widgetType);
-    }
-    return base;
-  }, [resolvedWidgets, selectedTarget, previewMode, selectMode]);
+  const baseVisibleWidgets = useMemo(() => (resolvedWidgets || []).filter(w => w.is_visible), [resolvedWidgets]);
 
   const focusWidget = useMemo(() => {
-    if (!selectedWidgetId) return null;
-    return visibleWidgets.find(widget => widget.id === selectedWidgetId) || null;
-  }, [selectedWidgetId, visibleWidgets]);
+    if (selectedWidgetId) return baseVisibleWidgets.find(widget => widget.id === selectedWidgetId) || null;
+    if (selectedTarget?.scope === 'widget_type' && selectedTarget.widgetType) {
+      return baseVisibleWidgets.find(widget => widget.widget_type === selectedTarget.widgetType) || null;
+    }
+    return null;
+  }, [baseVisibleWidgets, selectedTarget, selectedWidgetId]);
 
-  const focusActive = (previewMode === 'focus-widget' || previewMode === 'fit-widget') && focusWidget;
-  const viewportWidth = focusActive ? Math.max(1, Number(focusWidget.width) || 1) : CANVAS_W;
-  const viewportHeight = focusActive ? Math.max(1, Number(focusWidget.height) || 1) : CANVAS_H;
-  const focusLeft = focusActive ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_x) || 0) : 0;
-  const focusTop = focusActive ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_y) || 0) : 0;
+  const visibleWidgets = useMemo(() => {
+    if (previewMode === 'full-overlay' || previewMode === 'focus-widget' || previewMode === 'actual-scale' || previewMode === 'fit-canvas' || selectMode) return baseVisibleWidgets;
+    if (previewMode === 'fit-widget' && selectedTarget?.scope === 'widget_instance' && selectedTarget.widgetId) {
+      return baseVisibleWidgets.filter(w => w.id === selectedTarget.widgetId);
+    }
+    if (previewMode === 'fit-widget' && selectedTarget?.scope === 'widget_type' && selectedTarget.widgetType) {
+      return baseVisibleWidgets.filter(w => w.widget_type === selectedTarget.widgetType);
+    }
+    return baseVisibleWidgets;
+  }, [baseVisibleWidgets, selectedTarget, previewMode, selectMode]);
+
+  const contextFocusActive = previewMode === 'focus-widget' && focusWidget && !selectMode;
+  const fitWidgetActive = previewMode === 'fit-widget' && focusWidget && !selectMode;
+  const focusWidth = focusWidget ? Math.max(1, Number(focusWidget.width) || 1) : CANVAS_W;
+  const focusHeight = focusWidget ? Math.max(1, Number(focusWidget.height) || 1) : CANVAS_H;
+  const focusX = focusWidget ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_x) || 0) : 0;
+  const focusY = focusWidget ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_y) || 0) : 0;
+  const focusMargin = contextFocusActive ? Math.max(96, Math.round(Math.max(focusWidth, focusHeight) * 0.28)) : 0;
+  const viewportWidth = fitWidgetActive
+    ? focusWidth
+    : contextFocusActive
+      ? Math.min(CANVAS_W, Math.max(focusWidth + focusMargin * 2, 640))
+      : CANVAS_W;
+  const viewportHeight = fitWidgetActive
+    ? focusHeight
+    : contextFocusActive
+      ? Math.min(CANVAS_H, Math.max(focusHeight + focusMargin * 2, 360))
+      : CANVAS_H;
+  const focusLeft = (contextFocusActive || fitWidgetActive)
+    ? clamp(focusX + focusWidth / 2 - viewportWidth / 2, 0, Math.max(0, CANVAS_W - viewportWidth))
+    : 0;
+  const focusTop = (contextFocusActive || fitWidgetActive)
+    ? clamp(focusY + focusHeight / 2 - viewportHeight / 2, 0, Math.max(0, CANVAS_H - viewportHeight))
+    : 0;
+  const dimUnfocused = contextFocusActive || (previewMode === 'focus-widget' && selectedTarget?.scope === 'widget_type');
 
   /* Dynamic scale to fit container width */
   useEffect(() => {
@@ -93,15 +131,15 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
         setScale(fixedZoom || 1);
         return;
       }
-      const targetW = focusActive ? viewportWidth : CANVAS_W;
-      const maxScale = focusActive ? (previewMode === 'fit-widget' ? 2.5 : 1.8) : 0.65;
+      const targetW = contextFocusActive || fitWidgetActive ? viewportWidth : CANVAS_W;
+      const maxScale = fitWidgetActive ? 2.5 : contextFocusActive ? 1.75 : 0.65;
       setScale(fixedZoom || Math.min(availW / targetW, maxScale));
     }
     calcScale();
     const ro = new ResizeObserver(() => calcScale());
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
-  }, [CANVAS_W, CANVAS_H, zoom, previewMode, focusActive, viewportWidth]);
+  }, [CANVAS_W, zoom, previewMode, contextFocusActive, fitWidgetActive, viewportWidth]);
 
   const previewBg = previewBackground === 'light'
     ? '#f8fafc'
@@ -150,6 +188,8 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
               canvasWidth={CANVAS_W}
               canvasHeight={CANVAS_H}
               selectedWidgetId={selectedWidgetId}
+              selectedTarget={selectedTarget}
+              dimmed={dimUnfocused && !isWidgetHighlighted(w, selectedTarget, selectedWidgetId)}
               selectMode={selectMode}
               onSelectWidget={onSelectWidget}
             />

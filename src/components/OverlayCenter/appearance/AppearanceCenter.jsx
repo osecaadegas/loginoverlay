@@ -31,6 +31,7 @@ import {
   createAppearancePreset,
   createAppearanceVersion,
   deepMerge,
+  getAppearancePropertyState,
   getAppearancePathForVisualKey,
   getAppearanceWarnings,
   getByPath,
@@ -74,6 +75,8 @@ const CATEGORY_GROUPS = [
   { id: 'advanced', label: 'Advanced', keywords: 'custom css validation reset json' },
 ];
 
+const SIMPLE_CATEGORY_IDS = new Set(['themes', 'colors', 'typography', 'containers', 'widgets']);
+
 const FONT_OPTIONS = [
   "'Inter', 'Segoe UI', sans-serif",
   "'Poppins', 'Segoe UI', sans-serif",
@@ -106,6 +109,25 @@ const PREVIEW_BACKGROUNDS = [
   { id: 'light', label: 'Light' },
   { id: 'checkerboard', label: 'Checkerboard' },
 ];
+
+const WORKFLOW_STEPS = [
+  { id: 'widget', label: 'Choose widget' },
+  { id: 'style', label: 'Choose style' },
+  { id: 'element', label: 'Choose element' },
+  { id: 'customise', label: 'Customise' },
+  { id: 'preview', label: 'Preview and save' },
+];
+
+const SOURCE_LABELS = {
+  draft: 'Draft value',
+  'style-instance': 'This style',
+  'widget-instance': 'This widget',
+  'style-default': 'Type style',
+  'widget-type': 'Widget type',
+  global: 'Overlay',
+  theme: 'Theme',
+  system: 'System',
+};
 
 const SURFACE_PRESETS = {
   flat: { surfaces: { preset: 'flat', opacity: 1, glass: false, blur: 0 }, effects: { shadowEnabled: false, glowEnabled: false } },
@@ -164,7 +186,39 @@ function formatDate(value) {
   }
 }
 
-function ControlShell({ label, description, inherited, onReset, children }) {
+function createInitialTarget(widgets = [], appearance = {}) {
+  const widget = widgets.find(item => item?.is_visible) || widgets[0];
+  if (!widget) return { scope: 'overlay' };
+  return {
+    scope: 'widget_instance',
+    widgetId: widget.id,
+    widgetType: widget.widget_type,
+    styleId: getWidgetActiveStyleId(widget, appearance),
+  };
+}
+
+function getFirstElementId(widgetType) {
+  return widgetType ? getWidgetSubElementDefinitions(widgetType)[0]?.id || '' : '';
+}
+
+function formatSourceLabel(source) {
+  return SOURCE_LABELS[source] || (source ? String(source).replace(/-/g, ' ') : 'Inherited');
+}
+
+function formatOverrideSource(target) {
+  if (target?.scope === 'widget_instance') return target.styleId ? 'Custom on style' : 'Custom on widget';
+  if (target?.scope === 'widget_type') return target.styleId ? 'Custom on type style' : 'Custom on type';
+  return 'Custom here';
+}
+
+function formatInheritedSource(target) {
+  if (target?.scope === 'widget_instance') return 'Inherited from type/overlay';
+  if (target?.scope === 'widget_type') return 'Inherited from overlay';
+  return 'Inherited';
+}
+
+function ControlShell({ label, description, inherited, source, onReset, children }) {
+  const sourceLabel = source || (inherited ? 'Inherited' : '');
   return (
     <label className="ac-control">
       <span className="ac-control__label">
@@ -173,7 +227,7 @@ function ControlShell({ label, description, inherited, onReset, children }) {
           {description && <small>{description}</small>}
         </span>
         <span className="ac-control__meta">
-          {inherited && <em>Inherited</em>}
+          {sourceLabel && <em className={inherited ? '' : 'ac-control__source--custom'}>{sourceLabel}</em>}
           {onReset && (
             <button type="button" onClick={onReset} title={`Reset ${label}`}>
               <RotateCcw size={13} />
@@ -186,10 +240,10 @@ function ControlShell({ label, description, inherited, onReset, children }) {
   );
 }
 
-function ColorControl({ label, description, value, fallback = '#ffffff', inherited, onChange, onReset }) {
+function ColorControl({ label, description, value, fallback = '#ffffff', inherited, source, onChange, onReset }) {
   const display = value || fallback;
   return (
-    <ControlShell label={label} description={description} inherited={inherited} onReset={onReset}>
+    <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
       <span className="ac-color-row">
         <input type="color" value={display.startsWith('#') ? display.slice(0, 7) : fallback} onChange={event => onChange(event.target.value)} />
         <input value={display} onChange={event => onChange(event.target.value)} aria-label={`${label} value`} />
@@ -198,9 +252,9 @@ function ColorControl({ label, description, value, fallback = '#ffffff', inherit
   );
 }
 
-function RangeControl({ label, description, value, min, max, step = 1, unit = '', inherited, onChange, onReset }) {
+function RangeControl({ label, description, value, min, max, step = 1, unit = '', inherited, source, onChange, onReset }) {
   return (
-    <ControlShell label={label} description={description} inherited={inherited} onReset={onReset}>
+    <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
       <span className="ac-range-row">
         <input type="range" min={min} max={max} step={step} value={value} onChange={event => onChange(Number(event.target.value))} />
         <input type="number" min={min} max={max} step={step} value={value} onChange={event => onChange(Number(event.target.value))} aria-label={`${label} number`} />
@@ -210,9 +264,9 @@ function RangeControl({ label, description, value, min, max, step = 1, unit = ''
   );
 }
 
-function SelectControl({ label, description, value, options, inherited, onChange, onReset }) {
+function SelectControl({ label, description, value, options, inherited, source, onChange, onReset }) {
   return (
-    <ControlShell label={label} description={description} inherited={inherited} onReset={onReset}>
+    <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
       <select value={value} onChange={event => onChange(event.target.value)}>
         {options.map(option => (
           <option key={option.value || option} value={option.value || option}>{option.label || option}</option>
@@ -222,17 +276,17 @@ function SelectControl({ label, description, value, options, inherited, onChange
   );
 }
 
-function TextControl({ label, description, value, placeholder, inherited, onChange, onReset }) {
+function TextControl({ label, description, value, placeholder, inherited, source, onChange, onReset }) {
   return (
-    <ControlShell label={label} description={description} inherited={inherited} onReset={onReset}>
+    <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
       <input value={value || ''} placeholder={placeholder} onChange={event => onChange(event.target.value)} />
     </ControlShell>
   );
 }
 
-function ToggleControl({ label, description, checked, inherited, onChange, onReset }) {
+function ToggleControl({ label, description, checked, inherited, source, onChange, onReset }) {
   return (
-    <ControlShell label={label} description={description} inherited={inherited} onReset={onReset}>
+    <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
       <button
         type="button"
         className={`ac-toggle ${checked ? 'ac-toggle--on' : ''}`}
@@ -296,6 +350,27 @@ function StatusPill({ status }) {
   );
 }
 
+function WorkflowSteps({ selectedTarget, selectedStyle, selectedElement, saveStatus, previewStatus }) {
+  const hasWidget = selectedTarget.scope === 'widget_instance' || selectedTarget.scope === 'widget_type';
+  const stepState = {
+    widget: hasWidget ? 'ready' : 'current',
+    style: selectedStyle ? 'ready' : hasWidget ? 'current' : 'waiting',
+    element: selectedElement ? 'ready' : hasWidget ? 'current' : 'waiting',
+    customise: hasWidget ? 'current' : 'waiting',
+    preview: saveStatus === 'saved' && previewStatus === 'connected' ? 'ready' : 'current',
+  };
+  return (
+    <section className="ac-workflow" aria-label="Appearance workflow">
+      {WORKFLOW_STEPS.map((step, index) => (
+        <div key={step.id} className={`ac-workflow__step ac-workflow__step--${stepState[step.id] || 'waiting'}`}>
+          <span>{index + 1}</span>
+          <strong>{step.label}</strong>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 function TargetSelector({ widgets, selected, appearance, onChange }) {
   const defs = getAllWidgetDefs();
   const installedTypes = new Set(widgets.map(widget => widget.widget_type));
@@ -317,17 +392,30 @@ function TargetSelector({ widgets, selected, appearance, onChange }) {
     : selected.scope === 'widget_type'
       ? getWidgetTypeOverrideCount(appearance, selected.widgetType, selectedStyleId)
       : 0;
+  const scopeLabel = selected.scope === 'widget_instance'
+    ? 'Single widget instance'
+    : selected.scope === 'widget_type'
+      ? 'Every widget of this type'
+      : selected.scope === 'all_widgets'
+        ? 'Shared widget defaults'
+        : 'Global overlay';
 
   return (
     <section className="ac-target">
-      <div>
+      <div className="ac-target__summary">
         <span>{selected.scope === 'widget_instance' ? 'Editing widget' : selected.scope === 'widget_type' ? 'Editing widget type' : 'Editing'}</span>
         <strong>{label}</strong>
         {selected.scope === 'widget_instance' && <small>Instance: {selectedWidget?.label || selectedWidget?.id || 'Unknown widget'}</small>}
         {(selected.scope === 'widget_type' || selected.scope === 'widget_instance') && <small>Style: {selectedStyle?.label || selectedStyleId || 'Default'}</small>}
         {selected.scope !== 'overlay' && <small>Appearance: {overrideCount} custom override{overrideCount === 1 ? '' : 's'}</small>}
       </div>
+      <div className="ac-target__facts">
+        <span><small>Scope</small><strong>{scopeLabel}</strong></span>
+        {selectedType && <span><small>Type ID</small><code>{selectedType}</code></span>}
+        {selected.scope === 'widget_instance' && <span><small>Instance ID</small><code>{selectedWidget?.id || selected.widgetId}</code></span>}
+      </div>
       <select
+        aria-label="Appearance editing target"
         value={
           selected.scope === 'widget_instance'
             ? `widget:${selected.widgetId}`
@@ -418,7 +506,8 @@ export default function AppearanceCenter({
   );
   const [draft, setDraft] = useState(stateFromServer.draft);
   const [selectedCategory, setSelectedCategory] = useState('themes');
-  const [selectedTarget, setSelectedTarget] = useState({ scope: 'overlay' });
+  const [selectedTarget, setSelectedTarget] = useState(() => createInitialTarget(widgets, stateFromServer.draft));
+  const [selectedElementId, setSelectedElementId] = useState(() => getFirstElementId(createInitialTarget(widgets, stateFromServer.draft).widgetType));
   const [saveStatus, setSaveStatus] = useState('saved');
   const [search, setSearch] = useState('');
   const [undoStack, setUndoStack] = useState([]);
@@ -434,6 +523,7 @@ export default function AppearanceCenter({
   const [themePreview, setThemePreview] = useState(null);
   const themePreviewBackupRef = useRef(null);
   const saveTimerRef = useRef(null);
+  const targetWasUserSelectedRef = useRef(false);
   const lastServerRevisionRef = useRef(stateFromServer.revision);
   const lastPersistedDraftRef = useRef(safeJson(stateFromServer.draft));
   const selectedStyleId = getTargetStyleId(selectedTarget, draft, widgets);
@@ -448,16 +538,20 @@ export default function AppearanceCenter({
   const selectedWidget = selectedTarget.scope === 'widget_instance'
     ? widgets.find(widget => widget.id === selectedTarget.widgetId)
     : null;
-  const selectedWidgetDef = selectedTarget.widgetType
-    ? getAllWidgetDefs().find(def => def.type === selectedTarget.widgetType)
-    : selectedWidget
-      ? getAllWidgetDefs().find(def => def.type === selectedWidget.widget_type)
-      : null;
-  const selectedStyleOptions = selectedTarget.widgetType ? getWidgetStyleOptions(selectedTarget.widgetType, draft, selectedTarget.widgetId) : [];
+  const selectedWidgetType = selectedTarget.widgetType || selectedWidget?.widget_type || '';
+  const selectedWidgetDef = selectedWidgetType
+    ? getAllWidgetDefs().find(def => def.type === selectedWidgetType)
+    : null;
+  const selectedStyleOptions = selectedWidgetType ? getWidgetStyleOptions(selectedWidgetType, draft, selectedTarget.widgetId) : [];
   const selectedStyle = selectedStyleOptions.find(style => style.id === selectedStyleId);
   const selectedRenderStyleId = selectedWidget
     ? getWidgetStyleRenderId(selectedWidget, selectedStyleId, draft)
     : selectedStyle?.baseStyleId || selectedStyleId;
+  const selectedSubElementDefinitions = useMemo(
+    () => selectedWidgetType ? getWidgetSubElementDefinitions(selectedWidgetType) : [],
+    [selectedWidgetType]
+  );
+  const selectedSubElement = selectedSubElementDefinitions.find(definition => definition.id === selectedElementId) || selectedSubElementDefinitions[0] || null;
 
   useEffect(() => {
     trackEvent(ANALYTICS_EVENTS.APPEARANCE_CENTER_OPENED, { route: '/overlay-center/appearance' });
@@ -470,6 +564,26 @@ export default function AppearanceCenter({
     setDraft(stateFromServer.draft);
     lastPersistedDraftRef.current = safeJson(stateFromServer.draft);
   }, [stateFromServer, saveStatus, themePreview]);
+
+  useEffect(() => {
+    if (!widgets.length) return;
+    setSelectedTarget(prev => {
+      const targetStillExists = prev.scope !== 'widget_instance' || widgets.some(widget => widget.id === prev.widgetId);
+      if (targetStillExists && (targetWasUserSelectedRef.current || prev.scope !== 'overlay')) return prev;
+      return createInitialTarget(widgets, draft);
+    });
+  }, [draft, widgets]);
+
+  useEffect(() => {
+    const firstElementId = selectedSubElementDefinitions[0]?.id || '';
+    if (!firstElementId) {
+      if (selectedElementId) setSelectedElementId('');
+      return;
+    }
+    if (!selectedSubElementDefinitions.some(definition => definition.id === selectedElementId)) {
+      setSelectedElementId(firstElementId);
+    }
+  }, [selectedElementId, selectedSubElementDefinitions]);
 
   useEffect(() => {
     if (typeof BroadcastChannel === 'undefined') return undefined;
@@ -856,6 +970,7 @@ export default function AppearanceCenter({
     return CATEGORY_GROUPS.filter(item => `${item.label} ${item.keywords}`.toLowerCase().includes(term));
   }, [search]);
   const handleTargetChange = useCallback((next) => {
+    targetWasUserSelectedRef.current = true;
     if (saveStatus === 'dirty') {
       clearTimeout(saveTimerRef.current);
       persistDraft(draft, 'target-switch');
@@ -864,6 +979,8 @@ export default function AppearanceCenter({
       ? { ...next, styleId: getTargetStyleId(next, draft, widgets) }
       : next;
     setSelectedTarget(normalizedTarget);
+    const nextWidgetType = normalizedTarget.widgetType || widgets.find(widget => widget.id === normalizedTarget.widgetId)?.widget_type || '';
+    setSelectedElementId(getFirstElementId(nextWidgetType));
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED, { scope: normalizedTarget.scope, widget_type: normalizedTarget.widgetType || null });
   }, [draft, persistDraft, saveStatus, widgets]);
 
@@ -1090,21 +1207,21 @@ export default function AppearanceCenter({
 
     if (selectedCategory === 'widgets') {
       const keys = selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance'
-        ? getSupportedVisualKeys(selectedTarget.widgetType || selectedWidget?.widget_type).slice(0, 16)
+        ? getSupportedVisualKeys(selectedWidgetType).slice(0, 16)
         : ['accentColor', 'bgColor', 'cardBg', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'fontSize', 'borderRadius', 'borderWidth'];
       const overrideEntry = getByPath(draft, getTargetOverrideRoot(selectedTarget)) || {};
       const visualSource = overrideEntry.visual || overrideEntry.tokens || {};
       const appearanceSource = overrideEntry.appearance || {};
-      const widgetTypeForSubElements = selectedTarget.widgetType || selectedWidget?.widget_type;
-      const subElementDefinitions = widgetTypeForSubElements ? getWidgetSubElementDefinitions(widgetTypeForSubElements) : [];
-      const typeSubElements = widgetTypeForSubElements ? draft.widgetTypes?.[widgetTypeForSubElements]?.subElements || {} : {};
-      const typeStyleSubElements = widgetTypeForSubElements && selectedRenderStyleId ? draft.widgetTypes?.[widgetTypeForSubElements]?.styles?.[selectedRenderStyleId]?.subElements || {} : {};
+      const subElementDefinitions = selectedSubElementDefinitions;
+      const typeSubElements = selectedWidgetType ? draft.widgetTypes?.[selectedWidgetType]?.subElements || {} : {};
+      const typeStyleSubElements = selectedWidgetType && selectedRenderStyleId ? draft.widgetTypes?.[selectedWidgetType]?.styles?.[selectedRenderStyleId]?.subElements || {} : {};
       const instanceSubElements = selectedTarget.scope === 'widget_instance' ? draft.widgets?.[selectedTarget.widgetId]?.subElements || {} : {};
       const instanceStyleSubElements = selectedTarget.scope === 'widget_instance' && selectedStyleId ? draft.widgets?.[selectedTarget.widgetId]?.styles?.[selectedStyleId]?.subElements || {} : {};
       const explicitSubElements = overrideEntry.subElements || {};
-      const effectiveSubElements = widgetTypeForSubElements
-        ? deepMerge(buildSubElementDefaults(widgetTypeForSubElements, a), typeSubElements, typeStyleSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {}, selectedTarget.scope === 'widget_instance' ? instanceStyleSubElements : {})
+      const effectiveSubElements = selectedWidgetType
+        ? deepMerge(buildSubElementDefaults(selectedWidgetType, a), typeSubElements, typeStyleSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {}, selectedTarget.scope === 'widget_instance' ? instanceStyleSubElements : {})
         : {};
+      const selectedSubElementDefinition = subElementDefinitions.find(definition => definition.id === selectedElementId) || subElementDefinitions[0];
       return (
         <Section
           title="Widget-specific appearance"
@@ -1122,13 +1239,6 @@ export default function AppearanceCenter({
         >
           {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && selectedStyleOptions.length > 0 && (
             <div className="ac-style-editor">
-              <SelectControl
-                label="Style variant"
-                description={selectedTarget.scope === 'widget_instance' ? 'Preview a style for this widget instance before applying it.' : 'Preview this style across widgets of this type.'}
-                value={selectedStyleId}
-                options={selectedStyleOptions.map(style => ({ value: style.id, label: `${style.label}${style.custom ? ' (custom)' : ''}` }))}
-                onChange={previewStyle}
-              />
               <div className="ac-style-summary">
                 <span>Active style: {selectedWidget ? (selectedStyleOptions.find(style => style.id === getWidgetActiveStyleId(selectedWidget, draft))?.label || getWidgetActiveStyleId(selectedWidget, draft)) : selectedStyle?.label || selectedStyleId}</span>
                 <span>Editing style: {selectedStyle?.label || selectedStyleId}</span>
@@ -1156,6 +1266,9 @@ export default function AppearanceCenter({
           <div className="ac-control-grid">
             {keys.map(key => {
               const canonicalPath = getAppearancePathForVisualKey(key);
+              const propertyState = canonicalPath
+                ? getAppearancePropertyState({ appearance: draft, target: selectedTarget, path: canonicalPath, theme })
+                : null;
               const value = visualSource[key] ?? getByPath(a, {
                 accentColor: 'colors.accent',
                 bgColor: 'surfaces.containerBg',
@@ -1171,71 +1284,79 @@ export default function AppearanceCenter({
                 borderWidth: 'borders.width',
               }[key] || '');
               const inherited = visualSource[key] == null && (!canonicalPath || getByPath(appearanceSource, canonicalPath) == null);
+              const source = inherited ? formatSourceLabel(propertyState?.source) : formatOverrideSource(selectedTarget);
               const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
               if (/color|bg/i.test(key)) {
-                return <ColorControl key={key} label={label} value={value} inherited={inherited} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
+                return <ColorControl key={key} label={label} value={value} inherited={inherited} source={source} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
               }
               if (/size|radius|width|padding|gap|blur|shadow|intensity/i.test(key)) {
-                return <RangeControl key={key} label={label} value={Number(value) || 0} min={0} max={key.toLowerCase().includes('font') ? 64 : 100} inherited={inherited} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
+                return <RangeControl key={key} label={label} value={Number(value) || 0} min={0} max={key.toLowerCase().includes('font') ? 64 : 100} inherited={inherited} source={source} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
               }
-              return <TextControl key={key} label={label} value={value || ''} inherited={inherited} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
+              return <TextControl key={key} label={label} value={value || ''} inherited={inherited} source={source} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
             })}
           </div>
-          {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && subElementDefinitions.length > 0 && (
+          {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && selectedSubElementDefinition && (
             <div className="ac-sub-elements">
-              <h4>Sub-elements</h4>
-              {subElementDefinitions.map(definition => (
-                <details key={definition.id} className="ac-sub-element" open={['container', 'header', 'card'].includes(definition.id)}>
-                  <summary>{definition.label}</summary>
-                  <div className="ac-control-grid">
-                    {(definition.properties || []).map(property => {
-                      const value = getByPath(effectiveSubElements, `${definition.id}.${property}`);
-                      const explicit = getByPath(explicitSubElements, `${definition.id}.${property}`);
-                      const inherited = explicit == null;
-                      const label = formatSubElementLabel(property);
-                      if (isColorProperty(property)) {
-                        return (
-                          <ColorControl
-                            key={`${definition.id}.${property}`}
-                            label={label}
-                            value={value}
-                            inherited={inherited}
-                            onChange={next => updateSubElement(definition.id, property, next)}
-                            onReset={() => resetSubElement(definition.id, property)}
-                          />
-                        );
-                      }
-                      const range = getRangeMeta(property);
-                      if (range) {
-                        return (
-                          <RangeControl
-                            key={`${definition.id}.${property}`}
-                            label={label}
-                            value={Number(value) || 0}
-                            min={range.min}
-                            max={range.max}
-                            step={range.step}
-                            unit={range.unit}
-                            inherited={inherited}
-                            onChange={next => updateSubElement(definition.id, property, next)}
-                            onReset={() => resetSubElement(definition.id, property)}
-                          />
-                        );
-                      }
+              <div className="ac-sub-elements__header">
+                <div>
+                  <h4>{selectedSubElementDefinition.label}</h4>
+                  <p>Element ID: <code>{selectedSubElementDefinition.id}</code></p>
+                </div>
+                <span>{selectedSubElementDefinition.properties?.length || 0} supported controls</span>
+              </div>
+              <div className="ac-sub-element ac-sub-element--selected">
+                <div className="ac-control-grid">
+                  {(selectedSubElementDefinition.properties || []).map(property => {
+                    const value = getByPath(effectiveSubElements, `${selectedSubElementDefinition.id}.${property}`);
+                    const explicit = getByPath(explicitSubElements, `${selectedSubElementDefinition.id}.${property}`);
+                    const inherited = explicit == null;
+                    const source = inherited ? formatInheritedSource(selectedTarget) : formatOverrideSource(selectedTarget);
+                    const label = formatSubElementLabel(property);
+                    if (isColorProperty(property)) {
                       return (
-                        <TextControl
-                          key={`${definition.id}.${property}`}
+                        <ColorControl
+                          key={`${selectedSubElementDefinition.id}.${property}`}
                           label={label}
-                          value={value || ''}
+                          value={value}
                           inherited={inherited}
-                          onChange={next => updateSubElement(definition.id, property, next)}
-                          onReset={() => resetSubElement(definition.id, property)}
+                          source={source}
+                          onChange={next => updateSubElement(selectedSubElementDefinition.id, property, next)}
+                          onReset={() => resetSubElement(selectedSubElementDefinition.id, property)}
                         />
                       );
-                    })}
-                  </div>
-                </details>
-              ))}
+                    }
+                    const range = getRangeMeta(property);
+                    if (range) {
+                      return (
+                        <RangeControl
+                          key={`${selectedSubElementDefinition.id}.${property}`}
+                          label={label}
+                          value={Number(value) || 0}
+                          min={range.min}
+                          max={range.max}
+                          step={range.step}
+                          unit={range.unit}
+                          inherited={inherited}
+                          source={source}
+                          onChange={next => updateSubElement(selectedSubElementDefinition.id, property, next)}
+                          onReset={() => resetSubElement(selectedSubElementDefinition.id, property)}
+                        />
+                      );
+                    }
+                    return (
+                      <TextControl
+                        key={`${selectedSubElementDefinition.id}.${property}`}
+                        label={label}
+                        value={value || ''}
+                        inherited={inherited}
+                        source={source}
+                        onChange={next => updateSubElement(selectedSubElementDefinition.id, property, next)}
+                        onReset={() => resetSubElement(selectedSubElementDefinition.id, property)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </Section>
@@ -1388,6 +1509,14 @@ export default function AppearanceCenter({
         <span className={`ac-preview-status ac-preview-status--${previewStatus}`}>Preview {previewStatus}</span>
       </div>
 
+      <WorkflowSteps
+        selectedTarget={selectedTarget}
+        selectedStyle={selectedStyle}
+        selectedElement={selectedSubElement}
+        saveStatus={saveStatus}
+        previewStatus={previewStatus}
+      />
+
       {warnings.length > 0 && (
         <div className="ac-warning-strip">
           {warnings.map(warning => <span key={warning.id}>{warning.label}</span>)}
@@ -1396,7 +1525,22 @@ export default function AppearanceCenter({
 
       <div className="ac-layout">
         <aside className="ac-categories">
-          {categories.map(category => (
+          {categories.some(category => SIMPLE_CATEGORY_IDS.has(category.id)) && <span className="ac-category-group-label">Simple</span>}
+          {categories.filter(category => SIMPLE_CATEGORY_IDS.has(category.id)).map(category => (
+            <button
+              key={category.id}
+              type="button"
+              className={selectedCategory === category.id ? 'ac-category ac-category--active' : 'ac-category'}
+              onClick={() => {
+                setSelectedCategory(category.id);
+                trackEvent(ANALYTICS_EVENTS.APPEARANCE_CATEGORY_OPENED, { category: category.id });
+              }}
+            >
+              {category.label}
+            </button>
+          ))}
+          {categories.some(category => !SIMPLE_CATEGORY_IDS.has(category.id)) && <span className="ac-category-group-label">Advanced</span>}
+          {categories.filter(category => !SIMPLE_CATEGORY_IDS.has(category.id)).map(category => (
             <button
               key={category.id}
               type="button"
@@ -1475,6 +1619,45 @@ export default function AppearanceCenter({
 
         <aside className="ac-inspector">
           <TargetSelector widgets={widgets} selected={selectedTarget} appearance={draft} onChange={handleTargetChange} />
+          <section className="ac-workflow-card">
+            <header>
+              <span>Style and element</span>
+              <strong>{selectedWidgetDef?.label || selectedWidgetType || 'No widget selected'}</strong>
+            </header>
+            {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') ? (
+              <>
+                {selectedStyleOptions.length > 0 && (
+                  <SelectControl
+                    label="Style variant"
+                    description={selectedTarget.scope === 'widget_instance' ? 'Preview for this exact widget before applying.' : 'Preview across widgets of this type.'}
+                    value={selectedStyleId}
+                    options={selectedStyleOptions.map(style => ({ value: style.id, label: `${style.label}${style.custom ? ' (custom)' : ''}` }))}
+                    onChange={previewStyle}
+                  />
+                )}
+                {selectedSubElementDefinitions.length > 0 && (
+                  <SelectControl
+                    label="Element"
+                    description="Only supported element controls are shown below."
+                    value={selectedSubElement?.id || ''}
+                    options={selectedSubElementDefinitions.map(definition => ({ value: definition.id, label: definition.label }))}
+                    onChange={value => {
+                      setSelectedElementId(value);
+                      setSelectedCategory('widgets');
+                    }}
+                  />
+                )}
+                <div className="ac-workflow-card__actions">
+                  <button type="button" className="ac-small-button" onClick={applyStyle} disabled={!selectedStyleId}>Apply style</button>
+                  {selectedTarget.scope === 'widget_instance' && (
+                    <button type="button" className="ac-small-button" onClick={() => saveAsCustomStyle(true)}>Duplicate style</button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p>Choose a widget instance or widget type to edit styles and individual elements.</p>
+            )}
+          </section>
           {renderCategory()}
         </aside>
       </div>
