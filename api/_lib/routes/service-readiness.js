@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { serviceLinks } from '../shared/serviceLinks.js';
+import { serviceLinks } from '../../../shared/serviceLinks.js';
 import {
   READINESS_STATUSES,
   SERVICE_IDS,
@@ -7,7 +7,7 @@ import {
   validateCommandConfiguration,
   validatePointSettings,
   summarizeReadiness,
-} from '../shared/serviceSetupModel.js';
+} from '../../../shared/serviceSetupModel.js';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
