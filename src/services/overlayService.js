@@ -12,6 +12,53 @@ const generateToken = () => {
   return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
 };
 
+let overlayScopeAvailable = true;
+
+const isMissingOverlayScopeError = (error) => {
+  const message = [error?.message, error?.details, error?.hint]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return message.includes('overlay_id') && (
+    error?.code === 'PGRST204'
+    || error?.code === '42703'
+    || message.includes('schema cache')
+    || message.includes('does not exist')
+  );
+};
+
+const markOverlayScopeUnavailable = (error) => {
+  if (!isMissingOverlayScopeError(error)) return false;
+  overlayScopeAvailable = false;
+  return true;
+};
+
+const shouldUseOverlayScope = (overlayId) => Boolean(overlayId && overlayScopeAvailable);
+
+const applyOverlayScope = (payload, overlayId, scoped) => {
+  const { overlay_id, ...basePayload } = payload;
+  return scoped ? { ...basePayload, overlay_id: overlayId } : basePayload;
+};
+
+const insertDefaultOverlayRows = async (userId, overlayId) => {
+  let scoped = shouldUseOverlayScope(overlayId);
+  let themePayload = applyOverlayScope({ user_id: userId }, overlayId, scoped);
+  let statePayload = applyOverlayScope({ user_id: userId, state: {} }, overlayId, scoped);
+
+  const { error: themeError } = await supabase.from('overlay_themes').insert(themePayload).select();
+  if (themeError && scoped && markOverlayScopeUnavailable(themeError)) {
+    scoped = false;
+    themePayload = applyOverlayScope({ user_id: userId }, overlayId, scoped);
+    statePayload = applyOverlayScope({ user_id: userId, state: {} }, overlayId, scoped);
+    await supabase.from('overlay_themes').insert(themePayload).select();
+  }
+
+  const { error: stateError } = await supabase.from('overlay_state').insert(statePayload).select();
+  if (stateError && scoped && markOverlayScopeUnavailable(stateError)) {
+    await supabase.from('overlay_state').insert({ user_id: userId, state: {} }).select();
+  }
+};
+
 // ─── OVERLAY INSTANCE ───────────────────────────────────
 
 export async function getOrCreateInstance(userId, displayName) {
@@ -42,11 +89,7 @@ export async function getOrCreateInstance(userId, displayName) {
 
   if (createErr) throw createErr;
 
-  // Also create default theme row
-  await supabase.from('overlay_themes').insert({ user_id: userId, overlay_id: created.id }).select();
-
-  // Create default state row
-  await supabase.from('overlay_state').insert({ user_id: userId, overlay_id: created.id, state: {} }).select();
+  await insertDefaultOverlayRows(userId, created.id);
 
   return created;
 }
@@ -79,23 +122,39 @@ export async function regenerateToken(userId) {
 // ─── THEME / CUSTOMIZATION ──────────────────────────────
 
 export async function getTheme(userId, overlayId = null) {
-  let query = supabase
-    .from('overlay_themes')
-    .select('*')
-    .eq('user_id', userId);
-  if (overlayId) query = query.eq('overlay_id', overlayId);
-  const { data } = await query.maybeSingle();
+  const fetchTheme = (scoped) => {
+    let query = supabase
+      .from('overlay_themes')
+      .select('*')
+      .eq('user_id', userId);
+    if (scoped) query = query.eq('overlay_id', overlayId);
+    return query.maybeSingle();
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { data, error } = await fetchTheme(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ data, error } = await fetchTheme(false));
+  }
+  if (error) return null;
   return data;
 }
 
 export async function updateTheme(userId, patch, overlayId = null) {
-  const payload = { user_id: userId, ...patch, updated_at: new Date().toISOString() };
-  if (overlayId) payload.overlay_id = overlayId;
-  const { data, error } = await supabase
-    .from('overlay_themes')
-    .upsert(payload, { onConflict: overlayId ? 'overlay_id' : 'user_id' })
-    .select()
-    .single();
+  const saveTheme = (scoped) => {
+    const payload = applyOverlayScope({ user_id: userId, ...patch, updated_at: new Date().toISOString() }, overlayId, scoped);
+    return supabase
+      .from('overlay_themes')
+      .upsert(payload, { onConflict: scoped ? 'overlay_id' : 'user_id' })
+      .select()
+      .single();
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { data, error } = await saveTheme(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ data, error } = await saveTheme(false));
+  }
   if (error) throw error;
   return data;
 }
@@ -103,34 +162,47 @@ export async function updateTheme(userId, patch, overlayId = null) {
 // ─── WIDGETS ────────────────────────────────────────────
 
 export async function getWidgets(userId, overlayId = null) {
-  let query = supabase
-    .from('overlay_widgets')
-    .select('*')
-    .eq('user_id', userId);
-  if (overlayId) query = query.eq('overlay_id', overlayId);
-  const { data, error } = await query.order('z_index', { ascending: true });
+  const fetchWidgets = (scoped) => {
+    let query = supabase
+      .from('overlay_widgets')
+      .select('*')
+      .eq('user_id', userId);
+    if (scoped) query = query.eq('overlay_id', overlayId);
+    return query.order('z_index', { ascending: true });
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { data, error } = await fetchWidgets(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ data, error } = await fetchWidgets(false));
+  }
   if (error) throw error;
   return data || [];
 }
 
 export async function upsertWidget(userId, widget, overlayId = null) {
-  const payload = { user_id: userId, ...widget, updated_at: new Date().toISOString() };
-  if (overlayId) payload.overlay_id = overlayId;
-  const { data, error } = await supabase
-    .from('overlay_widgets')
-    .upsert(payload, { onConflict: 'id' })
-    .select()
-    .single();
+  const saveWidget = (scoped) => {
+    const payload = applyOverlayScope({ user_id: userId, ...widget, updated_at: new Date().toISOString() }, overlayId, scoped);
+    return supabase
+      .from('overlay_widgets')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { data, error } = await saveWidget(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ data, error } = await saveWidget(false));
+  }
   if (error) throw error;
   return data;
 }
 
 export async function createWidget(userId, widgetType, config = {}, overlayId = null) {
-  const { data, error } = await supabase
-    .from('overlay_widgets')
-    .insert({
+  const insertWidget = (scoped) => {
+    const payload = applyOverlayScope({
       user_id: userId,
-      overlay_id: overlayId,
       widget_type: widgetType,
       label: widgetType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
       is_visible: true,
@@ -141,9 +213,19 @@ export async function createWidget(userId, widgetType, config = {}, overlayId = 
       z_index: 1,
       config,
       animation: 'fade',
-    })
-    .select()
-    .single();
+    }, overlayId, scoped);
+    return supabase
+      .from('overlay_widgets')
+      .insert(payload)
+      .select()
+      .single();
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { data, error } = await insertWidget(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ data, error } = await insertWidget(false));
+  }
   if (error) {
     console.error('[overlayService] createWidget failed:', error);
     throw error;
@@ -152,32 +234,56 @@ export async function createWidget(userId, widgetType, config = {}, overlayId = 
 }
 
 export async function deleteWidget(userId, widgetId, overlayId = null) {
-  let query = supabase.from('overlay_widgets').delete().eq('id', widgetId).eq('user_id', userId);
-  if (overlayId) query = query.eq('overlay_id', overlayId);
-  const { error } = await query;
+  const removeWidget = (scoped) => {
+    let query = supabase.from('overlay_widgets').delete().eq('id', widgetId).eq('user_id', userId);
+    if (scoped) query = query.eq('overlay_id', overlayId);
+    return query;
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { error } = await removeWidget(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ error } = await removeWidget(false));
+  }
   if (error) throw error;
 }
 
 // ─── OVERLAY STATE (ephemeral real-time state) ──────────
 
 export async function getOverlayState(userId, overlayId = null) {
-  let query = supabase
-    .from('overlay_state')
-    .select('*')
-    .eq('user_id', userId);
-  if (overlayId) query = query.eq('overlay_id', overlayId);
-  const { data } = await query.maybeSingle();
+  const fetchState = (scoped) => {
+    let query = supabase
+      .from('overlay_state')
+      .select('*')
+      .eq('user_id', userId);
+    if (scoped) query = query.eq('overlay_id', overlayId);
+    return query.maybeSingle();
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { data, error } = await fetchState(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ data, error } = await fetchState(false));
+  }
+  if (error) return {};
   return data?.state || {};
 }
 
 export async function setOverlayState(userId, state, overlayId = null) {
-  const payload = { user_id: userId, state, updated_at: new Date().toISOString() };
-  if (overlayId) payload.overlay_id = overlayId;
-  const { data, error } = await supabase
-    .from('overlay_state')
-    .upsert(payload, { onConflict: overlayId ? 'overlay_id' : 'user_id' })
-    .select()
-    .single();
+  const saveState = (scoped) => {
+    const payload = applyOverlayScope({ user_id: userId, state, updated_at: new Date().toISOString() }, overlayId, scoped);
+    return supabase
+      .from('overlay_state')
+      .upsert(payload, { onConflict: scoped ? 'overlay_id' : 'user_id' })
+      .select()
+      .single();
+  };
+
+  let scoped = shouldUseOverlayScope(overlayId);
+  let { data, error } = await saveState(scoped);
+  if (error && scoped && markOverlayScopeUnavailable(error)) {
+    ({ data, error } = await saveState(false));
+  }
   if (error) throw error;
   return data;
 }
@@ -190,8 +296,9 @@ export async function patchOverlayState(userId, patch, overlayId = null) {
 // ─── REALTIME SUBSCRIPTIONS ─────────────────────────────
 
 export function subscribeToOverlay(userId, { onState, onWidgets, onTheme }, overlayId = null) {
-  const channel = supabase.channel(`overlay_sync_${overlayId || userId}`);
-  const filter = overlayId ? `overlay_id=eq.${overlayId}` : `user_id=eq.${userId}`;
+  const scoped = shouldUseOverlayScope(overlayId);
+  const channel = supabase.channel(`overlay_sync_${scoped ? overlayId : userId}`);
+  const filter = scoped ? `overlay_id=eq.${overlayId}` : `user_id=eq.${userId}`;
 
   if (onState) {
     channel.on('postgres_changes', {
