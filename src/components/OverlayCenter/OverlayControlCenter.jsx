@@ -14,7 +14,6 @@ import {
   Copy,
   ExternalLink,
   Grid3X3,
-  LayoutDashboard,
   Link2,
   Lock,
   MonitorPlay,
@@ -163,7 +162,6 @@ const INTEGRATIONS = [
 
 const PANEL_ROUTES = {
   '/overlay-center': 'home',
-  '/overlay-center/widgets': 'tools',
   '/overlay-center/appearance': 'appearance',
   '/overlay-center/integrations': 'integrations',
   '/overlay-center/preview': 'preview',
@@ -399,9 +397,8 @@ function validateOverlay({ instance, widgets, setup, integrations = {} }) {
 
 function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, onOpenPreview }) {
   const navItems = [
-    { id: 'home', label: 'Home', to: '/overlay-center', icon: LayoutDashboard },
+    { id: 'home', label: 'Tools', to: '/overlay-center', icon: Grid3X3 },
     { id: 'integrations', label: 'Integrations', to: '/overlay-center/integrations', icon: Link2 },
-    { id: 'tools', label: 'Tools', to: '/overlay-center/widgets', icon: Grid3X3 },
     { id: 'appearance', label: 'Appearance', to: '/overlay-center/appearance', icon: Brush },
   ];
 
@@ -840,7 +837,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
   if (!def) {
     return (
       <section className="oc2-panel">
-        <Link className="oc2-back-link" to="/overlay-center/widgets"><ArrowLeft size={16} /> Back to tools</Link>
+        <Link className="oc2-back-link" to="/overlay-center"><ArrowLeft size={16} /> Back to tools</Link>
         <h1>Unknown widget</h1>
         <p>This widget is not registered in the current widget registry.</p>
       </section>
@@ -919,7 +916,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
   return (
     <section className="oc2-detail" data-tour="widget-detail-page">
       <div className="oc2-detail-header">
-        <Link className="oc2-back-link" to="/overlay-center/widgets"><ArrowLeft size={16} /> Back to tools</Link>
+        <Link className="oc2-back-link" to="/overlay-center"><ArrowLeft size={16} /> Back to tools</Link>
         <div>
           <span className="oc2-eyebrow">Widget detail</span>
           <h1>{FEATURE_COPY[widgetType]?.title || def.label}</h1>
@@ -1363,7 +1360,10 @@ export default function OverlayControlCenter() {
 
   useEffect(() => {
     if (location.pathname === '/overlay-center/layout') {
-      navigate('/overlay-center/widgets', { replace: true });
+      navigate('/overlay-center', { replace: true });
+    }
+    if (location.pathname === '/overlay-center/widgets') {
+      navigate('/overlay-center', { replace: true });
     }
   }, [location.pathname, navigate]);
 
@@ -1403,7 +1403,7 @@ export default function OverlayControlCenter() {
     const routeMap = {
       home: '/overlay-center',
       integrations: '/overlay-center/integrations',
-      tools: '/overlay-center/widgets',
+      tools: '/overlay-center',
       appearance: '/overlay-center/appearance',
       preview: '/overlay-center/preview',
       presets: '/overlay-center/presets',
@@ -1427,7 +1427,7 @@ export default function OverlayControlCenter() {
     const isWidgetDetailPath = location.pathname.startsWith('/overlay-center/widgets/');
     const isKnownPanelPath = Boolean(PANEL_ROUTES[location.pathname]);
     if (location.pathname.startsWith('/overlay-center/') && !isWidgetDetailPath && !isKnownPanelPath) {
-      navigate('/overlay-center/widgets', { replace: true });
+      navigate('/overlay-center', { replace: true });
     }
   }, [location.pathname, navigate]);
 
@@ -1574,7 +1574,7 @@ export default function OverlayControlCenter() {
   return (
     <div className="oc-page oc2-page">
       <OverlayTopNavigation
-        active={currentPanel === 'widget-detail' ? 'tools' : currentPanel}
+        active={currentPanel === 'widget-detail' ? 'home' : currentPanel}
         setupComplete={setupComplete}
         isAdmin={isAdmin}
         onRestartSetup={restartSetup}
@@ -1624,25 +1624,6 @@ export default function OverlayControlCenter() {
                 trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, { widget_type: type });
                 navigate(`/overlay-center/widgets/${toSlug(type)}`);
               }}
-              onToggleTool={handleToggleTool}
-              onAddTool={handleAddTool}
-              onRemoveTool={handleRemoveTool}
-            />
-          </>
-        )}
-
-        {currentPanel === 'tools' && (
-          <>
-            <div className="oc2-section-heading" data-tour="tools-page">
-              <span className="oc2-eyebrow">Tool grid</span>
-              <h1>Overlay tools</h1>
-              <p>Add or open a tool. Ordering, visibility and placement now live on each tool page.</p>
-            </div>
-            <ToolWorkspace
-              widgets={widgets}
-              integrations={integrations}
-              isAdmin={isAdmin}
-              onOpenTool={(type) => navigate(`/overlay-center/widgets/${toSlug(type)}`)}
               onToggleTool={handleToggleTool}
               onAddTool={handleAddTool}
               onRemoveTool={handleRemoveTool}
