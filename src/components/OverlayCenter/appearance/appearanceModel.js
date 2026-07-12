@@ -1903,19 +1903,23 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
     ...appearanceToVisualOverride(instanceStyleEntry.appearance),
     ...instanceStyleEntry.visual,
   });
+  const explicitSubElements = deepMerge(
+    registryTypeDefaults.subElements,
+    registryStyleDefaults.subElements,
+    base.subElements || {},
+    typeEntry.subElements,
+    typeStyleEntry.subElements,
+    instanceEntry.subElements,
+    instanceStyleEntry.subElements
+  );
   return {
     ...next,
     ...typeOverride,
     ...instanceOverride,
+    __appearanceExplicitSubElements: explicitSubElements,
     subElements: deepMerge(
       buildSubElementDefaults(widget.widget_type, resolved),
-      registryTypeDefaults.subElements,
-      registryStyleDefaults.subElements,
-      base.subElements || {},
-      typeEntry.subElements,
-      typeStyleEntry.subElements,
-      instanceEntry.subElements,
-      instanceStyleEntry.subElements
+      explicitSubElements
     ),
   };
 }
@@ -1962,7 +1966,10 @@ export function buildWidgetAppearanceVars(config = {}) {
       ? `0 ${Math.round(shadowSize * 0.35)}px ${Math.round(shadowSize * 0.7)}px rgba(0,0,0,${shadowOpacity.toFixed(2)})`
       : 'none',
   };
-  for (const [elementId, tokens] of Object.entries(config.subElements || {})) {
+  const elementSubElements = Object.prototype.hasOwnProperty.call(config || {}, '__appearanceExplicitSubElements')
+    ? config.__appearanceExplicitSubElements || {}
+    : config.subElements || {};
+  for (const [elementId, tokens] of Object.entries(elementSubElements)) {
     const elementPrefix = `--widget-${cssSafeName(elementId)}`;
     Object.assign(vars, buildElementAppearanceVars(tokens, elementPrefix));
     for (const [stateId, stateTokens] of Object.entries(tokens?.states || {})) {

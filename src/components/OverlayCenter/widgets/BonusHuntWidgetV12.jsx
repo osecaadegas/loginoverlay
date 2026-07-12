@@ -144,35 +144,40 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
   /* ─── Style vars (same as classic v1) ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
-  const headerColor = subValue(c, 'headerContainer', 'background', subValue(c, 'header', 'background', c.headerColor || '#1e3a8a'));
-  const headerAccent = subValue(c, 'headerContainer', 'accentColor', subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa'));
-  const countCardColor = subValue(c, 'card', 'background', c.countCardColor || '#1e3a8a');
-  const currentBonusColor = subValue(c, 'highlight', 'background', c.currentBonusColor || '#166534');
-  const currentBonusAccent = subValue(c, 'highlight', 'accentColor', c.currentBonusAccent || '#86efac');
-  const listCardColor = subValue(c, 'bonusCard', 'background', c.listCardColor || '#581c87');
-  const listCardAccent = subValue(c, 'bonusCard', 'accentColor', c.listCardAccent || '#cbd5e1');
-  const summaryColor = subValue(c, 'value', 'background', c.summaryColor || '#1e3a8a');
-  const totalPayColor = subValue(c, 'profit', 'background', c.totalPayColor || '#eab308');
-  const totalPayText = subValue(c, 'profit', 'textColor', c.totalPayText || '#ffffff');
-  const superBadgeColor = subValue(c, 'openedState', 'accentColor', c.superBadgeColor || '#eab308');
-  const extremeBadgeColor = subValue(c, 'loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
-  const textColor = subValue(c, 'bonusCard', 'textColor', c.textColor || '#ffffff');
-  const mutedTextColor = subValue(c, 'label', 'textColor', c.mutedTextColor || '#93c5fd');
-  const statValueColor = subValue(c, 'value', 'textColor', c.statValueColor || '#ffffff');
-  const cardOutlineColor = subValue(c, 'bonusCard', 'borderColor', c.cardOutlineColor || 'transparent');
-  const cardOutlineWidth = subValue(c, 'bonusCard', 'borderWidth', c.cardOutlineWidth ?? 2);
-  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
-  const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 15);
-  const cardRadius = subValue(c, 'bonusCard', 'radius', c.cardRadius ?? 16);
-  const cardGap = subValue(c, 'bonusCard', 'gap', c.cardGap ?? 12);
-  const cardPadding = subValue(c, 'bonusCard', 'padding', c.cardPadding ?? 14);
-  const slotImageHeight = subValue(c, 'slotImage', 'height', c.slotImageHeight ?? 180);
+  const explicitAppearanceConfig = Object.prototype.hasOwnProperty.call(c, '__appearanceExplicitSubElements')
+    ? { subElements: c.__appearanceExplicitSubElements || {} }
+    : { subElements: c.subElements || {} };
+  const scopedValue = (elementId, property, fallback, stateId = 'default') => subValue(explicitAppearanceConfig, elementId, property, fallback, stateId);
+  const scopedValueWithLegacy = (elementId, legacyElementId, property, fallback, stateId = 'default') => scopedValue(elementId, property, scopedValue(legacyElementId, property, fallback, stateId), stateId);
+  const headerColor = scopedValueWithLegacy('headerContainer', 'header', 'background', c.headerColor || '#1e3a8a');
+  const headerAccent = scopedValueWithLegacy('headerContainer', 'header', 'accentColor', c.headerAccent || '#60a5fa');
+  const countCardColor = scopedValue('card', 'background', c.countCardColor || '#1e3a8a');
+  const currentBonusColor = scopedValue('highlight', 'background', c.currentBonusColor || '#166534');
+  const currentBonusAccent = scopedValue('highlight', 'accentColor', c.currentBonusAccent || '#86efac');
+  const listCardColor = scopedValue('bonusCard', 'background', c.listCardColor || '#581c87');
+  const listCardAccent = scopedValue('bonusCard', 'accentColor', c.listCardAccent || '#cbd5e1');
+  const summaryColor = scopedValue('value', 'background', c.summaryColor || '#1e3a8a');
+  const totalPayColor = scopedValue('profit', 'background', c.totalPayColor || '#eab308');
+  const totalPayText = scopedValue('profit', 'textColor', c.totalPayText || '#ffffff');
+  const superBadgeColor = scopedValue('openedState', 'accentColor', c.superBadgeColor || '#eab308');
+  const extremeBadgeColor = scopedValue('loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
+  const textColor = scopedValue('bonusCard', 'textColor', c.textColor || '#ffffff');
+  const mutedTextColor = scopedValue('label', 'textColor', c.mutedTextColor || '#93c5fd');
+  const statValueColor = scopedValue('value', 'textColor', c.statValueColor || '#ffffff');
+  const cardOutlineColor = scopedValue('bonusCard', 'borderColor', c.cardOutlineColor || 'transparent');
+  const cardOutlineWidth = scopedValue('bonusCard', 'borderWidth', c.cardOutlineWidth ?? 2);
+  const fontFamily = scopedValue('container', 'fontFamily', scopedValue('bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif"));
+  const fontSize = scopedValue('container', 'fontSize', scopedValue('bonusCard', 'fontSize', c.fontSize ?? 15));
+  const cardRadius = scopedValue('bonusCard', 'radius', c.cardRadius ?? 16);
+  const cardGap = scopedValue('bonusCard', 'gap', c.cardGap ?? 12);
+  const cardPadding = scopedValue('bonusCard', 'padding', c.cardPadding ?? 14);
+  const slotImageHeight = scopedValue('slotImage', 'height', c.slotImageHeight ?? 180);
   const listMaxHeight = c.listMaxHeight ?? 400;
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
 
-  const scopedStyle = (elementId, fallback = {}, stateId = 'default') => subElementStyle(c, elementId, fallback, stateId);
+  const scopedStyle = (elementId, fallback = {}, stateId = 'default') => subElementStyle(explicitAppearanceConfig, elementId, fallback, stateId);
   const scopedStyleWithLegacy = (elementId, legacyElementId, fallback = {}, stateId = 'default') => scopedStyle(elementId, scopedStyle(legacyElementId, fallback, stateId), stateId);
   const headerContainerStyle = scopedStyleWithLegacy('headerContainer', 'header');
   const headerIconStyle = scopedStyle('headerIcon');

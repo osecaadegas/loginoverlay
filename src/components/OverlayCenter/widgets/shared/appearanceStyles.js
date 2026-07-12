@@ -1,5 +1,8 @@
 export function getSubElement(config = {}, elementId) {
-  return config?.subElements?.[elementId] || {};
+  const subElements = Object.prototype.hasOwnProperty.call(config || {}, '__appearanceExplicitSubElements')
+    ? config.__appearanceExplicitSubElements
+    : config?.subElements;
+  return subElements?.[elementId] || {};
 }
 
 const STATE_ELEMENT_ALIASES = {

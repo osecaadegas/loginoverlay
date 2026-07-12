@@ -71,14 +71,26 @@ function pickTextStyle(style = {}) {
   return Object.fromEntries(TEXT_STYLE_KEYS.map(key => [key, style[key]]).filter(([, value]) => value !== undefined));
 }
 
+function getExplicitAppearanceConfig(config = {}) {
+  return Object.prototype.hasOwnProperty.call(config, '__appearanceExplicitSubElements')
+    ? { subElements: config.__appearanceExplicitSubElements || {} }
+    : config;
+}
+
+function scopedSubValue(config, elementId, property, fallback, stateId = 'default') {
+  return subValue(getExplicitAppearanceConfig(config), elementId, property, fallback, stateId);
+}
+
 function elementValue(config, elementId, property, fallback, legacyElementId, stateId = 'default') {
-  const legacyFallback = legacyElementId ? subValue(config, legacyElementId, property, fallback, stateId) : fallback;
-  return subValue(config, elementId, property, legacyFallback, stateId);
+  const explicitConfig = getExplicitAppearanceConfig(config);
+  const legacyFallback = legacyElementId ? subValue(explicitConfig, legacyElementId, property, fallback, stateId) : fallback;
+  return subValue(explicitConfig, elementId, property, legacyFallback, stateId);
 }
 
 function elementStyle(config, elementId, fallback = {}, legacyElementId, stateId = 'default') {
-  const legacyFallback = legacyElementId ? subElementStyle(config, legacyElementId, fallback, stateId) : fallback;
-  return subElementStyle(config, elementId, legacyFallback, stateId);
+  const explicitConfig = getExplicitAppearanceConfig(config);
+  const legacyFallback = legacyElementId ? subElementStyle(explicitConfig, legacyElementId, fallback, stateId) : fallback;
+  return subElementStyle(explicitConfig, elementId, legacyFallback, stateId);
 }
 
 function optionStateId({ isWin, isLose, isLead, status }) {
@@ -117,20 +129,20 @@ function BetsWidget({ config }) {
   const textColor   = elementValue(c, 'container', 'textColor', c.textColor || preset.textColor);
   const borderColor = elementValue(c, 'container', 'borderColor', c.borderColor || 'rgba(148,163,184,0.12)');
   const borderWidth = elementValue(c, 'container', 'borderWidth', c.borderWidth ?? c.cardBorderWidth ?? 1);
-  const headerBg    = elementValue(c, 'title', 'background', subValue(c, 'question', 'background', subValue(c, 'header', 'background', c.headerBg || preset.headerBg)), 'question');
-  const headerText  = elementValue(c, 'title', 'textColor', subValue(c, 'question', 'textColor', subValue(c, 'header', 'textColor', c.headerText || preset.headerText)), 'question');
+  const headerBg    = elementValue(c, 'title', 'background', scopedSubValue(c, 'header', 'background', c.headerBg || preset.headerBg), 'question');
+  const headerText  = elementValue(c, 'title', 'textColor', scopedSubValue(c, 'header', 'textColor', c.headerText || preset.headerText), 'question');
   const barBg       = elementValue(c, 'progressBar', 'background', c.barBg || c.progressBgColor || preset.barBg);
   const barFill     = elementValue(c, 'progressBar', 'fillColor', c.barFill || c.progressColor || preset.barFill);
-  const accentColor = elementValue(c, 'optionNumber', 'background', subValue(c, 'optionCard', 'accentColor', c.accentColor || preset.accentColor), 'optionCard');
-  const optionBg    = elementValue(c, 'optionRow', 'background', subValue(c, 'optionCard', 'background', c.cardBg || barBg), 'optionCard');
-  const optionText  = elementValue(c, 'optionLabel', 'textColor', subValue(c, 'optionCard', 'textColor', textColor), 'optionCard');
-  const timerText   = elementValue(c, 'status', 'textColor', subValue(c, 'timer', 'textColor', headerText), 'timer', status || 'default');
-  const timerBg     = elementValue(c, 'status', 'background', subValue(c, 'timer', 'background', 'rgba(99,102,241,0.18)'), 'timer', status || 'default');
-  const winText     = elementValue(c, 'optionRow', 'textColor', subValue(c, 'winningState', 'textColor', '#4ade80'), 'optionCard', 'winner');
-  const winBg       = elementValue(c, 'optionRow', 'background', subValue(c, 'winningState', 'background', 'rgba(34,197,94,0.14)'), 'optionCard', 'winner');
-  const loseText    = elementValue(c, 'optionRow', 'textColor', subValue(c, 'losingState', 'textColor', '#f87171'), 'optionCard', 'loser');
-  const loseBg      = elementValue(c, 'optionRow', 'background', subValue(c, 'losingState', 'background', 'rgba(239,68,68,0.14)'), 'optionCard', 'loser');
-  const radius      = elementValue(c, 'optionRow', 'radius', subValue(c, 'optionCard', 'radius', c.cardRadius ?? 12), 'optionCard');
+  const accentColor = elementValue(c, 'optionNumber', 'background', scopedSubValue(c, 'optionCard', 'accentColor', c.accentColor || preset.accentColor), 'optionCard');
+  const optionBg    = elementValue(c, 'optionRow', 'background', scopedSubValue(c, 'optionCard', 'background', c.cardBg || barBg), 'optionCard');
+  const optionText  = elementValue(c, 'optionLabel', 'textColor', scopedSubValue(c, 'optionCard', 'textColor', textColor), 'optionCard');
+  const timerText   = elementValue(c, 'status', 'textColor', scopedSubValue(c, 'timer', 'textColor', headerText), 'timer', status || 'default');
+  const timerBg     = elementValue(c, 'status', 'background', scopedSubValue(c, 'timer', 'background', 'rgba(99,102,241,0.18)'), 'timer', status || 'default');
+  const winText     = elementValue(c, 'optionRow', 'textColor', scopedSubValue(c, 'winningState', 'textColor', '#4ade80'), 'optionCard', 'winner');
+  const winBg       = elementValue(c, 'optionRow', 'background', scopedSubValue(c, 'winningState', 'background', 'rgba(34,197,94,0.14)'), 'optionCard', 'winner');
+  const loseText    = elementValue(c, 'optionRow', 'textColor', scopedSubValue(c, 'losingState', 'textColor', '#f87171'), 'optionCard', 'loser');
+  const loseBg      = elementValue(c, 'optionRow', 'background', scopedSubValue(c, 'losingState', 'background', 'rgba(239,68,68,0.14)'), 'optionCard', 'loser');
+  const radius      = elementValue(c, 'optionRow', 'radius', scopedSubValue(c, 'optionCard', 'radius', c.cardRadius ?? 12), 'optionCard');
   const progressHeight = elementValue(c, 'progressBar', 'height', c.barHeight || 8);
   const progressRadius = elementValue(c, 'progressBar', 'radius', 4);
   const containerStyle = elementStyle(c, 'container', {

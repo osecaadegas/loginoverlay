@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
+import * as React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const server = await createServer({
   logLevel: 'silent',
@@ -9,6 +11,7 @@ const server = await createServer({
 
 const { registerWidget, getAllWidgetDefs } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/widgetRegistry.js');
 const { subValue } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/appearanceStyles.js');
+const { default: BonusHuntWidgetV12 } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/BonusHuntWidgetV12.jsx');
 const { applyPreviewWidgetSamples } = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/previewWidgetSamples.js');
 const {
   buildWidgetAppearanceVars,
@@ -383,6 +386,17 @@ const bonusHuntV12Widget = {
   widget_type: 'bonus_hunt',
   config: { displayStyle: 'v12_classic_sr', fontSize: 15, fontFamily: 'Legacy Sans' },
 };
+const bonusHuntV12StandardConfig = resolveWidgetAppearanceConfig(bonusHuntV12Widget, { themeId: 'classic' });
+assert.deepEqual(bonusHuntV12StandardConfig.__appearanceExplicitSubElements, {}, 'standard Bonus Hunt V12 has no explicit child element overrides');
+assert.equal(subValue(bonusHuntV12StandardConfig, 'headerTitle', 'fontSize', 'css-default'), 'css-default', 'generated element defaults do not override standard renderer fallbacks');
+const bonusHuntV12StandardMarkup = renderToStaticMarkup(React.createElement(BonusHuntWidgetV12, {
+  config: bonusHuntV12StandardConfig,
+  userId: null,
+}));
+assert.ok(bonusHuntV12StandardMarkup.includes('data-widget-element="headerTitle"'), 'standard Bonus Hunt V12 renders the header target');
+assert.ok(!/data-widget-element="headerTitle"[^>]*style=/.test(bonusHuntV12StandardMarkup), 'standard Bonus Hunt V12 header keeps CSS-driven styling');
+assert.ok(!/data-widget-element="statLabel"[^>]*style=/.test(bonusHuntV12StandardMarkup), 'standard Bonus Hunt V12 stat labels keep CSS-driven styling');
+assert.ok(!/data-widget-element="slotTitle"[^>]*style=/.test(bonusHuntV12StandardMarkup), 'standard Bonus Hunt V12 slot titles keep CSS-driven styling');
 const bonusHuntV12Appearance = {
   themeId: 'classic',
   widgetTypes: {
@@ -422,6 +436,8 @@ const bonusHuntV12Appearance = {
 };
 const bonusHuntV12Config = resolveWidgetAppearanceConfig(bonusHuntV12Widget, bonusHuntV12Appearance);
 assert.equal(bonusHuntV12Config.displayStyle, 'v12_classic_sr', 'bonus hunt Classic + Requests keeps its renderer style');
+assert.equal(bonusHuntV12Config.__appearanceExplicitSubElements.headerTitle.fontSize, 42, 'explicit child element metadata includes real header override');
+assert.equal(subValue(bonusHuntV12Config, 'headerTitle', 'fontSize', 'css-default'), 42, 'explicit element overrides still reach shared renderer helpers');
 assert.equal(bonusHuntV12Config.subElements.headerTitle.fontSize, 42, 'grouped headerTitle font size resolves to flat renderer config');
 assert.equal(bonusHuntV12Config.subElements.headerTitle.fontWeight, 900, 'grouped headerTitle font weight resolves to flat renderer config');
 assert.equal(bonusHuntV12Config.subElements.headerTitle.textColor, '#112233', 'grouped headerTitle text color resolves to flat renderer config');
@@ -435,6 +451,12 @@ assert.equal(bonusHuntV12Config.subElements.requestsHeader.textColor, '#abcdef',
 assert.notEqual(bonusHuntV12Config.subElements.headerTitle.textColor, '#abcdef', 'requests header colour does not leak to main header');
 assert.equal(bonusHuntV12Config.subElements.slotRow.states.active.background, '#010203', 'slot row active state resolves from grouped state override');
 assert.notEqual(bonusHuntV12Config.subElements.slotRow.background, '#010203', 'slot row active state does not overwrite default state');
+const bonusHuntV12CustomizedMarkup = renderToStaticMarkup(React.createElement(BonusHuntWidgetV12, {
+  config: bonusHuntV12Config,
+  userId: null,
+}));
+assert.match(bonusHuntV12CustomizedMarkup, /data-widget-element="headerTitle"[^>]*style="[^"]*font-size:42px/, 'custom Bonus Hunt V12 header renders explicit inline font size');
+assert.doesNotMatch(bonusHuntV12CustomizedMarkup, /data-widget-element="statLabel"[^>]*style="[^"]*font-size:42px/, 'custom Bonus Hunt V12 header font size does not render on stat labels');
 
 const bonusHuntSelectedHeader = resolveWidgetAppearance({
   widgetType: 'bonus_hunt',
@@ -605,6 +627,9 @@ assert.equal(betsConfig.subElements.optionNumber.background, '#445566', 'bets op
 assert.equal(betsConfig.subElements.optionLabel.textTransform, 'uppercase', 'bets option label typography override reaches widget config');
 assert.equal(betsConfig.subElements.percentage.fontFamily, 'Bets Number', 'bets percentage number font override reaches widget config');
 assert.equal(betsConfig.subElements.progressBar.fillColor, '#abcdef', 'bets progress fill override reaches widget config');
+const betsOverrideVars = buildWidgetAppearanceVars(betsConfig);
+assert.equal(betsOverrideVars['--widget-title-font-size'], '31px', 'explicit bets title override emits element CSS var');
+assert.equal(betsOverrideVars['--widget-progress-bar-fill-color'], '#abcdef', 'explicit bets progress fill override emits element CSS var');
 
 const inheritingBetsWidget = {
   id: 'bets_global',
@@ -652,8 +677,8 @@ assert.equal(globalBetsVars['--widget-heading-font'], 'Global Heading', 'widget 
 assert.equal(globalBetsVars['--widget-number-font'], 'Global Number', 'widget CSS vars expose number font');
 assert.equal(globalBetsVars['--widget-line-height'], 1.65, 'widget CSS vars expose line height');
 assert.equal(globalBetsVars['--widget-letter-spacing'], '0.04em', 'widget CSS vars expose letter spacing');
-assert.equal(globalBetsVars['--widget-title-font-family'], 'Global Heading', 'widget CSS vars expose title sub-element font');
-assert.equal(globalBetsVars['--widget-option-row-radius'], '21px', 'widget CSS vars expose option row radius');
+assert.equal(globalBetsVars['--widget-title-font-family'], undefined, 'generated title defaults do not emit element CSS vars');
+assert.equal(globalBetsVars['--widget-option-row-radius'], undefined, 'generated option row defaults do not emit element CSS vars');
 
 assert.equal(
   subValue({ subElements: { bonusCard: { background: '#111111', states: { opened: { background: '#222222' } } } } }, 'openedState', 'background', '#000000'),
