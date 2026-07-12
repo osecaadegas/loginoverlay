@@ -8,7 +8,7 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import SlotImage from './SlotImage';
-import { subValue } from './shared/appearanceStyles';
+import { subElementStyle, subValue } from './shared/appearanceStyles';
 
 const FALLBACK_SR_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -144,8 +144,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
   /* ─── Style vars (same as classic v1) ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
-  const headerColor = subValue(c, 'header', 'background', c.headerColor || '#1e3a8a');
-  const headerAccent = subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa');
+  const headerColor = subValue(c, 'headerContainer', 'background', subValue(c, 'header', 'background', c.headerColor || '#1e3a8a'));
+  const headerAccent = subValue(c, 'headerContainer', 'accentColor', subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa'));
   const countCardColor = subValue(c, 'card', 'background', c.countCardColor || '#1e3a8a');
   const currentBonusColor = subValue(c, 'highlight', 'background', c.currentBonusColor || '#166534');
   const currentBonusAccent = subValue(c, 'highlight', 'accentColor', c.currentBonusAccent || '#86efac');
@@ -161,8 +161,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const statValueColor = subValue(c, 'value', 'textColor', c.statValueColor || '#ffffff');
   const cardOutlineColor = subValue(c, 'bonusCard', 'borderColor', c.cardOutlineColor || 'transparent');
   const cardOutlineWidth = subValue(c, 'bonusCard', 'borderWidth', c.cardOutlineWidth ?? 2);
-  const fontFamily = subValue(c, 'bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
-  const fontSize = subValue(c, 'bonusCard', 'fontSize', c.fontSize ?? 15);
+  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
+  const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 15);
   const cardRadius = subValue(c, 'bonusCard', 'radius', c.cardRadius ?? 16);
   const cardGap = subValue(c, 'bonusCard', 'gap', c.cardGap ?? 12);
   const cardPadding = subValue(c, 'bonusCard', 'padding', c.cardPadding ?? 14);
@@ -172,19 +172,55 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
 
+  const scopedStyle = (elementId, fallback = {}, stateId = 'default') => subElementStyle(c, elementId, fallback, stateId);
+  const scopedStyleWithLegacy = (elementId, legacyElementId, fallback = {}, stateId = 'default') => scopedStyle(elementId, scopedStyle(legacyElementId, fallback, stateId), stateId);
+  const headerContainerStyle = scopedStyleWithLegacy('headerContainer', 'header');
+  const headerIconStyle = scopedStyle('headerIcon');
+  const headerTitleStyle = scopedStyleWithLegacy('headerTitle', 'huntTitle');
+  const mainStatsContainerStyle = scopedStyle('mainStatsContainer');
+  const statCellStyle = scopedStyle('statCell');
+  const statLabelStyle = scopedStyle('statLabel');
+  const tagContainerStyle = scopedStyle('tagContainer');
+  const tagTextStyle = scopedStyle('tagText');
+  const slotCarouselContainerStyle = scopedStyleWithLegacy('slotCarouselContainer', 'carousel');
+  const slotImageStyle = scopedStyle('slotImage');
+  const progressBarStyle = scopedStyle('progressBar');
+  const progressBarFillStyle = scopedStyle('progressBarFill');
+  const progressCountStyle = scopedStyle('progressCount');
+  const slotListContainerStyle = scopedStyleWithLegacy('slotListContainer', 'bonusCard');
+  const slotPositionNumberStyle = scopedStyle('slotPositionNumber');
+  const slotThumbnailStyle = scopedStyle('slotThumbnail', slotImageStyle);
+  const slotTitleStyle = scopedStyle('slotTitle');
+  const winLabelStyle = scopedStyle('winLabel');
+  const winValueStyle = scopedStyleWithLegacy('winValue', 'payoutValue');
+  const multiplierLabelStyle = scopedStyle('multiplierLabel');
+  const multiplierValueStyle = scopedStyle('multiplierValue');
+  const betLabelStyle = scopedStyle('betLabel');
+  const betValueStyle = scopedStyle('betValue');
+  const requestsSectionContainerStyle = scopedStyle('requestsSectionContainer');
+  const requestsHeaderStyle = scopedStyle('requestsHeader');
+  const requestsDescriptionStyle = scopedStyle('requestsDescription');
+  const requestsEmptyStyle = scopedStyle('requestsEmpty');
+  const footerContainerStyle = scopedStyleWithLegacy('footerContainer', 'footer');
+  const footerLabelStyle = scopedStyle('footerLabel');
+  const footerTotalValueStyle = scopedStyleWithLegacy('footerTotalValue', 'footer');
+
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
 
   const rootStyle = {
+    ...scopedStyle('container', {
+      fontFamily,
+      fontSize: `${fontSize}px`,
+      gap: `${cardGap}px`,
+      background: `linear-gradient(160deg, ${headerColor}f8, ${headerColor}f0)`,
+      color: textColor,
+    }),
     fontFamily,
-    fontSize: `${fontSize}px`,
     width: '100%',
     height: '100%',
     overflow: 'hidden',
-    gap: `${cardGap}px`,
-    background: `linear-gradient(160deg, ${headerColor}f8, ${headerColor}f0)`,
-    color: textColor,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
       : undefined,
@@ -219,54 +255,54 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const srScrollSpeed = 20;
 
   return (
-    <div className="oc-widget-inner oc-bonushunt oc-bonushunt--v12" style={{ ...rootStyle, height: '100%' }}>
+    <div className="oc-widget-inner oc-bonushunt oc-bonushunt--v12" data-widget-element="container" style={{ ...rootStyle, height: '100%' }}>
 
       {/* ═══ Header — Classic full-card flip ═══ */}
-      <div className="bht-card bht-header bht-header--fullflip" style={{ flex: '0 0 auto' }}>
+      <div className="bht-card bht-header bht-header--fullflip" data-widget-element="headerContainer" style={{ ...headerContainerStyle, flex: '0 0 auto' }}>
         <div className={`bht-fullflip-container${statsFlipped ? ' bht-fullflip-container--flipped' : ''}`}>
           <div className="bht-fullflip-face bht-fullflip-front">
             <div className="bht-header-center">
               {c.avatarUrl ? (
-                <img src={c.avatarUrl} alt="" className="bht-header-avatar"
+                <img src={c.avatarUrl} alt="" className="bht-header-avatar" data-widget-element="headerIcon" style={headerIconStyle}
                   onError={e => { e.target.style.display = 'none'; }} />
               ) : (
-                <div className="bht-icon-circle">
+                <div className="bht-icon-circle" data-widget-element="headerIcon" style={headerIconStyle}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
                   </svg>
                 </div>
               )}
-              <div className="bht-title">{huntTitle}</div>
+              <div className="bht-title" data-widget-element="headerTitle" style={headerTitleStyle}>{huntTitle}</div>
             </div>
-            <div className="bht-header-stats bht-header-stats--4col">
+            <div className="bht-header-stats bht-header-stats--4col" data-widget-element="mainStatsContainer" style={mainStatsContainerStyle}>
               <div className="bht-flip-face bht-flip-front">
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">START</div>
-                  <div className="bht-stat-value">{currency}{startMoney.toFixed(0)}</div>
+                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                  <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>START</div>
+                  <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue')}>{currency}{startMoney.toFixed(0)}</div>
                 </div>
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">STOP</div>
-                  <div className="bht-stat-value">{currency}{stopLoss.toFixed(0)}</div>
+                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                  <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>STOP</div>
+                  <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue')}>{currency}{stopLoss.toFixed(0)}</div>
                 </div>
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">B.E.</div>
-                  <div className="bht-stat-value" style={{ color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }}>{stats.liveBE.toFixed(0)}x</div>
+                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                  <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>B.E.</div>
+                  <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue', { color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }, stats.liveBE >= 100 ? 'negative' : 'positive')}>{stats.liveBE.toFixed(0)}x</div>
                 </div>
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">AVG</div>
-                  <div className="bht-stat-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(0)}x</div>
+                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                  <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>AVG</div>
+                  <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue', { color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }, stats.avgMulti >= 100 ? 'positive' : 'negative')}>{stats.avgMulti.toFixed(0)}x</div>
                 </div>
               </div>
             </div>
             {(stats.superCount > 0 || stats.extremeCount > 0) && (
               <div className="bht-badge-pills">
                 {stats.superCount > 0 && (
-                  <span className="bht-badge-pill bht-badge-pill--super">
+                  <span className="bht-badge-pill bht-badge-pill--super" data-widget-element="tagContainer" style={{ ...tagContainerStyle, ...tagTextStyle }}>
                     {stats.superCount} SUPER
                   </span>
                 )}
                 {stats.extremeCount > 0 && (
-                  <span className="bht-badge-pill bht-badge-pill--extreme">
+                  <span className="bht-badge-pill bht-badge-pill--extreme" data-widget-element="tagContainer" style={{ ...tagContainerStyle, ...tagTextStyle }}>
                     {stats.extremeCount} EXTREME
                   </span>
                 )}
@@ -278,17 +314,17 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
               {/* Best side card (stats + image) */}
               <div className="bht-flipback-side">
                 <div className="bht-flipback-stats">
-                  <div className="bht-flipback-stat-label">PAYOUT</div>
-                  <div className="bht-flipback-stat-val" style={{ color: '#4ade80' }}>{stats.bestSlot ? `${currency}${stats.bestSlot._payout.toFixed(0)}` : '—'}</div>
-                  <div className="bht-flipback-stat-label">MULTI</div>
-                  <div className="bht-flipback-stat-val">{stats.bestSlot ? `${stats.bestSlot._multi.toFixed(1)}x` : '—'}</div>
-                  <div className="bht-flipback-stat-label">BET</div>
-                  <div className="bht-flipback-stat-val">{stats.bestSlot ? `${currency}${(Number(stats.bestSlot.betSize) || 0).toFixed(2)}` : '—'}</div>
+                  <div className="bht-flipback-stat-label" data-widget-element="winLabel" style={winLabelStyle}>PAYOUT</div>
+                  <div className="bht-flipback-stat-val" data-widget-element="winValue" style={scopedStyleWithLegacy('winValue', 'payoutValue', { color: '#4ade80' }, 'positive')}>{stats.bestSlot ? `${currency}${stats.bestSlot._payout.toFixed(0)}` : '—'}</div>
+                  <div className="bht-flipback-stat-label" data-widget-element="multiplierLabel" style={multiplierLabelStyle}>MULTI</div>
+                  <div className="bht-flipback-stat-val" data-widget-element="multiplierValue" style={multiplierValueStyle}>{stats.bestSlot ? `${stats.bestSlot._multi.toFixed(1)}x` : '—'}</div>
+                  <div className="bht-flipback-stat-label" data-widget-element="betLabel" style={betLabelStyle}>BET</div>
+                  <div className="bht-flipback-stat-val" data-widget-element="betValue" style={betValueStyle}>{stats.bestSlot ? `${currency}${(Number(stats.bestSlot.betSize) || 0).toFixed(2)}` : '—'}</div>
                 </div>
                 {stats.bestSlot ? (
                   <div className="bht-flipback-slot bht-flipback-slot--best">
                     {stats.bestSlot.slot?.image ? (
-                      <SlotImage src={stats.bestSlot.slot.image} alt={stats.bestSlot.slotName || stats.bestSlot.slot?.name} className="bht-flipback-slot-img" />
+                      <SlotImage src={stats.bestSlot.slot.image} alt={stats.bestSlot.slotName || stats.bestSlot.slot?.name} className="bht-flipback-slot-img" data-widget-element="slotImage" style={slotImageStyle} />
                     ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
                   </div>
                 ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
@@ -300,17 +336,17 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 {stats.worstSlot ? (
                   <div className="bht-flipback-slot bht-flipback-slot--worst">
                     {stats.worstSlot.slot?.image ? (
-                      <SlotImage src={stats.worstSlot.slot.image} alt={stats.worstSlot.slotName || stats.worstSlot.slot?.name} className="bht-flipback-slot-img" />
+                      <SlotImage src={stats.worstSlot.slot.image} alt={stats.worstSlot.slotName || stats.worstSlot.slot?.name} className="bht-flipback-slot-img" data-widget-element="slotImage" style={slotImageStyle} />
                     ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
                   </div>
                 ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
                 <div className="bht-flipback-stats">
-                  <div className="bht-flipback-stat-label">PAYOUT</div>
-                  <div className="bht-flipback-stat-val" style={{ color: '#f87171' }}>{stats.worstSlot ? `${currency}${stats.worstSlot._payout.toFixed(0)}` : '—'}</div>
-                  <div className="bht-flipback-stat-label">MULTI</div>
-                  <div className="bht-flipback-stat-val">{stats.worstSlot ? `${stats.worstSlot._multi.toFixed(1)}x` : '—'}</div>
-                  <div className="bht-flipback-stat-label">BET</div>
-                  <div className="bht-flipback-stat-val">{stats.worstSlot ? `${currency}${(Number(stats.worstSlot.betSize) || 0).toFixed(2)}` : '—'}</div>
+                  <div className="bht-flipback-stat-label" data-widget-element="winLabel" style={winLabelStyle}>PAYOUT</div>
+                  <div className="bht-flipback-stat-val" data-widget-element="winValue" style={scopedStyleWithLegacy('winValue', 'payoutValue', { color: '#f87171' }, 'negative')}>{stats.worstSlot ? `${currency}${stats.worstSlot._payout.toFixed(0)}` : '—'}</div>
+                  <div className="bht-flipback-stat-label" data-widget-element="multiplierLabel" style={multiplierLabelStyle}>MULTI</div>
+                  <div className="bht-flipback-stat-val" data-widget-element="multiplierValue" style={multiplierValueStyle}>{stats.worstSlot ? `${stats.worstSlot._multi.toFixed(1)}x` : '—'}</div>
+                  <div className="bht-flipback-stat-label" data-widget-element="betLabel" style={betLabelStyle}>BET</div>
+                  <div className="bht-flipback-stat-val" data-widget-element="betValue" style={betValueStyle}>{stats.worstSlot ? `${currency}${(Number(stats.worstSlot.betSize) || 0).toFixed(2)}` : '—'}</div>
                 </div>
               </div>
             </div>
@@ -320,9 +356,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+        <div className="bht-card bht-list-card" data-widget-element="slotListContainer" style={{ ...slotListContainerStyle, flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
           {/* ── 3D Animated Card Carousel ── */}
-          <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
+          <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`} data-widget-element="slotCarouselContainer" style={slotCarouselContainerStyle}>
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
@@ -338,7 +374,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                     <div className="bht-stack-card-inner">
                       <div className="bht-stack-card-img-wrap">
                         {bonus.slot?.image ? (
-                          <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-stack-card-img" />
+                          <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-stack-card-img" data-widget-element="slotImage" style={slotImageStyle} />
                         ) : <div className="bht-stack-card-img-ph" />}
                       </div>
                     </div>
@@ -354,15 +390,15 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             const pct = total > 0 ? (opened / total) * 100 : 0;
             return (
               <div className="bht-progress">
-                <div className="bht-progress-bar">
-                  <div className="bht-progress-fill" style={{ width: `${pct}%` }} />
+                <div className="bht-progress-bar" data-widget-element="progressBar" style={progressBarStyle}>
+                  <div className="bht-progress-fill" data-widget-element="progressBarFill" style={{ ...progressBarFillStyle, width: `${pct}%` }} />
                 </div>
-                <span className="bht-progress-text">{opened}/{total}</span>
+                <span className="bht-progress-text" data-widget-element="progressCount" style={progressCountStyle}>{opened}/{total}</span>
               </div>
             );
           })()}
           {/* ── Vertical list rows (half-height) ── */}
-          <div className="bht-list-rows" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+          <div className="bht-list-rows" data-widget-element="slotListContainer" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', position: 'relative' }}>
             <div className="bht-list-fade bht-list-fade--top" />
             <div className="bht-list-fade bht-list-fade--bottom" />
             {(() => {
@@ -377,31 +413,33 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                       const multi = bet > 0 ? payout / bet : 0;
                       return (
                         <div key={`lr-${bonus.id || i}-o`}
-                          className={`bht-list-row${i === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}>
-                          <span className="bht-list-row-idx">{i + 1}</span>
-                          <div className="bht-list-row-thumb">
+                          className={`bht-list-row${i === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}
+                          data-widget-element="slotRow"
+                          style={scopedStyle('slotRow', {}, i === currentIndex ? 'active' : bonus.opened ? 'opened' : 'default')}>
+                          <span className="bht-list-row-idx" data-widget-element="slotPositionNumber" style={slotPositionNumberStyle}>{i + 1}</span>
+                          <div className="bht-list-row-thumb" data-widget-element="slotThumbnail" style={slotThumbnailStyle}>
                             {bonus.slot?.image ? (
-                              <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
+                              <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" data-widget-element="slotImage" style={slotImageStyle} />
                             ) : <div className="bht-list-row-img-ph" />}
                           </div>
                           <div className="bht-list-row-info">
-                            <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                            <span className="bht-list-row-name" data-widget-element="slotTitle" style={slotTitleStyle}>{bonus.slotName || bonus.slot?.name}</span>
                             {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
-                              <span className="bht-list-row-requester">by {bonus.requestedBy}</span>
+                              <span className="bht-list-row-requester" data-widget-element="requestsDescription" style={requestsDescriptionStyle}>by {bonus.requestedBy}</span>
                             )}
                           </div>
                           <div className="bht-list-row-stats">
                             <div className="bht-list-row-col">
-                              <span className="bht-list-row-col-label">WIN</span>
-                              <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                              <span className="bht-list-row-col-label" data-widget-element="winLabel" style={winLabelStyle}>WIN</span>
+                              <span className="bht-list-row-col-val" data-widget-element="winValue" style={winValueStyle}>{currency}{payout.toFixed(0)}</span>
                             </div>
                             <div className="bht-list-row-col">
-                              <span className="bht-list-row-col-label">MULTI</span>
-                              <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                              <span className="bht-list-row-col-label" data-widget-element="multiplierLabel" style={multiplierLabelStyle}>MULTI</span>
+                              <span className="bht-list-row-col-val" data-widget-element="multiplierValue" style={multiplierValueStyle}>{multi.toFixed(1)}x</span>
                             </div>
                             <div className="bht-list-row-col">
-                              <span className="bht-list-row-col-label">BET</span>
-                              <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                              <span className="bht-list-row-col-label" data-widget-element="betLabel" style={betLabelStyle}>BET</span>
+                              <span className="bht-list-row-col-val" data-widget-element="betValue" style={betValueStyle}>{currency}{bet.toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
@@ -416,31 +454,33 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 const multi = bet > 0 ? payout / bet : 0;
                 return (
                   <div key={key}
-                    className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}>
-                    <span className="bht-list-row-idx">{idx + 1}</span>
-                    <div className="bht-list-row-thumb">
+                    className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}
+                    data-widget-element="slotRow"
+                    style={scopedStyle('slotRow', {}, idx === currentIndex ? 'active' : bonus.opened ? 'opened' : 'default')}>
+                    <span className="bht-list-row-idx" data-widget-element="slotPositionNumber" style={slotPositionNumberStyle}>{idx + 1}</span>
+                    <div className="bht-list-row-thumb" data-widget-element="slotThumbnail" style={slotThumbnailStyle}>
                       {bonus.slot?.image ? (
-                        <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
+                        <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" data-widget-element="slotImage" style={slotImageStyle} />
                       ) : <div className="bht-list-row-img-ph" />}
                     </div>
                     <div className="bht-list-row-info">
-                      <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                      <span className="bht-list-row-name" data-widget-element="slotTitle" style={slotTitleStyle}>{bonus.slotName || bonus.slot?.name}</span>
                       {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
-                        <span className="bht-list-row-requester">by {bonus.requestedBy}</span>
+                        <span className="bht-list-row-requester" data-widget-element="requestsDescription" style={requestsDescriptionStyle}>by {bonus.requestedBy}</span>
                       )}
                     </div>
                     <div className="bht-list-row-stats">
                       <div className="bht-list-row-col">
-                        <span className="bht-list-row-col-label">WIN</span>
-                        <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                        <span className="bht-list-row-col-label" data-widget-element="winLabel" style={winLabelStyle}>WIN</span>
+                        <span className="bht-list-row-col-val" data-widget-element="winValue" style={winValueStyle}>{currency}{payout.toFixed(0)}</span>
                       </div>
                       <div className="bht-list-row-col">
-                        <span className="bht-list-row-col-label">MULTI</span>
-                        <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                        <span className="bht-list-row-col-label" data-widget-element="multiplierLabel" style={multiplierLabelStyle}>MULTI</span>
+                        <span className="bht-list-row-col-val" data-widget-element="multiplierValue" style={multiplierValueStyle}>{multi.toFixed(1)}x</span>
                       </div>
                       <div className="bht-list-row-col">
-                        <span className="bht-list-row-col-label">BET</span>
-                        <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                        <span className="bht-list-row-col-label" data-widget-element="betLabel" style={betLabelStyle}>BET</span>
+                        <span className="bht-list-row-col-val" data-widget-element="betValue" style={betValueStyle}>{currency}{bet.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -463,42 +503,46 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       {/* ═══ Slot Requests Section ═══ */}
       {srVisible && (
         <div className={`bht-card bht-v12-sr bht-v12-sr--${srAnim}`}
+          data-widget-element="requestsSectionContainer"
           style={{
+            ...requestsSectionContainerStyle,
             flex: (srAnim === 'slide-down' || srAnim === 'shrink-list') ? '0 0 0px' : '1 1 0',
             minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
             transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
           }}>
-          <div className="bht-v12-sr-header">
+          <div className="bht-v12-sr-header" data-widget-element="requestsHeader" style={requestsHeaderStyle}>
             <span className="bht-v12-sr-icon">🎰</span>
-            <span className="bht-v12-sr-title">Slot Requests</span>
+            <span className="bht-v12-sr-title" data-widget-element="requestsHeader" style={requestsHeaderStyle}>Slot Requests</span>
             {srRequests.length > 0 && (
-              <span className="bht-v12-sr-count">{srRequests.length}</span>
+              <span className="bht-v12-sr-count" data-widget-element="tagContainer" style={{ ...tagContainerStyle, ...tagTextStyle }}>{srRequests.length}</span>
             )}
           </div>
           <div className="bht-v12-sr-list" ref={srListRef}>
             <div className="bht-list-fade bht-list-fade--top" />
             {srRequests.length === 0 ? (
-              <div className="bht-v12-sr-empty">
-                <span className="bht-v12-sr-hint">Type <strong>{c.commandTrigger || '!sr'} &lt;slot name&gt;</strong> in chat to request a slot</span>
+              <div className="bht-v12-sr-empty" data-widget-element="requestsEmpty" style={requestsEmptyStyle}>
+                <span className="bht-v12-sr-hint" data-widget-element="requestsDescription" style={requestsDescriptionStyle}>Type <strong>{c.commandTrigger || '!sr'} &lt;slot name&gt;</strong> in chat to request a slot</span>
               </div>
             ) : (
               <div className={`sr-min-scroll-track${srNeedsScroll ? ' sr-min-scroll-track--animate' : ''}`}
                 style={srNeedsScroll ? { '--sr-scroll-duration': `${Math.max(8, srRequests.length * srScrollSpeed / 3)}s` } : undefined}>
                 {[...(srNeedsScroll ? [0, 1] : [0])].map(setIdx =>
                   srRequests.map((r, i) => (
-                    <div key={`${setIdx}-${r.id}`} className="bht-v12-sr-row">
+                    <div key={`${setIdx}-${r.id}`} className="bht-v12-sr-row" data-widget-element="slotRow" style={scopedStyle('slotRow')}>
                       <div className="bht-v12-sr-row-bg"
                         style={{ backgroundImage: `url(${r.slot_image || FALLBACK_SR_IMG})` }} />
                       <div className="bht-v12-sr-row-overlay" />
                       <div className="bht-v12-sr-row-content">
-                        <span className="bht-v12-sr-row-idx">{i + 1}</span>
+                        <span className="bht-v12-sr-row-idx" data-widget-element="slotPositionNumber" style={slotPositionNumberStyle}>{i + 1}</span>
                         <SlotImage src={r.slot_image || FALLBACK_SR_IMG} alt={r.slot_name}
                           className="bht-v12-sr-row-img"
+                          data-widget-element="slotThumbnail"
+                          style={slotThumbnailStyle}
                         />
                         <div className="bht-v12-sr-row-info">
-                          <span className="bht-v12-sr-row-name">{r.slot_name}</span>
+                          <span className="bht-v12-sr-row-name" data-widget-element="slotTitle" style={slotTitleStyle}>{r.slot_name}</span>
                           {r.requested_by && r.requested_by !== 'anonymous' && (
-                            <span className="bht-v12-sr-row-by">by {r.requested_by}</span>
+                            <span className="bht-v12-sr-row-by" data-widget-element="requestsDescription" style={requestsDescriptionStyle}>by {r.requested_by}</span>
                           )}
                         </div>
                       </div>
@@ -513,12 +557,12 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       )}
 
       {/* ═══ Total Pay Footer ═══ */}
-      <div className="bht-card bht-footer" style={{ flex: '0 0 auto' }}>
+      <div className="bht-card bht-footer" data-widget-element="footerContainer" style={{ ...footerContainerStyle, flex: '0 0 auto' }}>
         <div className="bht-footer-flip-wrap">
           <div className={`bht-footer-flip${statsFlipped ? ' bht-footer-flip--flipped' : ''}`}>
             <div className="bht-footer-flip-face bht-footer-flip-front">
-              <span className="bht-footer-label">TOTAL PAY</span>
-              <span className="bht-footer-value">{currency}{stats.totalWin.toFixed(2)}</span>
+              <span className="bht-footer-label" data-widget-element="footerLabel" style={footerLabelStyle}>TOTAL PAY</span>
+              <span className="bht-footer-value" data-widget-element="footerTotalValue" style={footerTotalValueStyle}>{currency}{stats.totalWin.toFixed(2)}</span>
             </div>
             <div className="bht-footer-flip-face bht-footer-flip-back">
               {(() => {
@@ -527,8 +571,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 const isProfit = profit >= 0;
                 return (
                   <>
-                    <span className="bht-footer-label">{isProfit ? 'PROFIT' : 'LOSS'}</span>
-                    <span className="bht-footer-value" style={{ color: isProfit ? '#4ade80' : '#f87171' }}>
+                    <span className="bht-footer-label" data-widget-element="footerLabel" style={footerLabelStyle}>{isProfit ? 'PROFIT' : 'LOSS'}</span>
+                    <span className="bht-footer-value" data-widget-element="footerTotalValue" style={scopedStyleWithLegacy('footerTotalValue', 'footer', { color: isProfit ? '#4ade80' : '#f87171' }, isProfit ? 'success' : 'error')}>
                       {isProfit ? '+' : ''}{currency}{profit.toFixed(2)}
                     </span>
                   </>

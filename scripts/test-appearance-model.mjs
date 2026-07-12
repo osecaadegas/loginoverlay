@@ -374,6 +374,118 @@ assert.ok(bonusCardDefinition, 'bonus hunt exposes the real bonus card element')
 assert.ok(bonusCardDefinition.states.some(state => state.id === 'opened'), 'bonus card exposes opened as a state');
 assert.ok(!bonusHuntDefinition.elements.some(element => element.id === 'openedState'), 'legacy opened pseudo-element is hidden from the editor contract');
 
+for (const elementId of ['headerContainer', 'headerIcon', 'headerTitle', 'mainStatsContainer', 'statCell', 'statLabel', 'statValue', 'tagContainer', 'tagText', 'slotCarouselContainer', 'slotImage', 'progressBar', 'progressBarFill', 'progressCount', 'slotListContainer', 'slotRow', 'slotPositionNumber', 'slotThumbnail', 'slotTitle', 'winLabel', 'winValue', 'multiplierLabel', 'multiplierValue', 'betLabel', 'betValue', 'requestsSectionContainer', 'requestsHeader', 'requestsDescription', 'requestsEmpty', 'footerContainer', 'footerLabel', 'footerTotalValue']) {
+  assert.ok(bonusHuntDefinition.elements.some(element => element.id === elementId), `bonus hunt Classic + Requests exposes ${elementId}`);
+}
+
+const bonusHuntV12Widget = {
+  id: 'bonus_hunt_v12_a',
+  widget_type: 'bonus_hunt',
+  config: { displayStyle: 'v12_classic_sr', fontSize: 15, fontFamily: 'Legacy Sans' },
+};
+const bonusHuntV12Appearance = {
+  themeId: 'classic',
+  widgetTypes: {
+    bonus_hunt: {
+      styles: {
+        v3: {
+          elements: {
+            headerTitle: { typography: { fontSize: 20 } },
+          },
+        },
+      },
+    },
+  },
+  widgets: {
+    bonus_hunt_v12_a: {
+      styles: {
+        v12_classic_sr: {
+          elements: {
+            headerTitle: { typography: { fontSize: 42, fontWeight: 900 }, colors: { text: '#112233' } },
+            statValue: { typography: { fontWeight: 800 } },
+            requestsHeader: { colors: { text: '#abcdef' } },
+            slotRow: { states: { active: { colors: { background: '#010203' } } } },
+          },
+        },
+      },
+    },
+    bonus_hunt_v12_b: {
+      styles: {
+        v12_classic_sr: {
+          elements: {
+            headerTitle: { typography: { fontSize: 24 } },
+          },
+        },
+      },
+    },
+  },
+};
+const bonusHuntV12Config = resolveWidgetAppearanceConfig(bonusHuntV12Widget, bonusHuntV12Appearance);
+assert.equal(bonusHuntV12Config.displayStyle, 'v12_classic_sr', 'bonus hunt Classic + Requests keeps its renderer style');
+assert.equal(bonusHuntV12Config.subElements.headerTitle.fontSize, 42, 'grouped headerTitle font size resolves to flat renderer config');
+assert.equal(bonusHuntV12Config.subElements.headerTitle.fontWeight, 900, 'grouped headerTitle font weight resolves to flat renderer config');
+assert.equal(bonusHuntV12Config.subElements.headerTitle.textColor, '#112233', 'grouped headerTitle text color resolves to flat renderer config');
+assert.notEqual(bonusHuntV12Config.subElements.statLabel.fontSize, 42, 'headerTitle font size does not leak to stat labels');
+assert.notEqual(bonusHuntV12Config.subElements.statValue.fontSize, 42, 'headerTitle font size does not leak to stat values');
+assert.notEqual(bonusHuntV12Config.subElements.slotTitle.fontSize, 42, 'headerTitle font size does not leak to slot titles');
+assert.notEqual(bonusHuntV12Config.subElements.requestsHeader.fontSize, 42, 'headerTitle font size does not leak to requests header');
+assert.notEqual(bonusHuntV12Config.subElements.footerTotalValue.fontSize, 42, 'headerTitle font size does not leak to footer totals');
+assert.equal(bonusHuntV12Config.subElements.statValue.fontWeight, 800, 'stat value font weight remains independently scoped');
+assert.equal(bonusHuntV12Config.subElements.requestsHeader.textColor, '#abcdef', 'requests header colour remains independently scoped');
+assert.notEqual(bonusHuntV12Config.subElements.headerTitle.textColor, '#abcdef', 'requests header colour does not leak to main header');
+assert.equal(bonusHuntV12Config.subElements.slotRow.states.active.background, '#010203', 'slot row active state resolves from grouped state override');
+assert.notEqual(bonusHuntV12Config.subElements.slotRow.background, '#010203', 'slot row active state does not overwrite default state');
+
+const bonusHuntSelectedHeader = resolveWidgetAppearance({
+  widgetType: 'bonus_hunt',
+  widgetId: 'bonus_hunt_v12_a',
+  styleId: 'v12_classic_sr',
+  elementId: 'headerTitle',
+  globalAppearance: bonusHuntV12Appearance,
+});
+const bonusHuntSelectedStats = resolveWidgetAppearance({
+  widgetType: 'bonus_hunt',
+  widgetId: 'bonus_hunt_v12_a',
+  styleId: 'v12_classic_sr',
+  elementId: 'statValue',
+  globalAppearance: bonusHuntV12Appearance,
+});
+assert.equal(bonusHuntSelectedHeader.element.fontSize, 42, 'selected header resolver returns the header font size');
+assert.notEqual(bonusHuntSelectedStats.element.fontSize, 42, 'selected stat resolver does not inherit the header font size');
+
+const bonusHuntResponsiveHeader = resolveWidgetAppearance({
+  widgetType: 'bonus_hunt',
+  widgetId: 'bonus_hunt_v12_a',
+  styleId: 'v12_classic_sr',
+  elementId: 'headerTitle',
+  viewport: { width: 640, height: 360 },
+  globalAppearance: bonusHuntV12Appearance,
+  responsiveAppearance: {
+    overrides: {
+      compact: {
+        maxWidth: 800,
+        elements: {
+          headerTitle: { typography: { fontSize: 33 } },
+        },
+      },
+    },
+  },
+});
+assert.equal(bonusHuntResponsiveHeader.element.fontSize, 33, 'responsive grouped header override applies at matching viewport');
+
+const bonusHuntV3Config = resolveWidgetAppearanceConfig(bonusHuntV12Widget, bonusHuntV12Appearance, null, { styleSelections: { bonus_hunt_v12_a: 'v3' } });
+assert.equal(bonusHuntV3Config.displayStyle, 'v3', 'temporary selection can render another Bonus Hunt style');
+assert.equal(bonusHuntV3Config.subElements.headerTitle.fontSize, 20, 'Bonus Hunt v3 keeps its own style-level header font size');
+assert.notEqual(bonusHuntV3Config.subElements.headerTitle.fontSize, 42, 'Classic + Requests header font size does not leak to other Bonus Hunt styles');
+
+const bonusHuntOtherWidgetConfig = resolveWidgetAppearanceConfig({
+  id: 'bonus_hunt_v12_b',
+  widget_type: 'bonus_hunt',
+  config: { displayStyle: 'v12_classic_sr' },
+}, bonusHuntV12Appearance);
+assert.equal(bonusHuntOtherWidgetConfig.subElements.headerTitle.fontSize, 24, 'second Bonus Hunt instance keeps its own header font size');
+assert.notEqual(bonusHuntOtherWidgetConfig.subElements.headerTitle.fontSize, 42, 'first Bonus Hunt instance header font size does not leak to another instance');
+
 const chatDefinition = getWidgetAppearanceDefinition('chat');
 const messageDefinition = chatDefinition.elements.find(element => element.id === 'message');
 assert.ok(messageDefinition.states.some(state => state.id === 'moderator'), 'chat message exposes moderator as a state');

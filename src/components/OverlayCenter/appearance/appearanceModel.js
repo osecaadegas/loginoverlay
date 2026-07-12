@@ -1,7 +1,7 @@
 import { themeMap } from '../../../data/appThemes';
 import { getWidgetDef } from '../widgets/widgetRegistry';
 
-export const APPEARANCE_SCHEMA_VERSION = 1;
+export const APPEARANCE_SCHEMA_VERSION = 2;
 
 export const RESET_VALUE = '__inherit__';
 
@@ -40,6 +40,65 @@ export const COMMON_APPEARANCE_PROPERTY_DEFINITIONS = Object.freeze([
   { path: 'shadow', label: 'Shadow', category: 'effects', control: 'shadow', min: 0, max: 160, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
   { path: 'fillColor', label: 'Fill colour', category: 'progress', control: 'color', scope: ['widget-type', 'style', 'instance', 'element', 'state'] },
 ]);
+
+export const ELEMENT_APPEARANCE_GROUPS = Object.freeze({
+  typography: Object.freeze(['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign', 'textTransform', 'fontStyle']),
+  colors: Object.freeze(['text', 'background', 'accent', 'muted', 'fill']),
+  container: Object.freeze(['width', 'height', 'minWidth', 'maxWidth', 'minHeight', 'maxHeight', 'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'gap']),
+  borders: Object.freeze(['width', 'style', 'color', 'radius']),
+  effects: Object.freeze(['opacity', 'shadow', 'blur', 'backdropBlur']),
+  sizing: Object.freeze(['scale', 'iconSize', 'imageSize']),
+  motion: Object.freeze(['enabled', 'duration', 'delay', 'easing']),
+});
+
+const FLAT_TO_ELEMENT_PATH = Object.freeze({
+  fontFamily: 'typography.fontFamily',
+  fontSize: 'typography.fontSize',
+  fontWeight: 'typography.fontWeight',
+  fontStyle: 'typography.fontStyle',
+  lineHeight: 'typography.lineHeight',
+  letterSpacing: 'typography.letterSpacing',
+  textTransform: 'typography.textTransform',
+  textAlign: 'typography.textAlign',
+  textColor: 'colors.text',
+  background: 'colors.background',
+  accentColor: 'colors.accent',
+  mutedColor: 'colors.muted',
+  fillColor: 'colors.fill',
+  width: 'container.width',
+  height: 'container.height',
+  minWidth: 'container.minWidth',
+  maxWidth: 'container.maxWidth',
+  minHeight: 'container.minHeight',
+  maxHeight: 'container.maxHeight',
+  padding: 'container.padding',
+  paddingTop: 'container.paddingTop',
+  paddingRight: 'container.paddingRight',
+  paddingBottom: 'container.paddingBottom',
+  paddingLeft: 'container.paddingLeft',
+  marginTop: 'container.marginTop',
+  marginRight: 'container.marginRight',
+  marginBottom: 'container.marginBottom',
+  marginLeft: 'container.marginLeft',
+  gap: 'container.gap',
+  borderWidth: 'borders.width',
+  borderStyle: 'borders.style',
+  borderColor: 'borders.color',
+  radius: 'borders.radius',
+  opacity: 'effects.opacity',
+  shadow: 'effects.shadow',
+  blur: 'effects.blur',
+  backdropBlur: 'effects.backdropBlur',
+  scale: 'sizing.scale',
+  iconSize: 'sizing.iconSize',
+  imageSize: 'sizing.imageSize',
+  motionEnabled: 'motion.enabled',
+  duration: 'motion.duration',
+  delay: 'motion.delay',
+  easing: 'motion.easing',
+});
+
+const ELEMENT_PATH_TO_FLAT = Object.freeze(Object.fromEntries(Object.entries(FLAT_TO_ELEMENT_PATH).map(([flat, path]) => [path, flat])));
 
 function isControlObject(value) {
   return value && typeof value === 'object';
@@ -441,18 +500,47 @@ const COMMON_SUB_ELEMENT_DEFINITIONS = [
 
 const WIDGET_SUB_ELEMENT_DEFINITIONS = {
   bonus_hunt: [
-    ...COMMON_SUB_ELEMENT_DEFINITIONS,
-    { id: 'huntTitle', label: 'Hunt title', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'container', label: 'Root widget container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'headerContainer', label: 'Header container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
+    { id: 'headerIcon', label: 'Header icon', properties: ['background', 'textColor', 'accentColor', 'imageSize', 'radius', 'opacity'] },
+    { id: 'headerTitle', label: 'Header title', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'mainStatsContainer', label: 'Main stats container', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'statCell', label: 'Stat cell', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
     { id: 'statLabel', label: 'Stat labels', properties: ['textColor', 'fontSize', 'fontWeight'] },
     { id: 'statValue', label: 'Stat values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'tagContainer', label: 'Tag or badge container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'tagText', label: 'Tag text', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'slotCarouselContainer', label: 'Slot carousel container', properties: ['background', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'height', 'opacity'] },
+    { id: 'progressBar', label: 'Progress bar track', properties: ['background', 'fillColor', 'radius', 'height'] },
+    { id: 'progressBarFill', label: 'Progress bar fill', properties: ['background', 'fillColor', 'radius', 'height', 'opacity'] },
+    { id: 'progressCount', label: 'Progress count', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'slotListContainer', label: 'Slot list container', properties: ['background', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'slotRow', label: 'Slot row', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity'] },
+    { id: 'slotPositionNumber', label: 'Slot position number', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'radius'] },
+    { id: 'slotThumbnail', label: 'Slot thumbnail', properties: ['radius', 'imageSize', 'height', 'opacity'] },
+    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'winLabel', label: 'Win label', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'winValue', label: 'Win value', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'multiplierLabel', label: 'Multiplier label', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'betValue', label: 'Bet values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'betLabel', label: 'Bet label', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'payoutValue', label: 'Payout values', properties: ['textColor', 'fontSize', 'fontWeight'] },
     { id: 'multiplierValue', label: 'Multiplier values', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'footer', label: 'Footer totals', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'padding', 'radius'] },
+    { id: 'requestsSectionContainer', label: 'Requests section container', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'requestsHeader', label: 'Requests header', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'requestsDescription', label: 'Requests description', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'requestsEmpty', label: 'Requests empty state', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius', 'opacity'] },
+    { id: 'footerContainer', label: 'Footer container', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'padding', 'radius'] },
+    { id: 'footerLabel', label: 'Footer label', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'footerTotalValue', label: 'Footer total value', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'card', label: 'Legacy card surfaces', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
+    { id: 'label', label: 'Legacy labels', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'value', label: 'Legacy values', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'huntTitle', label: 'Legacy hunt title', properties: ['textColor', 'fontSize', 'fontWeight'] },
     { id: 'carousel', label: 'List and carousel', properties: ['gap', 'padding'] },
-    { id: 'progressBar', label: 'Progress bar', properties: ['background', 'fillColor', 'radius', 'height'] },
+    { id: 'footer', label: 'Legacy footer totals', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'padding', 'radius'] },
     { id: 'bonusCard', label: 'Bonus card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
-    { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'height', 'opacity'] },
     { id: 'profit', label: 'Profit values', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight'] },
     { id: 'loss', label: 'Loss values', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight'] },
     { id: 'highlight', label: 'Best-win highlight', properties: ['background', 'textColor', 'borderColor', 'accentColor', 'shadow'] },
@@ -609,6 +697,9 @@ const COMMON_STATE_DEFINITIONS = {
 
 const WIDGET_STATE_DEFINITIONS = {
   bonus_hunt: {
+    headerContainer: [{ id: 'default', label: 'Default' }],
+    headerTitle: [{ id: 'default', label: 'Default' }],
+    statCell: [{ id: 'default', label: 'Default' }, { id: 'hover', label: 'Hover' }, { id: 'active', label: 'Active' }],
     bonusCard: [
       { id: 'default', label: 'Default' },
       { id: 'opened', label: 'Opened' },
@@ -618,7 +709,14 @@ const WIDGET_STATE_DEFINITIONS = {
       { id: 'worst-win', label: 'Worst win' },
     ],
     statValue: [{ id: 'default', label: 'Default' }, { id: 'positive', label: 'Positive' }, { id: 'negative', label: 'Negative' }],
+    tagContainer: [{ id: 'default', label: 'Default' }, { id: 'success', label: 'Success' }, { id: 'warning', label: 'Warning' }, { id: 'error', label: 'Error' }],
+    slotRow: [{ id: 'default', label: 'Default' }, { id: 'hover', label: 'Hover' }, { id: 'active', label: 'Active' }, { id: 'opened', label: 'Opened' }],
+    slotTitle: [{ id: 'default', label: 'Default' }, { id: 'active', label: 'Active' }],
     progressBar: [{ id: 'default', label: 'Default' }, { id: 'complete', label: 'Complete' }],
+    progressBarFill: [{ id: 'default', label: 'Default' }, { id: 'complete', label: 'Complete' }],
+    requestsSectionContainer: [{ id: 'default', label: 'Default' }, { id: 'empty', label: 'Empty' }],
+    requestsEmpty: [{ id: 'default', label: 'Default' }, { id: 'empty', label: 'Empty' }],
+    footerTotalValue: [{ id: 'default', label: 'Default' }, { id: 'success', label: 'Success' }, { id: 'warning', label: 'Warning' }, { id: 'error', label: 'Error' }],
     container: COMMON_STATE_DEFINITIONS.container,
   },
   bets: {
@@ -880,6 +978,100 @@ export function omitPath(source, path) {
   return setByPath(source, path, RESET_VALUE);
 }
 
+export function getElementAppearancePropertyPath(property) {
+  return FLAT_TO_ELEMENT_PATH[property] || property;
+}
+
+function isElementGroupKey(key) {
+  return Object.prototype.hasOwnProperty.call(ELEMENT_APPEARANCE_GROUPS, key);
+}
+
+function flattenElementAppearance(appearance = {}) {
+  if (!isPlainObject(appearance)) return {};
+  const { states, responsive, ...rest } = appearance;
+  let flat = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (value === undefined || value === RESET_VALUE) continue;
+    if (isElementGroupKey(key) && isPlainObject(value)) {
+      for (const [groupProperty, groupValue] of Object.entries(value)) {
+        if (groupValue === undefined || groupValue === RESET_VALUE) continue;
+        const flatProperty = ELEMENT_PATH_TO_FLAT[`${key}.${groupProperty}`] || groupProperty;
+        flat[flatProperty] = groupValue;
+      }
+    } else {
+      flat[key] = value;
+    }
+  }
+  if (isPlainObject(states)) {
+    const flatStates = Object.fromEntries(Object.entries(states).map(([stateId, stateAppearance]) => [stateId, flattenElementAppearance(stateAppearance)]));
+    if (Object.keys(flatStates).length > 0) flat.states = flatStates;
+  }
+  if (isPlainObject(responsive)) flat.responsive = responsive;
+  return flat;
+}
+
+export function elementsAppearanceToSubElements(elements = {}) {
+  if (!isPlainObject(elements)) return {};
+  return Object.fromEntries(Object.entries(elements).map(([elementId, elementAppearance]) => [elementId, flattenElementAppearance(elementAppearance)]));
+}
+
+function expandSubElementAppearance(subElement = {}) {
+  if (!isPlainObject(subElement)) return {};
+  const { states, responsive, ...rest } = subElement;
+  let expanded = {};
+  for (const [property, value] of Object.entries(rest)) {
+    if (value === undefined || value === RESET_VALUE) continue;
+    const groupedPath = getElementAppearancePropertyPath(property);
+    expanded = groupedPath === property
+      ? setByPath(expanded, property, value)
+      : setByPath(expanded, groupedPath, value);
+  }
+  if (isPlainObject(states)) {
+    expanded.states = Object.fromEntries(Object.entries(states).map(([stateId, stateValue]) => [stateId, expandSubElementAppearance(stateValue)]));
+  }
+  if (isPlainObject(responsive)) expanded.responsive = responsive;
+  return expanded;
+}
+
+export function subElementsToElementsAppearance(subElements = {}) {
+  if (!isPlainObject(subElements)) return {};
+  return Object.fromEntries(Object.entries(subElements).map(([elementId, subElement]) => [elementId, expandSubElementAppearance(subElement)]));
+}
+
+export function getEntrySubElements(entry = {}) {
+  if (!isPlainObject(entry)) return {};
+  return deepMerge(
+    isPlainObject(entry.subElements) ? entry.subElements : {},
+    elementsAppearanceToSubElements(entry.elements)
+  );
+}
+
+function migrateOverrideEntryElements(entry = {}) {
+  if (!isPlainObject(entry)) return entry;
+  const migrated = { ...entry };
+  if (isPlainObject(entry.subElements)) {
+    migrated.elements = deepMerge(subElementsToElementsAppearance(entry.subElements), entry.elements || {});
+  } else if (!isPlainObject(entry.elements)) {
+    migrated.elements = {};
+  }
+  if (isPlainObject(entry.styles)) {
+    migrated.styles = Object.fromEntries(Object.entries(entry.styles).map(([styleId, styleEntry]) => [styleId, migrateOverrideEntryElements(styleEntry)]));
+  }
+  return migrated;
+}
+
+function migrateAppearanceSchema(input = {}) {
+  if (!isPlainObject(input)) return {};
+  const next = { ...input, schemaVersion: APPEARANCE_SCHEMA_VERSION };
+  if (isPlainObject(input.widgetTypes)) {
+    next.widgetTypes = Object.fromEntries(Object.entries(input.widgetTypes).map(([widgetType, entry]) => [widgetType, migrateOverrideEntryElements(entry)]));
+  }
+  if (isPlainObject(input.widgets)) {
+    next.widgets = Object.fromEntries(Object.entries(input.widgets).map(([widgetId, entry]) => [widgetId, migrateOverrideEntryElements(entry)]));
+  }
+  return next;
+}
+
 export function isScopedAppearancePath(path) {
   const [root] = String(path || '').split('.');
   return SCOPED_APPEARANCE_ROOTS.has(root);
@@ -953,10 +1145,12 @@ function appearanceToVisualOverride(appearance = {}) {
 function readOverrideEntry(entry = {}) {
   if (!isPlainObject(entry)) return { appearance: {}, visual: {} };
   const visual = getVisualOverride({ current: entry }, 'current');
+  const elements = isPlainObject(entry.elements) ? entry.elements : {};
   return {
     appearance: deepMerge(visualToAppearance(visual), entry.appearance || {}),
     visual,
-    subElements: isPlainObject(entry.subElements) ? entry.subElements : {},
+    elements,
+    subElements: getEntrySubElements(entry),
   };
 }
 
@@ -1205,11 +1399,12 @@ export function migrateThemeToAppearance(theme = {}) {
 export function normalizeAppearance(input = {}, context = {}) {
   const themeId = input?.themeId || context.theme?.style_preset || 'classic';
   const migrated = migrateThemeToAppearance(context.theme || {});
+  const migratedInput = migrateAppearanceSchema(input);
   const merged = deepMerge(
     SYSTEM_APPEARANCE,
     getThemeAppearance(themeId),
     migrated,
-    input,
+    migratedInput,
     { schemaVersion: APPEARANCE_SCHEMA_VERSION, themeId }
   );
 
@@ -1447,7 +1642,7 @@ function splitElementState(element = {}) {
 }
 
 function readSubElementOverride(entry = {}, elementId, stateId = 'default') {
-  const element = entry?.subElements?.[elementId];
+  const element = getEntrySubElements(entry)?.[elementId];
   const { base, states } = splitElementState(element);
   const stateValues = stateId && stateId !== 'default' && isPlainObject(states[stateId])
     ? states[stateId]
@@ -1548,8 +1743,8 @@ export function resolveWidgetAppearance({
     readSubElementOverride(typeStyleEntry, elementId, stateId),
     readSubElementOverride(instanceEntry, elementId, stateId),
     readSubElementOverride(instanceStyleEntry, elementId, stateId),
-    readSubElementOverride({ subElements: responsiveEntry?.subElements || {} }, elementId, stateId),
-    readSubElementOverride({ subElements: explicitResponsiveEntry?.subElements || {} }, elementId, stateId),
+    readSubElementOverride(responsiveEntry, elementId, stateId),
+    readSubElementOverride(explicitResponsiveEntry, elementId, stateId),
     elementAppearance,
     readSubElementOverride(draftEntry, elementId, stateId)
   ), elementDefaults);

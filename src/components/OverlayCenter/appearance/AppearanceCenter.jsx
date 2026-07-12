@@ -37,6 +37,8 @@ import {
   getAppearancePathForVisualKey,
   getAppearanceWarnings,
   getByPath,
+  getElementAppearancePropertyPath,
+  getEntrySubElements,
   getPerformanceTone,
   getScopedAppearancePath,
   getScopedVisualPath,
@@ -56,6 +58,7 @@ import {
   projectAppearanceToThemePatch,
   resolveAppearanceForTarget,
   setByPath,
+  subElementsToElementsAppearance,
 } from './appearanceModel';
 import './AppearanceCenter.css';
 
@@ -79,6 +82,11 @@ const CATEGORY_GROUPS = [
 ];
 
 const SIMPLE_CATEGORY_IDS = new Set(['themes', 'colors', 'typography', 'containers', 'widgets']);
+
+function clonePlainData(value) {
+  if (value == null || typeof value !== 'object') return value;
+  return JSON.parse(JSON.stringify(value));
+}
 
 const FONT_OPTIONS = [
   { value: "'Rajdhani', 'Segoe UI', sans-serif", label: 'Rajdhani' },
@@ -1067,23 +1075,31 @@ export default function AppearanceCenter({
   const updateSubElement = useCallback((elementId, property, value) => {
     const root = getTargetOverrideRoot(selectedTarget);
     if (!root) return;
+    const propertyPath = getElementAppearancePropertyPath(property);
     const statePath = selectedStateId && selectedStateId !== 'default'
-      ? `${root}.subElements.${elementId}.states.${selectedStateId}.${property}`
-      : `${root}.subElements.${elementId}.${property}`;
-    updateDraft(prev => setByPath(prev, statePath, value), `${elementId}.${selectedStateId}.${property}`);
+      ? `${root}.elements.${elementId}.states.${selectedStateId}.${propertyPath}`
+      : `${root}.elements.${elementId}.${propertyPath}`;
+    if (import.meta?.env?.DEV) {
+      console.debug('[Appearance update]', `${selectedTarget.widgetType || 'widget'} -> ${selectedTarget.styleId || 'default'} -> ${elementId} -> ${selectedStateId || 'default'} -> ${propertyPath} =`, value);
+    }
+    updateDraft(prev => setByPath(prev, statePath, value), `${elementId}.${selectedStateId}.${propertyPath}`);
   }, [selectedStateId, selectedTarget, updateDraft]);
 
   const resetSubElement = useCallback((elementId, property) => {
     const root = getTargetOverrideRoot(selectedTarget);
     if (!root) return;
+    const propertyPath = getElementAppearancePropertyPath(property);
     const statePath = selectedStateId && selectedStateId !== 'default'
+      ? `${root}.elements.${elementId}.states.${selectedStateId}.${propertyPath}`
+      : `${root}.elements.${elementId}.${propertyPath}`;
+    const legacyStatePath = selectedStateId && selectedStateId !== 'default'
       ? `${root}.subElements.${elementId}.states.${selectedStateId}.${property}`
       : `${root}.subElements.${elementId}.${property}`;
-    updateDraft(prev => omitPath(prev, statePath), `Reset ${elementId}.${selectedStateId}.${property}`);
+    updateDraft(prev => omitPath(omitPath(prev, statePath), legacyStatePath), `Reset ${elementId}.${selectedStateId}.${propertyPath}`);
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_RESET, {
       scope: selectedTarget.scope,
       widget_type: selectedTarget.widgetType || null,
-      path: `${elementId}.${selectedStateId}.${property}`,
+      path: `${elementId}.${selectedStateId}.${propertyPath}`,
     });
   }, [selectedStateId, selectedTarget, updateDraft]);
 
@@ -1095,7 +1111,7 @@ export default function AppearanceCenter({
     setCopiedAppearance({
       source: selectedTarget,
       widgetType: selectedTarget.widgetType || null,
-      payload,
+      payload: clonePlainData(payload),
     });
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_COPIED, { scope: selectedTarget.scope });
   }, [draft, selectedTarget]);
@@ -1110,18 +1126,19 @@ export default function AppearanceCenter({
     const incomingAppearance = copiedAppearance.payload.appearance || {};
     const targetSubElementDefs = getWidgetSubElementDefinitions(selectedTarget.widgetType);
     const supportedSubElementProps = new Map(targetSubElementDefs.map(def => [def.id, new Set(def.properties || [])]));
-    const compatibleSubElements = Object.fromEntries(Object.entries(copiedAppearance.payload.subElements || {}).map(([elementId, values]) => {
+    const compatibleSubElements = Object.fromEntries(Object.entries(getEntrySubElements(copiedAppearance.payload)).map(([elementId, values]) => {
       const supportedProps = supportedSubElementProps.get(elementId);
       if (!supportedProps) return [elementId, null];
       return [elementId, Object.fromEntries(Object.entries(values || {}).filter(([prop]) => supportedProps.has(prop)))];
     }).filter(([, values]) => values && Object.keys(values).length > 0));
+    const compatibleElements = subElementsToElementsAppearance(compatibleSubElements);
     updateDraft(prev => {
       const current = getByPath(prev, root) || {};
       return setByPath(prev, root, {
         ...current,
         appearance: deepMerge(current.appearance || {}, incomingAppearance),
         visual: deepMerge(current.visual || {}, compatibleVisual),
-        subElements: deepMerge(current.subElements || {}, compatibleSubElements),
+        elements: deepMerge(current.elements || {}, compatibleElements),
       });
     }, 'Paste widget appearance');
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_PASTED, {
@@ -1143,7 +1160,7 @@ export default function AppearanceCenter({
         ...current,
         appearance: deepMerge(current.appearance || {}, source.appearance || {}),
         visual: deepMerge(current.visual || {}, source.visual || source.tokens || {}),
-        subElements: deepMerge(current.subElements || {}, source.subElements || {}),
+        elements: deepMerge(current.elements || {}, subElementsToElementsAppearance(getEntrySubElements(source))),
       });
     }, 'Apply widget appearance to type');
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_APPLIED_TO_TYPE, { widget_type: selectedTarget.widgetType });
@@ -1244,9 +1261,12 @@ export default function AppearanceCenter({
     const root = getTargetOverrideRoot(selectedTarget);
     if (!root || !selectedElementId) return;
     const path = selectedStateId && selectedStateId !== 'default'
+      ? `${root}.elements.${selectedElementId}.states.${selectedStateId}`
+      : `${root}.elements.${selectedElementId}`;
+    const legacyPath = selectedStateId && selectedStateId !== 'default'
       ? `${root}.subElements.${selectedElementId}.states.${selectedStateId}`
       : `${root}.subElements.${selectedElementId}`;
-    updateDraft(prev => omitPath(prev, path), `Reset ${selectedElementId}.${selectedStateId || 'default'}`);
+    updateDraft(prev => omitPath(omitPath(prev, path), legacyPath), `Reset ${selectedElementId}.${selectedStateId || 'default'}`);
   }, [selectedElementId, selectedStateId, selectedTarget, updateDraft]);
 
   const revertUnsavedChanges = useCallback(() => {
@@ -1507,15 +1527,16 @@ export default function AppearanceCenter({
       const visualGroups = groupProperties(keys);
       const propertyGroupOrder = ['Typography', 'Colours', 'Dimensions', 'Spacing', 'Borders', 'Shadows', 'Effects', 'Motion', 'Advanced'];
       const subElementDefinitions = selectedSubElementDefinitions;
-      const typeSubElements = selectedWidgetType ? draft.widgetTypes?.[selectedWidgetType]?.subElements || {} : {};
-      const typeStyleSubElements = selectedWidgetType && selectedRenderStyleId ? draft.widgetTypes?.[selectedWidgetType]?.styles?.[selectedRenderStyleId]?.subElements || {} : {};
-      const instanceSubElements = selectedTarget.scope === 'widget_instance' ? draft.widgets?.[selectedTarget.widgetId]?.subElements || {} : {};
-      const instanceStyleSubElements = selectedTarget.scope === 'widget_instance' && selectedStyleId ? draft.widgets?.[selectedTarget.widgetId]?.styles?.[selectedStyleId]?.subElements || {} : {};
-      const explicitSubElements = overrideEntry.subElements || {};
+      const typeSubElements = selectedWidgetType ? getEntrySubElements(draft.widgetTypes?.[selectedWidgetType]) : {};
+      const typeStyleSubElements = selectedWidgetType && selectedRenderStyleId ? getEntrySubElements(draft.widgetTypes?.[selectedWidgetType]?.styles?.[selectedRenderStyleId]) : {};
+      const instanceSubElements = selectedTarget.scope === 'widget_instance' ? getEntrySubElements(draft.widgets?.[selectedTarget.widgetId]) : {};
+      const instanceStyleSubElements = selectedTarget.scope === 'widget_instance' && selectedStyleId ? getEntrySubElements(draft.widgets?.[selectedTarget.widgetId]?.styles?.[selectedStyleId]) : {};
+      const explicitSubElements = getEntrySubElements(overrideEntry);
       const effectiveSubElements = selectedWidgetType
         ? deepMerge(buildSubElementDefaults(selectedWidgetType, a), typeSubElements, typeStyleSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {}, selectedTarget.scope === 'widget_instance' ? instanceStyleSubElements : {}, explicitSubElements)
         : {};
       const selectedSubElementDefinition = subElementDefinitions.find(definition => definition.id === selectedElementId) || subElementDefinitions[0];
+      const showRootVisualControls = !selectedSubElementDefinition || selectedSubElementDefinition.id === 'container';
       const subElementGroups = groupProperties(selectedSubElementDefinition?.properties || []);
       const selectedStateKey = selectedState?.id || 'default';
       const readElementValue = (source, elementId, property) => {
@@ -1566,7 +1587,7 @@ export default function AppearanceCenter({
               .filter(([, value]) => value === true)
               .map(([key]) => <span key={key}>{key}</span>)}
           </div>
-          <div className="ac-property-groups">
+          {showRootVisualControls && <div className="ac-property-groups">
             {propertyGroupOrder.filter(group => visualGroups[group]?.length).map(group => (
               <div className="ac-property-group" key={group}>
                 <h4>{group}</h4>
@@ -1595,7 +1616,7 @@ export default function AppearanceCenter({
                 </div>
               </div>
             ))}
-          </div>
+          </div>}
           {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && selectedSubElementDefinition && (
             <div className="ac-sub-elements">
               <div className="ac-sub-elements__header">
