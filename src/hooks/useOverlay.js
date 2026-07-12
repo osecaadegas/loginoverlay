@@ -220,7 +220,9 @@ export function useOverlay() {
 
   const updateState = useCallback(async (patch) => {
     if (!user) return;
-    return patchOverlayState(user.id, patch, instance?.id);
+    const updated = await patchOverlayState(user.id, patch, instance?.id);
+    if (updated?.state) setOverlayState(updated.state);
+    return updated;
   }, [instance?.id, user]);
 
   const regenToken = useCallback(async () => {

@@ -20,11 +20,7 @@ function Brand() {
   return (
     <Link to="/" className="topnav-brand" aria-label="Streamers Center home">
       <span className="topnav-brand__mark">
-        <img src="/newlogo.png" alt="" />
-      </span>
-      <span className="topnav-brand__text">
-        <strong>Streamers</strong>
-        <span>Center</span>
+        <img src="/StreamerCenterLogo.png" alt="" />
       </span>
     </Link>
   );

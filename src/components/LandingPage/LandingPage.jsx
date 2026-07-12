@@ -101,11 +101,7 @@ function BrandMark() {
   return (
     <Link to="/" className="lp-brand" aria-label="Streamers Center home">
       <span className="lp-brand__mark">
-        <img src="/newlogo.png" alt="" />
-      </span>
-      <span className="lp-brand__text">
-        <strong>Streamers</strong>
-        <span>Center</span>
+        <img src="/StreamerCenterLogo.png" alt="" />
       </span>
     </Link>
   );

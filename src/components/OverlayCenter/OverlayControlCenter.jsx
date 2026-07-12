@@ -247,7 +247,7 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
   return (
     <header className="oc2-topbar">
       <Link to="/overlay-center" className="oc2-brand" aria-label="Overlay Center home">
-        <img src="/newlogo.png" alt="" />
+        <img src="/StreamerCenterLogo.png" alt="" />
         <span>Overlay Center</span>
       </Link>
 
@@ -793,6 +793,8 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
 
 function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, addWidget, saveWidget, onFinish }) {
   const [draft, setDraft] = useState(setup);
+  const [actionError, setActionError] = useState('');
+  const [saving, setSaving] = useState(false);
   const step = Math.min(draft.currentStep || 0, SETUP_STEPS.length - 1);
   const selectedTools = draft.selectedTools || [];
 
@@ -812,28 +814,41 @@ function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, ad
   };
 
   const nextStep = async () => {
-    let next = { ...draft };
-    if (step === 0) {
-      const [width, height] = String(next.details?.resolution || '1920x1080').split('x').map(Number);
-      await saveTheme({ canvas_width: width || 1920, canvas_height: height || 1080 });
-    }
-    if (step === 1) {
-      if (next.details?.style === 'clean') {
-        await saveTheme({ style_preset: 'classic', primary_color: '#14b8a6', secondary_color: '#0f172a', accent_color: '#f59e0b' });
+    if (saving) return;
+    setSaving(true);
+    setActionError('');
+    try {
+      let next = { ...draft };
+      if (step === 0) {
+        const [width, height] = String(next.details?.resolution || '1920x1080').split('x').map(Number);
+        await saveTheme({ canvas_width: width || 1920, canvas_height: height || 1080 });
       }
-    }
-    if (step === 4) {
-      for (const type of selectedTools) {
-        const def = getWidgetDef(type);
-        const existing = widgets.find(widget => widget.widget_type === type);
-        if (!existing && def) await addWidget(type, def.defaults || {});
+      if (step === 1) {
+        if (next.details?.style === 'clean') {
+          await saveTheme({ style_preset: 'classic', primary_color: '#14b8a6', secondary_color: '#0f172a', accent_color: '#f59e0b' });
+        }
       }
+      if (step === 4) {
+        for (const type of selectedTools) {
+          const def = getWidgetDef(type);
+          const existing = widgets.find(widget => widget.widget_type === type);
+          if (!existing && def) await addWidget(type, def.defaults || {});
+        }
+      }
+      next = { ...next, currentStep: Math.min(step + 1, SETUP_STEPS.length - 1) };
+      await persist(next);
+    } catch (error) {
+      console.error('[OverlaySetup] Could not continue setup:', error);
+      setActionError(error?.message || 'Could not save this setup step. Please try again.');
+    } finally {
+      setSaving(false);
     }
-    next = await persist(next);
-    setDraft(prev => ({ ...prev, currentStep: Math.min(step + 1, SETUP_STEPS.length - 1) }));
   };
 
   const finish = async () => {
+    if (saving) return;
+    setSaving(true);
+    setActionError('');
     const errors = validateOverlay({ instance, widgets, setup: draft });
     const finalState = {
       ...draft,
@@ -844,12 +859,19 @@ function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, ad
       updatedAt: new Date().toISOString(),
       version: SETUP_VERSION,
     };
-    await saveSetup(finalState);
-    if (!errors.length) {
-      trackEvent(ANALYTICS_EVENTS.OVERLAY_SETUP_COMPLETED, { selected_tools: selectedTools.length });
-      onFinish();
+    try {
+      await saveSetup(finalState);
+      if (!errors.length) {
+        trackEvent(ANALYTICS_EVENTS.OVERLAY_SETUP_COMPLETED, { selected_tools: selectedTools.length });
+        onFinish();
+      }
+      setDraft(finalState);
+    } catch (error) {
+      console.error('[OverlaySetup] Could not finish setup:', error);
+      setActionError(error?.message || 'Could not finish setup. Please try again.');
+    } finally {
+      setSaving(false);
     }
-    setDraft(finalState);
   };
 
   return (
@@ -1002,12 +1024,13 @@ function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, ad
       )}
 
       <div className="oc2-setup-actions">
-        <button type="button" className="oc2-btn" disabled={step === 0} onClick={() => setDraft(prev => ({ ...prev, currentStep: Math.max(0, step - 1) }))}>Back</button>
-        <button type="button" className="oc2-btn" onClick={() => saveSetup({ ...draft, status: 'in_progress', updatedAt: new Date().toISOString() })}>Save and exit</button>
+        {actionError && <div className="oc2-error-list"><p>{actionError}</p></div>}
+        <button type="button" className="oc2-btn" disabled={saving || step === 0} onClick={() => setDraft(prev => ({ ...prev, currentStep: Math.max(0, step - 1) }))}>Back</button>
+        <button type="button" className="oc2-btn" disabled={saving} onClick={() => saveSetup({ ...draft, status: 'in_progress', updatedAt: new Date().toISOString() })}>Save and exit</button>
         {step < SETUP_STEPS.length - 1 ? (
-          <button type="button" className="oc2-btn oc2-btn--primary" onClick={nextStep}>Save and continue</button>
+          <button type="button" className="oc2-btn oc2-btn--primary" disabled={saving} onClick={nextStep}>{saving ? 'Saving...' : 'Save and continue'}</button>
         ) : (
-          <button type="button" className="oc2-btn oc2-btn--primary" onClick={finish}>Finish setup</button>
+          <button type="button" className="oc2-btn oc2-btn--primary" disabled={saving} onClick={finish}>{saving ? 'Saving...' : 'Finish setup'}</button>
         )}
       </div>
     </section>

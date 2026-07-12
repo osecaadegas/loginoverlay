@@ -90,7 +90,7 @@ function getStructuredData(pathname, route, canonical) {
       '@id': `${SITE_URL}/#organization`,
       name: 'Streamers Center',
       url: `${SITE_URL}/`,
-      logo: `${SITE_URL}/newlogo.png`,
+      logo: `${SITE_URL}/StreamerCenterLogo.png`,
     },
     {
       '@type': 'WebSite',

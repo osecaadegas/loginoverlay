@@ -19312,9 +19312,10 @@ body.wm-resizing {
 }
 
 .oc2-brand img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+  width: 170px;
+  height: 40px;
+  object-fit: cover;
+  object-position: center;
 }
 
 .oc2-nav {
