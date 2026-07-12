@@ -491,6 +491,8 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
   ],
   rtp_stats: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'provider', label: 'Provider text', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'rtpValue', label: 'RTP value', properties: ['textColor', 'accentColor', 'fontSize', 'fontWeight'] },
     { id: 'volatility', label: 'Volatility', properties: ['textColor', 'accentColor', 'fontSize', 'fontWeight'] },
     { id: 'maxWin', label: 'Max win', properties: ['textColor', 'accentColor', 'fontSize', 'fontWeight'] },
@@ -579,15 +581,17 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
   spotify_now_playing: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
     { id: 'albumArt', label: 'Album art', properties: ['imageSize', 'radius', 'shadow'] },
-    { id: 'track', label: 'Track', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'artist', label: 'Artist', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'trackTitle', label: 'Track title', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'artistName', label: 'Artist name', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'playbackState', label: 'Playback state', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight', 'radius'] },
     { id: 'progressBar', label: 'Progress', properties: ['background', 'fillColor', 'radius', 'height'] },
   ],
   bh_stats: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
+    { id: 'statsCard', label: 'Stats cards', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
     { id: 'progressBar', label: 'Progress', properties: ['background', 'fillColor', 'radius', 'height'] },
-    { id: 'best', label: 'Best result', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'worst', label: 'Worst result', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'bestStat', label: 'Best result', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'worstStat', label: 'Worst result', properties: ['textColor', 'fontSize', 'fontWeight'] },
   ],
   container: [
     { id: 'container', label: 'Container', properties: ['background', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow'] },

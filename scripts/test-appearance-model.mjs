@@ -378,6 +378,62 @@ const messageDefinition = chatDefinition.elements.find(element => element.id ===
 assert.ok(messageDefinition.states.some(state => state.id === 'moderator'), 'chat message exposes moderator as a state');
 assert.ok(!chatDefinition.elements.some(element => element.id === 'moderatorMessage'), 'legacy moderator pseudo-element is hidden from the editor contract');
 
+const expectWidgetElements = (widgetType, elementIds) => {
+  const definition = getWidgetAppearanceDefinition(widgetType);
+  for (const elementId of elementIds) {
+    assert.ok(definition.elements.some(element => element.id === elementId), `${widgetType} exposes ${elementId} as an editable element`);
+  }
+};
+
+expectWidgetElements('bh_stats', ['container', 'statsCard', 'label', 'value', 'progressBar', 'bestStat', 'worstStat']);
+expectWidgetElements('spotify_now_playing', ['container', 'albumArt', 'trackTitle', 'artistName', 'playbackState', 'progressBar']);
+expectWidgetElements('rtp_stats', ['container', 'statCard', 'provider', 'slotTitle', 'label', 'rtpValue', 'volatility', 'maxWin', 'personalBest', 'spinner']);
+
+const otherWidgetContracts = [
+  {
+    widgetType: 'bh_stats',
+    elementId: 'statsCard',
+    values: { background: '#111827', borderColor: '#223344', accentColor: '#f59e0b' },
+    expectedProperty: 'accentColor',
+    expectedValue: '#f59e0b',
+  },
+  {
+    widgetType: 'spotify_now_playing',
+    elementId: 'trackTitle',
+    values: { textColor: '#22c55e', fontSize: 24, fontWeight: 800 },
+    expectedProperty: 'textColor',
+    expectedValue: '#22c55e',
+  },
+  {
+    widgetType: 'rtp_stats',
+    elementId: 'slotTitle',
+    values: { textColor: '#60a5fa', fontSize: 21, fontWeight: 900 },
+    expectedProperty: 'fontSize',
+    expectedValue: 21,
+  },
+];
+for (const contract of otherWidgetContracts) {
+  const resolvedConfig = resolveWidgetAppearanceConfig({
+    id: `${contract.widgetType}_contract_widget`,
+    widget_type: contract.widgetType,
+    config: {},
+  }, {
+    themeId: 'classic',
+    widgetTypes: {
+      [contract.widgetType]: {
+        subElements: {
+          [contract.elementId]: contract.values,
+        },
+      },
+    },
+  });
+  assert.equal(
+    resolvedConfig.subElements[contract.elementId][contract.expectedProperty],
+    contract.expectedValue,
+    `${contract.widgetType}.${contract.elementId}.${contract.expectedProperty} resolves into widget config`
+  );
+}
+
 const betsDefinition = getWidgetAppearanceDefinition('bets');
 for (const elementId of ['container', 'title', 'status', 'statistics', 'optionRow', 'optionNumber', 'optionLabel', 'percentage', 'footer', 'progressBar']) {
   assert.ok(betsDefinition.elements.some(element => element.id === elementId), `bets exposes ${elementId} as an editable element`);
