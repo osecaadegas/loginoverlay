@@ -51,6 +51,11 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
   if (element.fontFamily != null) style.fontFamily = element.fontFamily;
   if (element.fontSize != null) style.fontSize = px(element.fontSize);
   if (element.fontWeight != null) style.fontWeight = element.fontWeight;
+  if (element.fontStyle != null) style.fontStyle = element.fontStyle;
+  if (element.lineHeight != null) style.lineHeight = element.lineHeight;
+  if (element.letterSpacing != null) style.letterSpacing = typeof element.letterSpacing === 'number' ? `${element.letterSpacing}em` : element.letterSpacing;
+  if (element.textTransform != null) style.textTransform = element.textTransform;
+  if (element.textAlign != null) style.textAlign = element.textAlign;
   if (element.radius != null) style.borderRadius = px(element.radius);
   if (element.padding != null) style.padding = px(element.padding);
   if (element.gap != null) style.gap = px(element.gap);

@@ -24,8 +24,10 @@ import { trackEvent } from '../../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../../shared/analytics';
 import {
   APPEARANCE_SCHEMA_VERSION,
+  COMMON_APPEARANCE_PROPERTY_DEFINITIONS,
   RESET_VALUE,
   SYSTEM_APPEARANCE,
+  appearanceToWidgetConfigDefaults,
   buildOverlayAppearanceState,
   buildSubElementDefaults,
   createAppearancePreset,
@@ -48,6 +50,7 @@ import {
   getWidgetStyleOptions,
   getWidgetStyleRenderId,
   getWidgetTypeOverrideCount,
+  normalizeAppearanceControlValue,
   normalizeAppearance,
   omitPath,
   projectAppearanceToThemePatch,
@@ -78,16 +81,37 @@ const CATEGORY_GROUPS = [
 const SIMPLE_CATEGORY_IDS = new Set(['themes', 'colors', 'typography', 'containers', 'widgets']);
 
 const FONT_OPTIONS = [
+  { value: "'Rajdhani', 'Segoe UI', sans-serif", label: 'Rajdhani' },
   "'Inter', 'Segoe UI', sans-serif",
-  "'Poppins', 'Segoe UI', sans-serif",
   "'Roboto', 'Segoe UI', sans-serif",
+  "'Open Sans', 'Segoe UI', sans-serif",
   "'Montserrat', 'Segoe UI', sans-serif",
-  "'Oswald', 'Arial Narrow', sans-serif",
-  "'Rajdhani', 'Segoe UI', sans-serif",
+  "'Poppins', 'Segoe UI', sans-serif",
   "'Orbitron', 'Segoe UI', sans-serif",
+  "'Exo 2', 'Segoe UI', sans-serif",
+  "'Oxanium', 'Segoe UI', sans-serif",
   "'Bebas Neue', 'Arial Narrow', sans-serif",
-  "'Play', 'Segoe UI', sans-serif",
+  "'Oswald', 'Arial Narrow', sans-serif",
+  "'Space Grotesk', 'Segoe UI', sans-serif",
+  'Arial, sans-serif',
+  'Georgia, serif',
+  'monospace',
+  'system-ui',
 ];
+
+const FONT_WEIGHT_OPTIONS = [300, 400, 500, 600, 700, 800, 900].map(value => ({ value: String(value), label: String(value) }));
+const FONT_STYLE_OPTIONS = ['normal', 'italic', 'oblique'];
+const TEXT_TRANSFORM_OPTIONS = ['none', 'uppercase', 'lowercase', 'capitalize'];
+const TEXT_ALIGN_OPTIONS = ['left', 'center', 'right', 'justify'];
+const TYPOGRAPHY_PRESETS = {
+  display: { fontFamily: "'Bebas Neue', 'Arial Narrow', sans-serif", fontSize: 44, fontWeight: 800, lineHeight: 1.05, letterSpacing: 0.02, textTransform: 'uppercase' },
+  heading: { fontFamily: "'Rajdhani', 'Segoe UI', sans-serif", fontSize: 32, fontWeight: 800, lineHeight: 1.15, letterSpacing: 0, textTransform: 'none' },
+  subheading: { fontFamily: "'Space Grotesk', 'Segoe UI', sans-serif", fontSize: 20, fontWeight: 700, lineHeight: 1.25, letterSpacing: 0, textTransform: 'none' },
+  body: { fontFamily: "'Inter', 'Segoe UI', sans-serif", fontSize: 14, fontWeight: 600, lineHeight: 1.45, letterSpacing: 0, textTransform: 'none' },
+  label: { fontFamily: "'Inter', 'Segoe UI', sans-serif", fontSize: 12, fontWeight: 800, lineHeight: 1.25, letterSpacing: 0.04, textTransform: 'uppercase' },
+  numeric: { fontFamily: "'Rajdhani', 'Segoe UI', sans-serif", fontSize: 22, fontWeight: 800, lineHeight: 1.1, letterSpacing: 0, textTransform: 'none' },
+  monospace: { fontFamily: 'monospace', fontSize: 13, fontWeight: 600, lineHeight: 1.35, letterSpacing: 0, textTransform: 'none' },
+};
 
 const PREVIEW_SIZES = [
   { id: '1080p', label: '1920 x 1080', width: 1920, height: 1080 },
@@ -217,6 +241,77 @@ function formatInheritedSource(target) {
   return 'Inherited';
 }
 
+function isPlainObjectValue(value) {
+  return value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function toInputString(value, fallback = '') {
+  if (value === undefined || value === null) return fallback;
+  if (isPlainObjectValue(value) || Array.isArray(value)) return fallback;
+  return String(value);
+}
+
+function toInputNumber(value, fallback = 0) {
+  if (isPlainObjectValue(value) || Array.isArray(value)) return fallback;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function toCssColor(value, fallback = '#ffffff') {
+  if (isPlainObjectValue(value) || Array.isArray(value)) return fallback;
+  const color = String(value || '').trim();
+  return color || fallback;
+}
+
+function colorPickerValue(value, fallback = '#ffffff') {
+  const color = toCssColor(value, fallback);
+  return /^#[0-9a-f]{6}$/i.test(color) ? color : fallback;
+}
+
+function optionValue(option) {
+  return typeof option === 'object' ? option.value : option;
+}
+
+function optionLabel(option) {
+  return typeof option === 'object' ? option.label : option;
+}
+
+export function normalizeControlValue(property, value, control = '') {
+  return normalizeAppearanceControlValue(property, value, control);
+}
+
+function getPropertyDefinition(property) {
+  return COMMON_APPEARANCE_PROPERTY_DEFINITIONS.find(definition => definition.path === property) || null;
+}
+
+function getPropertyCategory(property) {
+  const definition = getPropertyDefinition(property);
+  if (definition?.category === 'colour') return 'Colours';
+  if (definition?.category === 'border') return 'Borders';
+  if (definition?.category === 'spacing') return 'Spacing';
+  if (definition?.category === 'typography') return 'Typography';
+  if (definition?.category === 'size') return 'Dimensions';
+  if (definition?.category === 'effects') return 'Shadows';
+  if (definition?.category === 'progress') return 'Colours';
+  if (/font|lineHeight|letterSpacing|textTransform|textAlign/i.test(property)) return 'Typography';
+  if (isColorProperty(property) || /color|background|fill/i.test(property)) return 'Colours';
+  if (/width|height|size/i.test(property)) return 'Dimensions';
+  if (/padding|margin|gap/i.test(property)) return 'Spacing';
+  if (/border|radius/i.test(property)) return 'Borders';
+  if (/shadow|opacity|blur|brightness|contrast|saturation/i.test(property)) return 'Effects';
+  if (/duration|delay|easing|animation|motion/i.test(property)) return 'Motion';
+  return 'Advanced';
+}
+
+function groupProperties(properties = []) {
+  return properties.reduce((groups, property) => {
+    const category = getPropertyCategory(property);
+    if (!groups[category]) groups[category] = [];
+    groups[category].push(property);
+    return groups;
+  }, {});
+}
+
 function ControlShell({ label, description, inherited, source, onReset, children }) {
   const sourceLabel = source || (inherited ? 'Inherited' : '');
   return (
@@ -241,11 +336,12 @@ function ControlShell({ label, description, inherited, source, onReset, children
 }
 
 function ColorControl({ label, description, value, fallback = '#ffffff', inherited, source, onChange, onReset }) {
-  const display = value || fallback;
+  const display = toCssColor(value, fallback);
   return (
     <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
       <span className="ac-color-row">
-        <input type="color" value={display.startsWith('#') ? display.slice(0, 7) : fallback} onChange={event => onChange(event.target.value)} />
+        <input type="color" value={colorPickerValue(display, fallback)} onChange={event => onChange(event.target.value)} />
+        <span className="ac-color-swatch" style={{ background: display }} aria-hidden="true" />
         <input value={display} onChange={event => onChange(event.target.value)} aria-label={`${label} value`} />
       </span>
     </ControlShell>
@@ -253,11 +349,12 @@ function ColorControl({ label, description, value, fallback = '#ffffff', inherit
 }
 
 function RangeControl({ label, description, value, min, max, step = 1, unit = '', inherited, source, onChange, onReset }) {
+  const numericValue = toInputNumber(value, min ?? 0);
   return (
     <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
       <span className="ac-range-row">
-        <input type="range" min={min} max={max} step={step} value={value} onChange={event => onChange(Number(event.target.value))} />
-        <input type="number" min={min} max={max} step={step} value={value} onChange={event => onChange(Number(event.target.value))} aria-label={`${label} number`} />
+        <input type="range" min={min} max={max} step={step} value={numericValue} onChange={event => onChange(Number(event.target.value))} />
+        <input type="number" min={min} max={max} step={step} value={numericValue} onChange={event => onChange(Number(event.target.value))} aria-label={`${label} number`} />
         {unit && <small>{unit}</small>}
       </span>
     </ControlShell>
@@ -265,12 +362,29 @@ function RangeControl({ label, description, value, min, max, step = 1, unit = ''
 }
 
 function SelectControl({ label, description, value, options, inherited, source, onChange, onReset }) {
+  const normalizedOptions = options.map(option => ({ value: String(optionValue(option)), label: String(optionLabel(option)) }));
+  const normalizedValue = toInputString(value, normalizedOptions[0]?.value || '');
   return (
     <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
-      <select value={value} onChange={event => onChange(event.target.value)}>
-        {options.map(option => (
-          <option key={option.value || option} value={option.value || option}>{option.label || option}</option>
+      <select value={normalizedValue} onChange={event => onChange(event.target.value)}>
+        {normalizedOptions.map(option => (
+          <option key={option.value} value={option.value}>{option.label}</option>
         ))}
+      </select>
+    </ControlShell>
+  );
+}
+
+function FontFamilyControl({ label = 'Font family', value, inherited, source, onChange, onReset }) {
+  const current = toInputString(value, optionValue(FONT_OPTIONS[0]));
+  return (
+    <ControlShell label={label} inherited={inherited} source={source} onReset={onReset}>
+      <select className="ac-font-select" value={current} onChange={event => onChange(event.target.value)} style={{ fontFamily: current }}>
+        {FONT_OPTIONS.map(option => {
+          const valueOption = optionValue(option);
+          const labelOption = optionLabel(option);
+          return <option key={valueOption} value={valueOption} style={{ fontFamily: valueOption }}>{labelOption}</option>;
+        })}
       </select>
     </ControlShell>
   );
@@ -279,7 +393,7 @@ function SelectControl({ label, description, value, options, inherited, source, 
 function TextControl({ label, description, value, placeholder, inherited, source, onChange, onReset }) {
   return (
     <ControlShell label={label} description={description} inherited={inherited} source={source} onReset={onReset}>
-      <input value={value || ''} placeholder={placeholder} onChange={event => onChange(event.target.value)} />
+      <input value={toInputString(value)} placeholder={placeholder} onChange={event => onChange(event.target.value)} />
     </ControlShell>
   );
 }
@@ -300,15 +414,71 @@ function ToggleControl({ label, description, checked, inherited, source, onChang
   );
 }
 
+function PropertyControl({ property, label, description, value, inherited, source, onChange, onReset }) {
+  const definition = getPropertyDefinition(property);
+  const control = definition?.control || '';
+  const displayLabel = label || definition?.label || formatSubElementLabel(property);
+  if (property === 'fontFamily' || control === 'font' || /font$/i.test(property)) {
+    return <FontFamilyControl label={displayLabel} value={value} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+  }
+  if (property === 'fontWeight') {
+    return <SelectControl label={displayLabel} description={description} value={toInputString(value, '600')} options={FONT_WEIGHT_OPTIONS} inherited={inherited} source={source} onChange={next => onChange(Number(next))} onReset={onReset} />;
+  }
+  if (property === 'fontStyle') {
+    return <SelectControl label={displayLabel} description={description} value={toInputString(value, 'normal')} options={FONT_STYLE_OPTIONS} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+  }
+  if (property === 'textTransform') {
+    return <SelectControl label={displayLabel} description={description} value={toInputString(value, 'none')} options={TEXT_TRANSFORM_OPTIONS} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+  }
+  if (property === 'textAlign') {
+    return <SelectControl label={displayLabel} description={description} value={toInputString(value, 'left')} options={TEXT_ALIGN_OPTIONS} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+  }
+  if (control === 'select' && definition?.options) {
+    return <SelectControl label={displayLabel} description={description} value={toInputString(value)} options={definition.options} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+  }
+  if (control === 'boolean') {
+    return <ToggleControl label={displayLabel} description={description} checked={Boolean(value)} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+  }
+  if (control === 'color' || isColorProperty(property)) {
+    return <ColorControl label={displayLabel} description={description} value={value} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+  }
+  const range = definition || getRangeMeta(property);
+  if (range && (range.control === 'slider' || range.min !== undefined)) {
+    return (
+      <RangeControl
+        label={displayLabel}
+        description={description}
+        value={normalizeControlValue(property, value, 'slider')}
+        min={range.min ?? 0}
+        max={range.max ?? 100}
+        step={range.step ?? 1}
+        unit={range.unit || ''}
+        inherited={inherited}
+        source={source}
+        onChange={onChange}
+        onReset={onReset}
+      />
+    );
+  }
+  return <TextControl label={displayLabel} description={description} value={normalizeControlValue(property, value, 'text')} inherited={inherited} source={source} onChange={onChange} onReset={onReset} />;
+}
+
 function isColorProperty(property) {
-  return /color|background|fill/i.test(property);
+  const name = String(property || '').toLowerCase();
+  if (/size|width|height|weight|spacing|lineheight|opacity|padding|radius|blur|shadow|angle|speed|transform|align/i.test(name)) return false;
+  return /color|background|fill|bg|text|caption|provider|slotname|accent|primary|secondary|muted|divider|progress|spinner|sword|button|best|worst|positive|negative|border/i.test(name);
 }
 
 function getRangeMeta(property) {
+  const name = String(property || '');
   if (/opacity/i.test(property)) return { min: 0, max: 1, step: 0.05, unit: '' };
+  if (/animSpeed/i.test(property)) return { min: 0, max: 3, step: 0.05, unit: 'x' };
+  if (/duration|delay/i.test(property)) return { min: 0, max: 3000, step: 25, unit: 'ms' };
   if (/brightness|contrast|saturation/i.test(property)) return { min: 0, max: 200, step: 1, unit: '%' };
   if (/fontWeight/i.test(property)) return { min: 100, max: 1000, step: 50, unit: '' };
-  if (/borderWidth|radius|padding|gap|fontSize|imageSize|height|blur|shadow/i.test(property)) return { min: 0, max: 120, step: 1, unit: 'px' };
+  if (/lineHeight/i.test(property)) return { min: 0.8, max: 2.4, step: 0.05, unit: '' };
+  if (/letterSpacing/i.test(property)) return { min: 0, max: 0.2, step: 0.005, unit: 'em' };
+  if (/borderWidth|radius|padding|gap|fontSize|imageSize|height|width|blur|shadow|spacing|pad|Size/i.test(name)) return { min: 0, max: /width|height|widgetWidth|maxWidth|barHeight/i.test(name) ? 720 : 120, step: 1, unit: 'px' };
   return null;
 }
 
@@ -458,6 +628,54 @@ function TargetSelector({ widgets, selected, appearance, onChange }) {
         </optgroup>
       </select>
     </section>
+  );
+}
+
+function SelectionSummary({ selectedTarget, selectedWidgetDef, selectedWidget, selectedStyle, selectedElement, selectedState }) {
+  const scopeLabel = selectedTarget.scope === 'widget_instance'
+    ? 'This widget instance'
+    : selectedTarget.scope === 'widget_type'
+      ? 'Widget type'
+      : selectedTarget.scope === 'all_widgets'
+        ? 'All widgets'
+        : 'Overlay';
+  return (
+    <section className="ac-selection-summary" aria-label="Current appearance selection">
+      <div>
+        <span>Widget</span>
+        <strong>{selectedWidgetDef?.label || selectedWidget?.widget_type || selectedTarget.widgetType || 'Overlay'}</strong>
+      </div>
+      <div>
+        <span>Variant</span>
+        <strong>{selectedStyle?.label || selectedTarget.styleId || 'Default'}</strong>
+      </div>
+      <div>
+        <span>Element</span>
+        <strong>{selectedElement?.label || 'None'}</strong>
+      </div>
+      <div>
+        <span>State</span>
+        <strong>{selectedState?.label || 'Default'}</strong>
+      </div>
+      <div>
+        <span>Scope</span>
+        <strong>{scopeLabel}</strong>
+      </div>
+    </section>
+  );
+}
+
+function InspectorActions({ dirty, saving, onResetElement, onRevert, onApply }) {
+  return (
+    <div className="ac-inspector-actions" aria-label="Appearance editing actions">
+      <div>
+        <strong>{dirty ? 'Unapplied draft changes' : 'No pending inspector changes'}</strong>
+        <span>Apply commits the current editing session to the draft. Save draft and Publish remain page-level actions.</span>
+      </div>
+      <button type="button" onClick={onResetElement}>Reset current element</button>
+      <button type="button" onClick={onRevert} disabled={!dirty || saving}>Revert unsaved changes</button>
+      <button type="button" className="ac-inspector-actions__primary" onClick={onApply} disabled={!dirty || saving}>{saving ? 'Applying...' : 'Apply changes'}</button>
+    </div>
   );
 }
 
@@ -1010,6 +1228,28 @@ export default function AppearanceCenter({
     setSelectedCategory('widgets');
   }, [draft, handleTargetChange]);
 
+  const resetCurrentElement = useCallback(() => {
+    const root = getTargetOverrideRoot(selectedTarget);
+    if (!root || !selectedElementId) return;
+    const path = selectedStateId && selectedStateId !== 'default'
+      ? `${root}.subElements.${selectedElementId}.states.${selectedStateId}`
+      : `${root}.subElements.${selectedElementId}`;
+    updateDraft(prev => omitPath(prev, path), `Reset ${selectedElementId}.${selectedStateId || 'default'}`);
+  }, [selectedElementId, selectedStateId, selectedTarget, updateDraft]);
+
+  const revertUnsavedChanges = useCallback(() => {
+    clearTimeout(saveTimerRef.current);
+    setThemePreview(null);
+    themePreviewBackupRef.current = null;
+    setDraft(stateFromServer.draft);
+    setSaveStatus('saved');
+  }, [stateFromServer.draft]);
+
+  const applyInspectorChanges = useCallback(() => {
+    clearTimeout(saveTimerRef.current);
+    persistDraft(draft, 'inspector-apply');
+  }, [draft, persistDraft]);
+
   const renderCategory = () => {
     const a = targetAppearance;
     if (selectedCategory === 'themes') {
@@ -1107,6 +1347,29 @@ export default function AppearanceCenter({
     if (selectedCategory === 'typography') {
       return (
         <Section title="Typography" description="Central fonts for headings, body text, buttons and statistics.">
+          <div className="ac-preset-row">
+            {Object.entries(TYPOGRAPHY_PRESETS).map(([id, preset]) => (
+              <button
+                key={id}
+                type="button"
+                className="ac-chip"
+                onClick={() => updateDraft(prev => deepMerge(prev, {
+                  typography: {
+                    headingFont: preset.fontFamily,
+                    bodyFont: preset.fontFamily,
+                    numberFont: id === 'numeric' ? preset.fontFamily : prev.typography?.numberFont,
+                    baseSize: preset.fontSize,
+                    bodyWeight: preset.fontWeight,
+                    lineHeight: preset.lineHeight,
+                    letterSpacing: preset.letterSpacing,
+                    textTransform: preset.textTransform,
+                  },
+                }), `Typography preset ${id}`)}
+              >
+                {id}
+              </button>
+            ))}
+          </div>
           <div className="ac-control-grid">
             <SelectControl label="Heading font" value={a.typography.headingFont} options={FONT_OPTIONS} onChange={value => updatePath('typography.headingFont', value)} onReset={() => resetPath('typography.headingFont')} />
             <SelectControl label="Body font" value={a.typography.bodyFont} options={FONT_OPTIONS} onChange={value => updatePath('typography.bodyFont', value)} onReset={() => resetPath('typography.bodyFont')} />
@@ -1223,11 +1486,14 @@ export default function AppearanceCenter({
 
     if (selectedCategory === 'widgets') {
       const keys = selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance'
-        ? getSupportedVisualKeys(selectedWidgetType).slice(0, 16)
+        ? getSupportedVisualKeys(selectedWidgetType)
         : ['accentColor', 'bgColor', 'cardBg', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'fontSize', 'borderRadius', 'borderWidth'];
       const overrideEntry = getByPath(draft, getTargetOverrideRoot(selectedTarget)) || {};
       const visualSource = overrideEntry.visual || overrideEntry.tokens || {};
       const appearanceSource = overrideEntry.appearance || {};
+      const inheritedVisualDefaults = appearanceToWidgetConfigDefaults(a);
+      const visualGroups = groupProperties(keys);
+      const propertyGroupOrder = ['Typography', 'Colours', 'Dimensions', 'Spacing', 'Borders', 'Shadows', 'Effects', 'Motion', 'Advanced'];
       const subElementDefinitions = selectedSubElementDefinitions;
       const typeSubElements = selectedWidgetType ? draft.widgetTypes?.[selectedWidgetType]?.subElements || {} : {};
       const typeStyleSubElements = selectedWidgetType && selectedRenderStyleId ? draft.widgetTypes?.[selectedWidgetType]?.styles?.[selectedRenderStyleId]?.subElements || {} : {};
@@ -1235,9 +1501,10 @@ export default function AppearanceCenter({
       const instanceStyleSubElements = selectedTarget.scope === 'widget_instance' && selectedStyleId ? draft.widgets?.[selectedTarget.widgetId]?.styles?.[selectedStyleId]?.subElements || {} : {};
       const explicitSubElements = overrideEntry.subElements || {};
       const effectiveSubElements = selectedWidgetType
-        ? deepMerge(buildSubElementDefaults(selectedWidgetType, a), typeSubElements, typeStyleSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {}, selectedTarget.scope === 'widget_instance' ? instanceStyleSubElements : {})
+        ? deepMerge(buildSubElementDefaults(selectedWidgetType, a), typeSubElements, typeStyleSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {}, selectedTarget.scope === 'widget_instance' ? instanceStyleSubElements : {}, explicitSubElements)
         : {};
       const selectedSubElementDefinition = subElementDefinitions.find(definition => definition.id === selectedElementId) || subElementDefinitions[0];
+      const subElementGroups = groupProperties(selectedSubElementDefinition?.properties || []);
       const selectedStateKey = selectedState?.id || 'default';
       const readElementValue = (source, elementId, property) => {
         const baseValue = getByPath(source, `${elementId}.${property}`);
@@ -1287,37 +1554,35 @@ export default function AppearanceCenter({
               .filter(([, value]) => value === true)
               .map(([key]) => <span key={key}>{key}</span>)}
           </div>
-          <div className="ac-control-grid">
-            {keys.map(key => {
-              const canonicalPath = getAppearancePathForVisualKey(key);
-              const propertyState = canonicalPath
-                ? getAppearancePropertyState({ appearance: draft, target: selectedTarget, path: canonicalPath, theme })
-                : null;
-              const value = visualSource[key] ?? getByPath(a, {
-                accentColor: 'colors.accent',
-                bgColor: 'surfaces.containerBg',
-                cardBg: 'surfaces.cardBg',
-                headerBg: 'surfaces.headerBg',
-                headerText: 'colors.textSecondary',
-                textColor: 'colors.text',
-                mutedColor: 'colors.muted',
-                borderColor: 'borders.color',
-                fontFamily: 'typography.bodyFont',
-                fontSize: 'typography.baseSize',
-                borderRadius: 'borders.radius',
-                borderWidth: 'borders.width',
-              }[key] || '');
-              const inherited = visualSource[key] == null && (!canonicalPath || getByPath(appearanceSource, canonicalPath) == null);
-              const source = inherited ? formatSourceLabel(propertyState?.source) : formatOverrideSource(selectedTarget);
-              const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
-              if (/color|bg/i.test(key)) {
-                return <ColorControl key={key} label={label} value={value} inherited={inherited} source={source} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
-              }
-              if (/size|radius|width|padding|gap|blur|shadow|intensity/i.test(key)) {
-                return <RangeControl key={key} label={label} value={Number(value) || 0} min={0} max={key.toLowerCase().includes('font') ? 64 : 100} inherited={inherited} source={source} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
-              }
-              return <TextControl key={key} label={label} value={value || ''} inherited={inherited} source={source} onChange={next => updateTargetVisual(key, next)} onReset={() => resetTargetVisual(key)} />;
-            })}
+          <div className="ac-property-groups">
+            {propertyGroupOrder.filter(group => visualGroups[group]?.length).map(group => (
+              <div className="ac-property-group" key={group}>
+                <h4>{group}</h4>
+                <div className="ac-control-grid ac-control-grid--single">
+                  {visualGroups[group].map(key => {
+                    const canonicalPath = getAppearancePathForVisualKey(key);
+                    const propertyState = canonicalPath
+                      ? getAppearancePropertyState({ appearance: draft, target: selectedTarget, path: canonicalPath, theme })
+                      : null;
+                    const explicitAppearance = canonicalPath ? getByPath(appearanceSource, canonicalPath) : undefined;
+                    const value = visualSource[key] ?? explicitAppearance ?? inheritedVisualDefaults[key] ?? '';
+                    const inherited = visualSource[key] == null && explicitAppearance == null;
+                    const source = inherited ? formatSourceLabel(propertyState?.source) : formatOverrideSource(selectedTarget);
+                    return (
+                      <PropertyControl
+                        key={key}
+                        property={key}
+                        value={value}
+                        inherited={inherited}
+                        source={source}
+                        onChange={next => updateTargetVisual(key, normalizeControlValue(key, next))}
+                        onReset={() => resetTargetVisual(key)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
           {(selectedTarget.scope === 'widget_type' || selectedTarget.scope === 'widget_instance') && selectedSubElementDefinition && (
             <div className="ac-sub-elements">
@@ -1329,56 +1594,31 @@ export default function AppearanceCenter({
                 <span>{selectedSubElementDefinition.properties?.length || 0} supported controls</span>
               </div>
               <div className="ac-sub-element ac-sub-element--selected">
-                <div className="ac-control-grid">
-                  {(selectedSubElementDefinition.properties || []).map(property => {
-                    const value = readElementValue(effectiveSubElements, selectedSubElementDefinition.id, property);
-                    const explicit = readElementValue(explicitSubElements, selectedSubElementDefinition.id, property);
-                    const inherited = explicit == null;
-                    const source = inherited ? formatInheritedSource(selectedTarget) : formatOverrideSource(selectedTarget);
-                    const label = formatSubElementLabel(property);
-                    if (isColorProperty(property)) {
-                      return (
-                        <ColorControl
-                          key={`${selectedSubElementDefinition.id}.${property}`}
-                          label={label}
-                          value={value}
-                          inherited={inherited}
-                          source={source}
-                          onChange={next => updateSubElement(selectedSubElementDefinition.id, property, next)}
-                          onReset={() => resetSubElement(selectedSubElementDefinition.id, property)}
-                        />
-                      );
-                    }
-                    const range = getRangeMeta(property);
-                    if (range) {
-                      return (
-                        <RangeControl
-                          key={`${selectedSubElementDefinition.id}.${property}`}
-                          label={label}
-                          value={Number(value) || 0}
-                          min={range.min}
-                          max={range.max}
-                          step={range.step}
-                          unit={range.unit}
-                          inherited={inherited}
-                          source={source}
-                          onChange={next => updateSubElement(selectedSubElementDefinition.id, property, next)}
-                          onReset={() => resetSubElement(selectedSubElementDefinition.id, property)}
-                        />
-                      );
-                    }
-                    return (
-                      <TextControl
-                        key={`${selectedSubElementDefinition.id}.${property}`}
-                        label={label}
-                        value={value || ''}
-                        inherited={inherited}
-                        source={source}
-                        onChange={next => updateSubElement(selectedSubElementDefinition.id, property, next)}
-                        onReset={() => resetSubElement(selectedSubElementDefinition.id, property)}
-                      />
-                    );
-                  })}
+                <div className="ac-property-groups">
+                  {propertyGroupOrder.filter(group => subElementGroups[group]?.length).map(group => (
+                    <div className="ac-property-group" key={`${selectedSubElementDefinition.id}.${group}`}>
+                      <h4>{group}</h4>
+                      <div className="ac-control-grid ac-control-grid--single">
+                        {subElementGroups[group].map(property => {
+                          const value = readElementValue(effectiveSubElements, selectedSubElementDefinition.id, property);
+                          const explicit = readElementValue(explicitSubElements, selectedSubElementDefinition.id, property);
+                          const inherited = explicit == null;
+                          const source = inherited ? formatInheritedSource(selectedTarget) : formatOverrideSource(selectedTarget);
+                          return (
+                            <PropertyControl
+                              key={`${selectedSubElementDefinition.id}.${property}`}
+                              property={property}
+                              value={value}
+                              inherited={inherited}
+                              source={source}
+                              onChange={next => updateSubElement(selectedSubElementDefinition.id, property, normalizeControlValue(property, next))}
+                              onReset={() => resetSubElement(selectedSubElementDefinition.id, property)}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1643,6 +1883,14 @@ export default function AppearanceCenter({
 
         <aside className="ac-inspector">
           <TargetSelector widgets={widgets} selected={selectedTarget} appearance={draft} onChange={handleTargetChange} />
+          <SelectionSummary
+            selectedTarget={selectedTarget}
+            selectedWidgetDef={selectedWidgetDef}
+            selectedWidget={selectedWidget}
+            selectedStyle={selectedStyle}
+            selectedElement={selectedSubElement}
+            selectedState={selectedState}
+          />
           <section className="ac-workflow-card">
             <header>
               <span>Style and element</span>
@@ -1696,6 +1944,13 @@ export default function AppearanceCenter({
             )}
           </section>
           {renderCategory()}
+          <InspectorActions
+            dirty={['dirty', 'previewing', 'failed'].includes(saveStatus)}
+            saving={saveStatus === 'saving'}
+            onResetElement={resetCurrentElement}
+            onRevert={revertUnsavedChanges}
+            onApply={applyInspectorChanges}
+          />
         </aside>
       </div>
 

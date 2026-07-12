@@ -7,17 +7,21 @@ const server = await createServer({
   appType: 'custom',
 });
 
-const { registerWidget } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/widgetRegistry.js');
+const { registerWidget, getAllWidgetDefs } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/widgetRegistry.js');
 const { subValue } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/appearanceStyles.js');
 const {
   buildWidgetAppearanceVars,
+  buildSubElementDefaults,
   buildScopedAppearanceVars,
+  COMMON_APPEARANCE_PROPERTY_DEFINITIONS,
   SYSTEM_APPEARANCE,
   getWidgetAppearanceDefinition,
   getScopedAppearancePath,
   getScopedVisualPath,
   getWidgetActiveStyleId,
   getWidgetOverrideCount,
+  getSupportedVisualKeys,
+  normalizeAppearanceControlValue,
   omitPath,
   resolveAppearance,
   resolveAppearanceForTarget,
@@ -25,6 +29,23 @@ const {
   resolveWidgetAppearanceConfig,
   resolveWidgetsForAppearance,
 } = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/appearanceModel.js');
+
+function sampleValueForVisualKey(key) {
+  const name = String(key || '').toLowerCase();
+  if (/size|width|height|weight|spacing|lineheight|opacity|padding|radius|blur|shadow|angle|speed|intensity/.test(name)) {
+    if (name.includes('opacity')) return 0.65;
+    if (name.includes('speed')) return 1.25;
+    if (name.includes('weight')) return 700;
+    if (name.includes('lineheight')) return 1.4;
+    if (name.includes('angle')) return 90;
+    return 24;
+  }
+  if (/fontfamily|font$/.test(name)) return "'Rajdhani', 'Segoe UI', sans-serif";
+  if (/fit/.test(name)) return 'cover';
+  if (/position/.test(name)) return 'center';
+  if (/color|background|fill|bg|text|caption|provider|slotname|accent|primary|secondary|muted|divider|progress|spinner|sword|button|best|worst|positive|negative|border/.test(name)) return '#123456';
+  return 'test-value';
+}
 
 registerWidget({
   type: 'appearance_test_widget',
@@ -109,6 +130,34 @@ const registryDefaultConfig = resolveWidgetAppearanceConfig({
 assert.equal(registryDefaultConfig.bgColor, '#242424', 'registry appearance defaults feed visual config inheritance');
 assert.equal(registryDefaultConfig.borderRadius, 15, 'registry appearance defaults feed dimensional config inheritance');
 assert.equal(registryDefaultConfig.subElements.card.background, '#2a2a2a', 'registry appearance defaults feed element defaults');
+
+const propertyDefinitionPaths = new Set(COMMON_APPEARANCE_PROPERTY_DEFINITIONS.map(property => property.path));
+for (const property of ['fontFamily', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'textTransform', 'textAlign']) {
+  assert.ok(propertyDefinitionPaths.has(property), `common property registry exposes ${property}`);
+}
+
+assert.equal(normalizeAppearanceControlValue('animSpeed', { duration: 350 }, 'slider'), 0, 'object animation values are normalized before binding to numeric inputs');
+assert.equal(normalizeAppearanceControlValue('fontFamily', { value: 'Bad Object' }, 'text'), '', 'object font values are normalized before binding to text inputs');
+assert.equal(normalizeAppearanceControlValue('textColor', { token: 'primary' }, 'color'), '', 'object color values are normalized before binding to color inputs');
+
+const typographyElementDefaults = buildSubElementDefaults('appearance_test_widget', {
+  typography: {
+    bodyFont: 'Spec Sans',
+    baseSize: 17,
+    bodyWeight: 700,
+    fontStyle: 'italic',
+    lineHeight: 1.6,
+    letterSpacing: 0.04,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+});
+assert.equal(typographyElementDefaults.label.fontFamily, 'Spec Sans', 'element typography defaults include font family');
+assert.equal(typographyElementDefaults.label.fontStyle, 'italic', 'element typography defaults include font style');
+assert.equal(typographyElementDefaults.label.lineHeight, 1.6, 'element typography defaults include line height');
+assert.equal(typographyElementDefaults.label.letterSpacing, 0.04, 'element typography defaults include letter spacing');
+assert.equal(typographyElementDefaults.label.textTransform, 'uppercase', 'element typography defaults include text transform');
+assert.equal(typographyElementDefaults.label.textAlign, 'center', 'element typography defaults include text alignment');
 
 assert.equal(
   getScopedAppearancePath({ scope: 'widget_instance', widgetId: 'widget_a', widgetType: 'appearance_test_widget' }, 'borders.radius'),
@@ -275,11 +324,23 @@ const widgetVars = buildWidgetAppearanceVars({
       background: '#111111',
       states: { winner: { background: '#222222', opacity: 0.9 } },
     },
+    label: {
+      fontStyle: 'italic',
+      lineHeight: 1.4,
+      letterSpacing: 0.03,
+      textTransform: 'uppercase',
+      textAlign: 'center',
+    },
   },
 });
 assert.equal(widgetVars['--widget-participant-card-background'], '#111111', 'widget vars include element token variables');
 assert.equal(widgetVars['--widget-participant-card-winner-background'], '#222222', 'widget vars include state token variables');
 assert.equal(widgetVars['--widget-participant-card-winner-opacity'], 0.9, 'state token variables preserve unitless values');
+assert.equal(widgetVars['--widget-label-font-style'], 'italic', 'widget vars include font style token variables');
+assert.equal(widgetVars['--widget-label-line-height'], 1.4, 'widget vars preserve unitless line-height variables');
+assert.equal(widgetVars['--widget-label-letter-spacing'], '0.03em', 'widget vars serialize numeric letter spacing as em');
+assert.equal(widgetVars['--widget-label-text-transform'], 'uppercase', 'widget vars include text transform variables');
+assert.equal(widgetVars['--widget-label-text-align'], 'center', 'widget vars include text alignment variables');
 
 const widgetDefinition = getWidgetAppearanceDefinition('appearance_test_widget');
 assert.equal(widgetDefinition.type, 'appearance_test_widget', 'appearance definition exposes widget type');
@@ -302,6 +363,46 @@ assert.equal(
   '#222222',
   'legacy pseudo-elements resolve canonical state overrides'
 );
+
+const widgetTypographyConfig = resolveWidgetAppearanceConfig(widgetA, {
+  themeId: 'classic',
+  widgetTypes: {
+    appearance_test_widget: {
+      subElements: {
+        label: { fontFamily: 'Type Sans', lineHeight: 1.7 },
+      },
+    },
+  },
+  widgets: {
+    widget_a: {
+      subElements: {
+        label: { states: { selected: { textTransform: 'uppercase' } } },
+      },
+    },
+  },
+});
+assert.equal(widgetTypographyConfig.subElements.label.fontFamily, 'Type Sans', 'widget config carries type-level typography sub-element overrides');
+assert.equal(widgetTypographyConfig.subElements.label.lineHeight, 1.7, 'widget config carries line-height sub-element overrides');
+assert.equal(widgetTypographyConfig.subElements.label.states.selected.textTransform, 'uppercase', 'widget config carries state typography overrides');
+
+for (const widgetDefinitionEntry of getAllWidgetDefs()) {
+  const keys = getSupportedVisualKeys(widgetDefinitionEntry.type);
+  assert.ok(keys.length > 0, `${widgetDefinitionEntry.type} exposes supported appearance visual keys`);
+  const visual = Object.fromEntries(keys.map(key => [key, sampleValueForVisualKey(key)]));
+  const resolvedConfig = resolveWidgetAppearanceConfig({
+    id: `registry_smoke_${widgetDefinitionEntry.type}`,
+    widget_type: widgetDefinitionEntry.type,
+    config: { ...(widgetDefinitionEntry.defaults || {}) },
+  }, {
+    themeId: 'classic',
+    widgetTypes: {
+      [widgetDefinitionEntry.type]: { visual },
+    },
+  });
+  for (const key of keys) {
+    assert.equal(resolvedConfig[key], visual[key], `${widgetDefinitionEntry.type}.${key} resolves from registry visual override`);
+  }
+}
 
 console.log('appearance model tests passed');
 

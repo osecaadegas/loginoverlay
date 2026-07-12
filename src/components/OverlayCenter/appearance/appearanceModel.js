@@ -27,7 +27,12 @@ export const COMMON_APPEARANCE_PROPERTY_DEFINITIONS = Object.freeze([
   { path: 'gap', label: 'Gap', category: 'spacing', control: 'slider', min: 0, max: 96, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element'] },
   { path: 'fontFamily', label: 'Font', category: 'typography', control: 'font', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
   { path: 'fontSize', label: 'Font size', category: 'typography', control: 'slider', min: 8, max: 96, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
-  { path: 'fontWeight', label: 'Font weight', category: 'typography', control: 'slider', min: 100, max: 1000, step: 50, scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'fontWeight', label: 'Font weight', category: 'typography', control: 'select', options: [300, 400, 500, 600, 700, 800, 900], scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'fontStyle', label: 'Font style', category: 'typography', control: 'select', options: ['normal', 'italic', 'oblique'], scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'lineHeight', label: 'Line height', category: 'typography', control: 'slider', min: 0.8, max: 2.4, step: 0.05, scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'letterSpacing', label: 'Letter spacing', category: 'typography', control: 'slider', min: 0, max: 0.2, step: 0.005, unit: 'em', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'textTransform', label: 'Text transform', category: 'typography', control: 'select', options: ['none', 'uppercase', 'lowercase', 'capitalize'], scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'textAlign', label: 'Text alignment', category: 'typography', control: 'select', options: ['left', 'center', 'right', 'justify'], scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
   { path: 'height', label: 'Height', category: 'size', control: 'slider', min: 0, max: 720, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element'] },
   { path: 'width', label: 'Width', category: 'size', control: 'slider', min: 0, max: 1280, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element'] },
   { path: 'imageSize', label: 'Image or icon size', category: 'size', control: 'slider', min: 0, max: 512, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element'] },
@@ -35,6 +40,37 @@ export const COMMON_APPEARANCE_PROPERTY_DEFINITIONS = Object.freeze([
   { path: 'shadow', label: 'Shadow', category: 'effects', control: 'shadow', min: 0, max: 160, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
   { path: 'fillColor', label: 'Fill colour', category: 'progress', control: 'color', scope: ['widget-type', 'style', 'instance', 'element', 'state'] },
 ]);
+
+function isControlObject(value) {
+  return value && typeof value === 'object';
+}
+
+function isControlColorProperty(property) {
+  const name = String(property || '').toLowerCase();
+  if (/size|width|height|weight|spacing|lineheight|opacity|padding|radius|blur|shadow|angle|speed|transform|align/.test(name)) return false;
+  return /color|background|fill|bg|text|caption|provider|slotname|accent|primary|secondary|muted|divider|progress|spinner|sword|button|best|worst|positive|negative|border/.test(name);
+}
+
+function hasNumericControl(property, control) {
+  const definition = COMMON_APPEARANCE_PROPERTY_DEFINITIONS.find(item => item.path === property);
+  if (control === 'slider' || control === 'number' || definition?.control === 'slider') return true;
+  return /opacity|animSpeed|duration|delay|brightness|contrast|saturation|fontWeight|lineHeight|letterSpacing|borderWidth|radius|padding|gap|fontSize|imageSize|height|width|blur|shadow|spacing|pad|Size/i.test(String(property || ''));
+}
+
+export function normalizeAppearanceControlValue(property, value, control = '') {
+  if (value === RESET_VALUE) return value;
+  if (hasNumericControl(property, control)) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+  }
+  if (control === 'boolean') return Boolean(value);
+  if (control === 'color' || isControlColorProperty(property)) {
+    if (isControlObject(value)) return '';
+    return String(value || '').trim();
+  }
+  if (isControlObject(value)) return '';
+  return value ?? '';
+}
 
 export const SYSTEM_APPEARANCE = {
   schemaVersion: APPEARANCE_SCHEMA_VERSION,
@@ -377,12 +413,14 @@ const APPEARANCE_PATH_TO_VISUAL = Object.entries(VISUAL_TO_APPEARANCE_PATH).redu
   return acc;
 }, {});
 
+const COMMON_TEXT_PROPERTIES = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'textTransform', 'textAlign'];
+
 const COMMON_SUB_ELEMENT_DEFINITIONS = [
   { id: 'container', label: 'Container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow'] },
-  { id: 'header', label: 'Header', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight', 'padding', 'radius'] },
+  { id: 'header', label: 'Header', properties: ['background', 'textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius'] },
   { id: 'card', label: 'Card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
-  { id: 'label', label: 'Labels', properties: ['textColor', 'fontSize', 'fontWeight'] },
-  { id: 'value', label: 'Values', properties: ['textColor', 'fontSize', 'fontWeight'] },
+  { id: 'label', label: 'Labels', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+  { id: 'value', label: 'Values', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
 ];
 
 const WIDGET_SUB_ELEMENT_DEFINITIONS = {
@@ -742,6 +780,11 @@ const SUB_ELEMENT_DEFAULT_PATHS = {
   fontFamily: 'typography.bodyFont',
   fontSize: 'typography.baseSize',
   fontWeight: 'typography.bodyWeight',
+  fontStyle: 'typography.fontStyle',
+  lineHeight: 'typography.lineHeight',
+  letterSpacing: 'typography.letterSpacing',
+  textTransform: 'typography.textTransform',
+  textAlign: 'typography.textAlign',
   padding: 'surfaces.padding',
   gap: 'surfaces.gap',
   opacity: 'surfaces.opacity',
@@ -1672,6 +1715,7 @@ function cssSafeName(value) {
 
 function toCssValue(property, value) {
   if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number' && /letterSpacing/i.test(property)) return `${value}em`;
   if (typeof value === 'number' && !/opacity|fontWeight|lineHeight|brightness|contrast|saturation|scale/i.test(property)) return `${value}px`;
   return value;
 }

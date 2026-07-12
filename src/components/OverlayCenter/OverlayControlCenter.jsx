@@ -38,6 +38,7 @@ import usePresets from '../../hooks/usePresets';
 import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
 import AppearanceCenter from './appearance/AppearanceCenter';
+import ConnectServicesStep from './setup/ConnectServicesStep';
 import { buildSyncedConfig } from './WidgetManager';
 import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
@@ -54,6 +55,13 @@ import {
 } from './toolStatusResolver';
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
+import {
+  currencySymbolForCode,
+  normalizeCommandName,
+  normalizeCommandPrefix,
+  normalizeCurrencyCode,
+  normalizeSetupDetails,
+} from '../../../shared/serviceSetupModel';
 
 import './widgets/builtinWidgets';
 
@@ -211,19 +219,40 @@ function defaultSetupState(widgets = [], theme = null, instance = null) {
       accentColor: theme?.accent_color || '#f59e0b',
       twitchChannel: chatConfig.twitchChannel || slotRequestsConfig.twitchChannel || betsConfig.twitchChannel || '',
       commandPrefix: '!',
-      slotRequestCommand: slotRequestsConfig.commandTrigger || '!sr',
-      betCommand: betsConfig.chatCommand || '!bet',
-      giveawayKeyword: configFor('giveaway').keyword || '!join',
-      currency: bonusHuntConfig.currency || currentSlotConfig.currency || navbarConfig.balanceCurrency || '€',
+      slotRequestCommand: normalizeCommandName(slotRequestsConfig.commandTrigger, 'sr'),
+      betCommand: normalizeCommandName(betsConfig.chatCommand, 'bet'),
+      giveawayKeyword: normalizeCommandName(configFor('giveaway').keyword, 'join'),
+      currencyCode: normalizeCurrencyCode(bonusHuntConfig.currencyCode || currentSlotConfig.currencyCode || navbarConfig.currencyCode || bonusHuntConfig.currency || currentSlotConfig.currency || navbarConfig.balanceCurrency || 'EUR'),
+      currency: normalizeCurrencyCode(bonusHuntConfig.currencyCode || currentSlotConfig.currencyCode || navbarConfig.currencyCode || bonusHuntConfig.currency || currentSlotConfig.currency || navbarConfig.balanceCurrency || 'EUR'),
+      pointSource: slotRequestsConfig.srSeEnabled || betsConfig.betSeEnabled ? 'streamelements' : 'internal',
       requestsUsePoints: Boolean(slotRequestsConfig.srSeEnabled),
       requestCost: slotRequestsConfig.srSeCost || 100,
+      giveawayEntryCost: configFor('giveaway').entryCost || 0,
       betsUsePoints: betsConfig.betSeEnabled !== false,
       betMinAmount: betsConfig.betMinAmount || 1,
-      betMaxAmount: betsConfig.betMaxAmount || 0,
+      betMaxAmount: betsConfig.betMaxAmount || 10000,
+      defaultBetAmount: betsConfig.defaultBetAmount || '',
+      pointBalanceBehavior: slotRequestsConfig.pointBalanceBehavior || 'charge_immediately',
+      insufficientPointsBehavior: slotRequestsConfig.insufficientPointsBehavior || 'reject',
+      refundBehavior: slotRequestsConfig.refundBehavior || 'refund_on_cancel_or_reject',
+      musicMode: navbarConfig.musicSource === 'spotify' ? 'spotify' : navbarConfig.musicSource === 'disabled' ? 'disabled' : 'manual',
       spotifyMode: navbarConfig.musicSource === 'spotify' ? 'spotify' : 'manual',
       manualArtist: navbarConfig.manualArtist || configFor('spotify_now_playing').manualArtist || '',
       manualTrack: navbarConfig.manualTrack || configFor('spotify_now_playing').manualTrack || '',
+      manualAlbum: navbarConfig.manualAlbum || configFor('spotify_now_playing').manualAlbum || '',
+      manualCoverUrl: navbarConfig.manualCoverUrl || configFor('spotify_now_playing').manualAlbumArt || '',
+      manualMusicLink: navbarConfig.manualMusicLink || '',
+      musicFallbackMessage: navbarConfig.musicFallbackMessage || 'No track playing',
+      hideMusicWhenEmpty: navbarConfig.hideMusicWhenEmpty !== false,
+      slotSource: currentSlotConfig.slotSource || 'streamers_center',
+      manualSlotFallback: currentSlotConfig.manualSlotFallback !== false,
       slotProviderHint: currentSlotConfig.provider || '',
+      sampleSlotName: currentSlotConfig.sampleSlotName || 'Gates of Olympus',
+      unknownSlotImage: currentSlotConfig.unknownSlotImage || '',
+      defaultRtpHandling: currentSlotConfig.defaultRtpHandling || 'show_unknown',
+      defaultVolatilityHandling: currentSlotConfig.defaultVolatilityHandling || 'show_unknown',
+      defaultProviderLabel: currentSlotConfig.defaultProviderLabel || 'Unknown provider',
+      missingSlotImageBehavior: currentSlotConfig.missingSlotImageBehavior || 'use_default_image',
     },
     validationErrors: [],
   };
@@ -250,11 +279,7 @@ function normalizeTwitchChannel(value) {
 }
 
 function normalizeCommand(value, fallback, prefix = '!') {
-  const safePrefix = String(prefix || '!').trim() || '!';
-  const command = String(value || fallback || '').trim();
-  if (!command) return `${safePrefix}${fallback || ''}`;
-  if (command.startsWith('!') || command.startsWith('/')) return command;
-  return `${safePrefix}${command.replace(/^!+/, '')}`;
+  return normalizeCommandName(value, fallback || '');
 }
 
 function toPositiveNumber(value, fallback = 0) {
@@ -264,51 +289,81 @@ function toPositiveNumber(value, fallback = 0) {
 }
 
 function serviceSetupPatch(type, details = {}, integrations = {}) {
-  const twitchChannel = normalizeTwitchChannel(details.twitchChannel || integrations.twitchChannel);
-  const commandPrefix = details.commandPrefix || '!';
-  const currency = details.currency || '€';
-  const manualArtist = String(details.manualArtist || '').trim();
-  const manualTrack = String(details.manualTrack || '').trim();
+  const normalized = normalizeSetupDetails(details, integrations);
+  const twitchChannel = normalizeTwitchChannel(normalized.twitchChannel || integrations.twitchChannel);
+  const commandPrefix = normalizeCommandPrefix(normalized.commandPrefix || '!');
+  const currencyCode = normalizeCurrencyCode(normalized.currencyCode || normalized.currency);
+  const currencySymbol = currencySymbolForCode(currencyCode);
+  const manualArtist = String(normalized.manualArtist || '').trim();
+  const manualTrack = String(normalized.manualTrack || '').trim();
+  const musicSource = normalized.musicMode === 'spotify' ? 'spotify' : normalized.musicMode === 'disabled' ? 'disabled' : 'manual';
+  const usesStreamElementsPoints = normalized.pointSource === 'streamelements';
 
   switch (type) {
     case 'chat':
       return { twitchEnabled: Boolean(twitchChannel), twitchChannel };
     case 'giveaway':
-      return { twitchEnabled: Boolean(twitchChannel), twitchChannel, keyword: normalizeCommand(details.giveawayKeyword, 'join', commandPrefix) };
+      return { twitchEnabled: Boolean(twitchChannel), twitchChannel, commandPrefix, keyword: normalizeCommand(normalized.giveawayKeyword, 'join', commandPrefix), entryCost: normalized.giveawayEntryCost };
     case 'slot_requests':
       return {
         twitchChannel,
-        commandTrigger: normalizeCommand(details.slotRequestCommand, 'sr', commandPrefix),
-        srSeEnabled: Boolean(details.requestsUsePoints),
-        srSeCost: toPositiveNumber(details.requestCost, 100),
+        commandPrefix,
+        commandTrigger: normalizeCommand(normalized.slotRequestCommand, 'sr', commandPrefix),
+        srSeEnabled: usesStreamElementsPoints,
+        srSeCost: toPositiveNumber(normalized.requestCost, 100),
+        pointBalanceBehavior: normalized.pointBalanceBehavior,
+        insufficientPointsBehavior: normalized.insufficientPointsBehavior,
+        refundBehavior: normalized.refundBehavior,
+        pointCurrencyName: normalized.pointCurrencyName,
       };
     case 'bets':
       return {
         twitchChannel,
-        chatCommand: normalizeCommand(details.betCommand, 'bet', commandPrefix),
-        betSeEnabled: Boolean(details.betsUsePoints),
-        betMinAmount: Math.max(1, toPositiveNumber(details.betMinAmount, 1)),
-        betMaxAmount: toPositiveNumber(details.betMaxAmount, 0),
+        commandPrefix,
+        chatCommand: normalizeCommand(normalized.betCommand, 'bet', commandPrefix),
+        betSeEnabled: usesStreamElementsPoints,
+        betMinAmount: Math.max(1, toPositiveNumber(normalized.betMinAmount, 1)),
+        betMaxAmount: toPositiveNumber(normalized.betMaxAmount, 10000),
+        defaultBetAmount: normalized.defaultBetAmount,
+        pointCurrencyName: normalized.pointCurrencyName,
       };
     case 'navbar':
       return {
-        streamerName: details.displayName || details.overlayName || '',
-        balanceCurrency: currency,
-        musicSource: details.spotifyMode === 'spotify' ? 'spotify' : 'manual',
+        streamerName: normalized.displayName || normalized.overlayName || '',
+        currencyCode,
+        balanceCurrency: currencySymbol,
+        musicSource,
         manualArtist,
         manualTrack,
-        showNowPlaying: details.spotifyMode === 'spotify' || Boolean(manualArtist || manualTrack),
+        manualAlbum: normalized.manualAlbum,
+        manualCoverUrl: normalized.manualCoverUrl,
+        manualMusicLink: normalized.manualMusicLink,
+        musicFallbackMessage: normalized.musicFallbackMessage,
+        hideMusicWhenEmpty: normalized.hideMusicWhenEmpty,
+        showNowPlaying: musicSource === 'spotify' || (musicSource === 'manual' && Boolean(manualArtist || manualTrack || normalized.musicFallbackMessage)),
       };
     case 'spotify_now_playing':
-      return { manualArtist, manualTrack };
+      return { musicSource, manualArtist, manualTrack, manualAlbum: normalized.manualAlbum, manualAlbumArt: normalized.manualCoverUrl, musicFallbackMessage: normalized.musicFallbackMessage, hideMusicWhenEmpty: normalized.hideMusicWhenEmpty };
     case 'bonus_hunt':
     case 'rtp_stats':
-      return { currency };
+      return { currencyCode, currency: currencySymbol };
     case 'current_slot':
     case 'bonus_buys':
-      return { currency, provider: details.slotProviderHint || '' };
+      return {
+        currencyCode,
+        currency: currencySymbol,
+        provider: normalized.slotProviderHint || '',
+        slotSource: normalized.slotSource,
+        manualSlotFallback: normalized.manualSlotFallback,
+        sampleSlotName: normalized.sampleSlotName,
+        unknownSlotImage: normalized.unknownSlotImage,
+        defaultRtpHandling: normalized.defaultRtpHandling,
+        defaultVolatilityHandling: normalized.defaultVolatilityHandling,
+        defaultProviderLabel: normalized.defaultProviderLabel,
+        missingSlotImageBehavior: normalized.missingSlotImageBehavior,
+      };
     case 'tournament':
-      return { currency, arenaCurrency: currency };
+      return { currencyCode, currency: currencySymbol, arenaCurrency: currencySymbol };
     default:
       return null;
   }
@@ -901,54 +956,33 @@ function SetupWizard({ setup, widgets, theme, instance, integrations = {}, saveS
   const [draft, setDraft] = useState(setup);
   const [actionError, setActionError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [serviceReadiness, setServiceReadiness] = useState({ canContinue: false, requiredTotal: 0, requiredCompleted: 0, blockingChecks: [] });
+  const serviceAutosaveRef = useRef(null);
+  const lastServiceAutosaveSignatureRef = useRef('');
   const step = Math.min(draft.currentStep || 0, SETUP_STEPS.length - 1);
   const selectedTools = draft.selectedTools || [];
   const details = draft.details || {};
-  const chatToolTypes = selectedTools.filter(type => ['chat', 'giveaway', 'slot_requests', 'bets'].includes(type));
-  const slotToolTypes = selectedTools.filter(type => ['bonus_hunt', 'current_slot', 'rtp_stats', 'slot_requests', 'bonus_buys', 'tournament'].includes(type));
-  const musicToolTypes = selectedTools.filter(type => ['navbar', 'spotify_now_playing'].includes(type));
-  const twitchChannel = normalizeTwitchChannel(details.twitchChannel || integrations.twitchChannel);
-  const requestsUsePoints = Boolean(details.requestsUsePoints);
-  const betsUsePoints = details.betsUsePoints !== false;
-  const needsStreamElements = (selectedTools.includes('slot_requests') && requestsUsePoints) || (selectedTools.includes('bets') && betsUsePoints);
-  const needsSpotify = selectedTools.includes('spotify_now_playing') || (selectedTools.includes('navbar') && details.spotifyMode === 'spotify');
-  const serviceChecks = [
-    {
-      id: 'chat',
-      title: 'Chat channel',
-      ready: !chatToolTypes.length || Boolean(twitchChannel),
-      status: chatToolTypes.length ? (twitchChannel ? 'Ready' : 'Needs channel') : 'Optional',
-      detail: chatToolTypes.length
-        ? `Used by ${chatToolTypes.map(type => FEATURE_COPY[type]?.title || type).join(', ')}.`
-        : 'Needed only when chat-driven tools are selected.',
-    },
-    {
-      id: 'streamelements',
-      title: 'StreamElements points',
-      ready: !needsStreamElements || integrations.streamelementsConnected,
-      status: needsStreamElements ? (integrations.streamelementsConnected ? 'Connected' : 'Needs credentials') : 'Not required',
-      detail: 'Used when slot requests or bets charge loyalty points.',
-    },
-    {
-      id: 'spotify',
-      title: 'Music data',
-      ready: !needsSpotify || integrations.spotifyConnected || Boolean(details.manualArtist && details.manualTrack),
-      status: needsSpotify ? (integrations.spotifyConnected ? 'Spotify connected' : 'Manual fallback') : 'Optional',
-      detail: musicToolTypes.length ? `Used by ${musicToolTypes.map(type => FEATURE_COPY[type]?.title || type).join(', ')}.` : 'Used by Navbar and Spotify widgets.',
-    },
-    {
-      id: 'slots',
-      title: 'Slot data and currency',
-      ready: !slotToolTypes.length || Boolean(details.currency),
-      status: slotToolTypes.length ? (details.currency ? 'Ready' : 'Needs currency') : 'Optional',
-      detail: slotToolTypes.length ? `Used by ${slotToolTypes.map(type => FEATURE_COPY[type]?.title || type).join(', ')}.` : 'Used by casino and slot metadata widgets.',
-    },
-  ];
 
   useEffect(() => setDraft(setup), [setup]);
 
+  useEffect(() => () => clearTimeout(serviceAutosaveRef.current), []);
+
+  useEffect(() => {
+    if (step !== 5) return undefined;
+    const signature = JSON.stringify({ details: draft.details || {}, selectedTools: draft.selectedTools || [], currentStep: draft.currentStep });
+    if (signature === lastServiceAutosaveSignatureRef.current) return undefined;
+    clearTimeout(serviceAutosaveRef.current);
+    serviceAutosaveRef.current = setTimeout(() => {
+      lastServiceAutosaveSignatureRef.current = signature;
+      saveSetup({ ...draft, status: 'in_progress', updatedAt: new Date().toISOString(), version: SETUP_VERSION }).catch(error => {
+        console.error('[OverlaySetup] service autosave failed', error);
+      });
+    }, 900);
+    return () => clearTimeout(serviceAutosaveRef.current);
+  }, [draft, saveSetup, step]);
+
   const patchDetails = (patch) => {
-    setDraft(prev => ({ ...prev, details: { ...(prev.details || {}), ...patch } }));
+    setDraft(prev => ({ ...prev, details: normalizeSetupDetails({ ...(prev.details || {}), ...patch }, integrations) }));
   };
 
   const persist = async (next, stepToComplete = step) => {
@@ -997,6 +1031,10 @@ function SetupWizard({ setup, widgets, theme, instance, integrations = {}, saveS
         }
       }
       if (step === 5) {
+        if (!serviceReadiness.canContinue) {
+          setActionError('Finish the required service checks before continuing. Optional integrations and selected fallbacks will not block setup.');
+          return;
+        }
         await applyServiceSetupToWidgets(next.details || {});
       }
       next = { ...next, currentStep: Math.min(step + 1, SETUP_STEPS.length - 1) };
@@ -1008,6 +1046,12 @@ function SetupWizard({ setup, widgets, theme, instance, integrations = {}, saveS
       setSaving(false);
     }
   };
+
+  const saveServiceProgress = useCallback(async () => {
+    clearTimeout(serviceAutosaveRef.current);
+    lastServiceAutosaveSignatureRef.current = JSON.stringify({ details: draft.details || {}, selectedTools: draft.selectedTools || [], currentStep: draft.currentStep });
+    await saveSetup({ ...draft, status: 'in_progress', updatedAt: new Date().toISOString(), version: SETUP_VERSION });
+  }, [draft, saveSetup]);
 
   const finish = async () => {
     if (saving) return;
@@ -1161,168 +1205,17 @@ function SetupWizard({ setup, widgets, theme, instance, integrations = {}, saveS
       )}
 
       {step === 5 && (
-        <div className="oc2-service-guide" data-tour="setup-services">
-          <div className="oc2-service-column">
-            <div className="oc2-service-intro">
-              <h2>Make the overlay operational</h2>
-              <p>Fill the fields that match your selected tools. When you continue, these settings sync into the widgets that need them.</p>
-            </div>
-            <div className="oc2-service-checklist" aria-label="Service readiness checklist">
-              {serviceChecks.map(check => (
-                <div key={check.id} className={`oc2-service-check${check.ready ? ' oc2-service-check--ready' : ' oc2-service-check--needed'}`}>
-                  <span className={`oc2-status-dot ${check.ready ? 'oc2-status-dot--connected' : 'oc2-status-dot--blocked'}`} />
-                  <span>
-                    <strong>{check.title}</strong>
-                    <small>{check.detail}</small>
-                  </span>
-                  <em>{check.status}</em>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="oc2-service-steps">
-            <section className="oc2-service-step">
-              <div className="oc2-service-step__header">
-                <span>1</span>
-                <div>
-                  <h2>Chat channel and commands</h2>
-                  <p>Set the stream channel and the commands viewers will type in chat.</p>
-                </div>
-              </div>
-              <div className="oc2-form-grid oc2-form-grid--compact">
-                <Field label="Twitch channel">
-                  <input value={details.twitchChannel || integrations.twitchChannel || ''} onChange={event => patchDetails({ twitchChannel: event.target.value })} placeholder="yourchannel" />
-                  <small>Used by chat, giveaways, slot requests and bets.</small>
-                </Field>
-                <Field label="Command prefix">
-                  <input value={details.commandPrefix || '!'} maxLength={3} onChange={event => patchDetails({ commandPrefix: event.target.value })} />
-                </Field>
-                {selectedTools.includes('slot_requests') && (
-                  <Field label="Slot request command">
-                    <input value={details.slotRequestCommand || '!sr'} onChange={event => patchDetails({ slotRequestCommand: event.target.value })} />
-                  </Field>
-                )}
-                {selectedTools.includes('bets') && (
-                  <Field label="Bet command">
-                    <input value={details.betCommand || '!bet'} onChange={event => patchDetails({ betCommand: event.target.value })} />
-                  </Field>
-                )}
-                {selectedTools.includes('giveaway') && (
-                  <Field label="Giveaway keyword">
-                    <input value={details.giveawayKeyword || '!join'} onChange={event => patchDetails({ giveawayKeyword: event.target.value })} />
-                  </Field>
-                )}
-              </div>
-            </section>
-
-            {(selectedTools.includes('slot_requests') || selectedTools.includes('bets')) && (
-              <section className="oc2-service-step">
-                <div className="oc2-service-step__header">
-                  <span>2</span>
-                  <div>
-                    <h2>Points and StreamElements</h2>
-                    <p>Choose whether requests and bets spend StreamElements points.</p>
-                  </div>
-                </div>
-                <div className="oc2-form-grid oc2-form-grid--compact">
-                  {selectedTools.includes('slot_requests') && (
-                    <label className="oc2-field oc2-field--toggle">
-                      <span>
-                        <strong>Charge points for slot requests</strong>
-                        <small>Turn off for a free request queue.</small>
-                      </span>
-                      <input type="checkbox" checked={requestsUsePoints} onChange={event => patchDetails({ requestsUsePoints: event.target.checked })} />
-                    </label>
-                  )}
-                  {selectedTools.includes('slot_requests') && requestsUsePoints && (
-                    <Field label="Request cost">
-                      <input type="number" min="0" value={details.requestCost || 100} onChange={event => patchDetails({ requestCost: event.target.value })} />
-                    </Field>
-                  )}
-                  {selectedTools.includes('bets') && (
-                    <label className="oc2-field oc2-field--toggle">
-                      <span>
-                        <strong>Use points for bets</strong>
-                        <small>Requires StreamElements credentials.</small>
-                      </span>
-                      <input type="checkbox" checked={betsUsePoints} onChange={event => patchDetails({ betsUsePoints: event.target.checked })} />
-                    </label>
-                  )}
-                  {selectedTools.includes('bets') && betsUsePoints && (
-                    <>
-                      <Field label="Minimum bet">
-                        <input type="number" min="1" value={details.betMinAmount || 1} onChange={event => patchDetails({ betMinAmount: event.target.value })} />
-                      </Field>
-                      <Field label="Maximum bet">
-                        <input type="number" min="0" value={details.betMaxAmount || 0} onChange={event => patchDetails({ betMaxAmount: event.target.value })} />
-                        <small>Use 0 for no maximum.</small>
-                      </Field>
-                    </>
-                  )}
-                </div>
-                <div className="oc2-service-action-row">
-                  <span className={`oc2-pill ${integrations.streamelementsConnected ? '' : 'oc2-pill--gold'}`}>
-                    {integrations.streamelementsConnected ? 'StreamElements connected' : 'Credentials managed in Integrations'}
-                  </span>
-                  <Link className="oc2-btn" to="/overlay-center/integrations"><ExternalLink size={15} /> Open Integrations</Link>
-                </div>
-              </section>
-            )}
-
-            {musicToolTypes.length > 0 && (
-              <section className="oc2-service-step">
-                <div className="oc2-service-step__header">
-                  <span>3</span>
-                  <div>
-                    <h2>Music source</h2>
-                    <p>Use Spotify when connected, or keep a manual fallback so the overlay still has display text.</p>
-                  </div>
-                </div>
-                <div className="oc2-form-grid oc2-form-grid--compact">
-                  <Field label="Music mode">
-                    <select value={details.spotifyMode || 'manual'} onChange={event => patchDetails({ spotifyMode: event.target.value })}>
-                      <option value="manual">Manual fallback</option>
-                      <option value="spotify">Spotify live data</option>
-                    </select>
-                  </Field>
-                  <Field label="Fallback artist">
-                    <input value={details.manualArtist || ''} onChange={event => patchDetails({ manualArtist: event.target.value })} placeholder="Artist name" />
-                  </Field>
-                  <Field label="Fallback track">
-                    <input value={details.manualTrack || ''} onChange={event => patchDetails({ manualTrack: event.target.value })} placeholder="Track title" />
-                  </Field>
-                </div>
-                <div className="oc2-service-action-row">
-                  <span className={`oc2-pill ${integrations.spotifyConnected ? '' : 'oc2-pill--gold'}`}>
-                    {integrations.spotifyConnected ? 'Spotify connected' : 'Connect Spotify in Integrations'}
-                  </span>
-                  <Link className="oc2-btn" to="/overlay-center/integrations"><ExternalLink size={15} /> Open Integrations</Link>
-                </div>
-              </section>
-            )}
-
-            {slotToolTypes.length > 0 && (
-              <section className="oc2-service-step">
-                <div className="oc2-service-step__header">
-                  <span>{musicToolTypes.length > 0 ? 4 : 3}</span>
-                  <div>
-                    <h2>Slot data and money display</h2>
-                    <p>The slot database is built in. Set the currency and optional provider fallback used by slot widgets.</p>
-                  </div>
-                </div>
-                <div className="oc2-form-grid oc2-form-grid--compact">
-                  <Field label="Currency symbol">
-                    <input value={details.currency || '€'} onChange={event => patchDetails({ currency: event.target.value })} />
-                  </Field>
-                  <Field label="Default provider fallback">
-                    <input value={details.slotProviderHint || ''} onChange={event => patchDetails({ slotProviderHint: event.target.value })} placeholder="Pragmatic Play, Hacksaw, Nolimit..." />
-                  </Field>
-                </div>
-              </section>
-            )}
-          </div>
-        </div>
+        <ConnectServicesStep
+          details={details}
+          selectedTools={selectedTools}
+          widgets={widgets}
+          integrations={integrations}
+          saving={saving}
+          onDetailsChange={(nextDetails) => setDraft(prev => ({ ...prev, details: nextDetails }))}
+          onReadinessChange={setServiceReadiness}
+          onSaveProgress={saveServiceProgress}
+          onContinue={nextStep}
+        />
       )}
 
       {step === 6 && (
@@ -1341,7 +1234,7 @@ function SetupWizard({ setup, widgets, theme, instance, integrations = {}, saveS
         {actionError && <div className="oc2-error-list"><p>{actionError}</p></div>}
         <button type="button" className="oc2-btn" disabled={saving || step === 0} onClick={() => setDraft(prev => ({ ...prev, currentStep: Math.max(0, step - 1) }))}>Back</button>
         <button type="button" className="oc2-btn" disabled={saving} onClick={() => saveSetup({ ...draft, status: 'in_progress', updatedAt: new Date().toISOString() })}>Save and exit</button>
-        {step < SETUP_STEPS.length - 1 ? (
+        {step === 5 ? null : step < SETUP_STEPS.length - 1 ? (
           <button type="button" className="oc2-btn oc2-btn--primary" disabled={saving} onClick={nextStep}>{saving ? 'Saving...' : 'Save and continue'}</button>
         ) : (
           <button type="button" className="oc2-btn oc2-btn--primary" disabled={saving} onClick={finish}>{saving ? 'Saving...' : 'Finish setup'}</button>
