@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BarChart3,
   CalendarDays,
-  ChevronsRight,
   CircleDollarSign,
   Clapperboard,
   Database,
@@ -237,7 +236,6 @@ function StreamerPreview({ expanded = false }) {
 
 function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPreview, onClearPreview, onSelect }) {
   const isPlayer = audience === 'player';
-  const label = isPlayer ? 'PLAYER' : 'STREAMER';
   const title = isPlayer
     ? 'Track your Wins'
     : 'Become a Streamer';
@@ -270,15 +268,11 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
       </span>
       <span className="lp-audience-panel__shade" />
       <span className="lp-audience-panel__content">
-        <span className="lp-eyebrow">{label}</span>
         <span className="lp-audience-panel__title">{title}</span>
         <span className="lp-audience-panel__desc">{description}</span>
         <span className="lp-panel-cta">
           {cta}
           <ArrowRight size={18} />
-        </span>
-        <span className="lp-panel-explore">
-          Explore <ChevronsRight size={16} />
         </span>
       </span>
       <span className="lp-audience-panel__preview">

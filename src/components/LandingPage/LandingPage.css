@@ -350,7 +350,7 @@
   flex-direction: column;
   align-items: flex-start;
   max-width: 650px;
-  margin-top: clamp(52px, 10vh, 92px);
+  margin-top: clamp(38px, 8vh, 72px);
   z-index: 3;
   transform: translate3d(0, 0, 0);
   transition: transform 480ms var(--lp-ease);
@@ -458,6 +458,10 @@
 
 .lp-audience-panel--player .lp-audience-panel__preview {
   transform: perspective(1200px) rotateY(5deg) rotateX(2deg);
+}
+
+.lp-audience-panel--streamer .lp-audience-panel__preview {
+  width: clamp(340px, 46%, 480px);
 }
 
 .lp-audience-panel.is-previewed .lp-audience-panel__preview,
@@ -658,11 +662,29 @@
 }
 
 .lp-gateway .lp-streamer-preview__stage {
-  min-height: 282px;
+  min-height: 330px;
 }
 
 .lp-gateway .lp-overlay-card {
   padding: 10px;
+}
+
+.lp-gateway .lp-overlay-card--hunt {
+  top: 72px;
+  gap: 5px;
+  padding-block: 9px;
+}
+
+.lp-gateway .lp-overlay-card--hunt .lp-preview-progress {
+  height: 6px;
+}
+
+.lp-gateway .lp-overlay-card--request {
+  bottom: 16px;
+}
+
+.lp-gateway .lp-overlay-card--tournament {
+  bottom: 32px;
 }
 
 .lp-streamer-preview__live {
@@ -713,13 +735,13 @@
 .lp-overlay-card--request {
   left: 7%;
   bottom: 32px;
-  width: min(250px, 44%);
+  width: min(250px, 40%);
 }
 
 .lp-overlay-card--tournament {
   right: 7%;
   bottom: 52px;
-  width: min(250px, 44%);
+  width: min(250px, 40%);
 }
 
 .lp-bracket-lines {
