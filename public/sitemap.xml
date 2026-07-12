@@ -1,37 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://streamerscenter.com/</loc>
+    <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://streamerscenter.com/Hero.png</image:loc>
+      <image:title>Streamers Center bonus hunt tracker and streamer tools</image:title>
+      <image:caption>Bonus hunt tracker, iGaming streamer tools and casino profit/loss tracking dashboard.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://streamerscenter.com/player</loc>
+    <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://streamerscenter.com/player.png</image:loc>
+      <image:title>Bonus hunt tracker and casino financial tracking</image:title>
+      <image:caption>Track deposits, wins, losses, profit/loss, casino brands and slot providers from a player dashboard.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://streamerscenter.com/streamer</loc>
+    <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://streamerscenter.com/streamer.png</image:loc>
+      <image:title>Streamer tools for iGaming creators</image:title>
+      <image:caption>Streamer overlays, bonus hunt trackers, slot requests, tournaments, giveaways, chat tools and iGaming deal discovery.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://streamerscenter.com/offers</loc>
+    <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://streamerscenter.com/premium</loc>
+    <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://streamerscenter.com/privacy</loc>
+    <lastmod>2026-07-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
     <loc>https://streamerscenter.com/terms</loc>
+    <lastmod>2026-07-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>

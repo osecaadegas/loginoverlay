@@ -127,9 +127,10 @@ export default function OffersPage() {
             borderRadius: 16, padding: '48px 40px', maxWidth: 420,
           }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-            <h2 style={{ color: '#e2e8f0', fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px' }}>Login Required</h2>
+            <h1 style={{ color: '#e2e8f0', fontSize: '1.65rem', fontWeight: 800, margin: '0 0 10px' }}>iGaming deals and casino offers for streamers</h1>
             <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.5, margin: '0 0 24px' }}>
-              You need to log in with Twitch to view our exclusive casino offers and bonuses.
+              Compare streamer-friendly casino offers, partner details, deposit methods, providers,
+              withdrawal notes and bonus information. Log in with Twitch to view current deal links and private offer details.
             </p>
             <button
               onClick={() => signInWithTwitch()}

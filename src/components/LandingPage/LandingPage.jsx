@@ -240,8 +240,17 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
     ? 'Track your Wins'
     : 'Become a Streamer';
   const description = isPlayer
-    ? 'Manage bonus hunts, deposits, withdrawals, break-even targets, wins, multipliers and personal records from one simple dashboard.'
-    : 'Improve your stream numbers. Whether you are a new streamer or a small-time streamer, elevate your game with bonus hunt trackers, tournament brackets, bets, giveaways, chat tools and games for your chat. Everything you need to look like a pro in one place.';
+    ? (
+      <>
+        <span className="lp-audience-panel__lead">Track your <strong>Profits/Losses</strong></span>
+        Have your own <strong>Bonus hunt tracker</strong>, keep track of <strong>deposits</strong>, <strong>wins</strong>, <strong>loses</strong> by either <strong>casino brand</strong>, <strong>year</strong>, <strong>monthly</strong>, <strong>weekly</strong>, <strong>daily</strong> or <strong>provider</strong>. Financial power house tool at the tip of your fingers.
+      </>
+    )
+    : (
+      <>
+        Improve your <strong>stream numbers</strong>. Whether you are a <strong>new streamer</strong> or a <strong>small-time streamer</strong>, elevate your game with <strong>bonus hunt trackers</strong>, <strong>tournament brackets</strong>, <strong>bets</strong>, <strong>giveaways</strong>, <strong>chat tools</strong> and <strong>games for your chat</strong>. Everything you need to be an <strong>elite streamer</strong> in one place.
+      </>
+    );
   const cta = isPlayer ? 'Enter Player Center' : 'Enter Streamer Center';
   const Preview = isPlayer ? PlayerPreview : StreamerPreview;
 
@@ -269,12 +278,8 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
       <span className="lp-audience-panel__shade" />
       <span className="lp-audience-panel__content">
         <span className="lp-audience-panel__title">{title}</span>
-        <span className="lp-audience-panel__desc">{description}</span>
-        <span className="lp-panel-cta">
-          {cta}
-          <ArrowRight size={18} />
-        </span>
       </span>
+      <span className="lp-audience-panel__desc">{description}</span>
       <span className="lp-audience-panel__preview">
         <Preview expanded={selecting} />
       </span>
@@ -294,7 +299,7 @@ function AudienceGateway({ previewAudience, selectingAudience, onPreview, onClea
       aria-labelledby="audience-selector-heading"
     >
       <h1 id="audience-selector-heading" className="lp-sr-only">
-        Choose Streamers Center for players or streamers
+        Bonus hunt tracker, streamer tools and casino financial tracking
       </h1>
       <AudiencePanel
         audience="player"
@@ -357,7 +362,7 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
         <div className="lp-selected-hero__copy">
           <span className="lp-eyebrow">Player Center</span>
           <h1 ref={headingRef} tabIndex="-1">
-            Personal bonus hunts without the streamer setup.
+            Bonus hunt tracking and casino profit/loss tools for players.
           </h1>
           <p>
             Track deposits, withdrawals, bonus costs, payouts, multipliers, break-even targets,
@@ -493,7 +498,7 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
         <div className="lp-selected-hero__copy">
           <span className="lp-eyebrow">Streamer Center</span>
           <h1 ref={headingRef} tabIndex="-1">
-            Build a stream your audience remembers.
+            Streamer tools for iGaming creators.
           </h1>
           <p>
             Professional browser-source overlays, bonus hunt trackers, slot requests, tournaments,
@@ -660,12 +665,6 @@ export default function LandingPage({ mode = 'selector' }) {
     };
   }, [location.pathname]);
 
-  useEffect(() => {
-    if (mode !== 'streamer') return;
-    rememberAudience(user, 'streamer');
-    navigate('/overlay-center', { replace: true, state: { fromAudienceSelector: true } });
-  }, [mode, navigate, user]);
-
   const partners = useMemo(() => {
     if (casinoOffers.length) {
       return casinoOffers.slice(0, 5).map((offer, index) => ({
@@ -784,11 +783,19 @@ export default function LandingPage({ mode = 'selector' }) {
           />
         ) : mode === 'player' ? (
           <PlayerLanding headingRef={headingRef} onPrimaryCta={startPlayerTrial} user={user} />
+        ) : mode === 'streamer' ? (
+          <StreamerLanding
+            headingRef={headingRef}
+            pricingPlans={pricingPlans}
+            partners={partners}
+            onStreamerCta={startStreamer}
+            onOfferClick={handleOfferClick}
+          />
         ) : (
           null
         )}
 
-        {mode === 'player' && <Footer />}
+        {(mode === 'player' || mode === 'streamer') && <Footer />}
       </div>
 
     </>
