@@ -273,6 +273,14 @@ const VISUAL_CONFIG_KEYS = [
   'fontFamily',
   'fontSize',
   'fontWeight',
+  'headingFont',
+  'bodyFont',
+  'numberFont',
+  'headingScale',
+  'lineHeight',
+  'letterSpacing',
+  'textTransform',
+  'textAlign',
   'borderRadius',
   'cardRadius',
   'borderWidth',
@@ -375,6 +383,14 @@ const VISUAL_TO_APPEARANCE_PATH = {
   fontFamily: 'typography.bodyFont',
   fontSize: 'typography.baseSize',
   fontWeight: 'typography.bodyWeight',
+  headingFont: 'typography.headingFont',
+  bodyFont: 'typography.bodyFont',
+  numberFont: 'typography.numberFont',
+  headingScale: 'typography.headingScale',
+  lineHeight: 'typography.lineHeight',
+  letterSpacing: 'typography.letterSpacing',
+  textTransform: 'typography.textTransform',
+  textAlign: 'typography.textAlign',
   borderRadius: 'borders.radius',
   cardRadius: 'borders.radius',
   borderWidth: 'borders.width',
@@ -442,11 +458,16 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'highlight', label: 'Best-win highlight', properties: ['background', 'textColor', 'borderColor', 'accentColor', 'shadow'] },
   ],
   bets: [
-    ...COMMON_SUB_ELEMENT_DEFINITIONS,
-    { id: 'question', label: 'Question text', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'optionCard', label: 'Option cards', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
+    { id: 'container', label: 'Container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'title', label: 'Title', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius'] },
+    { id: 'status', label: 'Status badge', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius'] },
+    { id: 'statistics', label: 'Statistics strip', properties: ['background', 'textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'gap', 'borderColor', 'borderWidth'] },
+    { id: 'optionRow', label: 'Option row', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
+    { id: 'optionNumber', label: 'Option number', properties: ['background', 'textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES, 'radius', 'imageSize'] },
+    { id: 'optionLabel', label: 'Option label', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'percentage', label: 'Percentage', properties: ['textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'footer', label: 'Footer hint', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius', 'borderColor', 'borderWidth'] },
     { id: 'progressBar', label: 'Progress bars', properties: ['background', 'fillColor', 'radius', 'height'] },
-    { id: 'timer', label: 'Timer', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
   ],
   slot_requests: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
@@ -597,7 +618,11 @@ const WIDGET_STATE_DEFINITIONS = {
     container: COMMON_STATE_DEFINITIONS.container,
   },
   bets: {
-    optionCard: [{ id: 'default', label: 'Default' }, { id: 'selected', label: 'Selected' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }, { id: 'closed', label: 'Closed' }],
+    optionRow: [{ id: 'default', label: 'Default' }, { id: 'selected', label: 'Selected' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }, { id: 'closed', label: 'Closed' }, { id: 'leading', label: 'Leading' }],
+    optionNumber: [{ id: 'default', label: 'Default' }, { id: 'selected', label: 'Selected' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }],
+    optionLabel: [{ id: 'default', label: 'Default' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }],
+    percentage: [{ id: 'default', label: 'Default' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }, { id: 'leading', label: 'Leading' }],
+    status: [{ id: 'default', label: 'Default' }, { id: 'open', label: 'Open' }, { id: 'locked', label: 'Locked' }, { id: 'result', label: 'Result' }],
     progressBar: [{ id: 'default', label: 'Default' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }],
     container: COMMON_STATE_DEFINITIONS.container,
   },
@@ -1016,8 +1041,31 @@ export function getWidgetAppearanceDefinition(widgetType) {
   };
 }
 
-export function getSubElementPropertyDefault(property, appearance) {
+function getElementTypographyRole(elementId = '') {
+  const id = String(elementId || '').toLowerCase();
+  if (/title|heading|header|question|prize/.test(id)) return 'heading';
+  if (/number|percent|percentage|value|amount|total|stat|score|cost|payout|profit|loss|multi|rtp|timer|clock/.test(id)) return 'number';
+  return 'body';
+}
+
+export function getSubElementPropertyDefault(property, appearance, elementId = '') {
   const a = normalizeAppearance(appearance);
+  const id = String(elementId || '').toLowerCase();
+  const typographyRole = getElementTypographyRole(elementId);
+  if (property === 'background') {
+    if (/container|canvas|root/.test(id)) return a.surfaces.containerBg || a.colors.surface;
+    if (/title|heading|header|status/.test(id)) return a.surfaces.headerBg || a.surfaces.cardBg;
+    if (/progress|bar/.test(id)) return a.colors.divider;
+    return a.surfaces.cardBg;
+  }
+  if (property === 'fontFamily') {
+    if (typographyRole === 'heading') return a.typography.headingFont || a.typography.bodyFont;
+    if (typographyRole === 'number') return a.typography.numberFont || a.typography.bodyFont;
+    return a.typography.bodyFont;
+  }
+  if (property === 'fontSize' && typographyRole === 'heading') {
+    return Math.round((Number(a.typography.baseSize) || 14) * (Number(a.typography.headingScale) || 1.22));
+  }
   const path = SUB_ELEMENT_DEFAULT_PATHS[property];
   if (!path) return undefined;
   return getByPath(a, path);
@@ -1028,7 +1076,7 @@ export function buildSubElementDefaults(widgetType, appearance) {
   return getWidgetSubElementDefinitions(widgetType).reduce((acc, definition) => {
     const values = {};
     for (const property of definition.properties || []) {
-      const value = getSubElementPropertyDefault(property, a);
+      const value = getSubElementPropertyDefault(property, a, definition.id);
       if (value !== undefined) values[property] = value;
     }
     acc[definition.id] = values;
@@ -1285,6 +1333,14 @@ export function appearanceToWidgetConfigDefaults(appearance) {
     fontFamily: a.typography.bodyFont,
     fontSize: a.typography.baseSize,
     fontWeight: String(a.typography.bodyWeight),
+    headingFont: a.typography.headingFont,
+    bodyFont: a.typography.bodyFont,
+    numberFont: a.typography.numberFont,
+    headingScale: a.typography.headingScale,
+    lineHeight: a.typography.lineHeight,
+    letterSpacing: a.typography.letterSpacing,
+    textTransform: a.typography.textTransform,
+    textAlign: a.typography.textAlign,
     borderRadius: a.borders.radius,
     cardRadius: a.borders.radius,
     borderWidth: a.borders.enabled ? a.borders.width : 0,
@@ -1689,6 +1745,14 @@ export function buildWidgetAppearanceVars(config = {}) {
     '--widget-font-family': config.fontFamily || 'var(--overlay-font-body)',
     '--widget-font-size': `${Number(config.fontSize) || 14}px`,
     '--widget-font-weight': config.fontWeight || 'var(--oc-font-weight)',
+    '--widget-heading-font': config.headingFont || config.fontFamily || 'var(--overlay-font-heading)',
+    '--widget-body-font': config.bodyFont || config.fontFamily || 'var(--overlay-font-body)',
+    '--widget-number-font': config.numberFont || config.fontFamily || 'var(--overlay-font-number)',
+    '--widget-heading-scale': Number(config.headingScale) || 1.22,
+    '--widget-line-height': Number(config.lineHeight) || 1.45,
+    '--widget-letter-spacing': typeof config.letterSpacing === 'number' ? `${config.letterSpacing}em` : (config.letterSpacing || '0em'),
+    '--widget-text-transform': config.textTransform || 'none',
+    '--widget-text-align': config.textAlign || 'left',
     '--widget-padding': `${Number(config.containerPadding ?? config.padding ?? config.paddingX ?? 0) || 0}px`,
     '--widget-gap': `${Number(config.cardGap ?? config.gap ?? 0) || 0}px`,
     '--widget-progress': config.progressColor || 'var(--overlay-color-success)',

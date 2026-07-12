@@ -665,16 +665,28 @@ function SelectionSummary({ selectedTarget, selectedWidgetDef, selectedWidget, s
   );
 }
 
-function InspectorActions({ dirty, saving, onResetElement, onRevert, onApply }) {
+function InspectorActions({ dirty, saving, status, onResetElement, onRevert, onApply }) {
+  const failed = status === 'failed';
+  const saved = status === 'saved';
+  const heading = saving ? 'Applying draft changes'
+    : failed ? 'Draft save failed'
+      : dirty ? 'Unsaved draft changes'
+        : saved ? 'Draft saved'
+          : 'No pending inspector changes';
+  const description = saving ? 'Saving the current appearance draft and refreshing connected previews.'
+    : failed ? 'Apply Style will retry saving the current draft.'
+      : dirty ? 'Apply Style saves the current draft for the selected scope. Publish remains a page-level action.'
+        : 'Latest inspector changes are already saved. Publish when you want OBS to use the published version.';
+  const applyLabel = saving ? 'Applying...' : failed ? 'Retry Apply Style' : 'Apply Style';
   return (
     <div className="ac-inspector-actions" aria-label="Appearance editing actions">
       <div>
-        <strong>{dirty ? 'Unapplied draft changes' : 'No pending inspector changes'}</strong>
-        <span>Apply commits the current editing session to the draft. Save draft and Publish remain page-level actions.</span>
+        <strong>{heading}</strong>
+        <span>{description}</span>
       </div>
       <button type="button" onClick={onResetElement}>Reset current element</button>
       <button type="button" onClick={onRevert} disabled={!dirty || saving}>Revert unsaved changes</button>
-      <button type="button" className="ac-inspector-actions__primary" onClick={onApply} disabled={!dirty || saving}>{saving ? 'Applying...' : 'Apply changes'}</button>
+      <button type="button" className="ac-inspector-actions__primary" onClick={onApply} disabled={!dirty || saving}>{applyLabel}</button>
     </div>
   );
 }
@@ -1947,6 +1959,7 @@ export default function AppearanceCenter({
           <InspectorActions
             dirty={['dirty', 'previewing', 'failed'].includes(saveStatus)}
             saving={saveStatus === 'saving'}
+            status={saveStatus}
             onResetElement={resetCurrentElement}
             onRevert={revertUnsavedChanges}
             onApply={applyInspectorChanges}

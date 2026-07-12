@@ -159,6 +159,26 @@ assert.equal(typographyElementDefaults.label.letterSpacing, 0.04, 'element typog
 assert.equal(typographyElementDefaults.label.textTransform, 'uppercase', 'element typography defaults include text transform');
 assert.equal(typographyElementDefaults.label.textAlign, 'center', 'element typography defaults include text alignment');
 
+const betsTypographyDefaults = buildSubElementDefaults('bets', {
+  typography: {
+    headingFont: 'Heading Face',
+    bodyFont: 'Body Face',
+    numberFont: 'Number Face',
+    baseSize: 20,
+    headingScale: 1.5,
+    lineHeight: 1.8,
+    letterSpacing: 0.02,
+    textTransform: 'uppercase',
+  },
+});
+assert.equal(betsTypographyDefaults.title.fontFamily, 'Heading Face', 'bets title inherits heading font defaults');
+assert.equal(betsTypographyDefaults.title.fontSize, 30, 'bets title inherits heading scale defaults');
+assert.equal(betsTypographyDefaults.optionLabel.fontFamily, 'Body Face', 'bets option label inherits body font defaults');
+assert.equal(betsTypographyDefaults.percentage.fontFamily, 'Number Face', 'bets percentage inherits number font defaults');
+assert.equal(betsTypographyDefaults.statistics.fontFamily, 'Number Face', 'bets statistics inherit number font defaults');
+assert.equal(betsTypographyDefaults.optionLabel.lineHeight, 1.8, 'bets option label inherits shared line height defaults');
+assert.equal(betsTypographyDefaults.optionLabel.textTransform, 'uppercase', 'bets option label inherits shared text transform defaults');
+
 assert.equal(
   getScopedAppearancePath({ scope: 'widget_instance', widgetId: 'widget_a', widgetType: 'appearance_test_widget' }, 'borders.radius'),
   'widgets.widget_a.appearance.borders.radius',
@@ -357,6 +377,98 @@ const chatDefinition = getWidgetAppearanceDefinition('chat');
 const messageDefinition = chatDefinition.elements.find(element => element.id === 'message');
 assert.ok(messageDefinition.states.some(state => state.id === 'moderator'), 'chat message exposes moderator as a state');
 assert.ok(!chatDefinition.elements.some(element => element.id === 'moderatorMessage'), 'legacy moderator pseudo-element is hidden from the editor contract');
+
+const betsDefinition = getWidgetAppearanceDefinition('bets');
+for (const elementId of ['container', 'title', 'status', 'statistics', 'optionRow', 'optionNumber', 'optionLabel', 'percentage', 'footer', 'progressBar']) {
+  assert.ok(betsDefinition.elements.some(element => element.id === elementId), `bets exposes ${elementId} as an editable element`);
+}
+
+const betsWidget = {
+  id: 'bets_a',
+  widget_type: 'bets',
+  config: {
+    displayStyle: 'v1_list',
+    bgColor: 'rgba(10,14,20,0.94)',
+    textColor: '#d4dce8',
+    fontFamily: 'Legacy Sans',
+    fontSize: 14,
+  },
+};
+const betsAppearance = {
+  themeId: 'classic',
+  widgets: {
+    bets_a: {
+      styles: {
+        v1_list: {
+          subElements: {
+            title: { fontFamily: 'Bets Heading', fontSize: 31, textColor: '#112233' },
+            optionRow: { radius: 22, padding: 13, gap: 9 },
+            optionNumber: { background: '#445566', radius: 11 },
+            optionLabel: { fontSize: 19, lineHeight: 1.7, textTransform: 'uppercase' },
+            percentage: { fontFamily: 'Bets Number', fontSize: 23, textColor: '#778899' },
+            progressBar: { background: '#010203', fillColor: '#abcdef', height: 12, radius: 6 },
+          },
+        },
+      },
+    },
+  },
+};
+const betsConfig = resolveWidgetAppearanceConfig(betsWidget, betsAppearance);
+assert.equal(betsConfig.subElements.title.fontSize, 31, 'bets title style override reaches widget config');
+assert.equal(betsConfig.subElements.optionRow.radius, 22, 'bets option row radius override reaches widget config');
+assert.equal(betsConfig.subElements.optionNumber.background, '#445566', 'bets option number background override reaches widget config');
+assert.equal(betsConfig.subElements.optionLabel.textTransform, 'uppercase', 'bets option label typography override reaches widget config');
+assert.equal(betsConfig.subElements.percentage.fontFamily, 'Bets Number', 'bets percentage number font override reaches widget config');
+assert.equal(betsConfig.subElements.progressBar.fillColor, '#abcdef', 'bets progress fill override reaches widget config');
+
+const inheritingBetsWidget = {
+  id: 'bets_global',
+  widget_type: 'bets',
+  config: { displayStyle: 'v1_list' },
+};
+const globalBetsConfig = resolveWidgetAppearanceConfig(inheritingBetsWidget, {
+  themeId: 'classic',
+  typography: {
+    headingFont: 'Global Heading',
+    bodyFont: 'Global Body',
+    numberFont: 'Global Number',
+    baseSize: 18,
+    headingScale: 1.4,
+    lineHeight: 1.65,
+    letterSpacing: 0.04,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  surfaces: {
+    containerBg: '#010101',
+    cardBg: '#020202',
+    padding: 17,
+    gap: 12,
+  },
+  borders: {
+    color: '#030303',
+    radius: 21,
+    width: 3,
+  },
+});
+assert.equal(globalBetsConfig.headingFont, 'Global Heading', 'bets config receives global heading font');
+assert.equal(globalBetsConfig.numberFont, 'Global Number', 'bets config receives global number font');
+assert.equal(globalBetsConfig.lineHeight, 1.65, 'bets config receives global line height');
+assert.equal(globalBetsConfig.letterSpacing, 0.04, 'bets config receives global letter spacing');
+assert.equal(globalBetsConfig.bgColor, '#010101', 'bets config receives global container background');
+assert.equal(globalBetsConfig.subElements.container.background, '#010101', 'bets container element inherits global container background');
+assert.equal(globalBetsConfig.subElements.title.fontFamily, 'Global Heading', 'bets title element inherits global heading font');
+assert.equal(globalBetsConfig.subElements.title.fontSize, 25, 'bets title element inherits global heading scale');
+assert.equal(globalBetsConfig.subElements.percentage.fontFamily, 'Global Number', 'bets percentage element inherits global number font');
+assert.equal(globalBetsConfig.subElements.optionRow.radius, 21, 'bets option row inherits global radius');
+
+const globalBetsVars = buildWidgetAppearanceVars(globalBetsConfig);
+assert.equal(globalBetsVars['--widget-heading-font'], 'Global Heading', 'widget CSS vars expose heading font');
+assert.equal(globalBetsVars['--widget-number-font'], 'Global Number', 'widget CSS vars expose number font');
+assert.equal(globalBetsVars['--widget-line-height'], 1.65, 'widget CSS vars expose line height');
+assert.equal(globalBetsVars['--widget-letter-spacing'], '0.04em', 'widget CSS vars expose letter spacing');
+assert.equal(globalBetsVars['--widget-title-font-family'], 'Global Heading', 'widget CSS vars expose title sub-element font');
+assert.equal(globalBetsVars['--widget-option-row-radius'], '21px', 'widget CSS vars expose option row radius');
 
 assert.equal(
   subValue({ subElements: { bonusCard: { background: '#111111', states: { opened: { background: '#222222' } } } } }, 'openedState', 'background', '#000000'),
