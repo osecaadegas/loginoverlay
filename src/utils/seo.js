@@ -1,6 +1,6 @@
 const SITE_URL = 'https://streamerscenter.com';
-const DEFAULT_TITLE = 'Bonus Hunt Tracker & Streamer Tools | Streamers Center';
-const DEFAULT_DESCRIPTION = 'Streamers Center combines a bonus hunt tracker, casino profit/loss financial tracking, streamer overlays, chat tools, tournaments, giveaways and iGaming deal discovery.';
+const DEFAULT_TITLE = 'Bonus Hunt Tracker, Casino P/L & Streamer Overlays | Streamers Center';
+const DEFAULT_DESCRIPTION = 'Bonus hunt tracker, casino profit/loss dashboard and streamer overlay tools for iGaming creators. Track deposits, wins, losses, slot requests, tournaments and giveaways.';
 const DEFAULT_IMAGE = `${SITE_URL}/Hero.png`;
 
 const SEO_BY_PATH = {
@@ -91,13 +91,14 @@ function getStructuredData(pathname, route, canonical) {
       name: 'Streamers Center',
       url: `${SITE_URL}/`,
       logo: `${SITE_URL}/StreamerCenterLogo.png`,
+      image: `${SITE_URL}/favicon-512x512.png`,
     },
     {
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
       url: `${SITE_URL}/`,
       name: 'Streamers Center',
-      description: 'Bonus hunt tracker, streamer tools, iGaming deal discovery and casino profit/loss financial tracking for players and creators.',
+      description: 'Bonus hunt tracker, casino profit/loss dashboard, streamer overlays and iGaming creator tools for players and streamers.',
       inLanguage: 'en',
       publisher: { '@id': `${SITE_URL}/#organization` },
     },

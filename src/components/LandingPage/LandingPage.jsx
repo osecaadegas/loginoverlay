@@ -233,13 +233,13 @@ function StreamerPreview({ expanded = false }) {
 function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPreview, onClearPreview, onSelect }) {
   const isPlayer = audience === 'player';
   const title = isPlayer
-    ? 'Track your Wins'
-    : 'Become a Streamer';
+    ? 'Bonus Hunt Tracker'
+    : 'Streamer Overlay Tools';
   const description = isPlayer
     ? (
       <>
         <span className="lp-audience-panel__lead">Track your <strong>Profits/Losses</strong></span>
-        Have your own <strong>Bonus hunt tracker</strong>, keep track of <strong>deposits</strong>, <strong>wins</strong>, <strong>loses</strong> by either <strong>casino brand</strong>, <strong>year</strong>, <strong>monthly</strong>, <strong>weekly</strong>, <strong>daily</strong> or <strong>provider</strong>. Financial power house tool at the tip of your fingers.
+        Have your own <strong>Bonus hunt tracker</strong>, keep track of <strong>deposits</strong>, <strong>wins</strong>, <strong>losses</strong> by either <strong>casino brand</strong>, <strong>year</strong>, <strong>monthly</strong>, <strong>weekly</strong>, <strong>daily</strong> or <strong>provider</strong>. Financial power house tool at the tip of your fingers.
       </>
     )
     : (
