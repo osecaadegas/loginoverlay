@@ -1,7 +1,7 @@
 const SITE_URL = 'https://streamerscenter.com';
 const DEFAULT_TITLE = 'Bonus Hunt Tracker, Casino P/L & Streamer Overlays | Streamers Center';
 const DEFAULT_DESCRIPTION = 'Bonus hunt tracker, casino profit/loss dashboard and streamer overlay tools for iGaming creators. Track deposits, wins, losses, slot requests, tournaments and giveaways.';
-const DEFAULT_IMAGE = `${SITE_URL}/Hero.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/social-preview.png`;
 
 const SEO_BY_PATH = {
   '/': {
@@ -91,7 +91,7 @@ function getStructuredData(pathname, route, canonical) {
       name: 'Streamers Center',
       url: `${SITE_URL}/`,
       logo: `${SITE_URL}/StreamerCenterLogo.png`,
-      image: `${SITE_URL}/favicon-512x512.png`,
+      image: DEFAULT_IMAGE,
     },
     {
       '@type': 'WebSite',
@@ -198,6 +198,9 @@ export function applyRouteSeo(pathname) {
   upsertMeta('meta[property="og:description"]', { property: 'og:description', content: route.description });
   upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonical });
   upsertMeta('meta[property="og:image"]', { property: 'og:image', content: route.image || DEFAULT_IMAGE });
+  upsertMeta('meta[property="og:image:secure_url"]', { property: 'og:image:secure_url', content: route.image || DEFAULT_IMAGE });
+  upsertMeta('meta[property="og:image:width"]', { property: 'og:image:width', content: '1200' });
+  upsertMeta('meta[property="og:image:height"]', { property: 'og:image:height', content: '630' });
   upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt', content: `${route.title} preview` });
   upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
   upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: route.title });
