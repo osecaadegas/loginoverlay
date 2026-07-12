@@ -183,6 +183,13 @@ function getOverlayUrl(instance, { preview = false } = {}) {
 
 function defaultSetupState(widgets = [], theme = null, instance = null) {
   const completed = widgets.length > 0;
+  const configFor = (type) => widgets.find(widget => widget.widget_type === type)?.config || {};
+  const chatConfig = configFor('chat');
+  const slotRequestsConfig = configFor('slot_requests');
+  const betsConfig = configFor('bets');
+  const bonusHuntConfig = configFor('bonus_hunt');
+  const currentSlotConfig = configFor('current_slot');
+  const navbarConfig = configFor('navbar');
   return {
     status: completed ? 'completed' : 'not_started',
     currentStep: 0,
@@ -202,6 +209,21 @@ function defaultSetupState(widgets = [], theme = null, instance = null) {
       primaryColor: theme?.primary_color || '#14b8a6',
       secondaryColor: theme?.secondary_color || '#0f172a',
       accentColor: theme?.accent_color || '#f59e0b',
+      twitchChannel: chatConfig.twitchChannel || slotRequestsConfig.twitchChannel || betsConfig.twitchChannel || '',
+      commandPrefix: '!',
+      slotRequestCommand: slotRequestsConfig.commandTrigger || '!sr',
+      betCommand: betsConfig.chatCommand || '!bet',
+      giveawayKeyword: configFor('giveaway').keyword || '!join',
+      currency: bonusHuntConfig.currency || currentSlotConfig.currency || navbarConfig.balanceCurrency || '€',
+      requestsUsePoints: Boolean(slotRequestsConfig.srSeEnabled),
+      requestCost: slotRequestsConfig.srSeCost || 100,
+      betsUsePoints: betsConfig.betSeEnabled !== false,
+      betMinAmount: betsConfig.betMinAmount || 1,
+      betMaxAmount: betsConfig.betMaxAmount || 0,
+      spotifyMode: navbarConfig.musicSource === 'spotify' ? 'spotify' : 'manual',
+      manualArtist: navbarConfig.manualArtist || configFor('spotify_now_playing').manualArtist || '',
+      manualTrack: navbarConfig.manualTrack || configFor('spotify_now_playing').manualTrack || '',
+      slotProviderHint: currentSlotConfig.provider || '',
     },
     validationErrors: [],
   };
@@ -223,16 +245,100 @@ function mergeSetupState(raw, widgets, theme, instance) {
   return defaultSetupState(widgets, theme, instance);
 }
 
-function validateOverlay({ instance, widgets, setup }) {
+function normalizeTwitchChannel(value) {
+  return String(value || '').trim().replace(/^#/, '').toLowerCase();
+}
+
+function normalizeCommand(value, fallback, prefix = '!') {
+  const safePrefix = String(prefix || '!').trim() || '!';
+  const command = String(value || fallback || '').trim();
+  if (!command) return `${safePrefix}${fallback || ''}`;
+  if (command.startsWith('!') || command.startsWith('/')) return command;
+  return `${safePrefix}${command.replace(/^!+/, '')}`;
+}
+
+function toPositiveNumber(value, fallback = 0) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(0, number);
+}
+
+function serviceSetupPatch(type, details = {}, integrations = {}) {
+  const twitchChannel = normalizeTwitchChannel(details.twitchChannel || integrations.twitchChannel);
+  const commandPrefix = details.commandPrefix || '!';
+  const currency = details.currency || '€';
+  const manualArtist = String(details.manualArtist || '').trim();
+  const manualTrack = String(details.manualTrack || '').trim();
+
+  switch (type) {
+    case 'chat':
+      return { twitchEnabled: Boolean(twitchChannel), twitchChannel };
+    case 'giveaway':
+      return { twitchEnabled: Boolean(twitchChannel), twitchChannel, keyword: normalizeCommand(details.giveawayKeyword, 'join', commandPrefix) };
+    case 'slot_requests':
+      return {
+        twitchChannel,
+        commandTrigger: normalizeCommand(details.slotRequestCommand, 'sr', commandPrefix),
+        srSeEnabled: Boolean(details.requestsUsePoints),
+        srSeCost: toPositiveNumber(details.requestCost, 100),
+      };
+    case 'bets':
+      return {
+        twitchChannel,
+        chatCommand: normalizeCommand(details.betCommand, 'bet', commandPrefix),
+        betSeEnabled: Boolean(details.betsUsePoints),
+        betMinAmount: Math.max(1, toPositiveNumber(details.betMinAmount, 1)),
+        betMaxAmount: toPositiveNumber(details.betMaxAmount, 0),
+      };
+    case 'navbar':
+      return {
+        streamerName: details.displayName || details.overlayName || '',
+        balanceCurrency: currency,
+        musicSource: details.spotifyMode === 'spotify' ? 'spotify' : 'manual',
+        manualArtist,
+        manualTrack,
+        showNowPlaying: details.spotifyMode === 'spotify' || Boolean(manualArtist || manualTrack),
+      };
+    case 'spotify_now_playing':
+      return { manualArtist, manualTrack };
+    case 'bonus_hunt':
+    case 'rtp_stats':
+      return { currency };
+    case 'current_slot':
+    case 'bonus_buys':
+      return { currency, provider: details.slotProviderHint || '' };
+    case 'tournament':
+      return { currency, arenaCurrency: currency };
+    default:
+      return null;
+  }
+}
+
+function validateOverlay({ instance, widgets, setup, integrations = {} }) {
   const errors = [];
   if (!instance?.overlay_token) errors.push('Browser-source URL is missing.');
   if (!setup?.details?.overlayName) errors.push('Overlay name is required.');
   const selected = setup?.selectedTools || [];
+  const details = setup?.details || {};
   for (const type of selected) {
     if (!widgets.some(widget => widget.widget_type === type)) {
       errors.push(`${FEATURE_COPY[type]?.title || type} has not been added yet.`);
     }
   }
+  const needsChatChannel = selected.some(type => ['chat', 'giveaway', 'slot_requests', 'bets'].includes(type));
+  if (needsChatChannel && !normalizeTwitchChannel(details.twitchChannel || integrations.twitchChannel)) {
+    errors.push('Add your Twitch channel so chat, requests, giveaways and bets can listen to the right stream.');
+  }
+  const needsStreamElements = (selected.includes('slot_requests') && details.requestsUsePoints) || (selected.includes('bets') && details.betsUsePoints !== false);
+  if (needsStreamElements && !integrations.streamelementsConnected) {
+    errors.push('Connect StreamElements in Integrations before using point-paid requests or bets.');
+  }
+  const needsSpotify = selected.includes('spotify_now_playing') || (selected.includes('navbar') && details.spotifyMode === 'spotify');
+  if (needsSpotify && !integrations.spotifyConnected && !(details.manualArtist && details.manualTrack)) {
+    errors.push('Connect Spotify or add a manual artist and track fallback for music widgets.');
+  }
+  const needsCurrency = selected.some(type => ['bonus_hunt', 'current_slot', 'rtp_stats', 'bonus_buys', 'tournament', 'navbar'].includes(type));
+  if (needsCurrency && !details.currency) errors.push('Choose a currency symbol for money and slot widgets.');
   return errors;
 }
 
@@ -791,12 +897,53 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
   );
 }
 
-function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, addWidget, saveWidget, onFinish }) {
+function SetupWizard({ setup, widgets, theme, instance, integrations = {}, saveSetup, saveTheme, addWidget, saveWidget, onFinish }) {
   const [draft, setDraft] = useState(setup);
   const [actionError, setActionError] = useState('');
   const [saving, setSaving] = useState(false);
   const step = Math.min(draft.currentStep || 0, SETUP_STEPS.length - 1);
   const selectedTools = draft.selectedTools || [];
+  const details = draft.details || {};
+  const chatToolTypes = selectedTools.filter(type => ['chat', 'giveaway', 'slot_requests', 'bets'].includes(type));
+  const slotToolTypes = selectedTools.filter(type => ['bonus_hunt', 'current_slot', 'rtp_stats', 'slot_requests', 'bonus_buys', 'tournament'].includes(type));
+  const musicToolTypes = selectedTools.filter(type => ['navbar', 'spotify_now_playing'].includes(type));
+  const twitchChannel = normalizeTwitchChannel(details.twitchChannel || integrations.twitchChannel);
+  const requestsUsePoints = Boolean(details.requestsUsePoints);
+  const betsUsePoints = details.betsUsePoints !== false;
+  const needsStreamElements = (selectedTools.includes('slot_requests') && requestsUsePoints) || (selectedTools.includes('bets') && betsUsePoints);
+  const needsSpotify = selectedTools.includes('spotify_now_playing') || (selectedTools.includes('navbar') && details.spotifyMode === 'spotify');
+  const serviceChecks = [
+    {
+      id: 'chat',
+      title: 'Chat channel',
+      ready: !chatToolTypes.length || Boolean(twitchChannel),
+      status: chatToolTypes.length ? (twitchChannel ? 'Ready' : 'Needs channel') : 'Optional',
+      detail: chatToolTypes.length
+        ? `Used by ${chatToolTypes.map(type => FEATURE_COPY[type]?.title || type).join(', ')}.`
+        : 'Needed only when chat-driven tools are selected.',
+    },
+    {
+      id: 'streamelements',
+      title: 'StreamElements points',
+      ready: !needsStreamElements || integrations.streamelementsConnected,
+      status: needsStreamElements ? (integrations.streamelementsConnected ? 'Connected' : 'Needs credentials') : 'Not required',
+      detail: 'Used when slot requests or bets charge loyalty points.',
+    },
+    {
+      id: 'spotify',
+      title: 'Music data',
+      ready: !needsSpotify || integrations.spotifyConnected || Boolean(details.manualArtist && details.manualTrack),
+      status: needsSpotify ? (integrations.spotifyConnected ? 'Spotify connected' : 'Manual fallback') : 'Optional',
+      detail: musicToolTypes.length ? `Used by ${musicToolTypes.map(type => FEATURE_COPY[type]?.title || type).join(', ')}.` : 'Used by Navbar and Spotify widgets.',
+    },
+    {
+      id: 'slots',
+      title: 'Slot data and currency',
+      ready: !slotToolTypes.length || Boolean(details.currency),
+      status: slotToolTypes.length ? (details.currency ? 'Ready' : 'Needs currency') : 'Optional',
+      detail: slotToolTypes.length ? `Used by ${slotToolTypes.map(type => FEATURE_COPY[type]?.title || type).join(', ')}.` : 'Used by casino and slot metadata widgets.',
+    },
+  ];
 
   useEffect(() => setDraft(setup), [setup]);
 
@@ -811,6 +958,20 @@ function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, ad
     setDraft(updated);
     trackEvent(ANALYTICS_EVENTS.OVERLAY_SETUP_STEP_COMPLETED, { step: stepToComplete + 1 });
     return updated;
+  };
+
+  const applyServiceSetupToWidgets = async (detailsToApply) => {
+    const updates = widgets
+      .filter(widget => selectedTools.includes(widget.widget_type))
+      .map(widget => {
+        const patch = serviceSetupPatch(widget.widget_type, detailsToApply, integrations);
+        if (!patch) return null;
+        const cleanPatch = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined));
+        if (!Object.keys(cleanPatch).length) return null;
+        return saveWidget({ ...widget, config: { ...widget.config, ...cleanPatch } });
+      })
+      .filter(Boolean);
+    await Promise.all(updates);
   };
 
   const nextStep = async () => {
@@ -835,6 +996,9 @@ function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, ad
           if (!existing && def) await addWidget(type, def.defaults || {});
         }
       }
+      if (step === 5) {
+        await applyServiceSetupToWidgets(next.details || {});
+      }
       next = { ...next, currentStep: Math.min(step + 1, SETUP_STEPS.length - 1) };
       await persist(next);
     } catch (error) {
@@ -849,7 +1013,7 @@ function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, ad
     if (saving) return;
     setSaving(true);
     setActionError('');
-    const errors = validateOverlay({ instance, widgets, setup: draft });
+    const errors = validateOverlay({ instance, widgets, setup: draft, integrations });
     const finalState = {
       ...draft,
       status: errors.length ? 'failed' : 'completed',
@@ -997,17 +1161,167 @@ function SetupWizard({ setup, widgets, theme, instance, saveSetup, saveTheme, ad
       )}
 
       {step === 5 && (
-        <div className="oc2-integration-grid">
-          {INTEGRATIONS.map(item => {
-            const required = selectedTools.some(type => item.requiredFor.includes(type));
-            return (
-              <article key={item.id} className="oc2-integration-card">
-                <strong>{item.name}</strong>
-                <p>{item.detail}</p>
-                <span className={`oc2-pill ${required ? 'oc2-pill--gold' : ''}`}>{required ? 'Required by selected tools' : 'Optional'}</span>
-              </article>
-            );
-          })}
+        <div className="oc2-service-guide" data-tour="setup-services">
+          <div className="oc2-service-column">
+            <div className="oc2-service-intro">
+              <h2>Make the overlay operational</h2>
+              <p>Fill the fields that match your selected tools. When you continue, these settings sync into the widgets that need them.</p>
+            </div>
+            <div className="oc2-service-checklist" aria-label="Service readiness checklist">
+              {serviceChecks.map(check => (
+                <div key={check.id} className={`oc2-service-check${check.ready ? ' oc2-service-check--ready' : ' oc2-service-check--needed'}`}>
+                  <span className={`oc2-status-dot ${check.ready ? 'oc2-status-dot--connected' : 'oc2-status-dot--blocked'}`} />
+                  <span>
+                    <strong>{check.title}</strong>
+                    <small>{check.detail}</small>
+                  </span>
+                  <em>{check.status}</em>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="oc2-service-steps">
+            <section className="oc2-service-step">
+              <div className="oc2-service-step__header">
+                <span>1</span>
+                <div>
+                  <h2>Chat channel and commands</h2>
+                  <p>Set the stream channel and the commands viewers will type in chat.</p>
+                </div>
+              </div>
+              <div className="oc2-form-grid oc2-form-grid--compact">
+                <Field label="Twitch channel">
+                  <input value={details.twitchChannel || integrations.twitchChannel || ''} onChange={event => patchDetails({ twitchChannel: event.target.value })} placeholder="yourchannel" />
+                  <small>Used by chat, giveaways, slot requests and bets.</small>
+                </Field>
+                <Field label="Command prefix">
+                  <input value={details.commandPrefix || '!'} maxLength={3} onChange={event => patchDetails({ commandPrefix: event.target.value })} />
+                </Field>
+                {selectedTools.includes('slot_requests') && (
+                  <Field label="Slot request command">
+                    <input value={details.slotRequestCommand || '!sr'} onChange={event => patchDetails({ slotRequestCommand: event.target.value })} />
+                  </Field>
+                )}
+                {selectedTools.includes('bets') && (
+                  <Field label="Bet command">
+                    <input value={details.betCommand || '!bet'} onChange={event => patchDetails({ betCommand: event.target.value })} />
+                  </Field>
+                )}
+                {selectedTools.includes('giveaway') && (
+                  <Field label="Giveaway keyword">
+                    <input value={details.giveawayKeyword || '!join'} onChange={event => patchDetails({ giveawayKeyword: event.target.value })} />
+                  </Field>
+                )}
+              </div>
+            </section>
+
+            {(selectedTools.includes('slot_requests') || selectedTools.includes('bets')) && (
+              <section className="oc2-service-step">
+                <div className="oc2-service-step__header">
+                  <span>2</span>
+                  <div>
+                    <h2>Points and StreamElements</h2>
+                    <p>Choose whether requests and bets spend StreamElements points.</p>
+                  </div>
+                </div>
+                <div className="oc2-form-grid oc2-form-grid--compact">
+                  {selectedTools.includes('slot_requests') && (
+                    <label className="oc2-field oc2-field--toggle">
+                      <span>
+                        <strong>Charge points for slot requests</strong>
+                        <small>Turn off for a free request queue.</small>
+                      </span>
+                      <input type="checkbox" checked={requestsUsePoints} onChange={event => patchDetails({ requestsUsePoints: event.target.checked })} />
+                    </label>
+                  )}
+                  {selectedTools.includes('slot_requests') && requestsUsePoints && (
+                    <Field label="Request cost">
+                      <input type="number" min="0" value={details.requestCost || 100} onChange={event => patchDetails({ requestCost: event.target.value })} />
+                    </Field>
+                  )}
+                  {selectedTools.includes('bets') && (
+                    <label className="oc2-field oc2-field--toggle">
+                      <span>
+                        <strong>Use points for bets</strong>
+                        <small>Requires StreamElements credentials.</small>
+                      </span>
+                      <input type="checkbox" checked={betsUsePoints} onChange={event => patchDetails({ betsUsePoints: event.target.checked })} />
+                    </label>
+                  )}
+                  {selectedTools.includes('bets') && betsUsePoints && (
+                    <>
+                      <Field label="Minimum bet">
+                        <input type="number" min="1" value={details.betMinAmount || 1} onChange={event => patchDetails({ betMinAmount: event.target.value })} />
+                      </Field>
+                      <Field label="Maximum bet">
+                        <input type="number" min="0" value={details.betMaxAmount || 0} onChange={event => patchDetails({ betMaxAmount: event.target.value })} />
+                        <small>Use 0 for no maximum.</small>
+                      </Field>
+                    </>
+                  )}
+                </div>
+                <div className="oc2-service-action-row">
+                  <span className={`oc2-pill ${integrations.streamelementsConnected ? '' : 'oc2-pill--gold'}`}>
+                    {integrations.streamelementsConnected ? 'StreamElements connected' : 'Credentials managed in Integrations'}
+                  </span>
+                  <Link className="oc2-btn" to="/overlay-center/integrations"><ExternalLink size={15} /> Open Integrations</Link>
+                </div>
+              </section>
+            )}
+
+            {musicToolTypes.length > 0 && (
+              <section className="oc2-service-step">
+                <div className="oc2-service-step__header">
+                  <span>3</span>
+                  <div>
+                    <h2>Music source</h2>
+                    <p>Use Spotify when connected, or keep a manual fallback so the overlay still has display text.</p>
+                  </div>
+                </div>
+                <div className="oc2-form-grid oc2-form-grid--compact">
+                  <Field label="Music mode">
+                    <select value={details.spotifyMode || 'manual'} onChange={event => patchDetails({ spotifyMode: event.target.value })}>
+                      <option value="manual">Manual fallback</option>
+                      <option value="spotify">Spotify live data</option>
+                    </select>
+                  </Field>
+                  <Field label="Fallback artist">
+                    <input value={details.manualArtist || ''} onChange={event => patchDetails({ manualArtist: event.target.value })} placeholder="Artist name" />
+                  </Field>
+                  <Field label="Fallback track">
+                    <input value={details.manualTrack || ''} onChange={event => patchDetails({ manualTrack: event.target.value })} placeholder="Track title" />
+                  </Field>
+                </div>
+                <div className="oc2-service-action-row">
+                  <span className={`oc2-pill ${integrations.spotifyConnected ? '' : 'oc2-pill--gold'}`}>
+                    {integrations.spotifyConnected ? 'Spotify connected' : 'Connect Spotify in Integrations'}
+                  </span>
+                  <Link className="oc2-btn" to="/overlay-center/integrations"><ExternalLink size={15} /> Open Integrations</Link>
+                </div>
+              </section>
+            )}
+
+            {slotToolTypes.length > 0 && (
+              <section className="oc2-service-step">
+                <div className="oc2-service-step__header">
+                  <span>{musicToolTypes.length > 0 ? 4 : 3}</span>
+                  <div>
+                    <h2>Slot data and money display</h2>
+                    <p>The slot database is built in. Set the currency and optional provider fallback used by slot widgets.</p>
+                  </div>
+                </div>
+                <div className="oc2-form-grid oc2-form-grid--compact">
+                  <Field label="Currency symbol">
+                    <input value={details.currency || '€'} onChange={event => patchDetails({ currency: event.target.value })} />
+                  </Field>
+                  <Field label="Default provider fallback">
+                    <input value={details.slotProviderHint || ''} onChange={event => patchDetails({ slotProviderHint: event.target.value })} placeholder="Pragmatic Play, Hacksaw, Nolimit..." />
+                  </Field>
+                </div>
+              </section>
+            )}
+          </div>
         </div>
       )}
 
@@ -1381,6 +1695,7 @@ export default function OverlayControlCenter() {
             widgets={widgets}
             theme={theme}
             instance={instance}
+            integrations={integrations}
             saveSetup={saveSetup}
             saveTheme={saveTheme}
             addWidget={addWidget}
