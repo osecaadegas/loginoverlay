@@ -6,6 +6,7 @@ import React, { useMemo, memo, useRef, useState, useEffect } from 'react';
 import { getWidgetDef } from './widgets/widgetRegistry';
 import buildThemeVars from './themeVarsBuilder';
 import { buildCanvasBackground, buildWidgetAppearanceVars, normalizeAppearance, resolveWidgetsForAppearance } from './appearance/appearanceModel';
+import { applyPreviewWidgetSamples, getWidgetPreviewFrame } from './appearance/previewWidgetSamples';
 
 // Register built-in widgets (idempotent)
 import './widgets/builtinWidgets';
@@ -23,6 +24,14 @@ function isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) {
   return false;
 }
 
+function getPreviewSlotSize(widget) {
+  const frame = getWidgetPreviewFrame(widget);
+  return {
+    width: frame?.width || widget.width,
+    height: frame?.height || widget.height,
+  };
+}
+
 const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight, selectedWidgetId, selectedTarget, dimmed, selectMode, onSelectWidget }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
@@ -33,6 +42,12 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   const ss = cfg.shadowSize ?? 0;
   const si = cfg.shadowIntensity ?? 0;
   const hasShadow = ss > 0 && si > 0;
+  const slotSize = getPreviewSlotSize(widget);
+  const wStyle = cfg.displayStyle || '';
+  const isBH = widget.widget_type === 'bonus_hunt';
+  const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack'
+    || (isBH && !['v2', 'v5_compact'].includes(wStyle));
+  const needsVisible = needs3D || !!cfg.npcEnabled || widget.widget_type === 'navbar';
 
   return (
     <div
@@ -51,10 +66,10 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
       position: 'absolute',
       left: isBg ? 0 : widget.position_x,
       top: isBg ? 0 : widget.position_y,
-      width: isBg ? canvasWidth : widget.width,
-      height: isBg ? canvasHeight : widget.height,
+      width: isBg ? canvasWidth : slotSize.width,
+      height: isBg ? canvasHeight : slotSize.height,
       zIndex: widget.z_index || 1,
-      overflow: 'visible',
+      overflow: isBg || needsVisible ? 'visible' : 'hidden',
       cursor: selectMode ? 'crosshair' : undefined,
       opacity: dimmed ? 0.24 : 1,
       transition: 'opacity 140ms ease',
@@ -68,9 +83,13 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
 
 export default function OverlayPreview({ widgets, theme, appearance, selectedWidgetId, selectedTarget, styleSelections, zoom = 'fit', previewMode = 'focus-widget', previewBackground = 'dark', selectMode = false, onSelectWidget }) {
   const wrapRef = useRef(null);
+  const previewNowRef = useRef(Date.now());
   const [scale, setScale] = useState(0.5);
   const resolvedAppearance = useMemo(() => normalizeAppearance(appearance || {}, { theme }), [appearance, theme]);
-  const resolvedWidgets = useMemo(() => resolveWidgetsForAppearance(widgets || [], resolvedAppearance, theme, { styleSelections: styleSelections || {} }), [widgets, resolvedAppearance, theme, styleSelections]);
+  const resolvedWidgets = useMemo(() => applyPreviewWidgetSamples(
+    resolveWidgetsForAppearance(widgets || [], resolvedAppearance, theme, { styleSelections: styleSelections || {} }),
+    { now: previewNowRef.current, expandFrames: !selectMode && ['focus-widget', 'fit-widget'].includes(previewMode) }
+  ), [widgets, resolvedAppearance, theme, styleSelections, previewMode, selectMode]);
 
   const CANVAS_W = resolvedAppearance?.canvas?.width || theme?.canvas_width || DEFAULT_W;
   const CANVAS_H = resolvedAppearance?.canvas?.height || theme?.canvas_height || DEFAULT_H;
@@ -98,8 +117,9 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
 
   const contextFocusActive = previewMode === 'focus-widget' && focusWidget && !selectMode;
   const fitWidgetActive = previewMode === 'fit-widget' && focusWidget && !selectMode;
-  const focusWidth = focusWidget ? Math.max(1, Number(focusWidget.width) || 1) : CANVAS_W;
-  const focusHeight = focusWidget ? Math.max(1, Number(focusWidget.height) || 1) : CANVAS_H;
+  const focusSize = focusWidget ? getPreviewSlotSize(focusWidget) : { width: CANVAS_W, height: CANVAS_H };
+  const focusWidth = Math.max(1, Number(focusSize.width) || 1);
+  const focusHeight = Math.max(1, Number(focusSize.height) || 1);
   const focusX = focusWidget ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_x) || 0) : 0;
   const focusY = focusWidget ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_y) || 0) : 0;
   const focusMargin = contextFocusActive ? Math.max(96, Math.round(Math.max(focusWidth, focusHeight) * 0.28)) : 0;

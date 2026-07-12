@@ -9,6 +9,7 @@ const server = await createServer({
 
 const { registerWidget, getAllWidgetDefs } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/widgetRegistry.js');
 const { subValue } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/appearanceStyles.js');
+const { applyPreviewWidgetSamples } = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/previewWidgetSamples.js');
 const {
   buildWidgetAppearanceVars,
   buildSubElementDefaults,
@@ -433,6 +434,22 @@ for (const contract of otherWidgetContracts) {
     `${contract.widgetType}.${contract.elementId}.${contract.expectedProperty} resolves into widget config`
   );
 }
+
+const previewSampleWidgets = applyPreviewWidgetSamples([
+  { id: 'bets_preview', widget_type: 'bets', width: 320, height: 180, config: { gameStatus: 'idle', options: [] } },
+  { id: 'spotify_preview', widget_type: 'spotify_now_playing', width: 260, height: 100, config: {} },
+  { id: 'giveaway_preview', widget_type: 'giveaway', width: 280, height: 180, config: {} },
+], { now: 1000000, expandFrames: true });
+const sampledBets = previewSampleWidgets.find(widget => widget.id === 'bets_preview');
+assert.equal(sampledBets.config.gameStatus, 'open', 'preview samples open idle bets widgets');
+assert.ok(sampledBets.config.options.length >= 4, 'preview samples provide bets options');
+assert.ok(Object.keys(sampledBets.config.bets).length >= sampledBets.config.options.length, 'preview samples provide a visible bets pool');
+assert.ok(sampledBets.__previewFrame.width >= 560 && sampledBets.__previewFrame.height >= 460, 'preview samples expand the bets workbench frame');
+const sampledSpotify = previewSampleWidgets.find(widget => widget.id === 'spotify_preview');
+assert.equal(sampledSpotify.config.manualTrack, 'Bonus Hunt Live', 'preview samples provide spotify track data');
+const sampledGiveaway = previewSampleWidgets.find(widget => widget.id === 'giveaway_preview');
+assert.equal(sampledGiveaway.config.isActive, true, 'preview samples activate giveaway widgets');
+assert.ok(sampledGiveaway.config.participants.length > 0, 'preview samples provide giveaway participants');
 
 const betsDefinition = getWidgetAppearanceDefinition('bets');
 for (const elementId of ['container', 'title', 'status', 'statistics', 'optionRow', 'optionNumber', 'optionLabel', 'percentage', 'footer', 'progressBar']) {

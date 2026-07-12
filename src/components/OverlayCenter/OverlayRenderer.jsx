@@ -27,6 +27,7 @@ import {
   normalizeAppearance,
   resolveWidgetsForAppearance,
 } from './appearance/appearanceModel';
+import { applyPreviewWidgetSamples } from './appearance/previewWidgetSamples';
 import './OverlayRenderer.css';
 import './OverlayCenter.css';
 
@@ -144,6 +145,7 @@ export default function OverlayRenderer() {
   const [overlayState, setOverlayState] = useState({});
   const [previewDraft, setPreviewDraft] = useState(null);
   const [previewStyleSelections, setPreviewStyleSelections] = useState({});
+  const previewNowRef = useRef(Date.now());
   const [error, setError] = useState(null);
   const [ready, setReady] = useState(false);
   const channelRef = useRef(null);
@@ -254,10 +256,10 @@ export default function OverlayRenderer() {
     if (isPreviewMode && previewDraft) return normalizeAppearance(previewDraft, { theme });
     return isPreviewMode ? appearanceState.draft : appearanceState.published;
   }, [appearanceState, isPreviewMode, previewDraft, theme]);
-  const renderedWidgets = useMemo(
-    () => resolveWidgetsForAppearance(widgets, activeAppearance, theme, { styleSelections: isPreviewMode ? previewStyleSelections : {} }),
-    [widgets, activeAppearance, theme, isPreviewMode, previewStyleSelections]
-  );
+  const renderedWidgets = useMemo(() => {
+    const resolved = resolveWidgetsForAppearance(widgets, activeAppearance, theme, { styleSelections: isPreviewMode ? previewStyleSelections : {} });
+    return isPreviewMode ? applyPreviewWidgetSamples(resolved, { now: previewNowRef.current }) : resolved;
+  }, [widgets, activeAppearance, theme, isPreviewMode, previewStyleSelections]);
 
   const themeVars = useMemo(() => buildThemeVars(theme, activeAppearance), [theme, activeAppearance]);
 
