@@ -2,8 +2,36 @@ export function getSubElement(config = {}, elementId) {
   return config?.subElements?.[elementId] || {};
 }
 
-export function subValue(config = {}, elementId, property, fallback) {
-  const value = getSubElement(config, elementId)?.[property];
+const STATE_ELEMENT_ALIASES = {
+  openedState: ['bonusCard', 'opened'],
+  unopenedState: ['bonusCard', 'unopened'],
+  currentState: ['bonusCard', 'current'],
+  selectedState: ['optionCard', 'selected'],
+  winningState: ['optionCard', 'winner'],
+  losingState: ['optionCard', 'loser'],
+  pendingState: ['requestCard', 'pending'],
+  playingState: ['requestCard', 'playing'],
+  completedState: ['requestCard', 'completed'],
+  rejectedState: ['requestCard', 'rejected'],
+  winnerHighlight: ['participantCard', 'winner'],
+  eliminatedState: ['participantCard', 'eliminated'],
+  highlightedMessage: ['message', 'highlighted'],
+  botMessage: ['message', 'bot'],
+  subscriberMessage: ['message', 'subscriber'],
+  moderatorMessage: ['message', 'moderator'],
+};
+
+export function getSubElementState(config = {}, elementId, stateId = 'default') {
+  const element = getSubElement(config, elementId);
+  if (!stateId || stateId === 'default') return element;
+  return { ...element, ...(element?.states?.[stateId] || {}) };
+}
+
+export function subValue(config = {}, elementId, property, fallback, stateId = 'default') {
+  const aliased = STATE_ELEMENT_ALIASES[elementId];
+  const sourceElementId = aliased?.[0] || elementId;
+  const sourceStateId = stateId !== 'default' ? stateId : (aliased?.[1] || stateId);
+  const value = getSubElementState(config, sourceElementId, sourceStateId)?.[property];
   return value === undefined || value === null || value === '' ? fallback : value;
 }
 
@@ -12,8 +40,11 @@ function px(value) {
   return typeof value === 'number' ? `${value}px` : value;
 }
 
-export function subElementStyle(config = {}, elementId, fallback = {}) {
-  const element = getSubElement(config, elementId);
+export function subElementStyle(config = {}, elementId, fallback = {}, stateId = 'default') {
+  const aliased = STATE_ELEMENT_ALIASES[elementId];
+  const sourceElementId = aliased?.[0] || elementId;
+  const sourceStateId = stateId !== 'default' ? stateId : (aliased?.[1] || stateId);
+  const element = getSubElementState(config, sourceElementId, sourceStateId);
   const style = { ...fallback };
   if (element.background != null) style.background = element.background;
   if (element.textColor != null) style.color = element.textColor;
@@ -41,7 +72,10 @@ export function subElementStyle(config = {}, elementId, fallback = {}) {
   return style;
 }
 
-export function subElementVars(config = {}, elementId, prefix) {
-  const element = getSubElement(config, elementId);
+export function subElementVars(config = {}, elementId, prefix, stateId = 'default') {
+  const aliased = STATE_ELEMENT_ALIASES[elementId];
+  const sourceElementId = aliased?.[0] || elementId;
+  const sourceStateId = stateId !== 'default' ? stateId : (aliased?.[1] || stateId);
+  const element = getSubElementState(config, sourceElementId, sourceStateId);
   return Object.fromEntries(Object.entries(element).map(([key, value]) => ([`--${prefix}-${key}`, typeof value === 'number' && !['opacity', 'fontWeight', 'brightness', 'contrast', 'saturation'].includes(key) ? `${value}px` : value])));
 }

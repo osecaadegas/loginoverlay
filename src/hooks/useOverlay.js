@@ -35,11 +35,11 @@ export function useOverlay() {
     if (!user) return;
     setLoading(true);
     try {
-      const [inst, th, wdgs, st] = await Promise.all([
-        getOrCreateInstance(user.id, user.user_metadata?.full_name || user.email),
-        getTheme(user.id),
-        getWidgets(user.id),
-        getOverlayState(user.id),
+      const inst = await getOrCreateInstance(user.id, user.user_metadata?.full_name || user.email);
+      const [th, wdgs, st] = await Promise.all([
+        getTheme(user.id, inst.id),
+        getWidgets(user.id, inst.id),
+        getOverlayState(user.id, inst.id),
       ]);
       setInstance(inst);
       setTheme(th);
@@ -56,14 +56,14 @@ export function useOverlay() {
 
   // ── Realtime subscription ──
   useEffect(() => {
-    if (!user) return;
+    if (!user || !instance?.id) return;
     channelRef.current = subscribeToOverlay(user.id, {
       onState: (s) => setOverlayState(s),
-      onWidgets: () => getWidgets(user.id).then(setWidgets),
+      onWidgets: () => getWidgets(user.id, instance.id).then(setWidgets),
       onTheme: (t) => setTheme(t),
-    });
+    }, instance.id);
     return () => unsubscribeOverlay(channelRef.current);
-  }, [user]);
+  }, [instance?.id, user]);
 
   // ── Auto-tracker: listen for detected_slots changes and update current_slot / single_slot widgets ──
   const detectedChannelRef = useRef(null);
@@ -138,7 +138,7 @@ export function useOverlay() {
               const merged = { ...w, config: { ...w.config, ...update } };
               updated.push(merged);
               // Persist to DB (fire-and-forget)
-              upsertWidget(user.id, merged).catch(() => {});
+              upsertWidget(user.id, merged, instance?.id).catch(() => {});
             } else if (w.widget_type === 'rtp_stats' && update.bestWin) {
               // Also cache bestWin into rtp_stats config so OBS can read it (no auth → RLS blocks direct DB query)
               const cached = {
@@ -150,7 +150,7 @@ export function useOverlay() {
               };
               const merged = { ...w, config: { ...w.config, _cachedBestWin: cached } };
               updated.push(merged);
-              upsertWidget(user.id, merged).catch(() => {});
+              upsertWidget(user.id, merged, instance?.id).catch(() => {});
             } else {
               updated.push(w);
             }
@@ -166,15 +166,15 @@ export function useOverlay() {
         supabase.removeChannel(detectedChannelRef.current);
       }
     };
-  }, [user]);
+  }, [instance?.id, user]);
 
   // ── Actions ──
   const saveTheme = useCallback(async (patch) => {
     if (!user) return;
-    const updated = await updateTheme(user.id, patch);
+    const updated = await updateTheme(user.id, patch, instance?.id);
     setTheme(updated);
     return updated;
-  }, [user]);
+  }, [instance?.id, user]);
 
   const addWidget = useCallback(async (widgetType, config) => {
     if (!user) {
@@ -182,14 +182,14 @@ export function useOverlay() {
       return;
     }
     try {
-      const w = await createWidget(user.id, widgetType, config);
+      const w = await createWidget(user.id, widgetType, config, instance?.id);
       setWidgets(prev => [...prev, w]);
       return w;
     } catch (err) {
       console.error('[useOverlay] addWidget error:', err);
       throw err;
     }
-  }, [user]);
+  }, [instance?.id, user]);
 
   // ── Debounced DB save for widgets ──
   // Keeps a per-widget timer so rapid keystrokes don't hammer the DB.
@@ -205,22 +205,23 @@ export function useOverlay() {
     clearTimeout(saveTimersRef.current[widget.id]);
     saveTimersRef.current[widget.id] = setTimeout(async () => {
       try {
-        await upsertWidget(user.id, widget);
+        await upsertWidget(user.id, widget, instance?.id);
       } catch (err) {
         console.error('[useOverlay] saveWidget error:', err);
       }
     }, 500);
-  }, [user]);
+  }, [instance?.id, user]);
 
   const removeWidget = useCallback(async (widgetId) => {
-    await deleteWidget(widgetId);
+    if (!user) return;
+    await deleteWidget(user.id, widgetId, instance?.id);
     setWidgets(prev => prev.filter(w => w.id !== widgetId));
-  }, []);
+  }, [instance?.id, user]);
 
   const updateState = useCallback(async (patch) => {
     if (!user) return;
-    return patchOverlayState(user.id, patch);
-  }, [user]);
+    return patchOverlayState(user.id, patch, instance?.id);
+  }, [instance?.id, user]);
 
   const regenToken = useCallback(async () => {
     if (!user) return;

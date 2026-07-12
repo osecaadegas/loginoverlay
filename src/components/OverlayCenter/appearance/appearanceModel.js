@@ -5,6 +5,37 @@ export const APPEARANCE_SCHEMA_VERSION = 1;
 
 export const RESET_VALUE = '__inherit__';
 
+export const VISUAL_VALUE_CLASSIFICATIONS = Object.freeze([
+  'structural',
+  'global-customisable',
+  'widget-type-customisable',
+  'style-customisable',
+  'instance-customisable',
+  'element-customisable',
+  'responsive-customisable',
+  'state-customisable',
+]);
+
+export const COMMON_APPEARANCE_PROPERTY_DEFINITIONS = Object.freeze([
+  { path: 'background', label: 'Background', category: 'colour', control: 'color', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'textColor', label: 'Text colour', category: 'colour', control: 'color', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'accentColor', label: 'Accent colour', category: 'colour', control: 'color', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'borderColor', label: 'Border colour', category: 'border', control: 'color', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'borderWidth', label: 'Border width', category: 'border', control: 'slider', min: 0, max: 16, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'radius', label: 'Radius', category: 'border', control: 'radius', min: 0, max: 120, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'padding', label: 'Padding', category: 'spacing', control: 'spacing', min: 0, max: 120, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element'] },
+  { path: 'gap', label: 'Gap', category: 'spacing', control: 'slider', min: 0, max: 96, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element'] },
+  { path: 'fontFamily', label: 'Font', category: 'typography', control: 'font', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'fontSize', label: 'Font size', category: 'typography', control: 'slider', min: 8, max: 96, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'fontWeight', label: 'Font weight', category: 'typography', control: 'slider', min: 100, max: 1000, step: 50, scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'height', label: 'Height', category: 'size', control: 'slider', min: 0, max: 720, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element'] },
+  { path: 'width', label: 'Width', category: 'size', control: 'slider', min: 0, max: 1280, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element'] },
+  { path: 'imageSize', label: 'Image or icon size', category: 'size', control: 'slider', min: 0, max: 512, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element'] },
+  { path: 'opacity', label: 'Opacity', category: 'effects', control: 'slider', min: 0, max: 1, step: 0.05, scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'shadow', label: 'Shadow', category: 'effects', control: 'shadow', min: 0, max: 160, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'fillColor', label: 'Fill colour', category: 'progress', control: 'color', scope: ['widget-type', 'style', 'instance', 'element', 'state'] },
+]);
+
 export const SYSTEM_APPEARANCE = {
   schemaVersion: APPEARANCE_SCHEMA_VERSION,
   themeId: 'classic',
@@ -367,8 +398,6 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'carousel', label: 'List and carousel', properties: ['gap', 'padding'] },
     { id: 'progressBar', label: 'Progress bar', properties: ['background', 'fillColor', 'radius', 'height'] },
     { id: 'bonusCard', label: 'Bonus card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
-    { id: 'openedState', label: 'Opened card', properties: ['background', 'textColor', 'borderColor', 'accentColor', 'opacity'] },
-    { id: 'unopenedState', label: 'Unopened card', properties: ['background', 'textColor', 'borderColor', 'opacity'] },
     { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'height', 'opacity'] },
     { id: 'profit', label: 'Profit values', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight'] },
     { id: 'loss', label: 'Loss values', properties: ['background', 'textColor', 'accentColor', 'fontSize', 'fontWeight'] },
@@ -378,11 +407,8 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
     { id: 'question', label: 'Question text', properties: ['textColor', 'fontSize', 'fontWeight'] },
     { id: 'optionCard', label: 'Option cards', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
-    { id: 'selectedState', label: 'Selected option', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
     { id: 'progressBar', label: 'Progress bars', properties: ['background', 'fillColor', 'radius', 'height'] },
     { id: 'timer', label: 'Timer', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
-    { id: 'winningState', label: 'Winning option', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
-    { id: 'losingState', label: 'Losing option', properties: ['background', 'textColor', 'opacity'] },
   ],
   slot_requests: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
@@ -392,10 +418,6 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'slotTitle', label: 'Slot title', properties: ['textColor', 'fontSize', 'fontWeight'] },
     { id: 'provider', label: 'Provider text', properties: ['textColor', 'fontSize', 'fontWeight'] },
     { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'opacity'] },
-    { id: 'pendingState', label: 'Pending state', properties: ['background', 'textColor', 'borderColor'] },
-    { id: 'playingState', label: 'Playing state', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
-    { id: 'completedState', label: 'Completed state', properties: ['background', 'textColor', 'opacity'] },
-    { id: 'rejectedState', label: 'Rejected state', properties: ['background', 'textColor', 'opacity'] },
   ],
   giveaway: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
@@ -456,12 +478,12 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'bracket', label: 'Bracket background', properties: ['background', 'borderColor', 'radius', 'padding', 'gap'] },
     { id: 'roundHeading', label: 'Round headings', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
     { id: 'participantCard', label: 'Participant cards', properties: ['background', 'textColor', 'borderColor', 'radius', 'padding', 'gap'] },
-    { id: 'winnerHighlight', label: 'Winner highlight', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
-    { id: 'eliminatedState', label: 'Eliminated state', properties: ['background', 'textColor', 'opacity'] },
+    { id: 'slotImage', label: 'Slot image', properties: ['background', 'radius', 'imageSize', 'opacity'] },
     { id: 'connector', label: 'Match connector lines', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'opacity'] },
     { id: 'score', label: 'Score text', properties: ['textColor', 'fontSize', 'fontWeight'] },
     { id: 'timer', label: 'Timer', properties: ['background', 'textColor', 'radius'] },
     { id: 'finalWinner', label: 'Final winner', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
+    { id: 'emptyState', label: 'Empty state', properties: ['background', 'textColor', 'fontSize', 'opacity'] },
   ],
   current_slot: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
@@ -481,10 +503,6 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'avatar', label: 'Avatar', properties: ['imageSize', 'radius', 'borderColor', 'borderWidth'] },
     { id: 'badge', label: 'Badges', properties: ['background', 'textColor', 'fontSize', 'radius', 'padding'] },
     { id: 'emote', label: 'Emotes', properties: ['imageSize', 'opacity'] },
-    { id: 'highlightedMessage', label: 'Highlighted message', properties: ['background', 'textColor', 'borderColor', 'shadow'] },
-    { id: 'botMessage', label: 'Bot message', properties: ['background', 'textColor', 'opacity'] },
-    { id: 'subscriberMessage', label: 'Subscriber message', properties: ['background', 'textColor', 'borderColor'] },
-    { id: 'moderatorMessage', label: 'Moderator message', properties: ['background', 'textColor', 'borderColor'] },
   ],
   image_slideshow: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
@@ -516,6 +534,200 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'container', label: 'Container', properties: ['background', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow'] },
     { id: 'children', label: 'Child spacing', properties: ['gap', 'padding'] },
   ],
+};
+
+const COMMON_STATE_DEFINITIONS = {
+  container: [{ id: 'default', label: 'Default' }, { id: 'loading', label: 'Loading' }, { id: 'empty', label: 'Empty' }, { id: 'error', label: 'Error' }],
+  header: [{ id: 'default', label: 'Default' }],
+  card: [{ id: 'default', label: 'Default' }, { id: 'hover', label: 'Hover' }, { id: 'active', label: 'Active' }, { id: 'selected', label: 'Selected' }],
+  label: [{ id: 'default', label: 'Default' }],
+  value: [{ id: 'default', label: 'Default' }, { id: 'positive', label: 'Positive' }, { id: 'negative', label: 'Negative' }],
+};
+
+const WIDGET_STATE_DEFINITIONS = {
+  bonus_hunt: {
+    bonusCard: [
+      { id: 'default', label: 'Default' },
+      { id: 'opened', label: 'Opened' },
+      { id: 'unopened', label: 'Unopened' },
+      { id: 'current', label: 'Current' },
+      { id: 'best-win', label: 'Best win' },
+      { id: 'worst-win', label: 'Worst win' },
+    ],
+    statValue: [{ id: 'default', label: 'Default' }, { id: 'positive', label: 'Positive' }, { id: 'negative', label: 'Negative' }],
+    progressBar: [{ id: 'default', label: 'Default' }, { id: 'complete', label: 'Complete' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  bets: {
+    optionCard: [{ id: 'default', label: 'Default' }, { id: 'selected', label: 'Selected' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }, { id: 'closed', label: 'Closed' }],
+    progressBar: [{ id: 'default', label: 'Default' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  slot_requests: {
+    requestCard: [{ id: 'default', label: 'Default' }, { id: 'pending', label: 'Pending' }, { id: 'selected', label: 'Selected' }, { id: 'playing', label: 'Playing' }, { id: 'completed', label: 'Completed' }, { id: 'rejected', label: 'Rejected' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  giveaway: {
+    winnerCard: [{ id: 'default', label: 'Default' }, { id: 'winner', label: 'Winner' }, { id: 'drawing', label: 'Drawing' }],
+    participantList: [{ id: 'default', label: 'Default' }, { id: 'empty', label: 'Empty' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  rtp_stats: {
+    statCard: [{ id: 'default', label: 'Default' }, { id: 'positive', label: 'Positive' }, { id: 'negative', label: 'Negative' }, { id: 'highlight', label: 'Highlight' }],
+    chart: [{ id: 'default', label: 'Default' }, { id: 'loading', label: 'Loading' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  navbar: {
+    music: [{ id: 'default', label: 'Default' }, { id: 'connected', label: 'Connected' }, { id: 'disconnected', label: 'Disconnected' }],
+    crypto: [{ id: 'default', label: 'Default' }, { id: 'positive', label: 'Positive' }, { id: 'negative', label: 'Negative' }],
+  },
+  bonus_buys: {
+    sessionCard: [{ id: 'default', label: 'Default' }, { id: 'profit', label: 'Profit' }, { id: 'loss', label: 'Loss' }],
+    progressBar: [{ id: 'default', label: 'Default' }, { id: 'complete', label: 'Complete' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  tournament: {
+    participantCard: [{ id: 'default', label: 'Default' }, { id: 'winner', label: 'Winner' }, { id: 'eliminated', label: 'Eliminated' }, { id: 'active', label: 'Active' }],
+    connector: [{ id: 'default', label: 'Default' }, { id: 'winner-path', label: 'Winner path' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  current_slot: {
+    imageFrame: [{ id: 'default', label: 'Default' }, { id: 'missing-image', label: 'Missing image' }, { id: 'changing', label: 'Changing' }],
+    container: COMMON_STATE_DEFINITIONS.container,
+  },
+  chat: {
+    message: [{ id: 'default', label: 'Default' }, { id: 'highlighted', label: 'Highlighted' }, { id: 'bot', label: 'Bot' }, { id: 'subscriber', label: 'Subscriber' }, { id: 'moderator', label: 'Moderator' }],
+    container: [{ id: 'default', label: 'Default' }, { id: 'entrance', label: 'Entrance' }, { id: 'exit', label: 'Exit' }, { id: 'fade', label: 'Fade' }],
+  },
+};
+
+const WIDGET_TYPE_APPEARANCE_DEFAULTS = {
+  giveaway: {
+    appearance: {
+      colors: {
+        accent: '#9346ff',
+        text: '#ffffff',
+        muted: '#94a3b8',
+      },
+      typography: {
+        bodyFont: "'Inter', sans-serif",
+      },
+      surfaces: {
+        containerBg: '#13151e',
+        cardBg: 'rgba(255,255,255,0.04)',
+      },
+      borders: {
+        color: 'rgba(255,255,255,0.08)',
+        radius: 12,
+      },
+    },
+    subElements: {
+      container: {
+        background: '#13151e',
+        textColor: '#ffffff',
+        borderColor: 'rgba(255,255,255,0.08)',
+        radius: 12,
+      },
+      card: {
+        background: 'rgba(255,255,255,0.04)',
+        textColor: '#ffffff',
+        borderColor: 'rgba(255,255,255,0.08)',
+        radius: 12,
+      },
+      keyword: {
+        background: 'rgba(255,255,255,0.04)',
+        textColor: '#ffffff',
+        radius: 12,
+      },
+      counter: {
+        background: 'rgba(255,255,255,0.04)',
+        textColor: '#ffffff',
+        radius: 12,
+      },
+      emptyState: {
+        textColor: '#94a3b8',
+      },
+    },
+  },
+  tournament: {
+    appearance: {
+      colors: {
+        accent: '#facc15',
+        text: '#ffffff',
+        muted: '#94a3b8',
+        positive: '#22c55e',
+        negative: '#ef4444',
+      },
+      typography: {
+        bodyFont: "'Inter', sans-serif",
+        baseSize: 12,
+      },
+      surfaces: {
+        containerBg: '#13151e',
+        cardBg: '#1a1d2e',
+        padding: 6,
+        gap: 6,
+      },
+      borders: {
+        color: 'transparent',
+        radius: 12,
+        width: 0,
+      },
+    },
+    subElements: {
+      container: {
+        background: '#13151e',
+        borderColor: 'transparent',
+        borderWidth: 0,
+        radius: 12,
+        padding: 6,
+      },
+      participantCard: {
+        background: '#1a1d2e',
+        textColor: '#ffffff',
+        borderColor: 'rgba(255,255,255,0.08)',
+        borderWidth: 1,
+        radius: 10,
+        fontSize: 12,
+        gap: 6,
+        states: {
+          winner: { textColor: '#22c55e' },
+          eliminated: {
+            opacity: 0.35,
+            textColor: '#eab308',
+            background: 'rgba(0,0,0,0.7)',
+          },
+        },
+      },
+      score: {
+        textColor: '#facc15',
+        fontSize: 13,
+        mutedColor: '#94a3b8',
+        negativeColor: '#ef4444',
+      },
+      label: {
+        textColor: '#ffffff',
+        fontSize: 10,
+      },
+      connector: {
+        textColor: '#eab308',
+        background: 'rgba(0,0,0,0.85)',
+        imageSize: 20,
+      },
+      timer: {
+        textColor: '#818cf8',
+        background: 'rgba(0,0,0,0.85)',
+      },
+      slotImage: {
+        background: 'rgba(0,0,0,0.3)',
+        radius: 6,
+      },
+      emptyState: {
+        textColor: '#64748b',
+        fontSize: 14,
+      },
+    },
+  },
 };
 
 const SUB_ELEMENT_DEFAULT_PATHS = {
@@ -731,7 +943,34 @@ export function getTargetStyleId(target, appearance, widgets = []) {
 }
 
 export function getWidgetSubElementDefinitions(widgetType) {
-  return WIDGET_SUB_ELEMENT_DEFINITIONS[widgetType] || COMMON_SUB_ELEMENT_DEFINITIONS;
+  return (WIDGET_SUB_ELEMENT_DEFINITIONS[widgetType] || COMMON_SUB_ELEMENT_DEFINITIONS).map(definition => ({
+    ...definition,
+    states: definition.states || getWidgetStateDefinitions(widgetType, definition.id),
+  }));
+}
+
+export function getWidgetStateDefinitions(widgetType, elementId) {
+  return WIDGET_STATE_DEFINITIONS[widgetType]?.[elementId]
+    || COMMON_STATE_DEFINITIONS[elementId]
+    || [{ id: 'default', label: 'Default' }];
+}
+
+export function getWidgetAppearanceDefinition(widgetType) {
+  const def = getWidgetDef(widgetType);
+  return {
+    type: widgetType,
+    styles: Array.isArray(def?.styles) ? def.styles : [],
+    elements: getWidgetSubElementDefinitions(widgetType),
+    supportedProperties: COMMON_APPEARANCE_PROPERTY_DEFINITIONS,
+    stateDefinitions: WIDGET_STATE_DEFINITIONS[widgetType] || {},
+    responsiveCapabilities: def?.appearanceCapabilities?.responsive === false
+      ? { enabled: false, modes: [] }
+      : { enabled: true, modes: ['viewport', 'compact', 'mobile'] },
+    defaults: {
+      ...(def?.defaults || {}),
+      appearance: WIDGET_TYPE_APPEARANCE_DEFAULTS[widgetType] || def?.appearanceDefaults || {},
+    },
+  };
 }
 
 export function getSubElementPropertyDefault(property, appearance) {
@@ -1095,6 +1334,139 @@ export function resolveAppearanceForTarget(appearance, target, theme) {
   });
 }
 
+function splitElementState(element = {}) {
+  if (!isPlainObject(element)) return { base: {}, states: {} };
+  const { states, ...base } = element;
+  return {
+    base,
+    states: isPlainObject(states) ? states : {},
+  };
+}
+
+function readSubElementOverride(entry = {}, elementId, stateId = 'default') {
+  const element = entry?.subElements?.[elementId];
+  const { base, states } = splitElementState(element);
+  const stateValues = stateId && stateId !== 'default' && isPlainObject(states[stateId])
+    ? states[stateId]
+    : {};
+  return deepMerge(base, stateValues);
+}
+
+function viewportMatchesOverride(override = {}, viewport = {}) {
+  if (!viewport || !isPlainObject(override)) return false;
+  const width = Number(viewport.width);
+  const height = Number(viewport.height);
+  if (override.minWidth != null && (!Number.isFinite(width) || width < Number(override.minWidth))) return false;
+  if (override.maxWidth != null && (!Number.isFinite(width) || width > Number(override.maxWidth))) return false;
+  if (override.minHeight != null && (!Number.isFinite(height) || height < Number(override.minHeight))) return false;
+  if (override.maxHeight != null && (!Number.isFinite(height) || height > Number(override.maxHeight))) return false;
+  return override.minWidth != null || override.maxWidth != null || override.minHeight != null || override.maxHeight != null;
+}
+
+function collectResponsiveOverrides(source = {}, viewport = {}) {
+  const responsive = source?.responsive;
+  const overrides = responsive?.overrides;
+  if (!overrides) return {};
+  if (Array.isArray(overrides)) {
+    return overrides.filter(item => viewportMatchesOverride(item, viewport)).reduce((acc, item) => deepMerge(acc, item.appearance || item), {});
+  }
+  if (isPlainObject(overrides)) {
+    return Object.values(overrides).filter(item => viewportMatchesOverride(item, viewport)).reduce((acc, item) => deepMerge(acc, item.appearance || item), {});
+  }
+  return {};
+}
+
+function isColorPropertyName(property) {
+  return /color|background|fill/i.test(property);
+}
+
+function sanitizeElementTokenValue(property, value, fallback) {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (isColorPropertyName(property)) return sanitizeColor(value, fallback);
+  if (/opacity/i.test(property)) return clampNumber(value, 0, 1, fallback ?? 1);
+  if (/fontWeight/i.test(property)) return clampNumber(value, 100, 1000, fallback ?? 600);
+  if (/brightness|contrast|saturation/i.test(property)) return clampNumber(value, 0, 200, fallback ?? 100);
+  if (/radius|padding|gap|fontSize|imageSize|height|width|blur|shadow|borderWidth/i.test(property)) return clampNumber(value, 0, 1000, fallback ?? 0);
+  return value;
+}
+
+function sanitizeElementTokens(tokens = {}, fallback = {}) {
+  const next = {};
+  const keys = new Set([...Object.keys(fallback || {}), ...Object.keys(tokens || {})]);
+  for (const key of keys) {
+    if (key === 'states') continue;
+    const value = sanitizeElementTokenValue(key, tokens[key], fallback[key]);
+    if (value !== undefined) next[key] = value;
+  }
+  return next;
+}
+
+export function resolveWidgetAppearance({
+  widgetType,
+  widgetId,
+  styleId,
+  elementId = 'container',
+  stateId = 'default',
+  viewport,
+  theme,
+  globalAppearance = {},
+  typeAppearance,
+  styleAppearance,
+  instanceAppearance,
+  elementAppearance = {},
+  responsiveAppearance = {},
+  draftAppearance = {},
+} = {}) {
+  const normalized = normalizeAppearance(globalAppearance, { theme });
+  const def = getWidgetDef(widgetType);
+  const requestedStyleId = styleId || def?.styles?.[0]?.id || 'default';
+  const renderStyleId = widgetId
+    ? getWidgetStyleRenderId({ id: widgetId, widget_type: widgetType, config: {} }, requestedStyleId, normalized)
+    : requestedStyleId;
+  const typeEntry = readOverrideEntry(typeAppearance ?? normalized.widgetTypes?.[widgetType]);
+  const typeStyleEntry = readOverrideEntry(styleAppearance ?? normalized.widgetTypes?.[widgetType]?.styles?.[renderStyleId]);
+  const instanceEntry = readOverrideEntry(instanceAppearance ?? normalized.widgets?.[widgetId]);
+  const instanceStyleEntry = readOverrideEntry(widgetId ? normalized.widgets?.[widgetId]?.styles?.[requestedStyleId] : {});
+  const responsiveEntry = collectResponsiveOverrides(normalized, viewport);
+  const explicitResponsiveEntry = collectResponsiveOverrides({ responsive: responsiveAppearance }, viewport);
+  const draftEntry = readOverrideEntry(draftAppearance);
+  const appearance = resolveAppearance({
+    systemDefaults: SYSTEM_APPEARANCE,
+    theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
+    globalAppearance: normalized,
+    widgetTypeAppearance: deepMerge(typeEntry.appearance, typeStyleEntry.appearance),
+    widgetInstanceAppearance: deepMerge(instanceEntry.appearance, instanceStyleEntry.appearance),
+    draftAppearance: deepMerge(responsiveEntry, explicitResponsiveEntry, draftEntry.appearance),
+  });
+  const elementDefaults = buildSubElementDefaults(widgetType, appearance)[elementId] || {};
+  const elementTokens = sanitizeElementTokens(deepMerge(
+    elementDefaults,
+    readSubElementOverride(typeEntry, elementId, stateId),
+    readSubElementOverride(typeStyleEntry, elementId, stateId),
+    readSubElementOverride(instanceEntry, elementId, stateId),
+    readSubElementOverride(instanceStyleEntry, elementId, stateId),
+    readSubElementOverride({ subElements: responsiveEntry?.subElements || {} }, elementId, stateId),
+    readSubElementOverride({ subElements: explicitResponsiveEntry?.subElements || {} }, elementId, stateId),
+    elementAppearance,
+    readSubElementOverride(draftEntry, elementId, stateId)
+  ), elementDefaults);
+
+  return {
+    schemaVersion: APPEARANCE_SCHEMA_VERSION,
+    widgetType,
+    widgetId,
+    styleId: requestedStyleId,
+    renderStyleId,
+    elementId,
+    stateId,
+    appearance,
+    widget: appearanceToWidgetConfigDefaults(appearance),
+    element: elementTokens,
+    states: getWidgetStateDefinitions(widgetType, elementId),
+    sourceOrder: ['system', 'theme', 'global', 'widget-type', 'widget-style', 'widget-instance', 'widget-element', 'responsive', 'draft'],
+  };
+}
+
 export function getAppearancePropertyState({ appearance, target, path, theme, draftAppearance } = {}) {
   const normalized = normalizeAppearance(appearance, { theme });
   const styleId = target?.styleId || '';
@@ -1192,13 +1564,15 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
   const renderStyleId = getWidgetStyleRenderId(widget, requestedStyleId, normalized);
   const typeEntry = readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]);
   const typeStyleEntry = readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]?.styles?.[renderStyleId]);
+  const registryTypeDefaults = readOverrideEntry(WIDGET_TYPE_APPEARANCE_DEFAULTS[widget.widget_type] || def?.appearanceDefaults);
+  const registryStyleDefaults = readOverrideEntry((WIDGET_TYPE_APPEARANCE_DEFAULTS[widget.widget_type]?.styles || def?.appearanceDefaults?.styles)?.[renderStyleId]);
   const instanceEntry = readOverrideEntry(normalized.widgets?.[widget.id]);
   const instanceStyleEntry = readOverrideEntry(normalized.widgets?.[widget.id]?.styles?.[requestedStyleId]);
   const resolved = resolveAppearance({
     systemDefaults: SYSTEM_APPEARANCE,
     theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
     globalAppearance: normalized,
-    widgetTypeAppearance: deepMerge(typeEntry.appearance, typeStyleEntry.appearance),
+    widgetTypeAppearance: deepMerge(registryTypeDefaults.appearance, registryStyleDefaults.appearance, typeEntry.appearance, typeStyleEntry.appearance),
     widgetInstanceAppearance: deepMerge(instanceEntry.appearance, instanceStyleEntry.appearance),
   });
   const inherited = pickSupportedConfig(widget.widget_type, appearanceToWidgetConfigDefaults(resolved));
@@ -1216,6 +1590,10 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
   }
 
   const typeOverride = pickSupportedConfig(widget.widget_type, {
+    ...appearanceToVisualOverride(registryTypeDefaults.appearance),
+    ...registryTypeDefaults.visual,
+    ...appearanceToVisualOverride(registryStyleDefaults.appearance),
+    ...registryStyleDefaults.visual,
     ...appearanceToVisualOverride(typeEntry.appearance),
     ...typeEntry.visual,
     ...appearanceToVisualOverride(typeStyleEntry.appearance),
@@ -1233,6 +1611,8 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
     ...instanceOverride,
     subElements: deepMerge(
       buildSubElementDefaults(widget.widget_type, resolved),
+      registryTypeDefaults.subElements,
+      registryStyleDefaults.subElements,
       base.subElements || {},
       typeEntry.subElements,
       typeStyleEntry.subElements,
@@ -1253,7 +1633,7 @@ export function buildWidgetAppearanceVars(config = {}) {
   const shadowSize = Number(config.shadowSize) || 0;
   const shadowIntensity = Number(config.shadowIntensity) || 0;
   const shadowOpacity = Math.max(0, Math.min(1, shadowIntensity / 100));
-  return {
+  const vars = {
     '--widget-accent': config.accentColor || 'var(--overlay-color-accent)',
     '--widget-surface': config.bgColor || 'var(--overlay-surface)',
     '--widget-card-bg': config.cardBg || 'var(--overlay-card-bg)',
@@ -1276,6 +1656,37 @@ export function buildWidgetAppearanceVars(config = {}) {
       ? `0 ${Math.round(shadowSize * 0.35)}px ${Math.round(shadowSize * 0.7)}px rgba(0,0,0,${shadowOpacity.toFixed(2)})`
       : 'none',
   };
+  for (const [elementId, tokens] of Object.entries(config.subElements || {})) {
+    const elementPrefix = `--widget-${cssSafeName(elementId)}`;
+    Object.assign(vars, buildElementAppearanceVars(tokens, elementPrefix));
+    for (const [stateId, stateTokens] of Object.entries(tokens?.states || {})) {
+      Object.assign(vars, buildElementAppearanceVars(stateTokens, `${elementPrefix}-${cssSafeName(stateId)}`));
+    }
+  }
+  return vars;
+}
+
+function cssSafeName(value) {
+  return String(value || '').replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
+}
+
+function toCssValue(property, value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number' && !/opacity|fontWeight|lineHeight|brightness|contrast|saturation|scale/i.test(property)) return `${value}px`;
+  return value;
+}
+
+export function buildElementAppearanceVars(tokens = {}, prefix = '--element') {
+  const safePrefix = prefix.startsWith('--') ? prefix : `--${cssSafeName(prefix)}`;
+  return Object.fromEntries(Object.entries(tokens || {}).filter(([key]) => key !== 'states').map(([key, value]) => ([
+    `${safePrefix}-${cssSafeName(key)}`,
+    toCssValue(key, value),
+  ])).filter(([, value]) => value !== undefined));
+}
+
+export function buildScopedAppearanceVars(options = {}) {
+  const resolved = options.element || resolveWidgetAppearance(options).element;
+  return buildElementAppearanceVars(resolved, options.prefix || '--element');
 }
 
 function countOverrideEntry(entry = {}) {

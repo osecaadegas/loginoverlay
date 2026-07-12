@@ -508,6 +508,7 @@ export default function AppearanceCenter({
   const [selectedCategory, setSelectedCategory] = useState('themes');
   const [selectedTarget, setSelectedTarget] = useState(() => createInitialTarget(widgets, stateFromServer.draft));
   const [selectedElementId, setSelectedElementId] = useState(() => getFirstElementId(createInitialTarget(widgets, stateFromServer.draft).widgetType));
+  const [selectedStateId, setSelectedStateId] = useState('default');
   const [saveStatus, setSaveStatus] = useState('saved');
   const [search, setSearch] = useState('');
   const [undoStack, setUndoStack] = useState([]);
@@ -552,6 +553,8 @@ export default function AppearanceCenter({
     [selectedWidgetType]
   );
   const selectedSubElement = selectedSubElementDefinitions.find(definition => definition.id === selectedElementId) || selectedSubElementDefinitions[0] || null;
+  const selectedStateOptions = selectedSubElement?.states?.length ? selectedSubElement.states : [{ id: 'default', label: 'Default' }];
+  const selectedState = selectedStateOptions.find(state => state.id === selectedStateId) || selectedStateOptions[0];
 
   useEffect(() => {
     trackEvent(ANALYTICS_EVENTS.APPEARANCE_CENTER_OPENED, { route: '/overlay-center/appearance' });
@@ -584,6 +587,12 @@ export default function AppearanceCenter({
       setSelectedElementId(firstElementId);
     }
   }, [selectedElementId, selectedSubElementDefinitions]);
+
+  useEffect(() => {
+    if (!selectedStateOptions.some(state => state.id === selectedStateId)) {
+      setSelectedStateId(selectedStateOptions[0]?.id || 'default');
+    }
+  }, [selectedStateId, selectedStateOptions]);
 
   useEffect(() => {
     if (typeof BroadcastChannel === 'undefined') return undefined;
@@ -828,19 +837,25 @@ export default function AppearanceCenter({
   const updateSubElement = useCallback((elementId, property, value) => {
     const root = getTargetOverrideRoot(selectedTarget);
     if (!root) return;
-    updateDraft(prev => setByPath(prev, `${root}.subElements.${elementId}.${property}`, value), `${elementId}.${property}`);
-  }, [selectedTarget, updateDraft]);
+    const statePath = selectedStateId && selectedStateId !== 'default'
+      ? `${root}.subElements.${elementId}.states.${selectedStateId}.${property}`
+      : `${root}.subElements.${elementId}.${property}`;
+    updateDraft(prev => setByPath(prev, statePath, value), `${elementId}.${selectedStateId}.${property}`);
+  }, [selectedStateId, selectedTarget, updateDraft]);
 
   const resetSubElement = useCallback((elementId, property) => {
     const root = getTargetOverrideRoot(selectedTarget);
     if (!root) return;
-    updateDraft(prev => omitPath(prev, `${root}.subElements.${elementId}.${property}`), `Reset ${elementId}.${property}`);
+    const statePath = selectedStateId && selectedStateId !== 'default'
+      ? `${root}.subElements.${elementId}.states.${selectedStateId}.${property}`
+      : `${root}.subElements.${elementId}.${property}`;
+    updateDraft(prev => omitPath(prev, statePath), `Reset ${elementId}.${selectedStateId}.${property}`);
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_RESET, {
       scope: selectedTarget.scope,
       widget_type: selectedTarget.widgetType || null,
-      path: `${elementId}.${property}`,
+      path: `${elementId}.${selectedStateId}.${property}`,
     });
-  }, [selectedTarget, updateDraft]);
+  }, [selectedStateId, selectedTarget, updateDraft]);
 
   const copySelectedAppearance = useCallback(() => {
     const root = getTargetOverrideRoot(selectedTarget);
@@ -981,6 +996,7 @@ export default function AppearanceCenter({
     setSelectedTarget(normalizedTarget);
     const nextWidgetType = normalizedTarget.widgetType || widgets.find(widget => widget.id === normalizedTarget.widgetId)?.widget_type || '';
     setSelectedElementId(getFirstElementId(nextWidgetType));
+    setSelectedStateId('default');
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED, { scope: normalizedTarget.scope, widget_type: normalizedTarget.widgetType || null });
   }, [draft, persistDraft, saveStatus, widgets]);
 
@@ -1222,6 +1238,14 @@ export default function AppearanceCenter({
         ? deepMerge(buildSubElementDefaults(selectedWidgetType, a), typeSubElements, typeStyleSubElements, selectedTarget.scope === 'widget_instance' ? instanceSubElements : {}, selectedTarget.scope === 'widget_instance' ? instanceStyleSubElements : {})
         : {};
       const selectedSubElementDefinition = subElementDefinitions.find(definition => definition.id === selectedElementId) || subElementDefinitions[0];
+      const selectedStateKey = selectedState?.id || 'default';
+      const readElementValue = (source, elementId, property) => {
+        const baseValue = getByPath(source, `${elementId}.${property}`);
+        const stateValue = selectedStateKey !== 'default'
+          ? getByPath(source, `${elementId}.states.${selectedStateKey}.${property}`)
+          : undefined;
+        return stateValue ?? baseValue;
+      };
       return (
         <Section
           title="Widget-specific appearance"
@@ -1300,15 +1324,15 @@ export default function AppearanceCenter({
               <div className="ac-sub-elements__header">
                 <div>
                   <h4>{selectedSubElementDefinition.label}</h4>
-                  <p>Element ID: <code>{selectedSubElementDefinition.id}</code></p>
+                  <p>Element ID: <code>{selectedSubElementDefinition.id}</code> - State: <code>{selectedStateKey}</code></p>
                 </div>
                 <span>{selectedSubElementDefinition.properties?.length || 0} supported controls</span>
               </div>
               <div className="ac-sub-element ac-sub-element--selected">
                 <div className="ac-control-grid">
                   {(selectedSubElementDefinition.properties || []).map(property => {
-                    const value = getByPath(effectiveSubElements, `${selectedSubElementDefinition.id}.${property}`);
-                    const explicit = getByPath(explicitSubElements, `${selectedSubElementDefinition.id}.${property}`);
+                    const value = readElementValue(effectiveSubElements, selectedSubElementDefinition.id, property);
+                    const explicit = readElementValue(explicitSubElements, selectedSubElementDefinition.id, property);
                     const inherited = explicit == null;
                     const source = inherited ? formatInheritedSource(selectedTarget) : formatOverrideSource(selectedTarget);
                     const label = formatSubElementLabel(property);
@@ -1643,6 +1667,19 @@ export default function AppearanceCenter({
                     options={selectedSubElementDefinitions.map(definition => ({ value: definition.id, label: definition.label }))}
                     onChange={value => {
                       setSelectedElementId(value);
+                      setSelectedStateId('default');
+                      setSelectedCategory('widgets');
+                    }}
+                  />
+                )}
+                {selectedSubElementDefinitions.length > 0 && selectedStateOptions.length > 0 && (
+                  <SelectControl
+                    label="State"
+                    description="State overrides inherit from the selected element."
+                    value={selectedState?.id || 'default'}
+                    options={selectedStateOptions.map(state => ({ value: state.id, label: state.label || state.id }))}
+                    onChange={value => {
+                      setSelectedStateId(value);
                       setSelectedCategory('widgets');
                     }}
                   />

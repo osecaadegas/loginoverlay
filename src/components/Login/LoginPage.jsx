@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import LandingPage from '../LandingPage/LandingPage';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -20,6 +21,10 @@ export default function LoginPage() {
     if (user) navigate(returnTo, { replace: true });
   }, [navigate, returnTo, user]);
 
+  const closeLogin = () => {
+    navigate('/', { replace: true });
+  };
+
   const handleLogin = async (provider, signInFn) => {
     setError('');
     setLoading(provider);
@@ -37,14 +42,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page">
-      <div className="login-container">
+    <div className="login-route">
+      <div className="login-route__landing" aria-hidden="true">
+        <LandingPage mode="selector" />
+      </div>
+
+      <div className="login-page" role="dialog" aria-modal="true" aria-labelledby="login-title" onClick={closeLogin}>
+      <div className="login-container" onClick={(event) => event.stopPropagation()}>
         {/* Glow effect */}
         <div className="login-glow" />
 
         <div className="login-card">
+          <button type="button" className="login-close" aria-label="Close login" onClick={closeLogin}>×</button>
           <div className="login-header">
-            <h1 className="login-title">Welcome</h1>
+            <h1 id="login-title" className="login-title">Welcome</h1>
             <p className="login-subtitle">Sign in to access the full experience</p>
           </div>
 
@@ -109,6 +120,7 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

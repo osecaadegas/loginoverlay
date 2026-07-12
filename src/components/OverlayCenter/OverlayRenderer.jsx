@@ -180,9 +180,9 @@ export default function OverlayRenderer() {
         if (cancelled) return;
 
         const [wdgs, th, st] = await Promise.all([
-          getWidgets(inst.user_id),
-          getTheme(inst.user_id),
-          getOverlayState(inst.user_id),
+          getWidgets(inst.user_id, inst.id),
+          getTheme(inst.user_id, inst.id),
+          getOverlayState(inst.user_id, inst.id),
         ]);
 
         if (cancelled) return;
@@ -194,10 +194,10 @@ export default function OverlayRenderer() {
 
         // Subscribe to realtime
         channelRef.current = subscribeToOverlay(inst.user_id, {
-          onWidgets: () => getWidgets(inst.user_id).then(w => !cancelled && setWidgets(w)),
+          onWidgets: () => getWidgets(inst.user_id, inst.id).then(w => !cancelled && setWidgets(w)),
           onTheme: (t) => !cancelled && setTheme(t),
           onState: (s) => !cancelled && setOverlayState(s),
-        });
+        }, inst.id);
       } catch (err) {
         console.error('[OverlayRenderer]', err);
         setError('Failed to load overlay');

@@ -33,7 +33,6 @@ import { supabase } from '../../config/supabaseClient';
 import { usePremium } from '../../hooks/usePremium';
 import { trackEvent } from '../../utils/analytics';
 import trackOfferClick from '../../utils/trackOfferClick';
-import AuthModal from '../Auth/AuthModal';
 import './LandingPage.css';
 
 const FEATURED_PARTNERS = [
@@ -76,6 +75,11 @@ const PLAYER_STATS = [
   { label: 'Best win', value: 'EUR 240', tone: 'positive' },
   { label: 'Highest multi', value: '1,200x', tone: 'positive' },
 ];
+
+const LANDING_IMAGES = {
+  player: '/player.png',
+  streamer: '/streamer.png',
+};
 
 const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
 function rememberAudience(user, audience) {
@@ -235,11 +239,11 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
   const isPlayer = audience === 'player';
   const label = isPlayer ? 'PLAYER' : 'STREAMER';
   const title = isPlayer
-    ? 'Track every session. Understand every result.'
-    : 'Build a stream your audience remembers.';
+    ? 'Track your Wins'
+    : 'Become a Streamer';
   const description = isPlayer
     ? 'Manage bonus hunts, deposits, withdrawals, break-even targets, wins, multipliers and personal records from one simple dashboard.'
-    : 'Professional overlays, bonus hunts, slot requests, tournaments, giveaways, viewer games and live-streaming tools in one platform.';
+    : 'Improve your stream numbers. Whether you are a new streamer or a small-time streamer, elevate your game with bonus hunt trackers, tournament brackets, bets, giveaways, chat tools and games for your chat. Everything you need to look like a pro in one place.';
   const cta = isPlayer ? 'Enter Player Center' : 'Enter Streamer Center';
   const Preview = isPlayer ? PlayerPreview : StreamerPreview;
 
@@ -261,6 +265,9 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
       aria-label={cta}
       disabled={locked && !selecting}
     >
+      <span className="lp-audience-panel__media" aria-hidden="true">
+        <img src={LANDING_IMAGES[audience]} alt="" loading="eager" decoding="async" />
+      </span>
       <span className="lp-audience-panel__shade" />
       <span className="lp-audience-panel__content">
         <span className="lp-eyebrow">{label}</span>
@@ -350,6 +357,9 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
   return (
     <main className="lp-selected lp-selected--player">
       <section className="lp-selected-hero">
+        <div className="lp-selected-hero__media" aria-hidden="true">
+          <img src={LANDING_IMAGES.player} alt="" loading="eager" decoding="async" />
+        </div>
         <div className="lp-selected-hero__copy">
           <span className="lp-eyebrow">Player Center</span>
           <h1 ref={headingRef} tabIndex="-1">
@@ -483,6 +493,9 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
   return (
     <main className="lp-selected lp-selected--streamer">
       <section className="lp-selected-hero">
+        <div className="lp-selected-hero__media" aria-hidden="true">
+          <img src={LANDING_IMAGES.streamer} alt="" loading="eager" decoding="async" />
+        </div>
         <div className="lp-selected-hero__copy">
           <span className="lp-eyebrow">Streamer Center</span>
           <h1 ref={headingRef} tabIndex="-1">
@@ -593,7 +606,6 @@ function Footer() {
 }
 
 export default function LandingPage({ mode = 'selector' }) {
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [pricingPlans, setPricingPlans] = useState([]);
@@ -670,7 +682,9 @@ export default function LandingPage({ mode = 'selector' }) {
     return FEATURED_PARTNERS;
   }, [casinoOffers]);
 
-  const openAuth = () => setShowAuthModal(true);
+  const openAuth = () => {
+    navigate('/login', { state: { from: `${location.pathname}${location.search}` } });
+  };
 
   const handlePreview = (audience) => {
     if (selectingAudience) return;
@@ -783,7 +797,6 @@ export default function LandingPage({ mode = 'selector' }) {
         {mode === 'player' && <Footer />}
       </div>
 
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </>
   );
 }

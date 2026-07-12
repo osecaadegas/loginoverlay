@@ -8,8 +8,12 @@ const server = await createServer({
 });
 
 const { registerWidget } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/widgetRegistry.js');
+const { subValue } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/appearanceStyles.js');
 const {
+  buildWidgetAppearanceVars,
+  buildScopedAppearanceVars,
   SYSTEM_APPEARANCE,
+  getWidgetAppearanceDefinition,
   getScopedAppearancePath,
   getScopedVisualPath,
   getWidgetActiveStyleId,
@@ -17,6 +21,7 @@ const {
   omitPath,
   resolveAppearance,
   resolveAppearanceForTarget,
+  resolveWidgetAppearance,
   resolveWidgetAppearanceConfig,
   resolveWidgetsForAppearance,
 } = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/appearanceModel.js');
@@ -30,6 +35,15 @@ registerWidget({
     borderRadius: 12,
     textColor: '#ffffff',
     fontFamily: 'Test Sans',
+  },
+  appearanceDefaults: {
+    appearance: {
+      surfaces: { containerBg: '#242424' },
+      borders: { radius: 15 },
+    },
+    subElements: {
+      card: { background: '#2a2a2a', radius: 9 },
+    },
   },
   styles: [
     { id: 'v1', label: 'Classic' },
@@ -86,6 +100,15 @@ const widgetConfig = resolveWidgetAppearanceConfig({
 }, baseAppearance);
 assert.equal(widgetConfig.borderRadius, 24, 'widget config receives resolved instance radius');
 assert.equal(widgetConfig.bgColor, '#333333', 'widget config receives resolved type background');
+
+const registryDefaultConfig = resolveWidgetAppearanceConfig({
+  id: 'widget_registry_defaults',
+  widget_type: 'appearance_test_widget',
+  config: { bgColor: '#101010', borderRadius: 12, textColor: '#ffffff', fontFamily: 'Test Sans' },
+}, { themeId: 'classic' });
+assert.equal(registryDefaultConfig.bgColor, '#242424', 'registry appearance defaults feed visual config inheritance');
+assert.equal(registryDefaultConfig.borderRadius, 15, 'registry appearance defaults feed dimensional config inheritance');
+assert.equal(registryDefaultConfig.subElements.card.background, '#2a2a2a', 'registry appearance defaults feed element defaults');
 
 assert.equal(
   getScopedAppearancePath({ scope: 'widget_instance', widgetId: 'widget_a', widgetType: 'appearance_test_widget' }, 'borders.radius'),
@@ -186,6 +209,99 @@ const resetStyleRadius = omitPath(styleScopedAppearance, 'widgets.widget_a.style
 const resetConfig = resolveWidgetAppearanceConfig(widgetA, resetStyleRadius);
 assert.equal(resetConfig.borderRadius, 30, 'resetting a style override restores the inherited type/style value');
 assert.equal(getWidgetOverrideCount(styleScopedAppearance, 'widget_a', 'compact_horizontal'), 2, 'style-specific override count only includes that style root');
+
+const elementStateAppearance = {
+  ...styleScopedAppearance,
+  responsive: {
+    overrides: {
+      compact: {
+        maxWidth: 800,
+        appearance: {
+          subElements: {
+            card: { padding: 6 },
+          },
+        },
+      },
+    },
+  },
+  widgetTypes: {
+    appearance_test_widget: {
+      styles: {
+        compact_horizontal: {
+          subElements: {
+            card: { background: '#222222', states: { selected: { background: '#333333' } } },
+          },
+        },
+      },
+    },
+  },
+  widgets: {
+    widget_a: {
+      styles: {
+        compact_horizontal: {
+          subElements: {
+            card: { radius: 18, states: { selected: { background: '#444444' } } },
+          },
+        },
+      },
+    },
+  },
+};
+
+const selectedCard = resolveWidgetAppearance({
+  widgetType: 'appearance_test_widget',
+  widgetId: 'widget_a',
+  styleId: 'compact_horizontal',
+  elementId: 'card',
+  stateId: 'selected',
+  viewport: { width: 640, height: 360 },
+  globalAppearance: elementStateAppearance,
+  draftAppearance: { subElements: { card: { states: { selected: { textColor: '#abcdef' } } } } },
+});
+assert.equal(selectedCard.element.background, '#444444', 'state-specific instance override wins over type style state');
+assert.equal(selectedCard.element.radius, 18, 'element override inherits from instance style element');
+assert.equal(selectedCard.element.padding, 6, 'responsive element override applies for matching viewport');
+assert.equal(selectedCard.element.textColor, '#abcdef', 'temporary draft element state wins last');
+assert.deepEqual(selectedCard.sourceOrder, ['system', 'theme', 'global', 'widget-type', 'widget-style', 'widget-instance', 'widget-element', 'responsive', 'draft'], 'resolver documents deterministic precedence');
+
+const cardVars = buildScopedAppearanceVars({ element: selectedCard.element, prefix: '--test-card' });
+assert.equal(cardVars['--test-card-background'], '#444444', 'token generator emits scoped background variable');
+assert.equal(cardVars['--test-card-radius'], '18px', 'token generator adds px units for dimensional numbers');
+assert.equal(cardVars['--test-card-text-color'], '#abcdef', 'token generator kebab-cases token names');
+
+const widgetVars = buildWidgetAppearanceVars({
+  subElements: {
+    participantCard: {
+      background: '#111111',
+      states: { winner: { background: '#222222', opacity: 0.9 } },
+    },
+  },
+});
+assert.equal(widgetVars['--widget-participant-card-background'], '#111111', 'widget vars include element token variables');
+assert.equal(widgetVars['--widget-participant-card-winner-background'], '#222222', 'widget vars include state token variables');
+assert.equal(widgetVars['--widget-participant-card-winner-opacity'], 0.9, 'state token variables preserve unitless values');
+
+const widgetDefinition = getWidgetAppearanceDefinition('appearance_test_widget');
+assert.equal(widgetDefinition.type, 'appearance_test_widget', 'appearance definition exposes widget type');
+assert.ok(widgetDefinition.elements.some(element => element.id === 'card'), 'appearance definition exposes element definitions');
+assert.ok(widgetDefinition.supportedProperties.some(property => property.path === 'background'), 'appearance definition exposes generated property controls');
+
+const bonusHuntDefinition = getWidgetAppearanceDefinition('bonus_hunt');
+const bonusCardDefinition = bonusHuntDefinition.elements.find(element => element.id === 'bonusCard');
+assert.ok(bonusCardDefinition, 'bonus hunt exposes the real bonus card element');
+assert.ok(bonusCardDefinition.states.some(state => state.id === 'opened'), 'bonus card exposes opened as a state');
+assert.ok(!bonusHuntDefinition.elements.some(element => element.id === 'openedState'), 'legacy opened pseudo-element is hidden from the editor contract');
+
+const chatDefinition = getWidgetAppearanceDefinition('chat');
+const messageDefinition = chatDefinition.elements.find(element => element.id === 'message');
+assert.ok(messageDefinition.states.some(state => state.id === 'moderator'), 'chat message exposes moderator as a state');
+assert.ok(!chatDefinition.elements.some(element => element.id === 'moderatorMessage'), 'legacy moderator pseudo-element is hidden from the editor contract');
+
+assert.equal(
+  subValue({ subElements: { bonusCard: { background: '#111111', states: { opened: { background: '#222222' } } } } }, 'openedState', 'background', '#000000'),
+  '#222222',
+  'legacy pseudo-elements resolve canonical state overrides'
+);
 
 console.log('appearance model tests passed');
 

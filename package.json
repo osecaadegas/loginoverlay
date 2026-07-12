@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npx vite build",
+    "audit:appearance-hardcoding": "node scripts/audit-overlay-appearance-hardcoding.mjs",
     "preview": "vite preview",
     "test:appearance": "node scripts/test-appearance-model.mjs",
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",

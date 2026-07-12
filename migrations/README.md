@@ -61,6 +61,9 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 19. `019_analytics_product_foundation.sql`
 	Adds analytics v2 event context, product reporting views, indexes, idempotency support, and stricter analytics RLS policies.
 
+20. `020_overlay_appearance_system.sql`
+	Adds overlay-scoped appearance persistence, bootstraps missing Overlay Center runtime tables for legacy databases that only have `overlays.settings`, backfills `overlay_id` for themes/widgets/state, creates the legacy-to-canonical appearance property mapping table, and tightens owner policies for overlay appearance mutations.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.
