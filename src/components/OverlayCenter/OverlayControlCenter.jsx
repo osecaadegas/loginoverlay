@@ -406,10 +406,10 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
 
   return (
     <header className="oc2-topbar">
-      <Link to="/overlay-center" className="oc2-brand" aria-label="Overlay Center home">
+      <a href="https://streamerscenter.com/" className="oc2-brand" aria-label="Streamers Center home">
         <img src="/StreamerCenterLogo.png" alt="" />
         <span>Overlay Center</span>
-      </Link>
+      </a>
 
       <nav className="oc2-nav" aria-label="Overlay Center navigation">
         {navItems.map(item => {

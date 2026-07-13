@@ -99,11 +99,11 @@ function rememberAudience(user, audience) {
 
 function BrandMark() {
   return (
-    <Link to="/" className="lp-brand" aria-label="Streamers Center home">
+    <a href="https://streamerscenter.com/" className="lp-brand" aria-label="Streamers Center home">
       <span className="lp-brand__mark">
         <img src="/StreamerCenterLogo.png" alt="" />
       </span>
-    </Link>
+    </a>
   );
 }
 

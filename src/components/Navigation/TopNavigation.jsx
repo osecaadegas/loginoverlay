@@ -18,11 +18,11 @@ import './TopNavigation.css';
 
 function Brand() {
   return (
-    <Link to="/" className="topnav-brand" aria-label="Streamers Center home">
+    <a href="https://streamerscenter.com/" className="topnav-brand" aria-label="Streamers Center home">
       <span className="topnav-brand__mark">
         <img src="/StreamerCenterLogo.png" alt="" />
       </span>
-    </Link>
+    </a>
   );
 }
 
