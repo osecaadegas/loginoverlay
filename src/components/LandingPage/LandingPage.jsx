@@ -9,6 +9,7 @@ import {
   Database,
   Gauge,
   Gift,
+  Grid3X3,
   LayoutDashboard,
   LibraryBig,
   LineChart,
@@ -22,7 +23,6 @@ import {
   Sparkles,
   Swords,
   Trophy,
-  UserRound,
   Users,
   WalletCards,
   Zap,
@@ -226,8 +226,8 @@ function LandingNav({ activeAudience, user, onLogin, onSwitch, onReset }) {
           <span className="lp-site-nav__tagline">Tools for players and streamers</span>
         )}
         {user ? (
-          <Link className="lp-nav-btn lp-nav-btn--ghost" to="/profile">
-            <UserRound size={16} /> Account
+          <Link className="lp-nav-btn lp-nav-btn--ghost" to="/apps">
+            <Grid3X3 size={16} /> Apps
           </Link>
         ) : (
           <button type="button" className="lp-nav-btn lp-nav-btn--ghost" onClick={onLogin}>
