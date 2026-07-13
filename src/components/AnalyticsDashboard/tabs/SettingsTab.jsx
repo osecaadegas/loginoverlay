@@ -38,7 +38,9 @@ export default function SettingsTab({ analytics }) {
       fingerprint: gdprFingerprint || undefined,
     });
     if (result) {
-      setGdprStatus(`Deleted data for ${result.deleted_count || 0} visitors`);
+      const deleted = result.deleted || {};
+      const totalDeleted = Number(deleted.sessions || 0) + Number(deleted.events || 0) + Number(deleted.fraud_logs || 0);
+      setGdprStatus(`Deleted ${totalDeleted.toLocaleString()} analytics records`);
       setGdprEmail('');
       setGdprFingerprint('');
     }

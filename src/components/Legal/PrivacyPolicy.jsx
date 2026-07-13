@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
 
           <h3>2.3 Payment Information</h3>
           <p>
-            Premium subscription payments are processed by Stripe. We do not store full card
+            Premium subscription payments are processed by Mollie. We do not store full card
             numbers on our servers. We store billing identifiers, subscription status, plan
             metadata, and related account information needed to manage premium access.
           </p>
@@ -80,7 +80,7 @@ export default function PrivacyPolicy() {
             <li><strong>Supabase</strong> — Database and authentication</li>
             <li><strong>StreamElements</strong> — Points and loyalty system</li>
             <li><strong>Vercel</strong> — Website hosting and analytics</li>
-            <li><strong>Stripe</strong> - Payment processing and subscription management</li>
+            <li><strong>Mollie</strong> - Payment processing and subscription management</li>
           </ul>
           <p>
             Each of these services has their own privacy policy governing how they handle your data.

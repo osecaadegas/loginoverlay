@@ -65,10 +65,10 @@ export default function RealtimeTab({ analytics }) {
             {(data.recentEvents || []).map(e => (
               <div key={e.id} className={`an-realtime-event ${e.is_suspicious ? 'an-realtime-event--suspicious' : ''}`}>
                 <span className={`an-event-badge an-event-badge--${e.event_type}`}>
-                  {e.event_type}
+                  {e.event_name || e.event_type}
                 </span>
                 <span className="an-realtime-event__detail">
-                  {e.page_url || e.element_text || e.offer_id || '-'}
+                  {e.route || e.page_url || e.element_text || e.metadata?.element_text || e.offer_id || e.metadata?.offer_id || '-'}
                 </span>
                 <span className="an-realtime-event__time">
                   {timeAgo(e.created_at)}

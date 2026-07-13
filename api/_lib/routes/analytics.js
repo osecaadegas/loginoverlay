@@ -123,11 +123,20 @@ async function getGeoForIp(ip, supabase) {
   if (!ip) return {};
 
   // Check cache
-  const { data: cached } = await supabase
+  let { data: cached, error: cacheError } = await supabase
     .from('analytics_geo_cache')
     .select('*')
     .eq('ip_address', ip)
     .maybeSingle();
+
+  if (cacheError && isMissingRelationError(cacheError)) {
+    const legacy = await supabase
+      .from('geo_cache')
+      .select('*')
+      .eq('ip_address', ip)
+      .maybeSingle();
+    cached = legacy.data;
+  }
 
   if (cached) return cached;
 
@@ -175,7 +184,11 @@ async function getGeoForIp(ip, supabase) {
 
   // Cache result
   if (geo.ip_address) {
-    await supabase.from('analytics_geo_cache').upsert(geo, { onConflict: 'ip_address' }).select();
+    const cacheResult = await supabase.from('analytics_geo_cache').upsert(geo, { onConflict: 'ip_address' }).select();
+    if (cacheResult.error && isMissingRelationError(cacheResult.error)) {
+      const { fetched_at, ...legacyGeo } = { ...geo, fetched_at: new Date().toISOString() };
+      await supabase.from('geo_cache').upsert({ ...legacyGeo, cached_at: fetched_at }, { onConflict: 'ip_address' }).select();
+    }
   }
 
   return geo;
@@ -299,6 +312,11 @@ function isMissingColumnError(error) {
   return error?.code === 'PGRST204' || error?.code === '42703' || message.includes('schema cache') || message.includes('column');
 }
 
+function isMissingRelationError(error) {
+  const message = `${error?.message || ''} ${error?.details || ''}`.toLowerCase();
+  return error?.code === '42P01' || error?.code === 'PGRST205' || message.includes('could not find the table') || message.includes('relation') && message.includes('does not exist');
+}
+
 function removeV2EventColumns(row) {
   const {
     event_id,
@@ -318,6 +336,53 @@ function removeV2EventColumns(row) {
   return legacy;
 }
 
+function minimalLegacyEventRow(row) {
+  const metadata = safeMetadata(row);
+  return {
+    session_id: row.session_id,
+    user_id: row.user_id || null,
+    event_type: row.event_type,
+    page_url: row.page_url || row.route || null,
+    offer_id: row.offer_id || metadata.offer_id || null,
+    metadata: {
+      ...metadata,
+      event_id: row.event_id || metadata.event_id || null,
+      event_name: row.event_name || metadata.canonical_event_name || row.event_type,
+      canonical_event_name: row.event_name || metadata.canonical_event_name || row.event_type,
+      route: row.route || row.page_url || metadata.route || null,
+      properties: row.properties || metadata.properties || {},
+      anonymous_id: row.anonymous_id || metadata.anonymous_id || null,
+      experience: row.experience || metadata.experience || null,
+    },
+    ip_address: row.ip_address || null,
+    country: row.country || null,
+    city: row.city || null,
+    is_suspicious: row.is_suspicious || false,
+  };
+}
+
+function legacySessionPayload({ body, fingerprint, ip, ua, parsed, geo, referrer, referrer_source }) {
+  return {
+    session_token: body.session_token || `legacy_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    user_id: body.user_id || null,
+    ip_address: compactIp(ip),
+    user_agent: ua,
+    country: geo.country || null,
+    country_code: geo.country_code || null,
+    city: geo.city || null,
+    region: geo.region || null,
+    isp: geo.isp || null,
+    referrer,
+    referrer_source,
+    is_suspicious: false,
+    device_type: parsed.device_type,
+    browser: parsed.browser,
+    os: parsed.os,
+    timezone: body.timezone || null,
+    device_fingerprint: fingerprint || null,
+  };
+}
+
 function sumRows(rows = [], key) {
   return rows.reduce((sum, row) => sum + (Number(row?.[key]) || 0), 0);
 }
@@ -330,6 +395,258 @@ function countBy(rows = [], key) {
   }, {});
 }
 
+function safeMetadata(row = {}) {
+  const metadata = row.metadata || row.properties || {};
+  if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) return metadata;
+  if (typeof metadata === 'string') {
+    try {
+      const parsed = JSON.parse(metadata);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+function analyticsEventName(row = {}) {
+  const metadata = safeMetadata(row);
+  return normalizeAnalyticsEventName(row.event_name || metadata.canonical_event_name || row.event_type || 'unknown') || 'unknown';
+}
+
+function analyticsEventTime(row = {}) {
+  return row.occurred_at || row.created_at || row.received_at || null;
+}
+
+function analyticsSessionTime(row = {}) {
+  return row.started_at || row.created_at || row.last_seen_at || null;
+}
+
+function analyticsRoute(row = {}) {
+  const metadata = safeMetadata(row);
+  return row.route || row.page_url || row.landing_page || row.entry_route || row.last_route || metadata.route || metadata.page_url || '/';
+}
+
+function analyticsExperience(row = {}) {
+  const metadata = safeMetadata(row);
+  return row.experience || metadata.experience || getExperienceFromPath(analyticsRoute(row));
+}
+
+function sessionVisitorKey(row = {}) {
+  return row.visitor_id || row.anonymous_id || row.user_id || row.device_fingerprint || row.gpu_fingerprint || row.session_token || (row.ip_address && row.user_agent ? `${row.ip_address}:${row.user_agent}` : null) || row.id || null;
+}
+
+function eventVisitorKey(row = {}, sessionKeys = new Map()) {
+  const metadata = safeMetadata(row);
+  return row.visitor_id || row.anonymous_id || row.user_id || metadata.anonymous_id || sessionKeys.get(row.session_id) || row.session_id || row.id || null;
+}
+
+function addMapCount(map, key, amount = 1) {
+  const safeKey = key || 'unknown';
+  map[safeKey] = (map[safeKey] || 0) + amount;
+}
+
+function topCountRows(map, labelKey, valueKey, limit = 10) {
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([label, value]) => ({ [labelKey]: label, [valueKey]: value }));
+}
+
+function buildDayBuckets(startIso, endIso) {
+  const buckets = [];
+  const cursor = new Date(startIso);
+  const end = new Date(endIso);
+  cursor.setUTCHours(0, 0, 0, 0);
+  end.setUTCHours(0, 0, 0, 0);
+  while (cursor <= end) {
+    buckets.push(cursor.toISOString().slice(0, 10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return buckets;
+}
+
+async function fetchAnalyticsSessionsForRange(supabase, startIso, endIso, limit = 15000) {
+  const modernColumns = 'id, visitor_id, user_id, anonymous_id, ip_address, user_agent, browser, os, device_type, country, country_code, city, referrer, referrer_source, landing_page, entry_route, last_route, started_at, ended_at, duration_secs, page_count, event_count, is_bounce, risk_score, is_suspicious, experience, metadata';
+  let result = await supabase
+    .from('analytics_sessions')
+    .select(modernColumns)
+    .gte('started_at', startIso)
+    .lt('started_at', endIso)
+    .order('started_at', { ascending: true })
+    .limit(limit);
+
+  if (result.error && isMissingColumnError(result.error)) {
+    result = await supabase
+      .from('analytics_sessions')
+      .select('id, session_token, user_id, ip_address, user_agent, browser, os, device_type, country, country_code, city, referrer, referrer_source, created_at, last_seen_at, is_suspicious, device_fingerprint, gpu_fingerprint')
+      .gte('created_at', startIso)
+      .lt('created_at', endIso)
+      .order('created_at', { ascending: true })
+      .limit(limit);
+  }
+
+  if (result.error && isMissingRelationError(result.error)) return [];
+  return result.data || [];
+}
+
+async function fetchAnalyticsEventsForRange(supabase, startIso, endIso, limit = 25000) {
+  const modernColumns = 'id, session_id, visitor_id, user_id, event_type, event_name, event_id, page_url, route, offer_id, element_text, target_url, metadata, properties, ip_address, country, city, is_suspicious, created_at, occurred_at, anonymous_id, experience';
+  let result = await supabase
+    .from('analytics_events')
+    .select(modernColumns)
+    .gte('created_at', startIso)
+    .lt('created_at', endIso)
+    .order('created_at', { ascending: true })
+    .limit(limit);
+
+  if (result.error && isMissingColumnError(result.error)) {
+    result = await supabase
+      .from('analytics_events')
+      .select('id, session_id, user_id, event_type, page_url, offer_id, metadata, ip_address, country, city, is_suspicious, created_at')
+      .gte('created_at', startIso)
+      .lt('created_at', endIso)
+      .order('created_at', { ascending: true })
+      .limit(limit);
+  }
+
+  if (result.error && isMissingRelationError(result.error)) return [];
+  return result.data || [];
+}
+
+async function fetchOfferRows(supabase, offerIds = null) {
+  const selections = [
+    'id, name, logo_url, affiliate_url, visible, sort_order, rating',
+    'id, casino_name, title, image_url, bonus_link, is_active, is_premium, display_order',
+  ];
+
+  for (const selection of selections) {
+    let query = supabase.from('casino_offers').select(selection).limit(1000);
+    if (offerIds?.length) query = query.in('id', offerIds);
+    const result = await query;
+    if (!result.error) return result.data || [];
+    if (isMissingRelationError(result.error)) return [];
+    if (!isMissingColumnError(result.error)) return [];
+  }
+  return [];
+}
+
+async function optionalRows(queryPromise) {
+  const result = await queryPromise;
+  if (!result.error) return result.data || [];
+  if (isMissingRelationError(result.error) || isMissingColumnError(result.error)) return [];
+  return [];
+}
+
+async function fetchUserRoleRows(supabase) {
+  let result = await supabase
+    .from('user_roles')
+    .select('user_id, role, is_active, access_expires_at, source, created_at')
+    .in('role', ['premium', 'admin', 'superadmin', 'moderator'])
+    .limit(5000);
+
+  if (result.error && isMissingColumnError(result.error)) {
+    result = await supabase
+      .from('user_roles')
+      .select('user_id, role, is_active, access_expires_at, created_at')
+      .in('role', ['premium', 'admin', 'superadmin', 'moderator'])
+      .limit(5000);
+  }
+
+  if (result.error && (isMissingRelationError(result.error) || isMissingColumnError(result.error))) return [];
+  return result.data || [];
+}
+
+function offerDisplayName(row = {}) {
+  return row.name || row.casino_name || row.title || 'Unknown offer';
+}
+
+function normalizeSessionRow(row = {}) {
+  return {
+    ...row,
+    started_at: analyticsSessionTime(row),
+    ended_at: row.ended_at || row.last_seen_at || null,
+    landing_page: row.landing_page || row.entry_route || null,
+    page_count: Number(row.page_count || 0),
+    event_count: Number(row.event_count || 0),
+    duration_secs: Number(row.duration_secs || 0),
+    risk_score: Number(row.risk_score || 0),
+    is_bounce: row.is_bounce ?? Number(row.page_count || 0) <= 1,
+  };
+}
+
+function normalizeEventRow(row = {}) {
+  return {
+    ...row,
+    event_name: analyticsEventName(row),
+    route: analyticsRoute(row),
+    created_at: row.created_at || row.occurred_at || row.received_at,
+  };
+}
+
+function synthesizeVisitors(sessions = [], events = []) {
+  const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
+  const visitors = new Map();
+
+  for (const session of sessions) {
+    const key = sessionVisitorKey(session);
+    if (!key) continue;
+    const time = analyticsSessionTime(session);
+    const existing = visitors.get(key) || {
+      id: key,
+      fingerprint: session.device_fingerprint || session.gpu_fingerprint || session.session_token || key,
+      twitch_username: null,
+      twitch_avatar: null,
+      total_sessions: 0,
+      total_events: 0,
+      first_seen_at: time,
+      last_seen_at: time,
+      is_bot: false,
+      user_id: session.user_id || null,
+      user_email: session.user_email || null,
+      country: session.country || null,
+      city: session.city || null,
+      ip_address: session.ip_address || null,
+    };
+    existing.total_sessions += 1;
+    existing.total_events += Number(session.event_count || 0);
+    if (time && (!existing.first_seen_at || time < existing.first_seen_at)) existing.first_seen_at = time;
+    if (time && (!existing.last_seen_at || time > existing.last_seen_at)) existing.last_seen_at = time;
+    existing.user_id ||= session.user_id || null;
+    existing.user_email ||= session.user_email || null;
+    visitors.set(key, existing);
+  }
+
+  for (const event of events) {
+    const key = eventVisitorKey(event, sessionKeys);
+    if (!key) continue;
+    const time = analyticsEventTime(event);
+    const metadata = safeMetadata(event);
+    const existing = visitors.get(key) || {
+      id: key,
+      fingerprint: metadata.anonymous_id || key,
+      twitch_username: null,
+      twitch_avatar: null,
+      total_sessions: 0,
+      total_events: 0,
+      first_seen_at: time,
+      last_seen_at: time,
+      is_bot: false,
+      user_id: event.user_id || null,
+      country: event.country || null,
+      city: event.city || null,
+      ip_address: event.ip_address || null,
+    };
+    existing.total_events += 1;
+    if (time && (!existing.first_seen_at || time < existing.first_seen_at)) existing.first_seen_at = time;
+    if (time && (!existing.last_seen_at || time > existing.last_seen_at)) existing.last_seen_at = time;
+    existing.user_id ||= event.user_id || null;
+    visitors.set(key, existing);
+  }
+
+  return Array.from(visitors.values()).sort((a, b) => String(b.last_seen_at || '').localeCompare(String(a.last_seen_at || '')));
+}
+
 /* ═══════════════════════════════════════════════════════════
    FRAUD DETECTION
    ═══════════════════════════════════════════════════════════ */
@@ -339,11 +656,20 @@ async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, ev
   const flags = [];
 
   // Load config (use defaults if none)
-  const { data: cfg } = await supabase
+  let { data: cfg, error: cfgError } = await supabase
     .from('analytics_config')
     .select('*')
     .limit(1)
     .maybeSingle();
+
+  if (cfgError && isMissingRelationError(cfgError)) {
+    const legacyConfig = await supabase
+      .from('fraud_config')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+    cfg = legacyConfig.data?.value || legacyConfig.data || null;
+  }
 
   const maxClicks10s = cfg?.max_clicks_10s || 15;
   const maxSameOffer1m = cfg?.max_same_offer_1m || 5;
@@ -372,11 +698,20 @@ async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, ev
   // Rule 2: Multiple sessions from same IP in 1 hour
   if (ip_address) {
     const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
-    const { count: ipSessions } = await supabase
+    let { count: ipSessions, error: ipSessionsError } = await supabase
       .from('analytics_sessions')
       .select('id', { count: 'exact', head: true })
       .eq('ip_address', ip_address)
       .gte('started_at', oneHourAgo);
+
+    if (ipSessionsError && isMissingColumnError(ipSessionsError)) {
+      const fallback = await supabase
+        .from('analytics_sessions')
+        .select('id', { count: 'exact', head: true })
+        .eq('ip_address', ip_address)
+        .gte('created_at', oneHourAgo);
+      ipSessions = fallback.count;
+    }
 
     if (ipSessions >= maxSessionsIp1h) {
       totalScore += 30;
@@ -417,12 +752,26 @@ async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, ev
 
   // Store fraud logs
   for (const flag of flags) {
-    await supabase.from('analytics_fraud_logs').insert({
+    const fraudResult = await supabase.from('analytics_fraud_logs').insert({
       session_id,
       visitor_id,
       ip_address,
       ...flag,
     });
+    if (fraudResult.error && (isMissingRelationError(fraudResult.error) || isMissingColumnError(fraudResult.error))) {
+      await supabase.from('fraud_logs').insert({
+        session_id,
+        ip_address,
+        reason: flag.reason,
+        risk_score: flag.risk_score,
+        metadata: {
+          visitor_id,
+          rule_name: flag.rule_name,
+          event_count: flag.event_count,
+          time_window: flag.time_window,
+        },
+      });
+    }
   }
 
   // Update session risk score
@@ -455,7 +804,7 @@ async function handleSession(req, res, supabase) {
   const referrer_source = classifyReferrer(referrer);
 
   // Upsert visitor
-  const { data: visitor } = await supabase
+  let { data: visitor, error: visitorError } = await supabase
     .from('analytics_visitors')
     .upsert(
       { fingerprint, last_seen_at: new Date().toISOString() },
@@ -464,17 +813,25 @@ async function handleSession(req, res, supabase) {
     .select('id')
     .single();
 
+  const hasVisitorTable = !(visitorError && isMissingRelationError(visitorError));
+
+  if (!hasVisitorTable) {
+    visitor = { id: body.anonymous_id || fingerprint };
+  }
+
   if (!visitor) return res.status(500).json({ error: 'Failed to create visitor' });
 
   // Increment total_sessions (best-effort, non-critical)
-  await supabase.rpc('increment_field', {
-    table_name: 'analytics_visitors',
-    row_id: visitor.id,
-    field_name: 'total_sessions',
-    amount: 1,
-  }).catch(() => {
-    // If RPC doesn't exist, just skip increment (not critical)
-  });
+  if (hasVisitorTable) {
+    await supabase.rpc('increment_field', {
+      table_name: 'analytics_visitors',
+      row_id: visitor.id,
+      field_name: 'total_sessions',
+      amount: 1,
+    }).catch(() => {
+      // If RPC doesn't exist, just skip increment (not critical)
+    });
+  }
 
   const sessionPayload = {
     visitor_id: visitor.id,
@@ -525,6 +882,14 @@ async function handleSession(req, res, supabase) {
     sessionResult = await supabase
       .from('analytics_sessions')
       .insert(legacySessionPayload)
+      .select('id')
+      .single();
+  }
+
+  if (sessionResult.error && (isMissingRelationError(sessionResult.error) || isMissingColumnError(sessionResult.error))) {
+    sessionResult = await supabase
+      .from('analytics_sessions')
+      .insert(legacySessionPayload({ body, fingerprint, ip, ua, parsed, geo, referrer, referrer_source }))
       .select('id')
       .single();
   }
@@ -607,6 +972,14 @@ async function handleTrack(req, res, supabase) {
         .single();
     }
 
+    if (result.error && isMissingColumnError(result.error)) {
+      result = await supabase
+        .from('analytics_events')
+        .insert(minimalLegacyEventRow(row))
+        .select('id')
+        .single();
+    }
+
     if (result.error) {
       rejected.push({ reason: result.error.message || 'insert failed', event_name: normalized.event_name });
       continue;
@@ -671,83 +1044,106 @@ async function handleIdentify(req, res, supabase) {
 
 async function handleOverview(req, res, supabase) {
   const { period = '7d' } = req.query;
-  const days = period === '24h' ? 1 : period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : 7;
-  const since = new Date(Date.now() - days * 86400000).toISOString();
-  const prevSince = new Date(Date.now() - days * 2 * 86400000).toISOString();
-
-  // Current period
-  const [
-    { count: totalSessions },
-    { count: totalEvents },
-    { count: uniqueVisitors },
-    { count: suspiciousSessions },
-  ] = await Promise.all([
-    supabase.from('analytics_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since),
-    supabase.from('analytics_events').select('id', { count: 'exact', head: true }).gte('created_at', since),
-    supabase.from('analytics_sessions').select('visitor_id', { count: 'exact', head: true }).gte('started_at', since),
-    supabase.from('analytics_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('is_suspicious', true),
+  const range = getAnalyticsPeriodRange(period);
+  const [sessions, events, previousSessions, previousEvents] = await Promise.all([
+    fetchAnalyticsSessionsForRange(supabase, range.start, range.end),
+    fetchAnalyticsEventsForRange(supabase, range.start, range.end),
+    fetchAnalyticsSessionsForRange(supabase, range.previousStart, range.start, 8000),
+    fetchAnalyticsEventsForRange(supabase, range.previousStart, range.start, 12000),
   ]);
 
-  // Previous period for trends
-  const [
-    { count: prevSessions },
-    { count: prevEvents },
-  ] = await Promise.all([
-    supabase.from('analytics_sessions').select('id', { count: 'exact', head: true }).gte('started_at', prevSince).lt('started_at', since),
-    supabase.from('analytics_events').select('id', { count: 'exact', head: true }).gte('created_at', prevSince).lt('created_at', since),
+  const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
+  const visitorKeys = new Set([
+    ...sessions.map(sessionVisitorKey).filter(Boolean),
+    ...events.map(event => eventVisitorKey(event, sessionKeys)).filter(Boolean),
   ]);
+  const suspiciousSessions = sessions.filter(session => session.is_suspicious).length;
+  const suspiciousEvents = events.filter(event => event.is_suspicious).length;
+  const pageViewEvents = events.filter(event => analyticsEventName(event) === ANALYTICS_EVENTS.PAGE_VIEW);
+  const clickEvents = events.filter(event => [
+    ANALYTICS_EVENTS.OFFER_CLICKED,
+    ANALYTICS_EVENTS.UI_BUTTON_CLICKED,
+    ANALYTICS_EVENTS.EXTERNAL_LINK_CLICKED,
+  ].includes(analyticsEventName(event)));
 
-  // Click count
-  const { count: totalClicks } = await supabase
-    .from('analytics_events')
-    .select('id', { count: 'exact', head: true })
-    .gte('created_at', since)
-    .in('event_type', ['click', 'offer_click', 'button_click']);
+  const chartBuckets = new Map(buildDayBuckets(range.start, range.end).map(date => [date, {
+    date,
+    sessions: 0,
+    events: 0,
+    pageViews: 0,
+    clicks: 0,
+    visitors: new Set(),
+  }]));
+  const eventNameCounts = {};
+  const experienceCounts = {};
+  const referrerCounts = {};
+  const deviceCounts = {};
+  const countryCounts = {};
+  const pageCounts = {};
 
-  // Daily chart data
-  const { data: dailyData } = await supabase
-    .from('analytics_sessions')
-    .select('started_at')
-    .gte('started_at', since)
-    .order('started_at', { ascending: true });
+  for (const session of sessions) {
+    const time = analyticsSessionTime(session);
+    const day = time ? time.slice(0, 10) : null;
+    const bucket = day ? chartBuckets.get(day) : null;
+    if (bucket) {
+      bucket.sessions += 1;
+      const key = sessionVisitorKey(session);
+      if (key) bucket.visitors.add(key);
+    }
+    addMapCount(referrerCounts, session.referrer_source || classifyReferrer(session.referrer));
+    addMapCount(deviceCounts, session.device_type || 'unknown');
+    addMapCount(countryCounts, session.country || session.country_code || 'Unknown');
+  }
 
-  // Group by day
-  const chartMap = {};
-  (dailyData || []).forEach(s => {
-    const day = s.started_at.slice(0, 10);
-    chartMap[day] = (chartMap[day] || 0) + 1;
-  });
-  const chart = Object.entries(chartMap).map(([date, sessions]) => ({ date, sessions }));
+  for (const event of events) {
+    const name = analyticsEventName(event);
+    const route = analyticsRoute(event);
+    const time = analyticsEventTime(event);
+    const day = time ? time.slice(0, 10) : null;
+    const bucket = day ? chartBuckets.get(day) : null;
+    if (bucket) {
+      bucket.events += 1;
+      if (name === ANALYTICS_EVENTS.PAGE_VIEW) bucket.pageViews += 1;
+      if ([ANALYTICS_EVENTS.OFFER_CLICKED, ANALYTICS_EVENTS.UI_BUTTON_CLICKED, ANALYTICS_EVENTS.EXTERNAL_LINK_CLICKED].includes(name)) bucket.clicks += 1;
+      const key = eventVisitorKey(event, sessionKeys);
+      if (key) bucket.visitors.add(key);
+    }
+    addMapCount(eventNameCounts, name);
+    addMapCount(experienceCounts, analyticsExperience(event));
+    if (name === ANALYTICS_EVENTS.PAGE_VIEW) addMapCount(pageCounts, route || '/');
+  }
 
-  // Top pages
-  const { data: topPages } = await supabase
-    .from('analytics_events')
-    .select('page_url')
-    .eq('event_type', 'pageview')
-    .gte('created_at', since)
-    .limit(500);
-
-  const pageCount = {};
-  (topPages || []).forEach(e => {
-    const p = e.page_url || '/';
-    pageCount[p] = (pageCount[p] || 0) + 1;
-  });
-  const topPagesList = Object.entries(pageCount)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([page, views]) => ({ page, views }));
+  const chart = Array.from(chartBuckets.values()).map(bucket => ({
+    ...bucket,
+    visitors: bucket.visitors.size,
+  }));
+  const topPagesList = topCountRows(pageCounts, 'page', 'views', 10);
 
   return res.status(200).json({
-    totalSessions: totalSessions || 0,
-    totalEvents: totalEvents || 0,
-    uniqueVisitors: uniqueVisitors || 0,
-    totalClicks: totalClicks || 0,
-    suspiciousSessions: suspiciousSessions || 0,
-    sessionsTrend: calcTrend(totalSessions, prevSessions),
-    eventsTrend: calcTrend(totalEvents, prevEvents),
+    totalSessions: sessions.length,
+    totalEvents: events.length,
+    uniqueVisitors: visitorKeys.size,
+    totalClicks: clickEvents.length,
+    totalPageViews: pageViewEvents.length,
+    suspiciousSessions,
+    suspiciousEvents,
+    sessionsTrend: calcTrend(sessions.length, previousSessions.length),
+    eventsTrend: calcTrend(events.length, previousEvents.length),
     chart,
     topPages: topPagesList,
-    period,
+    topEvents: topCountRows(eventNameCounts, 'event', 'count', 12),
+    byEventName: eventNameCounts,
+    byExperience: experienceCounts,
+    byReferrer: referrerCounts,
+    deviceTypes: deviceCounts,
+    topCountries: topCountRows(countryCounts, 'country', 'sessions', 10),
+    dataHealth: {
+      knownEvents: events.filter(event => isKnownAnalyticsEvent(analyticsEventName(event))).length,
+      unknownEvents: events.filter(event => !isKnownAnalyticsEvent(analyticsEventName(event))).length,
+      eventIdCoverage: safeRatio(events.filter(event => event.event_id || safeMetadata(event).event_id).length, events.length),
+    },
+    period: range.key,
+    range: { start: range.start, end: range.end },
   });
 }
 
@@ -771,8 +1167,35 @@ async function handleVisitors(req, res, supabase) {
     query = query.or(`twitch_username.ilike.%${search}%,fingerprint.ilike.%${search}%`);
   }
 
-  const { data, count } = await query;
-  return res.status(200).json({ visitors: data || [], total: count || 0 });
+  const { data, count, error } = await query;
+  if (!error) return res.status(200).json({ visitors: data || [], total: count || 0 });
+
+  if (!isMissingRelationError(error)) return res.status(200).json({ visitors: [], total: 0, warning: error.message });
+
+  const range = getAnalyticsPeriodRange('90d');
+  const [sessions, events] = await Promise.all([
+    fetchAnalyticsSessionsForRange(supabase, range.start, range.end),
+    fetchAnalyticsEventsForRange(supabase, range.start, range.end),
+  ]);
+  let visitors = synthesizeVisitors(sessions, events);
+  if (search) {
+    const needle = String(search).toLowerCase();
+    visitors = visitors.filter(visitor => [visitor.fingerprint, visitor.user_email, visitor.twitch_username, visitor.ip_address]
+      .filter(Boolean)
+      .some(value => String(value).toLowerCase().includes(needle)));
+  }
+  if (sort) {
+    visitors.sort((a, b) => {
+      const left = a[sort] || '';
+      const right = b[sort] || '';
+      return order === 'asc' ? String(left).localeCompare(String(right)) : String(right).localeCompare(String(left));
+    });
+  }
+  return res.status(200).json({
+    visitors: visitors.slice(offset, offset + parseInt(limit)),
+    total: visitors.length,
+    synthetic: true,
+  });
 }
 
 async function handleVisitorDetail(req, res, supabase) {
@@ -780,10 +1203,10 @@ async function handleVisitorDetail(req, res, supabase) {
   if (!id) return res.status(400).json({ error: 'id required' });
 
   const [
-    { data: visitor },
-    { data: sessions },
-    { data: events },
-    { data: fraudLogs },
+    visitorResult,
+    sessionsResult,
+    eventsResult,
+    fraudLogsResult,
   ] = await Promise.all([
     supabase.from('analytics_visitors').select('*').eq('id', id).single(),
     supabase.from('analytics_sessions').select('*').eq('visitor_id', id).order('started_at', { ascending: false }).limit(50),
@@ -791,76 +1214,81 @@ async function handleVisitorDetail(req, res, supabase) {
     supabase.from('analytics_fraud_logs').select('*').eq('visitor_id', id).order('created_at', { ascending: false }).limit(20),
   ]);
 
-  return res.status(200).json({ visitor, sessions: sessions || [], events: events || [], fraudLogs: fraudLogs || [] });
+  if (!visitorResult.error) {
+    return res.status(200).json({
+      visitor: visitorResult.data,
+      sessions: sessionsResult.data || [],
+      events: eventsResult.data || [],
+      fraudLogs: fraudLogsResult.data || [],
+    });
+  }
+
+  const range = getAnalyticsPeriodRange('90d');
+  const [allSessions, allEvents] = await Promise.all([
+    fetchAnalyticsSessionsForRange(supabase, range.start, range.end),
+    fetchAnalyticsEventsForRange(supabase, range.start, range.end),
+  ]);
+  const sessionKeys = new Map(allSessions.map(session => [session.id, sessionVisitorKey(session)]));
+  const sessions = allSessions.filter(session => sessionVisitorKey(session) === id).map(normalizeSessionRow);
+  const sessionIds = new Set(sessions.map(session => session.id));
+  const events = allEvents
+    .filter(event => eventVisitorKey(event, sessionKeys) === id || sessionIds.has(event.session_id))
+    .map(normalizeEventRow)
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+    .slice(0, 100);
+  const visitor = synthesizeVisitors(sessions, events)[0] || { id, fingerprint: id, total_sessions: sessions.length, total_events: events.length };
+
+  return res.status(200).json({ visitor, sessions: sessions || [], events: events || [], fraudLogs: [] });
 }
 
 async function handleSessions(req, res, supabase) {
   const { page = 1, limit = 20, suspicious, country, since } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
+  const start = since || new Date(Date.now() - 90 * 86400000).toISOString();
+  const sessions = (await fetchAnalyticsSessionsForRange(supabase, start, new Date().toISOString()))
+    .map(normalizeSessionRow)
+    .filter(session => suspicious === 'true' ? session.is_suspicious : true)
+    .filter(session => country ? session.country_code === country || session.country === country : true)
+    .sort((a, b) => String(b.started_at || '').localeCompare(String(a.started_at || '')));
 
-  let query = supabase
-    .from('analytics_sessions')
-    .select('*, analytics_visitors(twitch_username, twitch_avatar, fingerprint)', { count: 'exact' })
-    .order('started_at', { ascending: false })
-    .range(offset, offset + parseInt(limit) - 1);
-
-  if (suspicious === 'true') query = query.eq('is_suspicious', true);
-  if (country) query = query.eq('country_code', country);
-  if (since) query = query.gte('started_at', since);
-
-  const { data, count } = await query;
-  return res.status(200).json({ sessions: data || [], total: count || 0 });
+  return res.status(200).json({ sessions: sessions.slice(offset, offset + parseInt(limit)), total: sessions.length });
 }
 
 async function handleEvents(req, res, supabase) {
   const { page = 1, limit = 50, type, session_id, since } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
+  const start = since || new Date(Date.now() - 30 * 86400000).toISOString();
+  const wantedType = type ? normalizeAnalyticsEventName(type) : null;
+  const events = (await fetchAnalyticsEventsForRange(supabase, start, new Date().toISOString()))
+    .map(normalizeEventRow)
+    .filter(event => wantedType ? analyticsEventName(event) === wantedType || event.event_type === type : true)
+    .filter(event => session_id ? event.session_id === session_id : true)
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
 
-  let query = supabase
-    .from('analytics_events')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + parseInt(limit) - 1);
-
-  if (type) query = query.eq('event_type', type);
-  if (session_id) query = query.eq('session_id', session_id);
-  if (since) query = query.gte('created_at', since);
-
-  const { data, count } = await query;
-  return res.status(200).json({ events: data || [], total: count || 0 });
+  return res.status(200).json({ events: events.slice(offset, offset + parseInt(limit)), total: events.length });
 }
 
 async function handleOffers(req, res, supabase) {
   const { since } = req.query;
   const sinceDate = since || new Date(Date.now() - 30 * 86400000).toISOString();
 
-  // Get all offer clicks
-  const { data: clicks } = await supabase
-    .from('analytics_events')
-    .select('offer_id, is_suspicious, visitor_id, session_id, created_at')
-    .in('event_type', ['offer_click', 'click'])
-    .not('offer_id', 'is', null)
-    .gte('created_at', sinceDate);
-
-  // Get total pageviews for CTR
-  const { count: totalPageviews } = await supabase
-    .from('analytics_events')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_type', 'pageview')
-    .gte('created_at', sinceDate);
+  const events = await fetchAnalyticsEventsForRange(supabase, sinceDate, new Date().toISOString());
+  const clicks = events.filter(event => analyticsEventName(event) === ANALYTICS_EVENTS.OFFER_CLICKED && (event.offer_id || safeMetadata(event).offer_id));
+  const totalPageviews = events.filter(event => analyticsEventName(event) === ANALYTICS_EVENTS.PAGE_VIEW).length;
 
   // Aggregate per offer
   const offerMap = {};
-  (clicks || []).forEach(c => {
-    if (!c.offer_id) return;
-    if (!offerMap[c.offer_id]) {
-      offerMap[c.offer_id] = { offer_id: c.offer_id, total: 0, clean: 0, suspicious: 0, visitors: new Set(), sessions: new Set() };
+  clicks.forEach(c => {
+    const offerId = c.offer_id || safeMetadata(c).offer_id;
+    if (!offerId) return;
+    if (!offerMap[offerId]) {
+      offerMap[offerId] = { offer_id: offerId, total: 0, clean: 0, suspicious: 0, visitors: new Set(), sessions: new Set() };
     }
-    const o = offerMap[c.offer_id];
+    const o = offerMap[offerId];
     o.total++;
     if (c.is_suspicious) o.suspicious++;
     else o.clean++;
-    o.visitors.add(c.visitor_id);
+    o.visitors.add(c.visitor_id || safeMetadata(c).anonymous_id || c.session_id || c.id);
     o.sessions.add(c.session_id);
   });
 
@@ -868,11 +1296,8 @@ async function handleOffers(req, res, supabase) {
   const offerIds = Object.keys(offerMap);
   let offerNames = {};
   if (offerIds.length > 0) {
-    const { data: offers } = await supabase
-      .from('casino_offers')
-      .select('id, name')
-      .in('id', offerIds);
-    (offers || []).forEach(o => { offerNames[o.id] = o.name; });
+    const offers = await fetchOfferRows(supabase, offerIds);
+    offers.forEach(o => { offerNames[o.id] = offerDisplayName(o); });
   }
 
   const result = Object.values(offerMap)
@@ -899,41 +1324,31 @@ async function handleOfferDetail(req, res, supabase) {
   const lim = Math.min(parseInt(limit) || 100, 500);
   const off = parseInt(offset) || 0;
 
-  // Get offer name
-  const { data: offerRow } = await supabase
-    .from('casino_offers')
-    .select('id, name, url, logo_url')
-    .eq('id', offer_id)
-    .single();
+  const [offerRows, events, sessions] = await Promise.all([
+    fetchOfferRows(supabase, [offer_id]),
+    fetchAnalyticsEventsForRange(supabase, sinceDate, new Date().toISOString()),
+    fetchAnalyticsSessionsForRange(supabase, sinceDate, new Date().toISOString()),
+  ]);
 
-  // Get click events with session + visitor data
-  const { data: clicks, count } = await supabase
-    .from('analytics_events')
-    .select(`
-      id, event_type, created_at, is_suspicious, ip_address, country, city, metadata, target_url,
-      session:analytics_sessions!session_id (
-        id, ip_address, browser, os, device_type, country, country_code, city, region, isp,
-        referrer, referrer_source, user_agent, risk_score, is_suspicious, started_at, duration_secs
-      ),
-      visitor:analytics_visitors!visitor_id (
-        id, twitch_id, twitch_username, twitch_avatar, fingerprint, first_seen_at, last_seen_at,
-        total_sessions, total_events, is_bot
-      )
-    `, { count: 'exact' })
-    .eq('offer_id', offer_id)
-    .in('event_type', ['offer_click', 'click'])
-    .gte('created_at', sinceDate)
-    .order('created_at', { ascending: false })
-    .range(off, off + lim - 1);
+  const offerRow = offerRows[0] || null;
+  const sessionMap = new Map(sessions.map(session => [session.id, normalizeSessionRow(session)]));
+  const visitorMap = new Map(synthesizeVisitors(sessions, events).map(visitor => [visitor.id, visitor]));
+  const allRows = events
+    .filter(event => analyticsEventName(event) === ANALYTICS_EVENTS.OFFER_CLICKED)
+    .filter(event => (event.offer_id || safeMetadata(event).offer_id) === offer_id)
+    .map(normalizeEventRow)
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
 
   // Aggregate quick stats
-  const rows = clicks || [];
-  const uniqueVisitors = new Set(rows.map(r => r.visitor?.id)).size;
-  const uniqueIPs = new Set(rows.map(r => r.session?.ip_address || r.ip_address).filter(Boolean)).size;
+  const rows = allRows.slice(off, off + lim);
+  const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
+  const uniqueVisitors = new Set(allRows.map(r => eventVisitorKey(r, sessionKeys)).filter(Boolean)).size;
+  const uniqueIPs = new Set(allRows.map(r => sessionMap.get(r.session_id)?.ip_address || r.ip_address).filter(Boolean)).size;
   const suspiciousCount = rows.filter(r => r.is_suspicious).length;
   const countries = {};
-  rows.forEach(r => {
-    const c = r.session?.country || r.country || 'Unknown';
+  allRows.forEach(r => {
+    const session = sessionMap.get(r.session_id);
+    const c = session?.country || r.country || 'Unknown';
     countries[c] = (countries[c] || 0) + 1;
   });
   const topCountries = Object.entries(countries)
@@ -943,7 +1358,7 @@ async function handleOfferDetail(req, res, supabase) {
 
   // Clicks per hour for timeline chart
   const hourBuckets = {};
-  rows.forEach(r => {
+  allRows.forEach(r => {
     const h = r.created_at.slice(0, 13); // "2026-04-17T14"
     hourBuckets[h] = (hourBuckets[h] || 0) + 1;
   });
@@ -954,46 +1369,53 @@ async function handleOfferDetail(req, res, supabase) {
   return res.status(200).json({
     offer: {
       id: offer_id,
-      name: offerRow?.name || 'Unknown',
-      url: offerRow?.url || null,
-      logo_url: offerRow?.logo_url || null,
+      name: offerDisplayName(offerRow),
+      url: offerRow?.affiliate_url || offerRow?.bonus_link || null,
+      logo_url: offerRow?.logo_url || offerRow?.image_url || null,
     },
-    clicks: rows.map(r => ({
+    clicks: rows.map(r => {
+      const session = sessionMap.get(r.session_id) || {};
+      const visitorKey = eventVisitorKey(r, sessionKeys);
+      const visitor = visitorMap.get(visitorKey) || {};
+      const metadata = safeMetadata(r);
+      return {
       id: r.id,
       event_type: r.event_type,
+      event_name: analyticsEventName(r),
       created_at: r.created_at,
       is_suspicious: r.is_suspicious,
-      target_url: r.target_url,
-      ip_address: r.session?.ip_address || r.ip_address || null,
-      country: r.session?.country || r.country || null,
-      city: r.session?.city || r.city || null,
-      region: r.session?.region || null,
-      isp: r.session?.isp || null,
-      browser: r.session?.browser || null,
-      os: r.session?.os || null,
-      device_type: r.session?.device_type || null,
-      referrer_source: r.session?.referrer_source || null,
-      risk_score: r.session?.risk_score || 0,
-      session_duration: r.session?.duration_secs || null,
-      twitch_id: r.visitor?.twitch_id || null,
-      twitch_username: r.visitor?.twitch_username || null,
-      twitch_avatar: r.visitor?.twitch_avatar || null,
-      fingerprint: r.visitor?.fingerprint || null,
-      visitor_total_sessions: r.visitor?.total_sessions || 0,
-      visitor_total_events: r.visitor?.total_events || 0,
-      visitor_first_seen: r.visitor?.first_seen_at || null,
-      is_bot: r.visitor?.is_bot || false,
-      metadata: r.metadata || {},
-    })),
+      target_url: r.target_url || metadata.target_url || null,
+      ip_address: session.ip_address || r.ip_address || null,
+      country: session.country || r.country || null,
+      city: session.city || r.city || null,
+      region: session.region || null,
+      isp: session.isp || null,
+      browser: session.browser || null,
+      os: session.os || null,
+      device_type: session.device_type || null,
+      referrer_source: session.referrer_source || null,
+      risk_score: session.risk_score || 0,
+      session_duration: session.duration_secs || null,
+      twitch_id: visitor.twitch_id || null,
+      twitch_username: visitor.twitch_username || null,
+      twitch_avatar: visitor.twitch_avatar || null,
+      fingerprint: visitor.fingerprint || visitorKey || null,
+      visitor_total_sessions: visitor.total_sessions || 0,
+      visitor_total_events: visitor.total_events || 0,
+      visitor_first_seen: visitor.first_seen_at || null,
+      is_bot: visitor.is_bot || false,
+      metadata,
+      };
+    }),
     stats: {
-      totalClicks: count || rows.length,
+      totalClicks: allRows.length,
       uniqueVisitors,
       uniqueIPs,
-      suspiciousCount,
+      suspiciousCount: allRows.filter(r => r.is_suspicious).length,
       topCountries,
     },
     timeline,
-    pagination: { total: count || rows.length, limit: lim, offset: off },
+    pagination: { total: allRows.length, limit: lim, offset: off },
   });
 }
 
@@ -1002,96 +1424,64 @@ async function handleProductOverview(req, res, supabase) {
   const range = getAnalyticsPeriodRange(period);
 
   const [
-    sessionsResult,
-    eventsResult,
-    playerHuntsResult,
-    playerBonusesResult,
-    streamerSubsResult,
-    playerSubsResult,
-    billingSubsResult,
-    offersResult,
-    legacyOfferClicksResult,
+    sessions,
+    events,
+    playerHunts,
+    playerBonuses,
+    streamerRoles,
+    playerSubscriptions,
+    billingSubscriptions,
+    offers,
+    legacyOfferClicks,
   ] = await Promise.all([
-    supabase
-      .from('analytics_sessions')
-      .select('id, visitor_id, user_id, landing_page, referrer_source, started_at, event_count, page_count, duration_secs, is_suspicious')
-      .gte('started_at', range.start)
-      .lte('started_at', range.end)
-      .limit(10000),
-    supabase
-      .from('analytics_events')
-      .select('id, event_type, event_name, offer_id, page_url, route, metadata, created_at, occurred_at, visitor_id, session_id, is_suspicious')
-      .gte('created_at', range.start)
-      .lte('created_at', range.end)
-      .limit(15000),
-    supabase
+    fetchAnalyticsSessionsForRange(supabase, range.start, range.end, 10000).then(rows => rows.map(normalizeSessionRow)),
+    fetchAnalyticsEventsForRange(supabase, range.start, range.end, 15000).then(rows => rows.map(normalizeEventRow)),
+    optionalRows(supabase
       .from('player_hunts')
       .select('id, user_id, currency, status, starting_deposit, additional_deposits, initial_withdrawal, total_withdrawals, hunt_date, created_at')
       .is('deleted_at', null)
       .gte('created_at', range.start)
       .lte('created_at', range.end)
-      .limit(5000),
-    supabase
+      .limit(5000)),
+    optionalRows(supabase
       .from('player_hunt_bonuses')
       .select('id, user_id, hunt_id, slot_name, provider_name, bonus_cost, bet_size, payout, multiplier, profit_loss, status, created_at, opened_at')
       .is('deleted_at', null)
       .gte('created_at', range.start)
       .lte('created_at', range.end)
-      .limit(10000),
-    supabase
-      .from('user_roles')
-      .select('user_id, role, is_active, access_expires_at, source, created_at')
-      .in('role', ['premium', 'admin', 'superadmin', 'moderator'])
-      .limit(5000),
-    supabase
+      .limit(10000)),
+    fetchUserRoleRows(supabase),
+    optionalRows(supabase
       .from('user_product_subscriptions')
       .select('user_id, product_code, plan_code, status, trial_started_at, trial_ends_at, current_period_end, cancel_at_period_end, created_at')
-      .limit(5000),
-    supabase
+      .limit(5000)),
+    optionalRows(supabase
       .from('billing_subscriptions')
-      .select('user_id, product_code, plan_id, status, current_period_start, current_period_end, trial_start, trial_end, cancel_at_period_end, created_at')
-      .limit(5000),
-    supabase
-      .from('casino_offers')
-      .select('id, casino_name, title, is_active, is_premium, display_order')
-      .limit(1000),
-    supabase
+      .select('user_id, product_code, plan_id, status, current_period_start, current_period_end, trial_start, trial_end, cancel_at_period_end, provider, created_at')
+      .limit(5000)),
+    fetchOfferRows(supabase),
+    optionalRows(supabase
       .from('offer_clicks')
       .select('offer_id, casino_name, user_id, page_source, created_at')
       .gte('created_at', range.start)
       .lte('created_at', range.end)
-      .limit(10000),
+      .limit(10000)),
   ]);
 
-  const sessions = sessionsResult.data || [];
-  let events = eventsResult.data || [];
-  if (eventsResult.error && isMissingColumnError(eventsResult.error)) {
-    const fallback = await supabase
-      .from('analytics_events')
-      .select('id, event_type, offer_id, page_url, metadata, created_at, visitor_id, session_id, is_suspicious')
-      .gte('created_at', range.start)
-      .lte('created_at', range.end)
-      .limit(15000);
-    events = fallback.data || [];
-  }
-  const playerHunts = playerHuntsResult.data || [];
-  const playerBonuses = playerBonusesResult.data || [];
-  const streamerRoles = streamerSubsResult.data || [];
-  const playerSubscriptions = playerSubsResult.data || [];
-  const billingSubscriptions = billingSubsResult.data || [];
-  const offers = offersResult.data || [];
-  const legacyOfferClicks = legacyOfferClicksResult.data || [];
-
-  const uniqueVisitors = new Set(sessions.map(s => s.visitor_id).filter(Boolean)).size;
+  const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
+  const uniqueVisitors = new Set([
+    ...sessions.map(sessionVisitorKey).filter(Boolean),
+    ...events.map(event => eventVisitorKey(event, sessionKeys)).filter(Boolean),
+  ]).size;
   const authenticatedUsers = new Set(sessions.map(s => s.user_id).filter(Boolean)).size;
-  const playerSessions = sessions.filter(s => getExperienceFromPath(s.landing_page || '') === 'player' || String(s.landing_page || '').startsWith('/player'));
-  const streamerSessions = sessions.filter(s => ['streamer', 'overlay'].includes(getExperienceFromPath(s.landing_page || '')));
-  const overlaySessions = sessions.filter(s => String(s.landing_page || '').startsWith('/overlay-center') || String(s.landing_page || '').startsWith('/overlay/'));
+  const playerSessions = sessions.filter(s => analyticsExperience(s) === 'player' || String(analyticsRoute(s) || '').startsWith('/player'));
+  const streamerSessions = sessions.filter(s => ['streamer', 'overlay'].includes(analyticsExperience(s)));
+  const overlaySessions = sessions.filter(s => analyticsExperience(s) === 'overlay' || String(analyticsRoute(s) || '').startsWith('/overlay-center') || String(analyticsRoute(s) || '').startsWith('/overlay/'));
 
-  const canonicalName = (event) => normalizeAnalyticsEventName(event.event_name || event.metadata?.canonical_event_name || event.event_type);
-  const offerEvents = events.filter(event => canonicalName(event) === ANALYTICS_EVENTS.OFFER_CLICKED || event.event_type === 'offer_click');
-  const playerEvents = events.filter(event => getExperienceFromPath(event.route || event.page_url || '') === 'player' || event.metadata?.experience === 'player');
-  const streamerEvents = events.filter(event => ['streamer', 'overlay'].includes(getExperienceFromPath(event.route || event.page_url || '')) || ['streamer', 'overlay'].includes(event.metadata?.experience));
+  const canonicalName = (event) => analyticsEventName(event);
+  const offerEvents = events.filter(event => canonicalName(event) === ANALYTICS_EVENTS.OFFER_CLICKED);
+  const playerEvents = events.filter(event => analyticsExperience(event) === 'player');
+  const streamerEvents = events.filter(event => ['streamer', 'overlay'].includes(analyticsExperience(event)));
   const playerSessionIds = new Set([
     ...playerSessions.map(session => session.id),
     ...playerEvents.map(event => event.session_id).filter(Boolean),
@@ -1161,10 +1551,10 @@ async function handleProductOverview(req, res, supabase) {
     ['trialing', 'active'].includes(sub.status)
   );
 
-  const offerNameMap = new Map(offers.map(offer => [offer.id, offer.casino_name || offer.title || 'Unknown offer']));
+  const offerNameMap = new Map(offers.map(offer => [offer.id, offerDisplayName(offer)]));
   const offerClickMap = {};
   for (const event of offerEvents) {
-    const offerId = event.offer_id || event.metadata?.offer_id;
+    const offerId = event.offer_id || safeMetadata(event).offer_id;
     if (!offerId) continue;
     offerClickMap[offerId] = offerClickMap[offerId] || { offer_id: offerId, name: offerNameMap.get(offerId) || 'Unknown offer', clicks: 0, analyticsClicks: 0, legacyClicks: 0 };
     offerClickMap[offerId].clicks += 1;
@@ -1221,13 +1611,15 @@ async function handleProductOverview(req, res, supabase) {
     },
     streamer: {
       activePremiumUsers: activeStreamerUsers.size,
+      activeSubscriptions: activeStreamerSubs.length,
+      activeMollieSubscriptions: activeStreamerSubs.filter(sub => sub.provider === 'mollie').length,
       activeStripeSubscriptions: activeStreamerSubs.length,
       sessions: streamerSessionIds.size,
       overlaySessions: overlaySessionIds.size,
       events: streamerEvents.length,
       premiumViews: events.filter(event => String(event.page_url || event.route || '').startsWith('/premium')).length,
       offerClicks: offerEvents.length + legacyOfferClicks.length,
-      offersActive: offers.filter(offer => offer.is_active).length,
+      offersActive: offers.filter(offer => offer.is_active ?? offer.visible !== false).length,
       premiumOffers: offers.filter(offer => offer.is_premium).length,
     },
     revenue: {
@@ -1236,6 +1628,7 @@ async function handleProductOverview(req, res, supabase) {
       estimatedPlayerMrrEur: activePlayerSubs.length * 3,
       subscriptionStatuses: countBy([...playerSubscriptions, ...billingSubscriptions], 'status'),
       productMix: countBy([...playerSubscriptions, ...billingSubscriptions], 'product_code'),
+      providerMix: countBy(billingSubscriptions, 'provider'),
     },
     offers: Object.values(offerClickMap).sort((a, b) => b.clicks - a.clicks).slice(0, 12),
     events: {
@@ -1250,36 +1643,23 @@ async function handleProductOverview(req, res, supabase) {
 async function handleDataQuality(req, res, supabase) {
   const { period = '30d' } = req.query;
   const range = getAnalyticsPeriodRange(period);
-  let { data: events, error } = await supabase
-    .from('analytics_events')
-    .select('id, event_type, event_name, session_id, visitor_id, page_url, route, metadata, created_at, offer_id')
-    .gte('created_at', range.start)
-    .lte('created_at', range.end)
-    .limit(15000);
-
-  if (error && isMissingColumnError(error)) {
-    const fallback = await supabase
-      .from('analytics_events')
-      .select('id, event_type, session_id, visitor_id, page_url, metadata, created_at, offer_id')
-      .gte('created_at', range.start)
-      .lte('created_at', range.end)
-      .limit(15000);
-    events = fallback.data || [];
-  }
-
-  const rows = events || [];
-  const unknownEvents = rows.filter(event => !isKnownAnalyticsEvent(event.event_name || event.metadata?.canonical_event_name || event.event_type));
-  const missingRoute = rows.filter(event => !(event.route || event.page_url));
+  const rows = (await fetchAnalyticsEventsForRange(supabase, range.start, range.end, 15000)).map(normalizeEventRow);
+  const unknownEvents = rows.filter(event => !isKnownAnalyticsEvent(analyticsEventName(event)));
+  const missingRoute = rows.filter(event => !(event.route || event.page_url || safeMetadata(event).route || safeMetadata(event).page_url));
   const missingProductContext = rows.filter(event => {
-    const route = event.route || event.page_url || '';
-    const experience = event.metadata?.experience || getExperienceFromPath(route);
-    return !experience || experience === 'public' && route !== '/';
+    const route = analyticsRoute(event);
+    const experience = analyticsExperience(event);
+    return !experience || (experience === 'public' && route !== '/');
   });
   const offerClicksMissingOffer = rows.filter(event => {
-    const name = normalizeAnalyticsEventName(event.event_name || event.metadata?.canonical_event_name || event.event_type);
-    return name === ANALYTICS_EVENTS.OFFER_CLICKED && !(event.offer_id || event.metadata?.offer_id);
+    const name = analyticsEventName(event);
+    return name === ANALYTICS_EVENTS.OFFER_CLICKED && !(event.offer_id || safeMetadata(event).offer_id);
   });
-  const eventIdCoverage = rows.filter(event => event.metadata?.event_id).length;
+  const eventIdCoverage = rows.filter(event => event.event_id || safeMetadata(event).event_id).length;
+  const experienceCounts = rows.reduce((acc, event) => {
+    addMapCount(acc, analyticsExperience(event));
+    return acc;
+  }, {});
 
   return res.status(200).json({
     period: range.key,
@@ -1298,17 +1678,25 @@ async function handleDataQuality(req, res, supabase) {
       routePercent: safeRatio(rows.length - missingRoute.length, rows.length),
       eventIdPercent: safeRatio(eventIdCoverage, rows.length),
     },
+    byExperience: experienceCounts,
     examples: {
       unknownEvents: unknownEvents.slice(0, 10).map(event => ({
         id: event.id,
         event_type: event.event_type,
-        event_name: event.event_name || event.metadata?.canonical_event_name || null,
-        page_url: event.page_url,
+        event_name: analyticsEventName(event),
+        page_url: analyticsRoute(event),
         created_at: event.created_at,
       })),
       missingRoute: missingRoute.slice(0, 10).map(event => ({
         id: event.id,
         event_type: event.event_type,
+        created_at: event.created_at,
+      })),
+      offerClicksMissingOffer: offerClicksMissingOffer.slice(0, 10).map(event => ({
+        id: event.id,
+        event_type: event.event_type,
+        event_name: analyticsEventName(event),
+        page_url: analyticsRoute(event),
         created_at: event.created_at,
       })),
     },
@@ -1317,34 +1705,25 @@ async function handleDataQuality(req, res, supabase) {
 
 async function handleRealtime(req, res, supabase) {
   const fiveMinAgo = new Date(Date.now() - 300000).toISOString();
-
-  const [
-    { data: activeSessions },
-    { data: recentEvents },
-    { count: activeCount },
-  ] = await Promise.all([
-    supabase
-      .from('analytics_sessions')
-      .select('id, visitor_id, ip_address, country, city, browser, device_type, started_at, is_suspicious, analytics_visitors(twitch_username, twitch_avatar)')
-      .gte('started_at', new Date(Date.now() - 900000).toISOString())
-      .order('started_at', { ascending: false })
-      .limit(20),
-    supabase
-      .from('analytics_events')
-      .select('id, event_type, page_url, offer_id, element_text, is_suspicious, created_at, session_id')
-      .gte('created_at', fiveMinAgo)
-      .order('created_at', { ascending: false })
-      .limit(30),
-    supabase
-      .from('analytics_sessions')
-      .select('id', { count: 'exact', head: true })
-      .gte('started_at', fiveMinAgo),
+  const fifteenMinAgo = new Date(Date.now() - 900000).toISOString();
+  const [activeSessionsRaw, recentEventsRaw] = await Promise.all([
+    fetchAnalyticsSessionsForRange(supabase, fifteenMinAgo, new Date().toISOString(), 200),
+    fetchAnalyticsEventsForRange(supabase, fiveMinAgo, new Date().toISOString(), 200),
   ]);
 
+  const activeSessions = activeSessionsRaw
+    .map(normalizeSessionRow)
+    .sort((a, b) => String(b.started_at || '').localeCompare(String(a.started_at || '')))
+    .slice(0, 20);
+  const recentEvents = recentEventsRaw
+    .map(normalizeEventRow)
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+    .slice(0, 30);
+
   return res.status(200).json({
-    activeSessions: activeSessions || [],
-    recentEvents: recentEvents || [],
-    activeCount: activeCount || 0,
+    activeSessions,
+    recentEvents,
+    activeCount: activeSessionsRaw.length,
   });
 }
 
@@ -1352,18 +1731,15 @@ async function handleTraffic(req, res, supabase) {
   const { since } = req.query;
   const sinceDate = since || new Date(Date.now() - 30 * 86400000).toISOString();
 
-  const { data: sessions } = await supabase
-    .from('analytics_sessions')
-    .select('referrer_source, visitor_id, duration_secs, is_bounce')
-    .gte('started_at', sinceDate);
+  const sessions = (await fetchAnalyticsSessionsForRange(supabase, sinceDate, new Date().toISOString())).map(normalizeSessionRow);
 
   const sourceMap = {};
-  (sessions || []).forEach(s => {
-    const src = s.referrer_source || 'direct';
+  sessions.forEach(s => {
+    const src = s.referrer_source || classifyReferrer(s.referrer) || 'direct';
     if (!sourceMap[src]) sourceMap[src] = { source: src, sessions: 0, visitors: new Set(), bounces: 0, totalDuration: 0, durationCount: 0 };
     const m = sourceMap[src];
     m.sessions++;
-    m.visitors.add(s.visitor_id);
+    m.visitors.add(sessionVisitorKey(s));
     if (s.is_bounce) m.bounces++;
     if (s.duration_secs) { m.totalDuration += s.duration_secs; m.durationCount++; }
   });
@@ -1383,20 +1759,17 @@ async function handleGeo(req, res, supabase) {
   const { since } = req.query;
   const sinceDate = since || new Date(Date.now() - 30 * 86400000).toISOString();
 
-  const { data: sessions } = await supabase
-    .from('analytics_sessions')
-    .select('country, country_code, city, visitor_id')
-    .gte('started_at', sinceDate);
+  const sessions = (await fetchAnalyticsSessionsForRange(supabase, sinceDate, new Date().toISOString())).map(normalizeSessionRow);
 
   // Country breakdown
   const countryMap = {};
   const cityMap = {};
-  (sessions || []).forEach(s => {
+  sessions.forEach(s => {
     const c = s.country || 'Unknown';
     const cc = s.country_code || '??';
     if (!countryMap[cc]) countryMap[cc] = { country: c, country_code: cc, sessions: 0, visitors: new Set() };
     countryMap[cc].sessions++;
-    countryMap[cc].visitors.add(s.visitor_id);
+    countryMap[cc].visitors.add(sessionVisitorKey(s));
 
     const city = s.city || 'Unknown';
     const key = `${cc}:${city}`;
@@ -1421,20 +1794,42 @@ async function handleFraud(req, res, supabase) {
 
   let query = supabase
     .from('analytics_fraud_logs')
-    .select('*, analytics_sessions(ip_address, country, browser, analytics_visitors(twitch_username))', { count: 'exact' })
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + parseInt(limit) - 1);
 
   if (resolved !== 'all') query = query.eq('resolved', resolved === 'true');
   if (rule) query = query.eq('rule_name', rule);
 
-  const { data, count } = await query;
+  let { data, count, error } = await query;
+
+  if (error && isMissingRelationError(error)) {
+    let legacyQuery = supabase
+      .from('fraud_logs')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + parseInt(limit) - 1);
+    if (resolved !== 'all') legacyQuery = legacyQuery.eq('resolved', resolved === 'true');
+    const legacyResult = await legacyQuery;
+    data = (legacyResult.data || []).map(row => ({
+      ...row,
+      visitor_id: row.metadata?.visitor_id || null,
+      rule_name: row.metadata?.rule_name || 'legacy_flag',
+      event_count: row.metadata?.event_count || null,
+    }));
+    count = legacyResult.count || data.length;
+  }
 
   // Summary counts
-  const { data: summary } = await supabase
+  let { data: summary, error: summaryError } = await supabase
     .from('analytics_fraud_logs')
     .select('rule_name')
     .eq('resolved', false);
+
+  if (summaryError && isMissingRelationError(summaryError)) {
+    const legacySummary = await supabase.from('fraud_logs').select('metadata, reason').eq('resolved', false);
+    summary = (legacySummary.data || []).map(row => ({ rule_name: row.metadata?.rule_name || 'legacy_flag' }));
+  }
 
   const ruleCounts = {};
   (summary || []).forEach(f => {
@@ -1445,39 +1840,71 @@ async function handleFraud(req, res, supabase) {
 }
 
 async function handleConfig(req, res, supabase, user) {
+  const defaults = {
+    max_clicks_10s: 15,
+    max_same_offer_1m: 5,
+    max_sessions_ip_1h: 10,
+    risk_score_threshold: 60,
+    rapid_click_threshold: 15,
+    multi_session_ip_threshold: 10,
+    risk_threshold: 60,
+    tracking_enabled: true,
+    geo_tracking: true,
+    geo_enabled: true,
+    ip_tracking: true,
+    retention_days: 365,
+  };
+
   if (req.method === 'POST') {
-    const body = req.body;
-    const { data } = await supabase
+    const body = parseJsonBody(req);
+    const normalizedBody = {
+      ...body,
+      max_clicks_10s: body.max_clicks_10s ?? body.rapid_click_threshold ?? defaults.max_clicks_10s,
+      max_sessions_ip_1h: body.max_sessions_ip_1h ?? body.multi_session_ip_threshold ?? defaults.max_sessions_ip_1h,
+      risk_score_threshold: body.risk_score_threshold ?? body.risk_threshold ?? defaults.risk_score_threshold,
+      geo_tracking: body.geo_tracking ?? body.geo_enabled ?? defaults.geo_tracking,
+    };
+    const { data, error } = await supabase
       .from('analytics_config')
       .upsert({
         user_id: user.id,
-        ...body,
+        ...normalizedBody,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
       .select()
       .single();
 
-    return res.status(200).json({ config: data });
+    if (error && isMissingRelationError(error)) {
+      await supabase.from('fraud_config').insert({
+        key: `analytics_config:${user.id}`,
+        value: normalizedBody,
+        description: 'Analytics dashboard settings fallback',
+      }).catch(() => {});
+      return res.status(200).json({ config: { ...defaults, ...normalizedBody } });
+    }
+
+    return res.status(200).json({ config: { ...defaults, ...(data || normalizedBody) } });
   }
 
   // GET
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('analytics_config')
     .select('*')
     .eq('user_id', user.id)
     .maybeSingle();
 
-  return res.status(200).json({
-    config: data || {
-      max_clicks_10s: 15,
-      max_same_offer_1m: 5,
-      max_sessions_ip_1h: 10,
-      risk_score_threshold: 60,
-      tracking_enabled: true,
-      geo_tracking: true,
-      ip_tracking: true,
-    },
-  });
+  if (error && isMissingRelationError(error)) {
+    const legacy = await supabase
+      .from('fraud_config')
+      .select('value')
+      .eq('key', `analytics_config:${user.id}`)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return res.status(200).json({ config: { ...defaults, ...(legacy.data?.value || {}) } });
+  }
+
+  return res.status(200).json({ config: { ...defaults, ...(data || {}) } });
 }
 
 async function handleResolveFraud(req, res, supabase, user) {
@@ -1486,10 +1913,16 @@ async function handleResolveFraud(req, res, supabase, user) {
   const { id } = req.body;
   if (!id) return res.status(400).json({ error: 'id required' });
 
-  await supabase
+  const result = await supabase
     .from('analytics_fraud_logs')
     .update({ resolved: true, resolved_by: user.id, resolved_at: new Date().toISOString() })
     .eq('id', id);
+
+  if (result.error && isMissingColumnError(result.error)) {
+    await supabase.from('analytics_fraud_logs').update({ resolved: true }).eq('id', id);
+  } else if (result.error && isMissingRelationError(result.error)) {
+    await supabase.from('fraud_logs').update({ resolved: true }).eq('id', id);
+  }
 
   return res.status(200).json({ ok: true });
 }
@@ -1497,25 +1930,59 @@ async function handleResolveFraud(req, res, supabase, user) {
 async function handleDeleteData(req, res, supabase, user) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { visitor_id, ip_address } = req.body;
-  if (!visitor_id && !ip_address) return res.status(400).json({ error: 'visitor_id or ip_address required' });
+  const { visitor_id, ip_address, email, fingerprint } = parseJsonBody(req);
+  if (!visitor_id && !ip_address && !email && !fingerprint) return res.status(400).json({ error: 'visitor_id, ip_address, email, or fingerprint required' });
 
   const counts = { sessions: 0, events: 0, fraud_logs: 0 };
+  const targetVisitorIds = new Set(visitor_id ? [visitor_id] : []);
+  const targetSessionIds = new Set();
 
-  if (visitor_id) {
-    const { count: ec } = await supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('visitor_id', visitor_id);
-    const { count: sc } = await supabase.from('analytics_sessions').select('id', { count: 'exact', head: true }).eq('visitor_id', visitor_id);
-    const { count: fc } = await supabase.from('analytics_fraud_logs').select('id', { count: 'exact', head: true }).eq('visitor_id', visitor_id);
+  if (fingerprint) {
+    const visitorResult = await supabase.from('analytics_visitors').select('id').eq('fingerprint', fingerprint).limit(20);
+    (visitorResult.data || []).forEach(row => targetVisitorIds.add(row.id));
+  }
 
-    counts.events = ec || 0;
-    counts.sessions = sc || 0;
-    counts.fraud_logs = fc || 0;
+  const legacyFilters = [];
+  const syntheticId = fingerprint || visitor_id;
+  if (syntheticId) legacyFilters.push(`session_token.eq.${syntheticId}`, `device_fingerprint.eq.${syntheticId}`, `gpu_fingerprint.eq.${syntheticId}`);
+  if (email) legacyFilters.push(`user_email.eq.${email}`);
+  if (legacyFilters.length) {
+    const legacySessions = await supabase
+      .from('analytics_sessions')
+      .select('id')
+      .or(legacyFilters.join(','))
+      .limit(10000);
+    (legacySessions.data || []).forEach(row => targetSessionIds.add(row.id));
+  }
+
+  for (const targetVisitorId of targetVisitorIds) {
+    const { count: ec } = await supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('visitor_id', targetVisitorId);
+    const { count: sc } = await supabase.from('analytics_sessions').select('id', { count: 'exact', head: true }).eq('visitor_id', targetVisitorId);
+    const { count: fc } = await supabase.from('analytics_fraud_logs').select('id', { count: 'exact', head: true }).eq('visitor_id', targetVisitorId);
+
+    counts.events += ec || 0;
+    counts.sessions += sc || 0;
+    counts.fraud_logs += fc || 0;
 
     // Delete in order (events → sessions → fraud → visitor)
-    await supabase.from('analytics_events').delete().eq('visitor_id', visitor_id);
-    await supabase.from('analytics_fraud_logs').delete().eq('visitor_id', visitor_id);
-    await supabase.from('analytics_sessions').delete().eq('visitor_id', visitor_id);
-    await supabase.from('analytics_visitors').delete().eq('id', visitor_id);
+    await supabase.from('analytics_events').delete().eq('visitor_id', targetVisitorId);
+    await supabase.from('analytics_fraud_logs').delete().eq('visitor_id', targetVisitorId);
+    await supabase.from('analytics_sessions').delete().eq('visitor_id', targetVisitorId);
+    await supabase.from('analytics_visitors').delete().eq('id', targetVisitorId);
+  }
+
+  if (targetSessionIds.size) {
+    const ids = Array.from(targetSessionIds);
+    const { count: ec } = await supabase.from('analytics_events').select('id', { count: 'exact', head: true }).in('session_id', ids);
+    const { count: sc } = await supabase.from('analytics_sessions').select('id', { count: 'exact', head: true }).in('id', ids);
+    const { count: fc } = await supabase.from('fraud_logs').select('id', { count: 'exact', head: true }).in('session_id', ids);
+    counts.events += ec || 0;
+    counts.sessions += sc || 0;
+    counts.fraud_logs += fc || 0;
+    await supabase.from('analytics_events').delete().in('session_id', ids);
+    await supabase.from('analytics_fraud_logs').delete().in('session_id', ids);
+    await supabase.from('fraud_logs').delete().in('session_id', ids);
+    await supabase.from('analytics_sessions').delete().in('id', ids);
   }
 
   if (ip_address) {
@@ -1526,14 +1993,15 @@ async function handleDeleteData(req, res, supabase, user) {
   }
 
   // Log deletion request
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   await supabase.from('analytics_deletion_requests').insert({
     requester_id: user.id,
-    target_visitor_id: visitor_id || null,
+    target_visitor_id: visitor_id && uuid.test(visitor_id) ? visitor_id : null,
     target_ip: ip_address || null,
     status: 'completed',
     completed_at: new Date().toISOString(),
     deleted_count: counts,
-  });
+  }).catch(() => {});
 
   return res.status(200).json({ ok: true, deleted: counts });
 }
@@ -1544,29 +2012,26 @@ async function handleExport(req, res, supabase) {
 
   let data = [];
   if (type === 'events') {
-    const { data: rows } = await supabase
-      .from('analytics_events')
-      .select('id, session_id, event_type, page_url, offer_id, element_text, ip_address, country, city, is_suspicious, created_at')
-      .gte('created_at', sinceDate)
-      .order('created_at', { ascending: false })
-      .limit(parseInt(limit));
-    data = rows || [];
+    data = (await fetchAnalyticsEventsForRange(supabase, sinceDate, new Date().toISOString(), parseInt(limit))).map(normalizeEventRow);
   } else if (type === 'sessions') {
-    const { data: rows } = await supabase
-      .from('analytics_sessions')
-      .select('id, visitor_id, ip_address, browser, os, device_type, country, city, referrer_source, started_at, duration_secs, page_count, event_count, risk_score, is_suspicious')
-      .gte('started_at', sinceDate)
-      .order('started_at', { ascending: false })
-      .limit(parseInt(limit));
-    data = rows || [];
+    data = (await fetchAnalyticsSessionsForRange(supabase, sinceDate, new Date().toISOString(), parseInt(limit))).map(normalizeSessionRow);
   } else if (type === 'fraud') {
-    const { data: rows } = await supabase
+    let rows = await optionalRows(supabase
       .from('analytics_fraud_logs')
-      .select('id, session_id, ip_address, rule_name, reason, risk_score, event_count, resolved, created_at')
+      .select('id, session_id, visitor_id, ip_address, rule_name, reason, risk_score, event_count, resolved, created_at')
       .gte('created_at', sinceDate)
       .order('created_at', { ascending: false })
-      .limit(parseInt(limit));
-    data = rows || [];
+      .limit(parseInt(limit)));
+    if (!rows.length) {
+      rows = await optionalRows(supabase
+        .from('fraud_logs')
+        .select('id, session_id, ip_address, reason, risk_score, metadata, resolved, created_at')
+        .gte('created_at', sinceDate)
+        .order('created_at', { ascending: false })
+        .limit(parseInt(limit)));
+      rows = rows.map(row => ({ ...row, rule_name: row.metadata?.rule_name || 'legacy_flag', event_count: row.metadata?.event_count || null }));
+    }
+    data = rows;
   }
 
   // Convert to CSV
@@ -1578,7 +2043,7 @@ async function handleExport(req, res, supabase) {
     csvRows.push(headers.map(h => {
       const val = row[h];
       if (val === null || val === undefined) return '';
-      const str = String(val);
+      const str = typeof val === 'object' ? JSON.stringify(val) : String(val);
       return str.includes(',') || str.includes('"') || str.includes('\n')
         ? `"${str.replace(/"/g, '""')}"` : str;
     }).join(','));
@@ -1600,24 +2065,22 @@ async function handleFunnel(req, res, supabase) {
   }
 
   // For each step, count unique visitors who performed the event
+  const events = await fetchAnalyticsEventsForRange(supabase, sinceDate, new Date().toISOString(), 25000);
+  const sessionKeys = new Map();
   const results = [];
   for (const step of funnelSteps) {
-    let query = supabase
-      .from('analytics_events')
-      .select('visitor_id')
-      .eq('event_type', step.event_type)
-      .gte('created_at', sinceDate);
-
-    if (step.page_url_pattern) {
-      query = query.ilike('page_url', `%${step.page_url_pattern}%`);
-    }
-
-    const { data } = await query;
-    const uniqueVisitors = new Set((data || []).map(e => e.visitor_id)).size;
+    const stepEventName = normalizeAnalyticsEventName(step.event_name || step.event_type);
+    const matchingEvents = events.filter(event => {
+      if (analyticsEventName(event) !== stepEventName && event.event_type !== step.event_type) return false;
+      if (step.page_url_pattern && !String(analyticsRoute(event)).includes(step.page_url_pattern)) return false;
+      return true;
+    });
+    const uniqueVisitors = new Set(matchingEvents.map(event => eventVisitorKey(event, sessionKeys)).filter(Boolean)).size;
 
     results.push({
-      label: step.label || step.event_type,
-      event_type: step.event_type,
+      label: step.label || step.event_name || step.event_type,
+      event_type: step.event_type || getLegacyEventType(stepEventName),
+      event_name: stepEventName,
       unique_visitors: uniqueVisitors,
     });
   }

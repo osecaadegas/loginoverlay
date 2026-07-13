@@ -60,6 +60,60 @@ const PLAYER_FEATURES = [
   { icon: ShieldCheck, title: 'Private by design', desc: 'A player product with no OBS links, chat controls or streamer-only setup.' },
 ];
 
+const ROOT_ANSWERS = [
+  {
+    icon: MonitorPlay,
+    title: 'Software for livestream creators',
+    desc: 'Streamers Center is built for Twitch, Kick and YouTube iGaming creators who need overlays, browser-source widgets, slot requests, tournaments, giveaways and chat tools.',
+  },
+  {
+    icon: Gauge,
+    title: 'Casino tracking for players',
+    desc: 'The player tools track bonus hunts, deposits, withdrawals, payouts, multipliers, break-even targets, slot providers and profit/loss records in a private web dashboard.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Not an audio or party store',
+    desc: 'Streamers Center is a web app for streamer workflows and casino session tracking. It is not a Hi-Fi retailer, audio equipment shop or physical decoration supplier.',
+  },
+];
+
+const PLAYER_ANSWERS = [
+  {
+    icon: WalletCards,
+    title: 'What can players track?',
+    desc: 'Starting deposits, extra deposits, withdrawals, bonus costs, payouts, multipliers, best wins, worst results, casino brands, providers and profit/loss records.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Does it require OBS?',
+    desc: 'No. Player Center is a private bonus hunt tracker and casino accounting dashboard, separate from streamer overlays and live chat controls.',
+  },
+  {
+    icon: LineChart,
+    title: 'Does it predict results?',
+    desc: 'No. Streamers Center records play history and session results for organization. It does not predict winnings or imply guaranteed casino outcomes.',
+  },
+];
+
+const STREAMER_ANSWERS = [
+  {
+    icon: MonitorPlay,
+    title: 'What streamer tools are included?',
+    desc: 'Browser-source overlays, bonus hunt widgets, slot request queues, tournaments, giveaways, chat-connected tools, viewer games, custom themes and partner discovery.',
+  },
+  {
+    icon: Clapperboard,
+    title: 'Does it work with OBS?',
+    desc: 'Yes. Streamers Center overlays and widgets are designed for browser-source live production workflows, including OBS scenes.',
+  },
+  {
+    icon: Radio,
+    title: 'Who is it built for?',
+    desc: 'Streamers Center is built for iGaming, casino and slot content creators on Twitch, Kick and YouTube Live.',
+  },
+];
+
 const STREAMER_PRICING = [
   { id: 'starter', name: 'Starter', price: 'EUR 15', period: '/month', priceAnnual: 'EUR 144', periodAnnual: '/year', subPriceAnnual: 'EUR 12/month billed annually', badge: null, badgeType: null, desc: 'Perfect for new streamers', subPrice: null, features: ['Overlay Center access', 'Core widgets and themes', 'Email support', 'Regular updates'], cta: 'Get Started', highlight: false },
   { id: 'creator', name: 'Creator', price: 'EUR 60', period: '/6 months', priceAnnual: 'EUR 96', periodAnnual: '/year', subPriceAnnual: 'EUR 8/month billed annually', badge: 'MOST POPULAR', badgeType: 'popular', desc: 'For growing content creators', subPrice: 'EUR 10/month', features: ['Everything in Starter', 'Advanced widgets', 'Priority support', 'Early access to new features'], cta: 'Choose Plan', highlight: true },
@@ -80,6 +134,9 @@ const LANDING_IMAGES = {
   streamer: '/streamer.png',
 };
 
+const AUDIENCE_TRANSITION_MS = 1280;
+const REDUCED_MOTION_TRANSITION_MS = 120;
+
 const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
 function rememberAudience(user, audience) {
   localStorage.setItem(AUDIENCE_STORAGE_KEY, audience);
@@ -95,6 +152,31 @@ function rememberAudience(user, audience) {
     .catch((error) => {
       console.warn('[LandingPage] Failed to persist audience preference:', error);
     });
+}
+
+function launchAudienceTransition(audience) {
+  const existing = document.querySelector('.lp-route-transition');
+  if (existing) existing.remove();
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const duration = prefersReducedMotion ? REDUCED_MOTION_TRANSITION_MS : AUDIENCE_TRANSITION_MS;
+
+  const transition = document.createElement('div');
+  transition.className = `lp-route-transition lp-route-transition--${audience}`;
+  transition.setAttribute('aria-hidden', 'true');
+  transition.innerHTML = `
+    <img src="${LANDING_IMAGES[audience]}" alt="" />
+    <span class="lp-route-transition__veil"></span>
+    <span class="lp-route-transition__label">${audience === 'player' ? 'Opening Player Center' : 'Opening Streamer Center'}</span>
+  `;
+  document.body.appendChild(transition);
+  window.requestAnimationFrame(() => transition.classList.add('is-running'));
+
+  window.setTimeout(() => {
+    transition.classList.add('is-leaving');
+    window.setTimeout(() => transition.remove(), 520);
+  }, duration + 520);
+
+  return duration;
 }
 
 function BrandMark() {
@@ -348,6 +430,30 @@ function ProductFeatureGrid({ features }) {
   );
 }
 
+function AnswerSection({ eyebrow, title, children, answers }) {
+  return (
+    <section className="lp-section">
+      <SectionHeading eyebrow={eyebrow} title={title}>{children}</SectionHeading>
+      <ProductFeatureGrid features={answers} />
+    </section>
+  );
+}
+
+function RootOverview() {
+  return (
+    <main className="lp-selected lp-selected--overview">
+      <AnswerSection
+        eyebrow="Streamers Center"
+        title="Streamer tools and casino tracking in one web app."
+        answers={ROOT_ANSWERS}
+      >
+        A clear home for iGaming content creators and casino players: live stream overlays, bonus hunt tracking,
+        slot requests, tournaments, giveaways, chat tools and profit/loss records.
+      </AnswerSection>
+    </main>
+  );
+}
+
 function PlayerLanding({ headingRef, onPrimaryCta, user }) {
   return (
     <main className="lp-selected lp-selected--player">
@@ -390,6 +496,14 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
         </SectionHeading>
         <ProductFeatureGrid features={PLAYER_FEATURES} />
       </section>
+
+      <AnswerSection
+        eyebrow="Quick answers"
+        title="Built for casino session records, not predictions."
+        answers={PLAYER_ANSWERS}
+      >
+        Player Center keeps bonus hunt and casino play history organized without implying future results.
+      </AnswerSection>
 
       <section className="lp-section lp-player-insight">
         <div>
@@ -520,6 +634,14 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
         </SectionHeading>
         <ProductFeatureGrid features={STREAMER_FEATURES} />
       </section>
+
+      <AnswerSection
+        eyebrow="Quick answers"
+        title="Built for iGaming creators and live production."
+        answers={STREAMER_ANSWERS}
+      >
+        Streamer Center focuses on Twitch, Kick and YouTube casino creator workflows, not audio retail or event supplies.
+      </AnswerSection>
 
       <section className="lp-section lp-streamer-showcase">
         <div className="lp-showcase-card lp-showcase-card--wide">
@@ -699,7 +821,8 @@ export default function LandingPage({ mode = 'selector' }) {
     setPreviewAudience(null);
     rememberAudience(user, audience);
     trackEvent(`audience_${audience}_selected`, { route: location.pathname });
-    navigateAudience(audience);
+    const transitionDuration = launchAudienceTransition(audience);
+    window.setTimeout(() => navigateAudience(audience), transitionDuration);
   };
 
   const switchAudience = (audience) => {
@@ -770,13 +893,16 @@ export default function LandingPage({ mode = 'selector' }) {
         />
 
         {mode === 'selector' ? (
-          <AudienceGateway
-            previewAudience={previewAudience}
-            selectingAudience={selectingAudience}
-            onPreview={handlePreview}
-            onClearPreview={clearPreview}
-            onSelect={selectAudience}
-          />
+          <>
+            <AudienceGateway
+              previewAudience={previewAudience}
+              selectingAudience={selectingAudience}
+              onPreview={handlePreview}
+              onClearPreview={clearPreview}
+              onSelect={selectAudience}
+            />
+            <RootOverview />
+          </>
         ) : mode === 'player' ? (
           <PlayerLanding headingRef={headingRef} onPrimaryCta={startPlayerTrial} user={user} />
         ) : mode === 'streamer' ? (
@@ -791,7 +917,7 @@ export default function LandingPage({ mode = 'selector' }) {
           null
         )}
 
-        {(mode === 'player' || mode === 'streamer') && <Footer />}
+        {(mode === 'selector' || mode === 'player' || mode === 'streamer') && <Footer />}
       </div>
 
     </>

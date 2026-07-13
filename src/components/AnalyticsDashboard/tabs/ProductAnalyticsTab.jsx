@@ -52,6 +52,7 @@ export default function ProductAnalyticsTab({ analytics, period }) {
   const playerCurrencyRows = data.player?.totalsByCurrency || [];
   const topOffers = data.offers || [];
   const statuses = Object.entries(data.revenue?.subscriptionStatuses || {});
+  const activeStreamerSubscriptions = data.streamer?.activeSubscriptions ?? data.streamer?.activeStripeSubscriptions;
 
   return (
     <div className="an-tab">
@@ -81,7 +82,7 @@ export default function ProductAnalyticsTab({ analytics, period }) {
         <Section title="Streamer Product">
           <div className="an-metric-list">
             <Metric label="Premium users" value={formatNumber(data.streamer?.activePremiumUsers)} />
-            <Metric label="Active Stripe subscriptions" value={formatNumber(data.streamer?.activeStripeSubscriptions)} />
+            <Metric label="Active subscriptions" value={formatNumber(activeStreamerSubscriptions)} note={`${formatNumber(data.streamer?.activeMollieSubscriptions)} Mollie`} />
             <Metric label="Streamer events" value={formatNumber(data.streamer?.events)} />
             <Metric label="Overlay sessions" value={formatNumber(data.streamer?.overlaySessions)} />
             <Metric label="Premium page views" value={formatNumber(data.streamer?.premiumViews)} />

@@ -1,22 +1,15 @@
 import {
   createBillingPortalSession,
   createCheckoutSession,
-  findOrCreateStripeCustomer,
-} from './_lib/stripe-billing.js';
+} from './_lib/mollie-billing.js';
 import {
   createSupabaseAdmin,
   parseBody,
   requireUser,
   setCors,
 } from './_lib/api-auth.js';
-import { getPlayerAccess, getPlayerSubscription, playerSubscriptionRequired } from './_lib/player-access.js';
+import { getPlayerAccess, playerSubscriptionRequired } from './_lib/player-access.js';
 import { PLAYER_PLAN_CODE, PLAYER_PRODUCT_CODE } from '../src/features/playerBonusHunt/domain.js';
-
-function checkoutTrialDays(subscription) {
-  if (!subscription) return 30;
-  if (subscription.trial_consumed || subscription.trial_started_at || subscription.trial_ends_at) return 0;
-  return 30;
-}
 
 async function handleStatus(req, res, supabase, user) {
   const subscriptionRequired = playerSubscriptionRequired();
@@ -27,7 +20,7 @@ async function handleStatus(req, res, supabase, user) {
     planName: subscriptionRequired ? 'Player' : 'Player Bonus Hunt',
     monthlyPrice: subscriptionRequired ? 3 : 0,
     currency: 'EUR',
-    trialDays: subscriptionRequired ? 30 : 0,
+    trialDays: 0,
     subscriptionRequired,
     ...access,
   });
@@ -42,7 +35,6 @@ async function handleCheckout(req, res, supabase, user) {
     });
   }
 
-  const subscription = await getPlayerSubscription(supabase, user.id);
   const access = await getPlayerAccess(supabase, user.id);
   if (access.entitled) {
     return res.status(409).json({
@@ -51,7 +43,6 @@ async function handleCheckout(req, res, supabase, user) {
     });
   }
 
-  const trialPeriodDays = checkoutTrialDays(subscription);
   const session = await createCheckoutSession({
     req,
     supabase,
@@ -59,12 +50,11 @@ async function handleCheckout(req, res, supabase, user) {
     planId: PLAYER_PLAN_CODE,
     successPath: '/player/subscription',
     cancelPath: '/player/subscription',
-    trialPeriodDays,
   });
   return res.status(200).json({
     id: session.id,
     url: session.url,
-    trialPeriodDays,
+    trialPeriodDays: 0,
   });
 }
 
@@ -72,18 +62,16 @@ async function handlePortal(req, res, supabase, user) {
   if (!playerSubscriptionRequired()) {
     const access = await getPlayerAccess(supabase, user.id);
     return res.status(200).json({
-      message: 'No Stripe billing portal is needed while Player Bonus Hunt is free.',
+      message: 'No billing portal is needed while Player Bonus Hunt is free.',
       access,
     });
   }
 
-  const customerId = await findOrCreateStripeCustomer(supabase, user);
   const session = await createBillingPortalSession({
     req,
-    customerId,
     returnPath: '/player/subscription',
   });
-  return res.status(200).json({ id: session.id, url: session.url });
+  return res.status(200).json({ id: session.id, url: session.url, message: session.message });
 }
 
 export default async function handler(req, res) {

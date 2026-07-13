@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createCheckoutSession } from './_lib/stripe-billing.js';
+import { createCheckoutSession } from './_lib/mollie-billing.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;

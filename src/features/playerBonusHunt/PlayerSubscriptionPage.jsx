@@ -18,7 +18,7 @@ export default function PlayerSubscriptionPage() {
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
-      setMessage('Checkout complete. Stripe may take a moment to confirm your trial or subscription.');
+      setMessage('Checkout complete. Mollie may take a moment to confirm your subscription.');
       refresh();
     }
     if (searchParams.get('canceled') === 'true') {
@@ -97,8 +97,8 @@ export default function PlayerSubscriptionPage() {
             {loading
               ? 'Confirming your Player Bonus Hunt access.'
               : freeAccess
-              ? 'Stripe subscription checks are disabled for now, so every signed-in account can use Player Bonus Hunt.'
-              : 'Start with 30 days free after authorizing recurring billing through Stripe.'}
+              ? 'Subscription checks are disabled for now, so every signed-in account can use Player Bonus Hunt.'
+              : 'Start recurring billing securely through Mollie.'}
           </p>
           <ul>
             <li>Manual casino session and Bonus Hunt tracker</li>
@@ -118,7 +118,7 @@ export default function PlayerSubscriptionPage() {
               <dl>
                 <div><dt>Current plan</dt><dd>{plan?.planName || 'Player Bonus Hunt'}</dd></div>
                 <div><dt>Monthly price</dt><dd>{freeAccess ? 'Free for now' : `EUR ${Number(plan?.monthlyPrice || 3).toFixed(2)}`}</dd></div>
-                <div><dt>Access mode</dt><dd>{freeAccess ? 'Authenticated account' : 'Stripe subscription'}</dd></div>
+                <div><dt>Access mode</dt><dd>{freeAccess ? 'Authenticated account' : 'Mollie subscription'}</dd></div>
                 {!freeAccess && (
                   <>
                     <div><dt>Trial start</dt><dd>{formatDate(subscription?.trial_started_at)}</dd></div>
@@ -149,7 +149,7 @@ export default function PlayerSubscriptionPage() {
                   </>
                 ) : (
                   <button className="pbh-btn pbh-btn--primary" onClick={startCheckout} disabled={busy === 'checkout'}>
-                    <CreditCard size={17} /> {busy === 'checkout' ? 'Opening Stripe...' : 'Start 30-day trial'}
+                    <CreditCard size={17} /> {busy === 'checkout' ? 'Opening Mollie...' : 'Start subscription'}
                   </button>
                 )}
               </div>
@@ -164,8 +164,8 @@ export default function PlayerSubscriptionPage() {
             <h2>{freeAccess ? 'Access for now' : 'Billing safety'}</h2>
             <p>
               {freeAccess
-                ? 'The Stripe billing path remains in the codebase, but it is not required while free access is enabled.'
-                : 'Recurring billing is handled by Stripe checkout and Stripe webhooks. The frontend never stores card data and never grants access by itself.'}
+                ? 'The billing path is not required while free access is enabled.'
+                : 'Recurring billing is handled by Mollie checkout and Mollie webhooks. The frontend never stores card data and never grants access by itself.'}
             </p>
           </div>
         </div>
@@ -173,12 +173,12 @@ export default function PlayerSubscriptionPage() {
           {freeAccess ? (
             <>
               <div className="pbh-note"><strong>No checkout required</strong><span>Signed-in users can open and use Player Bonus Hunt immediately.</span></div>
-              <div className="pbh-note"><strong>Server-side access</strong><span>The API grants access before Stripe tables or checkout sessions are touched.</span></div>
-              <div className="pbh-note"><strong>Stripe can return later</strong><span>Set PLAYER_BONUS_HUNT_REQUIRE_SUBSCRIPTION=true to enforce the paid plan again.</span></div>
+              <div className="pbh-note"><strong>Server-side access</strong><span>The API grants access before billing tables or checkout sessions are touched.</span></div>
+              <div className="pbh-note"><strong>Paid access can return later</strong><span>Set PLAYER_BONUS_HUNT_REQUIRE_SUBSCRIPTION=true to enforce the paid plan again.</span></div>
             </>
           ) : (
             <>
-              <div className="pbh-note"><strong>No early charge</strong><span>You only renew at EUR 3/month after Stripe authorization and the 30-day trial.</span></div>
+              <div className="pbh-note"><strong>Secure billing</strong><span>Mollie handles recurring EUR 3/month payments after checkout confirmation.</span></div>
               <div className="pbh-note"><strong>Trial is account-bound</strong><span>Trial use is stored server-side, so cancelling does not reset eligibility.</span></div>
               <div className="pbh-note"><strong>Data retained</strong><span>Expired or cancelled users keep stored hunts and regain access after resubscribing.</span></div>
             </>

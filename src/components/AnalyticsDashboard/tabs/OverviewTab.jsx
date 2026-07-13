@@ -7,6 +7,39 @@ import {
   BarChart, Bar,
 } from 'recharts';
 
+function formatNumber(value) {
+  return (Number(value) || 0).toLocaleString();
+}
+
+function objectRows(value = {}, labelKey = 'label', valueKey = 'count') {
+  return Object.entries(value)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([label, count]) => ({ [labelKey]: label, [valueKey]: count }));
+}
+
+function Breakdown({ title, rows, labelKey = 'label', valueKey = 'count', empty = 'No data yet' }) {
+  return (
+    <section className="an-chart-card">
+      <h3 className="an-chart-card__title">{title}</h3>
+      <div className="an-chart-card__body an-chart-card__body--plain">
+        {rows.length ? (
+          <div className="an-metric-list">
+            {rows.map(row => (
+              <div className="an-metric-row" key={row[labelKey]}>
+                <span>{row[labelKey]}</span>
+                <strong>{formatNumber(row[valueKey])}</strong>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="an-tab__empty">{empty}</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function OverviewTab({ analytics, period }) {
   const [data, setData] = useState(null);
 
@@ -19,12 +52,18 @@ export default function OverviewTab({ analytics, period }) {
   }
 
   const cards = [
-    { label: 'Total Sessions', value: data.totalSessions?.toLocaleString() ?? '0', trend: data.sessionsTrend, icon: '📡' },
-    { label: 'Unique Visitors', value: data.uniqueVisitors?.toLocaleString() ?? '0', icon: '👤' },
-    { label: 'Total Events', value: data.totalEvents?.toLocaleString() ?? '0', trend: data.eventsTrend, icon: '⚡' },
-    { label: 'Total Clicks', value: data.totalClicks?.toLocaleString() ?? '0', icon: '🖱️' },
-    { label: 'Suspicious', value: data.suspiciousSessions?.toLocaleString() ?? '0', icon: '🚨', danger: (data.suspiciousSessions || 0) > 0 },
+    { label: 'Total Sessions', value: formatNumber(data.totalSessions), trend: data.sessionsTrend, icon: '📡' },
+    { label: 'Unique Visitors', value: formatNumber(data.uniqueVisitors), icon: '👤' },
+    { label: 'Total Events', value: formatNumber(data.totalEvents), trend: data.eventsTrend, icon: '⚡' },
+    { label: 'Page Views', value: formatNumber(data.totalPageViews), icon: '📄' },
+    { label: 'Total Clicks', value: formatNumber(data.totalClicks), icon: '🖱️' },
+    { label: 'Suspicious', value: formatNumber(data.suspiciousSessions), icon: '🚨', danger: (data.suspiciousSessions || 0) > 0 },
   ];
+  const topEvents = data.topEvents || objectRows(data.byEventName || {}, 'event', 'count');
+  const experiences = objectRows(data.byExperience || {}, 'experience', 'count');
+  const referrers = objectRows(data.byReferrer || {}, 'source', 'sessions');
+  const devices = objectRows(data.deviceTypes || {}, 'device', 'sessions');
+  const countries = data.topCountries || [];
 
   return (
     <div className="an-tab">
@@ -46,9 +85,9 @@ export default function OverviewTab({ analytics, period }) {
         ))}
       </div>
 
-      {/* Sessions Chart */}
+      {/* Activity Chart */}
       <div className="an-chart-card">
-        <h3 className="an-chart-card__title">Sessions Over Time</h3>
+        <h3 className="an-chart-card__title">Activity Over Time</h3>
         <div className="an-chart-card__body">
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={data.chart || []}>
@@ -56,6 +95,14 @@ export default function OverviewTab({ analytics, period }) {
                 <linearGradient id="sessionsGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
                   <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="pageViewsGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.28} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="clicksGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.24} />
+                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -68,6 +115,8 @@ export default function OverviewTab({ analytics, period }) {
                 cursor={{ stroke: 'rgba(99,102,241,0.3)' }}
               />
               <Area type="monotone" dataKey="sessions" stroke="#6366f1" fill="url(#sessionsGradient)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, stroke: '#6366f1', strokeWidth: 2, fill: '#1e1b4b' }} />
+              <Area type="monotone" dataKey="pageViews" stroke="#10b981" fill="url(#pageViewsGradient)" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="clicks" stroke="#f59e0b" fill="url(#clicksGradient)" strokeWidth={2} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -102,6 +151,18 @@ export default function OverviewTab({ analytics, period }) {
           )}
         </div>
       </div>
+
+      <div className="an-product-grid">
+        <Breakdown title="Top Events" rows={topEvents} labelKey="event" valueKey="count" />
+        <Breakdown title="Experiences" rows={experiences} labelKey="experience" valueKey="count" />
+      </div>
+
+      <div className="an-product-grid">
+        <Breakdown title="Traffic Sources" rows={referrers} labelKey="source" valueKey="sessions" />
+        <Breakdown title="Devices" rows={devices} labelKey="device" valueKey="sessions" />
+      </div>
+
+      <Breakdown title="Top Countries" rows={countries} labelKey="country" valueKey="sessions" />
     </div>
   );
 }

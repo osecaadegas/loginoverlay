@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createBillingPortalSession } from './_lib/stripe-billing.js';
+import { createBillingPortalSession } from './_lib/mollie-billing.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
@@ -50,17 +50,18 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from('billing_customers')
-      .select('stripe_customer_id')
+      .select('provider,provider_customer_id,mollie_customer_id')
       .eq('user_id', user.id)
       .maybeSingle();
 
     if (error) throw error;
-    if (!data?.stripe_customer_id) {
-      return res.status(404).json({ error: 'No Stripe subscription found for this account' });
+    const customerId = data?.mollie_customer_id || (data?.provider === 'mollie' ? data.provider_customer_id : null);
+    if (!customerId) {
+      return res.status(404).json({ error: 'No Mollie subscription found for this account' });
     }
 
-    const session = await createBillingPortalSession({ req, customerId: data.stripe_customer_id });
-    return res.status(200).json({ id: session.id, url: session.url });
+    const session = await createBillingPortalSession({ req, customerId });
+    return res.status(200).json({ id: session.id, url: session.url, message: session.message });
   } catch (err) {
     console.error('[create-billing-portal-session]', err);
     return res.status(err.statusCode || 500).json({ error: err.message || 'Unable to create billing portal session' });

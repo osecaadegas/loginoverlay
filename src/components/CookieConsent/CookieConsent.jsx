@@ -55,7 +55,7 @@ export default function CookieConsent() {
         </div>
 
         <div className="cookie-banner__content">
-          <h3 className="cookie-banner__title">We use cookies 🍪</h3>
+          <h3 className="cookie-banner__title">We use cookies</h3>
           <p className="cookie-banner__text">
             We use cookies and similar technologies to keep you logged in, remember your preferences,
             and improve your experience. You can choose which cookies to accept.

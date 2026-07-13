@@ -97,6 +97,10 @@ export default function PricingPage() {
       throw new Error(data.error || 'Could not open the billing portal.');
     }
 
+    if (!data.url) {
+      throw new Error(data.message || 'No hosted billing portal is available for this subscription.');
+    }
+
     window.location.href = data.url;
     return true;
   };
@@ -265,7 +269,7 @@ export default function PricingPage() {
         {/* Info footer */}
         <div className="pricing-footer">
           <p className="pricing-footer-text">
-            Secure recurring billing is handled by Stripe. You can manage or cancel your subscription from the customer portal.
+            Secure recurring billing is handled by Mollie. Contact support to update payment details or cancel your subscription.
           </p>
         </div>
       </div>

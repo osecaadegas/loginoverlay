@@ -111,7 +111,9 @@ const providerLogoBySlug = PROVIDER_LOGO_FILES.reduce((acc, file) => {
   const normalized = normalizeProviderSlug(stem);
   const stripped = stripProviderSuffixes(normalized);
   acc[normalized] = file;
+  acc[normalized.replace(/_/g, '')] = file;
   if (!acc[stripped]) acc[stripped] = file;
+  if (!acc[stripped.replace(/_/g, '')]) acc[stripped.replace(/_/g, '')] = file;
   return acc;
 }, {});
 
@@ -159,7 +161,7 @@ export const getProviderImage = (idOrSlug) => {
   if (!idOrSlug) return null;
   // 1) Check static list (with fuzzy suffix-stripping)
   const provider = getProvider(idOrSlug);
-  const providerImage = provider?.image || toProviderFilename(provider?.name || provider?.slug || provider?.id);
+  const providerImage = toProviderFilename(provider?.name || provider?.slug || provider?.id) || provider?.image;
   if (providerImage) return providerImage;
   // 2) Generate path from name (matches scraped logos in public/providers/)
   //    Also try with common suffixes stripped

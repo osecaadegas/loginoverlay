@@ -28,6 +28,94 @@
   position: relative;
 }
 
+.lp-route-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+  background: #05070d;
+  opacity: 0;
+  transform: scale(0.64);
+  transition:
+    opacity 260ms ease,
+    transform 1280ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center;
+}
+
+.lp-route-transition--player {
+  transform-origin: 26% 50%;
+}
+
+.lp-route-transition--streamer {
+  transform-origin: 74% 50%;
+}
+
+.lp-route-transition.is-running {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lp-route-transition.is-leaving {
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.lp-route-transition img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(1.12) contrast(1.05) brightness(0.9);
+  transform: scale(1.1);
+  transition: transform 1800ms cubic-bezier(0.16, 1, 0.3, 1), filter 700ms ease;
+}
+
+.lp-route-transition.is-running img {
+  transform: scale(1.02);
+  filter: saturate(1.18) contrast(1.06) brightness(0.96);
+}
+
+.lp-route-transition__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 48%, transparent 0 26%, rgba(5, 7, 13, 0.1) 56%, rgba(5, 7, 13, 0.54) 100%),
+    linear-gradient(180deg, rgba(5, 7, 13, 0.2), rgba(5, 7, 13, 0.82));
+}
+
+.lp-route-transition--player .lp-route-transition__veil {
+  background:
+    radial-gradient(circle at 48% 46%, rgba(45, 212, 191, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(5, 7, 13, 0.16), rgba(5, 7, 13, 0.78));
+}
+
+.lp-route-transition--streamer .lp-route-transition__veil {
+  background:
+    radial-gradient(circle at 52% 45%, rgba(139, 92, 246, 0.12), transparent 44%),
+    linear-gradient(180deg, rgba(5, 7, 13, 0.16), rgba(5, 7, 13, 0.8));
+}
+
+.lp-route-transition__label {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(34px, 7vh, 72px);
+  transform: translateX(-50%) translateY(12px);
+  opacity: 0;
+  color: #f8fafc;
+  font-size: clamp(0.82rem, 1.3vw, 1.05rem);
+  font-weight: 920;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8);
+  transition: opacity 440ms ease 260ms, transform 520ms var(--lp-ease) 260ms;
+}
+
+.lp-route-transition.is-running .lp-route-transition__label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .lp-sr-only {
   position: absolute;
   width: 1px;
@@ -792,22 +880,23 @@
 .lp-age-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 11000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 18px;
-  background: rgba(3, 6, 11, 0.94);
-  backdrop-filter: blur(14px);
+  background:
+    radial-gradient(circle at 50% 44%, rgba(45, 212, 191, 0.08), transparent 36%),
+    linear-gradient(180deg, rgba(3, 6, 11, 0.76), rgba(3, 6, 11, 0.9));
 }
 
 .lp-age-modal {
   width: min(440px, 100%);
   padding: 32px;
-  border-radius: 22px;
-  background: rgba(15, 23, 42, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.44);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(8, 13, 22, 0.95));
+  border: 1px solid rgba(226, 232, 240, 0.18);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   text-align: center;
 }
 
@@ -817,9 +906,9 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, var(--lp-player), var(--lp-streamer));
-  color: #fff;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--lp-player), #d9f99d);
+  color: #061018;
   font-size: 1.15rem;
   font-weight: 950;
   margin-bottom: 18px;
@@ -827,6 +916,8 @@
 
 .lp-age-modal h2 {
   margin: 0 0 10px;
+  color: #f8fafc;
+  font-weight: 950;
 }
 
 .lp-age-modal p {
@@ -845,7 +936,7 @@
 .lp-age-modal button {
   min-height: 46px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   color: #061018;
   background: linear-gradient(135deg, var(--lp-player), #d9f99d);
   font-weight: 900;
@@ -853,7 +944,7 @@
 }
 
 .lp-age-modal__deny {
-  color: #dbeafe !important;
+  color: #cbd5e1 !important;
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(255, 255, 255, 0.13) !important;
 }

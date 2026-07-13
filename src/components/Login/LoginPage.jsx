@@ -1,8 +1,34 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import LandingPage from '../LandingPage/LandingPage';
 import './LoginPage.css';
+
+const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
+
+const LOGIN_AUDIENCES = {
+  player: {
+    image: '/player.png',
+    title: 'Player Center',
+    subtitle: 'Bonus hunts, deposits, wins and session history.',
+  },
+  streamer: {
+    image: '/streamer.png',
+    title: 'Streamer Center',
+    subtitle: 'Overlay tools, widgets and live stream controls.',
+  },
+};
+
+function audienceFromReturnTo(returnTo) {
+  if (returnTo?.startsWith('/player')) return 'player';
+  if (returnTo?.startsWith('/overlay-center') || returnTo?.startsWith('/premium')) return 'streamer';
+  return null;
+}
+
+function readStoredAudience() {
+  if (typeof window === 'undefined') return null;
+  const stored = window.localStorage.getItem(AUDIENCE_STORAGE_KEY);
+  return stored === 'player' || stored === 'streamer' ? stored : null;
+}
 
 export default function LoginPage() {
   const { user, signInWithTwitch, signInWithGoogle, signInWithDiscord } = useAuth();
@@ -16,6 +42,8 @@ export default function LoginPage() {
     const candidate = fromState || fromQuery || '/';
     return typeof candidate === 'string' && candidate.startsWith('/') ? candidate : '/';
   }, [location.search, location.state]);
+  const loginAudience = useMemo(() => audienceFromReturnTo(returnTo) || readStoredAudience(), [returnTo]);
+  const backdrop = loginAudience ? LOGIN_AUDIENCES[loginAudience] : null;
 
   useEffect(() => {
     if (user) navigate(returnTo, { replace: true });
@@ -42,9 +70,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-route">
-      <div className="login-route__landing" aria-hidden="true">
-        <LandingPage mode="selector" />
+    <div className={`login-route login-route--${loginAudience || 'selector'}`}>
+      <div className="login-route__background" aria-hidden="true">
+        {backdrop ? (
+          <img className="login-route__background-image" src={backdrop.image} alt="" />
+        ) : (
+          <>
+            <img className="login-route__background-image login-route__background-image--player" src="/player.png" alt="" />
+            <img className="login-route__background-image login-route__background-image--streamer" src="/streamer.png" alt="" />
+          </>
+        )}
+        <span className="login-route__background-shade" />
+        <div className="login-route__background-copy">
+          <span>{backdrop ? 'Continue to' : 'Choose your center'}</span>
+          <strong>{backdrop?.title || 'Streamers Center'}</strong>
+          <small>{backdrop?.subtitle || 'Player tracking and streamer tools in one place.'}</small>
+        </div>
       </div>
 
       <div className="login-page" role="dialog" aria-modal="true" aria-labelledby="login-title" onClick={closeLogin}>
@@ -56,7 +97,9 @@ export default function LoginPage() {
           <button type="button" className="login-close" aria-label="Close login" onClick={closeLogin}>×</button>
           <div className="login-header">
             <h1 id="login-title" className="login-title">Welcome</h1>
-            <p className="login-subtitle">Sign in to access the full experience</p>
+            <p className="login-subtitle">
+              Sign in to access {backdrop ? backdrop.title : 'the full experience'}
+            </p>
           </div>
 
           {error && (

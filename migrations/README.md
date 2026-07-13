@@ -64,6 +64,15 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 20. `020_overlay_appearance_system.sql`
 	Adds overlay-scoped appearance persistence, bootstraps missing Overlay Center runtime tables for legacy databases that only have `overlays.settings`, backfills `overlay_id` for themes/widgets/state, creates the legacy-to-canonical appearance property mapping table, and tightens owner policies for overlay appearance mutations.
 
+21. `021_mollie_billing.sql`
+	Adds Mollie/provider-neutral billing identifiers while preserving legacy Stripe columns for existing subscription history.
+
+22. `022_analytics_schema_repair.sql`
+	Repairs older live analytics schemas by adding visitor/event/session v2 columns, backfilling visitor links, recreating reporting views, and bridging legacy fraud/geo tables.
+
+23. `023_analytics_rpc_security_hardening.sql`
+	Restricts analytics helper RPC execution to the service role and pins `search_path` for SECURITY DEFINER functions used by analytics maintenance paths.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.
