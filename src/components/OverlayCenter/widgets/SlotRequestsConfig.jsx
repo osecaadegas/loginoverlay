@@ -54,6 +54,7 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [seConnected, setSeConnected] = useState(false);
+  const [activeSection, setActiveSection] = useState('setup');
   // Monotonic counter — any fetchQueue result older than the latest is discarded.
   const fetchSeqRef = useRef(0);
 
@@ -195,8 +196,8 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
     ? `${((c.autoSpeed || 4000) / 1000).toFixed(1)}s cycle`
     : 'Static list';
   const heroNote = queueCount
-    ? `The queue is live with ${queueCount} pending request${queueCount === 1 ? '' : 's'}. Moderate the top picks and keep the overlay pacing aligned with chat activity.`
-    : 'The queue is empty right now. Configure the listener, command rules, and display style so viewers can start requesting slots immediately.';
+    ? `${queueCount} pending request${queueCount === 1 ? '' : 's'} waiting in the queue.`
+    : 'No pending requests yet. Start with Setup, then check Queue once chat begins using the command.';
   const sidebarSteps = [
     {
       key: 'listener',
@@ -233,64 +234,84 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
     { key: 'srMsgCooldown', label: 'Error: cooldown active', def: '⏳ {user}, please wait before requesting another slot.' },
     { key: 'srMsgQueueFull', label: 'Error: queue full', def: '❌ {user}, the slot queue is full right now.' },
   ];
+  const readySteps = sidebarSteps.filter(step => step.ready).length;
+  const sectionTabs = [
+    { key: 'setup', label: 'Setup', meta: `${readySteps}/${sidebarSteps.length} ready` },
+    { key: 'overlay', label: 'Overlay', meta: currentStyleLabel },
+    { key: 'queue', label: 'Queue', meta: `${queueCount} pending` },
+    { key: 'advanced', label: 'Advanced', meta: 'Chat replies' },
+  ];
 
   return (
+    <div data-tour="slot-requests-page">
     <div className={`sr-admin-page${isSidebar ? ' sr-admin-page--sidebar' : ''}`}>
 
-      <div className="sr-admin-hero">
+      <div className="sr-admin-hero sr-admin-hero--simple">
         <div className="sr-admin-hero-copy">
           <span className="sr-admin-eyebrow">Community Queue</span>
-          <h3 className="sr-admin-title">Slot requests control room</h3>
+          <h3 className="sr-admin-title">Slot requests setup</h3>
           <p className="sr-admin-subtitle">
-            Set up the chat command, decide whether requests cost points, and manage the live queue without leaving this panel.
+            Configure the chat listener, overlay behaviour, and live moderation from one predictable place.
           </p>
           <p className="sr-admin-note">{heroNote}</p>
-          {isSidebar && (
-            <>
-              <div className="sr-admin-quickstart">
-                {sidebarSteps.map((step, index) => (
-                  <div key={step.key} className={`sr-admin-quickstep${step.ready ? ' sr-admin-quickstep--ready' : ''}`}>
-                    <span className="sr-admin-quickstep-index">{index + 1}</span>
-                    <div className="sr-admin-quickstep-copy">
-                      <strong>{step.title}</strong>
-                      <span>{step.detail}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="sr-admin-example">
-                <span className="sr-admin-example-label">Viewer example</span>
-                <code className="sr-admin-example-code">{`${cmdTrigger} Gates of Olympus`}</code>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="sr-admin-metrics">
-          <div className="sr-admin-metric-card">
-            <span className="sr-admin-metric-label">Listener</span>
-            <strong className="sr-admin-metric-value">{listenerStateLabel}</strong>
-            <span className="sr-admin-metric-meta">{hasChannel ? (c.twitchChannel || autoChannel) : 'Waiting for channel binding'}</span>
-          </div>
-          <div className="sr-admin-metric-card">
-            <span className="sr-admin-metric-label">Queue</span>
-            <strong className="sr-admin-metric-value">{queueCount}/{queueLimit}</strong>
-            <span className="sr-admin-metric-meta">Showing up to {displayLimit} requests on stream</span>
-          </div>
-          <div className="sr-admin-metric-card">
-            <span className="sr-admin-metric-label">Pricing</span>
-            <strong className="sr-admin-metric-value">{pointModeLabel}</strong>
-            <span className="sr-admin-metric-meta">{pointsEnabled ? (seConnected ? 'StreamElements connected' : 'SE connection required') : 'Requests are currently free'}</span>
-          </div>
-          <div className="sr-admin-metric-card">
-            <span className="sr-admin-metric-label">Display</span>
-            <strong className="sr-admin-metric-value">{currentStyleLabel}</strong>
-            <span className="sr-admin-metric-meta">{cycleLabel}</span>
+          <div className="sr-admin-status-strip">
+            <div className="sr-admin-status-item">
+              <span>Listener</span>
+              <strong>{listenerStateLabel}</strong>
+            </div>
+            <div className="sr-admin-status-item">
+              <span>Command</span>
+              <strong>{cmdTrigger}</strong>
+            </div>
+            <div className="sr-admin-status-item">
+              <span>Pricing</span>
+              <strong>{pointModeLabel}</strong>
+            </div>
+            <div className="sr-admin-status-item">
+              <span>Display</span>
+              <strong>{currentStyleLabel}</strong>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="sr-admin-grid sr-admin-grid--top">
+      <div className="sr-admin-nav" role="tablist" aria-label="Slot Requests sections">
+        {sectionTabs.map(tab => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={activeSection === tab.key}
+            className={`sr-admin-nav-btn${activeSection === tab.key ? ' sr-admin-nav-btn--active' : ''}`}
+            onClick={() => setActiveSection(tab.key)}
+          >
+            <span>{tab.label}</span>
+            <small>{tab.meta}</small>
+          </button>
+        ))}
+      </div>
+
+      {activeSection === 'setup' && (
+      <div className="sr-admin-panel" role="tabpanel">
+        <div className="sr-admin-section-intro">
+          <div>
+            <span className="sr-admin-card-eyebrow">Start here</span>
+            <h4 className="sr-admin-card-title">Make chat requests work</h4>
+          </div>
+          <div className="sr-admin-quickstart sr-admin-quickstart--inline">
+            {sidebarSteps.map((step, index) => (
+              <div key={step.key} className={`sr-admin-quickstep${step.ready ? ' sr-admin-quickstep--ready' : ''}`}>
+                <span className="sr-admin-quickstep-index">{index + 1}</span>
+                <div className="sr-admin-quickstep-copy">
+                  <strong>{step.title}</strong>
+                  <span>{step.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="sr-admin-grid sr-admin-grid--top">
 
       {/* ═══════════════════════════════════════════════
           1. CHAT LISTENER + TWITCH CHANNEL
@@ -442,80 +463,50 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
         )}
       </div>
       </div>
+      </div>
+      )}
 
-      <div className="sr-admin-grid sr-admin-grid--middle">
+      {activeSection === 'advanced' && (
+      <div className="sr-admin-panel" role="tabpanel">
 
       {/* ═══════════════════════════════════════════════
           4. CHAT MESSAGES
           ═══════════════════════════════════════════════ */}
-      <div className="sr-admin-card sr-admin-card--messages">
-        {isSidebar ? (
-          <details className="sr-admin-disclosure">
-            <summary className="sr-admin-disclosure-summary">
-              <div className="sr-admin-disclosure-copy">
-                <span className="sr-admin-card-eyebrow">Automation</span>
-                <h4 className="sr-admin-card-title">Message templates</h4>
-                <p className="sr-admin-copy">Optional. Open this if you want custom chat replies for success, errors, and refunds.</p>
-              </div>
-              <span className="sr-admin-card-chip">Advanced</span>
-            </summary>
-            <div className="sr-admin-disclosure-body">
-              <p className="sr-admin-copy">
-                Available placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
-              </p>
-              <p className="sr-admin-copy">Tune what chat says for successful requests, queue errors, and refund actions.</p>
-              <div className="sr-admin-message-list">
-              {messageTemplates.map(({ key, label, def }) => (
-                <div key={key} className="sr-admin-message-field">
-                  <label className="sr-admin-message-label">{label}</label>
-                  <input
-                    type="text"
-                    value={c[key] || def}
-                    onChange={e => set(key, e.target.value)}
-                    className="sr-admin-message-input"
-                    style={S.inputFull}
-                  />
-                </div>
-              ))}
-              </div>
-            </div>
-          </details>
-        ) : (
-          <>
-            <div className="sr-admin-card-header">
-              <div>
-                <span className="sr-admin-card-eyebrow">Automation</span>
-                <h4 className="sr-admin-card-title">Message templates</h4>
-              </div>
-              <span className="sr-admin-card-chip">Templates</span>
-            </div>
-            <p className="sr-admin-copy">
-              Available placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
-            </p>
-            <p className="sr-admin-copy">Tune what chat says for successful requests, queue errors, and refund actions.</p>
-            <div className="sr-admin-message-list">
-            {messageTemplates.map(({ key, label, def }) => (
-              <div key={key} className="sr-admin-message-field">
-                <label className="sr-admin-message-label">{label}</label>
-                <input
-                  type="text"
-                  value={c[key] || def}
-                  onChange={e => set(key, e.target.value)}
-                  className="sr-admin-message-input"
-                  style={S.inputFull}
-                />
-              </div>
-            ))}
-            </div>
-          </>
-        )}
+      <div className="sr-admin-card sr-admin-card--messages sr-admin-card--wide">
+        <div className="sr-admin-card-header">
+          <div>
+            <span className="sr-admin-card-eyebrow">Advanced</span>
+            <h4 className="sr-admin-card-title">Chat reply templates</h4>
+          </div>
+          <span className="sr-admin-card-chip">Optional</span>
+        </div>
+        <p className="sr-admin-copy">
+          Placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
+        </p>
+        <div className="sr-admin-message-list">
+        {messageTemplates.map(({ key, label, def }) => (
+          <div key={key} className="sr-admin-message-field">
+            <label className="sr-admin-message-label">{label}</label>
+            <input
+              type="text"
+              value={c[key] || def}
+              onChange={e => set(key, e.target.value)}
+              className="sr-admin-message-input"
+              style={S.inputFull}
+            />
+          </div>
+        ))}
+        </div>
       </div>
+      </div>
+      )}
 
       {/* ═══════════════════════════════════════════════
           5. DISPLAY OPTIONS
           ═══════════════════════════════════════════════ */}
-      <div className="sr-admin-column">
-      <div className="sr-admin-card sr-admin-card--display">
+      {activeSection === 'overlay' && (
+      <div className="sr-admin-panel" role="tabpanel">
+      <div className="sr-admin-card sr-admin-card--display sr-admin-card--wide">
         <div className="sr-admin-card-header">
           <div>
             <span className="sr-admin-card-eyebrow">Presentation</span>
@@ -555,13 +546,14 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
           </label>
         )}
       </div>
-
       </div>
-      </div>
+      )}
 
       {/* ═══════════════════════════════════════════════
           6. QUEUE MANAGEMENT
           ═══════════════════════════════════════════════ */}
+      {activeSection === 'queue' && (
+      <div className="sr-admin-panel" role="tabpanel">
       <div className="sr-admin-card sr-admin-card--queue">
         <div className="sr-admin-card-header sr-admin-card-header--queue">
           <div>
@@ -628,6 +620,9 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
         ))}
         </div>
       </div>
+      </div>
+      )}
+    </div>
     </div>
   );
 }
