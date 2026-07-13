@@ -48,7 +48,25 @@ export const GAME_PROVIDERS = [
 ];
 
 // Common suffixes that DB normalization appends but logo files omit
-const STRIP_SUFFIXES = /\s+(gaming|studios?|games?|game|interactive|industries|entertainment|group)\s*$/i;
+const STRIP_SUFFIXES = /\s+(gaming|studios?|games?|game|interactive|industries|entertainment|group|slots?|casino|live|ltd|limited)\s*$/i;
+const GENERIC_PROVIDER_TOKENS = new Set([
+  'and',
+  'casino',
+  'entertainment',
+  'game',
+  'games',
+  'gaming',
+  'group',
+  'industries',
+  'interactive',
+  'limited',
+  'live',
+  'ltd',
+  'slot',
+  'slots',
+  'studio',
+  'studios',
+]);
 
 const PROVIDER_ALIASES = {
   '3_oaks': '3oaks',
@@ -101,10 +119,16 @@ const stripProviderSuffixes = (slug) => {
   let previous;
   do {
     previous = next;
-    next = next.replace(/_(gaming|studios?|games?|game|interactive|industries|entertainment|group)$/i, '');
+    next = next.replace(/_(gaming|studios?|games?|game|interactive|industries|entertainment|group|slots?|casino|live|ltd|limited)$/i, '');
   } while (next !== previous);
   return next;
 };
+
+const providerTokens = (slug) => stripProviderSuffixes(slug)
+  .split('_')
+  .filter(token => token && !GENERIC_PROVIDER_TOKENS.has(token));
+
+const includesAllTokens = (sourceTokens, targetTokens) => targetTokens.every(token => sourceTokens.includes(token));
 
 const providerLogoBySlug = PROVIDER_LOGO_FILES.reduce((acc, file) => {
   const stem = file.replace(/\.[^.]+$/, '');
@@ -117,6 +141,40 @@ const providerLogoBySlug = PROVIDER_LOGO_FILES.reduce((acc, file) => {
   return acc;
 }, {});
 
+const providerLogoEntries = PROVIDER_LOGO_FILES.map((file) => {
+  const stem = file.replace(/\.[^.]+$/, '');
+  const normalized = normalizeProviderSlug(stem);
+  const stripped = stripProviderSuffixes(normalized);
+  return {
+    file,
+    normalized,
+    compact: normalized.replace(/_/g, ''),
+    stripped,
+    strippedCompact: stripped.replace(/_/g, ''),
+    tokens: providerTokens(normalized),
+  };
+});
+
+const normalizeAlias = (value) => value ? normalizeProviderSlug(value) : null;
+
+const fuzzyProviderLogoFile = (candidates) => {
+  const normalizedCandidates = candidates.map(normalizeProviderSlug).filter(Boolean);
+  for (const candidate of normalizedCandidates) {
+    const stripped = stripProviderSuffixes(candidate);
+    const compact = candidate.replace(/_/g, '');
+    const strippedCompact = stripped.replace(/_/g, '');
+    const tokens = providerTokens(candidate);
+    const match = providerLogoEntries.find(entry => {
+      if (entry.normalized === candidate || entry.stripped === stripped || entry.compact === compact || entry.strippedCompact === strippedCompact) return true;
+      if (!tokens.length || !entry.tokens.length) return false;
+      if (tokens.length === 1 && entry.tokens.length === 1) return tokens[0] === entry.tokens[0];
+      return includesAllTokens(tokens, entry.tokens) || includesAllTokens(entry.tokens, tokens);
+    });
+    if (match) return match.file;
+  }
+  return null;
+};
+
 const findProviderLogoFile = (value) => {
   const slug = normalizeProviderSlug(value);
   if (!slug) return null;
@@ -125,16 +183,16 @@ const findProviderLogoFile = (value) => {
   const strippedCompact = stripped.replace(/_/g, '');
   const candidates = [
     slug,
-    PROVIDER_ALIASES[slug],
+    normalizeAlias(PROVIDER_ALIASES[slug]),
     compact,
-    PROVIDER_ALIASES[compact],
+    normalizeAlias(PROVIDER_ALIASES[compact]),
     stripped,
-    PROVIDER_ALIASES[stripped],
+    normalizeAlias(PROVIDER_ALIASES[stripped]),
     strippedCompact,
-    PROVIDER_ALIASES[strippedCompact],
+    normalizeAlias(PROVIDER_ALIASES[strippedCompact]),
   ].filter(Boolean);
   const match = candidates.find(candidate => providerLogoBySlug[candidate]);
-  return match ? providerLogoBySlug[match] : null;
+  return match ? providerLogoBySlug[match] : fuzzyProviderLogoFile(candidates);
 };
 
 const logoUrl = (file) => file ? `${PROVIDER_LOGO_BASE}${file}` : null;
