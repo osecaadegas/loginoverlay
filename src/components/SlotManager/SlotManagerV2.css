@@ -222,6 +222,15 @@
 .slot-manager-v2 .sm-provider-logo--table {
   width: 112px;
 }
+.slot-manager-v2 .sm-provider-logo--picker {
+  width: 150px;
+  justify-content: flex-start;
+}
+.slot-manager-v2 .sm-provider-logo--picker-option {
+  width: 108px;
+  height: 22px;
+  justify-content: flex-start;
+}
 .slot-manager-v2 .sm-provider-fallback {
   display: inline-block;
   max-width: 100%;
@@ -229,6 +238,94 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #8b949e;
+}
+.slot-manager-v2 .sm-provider-picker {
+  position: relative;
+}
+.slot-manager-v2 .sm-provider-picker-btn {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 10px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #8b949e;
+  cursor: pointer;
+  text-align: left;
+}
+.slot-manager-v2 .sm-provider-picker-btn.has-value {
+  color: #c9d1d9;
+}
+.slot-manager-v2 .sm-provider-picker-btn:hover,
+.slot-manager-v2 .sm-provider-picker-btn:focus {
+  border-color: #58a6ff;
+  outline: none;
+}
+.slot-manager-v2 .sm-provider-picker-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 120;
+  padding: 6px;
+  background: #1c2128;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .45);
+}
+.slot-manager-v2 .sm-provider-picker-menu input {
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 7px 9px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 12px;
+  outline: none;
+}
+.slot-manager-v2 .sm-provider-picker-menu input:focus {
+  border-color: #58a6ff;
+}
+.slot-manager-v2 .sm-provider-picker-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.slot-manager-v2 .sm-provider-picker-option {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #c9d1d9;
+  cursor: pointer;
+  text-align: left;
+}
+.slot-manager-v2 .sm-provider-picker-option:hover,
+.slot-manager-v2 .sm-provider-picker-option.selected {
+  background: #262c36;
+}
+.slot-manager-v2 .sm-provider-picker-option span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.slot-manager-v2 .sm-provider-picker-empty {
+  margin: 6px 4px;
+  color: #8b949e;
+  font-size: 12px;
 }
 .slot-manager-v2 .sm-clear-filters {
   background: none;

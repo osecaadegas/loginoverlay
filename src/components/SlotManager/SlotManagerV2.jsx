@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useRef, memo } from 'react';
+﻿import { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
@@ -79,6 +79,59 @@ const ProviderLogo = memo(({ provider, className = '' }) => {
   }
 
   return <span className={`sm-provider-fallback ${className}`} title={provider || 'Unknown provider'}>{provider || '—'}</span>;
+});
+
+const findExistingProvider = (provider, providers) => {
+  const candidate = String(provider || '').trim().toLowerCase();
+  if (!candidate) return '';
+  return providers.find(item => item.toLowerCase() === candidate) || '';
+};
+
+const ProviderPicker = memo(({ providers, value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const close = (event) => { if (ref.current && !ref.current.contains(event.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const list = query ? providers.filter(provider => provider.toLowerCase().includes(query)) : providers;
+    return list.slice(0, 80);
+  }, [providers, search]);
+
+  const choose = (provider) => {
+    onChange(provider);
+    setSearch('');
+    setOpen(false);
+  };
+
+  return (
+    <div className="sm-provider-picker" ref={ref}>
+      <button type="button" className={`sm-provider-picker-btn ${value ? 'has-value' : ''}`} onClick={() => setOpen(prev => !prev)}>
+        {value ? <ProviderLogo provider={value} className="sm-provider-logo--picker" /> : <span>Select existing provider</span>}
+        <svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
+      </button>
+      {open && (
+        <div className="sm-provider-picker-menu">
+          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search providers…" autoFocus />
+          <div className="sm-provider-picker-list">
+            {filtered.map(provider => (
+              <button key={provider} type="button" className={`sm-provider-picker-option ${value === provider ? 'selected' : ''}`} onClick={() => choose(provider)}>
+                <ProviderLogo provider={provider} className="sm-provider-logo--picker-option" />
+                <span>{provider}</span>
+              </button>
+            ))}
+            {filtered.length === 0 && <p className="sm-provider-picker-empty">No existing provider found</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 });
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -165,10 +218,11 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
         if (res.ok) {
           const { info } = await res.json();
           if (info) {
+            const existingProvider = findExistingProvider(info.provider, providers);
             setScrapedImages(info.images || (info.image ? [info.image] : []));
             setForm(prev => ({
               ...prev,
-              ...(info.provider && !prev.provider ? { provider: info.provider } : {}),
+              ...(existingProvider && !prev.provider ? { provider: existingProvider } : {}),
               ...(info.rtp && !prev.rtp ? { rtp: String(info.rtp) } : {}),
               ...(info.volatility && !prev.volatility ? { volatility: info.volatility } : {}),
               ...(info.max_win_multiplier && !prev.max_win_multiplier ? { max_win_multiplier: String(info.max_win_multiplier) } : {}),
@@ -180,7 +234,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
       setScrapeLoading(false);
     }, 600);
     return () => clearTimeout(timer);
-  }, [form.name]);
+  }, [form.name, providers]);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
@@ -213,6 +267,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
 
   const save = async () => {
     if (!form.name || !form.provider || !form.image) return alert('Name, Provider, and Image URL are required.');
+    if (!findExistingProvider(form.provider, providers)) return alert('Select an existing provider from the provider list.');
     setSaving(true);
     await onSave(form);
     setSaving(false);
@@ -271,8 +326,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
               </label>
               <label className="sm-field">
                 <span>Provider <em>*</em></span>
-                <input list="sm-prov-list" value={form.provider || ''} onChange={e => set('provider', e.target.value)} placeholder="Pragmatic Play" />
-                <datalist id="sm-prov-list">{providers.map(p => <option key={p} value={p} />)}</datalist>
+                <ProviderPicker providers={providers} value={form.provider || ''} onChange={provider => set('provider', provider)} />
               </label>
               <label className="sm-field">
                 <span>Image URL <em>*</em></span>
@@ -678,6 +732,7 @@ const SlotManagerV2 = () => {
       };
 
       if (!d.name || !d.provider || !d.image) throw new Error('Name, Provider, and Image URL are required.');
+      if (!findExistingProvider(d.provider, providers)) throw new Error('Select an existing provider from the provider list.');
 
       if (isNewSlot) {
         const { error } = await supabase.from('slots').insert([d]);
