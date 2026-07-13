@@ -218,19 +218,24 @@ function BonusHuntWidgetV3({ config, theme }) {
                 )}
                 <div className="bht3-flip-back-overlay" />
                 <div className="bht3-flip-back-content">
-                  {c.flipShowProvider !== false && (
+                  {c.flipShowProvider !== false && (() => {
+                  const providerLogo = getProviderImage(backBonus.slot?.provider);
+                  return (
                   <div className="bht3-flip-back-provider-logo">
-                    <img
-                      src={getProviderImage(backBonus.slot?.provider)}
-                      alt={backBonus.slot?.provider || ''}
-                      className="bht3-flip-back-provider-img"
-                      onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'inline'; }}
-                    />
-                    <span className="bht3-flip-back-provider-text" style={{ display: 'none' }}>
+                    {providerLogo && (
+                      <img
+                        src={providerLogo}
+                        alt={backBonus.slot?.provider || ''}
+                        className="bht3-flip-back-provider-img"
+                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'inline'; }}
+                      />
+                    )}
+                    <span className="bht3-flip-back-provider-text" style={{ display: providerLogo ? 'none' : 'inline' }}>
                       {backBonus.slot?.provider || 'Unknown'}
                     </span>
                   </div>
-                  )}
+                  );
+                  })()}
                   <div className="bht3-flip-back-header">
                     <div className="bht3-flip-back-name">{backBonus.slotName || backBonus.slot?.name}</div>
                   </div>
