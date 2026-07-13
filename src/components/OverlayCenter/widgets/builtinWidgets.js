@@ -300,6 +300,15 @@ registerWidget({
   category: 'stream',
   component: RtpStatsWidget,
   configPanel: RtpStatsConfig,
+  appearanceCapabilities: {
+    customTokens: [
+      'barBgFrom', 'barBgVia', 'barBgTo', 'borderColor', 'borderWidth', 'borderRadius',
+      'textColor', 'providerColor', 'slotNameColor', 'labelColor',
+      'rtpIconColor', 'potentialIconColor', 'volatilityIconColor', 'bestWinIconColor',
+      'dividerColor', 'spinnerColor', 'fontFamily', 'fontSize', 'providerFontSize',
+      'paddingX', 'paddingY', 'brightness', 'contrast', 'saturation', 'custom_css',
+    ],
+  },
   styles: [
     { id: 'v1', icon: '📊', label: 'Classic' },
     { id: 'vertical', icon: '📋', label: 'Vertical' },
@@ -322,6 +331,7 @@ registerWidget({
     rtpIconColor: '#60a5fa',
     potentialIconColor: '#facc15',
     volatilityIconColor: '#3b82f6',
+    bestWinIconColor: '#22c55e',
     dividerColor: '#3b82f6',
     spinnerColor: '#60a5fa',
     fontFamily: "'Inter', sans-serif",

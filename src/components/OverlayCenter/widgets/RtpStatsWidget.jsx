@@ -368,12 +368,12 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const dividerColor = subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6');
   const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
   const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 14);
-  const providerFontSize = c.providerFontSize ?? 16;
-  const paddingX = c.paddingX ?? 16;
-  const paddingY = c.paddingY ?? 8;
-  const brightness = c.brightness ?? 100;
-  const contrast = c.contrast ?? 100;
-  const saturation = c.saturation ?? 100;
+  const providerFontSize = subValue(c, 'provider', 'fontSize', c.providerFontSize ?? 16);
+  const paddingX = subValue(c, 'container', 'padding', c.paddingX ?? 16);
+  const paddingY = subValue(c, 'container', 'gap', c.paddingY ?? 8);
+  const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
+  const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
+  const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
   const showSpinner = c.showSpinner !== false;
   const showProvider = c.showProvider !== false;
   const showRtp = c.showRtp !== false;

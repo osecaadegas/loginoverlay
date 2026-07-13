@@ -389,6 +389,7 @@ const VISUAL_CONFIG_KEYS = [
   'rtpIconColor',
   'potentialIconColor',
   'volatilityIconColor',
+  'bestWinIconColor',
   'spinnerColor',
   'nameColor',
   'nameSize',
