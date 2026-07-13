@@ -38,7 +38,13 @@ export const COMMON_APPEARANCE_PROPERTY_DEFINITIONS = Object.freeze([
   { path: 'imageSize', label: 'Image or icon size', category: 'size', control: 'slider', min: 0, max: 512, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element'] },
   { path: 'opacity', label: 'Opacity', category: 'effects', control: 'slider', min: 0, max: 1, step: 0.05, scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
   { path: 'shadow', label: 'Shadow', category: 'effects', control: 'shadow', min: 0, max: 160, step: 1, unit: 'px', scope: ['global', 'widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'blur', label: 'Blur', category: 'effects', control: 'slider', min: 0, max: 40, step: 1, unit: 'px', scope: ['widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'brightness', label: 'Brightness', category: 'effects', control: 'slider', min: 0, max: 200, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance', 'element'] },
+  { path: 'contrast', label: 'Contrast', category: 'effects', control: 'slider', min: 0, max: 200, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance', 'element'] },
+  { path: 'saturation', label: 'Saturation', category: 'effects', control: 'slider', min: 0, max: 200, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance', 'element'] },
   { path: 'fillColor', label: 'Fill colour', category: 'progress', control: 'color', scope: ['widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'mutedColor', label: 'Muted colour', category: 'colour', control: 'color', scope: ['widget-type', 'style', 'instance', 'element', 'state'] },
+  { path: 'negativeColor', label: 'Negative colour', category: 'colour', control: 'color', scope: ['widget-type', 'style', 'instance', 'element', 'state'] },
   { path: 'overlayOpacity', label: 'Overlay opacity', category: 'effects', control: 'slider', min: 0, max: 100, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance'] },
   { path: 'hueRotate', label: 'Hue rotation', category: 'effects', control: 'slider', min: 0, max: 360, step: 1, unit: 'deg', scope: ['widget-type', 'style', 'instance', 'element'] },
   { path: 'grayscale', label: 'Grayscale', category: 'effects', control: 'slider', min: 0, max: 100, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance', 'element'] },
@@ -552,13 +558,14 @@ const APPEARANCE_PATH_TO_VISUAL = Object.entries(VISUAL_TO_APPEARANCE_PATH).redu
 }, {});
 
 const COMMON_TEXT_PROPERTIES = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'textTransform', 'textAlign'];
+const COMMON_FILTER_PROPERTIES = ['brightness', 'contrast', 'saturation'];
 
 const COMMON_SUB_ELEMENT_DEFINITIONS = [
-  { id: 'container', label: 'Container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow'] },
-  { id: 'header', label: 'Header', properties: ['background', 'textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius'] },
-  { id: 'card', label: 'Card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
-  { id: 'label', label: 'Labels', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
-  { id: 'value', label: 'Values', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+  { id: 'container', label: 'Container', properties: ['background', 'textColor', 'accentColor', 'mutedColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow', ...COMMON_FILTER_PROPERTIES, ...COMMON_TEXT_PROPERTIES] },
+  { id: 'header', label: 'Header', properties: ['background', 'textColor', 'accentColor', 'mutedColor', 'borderColor', 'borderWidth', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius', 'shadow', 'opacity'] },
+  { id: 'card', label: 'Card', properties: ['background', 'textColor', 'accentColor', 'mutedColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow', 'opacity', ...COMMON_TEXT_PROPERTIES] },
+  { id: 'label', label: 'Labels', properties: ['textColor', 'mutedColor', 'accentColor', ...COMMON_TEXT_PROPERTIES] },
+  { id: 'value', label: 'Values', properties: ['textColor', 'accentColor', 'negativeColor', ...COMMON_TEXT_PROPERTIES] },
 ];
 
 const WIDGET_SUB_ELEMENT_DEFINITIONS = {
@@ -612,6 +619,7 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'container', label: 'Container', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'opacity', 'shadow', ...COMMON_TEXT_PROPERTIES] },
     { id: 'title', label: 'Title', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius'] },
     { id: 'status', label: 'Status badge', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius'] },
+    { id: 'optionCard', label: 'Option card fallback', properties: ['background', 'textColor', 'accentColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow', ...COMMON_TEXT_PROPERTIES] },
     { id: 'statistics', label: 'Statistics strip', properties: ['background', 'textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'gap', 'borderColor', 'borderWidth'] },
     { id: 'optionRow', label: 'Option row', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap', 'shadow'] },
     { id: 'optionNumber', label: 'Option number', properties: ['background', 'textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES, 'radius', 'imageSize'] },
@@ -623,10 +631,10 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
   slot_requests: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
     { id: 'requestCard', label: 'Request card', properties: ['background', 'textColor', 'borderColor', 'borderWidth', 'radius', 'padding', 'gap'] },
-    { id: 'position', label: 'Position number', properties: ['background', 'textColor', 'fontSize', 'fontWeight', 'radius'] },
-    { id: 'viewerName', label: 'Viewer name', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'provider', label: 'Provider text', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'position', label: 'Position number', properties: ['background', 'textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES, 'radius'] },
+    { id: 'viewerName', label: 'Viewer name', properties: ['textColor', 'mutedColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'provider', label: 'Provider text', properties: ['textColor', 'mutedColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'opacity'] },
   ],
   giveaway: [
@@ -700,10 +708,10 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
   current_slot: [
     ...COMMON_SUB_ELEMENT_DEFINITIONS,
     { id: 'slotImage', label: 'Slot image', properties: ['radius', 'imageSize', 'borderColor', 'borderWidth', 'opacity'] },
-    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'provider', label: 'Provider', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'stake', label: 'Stake', properties: ['textColor', 'fontSize', 'fontWeight'] },
-    { id: 'stat', label: 'RTP and stats', properties: ['textColor', 'fontSize', 'fontWeight'] },
+    { id: 'slotTitle', label: 'Slot title', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'provider', label: 'Provider', properties: ['textColor', 'mutedColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'stake', label: 'Stake', properties: ['textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'stat', label: 'RTP and stats', properties: ['textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'imageFrame', label: 'Image frame', properties: ['background', 'borderColor', 'borderWidth', 'radius', 'shadow'] },
     { id: 'fallback', label: 'Missing-image fallback', properties: ['background', 'textColor', 'radius'] },
   ],
@@ -783,6 +791,7 @@ const WIDGET_STATE_DEFINITIONS = {
     container: COMMON_STATE_DEFINITIONS.container,
   },
   bets: {
+    optionCard: [{ id: 'default', label: 'Default' }, { id: 'selected', label: 'Selected' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }, { id: 'closed', label: 'Closed' }, { id: 'leading', label: 'Leading' }],
     optionRow: [{ id: 'default', label: 'Default' }, { id: 'selected', label: 'Selected' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }, { id: 'closed', label: 'Closed' }, { id: 'leading', label: 'Leading' }],
     optionNumber: [{ id: 'default', label: 'Default' }, { id: 'selected', label: 'Selected' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }],
     optionLabel: [{ id: 'default', label: 'Default' }, { id: 'winner', label: 'Winner' }, { id: 'loser', label: 'Loser' }],
@@ -1272,10 +1281,60 @@ export function getTargetStyleId(target, appearance, widgets = []) {
 }
 
 export function getWidgetSubElementDefinitions(widgetType) {
-  return (WIDGET_SUB_ELEMENT_DEFINITIONS[widgetType] || COMMON_SUB_ELEMENT_DEFINITIONS).map(definition => ({
+  const def = getWidgetDef(widgetType);
+  const explicitDefinitions = WIDGET_SUB_ELEMENT_DEFINITIONS[widgetType] || COMMON_SUB_ELEMENT_DEFINITIONS;
+  const registryDefinitions = [
+    ...(Array.isArray(def?.appearanceElements) ? def.appearanceElements : []),
+    ...inferSubElementDefinitions(WIDGET_TYPE_APPEARANCE_DEFAULTS[widgetType]),
+    ...inferSubElementDefinitions(def?.appearanceDefaults),
+  ];
+  return mergeSubElementDefinitions(explicitDefinitions, registryDefinitions).map(definition => ({
     ...definition,
     states: definition.states || getWidgetStateDefinitions(widgetType, definition.id),
   }));
+}
+
+function mergeSubElementDefinitions(...groups) {
+  const map = new Map();
+  for (const definition of groups.flat().filter(Boolean)) {
+    if (!definition.id) continue;
+    const existing = map.get(definition.id) || { id: definition.id, label: formatElementDefinitionLabel(definition.id), properties: [] };
+    map.set(definition.id, {
+      ...existing,
+      ...definition,
+      label: definition.label || existing.label,
+      properties: [...new Set([...(existing.properties || []), ...(definition.properties || [])])],
+      states: definition.states || existing.states,
+    });
+  }
+  return [...map.values()];
+}
+
+function inferSubElementDefinitions(entry = {}) {
+  if (!isPlainObject(entry)) return [];
+  const root = readOverrideEntry(entry);
+  const styleDefinitions = isPlainObject(entry.styles)
+    ? Object.values(entry.styles).flatMap(styleEntry => inferSubElementDefinitions(styleEntry))
+    : [];
+  const ownDefinitions = Object.entries(root.subElements || {}).map(([elementId, values]) => ({
+    id: elementId,
+    label: formatElementDefinitionLabel(elementId),
+    properties: collectSubElementProperties(values),
+  }));
+  return [...ownDefinitions, ...styleDefinitions];
+}
+
+function collectSubElementProperties(values = {}) {
+  if (!isPlainObject(values)) return [];
+  const keys = Object.keys(values).filter(key => key !== 'states' && key !== 'responsive');
+  const stateKeys = isPlainObject(values.states)
+    ? Object.values(values.states).flatMap(stateValue => collectSubElementProperties(stateValue))
+    : [];
+  return [...new Set([...keys, ...stateKeys])];
+}
+
+function formatElementDefinitionLabel(value) {
+  return String(value || '').replace(/([A-Z])/g, ' $1').replace(/^./, character => character.toUpperCase());
 }
 
 export function getWidgetStateDefinitions(widgetType, elementId) {
@@ -2049,7 +2108,9 @@ function cssSafeName(value) {
 function toCssValue(property, value) {
   if (value === undefined || value === null || value === '') return undefined;
   if (typeof value === 'number' && /letterSpacing/i.test(property)) return `${value}em`;
-  if (typeof value === 'number' && !/opacity|fontWeight|lineHeight|brightness|contrast|saturation|scale/i.test(property)) return `${value}px`;
+  if (typeof value === 'number' && /hueRotate/i.test(property)) return `${value}deg`;
+  if (typeof value === 'number' && /brightness|contrast|saturation|grayscale|sepia/i.test(property)) return `${value}%`;
+  if (typeof value === 'number' && !/opacity|fontWeight|lineHeight|scale/i.test(property)) return `${value}px`;
   return value;
 }
 
@@ -2070,7 +2131,7 @@ function countOverrideEntry(entry = {}) {
   if (!isPlainObject(entry)) return 0;
   return countPlainLeaves(entry.appearance)
     + countPlainLeaves(entry.visual || entry.tokens)
-    + countPlainLeaves(entry.subElements);
+    + countPlainLeaves(getEntrySubElements(entry));
 }
 
 function countPlainLeaves(value) {

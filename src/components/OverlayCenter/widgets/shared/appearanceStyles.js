@@ -61,6 +61,14 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
   if (element.textAlign != null) style.textAlign = element.textAlign;
   if (element.radius != null) style.borderRadius = px(element.radius);
   if (element.padding != null) style.padding = px(element.padding);
+  if (element.paddingTop != null) style.paddingTop = px(element.paddingTop);
+  if (element.paddingRight != null) style.paddingRight = px(element.paddingRight);
+  if (element.paddingBottom != null) style.paddingBottom = px(element.paddingBottom);
+  if (element.paddingLeft != null) style.paddingLeft = px(element.paddingLeft);
+  if (element.marginTop != null) style.marginTop = px(element.marginTop);
+  if (element.marginRight != null) style.marginRight = px(element.marginRight);
+  if (element.marginBottom != null) style.marginBottom = px(element.marginBottom);
+  if (element.marginLeft != null) style.marginLeft = px(element.marginLeft);
   if (element.gap != null) style.gap = px(element.gap);
   if (element.opacity != null) style.opacity = element.opacity;
   if (element.shadow != null) style.boxShadow = typeof element.shadow === 'number'
@@ -69,14 +77,30 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
   if (element.borderColor != null || element.borderWidth != null) {
     const width = element.borderWidth ?? fallback.borderWidth ?? 1;
     const color = element.borderColor ?? fallback.borderColor ?? 'currentColor';
-    style.border = `${width}px solid ${color}`;
+    const borderStyle = element.borderStyle ?? fallback.borderStyle ?? 'solid';
+    style.border = `${px(width)} ${borderStyle} ${color}`;
   }
   if (element.width != null) style.width = px(element.width);
   if (element.height != null) style.height = px(element.height);
+  if (element.minWidth != null) style.minWidth = px(element.minWidth);
+  if (element.maxWidth != null) style.maxWidth = px(element.maxWidth);
+  if (element.minHeight != null) style.minHeight = px(element.minHeight);
+  if (element.maxHeight != null) style.maxHeight = px(element.maxHeight);
   if (element.imageSize != null) {
     style.width = px(element.imageSize);
     style.height = px(element.imageSize);
   }
+  const filters = [];
+  if (element.blur != null) filters.push(`blur(${px(element.blur)})`);
+  if (element.brightness != null) filters.push(`brightness(${element.brightness}%)`);
+  if (element.contrast != null) filters.push(`contrast(${element.contrast}%)`);
+  if (element.saturation != null) filters.push(`saturate(${element.saturation}%)`);
+  if (element.hueRotate != null) filters.push(`hue-rotate(${element.hueRotate}deg)`);
+  if (element.grayscale != null) filters.push(`grayscale(${element.grayscale}%)`);
+  if (element.sepia != null) filters.push(`sepia(${element.sepia}%)`);
+  if (filters.length > 0) style.filter = [fallback.filter, ...filters].filter(Boolean).join(' ');
+  if (element.backdropBlur != null) style.backdropFilter = `blur(${px(element.backdropBlur)})`;
+  if (element.fillColor != null) style.fill = element.fillColor;
   return style;
 }
 
