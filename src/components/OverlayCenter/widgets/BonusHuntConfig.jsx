@@ -1448,41 +1448,46 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               <span className={`bh-list-grip${canDrag ? ' bh-list-grip--active' : ''}`} title={canDrag ? 'Drag to reorder' : 'Set sort to Default to reorder'}>⠿</span>
               <span className="bh-list-num">#{i + 1}</span>
 
-              {/* Slot image */}
-              {bonus.slot?.image && (
-                <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="contain" />
-              )}
-
               {/* Name + provider — or inline edit */}
               {editingId === bonus.id ? (
-                <div className="bh-list-edit-row">
-                  <input className="bh-list-edit-input" value={editName}
-                    onChange={e => setEditName(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
-                    placeholder="Slot name" autoFocus />
-                  <input className="bh-list-edit-input bh-list-edit-bet" value={editBet}
-                    type="number" step="0.1"
-                    onChange={e => setEditBet(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
-                    placeholder="Bet" />
-                  <select className="bh-list-edit-input bh-list-edit-type" value={editBonusType}
-                    onChange={e => setEditBonusType(e.target.value)}>
-                    <option value="none">Normal</option>
-                    <option value="super">Super</option>
-                    <option value="extreme">Extreme</option>
-                  </select>
-                  <button className="bh-list-edit-save" onClick={() => handleSaveEdit(bonus.id)}>✓</button>
-                  <button className="bh-list-edit-cancel" onClick={handleCancelEdit}>✕</button>
+                <div className="bh-list-main bh-list-main--editing">
+                  {bonus.slot?.image && (
+                    <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="contain" />
+                  )}
+                  <div className="bh-list-edit-row">
+                    <input className="bh-list-edit-input" value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
+                      placeholder="Slot name" autoFocus />
+                    <input className="bh-list-edit-input bh-list-edit-bet" value={editBet}
+                      type="number" step="0.1"
+                      onChange={e => setEditBet(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
+                      placeholder="Bet" />
+                    <select className="bh-list-edit-input bh-list-edit-type" value={editBonusType}
+                      onChange={e => setEditBonusType(e.target.value)}>
+                      <option value="none">Normal</option>
+                      <option value="super">Super</option>
+                      <option value="extreme">Extreme</option>
+                    </select>
+                    <button className="bh-list-edit-save" onClick={() => handleSaveEdit(bonus.id)}>✓</button>
+                    <button className="bh-list-edit-cancel" onClick={handleCancelEdit}>✕</button>
+                  </div>
                 </div>
               ) : (
                 <>
-                  <div className="bh-list-info">
-                    <span className="bh-list-name">
-                      {bonus.slotName || bonus.slot?.name}
-                      {bonus.isSuperBonus && <span className="bh-list-super-badge">SUPER</span>}
-                      {bonus.isExtremeBonus && <span className="bh-list-extreme-badge">EXTREME</span>}
-                    </span>
-                    {bonus.slot?.provider && <span className="bh-list-provider">{bonus.slot.provider}</span>}
+                  <div className="bh-list-main">
+                    {bonus.slot?.image && (
+                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="contain" />
+                    )}
+                    <div className="bh-list-info">
+                      <span className="bh-list-name">
+                        {bonus.slotName || bonus.slot?.name}
+                        {bonus.isSuperBonus && <span className="bh-list-super-badge">SUPER</span>}
+                        {bonus.isExtremeBonus && <span className="bh-list-extreme-badge">EXTREME</span>}
+                      </span>
+                      {bonus.slot?.provider && <span className="bh-list-provider">{bonus.slot.provider}</span>}
+                    </div>
                   </div>
 
                   {/* Requester */}

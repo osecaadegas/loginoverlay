@@ -18607,24 +18607,41 @@ body.wm-resizing {
 }
 
 /* Bonus Hunt setup keeps dense editable rows; OBS widgets still use cover-fill imagery. */
-.oc-page [data-tour="bonus-hunt-page"] .bh-list {
+.oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list,
+.bh-config .bh-list {
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
 }
 
-.oc-page [data-tour="bonus-hunt-page"] .bh-list-item {
+.oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-item,
+.bh-config .bh-list-item {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   gap: 10px !important;
-  min-height: 62px !important;
+  min-height: 56px !important;
   padding: 9px 12px 9px 15px !important;
   border-radius: 10px !important;
   flex-wrap: nowrap !important;
 }
 
-.oc-page [data-tour="bonus-hunt-page"] .bh-list-img {
+.oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-main,
+.bh-config .bh-list-main {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex: 1 1 220px !important;
+  min-width: 0 !important;
+}
+
+.oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-main--editing,
+.bh-config .bh-list-main--editing {
+  flex-basis: 360px !important;
+}
+
+.oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-img,
+.bh-config .bh-list-img {
   width: 44px !important;
   height: 44px !important;
   max-width: 44px !important;
@@ -18633,12 +18650,14 @@ body.wm-resizing {
   flex: 0 0 44px !important;
 }
 
-.oc-page [data-tour="bonus-hunt-page"] .bh-list-info {
-  flex: 1 1 180px !important;
+.oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-info,
+.bh-config .bh-list-info {
+  flex: 1 1 auto !important;
   min-width: 0 !important;
 }
 
-.oc-page [data-tour="bonus-hunt-page"] .bh-sr-queue-img {
+.oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-sr-queue-img,
+.bh-config .bh-sr-queue-img {
   object-fit: contain !important;
 }
 
