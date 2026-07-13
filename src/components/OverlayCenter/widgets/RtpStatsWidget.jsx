@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { findUserSlotRecord, getSlotIdentity, recordMatchesSlot } from '../../../services/slotRecordService';
+import { getProviderImage } from '../../../utils/gameProviders';
 import { subValue } from './shared/appearanceStyles';
 
 /* ─── Fetch slot info from the database (slots table) ─── */
@@ -402,6 +403,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const displayProvider = isLive
     ? (slotInfo?.provider || activeSlot.provider || currentBonus?.slot?.provider || '')
     : (showDemoData ? demoProvider : '');
+  const displayProviderLogo = displayProvider ? getProviderImage(displayProvider) : null;
   const displayInfo = isLive ? (slotInfo || localSlotInfo) : (showDemoData ? demoInfo : null);
   const scopedBestWinData = bestWinData && recordMatchesSlot(bestWinData, activeSlot) ? bestWinData : null;
   const displayBestWin = isLive ? (scopedBestWinData || configBestWin) : (showDemoData ? demoBestWin : null);
@@ -457,7 +459,13 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         <div className="rtp-stats-left">
           {showProvider && displayProvider && (
             <>
-              <span className="rtp-stats-provider">{displayProvider.toUpperCase()}</span>
+              <span className={`rtp-stats-provider ${displayProviderLogo ? 'rtp-stats-provider--logo' : ''}`}>
+                {displayProviderLogo ? (
+                  <img src={displayProviderLogo} alt={`${displayProvider} logo`} className="rtp-stats-provider-logo" />
+                ) : (
+                  displayProvider.toUpperCase()
+                )}
+              </span>
               <div className="rtp-stats-divider" />
             </>
           )}

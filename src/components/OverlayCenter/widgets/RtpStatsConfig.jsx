@@ -104,7 +104,7 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
 
           <label className="ov-chat-cfg-platform-header" style={{ marginBottom: 6 }}>
             <input type="checkbox" checked={c.showProvider !== false} onChange={e => set('showProvider', e.target.checked)} />
-            <span>Show Provider Name</span>
+            <span>Show Provider Logo / Name</span>
           </label>
 
           <label className="ov-chat-cfg-platform-header" style={{ marginBottom: 6 }}>

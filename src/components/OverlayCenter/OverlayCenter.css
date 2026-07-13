@@ -7919,12 +7919,28 @@ body.wm-resizing {
 }
 
 .rtp-stats-provider {
+  display: inline-flex;
+  align-items: center;
   color: var(--rtp-provider, #ffffff);
   font-size: var(--rtp-provider-size, 16px);
   font-weight: 700;
   letter-spacing: 0.5px;
   white-space: nowrap;
   text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+.rtp-stats-provider--logo {
+  width: clamp(64px, 8vw, 128px);
+  height: 28px;
+  justify-content: center;
+  text-shadow: none;
+}
+
+.rtp-stats-provider-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .rtp-stats-divider {
