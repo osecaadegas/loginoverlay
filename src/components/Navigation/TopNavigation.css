@@ -53,9 +53,7 @@
 }
 
 .topnav-link,
-.topnav-account,
-.topnav-more-menu a,
-.topnav-more-menu button {
+.topnav-account {
   min-height: 42px;
   display: inline-flex;
   align-items: center;
@@ -110,84 +108,11 @@
 }
 
 .topnav-account:hover,
+.topnav-account--active,
 .topnav-mobile-toggle:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
 }
-
-.topnav-more-menu {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  width: min(620px, calc(100vw - 28px));
-  padding: 12px;
-  border-radius: 18px;
-  background: rgba(10, 16, 27, 0.98);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.44);
-}
-
-.topnav-more-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.topnav-more-menu a,
-.topnav-more-menu button {
-  width: 100%;
-  min-height: 112px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 16px;
-  background: transparent;
-  text-align: left;
-}
-
-.topnav-more-tile {
-  position: relative;
-  overflow: hidden;
-  border-color: rgba(148, 163, 184, 0.16) !important;
-  background:
-    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--tile-accent) 34%, transparent), transparent 45%),
-    rgba(255, 255, 255, 0.04) !important;
-}
-
-.topnav-more-tile svg {
-  color: var(--tile-accent);
-  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--tile-accent) 34%, transparent));
-}
-
-.topnav-more-tile strong {
-  color: #f8fafc;
-  font-size: 14px;
-  line-height: 1.1;
-}
-
-.topnav-more-tile span {
-  color: #94a3b8;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.25;
-  white-space: normal;
-}
-
-.topnav-more-tile:hover {
-  color: #fff;
-  background:
-    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--tile-accent) 44%, transparent), transparent 48%),
-    rgba(255, 255, 255, 0.075) !important;
-  border-color: color-mix(in srgb, var(--tile-accent) 42%, rgba(148, 163, 184, 0.2)) !important;
-}
-
-.topnav-more-tile--blue { --tile-accent: #60a5fa; }
-.topnav-more-tile--green { --tile-accent: #34d399; }
-.topnav-more-tile--cyan { --tile-accent: #2dd4bf; }
-.topnav-more-tile--gold { --tile-accent: #fbbf24; }
-.topnav-more-tile--violet { --tile-accent: #a78bfa; }
-.topnav-more-tile--red,
-.topnav-more-tile--danger { --tile-accent: #f87171; }
 
 .topnav-mobile-toggle {
   display: none;
@@ -209,8 +134,7 @@
   padding-top: 8px;
 }
 
-.topnav-mobile-panel nav,
-.topnav-mobile-account .topnav-more-menu {
+.topnav-mobile-panel nav {
   display: grid;
   gap: 6px;
 }
@@ -218,16 +142,6 @@
 .topnav-mobile-panel .topnav-link {
   width: 100%;
   justify-content: flex-start;
-}
-
-.topnav-mobile-account .topnav-more-menu {
-  position: static;
-  width: 100%;
-  box-shadow: none;
-}
-
-.topnav-mobile-account .topnav-more-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .topnav-shell :is(a, button):focus-visible {
@@ -241,8 +155,7 @@
   }
 
   .topnav-links,
-  .topnav-actions > .topnav-account,
-  .topnav-actions > .topnav-more-menu {
+  .topnav-actions > .topnav-account {
     display: none;
   }
 
@@ -261,7 +174,4 @@
     padding-inline: 12px;
   }
 
-  .topnav-mobile-account .topnav-more-grid {
-    grid-template-columns: 1fr;
-  }
 }

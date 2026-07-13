@@ -18,6 +18,7 @@ import { useStreamElements } from './context/StreamElementsContext';
 import ProtectedAdminRoute from './components/ProtectedRoute/ProtectedAdminRoute';
 
 import ProfilePage from './components/ProfilePage/ProfilePage';
+import AppsPage from './components/AppsPage/AppsPage';
 import SpotifyCallback from './components/SpotifyCallback';
 import DeveloperPage from './components/DeveloperPage/DeveloperPage';
 import PricingPage from './components/Pricing/PricingPage';
@@ -308,6 +309,7 @@ function App() {
                 <Route path="/player" element={<LandingPage mode="player" />} />
                 <Route path="/streamer" element={<LandingPage mode="streamer" />} />
                 <Route path="/offers" element={<OffersPage />} />
+                <Route path="/apps" element={<AppsPage />} />
 
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/premium" element={<PricingPage />} />
