@@ -3,6 +3,7 @@ import { supabase } from '../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
 import { getErrorMessage } from '../../utils/errorUtils';
+import { getProviderImage } from '../../utils/gameProviders';
 import './SlotManagerV2.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -59,6 +60,27 @@ const VolBadge = memo(({ v }) => {
   return <span className="sm-vol" style={{ '--c': o?.color || '#6b7280' }}>{o?.label || v}</span>;
 });
 
+const ProviderLogo = memo(({ provider, className = '' }) => {
+  const [failed, setFailed] = useState(false);
+  const logo = !failed ? getProviderImage(provider) : null;
+
+  if (logo) {
+    return (
+      <span className={`sm-provider-logo-wrap ${className}`} title={provider || 'Provider'}>
+        <img
+          className="sm-provider-logo"
+          src={logo}
+          alt={provider ? `${provider} logo` : 'Provider logo'}
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      </span>
+    );
+  }
+
+  return <span className={`sm-provider-fallback ${className}`} title={provider || 'Unknown provider'}>{provider || '—'}</span>;
+});
+
 /* ═══════════════════════════════════════════════════════════════════
    DROPDOWN FILTER (reusable)
    ═══════════════════════════════════════════════════════════════════ */
@@ -92,10 +114,10 @@ const DropdownFilter = memo(({ label, options, selected, onChange }) => {
             <button className="sm-dropdown-clear" onClick={() => { onChange([]); setOpen(false); }}>Clear all</button>
           )}
           {options.map(opt => (
-            <label key={opt.value} className="sm-dropdown-item">
+            <label key={opt.value} className="sm-dropdown-item" title={opt.label}>
               <input type="checkbox" checked={selected.includes(opt.value)} onChange={() => toggle(opt.value)} />
               {opt.color && <span className="sm-dropdown-dot" style={{ background: opt.color }} />}
-              <span>{opt.label}</span>
+              {opt.provider ? <ProviderLogo provider={opt.provider} className="sm-provider-logo--filter" /> : <span>{opt.label}</span>}
             </label>
           ))}
         </div>
@@ -904,7 +926,7 @@ const SlotManagerV2 = () => {
     setSearchTerm('');
   };
 
-  const providerOptions = providers.map(p => ({ value: p, label: p }));
+  const providerOptions = providers.map(p => ({ value: p, label: p, provider: p }));
 
   /* ── Render ─────────────────────────────────────────────────── */
   return (
@@ -1120,7 +1142,7 @@ const SlotManagerV2 = () => {
                       {slot.name}
                       {slot.is_featured && <span className="sm-star" title="Featured">★</span>}
                     </td>
-                    <td className="sm-td-prov">{slot.provider}</td>
+                    <td className="sm-td-prov"><ProviderLogo provider={slot.provider} className="sm-provider-logo--table" /></td>
                     <td className="sm-td-rtp">{slot.rtp ? `${slot.rtp}%` : '—'}</td>
                     <td className="sm-td-maxwin">{slot.max_win_multiplier ? `${Number(slot.max_win_multiplier).toLocaleString()}x` : '—'}</td>
                     <td className="sm-td-vol"><VolBadge v={slot.volatility} /></td>

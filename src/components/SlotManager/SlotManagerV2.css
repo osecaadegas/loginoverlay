@@ -201,6 +201,35 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+.slot-manager-v2 .sm-provider-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 24px;
+  min-width: 0;
+}
+.slot-manager-v2 .sm-provider-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.slot-manager-v2 .sm-provider-logo--filter {
+  width: 128px;
+  justify-content: flex-start;
+}
+.slot-manager-v2 .sm-provider-logo--table {
+  width: 112px;
+}
+.slot-manager-v2 .sm-provider-fallback {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8b949e;
+}
 .slot-manager-v2 .sm-clear-filters {
   background: none;
   border: none;
