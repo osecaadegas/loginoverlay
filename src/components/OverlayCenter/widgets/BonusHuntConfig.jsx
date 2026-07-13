@@ -1367,6 +1367,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             <span className="bh-opening-switch" />
             <span className="bh-compact-text">{bonusOpening ? '🎰 Opening' : '🔒 Opening'}</span>
           </label>
+          <label className={`bh-compact-toggle ${showStatistics ? 'bh-compact-toggle--active' : ''}`}>
+            <input type="checkbox" checked={showStatistics}
+              onChange={e => { setShowStatistics(e.target.checked); save(bonusList, { showStatistics: e.target.checked }); }} />
+            <span className="bh-opening-switch" />
+            <span className="bh-compact-text">{showStatistics ? '📊 Stats Bar' : '🚫 Stats Bar'}</span>
+          </label>
         </div>
 
         <h4 className="bh-section-pill">
@@ -1635,14 +1641,16 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       )}
 
       {/* Floating stats FAB */}
-      <FloatingStatsFab
-        bonusList={bonusList}
-        startMoney={startMoney}
-        targetMoney={targetMoney}
-        stopLoss={stopLoss}
-        currency={currency}
-        config={c}
-      />
+      {showStatistics && (
+        <FloatingStatsFab
+          bonusList={bonusList}
+          startMoney={startMoney}
+          targetMoney={targetMoney}
+          stopLoss={stopLoss}
+          currency={currency}
+          config={c}
+        />
+      )}
 
     </div>
   );
@@ -1697,7 +1705,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
 
   return createPortal(
     <div style={{
-      position: 'fixed', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 99999,
+      position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 99999,
       background: bgColor,
       backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
       border: `1px solid ${accentColor}40`,
