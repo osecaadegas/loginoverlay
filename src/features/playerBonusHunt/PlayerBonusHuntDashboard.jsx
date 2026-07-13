@@ -249,6 +249,10 @@ export default function PlayerBonusHuntDashboard() {
     <main className="pbh-page">
       <header className="pbh-header">
         <div>
+          <div className="pbh-audience-switch" aria-label="Switch experience">
+            <Link to="/player/bonus-hunt" className="pbh-audience-switch__option pbh-audience-switch__option--active" aria-current="page">Player</Link>
+            <Link to="/overlay-center" className="pbh-audience-switch__option">Streamer</Link>
+          </div>
           <span className="pbh-eyebrow">Player tools</span>
           <h1>Bonus Hunt</h1>
           <p>Private session tracking for deposits, withdrawals, bonuses, payouts, and slot results.</p>
