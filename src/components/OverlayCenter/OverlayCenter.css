@@ -19775,54 +19775,6 @@ body.wm-resizing {
   cursor: not-allowed;
 }
 
-.oc2-menu {
-  position: relative;
-}
-
-.oc2-menu summary {
-  list-style: none;
-}
-
-.oc2-menu summary::-webkit-details-marker {
-  display: none;
-}
-
-.oc2-menu-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 210px;
-  display: grid;
-  gap: 4px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: #0b1017;
-  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.52);
-}
-
-.oc2-menu-panel a,
-.oc2-menu-panel button {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #d6e1ea;
-  text-align: left;
-  text-decoration: none;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.oc2-menu-panel a:hover,
-.oc2-menu-panel button:hover {
-  background: rgba(51, 65, 85, 0.7);
-  color: #ffffff;
-}
-
 .oc2-main {
   width: min(1500px, calc(100% - 32px));
   margin: 0 auto;

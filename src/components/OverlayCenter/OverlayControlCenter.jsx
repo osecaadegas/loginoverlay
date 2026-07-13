@@ -21,7 +21,6 @@ import {
   Palette,
   PlugZap,
   Power,
-  Settings,
   SlidersHorizontal,
   Shield,
   Sparkles,
@@ -397,7 +396,7 @@ function validateOverlay({ instance, widgets, setup, integrations = {} }) {
   return errors;
 }
 
-function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, onOpenPreview }) {
+function OverlayTopNavigation({ active, setupComplete }) {
   const navItems = [
     { id: 'home', label: 'Tools', to: '/overlay-center', icon: Grid3X3 },
     { id: 'integrations', label: 'Integrations', to: '/overlay-center/integrations', icon: Link2 },
@@ -439,19 +438,6 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
           <Grid3X3 size={16} />
           Apps
         </Link>
-        <details className="oc2-menu">
-          <summary className="oc2-btn">
-            <Settings size={16} />
-            More
-          </summary>
-          <div className="oc2-menu-panel">
-            <Link to="/overlay-center/tutorial">Restart tutorial</Link>
-            <button type="button" onClick={onRestartSetup}>Restart guided setup</button>
-            <Link to="/overlay-center/presets">Presets</Link>
-            <Link to="/offers">Streamer home</Link>
-            {isAdmin && <Link to="/overlay-center/approvals">Approvals</Link>}
-          </div>
-        </details>
       </div>
     </header>
   );
@@ -1606,9 +1592,6 @@ export default function OverlayControlCenter() {
       <OverlayTopNavigation
         active={currentPanel === 'widget-detail' ? 'home' : currentPanel}
         setupComplete={setupComplete}
-        isAdmin={isAdmin}
-        onRestartSetup={restartSetup}
-        onOpenPreview={openPreview}
       />
 
       <main className="oc2-main">
