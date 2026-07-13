@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { DEFAULT_SLOT_IMAGE } from '../../../utils/slotUtils';
 
-export default function SlotImage({ src, alt, className, ...props }) {
+export default function SlotImage({ src, alt, className, fit = 'cover', ...props }) {
   const [currentSrc, setCurrentSrc] = useState(src || DEFAULT_SLOT_IMAGE);
   const { style, ...imgProps } = props;
+  const objectFit = style?.objectFit || fit;
+  const objectPosition = style?.objectPosition || 'center center';
 
   useEffect(() => {
     setCurrentSrc(src || DEFAULT_SLOT_IMAGE);
@@ -20,8 +22,8 @@ export default function SlotImage({ src, alt, className, ...props }) {
         height: '100%',
         display: 'block',
         ...style,
-        objectFit: 'cover',
-        objectPosition: style?.objectPosition || 'center center',
+        objectFit,
+        objectPosition,
       }}
       draggable={false}
       onError={() => {

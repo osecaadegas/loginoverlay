@@ -1128,7 +1128,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               <div className="bh-sr-queue-list">
                 {slotRequests.map(req => (
                   <div key={req.id} className="bh-sr-queue-item" onClick={() => handlePickRequest(req)} title={`Click to search "${req.slot_name}"`}>
-                    <SlotImage src={req.slot_image} alt={req.slot_name} className="bh-sr-queue-img" />
+                    <SlotImage src={req.slot_image} alt={req.slot_name} className="bh-sr-queue-img" fit="contain" />
                     <div className="bh-sr-queue-info">
                       <span className="bh-sr-queue-name">{req.slot_name}</span>
                       <span className="bh-sr-queue-by">by {req.requested_by}</span>
@@ -1444,7 +1444,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
               {/* Slot image */}
               {bonus.slot?.image && (
-                <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" />
+                <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="contain" />
               )}
 
               {/* Name + provider — or inline edit */}

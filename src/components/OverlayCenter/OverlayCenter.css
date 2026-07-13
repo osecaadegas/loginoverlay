@@ -18606,6 +18606,42 @@ body.wm-resizing {
   }
 }
 
+/* Bonus Hunt setup keeps dense editable rows; OBS widgets still use cover-fill imagery. */
+.oc-page [data-tour="bonus-hunt-page"] .bh-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.oc-page [data-tour="bonus-hunt-page"] .bh-list-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 62px !important;
+  padding: 9px 12px 9px 15px !important;
+  border-radius: 10px !important;
+  flex-wrap: nowrap !important;
+}
+
+.oc-page [data-tour="bonus-hunt-page"] .bh-list-img {
+  width: 44px !important;
+  height: 44px !important;
+  max-width: 44px !important;
+  max-height: 44px !important;
+  object-fit: contain !important;
+  flex: 0 0 44px !important;
+}
+
+.oc-page [data-tour="bonus-hunt-page"] .bh-list-info {
+  flex: 1 1 180px !important;
+  min-width: 0 !important;
+}
+
+.oc-page [data-tour="bonus-hunt-page"] .bh-sr-queue-img {
+  object-fit: contain !important;
+}
+
 /* Profile page uses legacy inline style objects, so scope the audit overrides tightly. */
 .oc-profile-page {
   display: flex !important;
