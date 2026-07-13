@@ -88,6 +88,12 @@ function fmtMultiplier(m) {
   return `x${Number(m).toLocaleString()}`;
 }
 
+function cachedBestWinMatchesUser(cached, userId) {
+  if (!cached) return false;
+  const cachedUserId = cached.userId || cached.user_id;
+  return !cachedUserId || !userId || cachedUserId === userId;
+}
+
 /* ─── Main widget ─── */
 function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const c = config || {};
@@ -255,6 +261,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       slot_provider: cached.provider || cached.slot_provider || null,
     } : null;
     const cachedIsExactEnough = cachedRecord
+      && cachedBestWinMatchesUser(cached, userId)
       && recordMatchesSlot(cachedRecord, activeSlot)
       && !(activeSlot.id && !cachedRecord.slot_id && activeSlot.provider && !cachedRecord.slot_provider);
     if (cached?.best_win && cachedIsExactEnough) {
@@ -276,15 +283,15 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       return { best_win: ssWidget.config.bestWin, best_multiplier: ssWidget.config.bestMulti || 0 };
     }
     return null;
-  }, [activeSlot, allWidgets, c._cachedBestWin, slotName]);
+  }, [activeSlot, allWidgets, c._cachedBestWin, slotName, userId]);
 
   // Persist bestWin to widget config so OBS can read it (OBS has no auth → can't query DB)
   const persistRef = useRef('');
   const configRef = useRef(c);
   configRef.current = c;
   useEffect(() => {
-    if (!bestWinData || !widgetId || !slotName) return;
-    const key = `${slotKey}:${bestWinData.best_win}:${bestWinData.best_multiplier}`;
+    if (!bestWinData || !widgetId || !slotName || !userId) return;
+    const key = `${userId}:${slotKey}:${bestWinData.best_win}:${bestWinData.best_multiplier}`;
     if (persistRef.current === key) return; // already persisted
     persistRef.current = key;
     const latest = configRef.current;
@@ -294,6 +301,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         config: {
           ...latest,
           _cachedBestWin: {
+            userId,
             slotId: activeSlot.id || null,
             slotName,
             provider: activeSlot.provider || null,
@@ -303,8 +311,9 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         },
       })
       .eq('id', widgetId)
+      .eq('user_id', userId)
       .then(); // fire-and-forget
-  }, [activeSlot, bestWinData, slotKey, widgetId, slotName]);
+  }, [activeSlot, bestWinData, slotKey, userId, widgetId, slotName]);
 
   // Fetch best win on slot change + subscribe to realtime updates
   useEffect(() => {
@@ -337,9 +346,13 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         table: 'user_slot_records',
         filter: `user_id=eq.${userId}`,
       }, (payload) => {
-        const rec = payload.new;
+        const rec = payload.new || payload.old;
         if (recordMatchesSlot(rec, activeSlot)) {
-          setBestWinData({ best_win: rec.best_win, best_multiplier: rec.best_multiplier });
+          if (payload.eventType === 'DELETE' || !payload.new?.best_win) {
+            setBestWinData(null);
+            return;
+          }
+          setBestWinData({ best_win: payload.new.best_win, best_multiplier: payload.new.best_multiplier });
         }
       })
       .subscribe();

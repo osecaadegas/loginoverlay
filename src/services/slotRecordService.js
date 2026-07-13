@@ -136,7 +136,8 @@ export async function updateSlotRecordsFromHunt(userId, bonuses, huntName) {
             slot_image: slotIdentity.image || existing.slot_image,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existing.id);
+          .eq('id', existing.id)
+          .eq('user_id', userId);
       } else {
         await supabase.from('user_slot_records').insert({
           user_id: userId,
