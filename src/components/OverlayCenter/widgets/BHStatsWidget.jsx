@@ -341,7 +341,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
             }}>
               {stats.best?.image ? (
                 <SlotImage src={stats.best.image} alt={stats.best.name} style={{
-                  width: '100%', height: '100%', objectFit: 'contain', display: 'block',
+                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
                 }} />
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -426,7 +426,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
             }}>
               {stats.worst?.image ? (
                 <SlotImage src={stats.worst.image} alt={stats.worst.name} style={{
-                  width: '100%', height: '100%', objectFit: 'contain', display: 'block',
+                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
                 }} />
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

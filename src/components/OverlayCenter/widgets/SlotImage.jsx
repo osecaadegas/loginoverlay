@@ -3,6 +3,7 @@ import { DEFAULT_SLOT_IMAGE } from '../../../utils/slotUtils';
 
 export default function SlotImage({ src, alt, className, ...props }) {
   const [currentSrc, setCurrentSrc] = useState(src || DEFAULT_SLOT_IMAGE);
+  const { style, ...imgProps } = props;
 
   useEffect(() => {
     setCurrentSrc(src || DEFAULT_SLOT_IMAGE);
@@ -10,10 +11,18 @@ export default function SlotImage({ src, alt, className, ...props }) {
 
   return (
     <img
-      {...props}
+      {...imgProps}
       src={currentSrc}
       alt={alt || 'Slot image'}
-      className={className}
+      className={['oc-slot-image-fill', className].filter(Boolean).join(' ')}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'block',
+        ...style,
+        objectFit: 'cover',
+        objectPosition: style?.objectPosition || 'center center',
+      }}
       draggable={false}
       onError={() => {
         if (currentSrc !== DEFAULT_SLOT_IMAGE) setCurrentSrc(DEFAULT_SLOT_IMAGE);
