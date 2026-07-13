@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { getAllSlots, DEFAULT_SLOT_IMAGE, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../utils/slotImageSearch';
@@ -39,6 +39,71 @@ function BonusHuntProviderLogo({ provider }) {
   }
 
   return <span className="bh-list-provider">{provider}</span>;
+}
+
+function findExistingProvider(provider, providers) {
+  const candidate = String(provider || '').trim().toLowerCase();
+  if (!candidate) return '';
+  return providers.find(item => item.toLowerCase() === candidate) || '';
+}
+
+function BonusHuntSubmitProviderLogo({ provider }) {
+  const [failed, setFailed] = useState(false);
+  const logo = !failed ? getProviderImage(provider) : null;
+
+  if (logo) {
+    return (
+      <span className="bh-submit-provider-logo" title={provider}>
+        <img src={logo} alt={`${provider} logo`} onError={() => setFailed(true)} />
+      </span>
+    );
+  }
+
+  return <span className="bh-submit-provider-text">{provider}</span>;
+}
+
+function BonusHuntProviderPicker({ providers, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    const close = (event) => { if (pickerRef.current && !pickerRef.current.contains(event.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
+  const query = search.trim().toLowerCase();
+  const filteredProviders = (query ? providers.filter(provider => provider.toLowerCase().includes(query)) : providers).slice(0, 90);
+
+  const chooseProvider = (provider) => {
+    onChange(provider);
+    setSearch('');
+    setOpen(false);
+  };
+
+  return (
+    <div className="bh-submit-provider-picker" ref={pickerRef}>
+      <button type="button" className={`bh-submit-provider-trigger${value ? ' has-value' : ''}`} onClick={() => setOpen(prev => !prev)}>
+        {value ? <BonusHuntSubmitProviderLogo provider={value} /> : <span className="bh-submit-provider-placeholder">Select provider</span>}
+        <span className="bh-submit-provider-caret">v</span>
+      </button>
+      {open && (
+        <div className="bh-submit-provider-menu">
+          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search providers..." autoFocus />
+          <div className="bh-submit-provider-options">
+            {filteredProviders.map(provider => (
+              <button key={provider} type="button" className={`bh-submit-provider-option${value === provider ? ' selected' : ''}`} onClick={() => chooseProvider(provider)}>
+                <BonusHuntSubmitProviderLogo provider={provider} />
+                <span className="bh-submit-provider-name">{provider}</span>
+              </button>
+            ))}
+            {filteredProviders.length === 0 && <p className="bh-submit-provider-empty">No existing provider found</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
@@ -485,6 +550,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   useEffect(() => { localStorage.setItem('bh_submitImages', JSON.stringify(submitImageResults)); }, [submitImageResults]);
 
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
+  const slotProviders = useMemo(() => [...new Set(slots.map(s => s.provider).filter(Boolean))].sort(), [slots]);
 
   const hydratePendingSlotList = useCallback(async (createdSubmission = null) => {
     const [allSlots, myPending] = await Promise.all([
@@ -571,10 +637,11 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           const { info } = await res.json();
           if (info) {
             const images = info.images || (info.image ? [info.image] : []);
+            const existingProvider = findExistingProvider(info.provider, slotProviders);
             setScrapedImages(images);
             setSubmitForm(prev => ({
               ...prev,
-              ...(info.provider && !prev.provider ? { provider: info.provider } : {}),
+              ...(existingProvider && !prev.provider ? { provider: existingProvider } : {}),
               ...(info.rtp && !prev.rtp ? { rtp: String(info.rtp) } : {}),
               ...(info.volatility && !prev.volatility ? { volatility: info.volatility } : {}),
               ...(info.max_win_multiplier && !prev.max_win_multiplier ? { max_win_multiplier: String(info.max_win_multiplier) } : {}),
@@ -594,7 +661,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [submitForm.name, showSubmitSlot]);
+  }, [submitForm.name, showSubmitSlot, slotProviders]);
 
   const handleSlotSubmit = async () => {
     if (!submitForm.name?.trim()) {
@@ -609,11 +676,16 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       return alert('Name, Provider, and Image URL are required for approval.');
     }
 
+    const existingProvider = findExistingProvider(submitForm.provider, slotProviders);
+    if (!existingProvider) {
+      return alert('Select an existing provider from the provider list.');
+    }
+
     setSubmitSaving(true);
     try {
       const createdSubmission = await submitSlot(userId, {
         name: submitForm.name.trim(),
-        provider: submitForm.provider.trim(),
+        provider: existingProvider,
         image: submitForm.image.trim(),
         rtp: submitForm.rtp ? parseFloat(submitForm.rtp) : null,
         volatility: submitForm.volatility || null,
@@ -645,8 +717,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setSubmitSaving(false);
     }
   };
-
-  const slotProviders = [...new Set(slots.map(s => s.provider).filter(Boolean))].sort();
 
   // Save & Close state
   const [saveHuntName, setSaveHuntName] = useState('');
@@ -1275,11 +1345,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <span>Name <em>*</em></span>
                 <input value={submitForm.name || ''} onChange={e => setField('name', e.target.value)} placeholder="Sweet Bonanza" />
               </label>
-              <label className="bh-submit-field">
+              <div className="bh-submit-field">
                 <span>Provider <em>*</em></span>
-                <input list="bh-prov-list" value={submitForm.provider || ''} onChange={e => setField('provider', e.target.value)} placeholder="Pragmatic Play" />
-                <datalist id="bh-prov-list">{slotProviders.map(p => <option key={p} value={p} />)}</datalist>
-              </label>
+                <BonusHuntProviderPicker providers={slotProviders} value={submitForm.provider || ''} onChange={provider => setField('provider', provider)} />
+              </div>
               <label className="bh-submit-field">
                 <span>RTP (%)</span>
                 <input type="number" value={submitForm.rtp || ''} onChange={e => setField('rtp', e.target.value || null)} placeholder="96.50" step="0.01" min="80" max="100" />
