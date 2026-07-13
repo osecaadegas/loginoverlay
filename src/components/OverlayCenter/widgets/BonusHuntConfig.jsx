@@ -12,6 +12,7 @@ import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
 import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
+import { getProviderImage } from '../../../utils/gameProviders';
 import SlotImage from './SlotImage';
 
 const FONT_OPTIONS = [
@@ -24,6 +25,21 @@ const FONT_OPTIONS = [
   { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
   { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
 ];
+
+function BonusHuntProviderLogo({ provider }) {
+  const [failed, setFailed] = useState(false);
+  const logo = !failed ? getProviderImage(provider) : null;
+
+  if (logo) {
+    return (
+      <span className="bh-list-provider bh-list-provider--logo" title={provider}>
+        <img src={logo} alt={`${provider} logo`} onError={() => setFailed(true)} />
+      </span>
+    );
+  }
+
+  return <span className="bh-list-provider">{provider}</span>;
+}
 
 export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
@@ -1486,7 +1502,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                         {bonus.isSuperBonus && <span className="bh-list-super-badge">SUPER</span>}
                         {bonus.isExtremeBonus && <span className="bh-list-extreme-badge">EXTREME</span>}
                       </span>
-                      {bonus.slot?.provider && <span className="bh-list-provider">{bonus.slot.provider}</span>}
+                      {bonus.slot?.provider && <BonusHuntProviderLogo provider={bonus.slot.provider} />}
                     </div>
                   </div>
 

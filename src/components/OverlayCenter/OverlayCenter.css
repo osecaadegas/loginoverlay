@@ -5599,6 +5599,20 @@ body.wm-resizing {
   gap: 4px;
 }
 
+.bh-list-provider--logo {
+  width: 96px;
+  height: 18px;
+  justify-content: flex-start;
+}
+
+.bh-list-provider--logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left center;
+}
+
 /* --- Super badge inline --- */
 .bh-list-super-badge {
   margin-left: 4px;
@@ -5786,8 +5800,8 @@ body.wm-resizing {
 }
 
 .bh-list-img {
-  width: 44px;
-  height: 44px;
+  width: 58px;
+  height: 58px;
   border-radius: 8px;
   object-fit: contain;
   flex-shrink: 0;
@@ -5800,8 +5814,11 @@ body.wm-resizing {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  justify-content: flex-start;
+  align-self: stretch;
+  gap: 5px;
   min-width: 0;
+  padding-top: 2px;
 }
 
 .bh-list-name {
@@ -18611,7 +18628,7 @@ body.wm-resizing {
 .bh-config .bh-list {
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important;
+  gap: 7px !important;
 }
 
 .oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-item,
@@ -18620,8 +18637,8 @@ body.wm-resizing {
   flex-direction: row !important;
   align-items: center !important;
   gap: 10px !important;
-  min-height: 56px !important;
-  padding: 9px 12px 9px 15px !important;
+  min-height: 66px !important;
+  padding: 4px 10px 4px 12px !important;
   border-radius: 10px !important;
   flex-wrap: nowrap !important;
 }
@@ -18629,7 +18646,7 @@ body.wm-resizing {
 .oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-main,
 .bh-config .bh-list-main {
   display: flex !important;
-  align-items: center !important;
+  align-items: stretch !important;
   gap: 10px !important;
   flex: 1 1 220px !important;
   min-width: 0 !important;
@@ -18642,12 +18659,12 @@ body.wm-resizing {
 
 .oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-img,
 .bh-config .bh-list-img {
-  width: 44px !important;
-  height: 44px !important;
-  max-width: 44px !important;
-  max-height: 44px !important;
+  width: 58px !important;
+  height: 58px !important;
+  max-width: 58px !important;
+  max-height: 58px !important;
   object-fit: contain !important;
-  flex: 0 0 44px !important;
+  flex: 0 0 58px !important;
 }
 
 .oc-page :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"]) .bh-list-info,
