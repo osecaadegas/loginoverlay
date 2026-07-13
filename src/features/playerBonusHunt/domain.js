@@ -91,6 +91,12 @@ export function calculateRemainingBreakEven(hunt = {}, bonuses = []) {
   return clampNonNegative(calculateBreakEven(hunt) - calculateTotalPayout(bonuses));
 }
 
+export function calculateRemainingBet(bonuses = []) {
+  return roundMoney((bonuses || [])
+    .filter((bonus) => (bonus.status || 'unopened') !== 'opened')
+    .reduce((sum, bonus) => sum + toNumber(bonus.bet_size), 0));
+}
+
 export function calculateRequiredAveragePayout(hunt = {}, bonuses = []) {
   const remaining = calculateRemainingBreakEven(hunt, bonuses);
   const unopened = bonuses.filter((bonus) => (bonus.status || 'unopened') !== 'opened').length;
@@ -100,10 +106,9 @@ export function calculateRequiredAveragePayout(hunt = {}, bonuses = []) {
 
 export function calculateRequiredAverageMultiplier(hunt = {}, bonuses = []) {
   const remaining = calculateRemainingBreakEven(hunt, bonuses);
-  const unopened = bonuses.filter((bonus) => (bonus.status || 'unopened') !== 'opened');
-  const totalBet = unopened.reduce((sum, bonus) => sum + toNumber(bonus.bet_size), 0);
-  if (remaining <= 0 || totalBet <= 0 || unopened.length === 0) return null;
-  return roundRatio(remaining / totalBet);
+  const remainingBet = calculateRemainingBet(bonuses);
+  if (remaining <= 0 || remainingBet <= 0) return null;
+  return roundRatio(remaining / remainingBet);
 }
 
 export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
@@ -118,6 +123,7 @@ export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
   const totalPayout = calculateTotalPayout(bonuses);
   const totalSpent = roundMoney(bonuses.reduce((sum, bonus) => sum + toNumber(bonus.bonus_cost), 0));
   const totalBet = roundMoney(bonuses.reduce((sum, bonus) => sum + toNumber(bonus.bet_size), 0));
+  const remainingBet = calculateRemainingBet(bonuses);
   const bestWin = opened.reduce((best, bonus) => toNumber(bonus.payout) > toNumber(best?.payout, -Infinity) ? bonus : best, null);
   const worstWin = opened.reduce((worst, bonus) => toNumber(bonus.payout) < toNumber(worst?.payout, Infinity) ? bonus : worst, null);
   const bestMultiplierBonus = opened.reduce((best, bonus) => {
@@ -140,6 +146,8 @@ export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
     totalDeposits: calculateTotalDeposits(hunt),
     totalWithdrawals: calculateTotalWithdrawals(hunt),
     netDeposited: calculateNetDeposited(hunt),
+    target: breakEven,
+    stopLoss: calculateTotalWithdrawals(hunt),
     currentBalance: roundMoney(hunt.current_balance),
     breakEven,
     remainingBreakEven,
@@ -147,6 +155,7 @@ export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
     totalPayout,
     totalSpent,
     totalBet,
+    remainingBet,
     totalBonuses: bonuses.length,
     openedBonuses: opened.length,
     remainingBonuses: unopened.length,
@@ -161,6 +170,7 @@ export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
     averageMultiplier: multipliers.length ? roundRatio(multipliers.reduce((sum, value) => sum + value, 0) / multipliers.length) : null,
     requiredAveragePayout: calculateRequiredAveragePayout(hunt, bonuses),
     requiredAverageMultiplier: calculateRequiredAverageMultiplier(hunt, bonuses),
+    liveBreakEvenMultiplier: calculateRequiredAverageMultiplier(hunt, bonuses),
   };
 }
 

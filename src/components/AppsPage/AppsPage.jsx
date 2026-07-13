@@ -27,24 +27,28 @@ export default function AppsPage() {
   const hasOverlayAccess = isAdmin || isModerator || isPremium;
 
   const tiles = [
-    { to: '/offers', label: 'Deals', desc: 'Casino offers and partners', icon: BadgeEuro, tone: 'green', art: 'deals' },
-    { to: '/premium', label: 'Premium', desc: 'Plans and access', icon: Crown, tone: 'gold', art: 'premium' },
-    ...(user ? [{ to: '/profile', label: 'Profile', desc: 'Account settings', icon: UserRound, tone: 'violet', art: 'profile' }] : []),
-    ...(user ? [{ to: '/player/bonus-hunt', label: 'Bonus Hunt', desc: 'Player hunt tracker', icon: LayoutDashboard, tone: 'blue', art: 'bonus-hunt' }] : []),
     ...(hasOverlayAccess ? [
       { to: '/overlay-center', label: 'Overlay Center', desc: 'OBS widgets and tools', icon: Grid3X3, tone: 'cyan', art: 'overlay-center' },
-      { to: '/overlay-center/tutorial', label: 'Restart Tutorial', desc: 'Walk through Overlay Center again', icon: RotateCcw, tone: 'cyan', art: 'restart-tutorial' },
-      { to: '/overlay-center/setup', label: 'Guided Setup', desc: 'Restart overlay setup flow', icon: ListRestart, tone: 'blue', art: 'guided-setup' },
+    ] : []),
+    ...(user ? [{ to: '/player/bonus-hunt', label: 'Bonus Hunt', desc: 'Player hunt tracker', icon: LayoutDashboard, tone: 'blue', art: 'bonus-hunt' }] : []),
+    ...(isSlotModder ? [{ to: '/webmod/slot-manager', label: 'Slot Manager', desc: 'Slot database tools', icon: Shield, tone: 'green', art: 'slot-manager' }] : []),
+    ...(hasOverlayAccess ? [
       { to: '/overlay-center/presets', label: 'Presets', desc: 'Browse saved overlay looks', icon: Sparkles, tone: 'violet', art: 'presets' },
+      { to: '/overlay-center/setup', label: 'Guided Setup', desc: 'Restart overlay setup flow', icon: ListRestart, tone: 'blue', art: 'guided-setup' },
+      { to: '/overlay-center/tutorial', label: 'Restart Tutorial', desc: 'Walk through Overlay Center again', icon: RotateCcw, tone: 'cyan', art: 'restart-tutorial' },
+    ] : []),
+    { to: '/offers', label: 'Deals', desc: 'Casino offers and partners', icon: BadgeEuro, tone: 'green', art: 'deals' },
+    { to: '/premium', label: 'Premium', desc: 'Plans and access', icon: Crown, tone: 'gold', art: 'premium' },
+    ...(hasOverlayAccess ? [
       { to: '/offers', label: 'Streamer Home', desc: 'Return to streamer deals', icon: PlayCircle, tone: 'green', art: 'streamer-home' },
     ] : []),
     ...(isAdmin ? [
       { to: '/admin', label: 'Admin Panel', desc: 'Platform management', icon: Shield, tone: 'red', art: 'admin' },
+      { to: '/overlay-center/approvals', label: 'Approvals', desc: 'Review submitted slots', icon: Shield, tone: 'red', art: 'approvals' },
       { to: '/analytics', label: 'Analytics', desc: 'Platform statistics', icon: BarChart3, tone: 'blue', art: 'analytics' },
       { to: '/developer', label: 'Developer', desc: 'Internal developer tools', icon: Code2, tone: 'cyan', art: 'developer' },
-      { to: '/overlay-center/approvals', label: 'Approvals', desc: 'Review submitted slots', icon: Shield, tone: 'red', art: 'approvals' },
     ] : []),
-    ...(isSlotModder ? [{ to: '/webmod/slot-manager', label: 'Slot Manager', desc: 'Slot database tools', icon: Shield, tone: 'green', art: 'slot-manager' }] : []),
+    ...(user ? [{ to: '/profile', label: 'Profile', desc: 'Account settings', icon: UserRound, tone: 'violet', art: 'profile' }] : []),
   ];
 
   const login = () => {

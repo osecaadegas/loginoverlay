@@ -37,8 +37,8 @@ function bonusTypeLabel(value) {
 
 function SummaryStrip({ stats, currency }) {
   const items = [
-    ['Net deposited', formatMoney(stats.netDeposited, currency), 'Deposits minus withdrawals'],
-    ['Break even', formatMoney(stats.breakEven, currency), 'Target from net deposits'],
+    ['Target', formatMoney(stats.target ?? stats.breakEven, currency), 'Deposits minus withdrawals'],
+    ['Break even', formatMoney(stats.breakEven, currency), 'Same value as target'],
     ['Remaining', formatMoney(stats.remainingBreakEven, currency), 'Target minus opened payouts'],
     ['Profit / Loss', formatSignedMoney(stats.profitLoss, currency), 'Opened payouts minus target'],
     ['Total payout', formatMoney(stats.totalPayout, currency), 'Opened bonuses only'],
@@ -53,6 +53,62 @@ function SummaryStrip({ stats, currency }) {
           <small>{detail}</small>
         </div>
       ))}
+    </div>
+  );
+}
+
+function MathLine({ label, formula, value, tone }) {
+  return (
+    <div className={`pbh-math-line ${tone ? `pbh-math-line--${tone}` : ''}`}>
+      <span>{label}</span>
+      <code>{formula}</code>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function MathematicsPanel({ stats, currency }) {
+  const target = stats.target ?? stats.breakEven;
+  const profitTone = stats.profitLoss >= 0 ? 'positive' : 'negative';
+  const remainingBonuses = stats.remainingBonuses || 0;
+  const liveBreakEven = stats.liveBreakEvenMultiplier ?? stats.requiredAverageMultiplier;
+  return (
+    <div className="pbh-math-panel" aria-label="Bonus hunt mathematics">
+      <div className="pbh-math-panel__head">
+        <div>
+          <span className="pbh-eyebrow">Mathematics</span>
+          <h3>Streamer formula</h3>
+        </div>
+        <p>Target uses the same streamer formula: start money minus stop loss. On player hunts, deposits are start money and withdrawals are stop loss.</p>
+      </div>
+      <div className="pbh-math-grid">
+        <MathLine
+          label="Target"
+          formula={`${formatMoney(stats.totalDeposits, currency)} - ${formatMoney(stats.totalWithdrawals, currency)}`}
+          value={formatMoney(target, currency)}
+        />
+        <MathLine
+          label="Profit / Loss"
+          formula={`${formatMoney(stats.totalPayout, currency)} - ${formatMoney(target, currency)}`}
+          value={formatSignedMoney(stats.profitLoss, currency)}
+          tone={profitTone}
+        />
+        <MathLine
+          label="Remaining"
+          formula={`${formatMoney(target, currency)} - ${formatMoney(stats.totalPayout, currency)}`}
+          value={formatMoney(stats.remainingBreakEven, currency)}
+        />
+        <MathLine
+          label="Live BE x"
+          formula={`${formatMoney(stats.remainingBreakEven, currency)} / ${formatMoney(stats.remainingBet, currency)} unopened bet`}
+          value={formatMultiplier(liveBreakEven)}
+        />
+        <MathLine
+          label="Average needed"
+          formula={`${formatMoney(stats.remainingBreakEven, currency)} / ${remainingBonuses} unopened bonuses`}
+          value={formatMoney(stats.requiredAveragePayout, currency)}
+        />
+      </div>
     </div>
   );
 }
@@ -686,7 +742,7 @@ export default function PlayerBonusHuntDetail() {
           <div>
             <span className={`pbh-pill pbh-pill--${hunt.status}`}>{hunt.status}</span>
             <h2>Accounting</h2>
-            <p>Break Even target = Net Deposited. Profit/Loss = opened payouts minus that target.</p>
+            <p>Target = deposits minus withdrawals. Profit/Loss = opened payouts minus target.</p>
           </div>
           <div className="pbh-actions">
             {hunt.status !== 'completed' && (
@@ -700,6 +756,7 @@ export default function PlayerBonusHuntDetail() {
         </div>
 
         <SummaryStrip stats={stats} currency={currency} />
+        <MathematicsPanel stats={stats} currency={currency} />
 
         <div className="pbh-form pbh-form--compact">
           {[
