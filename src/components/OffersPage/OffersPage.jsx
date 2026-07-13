@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getMethodIcons } from '../../utils/depositMethods';
 import { getProviderName } from '../../utils/gameProviders';
 import trackOfferClick from '../../utils/trackOfferClick';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import './OffersPage.css';
 
 export default function OffersPage() {
@@ -158,7 +159,7 @@ export default function OffersPage() {
   if (loading) {
     return (
       <div className="offers-page">
-        <div className="offers-loading">Loading offers...</div>
+        <LoadingSpinner text="Loading offers..." />
       </div>
     );
   }

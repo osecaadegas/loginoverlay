@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useAuth } from '../../context/AuthContext';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import './DeveloperPage.css';
 
 export default function DeveloperPage() {
@@ -15,10 +16,7 @@ export default function DeveloperPage() {
   if (authLoading || adminLoading) {
     return (
       <div className="dev-page">
-        <div className="dev-loading">
-          <div className="dev-spinner" />
-          <p>Loading…</p>
-        </div>
+        <LoadingSpinner text="Loading..." className="dev-loading" />
       </div>
     );
   }

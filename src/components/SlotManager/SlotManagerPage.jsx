@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useEffect } from 'react';
 import SlotManagerV2 from './SlotManagerV2';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import './SlotManagerPage.css';
 
 const SlotManagerPage = () => {
@@ -15,12 +16,7 @@ const SlotManagerPage = () => {
   }, [isSlotModder, loading, navigate]);
 
   if (loading) {
-    return (
-      <div className="slot-manager-page-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading...</p>
-      </div>
-    );
+    return <LoadingSpinner text="Loading..." fullPage />;
   }
 
   if (!isSlotModder) {

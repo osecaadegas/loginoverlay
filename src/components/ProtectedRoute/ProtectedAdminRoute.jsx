@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAdmin } from '../../hooks/useAdmin';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 
 export default function ProtectedAdminRoute({
   children,
@@ -14,17 +15,7 @@ export default function ProtectedAdminRoute({
   const { isAdmin, isModerator, isSlotModder, isPremium, loading: adminLoading } = useAdmin();
 
   if (loading || adminLoading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        color: 'var(--theme-text-primary)'
-      }}>
-        Loading...
-      </div>
-    );
+    return <LoadingSpinner text="Loading..." fullPage />;
   }
 
   if (!user) {

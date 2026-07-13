@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import usePlayerSubscription from './usePlayerSubscription';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
 export default function ProtectedPlayerRoute({ children }) {
   const { user, loading: authLoading } = useAuth();
@@ -10,7 +11,7 @@ export default function ProtectedPlayerRoute({ children }) {
   if (authLoading || loading) {
     return (
       <div className="pbh-page pbh-page--center">
-        <div className="pbh-loader">Loading Bonus Hunt...</div>
+        <LoadingSpinner text="Loading Bonus Hunt..." />
       </div>
     );
   }

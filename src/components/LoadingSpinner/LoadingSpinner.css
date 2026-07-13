@@ -1,0 +1,100 @@
+.app-loading-shell {
+  --app-loading-size: 100px;
+  --app-loading-text-size: 20px;
+  --app-loading-text-color: #cecece;
+  --app-loading-ring-one: #5c5edc;
+  --app-loading-ring-two: #9147ff;
+  --app-loading-ring-three: #3b82f6;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120px;
+  padding: 24px;
+  color: var(--app-loading-text-color);
+}
+
+.app-loading-shell--full {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(145, 71, 255, 0.16), transparent 34rem),
+    radial-gradient(circle at 80% 15%, rgba(59, 130, 246, 0.14), transparent 30rem),
+    #0d1117;
+}
+
+.app-loading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--app-loading-size);
+  height: var(--app-loading-size);
+  perspective: 780px;
+}
+
+.app-loading--small {
+  --app-loading-size: 68px;
+  --app-loading-text-size: 14px;
+}
+
+.app-loading--compact {
+  --app-loading-size: 82px;
+  --app-loading-text-size: 16px;
+}
+
+.app-loading__text {
+  color: var(--app-loading-text-color);
+  font-size: var(--app-loading-text-size);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.app-loading__ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 50%;
+}
+
+.app-loading__ring--one {
+  inset: 0 auto auto 0;
+  border-bottom: 3px solid var(--app-loading-ring-one);
+  animation: appLoadingRotateOne 1.15s linear infinite;
+}
+
+.app-loading__ring--two {
+  inset: 0 0 auto auto;
+  border-right: 3px solid var(--app-loading-ring-two);
+  animation: appLoadingRotateTwo 1.15s 0.1s linear infinite;
+}
+
+.app-loading__ring--three {
+  inset: auto 0 0 auto;
+  border-top: 3px solid var(--app-loading-ring-three);
+  animation: appLoadingRotateThree 1.15s 0.15s linear infinite;
+}
+
+@keyframes appLoadingRotateOne {
+  0% { transform: rotateX(45deg) rotateY(-45deg) rotateZ(0deg); }
+  100% { transform: rotateX(45deg) rotateY(-45deg) rotateZ(360deg); }
+}
+
+@keyframes appLoadingRotateTwo {
+  0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
+  100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); }
+}
+
+@keyframes appLoadingRotateThree {
+  0% { transform: rotateX(-60deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(-60deg) rotateY(0deg) rotateZ(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loading__ring {
+    animation-duration: 3s;
+  }
+}

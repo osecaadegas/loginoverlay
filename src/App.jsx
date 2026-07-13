@@ -30,6 +30,7 @@ import usePredictionListener from './hooks/usePredictionListener';
 import useBetsListener from './hooks/useBetsListener';
 import useAnalytics from './hooks/useAnalytics';
 import { applyRouteSeo } from './utils/seo';
+import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 // ThemesPage is now rendered inside OverlayControlCenter
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
@@ -216,19 +217,7 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
   }, [user]);
 
   if (loading || accessCheck.checking) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        fontSize: '1.5rem'
-      }}>
-        Loading...
-      </div>
-    );
+    return <LoadingSpinner text="Loading..." fullPage />;
   }
 
   if (!user) {
@@ -313,7 +302,7 @@ function App() {
           <ThemeProvider>
           <BrowserRouter>
             <LayoutWrapper>
-              <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#94a3b8' }}>Loading...</div>}>
+              <Suspense fallback={<LoadingSpinner text="Loading..." fullPage />}>
               <Routes>
                 <Route path="/" element={<LandingPage mode="selector" />} />
                 <Route path="/player" element={<LandingPage mode="player" />} />

@@ -19781,12 +19781,28 @@ body.wm-resizing {
   position: relative;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .oc2-tool-card__actions .oc2-btn {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.oc2-tool-copy-url {
+  flex: 1 0 100% !important;
+  min-height: 40px;
+  color: #ccfbf1;
+  border-color: rgba(45, 212, 191, 0.26);
+  background: rgba(20, 184, 166, 0.12);
+}
+
+.oc2-tool-copy-url:hover,
+.oc2-tool-copy-url:focus-visible {
+  color: #ffffff;
+  border-color: rgba(94, 234, 212, 0.45);
+  background: rgba(20, 184, 166, 0.2);
 }
 
 .oc2-tool-toggle {

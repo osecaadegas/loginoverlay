@@ -36,6 +36,7 @@ import useTwitchChannel from '../../hooks/useTwitchChannel';
 import usePresets from '../../hooks/usePresets';
 import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import AppearanceCenter from './appearance/AppearanceCenter';
 import ConnectServicesStep from './setup/ConnectServicesStep';
 import { buildSyncedConfig } from './WidgetManager';
@@ -180,9 +181,10 @@ function fromSlug(slug) {
   return String(slug || '').replace(/-/g, '_');
 }
 
-function getOverlayUrl(instance, { preview = false } = {}) {
+function getOverlayUrl(instance, { preview = false, widgetId = null } = {}) {
   if (!instance || typeof window === 'undefined') return '';
   const url = new URL(`/overlay/${instance.overlay_token}`, window.location.origin);
+  if (widgetId) url.searchParams.set('widget', widgetId);
   if (preview) url.searchParams.set('preview', '1');
   return url.toString();
 }
@@ -506,7 +508,7 @@ function OverlaySetupSummary({ summary, previewStatus, onOpenPreview }) {
   );
 }
 
-function ToolCard({ tool, mode, onOpen, onAdd, onToggle, onRemove }) {
+function ToolCard({ tool, mode, onOpen, onAdd, onToggle, onRemove, onCopyObsUrl, copied }) {
   const { type, def, widget, copy, status } = tool;
   const installed = !!widget;
   const isDisabled = widget?.is_visible === false;
@@ -594,6 +596,17 @@ function ToolCard({ tool, mode, onOpen, onAdd, onToggle, onRemove }) {
             </div>
           </details>
         )}
+
+        {installed && (
+          <button
+            type="button"
+            className="oc2-btn oc2-tool-copy-url"
+            onClick={() => onCopyObsUrl(widget)}
+          >
+            <Copy size={15} />
+            {copied ? 'Copied OBS URL' : 'Copy OBS URL'}
+          </button>
+        )}
       </footer>
     </article>
   );
@@ -658,7 +671,7 @@ function QuickSettings({ isAdmin }) {
   );
 }
 
-function ToolWorkspace({ widgets, integrations, isAdmin, onOpenTool, onToggleTool, onAddTool, onRemoveTool }) {
+function ToolWorkspace({ widgets, integrations, isAdmin, onOpenTool, onToggleTool, onAddTool, onRemoveTool, onCopyToolObsUrl, copiedWidgetId }) {
   const definitions = getAllWidgetDefs();
   const definitionMap = new Map(definitions.map(def => [def.type, def]));
   const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
@@ -688,6 +701,8 @@ function ToolWorkspace({ widgets, integrations, isAdmin, onOpenTool, onToggleToo
       onAdd={onAddTool}
       onToggle={onToggleTool}
       onRemove={onRemoveTool}
+      onCopyObsUrl={onCopyToolObsUrl}
+      copied={copiedWidgetId === tool.widget?.id}
     />
   );
 
@@ -1322,6 +1337,7 @@ export default function OverlayControlCenter() {
   const previewChannelRef = useRef(null);
   const [previewStatus, setPreviewStatus] = useState('closed');
   const [copyMsg, setCopyMsg] = useState('');
+  const [copiedWidgetId, setCopiedWidgetId] = useState('');
   const [guidedTutorialActive, setGuidedTutorialActive] = useState(false);
 
   const overlayUrl = useMemo(() => getOverlayUrl(instance), [instance]);
@@ -1450,6 +1466,16 @@ export default function OverlayControlCenter() {
     });
   }, [overlayUrl]);
 
+  const copyToolObsUrl = useCallback((widget) => {
+    const widgetUrl = getOverlayUrl(instance, { widgetId: widget?.id });
+    if (!widgetUrl || !widget?.id) return;
+    navigator.clipboard.writeText(widgetUrl).then(() => {
+      setCopiedWidgetId(widget.id);
+      trackEvent(ANALYTICS_EVENTS.OBS_URL_COPIED, { widget_type: widget.widget_type, widget_id: widget.id });
+      setTimeout(() => setCopiedWidgetId(''), 1800);
+    });
+  }, [instance]);
+
   const openPreview = useCallback(() => {
     if (!previewUrl) return;
     if (previewWindowRef.current && !previewWindowRef.current.closed) {
@@ -1564,8 +1590,7 @@ export default function OverlayControlCenter() {
     return (
       <div className="oc-page oc2-page">
         <section className="oc2-empty-state">
-          <div className="oc-spinner" />
-          <p>Loading your overlay...</p>
+          <LoadingSpinner text="Loading your overlay..." />
         </section>
       </div>
     );
@@ -1627,6 +1652,8 @@ export default function OverlayControlCenter() {
               onToggleTool={handleToggleTool}
               onAddTool={handleAddTool}
               onRemoveTool={handleRemoveTool}
+              onCopyToolObsUrl={copyToolObsUrl}
+              copiedWidgetId={copiedWidgetId}
             />
           </>
         )}

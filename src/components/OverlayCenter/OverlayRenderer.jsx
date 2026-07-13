@@ -27,12 +27,20 @@ import {
   normalizeAppearance,
   resolveWidgetsForAppearance,
 } from './appearance/appearanceModel';
-import { applyPreviewWidgetSamples } from './appearance/previewWidgetSamples';
+import { applyPreviewWidgetSamples, getWidgetPreviewFrame } from './appearance/previewWidgetSamples';
 import './OverlayRenderer.css';
 import './OverlayCenter.css';
 
 // Register built-in widgets
 import './widgets/builtinWidgets';
+
+function getSlotSize(widget) {
+  const frame = getWidgetPreviewFrame(widget);
+  return {
+    width: frame?.width || widget.width,
+    height: frame?.height || widget.height,
+  };
+}
 
 // ─── Single widget wrapper with animation + scale-to-fit ───
 const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting, userId, suppressAnimations = false }) {
@@ -67,6 +75,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const shadowFilter = hasShadow
     ? `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))`
     : undefined;
+  const slotSize = getSlotSize(widget);
 
   const widgetRadius = widget.config?.cardRadius;
 
@@ -90,8 +99,8 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     position: 'absolute',
     left: isBg ? 0 : widget.position_x,
     top: isBg ? 0 : widget.position_y,
-    width: isBg ? canvasWidth : widget.width,
-    height: isBg ? canvasHeight : widget.height,
+    width: isBg ? canvasWidth : slotSize.width,
+    height: isBg ? canvasHeight : slotSize.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(widget.config?.animSpeed || animSpeed || 1) * 0.35}s`,
     /* Shadow lives on the outer wrapper — away from the clip layer */
@@ -258,7 +267,7 @@ export default function OverlayRenderer() {
   }, [appearanceState, isPreviewMode, previewDraft, theme]);
   const renderedWidgets = useMemo(() => {
     const resolved = resolveWidgetsForAppearance(widgets, activeAppearance, theme, { styleSelections: isPreviewMode ? previewStyleSelections : {} });
-    return isPreviewMode ? applyPreviewWidgetSamples(resolved, { now: previewNowRef.current }) : resolved;
+    return isPreviewMode ? applyPreviewWidgetSamples(resolved, { now: previewNowRef.current, expandFrames: true }) : resolved;
   }, [widgets, activeAppearance, theme, isPreviewMode, previewStyleSelections]);
 
   const themeVars = useMemo(() => buildThemeVars(theme, activeAppearance), [theme, activeAppearance]);

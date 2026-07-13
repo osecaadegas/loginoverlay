@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import LoadingSpinner from '../../LoadingSpinner/LoadingSpinner';
 import './DataTable.css';
 
 /**
@@ -210,8 +211,7 @@ export default function DataTable({
             {loading ? (
               <tr>
                 <td colSpan={columns.length + (rowActions ? 1 : 0)} className="table-loading">
-                  <div className="loading-spinner" />
-                  Loading...
+                  <LoadingSpinner text="Loading..." size="small" />
                 </td>
               </tr>
             ) : paginatedData.length === 0 ? (

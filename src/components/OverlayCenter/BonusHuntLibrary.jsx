@@ -9,6 +9,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getBonusHuntHistory, deleteBonusHuntHistory } from '../../services/overlayService';
 import { supabase } from '../../config/supabaseClient';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 
 export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
   const { user } = useAuth();
@@ -346,8 +347,7 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
       {/* ── Loading state ── */}
       {loading && (
         <div className="bhl-loading">
-          <div className="oc-spinner" />
-          <p>Loading your library…</p>
+          <LoadingSpinner text="Loading your library..." />
         </div>
       )}
 

@@ -17,6 +17,7 @@ import GeoTab from './tabs/GeoTab';
 import FraudTab from './tabs/FraudTab';
 import DataQualityTab from './tabs/DataQualityTab';
 import SettingsTab from './tabs/SettingsTab';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import './AnalyticsDashboard.css';
 
 const TABS = [
@@ -54,8 +55,7 @@ export default function AnalyticsDashboard() {
   if (adminLoading) {
     return (
       <div className="an-dash an-dash--loading">
-        <div className="an-dash__spinner" />
-        <span>Loading analytics...</span>
+        <LoadingSpinner text="Loading analytics..." />
       </div>
     );
   }

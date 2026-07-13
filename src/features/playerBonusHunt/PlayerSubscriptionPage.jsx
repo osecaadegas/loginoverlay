@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { openPlayerBillingPortal, startPlayerCheckout } from './playerBonusHuntService';
 import usePlayerSubscription from './usePlayerSubscription';
 import { formatDate, statusLabel } from './format';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './PlayerBonusHunt.css';
 
 export default function PlayerSubscriptionPage() {
@@ -25,7 +26,7 @@ export default function PlayerSubscriptionPage() {
     }
   }, [searchParams, refresh]);
 
-  if (authLoading) return <main className="pbh-page pbh-page--center"><div className="pbh-loader">Loading...</div></main>;
+  if (authLoading) return <main className="pbh-page pbh-page--center"><LoadingSpinner text="Loading..." /></main>;
   if (!user) return <Navigate to="/login" replace state={{ from: '/player/subscription' }} />;
 
   const startCheckout = async () => {
