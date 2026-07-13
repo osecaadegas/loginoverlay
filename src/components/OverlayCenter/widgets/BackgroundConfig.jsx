@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BACKGROUND_STYLE_KEYS } from './styleKeysRegistry';
-import ColorPickerBase from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
-const ColorPicker = (props) => <ColorPickerBase {...props} showHex={false} className="nb-color-item" />;
 
 /* ─── Texture options ─── */
 const TEXTURE_OPTIONS = [
@@ -56,21 +54,11 @@ function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suf
   );
 }
 
-export default function BackgroundConfig({ config, onChange, allWidgets }) {
+export default function BackgroundConfig({ config, onChange }) {
   const c = config || {};
   const currentStyle = c.displayStyle || 'v1';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BACKGROUND_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('source');
-
-  /* ─── Navbar sync ─── */
-  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
-  const syncFromNavbar = () => {
-    if (!navbarConfig) return;
-    setMulti({
-      color1: navbarConfig.bgColor || '#0f172a',
-      color2: navbarConfig.accentColor || '#1e3a5f',
-    });
-  };
 
   /* ─── Preset system ─── */
   const [presetName, setPresetName] = useState('');
@@ -133,9 +121,7 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
   const tabs = [
     { id: 'source', label: '🖼️ Source' },
     { id: 'texture', label: '🎨 Texture' },
-    { id: 'colors', label: '🌈 Colors' },
     { id: 'effects', label: '🌀 Effects' },
-    { id: 'filters', label: '✨ Filters' },
     { id: 'presets', label: '💾 Presets' },
   ];
 
@@ -226,12 +212,6 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
               </div>
             </div>
           )}
-
-          {/* Global opacity & radius */}
-          <div style={{ marginTop: 12 }}>
-            <SliderField label="Opacity" value={c.opacity ?? 100} onChange={v => set('opacity', v)} min={0} max={100} suffix="%" />
-            <SliderField label="Border Radius" value={c.borderRadius ?? 0} onChange={v => set('borderRadius', v)} min={0} max={48} suffix="px" />
-          </div>
         </div>
       )}
 
@@ -270,45 +250,6 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
         </div>
       )}
 
-      {/* ═══════ COLORS TAB ═══════ */}
-      {activeTab === 'colors' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Colors</h4>
-
-          {navbarConfig && (
-            <button className="nb-preset-load-btn" onClick={syncFromNavbar} style={{ marginBottom: 10, width: '100%' }}>
-              🔗 Sync Colors from Navbar
-            </button>
-          )}
-
-          <div className="nb-color-grid">
-            <ColorPicker label="Color 1" value={c.color1 || '#0f172a'} onChange={v => set('color1', v)} />
-            <ColorPicker label="Color 2" value={c.color2 || '#1e293b'} onChange={v => set('color2', v)} />
-            <ColorPicker label="Color 3" value={c.color3 || '#0f172a'} onChange={v => set('color3', v)} />
-          </div>
-
-          <h5 style={{ color: '#94a3b8', fontSize: 11, marginTop: 14, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Color Overlay</h5>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>
-            Tint the entire background with a semi-transparent color overlay.
-          </p>
-          <div className="nb-color-grid">
-            <ColorPicker label="Overlay Color" value={c.overlayColor || '#000000'} onChange={v => set('overlayColor', v)} />
-          </div>
-          <SliderField label="Overlay Opacity" value={c.overlayOpacity ?? 0} onChange={v => set('overlayOpacity', v)} min={0} max={100} suffix="%" />
-
-          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
-          <textarea
-            className="oc-widget-css-input"
-            value={c.custom_css || ''}
-            onChange={e => set('custom_css', e.target.value)}
-            rows={4}
-            placeholder={`/* custom CSS for this widget */`}
-            spellCheck={false}
-          />
-        </div>
-      )}
-
       {/* ═══════ EFFECTS TAB ═══════ */}
       {activeTab === 'effects' && (
         <div className="nb-section">
@@ -343,9 +284,6 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
           </label>
           {(c.fxParticles && c.fxParticles !== 'none') && (
             <>
-              <div className="nb-color-grid" style={{ marginTop: 4 }}>
-                <ColorPicker label="Color" value={c.fxParticleColor || '#ffffff'} onChange={v => set('fxParticleColor', v)} />
-              </div>
               <SliderField label="Count" value={c.fxParticleCount ?? 25} onChange={v => set('fxParticleCount', v)} min={5} max={80} />
               <SliderField label="Speed" value={c.fxParticleSpeed ?? 50} onChange={v => set('fxParticleSpeed', v)} min={0} max={100} suffix="%" />
               <SliderField label="Size" value={c.fxParticleSize ?? 50} onChange={v => set('fxParticleSize', v)} min={10} max={100} suffix="%" />
@@ -363,12 +301,6 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
               <option value="heavy">🌑 Heavy</option>
             </select>
           </label>
-          {(c.fxFog && c.fxFog !== 'none') && (
-            <div className="nb-color-grid" style={{ marginTop: 4 }}>
-              <ColorPicker label="Fog Color" value={c.fxFogColor || '#000000'} onChange={v => set('fxFogColor', v)} />
-            </div>
-          )}
-
           {/* ── Light Glimpse ── */}
           <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Light Effects</h4>
           <label className="nb-field">
@@ -381,36 +313,8 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
             </select>
           </label>
           {(c.fxGlimpse && c.fxGlimpse !== 'none') && (
-            <>
-              <div className="nb-color-grid" style={{ marginTop: 4 }}>
-                <ColorPicker label="Light Color" value={c.fxGlimpseColor || '#ffffff'} onChange={v => set('fxGlimpseColor', v)} />
-              </div>
-              <SliderField label="Speed" value={c.fxGlimpseSpeed ?? 50} onChange={v => set('fxGlimpseSpeed', v)} min={0} max={100} suffix="%" />
-            </>
+            <SliderField label="Speed" value={c.fxGlimpseSpeed ?? 50} onChange={v => set('fxGlimpseSpeed', v)} min={0} max={100} suffix="%" />
           )}
-        </div>
-      )}
-
-      {/* ═══════ FILTERS TAB ═══════ */}
-      {activeTab === 'filters' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Image & Video Filters</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
-            Apply CSS filters. Works on textures, images and videos.
-          </p>
-
-          <SliderField label="Brightness" value={c.brightness ?? 100} onChange={v => set('brightness', v)} min={0} max={200} suffix="%" />
-          <SliderField label="Contrast" value={c.contrast ?? 100} onChange={v => set('contrast', v)} min={0} max={200} suffix="%" />
-          <SliderField label="Saturation" value={c.saturation ?? 100} onChange={v => set('saturation', v)} min={0} max={200} suffix="%" />
-          <SliderField label="Blur" value={c.blur ?? 0} onChange={v => set('blur', v)} min={0} max={20} suffix="px" />
-          <SliderField label="Hue Rotate" value={c.hueRotate ?? 0} onChange={v => set('hueRotate', v)} min={0} max={360} suffix="°" />
-          <SliderField label="Grayscale" value={c.grayscale ?? 0} onChange={v => set('grayscale', v)} min={0} max={100} suffix="%" />
-          <SliderField label="Sepia" value={c.sepia ?? 0} onChange={v => set('sepia', v)} min={0} max={100} suffix="%" />
-
-          <button className="nb-preset-load-btn" style={{ marginTop: 10 }}
-            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100, blur: 0, hueRotate: 0, grayscale: 0, sepia: 0 })}>
-            Reset All Filters
-          </button>
         </div>
       )}
 

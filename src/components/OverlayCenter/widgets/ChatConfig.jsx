@@ -1,55 +1,15 @@
 import React, { useState } from 'react';
-import ColorPicker from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { CHAT_STYLE_KEYS } from './styleKeysRegistry';
 import useTwitchChannel from '../../../hooks/useTwitchChannel';
 
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-  { value: "'JetBrains Mono', monospace", label: 'JetBrains Mono' },
-  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
-  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
-  { value: "'Arial', sans-serif", label: 'Arial' },
-  { value: "'Georgia', serif", label: 'Georgia' },
-];
-
-export default function ChatConfig({ config, onChange, allWidgets }) {
+export default function ChatConfig({ config, onChange }) {
   const c = config || {};
   const currentStyle = c.chatStyle || 'classic';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, CHAT_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('platforms');
   const autoChannel = useTwitchChannel();
-
-  // ─── Navbar sync ───
-  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
-
-  const syncFromNavbar = () => {
-    if (!navbarConfig) return;
-    const nb = navbarConfig;
-    setMulti({
-      bgColor: nb.bgColor || '#111318',
-      textColor: nb.textColor || '#f1f5f9',
-      headerBg: nb.bgColor || '#111318',
-      headerText: nb.mutedColor || '#94a3b8',
-      borderColor: nb.accentColor || '#f59e0b',
-      fontFamily: nb.fontFamily || "'Inter', sans-serif",
-      fontSize: nb.fontSize ?? 13,
-      /* Cards-specific colors synced from navbar */
-      cardBg: nb.bgColor ? nb.bgColor + 'e6' : 'rgba(20,15,40,0.9)',
-      cardBorder: nb.accentColor ? nb.accentColor + '33' : 'rgba(100,70,180,0.2)',
-      cardHoverBg: nb.bgColor ? nb.bgColor + 'f2' : 'rgba(30,22,55,0.95)',
-      cardHoverBorder: nb.accentColor ? nb.accentColor + '55' : 'rgba(120,80,200,0.3)',
-      cardTextColor: nb.textColor || '#e2e8f0',
-      headerBorder: nb.accentColor ? nb.accentColor + '26' : 'rgba(100,70,180,0.15)',
-      headerChannelColor: nb.mutedColor || '#d1d5db',
-    });
-  };
 
   // ─── Preset system ───
   const [presetName, setPresetName] = useState('');
@@ -83,9 +43,6 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
 
   const tabs = [
     { id: 'platforms', label: '📡 Platforms' },
-    { id: 'style', label: '🎨 Style' },
-    { id: 'layout', label: '📐 Layout' },
-    { id: 'filters', label: '✨ Filters' },
     { id: 'presets', label: '💾 Presets' },
   ];
 
@@ -181,111 +138,12 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
             <input type="checkbox" checked={c.nameBold !== false} onChange={e => set('nameBold', e.target.checked)} />
             <span>Bold Usernames</span>
           </label>
-        </div>
-      )}
-
-      {/* ═══════ STYLE TAB ═══════ */}
-      {activeTab === 'style' && (
-        <div className="nb-section">
-          {navbarConfig && (
-            <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ marginBottom: 12, width: '100%' }} onClick={syncFromNavbar}>
-              🔗 Sync Colors from Navbar
-            </button>
-          )}
-
-          <h4 className="nb-subtitle">Widget Colors</h4>
-          <div className="nb-color-grid">
-            <ColorPicker label="Background" value={c.bgColor || '#0f172a'} onChange={v => set('bgColor', v)} />
-            <ColorPicker label="Text Color" value={c.textColor || '#e2e8f0'} onChange={v => set('textColor', v)} />
-            <ColorPicker label="Border" value={c.borderColor || '#334155'} onChange={v => set('borderColor', v)} />
-          </div>
-
-          <h4 className="nb-subtitle">Header Colors</h4>
-          <div className="nb-color-grid">
-            <ColorPicker label="Header BG" value={c.headerBg || '#1e293b'} onChange={v => set('headerBg', v)} />
-            <ColorPicker label="Header Text" value={c.headerText || '#94a3b8'} onChange={v => set('headerText', v)} />
-          </div>
-
-          <h4 className="nb-subtitle">Raid Highlight</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
-            Customize how incoming raid events appear in chat.
-          </p>
-          <div className="nb-color-grid">
-            <ColorPicker label="Raid BG" value={c.raidBgColor || '#7c3aed'} onChange={v => set('raidBgColor', v)} />
-            <ColorPicker label="Raid Border" value={c.raidBorderColor || '#64748b'} onChange={v => set('raidBorderColor', v)} />
-            <ColorPicker label="Raid Text" value={c.raidTextColor || '#ffffff'} onChange={v => set('raidTextColor', v)} />
-          </div>
-          <label className="ov-chat-cfg-platform-header" style={{ gap: 8, marginTop: 6 }}>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
             <input type="checkbox" checked={c.showRaidAvatar !== false} onChange={e => set('showRaidAvatar', e.target.checked)} />
             <span>Show Raider's Avatar</span>
           </label>
-
-          <h4 className="nb-subtitle">Typography</h4>
-          <label className="nb-field">
-            <span>Font Family</span>
-            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-          </label>
-          <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={24} step={1} unit="px"
-            onChange={v => set('fontSize', v)} />
-
-          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
-          <textarea
-            className="oc-widget-css-input"
-            value={c.custom_css || ''}
-            onChange={e => set('custom_css', e.target.value)}
-            rows={4}
-            placeholder={`/* custom CSS for this widget */`}
-            spellCheck={false}
-          />
-        </div>
-      )}
-
-      {/* ═══════ LAYOUT TAB ═══════ */}
-      {activeTab === 'layout' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Dimensions</h4>
-          <SliderField label="Width" value={c.width ?? 350} min={150} max={800} step={10} unit="px"
-            onChange={v => set('width', v)} />
-          <SliderField label="Height" value={c.height ?? 500} min={150} max={1200} step={10} unit="px"
-            onChange={v => set('height', v)} />
-          <SliderField label="Border Radius" value={c.borderRadius ?? 12} min={0} max={50} step={1} unit="px"
-            onChange={v => set('borderRadius', v)} />
-          <SliderField label="Border Width" value={c.borderWidth ?? 1} min={0} max={8} step={1} unit="px"
-            onChange={v => set('borderWidth', v)} />
-
-          <h4 className="nb-subtitle">Messages</h4>
-          <SliderField label="Msg Spacing" value={c.msgSpacing ?? 2} min={0} max={16} step={1} unit="px"
-            onChange={v => set('msgSpacing', v)} />
-          <SliderField label="Msg Padding" value={c.msgPadH ?? 10} min={4} max={30} step={1} unit="px"
-            onChange={v => set('msgPadH', v)} />
-          <SliderField label="Line Height" value={c.msgLineHeight ?? 1.45} min={1} max={2.5} step={0.05} unit=""
-            onChange={v => set('msgLineHeight', v)} />
           <SliderField label="Max Messages" value={c.maxMessages ?? 50} min={5} max={200} step={5} unit=""
             onChange={v => set('maxMessages', v)} />
-        </div>
-      )}
-
-      {/* ═══════ FILTERS TAB ═══════ */}
-      {activeTab === 'filters' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Image Filters</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 12 }}>
-            Adjust the overall look of the chat widget on the OBS overlay.
-          </p>
-          <SliderField label="Brightness" value={c.brightness ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('brightness', v)} />
-          <SliderField label="Contrast" value={c.contrast ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('contrast', v)} />
-          <SliderField label="Saturation" value={c.saturation ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('saturation', v)} />
-
-          <button className="oc-btn oc-btn--sm" style={{ marginTop: 12 }}
-            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
-            Reset Filters
-          </button>
         </div>
       )}
 

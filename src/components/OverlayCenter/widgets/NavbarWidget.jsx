@@ -204,9 +204,9 @@ function NavbarWidget({ config, widgetId, userId }) {
   const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
   const borderColor = subValue(c, 'separator', 'borderColor', c.borderColor || accentColor);
   const fontFamily = subValue(c, 'displayName', 'fontFamily', c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
-  const brightness = c.brightness ?? 100;
-  const contrast = c.contrast ?? 100;
-  const saturation = c.saturation ?? 100;
+  const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
+  const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
+  const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
   const borderWidth = subValue(c, 'separator', 'borderWidth', c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3));
   const barHeight = c.barHeight ?? 64;
   const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999));

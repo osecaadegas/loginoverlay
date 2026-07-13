@@ -95,15 +95,15 @@ function ChatWidget({ config, theme }) {
   const headerText = subValue(c, 'header', 'textColor', isMetal ? '#a8b0c0' : isBH ? '#64748b' : (c.headerText || '#94a3b8'));
   const fontFamily = subValue(c, 'message', 'fontFamily', isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif"));
   const fontSize = subValue(c, 'message', 'fontSize', c.fontSize || 15);
-  const msgSpacing = c.msgSpacing ?? 2;
+  const msgSpacing = subValue(c, 'message', 'gap', c.msgSpacing ?? 2);
   const borderRadius = subValue(c, 'message', 'radius', c.borderRadius ?? (isMetal ? 10 : isBH ? 14 : 12));
   const borderWidth = subValue(c, 'message', 'borderWidth', c.borderWidth ?? 1);
   const borderColor = subValue(c, 'message', 'borderColor', isMetal ? 'rgba(200,210,225,0.18)' : isBH ? 'rgba(255,255,255,0.06)' : (c.borderColor || 'rgba(51,65,85,0.5)'));
   const width = c.width || 350;
   const height = c.height || 500;
   const nameBold = c.nameBold ?? true;
-  const msgLineHeight = c.msgLineHeight ?? 1.45;
-  const msgPadH = c.msgPadH ?? 10;
+  const msgLineHeight = subValue(c, 'message', 'lineHeight', c.msgLineHeight ?? 1.45);
+  const msgPadH = subValue(c, 'message', 'padding', c.msgPadH ?? 10);
   const messageBg = subValue(c, 'message', 'background', 'transparent');
   const usernameColor = subValue(c, 'username', 'textColor', headerText);
   const avatarBg = subValue(c, 'avatar', 'background', 'rgba(255,255,255,0.04)');
@@ -124,9 +124,9 @@ function ChatWidget({ config, theme }) {
     metal: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
     bh_stats: 'rgba(15, 23, 42, 0.9)',
   };
-  const bgColor = isMetal
+  const bgColor = subValue(c, 'container', 'background', isMetal
     ? 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)'
-    : (c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic);
+    : (c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic));
 
   /* Which features each style shows */
   const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal' || chatStyle === 'bh_stats') ? (c.showHeader !== false) : false;
@@ -169,9 +169,9 @@ function ChatWidget({ config, theme }) {
   if (c.youtubeEnabled) enabledPlatforms.push('youtube');
   if (c.kickEnabled) enabledPlatforms.push('kick');
 
-  const brightness = c.brightness ?? 100;
-  const contrast = c.contrast ?? 100;
-  const saturation = c.saturation ?? 100;
+  const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
+  const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
+  const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
   const filterStyle = (brightness !== 100 || contrast !== 100 || saturation !== 100)
     ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
     : undefined;

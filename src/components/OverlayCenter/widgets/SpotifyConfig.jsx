@@ -11,7 +11,6 @@ export default function SpotifyConfig({ config, onChange }) {
 
   const TABS = [
     { id: 'content', label: '🎵 Content' },
-    { id: 'style',   label: '🎨 Style' },
   ];
 
   const isConnected = !!c.spotify_access_token;
@@ -61,26 +60,6 @@ export default function SpotifyConfig({ config, onChange }) {
         </div>
       )}
 
-      {/* ─── Style Tab ─── */}
-      {activeTab === 'style' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Accent Color</h4>
-          <label className="nb-field" style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <input type="color" value={c.accentColor || '#1DB954'}
-              onChange={e => set('accentColor', e.target.value)}
-              style={{ width: 36, height: 28, border: 'none', background: 'none', cursor: 'pointer' }} />
-            <input value={c.accentColor || '#1DB954'}
-              onChange={e => set('accentColor', e.target.value)}
-              placeholder="#1DB954" style={{ flex: 1 }} />
-          </label>
-
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Custom CSS</h4>
-          <textarea className="oc-widget-css-input"
-            value={c.custom_css || ''}
-            onChange={e => set('custom_css', e.target.value)}
-            rows={4} placeholder={`/* custom CSS for this widget */`} spellCheck={false} />
-        </div>
-      )}
     </div>
   );
 }

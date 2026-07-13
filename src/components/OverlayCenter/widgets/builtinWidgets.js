@@ -4,6 +4,12 @@
  */
 import { registerWidget } from './widgetRegistry';
 
+const BASIC_WIDGET_APPEARANCE_TOKENS = [
+  'accentColor', 'bgColor', 'cardBg', 'textColor', 'mutedColor', 'borderColor',
+  'fontFamily', 'fontSize', 'fontWeight', 'borderRadius', 'borderWidth',
+  'shadowSize', 'shadowIntensity',
+];
+
 // ─── 2. BONUS HUNT ─────────────────────────────────────
 import BonusHuntWidget from './BonusHuntWidget';
 import BonusHuntConfig from './BonusHuntConfig';
@@ -52,6 +58,9 @@ registerWidget({
     { id: 'v4', icon: '📐', label: 'Compact Bar' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: BASIC_WIDGET_APPEARANCE_TOKENS,
+  },
   defaults: {
     slotName: '',
     provider: '',
@@ -85,6 +94,19 @@ registerWidget({
     { id: 'esports', icon: '🎮', label: 'Esports' },
   ],
   styleConfigKey: 'layout',
+  appearanceCapabilities: {
+    customTokens: [
+      ...BASIC_WIDGET_APPEARANCE_TOKENS,
+      'showBg', 'containerPadding', 'cardGap', 'cardBorder', 'cardRadius', 'cardBorderWidth',
+      'tabBg', 'tabActiveBg', 'tabColor', 'tabActiveColor', 'tabBorder',
+      'nameColor', 'multiColor', 'slotNameColor', 'nameSize', 'multiSize', 'slotNameSize', 'showSlotName',
+      'swordSize', 'swordColor', 'swordBg', 'xIconColor', 'xIconBg', 'eliminatedOpacity',
+      'arenaAccent', 'arenaWinColor', 'arenaCardBg', 'arenaLoseOpacity',
+      'esCyan', 'esPurple', 'esGold', 'esBg', 'esCardBg', 'esBorder',
+      'sbAccent', 'sbHeaderBg', 'sbCardBg', 'sbTextColor', 'sbPayColor', 'sbMultiColor',
+      'sbWinColor', 'sbLoseColor', 'sbTabBg', 'sbTabActive',
+    ],
+  },
   defaults: {
     title: '',
     prize: '',
@@ -121,6 +143,9 @@ registerWidget({
     { id: 'v12', icon: '💎', label: 'V12' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: BASIC_WIDGET_APPEARANCE_TOKENS,
+  },
   defaults: {
     title: '',
     prize: '',
@@ -153,6 +178,15 @@ registerWidget({
     { id: 'retro', icon: '📺', label: 'Retro' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: [
+      'accentColor', 'bgColor', 'textColor', 'mutedColor', 'ctaColor',
+      'cryptoUpColor', 'cryptoDownColor', 'fontFamily', 'fontSize',
+      'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
+      'avatarSize', 'badgeSize', 'casinoImageSize',
+      'brightness', 'contrast', 'saturation', 'shadowSize', 'shadowIntensity',
+    ],
+  },
   defaults: {
     streamerName: '',
     motto: '',
@@ -208,6 +242,16 @@ registerWidget({
     { id: 'bh_stats',   icon: '🎰', label: 'Hunt' },
   ],
   styleConfigKey: 'chatStyle',
+  appearanceCapabilities: {
+    customTokens: [
+      'bgColor', 'textColor', 'borderColor', 'headerBg', 'headerText',
+      'fontFamily', 'fontSize', 'msgLineHeight', 'msgPadH', 'width', 'height',
+      'borderRadius', 'borderWidth', 'msgSpacing', 'brightness', 'contrast', 'saturation',
+      'raidBgColor', 'raidBorderColor', 'raidTextColor',
+      'cardBg', 'cardBorder', 'cardHoverBg', 'cardHoverBorder', 'cardTextColor',
+      'headerBorder', 'headerChannelColor', 'shadowSize', 'shadowIntensity',
+    ],
+  },
   defaults: {
     chatStyle: 'classic',
     twitchEnabled: false,
@@ -370,6 +414,14 @@ registerWidget({
     { id: 'geometric', icon: '🔷', label: 'Geometric' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: [
+      'color1', 'color2', 'color3', 'gradientAngle', 'patternSize', 'animSpeed',
+      'imageFit', 'imagePosition', 'opacity', 'borderRadius',
+      'brightness', 'contrast', 'saturation', 'blur', 'hueRotate', 'grayscale', 'sepia',
+      'overlayColor', 'overlayOpacity', 'fxParticleColor', 'fxFogColor', 'fxGlimpseColor',
+    ],
+  },
   defaults: {
     bgMode: 'texture',
     textureType: 'gradient',
@@ -448,6 +500,9 @@ registerWidget({
     { id: 'compact_bar',  icon: '📻', label: 'Compact Bar' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: ['accentColor', 'bgColor', 'textColor', 'mutedColor', 'fontFamily', 'borderRadius'],
+  },
   defaults: {
     accentColor: '#1DB954',
     manualArtist: '',
@@ -473,6 +528,9 @@ registerWidget({
     { id: 'v3_compact', icon: '🎴', label: 'Compact Overlay' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: BASIC_WIDGET_APPEARANCE_TOKENS,
+  },
   defaults: {
     displayStyle: 'v1_minimal',
     maxDisplay: 20,
@@ -560,6 +618,9 @@ registerWidget({
     { id: 'v3_minimal', icon: '✦', label: 'Minimal' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: BASIC_WIDGET_APPEARANCE_TOKENS,
+  },
   defaults: {
     slotName: '',
     provider: '',
@@ -597,6 +658,13 @@ registerWidget({
     { id: 'v3_grid_2x3', icon: '▦', label: 'Grid 2x3' },
   ],
   styleConfigKey: 'displayStyle',
+  appearanceCapabilities: {
+    customTokens: [
+      ...BASIC_WIDGET_APPEARANCE_TOKENS,
+      'headerBg', 'headerText', 'barBg', 'barFill', 'progressColor', 'progressBgColor',
+      'buttonBg', 'buttonText', 'shadowSize', 'shadowIntensity',
+    ],
+  },
   defaults: {
     gameStatus:    'idle',
     question:      'Place Your Bets',

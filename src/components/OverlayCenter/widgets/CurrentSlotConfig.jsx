@@ -4,15 +4,6 @@ import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { CURRENT_SLOT_STYLE_KEYS } from './styleKeysRegistry';
 
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-];
-
 export default function CurrentSlotConfig({ config, onChange, allWidgets, mode }) {
   const c = config || {};
   const currentStyle = c.displayStyle || 'v1';
@@ -25,10 +16,9 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets, mode }
 
   const allTabs = [
     { id: 'content', label: '🎰 Slot' },
-    { id: 'style', label: '🎨 Style' },
   ];
   const SIDEBAR_TABS = new Set(['content']);
-  const WIDGET_TABS = new Set(['style']);
+  const WIDGET_TABS = new Set(['content']);
   const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
     : mode === 'widget' ? allTabs.filter(t => WIDGET_TABS.has(t.id))
     : allTabs;
@@ -54,14 +44,6 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets, mode }
   const selectSlot = (slot) => {
     setMulti({ slotName: slot.name, provider: slot.provider || '', imageUrl: slot.image || '', slotId: slot.id });
     setSearchTerm(''); setSearchResults([]);
-  };
-
-  const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
-  const syncFromNavbar = () => {
-    if (!nb) return;
-    setMulti({ bgColor: nb.bgColor || '#111318', accentColor: nb.accentColor || '#f59e0b',
-      textColor: nb.textColor || '#f1f5f9', mutedColor: nb.mutedColor || '#94a3b8',
-      fontFamily: nb.fontFamily || "'Inter', sans-serif" });
   };
 
   const styleLabels = {
@@ -235,64 +217,6 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets, mode }
         </div>
       )}
 
-      {activeTab === 'style' && (
-        <div className="nb-section cs-section">
-          <div className="cs-section-heading">
-            <div>
-              <span className="cs-section-eyebrow">Style Controls</span>
-              <h3 className="cs-section-title">Shape the current slot banner so it matches the rest of the overlay</h3>
-            </div>
-            <span className="cs-section-pill">{currentStyleLabel}</span>
-          </div>
-
-          <div className="cs-style-grid">
-            {nb && (
-              <div className="cs-card cs-card--sync">
-                <div className="cs-card-header">
-                  <h4 className="cs-card-title">Navbar sync</h4>
-                  <span className="cs-card-chip">Shared palette</span>
-                </div>
-                <p className="cs-card-copy">Import the navbar colors and typography to keep the current slot panel visually aligned with the rest of the overlay.</p>
-                <button type="button" className="cs-sync-btn" onClick={syncFromNavbar}>
-                  Sync Colors from Navbar
-                </button>
-              </div>
-            )}
-
-            <div className="cs-card cs-card--colors">
-              <div className="cs-card-header">
-                <h4 className="cs-card-title">Color palette</h4>
-                <span className="cs-card-chip">Live widget colors</span>
-              </div>
-              <div className="cs-color-grid">
-                <label className="cs-color-field"><span className="cs-field-label">Background</span><input className="cs-color-input" type="color" value={c.bgColor || '#13151e'} onChange={e => set('bgColor', e.target.value)} /></label>
-                <label className="cs-color-field"><span className="cs-field-label">Card BG</span><input className="cs-color-input" type="color" value={c.cardBg || '#1a1d2e'} onChange={e => set('cardBg', e.target.value)} /></label>
-                <label className="cs-color-field"><span className="cs-field-label">Accent</span><input className="cs-color-input" type="color" value={c.accentColor || '#f59e0b'} onChange={e => set('accentColor', e.target.value)} /></label>
-                <label className="cs-color-field"><span className="cs-field-label">Text</span><input className="cs-color-input" type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)} /></label>
-                <label className="cs-color-field"><span className="cs-field-label">Muted</span><input className="cs-color-input" type="color" value={c.mutedColor || '#94a3b8'} onChange={e => set('mutedColor', e.target.value)} /></label>
-                <label className="cs-color-field"><span className="cs-field-label">Border</span><input className="cs-color-input" type="color" value={c.borderColor || '#1e293b'} onChange={e => set('borderColor', e.target.value)} /></label>
-              </div>
-            </div>
-
-            <div className="cs-card cs-card--type">
-              <div className="cs-card-header">
-                <h4 className="cs-card-title">Typography & CSS</h4>
-                <span className="cs-card-chip">Advanced styling</span>
-              </div>
-              <label className="cs-field cs-field--full">
-                <span className="cs-field-label">Font</span>
-                <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-                  {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                </select>
-              </label>
-              <label className="cs-field cs-field--full">
-                <span className="cs-field-label">Custom CSS</span>
-                <textarea className="oc-widget-css-input cs-textarea" value={c.custom_css || ''} onChange={e => set('custom_css', e.target.value)} rows={4} placeholder="/* custom CSS */" spellCheck={false} />
-              </label>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

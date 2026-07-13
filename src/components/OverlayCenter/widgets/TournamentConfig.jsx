@@ -4,7 +4,6 @@ import { TOURNAMENT_STYLE_KEYS } from './styleKeysRegistry';
 import { getAllSlots, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import { useAuth } from '../../../context/AuthContext';
 import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
-import ColorPickerBase from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 import {
   TOURNAMENT_TYPES,
@@ -26,30 +25,6 @@ import {
   getChampion,
   seedPlayers,
 } from '../../TournamentsPage/bracketUtils';
-
-const ColorPicker = (props) => <ColorPickerBase {...props} showHex={false} className="nb-color-item" />;
-
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-  { value: "'Arial', sans-serif", label: 'Arial' },
-];
-
-/* ─── Helpers ─── */
-function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suffix = '' }) {
-  return (
-    <label className="nb-slider-field">
-      <span>{label}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(+e.target.value)} />
-        <span className="nb-slider-val">{value}{suffix}</span>
-      </div>
-    </label>
-  );
-}
 
 /* ─── Numeric input with controlled value ─── */
 function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = {}, onNext }) {
@@ -84,12 +59,12 @@ function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = 
   );
 }
 
-export default function TournamentConfig({ config, onChange, allWidgets, mode = 'full' }) {
+export default function TournamentConfig({ config, onChange, mode = 'full' }) {
   const { user } = useAuth();
   const c = config || {};
   const currentStyle = c.layout || 'grid';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, TOURNAMENT_STYLE_KEYS);
-  const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'bracket');
+  const [activeTab, setActiveTab] = useState('bracket');
 
   /* ─── Slot data (for search) ─── */
   const [slots, setSlots] = useState([]);
@@ -102,19 +77,6 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     if (!term || term.length < 1) return [];
     return sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(term.toLowerCase()))).slice(0, 5);
   }, [slots]);
-
-  /* ─── Navbar sync ─── */
-  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
-  const syncFromNavbar = () => {
-    if (!navbarConfig) return;
-    setMulti({
-      bgColor: navbarConfig.bgColor || '#13151e',
-      cardBg: navbarConfig.bgColor || '#1a1d2e',
-      cardBorder: navbarConfig.accentColor || 'rgba(255,255,255,0.08)',
-      nameColor: navbarConfig.textColor || '#ffffff',
-      fontFamily: navbarConfig.fontFamily || "'Inter', sans-serif",
-    });
-  };
 
   /* ─── Preset system ─── */
   const [presetName, setPresetName] = useState('');
@@ -650,11 +612,10 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
 
   const allTabs = [
     { id: 'bracket', label: '🏅 Bracket' },
-    { id: 'style',   label: '🎨 Style' },
     { id: 'presets', label: '💾 Presets' },
   ];
   const SIDEBAR_TABS = new Set(['bracket']);
-  const WIDGET_TABS  = new Set(['style', 'presets']);
+  const WIDGET_TABS  = new Set(['bracket', 'presets']);
   const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
              : mode === 'widget'  ? allTabs.filter(t => WIDGET_TABS.has(t.id))
              : allTabs;
@@ -1257,218 +1218,6 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               </div>{/* end bk-active-grid */}
             </div>
           )}
-        </div>
-      )}
-
-      {/* ═══════ STYLE TAB ═══════ */}
-      {activeTab === 'style' && (
-        <div className="nb-section">
-          <div className="tm-tab-intro">
-            <span className="tm-section-eyebrow">Visual System</span>
-            <h3 className="tm-section-title">Tune the broadcast presentation for every tournament layout</h3>
-            <p className="tm-tab-intro-copy">Adjust layout mode, cards, typography, highlight colors, and overlay polish without changing tournament mechanics.</p>
-          </div>
-
-          {/* Sync + Layout — always visible */}
-          {navbarConfig && (
-            <button className="nb-preset-load-btn" onClick={syncFromNavbar} style={{ marginBottom: 6, width: '100%' }}>
-              🔗 Sync Colors from Navbar
-            </button>
-          )}
-          <div className="oc-bg-mode-grid" style={{ marginBottom: 6 }}>
-            {[
-              { id: 'vertical', icon: '📋', label: 'Vertical' },
-              { id: 'minimal',  icon: '✨', label: 'Minimal' },
-              { id: 'arena',    icon: '⚔️', label: 'Arena' },
-              { id: 'esports', icon: '🎮', label: 'Esports' },
-              { id: 'scoreboard', icon: '🏆', label: 'Scoreboard' },
-            ].map(m => (
-              <button key={m.id}
-                className={`oc-bg-mode-btn ${(c.layout || 'esports') === m.id ? 'oc-bg-mode-btn--active' : ''}`}
-                onClick={() => set('layout', m.id)}>
-                <span style={{ fontSize: 16 }}>{m.icon}</span>
-                <span>{m.label}</span>
-              </button>
-            ))}
-          </div>
-          <p className="oc-config-hint" style={{ marginBottom: 4, fontSize: 10 }}>
-            {(c.layout || 'esports') === 'vertical'
-              ? 'All matches stacked vertically — compact horizontal rows.'
-              : (c.layout || 'esports') === 'minimal'
-              ? 'Clean minimal style — same vertical layout, subtle styling.'
-              : (c.layout || 'esports') === 'arena'
-              ? 'Battle Arena — VS cards with profit display, winner highlights.'
-              : (c.layout || 'esports') === 'scoreboard'
-              ? 'Bo3 Scoreboard — PAY & MULTI per round, slot images, phase tabs.'
-              : 'Cyberpunk 3D glass panels — bracket grid + dramatic current match.'}
-          </p>
-
-          {/* ── Container ── */}
-          <details className="bk-details">
-            <summary>Container</summary>
-            <div className="bk-details-body">
-              <label className="nb-field">
-                <span>Show Background</span>
-                <input type="checkbox" checked={c.showBg !== false} onChange={e => set('showBg', e.target.checked)} />
-              </label>
-              {c.showBg !== false && (
-                <>
-                  <div className="nb-color-grid">
-                    <ColorPicker label="Background" value={c.bgColor || '#13151e'} onChange={v => set('bgColor', v)} />
-                    <ColorPicker label="Border" value={c.borderColor || 'transparent'} onChange={v => set('borderColor', v)} />
-                  </div>
-                  <SliderField label="Border Radius" value={c.borderRadius ?? 12} onChange={v => set('borderRadius', v)} min={0} max={40} suffix="px" />
-                  <SliderField label="Border Width" value={c.borderWidth ?? 0} onChange={v => set('borderWidth', v)} min={0} max={6} suffix="px" />
-                </>
-              )}
-              <SliderField label="Padding" value={c.containerPadding ?? 6} onChange={v => set('containerPadding', v)} min={0} max={30} suffix="px" />
-              <SliderField label="Card Gap" value={c.cardGap ?? 6} onChange={v => set('cardGap', v)} min={0} max={24} suffix="px" />
-            </div>
-          </details>
-
-          {/* ── Arena-specific colors ── */}
-          {(c.layout || 'esports') === 'arena' && (
-            <details className="bk-details">
-              <summary>Arena Colors</summary>
-              <div className="bk-details-body">
-                <div className="nb-color-grid">
-                  <ColorPicker label="Accent" value={c.arenaAccent || '#eab308'} onChange={v => set('arenaAccent', v)} />
-                  <ColorPicker label="Winner" value={c.arenaWinColor || '#dbe2e8'} onChange={v => set('arenaWinColor', v)} />
-                  <ColorPicker label="Card BG" value={c.arenaCardBg || '#1e1550'} onChange={v => set('arenaCardBg', v)} />
-                </div>
-                <label className="nb-field" style={{ marginTop: 4 }}>
-                  <span>Currency Symbol</span>
-                  <input value={c.arenaCurrency || '€'} onChange={e => set('arenaCurrency', e.target.value)} style={{ width: 50 }} />
-                </label>
-                <SliderField label="Loser Opacity" value={Math.round((c.arenaLoseOpacity ?? 0.55) * 100)} onChange={v => set('arenaLoseOpacity', v / 100)} min={20} max={100} suffix="%" />
-              </div>
-            </details>
-          )}
-
-          {/* ── Futuristic-specific colors removed ── */}
-
-          {/* ── Esports-specific colors ── */}
-          {(c.layout || 'esports') === 'esports' && (
-            <details className="bk-details">
-              <summary>Esports Colors</summary>
-              <div className="bk-details-body">
-                <div className="nb-color-grid">
-                  <ColorPicker label="Cyan" value={c.esCyan || '#00e5ff'} onChange={v => set('esCyan', v)} />
-                  <ColorPicker label="Slate" value={c.esPurple || '#64748b'} onChange={v => set('esPurple', v)} />
-                  <ColorPicker label="Gold" value={c.esGold || '#fbbf24'} onChange={v => set('esGold', v)} />
-                  <ColorPicker label="Background" value={c.esBg || '#030712'} onChange={v => set('esBg', v)} />
-                  <ColorPicker label="Card BG" value={c.esCardBg || 'rgba(15,23,42,0.75)'} onChange={v => set('esCardBg', v)} />
-                  <ColorPicker label="Border" value={c.esBorder || 'rgba(0,229,255,0.18)'} onChange={v => set('esBorder', v)} />
-                </div>
-              </div>
-            </details>
-          )}
-
-          {/* ── Scoreboard-specific colors ── */}
-          {(c.layout || 'esports') === 'scoreboard' && (
-            <details className="bk-details" open>
-              <summary>Scoreboard Colors</summary>
-              <div className="bk-details-body">
-                <div className="nb-color-grid">
-                  <ColorPicker label="Accent" value={c.sbAccent || '#3b82f6'} onChange={v => set('sbAccent', v)} />
-                  <ColorPicker label="Header BG" value={c.sbHeaderBg || 'rgba(0,0,0,0.85)'} onChange={v => set('sbHeaderBg', v)} />
-                  <ColorPicker label="Card BG" value={c.sbCardBg || '#1a1d2e'} onChange={v => set('sbCardBg', v)} />
-                  <ColorPicker label="Text" value={c.sbTextColor || '#ffffff'} onChange={v => set('sbTextColor', v)} />
-                  <ColorPicker label="Pay Color" value={c.sbPayColor || '#e2e8f0'} onChange={v => set('sbPayColor', v)} />
-                  <ColorPicker label="Multi Color" value={c.sbMultiColor || '#facc15'} onChange={v => set('sbMultiColor', v)} />
-                  <ColorPicker label="Win" value={c.sbWinColor || '#dbe2e8'} onChange={v => set('sbWinColor', v)} />
-                  <ColorPicker label="Lose" value={c.sbLoseColor || '#ef4444'} onChange={v => set('sbLoseColor', v)} />
-                  <ColorPicker label="Tab BG" value={c.sbTabBg || 'rgba(0,0,0,0.6)'} onChange={v => set('sbTabBg', v)} />
-                  <ColorPicker label="Tab Active" value={c.sbTabActive || '#3b82f6'} onChange={v => set('sbTabActive', v)} />
-                </div>
-              </div>
-            </details>
-          )}
-
-          {/* ── Cards ── */}
-          <details className="bk-details">
-            <summary>Cards</summary>
-            <div className="bk-details-body">
-              <div className="nb-color-grid">
-                <ColorPicker label="Card BG" value={c.cardBg || '#1a1d2e'} onChange={v => set('cardBg', v)} />
-                <ColorPicker label="Card Border" value={c.cardBorder || 'rgba(255,255,255,0.08)'} onChange={v => set('cardBorder', v)} />
-              </div>
-              <SliderField label="Card Radius" value={c.cardRadius ?? 12} onChange={v => set('cardRadius', v)} min={0} max={30} suffix="px" />
-              <SliderField label="Card Border Width" value={c.cardBorderWidth ?? 1} onChange={v => set('cardBorderWidth', v)} min={0} max={6} suffix="px" />
-            </div>
-          </details>
-
-          {/* ── Tabs ── */}
-          <details className="bk-details">
-            <summary>Tabs</summary>
-            <div className="bk-details-body">
-              <div className="nb-color-grid">
-                <ColorPicker label="Tab BG" value={c.tabBg || 'rgba(255,255,255,0.05)'} onChange={v => set('tabBg', v)} />
-                <ColorPicker label="Active BG" value={c.tabActiveBg || 'rgba(147,70,255,0.2)'} onChange={v => set('tabActiveBg', v)} />
-                <ColorPicker label="Tab Text" value={c.tabColor || '#94a3b8'} onChange={v => set('tabColor', v)} />
-                <ColorPicker label="Active Text" value={c.tabActiveColor || '#ffffff'} onChange={v => set('tabActiveColor', v)} />
-                <ColorPicker label="Active Border" value={c.tabBorder || 'rgba(147,70,255,0.4)'} onChange={v => set('tabBorder', v)} />
-              </div>
-            </div>
-          </details>
-
-          {/* ── Text ── */}
-          <details className="bk-details" open>
-            <summary>Text &amp; Font</summary>
-            <div className="bk-details-body">
-              <div className="nb-color-grid">
-                <ColorPicker label="Player Name" value={c.nameColor || '#ffffff'} onChange={v => set('nameColor', v)} />
-                <ColorPicker label="Profit Color" value={c.multiColor || '#facc15'} onChange={v => set('multiColor', v)} />
-                <ColorPicker label="Slot Name" value={c.slotNameColor || '#ffffff'} onChange={v => set('slotNameColor', v)} />
-              </div>
-              <SliderField label="Name Size" value={c.nameSize ?? 13} onChange={v => set('nameSize', v)} min={8} max={24} suffix="px" />
-              <SliderField label="Result Size" value={c.multiSize ?? 14} onChange={v => set('multiSize', v)} min={8} max={24} suffix="px" />
-              <SliderField label="Slot Name Size" value={c.slotNameSize ?? 11} onChange={v => set('slotNameSize', v)} min={8} max={18} suffix="px" />
-              <label className="nb-field">
-                <span>Font</span>
-                <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-                  {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                </select>
-              </label>
-              <label className="nb-field">
-                <span>Show Slot Names</span>
-                <input type="checkbox" checked={c.showSlotName !== false} onChange={e => set('showSlotName', e.target.checked)} />
-              </label>
-            </div>
-          </details>
-
-          {/* ── Sword + Eliminated (combined) ── */}
-          <details className="bk-details">
-            <summary>Sword &amp; Eliminated</summary>
-            <div className="bk-details-body">
-              <SliderField label="Sword Size" value={c.swordSize ?? 22} onChange={v => set('swordSize', v)} min={14} max={40} step={1} suffix="px" />
-              <div className="nb-color-grid">
-                <ColorPicker label="Sword Color" value={c.swordColor || '#eab308'} onChange={v => set('swordColor', v)} />
-                <ColorPicker label="Sword BG" value={c.swordBg || 'rgba(0,0,0,0.85)'} onChange={v => set('swordBg', v)} />
-              </div>
-              <SliderField label="Eliminated Opacity" value={c.eliminatedOpacity ?? 0.35} onChange={v => set('eliminatedOpacity', v)} min={0.1} max={1} step={0.05} suffix="" />
-              <div className="nb-color-grid">
-                <ColorPicker label="X Icon Color" value={c.xIconColor || '#eab308'} onChange={v => set('xIconColor', v)} />
-                <ColorPicker label="X Icon BG" value={c.xIconBg || 'rgba(0,0,0,0.7)'} onChange={v => set('xIconBg', v)} />
-              </div>
-            </div>
-          </details>
-
-          {/* ── Custom CSS ── */}
-          <details className="bk-details">
-            <summary>Custom CSS</summary>
-            <div className="bk-details-body">
-              <p className="oc-config-hint" style={{ marginBottom: 4, fontSize: 10 }}>Override styles for this widget in OBS.</p>
-              <textarea
-                className="oc-widget-css-input"
-                value={c.custom_css || ''}
-                onChange={e => set('custom_css', e.target.value)}
-                rows={3}
-                placeholder={`/* custom CSS for this widget */`}
-                spellCheck={false}
-              />
-            </div>
-          </details>
         </div>
       )}
 

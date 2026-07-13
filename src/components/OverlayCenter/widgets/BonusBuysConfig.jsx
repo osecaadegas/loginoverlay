@@ -5,16 +5,7 @@ import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BONUS_BUYS_STYLE_KEYS } from './styleKeysRegistry';
 
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-];
-
-export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) {
+export default function BonusBuysConfig({ config, onChange, mode }) {
   const { user } = useAuth();
   const c = config || {};
   const currentStyle = c.displayStyle || 'v1';
@@ -29,11 +20,10 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
   const allTabs = [
     { id: 'slot', label: '🎰 Setup' },
     { id: 'bonuses', label: '🛒 Bonuses' },
-    { id: 'style', label: '🎨 Style' },
   ];
 
   const SIDEBAR_TABS = new Set(['slot', 'bonuses']);
-  const WIDGET_TABS = new Set(['style']);
+  const WIDGET_TABS = new Set(['slot', 'bonuses']);
   const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
     : mode === 'widget' ? allTabs.filter(t => WIDGET_TABS.has(t.id))
     : allTabs;
@@ -67,19 +57,6 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
     });
     setSearchTerm('');
     setSearchResults([]);
-  };
-
-  // Sync colors from navbar
-  const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
-  const syncFromNavbar = () => {
-    if (!nb) return;
-    setMulti({
-      bgColor: nb.bgColor || '#0a0e1a',
-      accentColor: nb.accentColor || '#3b82f6',
-      textColor: nb.textColor || '#ffffff',
-      mutedColor: nb.mutedColor || '#64748b',
-      fontFamily: nb.fontFamily || "'Inter', sans-serif",
-    });
   };
 
   const currency = c.currency || '$';
@@ -556,79 +533,6 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
         </div>
       )}
 
-      {/* ─── Style Tab ─── */}
-      {activeTab === 'style' && (
-        <div className="bb-admin-section">
-          <div className="bb-admin-section-heading">
-            <div>
-              <span className="bb-admin-section-eyebrow">Visual System</span>
-              <h3 className="bb-admin-section-title">Tune the overlay colors and typography for the Bonus Buys widget</h3>
-            </div>
-            <span className="bb-admin-section-pill">Style presets</span>
-          </div>
-
-          <div className="bb-admin-style-grid">
-          {nb && (
-              <div className="bb-admin-card bb-admin-card--sync">
-                <div className="bb-admin-card-header">
-                  <h4 className="bb-admin-card-title">Navbar Sync</h4>
-                  <span className="bb-admin-card-chip">One click</span>
-                </div>
-                <p className="bb-admin-insight-copy">Pull the shared palette and font settings from the Navbar widget to keep the whole overlay consistent.</p>
-                <button
-                  type="button"
-                  className="bb-admin-secondary-btn"
-                  onClick={syncFromNavbar}
-                >
-                  🔗 Sync Colors from Navbar
-                </button>
-              </div>
-          )}
-
-            <div className="bb-admin-card bb-admin-card--colors">
-              <div className="bb-admin-card-header">
-                <h4 className="bb-admin-card-title">Color palette</h4>
-                <span className="bb-admin-card-chip">Live preview ready</span>
-              </div>
-
-              <div className="bb-admin-color-grid">
-                <div className="bb-admin-color-field">
-                  <label className="bb-admin-field-label">Accent</label>
-              <input type="color" value={c.accentColor || '#3b82f6'} onChange={e => set('accentColor', e.target.value)}
-                    className="bb-admin-color-input" />
-            </div>
-                <div className="bb-admin-color-field">
-                  <label className="bb-admin-field-label">Background</label>
-              <input type="color" value={c.bgColor || '#0a0e1a'} onChange={e => set('bgColor', e.target.value)}
-                    className="bb-admin-color-input" />
-            </div>
-                <div className="bb-admin-color-field">
-                  <label className="bb-admin-field-label">Text</label>
-              <input type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)}
-                    className="bb-admin-color-input" />
-            </div>
-                <div className="bb-admin-color-field">
-                  <label className="bb-admin-field-label">Muted</label>
-              <input type="color" value={c.mutedColor || '#64748b'} onChange={e => set('mutedColor', e.target.value)}
-                    className="bb-admin-color-input" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bb-admin-card bb-admin-card--font">
-              <div className="bb-admin-card-header">
-                <h4 className="bb-admin-card-title">Typography</h4>
-                <span className="bb-admin-card-chip">Broadcast readable</span>
-              </div>
-              <label className="bb-admin-field-label">Font</label>
-              <select className="bb-admin-field-select" value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-              <div className="bb-admin-helper">Choose a typeface that stays readable in OBS at smaller widget widths.</div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

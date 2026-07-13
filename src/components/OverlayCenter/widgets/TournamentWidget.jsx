@@ -386,7 +386,7 @@ function TournamentWidget({ config, theme }) {
   const renderArena = () => {
     const arenaAccent = subValue(c, 'connector', 'accentColor', c.arenaAccent || swordColor);
     const arenaWinColor = subValue(c, 'participantCard', 'textColor', c.arenaWinColor || stateToken('participant-card', 'winner', 'text-color', widgetToken('positive')), 'winner');
-    const arenaLoseOpacity = c.arenaLoseOpacity ?? 0.55;
+    const arenaLoseOpacity = subValue(c, 'eliminatedState', 'opacity', c.arenaLoseOpacity ?? 0.55);
     const arenaCardBg = subValue(c, 'participantCard', 'background', c.arenaCardBg || cardBg);
 
     /* Helper: get raw round values for display (bet/cost + end/payout) */

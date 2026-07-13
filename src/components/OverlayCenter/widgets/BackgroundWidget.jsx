@@ -2,6 +2,12 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import './BackgroundWidget.css';
 import { subValue } from './shared/appearanceStyles';
 
+const toPercentOpacity = (value, fallback = 0) => {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return number <= 1 ? number * 100 : number;
+};
+
 /* ─── Texture CSS generators ─── */
 const TEXTURES = {
   none: () => ({}),
@@ -89,28 +95,34 @@ function BackgroundWidget({ config, theme }) {
   const videoUrl = c.videoUrl || '';
   const imageFit = c.imageFit || 'cover';
   const imagePosition = c.imagePosition || 'center';
-  const opacity = subValue(c, 'canvas', 'opacity', c.opacity ?? 100);
+  const opacity = toPercentOpacity(subValue(c, 'canvas', 'opacity', c.opacity ?? 100), 100);
   const borderRadius = subValue(c, 'canvas', 'radius', c.borderRadius ?? 0);
+  const textureConfig = {
+    ...c,
+    color1: subValue(c, 'gradient', 'background', c.color1 || '#0f172a'),
+    color2: subValue(c, 'gradient', 'accentColor', c.color2 || '#2a3139'),
+    color3: subValue(c, 'gradient', 'fillColor', c.color3 || '#0f172a'),
+  };
   const brightness = subValue(c, 'media', 'brightness', c.brightness ?? 100);
   const contrast = subValue(c, 'media', 'contrast', c.contrast ?? 100);
   const saturation = subValue(c, 'media', 'saturation', c.saturation ?? 100);
   const blur = subValue(c, 'media', 'blur', c.blur ?? 0);
-  const hueRotate = c.hueRotate ?? 0;
-  const grayscale = c.grayscale ?? 0;
-  const sepia = c.sepia ?? 0;
+  const hueRotate = subValue(c, 'media', 'hueRotate', c.hueRotate ?? 0);
+  const grayscale = subValue(c, 'media', 'grayscale', c.grayscale ?? 0);
+  const sepia = subValue(c, 'media', 'sepia', c.sepia ?? 0);
   const overlayColor = subValue(c, 'tint', 'background', c.overlayColor || '');
-  const overlayOpacity = subValue(c, 'tint', 'opacity', c.overlayOpacity ?? 0);
+  const overlayOpacity = toPercentOpacity(subValue(c, 'tint', 'opacity', c.overlayOpacity ?? 0));
 
   /* ─── Effects config ─── */
   const fxParticles = c.fxParticles || 'none';     // none | orbs | fireflies | bokeh | snow | rain
-  const fxParticleColor = c.fxParticleColor || '#ffffff';
+  const fxParticleColor = subValue(c, 'texture', 'accentColor', c.fxParticleColor || '#ffffff');
   const fxParticleCount = c.fxParticleCount ?? 25;
   const fxParticleSpeed = c.fxParticleSpeed ?? 50;
   const fxParticleSize = c.fxParticleSize ?? 50;
   const fxFog = c.fxFog || 'none';                 // none | light | medium | heavy
-  const fxFogColor = c.fxFogColor || '#000000';
+  const fxFogColor = subValue(c, 'vignette', 'background', c.fxFogColor || '#000000');
   const fxGlimpse = c.fxGlimpse || 'none';         // none | sweep | pulse | flicker
-  const fxGlimpseColor = c.fxGlimpseColor || '#ffffff';
+  const fxGlimpseColor = subValue(c, 'texture', 'fillColor', c.fxGlimpseColor || '#ffffff');
   const fxGlimpseSpeed = c.fxGlimpseSpeed ?? 50;
 
   /* ─── Build CSS filter ─── */
@@ -127,8 +139,8 @@ function BackgroundWidget({ config, theme }) {
   /* ─── Texture style ─── */
   const textureStyle = useMemo(() => {
     const gen = TEXTURES[textureType] || TEXTURES.gradient;
-    return gen(c);
-  }, [textureType, c.color1, c.color2, c.color3, c.gradientAngle, c.patternSize, c.animSpeed]);
+    return gen(textureConfig);
+  }, [textureType, textureConfig]);
 
   const rootStyle = {
     width: '100%',

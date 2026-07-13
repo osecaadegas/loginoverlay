@@ -7,17 +7,8 @@ import { makePerStyleSetters } from './shared/perStyleConfig';
 import { GIVEAWAY_STYLE_KEYS } from './styleKeysRegistry';
 import { MetricCard, SectionHeader, SetupChecklist, StatusBadge } from '../ui';
 
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-];
-
 /* ─── Giveaway Config Panel ─── */
-export default function GiveawayConfig({ config, onChange, allWidgets }) {
+export default function GiveawayConfig({ config, onChange }) {
   const c = config || {};
   const currentStyle = c.displayStyle || 'v1';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, GIVEAWAY_STYLE_KEYS);
@@ -30,20 +21,6 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
   onChangeRef.current = onChange;
   const configRef = useRef(c);
   configRef.current = c;
-
-  // Navbar sync
-  const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
-  const syncFromNavbar = () => {
-    if (!nb) return;
-    setMulti({
-      bgColor: nb.bgColor || '#111318',
-      accentColor: nb.accentColor || '#7c3aed',
-      textColor: nb.textColor || '#f1f5f9',
-      mutedColor: nb.mutedColor || '#94a3b8',
-      borderColor: nb.borderColor || nb.accentColor || '#7c3aed',
-      fontFamily: nb.fontFamily || "'Inter', sans-serif",
-    });
-  };
 
   const participants = c.participants || [];
   const participantsRef = useRef(new Set(participants));
@@ -159,7 +136,6 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
     { id: 'setup', label: '🎁 Setup' },
     { id: 'platforms', label: '📡 Chat' },
     { id: 'participants', label: `👥 Entries (${participants.length})` },
-    { id: 'style', label: '🎨 Style' },
   ];
 
   return (
@@ -377,56 +353,6 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
         </div>
       )}
 
-      {/* ═══════ STYLE TAB ═══════ */}
-      {activeTab === 'style' && (
-        <div className="nb-section">
-          {nb && (
-            <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ width: '100%', marginBottom: 12 }} onClick={syncFromNavbar}>
-              🔗 Sync Colors from Navbar
-            </button>
-          )}
-
-          <h4 className="nb-subtitle">Colors</h4>
-          <label className="nb-field">
-            <span>Background</span>
-            <input type="color" value={c.bgColor || '#13151e'} onChange={e => set('bgColor', e.target.value)} />
-          </label>
-          <label className="nb-field">
-            <span>Accent</span>
-            <input type="color" value={c.accentColor || '#9346ff'} onChange={e => set('accentColor', e.target.value)} />
-          </label>
-          <label className="nb-field">
-            <span>Text</span>
-            <input type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)} />
-          </label>
-          <label className="nb-field">
-            <span>Muted Text</span>
-            <input type="color" value={c.mutedColor || '#94a3b8'} onChange={e => set('mutedColor', e.target.value)} />
-          </label>
-          <label className="nb-field">
-            <span>Card / Border</span>
-            <input type="color" value={c.borderColor || '#1e293b'} onChange={e => set('borderColor', e.target.value)} />
-          </label>
-
-          <h4 className="nb-subtitle">Font</h4>
-          <label className="nb-field">
-            <span>Font Family</span>
-            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-          </label>
-
-          <h4 className="nb-subtitle">Custom CSS</h4>
-          <textarea
-            className="oc-widget-css-input"
-            value={c.custom_css || ''}
-            onChange={e => set('custom_css', e.target.value)}
-            rows={4}
-            placeholder={`/* custom CSS for this widget */`}
-            spellCheck={false}
-          />
-        </div>
-      )}
     </div>
   );
 }

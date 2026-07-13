@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { NAVBAR_STYLE_KEYS } from './styleKeysRegistry';
-import ColorPicker from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 
 const DEFAULT_SECTION_LAYOUT = [
@@ -26,17 +25,6 @@ const SECTION_LABELS = {
   balance: '💰 Balance',
   casino: '🎰 Casino',
 };
-
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
-  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
-];
 
 export default function NavbarConfig({ config, onChange }) {
   const c = config || {};
@@ -157,7 +145,6 @@ export default function NavbarConfig({ config, onChange }) {
   const tabs = [
     { id: 'setup', label: '⚡ Setup' },
     { id: 'layout', label: '📐 Layout' },
-    { id: 'colors', label: '🎨 Colors' },
     { id: 'presets', label: '💾 Presets' },
   ];
 
@@ -392,37 +379,9 @@ export default function NavbarConfig({ config, onChange }) {
         </div>
       )}
 
-      {/* ═══════ LAYOUT TAB — sizing & typography ═══════ */}
+      {/* ═══════ LAYOUT TAB — section arrangement ═══════ */}
       {activeTab === 'layout' && (
         <div className="nb-section">
-          <h4 className="nb-subtitle">Dimensions</h4>
-          <SliderField label="Bar Height" value={c.barHeight ?? 64} min={40} max={100} step={2} unit="px"
-            onChange={v => set('barHeight', v)} />
-          <SliderField label="Max Width" value={c.maxWidth ?? 1200} min={600} max={3840} step={10} unit="px"
-            onChange={v => set('maxWidth', v)} />
-          <SliderField label="Border Width" value={c.borderWidth ?? 3} min={0} max={8} step={1} unit="px"
-            onChange={v => set('borderWidth', v)} />
-          <SliderField label="Border Radius" value={c.borderRadius ?? 999} min={0} max={999} step={1} unit="px"
-            onChange={v => set('borderRadius', v)} />
-
-          <h4 className="nb-subtitle">Element Sizes</h4>
-          <SliderField label="Avatar Size" value={c.avatarSize ?? 100} min={50} max={200} step={5} unit="%"
-            onChange={v => set('avatarSize', v)} />
-          <SliderField label="Badge Size" value={c.badgeSize ?? 100} min={50} max={200} step={5} unit="%"
-            onChange={v => set('badgeSize', v)} />
-          <SliderField label="Casino Image Size" value={c.casinoImageSize ?? 100} min={30} max={300} step={5} unit="%"
-            onChange={v => set('casinoImageSize', v)} />
-
-          <h4 className="nb-subtitle">Typography</h4>
-          <label className="nb-field">
-            <span>Font</span>
-            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-          </label>
-          <SliderField label="Font Size" value={c.fontSize ?? 12} min={8} max={20} step={1} unit="px"
-            onChange={v => set('fontSize', v)} />
-
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Arrange Sections</h4>
           <p className="oc-config-hint" style={{ marginBottom: 8 }}>
             Drag sections between Left, Center and Right. Use arrows to reorder.
@@ -502,48 +461,6 @@ export default function NavbarConfig({ config, onChange }) {
         </div>
       )}
 
-      {/* ═══════ COLORS TAB — colors, filters, custom CSS ═══════ */}
-      {activeTab === 'colors' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Colors</h4>
-          <div className="nb-color-grid">
-            <ColorPicker label="Accent / Border" value={c.accentColor || '#f59e0b'} onChange={v => set('accentColor', v)} />
-            <ColorPicker label="Background" value={c.bgColor || '#111318'} onChange={v => set('bgColor', v)} />
-            <ColorPicker label="Text" value={c.textColor || '#f1f5f9'} onChange={v => set('textColor', v)} />
-            <ColorPicker label="Muted Text" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
-            <ColorPicker label="CTA Badge" value={c.ctaColor || '#f43f5e'} onChange={v => set('ctaColor', v)} />
-            <ColorPicker label="Crypto Up" value={c.cryptoUpColor || '#34d399'} onChange={v => set('cryptoUpColor', v)} />
-            <ColorPicker label="Crypto Down" value={c.cryptoDownColor || '#f87171'} onChange={v => set('cryptoDownColor', v)} />
-          </div>
-
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Filters</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
-            Adjust the overall look of the navbar in OBS.
-          </p>
-          <SliderField label="Brightness" value={c.brightness ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('brightness', v)} />
-          <SliderField label="Contrast" value={c.contrast ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('contrast', v)} />
-          <SliderField label="Saturation" value={c.saturation ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('saturation', v)} />
-          <button className="oc-btn oc-btn--sm" style={{ marginTop: 8 }}
-            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
-            Reset Filters
-          </button>
-
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Custom CSS</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
-          <textarea
-            className="oc-widget-css-input"
-            value={c.custom_css || ''}
-            onChange={e => set('custom_css', e.target.value)}
-            rows={4}
-            placeholder={`/* custom CSS for this widget */`}
-            spellCheck={false}
-          />
-        </div>
-      )}
-
       {/* ═══════ PRESETS TAB ═══════ */}
       {activeTab === 'presets' && (
         <div className="nb-section">
@@ -595,18 +512,6 @@ export default function NavbarConfig({ config, onChange }) {
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-/* ─── Reusable sub-components ─── */
-function SliderField({ label, value, min, max, step, unit, onChange }) {
-  return (
-    <div className="nb-slider-field">
-      <span className="nb-slider-label">{label}</span>
-      <input type="range" value={value} min={min} max={max} step={step}
-        onChange={e => onChange(parseFloat(e.target.value))} />
-      <span className="nb-slider-value">{value}{unit}</span>
     </div>
   );
 }

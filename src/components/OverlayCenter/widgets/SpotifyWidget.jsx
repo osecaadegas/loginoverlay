@@ -14,11 +14,11 @@ function spotifyAccent(c) {
 }
 
 function spotifyText(c, fallback = '#fff') {
-  return subValue(c, 'trackTitle', 'textColor', fallback);
+  return subValue(c, 'trackTitle', 'textColor', c.textColor || fallback);
 }
 
 function spotifyMuted(c, fallback = '#ffffffcc') {
-  return subValue(c, 'artistName', 'textColor', fallback);
+  return subValue(c, 'artistName', 'textColor', c.mutedColor || fallback);
 }
 
 function spotifyArtRadius(c, fallback = 12) {
@@ -121,7 +121,7 @@ function AlbumCard({ data, c }) {
   const titleColor = spotifyText(c);
   const artistColor = spotifyMuted(c);
   const artRadius = spotifyArtRadius(c);
-  const bgColor = subValue(c, 'container', 'background', '#0a0a0f');
+  const bgColor = subValue(c, 'container', 'background', c.bgColor || '#0a0a0f');
   return (
     <div className="oc-spotify oc-spotify--album-card" style={{
       width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
@@ -189,7 +189,7 @@ function MiniPlayer({ data, c }) {
   const titleColor = spotifyText(c);
   const artistColor = spotifyMuted(c, '#b3b3b3');
   const artRadius = spotifyArtRadius(c, 6);
-  const bgColor = subValue(c, 'container', 'background', 'linear-gradient(135deg, #181818, #121212)');
+  const bgColor = subValue(c, 'container', 'background', c.bgColor || 'linear-gradient(135deg, #181818, #121212)');
   return (
     <div className="oc-spotify oc-spotify--mini" style={{
       width: '100%', height: '100%', display: 'flex', alignItems: 'center',

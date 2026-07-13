@@ -16,17 +16,6 @@ import { makePerStyleSetters } from './shared/perStyleConfig';
 import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { SLOT_REQUESTS_STYLE_KEYS } from './styleKeysRegistry';
 
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
-  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
-];
-
 /* ── Reusable inline styles ── */
 const S = {
   section: { display: 'flex', flexDirection: 'column', gap: 10 },
@@ -57,49 +46,6 @@ const S = {
     border: '1px solid rgba(255,255,255,0.06)',
   },
 };
-
-function ColorPicker({ label, value, onChange }) {
-  return (
-    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', color: '#e2e8f0' }}>
-      <input type="color" value={value} onChange={e => onChange(e.target.value)}
-        style={{ width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
-      {label}
-    </label>
-  );
-}
-
-/** Parse an rgba(...) or hex string into { hex, opacity }. */
-function splitRgba(val) {
-  const rgba = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(val || '');
-  if (rgba) {
-    const toHex = n => parseInt(n, 10).toString(16).padStart(2, '0');
-    return { hex: `#${toHex(rgba[1])}${toHex(rgba[2])}${toHex(rgba[3])}`, opacity: rgba[4] !== undefined ? parseFloat(rgba[4]) : 1 };
-  }
-  return { hex: val || '#000000', opacity: 1 };
-}
-function buildRgba(hex, opacity) {
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '#000000');
-  if (!m) return hex;
-  const [r, g, b] = [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
-  return opacity < 1 ? `rgba(${r},${g},${b},${opacity})` : `#${m[1]}${m[2]}${m[3]}`;
-}
-
-/** Color picker that supports both solid hex and rgba (shows hex input + opacity slider). */
-function RgbaColorPicker({ label, value, onChange }) {
-  const { hex, opacity } = splitRgba(value);
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', color: '#e2e8f0', flexWrap: 'wrap' }}>
-      <input type="color" value={hex}
-        onChange={e => onChange(buildRgba(e.target.value, opacity))}
-        style={{ width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
-      <span style={{ minWidth: 50 }}>{label}</span>
-      <input type="range" min={0} max={1} step={0.05} value={opacity}
-        onChange={e => onChange(buildRgba(hex, parseFloat(e.target.value)))}
-        style={{ width: 50, accentColor: '#94a3b8' }} />
-      <span style={{ fontSize: '0.65rem', color: '#64748b', minWidth: 28 }}>{Math.round(opacity * 100)}%</span>
-    </div>
-  );
-}
 
 export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) {
   const { user } = useAuth();
@@ -610,104 +556,6 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
         )}
       </div>
 
-      {/* Typography */}
-      <div className="sr-admin-card sr-admin-card--theme">
-        {isSidebar ? (
-          <details className="sr-admin-disclosure">
-            <summary className="sr-admin-disclosure-summary">
-              <div className="sr-admin-disclosure-copy">
-                <span className="sr-admin-card-eyebrow">Visual System</span>
-                <h4 className="sr-admin-card-title">Typography & colours</h4>
-                <p className="sr-admin-copy">Optional. Open this when you want to fine-tune the overlay look.</p>
-              </div>
-              <span className="sr-admin-card-chip">Advanced</span>
-            </summary>
-            <div className="sr-admin-disclosure-body">
-              <label className={inlineFieldClass}>
-                <span className="sr-admin-inline-label">Font</span>
-                <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}
-                  style={{ flex: 1, ...S.input }}>
-                  {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                </select>
-              </label>
-              <label className={inlineFieldClass}>
-                <span className="sr-admin-inline-label">Size</span>
-                <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
-                  onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#94a3b8' }} />
-                <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{c.fontSize || 14}px</span>
-              </label>
-              <label className={inlineFieldClass}>
-                <span className="sr-admin-inline-label">Weight</span>
-                <select value={c.fontWeight || '600'} onChange={e => set('fontWeight', e.target.value)}
-                  style={{ flex: 1, ...S.input }}>
-                  <option value="400">Normal</option>
-                  <option value="600">Semi Bold</option>
-                  <option value="700">Bold</option>
-                  <option value="800">Extra Bold</option>
-                </select>
-              </label>
-
-              <div className="sr-admin-color-block">
-                <p className="sr-admin-subheading">Colors</p>
-                <div className="sr-admin-color-list">
-                  <ColorPicker label="Accent" value={c.accentColor || '#94a3b8'} onChange={v => set('accentColor', v)} />
-                  <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
-                  <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
-                  <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />
-                  <RgbaColorPicker label="Card BG" value={c.cardBg || 'rgba(255,255,255,0.04)'} onChange={v => set('cardBg', v)} />
-                  <RgbaColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.07)'} onChange={v => set('borderColor', v)} />
-                </div>
-              </div>
-            </div>
-          </details>
-        ) : (
-          <>
-            <div className="sr-admin-card-header">
-              <div>
-                <span className="sr-admin-card-eyebrow">Visual System</span>
-                <h4 className="sr-admin-card-title">Typography & colours</h4>
-              </div>
-              <span className="sr-admin-card-chip">Overlay styling</span>
-            </div>
-
-            <label className={inlineFieldClass}>
-              <span className="sr-admin-inline-label">Font</span>
-              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}
-                style={{ flex: 1, ...S.input }}>
-                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
-            </label>
-            <label className={inlineFieldClass}>
-              <span className="sr-admin-inline-label">Size</span>
-              <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
-                onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#94a3b8' }} />
-              <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{c.fontSize || 14}px</span>
-            </label>
-            <label className={inlineFieldClass}>
-              <span className="sr-admin-inline-label">Weight</span>
-              <select value={c.fontWeight || '600'} onChange={e => set('fontWeight', e.target.value)}
-                style={{ flex: 1, ...S.input }}>
-                <option value="400">Normal</option>
-                <option value="600">Semi Bold</option>
-                <option value="700">Bold</option>
-                <option value="800">Extra Bold</option>
-              </select>
-            </label>
-
-            <div className="sr-admin-color-block">
-              <p className="sr-admin-subheading">Colors</p>
-              <div className="sr-admin-color-list">
-                <ColorPicker label="Accent" value={c.accentColor || '#94a3b8'} onChange={v => set('accentColor', v)} />
-                <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
-                <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
-                <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />
-                <RgbaColorPicker label="Card BG" value={c.cardBg || 'rgba(255,255,255,0.04)'} onChange={v => set('cardBg', v)} />
-                <RgbaColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.07)'} onChange={v => set('borderColor', v)} />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
       </div>
       </div>
 
