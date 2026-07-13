@@ -1844,6 +1844,66 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
     setTimeout(() => setMessage(''), 3000);
   };
 
+  // Download a hunt from history as JSON
+  const handleDownloadJSON = (record) => {
+    const savedBonuses = record.bonuses || [];
+    const opened = savedBonuses.filter(b => b.opened);
+    const totalBet = savedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const totalBetOpened = opened.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const startMoney = Number(record.start_money) || 0;
+    const profit = totalWin - startMoney;
+    const avgMultiPerSlot = opened.length > 0
+      ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
+      : 0;
+    const overallMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
+    const breakEvenMulti = totalBet > 0 ? startMoney / totalBet : 0;
+    let bestMulti = 0;
+    let bestSlotName = '';
+    let worstMulti = opened.length > 0 ? Infinity : 0;
+    let worstSlotName = '';
+
+    opened.forEach(b => {
+      const multi = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
+      if (multi > bestMulti) { bestMulti = multi; bestSlotName = b.slotName || b.slot?.name || ''; }
+      if (multi < worstMulti) { worstMulti = multi; worstSlotName = b.slotName || b.slot?.name || ''; }
+    });
+    if (opened.length === 0) worstMulti = 0;
+
+    const round2 = value => Math.round(value * 100) / 100;
+    const data = {
+      hunt_name: record.hunt_name,
+      currency: record.currency || currency,
+      created_at: record.created_at,
+      start_money: startMoney,
+      stop_loss: Number(record.stop_loss) || 0,
+      bonus_count: savedBonuses.length,
+      bonuses_opened: opened.length,
+      total_bet: round2(totalBet),
+      total_win: round2(totalWin),
+      profit: round2(profit),
+      roi_percent: round2(startMoney > 0 ? (profit / startMoney) * 100 : 0),
+      avg_multi: round2(avgMultiPerSlot),
+      overall_multi: round2(overallMulti),
+      break_even_multi: round2(breakEvenMulti),
+      best_multi: round2(bestMulti),
+      best_slot_name: bestSlotName,
+      worst_multi: round2(worstMulti),
+      worst_slot_name: worstSlotName,
+      bonuses: savedBonuses,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const savedDate = record.created_at ? new Date(record.created_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `${(record.hunt_name || 'hunt').replace(/[^a-z0-9]/gi, '_')}_${savedDate}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // Delete from history
   const handleDelete = async (id) => {
     try {
@@ -2012,6 +2072,9 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
                     <div className="bh-history-actions">
                       <button className="oc-btn oc-btn--sm oc-btn--primary" onClick={() => handleLoad(h)}>
                         📥 Load to Overlay
+                      </button>
+                      <button className="oc-btn oc-btn--sm" onClick={() => handleDownloadJSON(h)} title="Download hunt data as JSON">
+                        💾 Download JSON
                       </button>
                       {confirmDelete === h.id ? (
                         <div className="bh-history-confirm-row">
