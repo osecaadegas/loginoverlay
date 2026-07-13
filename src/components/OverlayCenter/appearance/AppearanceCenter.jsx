@@ -129,11 +129,8 @@ const PREVIEW_SIZES = [
 ];
 
 const PREVIEW_MODES = [
-  { id: 'focus-widget', label: 'Focus selected widget' },
   { id: 'full-overlay', label: 'Full overlay' },
-  { id: 'actual-scale', label: 'Actual scale' },
   { id: 'fit-widget', label: 'Fit widget' },
-  { id: 'fit-canvas', label: 'Fit canvas' },
 ];
 
 const PREVIEW_BACKGROUNDS = [
@@ -756,7 +753,7 @@ export default function AppearanceCenter({
   const [compare, setCompare] = useState(false);
   const [previewSize, setPreviewSize] = useState('1080p');
   const [previewZoom, setPreviewZoom] = useState('fit');
-  const [previewMode, setPreviewMode] = useState('focus-widget');
+  const [previewMode, setPreviewMode] = useState('fit-widget');
   const [previewBackground, setPreviewBackground] = useState('dark');
   const [previewSelectMode, setPreviewSelectMode] = useState(false);
   const [themePreview, setThemePreview] = useState(null);
