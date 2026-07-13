@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   BadgeEuro,
-  ChevronDown,
+  BarChart3,
   Crown,
+  Grid3X3,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -41,31 +42,42 @@ function TopNavLink({ to, icon: Icon, children, onClick }) {
 
 export default function TopNavigation() {
   const { user, signOut } = useAuth();
-  const { isAdmin, isModerator, isSlotModder, isPremium } = useAdmin();
+  const { isAdmin, isSlotModder } = useAdmin();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const accountRef = useRef(null);
 
   const isPlayerExperience = location.pathname.startsWith('/player');
-  const accountLabel = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account';
   const primaryLinks = [
     { to: '/player/bonus-hunt', label: 'Bonus Hunt', icon: LayoutDashboard },
     { to: '/offers', label: 'Deals', icon: BadgeEuro },
     { to: '/overlay-center', label: 'Overlays', icon: LayoutDashboard },
     { to: '/premium', label: 'Premium', icon: Crown },
   ];
+  const moreItems = [
+    { to: '/player/bonus-hunt', label: 'Bonus Hunt', desc: 'Player hunt tracker', icon: LayoutDashboard, tone: 'blue' },
+    { to: '/offers', label: 'Deals', desc: 'Casino offers and partners', icon: BadgeEuro, tone: 'green' },
+    { to: '/overlay-center', label: 'Overlay Center', desc: 'OBS widgets and tools', icon: Grid3X3, tone: 'cyan' },
+    { to: '/premium', label: 'Premium', desc: 'Plans and access', icon: Crown, tone: 'gold' },
+    ...(user ? [{ to: '/profile', label: 'Profile', desc: 'Account settings', icon: UserRound, tone: 'violet' }] : []),
+    ...(isAdmin ? [
+      { to: '/admin', label: 'Admin Panel', desc: 'Platform management', icon: Shield, tone: 'red' },
+      { to: '/analytics', label: 'Analytics', desc: 'Platform statistics', icon: BarChart3, tone: 'blue' },
+    ] : []),
+    ...(isSlotModder ? [{ to: '/webmod/slot-manager', label: 'Slot Manager', desc: 'Slot database tools', icon: Shield, tone: 'green' }] : []),
+  ];
 
   useEffect(() => {
     setMobileOpen(false);
-    setAccountOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
     const handlePointerDown = (event) => {
       if (accountRef.current && !accountRef.current.contains(event.target)) {
-        setAccountOpen(false);
+        setMoreOpen(false);
       }
     };
 
@@ -82,6 +94,11 @@ export default function TopNavigation() {
     navigate('/');
   };
 
+  const closeMenus = () => {
+    setMoreOpen(false);
+    setMobileOpen(false);
+  };
+
   const renderPrimaryLinks = () => (
     <>
       {primaryLinks.map((link) => (
@@ -92,47 +109,33 @@ export default function TopNavigation() {
     </>
   );
 
-  const renderAccountMenu = () => (
-    <div className="topnav-account-menu" role="menu">
-      {user ? (
-        <>
-          <Link to="/profile" role="menuitem">
-            <UserRound size={16} /> Profile
-          </Link>
-          {isPlayerExperience && (
-            <Link to="/player/subscription" role="menuitem">
-              <Crown size={16} /> Player access
+  const renderMoreMenu = () => (
+    <div className="topnav-more-menu" role="menu" aria-label="More sections">
+      <div className="topnav-more-grid">
+        {moreItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link key={item.to} to={item.to} role="menuitem" className={`topnav-more-tile topnav-more-tile--${item.tone}`} onClick={closeMenus}>
+              <Icon size={24} />
+              <strong>{item.label}</strong>
+              <span>{item.desc}</span>
             </Link>
-          )}
-          {!isPlayerExperience && (
-            <Link to="/premium" role="menuitem">
-              <Crown size={16} /> Subscription
-            </Link>
-          )}
-          {isAdmin && (
-            <Link to="/admin" role="menuitem">
-              <Shield size={16} /> Admin Panel
-            </Link>
-          )}
-          {isAdmin && (
-            <Link to="/analytics" role="menuitem">
-              <Shield size={16} /> Analytics
-            </Link>
-          )}
-          {isSlotModder && (
-            <Link to="/webmod/slot-manager" role="menuitem">
-              <Shield size={16} /> Slot Manager
-            </Link>
-          )}
-          <button type="button" role="menuitem" onClick={logout} className="topnav-account-menu__danger">
-            <LogOut size={16} /> Logout
+          );
+        })}
+        {user ? (
+          <button type="button" role="menuitem" onClick={logout} className="topnav-more-tile topnav-more-tile--danger">
+            <LogOut size={24} />
+            <strong>Logout</strong>
+            <span>End this session</span>
           </button>
-        </>
-      ) : (
-        <button type="button" role="menuitem" onClick={login}>
-          <LogIn size={16} /> Login
-        </button>
-      )}
+        ) : (
+          <button type="button" role="menuitem" onClick={login} className="topnav-more-tile topnav-more-tile--violet">
+            <LogIn size={24} />
+            <strong>Login</strong>
+            <span>Access your tools</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 
@@ -145,26 +148,18 @@ export default function TopNavigation() {
       </nav>
 
       <div className="topnav-actions" ref={accountRef}>
-        {user ? (
-          <button
-            type="button"
-            className="topnav-account"
-            aria-haspopup="menu"
-            aria-expanded={accountOpen}
-            onClick={() => setAccountOpen((open) => !open)}
-          >
-            <UserRound size={17} />
-            <span>{accountLabel}</span>
-            <ChevronDown size={15} />
-          </button>
-        ) : (
-          <button type="button" className="topnav-account" onClick={login}>
-            <LogIn size={17} />
-            <span>Login</span>
-          </button>
-        )}
+        <button
+          type="button"
+          className="topnav-account"
+          aria-haspopup="menu"
+          aria-expanded={moreOpen}
+          onClick={() => setMoreOpen((open) => !open)}
+        >
+          <Grid3X3 size={17} />
+          <span>More</span>
+        </button>
 
-        {accountOpen && renderAccountMenu()}
+        {moreOpen && renderMoreMenu()}
 
         <button
           type="button"
@@ -180,7 +175,7 @@ export default function TopNavigation() {
       {mobileOpen && (
         <div className="topnav-mobile-panel">
           <nav aria-label="Mobile navigation">{renderPrimaryLinks()}</nav>
-          <div className="topnav-mobile-account">{renderAccountMenu()}</div>
+          <div className="topnav-mobile-account">{renderMoreMenu()}</div>
         </div>
       )}
     </header>

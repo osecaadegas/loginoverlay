@@ -8058,6 +8058,10 @@ body.wm-resizing {
   height: 28px;
   justify-content: center;
   text-shadow: none;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 .rtp-stats-provider-logo {
@@ -8065,6 +8069,7 @@ body.wm-resizing {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  background: transparent;
 }
 
 .rtp-stats-divider {

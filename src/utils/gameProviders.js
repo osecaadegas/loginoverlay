@@ -120,11 +120,18 @@ const providerLogoBySlug = PROVIDER_LOGO_FILES.reduce((acc, file) => {
 const findProviderLogoFile = (value) => {
   const slug = normalizeProviderSlug(value);
   if (!slug) return null;
+  const stripped = stripProviderSuffixes(slug);
+  const compact = slug.replace(/_/g, '');
+  const strippedCompact = stripped.replace(/_/g, '');
   const candidates = [
     slug,
     PROVIDER_ALIASES[slug],
-    stripProviderSuffixes(slug),
-    PROVIDER_ALIASES[stripProviderSuffixes(slug)],
+    compact,
+    PROVIDER_ALIASES[compact],
+    stripped,
+    PROVIDER_ALIASES[stripped],
+    strippedCompact,
+    PROVIDER_ALIASES[strippedCompact],
   ].filter(Boolean);
   const match = candidates.find(candidate => providerLogoBySlug[candidate]);
   return match ? providerLogoBySlug[match] : null;
@@ -136,9 +143,13 @@ const logoUrl = (file) => file ? `${PROVIDER_LOGO_BASE}${file}` : null;
 export const getProvider = (idOrSlug) => {
   if (!idOrSlug) return null;
   const lower = idOrSlug.toLowerCase();
+  const normalizedInput = normalizeProviderSlug(idOrSlug);
   // exact match on id, slug, or name
   const exact = GAME_PROVIDERS.find(p =>
-    p.id === idOrSlug || p.slug === idOrSlug || p.name.toLowerCase() === lower
+    p.id === idOrSlug || p.slug === idOrSlug || p.name.toLowerCase() === lower ||
+    normalizeProviderSlug(p.id) === normalizedInput ||
+    normalizeProviderSlug(p.slug) === normalizedInput ||
+    normalizeProviderSlug(p.name) === normalizedInput
   );
   if (exact) return exact;
   // try after stripping suffix (e.g. "Red Tiger Gaming" → "Red Tiger")
