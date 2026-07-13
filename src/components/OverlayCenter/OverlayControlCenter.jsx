@@ -435,10 +435,10 @@ function OverlayTopNavigation({ active, setupComplete, isAdmin, onRestartSetup, 
             Finish setup
           </Link>
         )}
-        <button type="button" className="oc2-btn" onClick={onOpenPreview}>
-          <ExternalLink size={16} />
-          Open preview
-        </button>
+        <Link to="/apps" className="oc2-btn">
+          <Grid3X3 size={16} />
+          Apps
+        </Link>
         <details className="oc2-menu">
           <summary className="oc2-btn">
             <Settings size={16} />
