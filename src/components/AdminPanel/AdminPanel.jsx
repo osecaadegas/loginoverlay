@@ -485,6 +485,31 @@ export default function AdminPanel() {
     }
   };
 
+  const toggleOfferActive = async (offerId, currentStatus) => {
+    setError('');
+    setSuccess('');
+    const nextStatus = !currentStatus;
+
+    setOffers(prev => prev.map(offer => (
+      offer.id === offerId ? { ...offer, is_active: nextStatus } : offer
+    )));
+
+    try {
+      const { error } = await supabase
+        .from('casino_offers')
+        .update({ is_active: nextStatus })
+        .eq('id', offerId);
+
+      if (error) throw error;
+      setSuccess(`Offer ${nextStatus ? 'activated' : 'deactivated'} successfully!`);
+    } catch (err) {
+      setOffers(prev => prev.map(offer => (
+        offer.id === offerId ? { ...offer, is_active: currentStatus } : offer
+      )));
+      setError('Failed to update offer status: ' + err.message);
+    }
+  };
+
   // === DAILY WHEEL MANAGEMENT ===
 
   const loadWheelPrizes = async () => {
