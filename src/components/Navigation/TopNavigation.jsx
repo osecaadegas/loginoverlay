@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Grid3X3 } from 'lucide-react';
 import './TopNavigation.css';
 
@@ -13,9 +13,30 @@ function Brand() {
 }
 
 export default function TopNavigation() {
+  const location = useLocation();
+  const activeAudience = location.pathname.startsWith('/player') ? 'player' : 'streamer';
+
   return (
     <header className="topnav-shell">
-      <Brand />
+      <div className="topnav-brand-zone">
+        <Brand />
+        <div className="topnav-audience-switch" aria-label="Switch experience">
+          <NavLink
+            to="/player/bonus-hunt"
+            className={`topnav-audience-switch__option${activeAudience === 'player' ? ' topnav-audience-switch__option--active' : ''}`}
+            aria-current={activeAudience === 'player' ? 'page' : undefined}
+          >
+            Player
+          </NavLink>
+          <NavLink
+            to="/overlay-center"
+            className={`topnav-audience-switch__option${activeAudience === 'streamer' ? ' topnav-audience-switch__option--active' : ''}`}
+            aria-current={activeAudience === 'streamer' ? 'page' : undefined}
+          >
+            Streamer
+          </NavLink>
+        </div>
+      </div>
 
       <div className="topnav-actions">
         <NavLink
