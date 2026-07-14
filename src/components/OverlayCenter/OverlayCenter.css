@@ -24611,3 +24611,267 @@ body.wm-resizing {
   }
 }
 
+/* Bonus Hunt detail polish: keep setup controls compact and out of the body sidebar. */
+.oc2-widget-status-summary {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(52, 65, 87, 0.9);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.8), rgba(7, 11, 18, 0.9)),
+    rgba(8, 13, 21, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.oc2-widget-status-summary h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 0.82rem;
+}
+
+.oc2-widget-status-summary p {
+  margin: 2px 0 0;
+  color: #aebcd0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.oc2-widget-status-summary__main {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.oc2-widget-status-summary__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.oc2-widget-status-summary__meta div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(72, 89, 118, 0.56);
+  border-radius: 10px;
+  background: rgba(3, 7, 14, 0.38);
+}
+
+.oc2-widget-status-summary__meta dt {
+  color: #8da0b6;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.oc2-widget-status-summary__meta dd {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 0.84rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oc2-detail-header-tools {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.oc2-header-currency-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(52, 65, 87, 0.9);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.78), rgba(7, 11, 18, 0.9)),
+    rgba(8, 13, 21, 0.82);
+}
+
+.oc2-header-currency-field span {
+  color: #8da0b6;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.oc2-header-currency-field select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid rgba(72, 89, 118, 0.72);
+  border-radius: 10px;
+  background: rgba(3, 7, 14, 0.68);
+  color: #f8fafc;
+  font-weight: 850;
+}
+
+.oc2-header-currency-field select:focus-visible {
+  border-color: rgba(125, 211, 252, 0.62);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.14);
+  outline: none;
+}
+
+.oc2-detail--bonus-hunt .oc2-detail-header {
+  grid-template-columns: minmax(0, 1fr) auto minmax(380px, 560px) !important;
+  align-items: end !important;
+}
+
+.oc2-detail--bonus-hunt .oc2-detail-header-copy {
+  min-width: 0;
+}
+
+.oc2-detail--bonus-hunt .oc2-detail-actions {
+  align-self: stretch;
+  display: flex;
+  align-items: end;
+}
+
+.oc2-detail--bonus-hunt .oc2-config-shell {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.oc2-detail--bonus-hunt .oc2-widget-status-summary--header {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+}
+
+.oc2-detail--bonus-hunt .oc2-widget-status-summary--header h3 {
+  display: none;
+}
+
+.oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-widget-status-summary__main {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-tool-status {
+  min-height: 30px;
+}
+
+.oc2-detail--bonus-hunt .oc2-widget-status-summary--header p {
+  margin: 0;
+}
+
+.oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-status-issue-list {
+  grid-column: 1 / -1;
+}
+
+.oc2-detail--bonus-hunt .bh-hunt-split {
+  grid-template-columns: minmax(0, 0.95fr) minmax(360px, 1.05fr) !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-hunt-split-left,
+.oc2-detail--bonus-hunt .bh-hunt-split-right {
+  padding: 12px !important;
+  border-radius: 14px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-section-pill {
+  min-height: 34px !important;
+  padding: 8px 11px !important;
+  border-radius: 10px !important;
+  gap: 8px !important;
+  color: #eef7ff !important;
+  font-size: 0.74rem !important;
+  letter-spacing: 0.04em !important;
+  background:
+    linear-gradient(135deg, rgba(125, 211, 252, 0.13), rgba(94, 234, 212, 0.08)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-section-pill .bh-count {
+  min-width: 26px !important;
+  padding: 4px 8px !important;
+  border-radius: 8px !important;
+  background: rgba(15, 23, 42, 0.72) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-sr-state-grid {
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-sr-state-btn {
+  min-height: 58px !important;
+  padding: 10px !important;
+  border-radius: 12px !important;
+  background: rgba(5, 10, 18, 0.64) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-sr-state-btn--on {
+  border-color: rgba(94, 234, 212, 0.28) !important;
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(15, 23, 42, 0.72)) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-sr-state-btn--off {
+  border-color: rgba(248, 113, 113, 0.26) !important;
+  background:
+    linear-gradient(135deg, rgba(248, 113, 113, 0.11), rgba(15, 23, 42, 0.72)) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-sr-state-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 10px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-sr-state-label {
+  font-size: 0.64rem !important;
+  letter-spacing: 0.06em !important;
+}
+
+.oc2-detail--bonus-hunt .bh-sr-state-value {
+  font-size: 0.78rem !important;
+  line-height: 1.25 !important;
+}
+
+@media (max-width: 1280px) {
+  .oc2-detail--bonus-hunt .oc2-detail-header {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+
+  .oc2-detail--bonus-hunt .oc2-detail-header-tools {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 920px) {
+  .oc2-detail--bonus-hunt .bh-hunt-split,
+  .oc2-detail--bonus-hunt .bh-sr-state-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .oc2-detail--bonus-hunt .oc2-detail-header,
+  .oc2-detail-header-tools,
+  .oc2-widget-status-summary__meta {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .oc2-detail--bonus-hunt .oc2-detail-actions,
+  .oc2-detail--bonus-hunt .oc2-detail-actions .oc2-btn {
+    width: 100%;
+  }
+
+  .oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-widget-status-summary__main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

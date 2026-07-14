@@ -63,6 +63,22 @@ import {
 import './widgets/builtinWidgets';
 
 const SETUP_VERSION = 1;
+const BONUS_HUNT_CURRENCY_OPTIONS = [
+  { value: '\u20ac', label: '\u20ac EUR' },
+  { value: '$', label: '$ USD' },
+  { value: '\u00a3', label: '\u00a3 GBP' },
+  { value: 'R$', label: 'R$ BRL' },
+  { value: 'kr', label: 'kr SEK/NOK' },
+  { value: '\u00a5', label: '\u00a5 JPY/CNY' },
+  { value: '\u20b9', label: '\u20b9 INR' },
+  { value: '\u20bf', label: '\u20bf BTC' },
+  { value: 'C$', label: 'C$ CAD' },
+  { value: 'A$', label: 'A$ AUD' },
+  { value: 'CHF', label: 'CHF' },
+  { value: 'PLN', label: 'PLN' },
+  { value: 'TRY', label: 'TRY' },
+];
+
 const SETUP_STEPS = [
   'Create overlay',
   'Choose style',
@@ -814,7 +830,50 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
 
   const status = resolveToolStatus({ type: widgetType, widget, integrations });
   const useFullWidthConfig = widgetType === 'slot_requests';
+  const useHeaderStatus = widgetType === 'bonus_hunt';
   const detailModifier = `oc2-detail--${widgetType.replace(/_/g, '-')}`;
+  const showBonusHuntHeaderTools = useHeaderStatus && Boolean(widget);
+
+  const handleBonusHuntCurrencyChange = (event) => {
+    if (!widget) return;
+    saveWidget({
+      ...widget,
+      config: {
+        ...(widget.config || {}),
+        currency: event.target.value,
+      },
+    });
+    trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: 'currency' });
+  };
+
+  const renderStatusSummary = (className = '') => {
+    if (!widget) return null;
+
+    return (
+      <div className={`oc2-widget-status-summary ${className}`}>
+        <div className="oc2-widget-status-summary__main">
+          <h3>Status</h3>
+          <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
+            <StatusIcon status={status.type} />
+            <span>{status.label}</span>
+          </div>
+          {status.detail && <p>{status.detail}</p>}
+          {status.issues?.length > 1 && (
+            <ul className="oc2-status-issue-list">
+              {status.issues.slice(0, 4).map(issue => (
+                <li key={`${issue.kind}-${issue.label}`}>{issue.label}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <dl className="oc2-widget-status-summary__meta">
+          <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
+          <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
+          <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
+        </dl>
+      </div>
+    );
+  };
 
   const configPanel = (() => {
     if (!widget) return null;
@@ -841,27 +900,8 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
             mode={useFullWidthConfig ? 'full' : 'sidebar'}
           />
         </div>
-        {!useFullWidthConfig && <aside className="oc2-config-side">
-          <div className="oc2-config-side-card">
-            <h3>Status</h3>
-            <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
-              <StatusIcon status={status.type} />
-              <span>{status.label}</span>
-            </div>
-            {status.detail && <p>{status.detail}</p>}
-            {status.issues?.length > 1 && (
-              <ul className="oc2-status-issue-list">
-                {status.issues.slice(0, 4).map(issue => (
-                  <li key={`${issue.kind}-${issue.label}`}>{issue.label}</li>
-                ))}
-              </ul>
-            )}
-            <dl>
-              <div><dt>Visible</dt><dd>{widget.is_visible === false ? 'No' : 'Yes'}</dd></div>
-              <div><dt>Layer</dt><dd>{widget.z_index || 1}</dd></div>
-              <div><dt>Size</dt><dd>{Math.round(widget.width)} x {Math.round(widget.height)}</dd></div>
-            </dl>
-          </div>
+        {!useFullWidthConfig && !useHeaderStatus && <aside className="oc2-config-side">
+          {renderStatusSummary('oc2-widget-status-summary--side')}
           <BetsBracketShortcutTiles widget={widget} saveWidget={saveWidget} />
         </aside>}
       </div>
@@ -872,7 +912,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
     <section className={`oc2-detail ${detailModifier}`} data-tour="widget-detail-page">
       <div className="oc2-detail-header">
         <Link className="oc2-back-link" to="/overlay-center"><ArrowLeft size={16} /> Back to tools</Link>
-        <div>
+        <div className="oc2-detail-header-copy">
           <span className="oc2-eyebrow">Widget detail</span>
           <h1>{FEATURE_COPY[widgetType]?.title || def.label}</h1>
           <p>{FEATURE_COPY[widgetType]?.description || def.description}</p>
@@ -889,6 +929,19 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
             </button>
           )}
         </div>
+        {showBonusHuntHeaderTools && (
+          <div className="oc2-detail-header-tools" aria-label="Bonus Hunt quick settings">
+            <label className="oc2-header-currency-field">
+              <span>Currency</span>
+              <select value={widget.config?.currency || '\u20ac'} onChange={handleBonusHuntCurrencyChange}>
+                {BONUS_HUNT_CURRENCY_OPTIONS.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+            {renderStatusSummary('oc2-widget-status-summary--header')}
+          </div>
+        )}
       </div>
 
       {!widget && (

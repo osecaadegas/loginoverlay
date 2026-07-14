@@ -242,8 +242,8 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 
   return (
     <div className="bh-config">
-      {/* Top quick toggles — only in sidebar or full mode */}
-      {mode !== 'widget' && <div className="bh-quick-row">
+      {/* Top quick toggles — only in full mode. Widget detail owns compact header controls. */}
+      {mode === 'full' && <div className="bh-quick-row">
         <label className="oc-config-field">
           <span>Currency</span>
           <select value={c.currency || '€'} onChange={e => set('currency', e.target.value)} style={{ width: 80 }}>
