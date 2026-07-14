@@ -17,6 +17,7 @@ import {
 import { calculateBonusMultiplier, calculateHuntStatistics, roundMoney } from './domain.js';
 import { formatDate, formatMaxWin, formatMoney, formatMultiplier, formatRtp, formatSignedMoney, formatVolatility } from './format';
 import { formatAutoDecimalInput } from './inputFormat';
+import { getProviderImage } from '../../utils/gameProviders';
 import './PlayerBonusHunt.css';
 
 const BONUS_TYPE_OPTIONS = [
@@ -118,6 +119,22 @@ function BonusTypePill({ type }) {
   return <span className={`pbh-type-pill pbh-type-pill--${value}`}>{bonusTypeLabel(value)}</span>;
 }
 
+function ProviderLogo({ provider, className = '' }) {
+  const [failed, setFailed] = useState(false);
+  const logo = !failed ? getProviderImage(provider) : null;
+  const label = provider || 'Unknown provider';
+
+  if (logo) {
+    return (
+      <span className={`pbh-provider-logo ${className}`} title={label}>
+        <img src={logo} alt={`${label} logo`} onError={() => setFailed(true)} />
+      </span>
+    );
+  }
+
+  return <span className={`pbh-provider-logo pbh-provider-logo--text ${className}`} title={label}>{label}</span>;
+}
+
 function PayoutInput({ bonus, value, saving, onChange, onSave, onKeyDown }) {
   const isDirty = value !== (bonus.status === 'opened' ? String(bonus.payout ?? '') : '');
   return (
@@ -184,7 +201,7 @@ function BonusRow({
           <SlotThumb src={bonus.slot_image_url} name={bonus.slot_name} size="sm" />
           <div>
             <strong>{bonus.slot_name}</strong>
-            <span>{bonus.provider_name || 'Unknown provider'}</span>
+            <ProviderLogo provider={bonus.provider_name} className="pbh-provider-logo--inline" />
           </div>
         </div>
       </td>
@@ -210,7 +227,7 @@ function BonusRow({
         </>
       ) : (
         <>
-          <td>{bonus.provider_name || '-'}</td>
+          <td><ProviderLogo provider={bonus.provider_name} /></td>
           <td><BonusTypePill type={bonus.bonus_type} /></td>
           <td>{formatRtp(bonus.slot_rtp)}</td>
           <td>{formatMaxWin(bonus.slot_max_win_multiplier)}</td>
@@ -252,13 +269,13 @@ function BonusCard({
         <div>
           <BonusTypePill type={bonus.bonus_type} />
           <h3>{bonus.slot_name}</h3>
-          <p>{bonus.provider_name || 'Unknown provider'}</p>
+          <ProviderLogo provider={bonus.provider_name} className="pbh-provider-logo--inline" />
         </div>
       </div>
       <div className="pbh-bonus-card__grid">
         {!isOpening && (
           <>
-            <span>Provider <strong>{bonus.provider_name || '-'}</strong></span>
+            <span>Provider <strong><ProviderLogo provider={bonus.provider_name} /></strong></span>
             <span>RTP <strong>{formatRtp(bonus.slot_rtp)}</strong></span>
             <span>Max win <strong>{formatMaxWin(bonus.slot_max_win_multiplier)}</strong></span>
             <span>Volatility <strong>{formatVolatility(bonus.slot_volatility)}</strong></span>
@@ -389,7 +406,7 @@ function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
         <SlotThumb src={draft.slot_image_url} name={draft.slot_name} />
         <div>
           <strong>{draft.slot_name}</strong>
-          <span>{draft.provider_name || 'Unknown provider'}</span>
+          <ProviderLogo provider={draft.provider_name} className="pbh-provider-logo--inline" />
         </div>
       </div>
 
