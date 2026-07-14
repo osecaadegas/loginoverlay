@@ -62,10 +62,16 @@ const VolBadge = memo(({ v }) => {
 });
 
 const ProviderLogo = memo(({ provider, logoUrl = '', className = '', fallbackMode = 'text' }) => {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [provider, logoUrl]);
+  const resolvedLogo = useMemo(() => getProviderImage(provider), [provider]);
+  const logoCandidates = useMemo(() => {
+    const candidates = [logoUrl, resolvedLogo].filter(Boolean);
+    return candidates.filter((candidate, index) => candidates.indexOf(candidate) === index);
+  }, [logoUrl, resolvedLogo]);
+  const [candidateIndex, setCandidateIndex] = useState(0);
 
-  const logo = !failed ? (logoUrl || getProviderImage(provider)) : null;
+  useEffect(() => setCandidateIndex(0), [provider, logoUrl, resolvedLogo]);
+
+  const logo = logoCandidates[candidateIndex] || null;
 
   if (logo) {
     return (
@@ -75,7 +81,7 @@ const ProviderLogo = memo(({ provider, logoUrl = '', className = '', fallbackMod
           src={logo}
           alt={provider ? `${provider} logo` : 'Provider logo'}
           loading="lazy"
-          onError={() => setFailed(true)}
+          onError={() => setCandidateIndex(index => index + 1)}
         />
       </span>
     );

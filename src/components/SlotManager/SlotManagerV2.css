@@ -202,26 +202,34 @@
   flex-shrink: 0;
 }
 .slot-manager-v2 .sm-provider-logo-wrap {
-  display: inline-flex;
+  --provider-logo-width: 104px;
+  --provider-logo-height: 30px;
+  display: inline-grid;
+  place-items: center;
   align-items: center;
   justify-content: center;
-  width: 96px;
-  height: 24px;
+  width: var(--provider-logo-width);
+  height: var(--provider-logo-height);
   min-width: 0;
+  overflow: hidden;
   background: transparent;
+  flex: 0 0 auto;
 }
 .slot-manager-v2 .sm-provider-logo {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center;
   background: transparent;
+  filter:
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.72))
+    drop-shadow(0 0 9px rgba(226, 246, 255, 0.1));
 }
 .slot-manager-v2 .sm-provider-logo--filter {
-  width: 58px;
-  height: 20px;
-  justify-content: flex-start;
-  opacity: 0.78;
+  --provider-logo-width: 70px;
+  --provider-logo-height: 24px;
+  opacity: 0.92;
 }
 .slot-manager-v2 .sm-provider-filter-name {
   min-width: 0;
@@ -231,26 +239,22 @@
   color: #c9d1d9;
 }
 .slot-manager-v2 .sm-provider-logo--table {
-  width: 112px;
+  --provider-logo-width: 118px;
+  --provider-logo-height: 34px;
 }
 .slot-manager-v2 .sm-provider-logo--picker {
-  width: 150px;
-  justify-content: flex-start;
+  --provider-logo-width: 150px;
+  --provider-logo-height: 32px;
 }
 .slot-manager-v2 .sm-provider-logo--picker-option {
-  width: 108px;
-  height: 22px;
-  justify-content: flex-start;
+  --provider-logo-width: 110px;
+  --provider-logo-height: 26px;
 }
 .slot-manager-v2 .sm-provider-logo-wrap.sm-provider-logo--provider-card {
-  width: 108px;
-  height: 34px;
-  flex: 0 0 108px;
-  justify-content: flex-start;
-  opacity: 0.95;
-}
-.slot-manager-v2 .sm-provider-logo-wrap.sm-provider-logo--provider-card .sm-provider-logo {
-  object-position: left center;
+  --provider-logo-width: 118px;
+  --provider-logo-height: 42px;
+  flex: 0 0 118px;
+  opacity: 0.96;
 }
 .slot-manager-v2 .sm-provider-logo-initial {
   width: 34px;
