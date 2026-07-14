@@ -24083,3 +24083,191 @@ body.wm-resizing {
   }
 }
 
+/* Remaining page group pass: polish the older inline panels without changing behavior. */
+.oc2-detail--bets .cg-config--modern,
+.oc2-detail--chat .bh-config,
+.oc2-detail--rtp-stats .bh-config,
+.oc2-detail--spotify-now-playing .nb-config,
+.oc2-detail--navbar .nb-config {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.oc2-detail--bets .cg-config__section[style] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 390px) !important;
+  gap: 14px !important;
+  align-items: start !important;
+}
+
+.oc2-detail--bets .cg-config__section[style] > div[style],
+.oc2-detail--bets .cg-config__section[style] > aside[style],
+.oc2-detail--bets .cg-config__section > div[style*="background"],
+.oc2-detail--navbar .nb-section > div[style],
+.oc2-detail--rtp-stats .bh-config > div[style],
+.oc2-detail--spotify-now-playing .nb-section > div[style],
+.oc2-detail--chat .nb-section > p[style],
+.oc2-detail--rtp-stats .nb-section > p[style] {
+  border: 1px solid rgba(72, 89, 118, 0.72) !important;
+  border-radius: 14px !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(125, 211, 252, 0.08), transparent 30%),
+    rgba(7, 12, 21, 0.68) !important;
+  color: var(--sc-muted) !important;
+  box-shadow: none !important;
+}
+
+.oc2-detail--navbar .nb-section > div[style],
+.oc2-detail--bets .cg-config__section > div[style*="background"],
+.oc2-detail--rtp-stats .bh-config > div[style],
+.oc2-detail--spotify-now-playing .nb-section > div[style] {
+  padding: 12px !important;
+}
+
+.oc2-detail--bets .cg-config__section[style] > div[style] {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--bets .cg-config__section[style] div[style*="border-bottom"] {
+  grid-template-columns: 104px minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(72, 89, 118, 0.62) !important;
+  border-radius: 12px !important;
+  background: rgba(8, 13, 22, 0.68) !important;
+}
+
+.oc2-detail--bets .cg-config__section[style] div[style*="border-bottom"] input {
+  min-height: 38px !important;
+  border-color: rgba(72, 89, 118, 0.88) !important;
+  border-radius: 10px !important;
+  background: rgba(3, 7, 14, 0.76) !important;
+  color: var(--sc-text) !important;
+}
+
+.oc2-detail--bets .cg-config__section[style] div[style*="border-bottom"] > div:last-child {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+}
+
+.oc2-detail--bets .cg-config__section[style] code {
+  border: 1px solid rgba(72, 89, 118, 0.68) !important;
+  border-radius: 10px !important;
+  background: rgba(3, 7, 14, 0.78) !important;
+  color: #bfdbfe !important;
+}
+
+.oc2-detail--bets .cg-config__status-badge,
+.oc2-detail--bonus-buys .bb-admin-card-chip,
+.oc2-detail--bonus-buys .bb-admin-section-pill,
+.oc2-detail--current-slot .cs-card-chip,
+.oc2-detail--current-slot .cs-section-pill,
+.oc2-detail--slot-requests .sr-admin-card-chip {
+  border: 1px solid rgba(125, 211, 252, 0.22) !important;
+  border-radius: 999px !important;
+  background: rgba(14, 165, 233, 0.1) !important;
+  color: #bae6fd !important;
+}
+
+.oc2-detail--navbar :is(.nb-style-toggle, .nb-music-styles, .nb-radio-row, .nb-preset-save, .nb-preset-save-row),
+.oc2-detail--chat .nb-preset-save-row,
+.oc2-detail--rtp-stats .nb-preset-save-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.oc2-detail--navbar :is(.nb-music-style-btn, .nb-radio, .nb-badge-option, .nb-crypto-chip),
+.oc2-detail--chat .nb-preset-pill,
+.oc2-detail--rtp-stats .nb-preset-pill {
+  border: 1px solid rgba(72, 89, 118, 0.72) !important;
+  border-radius: 13px !important;
+  background: rgba(7, 12, 21, 0.64) !important;
+  color: var(--sc-text) !important;
+}
+
+.oc2-detail--navbar :is(.nb-music-style-btn--active, .nb-badge-option--active, .nb-style-btn--active),
+.oc2-detail--navbar .nb-radio:has(input:checked) {
+  border-color: rgba(94, 234, 212, 0.52) !important;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(14, 165, 233, 0.12)) !important;
+}
+
+.oc2-detail--current-slot :is(.cs-page-hero, .cs-section, .cs-card, .cs-slot-card, .cs-page-metric-card, .cs-selected-slot),
+.oc2-detail--bonus-buys :is(.bb-admin-hero, .bb-admin-section, .bb-admin-card, .bb-admin-slot-card, .bb-admin-metric-card, .bb-admin-stat-card, .bb-admin-note-card) {
+  border-color: rgba(72, 89, 118, 0.72) !important;
+}
+
+.oc2-detail--current-slot :is(.cs-search-input, .cs-field input),
+.oc2-detail--bonus-buys :is(.bb-admin-field-input, .bb-admin-message-input),
+.oc2-detail--tournament :is(.bk-input, .bk-mp-input-wrap input, .nb-preset-input) {
+  min-height: 40px !important;
+  border-color: rgba(72, 89, 118, 0.88) !important;
+  border-radius: 11px !important;
+  background: rgba(3, 7, 14, 0.76) !important;
+  color: var(--sc-text) !important;
+}
+
+.oc2-detail--current-slot .cs-search-wrap,
+.oc2-detail--bonus-buys .bb-admin-card--search {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.oc2-detail--current-slot .cs-search-results,
+.oc2-detail--bonus-buys .bb-admin-search-results {
+  z-index: 80 !important;
+}
+
+.oc2-detail--current-slot :is(.cs-search-result, .cs-selected-slot),
+.oc2-detail--bonus-buys :is(.bb-admin-selected-slot, .bb-admin-search-result, .bb-admin-result-row, .bb-admin-summary-row),
+.oc2-detail--tournament :is(.bk-slot-option, .bk-match-card, .bk-mp-round, .bk-mp-p) {
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease !important;
+}
+
+.oc2-detail--current-slot :is(.cs-search-result:hover, .cs-selected-slot:hover),
+.oc2-detail--bonus-buys :is(.bb-admin-search-result:hover, .bb-admin-result-row:hover),
+.oc2-detail--tournament :is(.bk-slot-option:hover, .bk-match-card:hover) {
+  transform: translateY(-1px) !important;
+  border-color: rgba(125, 211, 252, 0.38) !important;
+  background: rgba(17, 24, 39, 0.88) !important;
+}
+
+.oc2-detail--tournament :is(.tm-section-heading, .bk-active-header, .bk-mp-header, .tm-tab-intro) {
+  gap: 10px !important;
+}
+
+.oc2-detail--tournament :is(.bk-badge, .tm-section-pill, .bk-round-label) {
+  border-radius: 999px !important;
+  background: rgba(17, 24, 39, 0.76) !important;
+  border: 1px solid rgba(72, 89, 118, 0.64) !important;
+}
+
+.oc2-detail--tournament .bk-bracket-scroll {
+  border-radius: 14px !important;
+  background: rgba(3, 7, 14, 0.34) !important;
+}
+
+.oc2-integrations-page :is(.oc2-profile-banner, .oc2-integration-card, .oc2-panel, .oc2-card),
+.oc2-preview-page :is(.oc2-panel, .oc2-preview-frame, .oc2-preview-sidebar) {
+  border-color: rgba(72, 89, 118, 0.72) !important;
+}
+
+@media (max-width: 980px) {
+  .oc2-detail--bets .cg-config__section[style],
+  .oc2-detail--current-slot .cs-page-hero,
+  .oc2-detail--bonus-buys .bb-admin-hero,
+  .oc2-detail--current-slot .cs-content-grid,
+  .oc2-detail--bonus-buys .bb-admin-setup-grid,
+  .oc2-detail--bonus-buys .bb-admin-track-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .oc2-detail--bets .cg-config__section[style] div[style*="border-bottom"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
