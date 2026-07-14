@@ -24098,6 +24098,44 @@ body.wm-resizing {
   }
 }
 
+@media (max-width: 980px) {
+  .oc2-detail--bets .cg-config__brackets-header,
+  .oc2-detail--bets .cg-config__bracket-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .oc2-detail--bets .cg-config__brackets-header {
+    display: grid !important;
+  }
+
+  .oc2-detail--bets .cg-config__round-status-chip {
+    justify-self: start;
+  }
+
+  .oc2-detail--bets .cg-config__bracket-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .oc2-detail--bets .cg-config__bracket-actions .cg-config__btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .oc2-detail--bets .cg-config__bracket-footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .oc2-detail--bets .cg-config__round-status-chip {
+    align-items: flex-start;
+    flex-direction: column;
+    border-radius: 14px;
+    white-space: normal;
+  }
+}
+
 /* Remaining page group pass: polish the older inline panels without changing behavior. */
 .oc2-detail--bets .cg-config--modern,
 .oc2-detail--chat .bh-config,
@@ -24173,6 +24211,156 @@ body.wm-resizing {
   border-radius: 10px !important;
   background: rgba(3, 7, 14, 0.78) !important;
   color: #bfdbfe !important;
+}
+
+.oc2-detail--bets .cg-config__brackets-section {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.oc2-detail--bets .cg-config__brackets-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(72, 89, 118, 0.72);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(125, 211, 252, 0.08), transparent 30%),
+    rgba(7, 12, 21, 0.68);
+}
+
+.oc2-detail--bets .cg-config__brackets-header .cg-config__hint {
+  max-width: 880px;
+  margin: 0;
+}
+
+.oc2-detail--bets .cg-config__bracket-list {
+  display: grid;
+  gap: 8px;
+}
+
+.oc2-detail--bets .cg-config__bracket-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 120px) minmax(360px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(72, 89, 118, 0.62);
+  border-radius: 12px;
+  background: rgba(8, 13, 22, 0.68);
+}
+
+.oc2-detail--bets .cg-config__bracket-label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.oc2-detail--bets .cg-config__bracket-label span {
+  overflow: hidden;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oc2-detail--bets .cg-config__bracket-label small {
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oc2-detail--bets .cg-config__bracket-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 11px;
+  border: 1px solid rgba(72, 89, 118, 0.88);
+  border-radius: 10px;
+  background: rgba(3, 7, 14, 0.76);
+  color: var(--sc-text);
+  font-size: 0.9rem;
+}
+
+.oc2-detail--bets .cg-config__bracket-input:focus-visible {
+  border-color: rgba(125, 211, 252, 0.58);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.14);
+  outline: none;
+}
+
+.oc2-detail--bets .cg-config__bracket-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.oc2-detail--bets .cg-config__bracket-actions .cg-config__btn {
+  min-width: 76px !important;
+  padding-right: 12px !important;
+  padding-left: 12px !important;
+}
+
+.oc2-detail--bets .cg-config__bracket-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, auto);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.oc2-detail--bets .cg-config__round-status-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.74);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.oc2-detail--bets .cg-config__round-status-chip small {
+  color: #9fb0c6;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.oc2-detail--bets .cg-config__round-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.oc2-detail--bets .cg-config__round-status-chip--green {
+  border-color: rgba(74, 222, 128, 0.28);
+  color: #86efac;
+  background: rgba(21, 128, 61, 0.1);
+}
+
+.oc2-detail--bets .cg-config__round-status-chip--yellow {
+  border-color: rgba(250, 204, 21, 0.28);
+  color: #fde68a;
+  background: rgba(161, 98, 7, 0.1);
+}
+
+.oc2-detail--bets .cg-config__round-status-chip--red {
+  border-color: rgba(248, 113, 113, 0.32);
+  color: #fca5a5;
+  background: rgba(127, 29, 29, 0.14);
 }
 
 .oc2-detail--bets .cg-config__status-badge,
@@ -24702,6 +24890,42 @@ body.wm-resizing {
   min-width: 0;
 }
 
+.oc2-detail--has-header-tools .oc2-detail-header {
+  grid-template-columns: minmax(0, 1fr) auto minmax(320px, 520px);
+  align-items: end;
+}
+
+.oc2-detail-header-tools--status-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.oc2-widget-status-summary--header {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+}
+
+.oc2-widget-status-summary--header h3 {
+  display: none;
+}
+
+.oc2-widget-status-summary--header .oc2-widget-status-summary__main {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.oc2-widget-status-summary--header .oc2-tool-status {
+  min-height: 30px;
+}
+
+.oc2-widget-status-summary--header p {
+  margin: 0;
+}
+
+.oc2-widget-status-summary--header .oc2-status-issue-list {
+  grid-column: 1 / -1;
+}
+
 .oc2-header-currency-field {
   display: grid;
   gap: 7px;
@@ -24756,33 +24980,6 @@ body.wm-resizing {
 
 .oc2-detail--bonus-hunt .oc2-config-shell {
   grid-template-columns: minmax(0, 1fr) !important;
-}
-
-.oc2-detail--bonus-hunt .oc2-widget-status-summary--header {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-  padding: 12px;
-}
-
-.oc2-detail--bonus-hunt .oc2-widget-status-summary--header h3 {
-  display: none;
-}
-
-.oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-widget-status-summary__main {
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-}
-
-.oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-tool-status {
-  min-height: 30px;
-}
-
-.oc2-detail--bonus-hunt .oc2-widget-status-summary--header p {
-  margin: 0;
-}
-
-.oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-status-issue-list {
-  grid-column: 1 / -1;
 }
 
 .oc2-detail--bonus-hunt .bh-hunt-split {
@@ -24857,10 +25054,12 @@ body.wm-resizing {
 }
 
 @media (max-width: 1280px) {
+  .oc2-detail--has-header-tools .oc2-detail-header,
   .oc2-detail--bonus-hunt .oc2-detail-header {
     grid-template-columns: minmax(0, 1fr) auto !important;
   }
 
+  .oc2-detail--has-header-tools .oc2-detail-header-tools,
   .oc2-detail--bonus-hunt .oc2-detail-header-tools {
     grid-column: 1 / -1;
   }
@@ -24874,6 +25073,7 @@ body.wm-resizing {
 }
 
 @media (max-width: 720px) {
+  .oc2-detail--has-header-tools .oc2-detail-header,
   .oc2-detail--bonus-hunt .oc2-detail-header,
   .oc2-detail-header-tools,
   .oc2-widget-status-summary__meta {
@@ -24885,6 +25085,7 @@ body.wm-resizing {
     width: 100%;
   }
 
+  .oc2-widget-status-summary--header .oc2-widget-status-summary__main,
   .oc2-detail--bonus-hunt .oc2-widget-status-summary--header .oc2-widget-status-summary__main {
     grid-template-columns: minmax(0, 1fr);
   }

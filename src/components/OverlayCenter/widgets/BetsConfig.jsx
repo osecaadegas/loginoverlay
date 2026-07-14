@@ -332,6 +332,25 @@ export default function BetsConfig({ config, onChange }) {
   };
   const loadDefaults = () => set('options', normalizeBracketOptions(DEFAULT_OPTIONS));
 
+  const roundStatusLabel =
+    status === 'open' ? 'Open' :
+    status === 'locked' ? 'Locked' :
+    status === 'result' ? 'Result' :
+    'Idle';
+  const roundStatusTone =
+    status === 'open' || status === 'result' ? 'green' :
+    status === 'locked' ? 'red' :
+    'yellow';
+  const roundStatusBadge = (
+    <div className={`cg-config__round-status-chip cg-config__round-status-chip--${roundStatusTone}`} aria-label={`Round status: ${roundStatusLabel}`}>
+      <span className="cg-config__round-status-dot" aria-hidden="true" />
+      <span>{roundStatusLabel}</span>
+      {status !== 'idle' && (
+        <small>{totalPool.toLocaleString()} pts / {totalBetters} bets</small>
+      )}
+    </div>
+  );
+
   const roundStatusCard = (
     <div className="cg-config__status-card">
       <div className="cg-config__status-row">
@@ -504,35 +523,30 @@ export default function BetsConfig({ config, onChange }) {
 
       {/* ═══ BRACKETS TAB ═══ */}
       {tab === 'brackets' && (
-        <div className="cg-config__section" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 380px)', gap: 14, alignItems: 'start' }}>
-          <div style={{ display: 'grid', gap: 8 }}>
+        <div className="cg-config__section cg-config__brackets-section">
+          <div className="cg-config__brackets-header">
             <p className="cg-config__hint">
               Each row is one bracket viewers can choose. The row number is the chat number: <code>{chatCommand} 1 &lt;amount&gt;</code>, <code>{chatCommand} 2 &lt;amount&gt;</code>, and so on.
             </p>
+            {roundStatusBadge}
+          </div>
 
+          <div className="cg-config__bracket-list">
             {options.map((opt, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0, 1fr) auto', gap: 8, alignItems: 'end', padding: '8px 0', borderBottom: '1px solid rgba(148,163,184,0.1)' }}>
-                <div style={{ display: 'grid', gap: 4 }}>
-                  <span style={{ color: '#e2e8f0', fontSize: '0.8rem', fontWeight: 800 }}>Bracket {i + 1}</span>
-                  <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>{chatCommand} {i + 1}</span>
+              <div key={i} className="cg-config__bracket-row">
+                <div className="cg-config__bracket-label">
+                  <span>Bracket {i + 1}</span>
+                  <small>{chatCommand} {i + 1}</small>
                 </div>
                 <input
-                  style={{
-                    flex: 1,
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: 6,
-                    padding: '6px 8px',
-                    color: '#e5e7eb',
-                    fontSize: '0.85rem',
-                  }}
+                  className="cg-config__bracket-input"
                   value={opt.label}
                   onChange={e => updateOption(i, e.target.value)}
                   disabled={status !== 'idle'}
                   placeholder={`Option ${i + 1}`}
                 />
                 {status === 'idle' && (
-                  <div style={{ display: 'flex', gap: 4 }}>
+                  <div className="cg-config__bracket-actions">
                     <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, -1)} disabled={i === 0}>Up</button>
                     <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => moveOption(i, 1)} disabled={i === options.length - 1}>Down</button>
                     <button type="button" className="cg-config__btn cg-config__btn--muted" onClick={() => duplicateOption(i)}>Copy</button>
@@ -542,11 +556,11 @@ export default function BetsConfig({ config, onChange }) {
               </div>
             ))}
             {status === 'idle' && (
-              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                <button className="cg-config__btn cg-config__btn--primary" onClick={addOption} style={{ fontSize: '0.82rem' }}>
+              <div className="cg-config__bracket-footer">
+                <button className="cg-config__btn cg-config__btn--primary" onClick={addOption}>
                   + Add Bracket
                 </button>
-                <button className="cg-config__btn cg-config__btn--muted" onClick={loadDefaults} style={{ fontSize: '0.82rem' }}>
+                <button className="cg-config__btn cg-config__btn--muted" onClick={loadDefaults}>
                   Load Defaults
                 </button>
               </div>
@@ -555,10 +569,6 @@ export default function BetsConfig({ config, onChange }) {
               <p className="cg-config__hint" style={{ marginTop: 4 }}>End the current round before changing bracket labels or loading saved setups.</p>
             )}
           </div>
-
-          <aside style={{ display: 'grid', gap: 12 }}>
-            {roundStatusCard}
-          </aside>
         </div>
       )}
 

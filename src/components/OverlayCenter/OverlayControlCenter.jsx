@@ -830,9 +830,10 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
 
   const status = resolveToolStatus({ type: widgetType, widget, integrations });
   const useFullWidthConfig = widgetType === 'slot_requests';
-  const useHeaderStatus = widgetType === 'bonus_hunt';
   const detailModifier = `oc2-detail--${widgetType.replace(/_/g, '-')}`;
-  const showBonusHuntHeaderTools = useHeaderStatus && Boolean(widget);
+  const showHeaderTools = Boolean(widget);
+  const showBonusHuntHeaderCurrency = widgetType === 'bonus_hunt' && Boolean(widget);
+  const showBetsShortcuts = widgetType === 'bets' && Boolean(widget);
 
   const handleBonusHuntCurrencyChange = (event) => {
     if (!widget) return;
@@ -888,28 +889,29 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
     }
 
     return (
-      <div className={`oc2-config-shell${useFullWidthConfig ? ' oc2-config-shell--full' : ''}`}>
-        <div className="oc2-config-main">
-          <ConfigComponent
-            config={widget.config || {}}
-            onChange={(newConfig) => {
-              saveWidget({ ...widget, config: newConfig });
-              trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: 'setup' });
-            }}
-            allWidgets={widgets}
-            mode={useFullWidthConfig ? 'full' : 'sidebar'}
-          />
+      <>
+        <div className="oc2-config-shell oc2-config-shell--full">
+          <div className="oc2-config-main">
+            <ConfigComponent
+              config={widget.config || {}}
+              onChange={(newConfig) => {
+                saveWidget({ ...widget, config: newConfig });
+                trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: 'setup' });
+              }}
+              allWidgets={widgets}
+              mode={useFullWidthConfig ? 'full' : 'sidebar'}
+            />
+          </div>
         </div>
-        {!useFullWidthConfig && !useHeaderStatus && <aside className="oc2-config-side">
-          {renderStatusSummary('oc2-widget-status-summary--side')}
+        {showBetsShortcuts && (
           <BetsBracketShortcutTiles widget={widget} saveWidget={saveWidget} />
-        </aside>}
-      </div>
+        )}
+      </>
     );
   })();
 
   return (
-    <section className={`oc2-detail ${detailModifier}`} data-tour="widget-detail-page">
+    <section className={`oc2-detail ${detailModifier}${showHeaderTools ? ' oc2-detail--has-header-tools' : ''}`} data-tour="widget-detail-page">
       <div className="oc2-detail-header">
         <Link className="oc2-back-link" to="/overlay-center"><ArrowLeft size={16} /> Back to tools</Link>
         <div className="oc2-detail-header-copy">
@@ -929,16 +931,21 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
             </button>
           )}
         </div>
-        {showBonusHuntHeaderTools && (
-          <div className="oc2-detail-header-tools" aria-label="Bonus Hunt quick settings">
-            <label className="oc2-header-currency-field">
-              <span>Currency</span>
-              <select value={widget.config?.currency || '\u20ac'} onChange={handleBonusHuntCurrencyChange}>
-                {BONUS_HUNT_CURRENCY_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
+        {showHeaderTools && (
+          <div
+            className={`oc2-detail-header-tools${showBonusHuntHeaderCurrency ? '' : ' oc2-detail-header-tools--status-only'}`}
+            aria-label={showBonusHuntHeaderCurrency ? 'Bonus Hunt quick settings' : 'Widget status'}
+          >
+            {showBonusHuntHeaderCurrency && (
+              <label className="oc2-header-currency-field">
+                <span>Currency</span>
+                <select value={widget.config?.currency || '\u20ac'} onChange={handleBonusHuntCurrencyChange}>
+                  {BONUS_HUNT_CURRENCY_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             {renderStatusSummary('oc2-widget-status-summary--header')}
           </div>
         )}
