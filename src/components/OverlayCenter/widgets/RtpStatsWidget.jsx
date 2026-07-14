@@ -450,8 +450,10 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
   const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 14);
   const providerFontSize = subValue(c, 'provider', 'fontSize', c.providerFontSize ?? 16);
-  const paddingX = subValue(c, 'container', 'padding', c.paddingX ?? 16);
-  const paddingY = subValue(c, 'container', 'gap', c.paddingY ?? 8);
+  const paddingX = subValue(c, 'container', 'padding', c.paddingX ?? 10);
+  const paddingY = subValue(c, 'container', 'gap', c.paddingY ?? 4);
+  const compactPaddingX = Math.max(2, Math.min(Number(paddingX) || 10, 10));
+  const compactPaddingY = Math.max(1, Math.min(Number(paddingY) || 4, 4));
   const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
   const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
   const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
@@ -541,8 +543,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-icon-volatility': volatilityIconColor,
     '--rtp-divider': dividerColor,
     '--rtp-spinner': spinnerColor,
-    '--rtp-px': `${paddingX}px`,
-    '--rtp-py': `${paddingY}px`,
+    '--rtp-px': `${compactPaddingX}px`,
+    '--rtp-py': `${compactPaddingY}px`,
     '--rtp-provider-size': `${providerFontSize}px`,
     '--rtp-icon-bestwin': bestWinIconColor,
     ...(isNeon ? { '--rtp-accent': borderColor } : {}),
