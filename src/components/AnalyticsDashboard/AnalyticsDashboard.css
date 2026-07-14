@@ -968,3 +968,324 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =====================================================
+   Admin-aligned Analytics refresh
+   Matches the modern Streamers Center admin surfaces.
+   ===================================================== */
+.an-dash {
+  min-height: 100vh;
+  width: min(1854px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 24px 0 56px;
+  color: #e7edf7;
+}
+
+.an-dash__header {
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border: 1px solid rgba(52, 65, 87, 0.95);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.86), rgba(9, 14, 23, 0.94)),
+    #0c111b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 18px 42px rgba(0, 0, 0, 0.22);
+}
+
+.an-dash__title {
+  gap: 0.65rem;
+  color: #f7fbff;
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  letter-spacing: 0;
+}
+
+.an-dash__title-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(14, 165, 233, 0.14);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  color: #7dd3fc;
+  box-shadow: none;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.an-dash__subtitle {
+  color: #9aa9bd;
+  font-size: 0.86rem;
+}
+
+.an-dash__period-select,
+.an-toolbar__select,
+.an-toolbar__search,
+.an-input {
+  min-height: 40px;
+  border-radius: 10px;
+  border-color: rgba(52, 65, 87, 0.95);
+  background-color: rgba(4, 8, 15, 0.78);
+  color: #f7fbff;
+}
+
+.an-dash__period-select:focus,
+.an-toolbar__select:focus,
+.an-toolbar__search:focus,
+.an-input:focus {
+  border-color: rgba(125, 211, 252, 0.6);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.14);
+}
+
+.an-dash__tabs {
+  gap: 0.45rem;
+  margin-bottom: 18px;
+  padding: 8px;
+  border-color: rgba(52, 65, 87, 0.95);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.72), rgba(9, 14, 23, 0.9)),
+    #0c111b;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.an-dash__tab {
+  min-height: 40px;
+  border-radius: 10px;
+  color: #aebbd0;
+  font-weight: 800;
+}
+
+.an-dash__tab:hover {
+  color: #f7fbff;
+  background: rgba(23, 33, 51, 0.88);
+}
+
+.an-dash__tab--active {
+  color: #071018;
+  background: linear-gradient(135deg, #7dd3fc, #5eead4);
+  box-shadow: 0 14px 34px rgba(45, 212, 191, 0.14);
+}
+
+.an-dash__tab-icon {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 24px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.an-dash__tab--active .an-dash__tab-icon {
+  background: rgba(7, 16, 24, 0.14);
+}
+
+.an-stats-grid {
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.an-stat-card,
+.an-chart-card,
+.an-card,
+.an-user-detail__header,
+.an-realtime-header {
+  border-color: rgba(52, 65, 87, 0.95);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.78), rgba(8, 13, 21, 0.9)),
+    #0c111b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 18px 42px rgba(0, 0, 0, 0.18);
+}
+
+.an-stat-card {
+  padding: 18px;
+}
+
+.an-stat-card::before {
+  height: 0;
+}
+
+.an-stat-card:hover,
+.an-chart-card:hover,
+.an-card:hover {
+  transform: none;
+  border-color: rgba(125, 211, 252, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 20px 46px rgba(0, 0, 0, 0.22);
+}
+
+.an-stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.an-stat-card__value,
+.an-card__title,
+.an-chart-card__title,
+.an-user-detail__name,
+.an-realtime-count {
+  color: #f7fbff;
+}
+
+.an-stat-card__label,
+.an-card__description,
+.an-tab__footnote,
+.an-setting__desc,
+.an-user-detail__meta,
+.an-realtime-label,
+.an-table__reason,
+.an-metric-row small {
+  color: #9aa9bd;
+}
+
+.an-chart-card,
+.an-card {
+  padding: 18px;
+}
+
+.an-chart-card__title {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(52, 65, 87, 0.72);
+}
+
+.an-chart-card__title::before {
+  background: #7dd3fc;
+  box-shadow: 0 0 16px rgba(125, 211, 252, 0.28);
+}
+
+.an-table-wrap {
+  border-color: rgba(52, 65, 87, 0.95);
+  border-radius: 14px;
+  background: #0c111b;
+}
+
+.an-table th {
+  color: #8fa0b7;
+  background: rgba(20, 29, 44, 0.96);
+  border-bottom-color: rgba(52, 65, 87, 0.9);
+}
+
+.an-table td {
+  color: #c7d3e3;
+  border-bottom-color: rgba(35, 46, 65, 0.72);
+  background: rgba(8, 13, 21, 0.62);
+}
+
+.an-table tbody tr:hover td,
+.an-table__row--clickable:hover td {
+  background: rgba(17, 24, 39, 0.92) !important;
+}
+
+.an-toolbar {
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid rgba(52, 65, 87, 0.95);
+  border-radius: 14px;
+  background: rgba(8, 13, 21, 0.72);
+}
+
+.an-toolbar__count {
+  color: #9aa9bd;
+}
+
+.an-btn {
+  min-height: 38px;
+  border-radius: 10px;
+  border-color: rgba(63, 78, 104, 0.95);
+  background: rgba(15, 23, 42, 0.86);
+  color: #dce6f4;
+  font-weight: 800;
+}
+
+.an-btn:hover {
+  border-color: rgba(125, 211, 252, 0.42);
+  background: rgba(23, 33, 51, 0.96);
+  transform: translateY(-1px);
+}
+
+.an-btn--primary,
+.an-btn--success {
+  color: #071018;
+  background: linear-gradient(135deg, #7dd3fc, #5eead4);
+  border-color: rgba(125, 211, 252, 0.56);
+  box-shadow: 0 14px 34px rgba(45, 212, 191, 0.14);
+}
+
+.an-btn--danger {
+  color: #fee2e2;
+  background: rgba(127, 29, 29, 0.34);
+  border-color: rgba(248, 113, 113, 0.38);
+  box-shadow: none;
+}
+
+.an-btn--ghost {
+  color: #7dd3fc;
+  background: transparent;
+}
+
+.an-badge,
+.an-risk,
+.an-event-badge,
+.an-timeline__badge {
+  border: 1px solid rgba(52, 65, 87, 0.72);
+}
+
+.an-metric-row,
+.an-timeline__item,
+.an-realtime-item,
+.an-realtime-event,
+.an-fraud-flag {
+  border-color: rgba(52, 65, 87, 0.78);
+  background: rgba(8, 13, 21, 0.7);
+}
+
+.an-pagination {
+  border-top-color: rgba(52, 65, 87, 0.72);
+}
+
+.an-pagination button {
+  border-color: rgba(63, 78, 104, 0.95);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.86);
+  color: #dce6f4;
+}
+
+.an-toggle__slider {
+  border-color: rgba(52, 65, 87, 0.95);
+  background: rgba(8, 13, 21, 0.84);
+}
+
+.an-toggle input:checked + .an-toggle__slider {
+  background: linear-gradient(135deg, #7dd3fc, #5eead4);
+  box-shadow: 0 0 18px rgba(45, 212, 191, 0.16);
+}
+
+@media (max-width: 768px) {
+  .an-dash {
+    width: min(100% - 24px, 720px);
+    padding: 16px 0 40px;
+  }
+
+  .an-dash__header {
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .an-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .an-dash__tabs {
+    padding: 6px;
+  }
+}

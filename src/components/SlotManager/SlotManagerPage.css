@@ -32,6 +32,7 @@
 }
 
 .slot-manager-page-header {
+  display: none;
   padding: 12px 20px;
   text-align: center;
   color: white;
