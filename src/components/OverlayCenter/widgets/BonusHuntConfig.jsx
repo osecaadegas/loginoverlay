@@ -1537,7 +1537,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               {editingId === bonus.id ? (
                 <div className="bh-list-main bh-list-main--editing">
                   {bonus.slot?.image && (
-                    <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="contain" />
+                    <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="cover" />
                   )}
                   <div className="bh-list-edit-row">
                     <input className="bh-list-edit-input" value={editName}
@@ -1563,7 +1563,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <>
                   <div className="bh-list-main">
                     {bonus.slot?.image && (
-                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="contain" />
+                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="cover" />
                     )}
                     <div className="bh-list-info">
                       <span className="bh-list-name">

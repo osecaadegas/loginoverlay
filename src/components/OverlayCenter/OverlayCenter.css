@@ -5910,7 +5910,8 @@ body.wm-resizing {
   width: 58px;
   height: 58px;
   border-radius: 8px;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center center;
   flex-shrink: 0;
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(148, 163, 184, 0.1);
@@ -18775,7 +18776,8 @@ body.wm-resizing {
   height: 58px !important;
   max-width: 58px !important;
   max-height: 58px !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
+  object-position: center center !important;
   flex: 0 0 58px !important;
 }
 
