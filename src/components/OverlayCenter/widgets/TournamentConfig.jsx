@@ -645,7 +645,9 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
       </div>
 
       {/* Tab nav */}
-      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 0 }} />
+      {tabs.length > 1 && (
+        <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 0 }} />
+      )}
 
       {/* ═══════ BRACKET TAB ═══════ */}
       {activeTab === 'bracket' && (

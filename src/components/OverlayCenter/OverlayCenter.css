@@ -24271,3 +24271,343 @@ body.wm-resizing {
   }
 }
 
+/* Final widget-detail polish: Tournament and Current Slot cleanup. */
+.oc2-detail--current-slot .cs-page {
+  display: grid !important;
+  gap: 16px !important;
+}
+
+.oc2-detail--current-slot .cs-page-hero {
+  display: grid !important;
+  grid-template-columns: minmax(320px, 0.82fr) minmax(560px, 1.18fr) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+.oc2-detail--current-slot .cs-page-hero-copy {
+  display: flex !important;
+  min-width: 0 !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 12px !important;
+}
+
+.oc2-detail--current-slot .cs-page-title {
+  max-width: 12ch !important;
+  font-size: clamp(2rem, 4vw, 3.45rem) !important;
+  line-height: 0.98 !important;
+  letter-spacing: 0 !important;
+}
+
+.oc2-detail--current-slot .cs-page-subtitle,
+.oc2-detail--current-slot .cs-page-note {
+  max-width: 58ch !important;
+  font-size: 0.98rem !important;
+}
+
+.oc2-detail--current-slot .cs-page-hero-side {
+  display: grid !important;
+  grid-template-columns: minmax(250px, 0.92fr) minmax(260px, 1fr) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+  min-width: 0 !important;
+}
+
+.oc2-detail--current-slot .cs-slot-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-content: start !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  padding: 14px !important;
+}
+
+.oc2-detail--current-slot .cs-slot-media {
+  width: 100% !important;
+  min-height: 0 !important;
+  aspect-ratio: 16 / 10 !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  background:
+    radial-gradient(circle at 24% 16%, rgba(125, 211, 252, 0.16), transparent 40%),
+    rgba(3, 7, 14, 0.72) !important;
+}
+
+.oc2-detail--current-slot .cs-slot-copy {
+  display: grid !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+.oc2-detail--current-slot .cs-slot-name,
+.oc2-detail--current-slot .cs-page-metric-value {
+  display: block !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+}
+
+.oc2-detail--current-slot .cs-slot-name {
+  font-size: clamp(1.1rem, 1.5vw, 1.45rem) !important;
+  line-height: 1.1 !important;
+}
+
+.oc2-detail--current-slot .cs-slot-meta,
+.oc2-detail--current-slot .cs-page-metric-meta {
+  display: block !important;
+  min-width: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.oc2-detail--current-slot .cs-page-metrics {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--current-slot .cs-page-metric-card {
+  display: grid !important;
+  align-content: center !important;
+  gap: 5px !important;
+  min-height: 78px !important;
+  padding: 12px 14px !important;
+}
+
+.oc2-detail--current-slot .cs-content-grid {
+  display: grid !important;
+  grid-template-columns: minmax(340px, 1fr) minmax(420px, 0.86fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+.oc2-detail--current-slot .cs-card {
+  overflow: visible !important;
+}
+
+.oc2-detail--current-slot .cs-card-header,
+.oc2-detail--current-slot .cs-section-heading {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.oc2-detail--current-slot .cs-field-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(170px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.oc2-detail--current-slot .cs-field,
+.oc2-detail--current-slot .cs-color-field {
+  display: grid !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+}
+
+.oc2-detail--current-slot .cs-field-label {
+  display: block !important;
+  line-height: 1.2 !important;
+}
+
+.oc2-detail--current-slot .cs-field input,
+.oc2-detail--current-slot .cs-search-input {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.oc2-detail--current-slot .cs-field--full {
+  grid-column: 1 / -1 !important;
+}
+
+.oc2-detail--current-slot .cs-field--compact {
+  max-width: none !important;
+}
+
+.oc2-detail--current-slot .cs-search-results {
+  z-index: 160 !important;
+}
+
+.oc2-detail--current-slot .cs-selected-slot {
+  display: grid !important;
+  grid-template-columns: 70px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.oc2-detail--current-slot .cs-card-chip,
+.oc2-detail--current-slot .cs-section-pill {
+  border-radius: 12px !important;
+}
+
+.oc2-detail--tournament .tm-command-bar {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.oc2-detail--tournament .tm-command-status {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+.oc2-detail--tournament .tm-status-pill,
+.oc2-detail--tournament .tm-section-pill {
+  min-height: 30px !important;
+  border-radius: 10px !important;
+  padding: 0 10px !important;
+  background: rgba(7, 12, 21, 0.68) !important;
+  border: 1px solid rgba(72, 89, 118, 0.72) !important;
+  color: #c8d7e8 !important;
+  box-shadow: none !important;
+}
+
+.oc2-detail--tournament .bk-type-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--tournament .bk-type-btn {
+  display: grid !important;
+  grid-template-columns: 38px minmax(0, 1fr) !important;
+  grid-template-areas:
+    "icon name"
+    "icon desc" !important;
+  align-items: center !important;
+  min-height: 78px !important;
+  padding: 12px !important;
+  border-radius: 16px !important;
+  text-align: left !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(125, 211, 252, 0.08), transparent 36%),
+    rgba(7, 12, 21, 0.62) !important;
+  border: 1px solid rgba(72, 89, 118, 0.72) !important;
+  color: var(--sc-text) !important;
+  box-shadow: none !important;
+}
+
+.oc2-detail--tournament .bk-type-icon {
+  grid-area: icon !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 12px !important;
+  background: rgba(125, 211, 252, 0.12) !important;
+  border: 1px solid rgba(125, 211, 252, 0.18) !important;
+  font-size: 1rem !important;
+}
+
+.oc2-detail--tournament .bk-type-name {
+  grid-area: name !important;
+  font-size: 0.9rem !important;
+  line-height: 1.15 !important;
+}
+
+.oc2-detail--tournament .bk-type-desc {
+  grid-area: desc !important;
+  text-align: left !important;
+  font-size: 0.74rem !important;
+  line-height: 1.35 !important;
+  color: #8ea2bb !important;
+}
+
+.oc2-detail--tournament .bk-type-btn:hover {
+  border-color: rgba(125, 211, 252, 0.38) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(125, 211, 252, 0.14), transparent 36%),
+    rgba(12, 20, 33, 0.82) !important;
+}
+
+.oc2-detail--tournament .bk-type-btn--active {
+  color: #061018 !important;
+  border-color: rgba(125, 211, 252, 0.7) !important;
+  background: linear-gradient(135deg, rgba(125, 211, 252, 0.98), rgba(94, 234, 212, 0.9)) !important;
+  box-shadow: 0 16px 34px rgba(45, 212, 191, 0.18) !important;
+}
+
+.oc2-detail--tournament .bk-type-btn--active .bk-type-icon {
+  background: rgba(6, 16, 24, 0.14) !important;
+  border-color: rgba(6, 16, 24, 0.18) !important;
+}
+
+.oc2-detail--tournament .bk-type-btn--active .bk-type-name,
+.oc2-detail--tournament .bk-type-btn--active .bk-type-desc {
+  color: #061018 !important;
+}
+
+.oc2-detail--tournament .bk-count-row {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 6px 0 0 !important;
+  padding: 6px !important;
+  border-radius: 16px !important;
+  background: rgba(3, 7, 14, 0.58) !important;
+  border: 1px solid rgba(72, 89, 118, 0.64) !important;
+}
+
+.oc2-detail--tournament .bk-count-btn {
+  min-height: 42px !important;
+  border-radius: 11px !important;
+  padding: 0 10px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: #cbd7e6 !important;
+  box-shadow: none !important;
+}
+
+.oc2-detail--tournament .bk-count-btn:hover {
+  border-color: rgba(125, 211, 252, 0.28) !important;
+  background: rgba(125, 211, 252, 0.08) !important;
+}
+
+.oc2-detail--tournament .bk-count-btn--active {
+  color: #061018 !important;
+  border-color: rgba(125, 211, 252, 0.62) !important;
+  background: linear-gradient(135deg, rgba(125, 211, 252, 0.96), rgba(94, 234, 212, 0.86)) !important;
+  box-shadow: 0 12px 26px rgba(45, 212, 191, 0.16) !important;
+}
+
+@media (max-width: 1180px) {
+  .oc2-detail--current-slot .cs-page-hero,
+  .oc2-detail--current-slot .cs-content-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .oc2-detail--current-slot .cs-page-hero-side {
+    grid-template-columns: minmax(260px, 0.9fr) minmax(260px, 1fr) !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .oc2-detail--current-slot .cs-page-hero-side,
+  .oc2-detail--current-slot .cs-field-grid,
+  .oc2-detail--current-slot .cs-page-metrics,
+  .oc2-detail--tournament .bk-type-grid,
+  .oc2-detail--tournament .bk-count-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .oc2-detail--current-slot .cs-selected-slot {
+    grid-template-columns: 56px minmax(0, 1fr) !important;
+  }
+
+  .oc2-detail--current-slot .cs-clear-btn {
+    grid-column: 1 / -1 !important;
+  }
+
+  .oc2-detail--tournament .tm-command-bar {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .oc2-detail--tournament .tm-command-status {
+    justify-content: flex-start !important;
+  }
+}
+
