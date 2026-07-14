@@ -1,48 +1,8 @@
+import { LEGACY_MOLLIE_PLANS, loadBillingPlan } from './premium-data.js';
+
 export const BILLING_PROVIDER = 'mollie';
 
-export const BILLING_PLANS = {
-  monthly: {
-    label: '1 Month',
-    amount: '15.00',
-    amountEnv: 'MOLLIE_AMOUNT_MONTHLY',
-    interval: '1 month',
-    intervalMonths: 1,
-    productCode: 'streamer_premium',
-  },
-  quarterly: {
-    label: '3 Months',
-    amount: '40.00',
-    amountEnv: 'MOLLIE_AMOUNT_QUARTERLY',
-    interval: '3 months',
-    intervalMonths: 3,
-    productCode: 'streamer_premium',
-  },
-  semiannual: {
-    label: '6 Months',
-    amount: '60.00',
-    amountEnv: 'MOLLIE_AMOUNT_SEMIANNUAL',
-    interval: '6 months',
-    intervalMonths: 6,
-    productCode: 'streamer_premium',
-  },
-  annual: {
-    label: '12 Months',
-    amount: '120.00',
-    amountEnv: 'MOLLIE_AMOUNT_ANNUAL',
-    interval: '12 months',
-    intervalMonths: 12,
-    productCode: 'streamer_premium',
-  },
-  player_monthly: {
-    label: 'Player',
-    amount: '3.00',
-    amountEnv: 'MOLLIE_AMOUNT_PLAYER_MONTHLY',
-    interval: '1 month',
-    intervalMonths: 1,
-    productCode: 'player_bonus_hunt',
-    monthlyPrice: '3.00',
-  },
-};
+export const BILLING_PLANS = LEGACY_MOLLIE_PLANS;
 
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing']);
 const MOLLIE_API_BASE = 'https://api.mollie.com/v2';
@@ -76,16 +36,21 @@ function normalizeAmount(value, label) {
   return numeric.toFixed(2);
 }
 
-export function getPlanPrice(planId) {
-  const plan = BILLING_PLANS[planId];
-  if (!plan) {
-    const err = new Error('Unknown subscription plan');
-    err.statusCode = 400;
-    throw err;
-  }
+export async function getPlanPrice(supabase, planId, options = {}) {
+  const plan = await loadBillingPlan(supabase, planId, options);
+  const amount = normalizeAmount(plan.amount, planId);
+  return { ...plan, amount };
+}
 
-  const amount = normalizeAmount(process.env[plan.amountEnv] || plan.amount, planId);
-  return { ...plan, id: planId, amount, currency: 'EUR' };
+function planWithMetadataPrice(plan, metadata = {}) {
+  const priceCents = Number(metadata.price_cents || metadata.priceCents || 0);
+  if (!Number.isFinite(priceCents) || priceCents <= 0) return plan;
+  return {
+    ...plan,
+    amount: normalizeAmount(priceCents / 100, plan.id),
+    priceCents,
+    currency: metadata.currency || plan.currency,
+  };
 }
 
 function mollieApiKey() {
@@ -180,7 +145,7 @@ export async function createCheckoutSession({
   successPath = '/premium',
   cancelPath = '/premium',
 }) {
-  const plan = getPlanPrice(planId);
+  const plan = await getPlanPrice(supabase, planId);
   const siteUrl = getSiteUrl(req);
   const customerId = await findOrCreateMollieCustomer(supabase, user);
   const productCode = plan.productCode || 'streamer_premium';
@@ -189,13 +154,17 @@ export async function createCheckoutSession({
     user_id: user.id,
     plan_id: plan.id,
     product_code: productCode,
+    product_type: plan.productType || null,
+    price_cents: plan.priceCents || null,
+    currency: plan.currency,
+    provider_price_id: plan.providerPriceId || null,
     interval: plan.interval,
     interval_months: plan.intervalMonths,
   };
 
   const payment = await mollieRequest('/payments', {
     method: 'POST',
-    idempotencyKey: `checkout-${user.id}-${plan.id}-${Date.now()}`,
+    idempotencyKey: `checkout-${user.id}-${plan.id}-${new Date().toISOString().slice(0, 16)}`,
     body: {
       amount: { currency: plan.currency, value: plan.amount },
       description: `StreamersCenter ${plan.label}`,
@@ -376,6 +345,13 @@ async function upsertMollieSubscription(supabase, { subscription, payment, plan,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,product_code' });
     throwSupabaseError(playerResult, 'Failed to sync player product subscription');
+    if (isPremiumActive) {
+      await supabase
+        .from('user_trials')
+        .update({ status: 'converted', updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('status', 'active');
+    }
     return { userId, active: ACTIVE_SUBSCRIPTION_STATUSES.has(status), status, productCode };
   }
 
@@ -408,6 +384,14 @@ async function upsertMollieSubscription(supabase, { subscription, payment, plan,
     throwSupabaseError(insertResult, 'Failed to create premium role');
   }
 
+  if (isPremiumActive) {
+    await supabase
+      .from('user_trials')
+      .update({ status: 'converted', updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('status', 'active');
+  }
+
   return { userId, active: isPremiumActive, status, productCode };
 }
 
@@ -415,7 +399,10 @@ export async function syncMolliePayment(supabase, payment, req) {
   if (!payment?.id) return null;
 
   const metadata = payment.metadata || {};
-  const plan = getPlanPrice(metadata.plan_id || 'monthly');
+  const plan = planWithMetadataPrice(
+    await getPlanPrice(supabase, metadata.plan_id || 'monthly', { requireActive: false }),
+    metadata,
+  );
   const paidAt = payment.paidAt || new Date().toISOString();
 
   if (payment.subscriptionId) {

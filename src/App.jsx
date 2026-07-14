@@ -36,6 +36,7 @@ import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
 const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'));
+const AdminSubscriptionsPage = lazy(() => import('./components/AdminSubscriptions/AdminSubscriptionsPage'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
@@ -347,6 +348,11 @@ function App() {
                 <Route path="/admin" element={
                   <ProtectedAdminRoute>
                     <AdminPanel />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/subscriptions" element={
+                  <ProtectedAdminRoute>
+                    <AdminSubscriptionsPage />
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/overlay-center/*" element={

@@ -3,6 +3,7 @@ import {
   BadgeEuro,
   BarChart3,
   Code2,
+  CreditCard,
   Crown,
   Grid3X3,
   LayoutDashboard,
@@ -44,6 +45,7 @@ export default function AppsPage() {
     ] : []),
     ...(isAdmin ? [
       { to: '/admin', label: 'Admin Panel', desc: 'Platform management', icon: Shield, tone: 'red', art: 'admin' },
+      { to: '/admin/subscriptions', label: 'Subscriptions', desc: 'Plans, trials and pricing copy', icon: CreditCard, tone: 'cyan', art: 'premium' },
       { to: '/overlay-center/approvals', label: 'Approvals', desc: 'Review submitted slots', icon: Shield, tone: 'red', art: 'approvals' },
       { to: '/analytics', label: 'Analytics', desc: 'Platform statistics', icon: BarChart3, tone: 'blue', art: 'analytics' },
       { to: '/developer', label: 'Developer', desc: 'Internal developer tools', icon: Code2, tone: 'cyan', art: 'developer' },

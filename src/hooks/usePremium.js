@@ -18,6 +18,25 @@ export function usePremium() {
       }
 
       try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (token) {
+          const response = await fetch('/api/premium?action=status', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.ok) {
+            const payload = await response.json();
+            const access = payload.access || {};
+            if (access.hasStreamerAccess) {
+              const trialExpiry = access.activeTrial?.expires_at || access.trial?.expires_at || null;
+              const subscriptionExpiry = access.currentSubscription?.currentPeriodEnd || null;
+              setIsPremium(true);
+              setPremiumUntil(trialExpiry ? new Date(trialExpiry) : subscriptionExpiry ? new Date(subscriptionExpiry) : null);
+              return;
+            }
+          }
+        }
+
         const { data, error } = await supabase
           .from('user_roles')
           .select('role, is_active, access_expires_at')

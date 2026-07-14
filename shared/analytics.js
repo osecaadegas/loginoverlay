@@ -41,6 +41,17 @@ export const ANALYTICS_EVENTS = {
   STREAMER_PREMIUM_VIEWED: 'streamer_premium_viewed',
   STREAMER_PREMIUM_CHECKOUT_STARTED: 'streamer_premium_checkout_started',
 
+  PREMIUM_PAGE_VIEWED: 'premium_page_viewed',
+  PRODUCT_TYPE_SELECTED: 'product_type_selected',
+  FREE_TRIAL_STARTED: 'free_trial_started',
+  FREE_TRIAL_ACTIVATION_FAILED: 'free_trial_activation_failed',
+  PRICING_PLAN_SELECTED: 'pricing_plan_selected',
+  CHECKOUT_STARTED: 'checkout_started',
+  CHECKOUT_FAILED: 'checkout_failed',
+  SUBSCRIPTION_STARTED: 'subscription_started',
+  PLAN_CHANGED: 'plan_changed',
+  BILLING_PORTAL_OPENED: 'billing_portal_opened',
+
   OVERLAY_SETUP_STARTED: 'overlay_setup_started',
   OVERLAY_SETUP_STEP_COMPLETED: 'overlay_setup_step_completed',
   OVERLAY_SETUP_COMPLETED: 'overlay_setup_completed',
