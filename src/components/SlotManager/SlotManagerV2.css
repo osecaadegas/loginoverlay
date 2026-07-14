@@ -2475,6 +2475,38 @@
   }
 }
 
+/* Keep toolbar dropdowns above the slot table. */
+.slot-manager-v2 .sm-control-panel {
+  position: relative;
+  z-index: 90;
+  overflow: visible;
+}
+
+.slot-manager-v2 .sm-toolbar,
+.slot-manager-v2 .sm-toolbar-left,
+.slot-manager-v2 .sm-toolbar-right,
+.slot-manager-v2 .sm-dropdown {
+  overflow: visible;
+}
+
+.slot-manager-v2 .sm-dropdown {
+  z-index: 100;
+}
+
+.slot-manager-v2 .sm-dropdown:has(.sm-dropdown-menu) {
+  z-index: 120;
+}
+
+.slot-manager-v2 .sm-dropdown-menu {
+  z-index: 5000;
+  max-height: min(360px, calc(100vh - 240px));
+}
+
+.slot-manager-v2 .sm-table-wrap {
+  position: relative;
+  z-index: 1;
+}
+
 @supports not (color: color-mix(in srgb, red 50%, transparent)) {
   .slot-manager-v2 .sm-dot,
   .slot-manager-v2 .sm-vol {
