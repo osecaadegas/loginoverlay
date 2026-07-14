@@ -87,9 +87,15 @@ const findExistingProvider = (provider, providers) => {
   return providers.find(item => item.toLowerCase() === candidate) || '';
 };
 
-const ProviderPicker = memo(({ providers, value, onChange }) => {
+const normalizeProviderName = (provider) => String(provider || '').trim().replace(/\s+/g, ' ');
+
+const toProviderSlug = (provider) => normalizeProviderName(provider).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+const ProviderPicker = memo(({ providers, value, onChange, onCreateProvider }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
   const ref = useRef(null);
 
   useEffect(() => {
@@ -107,7 +113,25 @@ const ProviderPicker = memo(({ providers, value, onChange }) => {
   const choose = (provider) => {
     onChange(provider);
     setSearch('');
+    setCreateError('');
     setOpen(false);
+  };
+
+  const proposedProvider = normalizeProviderName(search);
+  const canCreateProvider = !!onCreateProvider && proposedProvider && !findExistingProvider(proposedProvider, providers);
+
+  const createProvider = async () => {
+    if (!canCreateProvider) return;
+    setCreating(true);
+    setCreateError('');
+    try {
+      const created = await onCreateProvider(proposedProvider);
+      choose(created || proposedProvider);
+    } catch (error) {
+      setCreateError(getErrorMessage(error, 'Could not add provider.'));
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -118,7 +142,7 @@ const ProviderPicker = memo(({ providers, value, onChange }) => {
       </button>
       {open && (
         <div className="sm-provider-picker-menu">
-          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search providers…" autoFocus />
+          <input value={search} onChange={event => { setSearch(event.target.value); setCreateError(''); }} placeholder="Search providers…" autoFocus />
           <div className="sm-provider-picker-list">
             {filtered.map(provider => (
               <button key={provider} type="button" className={`sm-provider-picker-option ${value === provider ? 'selected' : ''}`} onClick={() => choose(provider)}>
@@ -127,6 +151,12 @@ const ProviderPicker = memo(({ providers, value, onChange }) => {
               </button>
             ))}
             {filtered.length === 0 && <p className="sm-provider-picker-empty">No existing provider found</p>}
+            {canCreateProvider && (
+              <button type="button" className="sm-provider-picker-create" onClick={createProvider} disabled={creating}>
+                {creating ? 'Adding provider…' : `+ Add "${proposedProvider}" provider`}
+              </button>
+            )}
+            {createError && <p className="sm-provider-picker-error">{createError}</p>}
           </div>
         </div>
       )}
@@ -183,7 +213,7 @@ const DropdownFilter = memo(({ label, options, selected, onChange }) => {
    SLIDE-IN EDITOR PANEL
    ═══════════════════════════════════════════════════════════════════ */
 
-const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew }) => {
+const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew, onCreateProvider }) => {
   const [form, setForm] = useState(slot || {});
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('basic');
@@ -326,7 +356,12 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
               </label>
               <label className="sm-field">
                 <span>Provider <em>*</em></span>
-                <ProviderPicker providers={providers} value={form.provider || ''} onChange={provider => set('provider', provider)} />
+                <ProviderPicker
+                  providers={providers}
+                  value={form.provider || ''}
+                  onChange={provider => set('provider', provider)}
+                  onCreateProvider={onCreateProvider}
+                />
               </label>
               <label className="sm-field">
                 <span>Image URL <em>*</em></span>
@@ -640,7 +675,23 @@ const SlotManagerV2 = () => {
   /* ── Load providers ────────────────────────────────────────── */
   const loadProviders = useCallback(async () => {
     try {
-      // Paginate to get ALL slots — Supabase defaults to 1000 row limit
+      const providerNames = new Set();
+
+      try {
+        const { data: managedProviders, error: providerError } = await supabase
+          .from('slot_providers')
+          .select('name')
+          .order('name')
+          .limit(1000);
+        if (!providerError && Array.isArray(managedProviders)) {
+          managedProviders.forEach(row => {
+            const name = normalizeProviderName(row.name);
+            if (name) providerNames.add(name);
+          });
+        }
+      } catch { /* slot_providers may not exist in older databases */ }
+
+      // Paginate to get ALL slot-used providers — Supabase defaults to 1000 row limit.
       let all = [];
       let from = 0;
       const step = 1000;
@@ -653,7 +704,11 @@ const SlotManagerV2 = () => {
         if (data.length < step) done = true;
         from += step;
       }
-      setProviders([...new Set(all.map(d => (d.provider || '').trim()))].filter(Boolean).sort());
+      all.forEach(row => {
+        const name = normalizeProviderName(row.provider);
+        if (name) providerNames.add(name);
+      });
+      setProviders([...providerNames].sort((a, b) => a.localeCompare(b)));
     } catch (e) {
       console.error('loadProviders:', e);
     }
@@ -709,6 +764,35 @@ const SlotManagerV2 = () => {
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
   /* ── CRUD ──────────────────────────────────────────────────── */
+  const handleCreateProvider = useCallback(async (rawName) => {
+    const name = normalizeProviderName(rawName);
+    if (!name) throw new Error('Provider name is required.');
+
+    const existing = findExistingProvider(name, providers);
+    if (existing) return existing;
+
+    const slug = toProviderSlug(name);
+    if (!slug) throw new Error('Provider name must include letters or numbers.');
+
+    const { data, error } = await supabase
+      .from('slot_providers')
+      .insert([{ name, slug }])
+      .select('name')
+      .single();
+
+    if (error) throw error;
+
+    const createdName = normalizeProviderName(data?.name) || name;
+    setProviders(prev => {
+      const next = new Set(prev);
+      next.add(createdName);
+      return [...next].sort((a, b) => a.localeCompare(b));
+    });
+    notify(`Provider "${createdName}" added`);
+    await loadProviders();
+    return createdName;
+  }, [loadProviders, notify, providers]);
+
   const handleSave = useCallback(async (formData) => {
     try {
       const d = {
@@ -750,7 +834,7 @@ const SlotManagerV2 = () => {
       console.error('handleSave:', e);
       notify(getErrorMessage(e, 'Could not save slot.'), 'error');
     }
-  }, [isNewSlot, loadSlots, loadProviders, notify]);
+  }, [isNewSlot, loadSlots, loadProviders, notify, providers]);
 
   const handleDelete = useCallback(async (id) => {
     try {
@@ -1261,6 +1345,7 @@ const SlotManagerV2 = () => {
           onClose={() => { setEditorSlot(null); setIsNewSlot(false); }}
           onSave={handleSave}
           onDelete={handleDelete}
+          onCreateProvider={handleCreateProvider}
         />
       )}
       {showProviders && <ProviderManager onClose={() => setShowProviders(false)} />}

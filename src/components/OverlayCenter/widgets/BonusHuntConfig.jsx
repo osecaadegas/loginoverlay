@@ -1519,6 +1519,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             return sorted.map((bonus, i) => {
               const realIdx = canDrag ? bonusList.indexOf(bonus) : i;
               const needsInput = bonusOpening && bonus.id === firstUnopenedId;
+              const bonusType = bonus.isExtremeBonus ? 'extreme' : bonus.isSuperBonus ? 'super' : '';
               return (
             <div key={bonus.id}
               className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''} ${bonus.isExtremeBonus ? 'bh-list-item--extreme' : ''}${dragIdx === realIdx ? ' bh-list-item--dragging' : ''}${needsInput ? ' bh-list-item--needs-input' : ''}`}
@@ -1568,8 +1569,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     <div className="bh-list-info">
                       <span className="bh-list-name">
                         {bonus.slotName || bonus.slot?.name}
-                        {bonus.isSuperBonus && <span className="bh-list-super-badge">SUPER</span>}
-                        {bonus.isExtremeBonus && <span className="bh-list-extreme-badge">EXTREME</span>}
                       </span>
                       {bonus.slot?.provider && <BonusHuntProviderLogo provider={bonus.slot.provider} />}
                     </div>
@@ -1639,6 +1638,11 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </svg>
                   </button>
                 </>
+              )}
+              {bonusType && (
+                <span className={`bh-list-type-ribbon bh-list-type-ribbon--${bonusType}`}>
+                  {bonusType === 'extreme' ? 'EXTREME' : 'SUPER'}
+                </span>
               )}
             </div>
               );

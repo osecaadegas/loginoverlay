@@ -327,6 +327,35 @@
   color: #8b949e;
   font-size: 12px;
 }
+.slot-manager-v2 .sm-provider-picker-create {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(88, 166, 255, 0.45);
+  border-radius: 6px;
+  background: rgba(88, 166, 255, 0.12);
+  color: #d8ecff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+.slot-manager-v2 .sm-provider-picker-create:hover:not(:disabled),
+.slot-manager-v2 .sm-provider-picker-create:focus-visible {
+  background: rgba(88, 166, 255, 0.18);
+  border-color: rgba(88, 166, 255, 0.7);
+  outline: none;
+}
+.slot-manager-v2 .sm-provider-picker-create:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.slot-manager-v2 .sm-provider-picker-error {
+  margin: 6px 4px 0;
+  color: #ffb4ad;
+  font-size: 11px;
+  line-height: 1.35;
+}
 .slot-manager-v2 .sm-clear-filters {
   background: none;
   border: none;
