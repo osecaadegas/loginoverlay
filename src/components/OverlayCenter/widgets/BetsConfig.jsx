@@ -647,43 +647,44 @@ export default function BetsConfig({ config, onChange }) {
           </label>
 
           {/* ── Chat reply messages ── */}
-          <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(16,185,129,0.07)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 4 }}>
+          <div className="cg-chat-template-card">
+            <div className="cg-chat-template-header">
               <div>
-                <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6ee7b7', marginBottom: 4 }}>
-                  Chat reply messages
-                </p>
-                {chatTemplateSaveMsg && <p style={{ fontSize: '0.72rem', color: '#86efac', margin: 0 }}>{chatTemplateSaveMsg}</p>}
+                <p className="cg-chat-template-title">Chat reply messages</p>
+                {chatTemplateSaveMsg && <p className="cg-chat-template-saved">{chatTemplateSaveMsg}</p>}
               </div>
               <button
                 type="button"
                 className="cg-config__btn cg-config__btn--primary"
                 onClick={saveChatTemplates}
-                style={{ flex: '0 0 auto', minWidth: 154, paddingInline: 14 }}
+                disabled={!chatTemplatesDirty}
               >
-                Save preset texts
+                {chatTemplatesDirty ? 'Save reply templates' : 'Saved'}
               </button>
             </div>
-            <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginBottom: 10 }}>
+            <p className="cg-chat-template-help">
               Write the exact chat replies the bot should send. These words are replaced automatically: <code style={{ color: '#c7d2fe' }}>{'{user}'}</code> viewer name, <code style={{ color: '#c7d2fe' }}>{'{amount}'}</code> bet amount, <code style={{ color: '#c7d2fe' }}>{'{option}'}</code> bracket label, <code style={{ color: '#c7d2fe' }}>{'{balance}'}</code> viewer balance, <code style={{ color: '#c7d2fe' }}>{'{winners}'}</code> winners, <code style={{ color: '#c7d2fe' }}>{'{total}'}</code> paid points.
             </p>
-            {CHAT_TEMPLATE_FIELDS.map(({ key, label, help, placeholder }) => (
-              <label key={key} className="cg-config__field" style={{ marginBottom: 6 }}>
-                <span style={{ fontSize: '0.75rem' }}>
-                  <strong style={{ display: 'block', color: '#dbeafe' }}>{label}</strong>
-                  <small style={{ display: 'block', color: '#94a3b8', fontSize: '0.68rem', fontWeight: 500 }}>{help}</small>
-                </span>
-                <input
-                  value={chatTemplateDrafts[key] ?? placeholder}
-                  onChange={e => {
-                    setChatTemplateDrafts(prev => ({ ...prev, [key]: e.target.value }));
-                    setChatTemplateSaveMsg('');
-                  }}
-                  placeholder={placeholder}
-                  style={{ fontSize: '0.75rem' }}
-                />
-              </label>
-            ))}
+            <div className="cg-chat-template-list">
+              {CHAT_TEMPLATE_FIELDS.map(({ key, label, help, placeholder }) => (
+                <label key={key} className="cg-chat-template-field">
+                  <span>
+                    <strong>{label}</strong>
+                    <small>{help}</small>
+                  </span>
+                  <textarea
+                    rows={2}
+                    value={chatTemplateDrafts[key] ?? placeholder}
+                    onChange={e => {
+                      setChatTemplateDrafts(prev => ({ ...prev, [key]: e.target.value }));
+                      setChatTemplateSaveMsg('');
+                    }}
+                    placeholder={placeholder}
+                    className="cg-chat-template-input"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
         </div>
       )}

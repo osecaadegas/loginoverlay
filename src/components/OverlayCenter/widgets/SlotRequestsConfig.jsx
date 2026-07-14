@@ -47,6 +47,31 @@ const S = {
   },
 };
 
+const SLOT_REQUEST_MESSAGE_TEMPLATES = [
+  { key: 'srMsgAccepted', label: 'Success: accepted (free)', def: '\uD83C\uDFB0 Added "{slot}" to the queue (requested by {user})' },
+  { key: 'srMsgAcceptedCost', label: 'Success: accepted (with cost)', def: '\uD83C\uDFB0 Added "{slot}" to the queue ({user} \u2014 {cost} points deducted)' },
+  { key: 'srMsgNotEnough', label: 'Error: not enough points', def: '\u274C {user}, you need {cost} points to request a slot (you have {points}).' },
+  { key: 'srMsgDuplicate', label: 'Error: already in queue', def: '\u26A0\uFE0F {user}, "{slot}" is already in the queue (requested by {by}). No points taken!' },
+  { key: 'srMsgRejected', label: 'Refund: rejected request', def: '\uD83D\uDEAB {user}, your request for "{slot}" was rejected. {refund}' },
+  { key: 'srMsgClearAll', label: 'Refund: clear whole queue', def: '\uD83D\uDDD1\uFE0F The slot request queue has been cleared. All points have been refunded!' },
+  { key: 'srMsgNoMatch', label: 'Error: slot not found', def: '\u274C {user}, could not find that slot. Please try again.' },
+  { key: 'srMsgCooldown', label: 'Error: cooldown active', def: '\u23F3 {user}, please wait before requesting another slot.' },
+  { key: 'srMsgQueueFull', label: 'Error: queue full', def: '\u274C {user}, the slot queue is full right now.' },
+];
+
+function getSlotRequestMessageValues(config = {}) {
+  return Object.fromEntries(
+    SLOT_REQUEST_MESSAGE_TEMPLATES.map(({ key, def }) => [
+      key,
+      typeof config[key] === 'string' ? config[key] : def,
+    ])
+  );
+}
+
+function slotRequestMessageSignature(values = {}) {
+  return SLOT_REQUEST_MESSAGE_TEMPLATES.map(({ key }) => values[key] || '').join('\u001f');
+}
+
 export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) {
   const { user } = useAuth();
   const c = config || {};
@@ -54,6 +79,8 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [seConnected, setSeConnected] = useState(false);
+  const [messageDrafts, setMessageDrafts] = useState(() => getSlotRequestMessageValues(c));
+  const [messageSaveMsg, setMessageSaveMsg] = useState('');
   // Monotonic counter — any fetchQueue result older than the latest is discarded.
   const fetchSeqRef = useRef(0);
 
@@ -102,6 +129,19 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
 
   const currentStyle = c.displayStyle || 'v1_minimal';
   const { set } = makePerStyleSetters(onChange, c, currentStyle, SLOT_REQUESTS_STYLE_KEYS);
+  const messageConfigValues = getSlotRequestMessageValues(c);
+  const messageConfigSignature = slotRequestMessageSignature(messageConfigValues);
+  const messageDraftSignature = slotRequestMessageSignature(messageDrafts);
+  const messageTemplatesDirty = messageDraftSignature !== messageConfigSignature;
+
+  useEffect(() => {
+    setMessageDrafts(getSlotRequestMessageValues(c));
+  }, [messageConfigSignature]);
+
+  const saveMessageTemplates = () => {
+    onChange({ ...c, ...messageDrafts });
+    setMessageSaveMsg('Saved reply templates');
+  };
 
   // Track which request IDs are currently in-flight so the buttons are disabled
   // until the server round-trip completes. This prevents double-click double-refund.
@@ -385,19 +425,35 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
                   <span className="sr-admin-card-chip sr-admin-card-chip--toggle" />
                 </summary>
                 <div className="sr-admin-disclosure-body">
-                  <p className="sr-admin-copy">
-                    Placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
-                  </p>
-                  <div className="sr-admin-message-list">
+                  <div className="sr-admin-message-toolbar">
+                    <p className="sr-admin-copy">
+                      Placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
+                    </p>
+                    <div className="sr-admin-message-save-wrap">
+                      {messageSaveMsg && <span className="sr-admin-message-saved">{messageSaveMsg}</span>}
+                      <button
+                        type="button"
+                        className="sr-admin-btn sr-admin-btn--primary sr-admin-message-save"
+                        onClick={saveMessageTemplates}
+                        disabled={!messageTemplatesDirty}
+                      >
+                        {messageTemplatesDirty ? 'Save reply templates' : 'Saved'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="sr-admin-message-list sr-admin-message-list--stacked">
                     {messageTemplates.map(({ key, label, def }) => (
                       <div key={key} className="sr-admin-message-field">
                         <label className="sr-admin-message-label">{label}</label>
-                        <input
-                          type="text"
-                          value={c[key] || def}
-                          onChange={e => set(key, e.target.value)}
-                          className="sr-admin-message-input"
-                          style={S.inputFull}
+                        <textarea
+                          rows={2}
+                          value={messageDrafts[key] ?? def}
+                          onChange={e => {
+                            setMessageDrafts(prev => ({ ...prev, [key]: e.target.value }));
+                            setMessageSaveMsg('');
+                          }}
+                          className="sr-admin-message-input sr-admin-message-textarea"
+                          placeholder={def}
                         />
                       </div>
                     ))}

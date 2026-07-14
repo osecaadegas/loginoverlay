@@ -24875,3 +24875,147 @@ body.wm-resizing {
   }
 }
 
+/* Readable chat reply template editors for Bets and Slot Requests. */
+.cg-chat-template-card {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(94, 234, 212, 0.18);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(13, 20, 31, 0.88), rgba(6, 11, 19, 0.92)),
+    rgba(16, 185, 129, 0.05);
+}
+
+.cg-chat-template-header,
+[data-tour="slot-requests-page"] .sr-admin-message-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cg-chat-template-title {
+  margin: 0;
+  color: #a7f3d0;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.cg-chat-template-saved,
+[data-tour="slot-requests-page"] .sr-admin-message-saved {
+  margin: 4px 0 0;
+  color: #86efac;
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.cg-chat-template-help {
+  margin: 0;
+  color: #9fb0c3;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.cg-chat-template-list,
+[data-tour="slot-requests-page"] .sr-admin-card--wide .sr-admin-message-list.sr-admin-message-list--stacked,
+[data-tour="slot-requests-page"] .sr-admin-message-list.sr-admin-message-list--stacked {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+.cg-chat-template-field,
+[data-tour="slot-requests-page"] .sr-admin-message-field {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 6px !important;
+  min-width: 0;
+}
+
+.cg-chat-template-field span {
+  display: grid;
+  gap: 2px;
+}
+
+.cg-chat-template-field strong,
+[data-tour="slot-requests-page"] .sr-admin-message-label {
+  color: #e5eefb;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.cg-chat-template-field small {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 550;
+  line-height: 1.35;
+}
+
+.cg-chat-template-input,
+[data-tour="slot-requests-page"] .sr-admin-message-textarea {
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 12px;
+  resize: vertical;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(13, 17, 23, 0.9), rgba(15, 20, 27, 0.78));
+  color: var(--oc-text-primary, #f8fafc);
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1.4;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.cg-chat-template-input:focus,
+[data-tour="slot-requests-page"] .sr-admin-message-textarea:focus {
+  border-color: rgba(125, 211, 252, 0.56);
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.14), 0 0 24px rgba(94, 234, 212, 0.08);
+  outline: none;
+}
+
+.cg-chat-template-header .cg-config__btn,
+[data-tour="slot-requests-page"] .sr-admin-message-save {
+  flex: 0 0 auto;
+  min-width: 166px;
+  min-height: 40px;
+  padding-inline: 14px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-message-save-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-btn--primary {
+  color: #061018;
+  background: linear-gradient(135deg, #7dd3fc, #5eead4);
+  border: 1px solid rgba(125, 211, 252, 0.56);
+  box-shadow: 0 12px 28px rgba(45, 212, 191, 0.14);
+}
+
+.cg-chat-template-header .cg-config__btn:disabled,
+[data-tour="slot-requests-page"] .sr-admin-message-save:disabled {
+  cursor: default;
+  opacity: 0.58;
+  filter: saturate(0.6);
+}
+
+@media (max-width: 720px) {
+  .cg-chat-template-header,
+  [data-tour="slot-requests-page"] .sr-admin-message-toolbar,
+  [data-tour="slot-requests-page"] .sr-admin-message-save-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cg-chat-template-header .cg-config__btn,
+  [data-tour="slot-requests-page"] .sr-admin-message-save {
+    width: 100%;
+  }
+}
+
