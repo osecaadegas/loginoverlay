@@ -886,18 +886,42 @@
   justify-content: center;
   padding: 18px;
   background:
-    radial-gradient(circle at 50% 44%, rgba(45, 212, 191, 0.08), transparent 36%),
-    linear-gradient(180deg, rgba(3, 6, 11, 0.76), rgba(3, 6, 11, 0.9));
+    radial-gradient(circle at 50% 30%, rgba(124, 247, 199, 0.12), transparent 34%),
+    radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(2, 6, 13, 0.78), rgba(2, 6, 13, 0.94));
+  backdrop-filter: blur(16px);
 }
 
 .lp-age-modal {
-  width: min(440px, 100%);
-  padding: 32px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(8, 13, 22, 0.95));
+  position: relative;
+  overflow: hidden;
+  width: min(480px, 100%);
+  padding: 30px;
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    rgba(9, 15, 26, 0.94);
   border: 1px solid rgba(226, 232, 240, 0.18);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.09);
   text-align: center;
+}
+
+.lp-age-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(190, 242, 100, 0.68), transparent);
+}
+
+.lp-age-modal__badge {
+  display: inline-flex;
+  padding: 6px;
+  margin-bottom: 18px;
+  border-radius: 24px;
+  background: rgba(134, 239, 172, 0.1);
+  border: 1px solid rgba(190, 242, 100, 0.24);
 }
 
 .lp-age-modal__icon {
@@ -906,47 +930,86 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  border-radius: 14px;
+  border-radius: 18px;
   background: linear-gradient(135deg, var(--lp-player), #d9f99d);
   color: #061018;
   font-size: 1.15rem;
   font-weight: 950;
-  margin-bottom: 18px;
+}
+
+.lp-age-modal__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #bef264;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .lp-age-modal h2 {
   margin: 0 0 10px;
   color: #f8fafc;
+  font-size: clamp(1.65rem, 4vw, 2.15rem);
   font-weight: 950;
+  letter-spacing: -0.04em;
 }
 
 .lp-age-modal p {
   color: var(--lp-muted);
   line-height: 1.6;
-  margin: 0 0 22px;
+  margin: 0 0 18px;
+}
+
+.lp-age-modal__notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 48px;
+  padding: 0 14px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.lp-age-modal__notice strong {
+  color: #ecfccb;
 }
 
 .lp-age-modal__actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .lp-age-modal button {
-  min-height: 46px;
+  min-height: 50px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 14px;
   color: #061018;
   background: linear-gradient(135deg, var(--lp-player), #d9f99d);
   font-weight: 900;
   cursor: pointer;
+  box-shadow: 0 14px 30px rgba(125, 211, 166, 0.18);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.lp-age-modal button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 38px rgba(125, 211, 166, 0.24);
 }
 
 .lp-age-modal__deny {
   color: #cbd5e1 !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: none !important;
 }
 
 .lp-age-modal small {

@@ -3,10 +3,10 @@ import SlotImage from './SlotImage';
 import { subValue } from './shared/appearanceStyles';
 
 /**
- * BonusHuntWidgetV11 — "Fever"
+ * BonusHuntWidgetV11 — Advanced List
  *
  * Layout:
- *  1. Compact header with icon, "BONUS HUNT" title, "fever" subtitle, hunt number
+ *  1. Compact header with dynamic bonus hunt title
  *  2. Stats row: START + BREAKEVEN
  *  3. Counts row: BONUSES total, SUPER count, EXTREME count
  *  4. Horizontal 3D carousel of slot cards (auto-scroll or snap-to-current during opening)
@@ -124,7 +124,6 @@ function BonusHuntWidgetV11({ config, theme }) {
         <div className="bht11-header-left">
           <div className="bht11-header-titles">
             <span className="bht11-header-title">{huntTitle}</span>
-            <span className="bht11-header-subtitle">fever</span>
           </div>
         </div>
       </div>

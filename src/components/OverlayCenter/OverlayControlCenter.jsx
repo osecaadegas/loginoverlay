@@ -857,15 +857,12 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
 
   const handleToggle = async () => {
     if (!widget) return;
-    if (widget.is_visible !== false) {
-      const ok = window.confirm('Disabling this tool will hide it from the live overlay. Continue?');
-      if (!ok) return;
-    }
     await saveWidget({ ...widget, is_visible: widget.is_visible === false });
     trackEvent(widget.is_visible === false ? ANALYTICS_EVENTS.OVERLAY_TOOL_ENABLED : ANALYTICS_EVENTS.OVERLAY_TOOL_DISABLED, { widget_type: widgetType });
   };
 
   const status = resolveToolStatus({ type: widgetType, widget, integrations });
+  const useFullWidthConfig = widgetType === 'slot_requests';
 
   const configPanel = (() => {
     if (!widget) return null;
@@ -880,7 +877,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
     }
 
     return (
-      <div className="oc2-config-shell">
+      <div className={`oc2-config-shell${useFullWidthConfig ? ' oc2-config-shell--full' : ''}`}>
         <div className="oc2-config-main">
           <ConfigComponent
             config={widget.config || {}}
@@ -889,10 +886,10 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
               trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, { widget_type: widgetType, tab: 'setup' });
             }}
             allWidgets={widgets}
-            mode="sidebar"
+            mode={useFullWidthConfig ? 'full' : 'sidebar'}
           />
         </div>
-        <aside className="oc2-config-side">
+        {!useFullWidthConfig && <aside className="oc2-config-side">
           <div className="oc2-config-side-card">
             <h3>Status</h3>
             <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
@@ -914,13 +911,13 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
             </dl>
           </div>
           <BetsBracketShortcutTiles widget={widget} saveWidget={saveWidget} />
-        </aside>
+        </aside>}
       </div>
     );
   })();
 
   return (
-    <section className="oc2-detail" data-tour="widget-detail-page">
+    <section className={`oc2-detail${useFullWidthConfig ? ` oc2-detail--${widgetType.replace(/_/g, '-')}` : ''}`} data-tour="widget-detail-page">
       <div className="oc2-detail-header">
         <Link className="oc2-back-link" to="/overlay-center"><ArrowLeft size={16} /> Back to tools</Link>
         <div>
@@ -1546,11 +1543,6 @@ export default function OverlayControlCenter() {
   };
 
   const handleToggleTool = async (widget) => {
-    if (widget.is_visible !== false) {
-      const title = FEATURE_COPY[widget.widget_type]?.title || widget.label || 'this tool';
-      const ok = window.confirm(`Disable ${title}? It will be hidden from the live overlay.`);
-      if (!ok) return;
-    }
     await saveWidget({ ...widget, is_visible: widget.is_visible === false });
     trackEvent(widget.is_visible === false ? ANALYTICS_EVENTS.OVERLAY_TOOL_ENABLED : ANALYTICS_EVENTS.OVERLAY_TOOL_DISABLED, { widget_type: widget.widget_type });
   };

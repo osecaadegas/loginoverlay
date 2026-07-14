@@ -867,18 +867,25 @@ export default function LandingPage({ mode = 'selector' }) {
       {showAgeVerification && (
         <div className="lp-age-overlay" role="dialog" aria-modal="true" aria-labelledby="lp-age-title">
           <div className="lp-age-modal">
-            <span className="lp-age-modal__icon">18+</span>
-            <h2 id="lp-age-title">Age Verification</h2>
-            <p>This website contains gambling-related content. You must be 18 or older to enter.</p>
+            <div className="lp-age-modal__badge" aria-hidden="true">
+              <span className="lp-age-modal__icon">18+</span>
+            </div>
+            <span className="lp-age-modal__eyebrow">Responsible access</span>
+            <h2 id="lp-age-title">Confirm your age</h2>
+            <p>Streamers Center includes gambling-related tools and content. Please confirm you are old enough to continue.</p>
+            <div className="lp-age-modal__notice">
+              <span>Age restricted</span>
+              <strong>18+ only</strong>
+            </div>
             <div className="lp-age-modal__actions">
               <button type="button" onClick={() => { localStorage.setItem('ageVerified', 'true'); setShowAgeVerification(false); }}>
-                I am 18+
+                Enter site
               </button>
               <button type="button" className="lp-age-modal__deny" onClick={() => { window.location.href = 'https://www.google.com'; }}>
                 Exit
               </button>
             </div>
-            <small>18+ only. Please play responsibly.</small>
+            <small>Please play responsibly.</small>
           </div>
         </div>
       )}

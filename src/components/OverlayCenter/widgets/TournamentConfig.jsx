@@ -622,7 +622,7 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
 
   const currency = c.arenaCurrency || '€';
   const readyPlayersCount = localBracketPlayers.filter(player => player.name.trim().length > 0).length;
-  const activeRoundLabel = bracketData[bracketActiveRound]?.label || 'Setup';
+  const selectedTournamentType = TOURNAMENT_TYPES[bracketType];
   const activeMatchLabel = bracketPhase === 'setup'
     ? `${readyPlayersCount}/${bracketPlayerCount} ready`
     : bracketData[bracketActiveRound]?.matches?.length
@@ -631,41 +631,21 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
 
   return (
     <div className="bh-config tm-page">
-
-      <div className="tm-page-hero">
-        <div className="tm-page-hero-copy">
-          <span className="tm-page-eyebrow">Competitive Overlay</span>
-          <h3 className="tm-page-title">Tournament control room</h3>
-          <p className="tm-page-subtitle">
-            Seed players, assign slots, manage live rounds, and keep the bracket stream-ready from one premium control surface.
-          </p>
+      <div className="tm-command-bar">
+        <div className="tm-command-copy">
+          <span className="tm-page-eyebrow">Widget detail</span>
+          <h3 className="tm-page-title">Tournament</h3>
+          <p className="tm-page-subtitle">Build the bracket, assign players, and run matches without leaving this screen.</p>
         </div>
-        <div className="tm-page-metrics">
-          <div className="tm-page-metric-card">
-            <span className="tm-page-metric-label">Phase</span>
-            <strong className="tm-page-metric-value">{bracketPhase === 'setup' ? 'Setup' : bracketPhase === 'active' ? 'Live' : 'Done'}</strong>
-            <span className="tm-page-metric-meta">{activeRoundLabel}</span>
-          </div>
-          <div className="tm-page-metric-card">
-            <span className="tm-page-metric-label">Players</span>
-            <strong className="tm-page-metric-value">{bracketPlayerCount}</strong>
-            <span className="tm-page-metric-meta">{readyPlayersCount} ready to start</span>
-          </div>
-          <div className="tm-page-metric-card">
-            <span className="tm-page-metric-label">Matches</span>
-            <strong className="tm-page-metric-value">{bracketStats.total}</strong>
-            <span className="tm-page-metric-meta">{bracketStats.completed} completed</span>
-          </div>
-          <div className="tm-page-metric-card">
-            <span className="tm-page-metric-label">Focus</span>
-            <strong className="tm-page-metric-value">{activeMatchLabel}</strong>
-            <span className="tm-page-metric-meta">{c.bracketName || 'Tournament name pending'}</span>
-          </div>
+        <div className="tm-command-status">
+          <span className="tm-status-pill">{bracketPhase === 'setup' ? 'Setup' : bracketPhase === 'active' ? 'Live' : 'Done'}</span>
+          <span className="tm-status-pill">{readyPlayersCount}/{bracketPlayerCount} ready</span>
+          <span className="tm-status-pill">{activeMatchLabel}</span>
         </div>
       </div>
 
       {/* Tab nav */}
-      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 4 }} />
+      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 0 }} />
 
       {/* ═══════ BRACKET TAB ═══════ */}
       {activeTab === 'bracket' && (
@@ -675,7 +655,7 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
             <div className="tm-section-heading">
               <div>
                 <span className="tm-section-eyebrow">Bracket Setup</span>
-                <h3 className="tm-section-title">Prepare the lineup, choose the format, and launch the tournament</h3>
+                <h3 className="tm-section-title">Prepare the lineup and launch when every player is ready</h3>
               </div>
               <span className="tm-section-pill">{readyPlayersCount}/{bracketPlayerCount} ready</span>
             </div>
@@ -683,8 +663,13 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
             <div className="bk-setup">
               {/* ── Settings card ── */}
               <div className="bk-card tm-card tm-card--setup">
-                <h4 className="bk-card-title">⚔️ Bracket Tournament</h4>
-                <p className="bk-hint">Single-elimination bracket. Players auto-seed into matchups.</p>
+                <div className="tm-card-head">
+                  <div>
+                    <span className="tm-section-eyebrow">Step 1</span>
+                    <h4 className="bk-card-title">Bracket setup</h4>
+                  </div>
+                  <span className="tm-section-pill">{selectedTournamentType?.label || 'Bonus'}</span>
+                </div>
 
                 <label className="bk-field">
                   <span className="bk-label">Tournament Name</span>
@@ -737,8 +722,11 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
               {/* ── Players card ── */}
               <div className="bk-card tm-card tm-card--players">
                 <div className="tm-card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <h4 className="bk-card-title" style={{ margin: 0 }}>👥 Players</h4>
-                  <button className="bk-fill-btn" onClick={fillRandomPlayers}>🎲 Fill Random</button>
+                  <div>
+                    <span className="tm-section-eyebrow">Step 2</span>
+                    <h4 className="bk-card-title" style={{ margin: 0 }}>Players and slots</h4>
+                  </div>
+                  <button className="bk-fill-btn" onClick={fillRandomPlayers}>Fill Random</button>
                 </div>
                 <div className="bk-players-scroll">
                   {localBracketPlayers.map((player, idx) => (
@@ -800,11 +788,14 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
 
               {/* ── Start button ── */}
               <div className="bk-start-area tm-start-area">
+                <div className="tm-start-copy">
+                  <span className="tm-section-eyebrow">Step 3</span>
+                  <strong>{canStartBracket ? 'Ready to launch' : `${bracketPlayerCount - readyPlayersCount} players missing`}</strong>
+                </div>
                 <button className={`bk-start-btn ${!canStartBracket ? 'bk-start-btn--disabled' : ''}`}
                   onClick={startBracketTournament} disabled={!canStartBracket}>
-                  🏆 Start Bracket Tournament
+                  Start Bracket Tournament
                 </button>
-                {!canStartBracket && <p className="bk-hint" style={{ textAlign: 'center', marginTop: 6 }}>Fill in all player names to start</p>}
               </div>
             </div>
             </>

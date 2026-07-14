@@ -54,7 +54,6 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [seConnected, setSeConnected] = useState(false);
-  const [activeSection, setActiveSection] = useState('setup');
   // Monotonic counter — any fetchQueue result older than the latest is discarded.
   const fetchSeqRef = useRef(0);
 
@@ -182,46 +181,12 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
   const autoChannel = useTwitchChannel();
   const hasChannel = !!(c.twitchChannel || autoChannel).trim();
   const queueCount = requests.length;
-  const queueLimit = c.maxQueueSize || 50;
-  const displayLimit = c.maxDisplay || 20;
-  const pointsEnabled = !!c.srSeEnabled;
   const currentStyleLabel = {
     v1_minimal: 'Minimal Queue',
     v2_card_stack: 'Card Stack',
     v3_compact: 'Compact Overlay',
   }[currentStyle] || currentStyle;
   const listenerStateLabel = chatEnabled ? (hasChannel ? 'Live' : 'Needs channel') : 'Off';
-  const pointModeLabel = pointsEnabled ? `${c.srSeCost || 100} pts` : 'Free';
-  const cycleLabel = currentStyle === 'v2_card_stack' || currentStyle === 'v3_compact'
-    ? `${((c.autoSpeed || 4000) / 1000).toFixed(1)}s cycle`
-    : 'Static list';
-  const heroNote = queueCount
-    ? `${queueCount} pending request${queueCount === 1 ? '' : 's'} waiting in the queue.`
-    : 'No pending requests yet. Start with Setup, then check Queue once chat begins using the command.';
-  const sidebarSteps = [
-    {
-      key: 'listener',
-      title: 'Turn the listener on',
-      detail: chatEnabled
-        ? (hasChannel ? `Bound to ${c.twitchChannel || autoChannel}` : 'Listener is on, but no Twitch channel is bound yet')
-        : 'Enable chat listening so requests are accepted',
-      ready: chatEnabled && hasChannel,
-    },
-    {
-      key: 'command',
-      title: 'Confirm the command rules',
-      detail: `${cmdTrigger} • max ${queueLimit} • ${c.cooldownSeconds || 0}s cooldown`,
-      ready: true,
-    },
-    {
-      key: 'pricing',
-      title: pointsEnabled ? 'Charge StreamElements points' : 'Keep requests free',
-      detail: pointsEnabled
-        ? (seConnected ? `${c.srSeCost || 100} points per request` : 'Connect StreamElements in Profile before charging points')
-        : 'Viewers can request without spending points',
-      ready: !pointsEnabled || seConnected,
-    },
-  ];
   const inlineFieldClass = `sr-admin-inline-field${isSidebar ? ' sr-admin-inline-field--stacked' : ''}`;
   const messageTemplates = [
     { key: 'srMsgAccepted', label: 'Success: accepted (free)', def: '🎰 Added "{slot}" to the queue (requested by {user})' },
@@ -234,395 +199,277 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
     { key: 'srMsgCooldown', label: 'Error: cooldown active', def: '⏳ {user}, please wait before requesting another slot.' },
     { key: 'srMsgQueueFull', label: 'Error: queue full', def: '❌ {user}, the slot queue is full right now.' },
   ];
-  const readySteps = sidebarSteps.filter(step => step.ready).length;
-  const sectionTabs = [
-    { key: 'setup', label: 'Setup', meta: `${readySteps}/${sidebarSteps.length} ready` },
-    { key: 'overlay', label: 'Overlay', meta: currentStyleLabel },
-    { key: 'queue', label: 'Queue', meta: `${queueCount} pending` },
-    { key: 'advanced', label: 'Advanced', meta: 'Chat replies' },
-  ];
-
   return (
     <div data-tour="slot-requests-page">
-    <div className={`sr-admin-page${isSidebar ? ' sr-admin-page--sidebar' : ''}`}>
+      <div className={`sr-admin-page sr-admin-page--command-center${isSidebar ? ' sr-admin-page--sidebar' : ''}`}>
+        <div className="sr-admin-workspace">
+          <main className="sr-admin-main">
+            <div className="sr-admin-grid sr-admin-grid--top sr-admin-grid--control">
+              <div className="sr-admin-card sr-admin-card--setup sr-admin-card--wide">
+                <div className="sr-admin-card-header">
+                  <div>
+                    <span className="sr-admin-card-eyebrow">Step 1</span>
+                    <h4 className="sr-admin-card-title">Request setup</h4>
+                  </div>
+                  <span className="sr-admin-card-chip">{listenerStateLabel}</span>
+                </div>
 
-      <div className="sr-admin-hero sr-admin-hero--simple">
-        <div className="sr-admin-hero-copy">
-          <span className="sr-admin-eyebrow">Community Queue</span>
-          <h3 className="sr-admin-title">Slot requests setup</h3>
-          <p className="sr-admin-subtitle">
-            Configure the chat listener, overlay behaviour, and live moderation from one predictable place.
-          </p>
-          <p className="sr-admin-note">{heroNote}</p>
-          <div className="sr-admin-status-strip">
-            <div className="sr-admin-status-item">
-              <span>Listener</span>
-              <strong>{listenerStateLabel}</strong>
-            </div>
-            <div className="sr-admin-status-item">
-              <span>Command</span>
-              <strong>{cmdTrigger}</strong>
-            </div>
-            <div className="sr-admin-status-item">
-              <span>Pricing</span>
-              <strong>{pointModeLabel}</strong>
-            </div>
-            <div className="sr-admin-status-item">
-              <span>Display</span>
-              <strong>{currentStyleLabel}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
+                <div className="sr-admin-setup-grid">
+                  <div className="sr-admin-command-panel">
+                    <label className={inlineFieldClass}>
+                      <span className="sr-admin-inline-label">Chat command</span>
+                      <input
+                        type="text"
+                        value={c.commandTrigger || '!sr'}
+                        onChange={e => set('commandTrigger', e.target.value.trim() || '!sr')}
+                        placeholder="!sr"
+                        style={{ ...S.input, width: isSidebar ? '100%' : 80, fontWeight: 700 }}
+                      />
+                      <span className="sr-admin-inline-hint">What viewers type before the slot name</span>
+                    </label>
 
-      <div className="sr-admin-nav" role="tablist" aria-label="Slot Requests sections">
-        {sectionTabs.map(tab => (
-          <button
-            key={tab.key}
-            type="button"
-            role="tab"
-            aria-selected={activeSection === tab.key}
-            className={`sr-admin-nav-btn${activeSection === tab.key ? ' sr-admin-nav-btn--active' : ''}`}
-            onClick={() => setActiveSection(tab.key)}
-          >
-            <span>{tab.label}</span>
-            <small>{tab.meta}</small>
-          </button>
-        ))}
-      </div>
+                    <div className="sr-admin-command-preview">
+                      <span>Viewer command</span>
+                      <strong>{`${cmdTrigger} <slot name>`}</strong>
+                    </div>
+                  </div>
 
-      {activeSection === 'setup' && (
-      <div className="sr-admin-panel" role="tabpanel">
-        <div className="sr-admin-section-intro">
-          <div>
-            <span className="sr-admin-card-eyebrow">Start here</span>
-            <h4 className="sr-admin-card-title">Make chat requests work</h4>
-          </div>
-          <div className="sr-admin-quickstart sr-admin-quickstart--inline">
-            {sidebarSteps.map((step, index) => (
-              <div key={step.key} className={`sr-admin-quickstep${step.ready ? ' sr-admin-quickstep--ready' : ''}`}>
-                <span className="sr-admin-quickstep-index">{index + 1}</span>
-                <div className="sr-admin-quickstep-copy">
-                  <strong>{step.title}</strong>
-                  <span>{step.detail}</span>
+                  <div className="sr-admin-listener-panel">
+                    <label className="sr-admin-toggle">
+                      <input
+                        type="checkbox"
+                        checked={chatEnabled}
+                        onChange={e => set('srChatEnabled', e.target.checked)}
+                      />
+                      <span className="sr-admin-toggle-copy">Twitch chat listener</span>
+                      <span className="sr-admin-status-dot" style={{ background: chatEnabled && hasChannel ? '#22c55e' : '#64748b' }} />
+                    </label>
+                    {chatEnabled ? (
+                      <>
+                        <p className="sr-admin-copy">Requests are collected from chat while this is on.</p>
+                        <p className="sr-admin-channel-line">
+                          Channel: <strong style={{ color: '#e2e8f0' }}>{c.twitchChannel || autoChannel || '—'}</strong>
+                          <span className="sr-admin-copy-muted">auto-detected from login</span>
+                        </p>
+                      </>
+                    ) : (
+                      <p className="sr-admin-copy">Chat commands are ignored until the listener is turned on.</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        <div className="sr-admin-grid sr-admin-grid--top">
+              <div className="sr-admin-card sr-admin-card--rules sr-admin-card--wide">
+                <div className="sr-admin-card-header">
+                  <div>
+                    <span className="sr-admin-card-eyebrow">Step 2</span>
+                    <h4 className="sr-admin-card-title">Queue rules and pricing</h4>
+                  </div>
+                  <span className="sr-admin-card-chip">{seConnected ? 'Connected' : 'Free mode'}</span>
+                </div>
 
-      {/* ═══════════════════════════════════════════════
-          1. CHAT LISTENER + TWITCH CHANNEL
-          ═══════════════════════════════════════════════ */}
-      <div className="sr-admin-card sr-admin-card--listener">
-        <div className="sr-admin-card-header">
-          <div>
-            <span className="sr-admin-card-eyebrow">Listener</span>
-            <h4 className="sr-admin-card-title">Twitch chat listener</h4>
-          </div>
-          <span className="sr-admin-card-chip">{listenerStateLabel}</span>
-        </div>
+                <div className="sr-admin-field-grid sr-admin-field-grid--rules">
+                  <label className={inlineFieldClass}>
+                    <span className="sr-admin-inline-label">Max queue</span>
+                    <input
+                      type="number" min={1} max={100}
+                      value={c.maxQueueSize || 50}
+                      onChange={e => set('maxQueueSize', Math.max(1, Math.min(100, +e.target.value)))}
+                      style={{ ...S.input, width: isSidebar ? '100%' : 60 }}
+                    />
+                    <span className="sr-admin-inline-hint">How many requests can wait</span>
+                  </label>
 
-        <label className="sr-admin-toggle">
-          <input
-            type="checkbox"
-            checked={chatEnabled}
-            onChange={e => set('srChatEnabled', e.target.checked)}
-          />
-          <span className="sr-admin-toggle-copy">📺 Chat Listener {chatEnabled ? 'ON' : 'OFF'}</span>
-          <span className="sr-admin-status-dot" style={{ background: chatEnabled && hasChannel ? '#22c55e' : '#64748b' }} />
-        </label>
-        {chatEnabled ? (
-          <>
-            <p className="sr-admin-copy">When the listener is on, viewers can request slots by typing <strong className="sr-admin-strong">{cmdTrigger}</strong> in chat.</p>
-            <p className="sr-admin-channel-line">
-              📺 Channel: <strong style={{ color: '#e2e8f0' }}>{c.twitchChannel || autoChannel || '—'}</strong>
-              <span className="sr-admin-copy-muted">(auto-detected from login)</span>
-            </p>
-            {hasChannel && (
-              <p className="sr-admin-success-copy">
-                ✓ Ready — viewers type: <strong className="sr-admin-strong">{`${cmdTrigger} Gates of Olympus`}</strong>
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="sr-admin-copy">Turn it on first. Until then, chat commands like <strong className="sr-admin-strong">{cmdTrigger}</strong> are ignored.</p>
-        )}
-      </div>
+                  <label className={inlineFieldClass}>
+                    <span className="sr-admin-inline-label">Cooldown</span>
+                    <input
+                      type="number" min={0} max={600}
+                      value={c.cooldownSeconds || 0}
+                      onChange={e => set('cooldownSeconds', Math.max(0, +e.target.value))}
+                      style={{ ...S.input, width: isSidebar ? '100%' : 60 }}
+                    />
+                    <span className="sr-admin-inline-hint">Seconds before another request</span>
+                  </label>
+                </div>
 
-      {/* ═══════════════════════════════════════════════
-          2. COMMAND SETTINGS
-          ═══════════════════════════════════════════════ */}
-      <div className="sr-admin-card sr-admin-card--command">
-        <div className="sr-admin-card-header">
-          <div>
-            <span className="sr-admin-card-eyebrow">Rules</span>
-            <h4 className="sr-admin-card-title">Request command</h4>
-          </div>
-          <span className="sr-admin-card-chip">{cmdTrigger}</span>
-        </div>
+                <div className="sr-admin-rule-switches">
+                  <label className="sr-admin-toggle sr-admin-toggle--compact">
+                    <input
+                      type="checkbox"
+                      checked={c.preventDuplicates !== false}
+                      onChange={e => set('preventDuplicates', e.target.checked)}
+                    />
+                    Prevent duplicate slot requests
+                  </label>
 
-        <div className="sr-admin-field-grid">
-          <label className={inlineFieldClass}>
-            <span className="sr-admin-inline-label">Trigger</span>
-            <input
-              type="text"
-              value={c.commandTrigger || '!sr'}
-              onChange={e => set('commandTrigger', e.target.value.trim() || '!sr')}
-              placeholder="!sr"
-              style={{ ...S.input, width: isSidebar ? '100%' : 80, fontWeight: 700 }}
-            />
-            <span className="sr-admin-inline-hint">What viewers type in chat</span>
-          </label>
+                  <label className="sr-admin-toggle sr-admin-toggle--compact">
+                    <input
+                      type="checkbox"
+                      checked={!!c.srSeEnabled}
+                      onChange={e => set('srSeEnabled', e.target.checked)}
+                    />
+                    <span className="sr-admin-toggle-copy">Require points for {cmdTrigger}</span>
+                  </label>
+                </div>
 
-          <label className={inlineFieldClass}>
-            <span className="sr-admin-inline-label">Max queue</span>
-            <input
-              type="number" min={1} max={100}
-              value={c.maxQueueSize || 50}
-              onChange={e => set('maxQueueSize', Math.max(1, Math.min(100, +e.target.value)))}
-              style={{ ...S.input, width: isSidebar ? '100%' : 60 }}
-            />
-            <span className="sr-admin-inline-hint">How many requests can wait at once</span>
-          </label>
-
-          <label className={inlineFieldClass}>
-            <span className="sr-admin-inline-label">Cooldown</span>
-            <input
-              type="number" min={0} max={600}
-              value={c.cooldownSeconds || 0}
-              onChange={e => set('cooldownSeconds', Math.max(0, +e.target.value))}
-              style={{ ...S.input, width: isSidebar ? '100%' : 60 }}
-            />
-            <span className="sr-admin-inline-hint">Seconds a user must wait before the next request</span>
-          </label>
-        </div>
-
-        {/* Duplicate prevention */}
-        <label className="sr-admin-toggle sr-admin-toggle--compact">
-          <input
-            type="checkbox"
-            checked={c.preventDuplicates !== false}
-            onChange={e => set('preventDuplicates', e.target.checked)}
-          />
-          Prevent duplicate slot requests
-        </label>
-        <p className="sr-admin-copy sr-admin-copy--indented">
-          Same slot can't be requested twice. Points won't be charged.
-        </p>
-        <p className="sr-admin-copy">
-          0 = no cooldown. Prevents spam by limiting how often a viewer can use {cmdTrigger}.
-        </p>
-      </div>
-
-      {/* ═══════════════════════════════════════════════
-          3. STREAMELEMENTS POINTS
-          ═══════════════════════════════════════════════ */}
-      <div className="sr-admin-card sr-admin-card--points">
-        <div className="sr-admin-card-header">
-          <div>
-            <span className="sr-admin-card-eyebrow">Economy</span>
-            <h4 className="sr-admin-card-title">StreamElements pricing</h4>
-          </div>
-          <span className="sr-admin-card-chip">{seConnected ? 'Connected' : 'Disconnected'}</span>
-        </div>
-
-        <label className="sr-admin-toggle sr-admin-toggle--compact">
-          <input
-            type="checkbox"
-            checked={!!c.srSeEnabled}
-            onChange={e => set('srSeEnabled', e.target.checked)}
-          />
-          <span className="sr-admin-toggle-copy">💰 Require SE Points for {cmdTrigger}</span>
-        </label>
-        {c.srSeEnabled ? (
-          <>
-            <p className="sr-admin-copy">
-              Each request costs SE points. If insufficient, the request is rejected — no charge.
-            </p>
-            <label className={inlineFieldClass}>
-              <span className="sr-admin-inline-label">Cost</span>
-              <input
-                type="number" min={1} max={1000000}
-                value={c.srSeCost || 100}
-                onChange={e => set('srSeCost', Math.max(1, +e.target.value))}
-                style={{ ...S.input, width: isSidebar ? '100%' : 80, color: '#f59e0b', fontWeight: 700 }}
-              />
-              <span className="sr-admin-inline-hint">Points charged per accepted request</span>
-            </label>
-            {!seConnected && (
-              <p className="sr-admin-error-copy">
-                ⚠️ StreamElements not connected — go to Profile and connect SE first.
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="sr-admin-copy">When disabled, all requests are free.</p>
-        )}
-      </div>
-      </div>
-      </div>
-      )}
-
-      {activeSection === 'advanced' && (
-      <div className="sr-admin-panel" role="tabpanel">
-
-      {/* ═══════════════════════════════════════════════
-          4. CHAT MESSAGES
-          ═══════════════════════════════════════════════ */}
-      <div className="sr-admin-card sr-admin-card--messages sr-admin-card--wide">
-        <div className="sr-admin-card-header">
-          <div>
-            <span className="sr-admin-card-eyebrow">Advanced</span>
-            <h4 className="sr-admin-card-title">Chat reply templates</h4>
-          </div>
-          <span className="sr-admin-card-chip">Optional</span>
-        </div>
-        <p className="sr-admin-copy">
-          Placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
-        </p>
-        <div className="sr-admin-message-list">
-        {messageTemplates.map(({ key, label, def }) => (
-          <div key={key} className="sr-admin-message-field">
-            <label className="sr-admin-message-label">{label}</label>
-            <input
-              type="text"
-              value={c[key] || def}
-              onChange={e => set(key, e.target.value)}
-              className="sr-admin-message-input"
-              style={S.inputFull}
-            />
-          </div>
-        ))}
-        </div>
-      </div>
-      </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════
-          5. DISPLAY OPTIONS
-          ═══════════════════════════════════════════════ */}
-      {activeSection === 'overlay' && (
-      <div className="sr-admin-panel" role="tabpanel">
-      <div className="sr-admin-card sr-admin-card--display sr-admin-card--wide">
-        <div className="sr-admin-card-header">
-          <div>
-            <span className="sr-admin-card-eyebrow">Presentation</span>
-            <h4 className="sr-admin-card-title">Overlay behaviour</h4>
-          </div>
-          <span className="sr-admin-card-chip">{currentStyleLabel}</span>
-        </div>
-
-        <label className="sr-admin-toggle sr-admin-toggle--compact">
-          <input type="checkbox" checked={c.showRequester !== false} onChange={e => set('showRequester', e.target.checked)} />
-          Show who requested
-        </label>
-        <label className="sr-admin-toggle sr-admin-toggle--compact">
-          <input type="checkbox" checked={c.showNumbers !== false} onChange={e => set('showNumbers', e.target.checked)} />
-          Show queue numbers
-        </label>
-        <label className={inlineFieldClass}>
-          <span className="sr-admin-inline-label">Max display</span>
-          <input
-            type="number" min={1} max={50}
-            value={c.maxDisplay || 20}
-            onChange={e => set('maxDisplay', Math.max(1, +e.target.value))}
-            style={{ ...S.input, width: isSidebar ? '100%' : 50 }}
-          />
-          <span className="sr-admin-inline-hint">How many requests appear on the overlay</span>
-        </label>
-
-        {/* Auto-cycle speed (for card stack / compact) */}
-        {(currentStyle === 'v2_card_stack' || currentStyle === 'v3_compact') && (
-          <label className={inlineFieldClass}>
-            <span className="sr-admin-inline-label">Cycle speed</span>
-            <input type="range" min={1000} max={8000} step={500}
-              value={c.autoSpeed || 4000}
-              onChange={e => set('autoSpeed', +e.target.value)}
-              style={{ flex: 1, accentColor: '#94a3b8' }} />
-            <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{((c.autoSpeed || 4000) / 1000).toFixed(1)}s</span>
-          </label>
-        )}
-      </div>
-      </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════
-          6. QUEUE MANAGEMENT
-          ═══════════════════════════════════════════════ */}
-      {activeSection === 'queue' && (
-      <div className="sr-admin-panel" role="tabpanel">
-      <div className="sr-admin-card sr-admin-card--queue">
-        <div className="sr-admin-card-header sr-admin-card-header--queue">
-          <div>
-            <span className="sr-admin-card-eyebrow">Moderation</span>
-            <h4 className="sr-admin-card-title">Pending queue</h4>
-          </div>
-          <span className="sr-admin-card-chip">{queueCount} pending</span>
-          {requests.length > 0 && (
-            <button className="sr-admin-btn sr-admin-btn--warn" style={{ ...S.btn }}
-              onClick={clearAll} disabled={loading}
-              title={c.srSeEnabled ? 'Refund SE points to all pending users and remove them from the queue' : 'Remove all pending requests from the queue'}>
-              {loading ? '…' : (c.srSeEnabled ? '↩ Refund All' : '🗑️ Clear All')}
-            </button>
-          )}
-        </div>
-
-        {requests.length === 0 && (
-          <p className="sr-admin-empty">No pending requests yet. Once the listener is on, viewers can type <strong className="sr-admin-strong">{`${cmdTrigger} <slot name>`}</strong> in chat.</p>
-        )}
-
-        <div className="sr-admin-queue-list">
-        {requests.map((r, i) => (
-          <div key={r.id} className="sr-admin-queue-row">
-            <span className="sr-admin-queue-index">
-              #{i + 1}
-            </span>
-            {r.slot_image && (
-              <img src={r.slot_image} alt="" className="sr-admin-queue-image" />
-            )}
-            <div className="sr-admin-queue-copy">
-              <div className="sr-admin-queue-name">
-                {r.slot_name}
+                {c.srSeEnabled ? (
+                  <div className="sr-admin-pricing-row">
+                    <label className={inlineFieldClass}>
+                      <span className="sr-admin-inline-label">Cost</span>
+                      <input
+                        type="number" min={1} max={1000000}
+                        value={c.srSeCost || 100}
+                        onChange={e => set('srSeCost', Math.max(1, +e.target.value))}
+                        style={{ ...S.input, width: isSidebar ? '100%' : 80, color: '#f59e0b', fontWeight: 700 }}
+                      />
+                      <span className="sr-admin-inline-hint">Points per accepted request</span>
+                    </label>
+                    {!seConnected && (
+                      <p className="sr-admin-error-copy">StreamElements is not connected yet.</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="sr-admin-copy">Requests are free when this is disabled.</p>
+                )}
               </div>
-              {r.requested_by && r.requested_by !== 'anonymous' && (
-                <div className="sr-admin-queue-by">by {r.requested_by}</div>
+            </div>
+
+            <div className="sr-admin-grid sr-admin-grid--middle sr-admin-grid--control">
+              <div className="sr-admin-card sr-admin-card--display sr-admin-card--wide">
+                <div className="sr-admin-card-header">
+                  <div>
+                    <span className="sr-admin-card-eyebrow">Overlay</span>
+                    <h4 className="sr-admin-card-title">Overlay behaviour</h4>
+                  </div>
+                  <span className="sr-admin-card-chip">{currentStyleLabel}</span>
+                </div>
+
+                <label className="sr-admin-toggle sr-admin-toggle--compact">
+                  <input type="checkbox" checked={c.showRequester !== false} onChange={e => set('showRequester', e.target.checked)} />
+                  Show who requested
+                </label>
+                <label className="sr-admin-toggle sr-admin-toggle--compact">
+                  <input type="checkbox" checked={c.showNumbers !== false} onChange={e => set('showNumbers', e.target.checked)} />
+                  Show queue numbers
+                </label>
+                <label className={inlineFieldClass}>
+                  <span className="sr-admin-inline-label">Max display</span>
+                  <input
+                    type="number" min={1} max={50}
+                    value={c.maxDisplay || 20}
+                    onChange={e => set('maxDisplay', Math.max(1, +e.target.value))}
+                    style={{ ...S.input, width: isSidebar ? '100%' : 50 }}
+                  />
+                  <span className="sr-admin-inline-hint">How many requests appear on the overlay</span>
+                </label>
+
+                {(currentStyle === 'v2_card_stack' || currentStyle === 'v3_compact') && (
+                  <label className={inlineFieldClass}>
+                    <span className="sr-admin-inline-label">Cycle speed</span>
+                    <input type="range" min={1000} max={8000} step={500}
+                      value={c.autoSpeed || 4000}
+                      onChange={e => set('autoSpeed', +e.target.value)}
+                      style={{ flex: 1, accentColor: '#94a3b8' }} />
+                    <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{((c.autoSpeed || 4000) / 1000).toFixed(1)}s</span>
+                  </label>
+                )}
+              </div>
+
+              <details className="sr-admin-card sr-admin-card--messages sr-admin-card--wide sr-admin-disclosure">
+                <summary className="sr-admin-disclosure-summary">
+                  <div className="sr-admin-disclosure-copy">
+                    <span className="sr-admin-card-eyebrow">Advanced</span>
+                    <h4 className="sr-admin-card-title">Chat reply templates</h4>
+                    <p className="sr-admin-copy">Customize the automated chat responses only when needed.</p>
+                  </div>
+                  <span className="sr-admin-card-chip sr-admin-card-chip--toggle" />
+                </summary>
+                <div className="sr-admin-disclosure-body">
+                  <p className="sr-admin-copy">
+                    Placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
+                  </p>
+                  <div className="sr-admin-message-list">
+                    {messageTemplates.map(({ key, label, def }) => (
+                      <div key={key} className="sr-admin-message-field">
+                        <label className="sr-admin-message-label">{label}</label>
+                        <input
+                          type="text"
+                          value={c[key] || def}
+                          onChange={e => set(key, e.target.value)}
+                          className="sr-admin-message-input"
+                          style={S.inputFull}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </details>
+            </div>
+          </main>
+
+          <aside className="sr-admin-side">
+            <div className="sr-admin-card sr-admin-card--queue">
+              <div className="sr-admin-card-header sr-admin-card-header--queue">
+                <div>
+                  <span className="sr-admin-card-eyebrow">Step 3</span>
+                  <h4 className="sr-admin-card-title">Pending queue</h4>
+                </div>
+                <span className="sr-admin-card-chip">{queueCount} pending</span>
+                {requests.length > 0 && (
+                  <button className="sr-admin-btn sr-admin-btn--warn" style={{ ...S.btn }}
+                    onClick={clearAll} disabled={loading}
+                    title={c.srSeEnabled ? 'Refund SE points to all pending users and remove them from the queue' : 'Remove all pending requests from the queue'}>
+                    {loading ? '...' : (c.srSeEnabled ? 'Refund All' : 'Clear All')}
+                  </button>
+                )}
+              </div>
+
+              {requests.length === 0 && (
+                <p className="sr-admin-empty">No pending requests yet. Viewers can type <strong className="sr-admin-strong">{`${cmdTrigger} <slot name>`}</strong> in chat once the listener is on.</p>
               )}
+
+              <div className="sr-admin-queue-list">
+                {requests.map((request, index) => (
+                  <div key={request.id} className="sr-admin-queue-row">
+                    <span className="sr-admin-queue-index">#{index + 1}</span>
+                    {request.slot_image && (
+                      <img src={request.slot_image} alt="" className="sr-admin-queue-image" />
+                    )}
+                    <div className="sr-admin-queue-copy">
+                      <div className="sr-admin-queue-name">{request.slot_name}</div>
+                      {request.requested_by && request.requested_by !== 'anonymous' && (
+                        <div className="sr-admin-queue-by">by {request.requested_by}</div>
+                      )}
+                    </div>
+                    <div className="sr-admin-queue-actions">
+                      <button
+                        className="sr-admin-btn sr-admin-btn--success"
+                        style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
+                        disabled={busyIds.has(request.id)}
+                        onClick={() => markPlayed(request.id)} title="Mark as played">
+                        {busyIds.has(request.id) ? '...' : 'Played'}
+                      </button>
+                      <button
+                        className="sr-admin-btn sr-admin-btn--warn"
+                        style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem', opacity: busyIds.has(request.id) ? 0.5 : 1 }}
+                        disabled={busyIds.has(request.id)}
+                        onClick={() => rejectRequest(request.id)}
+                        title={c.srSeEnabled ? 'Reject and refund SE points to this user' : 'Reject request'}>
+                        {busyIds.has(request.id) ? '...' : (c.srSeEnabled ? 'Reject + Refund' : 'Reject')}
+                      </button>
+                      <button
+                        className="sr-admin-btn sr-admin-btn--danger"
+                        style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem', opacity: busyIds.has(request.id) ? 0.5 : 1 }}
+                        disabled={busyIds.has(request.id)}
+                        onClick={() => removeRequest(request.id)} title="Remove without refund">Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="sr-admin-queue-actions">
-            {/* Mark played */}
-            <button
-              className="sr-admin-btn sr-admin-btn--success"
-              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
-              disabled={busyIds.has(r.id)}
-              onClick={() => markPlayed(r.id)} title="Mark as played">
-              {busyIds.has(r.id) ? '…' : 'Mark Played'}
-            </button>
-            {/* Reject & refund — always shown; no-op if SE not connected */}
-            <button
-              className="sr-admin-btn sr-admin-btn--warn"
-              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem', opacity: busyIds.has(r.id) ? 0.5 : 1 }}
-              disabled={busyIds.has(r.id)}
-              onClick={() => rejectRequest(r.id)}
-              title={c.srSeEnabled ? 'Reject & refund SE points to this user' : 'Reject request (SE points not enabled)'}>
-              {busyIds.has(r.id) ? '…' : (c.srSeEnabled ? 'Reject + Refund' : 'Reject')}
-            </button>
-            {/* Remove without refund */}
-            <button
-              className="sr-admin-btn sr-admin-btn--danger"
-              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem', opacity: busyIds.has(r.id) ? 0.5 : 1 }}
-              disabled={busyIds.has(r.id)}
-              onClick={() => removeRequest(r.id)} title="Remove without refund">Remove</button>
-            </div>
-          </div>
-        ))}
+          </aside>
         </div>
       </div>
-      </div>
-      )}
-    </div>
     </div>
   );
 }

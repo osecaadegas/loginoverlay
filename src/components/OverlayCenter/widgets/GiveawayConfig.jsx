@@ -2,17 +2,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import useTwitchChannel from '../../../hooks/useTwitchChannel';
-import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { GIVEAWAY_STYLE_KEYS } from './styleKeysRegistry';
-import { MetricCard, SectionHeader, SetupChecklist, StatusBadge } from '../ui';
+import { SectionHeader } from '../ui';
+import { CirclePlay, CircleStop, Trash2, Trophy, Users, Wifi, WifiOff, X } from 'lucide-react';
 
 /* ─── Giveaway Config Panel ─── */
 export default function GiveawayConfig({ config, onChange }) {
   const c = config || {};
   const currentStyle = c.displayStyle || 'v1';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, GIVEAWAY_STYLE_KEYS);
-  const [activeTab, setActiveTab] = useState('setup');
   const [confirmClear, setConfirmClear] = useState(false);
   const [chatStatus, setChatStatus] = useState({ twitch: false, kick: false });
 
@@ -48,28 +47,12 @@ export default function GiveawayConfig({ config, onChange }) {
   });
 
   const keyword = (c.keyword || '').toLowerCase().trim();
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
   const isActive = !!c.isActive && !!keyword;
   const platformCount = Number(!!chatStatus.twitch) + Number(!!chatStatus.kick);
-  const setupItems = [
-    {
-      key: 'prize',
-      title: 'Add a prize',
-      detail: c.prize || 'Set what the winner receives',
-      ready: !!(c.prize || '').trim(),
-    },
-    {
-      key: 'keyword',
-      title: 'Choose a chat keyword',
-      detail: keyword ? `Viewers type !${keyword}` : 'Add the keyword without the ! prefix',
-      ready: !!keyword,
-    },
-    {
-      key: 'platform',
-      title: 'Connect a chat platform',
-      detail: platformCount ? `${platformCount} live platform${platformCount === 1 ? '' : 's'}` : 'Enable Twitch or Kick before going live',
-      ready: platformCount > 0,
-    },
-  ];
+  const configuredPlatformCount = Number(!!resolvedChannel && !!c.twitchEnabled) + Number(!!c.kickChannelId && !!c.kickEnabled);
+  const canStart = !!keyword && configuredPlatformCount > 0;
 
   // Chat message handler — check for keyword match
   const handleMessage = useCallback((msg) => {
@@ -86,8 +69,6 @@ export default function GiveawayConfig({ config, onChange }) {
   }, [keyword]);
 
   // Connect to platforms when giveaway is active
-  const autoChannel = useTwitchChannel();
-  const resolvedChannel = c.twitchChannel || autoChannel || '';
   useTwitchChat(isActive && c.twitchEnabled ? resolvedChannel : '', handleMessage);
   useKickChat(isActive && c.kickEnabled ? c.kickChannelId : '', handleMessage);
 
@@ -132,226 +113,170 @@ export default function GiveawayConfig({ config, onChange }) {
     setConfirmClear(false);
   };
 
-  const TABS = [
-    { id: 'setup', label: '🎁 Setup' },
-    { id: 'platforms', label: '📡 Chat' },
-    { id: 'participants', label: `👥 Entries (${participants.length})` },
-  ];
-
   return (
-    <div className="nb-config nb-config--modern">
-      <div className="nb-config__hero">
-        <SectionHeader
-          eyebrow="Community Reward"
-          title="Giveaway control room"
-          description="Set the prize, watch chat entries, draw a winner, and keep the on-stream state obvious before the giveaway goes live."
-          pill={<StatusBadge tone={isActive ? 'live' : 'neutral'}>{isActive ? 'Live' : 'Not live'}</StatusBadge>}
-        />
-        <div className="nb-config__metrics">
-          <MetricCard label="Entries" value={participants.length} meta={c.winner ? `Winner: ${c.winner}` : 'Current participant list'} />
-          <MetricCard label="Keyword" value={keyword ? `!${keyword}` : 'Not set'} meta="Viewer entry command" />
-          <MetricCard label="Platforms" value={platformCount} meta="Connected chat listeners" />
-        </div>
-        <SetupChecklist items={setupItems} title="Giveaway readiness" />
-      </div>
-
-      <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
-
-      {/* ═══════ SETUP TAB ═══════ */}
-      {activeTab === 'setup' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Giveaway Setup</h4>
-          <label className="nb-field">
-            <span>Title</span>
-            <input value={c.title || ''} onChange={e => set('title', e.target.value)} placeholder="Giveaway Title" />
-          </label>
-          <label className="nb-field">
-            <span>Prize</span>
-            <input value={c.prize || ''} onChange={e => set('prize', e.target.value)} placeholder="€500 Bonus" />
-          </label>
-          <label className="nb-field">
-            <span>Chat Keyword (without !)</span>
-            <input value={c.keyword || ''} onChange={e => set('keyword', e.target.value)} placeholder="giveaway" />
-          </label>
-          <p className="oc-config-hint" style={{ fontSize: 11, marginTop: -4 }}>
-            Viewers type <strong>!{c.keyword || 'keyword'}</strong> in chat to enter the giveaway.
-          </p>
-          <label className="nb-field" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
-            <input type="checkbox" checked={!!c.isActive} onChange={e => set('isActive', e.target.checked)} />
-            <span style={{ fontWeight: 600 }}>Giveaway Active</span>
-          </label>
-          {isActive && (
-            <div style={{
-              background: '#22c55e18', border: '1px solid #22c55e44', borderRadius: 8,
-              padding: '8px 12px', fontSize: 11, color: '#22c55e', marginTop: 4,
-            }}>
-              ✅ Giveaway is LIVE — monitoring chat for <strong>!{keyword}</strong>
-              {!chatStatus.twitch && !chatStatus.kick && (
-                <div style={{ color: '#f59e0b', marginTop: 4 }}>
-                  ⚠️ No chat platforms connected. Go to the Chat tab to set up Twitch or Kick.
+    <div className="giveaway-config nb-config nb-config--modern">
+      <div className="giveaway-config__workspace">
+        <div className="giveaway-config__main">
+          <section className="giveaway-card giveaway-card--setup">
+            <SectionHeader
+              eyebrow="Step 1"
+              title="Prize and command"
+              description="These fields define what viewers see on stream and what they type in chat."
+            />
+            <div className="giveaway-form-grid">
+              <label className="nb-field giveaway-field">
+                <span>Overlay title</span>
+                <input value={c.title || ''} onChange={event => set('title', event.target.value)} placeholder="Friday Giveaway" />
+              </label>
+              <label className="nb-field giveaway-field">
+                <span>Prize</span>
+                <input value={c.prize || ''} onChange={event => set('prize', event.target.value)} placeholder="500 bonus spins" />
+              </label>
+              <label className="nb-field giveaway-field giveaway-field--command">
+                <span>Chat command</span>
+                <div className="giveaway-command-input">
+                  <span>!</span>
+                  <input value={c.keyword || ''} onChange={event => set('keyword', event.target.value.replace(/^!+/, ''))} placeholder="join" />
                 </div>
-              )}
+              </label>
+              <div className="giveaway-command-preview">
+                <span>Viewer command</span>
+                <strong>{keyword ? `!${keyword}` : '!join'}</strong>
+              </div>
             </div>
-          )}
+          </section>
+
+          <section className="giveaway-card giveaway-card--platforms">
+            <SectionHeader
+              eyebrow="Step 2"
+              title="Chat listeners"
+              description="Enable the platforms that should collect entries while the giveaway is live."
+            />
+            <div className="giveaway-platform-grid">
+              <label className={`giveaway-platform-card${c.twitchEnabled ? ' giveaway-platform-card--enabled' : ''}${chatStatus.twitch ? ' giveaway-platform-card--live' : ''}${!resolvedChannel ? ' giveaway-platform-card--missing' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={!!c.twitchEnabled}
+                  disabled={!resolvedChannel}
+                  onChange={event => set('twitchEnabled', event.target.checked)}
+                />
+                <span className="giveaway-platform-card__icon">{chatStatus.twitch ? <Wifi size={18} /> : <WifiOff size={18} />}</span>
+                <span className="giveaway-platform-card__copy">
+                  <strong>Twitch</strong>
+                  <span>{resolvedChannel || 'Set channel in Profile'}</span>
+                </span>
+                <span className="giveaway-switch" aria-hidden="true" />
+              </label>
+
+              <label className={`giveaway-platform-card${c.kickEnabled ? ' giveaway-platform-card--enabled' : ''}${chatStatus.kick ? ' giveaway-platform-card--live' : ''}${!c.kickChannelId ? ' giveaway-platform-card--missing' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={!!c.kickEnabled}
+                  disabled={!c.kickChannelId}
+                  onChange={event => set('kickEnabled', event.target.checked)}
+                />
+                <span className="giveaway-platform-card__icon">{chatStatus.kick ? <Wifi size={18} /> : <WifiOff size={18} />}</span>
+                <span className="giveaway-platform-card__copy">
+                  <strong>Kick</strong>
+                  <span>{c.kickChannelId || 'Set channel in Profile'}</span>
+                </span>
+                <span className="giveaway-switch" aria-hidden="true" />
+              </label>
+            </div>
+          </section>
+
+          <section className={`giveaway-live-panel${isActive ? ' giveaway-live-panel--active' : ''}`}>
+            <div>
+              <span>{isActive ? 'Live collection is running' : canStart ? 'Ready to collect entries' : 'Complete setup to go live'}</span>
+              <strong>{keyword ? `Listening for !${keyword}` : 'Add a command first'}</strong>
+              {isActive && !platformCount && <p>No live chat connection is active yet. Check your enabled listeners.</p>}
+            </div>
+            <button
+              type="button"
+              className={`giveaway-primary-action${c.isActive ? ' giveaway-primary-action--stop' : ''}`}
+              disabled={!c.isActive && !canStart}
+              onClick={() => set('isActive', !c.isActive)}
+            >
+              {c.isActive ? <CircleStop size={17} /> : <CirclePlay size={17} />}
+              {c.isActive ? 'Stop Giveaway' : 'Start Giveaway'}
+            </button>
+          </section>
         </div>
-      )}
 
-      {/* ═══════ PLATFORMS TAB ═══════ */}
-      {activeTab === 'platforms' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Chat Platforms</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 10, fontSize: 11 }}>
-            Channel names are managed in your <b>Profile</b>. Click <b>Sync All</b> there to update.
-          </p>
-
-          {/* Twitch */}
-          <div style={{
-            background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.2)',
-            borderRadius: 8, padding: 10, marginBottom: 8,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#64748b' : '#333' }} />
-              <span style={{ fontWeight: 600, fontSize: 13 }}>Twitch</span>
-              {resolvedChannel ? (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b', fontWeight: 600 }}>{resolvedChannel}</span>
-              ) : (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
-              )}
-              {chatStatus.twitch && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginLeft: 4 }}>● Live</span>}
-            </div>
-          </div>
-
-          {/* Kick */}
-          <div style={{
-            background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)',
-            borderRadius: 8, padding: 10, marginBottom: 8,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.kickChannelId ? '#22c55e' : '#333' }} />
-              <span style={{ fontWeight: 600, fontSize: 13 }}>Kick</span>
-              {c.kickChannelId ? (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#22c55e', fontWeight: 600 }}>{c.kickChannelId}</span>
-              ) : (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
-              )}
-              {chatStatus.kick && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginLeft: 4 }}>● Live</span>}
-            </div>
-          </div>
-
-          {!resolvedChannel && !c.kickChannelId && (
-            <p className="oc-config-hint" style={{ fontSize: 11, color: '#f59e0b' }}>
-              ⚠️ No platforms configured — go to Profile and add your channels, then Sync.
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* ═══════ PARTICIPANTS TAB ═══════ */}
-      {activeTab === 'participants' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Participants ({participants.length})</h4>
-
-          {/* Draw Winner Button */}
-          <button
-            onClick={drawWinner}
-            disabled={participants.length === 0}
-            style={{
-              width: '100%', padding: '12px 16px', marginBottom: 8,
-              background: participants.length > 0 ? 'linear-gradient(135deg, #9346ff, #6d28d9)' : '#333',
-              color: '#fff', border: 'none', borderRadius: 8,
-              fontSize: 14, fontWeight: 700, cursor: participants.length > 0 ? 'pointer' : 'not-allowed',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              transition: 'all 0.2s', opacity: participants.length > 0 ? 1 : 0.5,
-            }}
-          >
-            🎲 Draw Random Winner
-          </button>
-
-          {/* Winner display */}
-          {c.winner && (
-            <div style={{
-              background: '#9346ff22', border: '1px solid #9346ff55', borderRadius: 8,
-              padding: '10px 14px', marginBottom: 8, textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>🎉 Winner</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#c4b5fd', marginTop: 2 }}>{c.winner}</div>
-              <button
-                onClick={() => set('winner', '')}
-                style={{
-                  marginTop: 6, padding: '4px 12px', fontSize: 10,
-                  background: 'rgba(255,255,255,0.08)', color: '#94a3b8',
-                  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6,
-                  cursor: 'pointer',
-                }}>
-                Clear Winner
-              </button>
-            </div>
-          )}
-
-          {/* Participant list */}
-          {participants.length > 0 ? (
-            <div style={{
-              maxHeight: 220, overflowY: 'auto', background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8,
-              padding: 6, marginBottom: 8,
-            }}>
-              {participants.map((name, i) => (
-                <div key={i} style={{
-                  padding: '4px 10px', fontSize: 12, color: '#e2e8f0',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  borderRadius: 4,
-                  background: name === c.winner ? '#9346ff22' : i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent',
-                }}>
-                  <span style={{ color: '#64748b', fontSize: 10, minWidth: 24 }}>#{i + 1}</span>
-                  <span style={{ fontWeight: name === c.winner ? 700 : 400, color: name === c.winner ? '#c4b5fd' : '#e2e8f0', flex: 1 }}>{name}</span>
-                  {name === c.winner && <span style={{ fontSize: 10 }}>🏆</span>}
-                  <button
-                    onClick={() => removeParticipant(name)}
-                    title={`Remove ${name}`}
-                    style={{
-                      background: 'transparent', border: 'none', color: '#64748b',
-                      cursor: 'pointer', fontSize: 13, padding: '0 4px', lineHeight: 1,
-                      borderRadius: 4, transition: 'color 0.15s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#64748b'}
-                  >✕</button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{
-              padding: 20, textAlign: 'center', color: '#64748b', fontSize: 12,
-              background: 'rgba(255,255,255,0.02)', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.06)', marginBottom: 8,
-            }}>
-              {isActive ? '⏳ Waiting for entries...' : '📋 No entries yet. Activate the giveaway to start.'}
-            </div>
-          )}
-
-          {/* Clear entries */}
-          {participants.length > 0 && (
-            confirmClear ? (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={clearEntries} style={{
-                  flex: 1, padding: '8px', background: '#ef4444', color: '#fff',
-                  border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                }}>Confirm Clear All</button>
-                <button onClick={() => setConfirmClear(false)} style={{
-                  flex: 1, padding: '8px', background: 'rgba(255,255,255,0.08)', color: '#94a3b8',
-                  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                }}>Cancel</button>
+        <aside className="giveaway-config__side">
+          <section className="giveaway-card giveaway-winner-card">
+            <SectionHeader
+              eyebrow="Step 3"
+              title="Draw winner"
+              description={participants.length ? 'Pick a winner from the current entry list.' : 'Entries will appear here as viewers use the command.'}
+            />
+            <button
+              type="button"
+              className="giveaway-draw-button"
+              onClick={drawWinner}
+              disabled={participants.length === 0}
+            >
+              <Trophy size={18} />
+              Draw Random Winner
+            </button>
+            {c.winner ? (
+              <div className="giveaway-winner">
+                <span>Winner</span>
+                <strong>{c.winner}</strong>
+                <button type="button" onClick={() => set('winner', '')}>Clear winner</button>
               </div>
             ) : (
-              <button onClick={() => setConfirmClear(true)} style={{
-                width: '100%', padding: '8px', background: 'rgba(239,68,68,0.15)', color: '#f87171',
-                border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, fontSize: 12,
-                fontWeight: 600, cursor: 'pointer',
-              }}>🗑️ Clear All Entries</button>
-            )
-          )}
-        </div>
-      )}
+              <div className="giveaway-winner giveaway-winner--empty">
+                <span>No winner selected</span>
+                <strong>{participants.length ? `${participants.length} entries ready` : 'Waiting for entries'}</strong>
+              </div>
+            )}
+          </section>
+
+          <section className="giveaway-card giveaway-entries-card">
+            <div className="giveaway-entries-header">
+              <div>
+                <span>Entries</span>
+                <strong>{participants.length} participant{participants.length === 1 ? '' : 's'}</strong>
+              </div>
+              {participants.length > 0 && !confirmClear && (
+                <button type="button" className="giveaway-icon-button giveaway-icon-button--danger" onClick={() => setConfirmClear(true)} title="Clear all entries">
+                  <Trash2 size={15} />
+                </button>
+              )}
+            </div>
+
+            {participants.length > 0 ? (
+              <div className="giveaway-entries-list">
+                {participants.map((name, index) => (
+                  <div key={name} className={`giveaway-entry-row${name === c.winner ? ' giveaway-entry-row--winner' : ''}`}>
+                    <span className="giveaway-entry-row__index">#{index + 1}</span>
+                    <span className="giveaway-entry-row__name">{name}</span>
+                    {name === c.winner && <Trophy size={14} />}
+                    <button type="button" onClick={() => removeParticipant(name)} title={`Remove ${name}`}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="giveaway-empty-state">
+                <Users size={22} />
+                <strong>{isActive ? 'Waiting for chat entries' : 'No entries yet'}</strong>
+                <span>{isActive ? `Viewers can type !${keyword}` : 'Start the giveaway when your prize and listeners are ready.'}</span>
+              </div>
+            )}
+
+            {confirmClear && (
+              <div className="giveaway-clear-confirm">
+                <span>Clear every entry?</span>
+                <button type="button" onClick={clearEntries}>Clear all</button>
+                <button type="button" onClick={() => setConfirmClear(false)}>Cancel</button>
+              </div>
+            )}
+          </section>
+        </aside>
+      </div>
 
     </div>
   );

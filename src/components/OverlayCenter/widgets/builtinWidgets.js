@@ -24,7 +24,7 @@ registerWidget({
   styles: [
     { id: 'v3', icon: '🃏', label: 'Flip Card' },
     { id: 'v5_horizontal', icon: '↔️', label: 'Horizontal' },
-    { id: 'v11_fever', icon: '🔥', label: 'Fever' },
+    { id: 'v11_fever', icon: '🔥', label: 'Advanced List' },
     { id: 'v12_classic_sr', icon: '🎰📋', label: 'Classic + Requests' },
   ],
   styleConfigKey: 'displayStyle',
