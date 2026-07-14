@@ -208,12 +208,14 @@
   width: 96px;
   height: 24px;
   min-width: 0;
+  background: transparent;
 }
 .slot-manager-v2 .sm-provider-logo {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  background: transparent;
 }
 .slot-manager-v2 .sm-provider-logo--filter {
   width: 58px;
@@ -257,10 +259,10 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 34px;
-  border: 1px solid rgba(44, 231, 220, 0.16);
+  border: 1px solid rgba(126, 157, 203, 0.2);
   border-radius: 13px;
-  color: #71f3eb;
-  background: rgba(44, 231, 220, 0.1);
+  color: #aebed3;
+  background: transparent;
   font-size: 0.82rem;
   font-weight: 900;
 }
@@ -1173,7 +1175,7 @@
   height: 48px;
   border-radius: 6px;
   object-fit: contain;
-  background: #21262d;
+  background: transparent;
 }
 
 .slot-manager-v2 .sm-prov-grid {

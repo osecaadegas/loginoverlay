@@ -3,7 +3,7 @@ import { supabase } from '../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
 import { getErrorMessage } from '../../utils/errorUtils';
-import { getProviderImage } from '../../utils/gameProviders';
+import { getLocalProviderNames, getProviderIdentityKey, getProviderImage } from '../../utils/gameProviders';
 import { BarChart3, Building2, Database, Plus, RefreshCw, Search, SlidersHorizontal } from 'lucide-react';
 import './SlotManagerV2.css';
 
@@ -116,9 +116,7 @@ const toProviderSlug = (provider) => normalizeProviderName(provider).toLowerCase
 
 const providerIdentityKey = (provider) => {
   const name = normalizeProviderName(provider);
-  const slug = toProviderSlug(name);
-  if (!slug) return '';
-  return getProviderImage(name) || slug;
+  return getProviderIdentityKey(name) || toProviderSlug(name);
 };
 
 const providerDisplayScore = (provider) => {
@@ -155,6 +153,38 @@ const buildProviderCatalog = (names) => {
     .sort((a, b) => a.localeCompare(b));
 
   return { providers, aliases };
+};
+
+const mergeProviderRow = (groups, rawName, fields = {}) => {
+  const name = normalizeProviderName(rawName);
+  if (!name || !toProviderSlug(name)) return;
+
+  const key = providerIdentityKey(name);
+  if (!key) return;
+
+  const current = groups.get(key) || {
+    name,
+    slug: toProviderSlug(name),
+    logo_url: '',
+    website_url: '',
+    slot_count: 0,
+  };
+
+  const next = {
+    ...current,
+    ...fields,
+    name: current.id ? current.name : (
+      fields.id || providerDisplayScore(name) > providerDisplayScore(current.name)
+        ? name
+        : current.name
+    ),
+    slug: fields.slug || current.slug || toProviderSlug(name),
+    logo_url: fields.logo_url ?? current.logo_url,
+    website_url: fields.website_url ?? current.website_url,
+    slot_count: Math.max(Number(current.slot_count) || 0, Number(fields.slot_count) || 0),
+  };
+
+  groups.set(key, next);
 };
 
 const ProviderPicker = memo(({ providers, value, onChange, onCreateProvider }) => {
@@ -605,18 +635,30 @@ const ProviderManager = memo(({ onClose }) => {
 
   const load = useCallback(async () => {
     setLoading(true);
+    const providerGroups = new Map();
+
     try {
       // Probe slot_providers table (may not exist yet)
       const { data: provData, error: provErr } = await supabase.from('slot_providers').select('*').order('name').limit(1000);
       if (!provErr && provData) {
         setHasProvTable(true);
-        setList(provData);
-        setLoading(false);
-        return;
+        provData.forEach(provider => {
+          mergeProviderRow(providerGroups, provider.name, {
+            ...provider,
+            slot_count: Number(provider.slot_count) || 0,
+          });
+        });
       }
     } catch { /* table doesn't exist */ }
 
-    // Fallback: pull distinct providers from slots table (paginated)
+    getLocalProviderNames().forEach(name => {
+      mergeProviderRow(providerGroups, name, {
+        logo_url: getProviderImage(name),
+        is_local_logo: true,
+      });
+    });
+
+    // Pull distinct providers from slots table too (paginated), even when slot_providers exists.
     try {
       let all = [];
       let from = 0;
@@ -628,9 +670,24 @@ const ProviderManager = memo(({ onClose }) => {
         if (data.length < step) break;
         from += step;
       }
-      const unique = [...new Set(all.map(d => (d.provider || '').trim()))].filter(Boolean).sort();
-      setList(unique.map(name => ({ name, slug: name.toLowerCase().replace(/\s+/g, '-'), logo_url: null, slot_count: 0 })));
+
+      const counts = new Map();
+      all.forEach(row => {
+        const name = normalizeProviderName(row.provider);
+        if (!name) return;
+        const key = providerIdentityKey(name) || toProviderSlug(name);
+        counts.set(key, {
+          name,
+          count: (counts.get(key)?.count || 0) + 1,
+        });
+      });
+
+      counts.forEach(({ name, count }) => {
+        mergeProviderRow(providerGroups, name, { slot_count: count });
+      });
     } catch { /* noop */ }
+
+    setList([...providerGroups.values()].sort((a, b) => a.name.localeCompare(b.name)));
     setLoading(false);
   }, []);
 
@@ -792,6 +849,7 @@ const SlotManagerV2 = () => {
         const name = normalizeProviderName(row.provider);
         if (name) providerNames.push(name);
       });
+      providerNames.push(...getLocalProviderNames());
       const catalog = buildProviderCatalog(providerNames);
       setProviders(catalog.providers);
       setProviderAliases(catalog.aliases);

@@ -106,6 +106,17 @@ const PROVIDER_ALIASES = {
   'wizard_games': 'wizard_games',
 };
 
+const PROVIDER_DISPLAY_ACRONYMS = new Set([
+  'bf',
+  'egt',
+  'fbm',
+  'jftw',
+  'mga',
+  'pg',
+  'rtp',
+  'ux',
+]);
+
 const normalizeProviderSlug = (value) => String(value || '')
   .toLowerCase()
   .trim()
@@ -157,6 +168,26 @@ const providerLogoEntries = PROVIDER_LOGO_FILES.map((file) => {
 
 const normalizeAlias = (value) => value ? normalizeProviderSlug(value) : null;
 
+const compactProviderSlug = (slug) => String(slug || '').replace(/_/g, '');
+
+const canonicalProviderSlug = (value) => {
+  const slug = normalizeProviderSlug(value);
+  if (!slug) return '';
+
+  const stripped = stripProviderSuffixes(slug);
+  const compact = compactProviderSlug(slug);
+  const strippedCompact = compactProviderSlug(stripped);
+  const alias = normalizeAlias(PROVIDER_ALIASES[slug])
+    || normalizeAlias(PROVIDER_ALIASES[compact])
+    || normalizeAlias(PROVIDER_ALIASES[stripped])
+    || normalizeAlias(PROVIDER_ALIASES[strippedCompact]);
+  const canonical = stripProviderSuffixes(alias || stripped || slug);
+
+  return compactProviderSlug(canonical || slug);
+};
+
+export const getProviderIdentityKey = canonicalProviderSlug;
+
 const fuzzyProviderLogoFile = (candidates) => {
   const normalizedCandidates = candidates.map(normalizeProviderSlug).filter(Boolean);
   for (const candidate of normalizedCandidates) {
@@ -196,6 +227,51 @@ const findProviderLogoFile = (value) => {
 };
 
 const logoUrl = (file) => file ? `${PROVIDER_LOGO_BASE}${file}` : null;
+
+const formatProviderLogoWord = (word) => {
+  const lower = word.toLowerCase();
+  if (!lower) return '';
+  if (/^\d+x\d+$/.test(lower)) return lower.toUpperCase();
+  if (/^\d+[a-z]+$/.test(lower)) return lower.replace(/[a-z]+$/, match => match.toUpperCase());
+  if (PROVIDER_DISPLAY_ACRONYMS.has(lower)) return lower.toUpperCase();
+  if (lower === 'n') return 'N';
+  if (lower === 'go') return 'GO';
+  return `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
+};
+
+const providerDisplayNameFromLogoFile = (file) => {
+  const stem = String(file || '').replace(/\.[^.]+$/, '');
+  return stem
+    .replace(/[-_]+/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .map(formatProviderLogoWord)
+    .join(' ');
+};
+
+const providerDisplayNameScore = (name) => {
+  const display = String(name || '');
+  const compact = display.replace(/[^a-z]/gi, '');
+  const allCapsPenalty = compact.length > 2 && compact === compact.toUpperCase() ? -20 : 0;
+  return display.length + (/[a-z]/.test(display) ? 12 : 0) + (/\s/.test(display) ? 8 : 0) + allCapsPenalty;
+};
+
+export const getLocalProviderNames = () => {
+  const byLogoIdentity = new Map();
+
+  PROVIDER_LOGO_FILES.forEach((file) => {
+    const name = providerDisplayNameFromLogoFile(file);
+    const key = canonicalProviderSlug(name);
+    if (!key) return;
+
+    const current = byLogoIdentity.get(key);
+    if (!current || providerDisplayNameScore(name) > providerDisplayNameScore(current)) {
+      byLogoIdentity.set(key, name);
+    }
+  });
+
+  return [...byLogoIdentity.values()].sort((a, b) => a.localeCompare(b));
+};
 
 // Get provider by ID or slug
 export const getProvider = (idOrSlug) => {
