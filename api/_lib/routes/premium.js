@@ -3,12 +3,12 @@ import {
   parseBody,
   requireUser,
   setCors,
-} from './_lib/api-auth.js';
+} from '../api-auth.js';
 import {
   PRODUCT_TYPES,
   loadPremiumContent,
   resolvePremiumAccess,
-} from './_lib/premium-data.js';
+} from '../premium-data.js';
 
 const TRIAL_DAYS = 15;
 

@@ -1,15 +1,15 @@
 import {
   createBillingPortalSession,
   createCheckoutSession,
-} from './_lib/mollie-billing.js';
+} from '../mollie-billing.js';
 import {
   createSupabaseAdmin,
   parseBody,
   requireUser,
   setCors,
-} from './_lib/api-auth.js';
-import { getPlayerAccess, playerSubscriptionRequired } from './_lib/player-access.js';
-import { PLAYER_PLAN_CODE, PLAYER_PRODUCT_CODE } from '../src/features/playerBonusHunt/domain.js';
+} from '../api-auth.js';
+import { getPlayerAccess, playerSubscriptionRequired } from '../player-access.js';
+import { PLAYER_PLAN_CODE, PLAYER_PRODUCT_CODE } from '../../../src/features/playerBonusHunt/domain.js';
 
 async function handleStatus(req, res, supabase, user) {
   const subscriptionRequired = playerSubscriptionRequired();

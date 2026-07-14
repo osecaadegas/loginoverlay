@@ -24,9 +24,9 @@ export default async function handler(req, res) {
     if (fetchError) throw fetchError;
 
     if (!expiredGiveaways || expiredGiveaways.length === 0) {
-      return res.status(200).json({ 
+      return res.status(200).json({
         message: 'No expired giveaways to draw',
-        drawn: 0
+        drawn: 0,
       });
     }
 
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
             .update({
               winners_drawn: true,
               drawn_at: new Date().toISOString(),
-              is_active: false
+              is_active: false,
             })
             .eq('id', giveaway.id);
 
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
             giveaway_id: giveaway.id,
             title: giveaway.title,
             winners: 0,
-            message: 'No entries'
+            message: 'No entries',
           });
           continue;
         }
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
         // Insert winners
         const winnersData = uniqueWinners.map(userId => ({
           giveaway_id: giveaway.id,
-          user_id: userId
+          user_id: userId,
         }));
 
         const { error: winnersError } = await supabase
@@ -93,7 +93,7 @@ export default async function handler(req, res) {
           .update({
             winners_drawn: true,
             drawn_at: new Date().toISOString(),
-            is_active: false
+            is_active: false,
           })
           .eq('id', giveaway.id);
 
@@ -103,14 +103,14 @@ export default async function handler(req, res) {
           giveaway_id: giveaway.id,
           title: giveaway.title,
           winners: uniqueWinners.length,
-          message: 'Success'
+          message: 'Success',
         });
       } catch (error) {
         console.error(`Error drawing winners for giveaway ${giveaway.id}:`, error);
         results.push({
           giveaway_id: giveaway.id,
           title: giveaway.title,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -118,13 +118,13 @@ export default async function handler(req, res) {
     return res.status(200).json({
       message: 'Auto-draw completed',
       drawn: results.length,
-      results
+      results,
     });
   } catch (error) {
     console.error('Error in auto-draw:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to auto-draw winners',
-      details: error.message 
+      details: error.message,
     });
   }
 }
