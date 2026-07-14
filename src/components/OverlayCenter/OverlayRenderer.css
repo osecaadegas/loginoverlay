@@ -1703,12 +1703,56 @@
 
 /* ── V12 modern: 3D carousel ── */
 .oc-bonushunt--v12 .bht-stack {
-  height: 120px;
-  margin: -4px 0 2px;
+  height: 150px;
+  margin: -8px 0 0;
 }
 .oc-bonushunt--v12 .bht-stack-card {
-  width: 90px;
-  height: 110px;
+  width: 106px;
+  height: 138px;
+}
+.oc-bonushunt--v12 .bht-stack-card--far-left {
+  transform: translateX(-184px) translateZ(-120px) rotateY(35deg) scale(0.65);
+}
+.oc-bonushunt--v12 .bht-stack-card--left {
+  transform: translateX(-108px) translateZ(-50px) rotateY(20deg) scale(0.85);
+}
+.oc-bonushunt--v12 .bht-stack-card--right {
+  transform: translateX(108px) translateZ(-50px) rotateY(-20deg) scale(0.85);
+}
+.oc-bonushunt--v12 .bht-stack-card--far-right {
+  transform: translateX(184px) translateZ(-120px) rotateY(-35deg) scale(0.65);
+}
+.oc-bonushunt--v12 .bht-stack:not(.bht-stack--spinning) .bht-stack-card--left {
+  animation: bht-v12-stack-tilt-left 4s ease-in-out infinite;
+}
+.oc-bonushunt--v12 .bht-stack:not(.bht-stack--spinning) .bht-stack-card--right {
+  animation: bht-v12-stack-tilt-right 4s ease-in-out infinite;
+}
+.oc-bonushunt--v12 .bht-stack:not(.bht-stack--spinning) .bht-stack-card--left.bht-stack-card--extreme {
+  animation: bht-v12-extreme-hide-left 4.5s ease-in-out infinite;
+}
+.oc-bonushunt--v12 .bht-stack:not(.bht-stack--spinning) .bht-stack-card--right.bht-stack-card--extreme {
+  animation: bht-v12-extreme-hide-right 4.5s ease-in-out infinite;
+}
+@keyframes bht-v12-stack-tilt-left {
+  0%, 100% { transform: translateX(-108px) translateZ(-50px) rotateY(20deg) scale(0.85); }
+  50%      { transform: translateX(-108px) translateZ(-40px) rotateY(24deg) scale(0.87); }
+}
+@keyframes bht-v12-stack-tilt-right {
+  0%, 100% { transform: translateX(108px) translateZ(-50px) rotateY(-20deg) scale(0.85); }
+  50%      { transform: translateX(108px) translateZ(-40px) rotateY(-24deg) scale(0.87); }
+}
+@keyframes bht-v12-extreme-hide-left {
+  0%, 100% { transform: translateX(-108px) translateZ(-50px) rotateY(20deg) scale(0.85); }
+  25%      { transform: translateX(-76px) translateZ(-85px) rotateY(32deg) scale(0.72); }
+  45%      { transform: translateX(-64px) translateZ(-100px) rotateY(38deg) scale(0.66); }
+  65%      { transform: translateX(-82px) translateZ(-70px) rotateY(26deg) scale(0.78); }
+}
+@keyframes bht-v12-extreme-hide-right {
+  0%, 100% { transform: translateX(108px) translateZ(-50px) rotateY(-20deg) scale(0.85); }
+  25%      { transform: translateX(76px) translateZ(-85px) rotateY(-32deg) scale(0.72); }
+  45%      { transform: translateX(64px) translateZ(-100px) rotateY(-38deg) scale(0.66); }
+  65%      { transform: translateX(82px) translateZ(-70px) rotateY(-26deg) scale(0.78); }
 }
 .oc-bonushunt--v12 .bht-stack-card-inner {
   border-radius: 12px;
@@ -1766,8 +1810,9 @@
 
 /* ── V12 modern: progress bar ── */
 .oc-bonushunt--v12 .bht-progress {
-  padding: 0 10px;
-  margin: 0 0 4px;
+  padding: 0 8px;
+  margin: -1px 0 3px;
+  gap: 6px;
 }
 .oc-bonushunt--v12 .bht-progress-bar {
   height: 6px;
@@ -1783,6 +1828,32 @@
   font-weight: 700;
   opacity: 0.7;
   text-shadow: none;
+}
+.oc-bonushunt--v12 .bht-progress-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.oc-bonushunt--v12 .bht-progress-specials {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.oc-bonushunt--v12 .bht-progress-special {
+  font-size: 0.8em;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 5px rgba(0,0,0,0.55);
+}
+.oc-bonushunt--v12 .bht-progress-special--super {
+  color: var(--bht-super-badge, #eab308);
+}
+.oc-bonushunt--v12 .bht-progress-special--extreme {
+  color: var(--bht-extreme-badge, #ef4444);
 }
 
 /* ── V12 modern: list rows ── */

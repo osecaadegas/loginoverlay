@@ -299,20 +299,6 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 </div>
               </div>
             </div>
-            {(stats.superCount > 0 || stats.extremeCount > 0) && (
-              <div className="bht-badge-pills">
-                {stats.superCount > 0 && (
-                  <span className="bht-badge-pill bht-badge-pill--super" data-widget-element="tagContainer" style={{ ...tagContainerStyle, ...tagTextStyle }}>
-                    {stats.superCount} SUPER
-                  </span>
-                )}
-                {stats.extremeCount > 0 && (
-                  <span className="bht-badge-pill bht-badge-pill--extreme" data-widget-element="tagContainer" style={{ ...tagContainerStyle, ...tagTextStyle }}>
-                    {stats.extremeCount} EXTREME
-                  </span>
-                )}
-              </div>
-            )}
           </div>
           <div className="bht-fullflip-face bht-fullflip-back">
             <div className="bht-flipback-layout">
@@ -361,7 +347,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" data-widget-element="slotListContainer" style={{ ...slotListContainerStyle, flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+        <div className="bht-card bht-list-card" data-widget-element="slotListContainer" style={{ ...slotListContainerStyle, flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '2.65 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`} data-widget-element="slotCarouselContainer" style={slotCarouselContainerStyle}>
             {(() => {
@@ -398,7 +384,19 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 <div className="bht-progress-bar" data-widget-element="progressBar" style={progressBarStyle}>
                   <div className="bht-progress-fill" data-widget-element="progressBarFill" style={{ ...progressBarFillStyle, width: `${pct}%` }} />
                 </div>
-                <span className="bht-progress-text" data-widget-element="progressCount" style={progressCountStyle}>{opened}/{total}</span>
+                <span className="bht-progress-meta" data-widget-element="progressCount" style={progressCountStyle}>
+                  {(stats.superCount > 0 || stats.extremeCount > 0) && (
+                    <span className="bht-progress-specials" aria-label={`${stats.superCount} super bonuses and ${stats.extremeCount} extreme bonuses`}>
+                      {stats.superCount > 0 && (
+                        <span className="bht-progress-special bht-progress-special--super" title="Super bonuses">{stats.superCount}</span>
+                      )}
+                      {stats.extremeCount > 0 && (
+                        <span className="bht-progress-special bht-progress-special--extreme" title="Extreme bonuses">{stats.extremeCount}</span>
+                      )}
+                    </span>
+                  )}
+                  <span className="bht-progress-text">{opened}/{total}</span>
+                </span>
               </div>
             );
           })()}
