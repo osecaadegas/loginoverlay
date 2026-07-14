@@ -8127,17 +8127,18 @@ body.wm-resizing {
 }
 
 .rtp-stats-provider--logo {
-  width: clamp(148px, 12.5vw, 232px);
-  height: clamp(38px, 4.6vw, 56px);
+  width: clamp(132px, 10.5vw, 178px);
+  height: clamp(30px, 3.15vw, 38px);
   justify-content: center;
   flex: 0 0 auto;
   line-height: 1;
+  box-sizing: border-box;
   text-shadow: none;
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
-  padding: 0 !important;
-  margin: -2px 0;
+  padding: 1px 3px !important;
+  margin: 0;
 }
 
 .rtp-stats-provider--text {
