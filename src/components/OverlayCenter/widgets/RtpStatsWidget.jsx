@@ -116,6 +116,37 @@ function pickBestWinRecord(records) {
 }
 
 /* ─── Main widget ─── */
+function RtpStatsProviderMark({ provider, logo }) {
+  const [failedLogo, setFailedLogo] = useState('');
+
+  useEffect(() => {
+    setFailedLogo('');
+  }, [provider, logo]);
+
+  const canShowLogo = Boolean(logo) && failedLogo !== logo;
+  const label = String(provider || '').trim();
+
+  return (
+    <span
+      className={`rtp-stats-provider ${canShowLogo ? 'rtp-stats-provider--logo' : 'rtp-stats-provider--text'}`}
+      title={label}
+    >
+      {canShowLogo ? (
+        <img
+          src={logo}
+          alt={`${label} logo`}
+          className="rtp-stats-provider-logo"
+          draggable="false"
+          decoding="async"
+          onError={() => setFailedLogo(logo)}
+        />
+      ) : (
+        label.toUpperCase()
+      )}
+    </span>
+  );
+}
+
 function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const c = config || {};
 
@@ -530,13 +561,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         <div className="rtp-stats-left">
           {showProvider && displayProvider && (
             <>
-              <span className={`rtp-stats-provider ${displayProviderLogo ? 'rtp-stats-provider--logo' : ''}`}>
-                {displayProviderLogo ? (
-                  <img src={displayProviderLogo} alt={`${displayProvider} logo`} className="rtp-stats-provider-logo" />
-                ) : (
-                  displayProvider.toUpperCase()
-                )}
-              </span>
+              <RtpStatsProviderMark provider={displayProvider} logo={displayProviderLogo} />
               <div className="rtp-stats-divider" />
             </>
           )}

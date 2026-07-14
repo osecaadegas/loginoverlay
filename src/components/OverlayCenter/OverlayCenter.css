@@ -8117,6 +8117,7 @@ body.wm-resizing {
 .rtp-stats-provider {
   display: inline-flex;
   align-items: center;
+  min-width: 0;
   color: var(--rtp-provider, #ffffff);
   font-size: var(--rtp-provider-size, 16px);
   font-weight: 700;
@@ -8134,6 +8135,12 @@ body.wm-resizing {
   border: 0 !important;
   box-shadow: none !important;
   padding: 0 !important;
+}
+
+.rtp-stats-provider--text {
+  max-width: clamp(96px, 11vw, 190px);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rtp-stats-provider-logo {
