@@ -106,6 +106,41 @@ function BonusHuntProviderPicker({ providers, value, onChange }) {
   );
 }
 
+function normalizePayoutDraftInput(value) {
+  const text = String(value ?? '');
+  let normalized = '';
+  let hasDecimal = false;
+
+  for (const char of text) {
+    if (/\d/.test(char)) {
+      normalized += char;
+      continue;
+    }
+    if ((char === '.' || char === ',') && !hasDecimal) {
+      normalized += '.';
+      hasDecimal = true;
+    }
+  }
+
+  return normalized;
+}
+
+function parsePayoutDraftInput(value) {
+  const raw = normalizePayoutDraftInput(value).trim();
+  if (!raw) return 0;
+
+  if (raw.includes('.')) {
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed < 0) return null;
+    return Math.round((parsed + Number.EPSILON) * 100) / 100;
+  }
+
+  const digits = raw.replace(/\D/g, '').replace(/^0+/, '') || '0';
+  const cents = parseInt(digits, 10);
+  if (!Number.isFinite(cents) || cents < 0) return null;
+  return Math.round(((cents / 100) + Number.EPSILON) * 100) / 100;
+}
+
 export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
   const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
@@ -510,6 +545,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [showStatistics, setShowStatistics] = useState(c.showStatistics ?? true);
   const [animatedTracker, setAnimatedTracker] = useState(c.animatedTracker ?? true);
   const [bonusList, setBonusList] = useState(c.bonuses || []);
+  const [payoutDrafts, setPayoutDrafts] = useState({});
   const [sortBy, setSortBy] = useState(c.sortBy || 'default');
   const [sortDir, setSortDir] = useState(c.sortDir || 'asc');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -726,6 +762,15 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const autoSaveTimerRef = useRef(null);
   const autoSaveFiredRef = useRef(false);
 
+  const cancelPendingAutoSave = useCallback(() => {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+    autoSaveFiredRef.current = false;
+    setSaveHuntMsg('');
+  }, []);
+
   useEffect(() => {
     const loadSlots = async () => {
       try {
@@ -852,15 +897,44 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     save(updated);
   };
 
-  const handlePayoutChange = (bonusId, rawInput) => {
-    const digits = rawInput.replace(/\D/g, '').replace(/^0+/, '') || '0';
-    const cents = parseInt(digits, 10);
-    const payout = cents / 100;
+  const getPayoutDraftValue = (bonus) => (
+    Object.prototype.hasOwnProperty.call(payoutDrafts, bonus.id)
+      ? payoutDrafts[bonus.id]
+      : formatPayoutDisplay(bonus.payout)
+  );
+
+  const handlePayoutDraftChange = (bonusId, rawInput) => {
+    cancelPendingAutoSave();
+    setPayoutDrafts(prev => ({
+      ...prev,
+      [bonusId]: normalizePayoutDraftInput(rawInput),
+    }));
+  };
+
+  const commitPayoutDraft = (bonusId, rawInput) => {
+    const payout = parsePayoutDraftInput(rawInput);
+    if (payout === null) return;
+
+    const currentBonus = bonusList.find(b => b.id === bonusId);
+    const currentPayout = Number(currentBonus?.payout || 0);
+    const nextOpened = payout > 0;
+    if (Math.abs(currentPayout - payout) < 0.005 && Boolean(currentBonus?.opened) === nextOpened) {
+      setPayoutDrafts(prev => ({
+        ...prev,
+        [bonusId]: payout > 0 ? payout.toFixed(2) : '',
+      }));
+      return;
+    }
+
     const updated = bonusList.map(b =>
       b.id === bonusId ? { ...b, opened: payout > 0, payout, result: payout } : b
     );
     setBonusList(updated);
     save(updated);
+    setPayoutDrafts(prev => ({
+      ...prev,
+      [bonusId]: payout > 0 ? payout.toFixed(2) : '',
+    }));
 
     // Auto-save: if all bonuses now have a payout > 0, save the hunt after 3s
     if (bonusOpening && updated.length > 0 && updated.every(b => b.opened && Number(b.payout) > 0)) {
@@ -874,12 +948,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       }
     } else {
       // If user clears a payout, cancel the pending auto-save
-      if (autoSaveTimerRef.current) {
-        clearTimeout(autoSaveTimerRef.current);
-        autoSaveTimerRef.current = null;
-        setSaveHuntMsg('');
-      }
-      autoSaveFiredRef.current = false;
+      cancelPendingAutoSave();
     }
   };
   const formatPayoutDisplay = (val) => {
@@ -948,6 +1017,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   // Reset hunt without saving — start fresh
   const handleResetHunt = () => {
     setBonusList([]);
+    setPayoutDrafts({});
     setStartMoney('');
     setTargetMoney('');
     setStopLoss('');
@@ -1604,15 +1674,17 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   <div className="bh-list-field">
                     <span className="bh-list-field-label">Payment {!bonusOpening && '🔒'}</span>
                     {bonusOpening ? (
-                      <input className="bh-list-payout-input" type="text" inputMode="numeric"
+                      <input className="bh-list-payout-input" type="text" inputMode="decimal"
                         data-payout-idx={i}
-                        value={formatPayoutDisplay(bonus.payout)}
+                        value={getPayoutDraftValue(bonus)}
                         placeholder="0.00"
-                        onChange={e => handlePayoutChange(bonus.id, e.target.value)}
+                        onChange={e => handlePayoutDraftChange(bonus.id, e.target.value)}
+                        onBlur={e => commitPayoutDraft(bonus.id, e.target.value)}
                         onKeyDown={e => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
                             const next = document.querySelector(`[data-payout-idx="${i + 1}"]`);
+                            e.currentTarget.blur();
                             if (next) next.focus();
                           }
                         }} />

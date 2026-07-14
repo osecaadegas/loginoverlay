@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PERMISSIONS, getUserRoles, addUserRole, removeUserRole } from '../../utils/adminUtils';
 import { supabase } from '../../config/supabaseClient';
@@ -8,7 +8,6 @@ import './AdminPanel.css';
 import './AdminPanel.new.css';
 import ApiKeysAdmin from './ApiKeysAdmin';
 import { CasinoOfferModal } from './modals';
-import LandingAdmin from './LandingAdmin';
 import {
   SidePanel,
   StatsCard,
@@ -39,12 +38,13 @@ import {
 } from './components';
 
 // Valid tab IDs for URL deep linking
-const VALID_TABS = ['users', 'offers', 'apikeys', 'landing'];
+const DEFAULT_ADMIN_TAB = 'users';
+const VALID_TABS = ['users', 'offers', 'apikeys'];
+const getValidAdminTab = (tab) => (VALID_TABS.includes(tab) ? tab : DEFAULT_ADMIN_TAB);
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Pending confirmation state (replaces confirm() dialogs)
@@ -72,11 +72,11 @@ export default function AdminPanel() {
   // Get initial tab from URL or default to 'users'
   const getInitialTab = () => {
     const tabFromUrl = searchParams.get('tab');
-    return VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'users';
+    return getValidAdminTab(tabFromUrl);
   };
 
   // Offer Card Builder State
-  const [activeTab, setActiveTab] = useState(getInitialTab); // 'users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance'
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   const [offers, setOffers] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -170,17 +170,25 @@ export default function AdminPanel() {
 
   // Handle tab change with URL deep linking
   const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    setSearchParams({ tab: tabId });
+    const nextTab = getValidAdminTab(tabId);
+    setActiveTab(nextTab);
+    setSearchParams({ tab: nextTab });
   };
 
   // Sync tab with URL on browser back/forward
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && VALID_TABS.includes(tabFromUrl) && tabFromUrl !== activeTab) {
-      setActiveTab(tabFromUrl);
+    const nextTab = getValidAdminTab(tabFromUrl);
+
+    if (tabFromUrl && tabFromUrl !== nextTab) {
+      setSearchParams({ tab: nextTab }, { replace: true });
+      return;
     }
-  }, [searchParams]);
+
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+  }, [activeTab, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -1279,7 +1287,6 @@ export default function AdminPanel() {
     { id: 'users', label: 'User Management', shortLabel: 'Users', kicker: 'Accounts', description: 'Roles, access and account status' },
     { id: 'offers', label: 'Partnerships', shortLabel: 'Partnerships', kicker: 'Marketplace', description: 'Streamer deals and click analytics' },
     { id: 'apikeys', label: 'API Keys', shortLabel: 'API Keys', kicker: 'Access', description: 'External integrations and tokens' },
-    { id: 'landing', label: 'Landing Page', shortLabel: 'Landing', kicker: 'Website', description: 'Public content and pricing blocks' },
   ];
   const activeAdminTab = adminTabs.find(tab => tab.id === activeTab) || adminTabs[0];
 
@@ -1345,7 +1352,6 @@ export default function AdminPanel() {
               { id: 'users',     label: 'User Management', icon: '👥' },
               { id: 'offers',    label: 'Partnerships',     icon: '🤝' },
               { id: 'apikeys',   label: 'API Keys',         icon: '🔑' },
-              { id: 'landing',   label: 'Landing Page',     icon: '🏠' },
             ].map(tab => (
               <option key={tab.id} value={tab.id}>
                 {tab.icon}  {tab.label}
@@ -3437,11 +3443,6 @@ export default function AdminPanel() {
       {/* API Keys Tab */}
       {activeTab === 'apikeys' && (
         <ApiKeysAdmin />
-      )}
-
-      {/* Landing Page Tab */}
-      {activeTab === 'landing' && (
-        <LandingAdmin />
       )}
     </div>
   );

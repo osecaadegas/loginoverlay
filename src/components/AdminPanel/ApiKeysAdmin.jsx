@@ -1,6 +1,74 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../config/supabaseClient';
 
+const PROFILE_SELECTS = [
+  'user_id, display_name, username, twitch_display_name, twitch_username, avatar_url',
+  'user_id, twitch_display_name, twitch_username, avatar_url',
+  'user_id, twitch_username, avatar_url',
+];
+
+function cleanName(value) {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (/^user:[a-f0-9-]+$/i.test(trimmed)) return '';
+  return trimmed;
+}
+
+function emailName(email) {
+  if (typeof email !== 'string' || !email.includes('@')) return '';
+  return email.split('@')[0]?.trim() || '';
+}
+
+function authUserDisplay(authUser) {
+  const meta = authUser?.user_metadata || {};
+  return cleanName(
+    meta.full_name ||
+    meta.name ||
+    meta.display_name ||
+    meta.preferred_username ||
+    meta.user_name ||
+    meta.twitch_username ||
+    emailName(authUser?.email)
+  );
+}
+
+function buildDisplayProfile(userId, profile = {}, authUser = null, connection = null) {
+  const meta = authUser?.user_metadata || {};
+  const displayName = cleanName(
+    profile.display_name ||
+    profile.twitch_display_name ||
+    profile.username ||
+    profile.twitch_username ||
+    connection?.se_username ||
+    authUserDisplay(authUser)
+  ) || (userId ? `User ${userId.slice(0, 8)}` : 'Unknown user');
+
+  const handle = cleanName(
+    profile.twitch_username ||
+    profile.username ||
+    meta.preferred_username ||
+    meta.user_name ||
+    meta.twitch_username ||
+    connection?.se_username ||
+    emailName(authUser?.email)
+  );
+
+  return {
+    user_id: userId,
+    display_name: displayName,
+    handle,
+    email: authUser?.email || '',
+    avatar_url: profile.avatar_url || meta.avatar_url || meta.picture || '',
+    searchText: [
+      displayName,
+      handle,
+      authUser?.email,
+      userId,
+    ].filter(Boolean).join(' ').toLowerCase(),
+  };
+}
+
 export default function ApiKeysAdmin() {
   const [accessList, setAccessList] = useState([]);
   const [apiKeys, setApiKeys] = useState([]);
@@ -11,6 +79,66 @@ export default function ApiKeysAdmin() {
   const [copiedKey, setCopiedKey] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const loadUserDirectory = useCallback(async (userIds = null) => {
+    const ids = Array.isArray(userIds) ? userIds.filter(Boolean) : null;
+    const profiles = {};
+    const authUsers = {};
+    const connections = {};
+
+    if (ids && ids.length === 0) return {};
+
+    for (const select of PROFILE_SELECTS) {
+      try {
+        let query = supabase.from('user_profiles').select(select);
+        query = ids ? query.in('user_id', ids) : query.limit(1000);
+        const { data, error: profileError } = await query;
+        if (profileError) continue;
+        (data || []).forEach(profile => {
+          profiles[profile.user_id] = profile;
+        });
+        break;
+      } catch (lookupError) {
+        console.warn('Profile lookup failed:', lookupError);
+      }
+    }
+
+    try {
+      let query = supabase.from('streamelements_connections').select('user_id, se_username');
+      query = ids ? query.in('user_id', ids) : query.limit(1000);
+      const { data } = await query;
+      (data || []).forEach(connection => {
+        connections[connection.user_id] = connection;
+      });
+    } catch (lookupError) {
+      console.warn('StreamElements lookup failed:', lookupError);
+    }
+
+    try {
+      const { data, error: authError } = await supabase.rpc('get_all_auth_users');
+      if (!authError) {
+        (data || [])
+          .filter(authUser => !ids || ids.includes(authUser.id))
+          .forEach(authUser => {
+            authUsers[authUser.id] = authUser;
+          });
+      }
+    } catch (lookupError) {
+      console.warn('Auth user lookup failed:', lookupError);
+    }
+
+    const allIds = new Set([
+      ...(ids || []),
+      ...Object.keys(profiles),
+      ...Object.keys(connections),
+      ...Object.keys(authUsers),
+    ]);
+
+    return [...allIds].reduce((directory, userId) => {
+      directory[userId] = buildDisplayProfile(userId, profiles[userId], authUsers[userId], connections[userId]);
+      return directory;
+    }, {});
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -38,33 +166,17 @@ export default function ApiKeysAdmin() {
         // Table might not exist yet - ignore
       }
 
-      // Load user profiles for display names
+      // Load user profiles/auth metadata for display names
       const userIds = [...new Set([
         ...(access || []).map(a => a.user_id),
         ...(keys || []).map(k => k.user_id),
       ])].filter(Boolean);
 
-      let profiles = {};
-      if (userIds.length > 0) {
-        try {
-          const { data: profs, error: profErr } = await supabase
-            .from('user_profiles')
-            .select('user_id, twitch_username, avatar_url')
-            .in('user_id', userIds);
-          
-          if (!profErr && profs) {
-            profs.forEach(p => {
-              profiles[p.user_id] = p;
-            });
-          }
-        } catch (e) {
-          console.error('Profile fetch error:', e);
-        }
-      }
+      const profiles = await loadUserDirectory(userIds);
 
       setAccessList((access || []).map(a => ({
         ...a,
-        profile: profiles[a.user_id] || { twitch_username: 'Unknown' },
+        profile: profiles[a.user_id] || buildDisplayProfile(a.user_id),
         key: (keys || []).find(k => k.user_id === a.user_id) || null,
       })));
       setApiKeys(keys || []);
@@ -73,7 +185,7 @@ export default function ApiKeysAdmin() {
       setError('Failed to load API data. Make sure the migration has been run.');
     }
     setLoading(false);
-  }, []);
+  }, [loadUserDirectory]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -83,19 +195,12 @@ export default function ApiKeysAdmin() {
     if (query.length < 2) { setSearchResults([]); return; }
 
     try {
-      const { data, error: profErr } = await supabase
-        .from('user_profiles')
-        .select('user_id, twitch_username, avatar_url')
-        .ilike('twitch_username', `%${query}%`)
-        .limit(8);
-
-      if (profErr) {
-        console.error('Profiles query error:', profErr);
-        setError('Failed to load user profiles');
-        return;
-      }
-
-      setSearchResults(data || []);
+      const directory = await loadUserDirectory();
+      const needle = query.trim().toLowerCase();
+      const results = Object.values(directory)
+        .filter(userProfile => userProfile.searchText.includes(needle))
+        .slice(0, 8);
+      setSearchResults(results);
     } catch (err) {
       console.error('Search error:', err);
       setError('Search failed');
@@ -185,7 +290,7 @@ export default function ApiKeysAdmin() {
         <h3 style={{ margin: '0 0 0.75rem', color: '#e5e7eb', fontSize: '1rem' }}>Grant API Access</h3>
         <input
           type="text"
-          placeholder="Search premium users by Twitch username..."
+          placeholder="Search users by name, Twitch handle, or email..."
           value={grantSearch}
           onChange={(e) => searchUsers(e.target.value)}
           style={{
@@ -203,8 +308,12 @@ export default function ApiKeysAdmin() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {u.avatar_url && <img src={u.avatar_url} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />}
-                  <span style={{ color: '#e5e7eb' }}>{u.twitch_username || 'Unknown'}</span>
-                  <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>@{u.twitch_username || 'unknown'}</span>
+                  <span style={{ color: '#e5e7eb' }}>{u.display_name}</span>
+                  {(u.handle || u.email) && (
+                    <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                      {u.handle ? `@${u.handle}` : u.email}
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => grantAccess(u.user_id)}
@@ -240,11 +349,16 @@ export default function ApiKeysAdmin() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {p.avatar_url && <img src={p.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%' }} />}
                     <div>
-                      <div style={{ color: '#e5e7eb', fontWeight: 600 }}>{p.twitch_username || 'Unknown'}</div>
+                      <div style={{ color: '#e5e7eb', fontWeight: 600 }}>{p.display_name}</div>
                       <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
                         Granted {new Date(entry.granted_at).toLocaleDateString()}
                         {k?.last_used_at && ` • Last used ${new Date(k.last_used_at).toLocaleDateString()}`}
                       </div>
+                      {(p.handle || p.email) && (
+                        <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                          {p.handle ? `@${p.handle}` : p.email}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
