@@ -814,6 +814,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
 
   const status = resolveToolStatus({ type: widgetType, widget, integrations });
   const useFullWidthConfig = widgetType === 'slot_requests';
+  const detailModifier = `oc2-detail--${widgetType.replace(/_/g, '-')}`;
 
   const configPanel = (() => {
     if (!widget) return null;
@@ -868,7 +869,7 @@ function WidgetDetail({ widgetType, widgets, theme, integrations, saveWidget, ad
   })();
 
   return (
-    <section className={`oc2-detail${useFullWidthConfig ? ` oc2-detail--${widgetType.replace(/_/g, '-')}` : ''}`} data-tour="widget-detail-page">
+    <section className={`oc2-detail ${detailModifier}`} data-tour="widget-detail-page">
       <div className="oc2-detail-header">
         <Link className="oc2-back-link" to="/overlay-center"><ArrowLeft size={16} /> Back to tools</Link>
         <div>

@@ -23891,3 +23891,195 @@ body.wm-resizing {
   }
 }
 
+/* Remaining widget detail coverage: activate the group polish on every route. */
+.oc2-detail {
+  width: 100%;
+}
+
+.oc2-detail .oc2-config-shell {
+  gap: 16px !important;
+}
+
+.oc2-detail .oc2-config-main {
+  min-width: 0;
+}
+
+.oc2-detail :is(
+  .cg-config__field,
+  .nb-field,
+  .bb-admin-field-label,
+  .bk-label,
+  .bk-mp-input-label,
+  .giveaway-field
+) {
+  color: var(--sc-muted) !important;
+}
+
+.oc2-detail :is(
+  .cg-config__btn,
+  .bb-admin-btn,
+  .bb-admin-add-btn,
+  .bb-admin-remove-btn,
+  .bb-admin-reset-btn,
+  .giveaway-primary-action,
+  .giveaway-draw-button,
+  .nb-preset-save-btn,
+  .nb-preset-pill__load,
+  .nb-preset-pill__delete,
+  .bk-start-btn,
+  .bk-reset-btn,
+  .bk-reset-match-btn,
+  .bk-slot-action-btn
+) {
+  min-height: 38px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(72, 89, 118, 0.74) !important;
+  background: rgba(15, 23, 42, 0.84) !important;
+  color: #dce6f4 !important;
+  box-shadow: none !important;
+}
+
+.oc2-detail :is(
+  .cg-config__btn--primary,
+  .cg-config__btn--accent,
+  .bb-admin-btn--primary,
+  .bb-admin-add-btn,
+  .giveaway-primary-action,
+  .giveaway-draw-button,
+  .nb-preset-save-btn,
+  .bk-start-btn:not(.bk-start-btn--disabled)
+) {
+  color: #061018 !important;
+  background: linear-gradient(135deg, var(--sc-cyan), var(--sc-teal)) !important;
+  border-color: rgba(125, 211, 252, 0.62) !important;
+  box-shadow: 0 12px 28px rgba(45, 212, 191, 0.14) !important;
+}
+
+.oc2-detail :is(
+  .cg-config__btn:hover,
+  .bb-admin-btn:hover,
+  .giveaway-primary-action:hover,
+  .giveaway-draw-button:hover,
+  .nb-preset-save-btn:hover,
+  .nb-preset-pill__load:hover,
+  .bk-start-btn:hover,
+  .bk-reset-btn:hover
+) {
+  transform: translateY(-1px) !important;
+  border-color: rgba(125, 211, 252, 0.42) !important;
+}
+
+.oc2-detail--bets :is(
+  .cg-config__status-card,
+  .cg-config__history-row,
+  .cg-config__winner-tile,
+  .cg-config__field > input,
+  .cg-config__field > textarea
+),
+.oc2-detail--chat :is(.ov-chat-cfg-platform, .ov-chat-cfg-platform-header),
+.oc2-detail--rtp-stats :is(.ov-chat-cfg-platform-header, .nb-preset-pill),
+.oc2-detail--spotify-now-playing .nb-section > div[style],
+.oc2-detail--tournament :is(.tm-tab-intro, .bk-active-header, .bk-progress, .bk-champion, .bk-mp-p, .bk-mp-round, .bk-slot-dropdown, .bk-slot-option),
+.oc2-detail--bonus-buys :is(.bb-admin-empty, .bb-admin-selected-slot, .bb-admin-search-result, .bb-admin-result-row, .bb-admin-summary-row) {
+  border: 1px solid rgba(72, 89, 118, 0.7) !important;
+  border-radius: 13px !important;
+  background: rgba(7, 12, 21, 0.64) !important;
+}
+
+.oc2-detail--bets .cg-config__field {
+  display: grid !important;
+  gap: 7px !important;
+}
+
+.oc2-detail--bets .cg-config__field > span,
+.oc2-detail--bonus-buys .bb-admin-field-label,
+.oc2-detail--tournament .bk-label {
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  color: #9fb0c6 !important;
+}
+
+.oc2-detail--bets .cg-config__history {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.oc2-detail--bets .cg-config__history-row {
+  padding: 12px !important;
+}
+
+.oc2-detail--bets .cg-config__winner-tile {
+  min-height: 112px !important;
+  overflow: hidden !important;
+}
+
+.oc2-detail--bets .cg-config__winner-fill {
+  opacity: 0.18 !important;
+}
+
+.oc2-detail--bets .cg-config__custom-timer-row,
+.oc2-detail--bonus-buys .bb-admin-field-grid,
+.oc2-detail--bonus-buys .bb-admin-stats-grid {
+  gap: 10px !important;
+}
+
+.oc2-detail--chat .ov-chat-cfg-platform,
+.oc2-detail--chat .ov-chat-cfg-platform-header,
+.oc2-detail--rtp-stats .ov-chat-cfg-platform-header {
+  min-height: 44px !important;
+}
+
+.oc2-detail--spotify-now-playing .nb-section > div[style] {
+  margin-bottom: 12px !important;
+  padding: 12px !important;
+}
+
+.oc2-detail--spotify-now-playing .nb-section > p[style],
+.oc2-detail--rtp-stats .nb-section > p[style] {
+  color: var(--sc-muted) !important;
+}
+
+.oc2-detail--tournament .tm-page {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.oc2-detail--tournament :is(.tm-section, .tm-card, .bk-card, .bk-active, .bk-match-panel) {
+  border-radius: 16px !important;
+}
+
+.oc2-detail--tournament :is(.bk-slot-option, .bk-mp-p) {
+  padding: 10px !important;
+}
+
+.oc2-detail--tournament :is(.bk-slot-thumb, .bk-slot-option-img, .bk-mc-slot-img, .bk-mp-slot-img) {
+  border-radius: 10px !important;
+  border: 1px solid rgba(72, 89, 118, 0.7) !important;
+}
+
+.oc2-detail--bonus-buys .bb-admin-field-grid--two {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--bonus-buys .bb-admin-slot-image,
+.oc2-detail--bonus-buys .bb-admin-selected-slot-image,
+.oc2-detail--bonus-buys .bb-admin-search-result-image {
+  border-radius: 10px !important;
+}
+
+@media (max-width: 1180px) {
+  .oc2-config-shell:not(.oc2-config-shell--full) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .oc2-detail--bets .cg-config__section[style],
+  .oc2-detail--bonus-buys .bb-admin-field-grid--two {
+    grid-template-columns: 1fr !important;
+  }
+}
+
