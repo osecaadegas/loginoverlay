@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS public.player_hunts (
   currency TEXT NOT NULL DEFAULT 'EUR',
   status TEXT NOT NULL DEFAULT 'active',
   starting_deposit NUMERIC(14,2) NOT NULL DEFAULT 0,
+  stop_loss NUMERIC(14,2) NOT NULL DEFAULT 0,
   additional_deposits NUMERIC(14,2) NOT NULL DEFAULT 0,
   initial_withdrawal NUMERIC(14,2) NOT NULL DEFAULT 0,
   total_withdrawals NUMERIC(14,2) NOT NULL DEFAULT 0,
@@ -89,6 +90,7 @@ CREATE TABLE IF NOT EXISTS public.player_hunts (
   CONSTRAINT player_hunts_currency_check CHECK (currency IN ('EUR', 'USD', 'GBP', 'CAD', 'AUD', 'BRL', 'NOK', 'SEK', 'DKK', 'PLN')),
   CONSTRAINT player_hunts_non_negative_check CHECK (
     starting_deposit >= 0
+    AND stop_loss >= 0
     AND additional_deposits >= 0
     AND initial_withdrawal >= 0
     AND total_withdrawals >= 0

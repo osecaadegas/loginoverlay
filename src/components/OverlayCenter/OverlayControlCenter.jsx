@@ -16,7 +16,6 @@ import {
   Grid3X3,
   Link2,
   Lock,
-  MonitorPlay,
   MoreVertical,
   Palette,
   PlugZap,
@@ -50,7 +49,6 @@ import {
   RECOMMENDED_TOOLS,
   TOOL_STATUS,
   resolveToolStatus,
-  summarizeOverlayTools,
 } from './toolStatusResolver';
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
@@ -450,53 +448,6 @@ function StatusIcon({ status }) {
   if (status === TOOL_STATUS.PREMIUM) return <Lock size={15} />;
   if (status === TOOL_STATUS.ERROR) return <AlertTriangle size={15} />;
   return <Sparkles size={15} />;
-}
-
-function OverlaySetupSummary({ summary, previewStatus, onOpenPreview }) {
-  const ready = summary.issueCount === 0;
-  const firstIssue = summary.issues[0];
-
-  return (
-    <section className={`oc2-setup-summary ${ready ? 'oc2-setup-summary--ready' : 'oc2-setup-summary--warning'}`}>
-      <div className="oc2-setup-summary__main">
-        <span className="oc2-eyebrow">Overlay setup</span>
-        <h2>
-          {summary.readyCount} of {summary.activeCount} active tools are ready
-        </h2>
-        <p>
-          {ready ? 'Everything active has the required setup.' : firstIssue?.label || 'Some tools still need attention.'}
-        </p>
-      </div>
-
-      <div className="oc2-setup-summary__stats" aria-label="Overlay readiness numbers">
-        <div><strong>{summary.activeCount}</strong><span>Active</span></div>
-        <div><strong>{summary.readyCount}</strong><span>Ready</span></div>
-        <div><strong>{summary.issueCount}</strong><span>Warnings</span></div>
-        <div><strong>{previewStatus}</strong><span>Preview</span></div>
-      </div>
-
-      {summary.issues.length > 0 && (
-        <div className="oc2-setup-summary__warnings">
-          {summary.issues.slice(0, 3).map(issue => (
-            <Link key={`${issue.toolType}-${issue.label}`} to={issue.to} className="oc2-warning-link">
-              <AlertTriangle size={14} />
-              <span>{FEATURE_COPY[issue.toolType]?.title || issue.toolType}: {issue.label}</span>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      <div className="oc2-setup-summary__actions">
-        <Link className="oc2-btn" to={firstIssue?.to || '/overlay-center/setup'}>
-          Continue setup
-        </Link>
-        <button type="button" className="oc2-btn oc2-btn--primary" onClick={onOpenPreview}>
-          <MonitorPlay size={16} />
-          Open preview
-        </button>
-      </div>
-    </section>
-  );
 }
 
 function ToolCard({ tool, mode, onOpen, onAdd, onToggle, onRemove, onCopyObsUrl, copied }) {
@@ -1290,17 +1241,18 @@ function PreviewWorkspace({ overlayUrl, instance, previewStatus, onOpen, onFocus
 
 function IntegrationGrid({ selectedTools }) {
   return (
-    <div className="oc2-integration-grid" data-tour="integrations-overview">
+    <div className="oc2-integration-grid oc2-integration-grid--modern" data-tour="integrations-overview">
       {INTEGRATIONS.map(item => {
         const related = selectedTools.filter(type => item.requiredFor.includes(type));
         return (
-          <article key={item.id} className="oc2-integration-card">
+          <article key={item.id} className={`oc2-integration-card oc2-integration-card--${item.id}${related.length ? ' oc2-integration-card--relevant' : ''}`}>
             <div className="oc2-integration-card__top">
+              <span className="oc2-integration-card__indicator" aria-hidden="true" />
               <strong>{item.name}</strong>
               <span className={`oc2-pill ${related.length ? 'oc2-pill--gold' : ''}`}>{related.length ? 'Relevant' : 'Optional'}</span>
             </div>
             <p>{item.detail}</p>
-            {related.length > 0 && <small>Used by {related.map(type => FEATURE_COPY[type]?.title || type).join(', ')}</small>}
+            <small>{related.length > 0 ? `Used by ${related.map(type => FEATURE_COPY[type]?.title || type).join(', ')}` : 'Available when a tool needs it'}</small>
           </article>
         );
       })}
@@ -1350,11 +1302,6 @@ export default function OverlayControlCenter() {
       ),
     };
   }, [widgets, twitchChannel, seAccount]);
-  const overlaySummary = useMemo(() => summarizeOverlayTools({
-    toolTypes: PRIMARY_TOOLS,
-    widgets,
-    integrations,
-  }), [widgets, integrations]);
 
   const {
     globalPresets, sharedPresets, presetName, setPresetName, presetMsg,
@@ -1608,11 +1555,6 @@ export default function OverlayControlCenter() {
 
         {currentPanel === 'home' && (
           <>
-            <OverlaySetupSummary
-              summary={overlaySummary}
-              previewStatus={previewStatus}
-              onOpenPreview={openPreview}
-            />
             {previewStatus === 'blocked' && (
               <div className="oc2-warning">Your browser blocked the preview window. Allow pop-ups for Streamers Center and try again.</div>
             )}
@@ -1668,11 +1610,11 @@ export default function OverlayControlCenter() {
         )}
 
         {currentPanel === 'integrations' && (
-          <section data-tour="integrations-page">
-            <div className="oc2-section-heading">
+          <section className="oc2-integrations-page" data-tour="integrations-page">
+            <div className="oc2-section-heading oc2-integrations-heading">
               <span className="oc2-eyebrow">Integrations</span>
               <h1>Connect services</h1>
-              <p>Only integrations supported by the current repository are shown.</p>
+              <p>Set up the accounts your overlay tools use. Keep your profile, platform channels, music and StreamElements credentials in one place.</p>
             </div>
             <IntegrationGrid selectedTools={setup.selectedTools || widgets.map(widget => widget.widget_type)} />
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />

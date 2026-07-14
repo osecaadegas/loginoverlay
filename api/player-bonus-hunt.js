@@ -489,7 +489,7 @@ async function handleExport(req, res, supabase, user) {
   const type = req.query.type || 'bonuses';
   if (type === 'hunts') {
     const rows = [
-      ['Hunt name', 'Date', 'Casino', 'Currency', 'Deposited', 'Withdrawn', 'Current balance', 'Profit/Loss', 'Bonuses', 'Opened', 'Status'],
+      ['Hunt name', 'Date', 'Casino', 'Currency', 'Deposited', 'Stop loss', 'Withdrawn', 'Current balance', 'Profit/Loss', 'Bonuses', 'Opened', 'Status'],
       ...hunts.map((hunt) => {
         const huntBonuses = bonuses.filter((bonus) => bonus.hunt_id === hunt.id);
         const stats = calculateHuntStatistics(hunt, huntBonuses);
@@ -499,6 +499,7 @@ async function handleExport(req, res, supabase, user) {
           hunt.casino_name || '',
           hunt.currency,
           stats.totalDeposits,
+          stats.stopLoss,
           stats.totalWithdrawals,
           stats.currentBalance,
           stats.profitLoss,

@@ -171,7 +171,7 @@ export default function ApiKeysAdmin() {
   const siteUrl = window.location.origin;
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div className="api-keys-admin" style={{ padding: '1rem' }}>
       <h2 style={{ margin: '0 0 0.5rem', color: '#e5e7eb' }}>🔑 Streamer API Keys</h2>
       <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
         Control which streamers can sync their bonus hunt data to external websites.

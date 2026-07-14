@@ -52,12 +52,17 @@ export function calculateTotalWithdrawals(hunt = {}) {
   return roundMoney(toNumber(hunt.initial_withdrawal) + toNumber(hunt.total_withdrawals));
 }
 
+export function calculateStopLoss(hunt = {}) {
+  const explicitStopLoss = roundMoney(toNumber(hunt.stop_loss));
+  return explicitStopLoss > 0 ? explicitStopLoss : calculateTotalWithdrawals(hunt);
+}
+
 export function calculateNetDeposited(hunt = {}) {
   return roundMoney(calculateTotalDeposits(hunt) - calculateTotalWithdrawals(hunt));
 }
 
 export function calculateBonusHuntTarget(hunt = {}) {
-  return clampNonNegative(calculateNetDeposited(hunt));
+  return clampNonNegative(calculateTotalDeposits(hunt) - calculateStopLoss(hunt));
 }
 
 export function calculateBreakEven(hunt = {}) {
@@ -145,9 +150,9 @@ export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
     additionalDeposits: roundMoney(hunt.additional_deposits),
     totalDeposits: calculateTotalDeposits(hunt),
     totalWithdrawals: calculateTotalWithdrawals(hunt),
+    stopLoss: calculateStopLoss(hunt),
     netDeposited: calculateNetDeposited(hunt),
     target: breakEven,
-    stopLoss: calculateTotalWithdrawals(hunt),
     currentBalance: roundMoney(hunt.current_balance),
     breakEven,
     remainingBreakEven,
@@ -345,6 +350,7 @@ export function normalizeHuntPayload(input = {}, { partial = false } = {}) {
   if (!partial || maybe('currency')) payload.currency = normalizeCurrency(input.currency || 'EUR');
   if (!partial || maybe('starting_deposit')) payload.starting_deposit = assertMoney(input.starting_deposit, 'Starting deposit', { required: !partial });
   if (!partial || maybe('additional_deposits')) payload.additional_deposits = assertMoney(input.additional_deposits, 'Additional deposits');
+  if (!partial || maybe('stop_loss')) payload.stop_loss = assertMoney(input.stop_loss, 'Stop loss');
   if (!partial || maybe('initial_withdrawal')) payload.initial_withdrawal = assertMoney(input.initial_withdrawal, 'Initial withdrawal');
   if (!partial || maybe('total_withdrawals')) payload.total_withdrawals = assertMoney(input.total_withdrawals, 'Withdrawals');
   if (!partial || maybe('current_balance')) payload.current_balance = assertMoney(input.current_balance, 'Current balance');

@@ -21,6 +21,7 @@ export default function PlayerBonusHuntNew() {
     casino_name: '',
     currency: 'EUR',
     starting_deposit: '',
+    stop_loss: '',
     initial_withdrawal: '',
     hunt_date: today,
     notes: '',
@@ -49,6 +50,7 @@ export default function PlayerBonusHuntNew() {
       const result = await createHunt({
         ...form,
         starting_deposit: Number(form.starting_deposit || 0),
+        stop_loss: Number(form.stop_loss || 0),
         initial_withdrawal: Number(form.initial_withdrawal || 0),
         current_balance: Number(form.starting_deposit || 0) - Number(form.initial_withdrawal || 0),
         bonuses,
@@ -75,7 +77,7 @@ export default function PlayerBonusHuntNew() {
       {error && <div className="pbh-alert pbh-alert--error">{error}</div>}
 
       <section className="pbh-panel">
-        <form className="pbh-form" onSubmit={submit}>
+        <form className="pbh-form pbh-form--hunt-setup" onSubmit={submit}>
           <label className="pbh-field">
             <span>Hunt name</span>
             <input value={form.name} onChange={(event) => set('name', event.target.value)} placeholder="Friday bonus hunt" maxLength={120} required />
@@ -93,16 +95,20 @@ export default function PlayerBonusHuntNew() {
             </select>
           </label>
           <label className="pbh-field">
+            <span>Hunt date</span>
+            <input type="date" value={form.hunt_date} onChange={(event) => set('hunt_date', event.target.value)} required />
+          </label>
+          <label className="pbh-field">
             <span>Starting deposit</span>
             <input type="number" min="0" step="0.01" value={form.starting_deposit} onChange={(event) => set('starting_deposit', event.target.value)} required />
           </label>
           <label className="pbh-field">
-            <span>Initial withdrawal</span>
-            <input type="number" min="0" step="0.01" value={form.initial_withdrawal} onChange={(event) => set('initial_withdrawal', event.target.value)} />
+            <span>Stop loss</span>
+            <input type="number" min="0" step="0.01" value={form.stop_loss} onChange={(event) => set('stop_loss', event.target.value)} placeholder="0.00" />
           </label>
           <label className="pbh-field">
-            <span>Hunt date</span>
-            <input type="date" value={form.hunt_date} onChange={(event) => set('hunt_date', event.target.value)} required />
+            <span>Initial withdrawal</span>
+            <input type="number" min="0" step="0.01" value={form.initial_withdrawal} onChange={(event) => set('initial_withdrawal', event.target.value)} />
           </label>
           <label className="pbh-field pbh-field--wide">
             <span>Notes</span>

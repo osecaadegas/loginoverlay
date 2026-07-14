@@ -1,7 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Bell,
+  Check,
+  Copy,
+  ImagePlus,
+  LockKeyhole,
+  Mail,
+  PackageOpen,
+  ShieldCheck,
+  Upload,
+  UserRound,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../config/supabaseClient';
 import './ProfilePage.css';
+
+const AVATAR_OPTIONS = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=4',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=5',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=6',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=7',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=8',
+];
+
+function providerLabel(provider) {
+  if (provider === 'twitch') return 'Twitch';
+  if (provider === 'google') return 'Google';
+  if (provider === 'discord') return 'Discord';
+  return 'Email';
+}
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -12,17 +43,20 @@ export default function ProfilePage() {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [inventory, setInventory] = useState([]);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem('profileNotifications') !== 'off');
+  const [passwordSending, setPasswordSending] = useState(false);
 
-  const avatarOptions = [
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=4',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=5',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=6',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=7',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=8',
-  ];
+  const authProvider = user?.app_metadata?.provider || 'email';
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.preferred_username || user?.email || 'Your account';
+  const shortUserId = user?.id ? `${user.id.slice(0, 8)}...${user.id.slice(-4)}` : '';
+  const activeAvatar = avatarUrl || selectedAvatar;
+  const hasEmailPassword = authProvider === 'email';
+
+  const inventoryStats = useMemo(() => {
+    const total = inventory.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+    const equipped = inventory.filter((item) => item.equipped).length;
+    return { total, equipped };
+  }, [inventory]);
 
   useEffect(() => {
     if (user) {
@@ -40,8 +74,7 @@ export default function ProfilePage() {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      
-      // Ensure user_profiles has twitch_username stored
+
       const twitchUsername = user?.user_metadata?.twitch_username;
       if (twitchUsername) {
         await supabase
@@ -50,21 +83,15 @@ export default function ProfilePage() {
             user_id: user.id,
             twitch_username: twitchUsername,
             avatar_url: data?.avatar_url || user?.user_metadata?.avatar_url,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           }, {
-            onConflict: 'user_id'
+            onConflict: 'user_id',
           });
       }
 
-      if (data?.avatar_url) {
-        setAvatarUrl(data.avatar_url);
-        setSelectedAvatar(data.avatar_url);
-      } else if (user?.user_metadata?.avatar_url) {
-        setAvatarUrl(user.user_metadata.avatar_url);
-        setSelectedAvatar(user.user_metadata.avatar_url);
-      } else {
-        setSelectedAvatar(avatarOptions[0]);
-      }
+      const nextAvatar = data?.avatar_url || user?.user_metadata?.avatar_url || AVATAR_OPTIONS[0];
+      setAvatarUrl(nextAvatar);
+      setSelectedAvatar(nextAvatar);
     } catch (err) {
       console.error('Error loading avatar:', err);
     }
@@ -94,8 +121,7 @@ export default function ProfilePage() {
 
       if (error) throw error;
 
-      // Transform data to flat structure
-      const formattedInventory = data?.map(item => ({
+      const formattedInventory = data?.map((item) => ({
         inventoryId: item.id,
         id: item.items.id,
         name: item.items.name,
@@ -106,7 +132,7 @@ export default function ProfilePage() {
         tradeable: item.items.tradeable,
         quantity: item.quantity,
         equipped: item.equipped,
-        acquiredAt: item.acquired_at
+        acquiredAt: item.acquired_at,
       })) || [];
 
       setInventory(formattedInventory);
@@ -119,11 +145,10 @@ export default function ProfilePage() {
   const handleAvatarSelect = async (avatar) => {
     setSelectedAvatar(avatar);
     setAvatarUrl(avatar);
-    
-    // Update user metadata and profile
+
     try {
       await supabase.auth.updateUser({
-        data: { avatar_url: avatar }
+        data: { avatar_url: avatar },
       });
 
       await supabase
@@ -132,16 +157,16 @@ export default function ProfilePage() {
           user_id: user.id,
           avatar_url: avatar,
           twitch_username: user?.user_metadata?.twitch_username,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         }, {
-          onConflict: 'user_id'
+          onConflict: 'user_id',
         });
 
-      setMessage({ type: 'success', text: 'Avatar updated successfully!' });
+      setMessage({ type: 'success', text: 'Avatar updated.' });
       setShowAvatarPicker(false);
     } catch (error) {
       console.error('Error updating avatar:', error);
-      setMessage({ type: 'error', text: 'Failed to update avatar' });
+      setMessage({ type: 'error', text: 'Failed to update avatar.' });
     }
   };
 
@@ -151,7 +176,7 @@ export default function ProfilePage() {
       setMessage({ type: '', text: '' });
 
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
+        throw new Error('Select an image to upload.');
       }
 
       const file = event.target.files[0];
@@ -159,279 +184,210 @@ export default function ProfilePage() {
       const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('public-assets')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('public-assets')
         .getPublicUrl(filePath);
 
-      // Update user metadata (this is what the Sidebar reads!)
       await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl }
+        data: { avatar_url: publicUrl },
       });
 
-      // Update user profile table
       const { error: updateError } = await supabase
         .from('user_profiles')
         .upsert({
           user_id: user.id,
           avatar_url: publicUrl,
           twitch_username: user?.user_metadata?.twitch_username,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         }, {
-          onConflict: 'user_id'
+          onConflict: 'user_id',
         });
 
       if (updateError) throw updateError;
 
       setAvatarUrl(publicUrl);
       setSelectedAvatar(publicUrl);
-      setMessage({ type: 'success', text: 'Avatar updated successfully!' });
+      setMessage({ type: 'success', text: 'Avatar updated.' });
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
     } finally {
       setUploading(false);
+      event.target.value = '';
     }
   };
 
+  const copyUserId = () => {
+    navigator.clipboard.writeText(user?.id || '').then(() => {
+      setIdCopied(true);
+      setTimeout(() => setIdCopied(false), 1800);
+    });
+  };
+
+  const sendPasswordReset = async () => {
+    if (!user?.email || !hasEmailPassword) return;
+    setPasswordSending(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/profile`,
+      });
+      if (error) throw error;
+      setMessage({ type: 'success', text: 'Password reset email sent.' });
+    } catch (error) {
+      setMessage({ type: 'error', text: error.message || 'Could not send password reset email.' });
+    } finally {
+      setPasswordSending(false);
+    }
+  };
+
+  const toggleNotifications = () => {
+    const next = !notificationsEnabled;
+    setNotificationsEnabled(next);
+    localStorage.setItem('profileNotifications', next ? 'on' : 'off');
+    setMessage({ type: 'success', text: `Notifications ${next ? 'enabled' : 'disabled'} on this device.` });
+  };
+
   return (
-    <div className="profile-page">
+    <main className="profile-page">
       <div className="profile-container">
-        <h1>👤 Profile & Settings</h1>
-        
+        <header className="profile-hero">
+          <span className="profile-eyebrow">Account</span>
+          <h1>Profile settings</h1>
+          <p>Manage your avatar, login details and personal account preferences.</p>
+        </header>
+
         {message.text && (
-          <div className={`profile-message ${message.type}`}>
+          <div className={`profile-message ${message.type}`} role="status">
             {message.text}
           </div>
         )}
 
-        <div className="profile-content">
-          <div className="profile-card">
-            <div className="profile-avatar-container">
-              {(avatarUrl || selectedAvatar) ? (
-                <img src={avatarUrl || selectedAvatar} alt="Avatar" className="profile-avatar-large" />
+        <section className="profile-shell">
+          <article className="profile-card profile-card--identity">
+            <div className="profile-avatar-wrap">
+              {activeAvatar ? (
+                <img src={activeAvatar} alt="Account avatar" className="profile-avatar-large" />
               ) : (
                 <div className="profile-avatar-large profile-avatar-placeholder">
                   {user?.email?.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="profile-avatar-actions">
-                <button 
-                  className="profile-avatar-btn" 
-                  onClick={() => setShowAvatarPicker(true)}
-                >
-                  🎨 Choose Avatar
-                </button>
-                <label className="profile-avatar-upload" htmlFor="avatar-upload">
-                  📷 Upload Custom
-                </label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={uploadAvatar}
-                  disabled={uploading}
-                  style={{ display: 'none' }}
-                />
-              </div>
             </div>
-            <h2>{user?.email}</h2>
-            <p className="profile-id">
-              User ID: {user?.id.substring(0, 8)}...
-              <button
-                className="copy-id-btn"
-                onClick={() => {
-                  navigator.clipboard.writeText(user?.id || '').then(() => {
-                    setIdCopied(true);
-                    setTimeout(() => setIdCopied(false), 2000);
-                  });
+            <div className="profile-identity-copy">
+              <span className="profile-pill"><ShieldCheck size={14} /> {providerLabel(authProvider)} login</span>
+              <h2>{displayName}</h2>
+              <p>{user?.email}</p>
+            </div>
+            <div className="profile-avatar-actions">
+              <button className="profile-avatar-btn" type="button" onClick={() => setShowAvatarPicker(true)}>
+                <ImagePlus size={16} /> Choose avatar
+              </button>
+              <label
+                className="profile-avatar-upload"
+                htmlFor="avatar-upload"
+                role="button"
+                tabIndex={0}
+                aria-disabled={uploading}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    document.getElementById('avatar-upload')?.click();
+                  }
                 }}
-              >{idCopied ? '✅ Copied!' : '📋 Copy Full ID'}</button>
-            </p>
-          </div>
-
-          <div className="settings-card">
-            <h3>Account Settings</h3>
-            <div className="setting-item">
-              <label>Email</label>
-              <input type="email" value={user?.email || ''} disabled />
-            </div>
-            <div className="setting-item">
-              <label>Password</label>
-              <button className="change-btn">Change Password</button>
-            </div>
-            <div className="setting-item">
-              <label>Notifications</label>
-              <label className="toggle">
-                <input type="checkbox" defaultChecked />
-                <span className="toggle-slider"></span>
+              >
+                <Upload size={16} /> {uploading ? 'Uploading...' : 'Upload image'}
               </label>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={uploadAvatar}
+                disabled={uploading}
+              />
             </div>
-          </div>
+          </article>
 
-          {/* ── Slot Auto-Tracker Setup Guide ── */}
-          <div className="settings-card" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a1040 100%)', border: '1px solid rgba(99,102,241,0.3)' }}>
-            <h3>🔗 Slot Auto-Tracker</h3>
-            <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>
-              Automatically detect which slot you're playing and sync it with your Bonus Hunt overlay — no manual input needed.
-            </p>
-
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: 14, marginBottom: 12 }}>
-              <h4 style={{ fontSize: 13, color: '#e2e8f0', marginBottom: 10 }}>Setup Guide</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Download the extension</strong><br />
-                    Find the <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>browser-extension</code> folder in the project files.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Install in Chrome / Edge</strong><br />
-                    Go to <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>chrome://extensions</code> → Enable <strong>Developer Mode</strong> (top right) → Click <strong>"Load unpacked"</strong> → Select the <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>browser-extension</code> folder.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Enter your User ID</strong><br />
-                    Click the extension icon in your toolbar and paste your User ID. Copy it using the button above ☝️
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>4</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Enable in Bonus Hunt</strong><br />
-                    In the Overlay Center → Bonus Hunt → Content tab, turn on <strong>"🔗 Auto-Tracker"</strong>.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#4ade80', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#4ade80' }}>Play!</strong><br />
-                    When you open a slot on Stake, Roobet, Duelbits, etc., the extension detects it and your overlay highlights the matching bonus automatically.
-                  </div>
-                </div>
+          <article className="settings-card">
+            <div className="profile-card-head">
+              <div>
+                <span className="profile-eyebrow">Security</span>
+                <h3>Account details</h3>
               </div>
             </div>
 
-            <div style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)', borderRadius: 8, padding: 10, fontSize: 11, color: '#fbbf24' }}>
-              💡 <strong>Supported casinos:</strong> Stake, Roobet, Duelbits, Gamdom, Rollbit, BC.Game, Metaspins, Shuffle, Cloudbet, and more. The extension only reads tab URLs — it cannot see your balance or bets.
+            <div className="profile-settings-list">
+              <div className="setting-item">
+                <div className="setting-label">
+                  <Mail size={17} />
+                  <span>Email</span>
+                </div>
+                <input type="email" value={user?.email || ''} disabled />
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <UserRound size={17} />
+                  <span>User ID</span>
+                </div>
+                <button type="button" className="copy-id-btn" onClick={copyUserId}>
+                  {idCopied ? <Check size={15} /> : <Copy size={15} />}
+                  {idCopied ? 'Copied' : shortUserId}
+                </button>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <LockKeyhole size={17} />
+                  <span>Password</span>
+                </div>
+                <button
+                  type="button"
+                  className="change-btn"
+                  onClick={sendPasswordReset}
+                  disabled={!hasEmailPassword || passwordSending}
+                >
+                  {passwordSending ? 'Sending...' : hasEmailPassword ? 'Send reset email' : 'Managed by provider'}
+                </button>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <Bell size={17} />
+                  <span>Notifications</span>
+                </div>
+                <button
+                  type="button"
+                  className={`profile-switch ${notificationsEnabled ? 'profile-switch--on' : ''}`}
+                  onClick={toggleNotifications}
+                  aria-pressed={notificationsEnabled}
+                >
+                  <span>{notificationsEnabled ? 'On' : 'Off'}</span>
+                </button>
+              </div>
             </div>
-          </div>
+          </article>
 
-          {/* ── Chat Bets (!bet) Setup Guide ── */}
-          <div className="settings-card" style={{ background: 'linear-gradient(135deg, #0f1a2e 0%, #0d1f35 100%)', border: '1px solid rgba(34,197,94,0.3)' }}>
-            <h3>🎲 Chat Bets — !bet Command Setup</h3>
-            <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>
-              Let your viewers place bets via Twitch chat using <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 5px', borderRadius: 3 }}>!bet</code>.
-              This works through a StreamElements custom command that calls your overlay server — no browser tab needs to stay open.
-            </p>
-
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: 14, marginBottom: 12 }}>
-              <h4 style={{ fontSize: 13, color: '#e2e8f0', marginBottom: 10 }}>Setup Guide</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Open the Bets widget config</strong><br />
-                    Go to <strong>Overlay Center</strong> → find your <strong>Bets</strong> widget → open the <strong>💬 Chat</strong> tab. You can customise the command trigger (default <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>!bet</code>), set min/max amounts, and optionally enable SE points deduction.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Create a custom command in StreamElements</strong><br />
-                    Go to <strong>streamelements.com</strong> → <strong>Bot</strong> → <strong>Commands</strong> → <strong>Add Command</strong>.<br />
-                    Set the command to <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>!bet</code> (or your custom trigger) and paste this as the response:
-                  </div>
-                </div>
-
-                {/* Command URL block */}
-                <div style={{ marginLeft: 34 }}>
-                  <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(34,197,94,0.25)' }}>
-                    <code style={{
-                      flex: 1,
-                      display: 'block',
-                      fontSize: '0.68rem',
-                      wordBreak: 'break-all',
-                      color: '#86efac',
-                      background: 'rgba(0,0,0,0.4)',
-                      padding: '8px 10px',
-                      lineHeight: 1.6,
-                    }}>
-                      {`${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || '<your-user-id>'}&w1=\${1}&w2=\${2}&requester=\${user.username}`}
-                    </code>
-                    <button
-                      onClick={() => {
-                        const url = `${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || ''}&w1=\${1}&w2=\${2}&requester=\${user.username}`;
-                        navigator.clipboard.writeText(url).then(() => {
-                          setMessage({ type: 'success', text: '✅ !bet command URL copied to clipboard!' });
-                          setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-                        });
-                      }}
-                      style={{
-                        background: 'rgba(34,197,94,0.15)',
-                        border: 'none',
-                        borderLeft: '1px solid rgba(34,197,94,0.25)',
-                        color: '#4ade80',
-                        cursor: 'pointer',
-                        padding: '0 12px',
-                        fontSize: 13,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      📋 Copy
-                    </button>
-                  </div>
-                  <p style={{ fontSize: 11, color: '#64748b', marginTop: 5 }}>
-                    <code style={{ color: '#94a3b8' }}>${'{1}'}</code> = option number · <code style={{ color: '#94a3b8' }}>${'{2}'}</code> = amount · <code style={{ color: '#94a3b8' }}>${'{user.username}'}</code> = viewer name (SE placeholders)
-                  </p>
-                </div>
-
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Configure the command in SE</strong><br />
-                    Set <strong>Cooldown</strong> to prevent spam (e.g. 5s). Leave <strong>User Level</strong> as Everyone. Make sure the command is <strong>Enabled</strong>.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>4</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Open bets in the Bets widget</strong><br />
-                    In the Overlay Center → Bets widget → <strong>🎮 Game</strong> tab, click <strong>🟢 Open Bets</strong>. Viewers can now type <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>!bet 5 1000</code> to bet 1000 points on bracket 5.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ background: '#4ade80', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</span>
-                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#4ade80' }}>Done!</strong><br />
-                    Every bet goes through the server — works even if your browser is closed. The overlay updates live via realtime. When a viewer bets they get an instant chat confirmation.
-                  </div>
-                </div>
+          <article className="inventory-card">
+            <div className="profile-card-head">
+              <div>
+                <span className="profile-eyebrow">Collection</span>
+                <h3>Inventory</h3>
+              </div>
+              <div className="profile-inventory-stats">
+                <span>{inventoryStats.total} items</span>
+                <span>{inventoryStats.equipped} equipped</span>
               </div>
             </div>
 
-            <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, padding: 10, fontSize: 11, color: '#86efac' }}>
-              💡 <strong>SE Points deduction:</strong> In the Bets widget → <strong>💬 Chat</strong> tab, enable <em>"Deduct SE points equal to bet amount"</em> to automatically remove the viewer's SE loyalty points when they place a bet. Requires StreamElements to be connected in your overlay settings.
-            </div>
-          </div>
-
-          <div className="inventory-card">
-            <h3>🎒 Inventory</h3>
-            <p className="inventory-subtitle">Your collected items and achievements</p>
             <div className="inventory-grid">
               {inventory.length > 0 ? (
-                inventory.map(item => (
+                inventory.map((item) => (
                   <div key={item.inventoryId} className={`inventory-item rarity-${item.rarity}`}>
                     <div className="item-icon">{item.icon}</div>
                     <div className="item-info">
@@ -448,40 +404,47 @@ export default function ProfilePage() {
                 ))
               ) : (
                 <div className="inventory-empty">
-                  <p>📦 Your inventory is empty</p>
-                  <p className="inventory-empty-subtitle">Earn items and achievements by participating in events!</p>
+                  <PackageOpen size={34} />
+                  <p>Your inventory is empty</p>
+                  <span>Items and achievements you collect will appear here.</span>
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </article>
+        </section>
 
-        {/* Avatar Picker Modal */}
         {showAvatarPicker && (
           <div className="avatar-picker-overlay" onClick={() => setShowAvatarPicker(false)}>
-            <div className="avatar-picker-card" onClick={(e) => e.stopPropagation()}>
-              <h3 className="avatar-picker-title">Choose Your Avatar</h3>
+            <div className="avatar-picker-card" onClick={(event) => event.stopPropagation()}>
+              <div className="avatar-picker-head">
+                <div>
+                  <span className="profile-eyebrow">Avatar</span>
+                  <h3 className="avatar-picker-title">Choose avatar</h3>
+                </div>
+                <button className="avatar-picker-close-icon" type="button" onClick={() => setShowAvatarPicker(false)} aria-label="Close avatar picker">
+                  <X size={18} />
+                </button>
+              </div>
               <div className="avatar-grid">
-                {avatarOptions.map((avatar, index) => (
-                  <img
-                    key={index}
-                    src={avatar}
-                    alt={`Avatar ${index + 1}`}
+                {AVATAR_OPTIONS.map((avatar, index) => (
+                  <button
+                    key={avatar}
+                    type="button"
                     className={`avatar-option ${selectedAvatar === avatar ? 'selected' : ''}`}
                     onClick={() => handleAvatarSelect(avatar)}
-                  />
+                    aria-label={`Choose avatar ${index + 1}`}
+                  >
+                    <img src={avatar} alt="" />
+                  </button>
                 ))}
               </div>
-              <button 
-                className="avatar-picker-close" 
-                onClick={() => setShowAvatarPicker(false)}
-              >
+              <button className="avatar-picker-close" type="button" onClick={() => setShowAvatarPicker(false)}>
                 Close
               </button>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

@@ -7,6 +7,7 @@ import {
   calculateProfitLoss,
   calculateRequiredAverageMultiplier,
   calculateRequiredAveragePayout,
+  calculateStopLoss,
   getPeriodRange,
   normalizeBonusPayload,
   normalizeHuntPayload,
@@ -26,6 +27,7 @@ const hunt = {
 };
 
 assert.equal(calculateNetDeposited(hunt), 525);
+assert.equal(calculateStopLoss(hunt), 75);
 assert.equal(calculateProfitLoss(hunt, []), -525);
 
 const bonuses = [
@@ -53,6 +55,15 @@ assert.equal(stats.worstWin.slot_name, 'Beta');
 assert.equal(stats.bestMultiplier, 200);
 assert.equal(stats.averagePayout, 100);
 
+const explicitStopLossHunt = {
+  ...hunt,
+  stop_loss: 200,
+};
+const explicitStopLossStats = calculateHuntStatistics(explicitStopLossHunt, bonuses);
+assert.equal(calculateStopLoss(explicitStopLossHunt), 200);
+assert.equal(explicitStopLossStats.breakEven, 400);
+assert.equal(explicitStopLossStats.profitLoss, -200);
+
 const screenshotLikeStats = calculateHuntStatistics(
   { currency: 'EUR', starting_deposit: 100, additional_deposits: 0, initial_withdrawal: 0, total_withdrawals: 0, current_balance: 0 },
   [{ id: 'b5', slot_name: 'Winner', bet_size: 1, bonus_cost: 0, payout: 150, status: 'opened' }]
@@ -78,6 +89,7 @@ assert.equal(isSubscriptionEntitled({ status: 'active', current_period_end: '209
 assert.equal(isSubscriptionEntitled({ status: 'canceled', current_period_end: '2099-01-01T00:00:00Z' }), false);
 
 assert.equal(normalizeHuntPayload({ name: 'H', currency: 'EUR', starting_deposit: 1 }).currency, 'EUR');
+assert.equal(normalizeHuntPayload({ name: 'H', currency: 'EUR', starting_deposit: 1, stop_loss: 0.5 }).stop_loss, 0.5);
 assert.equal(normalizeBonusPayload({ slot_name: 'S', bet_size: 2, payout: 10 }).multiplier, 5);
 assert.equal(normalizeBonusPayload({ slot_name: 'S', bonus_type: 'supreme' }).bonus_type, 'supreme');
 assert.throws(() => normalizeBonusPayload({ slot_name: 'S', bonus_type: 'mega' }), /Bonus type is invalid/);

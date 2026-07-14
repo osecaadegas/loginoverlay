@@ -4,6 +4,7 @@ import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
 import { getErrorMessage } from '../../utils/errorUtils';
 import { getProviderImage } from '../../utils/gameProviders';
+import { BarChart3, Building2, Database, Plus, RefreshCw, Search, SlidersHorizontal } from 'lucide-react';
 import './SlotManagerV2.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -81,15 +82,70 @@ const ProviderLogo = memo(({ provider, className = '' }) => {
   return <span className={`sm-provider-fallback ${className}`} title={provider || 'Unknown provider'}>{provider || '—'}</span>;
 });
 
-const findExistingProvider = (provider, providers) => {
-  const candidate = String(provider || '').trim().toLowerCase();
-  if (!candidate) return '';
-  return providers.find(item => item.toLowerCase() === candidate) || '';
-};
-
 const normalizeProviderName = (provider) => String(provider || '').trim().replace(/\s+/g, ' ');
 
+const findExistingProvider = (provider, providers) => {
+  const candidate = normalizeProviderName(provider).toLowerCase();
+  if (!candidate) return '';
+  return providers.find(item => normalizeProviderName(item).toLowerCase() === candidate) || '';
+};
+
+const findKnownProvider = (provider, providers, aliases = {}) => {
+  const direct = findExistingProvider(provider, providers);
+  if (direct) return direct;
+
+  const candidate = normalizeProviderName(provider).toLowerCase();
+  if (!candidate) return '';
+
+  return Object.entries(aliases).find(([, values]) => (
+    Array.isArray(values) && values.some(value => normalizeProviderName(value).toLowerCase() === candidate)
+  ))?.[0] || '';
+};
+
 const toProviderSlug = (provider) => normalizeProviderName(provider).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+const providerIdentityKey = (provider) => {
+  const name = normalizeProviderName(provider);
+  const slug = toProviderSlug(name);
+  if (!slug) return '';
+  return getProviderImage(name) || slug;
+};
+
+const providerDisplayScore = (provider) => {
+  const name = normalizeProviderName(provider);
+  const compact = name.replace(/[^a-z]/gi, '');
+  const allCapsPenalty = compact.length > 2 && compact === compact.toUpperCase() ? -20 : 0;
+  return name.length + (/[a-z]/.test(name) ? 12 : 0) + (/\s/.test(name) ? 8 : 0) + allCapsPenalty;
+};
+
+const buildProviderCatalog = (names) => {
+  const groups = new Map();
+
+  names.forEach(rawName => {
+    const name = normalizeProviderName(rawName);
+    if (!name || !toProviderSlug(name)) return;
+
+    const key = providerIdentityKey(name);
+    if (!key) return;
+
+    const current = groups.get(key) || { display: name, aliases: new Set() };
+    current.aliases.add(name);
+    if (providerDisplayScore(name) > providerDisplayScore(current.display)) {
+      current.display = name;
+    }
+    groups.set(key, current);
+  });
+
+  const aliases = {};
+  const providers = [...groups.values()]
+    .map(group => {
+      aliases[group.display] = [...group.aliases];
+      return group.display;
+    })
+    .sort((a, b) => a.localeCompare(b));
+
+  return { providers, aliases };
+};
 
 const ProviderPicker = memo(({ providers, value, onChange, onCreateProvider }) => {
   const [open, setOpen] = useState(false);
@@ -118,7 +174,12 @@ const ProviderPicker = memo(({ providers, value, onChange, onCreateProvider }) =
   };
 
   const proposedProvider = normalizeProviderName(search);
-  const canCreateProvider = !!onCreateProvider && proposedProvider && !findExistingProvider(proposedProvider, providers);
+  const proposedProviderKey = providerIdentityKey(proposedProvider);
+  const canCreateProvider = !!onCreateProvider
+    && proposedProvider
+    && proposedProviderKey
+    && !findExistingProvider(proposedProvider, providers)
+    && !providers.some(provider => providerIdentityKey(provider) === proposedProviderKey);
 
   const createProvider = async () => {
     if (!canCreateProvider) return;
@@ -200,7 +261,14 @@ const DropdownFilter = memo(({ label, options, selected, onChange }) => {
             <label key={opt.value} className="sm-dropdown-item" title={opt.label}>
               <input type="checkbox" checked={selected.includes(opt.value)} onChange={() => toggle(opt.value)} />
               {opt.color && <span className="sm-dropdown-dot" style={{ background: opt.color }} />}
-              {opt.provider ? <ProviderLogo provider={opt.provider} className="sm-provider-logo--filter" /> : <span>{opt.label}</span>}
+              {opt.provider ? (
+                <>
+                  {getProviderImage(opt.provider) && <ProviderLogo provider={opt.provider} className="sm-provider-logo--filter" />}
+                  <span className="sm-provider-filter-name">{opt.label}</span>
+                </>
+              ) : (
+                <span>{opt.label}</span>
+              )}
             </label>
           ))}
         </div>
@@ -640,6 +708,7 @@ const SlotManagerV2 = () => {
   // Data
   const [slots, setSlots] = useState([]);
   const [providers, setProviders] = useState([]);
+  const [providerAliases, setProviderAliases] = useState({});
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -675,7 +744,7 @@ const SlotManagerV2 = () => {
   /* ── Load providers ────────────────────────────────────────── */
   const loadProviders = useCallback(async () => {
     try {
-      const providerNames = new Set();
+      const providerNames = [];
 
       try {
         const { data: managedProviders, error: providerError } = await supabase
@@ -686,7 +755,7 @@ const SlotManagerV2 = () => {
         if (!providerError && Array.isArray(managedProviders)) {
           managedProviders.forEach(row => {
             const name = normalizeProviderName(row.name);
-            if (name) providerNames.add(name);
+            if (name) providerNames.push(name);
           });
         }
       } catch { /* slot_providers may not exist in older databases */ }
@@ -706,9 +775,11 @@ const SlotManagerV2 = () => {
       }
       all.forEach(row => {
         const name = normalizeProviderName(row.provider);
-        if (name) providerNames.add(name);
+        if (name) providerNames.push(name);
       });
-      setProviders([...providerNames].sort((a, b) => a.localeCompare(b)));
+      const catalog = buildProviderCatalog(providerNames);
+      setProviders(catalog.providers);
+      setProviderAliases(catalog.aliases);
     } catch (e) {
       console.error('loadProviders:', e);
     }
@@ -724,7 +795,10 @@ const SlotManagerV2 = () => {
 
       if (debouncedSearch) q = q.or(`name.ilike.%${debouncedSearch}%,provider.ilike.%${debouncedSearch}%`);
       if (statusFilter.length) q = q.in('status', statusFilter);
-      if (providerFilter.length) q = q.in('provider', providerFilter);
+      if (providerFilter.length) {
+        const providerValues = [...new Set(providerFilter.flatMap(provider => providerAliases[provider] || [provider]))];
+        q = q.in('provider', providerValues);
+      }
       if (volFilter.length) q = q.in('volatility', volFilter);
 
       q = q.order(sortBy, { ascending: sortDir === 'asc', nullsFirst: false });
@@ -743,7 +817,7 @@ const SlotManagerV2 = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, statusFilter, providerFilter, volFilter, page, pageSize, sortBy, sortDir, notify]);
+  }, [debouncedSearch, statusFilter, providerFilter, providerAliases, volFilter, page, pageSize, sortBy, sortDir, notify]);
 
   useEffect(() => { loadSlots(); }, [loadSlots]);
   useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter, providerFilter, volFilter, pageSize]);
@@ -768,7 +842,7 @@ const SlotManagerV2 = () => {
     const name = normalizeProviderName(rawName);
     if (!name) throw new Error('Provider name is required.');
 
-    const existing = findExistingProvider(name, providers);
+    const existing = findKnownProvider(name, providers, providerAliases);
     if (existing) return existing;
 
     const slug = toProviderSlug(name);
@@ -788,10 +862,11 @@ const SlotManagerV2 = () => {
       next.add(createdName);
       return [...next].sort((a, b) => a.localeCompare(b));
     });
+    setProviderAliases(prev => ({ ...prev, [createdName]: [createdName] }));
     notify(`Provider "${createdName}" added`);
     await loadProviders();
     return createdName;
-  }, [loadProviders, notify, providers]);
+  }, [loadProviders, notify, providerAliases, providers]);
 
   const handleSave = useCallback(async (formData) => {
     try {
@@ -816,7 +891,7 @@ const SlotManagerV2 = () => {
       };
 
       if (!d.name || !d.provider || !d.image) throw new Error('Name, Provider, and Image URL are required.');
-      if (!findExistingProvider(d.provider, providers)) throw new Error('Select an existing provider from the provider list.');
+      if (!findKnownProvider(d.provider, providers, providerAliases)) throw new Error('Select an existing provider from the provider list.');
 
       if (isNewSlot) {
         const { error } = await supabase.from('slots').insert([d]);
@@ -834,7 +909,7 @@ const SlotManagerV2 = () => {
       console.error('handleSave:', e);
       notify(getErrorMessage(e, 'Could not save slot.'), 'error');
     }
-  }, [isNewSlot, loadSlots, loadProviders, notify, providers]);
+  }, [isNewSlot, loadSlots, loadProviders, notify, providerAliases, providers]);
 
   const handleDelete = useCallback(async (id) => {
     try {
@@ -895,6 +970,9 @@ const SlotManagerV2 = () => {
   const statCheckAbort = useRef(false);
   const STAT_CHECK_PAGE = 200;
   const STAT_CHECK_BATCH = 5;
+  const getProviderQueryValues = useCallback((provider) => (
+    [...new Set(providerAliases[provider] || [provider])]
+  ), [providerAliases]);
 
   // Helper: apply the data-missing filter to a query
   const applyDataFilter = (q, filter) => {
@@ -917,12 +995,12 @@ const SlotManagerV2 = () => {
   const refreshStatCheckCount = useCallback(async () => {
     let q = supabase.from('slots').select('id', { count: 'exact', head: true });
     q = applyDataFilter(q, statCheckDataFilter);
-    if (statCheckMode === 'provider' && statCheckProvider) q = q.eq('provider', statCheckProvider);
+    if (statCheckMode === 'provider' && statCheckProvider) q = q.in('provider', getProviderQueryValues(statCheckProvider));
     const { count } = await q;
     const total = count || 0;
     setStatCheckTotalPages(Math.max(1, Math.ceil(total / STAT_CHECK_PAGE)));
     if (statCheckPage > Math.max(1, Math.ceil(total / STAT_CHECK_PAGE))) setStatCheckPage(1);
-  }, [statCheckMode, statCheckProvider, statCheckPage, statCheckDataFilter]);
+  }, [getProviderQueryValues, statCheckMode, statCheckProvider, statCheckPage, statCheckDataFilter]);
 
   useEffect(() => { if (statCheckShowPanel) refreshStatCheckCount(); }, [statCheckShowPanel, statCheckMode, statCheckProvider, statCheckDataFilter, refreshStatCheckCount]);
 
@@ -941,7 +1019,7 @@ const SlotManagerV2 = () => {
       const buildQuery = (select, opts) => {
         let q = supabase.from('slots').select(select, opts);
         q = applyDataFilter(q, statCheckDataFilter);
-        if (statCheckMode === 'provider' && statCheckProvider) q = q.eq('provider', statCheckProvider);
+        if (statCheckMode === 'provider' && statCheckProvider) q = q.in('provider', getProviderQueryValues(statCheckProvider));
         if (statCheckMode === 'newest') q = q.order('created_at', { ascending: false, nullsFirst: false });
         else q = q.order('name', { ascending: true });
         return q;
@@ -1024,7 +1102,7 @@ const SlotManagerV2 = () => {
     } finally {
       setStatCheckRunning(false);
     }
-  }, [statCheckRunning, statCheckMode, statCheckProvider, statCheckPage, statCheckFast, statCheckSources, statCheckDataFilter, loadSlots, notify, refreshStatCheckCount]);
+  }, [getProviderQueryValues, statCheckRunning, statCheckMode, statCheckProvider, statCheckPage, statCheckFast, statCheckSources, statCheckDataFilter, loadSlots, notify, refreshStatCheckCount]);
 
   /* ── Keyboard shortcuts ────────────────────────────────────── */
   useEffect(() => {
@@ -1066,6 +1144,17 @@ const SlotManagerV2 = () => {
   };
 
   const providerOptions = providers.map(p => ({ value: p, label: p, provider: p }));
+  const statusLabelMap = Object.fromEntries(STATUS_OPTIONS.map(option => [option.value, option.label]));
+  const volatilityLabelMap = Object.fromEntries(VOLATILITY_OPTIONS.map(option => [option.value, option.label]));
+  const activeFilterChips = [
+    ...statusFilter.map(value => `Status: ${statusLabelMap[value] || value}`),
+    ...providerFilter.map(value => `Provider: ${value}`),
+    ...volFilter.map(value => `Volatility: ${volatilityLabelMap[value] || value}`),
+    ...(searchTerm.trim() ? [`Search: ${searchTerm.trim()}`] : []),
+  ];
+  const slotsWithStats = slots.filter(slot => slot.rtp || slot.max_win_multiplier || slot.volatility).length;
+  const shownRangeStart = totalCount > 0 ? ((page - 1) * pageSize + 1) : 0;
+  const shownRangeEnd = Math.min(page * pageSize, totalCount);
 
   /* ── Render ─────────────────────────────────────────────────── */
   return (
@@ -1073,166 +1162,234 @@ const SlotManagerV2 = () => {
       {/* Toast */}
       {notification && <div className={`sm-toast ${notification.type}`}>{notification.message}</div>}
 
-      {/* ── Toolbar ──────────────────────────────────────── */}
-      <div className="sm-toolbar">
-        <div className="sm-toolbar-left">
-          <div className="sm-search">
-            <svg className="sm-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
-            <input ref={searchRef} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search slots…" />
-            {searchTerm && <button className="sm-search-clear" onClick={() => setSearchTerm('')}>×</button>}
-          </div>
-          <DropdownFilter label="Status" options={STATUS_OPTIONS} selected={statusFilter} onChange={setStatusFilter} />
-          <DropdownFilter label="Provider" options={providerOptions} selected={providerFilter} onChange={setProviderFilter} />
-          <DropdownFilter label="Volatility" options={VOLATILITY_OPTIONS} selected={volFilter} onChange={setVolFilter} />
-          {hasNonDefaultFilters && (
-            <button className="sm-clear-filters" onClick={clearAllFilters}>Clear filters</button>
-          )}
+      <header className="sm-page-header">
+        <div className="sm-title-block">
+          <span className="sm-eyebrow">Database tools</span>
+          <h1><Database size={26} /> Slot Manager</h1>
+          <p>Search, maintain and enrich the slot library used across bonus hunts and overlays.</p>
         </div>
-        <div className="sm-toolbar-right">
-          <span className="sm-count">{totalCount.toLocaleString()} slots</span>
-          <button className="sm-btn-ghost" onClick={() => setStatCheckShowPanel(p => !p)}>
-            {statCheckShowPanel ? '✕ Close Stats' : '🔄 Check Stats'}
+        <div className="sm-header-actions">
+          <button type="button" className="sm-btn-ghost" onClick={() => setStatCheckShowPanel(p => !p)}>
+            <RefreshCw size={15} />
+            {statCheckShowPanel ? 'Close Stats' : 'Check Stats'}
           </button>
-          <button className="sm-btn-ghost" onClick={() => setShowProviders(true)}>Providers</button>
-          <button className="sm-btn-primary" onClick={() => { setEditorSlot({}); setIsNewSlot(true); }}>+ Add Slot</button>
+          <button type="button" className="sm-btn-ghost" onClick={() => setShowProviders(true)}>
+            <Building2 size={15} />
+            Providers
+          </button>
+          <button type="button" className="sm-btn-primary" onClick={() => { setEditorSlot({}); setIsNewSlot(true); }}>
+            <Plus size={15} />
+            Add Slot
+          </button>
         </div>
-      </div>
+      </header>
+
+      <section className="sm-stats-grid" aria-label="Slot database summary">
+        <div className="sm-stat-card">
+          <Database size={18} />
+          <div>
+            <strong>{totalCount.toLocaleString()}</strong>
+            <span>Matching slots</span>
+          </div>
+        </div>
+        <div className="sm-stat-card">
+          <Building2 size={18} />
+          <div>
+            <strong>{providers.length.toLocaleString()}</strong>
+            <span>Clean providers</span>
+          </div>
+        </div>
+        <div className="sm-stat-card">
+          <BarChart3 size={18} />
+          <div>
+            <strong>{slotsWithStats.toLocaleString()}</strong>
+            <span>With stats on page</span>
+          </div>
+        </div>
+        <div className="sm-stat-card">
+          <SlidersHorizontal size={18} />
+          <div>
+            <strong>{selectedIds.size.toLocaleString()}</strong>
+            <span>Selected</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="sm-control-panel" aria-label="Slot filters">
+        <div className="sm-toolbar">
+          <div className="sm-toolbar-left">
+            <div className="sm-search">
+              <Search className="sm-search-icon" size={15} />
+              <input ref={searchRef} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search slots or providers..." />
+              {searchTerm && <button type="button" className="sm-search-clear" onClick={() => setSearchTerm('')} aria-label="Clear search">×</button>}
+            </div>
+            <DropdownFilter label="Status" options={STATUS_OPTIONS} selected={statusFilter} onChange={setStatusFilter} />
+            <DropdownFilter label="Provider" options={providerOptions} selected={providerFilter} onChange={setProviderFilter} />
+            <DropdownFilter label="Volatility" options={VOLATILITY_OPTIONS} selected={volFilter} onChange={setVolFilter} />
+          </div>
+          <div className="sm-toolbar-right">
+            <span className="sm-count">
+              {shownRangeStart.toLocaleString()}-{shownRangeEnd.toLocaleString()} of {totalCount.toLocaleString()}
+            </span>
+            {hasNonDefaultFilters && (
+              <button type="button" className="sm-clear-filters" onClick={clearAllFilters}>Clear filters</button>
+            )}
+          </div>
+        </div>
+        {activeFilterChips.length > 0 && (
+          <div className="sm-active-filters" aria-label="Active filters">
+            {activeFilterChips.slice(0, 8).map(chip => <span key={chip} className="sm-filter-chip">{chip}</span>)}
+            {activeFilterChips.length > 8 && <span className="sm-filter-chip">+{activeFilterChips.length - 8} more</span>}
+          </div>
+        )}
+      </section>
 
       {/* ── Stat check control panel ──────────────────────── */}
       {statCheckShowPanel && (
-        <div style={{ padding: '12px 16px', background: '#1e293b', borderRadius: 8, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Row 1: Mode + Provider + Page */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <label style={{ fontSize: 12, color: '#94a3b8' }}>Mode:</label>
-            {['all', 'newest', 'provider'].map(m => (
-              <button key={m} disabled={statCheckRunning}
-                onClick={() => { setStatCheckMode(m); setStatCheckPage(1); }}
-                style={{
-                  padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
-                  background: statCheckMode === m ? '#3b82f6' : '#334155', color: statCheckMode === m ? '#fff' : '#94a3b8',
-                }}>
-                {m === 'all' ? 'All' : m === 'newest' ? 'Newest' : 'By Provider'}
-              </button>
-            ))}
+        <section className="sm-stat-check-panel" aria-label="Slot stat checker">
+          <div className="sm-stat-check-head">
+            <div>
+              <span className="sm-eyebrow">Enrichment</span>
+              <h2>Check missing slot stats</h2>
+            </div>
+            <p>Fetch RTP, volatility and max-win data for slots that still need metadata.</p>
+          </div>
 
-            <span style={{ width: 1, height: 20, background: '#334155' }} />
-            <label style={{ fontSize: 12, color: '#94a3b8' }}>Filter:</label>
-            {[['any', 'Missing Any'], ['all', 'Missing All'], ['one', 'Missing One']].map(([v, lbl]) => (
-              <button key={v} disabled={statCheckRunning}
-                onClick={() => { setStatCheckDataFilter(v); setStatCheckPage(1); }}
-                style={{
-                  padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
-                  background: statCheckDataFilter === v ? '#8b5cf6' : '#334155', color: statCheckDataFilter === v ? '#fff' : '#94a3b8',
-                }}>
-                {lbl}
-              </button>
-            ))}
+          <div className="sm-stat-check-grid">
+            <div className="sm-stat-group">
+              <span className="sm-stat-label">Mode</span>
+              <div className="sm-segment-group">
+                {['all', 'newest', 'provider'].map(m => (
+                  <button key={m} type="button" disabled={statCheckRunning}
+                    className={`sm-segment ${statCheckMode === m ? 'active' : ''}`}
+                    onClick={() => { setStatCheckMode(m); setStatCheckPage(1); }}>
+                    {m === 'all' ? 'All' : m === 'newest' ? 'Newest' : 'Provider'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="sm-stat-group">
+              <span className="sm-stat-label">Missing data</span>
+              <div className="sm-segment-group">
+                {[['any', 'Any'], ['all', 'All'], ['one', 'One field']].map(([v, lbl]) => (
+                  <button key={v} type="button" disabled={statCheckRunning}
+                    className={`sm-segment ${statCheckDataFilter === v ? 'active purple' : ''}`}
+                    onClick={() => { setStatCheckDataFilter(v); setStatCheckPage(1); }}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {statCheckMode === 'provider' && (
-              <select value={statCheckProvider} disabled={statCheckRunning}
-                onChange={e => { setStatCheckProvider(e.target.value); setStatCheckPage(1); }}
-                style={{ padding: '4px 8px', borderRadius: 6, fontSize: 12, background: '#0f172a', color: '#e2e8f0', border: '1px solid #334155' }}>
-                <option value="">— Select Provider —</option>
-                {providers.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
+              <label className="sm-stat-group sm-stat-select">
+                <span className="sm-stat-label">Provider</span>
+                <select value={statCheckProvider} disabled={statCheckRunning}
+                  onChange={e => { setStatCheckProvider(e.target.value); setStatCheckPage(1); }}>
+                  <option value="">Select Provider</option>
+                  {providers.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </label>
             )}
 
-            <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <label style={{ fontSize: 12, color: '#94a3b8' }}>Page:</label>
-              <button disabled={statCheckRunning || statCheckPage <= 1} onClick={() => setStatCheckPage(p => p - 1)}
-                style={{ background: '#334155', border: 'none', color: '#e2e8f0', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 13 }}>◀</button>
-              <span style={{ fontSize: 12, color: '#e2e8f0', minWidth: 70, textAlign: 'center' }}>{statCheckPage} / {statCheckTotalPages}</span>
-              <button disabled={statCheckRunning || statCheckPage >= statCheckTotalPages} onClick={() => setStatCheckPage(p => p + 1)}
-                style={{ background: '#334155', border: 'none', color: '#e2e8f0', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 13 }}>▶</button>
-              <span style={{ fontSize: 11, color: '#64748b' }}>(200/page)</span>
-            </span>
-          </div>
-
-          {/* Row 2: Sources + Fast mode */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <label style={{ fontSize: 12, color: '#94a3b8' }}>Sources:</label>
-            {[['demoslot', 'DemoSlot'], ['slotark', 'SlotArk'], ['slotslaunch', 'SlotsLaunch']].map(([k, lbl]) => (
-              <button key={k} disabled={statCheckRunning}
-                onClick={() => setStatCheckSources(s => ({ ...s, [k]: !s[k] }))}
-                style={{
-                  padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
-                  background: statCheckSources[k] ? '#0d9488' : '#334155', color: statCheckSources[k] ? '#fff' : '#94a3b8',
-                }}>
-                {lbl}
-              </button>
-            ))}
-            <span style={{ width: 1, height: 20, background: '#334155' }} />
-            <button disabled={statCheckRunning}
-              onClick={() => setStatCheckFast(f => !f)}
-              style={{
-                padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
-                background: statCheckFast ? '#f59e0b' : '#334155', color: statCheckFast ? '#fff' : '#94a3b8',
-              }}>
-              {statCheckFast ? '⚡ Fast Mode' : '🐢 Deep Mode'}
-            </button>
-            <span style={{ fontSize: 11, color: '#64748b' }}>{statCheckFast ? 'Direct URLs only' : 'Includes Bing fallback'}</span>
-          </div>
-
-          {/* Row 3: Start / Progress */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button onClick={bulkStatCheck}
-              disabled={statCheckMode === 'provider' && !statCheckProvider}
-              style={{
-                padding: '6px 18px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-                background: statCheckRunning ? '#dc2626' : '#22c55e', color: '#fff',
-              }}>
-              {statCheckRunning ? '⏹ Stop' : '▶ Start Check'}
-            </button>
-            {statCheckRunning && statCheckProgress.total > 0 && (
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 3 }}>
-                  {statCheckProgress.done}/{statCheckProgress.total} slots — {statCheckProgress.updated} updated
-                </div>
-                <div style={{ height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${(statCheckProgress.done / statCheckProgress.total * 100)}%`, background: '#3b82f6', borderRadius: 3, transition: 'width 0.3s' }} />
-                </div>
+            <div className="sm-stat-group sm-stat-pager">
+              <span className="sm-stat-label">Page</span>
+              <div className="sm-page-stepper">
+                <button type="button" disabled={statCheckRunning || statCheckPage <= 1} onClick={() => setStatCheckPage(p => p - 1)}>‹</button>
+                <span>{statCheckPage} / {statCheckTotalPages}</span>
+                <button type="button" disabled={statCheckRunning || statCheckPage >= statCheckTotalPages} onClick={() => setStatCheckPage(p => p + 1)}>›</button>
               </div>
-            )}
+              <small>200 slots per page</small>
+            </div>
           </div>
-        </div>
+
+          <div className="sm-stat-check-grid sm-stat-check-grid--sources">
+            <div className="sm-stat-group">
+              <span className="sm-stat-label">Sources</span>
+              <div className="sm-segment-group">
+                {[['demoslot', 'DemoSlot'], ['slotark', 'SlotArk'], ['slotslaunch', 'SlotsLaunch']].map(([k, lbl]) => (
+                  <button key={k} type="button" disabled={statCheckRunning}
+                    className={`sm-segment ${statCheckSources[k] ? 'active teal' : ''}`}
+                    onClick={() => setStatCheckSources(s => ({ ...s, [k]: !s[k] }))}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="sm-stat-group">
+              <span className="sm-stat-label">Depth</span>
+              <button type="button" disabled={statCheckRunning}
+                className={`sm-segment sm-depth-toggle ${statCheckFast ? 'active amber' : ''}`}
+                onClick={() => setStatCheckFast(f => !f)}>
+                {statCheckFast ? 'Fast mode' : 'Deep mode'}
+              </button>
+              <small>{statCheckFast ? 'Direct URLs only' : 'Includes Bing fallback'}</small>
+            </div>
+
+            <div className="sm-stat-group sm-stat-action-group">
+              <span className="sm-stat-label">Run</span>
+              <button type="button" className={`sm-stat-run ${statCheckRunning ? 'stop' : ''}`} onClick={bulkStatCheck}
+                disabled={statCheckMode === 'provider' && !statCheckProvider}>
+                {statCheckRunning ? 'Stop check' : 'Start check'}
+              </button>
+            </div>
+          </div>
+
+          {statCheckRunning && statCheckProgress.total > 0 && (
+            <div className="sm-stat-progress">
+              <div className="sm-stat-progress-copy">
+                <span>{statCheckProgress.done}/{statCheckProgress.total} slots checked</span>
+                <strong>{statCheckProgress.updated} updated</strong>
+              </div>
+              <div className="sm-stat-progress-track">
+                <div style={{ width: `${(statCheckProgress.done / statCheckProgress.total * 100)}%` }} />
+              </div>
+            </div>
+          )}
+        </section>
       )}
 
       {/* ── Stat check report ────────────────────────────── */}
       {statCheckReport && (
-        <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, marginBottom: 12, maxHeight: 400, overflow: 'auto' }}>
-          <div style={{ padding: '10px 16px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#0f172a', zIndex: 1 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>
-              📊 Stat Check Report — {statCheckReport.updated} updated, {statCheckReport.skipped} no data, {statCheckReport.failed} failed ({statCheckReport.total} checked)
-            </span>
-            <button onClick={() => setStatCheckReport(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 }}>✕</button>
+        <section className="sm-stat-report">
+          <div className="sm-stat-report-head">
+            <div>
+              <span className="sm-eyebrow">Report</span>
+              <h2>Stat check results</h2>
+            </div>
+            <div className="sm-report-metrics">
+              <span>{statCheckReport.updated} updated</span>
+              <span>{statCheckReport.skipped} skipped</span>
+              <span>{statCheckReport.failed} failed</span>
+              <span>{statCheckReport.total} checked</span>
+            </div>
+            <button type="button" onClick={() => setStatCheckReport(null)} className="sm-btn-close" aria-label="Close stat check report">×</button>
           </div>
-          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+          <table className="sm-report-table">
             <thead>
-              <tr style={{ color: '#94a3b8', textAlign: 'left' }}>
-                <th style={{ padding: '6px 12px', borderBottom: '1px solid #1e293b' }}>Slot</th>
-                <th style={{ padding: '6px 12px', borderBottom: '1px solid #1e293b' }}>Status</th>
-                <th style={{ padding: '6px 12px', borderBottom: '1px solid #1e293b' }}>Details</th>
+              <tr>
+                <th>Slot</th>
+                <th>Status</th>
+                <th>Details</th>
               </tr>
             </thead>
             <tbody>
               {statCheckReport.entries.map((e, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
-                  <td style={{ padding: '5px 12px', color: '#e2e8f0' }}>{e.name}</td>
-                  <td style={{ padding: '5px 12px' }}>
-                    <span style={{
-                      display: 'inline-block', padding: '1px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
-                      background: e.status === 'updated' ? '#166534' : e.status === 'error' ? '#7f1d1d' : '#1e293b',
-                      color: e.status === 'updated' ? '#4ade80' : e.status === 'error' ? '#fca5a5' : '#94a3b8',
-                    }}>
-                      {e.status === 'updated' ? '✓ Updated' : e.status === 'error' ? '✗ Error' : '— Skipped'}
+                <tr key={i}>
+                  <td>{e.name}</td>
+                  <td>
+                    <span className={`sm-report-status ${e.status}`}>
+                      {e.status === 'updated' ? 'Updated' : e.status === 'error' ? 'Error' : 'Skipped'}
                     </span>
                   </td>
-                  <td style={{ padding: '5px 12px', color: '#94a3b8' }}>{e.changes.join(', ')}</td>
+                  <td>{e.changes.join(', ')}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </section>
       )}
 
       {/* ── Table ────────────────────────────────────────── */}
@@ -1278,8 +1435,13 @@ const SlotManagerV2 = () => {
                       <img src={slot.image || DEFAULT_SLOT_IMAGE} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                     </td>
                     <td className="sm-td-name">
-                      {slot.name}
-                      {slot.is_featured && <span className="sm-star" title="Featured">★</span>}
+                      <div className="sm-slot-title-row">
+                        <span>{slot.name}</span>
+                        {slot.is_featured && <span className="sm-star" title="Featured">★</span>}
+                      </div>
+                      <div className="sm-slot-meta">
+                        {slot.theme || slot.reels || slot.paylines || 'Slot record'}
+                      </div>
                     </td>
                     <td className="sm-td-prov"><ProviderLogo provider={slot.provider} className="sm-provider-logo--table" /></td>
                     <td className="sm-td-rtp">{slot.rtp ? `${slot.rtp}%` : '—'}</td>

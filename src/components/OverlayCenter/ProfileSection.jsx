@@ -58,38 +58,42 @@ const SYNC_MAP = {
 };
 
 const S = {
-  page: { display: 'flex', flexDirection: 'column', gap: 20, width: '100%', maxWidth: '100%' },
+  page: { display: 'flex', flexDirection: 'column', gap: 18, width: '100%', maxWidth: '100%' },
   /* top identity strip */
   identity: {
-    display: 'flex', alignItems: 'center', gap: 20, padding: '18px 22px',
-    background: 'linear-gradient(150deg, rgba(17,24,39,0.78), rgba(13,17,23,0.9))', border: '1px solid rgba(148,163,184,0.28)', borderRadius: 22,
+    display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', alignItems: 'center', gap: 16, padding: '16px',
+    background: 'linear-gradient(135deg, rgba(20,184,166,0.1), rgba(124,58,237,0.08) 42%, rgba(13,18,28,0.88))',
+    border: '1px solid rgba(94,234,212,0.2)', borderRadius: 18,
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 18px 48px rgba(0,0,0,0.34)',
   },
-  avatar: { width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(200,208,216,0.38)', flexShrink: 0 },
-  avatarPlaceholder: { width: 64, height: 64, borderRadius: '50%', background: 'rgba(148,163,184,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '3px solid rgba(200,208,216,0.32)', flexShrink: 0 },
-  identityFields: { display: 'flex', flex: 1, gap: 12, flexWrap: 'wrap', minWidth: 0 },
+  avatar: { width: 58, height: 58, borderRadius: 16, objectFit: 'cover', border: '1px solid rgba(94,234,212,0.34)', flexShrink: 0, boxShadow: '0 12px 30px rgba(0,0,0,0.32)' },
+  avatarPlaceholder: { width: 58, height: 58, borderRadius: 16, background: 'rgba(20,184,166,0.13)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, border: '1px solid rgba(94,234,212,0.3)', flexShrink: 0 },
+  identityFields: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(180px, 1fr))', gap: 12, minWidth: 0 },
   /* grid for middle section */
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  grid: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(360px, 0.9fr)', gap: 16, alignItems: 'start' },
   /* cards used in the grid */
   card: {
-    background: 'linear-gradient(150deg, rgba(17,24,39,0.78), rgba(13,17,23,0.9))', border: '1px solid rgba(148,163,184,0.28)',
-    borderRadius: 22, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12,
+    background: 'linear-gradient(150deg, rgba(17,24,39,0.82), rgba(8,13,22,0.92))', border: '1px solid rgba(148,163,184,0.22)',
+    borderRadius: 18, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12,
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 38px rgba(0,0,0,0.28)',
   },
-  cardTitle: { fontSize: '0.88rem', fontWeight: 850, color: '#f4f7fb', display: 'flex', alignItems: 'center', gap: 8, margin: 0 },
+  cardTitle: { fontSize: '0.92rem', fontWeight: 850, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 8, margin: 0 },
   /* form elements */
-  label: { display: 'block', fontSize: '0.72rem', color: '#d0dbe6', fontWeight: 800, marginBottom: 3, textTransform: 'uppercase', letterSpacing: 0 },
-  input: { width: '100%', padding: '8px 11px', background: 'rgba(13,17,23,0.88)', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 16, color: '#f4f7fb', fontSize: '0.82rem', boxSizing: 'border-box' },
+  label: { display: 'block', fontSize: '0.7rem', color: '#b7c8dc', fontWeight: 850, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0 },
+  input: { width: '100%', minHeight: 40, padding: '8px 11px', background: 'rgba(7,11,18,0.72)', border: '1px solid rgba(148,163,184,0.24)', borderRadius: 12, color: '#f8fafc', fontSize: '0.84rem', boxSizing: 'border-box' },
   row2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
   /* platform compact row */
   platRow: { display: 'flex', alignItems: 'center', gap: 10 },
-  dot: (on) => ({ width: 7, height: 7, borderRadius: '50%', background: on ? '#d0dbe6' : '#6d7a8d', flexShrink: 0, boxShadow: on ? '0 0 16px rgba(208,219,230,0.36)' : 'none' }),
+  dot: (on) => ({ width: 8, height: 8, borderRadius: '50%', background: on ? '#5eead4' : '#64748b', flexShrink: 0, boxShadow: on ? '0 0 18px rgba(94,234,212,0.38)' : 'none' }),
   /* buttons */
-  btn: { padding: '8px 14px', borderRadius: 999, border: '1px solid rgba(148,163,184,0.34)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 800, transition: 'all 0.15s' },
-  btnSync: { background: 'linear-gradient(135deg, #94a3b8 0%, #7c8797 48%, #64748b 100%)', color: '#f4f7fb', width: '100%', padding: '12px 16px', fontSize: '0.88rem', borderRadius: 999, border: '1px solid rgba(200,208,216,0.5)', cursor: 'pointer', fontWeight: 850 },
+  btn: { minHeight: 38, padding: '8px 14px', borderRadius: 12, border: '1px solid rgba(148,163,184,0.3)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 850, transition: 'all 0.15s' },
+  btnSync: { background: 'linear-gradient(135deg, #14b8a6 0%, #2563eb 100%)', color: '#f8fafc', width: '100%', padding: '11px 16px', fontSize: '0.86rem', borderRadius: 12, border: '1px solid rgba(94,234,212,0.42)', cursor: 'pointer', fontWeight: 850, boxShadow: '0 12px 30px rgba(20,184,166,0.16)' },
   syncBar: {
-    display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
-    background: 'linear-gradient(150deg, rgba(17,24,39,0.78), rgba(13,17,23,0.9))', border: '1px solid rgba(148,163,184,0.28)', borderRadius: 22,
+    display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+    background: 'linear-gradient(135deg, rgba(37,99,235,0.12), rgba(17,24,39,0.86))', border: '1px solid rgba(96,165,250,0.22)', borderRadius: 18,
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 38px rgba(0,0,0,0.26)',
   },
-  syncResult: { fontSize: '0.8rem', padding: '8px 14px', borderRadius: 10, textAlign: 'center', fontWeight: 600 },
+  syncResult: { fontSize: '0.8rem', padding: '9px 14px', borderRadius: 12, textAlign: 'center', fontWeight: 800 },
 };
 
 /* ── ApiKeyCard sub-component ── */
@@ -570,13 +574,13 @@ export default function ProfileSection({ widgets, saveWidget }) {
   return (
     <div className="oc-profile-page" style={S.page}>
       {/* ──── Row 1: Identity strip ──── */}
-      <div style={S.identity} data-tour="profile-identity">
+      <div className="oc-profile-identity" style={S.identity} data-tour="profile-identity">
         {profile.avatarUrl ? (
           <img src={profile.avatarUrl} alt="Avatar" style={S.avatar} />
         ) : (
           <div style={S.avatarPlaceholder}>👤</div>
         )}
-        <div style={S.identityFields}>
+        <div className="oc-profile-identity-fields" style={S.identityFields}>
           <div style={{ flex: 1, minWidth: 150 }}>
             <label style={S.label}>Display Name</label>
             <input style={S.input} value={profile.streamerName} onChange={e => set('streamerName', e.target.value)} placeholder="Your streamer name" />
@@ -590,36 +594,36 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <input style={S.input} value={profile.avatarUrl} onChange={e => set('avatarUrl', e.target.value)} placeholder="https://..." />
           </div>
         </div>
-        <span style={{ fontSize: '0.7rem', color: '#aab6c8', whiteSpace: 'nowrap', flexShrink: 0 }}>{providerBadge}</span>
+        <span className="oc-profile-provider-badge" style={{ fontSize: '0.7rem', color: '#aab6c8', whiteSpace: 'nowrap', flexShrink: 0 }}>{providerBadge}</span>
       </div>
 
       {/* ──── Row 2: Two-column grid ──── */}
-      <div style={S.grid}>
+      <div className="oc-profile-grid" style={S.grid}>
         {/* LEFT — Platforms + Widget Sync + OBS Guide */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ ...S.card, gap: 8 }} data-tour="profile-platforms">
+        <div className="oc-profile-column" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="oc-profile-card oc-profile-card--platforms" style={{ ...S.card, gap: 10 }} data-tour="profile-platforms">
           <h3 style={S.cardTitle}>🔗 Platforms</h3>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="oc-profile-platform-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={S.dot(!!profile.twitchUsername)} />
             <label style={{ ...S.label, margin: 0, minWidth: 60 }}>Twitch</label>
             <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.twitchUsername} onChange={e => set('twitchUsername', e.target.value)} placeholder="your_twitch_name" />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="oc-profile-platform-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={S.dot(!!profile.kickChannel)} />
             <label style={{ ...S.label, margin: 0, minWidth: 60 }}>Kick</label>
             <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.kickChannel} onChange={e => set('kickChannel', e.target.value)} placeholder="your_kick_channel" />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="oc-profile-platform-row oc-profile-platform-row--youtube" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={S.dot(!!profile.youtubeChannel)} />
             <label style={{ ...S.label, margin: 0, minWidth: 60 }}>YouTube</label>
             <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.youtubeChannel} onChange={e => set('youtubeChannel', e.target.value)} placeholder="Video / Live ID" />
             <input style={{ ...S.input, flex: 1, margin: 0 }} type="password" value={profile.youtubeApiKey} onChange={e => set('youtubeApiKey', e.target.value)} placeholder="API Key" />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="oc-profile-platform-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={S.dot(!!profile.discordTag)} />
             <label style={{ ...S.label, margin: 0, minWidth: 60 }}>Discord</label>
             <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.discordTag} onChange={e => set('discordTag', e.target.value)} placeholder="username#0000" />
@@ -638,7 +642,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
         </div>
 
         {/* Widget Sync (below Platforms) */}
-        <div style={{ ...S.syncBar, borderRadius: 12 }} data-tour="profile-sync">
+        <div className="oc-profile-sync-card" style={{ ...S.syncBar, borderRadius: 18 }} data-tour="profile-sync">
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#fff' }}>📡 Widget Sync</span>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -673,7 +677,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
         )}
 
         {/* OBS Browser Source Setup (below Widget Sync) */}
-        <div data-tour="profile-obs-guide" style={{ ...S.card }}>
+        <div className="oc-profile-card oc-profile-card--obs" data-tour="profile-obs-guide" style={{ ...S.card }}>
           <h3 style={S.cardTitle}>🖥️ OBS Browser Source Setup</h3>
           <p style={{ fontSize: '0.75rem', color: '#aab6c8', margin: 0, lineHeight: 1.5 }}>
             Add your overlay as a Browser Source in OBS. Go to <strong style={{ color: '#d0dbe6' }}>Overlay Center → Get Link</strong> and paste the URL into OBS. Recommended settings: <strong style={{ color: '#d0dbe6' }}>1920×1080</strong>, enable <strong style={{ color: '#d0dbe6' }}>Shutdown source when not visible</strong>.
@@ -685,9 +689,9 @@ export default function ProfileSection({ widgets, saveWidget }) {
         </div>
 
         {/* RIGHT — Spotify + Preferences */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="oc-profile-column" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Spotify card */}
-          <div style={S.card} data-tour="profile-spotify">
+          <div className="oc-profile-card oc-profile-card--spotify" style={S.card} data-tour="profile-spotify">
             <h3 style={S.cardTitle}>🎵 Spotify</h3>
             <div style={S.platRow}>
               <div style={S.dot(!!profile.spotify_access_token)} />
@@ -754,7 +758,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
           </div>
 
           {/* StreamElements card */}
-          <div style={S.card} data-tour="profile-streamelements">
+          <div className="oc-profile-card oc-profile-card--streamelements" style={S.card} data-tour="profile-streamelements">
             <h3 style={S.cardTitle}>🎮 StreamElements</h3>
             <div style={S.platRow}>
               <div style={S.dot(!!(profile.seChannelId && profile.seJwtToken))} />
@@ -834,34 +838,10 @@ export default function ProfileSection({ widgets, saveWidget }) {
               <br />Each user must enter their own credentials. Saved per-account.
             </p>
 
-            {/* ── !bet command URL ── */}
-            <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(148,163,184,0.12)', borderRadius: 16, border: '1px solid rgba(148,163,184,0.28)' }}>
-              <p style={{ fontSize: '0.78rem', fontWeight: 800, color: '#d0dbe6', margin: '0 0 4px' }}>
-                🔗 !bet Command URL
-              </p>
-              <p style={{ fontSize: '0.72rem', color: '#aab6c8', margin: '0 0 6px' }}>
-                In SE, create a custom command <code style={{ color: '#d0dbe6' }}>!bet</code> with this URL response:
-              </p>
-              <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.3)' }}>
-                <code style={{ flex: 1, display: 'block', fontSize: '0.65rem', wordBreak: 'break-all', color: '#f4f7fb', background: 'rgba(8,11,16,0.86)', padding: '7px 9px', lineHeight: 1.6 }}>
-                  {`${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || '<your-user-id>'}&w1=\${1}&w2=\${2}&requester=\${user.username}`}
-                </code>
-                <button
-                  style={{ background: 'rgba(148,163,184,0.22)', border: 'none', color: '#f4f7fb', padding: '0 12px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 800, flexShrink: 0 }}
-                  onClick={() => {
-                    const url = `${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || ''}&w1=\${1}&w2=\${2}&requester=\${user.username}`;
-                    navigator.clipboard.writeText(url).catch(() => {});
-                  }}
-                >📋</button>
-              </div>
-              <p style={{ fontSize: '0.68rem', color: '#aab6c8', margin: '5px 0 0' }}>
-                <code style={{ color: '#d0dbe6' }}>{'${1}'}</code> = option · <code style={{ color: '#d0dbe6' }}>{'${2}'}</code> = amount · <code style={{ color: '#d0dbe6' }}>{'${user.username}'}</code> = viewer (SE placeholders)
-              </p>
-            </div>
           </div>
 
           {/* Preferences card */}
-          <div style={S.card} data-tour="profile-preferences">
+          <div className="oc-profile-card oc-profile-card--preferences" style={S.card} data-tour="profile-preferences">
             <h3 style={S.cardTitle}>⚙️ Preferences</h3>
             <div>
               <label style={S.label}>Default Currency</label>

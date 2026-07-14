@@ -19315,6 +19315,298 @@ body.wm-resizing {
   color: #d0dbe6 !important;
 }
 
+/* Integrations page refresh */
+.oc2-integrations-page {
+  display: grid;
+  gap: 16px;
+}
+
+.oc2-integrations-heading {
+  position: relative;
+  margin-bottom: 0;
+  padding: 20px 22px;
+  border: 1px solid rgba(94, 234, 212, 0.18);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(124, 58, 237, 0.08) 48%, rgba(8, 13, 22, 0.82)),
+    rgba(8, 13, 22, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 56px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.oc2-integrations-heading::after {
+  content: "";
+  position: absolute;
+  inset: auto 20px 0 auto;
+  width: min(360px, 42vw);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.55), rgba(168, 85, 247, 0.42));
+}
+
+.oc2-integrations-heading h1 {
+  font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+}
+
+.oc2-integrations-heading p {
+  max-width: 720px;
+  margin: 8px 0 0;
+}
+
+.oc2-integration-grid--modern {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.oc2-integration-grid--modern .oc2-integration-card {
+  position: relative;
+  min-height: 126px;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(15, 23, 42, 0.74);
+  border-color: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.oc2-integration-grid--modern .oc2-integration-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background: radial-gradient(circle at 16% 0%, var(--oc-integration-glow, rgba(94, 234, 212, 0.15)), transparent 38%);
+}
+
+.oc2-integration-grid--modern .oc2-integration-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(94, 234, 212, 0.32);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
+}
+
+.oc2-integration-card--twitch {
+  --oc-integration-glow: rgba(168, 85, 247, 0.18);
+}
+
+.oc2-integration-card--streamelements {
+  --oc-integration-glow: rgba(96, 165, 250, 0.18);
+}
+
+.oc2-integration-card--spotify {
+  --oc-integration-glow: rgba(34, 197, 94, 0.16);
+}
+
+.oc2-integration-card--slotdb {
+  --oc-integration-glow: rgba(245, 158, 11, 0.16);
+}
+
+.oc2-integration-grid--modern .oc2-integration-card__top,
+.oc2-integration-grid--modern .oc2-integration-card p,
+.oc2-integration-grid--modern .oc2-integration-card small {
+  position: relative;
+  z-index: 1;
+}
+
+.oc2-integration-grid--modern .oc2-integration-card__top {
+  align-items: center;
+}
+
+.oc2-integration-card__indicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #5eead4;
+  box-shadow: 0 0 16px rgba(94, 234, 212, 0.42);
+  flex: 0 0 auto;
+}
+
+.oc2-integration-grid--modern .oc2-integration-card strong {
+  flex: 1;
+  min-width: 0;
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+.oc2-integration-grid--modern .oc2-integration-card p {
+  margin: 0;
+  color: #a8b6c8;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.oc2-integration-grid--modern .oc2-integration-card small {
+  color: #c7d2e2;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.oc-profile-page > .oc-profile-grid {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.oc-profile-identity {
+  margin-top: 0 !important;
+}
+
+.oc-profile-identity-fields {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(180px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.oc-profile-provider-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  color: #dbeafe !important;
+  background: rgba(96, 165, 250, 0.12) !important;
+  border: 1px solid rgba(147, 197, 253, 0.26) !important;
+}
+
+.oc-profile-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+.oc-profile-column {
+  min-width: 0;
+}
+
+.oc-profile-card,
+.oc-profile-sync-card {
+  border-radius: 18px !important;
+}
+
+.oc-profile-card:hover,
+.oc-profile-sync-card:hover {
+  border-color: rgba(94, 234, 212, 0.28) !important;
+}
+
+.oc-profile-card h3,
+.oc-profile-sync-card span:first-child {
+  font-size: 0.92rem !important;
+}
+
+.oc-profile-platform-row {
+  min-height: 42px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.22);
+}
+
+.oc-profile-platform-row label {
+  width: 76px;
+  min-width: 76px !important;
+}
+
+.oc-profile-platform-row input {
+  min-width: 0;
+}
+
+.oc-profile-page input,
+.oc-profile-page select,
+.oc-profile-page textarea {
+  border-radius: 12px !important;
+}
+
+.oc-profile-page button:not([class*="wm-"]):not([style*="248,113,113"]):not([style*="#f87171"]) {
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.92), rgba(37, 99, 235, 0.9)) !important;
+  border-color: rgba(94, 234, 212, 0.38) !important;
+  box-shadow: 0 12px 30px rgba(20, 184, 166, 0.16) !important;
+}
+
+.oc-profile-page button[style*="248,113,113"],
+.oc-profile-page button[style*="#f87171"] {
+  color: #fecaca !important;
+  background: rgba(127, 29, 29, 0.26) !important;
+  border-color: rgba(248, 113, 113, 0.34) !important;
+  box-shadow: none !important;
+}
+
+.oc-profile-sync-card {
+  align-items: center !important;
+}
+
+.oc-profile-sync-card > button {
+  flex: 0 0 auto;
+}
+
+.oc-profile-card--obs {
+  border-style: dashed !important;
+}
+
+.oc-profile-card--streamelements code {
+  border-radius: 10px !important;
+}
+
+@media (max-width: 1220px) {
+  .oc2-integration-grid--modern {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .oc-profile-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .oc2-integrations-heading {
+    padding: 18px;
+  }
+
+  .oc2-integration-grid--modern {
+    grid-template-columns: 1fr;
+  }
+
+  .oc-profile-identity {
+    grid-template-columns: 1fr !important;
+  }
+
+  .oc-profile-identity > img,
+  .oc-profile-identity > div:first-child {
+    justify-self: start;
+  }
+
+  .oc-profile-identity-fields {
+    grid-template-columns: 1fr !important;
+  }
+
+  .oc-profile-provider-badge {
+    justify-self: start;
+  }
+
+  .oc-profile-platform-row,
+  .oc-profile-platform-row--youtube {
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    align-items: center !important;
+  }
+
+  .oc-profile-platform-row--youtube input {
+    grid-column: 1 / -1;
+  }
+
+  .oc-profile-sync-card {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .oc-profile-sync-card > button {
+    width: 100% !important;
+  }
+}
+
 /* Admin-only inline style normalizer for older widget config panels. */
 .oc-page :is(
   .oc-panel-section,

@@ -564,6 +564,10 @@
   gap: 14px;
 }
 
+.pbh-form--hunt-setup {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .pbh-form--compact {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
@@ -1265,6 +1269,7 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .pbh-form--compact,
+  .pbh-form--hunt-setup,
   .pbh-summary-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

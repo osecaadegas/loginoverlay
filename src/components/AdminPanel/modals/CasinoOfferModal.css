@@ -471,3 +471,108 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Streamers Center admin refresh */
+.co-panel-backdrop.open {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.co-panel {
+  width: min(620px, 100vw);
+  background: linear-gradient(180deg, rgba(22, 32, 48, 0.98), rgba(11, 17, 28, 0.98));
+  border-left: 1px solid var(--admin-line-strong, rgba(148, 193, 222, 0.32));
+  box-shadow: -30px 0 90px rgba(0, 0, 0, 0.48);
+}
+
+.co-panel-header,
+.co-panel-footer {
+  background: rgba(10, 16, 27, 0.82);
+  border-color: var(--admin-line, rgba(126, 152, 184, 0.18));
+}
+
+.co-panel-header h2 {
+  color: var(--admin-text, #f4f8fb);
+  font-weight: 900;
+}
+
+.co-panel-close {
+  border: 1px solid var(--admin-line, rgba(126, 152, 184, 0.18));
+  background: rgba(15, 23, 42, 0.74);
+  color: var(--admin-muted, #93a5b8);
+}
+
+.co-panel-body {
+  background: transparent;
+}
+
+.co-section {
+  padding: 16px;
+  border: 1px solid var(--admin-line, rgba(126, 152, 184, 0.18));
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.54);
+}
+
+.co-section-title {
+  color: var(--admin-cyan, #62e6f7);
+  border-bottom-color: rgba(98, 230, 247, 0.18);
+}
+
+.co-field label,
+.co-toggle span,
+.co-provider-name {
+  color: var(--admin-muted, #93a5b8);
+}
+
+.co-field input[type="text"],
+.co-field input[type="number"],
+.co-field input[type="url"],
+.co-field input[type="date"],
+.co-field select,
+.co-field textarea,
+.co-provider-search {
+  min-height: 40px;
+  border-color: var(--admin-line, rgba(126, 152, 184, 0.18));
+  background: rgba(7, 11, 18, 0.72);
+  border-radius: 11px;
+  color: var(--admin-text, #f4f8fb);
+}
+
+.co-field input:focus,
+.co-field select:focus,
+.co-field textarea:focus,
+.co-provider-search:focus {
+  border-color: rgba(98, 230, 247, 0.55);
+  box-shadow: 0 0 0 4px rgba(98, 230, 247, 0.1);
+}
+
+.co-provider-chip,
+.co-deposit-method,
+.co-toggle {
+  border-color: var(--admin-line, rgba(126, 152, 184, 0.18));
+  background: rgba(7, 11, 18, 0.44);
+  border-radius: 12px;
+}
+
+.co-provider-chip.selected,
+.co-deposit-method.selected,
+.co-toggle:has(input:checked) {
+  color: var(--admin-text, #f4f8fb);
+  border-color: rgba(98, 230, 247, 0.4);
+  background: rgba(98, 230, 247, 0.12);
+}
+
+.co-btn-save {
+  background: linear-gradient(135deg, var(--admin-teal, #43d7bd), var(--admin-cyan, #62e6f7));
+  color: #031014;
+  border: 1px solid rgba(98, 230, 247, 0.35);
+  border-radius: 11px;
+  font-weight: 850;
+}
+
+.co-btn-cancel {
+  border-radius: 11px;
+  border-color: var(--admin-line, rgba(126, 152, 184, 0.18));
+  background: rgba(15, 23, 42, 0.74);
+  color: var(--admin-text, #f4f8fb);
+}

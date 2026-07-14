@@ -38,7 +38,7 @@ function bonusTypeLabel(value) {
 
 function SummaryStrip({ stats, currency }) {
   const items = [
-    ['Target', formatMoney(stats.target ?? stats.breakEven, currency), 'Deposits minus withdrawals'],
+    ['Target', formatMoney(stats.target ?? stats.breakEven, currency), 'Deposits minus stop loss'],
     ['Break even', formatMoney(stats.breakEven, currency), 'Same value as target'],
     ['Remaining', formatMoney(stats.remainingBreakEven, currency), 'Target minus opened payouts'],
     ['Profit / Loss', formatSignedMoney(stats.profitLoss, currency), 'Opened payouts minus target'],
@@ -80,12 +80,12 @@ function MathematicsPanel({ stats, currency }) {
           <span className="pbh-eyebrow">Mathematics</span>
           <h3>Streamer formula</h3>
         </div>
-        <p>Target uses the same streamer formula: start money minus stop loss. On player hunts, deposits are start money and withdrawals are stop loss.</p>
+        <p>Target uses the same streamer formula: start money minus stop loss. Older hunts without a stop loss still use withdrawals as the fallback.</p>
       </div>
       <div className="pbh-math-grid">
         <MathLine
           label="Target"
-          formula={`${formatMoney(stats.totalDeposits, currency)} - ${formatMoney(stats.totalWithdrawals, currency)}`}
+          formula={`${formatMoney(stats.totalDeposits, currency)} - ${formatMoney(stats.stopLoss, currency)}`}
           value={formatMoney(target, currency)}
         />
         <MathLine
@@ -584,6 +584,7 @@ export default function PlayerBonusHuntDetail() {
         casino_name: huntForm.casino_name,
         currency: huntForm.currency,
         starting_deposit: Number(huntForm.starting_deposit || 0),
+        stop_loss: Number(huntForm.stop_loss || 0),
         additional_deposits: Number(huntForm.additional_deposits || 0),
         initial_withdrawal: Number(huntForm.initial_withdrawal || 0),
         total_withdrawals: Number(huntForm.total_withdrawals || 0),
@@ -781,6 +782,7 @@ export default function PlayerBonusHuntDetail() {
             ['casino_name', 'Casino', 'text'],
             ['hunt_date', 'Date', 'date'],
             ['starting_deposit', 'Starting deposit', 'number'],
+            ['stop_loss', 'Stop loss', 'number'],
             ['additional_deposits', 'Additional deposits', 'number'],
             ['initial_withdrawal', 'Initial withdrawal', 'number'],
             ['total_withdrawals', 'Withdrawals', 'number'],

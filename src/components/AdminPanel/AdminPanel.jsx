@@ -1275,9 +1275,26 @@ export default function AdminPanel() {
     return null;
   }
 
+  const adminTabs = [
+    { id: 'users', label: 'User Management', shortLabel: 'Users', kicker: 'Accounts', description: 'Roles, access and account status' },
+    { id: 'offers', label: 'Partnerships', shortLabel: 'Partnerships', kicker: 'Marketplace', description: 'Streamer deals and click analytics' },
+    { id: 'apikeys', label: 'API Keys', shortLabel: 'API Keys', kicker: 'Access', description: 'External integrations and tokens' },
+    { id: 'landing', label: 'Landing Page', shortLabel: 'Landing', kicker: 'Website', description: 'Public content and pricing blocks' },
+  ];
+  const activeAdminTab = adminTabs.find(tab => tab.id === activeTab) || adminTabs[0];
+
   return (
     <div className="admin-panel admin-panel-modern">
       <div className="admin-header">
+        <div className="admin-title-block">
+          <span className="admin-kicker">Streamers Center Control</span>
+          <h1>Admin Panel</h1>
+          <p>{activeAdminTab.description}</p>
+        </div>
+        <div className="admin-header-status" aria-label="Admin context">
+          <span>{activeAdminTab.kicker}</span>
+          <strong>{activeAdminTab.shortLabel}</strong>
+        </div>
         <h1>🛡️ Admin Panel</h1>
       </div>
 
@@ -1286,6 +1303,38 @@ export default function AdminPanel() {
 
       {/* Category Dropdown */}
       <div className="admin-dropdown-nav">
+        <div className="admin-tab-rail" role="tablist" aria-label="Admin sections">
+          {adminTabs.map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              className={`admin-tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              <span className="admin-tab-kicker">{tab.kicker}</span>
+              <span className="admin-tab-label">{tab.shortLabel}</span>
+            </button>
+          ))}
+        </div>
+        <div className="admin-dropdown-wrapper admin-dropdown-wrapper-clean">
+          <select
+            className="admin-dropdown-select"
+            value={activeTab}
+            onChange={(e) => handleTabChange(e.target.value)}
+            aria-label="Select admin section"
+          >
+            {adminTabs.map(tab => (
+              <option key={tab.id} value={tab.id}>
+                {tab.label}
+              </option>
+            ))}
+          </select>
+          <svg className="admin-dropdown-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
         <div className="admin-dropdown-wrapper">
           <select
             className="admin-dropdown-select"
