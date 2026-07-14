@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
-import { findUserSlotRecord, getSlotIdentity, recordMatchesSlot } from '../../../services/slotRecordService';
+import { findUserSlotRecord, getSlotIdentity, hydrateSlotPersonalBestFromHistory, recordMatchesSlot } from '../../../services/slotRecordService';
 import { getProviderImage } from '../../../utils/gameProviders';
 import { subValue } from './shared/appearanceStyles';
 
@@ -92,6 +92,27 @@ function cachedBestWinMatchesUser(cached, userId) {
   if (!cached) return false;
   const cachedUserId = cached.userId || cached.user_id;
   return !cachedUserId || !userId || cachedUserId === userId;
+}
+
+function normalizeBestWinRecord(record) {
+  if (!record?.best_win) return null;
+  return {
+    slot_id: record.slot_id || record.slotId || null,
+    slot_name: record.slot_name || record.slotName || '',
+    slot_provider: record.slot_provider || record.provider || null,
+    best_win: Number(record.best_win || record.bestWin || 0),
+    best_multiplier: Number(record.best_multiplier || record.bestMulti || 0),
+  };
+}
+
+function pickBestWinRecord(records) {
+  return records
+    .map(normalizeBestWinRecord)
+    .filter(record => record?.best_win > 0)
+    .sort((a, b) => (
+      Number(b.best_win || 0) - Number(a.best_win || 0)
+      || Number(b.best_multiplier || 0) - Number(a.best_multiplier || 0)
+    ))[0] || null;
 }
 
 /* ─── Main widget ─── */
@@ -265,7 +286,11 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       && recordMatchesSlot(cachedRecord, activeSlot)
       && !(activeSlot.id && !cachedRecord.slot_id && activeSlot.provider && !cachedRecord.slot_provider);
     if (cached?.best_win && cachedIsExactEnough) {
-      return { best_win: cached.best_win, best_multiplier: cached.best_multiplier || 0 };
+      return {
+        ...cachedRecord,
+        best_win: cached.best_win,
+        best_multiplier: cached.best_multiplier || 0,
+      };
     }
     // Fallback: check single_slot widgets
     if (!allWidgets) return null;
@@ -280,7 +305,13 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         && !(activeSlot.id && !widgetRecord.slot_id && activeSlot.provider && !widgetRecord.slot_provider);
     });
     if (ssWidget?.config?.bestWin) {
-      return { best_win: ssWidget.config.bestWin, best_multiplier: ssWidget.config.bestMulti || 0 };
+      return {
+        slot_id: ssWidget.config.slotId || null,
+        slot_name: ssWidget.config.slotName,
+        slot_provider: ssWidget.config.provider || null,
+        best_win: ssWidget.config.bestWin,
+        best_multiplier: ssWidget.config.bestMulti || 0,
+      };
     }
     return null;
   }, [activeSlot, allWidgets, c._cachedBestWin, slotName, userId]);
@@ -295,6 +326,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     if (persistRef.current === key) return; // already persisted
     persistRef.current = key;
     const latest = configRef.current;
+    const bestSlot = getSlotIdentity(bestWinData);
     supabase
       .from('overlay_widgets')
       .update({
@@ -302,9 +334,9 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
           ...latest,
           _cachedBestWin: {
             userId,
-            slotId: activeSlot.id || null,
-            slotName,
-            provider: activeSlot.provider || null,
+            slotId: bestSlot.id || activeSlot.id || null,
+            slotName: bestSlot.name || slotName,
+            provider: bestSlot.provider || activeSlot.provider || null,
             best_win: bestWinData.best_win,
             best_multiplier: bestWinData.best_multiplier,
           },
@@ -324,9 +356,13 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     async function fetchBestWin() {
       try {
         const data = await findUserSlotRecord(userId, activeSlot, 'slot_id, slot_name, slot_provider, best_win, best_multiplier');
+        let record = data && recordMatchesSlot(data, activeSlot) ? data : null;
+        if (!record) {
+          record = await hydrateSlotPersonalBestFromHistory(userId, activeSlot);
+        }
         if (!cancelled) {
-          setBestWinData(data && recordMatchesSlot(data, activeSlot)
-            ? { best_win: data.best_win, best_multiplier: data.best_multiplier }
+          setBestWinData(record && recordMatchesSlot(record, activeSlot)
+            ? normalizeBestWinRecord(record)
             : null);
         }
       } catch {
@@ -352,7 +388,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
             setBestWinData(null);
             return;
           }
-          setBestWinData({ best_win: payload.new.best_win, best_multiplier: payload.new.best_multiplier });
+          setBestWinData(normalizeBestWinRecord(payload.new));
         }
       })
       .subscribe();
@@ -418,8 +454,30 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     : (showDemoData ? demoProvider : '');
   const displayProviderLogo = displayProvider ? getProviderImage(displayProvider) : null;
   const displayInfo = isLive ? (slotInfo || localSlotInfo) : (showDemoData ? demoInfo : null);
+  const currentHuntBestWin = useMemo(() => {
+    if (!isLive) return null;
+    let best = null;
+    for (const bonus of bhConfig.bonuses || []) {
+      const payout = Number(bonus.payout) || Number(bonus.result) || 0;
+      if (payout <= 0) continue;
+      const record = {
+        slot_id: bonus.slot?.id || bonus.slot_id || bonus.slotId || null,
+        slot_name: bonus.slotName || bonus.slot?.name || '',
+        slot_provider: bonus.slot?.provider || bonus.provider || null,
+      };
+      if (!recordMatchesSlot(record, activeSlot)) continue;
+      const bet = Number(bonus.betSize) || 0;
+      const candidate = {
+        ...record,
+        best_win: payout,
+        best_multiplier: bet > 0 ? Math.round((payout / bet) * 100) / 100 : 0,
+      };
+      best = pickBestWinRecord([best, candidate]);
+    }
+    return best;
+  }, [activeSlot, bhConfig.bonuses, isLive]);
   const scopedBestWinData = bestWinData && recordMatchesSlot(bestWinData, activeSlot) ? bestWinData : null;
-  const displayBestWin = isLive ? (scopedBestWinData || configBestWin) : (showDemoData ? demoBestWin : null);
+  const displayBestWin = isLive ? pickBestWinRecord([scopedBestWinData, configBestWin, currentHuntBestWin]) : (showDemoData ? demoBestWin : null);
   const bestWinEmptyText = isLive ? 'No personal best yet' : '-';
 
   const styleClass = isVertical ? ' rtp-stats-bar--vertical'

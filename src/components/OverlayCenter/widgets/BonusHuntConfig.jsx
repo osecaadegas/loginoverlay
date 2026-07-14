@@ -7,7 +7,7 @@ import ColorPicker from './shared/ColorPicker';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../services/overlayService';
-import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
+import { saveSlotPersonalBestFromBonus, updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
@@ -824,6 +824,37 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     });
   }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, casinoName, showStatistics, animatedTracker, bonusOpening, sortBy, sortDir, bonusList]);
 
+  const cacheRtpStatsBestWin = useCallback((record) => {
+    if (!userId || !record?.best_win) return;
+    const rtpWidgets = (allWidgets || []).filter(widget => widget.widget_type === 'rtp_stats' && widget.id);
+    if (rtpWidgets.length === 0) return;
+
+    const cached = {
+      userId,
+      slotId: record.slot_id || null,
+      slotName: record.slot_name || '',
+      provider: record.slot_provider || null,
+      best_win: Number(record.best_win) || 0,
+      best_multiplier: Number(record.best_multiplier) || 0,
+    };
+
+    rtpWidgets.forEach((widget) => {
+      supabase
+        .from('overlay_widgets')
+        .update({
+          config: {
+            ...(widget.config || {}),
+            _cachedBestWin: cached,
+          },
+        })
+        .eq('id', widget.id)
+        .eq('user_id', userId)
+        .then(({ error }) => {
+          if (error) console.warn('RTP best win cache update failed:', error.message);
+        });
+    });
+  }, [allWidgets, userId]);
+
   const handleAddBonus = () => {
     const betNum = Number(betSize);
     if (!selectedSlot || !betSize || betNum <= 0) return;
@@ -935,6 +966,16 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       ...prev,
       [bonusId]: payout > 0 ? payout.toFixed(2) : '',
     }));
+
+    const updatedBonus = updated.find(b => b.id === bonusId);
+    if (userId && updatedBonus && payout > 0) {
+      const huntName = saveHuntName.trim()
+        || [casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : ''].filter(Boolean).join(' / ')
+        || 'Live bonus hunt';
+      saveSlotPersonalBestFromBonus(userId, updatedBonus, huntName)
+        .then(record => cacheRtpStatsBestWin(record))
+        .catch(e => console.warn('Slot personal best update failed:', e?.message || e));
+    }
 
     // Auto-save: if all bonuses now have a payout > 0, save the hunt after 3s
     if (bonusOpening && updated.length > 0 && updated.every(b => b.opened && Number(b.payout) > 0)) {

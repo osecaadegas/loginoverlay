@@ -8101,7 +8101,7 @@ body.wm-resizing {
   border-radius: var(--rtp-border-radius, 8px);
   padding: var(--rtp-py, 8px) var(--rtp-px, 16px);
   box-sizing: border-box;
-  gap: 16px;
+  gap: clamp(7px, 0.85vw, 12px);
   min-height: 40px;
 }
 
@@ -8109,7 +8109,7 @@ body.wm-resizing {
 .rtp-stats-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(7px, 0.8vw, 10px);
   flex: 1;
   min-width: 0;
 }
@@ -8126,8 +8126,8 @@ body.wm-resizing {
 }
 
 .rtp-stats-provider--logo {
-  width: clamp(88px, 8vw, 132px);
-  height: 32px;
+  width: clamp(118px, 10vw, 176px);
+  height: 40px;
   justify-content: center;
   text-shadow: none;
   background: transparent !important;
@@ -8149,7 +8149,7 @@ body.wm-resizing {
 
 .rtp-stats-divider {
   width: 1px;
-  height: 24px;
+  height: 28px;
   background: var(--rtp-divider, #3b82f6);
   flex-shrink: 0;
   opacity: 0.6;
@@ -8187,14 +8187,14 @@ body.wm-resizing {
 .rtp-stats-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: clamp(8px, 0.9vw, 14px);
   flex-shrink: 0;
 }
 
 .rtp-stats-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
 }
 
