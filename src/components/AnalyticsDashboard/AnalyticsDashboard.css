@@ -1289,3 +1289,275 @@
     padding: 6px;
   }
 }
+
+/* =====================================================
+   4 group rebuild - Group 4 analytics bridge
+   Keeps analytics aligned with the Overlay Center and admin surfaces.
+   ===================================================== */
+.an-dash {
+  --an-sc-bg: #070a10;
+  --an-sc-panel: rgba(13, 19, 31, 0.82);
+  --an-sc-card: rgba(16, 24, 39, 0.76);
+  --an-sc-border: rgba(72, 89, 118, 0.86);
+  --an-sc-border-soft: rgba(54, 70, 96, 0.74);
+  --an-sc-cyan: #7dd3fc;
+  --an-sc-teal: #5eead4;
+  --an-sc-purple: #a78bfa;
+  --an-sc-text: #f8fbff;
+  --an-sc-muted: #9fb0c6;
+  --an-sc-dim: #718198;
+  width: min(100% - 40px, 1580px);
+  padding-top: 22px;
+  color: var(--an-sc-text);
+}
+
+.an-dash__header {
+  align-items: center;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--an-sc-border);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(125, 211, 252, 0.12), transparent 34%),
+    radial-gradient(circle at 100% 0%, rgba(167, 139, 250, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.84), rgba(8, 13, 22, 0.94));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 22px 60px rgba(0, 0, 0, 0.34);
+}
+
+.an-dash__title {
+  font-size: clamp(1.65rem, 2.6vw, 2.6rem);
+  letter-spacing: 0;
+}
+
+.an-dash__title-icon {
+  color: #061018;
+  background: linear-gradient(135deg, var(--an-sc-cyan), var(--an-sc-teal));
+  box-shadow: 0 12px 26px rgba(45, 212, 191, 0.16);
+}
+
+.an-dash__subtitle {
+  max-width: 680px;
+  color: var(--an-sc-muted);
+}
+
+.an-dash__period-select,
+.an-toolbar__select,
+.an-toolbar__search,
+.an-input {
+  min-height: 40px;
+  border-radius: 11px;
+  border-color: var(--an-sc-border);
+  background: rgba(3, 7, 14, 0.76);
+  color: var(--an-sc-text);
+}
+
+.an-dash__tabs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--an-sc-border-soft);
+  border-radius: 15px;
+  background: rgba(6, 10, 18, 0.88);
+  backdrop-filter: blur(16px);
+}
+
+.an-dash__tab {
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  color: var(--an-sc-muted);
+  background: transparent;
+}
+
+.an-dash__tab:hover,
+.an-dash__tab:focus-visible {
+  color: var(--an-sc-text);
+  border-color: rgba(125, 211, 252, 0.32);
+  background: rgba(17, 24, 39, 0.82);
+}
+
+.an-dash__tab--active {
+  color: #061018;
+  background: linear-gradient(135deg, var(--an-sc-cyan), var(--an-sc-teal));
+  border-color: rgba(125, 211, 252, 0.62);
+  box-shadow: 0 12px 26px rgba(45, 212, 191, 0.16);
+}
+
+.an-dash__content,
+.an-tab {
+  display: grid;
+  gap: 16px;
+}
+
+.an-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.an-product-grid,
+.an-traffic-grid,
+.an-geo-grid,
+.an-realtime-grid,
+.an-settings-grid {
+  gap: 14px;
+}
+
+.an-stat-card,
+.an-chart-card,
+.an-card,
+.an-user-detail__header,
+.an-realtime-header,
+.an-table-wrap,
+.an-toolbar {
+  border: 1px solid var(--an-sc-border-soft);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(125, 211, 252, 0.1), transparent 32%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.82), rgba(8, 13, 22, 0.94));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 20px 54px rgba(0, 0, 0, 0.28);
+}
+
+.an-stat-card,
+.an-chart-card,
+.an-card {
+  padding: 16px;
+}
+
+.an-stat-card {
+  min-height: 112px;
+}
+
+.an-stat-card:hover,
+.an-chart-card:hover,
+.an-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(125, 211, 252, 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 24px 64px rgba(0, 0, 0, 0.34);
+}
+
+.an-stat-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  color: var(--an-sc-cyan);
+  background: rgba(14, 165, 233, 0.13);
+  border: 1px solid rgba(125, 211, 252, 0.22);
+}
+
+.an-stat-card__value,
+.an-chart-card__title,
+.an-card__title,
+.an-section-title,
+.an-user-detail__name,
+.an-realtime-count {
+  color: var(--an-sc-text);
+  letter-spacing: 0;
+}
+
+.an-chart-card__title,
+.an-card__title,
+.an-section-title {
+  font-size: 1rem;
+}
+
+.an-chart-card__body {
+  min-height: 220px;
+}
+
+.an-chart-card__body--plain {
+  min-height: auto;
+}
+
+.an-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.an-table-wrap {
+  overflow: hidden;
+}
+
+.an-table th {
+  color: #9fb0c6;
+  background: rgba(20, 29, 44, 0.92);
+}
+
+.an-table td {
+  color: #cbd7e8;
+  background: rgba(8, 13, 22, 0.7);
+}
+
+.an-table tbody tr:hover td,
+.an-table__row--clickable:hover td {
+  background: rgba(17, 24, 39, 0.96) !important;
+}
+
+.an-metric-row,
+.an-timeline__item,
+.an-realtime-item,
+.an-realtime-event,
+.an-fraud-flag,
+.an-setting {
+  border: 1px solid rgba(72, 89, 118, 0.64);
+  border-radius: 13px;
+  background: rgba(7, 12, 21, 0.62);
+}
+
+.an-btn {
+  min-height: 38px;
+  border-radius: 10px;
+}
+
+.an-btn--primary,
+.an-btn--success {
+  color: #061018;
+  background: linear-gradient(135deg, var(--an-sc-cyan), var(--an-sc-teal));
+  border-color: rgba(125, 211, 252, 0.62);
+}
+
+.an-badge,
+.an-risk,
+.an-event-badge,
+.an-timeline__badge {
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.76);
+}
+
+@media (max-width: 1180px) {
+  .an-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .an-dash {
+    width: min(100% - 24px, 720px);
+    padding-top: 16px;
+  }
+
+  .an-dash__header {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .an-dash__tabs {
+    position: static;
+  }
+
+  .an-stats-grid,
+  .an-product-grid,
+  .an-traffic-grid,
+  .an-geo-grid,
+  .an-realtime-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .an-toolbar {
+    align-items: stretch;
+  }
+}

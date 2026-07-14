@@ -61,9 +61,11 @@ const VolBadge = memo(({ v }) => {
   return <span className="sm-vol" style={{ '--c': o?.color || '#6b7280' }}>{o?.label || v}</span>;
 });
 
-const ProviderLogo = memo(({ provider, className = '' }) => {
+const ProviderLogo = memo(({ provider, logoUrl = '', className = '', fallbackMode = 'text' }) => {
   const [failed, setFailed] = useState(false);
-  const logo = !failed ? getProviderImage(provider) : null;
+  useEffect(() => setFailed(false), [provider, logoUrl]);
+
+  const logo = !failed ? (logoUrl || getProviderImage(provider)) : null;
 
   if (logo) {
     return (
@@ -75,6 +77,14 @@ const ProviderLogo = memo(({ provider, className = '' }) => {
           loading="lazy"
           onError={() => setFailed(true)}
         />
+      </span>
+    );
+  }
+
+  if (fallbackMode === 'initial') {
+    return (
+      <span className={`sm-provider-logo-initial ${className}`} title={provider || 'Unknown provider'}>
+        {(provider || '?').trim().charAt(0).toUpperCase() || '?'}
       </span>
     );
   }
@@ -686,7 +696,12 @@ const ProviderManager = memo(({ onClose }) => {
             <div className="sm-prov-grid">
               {filtered.map((p, i) => (
                 <button key={p.id || i} className="sm-prov-card" onClick={() => setEditing({ ...p })}>
-                  <span className="sm-prov-initial">{(p.name || '?')[0].toUpperCase()}</span>
+                  <ProviderLogo
+                    provider={p.name}
+                    logoUrl={p.logo_url}
+                    className="sm-provider-logo--provider-card"
+                    fallbackMode="initial"
+                  />
                   <span className="sm-prov-name">{p.name}</span>
                   {p.slot_count > 0 && <span className="sm-prov-count">{p.slot_count}</span>}
                 </button>

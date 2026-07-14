@@ -23214,3 +23214,680 @@ body.wm-resizing {
   }
 }
 
+/* =====================================================
+   4 group rebuild - shared foundations
+   These layers sit at the end on purpose: each group scopes to
+   the actual widget-detail modifier so functionality stays untouched.
+   ===================================================== */
+.oc2-page {
+  --sc-page-bg: #070a10;
+  --sc-panel: rgba(13, 19, 31, 0.82);
+  --sc-panel-strong: rgba(10, 15, 25, 0.94);
+  --sc-card: rgba(16, 24, 39, 0.74);
+  --sc-card-hover: rgba(20, 31, 49, 0.9);
+  --sc-border: rgba(78, 96, 126, 0.8);
+  --sc-border-soft: rgba(54, 70, 96, 0.7);
+  --sc-cyan: #7dd3fc;
+  --sc-teal: #5eead4;
+  --sc-purple: #a78bfa;
+  --sc-gold: #fbbf24;
+  --sc-red: #fb7185;
+  --sc-text: #f8fbff;
+  --sc-muted: #9fb0c6;
+  --sc-dim: #718198;
+  --sc-radius-lg: 18px;
+  --sc-radius-md: 14px;
+  --sc-radius-sm: 10px;
+  --sc-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+}
+
+.oc2-detail :is(.bh-config, .cg-config, .nb-config, .giveaway-config, .bb-admin-page, .cs-page),
+.oc2-detail [data-tour="slot-requests-page"] .sr-admin-page {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.oc2-detail :is(
+  .bh-panel-section,
+  .cg-config__section,
+  .cg-config__game-card,
+  .cg-config__status-card,
+  .nb-section,
+  .giveaway-card,
+  .giveaway-live-panel,
+  .bb-admin-hero,
+  .bb-admin-section,
+  .bb-admin-card,
+  .bb-admin-slot-card,
+  .bb-admin-metric-card,
+  .bb-admin-stat-card,
+  .bb-admin-note-card,
+  .cs-page-hero,
+  .cs-section,
+  .cs-card,
+  .cs-slot-card,
+  .cs-page-metric-card,
+  .sr-admin-card,
+  .sr-admin-queue-row
+) {
+  border: 1px solid var(--sc-border-soft) !important;
+  border-radius: var(--sc-radius-lg) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(125, 211, 252, 0.1), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(167, 139, 250, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.84), rgba(8, 13, 22, 0.94)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), var(--sc-shadow) !important;
+}
+
+.oc2-detail :is(
+  .bh-panel-section,
+  .cg-config__section,
+  .cg-config__game-card,
+  .nb-section,
+  .giveaway-card,
+  .giveaway-live-panel,
+  .bb-admin-section,
+  .bb-admin-card,
+  .cs-section,
+  .cs-card,
+  .sr-admin-card
+) {
+  padding: 16px !important;
+}
+
+.oc2-detail :is(
+  .nb-tabs,
+  .cg-config__tabs,
+  .bb-admin-tabs,
+  .sr-admin-tabs,
+  .bh-sort-controls
+) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px !important;
+  border: 1px solid var(--sc-border-soft) !important;
+  border-radius: var(--sc-radius-md) !important;
+  background: rgba(6, 10, 18, 0.72) !important;
+  overflow-x: auto !important;
+  scrollbar-width: none;
+}
+
+.oc2-detail :is(.nb-tabs, .cg-config__tabs, .bb-admin-tabs, .sr-admin-tabs, .bh-sort-controls)::-webkit-scrollbar {
+  display: none;
+}
+
+.oc2-detail :is(
+  .nb-tab,
+  .cg-config__tab,
+  .bb-admin-tab,
+  .sr-admin-tab,
+  .bh-sort-btn,
+  .nb-style-btn
+) {
+  min-height: 36px !important;
+  border-radius: 10px !important;
+  padding: 0 12px !important;
+  color: var(--sc-muted) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  white-space: nowrap !important;
+}
+
+.oc2-detail :is(
+  .nb-tab--active,
+  .cg-config__tab--active,
+  .bb-admin-tab--active,
+  .sr-admin-tab--active,
+  .bh-sort-btn--active,
+  .nb-style-btn--active
+) {
+  color: #061018 !important;
+  background: linear-gradient(135deg, var(--sc-cyan), var(--sc-teal)) !important;
+  border-color: rgba(125, 211, 252, 0.62) !important;
+  box-shadow: 0 12px 26px rgba(45, 212, 191, 0.16) !important;
+}
+
+.oc2-detail :is(
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+  select,
+  textarea
+) {
+  border-radius: var(--sc-radius-sm) !important;
+  border-color: rgba(72, 89, 118, 0.94) !important;
+  background: rgba(3, 7, 14, 0.76) !important;
+  color: var(--sc-text) !important;
+  min-height: 40px;
+}
+
+.oc2-detail :is(
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+  select:focus,
+  textarea:focus,
+  .bh-search-container:focus-within,
+  .giveaway-command-input:focus-within
+) {
+  border-color: rgba(125, 211, 252, 0.72) !important;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.14), 0 0 22px rgba(94, 234, 212, 0.1) !important;
+  outline: none !important;
+}
+
+.oc2-detail :is(
+  .oc-config-hint,
+  .cg-config__hint,
+  .bb-admin-subtitle,
+  .bb-admin-helper,
+  .bb-admin-metric-meta,
+  .cs-card-copy,
+  .cs-page-subtitle,
+  .cs-page-note,
+  .sr-admin-copy,
+  .sr-admin-inline-hint,
+  .giveaway-card p
+) {
+  color: var(--sc-muted) !important;
+}
+
+.oc2-detail :is(
+  .nb-subtitle,
+  .bh-section-pill,
+  .cg-config__game-card-header strong,
+  .bb-admin-card-title,
+  .bb-admin-section-title,
+  .cs-card-title,
+  .cs-section-title,
+  .sr-admin-card-title,
+  .giveaway-card h3
+) {
+  color: var(--sc-text) !important;
+  letter-spacing: 0 !important;
+}
+
+/* =====================================================
+   Group 1 - Core activity tools
+   Bonus Hunt, Bets, Slot Requests
+   ===================================================== */
+.oc2-detail--bonus-hunt .bh-hunt-split,
+.oc2-detail--bets .cg-config__game-layout,
+.oc2-detail--slot-requests .sr-admin-workspace {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px) !important;
+  gap: 14px !important;
+  align-items: start !important;
+}
+
+.oc2-detail--bonus-hunt .bh-panel-section--setup,
+.oc2-detail--bonus-hunt .bh-panel-section--add,
+.oc2-detail--bonus-hunt .bh-panel-section--list,
+.oc2-detail--bonus-hunt .bh-panel-section--save {
+  position: relative;
+  overflow: visible !important;
+}
+
+.oc2-detail--bonus-hunt .bh-panel-section--add {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) auto auto auto !important;
+  gap: 10px !important;
+  align-items: end !important;
+}
+
+.oc2-detail--bonus-hunt .bh-panel-section--add > .bh-section-pill,
+.oc2-detail--bonus-hunt .bh-panel-section--add > .bh-add-row:first-of-type,
+.oc2-detail--bonus-hunt .bh-submit-dropdown {
+  grid-column: 1 / -1 !important;
+}
+
+.oc2-detail--bonus-hunt .bh-add-row {
+  min-width: 0 !important;
+  gap: 8px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-search-container.bh-search-half {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.oc2-detail--bonus-hunt .bh-submit-provider-picker {
+  position: relative !important;
+  z-index: 60 !important;
+}
+
+.oc2-detail--bonus-hunt .bh-submit-provider-menu,
+.oc2-detail--bonus-hunt .bh-suggestions-dropdown {
+  z-index: 1200 !important;
+  border-color: rgba(125, 211, 252, 0.34) !important;
+  background: rgba(9, 14, 23, 0.98) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(125, 211, 252, 0.1) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list {
+  gap: 8px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-item {
+  min-height: 70px !important;
+  border-radius: 12px !important;
+  padding: 6px 42px 6px 12px !important;
+  background: rgba(9, 15, 25, 0.74) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-item--super {
+  border-color: rgba(251, 191, 36, 0.66) !important;
+  background:
+    linear-gradient(90deg, rgba(251, 191, 36, 0.24), rgba(251, 191, 36, 0.08) 38%, rgba(9, 15, 25, 0.76) 78%) !important;
+  box-shadow: inset 4px 0 0 rgba(251, 191, 36, 0.86), 0 0 28px rgba(251, 191, 36, 0.1) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-item--extreme {
+  border-color: rgba(251, 113, 133, 0.72) !important;
+  background:
+    linear-gradient(90deg, rgba(251, 113, 133, 0.24), rgba(127, 29, 29, 0.12) 38%, rgba(9, 15, 25, 0.76) 78%) !important;
+  box-shadow: inset 4px 0 0 rgba(251, 113, 133, 0.86), 0 0 30px rgba(251, 113, 133, 0.12) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-type-ribbon {
+  right: 0 !important;
+  width: 32px !important;
+  min-height: 100% !important;
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 9px !important;
+  letter-spacing: 0.08em !important;
+  border-radius: 0 12px 12px 0 !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-type-ribbon--super {
+  color: #2b1900 !important;
+  background: linear-gradient(180deg, #fde68a, var(--sc-gold)) !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-type-ribbon--extreme {
+  color: #fff1f2 !important;
+  background: linear-gradient(180deg, #fb7185, #b91c1c) !important;
+}
+
+.oc2-detail--bets .cg-config__game-card-header,
+.oc2-detail--bets .cg-config__status-row,
+.oc2-detail--slot-requests .sr-admin-card-header {
+  gap: 10px !important;
+}
+
+.oc2-detail--bets .cg-config__timer-grid,
+.oc2-detail--bets .cg-config__winner-grid {
+  gap: 8px !important;
+}
+
+.oc2-detail--bets .cg-config__timer-option,
+.oc2-detail--bets .cg-config__winner-tile {
+  border-radius: 12px !important;
+  border-color: rgba(72, 89, 118, 0.8) !important;
+  background: rgba(8, 13, 22, 0.7) !important;
+}
+
+.oc2-detail--bets .cg-config__winner-tile:hover,
+.oc2-detail--bets .cg-config__winner-tile:focus-visible,
+.oc2-detail--bets .cg-config__timer-option:hover,
+.oc2-detail--bets .cg-config__timer-option:focus-visible {
+  border-color: rgba(125, 211, 252, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.oc2-detail--slot-requests .sr-admin-card--wide {
+  min-width: 0;
+}
+
+.oc2-detail--slot-requests .sr-admin-setup-grid,
+.oc2-detail--slot-requests .sr-admin-grid--control {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.oc2-detail--slot-requests .sr-admin-command-panel,
+.oc2-detail--slot-requests .sr-admin-listener-panel,
+.oc2-detail--slot-requests .sr-admin-request-row,
+.oc2-detail--slot-requests .sr-admin-queue-row {
+  border-radius: 14px !important;
+  border: 1px solid rgba(72, 89, 118, 0.7) !important;
+  background: rgba(7, 12, 21, 0.64) !important;
+}
+
+.oc2-detail--slot-requests .sr-admin-status-dot {
+  box-shadow: 0 0 18px rgba(94, 234, 212, 0.32) !important;
+}
+
+/* =====================================================
+   Group 2 - Stream interaction tools
+   Chat, Giveaway, Spotify Now Playing, Navbar
+   ===================================================== */
+.oc2-detail--chat .nb-section,
+.oc2-detail--navbar .nb-section,
+.oc2-detail--spotify-now-playing .nb-section,
+.oc2-detail--giveaway .giveaway-card,
+.oc2-detail--giveaway .giveaway-live-panel {
+  overflow: hidden;
+}
+
+.oc2-detail--chat .ov-chat-cfg-platform,
+.oc2-detail--chat .ov-chat-cfg-platform-header,
+.oc2-detail--navbar .nb-toggle-row,
+.oc2-detail--spotify-now-playing .nb-spotify-connected,
+.oc2-detail--spotify-now-playing .nb-spotify-connect-card,
+.oc2-detail--giveaway .giveaway-platform-card,
+.oc2-detail--giveaway .giveaway-command-preview,
+.oc2-detail--giveaway .giveaway-entry-row,
+.oc2-detail--giveaway .giveaway-winner {
+  border: 1px solid rgba(72, 89, 118, 0.72) !important;
+  border-radius: 13px !important;
+  background: rgba(7, 12, 21, 0.64) !important;
+}
+
+.oc2-detail--chat .ov-chat-cfg-platform-header,
+.oc2-detail--navbar .nb-toggle-row {
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+}
+
+.oc2-detail--navbar .nb-badge-grid,
+.oc2-detail--navbar .nb-crypto-grid,
+.oc2-detail--giveaway .giveaway-platform-grid,
+.oc2-detail--giveaway .giveaway-form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--navbar .nb-badge-option,
+.oc2-detail--navbar .nb-crypto-chip,
+.oc2-detail--giveaway .giveaway-platform-card {
+  min-height: 58px !important;
+  border-radius: 13px !important;
+}
+
+.oc2-detail--navbar .nb-badge-option--active,
+.oc2-detail--giveaway .giveaway-platform-card--enabled,
+.oc2-detail--giveaway .giveaway-platform-card--live {
+  border-color: rgba(94, 234, 212, 0.48) !important;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.18), rgba(14, 165, 233, 0.1)) !important;
+}
+
+.oc2-detail--giveaway .giveaway-config__workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 390px) !important;
+  gap: 14px !important;
+}
+
+.oc2-detail--giveaway .giveaway-live-panel {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+}
+
+.oc2-detail--giveaway .giveaway-primary-action,
+.oc2-detail--giveaway .giveaway-draw-button,
+.oc2-detail--giveaway .giveaway-winner button,
+.oc2-detail--spotify-now-playing .nb-spotify-btn {
+  min-height: 40px !important;
+  border-radius: 11px !important;
+}
+
+.oc2-detail--spotify-now-playing .nb-spotify-section {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.oc2-detail--spotify-now-playing .nb-spotify-connected {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 12px !important;
+  align-items: center !important;
+  padding: 14px !important;
+}
+
+.oc2-detail--chat .nb-preset-pill,
+.oc2-detail--navbar .nb-preset-pill {
+  border-radius: 13px !important;
+  border-color: rgba(72, 89, 118, 0.72) !important;
+  background: rgba(7, 12, 21, 0.64) !important;
+}
+
+/* =====================================================
+   Group 3 - Slot/session tools
+   Current Slot, RTP Stats, Tournament, Bonus Buys
+   ===================================================== */
+.oc2-detail--current-slot .cs-page-hero,
+.oc2-detail--bonus-buys .bb-admin-hero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 520px) !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+
+.oc2-detail--current-slot .cs-page-title,
+.oc2-detail--bonus-buys .bb-admin-title {
+  font-size: clamp(1.35rem, 2vw, 2rem) !important;
+}
+
+.oc2-detail--current-slot .cs-page-metrics,
+.oc2-detail--bonus-buys .bb-admin-metrics {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--current-slot .cs-content-grid,
+.oc2-detail--bonus-buys .bb-admin-setup-grid,
+.oc2-detail--bonus-buys .bb-admin-track-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 420px) !important;
+  gap: 14px !important;
+}
+
+.oc2-detail--current-slot .cs-search-results,
+.oc2-detail--bonus-buys .bb-admin-search-results {
+  border: 1px solid rgba(72, 89, 118, 0.78) !important;
+  border-radius: 14px !important;
+  background: rgba(7, 12, 21, 0.94) !important;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.46) !important;
+}
+
+.oc2-detail--current-slot .cs-search-result,
+.oc2-detail--bonus-buys .bb-admin-search-result,
+.oc2-detail--bonus-buys .bb-admin-result-row,
+.oc2-detail--bonus-buys .bb-admin-summary-row {
+  border-radius: 12px !important;
+  background: rgba(7, 12, 21, 0.62) !important;
+  border-color: rgba(72, 89, 118, 0.66) !important;
+}
+
+.oc2-detail--bonus-buys .bb-admin-add-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+}
+
+.oc2-detail--rtp-stats .bh-config > div[style] {
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  background: rgba(7, 12, 21, 0.72) !important;
+  border: 1px solid rgba(72, 89, 118, 0.72) !important;
+}
+
+.oc2-detail--rtp-stats .ov-chat-cfg-platform-header {
+  min-height: 42px !important;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(72, 89, 118, 0.7) !important;
+  background: rgba(7, 12, 21, 0.62) !important;
+}
+
+.oc2-detail--tournament :is(.tm-page, .bk-card, .bk-bracket-card, .bk-match-card, .tm-section, .tm-player-entry, .tm-match-card) {
+  border-color: rgba(72, 89, 118, 0.76) !important;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(167, 139, 250, 0.12), transparent 32%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.82), rgba(8, 13, 22, 0.92)) !important;
+}
+
+.oc2-detail--tournament :is(.tm-setup-grid, .bk-active-grid, .tm-match-inline-inputs, .bk-player-fields) {
+  gap: 12px !important;
+}
+
+.oc2-detail--tournament :is(.bk-type-btn--active, .bk-count-btn--active, .bk-mp-winner-btn--active, .tm-format-btn--active, .tm-winner-btn--active) {
+  color: #061018 !important;
+  background: linear-gradient(135deg, var(--sc-purple), var(--sc-cyan)) !important;
+}
+
+/* =====================================================
+   Group 4 - Shell, integrations, analytics bridge
+   Overlay Center and Integrations live here. Analytics is in its own file.
+   ===================================================== */
+.oc2-main {
+  width: min(100% - 40px, 1580px);
+}
+
+.oc2-section-heading {
+  max-width: 980px;
+  margin-bottom: 16px !important;
+}
+
+.oc2-section-heading h1,
+.oc2-detail-header h1 {
+  font-size: clamp(2rem, 4vw, 3.65rem) !important;
+  letter-spacing: 0 !important;
+}
+
+.oc2-tool-section,
+.oc2-integrations-page,
+.oc2-panel,
+.oc2-setup,
+.oc2-preview-page {
+  border-radius: 20px !important;
+}
+
+.oc2-tool-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.oc2-tool-card {
+  min-height: 188px !important;
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(125, 211, 252, 0.11), transparent 34%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.78), rgba(8, 13, 22, 0.92)) !important;
+}
+
+.oc2-tool-card:hover,
+.oc2-tool-card:focus-within {
+  transform: translateY(-2px) !important;
+  border-color: rgba(125, 211, 252, 0.38) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42), 0 0 30px rgba(14, 165, 233, 0.1) !important;
+}
+
+.oc2-integration-grid--modern {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.oc2-integration-card {
+  min-height: 132px !important;
+  border-radius: 16px !important;
+}
+
+.oc2-integration-card--relevant {
+  border-color: rgba(94, 234, 212, 0.44) !important;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(94, 234, 212, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.82), rgba(8, 13, 22, 0.94)) !important;
+}
+
+@media (max-width: 1180px) {
+  .oc2-detail--bonus-hunt .bh-hunt-split,
+  .oc2-detail--bets .cg-config__game-layout,
+  .oc2-detail--slot-requests .sr-admin-workspace,
+  .oc2-detail--giveaway .giveaway-config__workspace,
+  .oc2-detail--current-slot .cs-page-hero,
+  .oc2-detail--bonus-buys .bb-admin-hero,
+  .oc2-detail--current-slot .cs-content-grid,
+  .oc2-detail--bonus-buys .bb-admin-setup-grid,
+  .oc2-detail--bonus-buys .bb-admin-track-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .oc2-tool-grid,
+  .oc2-integration-grid--modern {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .oc2-main {
+    width: min(100% - 24px, 720px);
+  }
+
+  .oc2-detail :is(
+    .bh-panel-section,
+    .cg-config__section,
+    .cg-config__game-card,
+    .nb-section,
+    .giveaway-card,
+    .giveaway-live-panel,
+    .bb-admin-section,
+    .bb-admin-card,
+    .cs-section,
+    .cs-card,
+    .sr-admin-card
+  ) {
+    padding: 14px !important;
+    border-radius: 14px !important;
+  }
+
+  .oc2-detail--bonus-hunt .bh-panel-section--add,
+  .oc2-detail--slot-requests .sr-admin-setup-grid,
+  .oc2-detail--slot-requests .sr-admin-grid--control,
+  .oc2-detail--current-slot .cs-page-metrics,
+  .oc2-detail--bonus-buys .bb-admin-metrics,
+  .oc2-detail--bonus-buys .bb-admin-add-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .oc2-tool-grid,
+  .oc2-integration-grid--modern,
+  .oc2-detail--navbar .nb-badge-grid,
+  .oc2-detail--navbar .nb-crypto-grid,
+  .oc2-detail--giveaway .giveaway-platform-grid,
+  .oc2-detail--giveaway .giveaway-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Center the Overlay Center shell and card tracks after the group overrides. */
+.oc2-main {
+  width: min(1440px, calc(100% - 48px)) !important;
+  max-width: 1440px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.oc2-tool-section,
+.oc2-section-heading {
+  width: 100%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.oc2-tool-grid {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 340px)) !important;
+  justify-content: center !important;
+}
+
+@media (max-width: 760px) {
+  .oc2-main {
+    width: min(100% - 24px, 720px) !important;
+  }
+
+  .oc2-tool-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

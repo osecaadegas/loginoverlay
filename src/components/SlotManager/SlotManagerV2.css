@@ -240,6 +240,30 @@
   height: 22px;
   justify-content: flex-start;
 }
+.slot-manager-v2 .sm-provider-logo-wrap.sm-provider-logo--provider-card {
+  width: 108px;
+  height: 34px;
+  flex: 0 0 108px;
+  justify-content: flex-start;
+  opacity: 0.95;
+}
+.slot-manager-v2 .sm-provider-logo-wrap.sm-provider-logo--provider-card .sm-provider-logo {
+  object-position: left center;
+}
+.slot-manager-v2 .sm-provider-logo-initial {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  border: 1px solid rgba(44, 231, 220, 0.16);
+  border-radius: 13px;
+  color: #71f3eb;
+  background: rgba(44, 231, 220, 0.1);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
 .slot-manager-v2 .sm-provider-fallback {
   display: inline-block;
   max-width: 100%;

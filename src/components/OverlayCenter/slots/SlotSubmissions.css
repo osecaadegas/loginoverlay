@@ -3362,3 +3362,86 @@
   }
 }
 
+/* Approval queue density pass: larger artwork, less row padding. */
+[data-tour="approvals-page"] .ss-list {
+  gap: 8px !important;
+}
+
+[data-tour="approvals-page"] .ss-card {
+  grid-template-columns: 96px minmax(0, 1fr) minmax(250px, auto) !important;
+  gap: 10px !important;
+  min-height: 96px !important;
+  padding: 6px 10px !important;
+  border-radius: 12px !important;
+}
+
+[data-tour="approvals-page"] .ss-card-left {
+  width: 88px !important;
+  align-self: stretch !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+[data-tour="approvals-page"] .ss-card-img {
+  width: 86px !important;
+  height: 86px !important;
+  border-radius: 10px !important;
+}
+
+[data-tour="approvals-page"] .ss-card-name {
+  margin-bottom: 2px !important;
+}
+
+[data-tour="approvals-page"] .ss-card-submitter {
+  margin-top: 5px !important;
+  gap: 6px !important;
+}
+
+[data-tour="approvals-page"] .ss-card-meta {
+  margin-top: 6px !important;
+  gap: 6px !important;
+}
+
+[data-tour="approvals-page"] .ss-card-meta span {
+  min-height: 24px !important;
+  padding: 0 8px !important;
+}
+
+[data-tour="approvals-page"] .ss-card-status,
+[data-tour="approvals-page"] .sa-actions {
+  gap: 6px !important;
+}
+
+@media (max-width: 980px) {
+  [data-tour="approvals-page"] .ss-card {
+    grid-template-columns: 92px minmax(0, 1fr) !important;
+    min-height: 94px !important;
+  }
+
+  [data-tour="approvals-page"] .ss-card-left {
+    width: 86px !important;
+  }
+
+  [data-tour="approvals-page"] .ss-card-img {
+    width: 84px !important;
+    height: 84px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  [data-tour="approvals-page"] .ss-card {
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  [data-tour="approvals-page"] .ss-card-left {
+    width: 78px !important;
+  }
+
+  [data-tour="approvals-page"] .ss-card-img {
+    width: 76px !important;
+    height: 76px !important;
+  }
+}
+
