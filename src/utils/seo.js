@@ -33,9 +33,11 @@ const ROUTE_TOPICS = {
     'giveaway tools for streamers',
   ],
   '/offers': [
-    'iGaming offers',
-    'casino affiliate deals',
-    'streamer partner deals',
+    'streamer partnerships',
+    'creator partnership marketplace',
+    'casino streamer deals',
+    'gaming creator sponsorships',
+    'streaming tools partnerships',
   ],
 };
 
@@ -101,8 +103,8 @@ const SEO_BY_PATH = {
     image: `${SITE_URL}/streamer.png`,
   },
   '/offers': {
-    title: 'iGaming Deals and Casino Offers for Streamers | Streamers Center',
-    description: 'Explore iGaming deals, casino offers and partner information organized for streamer communities and creators.',
+    title: 'Streamer Partnerships Marketplace | Streamers Center',
+    description: 'Discover verified casino, gaming, streaming tool and creator service partnerships available through Streamers Center.',
   },
   '/premium': {
     title: 'Premium Streamer Tools and Overlays | Streamers Center',
@@ -314,13 +316,14 @@ function getStructuredData(pathname, route, canonical) {
   if (pathname === '/offers') {
     graph.push({
       '@type': 'ItemList',
-      '@id': `${SITE_URL}/offers#igaming-deals`,
-      name: 'iGaming deals and casino offers',
-      description: 'Casino offers, iGaming deals and partner information organized for streamers and online casino communities.',
+      '@id': `${SITE_URL}/offers#streamer-partnerships`,
+      name: 'Streamer partnerships marketplace',
+      description: 'Verified casino, gaming, streaming tool and creator service partnerships for streamers.',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Casino offers' },
-        { '@type': 'ListItem', position: 2, name: 'Streamer partner deals' },
-        { '@type': 'ListItem', position: 3, name: 'iGaming community offers' },
+        { '@type': 'ListItem', position: 1, name: 'Casino partnerships' },
+        { '@type': 'ListItem', position: 2, name: 'Gaming partnerships' },
+        { '@type': 'ListItem', position: 3, name: 'Streaming tools partnerships' },
+        { '@type': 'ListItem', position: 4, name: 'Creator services partnerships' },
       ],
     });
   }

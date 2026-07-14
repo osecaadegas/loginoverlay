@@ -19,6 +19,55 @@ const DEPOSIT_METHODS = [
   { id: 'google', name: 'Google Pay', icon: '📱' },
 ];
 
+const PARTNERSHIP_CATEGORIES = [
+  { value: 'casino', label: 'Casino' },
+  { value: 'gaming', label: 'Gaming' },
+  { value: 'streaming_tools', label: 'Streaming Tools' },
+  { value: 'creator_services', label: 'Creator Services' },
+];
+
+const VISIBILITY_OPTIONS = [
+  { value: 'public', label: 'Public' },
+  { value: 'registered', label: 'Registered users only' },
+  { value: 'premium', label: 'Premium streamers only' },
+  { value: 'admin', label: 'Admin only' },
+  { value: 'hidden', label: 'Hidden' },
+];
+
+const DEAL_MODELS = ['CPA', 'Revenue Share', 'Hybrid', 'Sponsorship', 'Affiliate', 'Fixed Fee'];
+const PLATFORM_OPTIONS = ['Twitch', 'Kick', 'YouTube', 'TikTok', 'Website', 'Social Media'];
+
+const listToText = (value) => {
+  if (!value) return '';
+  if (Array.isArray(value)) return value.join('\n');
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.join('\n');
+    } catch {
+      return value;
+    }
+  }
+  return '';
+};
+
+const textToList = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map(String).map(item => item.trim()).filter(Boolean);
+  return String(value)
+    .split(/[\n,;]+/)
+    .map(item => item.trim())
+    .filter(Boolean);
+};
+
+const toNumberOrNull = (value) => {
+  if (value === '' || value === null || value === undefined) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const isValidUrl = (value) => !value || /^https?:\/\//i.test(value);
+
 const EMPTY_FORM = {
   casino_name: '',
   bonus_link: '',
@@ -55,6 +104,45 @@ const EMPTY_FORM = {
   landing_badges: '',
   landing_accent_color: '',
   landing_logo_bg: '',
+  slug: '',
+  partner_logo_url: '',
+  cover_image_url: '',
+  partnership_category: 'casino',
+  short_description: '',
+  is_verified: true,
+  is_featured: false,
+  is_exclusive: false,
+  is_new: false,
+  is_hot: false,
+  has_direct_manager: false,
+  streamer_balance_available: false,
+  application_status: 'open',
+  applications_close_at: '',
+  application_url: '',
+  terms_url: '',
+  visibility: 'public',
+  deal_model: 'Affiliate',
+  cpa_amount: '',
+  cpa_currency: 'EUR',
+  revenue_share_percent: '',
+  fixed_fee_amount: '',
+  fixed_fee_currency: 'EUR',
+  hybrid_terms: '',
+  min_ftd_requirement: '',
+  minimum_deposit: '',
+  minimum_deposit_currency: 'EUR',
+  cookie_duration_days: '',
+  payment_frequency: '',
+  payment_methods: '',
+  player_promotion: '',
+  traffic_requirements: '',
+  restrictions: '',
+  supported_geos: '',
+  supported_platforms: PLATFORM_OPTIONS.slice(0, 3).join('\n'),
+  public_notes: '',
+  private_notes: '',
+  last_updated_at: '',
+  archived_at: '',
 };
 
 export default function CasinoOfferModal({ 
@@ -111,6 +199,45 @@ export default function CasinoOfferModal({
             : (editingOffer.landing_badges || ''),
           landing_accent_color: editingOffer.landing_accent_color || '',
           landing_logo_bg: editingOffer.landing_logo_bg || '',
+          slug: editingOffer.slug || '',
+          partner_logo_url: editingOffer.partner_logo_url || '',
+          cover_image_url: editingOffer.cover_image_url || '',
+          partnership_category: editingOffer.partnership_category || 'casino',
+          short_description: editingOffer.short_description || '',
+          is_verified: editingOffer.is_verified !== false,
+          is_featured: editingOffer.is_featured || false,
+          is_exclusive: editingOffer.is_exclusive || false,
+          is_new: editingOffer.is_new || false,
+          is_hot: editingOffer.is_hot || false,
+          has_direct_manager: editingOffer.has_direct_manager || false,
+          streamer_balance_available: editingOffer.streamer_balance_available || false,
+          application_status: editingOffer.application_status || 'open',
+          applications_close_at: editingOffer.applications_close_at || '',
+          application_url: editingOffer.application_url || '',
+          terms_url: editingOffer.terms_url || '',
+          visibility: editingOffer.visibility || (editingOffer.is_premium ? 'premium' : 'public'),
+          deal_model: editingOffer.deal_model || editingOffer.landing_model || 'Affiliate',
+          cpa_amount: editingOffer.cpa_amount ?? '',
+          cpa_currency: editingOffer.cpa_currency || 'EUR',
+          revenue_share_percent: editingOffer.revenue_share_percent ?? '',
+          fixed_fee_amount: editingOffer.fixed_fee_amount ?? '',
+          fixed_fee_currency: editingOffer.fixed_fee_currency || 'EUR',
+          hybrid_terms: editingOffer.hybrid_terms || '',
+          min_ftd_requirement: editingOffer.min_ftd_requirement ?? '',
+          minimum_deposit: editingOffer.minimum_deposit ?? '',
+          minimum_deposit_currency: editingOffer.minimum_deposit_currency || 'EUR',
+          cookie_duration_days: editingOffer.cookie_duration_days ?? '',
+          payment_frequency: editingOffer.payment_frequency || '',
+          payment_methods: listToText(editingOffer.payment_methods),
+          player_promotion: editingOffer.player_promotion || '',
+          traffic_requirements: editingOffer.traffic_requirements || '',
+          restrictions: editingOffer.restrictions || '',
+          supported_geos: listToText(editingOffer.supported_geos),
+          supported_platforms: listToText(editingOffer.supported_platforms) || PLATFORM_OPTIONS.slice(0, 3).join('\n'),
+          public_notes: editingOffer.public_notes || '',
+          private_notes: editingOffer.private_notes || '',
+          last_updated_at: editingOffer.last_updated_at ? editingOffer.last_updated_at.slice(0, 10) : '',
+          archived_at: editingOffer.archived_at || '',
         });
       } else {
         setFormData({ ...EMPTY_FORM });
@@ -123,16 +250,71 @@ export default function CasinoOfferModal({
   };
 
   const handleSubmit = () => {
-    if (!formData.casino_name || !formData.title || !formData.image_url) {
-      alert('Please fill in all required fields (Casino Name, Title, Card Image URL)');
+    if (!formData.casino_name || !formData.title || (!formData.image_url && !formData.cover_image_url)) {
+      alert('Please fill in all required fields (Partner Name, Title, and at least one image URL)');
       return;
     }
-    // Convert landing_badges textarea (one per line) to JSON array
+
+    if (formData.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formData.slug)) {
+      alert('Slug must use lowercase letters, numbers and single hyphens only.');
+      return;
+    }
+
+    const urlFields = [
+      ['Bonus Link', formData.bonus_link],
+      ['Card Image URL', formData.image_url],
+      ['List Image URL', formData.list_image_url],
+      ['Logo URL', formData.partner_logo_url],
+      ['Cover Image URL', formData.cover_image_url],
+      ['Application URL', formData.application_url],
+      ['Terms URL', formData.terms_url],
+      ['Video URL', formData.video_url],
+    ];
+    const invalidUrl = urlFields.find(([, value]) => !isValidUrl(value));
+    if (invalidUrl) {
+      alert(`${invalidUrl[0]} must start with http:// or https://`);
+      return;
+    }
+
+    const percentage = toNumberOrNull(formData.revenue_share_percent);
+    if (percentage !== null && (percentage < 0 || percentage > 100)) {
+      alert('Revenue share percentage must be between 0 and 100.');
+      return;
+    }
+
+    const numericFields = [
+      ['CPA amount', formData.cpa_amount],
+      ['Fixed fee', formData.fixed_fee_amount],
+      ['Minimum deposit', formData.minimum_deposit],
+      ['Minimum FTD requirement', formData.min_ftd_requirement],
+      ['Cookie duration', formData.cookie_duration_days],
+    ];
+    const invalidNumber = numericFields.find(([, value]) => {
+      const parsed = toNumberOrNull(value);
+      return parsed !== null && parsed < 0;
+    });
+    if (invalidNumber) {
+      alert(`${invalidNumber[0]} cannot be negative.`);
+      return;
+    }
+
     const payload = {
       ...formData,
       landing_badges: formData.landing_badges
         ? formData.landing_badges.split('\n').map(s => s.trim()).filter(Boolean)
         : [],
+      supported_geos: textToList(formData.supported_geos),
+      supported_platforms: textToList(formData.supported_platforms),
+      payment_methods: textToList(formData.payment_methods),
+      cpa_amount: toNumberOrNull(formData.cpa_amount),
+      revenue_share_percent: toNumberOrNull(formData.revenue_share_percent),
+      fixed_fee_amount: toNumberOrNull(formData.fixed_fee_amount),
+      min_ftd_requirement: toNumberOrNull(formData.min_ftd_requirement),
+      minimum_deposit: toNumberOrNull(formData.minimum_deposit),
+      cookie_duration_days: toNumberOrNull(formData.cookie_duration_days),
+      applications_close_at: formData.applications_close_at || null,
+      last_updated_at: formData.last_updated_at || null,
+      archived_at: formData.visibility === 'hidden' ? (formData.archived_at || null) : null,
     };
     onSave(payload);
   };
@@ -160,7 +342,7 @@ export default function CasinoOfferModal({
             <div className="co-section-title">Basic Info</div>
             <div className="co-row">
               <div className="co-field">
-                <label>Casino Name *</label>
+                <label>Partner Name *</label>
                 <input type="text" value={formData.casino_name} onChange={e => handleChange('casino_name', e.target.value)} placeholder="e.g., Megarich" />
               </div>
               <div className="co-field">
@@ -175,6 +357,48 @@ export default function CasinoOfferModal({
             <div className="co-field">
               <label>Bonus Link *</label>
               <input type="text" value={formData.bonus_link} onChange={e => handleChange('bonus_link', e.target.value)} placeholder="https://..." />
+            </div>
+          </div>
+
+          {/* Marketplace Details */}
+          <div className="co-section">
+            <div className="co-section-title">Streamer Marketplace</div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Unique Slug</label>
+                <input type="text" value={formData.slug} onChange={e => handleChange('slug', e.target.value.toLowerCase())} placeholder="megarich-partnership" />
+              </div>
+              <div className="co-field">
+                <label>Category</label>
+                <select value={formData.partnership_category} onChange={e => handleChange('partnership_category', e.target.value)}>
+                  {PARTNERSHIP_CATEGORIES.map(category => (
+                    <option key={category.value} value={category.value}>{category.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Visibility</label>
+                <select value={formData.visibility} onChange={e => handleChange('visibility', e.target.value)}>
+                  {VISIBILITY_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="co-field">
+                <label>Last Updated</label>
+                <input type="date" value={formData.last_updated_at || ''} onChange={e => handleChange('last_updated_at', e.target.value)} />
+              </div>
+            </div>
+            <div className="co-field">
+              <label>Short Description</label>
+              <textarea
+                rows={3}
+                value={formData.short_description}
+                onChange={e => handleChange('short_description', e.target.value)}
+                placeholder="Short streamer-focused summary for the marketplace card."
+              />
             </div>
           </div>
 
@@ -194,9 +418,143 @@ export default function CasinoOfferModal({
               <label>List Image URL (landing page)</label>
               <input type="text" value={formData.list_image_url} onChange={e => handleChange('list_image_url', e.target.value)} placeholder="https://..." />
             </div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Partner Logo URL</label>
+                <input type="text" value={formData.partner_logo_url} onChange={e => handleChange('partner_logo_url', e.target.value)} placeholder="https://..." />
+              </div>
+              <div className="co-field">
+                <label>Cover Image URL</label>
+                <input type="text" value={formData.cover_image_url} onChange={e => handleChange('cover_image_url', e.target.value)} placeholder="https://..." />
+              </div>
+            </div>
             <div className="co-field">
               <label>Video URL (.mp4)</label>
               <input type="text" value={formData.video_url} onChange={e => handleChange('video_url', e.target.value)} placeholder="https://example.com/promo.mp4" />
+            </div>
+          </div>
+
+          {/* Commercial Terms */}
+          <div className="co-section">
+            <div className="co-section-title">Commercial Terms</div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Deal Model</label>
+                <select value={formData.deal_model} onChange={e => handleChange('deal_model', e.target.value)}>
+                  {DEAL_MODELS.map(model => <option key={model} value={model}>{model}</option>)}
+                </select>
+              </div>
+              <div className="co-field">
+                <label>Payment Frequency</label>
+                <input type="text" value={formData.payment_frequency} onChange={e => handleChange('payment_frequency', e.target.value)} placeholder="Monthly, weekly, net 30..." />
+              </div>
+            </div>
+            <div className="co-grid-4">
+              <div className="co-field">
+                <label>CPA Amount</label>
+                <input type="number" value={formData.cpa_amount} onChange={e => handleChange('cpa_amount', e.target.value)} min="0" step="0.01" />
+              </div>
+              <div className="co-field">
+                <label>CPA Currency</label>
+                <input type="text" value={formData.cpa_currency} onChange={e => handleChange('cpa_currency', e.target.value.toUpperCase())} placeholder="EUR" />
+              </div>
+              <div className="co-field">
+                <label>Revenue Share %</label>
+                <input type="number" value={formData.revenue_share_percent} onChange={e => handleChange('revenue_share_percent', e.target.value)} min="0" max="100" step="0.01" />
+              </div>
+              <div className="co-field">
+                <label>Fixed Fee</label>
+                <input type="number" value={formData.fixed_fee_amount} onChange={e => handleChange('fixed_fee_amount', e.target.value)} min="0" step="0.01" />
+              </div>
+            </div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Fixed Fee Currency</label>
+                <input type="text" value={formData.fixed_fee_currency} onChange={e => handleChange('fixed_fee_currency', e.target.value.toUpperCase())} placeholder="EUR" />
+              </div>
+              <div className="co-field">
+                <label>Cookie Duration Days</label>
+                <input type="number" value={formData.cookie_duration_days} onChange={e => handleChange('cookie_duration_days', e.target.value)} min="0" />
+              </div>
+            </div>
+            <div className="co-field">
+              <label>Hybrid Terms</label>
+              <input type="text" value={formData.hybrid_terms} onChange={e => handleChange('hybrid_terms', e.target.value)} placeholder="Custom hybrid deal, CPA + RevShare, etc." />
+            </div>
+          </div>
+
+          {/* Traffic and Requirements */}
+          <div className="co-section">
+            <div className="co-section-title">Traffic and Requirements</div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Supported GEOs <span style={{ fontWeight: 400, color: '#64748b' }}>(one per line or comma-separated)</span></label>
+                <textarea rows={3} value={formData.supported_geos} onChange={e => handleChange('supported_geos', e.target.value)} placeholder={'PT\nEU\nBR'} />
+              </div>
+              <div className="co-field">
+                <label>Supported Platforms</label>
+                <textarea rows={3} value={formData.supported_platforms} onChange={e => handleChange('supported_platforms', e.target.value)} placeholder={PLATFORM_OPTIONS.join('\n')} />
+              </div>
+            </div>
+            <div className="co-grid-4">
+              <div className="co-field">
+                <label>Min. FTD Requirement</label>
+                <input type="number" value={formData.min_ftd_requirement} onChange={e => handleChange('min_ftd_requirement', e.target.value)} min="0" />
+              </div>
+              <div className="co-field">
+                <label>Minimum Deposit</label>
+                <input type="number" value={formData.minimum_deposit} onChange={e => handleChange('minimum_deposit', e.target.value)} min="0" step="0.01" />
+              </div>
+              <div className="co-field">
+                <label>Deposit Currency</label>
+                <input type="text" value={formData.minimum_deposit_currency} onChange={e => handleChange('minimum_deposit_currency', e.target.value.toUpperCase())} placeholder="EUR" />
+              </div>
+              <div className="co-field">
+                <label>Payment Methods</label>
+                <input type="text" value={formData.payment_methods} onChange={e => handleChange('payment_methods', e.target.value)} placeholder="Bank, PayPal, Crypto" />
+              </div>
+            </div>
+            <div className="co-field">
+              <label>Traffic Requirements</label>
+              <textarea rows={3} value={formData.traffic_requirements} onChange={e => handleChange('traffic_requirements', e.target.value)} placeholder="Viewer averages, content rules, platform requirements..." />
+            </div>
+            <div className="co-field">
+              <label>Restrictions</label>
+              <textarea rows={3} value={formData.restrictions} onChange={e => handleChange('restrictions', e.target.value)} placeholder="Restricted GEOs, traffic types, compliance notes..." />
+            </div>
+          </div>
+
+          {/* Applications */}
+          <div className="co-section">
+            <div className="co-section-title">Applications</div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Application Status</label>
+                <select value={formData.application_status} onChange={e => handleChange('application_status', e.target.value)}>
+                  <option value="draft">Draft</option>
+                  <option value="open">Open</option>
+                  <option value="limited">Limited Availability</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+              <div className="co-field">
+                <label>Applications Close At</label>
+                <input type="date" value={formData.applications_close_at || ''} onChange={e => handleChange('applications_close_at', e.target.value)} />
+              </div>
+            </div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Application URL</label>
+                <input type="text" value={formData.application_url} onChange={e => handleChange('application_url', e.target.value)} placeholder="https://..." />
+              </div>
+              <div className="co-field">
+                <label>Terms URL</label>
+                <input type="text" value={formData.terms_url} onChange={e => handleChange('terms_url', e.target.value)} placeholder="https://..." />
+              </div>
+            </div>
+            <div className="co-field">
+              <label>Player Promotion</label>
+              <textarea rows={3} value={formData.player_promotion} onChange={e => handleChange('player_promotion', e.target.value)} placeholder="Player-facing promo shown inside the full details panel." />
             </div>
           </div>
 
@@ -393,6 +751,54 @@ export default function CasinoOfferModal({
                 <span className="co-toggle-slider"></span>
                 <span className="co-toggle-label">₿ Crypto Friendly</span>
               </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.is_verified} onChange={e => handleChange('is_verified', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">Verified Partner</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.is_featured} onChange={e => handleChange('is_featured', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">Featured</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.is_exclusive} onChange={e => handleChange('is_exclusive', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">Exclusive</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.is_new} onChange={e => handleChange('is_new', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">New</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.is_hot} onChange={e => handleChange('is_hot', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">Hot</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.has_direct_manager} onChange={e => handleChange('has_direct_manager', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">Direct Manager</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.streamer_balance_available} onChange={e => handleChange('streamer_balance_available', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">Streamer Balance</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Admin Notes */}
+          <div className="co-section">
+            <div className="co-section-title">Admin Notes</div>
+            <div className="co-field">
+              <label>Public Notes</label>
+              <textarea rows={3} value={formData.public_notes} onChange={e => handleChange('public_notes', e.target.value)} placeholder="Optional non-confidential notes for future public display." />
+            </div>
+            <div className="co-field">
+              <label>Private Notes</label>
+              <textarea rows={3} value={formData.private_notes} onChange={e => handleChange('private_notes', e.target.value)} placeholder="Internal-only terms or admin notes. Not rendered on public pages." />
             </div>
           </div>
 

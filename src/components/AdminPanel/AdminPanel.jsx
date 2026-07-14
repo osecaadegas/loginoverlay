@@ -1294,7 +1294,7 @@ export default function AdminPanel() {
           >
             {[
               { id: 'users',     label: 'User Management', icon: '👥' },
-              { id: 'offers',    label: 'Casino Offers',    icon: '🎰' },
+              { id: 'offers',    label: 'Partnerships',     icon: '🤝' },
               { id: 'apikeys',   label: 'API Keys',         icon: '🔑' },
               { id: 'landing',   label: 'Landing Page',     icon: '🏠' },
             ].map(tab => (
@@ -1788,11 +1788,11 @@ export default function AdminPanel() {
         </>
       )}
 
-      {/* Casino Offers Tab */}
+      {/* Streamer Partnerships Tab */}
       {activeTab === 'offers' && (
         <div className="offers-management">
           <div className="offers-header">
-            <h2>Casino Offer Cards</h2>
+            <h2>Streamer Partnerships</h2>
             <div className="offers-header-actions" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', gap: 4 }}>
                 <button
@@ -1801,7 +1801,7 @@ export default function AdminPanel() {
                     padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                     background: offerSubTab === 'cards' ? '#6366f1' : 'rgba(255,255,255,0.08)', color: offerSubTab === 'cards' ? '#fff' : '#94a3b8',
                   }}
-                >📰 Cards</button>
+                >📰 Marketplace</button>
                 <button
                   onClick={() => { setOfferSubTab('analytics'); if (offerClicks.length === 0) loadOfferClicks(); }}
                   style={{
@@ -1815,13 +1815,13 @@ export default function AdminPanel() {
                   <div className="offer-search-bar">
                     <input
                       type="text"
-                      placeholder="Search by casino name, title, or badge..."
+                      placeholder="Search by partner, title, category, model, or badge..."
                       value={offerSearch}
                       onChange={(e) => setOfferSearch(e.target.value)}
                     />
                   </div>
                   <button onClick={() => openOfferModal()} className="btn-create-offer">
-                    ➕ Create New Offer
+                    ➕ Create Partnership
                   </button>
                 </>
               )}
@@ -1844,6 +1844,8 @@ export default function AdminPanel() {
                     return (
                       offer.casino_name?.toLowerCase().includes(search) ||
                       offer.title?.toLowerCase().includes(search) ||
+                      offer.partnership_category?.toLowerCase().includes(search) ||
+                      offer.deal_model?.toLowerCase().includes(search) ||
                       offer.badge?.toLowerCase().includes(search) ||
                       offer.bonus_value?.toLowerCase().includes(search)
                     );
@@ -1851,9 +1853,11 @@ export default function AdminPanel() {
                   .map((offer) => (
               <div key={offer.id} className={`offer-admin-card ${!offer.is_active ? 'inactive' : ''}`}>
                 <div className="offer-admin-image">
-                  <img src={offer.image_url} alt={offer.casino_name} />
-                  {offer.badge && (
-                    <span className={`offer-badge ${offer.badge_class}`}>{offer.badge}</span>
+                  <img src={offer.cover_image_url || offer.list_image_url || offer.image_url} alt={offer.casino_name} />
+                  {(offer.is_featured || offer.badge) && (
+                    <span className={`offer-badge ${offer.is_featured ? 'featured' : offer.badge_class}`}>
+                      {offer.is_featured ? 'FEATURED' : offer.badge}
+                    </span>
                   )}
                   {!offer.is_active && (
                     <div className="inactive-overlay">INACTIVE</div>
@@ -1863,9 +1867,14 @@ export default function AdminPanel() {
                   <h3>{offer.casino_name}</h3>
                   <p className="offer-title">{offer.title}</p>
                   <div className="offer-stats">
-                    <span>💰 {offer.min_deposit}</span>
-                    <span>💸 {offer.cashback}</span>
-                    <span>🎁 {offer.bonus_value}</span>
+                    <span>{offer.partnership_category || 'casino'}</span>
+                    <span>{offer.deal_model || offer.landing_model || 'Affiliate'}</span>
+                    <span>{offer.visibility || (offer.is_premium ? 'premium' : 'public')}</span>
+                  </div>
+                  <div className="offer-stats">
+                    <span>{offer.cpa_amount ? `${offer.cpa_currency || 'EUR'} ${offer.cpa_amount}` : 'CPA not set'}</span>
+                    <span>{offer.revenue_share_percent ? `${offer.revenue_share_percent}% RevShare` : 'RevShare not set'}</span>
+                    <span>{offer.application_status || 'open'}</span>
                   </div>
                   <div className="offer-admin-actions">
                     <button
@@ -1899,7 +1908,7 @@ export default function AdminPanel() {
 
           {offers.length === 0 && (
             <div className="no-offers">
-              <p>No casino offers yet. Create your first offer!</p>
+              <p>No partnerships yet. Create your first marketplace deal!</p>
             </div>
           )}
             </>
@@ -2153,7 +2162,17 @@ export default function AdminPanel() {
               'crypto_friendly','vpn_friendly','is_premium','is_active','display_order',
               'highlights',
               'landing_tag','landing_tag_color','landing_model','landing_badges',
-              'landing_accent_color','landing_logo_bg'
+              'landing_accent_color','landing_logo_bg',
+              'slug','partner_logo_url','cover_image_url','partnership_category',
+              'short_description','is_verified','is_featured','is_exclusive','is_new',
+              'is_hot','has_direct_manager','streamer_balance_available',
+              'application_status','applications_close_at','application_url','terms_url',
+              'visibility','deal_model','cpa_amount','cpa_currency','revenue_share_percent',
+              'fixed_fee_amount','fixed_fee_currency','hybrid_terms','min_ftd_requirement',
+              'minimum_deposit','minimum_deposit_currency','cookie_duration_days',
+              'payment_frequency','payment_methods','player_promotion','traffic_requirements',
+              'restrictions','supported_geos','supported_platforms','public_notes',
+              'private_notes','last_updated_at','archived_at'
             ];
             const payload = {};
             for (const key of ALLOWED_COLS) {
@@ -2162,6 +2181,19 @@ export default function AdminPanel() {
             // Parse game_providers from JSON string to array for JSONB column
             if (typeof payload.game_providers === 'string') {
               try { payload.game_providers = JSON.parse(payload.game_providers); } catch { payload.game_providers = []; }
+            }
+            for (const jsonListKey of ['supported_geos', 'supported_platforms', 'payment_methods']) {
+              if (typeof payload[jsonListKey] === 'string') {
+                try {
+                  const parsed = JSON.parse(payload[jsonListKey]);
+                  payload[jsonListKey] = Array.isArray(parsed) ? parsed : [];
+                } catch {
+                  payload[jsonListKey] = payload[jsonListKey]
+                    .split(/[\n,;]+/)
+                    .map(item => item.trim())
+                    .filter(Boolean);
+                }
+              }
             }
 
             if (editingOffer) {

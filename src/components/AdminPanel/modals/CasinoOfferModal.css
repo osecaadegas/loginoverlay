@@ -131,6 +131,7 @@
 .co-field input[type="text"],
 .co-field input[type="number"],
 .co-field input[type="url"],
+.co-field input[type="date"],
 .co-field select,
 .co-field textarea {
   width: 100%;
