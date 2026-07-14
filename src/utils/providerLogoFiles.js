@@ -112,7 +112,6 @@ export const PROVIDER_LOGO_FILES = [
   'pinguin_king.png',
   'platipus.png',
   'play_digital.png',
-  'play_pearls.png',
   'playngo.png',
   'playpearls.png',
   'playson.png',
