@@ -1913,6 +1913,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </div>
                   )}
 
+                  <div className="bh-list-side">
+                    <div className="bh-list-side-actions" aria-label="Bonus actions">
                   {/* Copy + Edit buttons */}
                   <button className="bh-list-icon-btn" title="Copy name" onClick={() => handleCopyName(bonus)}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1925,14 +1927,16 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </svg>
                   </button>
 
+                    </div>
+
                   {/* Bet */}
-                  <div className="bh-list-field">
+                  <div className="bh-list-field bh-list-field--bet">
                     <span className="bh-list-field-label">Bet</span>
                     <span className="bh-list-field-value">{bonus.betSize}</span>
                   </div>
 
                   {/* Payment — locked unless bonusOpening */}
-                  <div className="bh-list-field">
+                  <div className="bh-list-field bh-list-field--payment">
                     <span className="bh-list-field-label">Payment {!bonusOpening && '🔒'}</span>
                     {bonusOpening ? (
                       <input className="bh-list-payout-input" type="text" inputMode="decimal"
@@ -1970,6 +1974,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                       <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
                     </svg>
                   </button>
+                  </div>
                 </>
               )}
             </div>
