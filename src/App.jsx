@@ -46,6 +46,7 @@ const PlayerBonusHuntDetail = lazy(() => import('./features/playerBonusHunt/Play
 const PlayerBonusHuntLibrary = lazy(() => import('./features/playerBonusHunt/PlayerBonusHuntLibrary'));
 const PlayerSubscriptionPage = lazy(() => import('./features/playerBonusHunt/PlayerSubscriptionPage'));
 const ProtectedPlayerRoute = lazy(() => import('./features/playerBonusHunt/ProtectedPlayerRoute'));
+const SlotDetectorDashboard = lazy(() => import('./features/slotDetector/SlotDetectorDashboard'));
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -358,6 +359,11 @@ function App() {
                 <Route path="/overlay-center/*" element={
                   <ProtectedAdminRoute allowPremium allowModerator redirectTo="/premium">
                     <OverlayControlCenter />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/slot-detector" element={
+                  <ProtectedAdminRoute allowPremium allowModerator redirectTo="/premium">
+                    <SlotDetectorDashboard />
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/overlay/:token" element={<OverlayRenderer />} />

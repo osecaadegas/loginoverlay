@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Streamers Center Slot Detector",
+  "description": "Detects the current slot from supported casino/provider pages and sends sanitized events to Streamers Center.",
+  "version": "0.1.0",
+  "permissions": ["storage", "tabs", "activeTab"],
+  "host_permissions": [
+    "https://*.streamerscenter.com/*",
+    "https://streamerscenter.com/*",
+    "https://*.stake.com/*",
+    "https://*.stake.us/*",
+    "https://*.gamdom.com/*",
+    "https://*.roobet.com/*",
+    "https://*.shuffle.com/*",
+    "https://*.rollbit.com/*",
+    "https://*.pragmaticplay.net/*",
+    "https://*.pragmaticplaylive.net/*",
+    "https://*.hacksawgaming.com/*",
+    "https://*.nolimitcity.com/*",
+    "https://*.relax-gaming.com/*",
+    "https://*.playngo.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.stake.com/*",
+        "https://*.stake.us/*",
+        "https://*.gamdom.com/*",
+        "https://*.roobet.com/*",
+        "https://*.shuffle.com/*",
+        "https://*.rollbit.com/*",
+        "https://*.pragmaticplay.net/*",
+        "https://*.pragmaticplaylive.net/*",
+        "https://*.hacksawgaming.com/*",
+        "https://*.nolimitcity.com/*",
+        "https://*.relax-gaming.com/*",
+        "https://*.playngo.com/*"
+      ],
+      "js": ["src/content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_title": "Streamers Center Slot Detector",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}

@@ -1,0 +1,12 @@
+export const PAIRING_CODE_TTL_MINUTES = 8;
+export const DEVICE_TOKEN_BYTES = 32;
+export const PAIRING_CODE_BYTES = 5;
+export const HIGH_CONFIDENCE_THRESHOLD = 85;
+export const MAX_EVENT_AGE_MS = 10 * 60 * 1000;
+export const MAX_EVENT_FUTURE_SKEW_MS = 2 * 60 * 1000;
+export const DEVICE_RATE_LIMIT = { limit: 90, windowMs: 60 * 1000 };
+export const USER_RATE_LIMIT = { limit: 240, windowMs: 60 * 1000 };
+export const AUTH_USER_RATE_LIMIT = { limit: 30, windowMs: 60 * 1000 };
+export const ALLOWED_TARGETS = new Set(['current_slot', 'single_slot', 'bonus_hunt']);
+export const DEFAULT_TARGET = 'current_slot';
+export const DETECTOR_SCOPES = ['slot:detect'];
