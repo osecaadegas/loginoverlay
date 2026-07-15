@@ -1,15 +1,24 @@
 const SITE_URL = 'https://streamerscenter.com';
-const DEFAULT_TITLE = 'Streamer Tools for iGaming Creators & Bonus Hunt Tracker | Streamers Center';
-const DEFAULT_DESCRIPTION = 'Streamer tools for Twitch, Kick and YouTube iGaming creators plus bonus hunt tracking and casino profit/loss dashboards. Run overlays, slot requests, tournaments and giveaways.';
+const DEFAULT_TITLE = 'iGaming Overlays, Bonus Hunt Tracker & Casino Profit/Loss Tracker | Streamers Center';
+const DEFAULT_DESCRIPTION = 'iGaming and casino overlays, bonus hunt tracker, slot tracker, financial tracker and profit/loss tracker for Twitch, Kick and YouTube streamers and casino players.';
 const DEFAULT_IMAGE = `${SITE_URL}/social-preview.png`;
+const BRAND_LOGO = `${SITE_URL}/StreamerCenterLogo.png`;
+const BRAND_ICON = `${SITE_URL}/favicon-512x512.png`;
 
 const CORE_TOPICS = [
+  'iGaming overlays',
+  'casino overlays',
+  'overlays tracker',
+  'casino overlay tracker',
   'Twitch streamer tools',
   'Kick streamer tools',
   'YouTube live streamer tools',
   'iGaming content creator software',
   'casino streamer overlays',
   'bonus hunt tracker',
+  'slot tracker',
+  'financial tracker',
+  'profit loss tracker',
   'slot request overlay',
   'casino profit and loss tracker',
 ];
@@ -19,11 +28,18 @@ const ROUTE_TOPICS = {
   '/player': [
     'bonus hunt tracker',
     'casino profit and loss tracker',
+    'profit loss tracker',
+    'financial tracker',
+    'slot tracker',
     'casino session accounting',
     'slot result tracking',
     'deposit and withdrawal tracking',
   ],
   '/streamer': [
+    'iGaming overlays',
+    'casino overlays',
+    'overlays tracker',
+    'casino overlay tracker',
     'streamer overlay tools',
     'OBS browser-source overlays',
     'Twitch casino streamer tools',
@@ -45,7 +61,7 @@ const FAQ_BY_PATH = {
   '/': [
     {
       question: 'What is Streamers Center?',
-      answer: 'Streamers Center is a web app for Twitch, Kick and YouTube iGaming content creators and casino players. It combines streamer overlays, bonus hunt tracking, slot requests, tournaments, giveaways, chat tools and casino profit/loss tracking.',
+      answer: 'Streamers Center is a web app for Twitch, Kick and YouTube iGaming content creators and casino players. It combines iGaming overlays, casino overlays, bonus hunt tracking, slot tracking, slot requests, tournaments, giveaways, chat tools and casino profit/loss tracking.',
     },
     {
       question: 'Who is Streamers Center for?',
@@ -59,7 +75,7 @@ const FAQ_BY_PATH = {
   '/player': [
     {
       question: 'What can players track in Streamers Center?',
-      answer: 'Players can track starting deposits, extra deposits, withdrawals, bonus costs, payouts, multipliers, break-even targets, best wins, worst results, casino brands, providers and profit/loss records.',
+      answer: 'Players can use Streamers Center as a bonus hunt tracker, slot tracker, financial tracker and profit/loss tracker for starting deposits, extra deposits, withdrawals, bonus costs, payouts, multipliers, break-even targets, best wins, worst results, casino brands and providers.',
     },
     {
       question: 'Does the player dashboard require streaming software?',
@@ -73,7 +89,7 @@ const FAQ_BY_PATH = {
   '/streamer': [
     {
       question: 'What streamer tools does Streamers Center provide?',
-      answer: 'Streamers Center provides browser-source overlays, bonus hunt widgets, slot request queues, tournaments, giveaways, chat-connected tools, viewer games, custom themes and iGaming partner discovery.',
+      answer: 'Streamers Center provides iGaming overlays, casino overlays, browser-source overlay trackers, bonus hunt widgets, slot request queues, tournaments, giveaways, chat-connected tools, viewer games, custom themes and iGaming partner discovery.',
     },
     {
       question: 'Can Streamers Center overlays be used in OBS?',
@@ -93,13 +109,13 @@ const SEO_BY_PATH = {
     image: DEFAULT_IMAGE,
   },
   '/player': {
-    title: 'Bonus Hunt Tracker & Casino Profit/Loss Tool | Streamers Center',
-    description: 'Track bonus hunts, casino deposits, withdrawals, wins, losses, providers, brands, break-even targets, payouts and profit/loss records from a private player dashboard.',
+    title: 'Bonus Hunt Tracker, Slot Tracker & Profit/Loss Tracker | Streamers Center',
+    description: 'Track bonus hunts, slots, casino deposits, withdrawals, wins, losses, providers, brands, break-even targets, payouts and profit/loss records from a private financial tracker.',
     image: `${SITE_URL}/player.png`,
   },
   '/streamer': {
-    title: 'Streamer Tools for iGaming Creators | Streamers Center',
-    description: 'Run iGaming streams with browser-source overlays, bonus hunt trackers, slot requests, tournaments, giveaways, chat tools, viewer games and partner deal discovery.',
+    title: 'iGaming Overlays & Casino Streamer Tools | Streamers Center',
+    description: 'Run iGaming streams with casino overlays, browser-source overlay trackers, bonus hunt trackers, slot requests, tournaments, giveaways, chat tools and viewer games.',
     image: `${SITE_URL}/streamer.png`,
   },
   '/offers': {
@@ -221,10 +237,14 @@ function getStructuredData(pathname, route, canonical) {
       '@id': `${SITE_URL}/#organization`,
       name: 'Streamers Center',
       alternateName: ['Streamer Center', 'streamerscenter.com'],
-      description: 'Streamers Center creates software for iGaming streamers and casino players, including streamer overlays, bonus hunt trackers, slot requests, tournaments, giveaways and casino profit/loss tools.',
+      description: 'Streamers Center creates software for iGaming streamers and casino players, including iGaming overlays, casino overlays, bonus hunt trackers, slot trackers, financial trackers, slot requests, tournaments, giveaways and casino profit/loss tools.',
       url: `${SITE_URL}/`,
-      logo: `${SITE_URL}/StreamerCenterLogo.png`,
-      image: DEFAULT_IMAGE,
+      logo: BRAND_LOGO,
+      image: BRAND_ICON,
+      icon: BRAND_ICON,
+      thumbnailUrl: BRAND_ICON,
+      foundingDate: '2026',
+      slogan: 'iGaming overlays and casino tracking tools for streamers and players.',
       knowsAbout: CORE_TOPICS,
     },
     {
@@ -232,7 +252,7 @@ function getStructuredData(pathname, route, canonical) {
       '@id': `${SITE_URL}/#website`,
       url: `${SITE_URL}/`,
       name: 'Streamers Center',
-      description: 'Bonus hunt tracker, casino profit/loss dashboard, streamer overlays and iGaming creator tools for players and streamers.',
+      description: 'iGaming overlays, casino overlays, bonus hunt tracker, slot tracker, financial tracker, profit/loss tracker and creator tools for players and streamers.',
       inLanguage: 'en',
       keywords: CORE_TOPICS.join(', '),
       about: CORE_TOPICS.map((name) => ({ '@type': 'Thing', name })),
@@ -265,13 +285,16 @@ function getStructuredData(pathname, route, canonical) {
       applicationCategory: 'FinanceApplication',
       operatingSystem: 'Web',
       description: 'A casino bonus hunt tracker for deposits, withdrawals, wins, losses, providers, brands, break-even targets, multipliers and profit/loss records.',
-      applicationSubCategory: 'Casino session accounting and bonus hunt tracking',
+      applicationSubCategory: 'Casino session accounting, slot tracking and profit/loss tracking',
       audience: {
         '@type': 'Audience',
         audienceType: 'casino players and bonus hunt players',
       },
       featureList: [
         'Bonus hunt tracker',
+        'Slot tracker',
+        'Financial tracker',
+        'Profit loss tracker',
         'Casino profit and loss tracking',
         'Deposit, withdrawal, win and loss records',
         'Daily, weekly, monthly and yearly filters',
@@ -296,13 +319,16 @@ function getStructuredData(pathname, route, canonical) {
       applicationCategory: 'MultimediaApplication',
       operatingSystem: 'Web',
       description: 'Streamer tools for iGaming creators, including overlays, bonus hunt trackers, slot requests, tournaments, giveaways, chat tools and viewer games.',
-      applicationSubCategory: 'Live streaming overlay and iGaming creator tools',
+      applicationSubCategory: 'Live streaming iGaming overlays and casino overlay tracker tools',
       audience: {
         '@type': 'Audience',
         audienceType: 'Twitch, Kick and YouTube iGaming content creators',
       },
       featureList: [
         'Streamer overlays',
+        'iGaming overlays',
+        'Casino overlays',
+        'Overlay tracker',
         'Browser-source widgets',
         'Bonus hunt tracker for streams',
         'Slot requests and chat commands',
@@ -341,6 +367,10 @@ export function applyRouteSeo(pathname) {
 
   document.title = noindex ? `${route.title} | Private area` : route.title;
   upsertMeta('meta[name="description"]', { name: 'description', content: route.description });
+  upsertMeta('meta[name="keywords"]', {
+    name: 'keywords',
+    content: (ROUTE_TOPICS[pathname] || CORE_TOPICS).join(', '),
+  });
   upsertMeta('meta[name="robots"]', {
     name: 'robots',
     content: noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large',

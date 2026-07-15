@@ -12,6 +12,7 @@ import {
   normalizeAnalyticsEventName,
   sanitizeAnalyticsProperties,
 } from '../../shared/analytics.js';
+import { COOKIE_CONSENT_KEY } from './cookieConsent';
 
 const API_BASE = '/api/analytics';
 const SESSION_KEY = 'analytics_session';
@@ -78,7 +79,7 @@ function generateFingerprint() {
 
 function hasAnalyticsConsent() {
   try {
-    const consent = JSON.parse(localStorage.getItem('cookie_consent'));
+    const consent = JSON.parse(localStorage.getItem(COOKIE_CONSENT_KEY));
     return consent?.analytics === true;
   } catch {
     return false;
@@ -158,6 +159,7 @@ export async function initAnalytics() {
     trackingEnabled = false;
     return null;
   }
+  trackingEnabled = true;
 
   try {
     const fingerprint = generateFingerprint();
@@ -277,7 +279,8 @@ export function getAnalyticsSession() {
 export function updateConsent() {
   const hadConsent = trackingEnabled;
   trackingEnabled = hasAnalyticsConsent();
-  if (trackingEnabled && !hadConsent && !initialized) initAnalytics();
+  if (trackingEnabled && !hadConsent && !initialized) return initAnalytics();
+  return Promise.resolve(trackingEnabled ? getAnalyticsSession() : null);
 }
 
 function queueEvent(evt) {

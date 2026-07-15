@@ -13,6 +13,7 @@ import {
   identifyUser,
   updateConsent,
 } from '../utils/analytics';
+import { COOKIE_CONSENT_EVENT } from '../utils/cookieConsent';
 
 export function useAnalytics() {
   const { user } = useAuth();
@@ -27,8 +28,18 @@ export function useAnalytics() {
     initAnalytics().then((result) => {
       if (!cancelled && result?.session_id) setReady(true);
     });
+
+    const handleConsentChange = () => {
+      updateConsent().then((result) => {
+        if (cancelled) return;
+        setReady(Boolean(result?.session_id));
+      });
+    };
+
+    window.addEventListener(COOKIE_CONSENT_EVENT, handleConsentChange);
     return () => {
       cancelled = true;
+      window.removeEventListener(COOKIE_CONSENT_EVENT, handleConsentChange);
     };
   }, []);
 

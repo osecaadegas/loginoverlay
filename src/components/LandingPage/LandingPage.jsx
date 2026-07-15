@@ -43,7 +43,7 @@ const FEATURED_PARTNERS = [
 ];
 
 const STREAMER_FEATURES = [
-  { icon: MonitorPlay, title: 'Browser-source overlays', desc: 'Professional overlay scenes, bonus hunt widgets and live stream panels ready for OBS.' },
+  { icon: MonitorPlay, title: 'iGaming overlays', desc: 'Professional casino overlays, overlay trackers, bonus hunt widgets and live stream panels ready for OBS.' },
   { icon: Gift, title: 'Viewer engagement', desc: 'Slot requests, giveaways, tournaments, predictions, bets and chat-driven community moments.' },
   { icon: Radio, title: 'Live integrations', desc: 'Tools designed around Twitch, Kick, YouTube and chat workflows where available.' },
   { icon: LayoutDashboard, title: 'Control center', desc: 'Manage widgets, themes, requests, assets and stream utilities from one dashboard.' },
@@ -54,9 +54,9 @@ const STREAMER_FEATURES = [
 const PLAYER_FEATURES = [
   { icon: WalletCards, title: 'Session accounting', desc: 'Track starting deposits, extra deposits, withdrawals, spent amount and final result.' },
   { icon: Trophy, title: 'Bonus hunt results', desc: 'Follow break-even targets, total payout, best win, worst win and highest multiplier.' },
-  { icon: LibraryBig, title: 'Personal library', desc: 'Search all-time, monthly, weekly and daily records by slot, provider and result.' },
+  { icon: LibraryBig, title: 'Slot tracker', desc: 'Search all-time, monthly, weekly and daily records by slot, provider and result.' },
   { icon: Search, title: 'Slot metadata', desc: 'Use your slot library for images, providers, RTP, volatility and max-win context.' },
-  { icon: LineChart, title: 'Simple statistics', desc: 'Readable averages, profit/loss summaries and historical hunt performance.' },
+  { icon: LineChart, title: 'Financial tracker', desc: 'Readable averages, profit/loss tracker summaries and historical hunt performance.' },
   { icon: ShieldCheck, title: 'Private by design', desc: 'A player product with no OBS links, chat controls or streamer-only setup.' },
 ];
 
@@ -64,12 +64,12 @@ const ROOT_ANSWERS = [
   {
     icon: MonitorPlay,
     title: 'Software for livestream creators',
-    desc: 'Streamers Center is built for Twitch, Kick and YouTube iGaming creators who need overlays, browser-source widgets, slot requests, tournaments, giveaways and chat tools.',
+    desc: 'Streamers Center is built for Twitch, Kick and YouTube iGaming creators who need iGaming overlays, casino overlays, browser-source widgets, slot requests, tournaments, giveaways and chat tools.',
   },
   {
     icon: Gauge,
     title: 'Casino tracking for players',
-    desc: 'The player tools track bonus hunts, deposits, withdrawals, payouts, multipliers, break-even targets, slot providers and profit/loss records in a private web dashboard.',
+    desc: 'The player tools work as a bonus hunt tracker, slot tracker, financial tracker and profit/loss tracker for deposits, withdrawals, payouts, multipliers, break-even targets and providers.',
   },
   {
     icon: ShieldCheck,
@@ -100,7 +100,7 @@ const STREAMER_ANSWERS = [
   {
     icon: MonitorPlay,
     title: 'What streamer tools are included?',
-    desc: 'Browser-source overlays, bonus hunt widgets, slot request queues, tournaments, giveaways, chat-connected tools, viewer games, custom themes and partner discovery.',
+    desc: 'iGaming overlays, casino overlays, browser-source overlay trackers, bonus hunt widgets, slot request queues, tournaments, giveaways, chat-connected tools, viewer games, custom themes and partner discovery.',
   },
   {
     icon: Clapperboard,
@@ -321,12 +321,12 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
     ? (
       <>
         <span className="lp-audience-panel__lead">Track your <strong>Profits/Losses</strong></span>
-        Have your own <strong>Bonus hunt tracker</strong>, keep track of <strong>deposits</strong>, <strong>wins</strong>, <strong>losses</strong> by either <strong>casino brand</strong>, <strong>year</strong>, <strong>monthly</strong>, <strong>weekly</strong>, <strong>daily</strong> or <strong>provider</strong>. Financial power house tool at the tip of your fingers.
+        Have your own <strong>Bonus hunt tracker</strong>, <strong>slot tracker</strong> and <strong>profit/loss tracker</strong>. Keep track of <strong>deposits</strong>, <strong>wins</strong>, <strong>losses</strong> by either <strong>casino brand</strong>, <strong>year</strong>, <strong>monthly</strong>, <strong>weekly</strong>, <strong>daily</strong> or <strong>provider</strong>. A financial tracker at the tip of your fingers.
       </>
     )
     : (
       <>
-        Improve your <strong>stream numbers</strong>. Whether you are a <strong>new streamer</strong> or a <strong>small-time streamer</strong>, elevate your game with <strong>bonus hunt trackers</strong>, <strong>tournament brackets</strong>, <strong>bets</strong>, <strong>giveaways</strong>, <strong>chat tools</strong> and <strong>games for your chat</strong>. Everything you need to be an <strong>elite streamer</strong> in one place.
+        Improve your <strong>stream numbers</strong>. Whether you are a <strong>new streamer</strong> or a <strong>small-time streamer</strong>, elevate your game with <strong>iGaming overlays</strong>, <strong>casino overlays</strong>, <strong>bonus hunt trackers</strong>, <strong>tournament brackets</strong>, <strong>bets</strong>, <strong>giveaways</strong>, <strong>chat tools</strong> and <strong>games for your chat</strong>. Everything you need to be an <strong>elite streamer</strong> in one place.
       </>
     );
   const cta = isPlayer ? 'Enter Player Center' : 'Enter Streamer Center';
@@ -377,7 +377,7 @@ function AudienceGateway({ previewAudience, selectingAudience, onPreview, onClea
       aria-labelledby="audience-selector-heading"
     >
       <h1 id="audience-selector-heading" className="lp-sr-only">
-        Bonus hunt tracker, streamer tools and casino financial tracking
+        iGaming overlays, bonus hunt tracker, slot tracker and casino financial tracking
       </h1>
       <AudiencePanel
         audience="player"
@@ -447,8 +447,8 @@ function RootOverview() {
         title="Streamer tools and casino tracking in one web app."
         answers={ROOT_ANSWERS}
       >
-        A clear home for iGaming content creators and casino players: live stream overlays, bonus hunt tracking,
-        slot requests, tournaments, giveaways, chat tools and profit/loss records.
+        A clear home for iGaming content creators and casino players: iGaming overlays, casino overlays,
+        bonus hunt tracking, slot tracking, slot requests, tournaments, giveaways, chat tools and profit/loss records.
       </AnswerSection>
     </main>
   );
@@ -464,11 +464,11 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
         <div className="lp-selected-hero__copy">
           <span className="lp-eyebrow">Player Center</span>
           <h1 ref={headingRef} tabIndex="-1">
-            Bonus hunt tracking and casino profit/loss tools for players.
+            Bonus hunt tracker, slot tracker and casino profit/loss tools for players.
           </h1>
           <p>
             Track deposits, withdrawals, bonus costs, payouts, multipliers, break-even targets,
-            best wins and worst results in a private dashboard made for regular casino players.
+            best wins, worst results and slot performance in a private financial tracker made for regular casino players.
           </p>
           <div className="lp-selected-hero__ctas">
             <button type="button" className="lp-btn lp-btn--player" onClick={onPrimaryCta}>
@@ -608,11 +608,11 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
         <div className="lp-selected-hero__copy">
           <span className="lp-eyebrow">Streamer Center</span>
           <h1 ref={headingRef} tabIndex="-1">
-            Streamer tools for iGaming creators.
+            iGaming overlays and casino streamer tools.
           </h1>
           <p>
-            Professional browser-source overlays, bonus hunt trackers, slot requests, tournaments,
-            giveaways, viewer games and chat-connected tools in one production dashboard.
+            Professional iGaming overlays, casino overlays, browser-source overlay trackers, bonus hunt trackers,
+            slot requests, tournaments, giveaways, viewer games and chat-connected tools in one production dashboard.
           </p>
           <div className="lp-selected-hero__ctas">
             <button type="button" className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>
@@ -630,7 +630,7 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
 
       <section className="lp-section">
         <SectionHeading eyebrow="Creator toolkit" title="Everything for a more interactive stream.">
-          Keep OBS overlays, chat interactions, bonus hunts, viewer commands and stream tools under one roof.
+          Keep OBS overlays, casino overlays, chat interactions, bonus hunts, viewer commands and stream tools under one roof.
         </SectionHeading>
         <ProductFeatureGrid features={STREAMER_FEATURES} />
       </section>
@@ -647,7 +647,7 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
         <div className="lp-showcase-card lp-showcase-card--wide">
           <MonitorPlay size={24} />
           <h3>Overlay Center</h3>
-          <p>Build browser-source scenes, custom themes, bonus hunt widgets and branded live panels.</p>
+          <p>Build browser-source scenes, iGaming overlays, casino overlays, custom themes, bonus hunt widgets and branded live panels.</p>
         </div>
         <div className="lp-showcase-card">
           <Swords size={24} />

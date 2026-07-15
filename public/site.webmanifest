@@ -1,13 +1,19 @@
 {
   "name": "Streamers Center",
   "short_name": "Streamers Center",
-  "description": "Bonus hunt tracker, casino profit/loss dashboard and streamer overlay tools for iGaming creators.",
+  "description": "iGaming overlays, casino overlays, bonus hunt tracker, slot tracker, financial tracker and casino profit/loss dashboard.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#07090d",
   "theme_color": "#0f172a",
   "icons": [
+    {
+      "src": "/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/favicon-192x192.png",
       "sizes": "192x192",

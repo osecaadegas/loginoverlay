@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY } from '../../utils/cookieConsent';
 import './CookieConsent.css';
-
-const COOKIE_KEY = 'cookie_consent';
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
@@ -14,7 +13,7 @@ export default function CookieConsent() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem(COOKIE_KEY);
+    const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!stored) {
       // Small delay so the page loads first
       const timer = setTimeout(() => setVisible(true), 800);
@@ -23,7 +22,8 @@ export default function CookieConsent() {
   }, []);
 
   const saveChoice = (consent) => {
-    localStorage.setItem(COOKIE_KEY, JSON.stringify(consent));
+    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
+    window.dispatchEvent(new CustomEvent(COOKIE_CONSENT_EVENT, { detail: consent }));
     setVisible(false);
   };
 
@@ -141,7 +141,7 @@ export function useCookieConsent() {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem(COOKIE_KEY));
+      const stored = JSON.parse(localStorage.getItem(COOKIE_CONSENT_KEY));
       if (stored) setConsent(stored);
     } catch { /* defaults */ }
   }, []);
