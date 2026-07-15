@@ -4,6 +4,13 @@ import { supabase } from '../config/supabaseClient';
 
 const StreamElementsContext = createContext();
 
+function isMissingRedemptionTable(error) {
+  const text = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''}`.toLowerCase();
+  return error?.code === 'PGRST205'
+    || error?.status === 404
+    || (text.includes('point_redemptions') && (text.includes('could not find') || text.includes('schema cache')));
+}
+
 export function useStreamElements() {
   const context = useContext(StreamElementsContext);
   if (!context) {
@@ -22,6 +29,7 @@ export function StreamElementsProvider({ children }) {
   const [latestRedemption, setLatestRedemption] = useState(null);
   const [autoConnecting, setAutoConnecting] = useState(false);
   const didAutoConnect = useRef(false);
+  const redemptionPollingDisabled = useRef(false);
 
   // Load user's StreamElements connection from database
   useEffect(() => {
@@ -435,11 +443,12 @@ export function StreamElementsProvider({ children }) {
   // Poll for redemptions from database
   useEffect(() => {
     if (!user) return;
+    redemptionPollingDisabled.current = false;
 
     const checkRedemptions = async () => {
+      if (redemptionPollingDisabled.current) return;
       try {
         const lastCheck = localStorage.getItem('last_redemption_id');
-        console.log('[Redemptions] Checking for new redemptions. Last check:', lastCheck);
         
         // Query redemptions from database, ordered by most recent first
         const { data, error } = await supabase
@@ -452,16 +461,17 @@ export function StreamElementsProvider({ children }) {
           .limit(1);
 
         if (error) {
+          if (isMissingRedemptionTable(error)) {
+            redemptionPollingDisabled.current = true;
+            return;
+          }
           console.error('[Redemptions] Error fetching redemptions:', error);
           return;
         }
 
-        console.log('[Redemptions] Query result:', data);
-
         // Check for new redemptions
         if (data && data.length > 0) {
           const newest = data[0];
-          console.log('[Redemptions] Latest redemption ID:', newest.id, 'vs last check:', lastCheck);
           
           if (newest.id !== lastCheck) {
             // Get username via RPC (bypasses RLS on streamelements_connections)
@@ -475,8 +485,6 @@ export function StreamElementsProvider({ children }) {
             const cost = newest.redemption_items?.point_cost || newest.points_spent || 0;
             const imageUrl = newest.redemption_items?.image_url || null;
             
-            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username: twitchUsername, itemName, cost, imageUrl });
-            
             setLatestRedemption({
               username: twitchUsername,
               item: itemName,
@@ -487,8 +495,6 @@ export function StreamElementsProvider({ children }) {
             });
             localStorage.setItem('last_redemption_id', newest.id);
           }
-        } else {
-          console.log('[Redemptions] No redemptions found in database');
         }
       } catch (err) {
         console.error('[Redemptions] Error checking redemptions:', err);

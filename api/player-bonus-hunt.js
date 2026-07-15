@@ -107,6 +107,58 @@ function userFacingError(err) {
   return err;
 }
 
+function isMissingColumnError(err, column) {
+  const text = `${err?.message || ''} ${err?.details || ''} ${err?.hint || ''}`.toLowerCase();
+  return text.includes(column.toLowerCase())
+    && (err?.code === 'PGRST204' || err?.code === '42703' || text.includes('could not find') || text.includes('column'));
+}
+
+async function insertPlayerHunt(supabase, payload) {
+  let result = await supabase
+    .from('player_hunts')
+    .insert(payload)
+    .select('*')
+    .single();
+
+  if (result.error && Object.prototype.hasOwnProperty.call(payload, 'stop_loss') && isMissingColumnError(result.error, 'stop_loss')) {
+    const fallbackPayload = { ...payload };
+    delete fallbackPayload.stop_loss;
+    result = await supabase
+      .from('player_hunts')
+      .insert(fallbackPayload)
+      .select('*')
+      .single();
+    if (!result.error && result.data) result.data.stop_loss = payload.stop_loss || 0;
+  }
+
+  return result;
+}
+
+async function updatePlayerHunt(supabase, hunt, payload) {
+  let result = await supabase
+    .from('player_hunts')
+    .update(payload)
+    .eq('id', hunt.id)
+    .eq('user_id', hunt.user_id)
+    .select('*')
+    .single();
+
+  if (result.error && Object.prototype.hasOwnProperty.call(payload, 'stop_loss') && isMissingColumnError(result.error, 'stop_loss')) {
+    const fallbackPayload = { ...payload };
+    delete fallbackPayload.stop_loss;
+    result = await supabase
+      .from('player_hunts')
+      .update(fallbackPayload)
+      .eq('id', hunt.id)
+      .eq('user_id', hunt.user_id)
+      .select('*')
+      .single();
+    if (!result.error && result.data) result.data.stop_loss = payload.stop_loss || hunt.stop_loss || 0;
+  }
+
+  return result;
+}
+
 async function loadHunt(supabase, userId, huntId) {
   const { data: hunt, error } = await supabase
     .from('player_hunts')
@@ -226,11 +278,7 @@ async function handleCreateHunt(req, res, supabase, user) {
     user_id: user.id,
   };
 
-  const { data: hunt, error } = await supabase
-    .from('player_hunts')
-    .insert(huntPayload)
-    .select('*')
-    .single();
+  const { data: hunt, error } = await insertPlayerHunt(supabase, huntPayload);
   if (error) throw error;
 
   const bonusesInput = Array.isArray(body.bonuses) ? body.bonuses : [];
@@ -267,13 +315,7 @@ async function handleUpdateHunt(req, res, supabase, user) {
   if (payload.status === 'completed' && hunt.status !== 'completed') payload.completed_at = new Date().toISOString();
   if (payload.status === 'archived' && hunt.status !== 'archived') payload.archived_at = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from('player_hunts')
-    .update(payload)
-    .eq('id', hunt.id)
-    .eq('user_id', user.id)
-    .select('*')
-    .single();
+  const { data, error } = await updatePlayerHunt(supabase, hunt, payload);
   if (error) throw error;
   const bonuses = await loadBonuses(supabase, user.id, [hunt.id]);
   return res.status(200).json({ hunt: withStats(data, bonuses) });

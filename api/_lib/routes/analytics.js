@@ -23,6 +23,7 @@
  *   GET   funnel       — Funnel analysis
  */
 
+import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import {
   ANALYTICS_SCHEMA_VERSION,
@@ -895,7 +896,12 @@ async function handleSession(req, res, supabase) {
   }
 
   if (sessionResult.error || !sessionResult.data) {
-    return res.status(500).json({ error: 'Failed to create session' });
+    console.warn('[Analytics API] Session persistence failed; using ephemeral session', sessionResult.error);
+    return res.status(200).json({
+      session_id: randomUUID(),
+      visitor_id: visitor.id,
+      persisted: false,
+    });
   }
 
   const session = sessionResult.data;
