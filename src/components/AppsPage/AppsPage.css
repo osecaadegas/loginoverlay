@@ -203,6 +203,7 @@
 .apps-tile--art-restart-tutorial { --tile-image: url('/apps-tiles/restart-tutorial.jpg'); --tile-position: 66% center; }
 .apps-tile--art-screensplit { --tile-image: url('/apps-tiles/screensplit.jpg'); --tile-position: 62% center; }
 .apps-tile--art-slot-manager { --tile-image: url('/apps-tiles/slot-manager.jpg'); --tile-position: 62% center; }
+.apps-tile--art-slot-detector { --tile-image: url('/apps-tiles/analytics.jpg'); --tile-position: 62% center; }
 .apps-tile--art-streamer-home { --tile-image: url('/apps-tiles/streamer-home.jpg'); --tile-position: 62% center; }
 .apps-tile--art-subscriptions { --tile-image: url('/apps-tiles/premium.jpg'); --tile-position: 44% center; }
 
