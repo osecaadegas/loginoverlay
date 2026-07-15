@@ -257,7 +257,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 9px;
+  margin-bottom: 8px;
 }
 
 .pbh-math-panel__head h3 {
@@ -281,14 +281,14 @@
 
 .pbh-math-line {
   min-width: 0;
-  min-height: 88px;
+  min-height: 62px;
   display: grid;
-  align-content: space-between;
-  gap: 5px;
+  align-content: center;
+  gap: 7px;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
   background: rgba(255,255,255,0.04);
-  padding: 9px;
+  padding: 10px;
 }
 
 .pbh-math-line span {
@@ -298,17 +298,9 @@
   text-transform: uppercase;
 }
 
-.pbh-math-line code {
-  color: #cbd5e1;
-  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
-  font-size: 0.76rem;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
 .pbh-math-line strong {
   color: #f8fafc;
-  font-size: 0.98rem;
+  font-size: 1.08rem;
   overflow-wrap: anywhere;
 }
 
@@ -784,8 +776,8 @@
 }
 
 .pbh-slot-thumb--sm {
-  width: 62px;
-  border-radius: 9px;
+  width: 70px;
+  border-radius: 8px;
 }
 
 .pbh-slot-thumb--lg {
@@ -803,18 +795,18 @@
 
 .pbh-provider-logo {
   display: inline-grid;
-  place-items: center start;
-  width: 132px;
-  height: 42px;
-  min-width: 132px;
-  max-width: 132px;
+  place-items: center;
+  width: 116px;
+  height: 30px;
+  min-width: 116px;
+  max-width: 116px;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  overflow: visible;
-  line-height: 1;
+  overflow: hidden;
+  line-height: 0;
   vertical-align: middle;
 }
 
@@ -823,7 +815,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: left center;
+  object-position: center;
   background: transparent;
   filter:
     drop-shadow(0 1px 2px rgba(0, 0, 0, 0.72))
@@ -831,23 +823,23 @@
 }
 
 .pbh-provider-logo--inline {
-  margin-top: 3px;
-  width: 104px;
-  height: 34px;
-  min-width: 104px;
-  max-width: 104px;
+  margin-top: 4px;
+  width: 96px;
+  height: 22px;
+  min-width: 96px;
+  max-width: 96px;
 }
 
 .pbh-provider-locked .pbh-provider-logo--locked {
-  width: 154px;
-  height: 42px;
-  min-width: 154px;
-  max-width: 154px;
-  overflow: visible;
+  width: 146px;
+  height: 30px;
+  min-width: 146px;
+  max-width: 146px;
+  overflow: hidden;
 }
 
 .pbh-provider-locked .pbh-provider-logo--locked img {
-  object-position: left center;
+  object-position: center;
 }
 
 .pbh-provider-logo--text {
@@ -890,10 +882,11 @@
 .pbh-slot-cell .pbh-provider-logo,
 .pbh-bonus-card__grid .pbh-provider-logo {
   display: inline-grid;
-  overflow: visible;
+  overflow: hidden;
   color: inherit;
   font-size: inherit;
   text-overflow: clip;
+  white-space: normal;
 }
 
 .pbh-summary-strip {
@@ -1079,6 +1072,7 @@
 }
 
 .pbh-table td:first-child {
+  padding: 5px 8px;
   border-left: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 10px 0 0 10px;
 }
@@ -1127,7 +1121,7 @@
 .pbh-slot-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 

@@ -59,11 +59,10 @@ function SummaryStrip({ stats, currency }) {
   );
 }
 
-function MathLine({ label, formula, value, tone }) {
+function MathLine({ label, value, tone }) {
   return (
     <div className={`pbh-math-line ${tone ? `pbh-math-line--${tone}` : ''}`}>
       <span>{label}</span>
-      <code>{formula}</code>
       <strong>{value}</strong>
     </div>
   );
@@ -72,7 +71,6 @@ function MathLine({ label, formula, value, tone }) {
 function MathematicsPanel({ stats, currency }) {
   const target = stats.target ?? stats.breakEven;
   const profitTone = stats.profitLoss >= 0 ? 'positive' : 'negative';
-  const remainingBonuses = stats.remainingBonuses || 0;
   const liveBreakEven = stats.liveBreakEvenMultiplier ?? stats.requiredAverageMultiplier;
   return (
     <div className="pbh-math-panel" aria-label="Bonus hunt mathematics">
@@ -81,33 +79,27 @@ function MathematicsPanel({ stats, currency }) {
           <span className="pbh-eyebrow">Mathematics</span>
           <h3>Hunt target</h3>
         </div>
-        <p>Deposits kept in play set the target. Opened payouts reduce what is still needed.</p>
       </div>
       <div className="pbh-math-grid">
         <MathLine
           label="Target"
-          formula={`${formatMoney(stats.totalDeposits, currency)} - ${formatMoney(stats.stopLoss, currency)}`}
           value={formatMoney(target, currency)}
         />
         <MathLine
           label="Profit / Loss"
-          formula={`${formatMoney(stats.totalPayout, currency)} - ${formatMoney(target, currency)}`}
           value={formatSignedMoney(stats.profitLoss, currency)}
           tone={profitTone}
         />
         <MathLine
           label="Remaining"
-          formula={`${formatMoney(target, currency)} - ${formatMoney(stats.totalPayout, currency)}`}
           value={formatMoney(stats.remainingBreakEven, currency)}
         />
         <MathLine
           label="Live BE x"
-          formula={`${formatMoney(stats.remainingBreakEven, currency)} / ${formatMoney(stats.remainingBet, currency)} unopened bet`}
           value={formatMultiplier(liveBreakEven)}
         />
         <MathLine
           label="Average needed"
-          formula={`${formatMoney(stats.remainingBreakEven, currency)} / ${remainingBonuses} unopened bonuses`}
           value={formatMoney(stats.requiredAveragePayout, currency)}
         />
       </div>
