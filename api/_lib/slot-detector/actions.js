@@ -341,6 +341,7 @@ export async function handleSubmitEvent(req, res, supabase, device, body) {
     domain: evidence.domain,
     path_pattern: evidence.pathPattern,
     safe_game_id: evidence.safeGameId,
+    device_panel_id: evidence.devicePanelId,
     provider_hint: evidence.providerHint,
     slot_hint: evidence.slotHint,
     page_title_hint: evidence.pageTitleHint,
@@ -501,6 +502,51 @@ export async function handleEvents(req, res, supabase, user) {
     .limit(limit);
   if (error) throw error;
   return res.status(200).json({ events: data || [] });
+}
+
+function compactSuggestions(events = []) {
+  const suggestions = [];
+  const seen = new Set();
+  for (const event of events) {
+    const key = event.device_panel_id
+      ? `${event.device_id || 'device'}:${event.device_panel_id}`
+      : `${event.slot_id}:${event.domain || 'domain'}:${event.target || DEFAULT_TARGET}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    suggestions.push(event);
+  }
+  return suggestions;
+}
+
+export async function handleSuggestions(req, res, supabase, user) {
+  const limit = Math.min(Math.max(Number(req.query.limit || 80), 1), 150);
+  const { data, error } = await supabase
+    .from('slot_detection_events')
+    .select('*')
+    .eq('user_id', user.id)
+    .not('slot_id', 'is', null)
+    .is('suggestion_dismissed_at', null)
+    .eq('live_update_applied', false)
+    .in('match_status', ['matched', 'low_confidence'])
+    .order('received_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return res.status(200).json({ suggestions: compactSuggestions(data || []) });
+}
+
+export async function handleDismissSuggestion(req, res, supabase, user, body) {
+  const eventId = body.eventId || req.query.eventId;
+  if (!eventId) throw statusError('eventId is required', 400);
+  const { data, error } = await supabase
+    .from('slot_detection_events')
+    .update({ suggestion_dismissed_at: new Date().toISOString() })
+    .eq('id', eventId)
+    .eq('user_id', user.id)
+    .select('*')
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw statusError('Suggestion not found', 404);
+  return res.status(200).json({ event: data });
 }
 
 export async function handleUnmatched(req, res, supabase, user) {

@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Copy, KeyRound, Power, RefreshCw, RotateCw, Search, ShieldCheck, Unplug } from 'lucide-react';
+import { Check, Copy, EyeOff, KeyRound, Play, Power, RefreshCw, RotateCw, Search, ShieldCheck, Unplug } from 'lucide-react';
 import {
   confirmMatch,
   createPairingCode,
+  dismissSuggestion,
   getActiveSlot,
   getEvents,
   getSettings,
+  getSuggestions,
   getUnmatched,
   listDevices,
   revokeDevice,
@@ -22,6 +24,11 @@ function formatDate(value) {
 
 function statusClass(status) {
   return `sd-pill sd-pill--${String(status || 'unknown').replace(/[^a-z0-9_-]/gi, '-')}`;
+}
+
+function panelLabel(value) {
+  const match = String(value || '').match(/panel-(\d+)/i);
+  return match ? `Panel ${match[1]}` : value || 'Panel';
 }
 
 function EventSlotSearch({ event, onConfirmed }) {
@@ -94,6 +101,7 @@ export default function SlotDetectorDashboard() {
   const [settings, setSettings] = useState(null);
   const [devices, setDevices] = useState([]);
   const [activeSlot, setActiveSlot] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
   const [events, setEvents] = useState([]);
   const [unmatched, setUnmatched] = useState([]);
   const [message, setMessage] = useState('');
@@ -106,16 +114,18 @@ export default function SlotDetectorDashboard() {
     if (!silent) setLoading(true);
     try {
       setError('');
-      const [settingsData, deviceData, activeData, eventData, unmatchedData] = await Promise.all([
+      const [settingsData, deviceData, activeData, suggestionData, eventData, unmatchedData] = await Promise.all([
         getSettings(),
         listDevices(),
         getActiveSlot(),
+        getSuggestions(),
         getEvents(30),
         getUnmatched(),
       ]);
       setSettings(settingsData.settings);
       setDevices(deviceData.devices || []);
       setActiveSlot(activeData.activeSlot || null);
+      setSuggestions(suggestionData.suggestions || []);
       setEvents(eventData.events || []);
       setUnmatched(unmatchedData.events || []);
     } catch (err) {
@@ -170,6 +180,35 @@ export default function SlotDetectorDashboard() {
     const result = await rotateDevice(deviceId);
     setRotatedToken(result.token);
     await load(true);
+  };
+
+  const activateSuggestion = async (event) => {
+    if (!event.slot_id) return;
+    try {
+      setError('');
+      await confirmMatch({
+        eventId: event.id,
+        slotId: event.slot_id,
+        saveAlias: Boolean(event.slot_hint),
+        saveGameCode: Boolean(event.safe_game_id),
+        target: event.target,
+      });
+      setMessage(`${event.slot_name || event.slot_hint} activated.`);
+      window.setTimeout(() => setMessage(''), 2500);
+      await load(true);
+    } catch (err) {
+      setError(err.message || 'Failed to activate suggestion.');
+    }
+  };
+
+  const hideSuggestion = async (eventId) => {
+    try {
+      setError('');
+      await dismissSuggestion(eventId);
+      await load(true);
+    } catch (err) {
+      setError(err.message || 'Failed to hide suggestion.');
+    }
   };
 
   if (loading) {
@@ -328,6 +367,38 @@ export default function SlotDetectorDashboard() {
               )}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section className="sd-panel">
+        <div className="sd-panel__head">
+          <div>
+            <h2>Suggested slots</h2>
+            <p>Database matches from ScreenSplit panels. Activate only the one you want live; hide the rest.</p>
+          </div>
+        </div>
+        <div className="sd-suggestion-grid">
+          {suggestions.map((event) => (
+            <article key={event.id} className="sd-suggestion">
+              <div className="sd-suggestion__main">
+                {event.evidence?.urls?.[0]?.domain && <span className="sd-suggestion__source">{event.evidence.urls[0].domain}</span>}
+                <strong>{event.slot_name || event.slot_hint || 'Matched slot'}</strong>
+                <small>
+                  {event.provider_name || event.provider_hint || 'Unknown provider'} · {event.server_confidence}% · {panelLabel(event.device_panel_id)}
+                </small>
+                <small>{formatDate(event.detected_at)} · {event.domain || '-'}</small>
+              </div>
+              <div className="sd-suggestion__actions">
+                <button type="button" className="sd-btn sd-btn--primary" onClick={() => activateSuggestion(event)}>
+                  <Play size={15} /> Activate
+                </button>
+                <button type="button" className="sd-btn sd-btn--ghost" onClick={() => hideSuggestion(event.id)}>
+                  <EyeOff size={15} /> Hide
+                </button>
+              </div>
+            </article>
+          ))}
+          {suggestions.length === 0 && <div className="sd-empty">No matched slot suggestions yet.</div>}
         </div>
       </section>
 

@@ -46,6 +46,10 @@ function safeIdentifier(value, max = 96) {
   return safe.slice(0, max) || null;
 }
 
+function safePanelId(value) {
+  return safeIdentifier(value, 64);
+}
+
 function cleanTitleTail(value) {
   return safeText(value, 160)
     .replace(/\s*[-|]\s*(?:VIP\s+)?Crypto\s+Casino.*$/i, '')
@@ -214,6 +218,7 @@ export function sanitizeDetectionPayload(body = {}) {
     clientEventId: body.clientEventId,
     detectedAt: body.detectedAt,
     target: normalizeTarget(body.target),
+    devicePanelId: safePanelId(body.panelId || body.devicePanelId),
     domain: primary?.domain || null,
     pathPattern: primary?.pathPattern || null,
     safeGameId,
@@ -233,6 +238,7 @@ export function sanitizeDetectionPayload(body = {}) {
         providerHint: item.providerHint || null,
       })),
       textHints: safeTextHints,
+      panelId: safePanelId(body.panelId || body.devicePanelId),
       iframeSupported: Boolean(body.iframeSupported),
       crossOriginUnsupported: Boolean(body.crossOriginUnsupported),
       extensionVersion: safeText(body.extensionVersion || '', 40) || null,

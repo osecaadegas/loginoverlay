@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS public.slot_detection_events (
   domain TEXT,
   path_pattern TEXT,
   safe_game_id TEXT,
+  device_panel_id TEXT,
   provider_hint TEXT,
   slot_hint TEXT,
   page_title_hint TEXT,
@@ -106,6 +107,7 @@ CREATE TABLE IF NOT EXISTS public.slot_detection_events (
   stale_rejected BOOLEAN NOT NULL DEFAULT false,
   duplicate_rejected BOOLEAN NOT NULL DEFAULT false,
   live_update_applied BOOLEAN NOT NULL DEFAULT false,
+  suggestion_dismissed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT slot_detection_events_confidence_check
@@ -176,6 +178,11 @@ CREATE INDEX IF NOT EXISTS idx_slot_detection_events_user_time
 CREATE INDEX IF NOT EXISTS idx_slot_detection_events_unmatched
   ON public.slot_detection_events(user_id, received_at DESC)
   WHERE match_status IN ('unmatched', 'low_confidence', 'unsupported');
+CREATE INDEX IF NOT EXISTS idx_slot_detection_events_suggestions
+  ON public.slot_detection_events(user_id, received_at DESC)
+  WHERE slot_id IS NOT NULL
+    AND suggestion_dismissed_at IS NULL
+    AND live_update_applied = false;
 CREATE INDEX IF NOT EXISTS idx_detected_slots_user_time
   ON public.detected_slots(user_id, detected_at DESC);
 

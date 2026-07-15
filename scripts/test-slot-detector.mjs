@@ -75,13 +75,16 @@ const shufflePayload = sanitizeDetectionPayload({
   topUrl: 'https://shuffle.com/casino/games/deal-with-death',
   title: 'Play Deal With Death Gambling Game by Hacksaw Gaming | Shuffle - VIP Crypto Casino',
   textHints: ['Play Deal With Death Gambling Game by Hacksaw Gaming | Shuffle - VIP Crypto Casino'],
+  panelId: 'panel-2',
   iframeSupported: false,
   crossOriginUnsupported: true,
 });
 assert.equal(shufflePayload.domain, 'shuffle.com');
+assert.equal(shufflePayload.devicePanelId, 'panel-2');
 assert.equal(shufflePayload.slotHint, 'Deal With Death');
 assert.equal(shufflePayload.providerHint, 'Hacksaw Gaming');
 assert.equal(shufflePayload.evidence.textHints[0], 'Deal With Death');
+assert.equal(shufflePayload.evidence.panelId, 'panel-2');
 
 const slots = [
   { id: 'slot-1', name: 'Gates of Olympus', provider: 'Pragmatic Play', image: '/gates.png' },

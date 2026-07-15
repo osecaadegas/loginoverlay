@@ -63,6 +63,14 @@ export function getEvents(limit = 30) {
   return request('events', { params: { limit } });
 }
 
+export function getSuggestions(limit = 80) {
+  return request('suggestions', { params: { limit } });
+}
+
+export function dismissSuggestion(eventId) {
+  return request('dismiss-suggestion', { method: 'POST', body: { eventId } });
+}
+
 export function getUnmatched() {
   return request('unmatched');
 }

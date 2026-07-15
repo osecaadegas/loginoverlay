@@ -328,6 +328,57 @@
   font-weight: 900;
 }
 
+.sd-suggestion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.sd-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(92, 227, 221, 0.2);
+  border-radius: 8px;
+  background: rgba(10, 22, 34, 0.86);
+}
+
+.sd-suggestion__main {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.sd-suggestion__main strong,
+.sd-suggestion__main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sd-suggestion__main small {
+  color: #9fb2c7;
+}
+
+.sd-suggestion__source {
+  width: fit-content;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #a9fff4;
+  background: rgba(21, 126, 115, 0.32);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sd-suggestion__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .sd-error {
   color: #ffb8c4;
 }
@@ -341,8 +392,13 @@
   .sd-grid,
   .sd-grid--top,
   .sd-event,
-  .sd-event--compact {
+  .sd-event--compact,
+  .sd-suggestion {
     grid-template-columns: 1fr;
+  }
+
+  .sd-suggestion {
+    display: grid;
   }
 
   .sd-header {

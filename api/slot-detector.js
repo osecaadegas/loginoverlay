@@ -8,6 +8,7 @@ import {
   handleActiveSlot,
   handleConfirmMatch,
   handleCreatePairingCode,
+  handleDismissSuggestion,
   handleEvents,
   handleExchangePairingCode,
   handleHeartbeat,
@@ -15,6 +16,7 @@ import {
   handleRevokeDevice,
   handleRotateDevice,
   handleSettings,
+  handleSuggestions,
   handleSubmitEvent,
   handleUnmatched,
   handleUpdateSettings,
@@ -30,6 +32,8 @@ const USER_ACTIONS = new Set([
   'update-settings',
   'active-slot',
   'events',
+  'suggestions',
+  'dismiss-suggestion',
   'unmatched',
   'confirm-match',
 ]);
@@ -74,6 +78,8 @@ export default async function handler(req, res) {
       if (action === 'update-settings') return handleUpdateSettings(req, res, supabase, user, body);
       if (action === 'active-slot') return handleActiveSlot(req, res, supabase, user);
       if (action === 'events') return handleEvents(req, res, supabase, user);
+      if (action === 'suggestions') return handleSuggestions(req, res, supabase, user);
+      if (action === 'dismiss-suggestion') return handleDismissSuggestion(req, res, supabase, user, body);
       if (action === 'unmatched') return handleUnmatched(req, res, supabase, user);
       if (action === 'confirm-match') return handleConfirmMatch(req, res, supabase, user, body);
     }
