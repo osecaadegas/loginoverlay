@@ -46,6 +46,46 @@ function safeIdentifier(value, max = 96) {
   return safe.slice(0, max) || null;
 }
 
+function cleanTitleTail(value) {
+  return safeText(value, 160)
+    .replace(/\s*[-|]\s*(?:VIP\s+)?Crypto\s+Casino.*$/i, '')
+    .replace(/\s*[-|]\s*Shuffle.*$/i, '')
+    .replace(/\s*[-|]\s*Stake.*$/i, '')
+    .replace(/\s*[-|]\s*Casino.*$/i, '')
+    .trim();
+}
+
+function parseSlotTitle(value) {
+  const title = cleanTitleTail(value);
+  if (!title) return { slotName: '', providerName: '' };
+
+  const gamblingGame = title.match(/^play\s+(.+?)\s+gambling\s+game\s+by\s+(.+)$/i);
+  if (gamblingGame) {
+    return {
+      slotName: safeText(gamblingGame[1], 120),
+      providerName: safeText(gamblingGame[2], 80),
+    };
+  }
+
+  const slotByProvider = title.match(/^play\s+(.+?)\s+(?:slot|casino\s+game|game)\s+by\s+(.+)$/i);
+  if (slotByProvider) {
+    return {
+      slotName: safeText(slotByProvider[1], 120),
+      providerName: safeText(slotByProvider[2], 80),
+    };
+  }
+
+  const plainPlay = title.match(/^play\s+(.+)$/i);
+  if (plainPlay) {
+    return {
+      slotName: safeText(plainPlay[1], 120),
+      providerName: '',
+    };
+  }
+
+  return { slotName: title, providerName: '' };
+}
+
 function normalizeDomain(hostname) {
   return String(hostname || '')
     .toLowerCase()
@@ -138,18 +178,21 @@ export function sanitizeDetectionPayload(body = {}) {
     .map(({ value, source }) => ({ ...sanitizeUrl(value), source }))
     .filter(Boolean);
   const primary = sanitizedUrls.find((item) => item.supported) || sanitizedUrls[0] || null;
+  const parsedTitle = parseSlotTitle(body.slotName || body.gameName || body.title || body.pageTitle || '');
   const safeTextHints = [
+    parsedTitle.slotName,
     body.slotName,
     body.gameName,
     body.title,
     body.pageTitle,
     ...(Array.isArray(body.textHints) ? body.textHints : []),
   ].map((value) => safeText(value)).filter(Boolean).slice(0, 12);
-  const slotHint = safeText(body.slotName || body.gameName || safeTextHints[0] || '', 120);
+  const slotHint = safeText(body.slotName || body.gameName || parsedTitle.slotName || safeTextHints[0] || '', 120);
   const providerHint = safeText(
     body.providerHint
       || body.provider
       || body.providerName
+      || parsedTitle.providerName
       || primary?.providerHint
       || '',
     80,

@@ -71,9 +71,22 @@ assert.equal(payload.providerHint, 'Pragmatic Play');
 assert.equal(payload.evidence.urls[1].safeGameId, 'vs20olympgate');
 assert.equal(Object.hasOwn(payload, 'confidence'), false);
 
+const shufflePayload = sanitizeDetectionPayload({
+  topUrl: 'https://shuffle.com/casino/games/deal-with-death',
+  title: 'Play Deal With Death Gambling Game by Hacksaw Gaming | Shuffle - VIP Crypto Casino',
+  textHints: ['Play Deal With Death Gambling Game by Hacksaw Gaming | Shuffle - VIP Crypto Casino'],
+  iframeSupported: false,
+  crossOriginUnsupported: true,
+});
+assert.equal(shufflePayload.domain, 'shuffle.com');
+assert.equal(shufflePayload.slotHint, 'Deal With Death');
+assert.equal(shufflePayload.providerHint, 'Hacksaw Gaming');
+assert.equal(shufflePayload.evidence.textHints[0], 'Deal With Death');
+
 const slots = [
   { id: 'slot-1', name: 'Gates of Olympus', provider: 'Pragmatic Play', image: '/gates.png' },
   { id: 'slot-2', name: 'Wanted Dead or a Wild', provider: 'Hacksaw Gaming' },
+  { id: 'slot-3', name: 'Deal With Death', provider: 'Hacksaw Gaming' },
 ];
 
 const gameCodeMatch = matchSlotFromEvidence({
@@ -103,6 +116,16 @@ const fuzzyMatch = matchSlotFromEvidence({
 });
 assert.equal(fuzzyMatch.slot.id, 'slot-1');
 assert.equal(fuzzyMatch.confidence >= 85, true);
+
+const shuffleTitleMatch = matchSlotFromEvidence({
+  evidence: shufflePayload,
+  slots,
+  aliases: [],
+  gameCodes: [],
+});
+assert.equal(shuffleTitleMatch.status, 'matched');
+assert.equal(shuffleTitleMatch.slot.id, 'slot-3');
+assert.equal(shuffleTitleMatch.confidence >= 90, true);
 
 const unsupported = matchSlotFromEvidence({
   evidence: { crossOriginUnsupported: true, slotHint: '' },
