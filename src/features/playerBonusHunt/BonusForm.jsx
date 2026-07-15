@@ -4,6 +4,7 @@ import { searchSlots } from './playerBonusHuntService';
 import SlotThumb from './SlotThumb';
 import { formatMaxWin, formatRtp, formatVolatility } from './format';
 import { formatAutoDecimalInput } from './inputFormat';
+import { getProviderImage } from '../../utils/gameProviders';
 
 const EMPTY = {
   slot_name: '',
@@ -18,6 +19,28 @@ const EMPTY = {
   bonus_cost: '',
   bet_size: '',
 };
+
+function LockedProvider({ provider }) {
+  const [failed, setFailed] = useState(false);
+  const label = provider || 'Select a library slot';
+  const logo = provider && !failed ? getProviderImage(provider) : null;
+
+  useEffect(() => {
+    setFailed(false);
+  }, [provider]);
+
+  return (
+    <div className={`pbh-provider-locked${provider ? '' : ' pbh-provider-locked--empty'}`} aria-label={`Provider: ${label}`}>
+      {logo ? (
+        <span className="pbh-provider-logo pbh-provider-logo--locked" title={provider}>
+          <img src={logo} alt={`${provider} logo`} onError={() => setFailed(true)} />
+        </span>
+      ) : (
+        <span className="pbh-provider-logo pbh-provider-logo--text pbh-provider-logo--locked-text">{label}</span>
+      )}
+    </div>
+  );
+}
 
 export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = 'Save bonus' }) {
   const [form, setForm] = useState({ ...EMPTY, ...(initial || {}) });
@@ -56,6 +79,7 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
       ...prev,
       slot_id: null,
       slot_name: value,
+      provider_name: '',
       slot_image_url: '',
       slot_rtp: null,
       slot_volatility: null,
@@ -81,6 +105,9 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
     setSlotQuery(slot.name);
     setSlotResults([]);
   };
+
+  const selectedType = form.bonus_type || 'normal';
+  const toggleType = (type) => set('bonus_type', selectedType === type ? 'normal' : type);
 
   const submit = (event) => {
     event.preventDefault();
@@ -147,7 +174,7 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
 
       <label className="pbh-field">
         <span>Provider</span>
-        <input value={form.provider_name || ''} onChange={(event) => set('provider_name', event.target.value)} placeholder="Optional" />
+        <LockedProvider provider={form.provider_name} />
       </label>
       <label className="pbh-field">
         <span>Bonus cost</span>
@@ -163,16 +190,26 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
           placeholder="0.20"
         />
       </label>
-      <label className="pbh-field">
-        <span>Type</span>
-        <select value={form.bonus_type || 'normal'} onChange={(event) => set('bonus_type', event.target.value)}>
-          <option value="normal">Normal</option>
-          <option value="super">Super</option>
-          <option value="supreme">Supreme</option>
-        </select>
-      </label>
-      <div className="pbh-form__actions">
+      <div className="pbh-form__actions pbh-form__actions--bonus">
         {onCancel && <button type="button" className="pbh-btn pbh-btn--ghost" onClick={onCancel}>Cancel</button>}
+        <div className="pbh-bonus-type-buttons" role="group" aria-label="Bonus type">
+          <button
+            type="button"
+            className={`pbh-type-toggle pbh-type-toggle--super${selectedType === 'super' ? ' active' : ''}`}
+            onClick={() => toggleType('super')}
+            aria-pressed={selectedType === 'super'}
+          >
+            Super
+          </button>
+          <button
+            type="button"
+            className={`pbh-type-toggle pbh-type-toggle--extreme${selectedType === 'supreme' ? ' active' : ''}`}
+            onClick={() => toggleType('supreme')}
+            aria-pressed={selectedType === 'supreme'}
+          >
+            Extreme
+          </button>
+        </div>
         <button type="submit" className="pbh-btn pbh-btn--primary">{submitLabel}</button>
       </div>
     </form>

@@ -23,7 +23,7 @@ import './PlayerBonusHunt.css';
 const BONUS_TYPE_OPTIONS = [
   { value: 'normal', label: 'Normal' },
   { value: 'super', label: 'Super' },
-  { value: 'supreme', label: 'Supreme' },
+  { value: 'supreme', label: 'Extreme' },
 ];
 
 const BONUS_TYPE_ORDER = {
@@ -124,6 +124,10 @@ function ProviderLogo({ provider, className = '' }) {
   const logo = !failed ? getProviderImage(provider) : null;
   const label = provider || 'Unknown provider';
 
+  useEffect(() => {
+    setFailed(false);
+  }, [provider]);
+
   if (logo) {
     return (
       <span className={`pbh-provider-logo ${className}`} title={label}>
@@ -133,6 +137,19 @@ function ProviderLogo({ provider, className = '' }) {
   }
 
   return <span className={`pbh-provider-logo pbh-provider-logo--text ${className}`} title={label}>{label}</span>;
+}
+
+function LockedProvider({ provider }) {
+  const label = provider || 'Select a library slot';
+  return (
+    <div className={`pbh-provider-locked${provider ? '' : ' pbh-provider-locked--empty'}`} aria-label={`Provider: ${label}`}>
+      {provider ? (
+        <ProviderLogo provider={provider} className="pbh-provider-logo--locked" />
+      ) : (
+        <span className="pbh-provider-logo pbh-provider-logo--text pbh-provider-logo--locked-text">{label}</span>
+      )}
+    </div>
+  );
 }
 
 function PayoutInput({ bonus, value, saving, onChange, onSave, onKeyDown }) {
@@ -390,6 +407,8 @@ function SlotCatalogSuggestions({ slots, loading, error, query, onAdd, onCustom 
 
 function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
   const set = (key, value) => setDraft((prev) => ({ ...prev, [key]: value }));
+  const selectedType = draft.bonus_type || 'normal';
+  const toggleType = (type) => set('bonus_type', selectedType === type ? 'normal' : type);
   const submit = (event) => {
     event.preventDefault();
     onSubmit({
@@ -420,7 +439,7 @@ function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
       <div className="pbh-quick-bonus__fields">
         <label className="pbh-field">
           <span>Provider</span>
-          <input value={draft.provider_name || ''} onChange={(event) => set('provider_name', event.target.value)} placeholder="Optional" />
+          <LockedProvider provider={draft.provider_name} />
         </label>
         <label className="pbh-field">
           <span>Bonus cost</span>
@@ -436,20 +455,30 @@ function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
             placeholder="0.20"
           />
         </label>
-        <label className="pbh-field">
-          <span>Type</span>
-          <select value={draft.bonus_type || 'normal'} onChange={(event) => set('bonus_type', event.target.value)}>
-            <option value="normal">Normal</option>
-            <option value="super">Super</option>
-            <option value="supreme">Supreme</option>
-          </select>
-        </label>
       </div>
 
-      <div className="pbh-form__actions pbh-form__actions--split">
+      <div className="pbh-form__actions pbh-form__actions--bonus">
         <button type="button" className="pbh-btn pbh-btn--ghost" onClick={onCancel}>Cancel</button>
+        <div className="pbh-bonus-type-buttons" role="group" aria-label="Bonus type">
+          <button
+            type="button"
+            className={`pbh-type-toggle pbh-type-toggle--super${selectedType === 'super' ? ' active' : ''}`}
+            onClick={() => toggleType('super')}
+            aria-pressed={selectedType === 'super'}
+          >
+            Super
+          </button>
+          <button
+            type="button"
+            className={`pbh-type-toggle pbh-type-toggle--extreme${selectedType === 'supreme' ? ' active' : ''}`}
+            onClick={() => toggleType('supreme')}
+            aria-pressed={selectedType === 'supreme'}
+          >
+            Extreme
+          </button>
+        </div>
         <button type="submit" className="pbh-btn pbh-btn--primary" disabled={saving}>
-          <Plus size={17} /> {saving ? 'Adding...' : 'Add bonus'}
+          <Plus size={17} /> {saving ? 'Adding...' : 'Add to hunt'}
         </button>
       </div>
     </form>
