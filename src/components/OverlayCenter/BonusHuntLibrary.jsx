@@ -11,6 +11,18 @@ import { getBonusHuntHistory, deleteBonusHuntHistory } from '../../services/over
 import { supabase } from '../../config/supabaseClient';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 
+function getBonusHuntSpendTarget(startMoney, stopLoss) {
+  const start = Number(startMoney) || 0;
+  const stop = Number(stopLoss) || 0;
+  return Math.max(start - stop, 0);
+}
+
+function getLibraryHuntProfit(hunt) {
+  const totalWin = Number(hunt?.total_win);
+  if (!Number.isFinite(totalWin)) return Number(hunt?.profit) || 0;
+  return totalWin - getBonusHuntSpendTarget(hunt?.start_money, hunt?.stop_loss);
+}
+
 export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
   const { user } = useAuth();
 
@@ -131,10 +143,10 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
         sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         break;
       case 'profit-desc':
-        sorted.sort((a, b) => (Number(b.profit) || 0) - (Number(a.profit) || 0));
+        sorted.sort((a, b) => getLibraryHuntProfit(b) - getLibraryHuntProfit(a));
         break;
       case 'profit-asc':
-        sorted.sort((a, b) => (Number(a.profit) || 0) - (Number(b.profit) || 0));
+        sorted.sort((a, b) => getLibraryHuntProfit(a) - getLibraryHuntProfit(b));
         break;
       case 'bonuses-desc':
         sorted.sort((a, b) => (b.bonus_count || 0) - (a.bonus_count || 0));
@@ -190,7 +202,8 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
     const totalBetOpened = opened.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
     const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
     const startMoney = Number(hunt.start_money) || 0;
-    const profit = totalWin - startMoney;
+    const spendTarget = getBonusHuntSpendTarget(startMoney, hunt.stop_loss);
+    const profit = totalWin - spendTarget;
 
     // Mean of per-slot multipliers (each bonus payout / its betSize)
     const avgMultiPerSlot = opened.length > 0
@@ -201,7 +214,7 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
     const overallMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
 
     // Break-even multiplier needed across all bonuses to recover start_money
-    const breakEvenMulti = totalBet > 0 ? startMoney / totalBet : 0;
+    const breakEvenMulti = totalBet > 0 ? spendTarget / totalBet : 0;
 
     let bestMulti = 0, bestSlotName = '';
     let worstMulti = opened.length > 0 ? Infinity : 0, worstSlotName = '';
@@ -212,7 +225,7 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
     });
     if (opened.length === 0) worstMulti = 0;
 
-    const roiPercent = startMoney > 0 ? (profit / startMoney) * 100 : 0;
+    const roiPercent = spendTarget > 0 ? (profit / spendTarget) * 100 : 0;
 
     const round2 = v => Math.round(v * 100) / 100;
 
@@ -264,11 +277,11 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
   // ── Stats summary ──
   const stats = useMemo(() => {
     const total = hunts.length;
-    const totalProfit = hunts.reduce((s, h) => s + (Number(h.profit) || 0), 0);
+    const totalProfit = hunts.reduce((s, h) => s + getLibraryHuntProfit(h), 0);
     const totalBonuses = hunts.reduce((s, h) => s + (h.bonus_count || 0), 0);
-    const profitable = hunts.filter(h => (Number(h.profit) || 0) >= 0).length;
+    const profitable = hunts.filter(h => getLibraryHuntProfit(h) >= 0).length;
     const bestHunt = hunts.reduce((best, h) =>
-      (Number(h.profit) || 0) > (Number(best?.profit) || -Infinity) ? h : best,
+      getLibraryHuntProfit(h) > (best ? getLibraryHuntProfit(best) : -Infinity) ? h : best,
       null
     );
     return { total, totalProfit, totalBonuses, profitable, bestHunt };
@@ -326,7 +339,9 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
             <div className="bhl-page-metric-card">
               <span className="bhl-page-metric-label">Top Session</span>
               <strong className="bhl-page-metric-value bhl-page-metric-value--name">{stats.bestHunt?.hunt_name || 'No hunts yet'}</strong>
-              <span className="bhl-page-metric-meta">{stats.bestHunt ? `+${fmtNum(stats.bestHunt.profit)}` : 'Save a hunt to start ranking'}</span>
+              <span className="bhl-page-metric-meta">
+                {stats.bestHunt ? `${getLibraryHuntProfit(stats.bestHunt) >= 0 ? '+' : ''}${fmtNum(getLibraryHuntProfit(stats.bestHunt))}` : 'Save a hunt to start ranking'}
+              </span>
             </div>
           </div>
         </div>
@@ -387,7 +402,9 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
               {stats.bestHunt && (
                 <div className="bhl-stat-item bhl-stat-item--best">
                   <span className="bhl-stat-value">🏆 {stats.bestHunt.hunt_name}</span>
-                  <span className="bhl-stat-label">Best Hunt (+{fmtNum(stats.bestHunt.profit)})</span>
+                  <span className="bhl-stat-label">
+                    Best Hunt ({getLibraryHuntProfit(stats.bestHunt) >= 0 ? '+' : ''}{fmtNum(getLibraryHuntProfit(stats.bestHunt))})
+                  </span>
                 </div>
               )}
             </div>
@@ -492,7 +509,7 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
 
             <div className={`bhl-hunt-grid ${viewMode === 'list' ? 'bhl-hunt-grid--list' : ''}`}>
               {filtered.map(hunt => {
-                const prof = Number(hunt.profit) || 0;
+                const prof = getLibraryHuntProfit(hunt);
                 const isProfit = prof >= 0;
                 const isExpanded = expandedId === hunt.id;
                 const cur = hunt.currency || '€';
@@ -542,10 +559,6 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
                           <div className="bhl-detail-box">
                             <span className="bhl-detail-label">Start</span>
                             <span className="bhl-detail-value">{cur}{fmtNum(hunt.start_money)}</span>
-                          </div>
-                          <div className="bhl-detail-box">
-                            <span className="bhl-detail-label">Total Bet</span>
-                            <span className="bhl-detail-value">{cur}{fmtNum(hunt.total_bet)}</span>
                           </div>
                           <div className="bhl-detail-box">
                             <span className="bhl-detail-label">Total Win</span>

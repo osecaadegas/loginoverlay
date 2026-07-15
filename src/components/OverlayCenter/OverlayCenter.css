@@ -25112,6 +25112,8 @@ body.wm-resizing {
   margin-top: 8px;
   padding-top: 12px;
   border-top: 1px solid rgba(148, 163, 184, 0.12);
+  position: relative;
+  z-index: 20;
 }
 
 .oc2-detail--bonus-hunt .bh-section-pill--inline-add {
@@ -25128,6 +25130,8 @@ body.wm-resizing {
 
 .oc2-detail--bonus-hunt .bh-add-row--search {
   width: 100%;
+  position: relative;
+  z-index: 50;
 }
 
 .oc2-detail--bonus-hunt .bh-add-row--inline-actions {
@@ -25136,8 +25140,11 @@ body.wm-resizing {
 }
 
 .oc2-detail--bonus-hunt .bh-inline-add .bh-search-container.bh-search-half {
+  flex: 1 1 100% !important;
   width: 100% !important;
   max-width: none !important;
+  position: relative;
+  z-index: 60;
 }
 
 .oc2-detail--bonus-hunt .bh-inline-add .bh-bet-field {
@@ -25152,6 +25159,65 @@ body.wm-resizing {
 
 .oc2-detail--bonus-hunt .bh-inline-add .bh-submit-dropdown {
   margin-top: 2px;
+}
+
+.oc2-detail--bonus-hunt .bh-panel-section--setup {
+  z-index: 30;
+}
+
+.oc2-detail--bonus-hunt .bh-panel-section--list,
+.oc2-detail--bonus-hunt .bh-panel-section--save {
+  z-index: 1;
+}
+
+.oc2-detail--bonus-hunt .bh-inline-add .bh-suggestions-dropdown {
+  z-index: 20000 !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-item {
+  padding-right: 12px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-item--super,
+.oc2-detail--bonus-hunt .bh-list-item--extreme {
+  padding-right: 12px !important;
+}
+
+.oc2-detail--bonus-hunt .bh-list-type-slot {
+  flex: 0 0 24px;
+  width: 24px;
+  align-self: stretch;
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  pointer-events: none;
+}
+
+.oc2-detail--bonus-hunt .bh-list-type-slot--empty {
+  opacity: 0;
+}
+
+.oc2-detail--bonus-hunt .bh-list-type-slot--super {
+  color: #2b1900;
+  border-color: rgba(251, 191, 36, 0.72);
+  background: linear-gradient(180deg, #fde68a, var(--sc-gold));
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.2);
+}
+
+.oc2-detail--bonus-hunt .bh-list-type-slot--extreme {
+  color: #fff1f2;
+  border-color: rgba(251, 113, 133, 0.74);
+  background: linear-gradient(180deg, #fb7185, #b91c1c);
+  box-shadow: 0 0 18px rgba(251, 113, 133, 0.22);
 }
 
 @media (max-width: 1180px) {

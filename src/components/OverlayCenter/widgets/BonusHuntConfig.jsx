@@ -47,6 +47,18 @@ function findExistingProvider(provider, providers) {
   return providers.find(item => item.toLowerCase() === candidate) || '';
 }
 
+function getBonusHuntSpendTarget(startMoney, stopLoss) {
+  const start = Number(startMoney) || 0;
+  const stop = Number(stopLoss) || 0;
+  return Math.max(start - stop, 0);
+}
+
+function getSavedBonusHuntProfit(record) {
+  const totalWin = Number(record?.total_win);
+  if (!Number.isFinite(totalWin)) return Number(record?.profit) || 0;
+  return totalWin - getBonusHuntSpendTarget(record?.start_money, record?.stop_loss);
+}
+
 function BonusHuntSubmitProviderLogo({ provider }) {
   const [failed, setFailed] = useState(false);
   const logo = !failed ? getProviderImage(provider) : null;
@@ -1012,7 +1024,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
       const opened = bonusList.filter(b => b.opened);
       const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
-      const profit = totalWin - (Number(startMoney) || 0);
+      const spendTarget = getBonusHuntSpendTarget(startMoney, stopLoss);
+      const profit = totalWin - spendTarget;
       const avgMulti = opened.length > 0
         ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
         : 0;
@@ -1306,9 +1319,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   onChange={e => setBetSize(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
                   placeholder={`Bet (${currency})`} step="0.1" />
-                <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
-                  + Add
-                </button>
                 <button
                   type="button"
                   className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
@@ -1325,6 +1335,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
                   onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
                 >Extreme</button>
+                <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
+                  + Add
+                </button>
                 {showSubmitSlot && (
                   <button
                     className="bh-submit-slot-btn active"
@@ -1844,6 +1857,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
               {/* Drag handle + number */}
               <span className={`bh-list-grip${canDrag ? ' bh-list-grip--active' : ''}`} title={canDrag ? 'Drag to reorder' : 'Set sort to Default to reorder'}>⠿</span>
+              <span
+                className={`bh-list-type-slot${bonusType ? ` bh-list-type-slot--${bonusType}` : ' bh-list-type-slot--empty'}`}
+                aria-label={bonusType ? `${bonusType} bonus` : 'Normal bonus'}
+              >
+                {bonusType === 'extreme' ? 'EXT' : bonusType === 'super' ? 'SUP' : ''}
+              </span>
               <span className="bh-list-num">#{i + 1}</span>
 
               {/* Name + provider — or inline edit */}
@@ -1952,11 +1971,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </svg>
                   </button>
                 </>
-              )}
-              {bonusType && (
-                <span className={`bh-list-type-ribbon bh-list-type-ribbon--${bonusType}`}>
-                  {bonusType === 'extreme' ? 'EXTREME' : 'SUPER'}
-                </span>
               )}
             </div>
               );
@@ -2078,7 +2092,6 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
   const total = bonusList.length;
   const opened = bonusList.filter(b => b.opened);
   const openedCount = opened.length;
-  const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
   const totalPayout = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
   const start = Number(startMoney) || 0;
   const sl = Number(stopLoss) || 0;
@@ -2127,7 +2140,6 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
     }}>
       <StatChip label="Bonuses" value={`${openedCount} / ${total}`} mutedColor={mutedColor} />
       <StatChip label="Start" value={fmtV(start)} mutedColor={mutedColor} />
-      <StatChip label="Total Bet" value={fmtV(totalBet)} mutedColor={mutedColor} />
       <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#eef2f5' : mutedColor} mutedColor={mutedColor} />
       <StatChip label="Target" value={fmtV(target)} color={accentColor} mutedColor={mutedColor} />
       <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} mutedColor={mutedColor} />
@@ -2184,7 +2196,8 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
     const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
     const opened = bonusList.filter(b => b.opened);
     const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
-    const profit = totalWin - (Number(startMoney) || 0);
+    const spendTarget = getBonusHuntSpendTarget(startMoney, stopLoss);
+    const profit = totalWin - spendTarget;
     const avgMulti = opened.length > 0
       ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
       : 0;
@@ -2268,12 +2281,13 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
     const totalBetOpened = opened.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
     const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
     const startMoney = Number(record.start_money) || 0;
-    const profit = totalWin - startMoney;
+    const spendTarget = getBonusHuntSpendTarget(startMoney, record.stop_loss);
+    const profit = totalWin - spendTarget;
     const avgMultiPerSlot = opened.length > 0
       ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
       : 0;
     const overallMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
-    const breakEvenMulti = totalBet > 0 ? startMoney / totalBet : 0;
+    const breakEvenMulti = totalBet > 0 ? spendTarget / totalBet : 0;
     let bestMulti = 0;
     let bestSlotName = '';
     let worstMulti = opened.length > 0 ? Infinity : 0;
@@ -2298,7 +2312,7 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
       total_bet: round2(totalBet),
       total_win: round2(totalWin),
       profit: round2(profit),
-      roi_percent: round2(startMoney > 0 ? (profit / startMoney) * 100 : 0),
+      roi_percent: round2(spendTarget > 0 ? (profit / spendTarget) * 100 : 0),
       avg_multi: round2(avgMultiPerSlot),
       overall_multi: round2(overallMulti),
       break_even_multi: round2(breakEvenMulti),
@@ -2399,7 +2413,7 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
         <div className="bh-history-list">
           {history.map(h => {
             const isExpanded = expandedId === h.id;
-            const prof = Number(h.profit) || 0;
+            const prof = getSavedBonusHuntProfit(h);
             const isProfit = prof >= 0;
 
             return (
@@ -2429,10 +2443,6 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
                       <div className="bh-history-stat-box">
                         <span className="bh-history-stat-label">Start</span>
                         <span className="bh-history-stat-val">{h.currency || currency}{fmtNum(h.start_money)}</span>
-                      </div>
-                      <div className="bh-history-stat-box">
-                        <span className="bh-history-stat-label">Total Bet</span>
-                        <span className="bh-history-stat-val">{h.currency || currency}{fmtNum(h.total_bet)}</span>
                       </div>
                       <div className="bh-history-stat-box">
                         <span className="bh-history-stat-label">Total Win</span>
