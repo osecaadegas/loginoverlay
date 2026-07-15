@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import { searchSlots } from './playerBonusHuntService';
 import SlotThumb from './SlotThumb';
 import { formatMaxWin, formatRtp, formatVolatility } from './format';
 import { formatAutoDecimalInput } from './inputFormat';
+import { readPlayerCache, removePlayerCache, writePlayerCache } from './clientCache';
 import { getProviderImage } from '../../utils/gameProviders';
 
 const EMPTY = {
@@ -42,16 +43,37 @@ function LockedProvider({ provider }) {
   );
 }
 
-export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = 'Save bonus' }) {
-  const [form, setForm] = useState({ ...EMPTY, ...(initial || {}) });
-  const [slotQuery, setSlotQuery] = useState(initial?.slot_name || '');
+export default function BonusForm({
+  initial,
+  onSubmit,
+  onCancel,
+  submitLabel = 'Save bonus',
+  autoFocus = false,
+  resetAfterSubmit = false,
+  cacheKey = '',
+}) {
+  const readCachedForm = () => cacheKey ? readPlayerCache(cacheKey) : null;
+  const [form, setForm] = useState(() => ({ ...EMPTY, ...(readCachedForm()?.form || {}), ...(initial || {}) }));
+  const [slotQuery, setSlotQuery] = useState(() => readCachedForm()?.slotQuery || initial?.slot_name || '');
   const [slotResults, setSlotResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const slotInputRef = useRef(null);
 
   useEffect(() => {
-    setForm({ ...EMPTY, ...(initial || {}) });
-    setSlotQuery(initial?.slot_name || '');
-  }, [initial]);
+    const cached = readCachedForm();
+    setForm({ ...EMPTY, ...(cached?.form || {}), ...(initial || {}) });
+    setSlotQuery(cached?.slotQuery || initial?.slot_name || '');
+  }, [initial, cacheKey]);
+
+  useEffect(() => {
+    if (!cacheKey) return;
+    writePlayerCache(cacheKey, { form, slotQuery });
+  }, [cacheKey, form, slotQuery]);
+
+  useEffect(() => {
+    if (!autoFocus) return;
+    window.setTimeout(() => slotInputRef.current?.focus(), 0);
+  }, [autoFocus]);
 
   useEffect(() => {
     if (!slotQuery || slotQuery.trim().length < 3) {
@@ -109,6 +131,14 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
   const selectedType = form.bonus_type || 'normal';
   const toggleType = (type) => set('bonus_type', selectedType === type ? 'normal' : type);
 
+  const resetForNextBonus = () => {
+    removePlayerCache(cacheKey);
+    setForm({ ...EMPTY });
+    setSlotQuery('');
+    setSlotResults([]);
+    window.setTimeout(() => slotInputRef.current?.focus(), 0);
+  };
+
   const submit = (event) => {
     event.preventDefault();
     const setupFields = { ...form };
@@ -118,13 +148,17 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
     delete setupFields.profit_loss;
     delete setupFields.status;
     delete setupFields.notes;
-    onSubmit({
+    const payload = {
       ...setupFields,
       slot_name: setupFields.slot_name || slotQuery,
       bonus_type: setupFields.bonus_type || 'normal',
       bonus_cost: Number(setupFields.bonus_cost || 0),
       bet_size: Number(setupFields.bet_size || 0),
-    });
+    };
+    const result = onSubmit(payload);
+    if (resetAfterSubmit) {
+      Promise.resolve(result).then(resetForNextBonus).catch(() => {});
+    }
   };
 
   return (
@@ -134,6 +168,7 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
         <div className="pbh-searchbox">
           <Search size={16} />
           <input
+            ref={slotInputRef}
             value={slotQuery}
             onChange={(event) => setSlotText(event.target.value)}
             placeholder="Search slot library"

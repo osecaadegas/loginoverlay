@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Archive, ArrowRight, CheckCircle2, CircleDollarSign, Edit2, Plus, Save, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
 import BonusForm from './BonusForm';
@@ -17,6 +17,7 @@ import {
 import { calculateBonusMultiplier, calculateHuntStatistics, roundMoney } from './domain.js';
 import { formatDate, formatMaxWin, formatMoney, formatMultiplier, formatRtp, formatSignedMoney, formatVolatility } from './format';
 import { formatAutoDecimalInput } from './inputFormat';
+import { huntDetailCacheKey, readPlayerCache, removePlayerCache, writePlayerCache } from './clientCache';
 import { getProviderImage } from '../../utils/gameProviders';
 import './PlayerBonusHunt.css';
 
@@ -211,8 +212,9 @@ function BonusRow({
   const openingMetrics = isOpening ? getOpeningMetrics(bonus, payoutValue) : null;
   const hasResult = isOpening ? openingMetrics.hasPayout : bonus.status === 'opened';
   const profit = isOpening ? openingMetrics.profit : Number(bonus.profit_loss || 0);
+  const typeClass = bonus.bonus_type && bonus.bonus_type !== 'normal' ? `pbh-row--${bonus.bonus_type}` : '';
   return (
-    <tr className={hasResult ? 'pbh-row--opened' : ''}>
+    <tr className={[hasResult ? 'pbh-row--opened' : '', typeClass].filter(Boolean).join(' ')}>
       <td>
         <div className="pbh-slot-cell">
           <SlotThumb src={bonus.slot_image_url} name={bonus.slot_name} size="sm" />
@@ -224,7 +226,11 @@ function BonusRow({
       </td>
       {isOpening ? (
         <>
+          <td><ProviderLogo provider={bonus.provider_name} /></td>
           <td><BonusTypePill type={bonus.bonus_type} /></td>
+          <td>{formatRtp(bonus.slot_rtp)}</td>
+          <td>{formatMaxWin(bonus.slot_max_win_multiplier)}</td>
+          <td>{formatVolatility(bonus.slot_volatility)}</td>
           <td>{formatMoney(bonus.bonus_cost, currency)}</td>
           <td>{formatMoney(bonus.bet_size, currency)}</td>
           <td>
@@ -279,8 +285,9 @@ function BonusCard({
   const openingMetrics = isOpening ? getOpeningMetrics(bonus, payoutValue) : null;
   const hasResult = isOpening ? openingMetrics.hasPayout : bonus.status === 'opened';
   const profit = isOpening ? openingMetrics.profit : Number(bonus.profit_loss || 0);
+  const typeClass = bonus.bonus_type && bonus.bonus_type !== 'normal' ? `pbh-bonus-card--${bonus.bonus_type}` : '';
   return (
-    <article className={`pbh-bonus-card ${hasResult ? 'pbh-bonus-card--opened' : ''}`}>
+    <article className={['pbh-bonus-card', hasResult ? 'pbh-bonus-card--opened' : '', typeClass].filter(Boolean).join(' ')}>
       <div className="pbh-bonus-card__top">
         <SlotThumb src={bonus.slot_image_url} name={bonus.slot_name} />
         <div>
@@ -290,14 +297,10 @@ function BonusCard({
         </div>
       </div>
       <div className="pbh-bonus-card__grid">
-        {!isOpening && (
-          <>
-            <span>Provider <strong><ProviderLogo provider={bonus.provider_name} /></strong></span>
-            <span>RTP <strong>{formatRtp(bonus.slot_rtp)}</strong></span>
-            <span>Max win <strong>{formatMaxWin(bonus.slot_max_win_multiplier)}</strong></span>
-            <span>Volatility <strong>{formatVolatility(bonus.slot_volatility)}</strong></span>
-          </>
-        )}
+        <span>Provider <strong><ProviderLogo provider={bonus.provider_name} /></strong></span>
+        <span>RTP <strong>{formatRtp(bonus.slot_rtp)}</strong></span>
+        <span>Max win <strong>{formatMaxWin(bonus.slot_max_win_multiplier)}</strong></span>
+        <span>Volatility <strong>{formatVolatility(bonus.slot_volatility)}</strong></span>
         <span>Cost <strong>{formatMoney(bonus.bonus_cost, currency)}</strong></span>
         <span>Bet <strong>{formatMoney(bonus.bet_size, currency)}</strong></span>
         {isOpening && (
@@ -488,36 +491,59 @@ function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
 export default function PlayerBonusHuntDetail() {
   const { huntId } = useParams();
   const navigate = useNavigate();
-  const [hunt, setHunt] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const initialCacheRef = useRef(null);
+  if (!initialCacheRef.current || initialCacheRef.current.huntId !== huntId) {
+    initialCacheRef.current = { huntId, data: readPlayerCache(huntDetailCacheKey(huntId)) || {} };
+  }
+  const initialCache = initialCacheRef.current.data;
+  const [hunt, setHunt] = useState(initialCache.hunt || null);
+  const [loading, setLoading] = useState(!initialCache.hunt);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [editingBonus, setEditingBonus] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [provider, setProvider] = useState('');
-  const [slotSearch, setSlotSearch] = useState('');
-  const [listSearch, setListSearch] = useState('');
-  const [sort, setSort] = useState('position');
-  const [bonusPhase, setBonusPhase] = useState('hunt');
-  const [huntForm, setHuntForm] = useState(null);
-  const [draftBonus, setDraftBonus] = useState(null);
+  const [filter, setFilter] = useState(initialCache.filter || 'all');
+  const [provider, setProvider] = useState(initialCache.provider || '');
+  const [slotSearch, setSlotSearch] = useState(initialCache.slotSearch || '');
+  const [listSearch, setListSearch] = useState(initialCache.listSearch || '');
+  const [sort, setSort] = useState(initialCache.sort || 'position');
+  const [bonusPhase, setBonusPhase] = useState(initialCache.bonusPhase || 'hunt');
+  const [huntForm, setHuntForm] = useState(initialCache.huntForm || initialCache.hunt || null);
+  const [draftBonus, setDraftBonus] = useState(initialCache.draftBonus || null);
   const [quickSaving, setQuickSaving] = useState(false);
-  const [payoutDrafts, setPayoutDrafts] = useState({});
+  const [payoutDrafts, setPayoutDrafts] = useState(initialCache.payoutDrafts || {});
   const [savingPayoutId, setSavingPayoutId] = useState(null);
-  const [showListOptions, setShowListOptions] = useState(false);
+  const [showListOptions, setShowListOptions] = useState(Boolean(initialCache.showListOptions));
   const [catalogResults, setCatalogResults] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState('');
+  const slotSearchRef = useRef(null);
+  const cacheKey = huntDetailCacheKey(huntId);
 
-  const load = async () => {
-    setLoading(true);
+  const applyCachedDetail = (cached) => {
+    if (!cached?.hunt) return false;
+    setHunt(cached.hunt);
+    setHuntForm(cached.huntForm || cached.hunt);
+    setDraftBonus(cached.draftBonus || null);
+    setSlotSearch(cached.slotSearch || '');
+    setPayoutDrafts(cached.payoutDrafts || {});
+    setFilter(cached.filter || 'all');
+    setProvider(cached.provider || '');
+    setListSearch(cached.listSearch || '');
+    setSort(cached.sort || 'position');
+    setBonusPhase(cached.bonusPhase || 'hunt');
+    setShowListOptions(Boolean(cached.showListOptions));
+    return true;
+  };
+
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError('');
     try {
       const data = await getHunt(huntId);
       setHunt(data.hunt);
       setHuntForm(data.hunt);
     } catch (err) {
-      setError(err.message);
+      setError(silent ? `${err.message} Showing locally cached progress.` : err.message);
     } finally {
       setLoading(false);
     }
@@ -536,8 +562,14 @@ export default function PlayerBonusHuntDetail() {
     });
   };
 
+  const focusSlotSearch = () => {
+    window.setTimeout(() => slotSearchRef.current?.focus(), 0);
+  };
+
   useEffect(() => {
-    load();
+    const cached = readPlayerCache(cacheKey);
+    const hasCachedHunt = applyCachedDetail(cached);
+    load(hasCachedHunt);
   }, [huntId]);
 
   useEffect(() => {
@@ -568,12 +600,32 @@ export default function PlayerBonusHuntDetail() {
   const stats = hunt?.stats || {};
   const currency = stats.currency || hunt?.currency || 'EUR';
   useEffect(() => {
-    const next = {};
-    for (const bonus of hunt?.bonuses || []) {
-      next[bonus.id] = bonus.status === 'opened' ? String(bonus.payout ?? '') : '';
-    }
-    setPayoutDrafts(next);
+    setPayoutDrafts((prev) => {
+      const next = {};
+      for (const bonus of hunt?.bonuses || []) {
+        const savedValue = bonus.status === 'opened' ? String(bonus.payout ?? '') : '';
+        next[bonus.id] = Object.prototype.hasOwnProperty.call(prev, bonus.id) ? prev[bonus.id] : savedValue;
+      }
+      return next;
+    });
   }, [hunt?.id, hunt?.bonuses]);
+
+  useEffect(() => {
+    if (!hunt) return;
+    writePlayerCache(cacheKey, {
+      hunt,
+      huntForm,
+      draftBonus,
+      slotSearch,
+      payoutDrafts,
+      filter,
+      provider,
+      listSearch,
+      sort,
+      bonusPhase,
+      showListOptions,
+    });
+  }, [cacheKey, hunt, huntForm, draftBonus, slotSearch, payoutDrafts, filter, provider, listSearch, sort, bonusPhase, showListOptions]);
 
   const providers = useMemo(() => [...new Set(bonuses.map((bonus) => bonus.provider_name).filter(Boolean))].sort(), [bonuses]);
   const filteredBonuses = useMemo(() => {
@@ -656,6 +708,7 @@ export default function PlayerBonusHuntDetail() {
       setDraftBonus(null);
       setSlotSearch('');
       setCatalogResults([]);
+      focusSlotSearch();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -745,6 +798,7 @@ export default function PlayerBonusHuntDetail() {
   const deleteCurrent = async () => {
     if (!window.confirm('Delete this hunt? This cannot be undone from the app UI.')) return;
     await deleteHunt(huntId);
+    removePlayerCache(cacheKey);
     navigate('/player/bonus-hunt');
   };
 
@@ -914,6 +968,7 @@ export default function PlayerBonusHuntDetail() {
                   <div className="pbh-searchbox">
                     <Search size={16} />
                     <input
+                      ref={slotSearchRef}
                       value={slotSearch}
                       onChange={(event) => {
                         setSlotSearch(event.target.value);
@@ -1006,7 +1061,11 @@ export default function PlayerBonusHuntDetail() {
                   {bonusPhase === 'opening' ? (
                     <tr>
                       <th>Slot</th>
+                      <th>Provider</th>
                       <th>Type</th>
+                      <th>RTP</th>
+                      <th>Max win</th>
+                      <th>Volatility</th>
                       <th>Cost</th>
                       <th>Bet</th>
                       <th>Payout</th>

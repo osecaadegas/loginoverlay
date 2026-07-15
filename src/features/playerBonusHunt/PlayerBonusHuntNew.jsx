@@ -1,41 +1,58 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
 import BonusForm from './BonusForm';
 import SlotThumb from './SlotThumb';
 import { createHunt } from './playerBonusHuntService';
 import { formatMoney } from './format';
+import { NEW_HUNT_DRAFT_CACHE_KEY, readPlayerCache, removePlayerCache, writePlayerCache } from './clientCache';
 import './PlayerBonusHunt.css';
 
 const today = new Date().toISOString().slice(0, 10);
+const DEFAULT_FORM = {
+  name: '',
+  casino_name: '',
+  currency: 'EUR',
+  starting_deposit: '',
+  stop_loss: '',
+  initial_withdrawal: '',
+  hunt_date: today,
+  notes: '',
+};
+
 const bonusTypeLabel = (value) => ({
   normal: 'Normal',
   super: 'Super',
   supreme: 'Extreme',
 }[value] || 'Normal');
 
+function readNewHuntDraft() {
+  const cached = readPlayerCache(NEW_HUNT_DRAFT_CACHE_KEY);
+  return {
+    form: { ...DEFAULT_FORM, ...(cached?.form || {}) },
+    bonuses: Array.isArray(cached?.bonuses) ? cached.bonuses : [],
+    showBonusForm: Boolean(cached?.showBonusForm),
+  };
+}
+
 export default function PlayerBonusHuntNew() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: '',
-    casino_name: '',
-    currency: 'EUR',
-    starting_deposit: '',
-    stop_loss: '',
-    initial_withdrawal: '',
-    hunt_date: today,
-    notes: '',
-  });
-  const [bonuses, setBonuses] = useState([]);
-  const [showBonusForm, setShowBonusForm] = useState(false);
+  const [cachedDraft] = useState(readNewHuntDraft);
+  const [form, setForm] = useState(cachedDraft.form);
+  const [bonuses, setBonuses] = useState(cachedDraft.bonuses);
+  const [showBonusForm, setShowBonusForm] = useState(cachedDraft.showBonusForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  useEffect(() => {
+    writePlayerCache(NEW_HUNT_DRAFT_CACHE_KEY, { form, bonuses, showBonusForm });
+  }, [form, bonuses, showBonusForm]);
+
   const addBonus = (bonus) => {
     setBonuses((prev) => [...prev, { ...bonus, position: prev.length }]);
-    setShowBonusForm(false);
+    setShowBonusForm(true);
   };
 
   const removeBonus = (index) => {
@@ -55,6 +72,8 @@ export default function PlayerBonusHuntNew() {
         current_balance: Number(form.starting_deposit || 0) - Number(form.initial_withdrawal || 0),
         bonuses,
       });
+      removePlayerCache(NEW_HUNT_DRAFT_CACHE_KEY);
+      removePlayerCache(`${NEW_HUNT_DRAFT_CACHE_KEY}.bonusForm`);
       navigate(`/player/bonus-hunt/${result.hunt.id}`);
     } catch (err) {
       setError(err.message);
@@ -134,7 +153,14 @@ export default function PlayerBonusHuntNew() {
               <p>This bonus will be created with the new hunt.</p>
             </div>
           </div>
-          <BonusForm onSubmit={addBonus} onCancel={() => setShowBonusForm(false)} submitLabel="Add to hunt" />
+          <BonusForm
+            onSubmit={addBonus}
+            onCancel={() => setShowBonusForm(false)}
+            submitLabel="Add to hunt"
+            autoFocus
+            resetAfterSubmit
+            cacheKey={`${NEW_HUNT_DRAFT_CACHE_KEY}.bonusForm`}
+          />
         </section>
       )}
 
@@ -152,8 +178,9 @@ export default function PlayerBonusHuntNew() {
                 <SlotThumb src={bonus.slot_image_url} name={bonus.slot_name} size="sm" />
                 <div>
                   <strong>{bonus.slot_name}</strong>
-                  <span>{bonus.provider_name || 'Unknown provider'} - {bonusTypeLabel(bonus.bonus_type)}</span>
+                  <span>{bonus.provider_name || 'Unknown provider'}</span>
                 </div>
+                <span className={`pbh-type-pill pbh-type-pill--${bonus.bonus_type || 'normal'}`}>{bonusTypeLabel(bonus.bonus_type)}</span>
                 <span>{formatMoney(bonus.bonus_cost, form.currency)} - Bet {formatMoney(bonus.bet_size, form.currency)}</span>
                 <button className="pbh-icon-btn pbh-icon-btn--danger" onClick={() => removeBonus(index)} title="Remove bonus">
                   <Trash2 size={16} />

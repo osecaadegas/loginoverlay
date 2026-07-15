@@ -20,6 +20,7 @@ const hunt = {
   currency: 'EUR',
   starting_deposit: 500,
   additional_deposits: 100,
+  stop_loss: 75,
   initial_withdrawal: 50,
   total_withdrawals: 25,
   current_balance: 300,
