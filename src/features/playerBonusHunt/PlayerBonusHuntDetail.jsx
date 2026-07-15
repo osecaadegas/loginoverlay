@@ -79,9 +79,9 @@ function MathematicsPanel({ stats, currency }) {
       <div className="pbh-math-panel__head">
         <div>
           <span className="pbh-eyebrow">Mathematics</span>
-          <h3>Streamer formula</h3>
+          <h3>Hunt target</h3>
         </div>
-        <p>Target uses the same formula as the streamer tracker: total deposits minus stop loss.</p>
+        <p>Deposits kept in play set the target. Opened payouts reduce what is still needed.</p>
       </div>
       <div className="pbh-math-grid">
         <MathLine
@@ -349,6 +349,13 @@ function slotToDraft(slot) {
 
 function SlotCatalogSuggestions({ slots, loading, error, query, onAdd, onCustom }) {
   if (query.trim().length < 3) return null;
+  const chooseSlot = (slot) => onAdd(slot);
+  const chooseSlotFromKeyboard = (event, slot) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    chooseSlot(slot);
+  };
+
   return (
       <div className="pbh-catalog-suggestions">
         <div className="pbh-catalog-suggestions__head">
@@ -374,13 +381,19 @@ function SlotCatalogSuggestions({ slots, loading, error, query, onAdd, onCustom 
                 <th>RTP</th>
                 <th>Max win</th>
                 <th>Volatility</th>
-                <th>Theme</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {slots.map((slot) => (
-                <tr key={slot.id}>
+                <tr
+                  key={slot.id || `${slot.name}-${slot.provider || 'unknown'}`}
+                  className="pbh-catalog-row"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select ${slot.name}`}
+                  onClick={() => chooseSlot(slot)}
+                  onKeyDown={(event) => chooseSlotFromKeyboard(event, slot)}
+                >
                   <td>
                     <div className="pbh-slot-cell">
                       <SlotThumb src={slot.image} name={slot.name} size="sm" />
@@ -394,10 +407,6 @@ function SlotCatalogSuggestions({ slots, loading, error, query, onAdd, onCustom 
                   <td>{formatRtp(slot.rtp)}</td>
                   <td>{formatMaxWin(slot.max_win_multiplier)}</td>
                   <td>{formatVolatility(slot.volatility)}</td>
-                  <td>{slot.theme || '-'}</td>
-                  <td>
-                    <button className="pbh-btn pbh-btn--secondary" onClick={() => onAdd(slot)}>Select</button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -436,7 +445,6 @@ function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
         <span>RTP <strong>{formatRtp(draft.slot_rtp)}</strong></span>
         <span>Max win <strong>{formatMaxWin(draft.slot_max_win_multiplier)}</strong></span>
         <span>Volatility <strong>{formatVolatility(draft.slot_volatility)}</strong></span>
-        <span>Theme <strong>{draft.slot_theme || '-'}</strong></span>
       </div>
 
       <div className="pbh-quick-bonus__fields">

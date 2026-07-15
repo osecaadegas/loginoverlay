@@ -182,7 +182,7 @@ export default function BonusForm({
                 <SlotThumb src={slot.image} name={slot.name} size="sm" />
                 <span className="pbh-slot-result-name">
                   <strong>{slot.name}</strong>
-                  <small>{slot.theme || 'Slot library'}</small>
+                  <small>Slot library</small>
                 </span>
                 <small>{slot.provider || 'Unknown provider'}</small>
                 <small>{formatRtp(slot.rtp)}</small>
@@ -198,12 +198,11 @@ export default function BonusForm({
         )}
       </label>
 
-      {(form.slot_rtp || form.slot_max_win_multiplier || form.slot_volatility || form.slot_theme) && (
+      {(form.slot_rtp || form.slot_max_win_multiplier || form.slot_volatility) && (
         <div className="pbh-selected-slot-meta">
           <span>RTP <strong>{formatRtp(form.slot_rtp)}</strong></span>
           <span>Max win <strong>{formatMaxWin(form.slot_max_win_multiplier)}</strong></span>
           <span>Volatility <strong>{formatVolatility(form.slot_volatility)}</strong></span>
-          {form.slot_theme && <span>Theme <strong>{form.slot_theme}</strong></span>}
         </div>
       )}
 
