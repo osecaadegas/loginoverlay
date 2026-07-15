@@ -25105,6 +25105,67 @@ body.wm-resizing {
   }
 }
 
+/* Bonus Hunt: keep add controls inside the hunt settings card. */
+.oc2-detail--bonus-hunt .bh-inline-add {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.oc2-detail--bonus-hunt .bh-section-pill--inline-add {
+  width: fit-content;
+  margin: 0 !important;
+}
+
+.oc2-detail--bonus-hunt .bh-inline-add .bh-add-row {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+}
+
+.oc2-detail--bonus-hunt .bh-add-row--search {
+  width: 100%;
+}
+
+.oc2-detail--bonus-hunt .bh-add-row--inline-actions {
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.oc2-detail--bonus-hunt .bh-inline-add .bh-search-container.bh-search-half {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.oc2-detail--bonus-hunt .bh-inline-add .bh-bet-field {
+  width: 96px;
+  min-width: 86px;
+}
+
+.oc2-detail--bonus-hunt .bh-inline-add :is(.bh-add-btn, .bh-super-btn, .bh-extreme-btn, .bh-submit-slot-btn) {
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.oc2-detail--bonus-hunt .bh-inline-add .bh-submit-dropdown {
+  margin-top: 2px;
+}
+
+@media (max-width: 1180px) {
+  .oc2-detail--bonus-hunt .bh-add-row--inline-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 920px) {
+  .oc2-detail--bonus-hunt .bh-inline-add .bh-bet-field {
+    flex: 1 1 110px;
+  }
+}
+
 /* Readable chat reply template editors for Bets and Slot Requests. */
 .cg-chat-template-card {
   display: grid;

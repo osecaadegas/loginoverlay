@@ -1237,6 +1237,205 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   onBlur={() => save()} />
               </label>
             </div>
+
+            <div className="bh-inline-add">
+              <h4 className="bh-section-pill bh-section-pill--inline-add">Add Bonus</h4>
+
+              <div className="bh-add-row bh-add-row--search">
+                <div className="bh-search-container bh-search-half" ref={searchRef}>
+                  <input
+                    type="text"
+                    className="bh-search-input"
+                    value={selectedSlot ? selectedSlot.name : slotSearch}
+                    onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); if (!e.target.value.trim()) onChange({ ...config, previewSlotName: '' }); }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
+                    placeholder={`Search ${slots.length} slots...`}
+                  />
+
+                  {showSuggestions && slotSearch.trim().length > 0 && (
+                    <div className="bh-suggestions-dropdown">
+                      {filteredSlots.length > 0 ? (
+                        filteredSlots.slice(0, 8).map(slot => (
+                          <div key={slot.id} className="bh-suggestion-item"
+                            onMouseDown={e => e.preventDefault()}
+                            onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); onChange({ ...config, previewSlotName: slot.name }); }}>
+                            <img
+                              src={slot.image || 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'}
+                              alt={slot.name}
+                              className="bh-suggestion-img"
+                              onError={e => { e.target.src = 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'; }}
+                            />
+                            <div className="bh-suggestion-info">
+                              <span className="bh-suggestion-name">
+                                {slot.name}
+                                {slot._isPending && <span className="bh-pending-badge">Pending</span>}
+                              </span>
+                              {slot.provider && <span className="bh-suggestion-provider">{slot.provider}</span>}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="bh-suggestion-empty bh-suggestion-submit"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => {
+                            setField('name', slotSearch.trim());
+                            setShowSubmitSlot(true);
+                            setShowSuggestions(false);
+                          }}>
+                          {slots.length === 0 ? 'Loading slots...' : (
+                            <>
+                              <span className="bh-notfound-label">"{slotSearch.trim()}" isn't in the database yet</span>
+                              <span className="bh-submit-cta">
+                                <span className="bh-submit-cta-icon">&#x2b;</span>
+                                Click here to add it
+                              </span>
+                              <span className="bh-submit-hint">Press to open the submit form</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bh-add-row bh-add-row--inline-actions">
+                <input type="number" className="bh-bet-field" value={betSize}
+                  onChange={e => setBetSize(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
+                  placeholder={`Bet (${currency})`} step="0.1" />
+                <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
+                  + Add
+                </button>
+                <button
+                  type="button"
+                  className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
+                  title="Super Bonus (double-click to add)"
+                  disabled={!betSize}
+                  onClick={() => { setIsSuperBonus(p => !p); if (!isSuperBonus) setIsExtremeBonus(false); }}
+                  onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsSuperBonus(true); setIsExtremeBonus(false); setTimeout(() => handleAddBonus(), 0); }}
+                >Super</button>
+                <button
+                  type="button"
+                  className={`bh-extreme-btn${isExtremeBonus ? ' active' : ''}`}
+                  title="Extreme Bonus (double-click to add)"
+                  disabled={!betSize}
+                  onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
+                  onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
+                >Extreme</button>
+                {showSubmitSlot && (
+                  <button
+                    className="bh-submit-slot-btn active"
+                    onClick={() => setShowSubmitSlot(false)}
+                  >Close</button>
+                )}
+              </div>
+
+              {showSubmitSlot && (
+                <div className="bh-submit-dropdown">
+                  <div className="bh-submit-grid">
+                    <label className="bh-submit-field">
+                      <span>Name <em>*</em></span>
+                      <input value={submitForm.name || ''} onChange={e => setField('name', e.target.value)} placeholder="Sweet Bonanza" />
+                    </label>
+                    <div className="bh-submit-field">
+                      <span>Provider <em>*</em></span>
+                      <BonusHuntProviderPicker providers={slotProviders} value={submitForm.provider || ''} onChange={provider => setField('provider', provider)} />
+                    </div>
+                    <label className="bh-submit-field">
+                      <span>RTP (%)</span>
+                      <input type="number" value={submitForm.rtp || ''} onChange={e => setField('rtp', e.target.value || null)} placeholder="96.50" step="0.01" min="80" max="100" />
+                    </label>
+                    <label className="bh-submit-field">
+                      <span>Volatility</span>
+                      <select value={submitForm.volatility || ''} onChange={e => setField('volatility', e.target.value || null)}>
+                        <option value="">Select...</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="very_high">Very High</option>
+                      </select>
+                    </label>
+                    <label className="bh-submit-field">
+                      <span>Max Win (x)</span>
+                      <input type="number" value={submitForm.max_win_multiplier || ''} onChange={e => setField('max_win_multiplier', e.target.value || null)} placeholder="10000" />
+                    </label>
+                    <label className="bh-submit-field">
+                      <span>Image <em>*</em></span>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <input style={{ flex: 1, fontSize: '0.68rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="URL or search ->" />
+                        <button type="button" className="bh-submit-search-btn" onClick={() => searchSlotImages()} disabled={!submitForm.name || submitImageSearching}>
+                          {submitImageSearching ? '...' : 'Search'}
+                        </button>
+                        {userAvatar && (
+                          <button type="button" className="bh-submit-search-btn" title="Use my stream logo" onClick={() => { setField('image', userAvatar); setSubmitImageResults([]); setImageSearchMeta(null); }}>
+                            Logo
+                          </button>
+                        )}
+                      </div>
+                    </label>
+                  </div>
+                  {submitScrapeLoading && (
+                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 8px' }}>Auto-fetching slot info...</p>
+                  )}
+                  {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (<>
+                    <div className="bh-submit-images">
+                      {submitForm.image && (
+                        <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                      )}
+                      {scrapedImages.map((imgUrl, i) => {
+                        const src = imgUrl.includes('slotslaunch') ? 'SlotsLaunch' : imgUrl.includes('slotark') ? 'SlotArk' : 'DemoSlot';
+                        return (
+                        <button key={`scraped-${i}`} type="button"
+                          className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === imgUrl ? ' selected' : ''}`}
+                          onClick={() => setField('image', imgUrl)}
+                          title={`Image from ${src}`}>
+                          <img src={imgUrl} alt="" />
+                          <span className="bh-demoslot-badge">{src}</span>
+                        </button>
+                        );
+                      })}
+                      {submitImageResults.slice(0, imageShowCount).map((img, i) => (
+                        <button key={i} type="button" className={`bh-submit-img-btn${submitForm.image === img.url ? ' selected' : ''}`}
+                          onClick={() => setField('image', img.url)}>
+                          <img src={img.url} alt="" />
+                        </button>
+                      ))}
+                      {submitImageResults.length > imageShowCount && (
+                        <button type="button" className="bh-show-more-btn"
+                          onClick={() => setImageShowCount(c => c + 10)}>
+                          Show more
+                        </button>
+                      )}
+                      {imageSearchMeta?.googleUrl && submitImageResults.length === 0 && !submitImageSearching && (
+                        <a className="bh-google-images-link" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
+                          Open Google Images
+                        </a>
+                      )}
+                    </div>
+                    <div className="bh-image-toolbar">
+                      <button type="button" className={`bh-pretty-toggle${prettyImage ? ' active' : ''}`}
+                        onClick={() => setPrettyImage(p => !p)}>
+                        {prettyImage ? 'Pretty Image: ON' : 'Pretty Image: OFF'}
+                      </button>
+                      {imageSearchMeta?.googleUrl && submitImageResults.length > 0 && (
+                        <a className="bh-google-images-link bh-google-images-link--small" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
+                          Open Google Images
+                        </a>
+                      )}
+                    </div>
+                  </>)}
+                  <div className="bh-submit-actions">
+                    <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setImageSearchMeta(null); setScrapedImages([]); setImageShowCount(10); setPrettyImage(false); }}>Cancel</button>
+                    <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
+                      {submitSaving ? 'Submitting...' : 'Submit for Approval'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right half: Slot Requests queue */}
@@ -1347,6 +1546,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       </div>
 
       {/* ─── Add Bonus ─── */}
+      {false && (
       <div className="bh-panel-section bh-panel-section--add">
         <h4 className="bh-section-pill" style={{ margin: '0 0 4px 0' }}>Add Bonus</h4>
 
@@ -1552,6 +1752,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </div>
         )}
       </div>
+      )}
 
       {/* ─── Bonus List ─── */}
       <div className="bh-panel-section bh-panel-section--list">

@@ -3445,3 +3445,96 @@
   }
 }
 
+/* Approval queue containment fix: keep review actions inside the Overlay Center panel. */
+[data-tour="approvals-page"],
+[data-tour="approvals-page"] .sa-page-shell,
+[data-tour="approvals-page"] .sa-page-hero,
+[data-tour="approvals-page"] .sa-filters-card,
+[data-tour="approvals-page"] .sa-bulk-confirm,
+[data-tour="approvals-page"] .ss-list,
+[data-tour="approvals-page"] .ss-card {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+[data-tour="approvals-page"] .sa-page-shell {
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+[data-tour="approvals-page"] .ss-card {
+  grid-template-columns: 96px minmax(0, 1fr) minmax(230px, 280px) !important;
+  align-items: center !important;
+  overflow: visible !important;
+}
+
+[data-tour="approvals-page"] .ss-card-body,
+[data-tour="approvals-page"] .ss-card-status,
+[data-tour="approvals-page"] .sa-actions {
+  min-width: 0 !important;
+}
+
+[data-tour="approvals-page"] .ss-card-status {
+  grid-column: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  width: auto !important;
+  margin-top: 0 !important;
+}
+
+[data-tour="approvals-page"] .sa-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  width: auto !important;
+  margin-left: auto !important;
+}
+
+[data-tour="approvals-page"] :is(.sa-edit-btn, .sa-approve-btn, .sa-deny-btn) {
+  flex: 0 0 auto !important;
+}
+
+[data-tour="approvals-page"] .sa-deny-form {
+  grid-template-columns: minmax(160px, 1fr) auto auto !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 720px) {
+  [data-tour="approvals-page"] .ss-card-status {
+    grid-column: 2 !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+  }
+
+  [data-tour="approvals-page"] .ss-card {
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+  }
+
+  [data-tour="approvals-page"] .ss-card-status,
+  [data-tour="approvals-page"] .sa-actions {
+    justify-content: flex-start !important;
+  }
+
+  [data-tour="approvals-page"] .sa-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  [data-tour="approvals-page"] .ss-card-status {
+    grid-column: 1 / -1 !important;
+  }
+
+  [data-tour="approvals-page"] .sa-deny-form {
+    grid-template-columns: 1fr !important;
+  }
+}
+
