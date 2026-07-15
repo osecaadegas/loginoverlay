@@ -80,7 +80,7 @@ function MathematicsPanel({ stats, currency }) {
           <span className="pbh-eyebrow">Mathematics</span>
           <h3>Streamer formula</h3>
         </div>
-        <p>Target uses the same streamer formula: start money minus stop loss. Older hunts without a stop loss still use withdrawals as the fallback.</p>
+        <p>Target uses the same formula as the streamer tracker: total deposits minus stop loss.</p>
       </div>
       <div className="pbh-math-grid">
         <MathLine
@@ -760,7 +760,7 @@ export default function PlayerBonusHuntDetail() {
           <div>
             <span className={`pbh-pill pbh-pill--${hunt.status}`}>{hunt.status}</span>
             <h2>Accounting</h2>
-            <p>Target = deposits minus withdrawals. Profit/Loss = opened payouts minus target.</p>
+            <p>Target = deposits minus stop loss. Profit/Loss = opened payouts minus target.</p>
           </div>
           <div className="pbh-actions">
             {hunt.status !== 'completed' && (

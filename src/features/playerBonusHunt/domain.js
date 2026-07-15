@@ -53,8 +53,7 @@ export function calculateTotalWithdrawals(hunt = {}) {
 }
 
 export function calculateStopLoss(hunt = {}) {
-  const explicitStopLoss = roundMoney(toNumber(hunt.stop_loss));
-  return explicitStopLoss > 0 ? explicitStopLoss : calculateTotalWithdrawals(hunt);
+  return roundMoney(toNumber(hunt.stop_loss));
 }
 
 export function calculateNetDeposited(hunt = {}) {

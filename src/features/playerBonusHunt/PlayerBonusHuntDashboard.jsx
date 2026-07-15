@@ -304,7 +304,7 @@ export default function PlayerBonusHuntDashboard() {
                 label="Break even"
                 value={formatMoney(primaryTotals.breakEven, currency)}
                 detail={`${formatMultiplier(primaryTotals.breakEvenMultiplier)} target multi`}
-                title="Target = deposits minus withdrawals. Multi = break-even target divided by total bet size."
+                title="Target = deposits minus stop loss. Multi = break-even target divided by total bet size."
               />
               <StatCard label="Total spent" value={formatMoney(primaryTotals.totalSpent, currency)} title="Sum of all bonus costs." />
               <StatCard label="Total payout" value={formatMoney(primaryTotals.totalPayout, currency)} />
