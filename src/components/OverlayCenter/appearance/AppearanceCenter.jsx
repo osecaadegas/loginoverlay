@@ -1890,7 +1890,7 @@ export default function AppearanceCenter({
                       value={currentSimpleSettings.fontFamily}
                       onChange={event => applyQuickSettings({ fontFamily: event.target.value }, 'Change font')}
                     >
-                      {FONT_OPTIONS.slice(0, 7).map(font => (
+                      {FONT_OPTIONS.map(font => (
                         <option key={font.value} value={font.value}>{font.label}</option>
                       ))}
                     </select>
