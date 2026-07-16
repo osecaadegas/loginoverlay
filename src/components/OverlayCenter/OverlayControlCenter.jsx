@@ -1594,7 +1594,7 @@ export default function OverlayControlCenter() {
         setupComplete={setupComplete}
       />
 
-      <main className="oc2-main">
+      <main className={`oc2-main${currentPanel === 'appearance' ? ' oc2-main--appearance' : ''}`}>
         {currentPanel === 'setup' && (
           <SetupWizard
             setup={setup}

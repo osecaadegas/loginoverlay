@@ -23922,6 +23922,11 @@ body.wm-resizing {
   margin-right: auto !important;
 }
 
+.oc2-main--appearance {
+  width: min(2200px, calc(100% - 32px)) !important;
+  max-width: 2200px !important;
+}
+
 .oc2-tool-section,
 .oc2-section-heading {
   width: 100%;
