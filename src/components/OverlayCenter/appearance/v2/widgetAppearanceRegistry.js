@@ -290,8 +290,8 @@ export const widgetAppearanceRegistry = Object.freeze({
         recommended: false,
         editorReady: true,
         legacy: false,
-        featureFlag: 'appearanceEditablePilot',
-        hiddenInProduction: true,
+        featureFlag: null,
+        hiddenInProduction: false,
         capabilities: {
           ...(getEditorReadyWidgetStyle('bonus_hunt', 'v12_classic_sr_editable')?.capabilities || {}),
         },

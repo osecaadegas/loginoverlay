@@ -24,9 +24,9 @@ assert.equal(originalBonusHunt.productionFallback, true, 'Bonus Hunt original st
 const editableBonusHunt = getEditorReadyWidgetStyle('bonus_hunt', 'v12_classic_sr_editable');
 assert.equal(editableBonusHunt.editable, true, 'Bonus Hunt editable Classic + Requests style is registered');
 assert.equal(editableBonusHunt.fallbackStyleId, 'v12_classic_sr', 'Bonus Hunt editable style falls back to the original V12 style');
-assert.equal(editableBonusHunt.hiddenInProduction, true, 'Bonus Hunt editable style is hidden until the pilot is enabled');
+assert.equal(editableBonusHunt.hiddenInProduction, false, 'Bonus Hunt editable style is visible for testing');
 assert.equal(shouldExposeEditorReadyStyle(editableBonusHunt, { dev: true }), true, 'development can expose the editable Bonus Hunt style');
-assert.equal(shouldExposeEditorReadyStyle(editableBonusHunt, { dev: false, appearanceEditablePilot: false }), false, 'production hides editable Bonus Hunt style without a flag');
+assert.equal(shouldExposeEditorReadyStyle(editableBonusHunt, { dev: false, appearanceEditablePilot: false }), true, 'production exposes editable Bonus Hunt style for testing');
 assert.ok(editableBonusHunt.editableElements.includes('requestsSectionContainer'), 'Bonus Hunt editable style declares the embedded requests panel');
 assert.ok(editableBonusHunt.quickEditorSchema.some(section => section.controls.includes('carouselSpeed')), 'Bonus Hunt quick schema exposes safe carousel speed');
 assert.ok(!editableBonusHunt.quickEditorSchema.some(section => section.controls.includes('imageSize')), 'Bonus Hunt quick schema hides unsafe structural image size');
