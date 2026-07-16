@@ -10,6 +10,7 @@ import {
   getWidgetAppearanceV2Elements,
   isWidgetAppearanceV2Enabled,
 } from './v2/widgetAppearanceRegistry';
+import { CUSTOM_FONT_OPTIONS } from './customFontOptions';
 
 export const EDITOR_SCHEMA_VERSION = 1;
 
@@ -42,6 +43,7 @@ export const FONT_OPTIONS = [
   { value: 'Georgia, serif', label: 'Georgia' },
   { value: 'monospace', label: 'Monospace' },
   { value: 'system-ui', label: 'System' },
+  ...CUSTOM_FONT_OPTIONS,
 ];
 
 export const EDITOR_MODE_CAPABILITIES = Object.freeze({

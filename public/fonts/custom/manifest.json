@@ -1,0 +1,278 @@
+﻿[
+    {
+        "label":  "Ancient Ad",
+        "family":  "SC Custom Ancient Ad",
+        "file":  "ancient-ad-ancient-ad.ttf",
+        "source":  "ancient_ad.zip"
+    },
+    {
+        "label":  "Ancient One",
+        "family":  "SC Custom Ancient One",
+        "file":  "ancient-one-ancient-one.ttf",
+        "source":  "ancient_one.zip"
+    },
+    {
+        "label":  "Ancient Runes 1 1",
+        "family":  "SC Custom Ancient Runes 1 1",
+        "file":  "ancient-runes-ancient-runes-1-1.ttf",
+        "source":  "ancient_runes.zip"
+    },
+    {
+        "label":  "Another Danger Demo",
+        "family":  "SC Custom Another Danger Demo",
+        "file":  "another-danger-another-danger-demo.otf",
+        "source":  "another_danger.zip"
+    },
+    {
+        "label":  "Another Danger Slanted Demo",
+        "family":  "SC Custom Another Danger Slanted Demo",
+        "file":  "another-danger-another-danger-slanted-demo.otf",
+        "source":  "another_danger.zip"
+    },
+    {
+        "label":  "arial narrow 7",
+        "family":  "SC Custom arial narrow 7",
+        "file":  "arial-narrow-7-arial-narrow-7.ttf",
+        "source":  "arial_narrow_7.zip"
+    },
+    {
+        "label":  "Bring Me A Helicopter!",
+        "family":  "SC Custom Bring Me A Helicopter!",
+        "file":  "bring-me-a-helicopter-bring-me-a-helicopter.otf",
+        "source":  "bring_me_a_helicopter.zip"
+    },
+    {
+        "label":  "Comic",
+        "family":  "SC Custom Comic",
+        "file":  "comic-2-comic.otf",
+        "source":  "comic_2.zip"
+    },
+    {
+        "label":  "Comic Cup",
+        "family":  "SC Custom Comic Cup",
+        "file":  "comic-cup-comic-cup.otf",
+        "source":  "comic_cup.zip"
+    },
+    {
+        "label":  "Gelio Fasolada",
+        "family":  "SC Custom Gelio Fasolada",
+        "file":  "gelio-gelio-fasolada.ttf",
+        "source":  "gelio.zip"
+    },
+    {
+        "label":  "Gelio Greek Diner",
+        "family":  "SC Custom Gelio Greek Diner",
+        "file":  "gelio-gelio-greek-diner.ttf",
+        "source":  "gelio.zip"
+    },
+    {
+        "label":  "Gelio Kleftiko",
+        "family":  "SC Custom Gelio Kleftiko",
+        "file":  "gelio-gelio-kleftiko.ttf",
+        "source":  "gelio.zip"
+    },
+    {
+        "label":  "Gelio Pasteli",
+        "family":  "SC Custom Gelio Pasteli",
+        "file":  "gelio-gelio-pasteli.ttf",
+        "source":  "gelio.zip"
+    },
+    {
+        "label":  "Gelio Retsina",
+        "family":  "SC Custom Gelio Retsina",
+        "file":  "gelio-gelio-retsina.ttf",
+        "source":  "gelio.zip"
+    },
+    {
+        "label":  "Gocake OTF",
+        "family":  "SC Custom Gocake OTF",
+        "file":  "gocake-gocake.otf",
+        "source":  "gocake.zip"
+    },
+    {
+        "label":  "Gocake TTF",
+        "family":  "SC Custom Gocake TTF",
+        "file":  "gocake-gocake.ttf",
+        "source":  "gocake.zip"
+    },
+    {
+        "label":  "Grafite",
+        "family":  "SC Custom Grafite",
+        "file":  "grafite-grafite.otf",
+        "source":  "grafite.zip"
+    },
+    {
+        "label":  "Grafitty outline",
+        "family":  "SC Custom Grafitty outline",
+        "file":  "grafitty-grafitty-outline.ttf",
+        "source":  "grafitty.zip"
+    },
+    {
+        "label":  "HelpMe",
+        "family":  "SC Custom HelpMe",
+        "file":  "help-me-helpme.ttf",
+        "source":  "help_me.zip"
+    },
+    {
+        "label":  "Hey Comic OTF",
+        "family":  "SC Custom Hey Comic OTF",
+        "file":  "hey-comic-hey-comic.otf",
+        "source":  "hey_comic.zip"
+    },
+    {
+        "label":  "Hey Comic TTF",
+        "family":  "SC Custom Hey Comic TTF",
+        "file":  "hey-comic-hey-comic.ttf",
+        "source":  "hey_comic.zip"
+    },
+    {
+        "label":  "HFF Greek ExCon OTF",
+        "family":  "SC Custom HFF Greek ExCon OTF",
+        "file":  "hff-greek-excon-hff-greek-excon.otf",
+        "source":  "hff_greek_excon.zip"
+    },
+    {
+        "label":  "HFF Greek ExCon TTF",
+        "family":  "SC Custom HFF Greek ExCon TTF",
+        "file":  "hff-greek-excon-hff-greek-excon.ttf",
+        "source":  "hff_greek_excon.zip"
+    },
+    {
+        "label":  "Hustle Kings",
+        "family":  "SC Custom Hustle Kings",
+        "file":  "hustle-kings-hustle-kings.otf",
+        "source":  "hustle_kings.zip"
+    },
+    {
+        "label":  "HZHandwrite",
+        "family":  "SC Custom HZHandwrite",
+        "file":  "hz-handwrite-hzhandwrite.ttf",
+        "source":  "hz_handwrite.zip"
+    },
+    {
+        "label":  "JFRocOut",
+        "family":  "SC Custom JFRocOut",
+        "file":  "jf-rock-jfrocout.ttf",
+        "source":  "jf_rock.zip"
+    },
+    {
+        "label":  "JFRocSol",
+        "family":  "SC Custom JFRocSol",
+        "file":  "jf-rock-jfrocsol.ttf",
+        "source":  "jf_rock.zip"
+    },
+    {
+        "label":  "LatenzaScript PERSONAL USE ONLY",
+        "family":  "SC Custom LatenzaScript PERSONAL USE ONLY",
+        "file":  "latenza-script-latenzascript-personal-use-only.otf",
+        "source":  "latenza_script.zip"
+    },
+    {
+        "label":  "Midstar Personal Use",
+        "family":  "SC Custom Midstar Personal Use",
+        "file":  "midstar-midstar-personal-use.otf",
+        "source":  "midstar.zip"
+    },
+    {
+        "label":  "pixel",
+        "family":  "SC Custom pixel",
+        "file":  "pixel-3-pixel.ttf",
+        "source":  "pixel_3.zip"
+    },
+    {
+        "label":  "PR Viking Alternates TTF",
+        "family":  "SC Custom PR Viking Alternates TTF",
+        "file":  "pr-viking-pr-viking-alternates.ttf",
+        "source":  "pr_viking.zip"
+    },
+    {
+        "label":  "PR Viking Alternates TTF pr_viking (1)",
+        "family":  "SC Custom PR Viking Alternates TTF pr_viking (1)",
+        "file":  "pr-viking-1-pr-viking-alternates.ttf",
+        "source":  "pr_viking (1).zip"
+    },
+    {
+        "label":  "PR Viking TTF",
+        "family":  "SC Custom PR Viking TTF",
+        "file":  "pr-viking-pr-viking.ttf",
+        "source":  "pr_viking.zip"
+    },
+    {
+        "label":  "PR Viking TTF pr_viking (1)",
+        "family":  "SC Custom PR Viking TTF pr_viking (1)",
+        "file":  "pr-viking-1-pr-viking.ttf",
+        "source":  "pr_viking (1).zip"
+    },
+    {
+        "label":  "Pricedown Bl",
+        "family":  "SC Custom Pricedown Bl",
+        "file":  "pricedown-pricedown-bl.otf",
+        "source":  "pricedown.zip"
+    },
+    {
+        "label":  "Rocky Regular",
+        "family":  "SC Custom Rocky Regular",
+        "file":  "rocky-2-rocky-regular.ttf",
+        "source":  "rocky_2.zip"
+    },
+    {
+        "label":  "Runasvikingas Regular",
+        "family":  "SC Custom Runasvikingas Regular",
+        "file":  "runasvikingas-runasvikingas-regular.otf",
+        "source":  "runasvikingas.zip"
+    },
+    {
+        "label":  "Singsong",
+        "family":  "SC Custom Singsong",
+        "file":  "singsong-singsong.otf",
+        "source":  "singsong.zip"
+    },
+    {
+        "label":  "Sketcomic OTF",
+        "family":  "SC Custom Sketcomic OTF",
+        "file":  "sketcomic-sketcomic.otf",
+        "source":  "sketcomic.zip"
+    },
+    {
+        "label":  "Sketcomic TTF",
+        "family":  "SC Custom Sketcomic TTF",
+        "file":  "sketcomic-sketcomic.ttf",
+        "source":  "sketcomic.zip"
+    },
+    {
+        "label":  "Super Jello",
+        "family":  "SC Custom Super Jello",
+        "file":  "super-jello-super-jello.ttf",
+        "source":  "super_jello.zip"
+    },
+    {
+        "label":  "Super Pandora",
+        "family":  "SC Custom Super Pandora",
+        "file":  "super-pandora-super-pandora.ttf",
+        "source":  "super_pandora.zip"
+    },
+    {
+        "label":  "viking middle runes",
+        "family":  "SC Custom viking middle runes",
+        "file":  "viking-middle-runes-viking-middle-runes.ttf",
+        "source":  "viking_middle_runes.zip"
+    },
+    {
+        "label":  "viking middle runes bold",
+        "family":  "SC Custom viking middle runes bold",
+        "file":  "viking-middle-runes-viking-middle-runes-bold.ttf",
+        "source":  "viking_middle_runes.zip"
+    },
+    {
+        "label":  "VikingLanguage Regular",
+        "family":  "SC Custom VikingLanguage Regular",
+        "file":  "viking-language-vikinglanguage-regular.ttf",
+        "source":  "viking_language.zip"
+    },
+    {
+        "label":  "XXII DONT MESS WITH VIKINGS",
+        "family":  "SC Custom XXII DONT MESS WITH VIKINGS",
+        "file":  "xxii-dont-mess-with-vikings-xxii-dont-mess-with-vikings.ttf",
+        "source":  "xxii_dont_mess_with_vikings.zip"
+    }
+]

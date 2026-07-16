@@ -1,0 +1,370 @@
+﻿/* Generated from C:\Users\miguel\Downloads\fonts_styles. */
+/* Keep this list in sync with src/components/OverlayCenter/appearance/customFontOptions.js. */
+
+@font-face {
+  font-family: 'SC Custom Ancient Ad';
+  src: url('/fonts/custom/ancient-ad-ancient-ad.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Ancient One';
+  src: url('/fonts/custom/ancient-one-ancient-one.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Ancient Runes 1 1';
+  src: url('/fonts/custom/ancient-runes-ancient-runes-1-1.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Another Danger Demo';
+  src: url('/fonts/custom/another-danger-another-danger-demo.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Another Danger Slanted Demo';
+  src: url('/fonts/custom/another-danger-another-danger-slanted-demo.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom arial narrow 7';
+  src: url('/fonts/custom/arial-narrow-7-arial-narrow-7.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Bring Me A Helicopter!';
+  src: url('/fonts/custom/bring-me-a-helicopter-bring-me-a-helicopter.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Comic';
+  src: url('/fonts/custom/comic-2-comic.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Comic Cup';
+  src: url('/fonts/custom/comic-cup-comic-cup.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Gelio Fasolada';
+  src: url('/fonts/custom/gelio-gelio-fasolada.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Gelio Greek Diner';
+  src: url('/fonts/custom/gelio-gelio-greek-diner.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Gelio Kleftiko';
+  src: url('/fonts/custom/gelio-gelio-kleftiko.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Gelio Pasteli';
+  src: url('/fonts/custom/gelio-gelio-pasteli.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Gelio Retsina';
+  src: url('/fonts/custom/gelio-gelio-retsina.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Gocake OTF';
+  src: url('/fonts/custom/gocake-gocake.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Gocake TTF';
+  src: url('/fonts/custom/gocake-gocake.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Grafite';
+  src: url('/fonts/custom/grafite-grafite.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Grafitty outline';
+  src: url('/fonts/custom/grafitty-grafitty-outline.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom HelpMe';
+  src: url('/fonts/custom/help-me-helpme.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Hey Comic OTF';
+  src: url('/fonts/custom/hey-comic-hey-comic.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Hey Comic TTF';
+  src: url('/fonts/custom/hey-comic-hey-comic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom HFF Greek ExCon OTF';
+  src: url('/fonts/custom/hff-greek-excon-hff-greek-excon.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom HFF Greek ExCon TTF';
+  src: url('/fonts/custom/hff-greek-excon-hff-greek-excon.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Hustle Kings';
+  src: url('/fonts/custom/hustle-kings-hustle-kings.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom HZHandwrite';
+  src: url('/fonts/custom/hz-handwrite-hzhandwrite.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom JFRocOut';
+  src: url('/fonts/custom/jf-rock-jfrocout.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom JFRocSol';
+  src: url('/fonts/custom/jf-rock-jfrocsol.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom LatenzaScript PERSONAL USE ONLY';
+  src: url('/fonts/custom/latenza-script-latenzascript-personal-use-only.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Midstar Personal Use';
+  src: url('/fonts/custom/midstar-midstar-personal-use.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom pixel';
+  src: url('/fonts/custom/pixel-3-pixel.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom PR Viking Alternates TTF';
+  src: url('/fonts/custom/pr-viking-pr-viking-alternates.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom PR Viking Alternates TTF pr_viking (1)';
+  src: url('/fonts/custom/pr-viking-1-pr-viking-alternates.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom PR Viking TTF';
+  src: url('/fonts/custom/pr-viking-pr-viking.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom PR Viking TTF pr_viking (1)';
+  src: url('/fonts/custom/pr-viking-1-pr-viking.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Pricedown Bl';
+  src: url('/fonts/custom/pricedown-pricedown-bl.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Rocky Regular';
+  src: url('/fonts/custom/rocky-2-rocky-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Runasvikingas Regular';
+  src: url('/fonts/custom/runasvikingas-runasvikingas-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Singsong';
+  src: url('/fonts/custom/singsong-singsong.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Sketcomic OTF';
+  src: url('/fonts/custom/sketcomic-sketcomic.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Sketcomic TTF';
+  src: url('/fonts/custom/sketcomic-sketcomic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Super Jello';
+  src: url('/fonts/custom/super-jello-super-jello.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom Super Pandora';
+  src: url('/fonts/custom/super-pandora-super-pandora.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom viking middle runes';
+  src: url('/fonts/custom/viking-middle-runes-viking-middle-runes.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom viking middle runes bold';
+  src: url('/fonts/custom/viking-middle-runes-viking-middle-runes-bold.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom VikingLanguage Regular';
+  src: url('/fonts/custom/viking-language-vikinglanguage-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Custom XXII DONT MESS WITH VIKINGS';
+  src: url('/fonts/custom/xxii-dont-mess-with-vikings-xxii-dont-mess-with-vikings.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
