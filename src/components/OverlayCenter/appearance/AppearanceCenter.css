@@ -1,8 +1,11 @@
 .appearance-center.visual-editor {
-  min-height: calc(100vh - 96px);
-  display: grid;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   width: 100%;
+  overflow: hidden;
   color: #e5edf6;
   --ve-bg: rgba(2, 6, 23, 0.94);
   --ve-panel: rgba(15, 23, 42, 0.92);
@@ -19,8 +22,7 @@
 }
 
 .ve-topbar {
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;
   z-index: 50;
   display: grid;
   grid-template-columns: minmax(260px, 1fr) auto;
@@ -278,16 +280,19 @@
 }
 
 .ve-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(300px, 360px) minmax(760px, 1fr) minmax(380px, 460px);
   gap: 12px;
-  min-height: calc(100vh - 190px);
+  height: auto;
 }
 
 .ve-left-panel,
 .ve-canvas-panel,
 .ve-right-panel {
   min-width: 0;
+  min-height: 0;
   border: 1px solid var(--ve-line);
   border-radius: var(--ve-radius);
   background: var(--ve-panel);
@@ -503,6 +508,7 @@
 }
 
 .ve-canvas-panel {
+  min-height: 0;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   padding: 10px;
@@ -535,7 +541,8 @@
   min-height: 0;
   overflow: auto;
   display: grid;
-  place-items: center;
+  align-items: start;
+  justify-items: center;
   border-radius: 8px;
   border: 1px solid rgba(148, 163, 184, 0.13);
   background:

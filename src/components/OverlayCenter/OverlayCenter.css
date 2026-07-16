@@ -23925,6 +23925,17 @@ body.wm-resizing {
 .oc2-main--appearance {
   width: min(2200px, calc(100% - 32px)) !important;
   max-width: 2200px !important;
+  height: calc(100vh - 58px) !important;
+  height: calc(100dvh - 58px) !important;
+  padding: 10px 0 !important;
+  overflow: hidden !important;
+}
+
+.oc2-main--appearance > [data-tour="appearance-page"] {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  width: 100%;
 }
 
 .oc2-tool-section,
