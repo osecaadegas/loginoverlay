@@ -6,7 +6,8 @@ import React, { useMemo, memo, useRef, useState, useEffect } from 'react';
 import { getWidgetDef } from './widgets/widgetRegistry';
 import buildThemeVars from './themeVarsBuilder';
 import { buildCanvasBackground, buildWidgetAppearanceVars, normalizeAppearance, resolveWidgetsForAppearance } from './appearance/appearanceModel';
-import { applyPreviewWidgetSamples, getWidgetPreviewFrame } from './appearance/previewWidgetSamples';
+import { applyPreviewWidgetSamples } from './appearance/previewWidgetSamples';
+import { getWidgetSlotBehavior, getWidgetSlotSize } from './appearance/v2/widgetSlot';
 
 // Register built-in widgets (idempotent)
 import './widgets/builtinWidgets';
@@ -51,19 +52,10 @@ function isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) {
   return false;
 }
 
-function getPreviewSlotSize(widget) {
-  const frame = getWidgetPreviewFrame(widget);
-  const configuredWidth = Number(widget.config?.widgetWidth);
-  const configuredHeight = Number(widget.config?.widgetHeight);
-  return {
-    width: configuredWidth || frame?.width || widget.width,
-    height: configuredHeight || frame?.height || widget.height,
-  };
-}
-
 const PreviewSlot = memo(function PreviewSlot({
   widget,
   theme,
+  userId,
   allWidgets,
   canvasWidth,
   canvasHeight,
@@ -87,12 +79,8 @@ const PreviewSlot = memo(function PreviewSlot({
   const ss = cfg.shadowSize ?? 0;
   const si = cfg.shadowIntensity ?? 0;
   const hasShadow = ss > 0 && si > 0;
-  const slotSize = getPreviewSlotSize(widget);
-  const wStyle = cfg.displayStyle || '';
-  const isBH = widget.widget_type === 'bonus_hunt';
-  const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack'
-    || (isBH && !['v2', 'v5_compact'].includes(wStyle));
-  const needsVisible = needs3D || !!cfg.npcEnabled || widget.widget_type === 'navbar';
+  const slotSize = getWidgetSlotSize(widget);
+  const { needsVisibleOverflow } = getWidgetSlotBehavior(widget);
   const highlighted = isWidgetHighlighted(widget, selectedTarget, selectedWidgetId);
   const selectionCss = selectMode && highlighted
     ? buildElementSelectionCss(widget.id, selectedElementId, hiddenElementIds)
@@ -126,6 +114,8 @@ const PreviewSlot = memo(function PreviewSlot({
       ].filter(Boolean).join(' ') || undefined}
       data-widget-id={widget.id}
       data-widget-type={widget.widget_type}
+      data-appearance-version={cfg.__appearanceV2?.schemaVersion ? `v2-${cfg.__appearanceV2.schemaVersion}` : undefined}
+      data-material={cfg.__appearanceV2?.material || undefined}
       onClick={selectMode ? (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -148,7 +138,7 @@ const PreviewSlot = memo(function PreviewSlot({
       width: isBg ? canvasWidth : slotSize.width,
       height: isBg ? canvasHeight : slotSize.height,
       zIndex: widget.z_index || 1,
-      overflow: isBg || needsVisible ? 'visible' : 'hidden',
+      overflow: isBg || needsVisibleOverflow ? 'visible' : 'hidden',
       cursor: selectMode ? 'crosshair' : undefined,
       opacity: dimmed ? 0.24 : 1,
       transition: 'opacity 140ms ease',
@@ -156,7 +146,7 @@ const PreviewSlot = memo(function PreviewSlot({
       ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
     }}>
       {selectionCss && <style>{selectionCss}</style>}
-      <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+      <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
       {selectMode && highlighted && !isBg && onResizeWidget && (
         <button
           type="button"
@@ -174,6 +164,7 @@ export default function OverlayPreview({
   widgets,
   theme,
   appearance,
+  userId,
   selectedWidgetId,
   selectedTarget,
   selectedElementId,
@@ -222,7 +213,7 @@ export default function OverlayPreview({
 
   const contextFocusActive = previewMode === 'focus-widget' && focusWidget && !selectMode;
   const fitWidgetActive = previewMode === 'fit-widget' && focusWidget && !selectMode;
-  const focusSize = focusWidget ? getPreviewSlotSize(focusWidget) : { width: CANVAS_W, height: CANVAS_H };
+  const focusSize = focusWidget ? getWidgetSlotSize(focusWidget) : { width: CANVAS_W, height: CANVAS_H };
   const focusWidth = Math.max(1, Number(focusSize.width) || 1);
   const focusHeight = Math.max(1, Number(focusSize.height) || 1);
   const focusX = focusWidget ? (focusWidget.widget_type === 'background' ? 0 : Number(focusWidget.position_x) || 0) : 0;
@@ -311,6 +302,7 @@ export default function OverlayPreview({
               key={w.id}
               widget={w}
               theme={theme}
+              userId={userId}
               allWidgets={resolvedWidgets}
               canvasWidth={CANVAS_W}
               canvasHeight={CANVAS_H}

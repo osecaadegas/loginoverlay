@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-07-16",
+  "purpose": "Documentation-only technical audit for the Streamers Center OBS widget appearance system.",
+  "counts": {
+    "canonicalObsRoutes": 1,
+    "obsRouteVariants": 3,
+    "previewImplementations": 2,
+    "registeredWidgets": 16,
+    "unregisteredWidgetComponentFiles": 13
+  },
+  "routes": [
+    {
+      "route": "/overlay/:token",
+      "file": "src/App.jsx:369",
+      "renderer": "src/components/OverlayCenter/OverlayRenderer.jsx",
+      "purpose": "Canonical OBS browser source"
+    },
+    {
+      "route": "/overlay/:token?widget=<widgetId>",
+      "file": "src/components/OverlayCenter/OverlayRenderer.jsx:158",
+      "renderer": "src/components/OverlayCenter/OverlayRenderer.jsx",
+      "purpose": "Single-widget OBS browser source"
+    },
+    {
+      "route": "/overlay/:token?preview=1",
+      "file": "src/components/OverlayCenter/OverlayRenderer.jsx:159",
+      "renderer": "src/components/OverlayCenter/OverlayRenderer.jsx",
+      "purpose": "Pop-out preview using OBS route with draft messages"
+    }
+  ],
+  "previewImplementations": [
+    {
+      "id": "inline-editor-preview",
+      "file": "src/components/OverlayCenter/OverlayPreview.jsx",
+      "usesRegisteredComponents": true,
+      "knownDifferences": [
+        "Runs inside admin page DOM",
+        "Can inject preview sample data",
+        "Has focused-widget and fit-widget viewports",
+        "Adds selection outlines for data-widget-element markers"
+      ]
+    },
+    {
+      "id": "obs-preview-route",
+      "file": "src/components/OverlayCenter/OverlayRenderer.jsx",
+      "route": "/overlay/:token?preview=1",
+      "usesRegisteredComponents": true,
+      "knownDifferences": [
+        "Uses BroadcastChannel draft data",
+        "Suppresses renderer enter and exit animations"
+      ]
+    }
+  ],
+  "styleSystems": [
+    "Global renderer CSS in src/components/OverlayCenter/OverlayRenderer.css",
+    "Admin CSS imported into OBS via src/components/OverlayCenter/OverlayCenter.css",
+    "Inline styles inside widget components",
+    "Legacy theme variables from src/components/OverlayCenter/themeVarsBuilder.js",
+    "Modern appearance variables from src/components/OverlayCenter/appearance/appearanceModel.js",
+    "Widget-specific CSS variables such as --bht-* and --sr-*",
+    "Injected custom_css, advancedCSS, and elementCSS from widget config"
+  ],
+  "persistence": {
+    "overlay_instances": "Public token and owner mapping for OBS routes.",
+    "overlay_widgets": "Widget config, position, dimensions, visibility, z-index, animation metadata.",
+    "overlay_themes": "Legacy theme and compatibility CSS variable source.",
+    "overlay_state": "Versioned overlay runtime state and intended draft/published appearance source.",
+    "shared_overlay_presets": "Preset sharing and library state."
+  },
+  "unregisteredWidgetComponentFiles": [
+    "AIChatBotWidget.jsx",
+    "CoinFlipWidget.jsx",
+    "PointWheelWidget.jsx",
+    "PredictionsWidget.jsx",
+    "RandomSlotPickerWidget.jsx",
+    "RecentWinsWidget.jsx",
+    "SaltyWordsWidget.jsx",
+    "SessionStatsWidget.jsx",
+    "SingleSlotWidget.jsx",
+    "SlotmachineWidget.jsx",
+    "StatsWidget.jsx",
+    "WheelOfNamesWidget.jsx",
+    "PlaceholderWidget.jsx"
+  ],
+  "widgets": [
+    {
+      "id": "bonus_hunt",
+      "name": "Bonus Hunt",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:17",
+      "component": "src/components/OverlayCenter/widgets/BonusHuntWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/BonusHuntConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v3", "v5_horizontal", "v11_fever", "v12_classic_sr"],
+      "routes": ["/overlay/:token", "/overlay/:token?widget=<id>"],
+      "styleSources": ["OverlayRenderer.css", "inline styles", "subValue", "data-widget-element in V12", "widget CSS variables"],
+      "dataSources": ["overlay_widgets.config", "bonus_hunt_history", "slot_requests in V12"],
+      "elements": ["root", "header", "stats", "slotCard", "slotRow", "slotImage", "stateBadge", "progress", "requestQueue"],
+      "safeRanges": {
+        "scale": [0.75, 1.5],
+        "rootRadiusPx": [0, 24],
+        "glowBlurPx": [0, 20],
+        "fontSizePx": [10, 28]
+      },
+      "unsupportedSettings": ["carouselDistance", "3dTransformDistance", "huntMath", "openingStateLogic"],
+      "animationDependencies": ["bht-stack-float", "bht-stack-tilt-left", "bht-stack-tilt-right", "bht-list-scroll", "bht-progress-swipe", "bht-super-trill"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Only V12 has broad element markers", "Older styles have different DOM structures", "3D styles require visible overflow"],
+      "risk": "high"
+    },
+    {
+      "id": "current_slot",
+      "name": "Current Slot",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:47",
+      "component": "src/components/OverlayCenter/widgets/CurrentSlotWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/CurrentSlotConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1", "v2", "v3", "v4"],
+      "styleSources": ["inline styles", "subValue", "basic appearance tokens"],
+      "dataSources": ["overlay_widgets.config", "detected_slots path through useOverlay.js"],
+      "elements": ["root", "slotImage", "title", "provider", "metadata"],
+      "safeRanges": {
+        "scale": [0.75, 1.5],
+        "fontSizePx": [10, 26],
+        "imageSizePx": [32, 180],
+        "radiusPx": [0, 24]
+      },
+      "unsupportedSettings": ["activeSlotLogic", "providerResolution"],
+      "animationDependencies": ["renderer enter/exit animations"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["No broad data-widget-element markers", "Compact bar and card layouts need separate ranges"],
+      "risk": "medium"
+    },
+    {
+      "id": "tournament",
+      "name": "Tournament",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:78",
+      "component": "src/components/OverlayCenter/widgets/TournamentWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/TournamentConfig.jsx",
+      "styleKey": "layout",
+      "styles": ["grid", "showcase", "vertical", "bracket", "neon", "minimal", "arena", "futuristic", "esports"],
+      "styleSources": ["heavy inline styles", "child component inline styles", "embedded keyframes", "subValue"],
+      "dataSources": ["overlay_widgets.config", "tournament engine state"],
+      "elements": ["root", "header", "playerCard", "matchCard", "slotImage", "bracketLine", "resultValue", "effects"],
+      "safeRanges": {
+        "fontSizePx": [9, 28],
+        "cardGapPx": [4, 32],
+        "cardRadiusPx": [0, 24]
+      },
+      "unsupportedSettings": ["bracketGeometry", "shatterTransform", "matchEngine", "arbitraryLayoutAnimation"],
+      "animationDependencies": ["tw-current-glow", "tw-sword-swing", "shatter effects", "layout-specific keyframes"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Many unrelated layouts under one widget ID", "No broad element markers", "Highest inline style count"],
+      "risk": "critical"
+    },
+    {
+      "id": "giveaway",
+      "name": "Giveaway",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:129",
+      "component": "src/components/OverlayCenter/widgets/GiveawayWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/GiveawayConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1", "v2", "v3", "v4", "metal", "bh_stats", "v12"],
+      "styleSources": ["heavy inline styles", "subValue", "gradients", "animation names"],
+      "dataSources": ["overlay_widgets.config", "chat participants", "preview sample data"],
+      "elements": ["root", "title", "prize", "keyword", "participantCount", "winner"],
+      "safeRanges": {
+        "fontSizePx": [10, 30],
+        "radiusPx": [0, 28],
+        "glowBlurPx": [0, 18]
+      },
+      "unsupportedSettings": ["winnerSelectionLogic", "participantLogic", "drawAnimationGeometry"],
+      "animationDependencies": ["pulse", "glow", "winner/draw animations"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Preview can show sample participants", "No broad element markers", "Style variants differ heavily"],
+      "risk": "high"
+    },
+    {
+      "id": "navbar",
+      "name": "Navbar",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:167",
+      "component": "src/components/OverlayCenter/widgets/NavbarWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/NavbarConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1", "metallic", "glass", "retro"],
+      "styleSources": ["heavy inline styles", "subValue", "widget config tokens"],
+      "dataSources": ["overlay_widgets.config", "clock", "crypto", "music", "profile integrations"],
+      "elements": ["rootBar", "streamerInfo", "avatar", "badge", "music", "crypto", "clock", "cta"],
+      "safeRanges": {
+        "barHeightPx": [36, 96],
+        "fontSizePx": [9, 20],
+        "avatarSizePx": [20, 72],
+        "maxWidthPx": [320, 1920]
+      },
+      "unsupportedSettings": ["clockLogic", "cryptoFetchLogic", "musicFetchLogic", "sectionOrderAsAppearance"],
+      "animationDependencies": ["music/crypto transitions", "renderer enter/exit animations"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Renderer intentionally skips slot-level clipping for navbar", "Many optional sections can overflow"],
+      "risk": "high"
+    },
+    {
+      "id": "chat",
+      "name": "Chat",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:226",
+      "component": "src/components/OverlayCenter/widgets/ChatWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/ChatConfig.jsx",
+      "styleKey": "chatStyle",
+      "styles": ["classic", "floating", "bubble", "stack", "typewriter", "sidebar", "cards", "metal", "bh_stats"],
+      "styleSources": ["heavy inline styles", "subValue", "platform/native colors", "animations"],
+      "dataSources": ["Twitch", "YouTube", "Kick", "overlay_widgets.config"],
+      "elements": ["root", "header", "messageList", "message", "username", "badge", "raidMessage"],
+      "safeRanges": {
+        "widthPx": [220, 900],
+        "heightPx": [120, 1080],
+        "fontSizePx": [10, 24],
+        "messageSpacingPx": [0, 18]
+      },
+      "unsupportedSettings": ["messageParsing", "platformConnection", "nativePlatformColorAlgorithm"],
+      "animationDependencies": ["message arrival", "typewriter", "stack/floating motion"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["External data differs from preview", "No broad element markers", "Native chat colors can override theme intent"],
+      "risk": "high"
+    },
+    {
+      "id": "image_slideshow",
+      "name": "Image Slideshow",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:305",
+      "component": "src/components/OverlayCenter/widgets/ImageSlideshowWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/ImageSlideshowConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1", "metal", "v12"],
+      "styleSources": ["inline styles", "subValue", "image object-fit", "gradient overlay"],
+      "dataSources": ["overlay_widgets.config.images"],
+      "elements": ["root", "image", "gradientOverlay", "caption", "dots"],
+      "safeRanges": {
+        "radiusPx": [0, 32],
+        "borderWidthPx": [0, 6],
+        "captionSizePx": [10, 32],
+        "fadeDurationSeconds": [0.1, 5]
+      },
+      "unsupportedSettings": ["imageSourceLogic", "arbitraryCropMath"],
+      "animationDependencies": ["fade transition", "slide transition", "interval timer"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Image aspect ratio can break with arbitrary sizing"],
+      "risk": "medium"
+    },
+    {
+      "id": "rtp_stats",
+      "name": "RTP Stats Bar",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:340",
+      "component": "src/components/OverlayCenter/widgets/RtpStatsWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/RtpStatsConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1", "vertical", "neon", "minimal", "glass"],
+      "styleSources": ["class styles", "subValue", "specific config tokens"],
+      "dataSources": ["slots", "current slot config", "/api/slot-ai"],
+      "elements": ["rootBar", "provider", "slotName", "rtp", "potential", "volatility", "bestWin", "divider"],
+      "safeRanges": {
+        "fontSizePx": [9, 22],
+        "providerFontSizePx": [10, 28],
+        "paddingXpx": [0, 32],
+        "paddingYpx": [0, 20],
+        "radiusPx": [0, 24]
+      },
+      "unsupportedSettings": ["slotLookup", "rtpCalculation"],
+      "animationDependencies": ["spinner/loading", "renderer enter/exit animations"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Horizontal and vertical layouts need separate ranges", "Long slot names can overflow"],
+      "risk": "medium"
+    },
+    {
+      "id": "background",
+      "name": "Background",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:401",
+      "component": "src/components/OverlayCenter/widgets/BackgroundWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/BackgroundConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1", "aurora", "matrix", "starfield", "waves", "geometric"],
+      "styleSources": ["inline styles", "BackgroundWidget.css", "subValue", "canvas-filling renderer shell"],
+      "dataSources": ["overlay_widgets.config"],
+      "elements": ["base", "image", "video", "pattern", "overlay", "particles"],
+      "safeRanges": {
+        "opacityPercent": [0, 100],
+        "blurPx": [0, 24],
+        "saturationPercent": [0, 200],
+        "animationSpeedSeconds": [2, 60]
+      },
+      "unsupportedSettings": ["foregroundZIndex", "unsafeVideoLoading"],
+      "animationDependencies": ["aurora", "matrix", "starfield", "waves"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Full-canvas filters can be expensive", "Must remain behind foreground widgets"],
+      "risk": "high"
+    },
+    {
+      "id": "raid_shoutout",
+      "name": "Raid Shoutout",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:454",
+      "component": "src/components/OverlayCenter/widgets/RaidShoutoutWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/RaidShoutoutConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1"],
+      "styleSources": ["inline styles", "class styles", "subValue", "renderer animations"],
+      "dataSources": ["overlay_widgets.config", "/api/clip-video"],
+      "elements": ["root", "header", "raidDetails", "viewerBadge", "clipContainer"],
+      "safeRanges": {
+        "radiusPx": [0, 32],
+        "alertDurationSeconds": [3, 120],
+        "fontSizePx": [10, 32]
+      },
+      "unsupportedSettings": ["raidDetection", "clipFetchLogic", "alertLifecycleAsPureAppearance"],
+      "animationDependencies": ["enterAnimation", "exitAnimation", "alert timers"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Alert lifecycle is behavior, not appearance", "Clip state changes dimensions"],
+      "risk": "high"
+    },
+    {
+      "id": "spotify_now_playing",
+      "name": "Spotify Now Playing",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:485",
+      "component": "src/components/OverlayCenter/widgets/SpotifyWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/SpotifyConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["album_card", "mini_player", "vinyl", "glass", "wave", "neon", "metal", "compact_bar"],
+      "styleSources": ["heavy inline styles", "subValue", "gradients", "style-specific animations"],
+      "dataSources": ["Spotify integration", "manual track config", "preview sample data"],
+      "elements": ["root", "albumArt", "title", "artist", "progress", "wave", "vinyl"],
+      "safeRanges": {
+        "fontSizePx": [10, 28],
+        "albumArtSizePx": [32, 220],
+        "radiusPx": [0, 32],
+        "glowBlurPx": [0, 18]
+      },
+      "unsupportedSettings": ["spotifyPolling", "vinylGeometry", "waveGeometry"],
+      "animationDependencies": ["vinyl rotation", "wave motion", "pulse/glow"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Preview can use sample track", "Compact bar and album card need separate dimensions"],
+      "risk": "high"
+    },
+    {
+      "id": "slot_requests",
+      "name": "Slot Requests",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:518",
+      "component": "src/components/OverlayCenter/widgets/SlotRequestsWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/SlotRequestsConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1_minimal", "v2_card_stack", "v3_compact"],
+      "styleSources": ["OverlayRenderer.css", "widget-specific CSS variables", "class styles"],
+      "dataSources": ["slot_requests", "chat command config"],
+      "elements": ["root", "header", "requestRow", "requestCard", "slotImage", "slotTitle", "requester", "queueNumber", "emptyState"],
+      "safeRanges": {
+        "fontSizePx": [10, 24],
+        "rowHeightPx": [44, 120],
+        "imageSizePx": [32, 96],
+        "radiusPx": [0, 24]
+      },
+      "unsupportedSettings": ["chatCommandParsing", "queueLogic", "3dCardTransformDistance", "marqueeDistance"],
+      "animationDependencies": ["sr-infinite-scroll", "sr-min-slide-in", "sr-cs-marquee", "sr-cs-float", "sr-cs-badge-pulse", "sr-co-pop"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["No broad element markers", "Three styles have different DOM and animation assumptions"],
+      "risk": "high"
+    },
+    {
+      "id": "bh_stats",
+      "name": "BH Stats",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:572",
+      "component": "src/components/OverlayCenter/widgets/BHStatsWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/BHStatsConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["default", "metal", "glass"],
+      "styleSources": ["inline styles", "subValue", "gradients"],
+      "dataSources": ["bonus hunt config/allWidgets", "bonus_hunt_history"],
+      "elements": ["root", "title", "statCard", "label", "value", "progress"],
+      "safeRanges": {
+        "fontSizePx": [10, 28],
+        "cardPaddingPx": [4, 28],
+        "radiusPx": [0, 24],
+        "progressHeightPx": [4, 24]
+      },
+      "unsupportedSettings": ["bonusHuntMath"],
+      "animationDependencies": ["renderer enter/exit animations"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["No broad element markers, but relatively simple structure"],
+      "risk": "low"
+    },
+    {
+      "id": "bonus_buys",
+      "name": "Bonus Buys",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:608",
+      "component": "src/components/OverlayCenter/widgets/BonusBuysWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/BonusBuysConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1", "v2_neon", "v3_minimal"],
+      "styleSources": ["inline styles", "subValue", "basic appearance tokens"],
+      "dataSources": ["overlay_widgets.config"],
+      "elements": ["root", "slotImage", "slotTitle", "statRow", "buyRow", "positiveValue", "negativeValue"],
+      "safeRanges": {
+        "fontSizePx": [10, 26],
+        "imageSizePx": [36, 160],
+        "radiusPx": [0, 24],
+        "rowHeightPx": [32, 96]
+      },
+      "unsupportedSettings": ["sessionCalculation", "bonusBuyLogic"],
+      "animationDependencies": ["renderer enter/exit animations"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["No broad element markers", "Neon style glow needs caps"],
+      "risk": "medium"
+    },
+    {
+      "id": "bets",
+      "name": "Bets",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:648",
+      "component": "src/components/OverlayCenter/widgets/BetsWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/BetsConfig.jsx",
+      "styleKey": "displayStyle",
+      "styles": ["v1_list", "v2_grid", "v3_grid_2x3"],
+      "styleSources": ["inline styles", "class styles", "data-widget-element", "subElementStyle", "subValue", "OverlayRenderer.css keyframes"],
+      "dataSources": ["overlay_widgets.config", "chat/points betting state"],
+      "elements": ["root", "header", "question", "timer", "pool", "optionCard", "progress", "footer"],
+      "safeRanges": {
+        "fontSizePx": [10, 28],
+        "optionGapPx": [4, 24],
+        "progressHeightPx": [4, 28],
+        "radiusPx": [0, 24]
+      },
+      "unsupportedSettings": ["bettingLogic", "pointDeduction", "winnerSelection", "gridGeometryWithoutStyleCheck"],
+      "animationDependencies": ["bets-open", "bets-card-in", "bets-lead-pulse", "bets-winner-pop"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Good element-marker coverage, but grid styles need separate constraints"],
+      "risk": "medium"
+    },
+    {
+      "id": "container",
+      "name": "Container",
+      "registryLine": "src/components/OverlayCenter/widgets/builtinWidgets.js:712",
+      "component": "src/components/OverlayCenter/widgets/ContainerWidget.jsx",
+      "configPanel": "src/components/OverlayCenter/widgets/ContainerConfig.jsx",
+      "styleKey": null,
+      "styles": [],
+      "styleSources": ["inline styles", "subValue", "child widget rendering"],
+      "dataSources": ["overlay_widgets.config.children", "child overlay widgets"],
+      "elements": ["root", "childLayout", "scrollContainer"],
+      "safeRanges": {
+        "gapPx": [0, 48],
+        "paddingPx": [0, 64],
+        "opacityPercent": [0, 100]
+      },
+      "unsupportedSettings": ["childBusinessLogic", "broadChildSelectors", "automaticChildRestyling"],
+      "animationDependencies": ["child widget animations"],
+      "previewRenderer": "OverlayPreview.PreviewSlot",
+      "obsRenderer": "OverlayRenderer.WidgetSlot",
+      "knownProblems": ["Can leak style expectations into children", "Children are excluded from top-level OBS render"],
+      "risk": "critical"
+    }
+  ]
+}

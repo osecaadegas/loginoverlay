@@ -47,9 +47,18 @@ import {
 import {
   BUILT_IN_STYLE_PRESETS,
   CONTROL_DEFINITIONS,
+  DEFAULT_SIMPLE_SETTINGS,
+  EDITOR_MODE_CAPABILITIES,
   EDITOR_SCHEMA_VERSION,
+  FONT_OPTIONS,
+  SIMPLE_COLOR_PALETTE,
+  SIMPLE_DENSITIES,
+  SIMPLE_MATERIAL_PRESETS,
+  SIMPLE_SHAPES,
+  SIMPLE_TEXT_SIZES,
   WIDGET_CATEGORY_FILTERS,
   elementSupportsControl,
+  generateSimpleAppearance,
   getElementControlGroups,
   getFriendlyElementLabel,
   getModeLabel,
@@ -58,13 +67,21 @@ import {
   getWidgetElementSchema,
   getWidgetIcon,
   inferElementKind,
+  normalizeHexColor,
+  normalizeSimpleSettings,
   validateEditorValue,
 } from './editorSchema';
+import {
+  buildAppearanceV2ForStorage,
+  getSimpleAppearanceV2Settings,
+} from './v2/appearanceResolver';
+import { isWidgetAppearanceV2Enabled } from './v2/widgetAppearanceRegistry';
 import { LayerToggleButton, PropertyControl } from './propertyControls';
 import './AppearanceCenter.css';
 
 const TOUR_STORAGE_KEY = 'streamers_center_appearance_tour_hidden';
 const MODE_STORAGE_KEY = 'streamers_center_appearance_mode';
+const RECENT_COLORS_STORAGE_KEY = 'streamers_center_appearance_recent_colors';
 const CLIENT_ID_PREFIX = 'appearance_editor';
 
 const PREVIEW_BACKGROUNDS = [
@@ -110,6 +127,41 @@ function getInitialMode() {
 function getInitialTourVisible() {
   if (typeof window === 'undefined') return false;
   return window.localStorage.getItem(TOUR_STORAGE_KEY) !== '1';
+}
+
+function getInitialRecentColors() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(RECENT_COLORS_STORAGE_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed.filter(Boolean).slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
+
+function getSimpleSettingsAtRoot(appearance, root, widgetType) {
+  if (isWidgetAppearanceV2Enabled(widgetType)) {
+    return getSimpleAppearanceV2Settings(appearance, root, widgetType);
+  }
+  if (!root) return normalizeSimpleSettings(appearance?.simpleSettings || {});
+  return normalizeSimpleSettings(
+    getByPath(appearance, `${root}.appearance.simpleSettings`)
+    || getByPath(appearance, `${root}.simpleSettings`)
+    || {}
+  );
+}
+
+function getSimplePresetVars(settings) {
+  const generated = generateSimpleAppearance(settings);
+  return {
+    '--preset-primary': generated.colors?.primary || settings.primaryColor,
+    '--preset-accent': generated.colors?.accent || settings.accentColor,
+    '--preset-surface': generated.surfaces?.containerBg || 'rgba(15,23,42,0.9)',
+    '--preset-card': generated.surfaces?.cardBg || 'rgba(255,255,255,0.08)',
+    '--preset-border': generated.borders?.color || 'rgba(148,163,184,0.28)',
+    '--preset-text': generated.colors?.text || '#f8fafc',
+    '--preset-glow': generated.effects?.glowColor || generated.colors?.primary || settings.primaryColor,
+  };
 }
 
 function createTarget(widget, appearance) {
@@ -257,10 +309,11 @@ export default function AppearanceCenter({
   const [sidebarTab, setSidebarTab] = useState('widgets');
   const [widgetSearch, setWidgetSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [previewMode, setPreviewMode] = useState('focus-widget');
+  const [previewMode, setPreviewMode] = useState(() => EDITOR_MODE_CAPABILITIES[getInitialMode()]?.previewMode || 'fit-widget');
   const [previewBackground, setPreviewBackground] = useState('dark');
   const [zoom, setZoom] = useState('fit');
   const [obsSafe, setObsSafe] = useState(true);
+  const [showBefore, setShowBefore] = useState(false);
   const [saveStatus, setSaveStatus] = useState('saved');
   const [statusMessage, setStatusMessage] = useState('');
   const [undoStack, setUndoStack] = useState([]);
@@ -268,6 +321,7 @@ export default function AppearanceCenter({
   const [hiddenLayers, setHiddenLayers] = useState({});
   const [lockedLayers, setLockedLayers] = useState({});
   const [tourVisible, setTourVisible] = useState(getInitialTourVisible);
+  const [recentColors, setRecentColors] = useState(getInitialRecentColors);
   const [toast, setToast] = useState('');
   const lastPersistedDraftRef = useRef(safeJson(serverState.draft));
   const lastRevisionRef = useRef(serverState.revision);
@@ -278,7 +332,22 @@ export default function AppearanceCenter({
   );
   const selectedWidgetName = selectedWidget ? getWidgetDisplayName(selectedWidget) : 'Overlay';
   const selectedWidgetType = selectedWidget?.widget_type || selectedTarget.widgetType || '';
+  const selectedWidgetUsesV2 = isWidgetAppearanceV2Enabled(selectedWidgetType);
   const selectedTargetRoot = useMemo(() => getTargetOverrideRoot(selectedTarget), [selectedTarget]);
+  const currentSimpleSettings = useMemo(
+    () => getSimpleSettingsAtRoot(draft, selectedTargetRoot, selectedWidgetType),
+    [draft, selectedTargetRoot, selectedWidgetType]
+  );
+  const currentSimpleAppearance = useMemo(
+    () => generateSimpleAppearance(currentSimpleSettings),
+    [currentSimpleSettings]
+  );
+  const visibleMaterialPresets = useMemo(
+    () => selectedWidgetUsesV2
+      ? SIMPLE_MATERIAL_PRESETS.filter(preset => preset.id !== 'soft_shadow')
+      : SIMPLE_MATERIAL_PRESETS,
+    [selectedWidgetUsesV2]
+  );
   const selectedElements = useMemo(() => getWidgetElementSchema(selectedWidgetType), [selectedWidgetType]);
   const selectedElement = useMemo(
     () => selectedElements.find(element => element.id === selectedElementId) || selectedElements[0] || null,
@@ -290,6 +359,11 @@ export default function AppearanceCenter({
   const warnings = useMemo(() => getAppearanceWarnings(draft), [draft]);
   const performance = useMemo(() => getPerformanceTone(draft), [draft]);
   const groupedLayers = useMemo(() => groupLayers(selectedElements), [selectedElements]);
+  const advancedOverrideCount = useMemo(() => {
+    if (!selectedTargetRoot) return 0;
+    return countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.elements`))
+      + countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.subElements`));
+  }, [draft, selectedTargetRoot]);
 
   const filteredWidgets = useMemo(() => {
     const term = widgetSearch.trim().toLowerCase();
@@ -322,6 +396,14 @@ export default function AppearanceCenter({
 
   useEffect(() => {
     if (typeof window !== 'undefined') window.localStorage.setItem(MODE_STORAGE_KEY, mode);
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode === 'simple') {
+      setSidebarTab('widgets');
+      setPreviewMode(prev => (prev === 'full-overlay' ? prev : 'fit-widget'));
+      setShowBefore(false);
+    }
   }, [mode]);
 
   useEffect(() => {
@@ -402,6 +484,7 @@ export default function AppearanceCenter({
   }, [draft, persistDraft]);
 
   const commitDraft = useCallback((recipe, summary = 'Style changed') => {
+    setShowBefore(false);
     setDraft(prev => {
       const next = normalizeAppearance(typeof recipe === 'function' ? recipe(prev) : recipe, { theme });
       if (safeJson(prev) === safeJson(next)) return prev;
@@ -418,6 +501,66 @@ export default function AppearanceCenter({
     });
   }, [selectedElementId, selectedTarget, selectedWidgetType, theme]);
 
+  const rememberColor = useCallback((color) => {
+    const normalized = normalizeHexColor(color, '');
+    if (!normalized) return;
+    setRecentColors(prev => {
+      const next = [normalized, ...prev.filter(item => item !== normalized)].slice(0, 8);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(RECENT_COLORS_STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const applySimpleSettings = useCallback((patch, summary = 'Quick style changed') => {
+    const nextSettings = normalizeSimpleSettings({ ...currentSimpleSettings, ...(patch || {}) });
+    const generated = generateSimpleAppearance(nextSettings);
+    if (patch?.primaryColor) rememberColor(nextSettings.primaryColor);
+    if (patch?.accentColor) rememberColor(nextSettings.accentColor);
+    commitDraft(prev => {
+      if (!selectedTargetRoot) {
+        return deepMerge(prev, generated);
+      }
+      const appearancePath = `${selectedTargetRoot}.appearance`;
+      const currentAppearance = getByPath(prev, appearancePath) || {};
+      let next = setByPath(prev, appearancePath, deepMerge(currentAppearance, generated));
+      if (isWidgetAppearanceV2Enabled(selectedWidgetType)) {
+        const currentV2 = getByPath(prev, `${selectedTargetRoot}.appearanceV2`) || {};
+        next = setByPath(next, `${selectedTargetRoot}.appearanceV2`, buildAppearanceV2ForStorage(selectedWidgetType, nextSettings, currentV2));
+      }
+      return next;
+    }, summary);
+  }, [commitDraft, currentSimpleSettings, rememberColor, selectedTargetRoot, selectedWidgetType]);
+
+  const restoreRecommendedStyle = useCallback(() => {
+    const generated = generateSimpleAppearance(DEFAULT_SIMPLE_SETTINGS);
+    commitDraft(prev => {
+      if (!selectedTargetRoot) return deepMerge(prev, generated);
+      let next = setByPath(prev, `${selectedTargetRoot}.appearance`, generated);
+      if (isWidgetAppearanceV2Enabled(selectedWidgetType)) {
+        next = setByPath(next, `${selectedTargetRoot}.appearanceV2`, buildAppearanceV2ForStorage(selectedWidgetType, DEFAULT_SIMPLE_SETTINGS, {}));
+      }
+      next = omitPath(next, `${selectedTargetRoot}.elements`);
+      next = omitPath(next, `${selectedTargetRoot}.subElements`);
+      return next;
+    }, 'Restore recommended style');
+    setToast('Recommended style restored');
+  }, [commitDraft, selectedTargetRoot, selectedWidgetType]);
+
+  const handleModeChange = useCallback((nextMode) => {
+    if (nextMode === mode) return;
+    if (nextMode === 'simple' && advancedOverrideCount > 0) {
+      const keep = window.confirm('Advanced adjustments are active for this widget. Keep them while using Simple Mode? Choose Cancel to stay in Advanced Mode.');
+      if (!keep) return;
+      setToast('Advanced adjustments kept');
+    }
+    setMode(nextMode);
+    setSidebarTab(nextMode === 'advanced' ? 'layers' : 'widgets');
+    setPreviewMode(EDITOR_MODE_CAPABILITIES[nextMode]?.previewMode || 'fit-widget');
+    setShowBefore(false);
+  }, [advancedOverrideCount, mode]);
+
   const selectWidget = useCallback((widget, nextElementId = '') => {
     if (!widget) return;
     if (dirty) {
@@ -429,12 +572,12 @@ export default function AppearanceCenter({
     setSelectedTarget(target);
     setSelectedElementId(nextElementId || firstElement?.id || '');
     setSelectedStateId('default');
-    setSidebarTab('layers');
+    setSidebarTab(mode === 'advanced' ? 'layers' : 'widgets');
     trackEvent(ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED || 'widget_appearance_target_selected', {
       scope: target.scope,
       widget_type: target.widgetType,
     });
-  }, [dirty, draft, persistDraft]);
+  }, [dirty, draft, mode, persistDraft]);
 
   const handlePreviewWidgetSelect = useCallback((widget) => {
     selectWidget(widget);
@@ -551,20 +694,35 @@ export default function AppearanceCenter({
   const applyPreset = useCallback((preset) => {
     const appearance = getPresetAppearance(preset);
     if (!appearance) return;
-    commitDraft(prev => normalizeAppearance(deepMerge(prev, appearance), { theme }), `Apply preset ${preset.name}`);
+    if (preset.isSimpleQuickStyle && selectedTargetRoot) {
+      commitDraft(prev => {
+        const appearancePath = `${selectedTargetRoot}.appearance`;
+        const currentAppearance = getByPath(prev, appearancePath) || {};
+        return setByPath(prev, appearancePath, deepMerge(currentAppearance, appearance));
+      }, `Apply preset ${preset.name}`);
+    } else {
+      commitDraft(prev => normalizeAppearance(deepMerge(prev, appearance), { theme }), `Apply preset ${preset.name}`);
+    }
     setToast(`${preset.name} applied`);
     trackEvent(ANALYTICS_EVENTS.APPEARANCE_PRESET_APPLIED || 'appearance_preset_applied', { preset_id: preset.id });
-  }, [commitDraft, theme]);
+  }, [commitDraft, selectedTargetRoot, theme]);
 
   const saveCurrentPreset = useCallback(async () => {
     const name = window.prompt('Preset name', `${selectedWidgetName} style`);
     if (!name?.trim() || !updateState) return;
+    const presetAppearance = mode === 'simple' && selectedTargetRoot
+      ? (getByPath(draft, `${selectedTargetRoot}.appearance`) || generateSimpleAppearance(currentSimpleSettings))
+      : draft;
     const preset = createAppearancePreset({
       name,
-      appearance: draft,
+      appearance: presetAppearance,
       scope: selectedTarget.scope,
       widgetTypes: selectedWidgetType ? [selectedWidgetType] : [],
     });
+    if (mode === 'simple') {
+      preset.isSimpleQuickStyle = true;
+      preset.simpleSettings = currentSimpleSettings;
+    }
     const nextRoot = {
       ...serverState,
       draft,
@@ -576,7 +734,7 @@ export default function AppearanceCenter({
     };
     await updateState({ overlayAppearance: nextRoot });
     setToast('Preset saved');
-  }, [draft, selectedTarget.scope, selectedWidgetName, selectedWidgetType, serverState, updateState]);
+  }, [currentSimpleSettings, draft, mode, selectedTarget.scope, selectedTargetRoot, selectedWidgetName, selectedWidgetType, serverState, updateState]);
 
   const renamePreset = useCallback(async (preset) => {
     const name = window.prompt('Rename preset', preset.name);
@@ -685,14 +843,14 @@ export default function AppearanceCenter({
         persistDraft(draft, 'keyboard');
       } else if (event.key === 'Escape') {
         setSelectedElementId('');
-      } else if (event.key === 'Delete' && selectedElement?.id && !selectedLayerLocked) {
+      } else if (mode === 'advanced' && event.key === 'Delete' && selectedElement?.id && !selectedLayerLocked) {
         event.preventDefault();
         if (window.confirm(`Reset ${selectedElement.label}?`)) resetElement();
       }
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [draft, persistDraft, redo, resetElement, selectedElement, selectedLayerLocked, undo]);
+  }, [draft, mode, persistDraft, redo, resetElement, selectedElement, selectedLayerLocked, undo]);
 
   const renderQuickControl = (item) => {
     const root = selectedTargetRoot;
@@ -731,6 +889,108 @@ export default function AppearanceCenter({
     );
   };
 
+  const renderWidgetSelector = (simple = false) => (
+    <div className={`ve-sidebar-scroll${simple ? ' ve-sidebar-scroll--simple' : ''}`}>
+      {simple && (
+        <div className="ve-simple-sidebar-head">
+          <strong>Widgets</strong>
+          <span>Choose which overlay tool you want to style.</span>
+        </div>
+      )}
+      <div className="ve-search">
+        <Search size={15} />
+        <input
+          value={widgetSearch}
+          onChange={event => setWidgetSearch(event.target.value)}
+          placeholder="Search widgets"
+          aria-label="Search widgets"
+        />
+      </div>
+      <div className="ve-category-chips" aria-label="Widget category filters">
+        {WIDGET_CATEGORY_FILTERS.map(item => (
+          <button
+            key={item.id}
+            type="button"
+            className={categoryFilter === item.id ? 'is-active' : ''}
+            onClick={() => setCategoryFilter(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div className="ve-widget-list">
+        {filteredWidgets.map(widget => {
+          const active = selectedWidget?.id === widget.id;
+          const edited = !!getByPath(draft, `widgets.${widget.id}`);
+          return (
+            <button
+              key={widget.id}
+              type="button"
+              className={`ve-widget-card${active ? ' is-active' : ''}${simple ? ' ve-widget-card--simple' : ''}`}
+              onClick={() => selectWidget(widget)}
+            >
+              <span className="ve-widget-card__thumb">
+                <WidgetIcon icon={getWidgetIcon(widget)} />
+              </span>
+              <span className="ve-widget-card__body">
+                <strong>{getWidgetDisplayName(widget)}</strong>
+                <small>{widget.is_visible ? 'Enabled' : 'Disabled'} - {WIDGET_CATEGORY_FILTERS.find(item => item.id === getWidgetCategory(widget))?.label || 'Other'}</small>
+              </span>
+              {edited && <span className="ve-edited-dot" title="Edited" />}
+            </button>
+          );
+        })}
+        {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search or category.</EmptyState>}
+      </div>
+    </div>
+  );
+
+  const renderLayersPanel = () => (
+    <div className="ve-sidebar-scroll ve-layers">
+      <div className="ve-layer-intro">
+        <MousePointer2 size={17} />
+        <span>Click the preview or choose a layer. The right panel will only show controls for that part.</span>
+      </div>
+      {visibleLayerRows.map(group => (
+        <section key={group.id} className="ve-layer-group">
+          <h3>{group.label}</h3>
+          {group.items.map(element => {
+            const key = layerKey(selectedWidget?.id, element.id);
+            const active = element.id === selectedElement?.id;
+            const hidden = !!hiddenLayers[key];
+            const locked = !!lockedLayers[key];
+            return (
+              <div key={element.id} className={`ve-layer-row${active ? ' is-active' : ''}`}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedElementId(element.id);
+                    setSelectedStateId('default');
+                  }}
+                >
+                  <span>{element.label}</span>
+                  <small>{inferElementKind(element)}</small>
+                </button>
+                <LayerToggleButton
+                  active={!hidden}
+                  type="visible"
+                  label={hidden ? 'Show layer in preview' : 'Hide layer in preview'}
+                  onClick={() => setHiddenLayers(prev => ({ ...prev, [key]: !hidden }))}
+                />
+                <LayerToggleButton
+                  active={locked}
+                  type="locked"
+                  label={locked ? 'Unlock layer editing' : 'Lock layer editing'}
+                  onClick={() => setLockedLayers(prev => ({ ...prev, [key]: !locked }))}
+                />
+              </div>
+            );
+          })}
+        </section>
+      ))}
+    </div>
+  );
+
   const controlGroups = useMemo(() => {
     if (!selectedElement) return [];
     return getElementControlGroups(selectedElement, mode).filter(group => group.controls.some(control => elementSupportsControl(selectedElement, control.id)));
@@ -749,7 +1009,7 @@ export default function AppearanceCenter({
           </a>
           <div className="ve-current-widget">
             <span>{selectedWidgetName}</span>
-            <small>{selectedElement ? getFriendlyElementLabel(selectedElement.id, selectedElement.label) : 'Choose an element'}</small>
+            <small>{mode === 'simple' ? 'Entire widget' : selectedElement ? getFriendlyElementLabel(selectedElement.id, selectedElement.label) : 'Choose an element'}</small>
           </div>
           <span className={`ve-save-status ve-save-status--${saveStatus}${dirty ? ' ve-save-status--dirty' : ''}`}>
             {saveStatus === 'saved' && !dirty ? <CheckCircle2 size={14} /> : <span className="ve-status-dot" />}
@@ -760,16 +1020,16 @@ export default function AppearanceCenter({
           <ToolbarButton icon={Undo2} disabled={!undoStack.length} onClick={undo} title="Undo (Ctrl+Z)" />
           <ToolbarButton icon={Redo2} disabled={!redoStack.length} onClick={redo} title="Redo (Ctrl+Shift+Z)" />
           <span className="ve-toolbar-divider" />
-          <ToolbarButton icon={Monitor} active={previewMode === 'full-overlay'} onClick={() => setPreviewMode('full-overlay')}>Desktop</ToolbarButton>
-          <ToolbarButton icon={MonitorPlay} active={previewMode === 'fit-widget'} onClick={() => setPreviewMode('fit-widget')}>OBS</ToolbarButton>
+          <ToolbarButton icon={MonitorPlay} active={previewMode === 'fit-widget'} onClick={() => setPreviewMode('fit-widget')}>{mode === 'simple' ? 'Focused Widget' : 'OBS'}</ToolbarButton>
+          <ToolbarButton icon={Monitor} active={previewMode === 'full-overlay'} onClick={() => setPreviewMode('full-overlay')}>{mode === 'simple' ? 'Full Overlay' : 'Desktop'}</ToolbarButton>
           <ToolbarButton icon={Maximize2} active={zoom === 'fit'} onClick={() => updateZoom('fit')} title="Fit preview" />
           <ToolbarButton icon={ZoomOut} onClick={() => updateZoom('out')} title="Zoom out" />
           <span className="ve-zoom-label">{zoom === 'fit' ? 'Fit' : `${zoom}%`}</span>
           <ToolbarButton icon={ZoomIn} onClick={() => updateZoom('in')} title="Zoom in" />
           <span className="ve-toolbar-divider" />
           <div className="ve-mode-switch" role="group" aria-label="Editor mode">
-            <button type="button" className={mode === 'simple' ? 'is-active' : ''} onClick={() => setMode('simple')}>Simple</button>
-            <button type="button" className={mode === 'advanced' ? 'is-active' : ''} onClick={() => setMode('advanced')}>Advanced</button>
+            <button type="button" className={mode === 'simple' ? 'is-active' : ''} onClick={() => handleModeChange('simple')}>Simple</button>
+            <button type="button" className={mode === 'advanced' ? 'is-active' : ''} onClick={() => handleModeChange('advanced')}>Advanced</button>
           </div>
           <ToolbarButton icon={RotateCcw} onClick={resetWidget}>Reset</ToolbarButton>
           <ToolbarButton icon={Save} onClick={() => persistDraft(draft, 'manual')}>Save Draft</ToolbarButton>
@@ -785,7 +1045,8 @@ export default function AppearanceCenter({
       )}
 
       <div className="ve-workspace">
-        <aside className="ve-left-panel">
+        <aside className={`ve-left-panel${mode === 'simple' ? ' ve-left-panel--simple' : ''}`}>
+          {mode === 'advanced' && (
           <div className="ve-panel-tabs" role="tablist" aria-label="Editor sidebar">
             <button type="button" className={sidebarTab === 'widgets' ? 'is-active' : ''} onClick={() => setSidebarTab('widgets')}>
               <Palette size={16} />
@@ -796,8 +1057,9 @@ export default function AppearanceCenter({
               Layers
             </button>
           </div>
+          )}
 
-          {sidebarTab === 'widgets' ? (
+          {mode === 'simple' ? renderWidgetSelector(true) : sidebarTab === 'widgets' ? (
             <div className="ve-sidebar-scroll">
               <div className="ve-search">
                 <Search size={15} />
@@ -895,10 +1157,19 @@ export default function AppearanceCenter({
         <main className="ve-canvas-panel">
           <div className="ve-canvas-header">
             <div>
-              <strong>Live canvas</strong>
-              <span>Preview uses the same widget components and appearance model as OBS.</span>
+              <strong>{mode === 'simple' ? 'Focused preview' : 'Live canvas'}</strong>
+              <span>{mode === 'simple' ? 'Choose a style and colour, then publish when it looks right.' : 'Preview uses the same widget components and appearance model as OBS.'}</span>
             </div>
             <div className="ve-canvas-actions">
+              {mode === 'simple' && (
+                <>
+                  <button type="button" className={previewMode === 'fit-widget' ? 'is-active' : ''} onClick={() => setPreviewMode('fit-widget')}>Focused Widget</button>
+                  <button type="button" className={previewMode === 'full-overlay' ? 'is-active' : ''} onClick={() => setPreviewMode('full-overlay')}>Full Overlay</button>
+                  <button type="button" className={showBefore ? 'is-active' : ''} onClick={() => setShowBefore(value => !value)}>
+                    {showBefore ? 'Showing Before' : 'Before / After'}
+                  </button>
+                </>
+              )}
               <label className="ve-toggle-inline">
                 <input type="checkbox" checked={obsSafe} onChange={event => setObsSafe(event.target.checked)} />
                 OBS safe frame
@@ -928,28 +1199,335 @@ export default function AppearanceCenter({
             <OverlayPreview
               widgets={widgets}
               theme={theme}
-              appearance={draft}
+              appearance={showBefore ? serverState.published : draft}
+              userId={user?.id}
               selectedWidgetId={selectedWidget?.id}
               selectedTarget={selectedTarget}
-              selectedElementId={selectedElement?.id}
-              hiddenElementIds={selectedHiddenElementIds}
+              selectedElementId={mode === 'advanced' ? selectedElement?.id : ''}
+              hiddenElementIds={mode === 'advanced' ? selectedHiddenElementIds : []}
               styleSelections={styleSelections}
               zoom={zoom === 'fit' ? 'fit' : `${zoom}%`}
               previewMode={previewMode}
               previewBackground={previewBackground}
-              selectMode
-              onSelectWidget={handlePreviewWidgetSelect}
-              onSelectElement={handlePreviewElementSelect}
-              onResizeWidget={handlePreviewResize}
+              selectMode={mode === 'advanced'}
+              onSelectWidget={mode === 'advanced' ? handlePreviewWidgetSelect : undefined}
+              onSelectElement={mode === 'advanced' ? handlePreviewElementSelect : undefined}
+              onResizeWidget={mode === 'advanced' ? handlePreviewResize : undefined}
             />
           </div>
 
           <div className="ve-canvas-footer">
-            <span><MousePointer2 size={15} /> Click text, cards, images or bars to edit that exact part.</span>
+            <span><MousePointer2 size={15} /> {mode === 'simple' ? 'Simple Mode styles the whole selected widget. Fine-tune parts in Advanced Mode.' : 'Click text, cards, images or bars to edit that exact part.'}</span>
             <span className={`ve-performance ve-performance--${performance.tone}`}>{performance.label}</span>
           </div>
         </main>
 
+        {mode === 'simple' ? (
+        <aside className="ve-right-panel ve-right-panel--simple">
+          <div className="ve-properties-header ve-properties-header--simple">
+            <div>
+              <strong>Quick Style</strong>
+              <span>{selectedWidgetName} - Entire widget</span>
+            </div>
+            {selectedWidgetUsesV2 && <span className="ve-engine-badge">V2 pilot</span>}
+          </div>
+
+          <div className="ve-properties-scroll ve-quick-style">
+            {tourVisible && (
+              <section className="ve-simple-onboarding">
+                <div>
+                  <Wand2 size={18} />
+                  <strong>Customize your widget in three steps</strong>
+                </div>
+                <ol>
+                  <li>Pick a style.</li>
+                  <li>Pick a colour.</li>
+                  <li>Publish to OBS.</li>
+                </ol>
+                <p>You can fine-tune individual parts in Advanced Mode.</p>
+                <div className="ve-simple-actions">
+                  <button type="button" onClick={() => setTourVisible(false)}>Start customizing</button>
+                  <button type="button" onClick={() => setTourVisible(false)}>Skip</button>
+                  <button type="button" onClick={() => setTourHidden(true)}>Do not show again</button>
+                </div>
+              </section>
+            )}
+
+            {advancedOverrideCount > 0 && (
+              <div className="ve-simple-note">
+                Advanced adjustments are still active for this widget. Restore recommended style if you want a clean simple preset.
+              </div>
+            )}
+
+            {import.meta.env.DEV && selectedWidgetUsesV2 && (
+              <details className="ve-v2-diagnostics">
+                <summary>Appearance V2 diagnostics</summary>
+                <dl>
+                  <div><dt>Widget</dt><dd>{selectedWidgetType}</dd></div>
+                  <div><dt>Material</dt><dd>{currentSimpleSettings.material}</dd></div>
+                  <div><dt>Primary</dt><dd>{currentSimpleSettings.primaryColor}</dd></div>
+                  <div><dt>Shape</dt><dd>{currentSimpleSettings.shape}</dd></div>
+                  <div><dt>Density</dt><dd>{currentSimpleSettings.density}</dd></div>
+                </dl>
+              </details>
+            )}
+
+            <section className="ve-property-section ve-simple-section">
+              <header>
+                <h3>1. Choose a style</h3>
+              </header>
+              <p className="ve-simple-help">Start by choosing the finish of your widget.</p>
+              <div className="ve-material-grid">
+                {visibleMaterialPresets.map(preset => {
+                  const active = currentSimpleSettings.material === preset.id;
+                  const previewSettings = { ...currentSimpleSettings, material: preset.id };
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className={`ve-material-card ve-material-card--${preset.id}${active ? ' is-active' : ''}`}
+                      style={getSimplePresetVars(previewSettings)}
+                      onClick={() => applySimpleSettings({ material: preset.id }, `Choose ${preset.name}`)}
+                    >
+                      <span className="ve-material-card__preview" aria-hidden="true">
+                        <span />
+                        <strong>Text</strong>
+                      </span>
+                      <span className="ve-material-card__copy">
+                        <strong>{preset.name}</strong>
+                        <small>{preset.tip}</small>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="ve-property-section ve-simple-section">
+              <header>
+                <h3>2. Choose your colour</h3>
+              </header>
+              <p className="ve-simple-help">Your colour automatically adapts to the selected style.</p>
+              <div className="ve-swatch-grid" aria-label="Main colour">
+                {SIMPLE_COLOR_PALETTE.map(color => (
+                  <button
+                    key={color.id}
+                    type="button"
+                    className={currentSimpleSettings.primaryColor === color.value ? 'is-active' : ''}
+                    style={{ '--swatch': color.value }}
+                    onClick={() => applySimpleSettings({ primaryColor: color.value }, `Choose ${color.label}`)}
+                    title={color.label}
+                    aria-label={`Use ${color.label}`}
+                  >
+                    <span />
+                  </button>
+                ))}
+              </div>
+              <label className="ve-simple-color-picker">
+                <span>Main colour</span>
+                <input
+                  type="color"
+                  value={currentSimpleSettings.primaryColor}
+                  onChange={event => applySimpleSettings({ primaryColor: event.target.value }, 'Choose custom colour')}
+                  aria-label="Custom main colour"
+                />
+              </label>
+
+              {!!recentColors.length && (
+                <div className="ve-recent-colors">
+                  <span>Recent colours</span>
+                  <div className="ve-swatch-grid ve-swatch-grid--compact">
+                    {recentColors.map(color => (
+                      <button
+                        key={color}
+                        type="button"
+                        className={currentSimpleSettings.primaryColor === color ? 'is-active' : ''}
+                        style={{ '--swatch': color }}
+                        onClick={() => applySimpleSettings({ primaryColor: color }, 'Use recent colour')}
+                        aria-label={`Use recent colour ${color}`}
+                      >
+                        <span />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <label className="ve-simple-toggle">
+                <input
+                  type="checkbox"
+                  checked={currentSimpleSettings.useSecondColor}
+                  onChange={event => applySimpleSettings({ useSecondColor: event.target.checked }, 'Toggle second colour')}
+                />
+                <span>Use a second colour</span>
+              </label>
+              {currentSimpleSettings.useSecondColor && (
+                <>
+                  <div className="ve-swatch-grid" aria-label="Accent colour">
+                    {SIMPLE_COLOR_PALETTE.map(color => (
+                      <button
+                        key={`accent-${color.id}`}
+                        type="button"
+                        className={currentSimpleSettings.accentColor === color.value ? 'is-active' : ''}
+                        style={{ '--swatch': color.value }}
+                        onClick={() => applySimpleSettings({ accentColor: color.value }, `Choose accent ${color.label}`)}
+                        title={color.label}
+                        aria-label={`Use ${color.label} as second colour`}
+                      >
+                        <span />
+                      </button>
+                    ))}
+                  </div>
+                  <label className="ve-simple-color-picker">
+                    <span>Second colour</span>
+                    <input
+                      type="color"
+                      value={currentSimpleSettings.accentColor}
+                      onChange={event => applySimpleSettings({ accentColor: event.target.value }, 'Choose custom second colour')}
+                      aria-label="Custom second colour"
+                    />
+                  </label>
+                </>
+              )}
+              {currentSimpleAppearance.generatedTokens?.contrastRatio < 4.5 && (
+                <div className="ve-warning">
+                  <AlertTriangle size={15} />
+                  <span>This colour may be hard to read.</span>
+                  <button type="button" onClick={() => applySimpleSettings({ material: 'matte' }, 'Fix contrast')}>Fix contrast</button>
+                </div>
+              )}
+            </section>
+
+            <section className="ve-property-section ve-simple-section">
+              <header>
+                <h3>3. Shape</h3>
+              </header>
+              <div className="ve-simple-choice-row ve-shape-row">
+                {SIMPLE_SHAPES.map(shape => (
+                  <button
+                    key={shape.id}
+                    type="button"
+                    className={currentSimpleSettings.shape === shape.id ? 'is-active' : ''}
+                    onClick={() => applySimpleSettings({ shape: shape.id }, `Choose ${shape.label}`)}
+                  >
+                    <span style={{ borderRadius: shape.radius >= 80 ? 999 : shape.radius }} />
+                    {shape.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="ve-property-section ve-simple-section">
+              <header>
+                <h3>4. Size</h3>
+              </header>
+              <div className="ve-simple-choice-row">
+                {SIMPLE_DENSITIES.map(size => (
+                  <button
+                    key={size.id}
+                    type="button"
+                    className={currentSimpleSettings.density === size.id ? 'is-active' : ''}
+                    onClick={() => applySimpleSettings({ density: size.id }, `Choose ${size.label}`)}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+              <label className="ve-simple-range">
+                <span>Widget size</span>
+                <input
+                  type="range"
+                  min="75"
+                  max="150"
+                  step="5"
+                  value={Math.round(currentSimpleSettings.scale * 100)}
+                  onChange={event => applySimpleSettings({ scale: Number(event.target.value) / 100 }, 'Change widget size')}
+                />
+                <strong>{Math.round(currentSimpleSettings.scale * 100)}%</strong>
+              </label>
+            </section>
+
+            <section className="ve-property-section ve-simple-section">
+              <header>
+                <h3>5. Text</h3>
+              </header>
+              <label className="ve-simple-select">
+                <span>Font style</span>
+                <select
+                  value={currentSimpleSettings.fontFamily}
+                  onChange={event => applySimpleSettings({ fontFamily: event.target.value }, 'Change font')}
+                >
+                  {FONT_OPTIONS.slice(0, 7).map(font => (
+                    <option key={font.value} value={font.value}>{font.label}</option>
+                  ))}
+                </select>
+              </label>
+              <div className="ve-simple-choice-row">
+                {SIMPLE_TEXT_SIZES.map(size => (
+                  <button
+                    key={size.id}
+                    type="button"
+                    className={currentSimpleSettings.textSize === size.id ? 'is-active' : ''}
+                    onClick={() => applySimpleSettings({ textSize: size.id }, `Choose ${size.label} text`)}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+              <label className="ve-simple-toggle">
+                <input
+                  type="checkbox"
+                  checked={currentSimpleSettings.boldText}
+                  onChange={event => applySimpleSettings({ boldText: event.target.checked }, 'Toggle bold text')}
+                />
+                <span>Bold text</span>
+              </label>
+            </section>
+
+            {!!serverState.presets?.filter(preset => preset.isSimpleQuickStyle).length && (
+              <section className="ve-property-section ve-simple-section">
+                <header>
+                  <h3>My presets</h3>
+                </header>
+                <div className="ve-user-presets">
+                  {serverState.presets.filter(preset => preset.isSimpleQuickStyle).map(preset => (
+                    <div key={preset.id} className="ve-user-preset-row">
+                      <button type="button" onClick={() => applyPreset(preset)}>{preset.name}</button>
+                      <button type="button" onClick={() => duplicatePreset(preset)} title="Duplicate preset"><Copy size={14} /></button>
+                      <button type="button" onClick={() => renamePreset(preset)} title="Rename preset">Rename</button>
+                      <button type="button" onClick={() => deletePreset(preset)} title="Delete preset"><Trash2 size={14} /></button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section className="ve-property-section ve-simple-section ve-simple-final">
+              <header>
+                <h3>6. Final actions</h3>
+              </header>
+              <div className="ve-simple-actions ve-simple-actions--final">
+                <button type="button" onClick={undo} disabled={!undoStack.length}>
+                  <Undo2 size={15} />
+                  Undo
+                </button>
+                <button type="button" onClick={restoreRecommendedStyle}>
+                  <RotateCcw size={15} />
+                  Restore recommended style
+                </button>
+                <button type="button" onClick={saveCurrentPreset}>
+                  <Save size={15} />
+                  Save as My Preset
+                </button>
+                <button type="button" className="ve-simple-publish" onClick={publish}>
+                  <ExternalLink size={15} />
+                  Publish to OBS
+                </button>
+              </div>
+            </section>
+          </div>
+        </aside>
+        ) : (
         <aside className="ve-right-panel">
           <div className="ve-properties-header">
             <div>
@@ -1088,6 +1666,7 @@ export default function AppearanceCenter({
             </section>
           </div>
         </aside>
+        )}
       </div>
 
       {toast && <div className="ve-toast" role="status">{toast}</div>}

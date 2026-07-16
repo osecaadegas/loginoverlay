@@ -1,5 +1,6 @@
 import { themeMap } from '../../../data/appThemes';
 import { getWidgetDef } from '../widgets/widgetRegistry';
+import { applyWidgetAppearanceV2ToConfig } from './v2/appearanceResolver';
 
 export const APPEARANCE_SCHEMA_VERSION = 2;
 
@@ -376,6 +377,8 @@ const VISUAL_CONFIG_KEYS = [
   'width',
   'height',
   'widgetWidth',
+  'widgetHeight',
+  'widgetScale',
   'barHeight',
   'maxWidth',
   'opacity',
@@ -1670,6 +1673,7 @@ export function appearanceToWidgetConfigDefaults(appearance) {
     cardGap: a.surfaces.gap,
     ...(Number.isFinite(Number(a.container?.width)) ? { widgetWidth: Number(a.container.width) } : {}),
     ...(Number.isFinite(Number(a.container?.height)) ? { widgetHeight: Number(a.container.height) } : {}),
+    widgetScale: a.spacing.widgetScale,
     paddingX: a.spacing.padding,
     paddingY: Math.max(4, Math.round(a.spacing.padding * 0.6)),
     brightness: a.effects.brightness,
@@ -2031,12 +2035,13 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
     registryTypeDefaults.subElements,
     registryStyleDefaults.subElements,
     base.subElements || {},
+    base.__appearanceExplicitSubElements || {},
     typeEntry.subElements,
     typeStyleEntry.subElements,
     instanceEntry.subElements,
     instanceStyleEntry.subElements
   );
-  return {
+  const resolvedConfig = {
     ...next,
     ...typeOverride,
     ...instanceOverride,
@@ -2046,6 +2051,12 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
       explicitSubElements
     ),
   };
+  return applyWidgetAppearanceV2ToConfig(
+    { ...widget, config: resolvedConfig },
+    resolvedConfig,
+    normalized,
+    { styleId: requestedStyleId, renderStyleId }
+  );
 }
 
 export function resolveWidgetsForAppearance(widgets = [], appearance, theme, options = {}) {
@@ -2100,7 +2111,10 @@ export function buildWidgetAppearanceVars(config = {}) {
       Object.assign(vars, buildElementAppearanceVars(stateTokens, `${elementPrefix}-${cssSafeName(stateId)}`));
     }
   }
-  return vars;
+  return {
+    ...vars,
+    ...(config.__appearanceV2Vars || {}),
+  };
 }
 
 function cssSafeName(value) {

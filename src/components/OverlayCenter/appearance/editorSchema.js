@@ -6,6 +6,10 @@ import {
   getWidgetSubElementDefinitions,
   normalizeAppearanceControlValue,
 } from './appearanceModel';
+import {
+  getWidgetAppearanceV2Elements,
+  isWidgetAppearanceV2Enabled,
+} from './v2/widgetAppearanceRegistry';
 
 export const EDITOR_SCHEMA_VERSION = 1;
 
@@ -39,6 +43,602 @@ export const FONT_OPTIONS = [
   { value: 'monospace', label: 'Monospace' },
   { value: 'system-ui', label: 'System' },
 ];
+
+export const EDITOR_MODE_CAPABILITIES = Object.freeze({
+  simple: Object.freeze({
+    showLayers: false,
+    showElementControls: false,
+    showTechnicalValues: false,
+    previewMode: 'fit-widget',
+  }),
+  advanced: Object.freeze({
+    showLayers: true,
+    showElementControls: true,
+    showTechnicalValues: true,
+    previewMode: 'focus-widget',
+  }),
+});
+
+export const SIMPLE_MATERIAL_PRESETS = [
+  {
+    id: 'matte',
+    name: 'Matte',
+    tip: 'Clean, flat, and easy to read.',
+    finish: 'soft solid background',
+  },
+  {
+    id: 'metallic',
+    name: 'Metallic',
+    tip: 'Premium shine with controlled highlights.',
+    finish: 'reflective gradient',
+  },
+  {
+    id: 'gradient',
+    name: 'Gradient',
+    tip: 'Two balanced colours with readable content.',
+    finish: 'smooth colour blend',
+  },
+  {
+    id: 'glass',
+    name: 'Glass',
+    tip: 'Transparent panels for OBS scenes.',
+    finish: 'blurred transparent surface',
+  },
+  {
+    id: 'neon',
+    name: 'Neon',
+    tip: 'Bright glow on a dark surface.',
+    finish: 'controlled glow',
+  },
+  {
+    id: 'minimal',
+    name: 'Minimal',
+    tip: 'Small, quiet, and unobtrusive.',
+    finish: 'simple outline',
+  },
+  {
+    id: 'soft_shadow',
+    name: 'Soft Shadow',
+    tip: 'Readable cards with gentle depth.',
+    finish: 'elevated card',
+  },
+  {
+    id: 'transparent_obs',
+    name: 'Transparent OBS',
+    tip: 'Only the widget content stays visible.',
+    finish: 'transparent background',
+  },
+];
+
+export const SIMPLE_COLOR_PALETTE = [
+  { id: 'cyan', label: 'Cyan', value: '#14d8d8' },
+  { id: 'blue', label: 'Blue', value: '#3b82f6' },
+  { id: 'purple', label: 'Purple', value: '#8b5cf6' },
+  { id: 'pink', label: 'Pink', value: '#ec4899' },
+  { id: 'red', label: 'Red', value: '#ef4444' },
+  { id: 'orange', label: 'Orange', value: '#f97316' },
+  { id: 'gold', label: 'Gold', value: '#f5b301' },
+  { id: 'green', label: 'Green', value: '#22c55e' },
+  { id: 'white', label: 'White', value: '#f8fafc' },
+  { id: 'dark', label: 'Dark grey', value: '#334155' },
+];
+
+export const SIMPLE_SHAPES = [
+  { id: 'square', label: 'Square', radius: 0 },
+  { id: 'slightly_rounded', label: 'Slightly rounded', radius: 8 },
+  { id: 'rounded', label: 'Rounded', radius: 16 },
+  { id: 'pill', label: 'Pill', radius: 80 },
+];
+
+export const SIMPLE_DENSITIES = [
+  { id: 'compact', label: 'Compact', padding: 9, gap: 7, buttonHeight: 34 },
+  { id: 'standard', label: 'Standard', padding: 14, gap: 10, buttonHeight: 44 },
+  { id: 'large', label: 'Large', padding: 20, gap: 15, buttonHeight: 54 },
+];
+
+export const SIMPLE_TEXT_SIZES = [
+  { id: 'small', label: 'Small', baseSize: 12, headingScale: 1.12 },
+  { id: 'standard', label: 'Standard', baseSize: 14, headingScale: 1.22 },
+  { id: 'large', label: 'Large', baseSize: 17, headingScale: 1.3 },
+];
+
+export const DEFAULT_SIMPLE_SETTINGS = Object.freeze({
+  material: 'matte',
+  primaryColor: '#14d8d8',
+  accentColor: '#f5b301',
+  useSecondColor: false,
+  shape: 'rounded',
+  density: 'standard',
+  scale: 1,
+  fontFamily: FONT_OPTIONS[0].value,
+  textSize: 'standard',
+  boldText: false,
+});
+
+function clamp(number, min, max) {
+  const value = Number(number);
+  if (!Number.isFinite(value)) return min;
+  return Math.min(max, Math.max(min, value));
+}
+
+export function normalizeHexColor(value, fallback = '#14d8d8') {
+  const raw = String(value || '').trim();
+  if (/^#[0-9a-f]{6}$/i.test(raw)) return raw.toLowerCase();
+  if (/^#[0-9a-f]{3}$/i.test(raw)) {
+    return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`.toLowerCase();
+  }
+  return fallback;
+}
+
+export function hexToRgb(value, fallback = '#14d8d8') {
+  const hex = normalizeHexColor(value, fallback).slice(1);
+  return {
+    r: parseInt(hex.slice(0, 2), 16),
+    g: parseInt(hex.slice(2, 4), 16),
+    b: parseInt(hex.slice(4, 6), 16),
+  };
+}
+
+export function rgbToHex({ r, g, b }) {
+  const toHex = channel => clamp(Math.round(channel), 0, 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+export function mixHex(first, second, weight = 0.5) {
+  const a = hexToRgb(first);
+  const b = hexToRgb(second);
+  const amount = clamp(weight, 0, 1);
+  return rgbToHex({
+    r: a.r * (1 - amount) + b.r * amount,
+    g: a.g * (1 - amount) + b.g * amount,
+    b: a.b * (1 - amount) + b.b * amount,
+  });
+}
+
+export function toRgba(value, alpha = 1) {
+  const { r, g, b } = hexToRgb(value);
+  return `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1).toFixed(2)})`;
+}
+
+function relativeLuminance(value) {
+  const { r, g, b } = hexToRgb(value);
+  const transform = channel => {
+    const normalized = channel / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : Math.pow((normalized + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * transform(r) + 0.7152 * transform(g) + 0.0722 * transform(b);
+}
+
+export function getContrastRatio(first, second) {
+  const light = Math.max(relativeLuminance(first), relativeLuminance(second));
+  const dark = Math.min(relativeLuminance(first), relativeLuminance(second));
+  return (light + 0.05) / (dark + 0.05);
+}
+
+export function getReadableTextColor(background, light = '#f8fafc', dark = '#07111f') {
+  return getContrastRatio(background, light) >= getContrastRatio(background, dark) ? light : dark;
+}
+
+function deriveAccent(primary, accent, useSecondColor) {
+  if (useSecondColor) return normalizeHexColor(accent, '#f5b301');
+  const primaryContrast = getContrastRatio(primary, '#ffffff');
+  if (primaryContrast < 1.6) return '#14d8d8';
+  return mixHex(primary, '#ffffff', 0.38);
+}
+
+export function normalizeSimpleSettings(settings = {}) {
+  const materialIds = new Set(SIMPLE_MATERIAL_PRESETS.map(item => item.id));
+  const shapeIds = new Set(SIMPLE_SHAPES.map(item => item.id));
+  const densityIds = new Set(SIMPLE_DENSITIES.map(item => item.id));
+  const textSizeIds = new Set(SIMPLE_TEXT_SIZES.map(item => item.id));
+  const fontValues = new Set(FONT_OPTIONS.map(item => item.value));
+  const next = { ...DEFAULT_SIMPLE_SETTINGS, ...(settings || {}) };
+  return {
+    ...next,
+    material: materialIds.has(next.material) ? next.material : DEFAULT_SIMPLE_SETTINGS.material,
+    primaryColor: normalizeHexColor(next.primaryColor, DEFAULT_SIMPLE_SETTINGS.primaryColor),
+    accentColor: normalizeHexColor(next.accentColor, DEFAULT_SIMPLE_SETTINGS.accentColor),
+    useSecondColor: !!next.useSecondColor,
+    shape: shapeIds.has(next.shape) ? next.shape : DEFAULT_SIMPLE_SETTINGS.shape,
+    density: densityIds.has(next.density) ? next.density : DEFAULT_SIMPLE_SETTINGS.density,
+    scale: clamp(next.scale, 0.75, 1.5),
+    fontFamily: fontValues.has(next.fontFamily) ? next.fontFamily : DEFAULT_SIMPLE_SETTINGS.fontFamily,
+    textSize: textSizeIds.has(next.textSize) ? next.textSize : DEFAULT_SIMPLE_SETTINGS.textSize,
+    boldText: !!next.boldText,
+  };
+}
+
+function buildSimpleBase(settings) {
+  const primary = normalizeHexColor(settings.primaryColor);
+  const accent = deriveAccent(primary, settings.accentColor, settings.useSecondColor);
+  const shape = SIMPLE_SHAPES.find(item => item.id === settings.shape) || SIMPLE_SHAPES[2];
+  const density = SIMPLE_DENSITIES.find(item => item.id === settings.density) || SIMPLE_DENSITIES[1];
+  const textSize = SIMPLE_TEXT_SIZES.find(item => item.id === settings.textSize) || SIMPLE_TEXT_SIZES[1];
+  const dark = mixHex(primary, '#020617', 0.82);
+  const darker = mixHex(primary, '#020617', 0.9);
+  const soft = mixHex(primary, '#0f172a', 0.62);
+  const light = mixHex(primary, '#ffffff', 0.72);
+  const readable = getReadableTextColor(dark);
+  const muted = readable === '#f8fafc' ? '#cbd5e1' : '#334155';
+  return { primary, accent, shape, density, textSize, dark, darker, soft, light, readable, muted };
+}
+
+export function generateMatteTheme(settings) {
+  const base = buildSimpleBase(settings);
+  return {
+    colors: {
+      primary: base.primary,
+      secondary: base.dark,
+      accent: base.accent,
+      background: base.darker,
+      backgroundAlt: base.dark,
+      surface: toRgba(base.dark, 0.92),
+      elevated: toRgba(base.soft, 0.8),
+      text: base.readable,
+      textSecondary: base.muted,
+      muted: base.muted,
+      border: toRgba(base.light, 0.3),
+      divider: toRgba(base.light, 0.18),
+      buttonBg: base.primary,
+      buttonText: getReadableTextColor(base.primary),
+      positive: '#86efac',
+      negative: '#fca5a5',
+      highlight: base.accent,
+      focus: base.light,
+    },
+    surfaces: {
+      preset: 'matte',
+      containerBg: toRgba(base.dark, 0.92),
+      cardBg: toRgba(base.soft, 0.58),
+      headerBg: toRgba(base.primary, 0.16),
+      footerBg: toRgba(base.darker, 0.7),
+      opacity: 0.94,
+      glass: false,
+      blur: 0,
+    },
+    borders: { enabled: true, width: 1, color: toRgba(base.light, 0.32), style: 'solid' },
+    effects: { shadowEnabled: true, shadowColor: '#000000', shadowBlur: 20, shadowOpacity: 0.22, glowEnabled: false, backdropBlur: 0 },
+  };
+}
+
+export function generateMetallicTheme(settings) {
+  const base = buildSimpleBase(settings);
+  const mid = mixHex(base.primary, '#111827', 0.52);
+  return {
+    colors: {
+      primary: base.primary,
+      secondary: mid,
+      accent: base.accent,
+      background: base.darker,
+      backgroundAlt: base.dark,
+      surface: toRgba(mid, 0.94),
+      elevated: toRgba(base.light, 0.16),
+      text: getReadableTextColor(mid),
+      textSecondary: '#e5edf6',
+      muted: '#cbd5e1',
+      border: toRgba(base.light, 0.52),
+      divider: toRgba(base.light, 0.22),
+      buttonBg: base.primary,
+      buttonText: getReadableTextColor(base.primary),
+      positive: '#bbf7d0',
+      negative: '#fecaca',
+      highlight: base.light,
+      focus: base.accent,
+    },
+    surfaces: {
+      preset: 'metallic',
+      containerBg: `linear-gradient(135deg, ${toRgba(base.light, 0.25)} 0%, ${toRgba(mid, 0.95)} 28%, ${toRgba(base.darker, 0.94)} 52%, ${toRgba(base.primary, 0.28)} 100%)`,
+      cardBg: `linear-gradient(135deg, ${toRgba(base.light, 0.18)}, ${toRgba(base.dark, 0.72)})`,
+      headerBg: toRgba(base.light, 0.22),
+      footerBg: toRgba(base.darker, 0.72),
+      opacity: 0.96,
+      glass: false,
+      blur: 2,
+    },
+    borders: { enabled: true, width: 1, color: toRgba(base.light, 0.56), style: 'solid' },
+    effects: { shadowEnabled: true, shadowColor: '#000000', shadowBlur: 34, shadowOpacity: 0.34, glowEnabled: true, glowColor: base.primary, glowBlur: 14, glowOpacity: 0.12, backdropBlur: 0 },
+  };
+}
+
+export function generateGradientTheme(settings) {
+  const base = buildSimpleBase(settings);
+  const second = settings.useSecondColor ? base.accent : mixHex(base.primary, '#8b5cf6', 0.45);
+  const surfaceDark = mixHex(base.primary, '#020617', 0.74);
+  return {
+    colors: {
+      primary: base.primary,
+      secondary: second,
+      accent: second,
+      background: base.darker,
+      backgroundAlt: surfaceDark,
+      surface: toRgba(surfaceDark, 0.92),
+      elevated: toRgba(second, 0.16),
+      text: getReadableTextColor(surfaceDark),
+      textSecondary: '#dbeafe',
+      muted: '#bfdbfe',
+      border: toRgba(base.light, 0.38),
+      divider: toRgba(second, 0.22),
+      buttonBg: second,
+      buttonText: getReadableTextColor(second),
+      positive: '#86efac',
+      negative: '#fda4af',
+      highlight: base.light,
+      focus: second,
+    },
+    surfaces: {
+      preset: 'gradient',
+      containerBg: `linear-gradient(135deg, ${toRgba(base.primary, 0.9)}, ${toRgba(second, 0.78)} 52%, ${toRgba('#020617', 0.92)})`,
+      cardBg: toRgba('#020617', 0.44),
+      headerBg: toRgba(second, 0.2),
+      footerBg: toRgba('#020617', 0.62),
+      opacity: 0.94,
+      glass: false,
+      blur: 4,
+    },
+    borders: { enabled: true, width: 1, color: toRgba(base.light, 0.34), style: 'solid' },
+    effects: { shadowEnabled: true, shadowColor: '#000000', shadowBlur: 26, shadowOpacity: 0.28, glowEnabled: true, glowColor: second, glowBlur: 18, glowOpacity: 0.16, backdropBlur: 0 },
+  };
+}
+
+export function generateGlassTheme(settings) {
+  const base = buildSimpleBase(settings);
+  return {
+    colors: {
+      primary: base.primary,
+      secondary: base.dark,
+      accent: base.accent,
+      background: '#020617',
+      backgroundAlt: base.dark,
+      surface: toRgba(base.dark, 0.44),
+      elevated: toRgba(base.primary, 0.12),
+      text: '#f8fafc',
+      textSecondary: '#dbeafe',
+      muted: '#b6c8da',
+      border: toRgba(base.light, 0.44),
+      divider: toRgba(base.light, 0.22),
+      buttonBg: toRgba(base.primary, 0.82),
+      buttonText: getReadableTextColor(base.primary),
+      positive: '#bbf7d0',
+      negative: '#fecaca',
+      highlight: base.light,
+      focus: base.primary,
+    },
+    surfaces: {
+      preset: 'glass',
+      containerBg: toRgba(base.dark, 0.46),
+      cardBg: toRgba(base.primary, 0.1),
+      headerBg: toRgba('#ffffff', 0.08),
+      footerBg: toRgba('#020617', 0.36),
+      opacity: 0.82,
+      glass: true,
+      blur: 14,
+    },
+    borders: { enabled: true, width: 1, color: toRgba(base.light, 0.48), style: 'solid' },
+    effects: { shadowEnabled: true, shadowColor: '#000000', shadowBlur: 28, shadowOpacity: 0.24, glowEnabled: true, glowColor: base.primary, glowBlur: 18, glowOpacity: 0.12, backdropBlur: 14 },
+  };
+}
+
+export function generateNeonTheme(settings) {
+  const base = buildSimpleBase(settings);
+  return {
+    colors: {
+      primary: base.primary,
+      secondary: '#020617',
+      accent: base.accent,
+      background: '#020617',
+      backgroundAlt: '#08111f',
+      surface: 'rgba(2, 6, 23, 0.94)',
+      elevated: toRgba(base.primary, 0.1),
+      text: '#f8fafc',
+      textSecondary: '#e0f2fe',
+      muted: '#9fb6c8',
+      border: toRgba(base.primary, 0.62),
+      divider: toRgba(base.primary, 0.26),
+      buttonBg: base.primary,
+      buttonText: getReadableTextColor(base.primary),
+      positive: '#bbf7d0',
+      negative: '#fecaca',
+      highlight: base.accent,
+      focus: base.primary,
+    },
+    surfaces: {
+      preset: 'neon',
+      containerBg: 'rgba(2, 6, 23, 0.94)',
+      cardBg: toRgba(base.primary, 0.11),
+      headerBg: toRgba(base.primary, 0.18),
+      footerBg: 'rgba(2, 6, 23, 0.72)',
+      opacity: 0.95,
+      glass: false,
+      blur: 0,
+    },
+    borders: { enabled: true, width: 1, color: toRgba(base.primary, 0.68), style: 'solid' },
+    effects: { shadowEnabled: true, shadowColor: '#000000', shadowBlur: 28, shadowOpacity: 0.34, glowEnabled: true, glowColor: base.primary, glowBlur: 28, glowOpacity: 0.28, backdropBlur: 0 },
+  };
+}
+
+export function generateMinimalTheme(settings) {
+  const base = buildSimpleBase(settings);
+  return {
+    colors: {
+      primary: base.primary,
+      secondary: '#0f172a',
+      accent: base.accent,
+      background: '#020617',
+      backgroundAlt: '#0f172a',
+      surface: 'rgba(2, 6, 23, 0.62)',
+      elevated: 'rgba(15, 23, 42, 0.44)',
+      text: '#f8fafc',
+      textSecondary: '#cbd5e1',
+      muted: '#94a3b8',
+      border: toRgba(base.primary, 0.22),
+      divider: 'rgba(148, 163, 184, 0.14)',
+      buttonBg: base.primary,
+      buttonText: getReadableTextColor(base.primary),
+      positive: '#86efac',
+      negative: '#fca5a5',
+      highlight: base.accent,
+      focus: base.primary,
+    },
+    surfaces: {
+      preset: 'minimal',
+      containerBg: 'rgba(2, 6, 23, 0.54)',
+      cardBg: 'rgba(2, 6, 23, 0.28)',
+      headerBg: 'transparent',
+      footerBg: 'transparent',
+      opacity: 0.86,
+      glass: false,
+      blur: 0,
+    },
+    borders: { enabled: true, width: 1, color: toRgba(base.primary, 0.24), style: 'solid' },
+    effects: { shadowEnabled: false, glowEnabled: false, backdropBlur: 0 },
+  };
+}
+
+export function generateSoftShadowTheme(settings) {
+  const baseTheme = generateMatteTheme(settings);
+  return deepMergeSimple(baseTheme, {
+    surfaces: {
+      preset: 'soft_shadow',
+      containerBg: toRgba(buildSimpleBase(settings).dark, 0.9),
+      cardBg: toRgba(buildSimpleBase(settings).primary, 0.12),
+    },
+    borders: { width: 1 },
+    effects: { shadowEnabled: true, shadowColor: '#000000', shadowBlur: 42, shadowOpacity: 0.3, glowEnabled: false },
+  });
+}
+
+export function generateTransparentTheme(settings) {
+  const base = buildSimpleBase(settings);
+  return {
+    canvas: { backgroundType: 'transparent', tintOpacity: 0 },
+    colors: {
+      primary: base.primary,
+      secondary: '#020617',
+      accent: base.accent,
+      background: '#020617',
+      backgroundAlt: '#0f172a',
+      surface: 'transparent',
+      elevated: toRgba('#020617', 0.36),
+      text: '#f8fafc',
+      textSecondary: '#e2e8f0',
+      muted: '#cbd5e1',
+      border: 'transparent',
+      divider: toRgba(base.primary, 0.22),
+      buttonBg: base.primary,
+      buttonText: getReadableTextColor(base.primary),
+      positive: '#bbf7d0',
+      negative: '#fecaca',
+      highlight: base.accent,
+      focus: base.primary,
+    },
+    surfaces: {
+      preset: 'transparent_obs',
+      containerBg: 'transparent',
+      cardBg: toRgba('#020617', 0.38),
+      headerBg: 'transparent',
+      footerBg: 'transparent',
+      opacity: 1,
+      glass: false,
+      blur: 0,
+    },
+    borders: { enabled: false, width: 0, color: 'transparent', style: 'none' },
+    effects: { shadowEnabled: true, shadowColor: '#000000', shadowBlur: 20, shadowOpacity: 0.24, glowEnabled: false, backdropBlur: 0 },
+  };
+}
+
+function deepMergeSimple(base, override) {
+  const output = { ...(base || {}) };
+  for (const [key, value] of Object.entries(override || {})) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      output[key] = deepMergeSimple(output[key] || {}, value);
+    } else {
+      output[key] = value;
+    }
+  }
+  return output;
+}
+
+export function generateSimpleAppearance(input = {}) {
+  const settings = normalizeSimpleSettings(input);
+  const materialGenerators = {
+    matte: generateMatteTheme,
+    metallic: generateMetallicTheme,
+    gradient: generateGradientTheme,
+    glass: generateGlassTheme,
+    neon: generateNeonTheme,
+    minimal: generateMinimalTheme,
+    soft_shadow: generateSoftShadowTheme,
+    transparent_obs: generateTransparentTheme,
+  };
+  const generated = (materialGenerators[settings.material] || generateMatteTheme)(settings);
+  const base = buildSimpleBase(settings);
+  const textColor = generated.colors?.text || getReadableTextColor(base.dark);
+  const contrastBackground = generated.surfaces?.containerBg === 'transparent'
+    ? '#020617'
+    : base.dark;
+  const contrastRatio = getContrastRatio(contrastBackground, textColor);
+  const radius = base.shape.radius;
+  const bodyWeight = settings.boldText ? 800 : 650;
+
+  return deepMergeSimple(generated, {
+    simpleSettings: settings,
+    generatedTokens: {
+      material: settings.material,
+      primaryColor: base.primary,
+      accentColor: base.accent,
+      readableTextColor: textColor,
+      contrastRatio,
+    },
+    typography: {
+      headingFont: settings.fontFamily,
+      bodyFont: settings.fontFamily,
+      numberFont: settings.fontFamily,
+      buttonFont: settings.fontFamily,
+      baseSize: base.textSize.baseSize,
+      headingScale: base.textSize.headingScale,
+      bodyWeight,
+      headingWeight: settings.boldText ? 900 : 820,
+      buttonWeight: 850,
+      lineHeight: 1.42,
+      letterSpacing: 0,
+      textTransform: 'none',
+    },
+    surfaces: {
+      padding: base.density.padding,
+      gap: base.density.gap,
+      density: settings.density,
+    },
+    borders: {
+      radius,
+      linkedCorners: true,
+      topLeft: radius,
+      topRight: radius,
+      bottomRight: radius,
+      bottomLeft: radius,
+      shape: settings.shape,
+    },
+    spacing: {
+      scale: settings.scale,
+      widgetScale: settings.scale,
+      padding: base.density.padding,
+      gap: base.density.gap,
+      buttonHeight: base.density.buttonHeight,
+    },
+    controls: {
+      primaryBg: generated.colors?.buttonBg || base.primary,
+      primaryText: generated.colors?.buttonText || getReadableTextColor(base.primary),
+      secondaryBg: generated.surfaces?.cardBg || toRgba(base.dark, 0.54),
+      secondaryText: generated.colors?.textSecondary || textColor,
+      inputBg: generated.surfaces?.cardBg || toRgba(base.dark, 0.54),
+      inputText: textColor,
+      radius: Math.min(radius, 24),
+      borderColor: generated.borders?.color || toRgba(base.light, 0.32),
+      focusColor: base.primary,
+    },
+  });
+}
 
 export const CONTROL_DEFINITIONS = {
   fontFamily: { id: 'fontFamily', label: 'Font', type: 'font', simple: true, group: 'Text' },
@@ -320,6 +920,17 @@ export function getElementControlGroups(element = {}, mode = 'simple') {
 }
 
 export function getWidgetElementSchema(widgetType) {
+  if (isWidgetAppearanceV2Enabled(widgetType)) {
+    const v2Elements = getWidgetAppearanceV2Elements(widgetType);
+    if (v2Elements.length) {
+      return v2Elements.map(element => ({
+        ...element,
+        label: getFriendlyElementLabel(element.id, element.label),
+        kind: element.kind || inferElementKind(element),
+        controls: element.controls || getElementControlGroups(element, 'advanced').flatMap(group => group.controls.map(control => control.id)),
+      }));
+    }
+  }
   const elements = getWidgetSubElementDefinitions(widgetType).map(element => ({
     ...element,
     label: getFriendlyElementLabel(element.id, element.label),

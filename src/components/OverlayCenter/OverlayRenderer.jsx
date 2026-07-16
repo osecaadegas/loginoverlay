@@ -27,22 +27,13 @@ import {
   normalizeAppearance,
   resolveWidgetsForAppearance,
 } from './appearance/appearanceModel';
-import { applyPreviewWidgetSamples, getWidgetPreviewFrame } from './appearance/previewWidgetSamples';
+import { applyPreviewWidgetSamples } from './appearance/previewWidgetSamples';
+import { getWidgetSlotBehavior, getWidgetSlotSize } from './appearance/v2/widgetSlot';
 import './OverlayRenderer.css';
 import './OverlayCenter.css';
 
 // Register built-in widgets
 import './widgets/builtinWidgets';
-
-function getSlotSize(widget) {
-  const frame = getWidgetPreviewFrame(widget);
-  const configuredWidth = Number(widget.config?.widgetWidth);
-  const configuredHeight = Number(widget.config?.widgetHeight);
-  return {
-    width: configuredWidth || frame?.width || widget.width,
-    height: configuredHeight || frame?.height || widget.height,
-  };
-}
 
 // ─── Single widget wrapper with animation + scale-to-fit ───
 const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting, userId, suppressAnimations = false }) {
@@ -77,22 +68,16 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const shadowFilter = hasShadow
     ? `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))`
     : undefined;
-  const slotSize = getSlotSize(widget);
+  const slotSize = getWidgetSlotSize(widget);
+  const slotBehavior = getWidgetSlotBehavior(widget);
 
-  const widgetRadius = widget.config?.cardRadius;
+  const widgetRadius = slotBehavior.widgetRadius;
 
-  /* Widgets with 3D transforms (flip cards, carousel) need visible overflow */
-  const wStyle = widget.config?.displayStyle || '';
-  const isBH = widget.widget_type === 'bonus_hunt';
-  const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack'
-    || (isBH && !['v2', 'v5_compact'].includes(wStyle));
-  /* NPC-enabled AI avatar needs visible overflow to roam outside its slot */
-  const needsNpcOverflow = !!widget.config?.npcEnabled;
-  const needsVisible = needs3D || needsNpcOverflow;
+  const needsVisible = slotBehavior.needsVisibleOverflow;
 
   /* Navbar handles its own clipping — skip slot-level clip & shadow */
-  const isNavbar = widget.widget_type === 'navbar';
-  const needsClip = !isNavbar && widgetRadius && !needsVisible;
+  const isNavbar = slotBehavior.isNavbar;
+  const needsClip = slotBehavior.needsClip;
 
   /* ── Separate shadow and clip onto two layers so Chromium never
        rasterises rounded-clip edges through a drop-shadow filter
@@ -122,7 +107,15 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   } : null;
 
   return (
-    <div id={slotId} className={`or-widget-slot ${animClass}`} data-widget-id={widget.id} data-widget-type={widget.widget_type} style={outerStyle}>
+    <div
+      id={slotId}
+      className={`or-widget-slot ${animClass}`}
+      data-widget-id={widget.id}
+      data-widget-type={widget.widget_type}
+      data-appearance-version={cfg.__appearanceV2?.schemaVersion ? `v2-${cfg.__appearanceV2.schemaVersion}` : undefined}
+      data-material={cfg.__appearanceV2?.material || undefined}
+      style={outerStyle}
+    >
       {mergedCSS && <style>{`#${slotId} { ${mergedCSS} }`}</style>}
       {(() => {
         const elCSS = widget.config?.elementCSS;
