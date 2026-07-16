@@ -284,6 +284,21 @@ export const widgetAppearanceRegistry = Object.freeze({
         ],
       }),
       freezeStyle({
+        id: 'v12_classic_sr_editable',
+        label: 'Classic + Requests - Editable',
+        description: 'Editor-ready Classic + Requests layout using the original V12 renderer and shared request data.',
+        recommended: false,
+        editorReady: true,
+        legacy: false,
+        featureFlag: 'appearanceEditablePilot',
+        hiddenInProduction: true,
+        capabilities: {
+          ...(getEditorReadyWidgetStyle('bonus_hunt', 'v12_classic_sr_editable')?.capabilities || {}),
+        },
+        elementIds: getEditorReadyWidgetStyle('bonus_hunt', 'v12_classic_sr_editable')?.editableElements || ['container'],
+        previewStateIds: ['hunt_live', 'opening', 'requests_empty', 'requests_busy'],
+      }),
+      freezeStyle({
         id: 'v5_horizontal',
         label: 'Horizontal',
         description: 'Wide stream bar with side stats and a horizontal scrolling bonus strip.',
@@ -458,6 +473,21 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: 'Slot requests',
         kind: 'surface',
         capabilities: ['surface', 'border', 'shape'],
+      }),
+      requestsHeader: Object.freeze({
+        label: 'Requests title',
+        kind: 'text',
+        capabilities: ['typography'],
+      }),
+      requestsDescription: Object.freeze({
+        label: 'Requests helper text',
+        kind: 'text',
+        capabilities: ['typography'],
+      }),
+      requestsEmpty: Object.freeze({
+        label: 'Requests empty state',
+        kind: 'surface',
+        capabilities: ['surface', 'typography'],
       }),
     }),
     previewSampleData: Object.freeze({

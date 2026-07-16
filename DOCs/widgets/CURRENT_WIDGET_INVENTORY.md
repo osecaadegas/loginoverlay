@@ -6,7 +6,7 @@ Detailed per-widget rendering notes remain in `docs/overlay-appearance/widgets/*
 
 | Widget ID | Display Name | Category | Existing Styles | Main Component | CSS / Styling Sources | Data / Integrations | Migration Complexity |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `bonus_hunt` | Bonus Hunt | casino | `v3`, `v5_horizontal`, `v11_fever`, `v12_classic_sr` | `BonusHuntWidget.jsx`, `BonusHuntWidgetV*.jsx` | Large global CSS in `OverlayRenderer.css`, inline style config, sub-elements | Bonus hunt config/data, slot images, request section | Very high |
+| `bonus_hunt` | Bonus Hunt | casino | `v3`, `v5_horizontal`, `v11_fever`, `v12_classic_sr`, hidden `v12_classic_sr_editable` pilot | `BonusHuntWidget.jsx`, `BonusHuntWidgetV*.jsx` | Large prefixed CSS in `OverlayRenderer.css`, inline style config, sub-elements | Bonus hunt config/data, slot images, embedded request section via shared request hook | Very high |
 | `current_slot` | Current Slot | casino | `v1`, `v2`, `v3`, `v4` | `CurrentSlotWidget.jsx` | component styles and inline config | active slot / detected slot data | Medium |
 | `tournament` | Tournament | casino | `grid`, `showcase`, `vertical`, `bracket`, `neon`, `minimal`, `arena`, `futuristic` | `TournamentWidget.jsx` | component styles, global overlay styles | tournament setup data | High |
 | `giveaway` | Giveaway | casino | `v1`, `v2`, `v3`, `v4`, `metal`, `bh_stats`, `v12` | `GiveawayWidget.jsx` | component styles, appearance V2 mappings | giveaway participants, keyword, drawing state | High |
@@ -34,6 +34,7 @@ Detailed per-widget rendering notes remain in `docs/overlay-appearance/widgets/*
 ## Shared Data Risks
 
 - Slot Requests previously had Supabase query and realtime subscription in `SlotRequestsWidget.jsx`.
+- Bonus Hunt Classic + Requests previously queried embedded slot requests directly inside `BonusHuntWidgetV12.jsx`; the editable migration now routes that through `bonus-hunt/shared/useBonusHuntRequestsData.js`.
 - Chat and alert widgets can easily duplicate live listeners if presentation styles are copied wholesale.
 - Carousel timers should be shared when original and editable presentations use the same motion behavior.
 
@@ -51,3 +52,15 @@ Reason:
 - It is smaller than Bonus Hunt but still validates the architecture.
 - It had extractable shared data and timer logic.
 - It can remain hidden behind a feature flag while the legacy style stays production fallback.
+
+The second editor-ready pilot style is:
+
+- Widget: `bonus_hunt`
+- Original style: `v12_classic_sr`
+- Editable style: `v12_classic_sr_editable`
+
+Reason:
+
+- It is the canonical Classic + Requests Bonus Hunt style.
+- It proves the architecture can handle a complex widget with stats, carousel motion, list rows, footer, and embedded requests.
+- It keeps the original V12 renderer as production fallback while exposing only safe style controls.

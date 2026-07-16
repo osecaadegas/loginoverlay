@@ -6,6 +6,7 @@ import BonusHuntWidgetV11 from './BonusHuntWidgetV11';
 import BonusHuntWidgetV12 from './BonusHuntWidgetV12';
 import SlotImage from './SlotImage';
 import { subValue } from './shared/appearanceStyles';
+import { useBonusHuntRequestsData } from './bonus-hunt/shared/useBonusHuntRequestsData';
 
 function cssPx(value) {
   if (value === undefined || value === null || value === '') return undefined;
@@ -43,6 +44,7 @@ function BonusHuntWidget({ config, theme, userId }) {
   const ds = c.displayStyle || 'v1';
   const isHorizontalBH = ds === 'v5_horizontal';
   const isCompactBH = ds === 'v6_compact';
+  const isClassicRequestsBH = ds === 'v12_classic_sr' || ds === 'v12_classic_sr_editable';
   const bonuses = sortedConfig.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
@@ -109,6 +111,12 @@ function BonusHuntWidget({ config, theme, userId }) {
     return () => clearInterval(id);
   }, [carouselAutoplay, isCompactBH, bonuses.length, carouselSpeedMs]);
 
+  const { requests: classicRequestRows } = useBonusHuntRequestsData({
+    config: sortedConfig,
+    userId,
+    enabled: isClassicRequestsBH && sortedConfig.showSlotRequests !== false,
+  });
+
   /* ─── Style switcher (early returns AFTER all hooks) ─── */
   if (c.displayStyle === 'v3') {
     return <BonusHuntWidgetV3 config={sortedConfig} theme={theme} />;
@@ -122,8 +130,8 @@ function BonusHuntWidget({ config, theme, userId }) {
   if (c.displayStyle === 'v11_fever') {
     return <BonusHuntWidgetV11 config={sortedConfig} theme={theme} />;
   }
-  if (c.displayStyle === 'v12_classic_sr') {
-    return <BonusHuntWidgetV12 config={sortedConfig} theme={theme} userId={userId} />;
+  if (isClassicRequestsBH) {
+    return <BonusHuntWidgetV12 config={sortedConfig} theme={theme} userId={userId} slotRequests={classicRequestRows} />;
   }
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
