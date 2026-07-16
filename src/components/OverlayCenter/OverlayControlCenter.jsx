@@ -574,7 +574,7 @@ function ToolSection({ title, subtitle, tools, emptyText, children, tourId }) {
   return (
     <section className="oc2-tool-section" data-tour={tourId}>
       <div className="oc2-tool-section__header">
-        <div>
+        <div className="oc2-tool-section__title-row">
           <h2>{title}</h2>
           {subtitle && <p>{subtitle}</p>}
         </div>
@@ -605,7 +605,7 @@ function QuickSettings({ isAdmin }) {
   return (
     <section className="oc2-quick-settings">
       <div className="oc2-tool-section__header">
-        <div>
+        <div className="oc2-tool-section__title-row">
           <h2>Quick settings</h2>
           <p>Global controls that are not overlay widgets.</p>
         </div>

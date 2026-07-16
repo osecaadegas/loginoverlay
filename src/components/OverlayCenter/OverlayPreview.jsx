@@ -18,6 +18,33 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function escapeCssAttr(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function buildElementSelectionCss(widgetId, selectedElementId, hiddenElementIds = []) {
+  const widgetSelector = `[data-widget-id="${escapeCssAttr(widgetId)}"]`;
+  const rules = [];
+  if (selectedElementId) {
+    rules.push(`
+      ${widgetSelector} [data-widget-element="${escapeCssAttr(selectedElementId)}"] {
+        outline: 3px solid rgba(94, 234, 212, 0.98) !important;
+        outline-offset: 4px;
+        box-shadow: 0 0 0 5px rgba(20, 184, 166, 0.18) !important;
+      }
+    `);
+  }
+  for (const elementId of hiddenElementIds || []) {
+    rules.push(`
+      ${widgetSelector} [data-widget-element="${escapeCssAttr(elementId)}"] {
+        opacity: 0.18 !important;
+        filter: grayscale(1) !important;
+      }
+    `);
+  }
+  return rules.join('\n');
+}
+
 function isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) {
   if (selectedWidgetId) return widget.id === selectedWidgetId;
   if (selectedTarget?.scope === 'widget_type' && selectedTarget.widgetType) return widget.widget_type === selectedTarget.widgetType;
@@ -26,13 +53,31 @@ function isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) {
 
 function getPreviewSlotSize(widget) {
   const frame = getWidgetPreviewFrame(widget);
+  const configuredWidth = Number(widget.config?.widgetWidth);
+  const configuredHeight = Number(widget.config?.widgetHeight);
   return {
-    width: frame?.width || widget.width,
-    height: frame?.height || widget.height,
+    width: configuredWidth || frame?.width || widget.width,
+    height: configuredHeight || frame?.height || widget.height,
   };
 }
 
-const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight, selectedWidgetId, selectedTarget, dimmed, selectMode, onSelectWidget }) {
+const PreviewSlot = memo(function PreviewSlot({
+  widget,
+  theme,
+  allWidgets,
+  canvasWidth,
+  canvasHeight,
+  selectedWidgetId,
+  selectedTarget,
+  selectedElementId,
+  hiddenElementIds,
+  scale,
+  dimmed,
+  selectMode,
+  onSelectWidget,
+  onSelectElement,
+  onResizeWidget,
+}) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   if (!Component) return null;
@@ -48,11 +93,35 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack'
     || (isBH && !['v2', 'v5_compact'].includes(wStyle));
   const needsVisible = needs3D || !!cfg.npcEnabled || widget.widget_type === 'navbar';
+  const highlighted = isWidgetHighlighted(widget, selectedTarget, selectedWidgetId);
+  const selectionCss = selectMode && highlighted
+    ? buildElementSelectionCss(widget.id, selectedElementId, hiddenElementIds)
+    : '';
+  const startResize = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = slotSize.width;
+    const startHeight = slotSize.height;
+    const divisor = Math.max(0.1, Number(scale) || 1);
+    const onMove = (moveEvent) => {
+      const width = clamp(Math.round(startWidth + ((moveEvent.clientX - startX) / divisor)), 80, 3840);
+      const height = clamp(Math.round(startHeight + ((moveEvent.clientY - startY) / divisor)), 50, 2160);
+      onResizeWidget?.(widget, { width, height });
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+  };
 
   return (
     <div
       className={[
-        isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) ? 'oc-preview-selected-widget' : '',
+        highlighted ? 'oc-preview-selected-widget' : '',
         dimmed ? 'oc-preview-dimmed-widget' : '',
       ].filter(Boolean).join(' ') || undefined}
       data-widget-id={widget.id}
@@ -60,6 +129,16 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
       onClick={selectMode ? (event) => {
         event.preventDefault();
         event.stopPropagation();
+        const elementNode = event.target?.closest?.('[data-widget-element]');
+        const elementInsideWidget = elementNode && event.currentTarget.contains(elementNode);
+        if (elementInsideWidget) {
+          onSelectElement?.({
+            widget,
+            elementId: elementNode.getAttribute('data-widget-element'),
+            stateId: elementNode.getAttribute('data-widget-state') || 'default',
+          });
+          return;
+        }
         onSelectWidget?.(widget);
       } : undefined}
       style={{
@@ -76,12 +155,38 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
       ...buildWidgetAppearanceVars(cfg),
       ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
     }}>
+      {selectionCss && <style>{selectionCss}</style>}
       <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+      {selectMode && highlighted && !isBg && onResizeWidget && (
+        <button
+          type="button"
+          className="oc-preview-resize-handle"
+          onPointerDown={startResize}
+          aria-label="Resize selected widget"
+          title="Drag to resize this widget"
+        />
+      )}
     </div>
   );
 });
 
-export default function OverlayPreview({ widgets, theme, appearance, selectedWidgetId, selectedTarget, styleSelections, zoom = 'fit', previewMode = 'focus-widget', previewBackground = 'dark', selectMode = false, onSelectWidget }) {
+export default function OverlayPreview({
+  widgets,
+  theme,
+  appearance,
+  selectedWidgetId,
+  selectedTarget,
+  selectedElementId,
+  hiddenElementIds,
+  styleSelections,
+  zoom = 'fit',
+  previewMode = 'focus-widget',
+  previewBackground = 'dark',
+  selectMode = false,
+  onSelectWidget,
+  onSelectElement,
+  onResizeWidget,
+}) {
   const wrapRef = useRef(null);
   const previewNowRef = useRef(Date.now());
   const [scale, setScale] = useState(0.5);
@@ -163,6 +268,8 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
 
   const previewBg = previewBackground === 'light'
     ? '#f8fafc'
+    : previewBackground === 'green'
+      ? '#00b140'
     : previewBackground === 'checkerboard'
       ? 'linear-gradient(45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,0.22) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,0.22) 75%)'
       : '#020617';
@@ -170,7 +277,7 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
   const previewBgPosition = previewBackground === 'checkerboard' ? '0 0, 0 12px, 12px -12px, -12px 0px' : undefined;
 
   return (
-    <div className="oc-preview-panel" ref={wrapRef}>
+    <div className={`oc-preview-panel${selectMode ? ' oc-preview-select-mode' : ''}`} ref={wrapRef}>
       <div className="oc-panel-header">
         <h2 className="oc-panel-title">👁️ Live Preview</h2>
         <span className="oc-preview-dims">{CANVAS_W} × {CANVAS_H} ({Math.round(scale * 100)}%)</span>
@@ -209,9 +316,14 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
               canvasHeight={CANVAS_H}
               selectedWidgetId={selectedWidgetId}
               selectedTarget={selectedTarget}
+              selectedElementId={selectedElementId}
+              hiddenElementIds={hiddenElementIds}
+              scale={scale}
               dimmed={dimUnfocused && !isWidgetHighlighted(w, selectedTarget, selectedWidgetId)}
               selectMode={selectMode}
               onSelectWidget={onSelectWidget}
+              onSelectElement={onSelectElement}
+              onResizeWidget={onResizeWidget}
             />
           ))}
           {visibleWidgets.length === 0 && (

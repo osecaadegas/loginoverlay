@@ -36,9 +36,11 @@ import './widgets/builtinWidgets';
 
 function getSlotSize(widget) {
   const frame = getWidgetPreviewFrame(widget);
+  const configuredWidth = Number(widget.config?.widgetWidth);
+  const configuredHeight = Number(widget.config?.widgetHeight);
   return {
-    width: frame?.width || widget.width,
-    height: frame?.height || widget.height,
+    width: configuredWidth || frame?.width || widget.width,
+    height: configuredHeight || frame?.height || widget.height,
   };
 }
 

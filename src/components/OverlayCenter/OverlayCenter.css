@@ -20715,6 +20715,14 @@ body.wm-resizing {
   gap: 16px;
 }
 
+.oc2-tool-section__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
 .oc2-tool-section__header h2 {
   margin: 0;
   color: #ffffff;
@@ -20722,14 +20730,14 @@ body.wm-resizing {
 }
 
 .oc2-tool-section__header p {
-  margin: 4px 0 0;
+  margin: 0;
 }
 
 .oc2-tool-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
-  max-width: 1400px;
+  width: 100%;
 }
 
 .oc2-tool-card {
@@ -23922,8 +23930,30 @@ body.wm-resizing {
 }
 
 .oc2-tool-grid {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 340px)) !important;
-  justify-content: center !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  justify-content: stretch !important;
+}
+
+.oc2-settings-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.oc2-tool-section__title-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: baseline !important;
+  gap: 8px 12px !important;
+}
+
+.oc2-tool-section__title-row p {
+  margin: 0 !important;
+}
+
+@media (max-width: 1180px) {
+  .oc2-tool-grid,
+  .oc2-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
 @media (max-width: 760px) {
@@ -23931,8 +23961,14 @@ body.wm-resizing {
     width: min(100% - 24px, 720px) !important;
   }
 
-  .oc2-tool-grid {
+  .oc2-tool-grid,
+  .oc2-settings-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .oc2-tool-section__title-row {
+    display: grid !important;
+    gap: 4px !important;
   }
 }
 

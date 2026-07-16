@@ -1668,6 +1668,8 @@ export function appearanceToWidgetConfigDefaults(appearance) {
     cardBorderWidth: a.borders.enabled ? a.borders.width : 0,
     containerPadding: a.surfaces.padding,
     cardGap: a.surfaces.gap,
+    ...(Number.isFinite(Number(a.container?.width)) ? { widgetWidth: Number(a.container.width) } : {}),
+    ...(Number.isFinite(Number(a.container?.height)) ? { widgetHeight: Number(a.container.height) } : {}),
     paddingX: a.spacing.padding,
     paddingY: Math.max(4, Math.round(a.spacing.padding * 0.6)),
     brightness: a.effects.brightness,
@@ -2233,4 +2235,3 @@ export function getSupportedVisualKeys(widgetType) {
     || ['accentColor', 'bgColor', 'cardBg', 'textColor', 'mutedColor', 'borderColor', 'fontFamily', 'fontSize', 'borderRadius', 'borderWidth', 'shadowSize', 'shadowIntensity', 'animSpeed'].includes(key)
   )).filter((key, index, keys) => keys.indexOf(key) === index);
 }
-
