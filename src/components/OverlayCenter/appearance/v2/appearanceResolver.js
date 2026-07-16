@@ -129,6 +129,7 @@ export function resolveWidgetAppearanceV2(widget, appearance = {}, options = {})
   const source = deepMergeV2(...migrated, ...explicit);
   const normalized = normalizeWidgetAppearanceV2(widget.widget_type, source);
   return {
+    styleId,
     capability,
     appearance: normalized,
     tokens: normalized.generatedTokens,
@@ -381,8 +382,9 @@ function buildBonusHuntPatch(tokens) {
   };
 }
 
-function buildSlotRequestsPatch(tokens) {
+function buildSlotRequestsPatch(tokens, styleId) {
   const common = commonSubElements(tokens);
+  const editableCompact = styleId === 'v3_compact_editable';
   const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
     ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 30)} ${tokens.colors.shadow}`
     : undefined;
@@ -462,6 +464,12 @@ function buildSlotRequestsPatch(tokens) {
         radius: Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
         borderColor: tokens.colors.border,
         borderWidth: tokens.shape.borderWidth,
+        ...(editableCompact ? {
+          visible: tokens.image?.visible !== false,
+          imageSize: Math.round(38 * (tokens.image?.sizeMultiplier || 1)),
+          imageFit: tokens.image?.fit || 'cover',
+          radius: tokens.image?.radius ?? Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
+        } : {}),
       },
       slotTitle: {
         textColor: tokens.colors.text,
@@ -688,21 +696,23 @@ function buildGiveawayPatch(tokens) {
   };
 }
 
-function buildPatchForWidget(widgetType, tokens) {
+function buildPatchForWidget(widgetType, tokens, styleId) {
   if (tokens?.isOriginalBaseline || tokens?.material === 'original') return {};
   if (widgetType === 'bh_stats') return buildBHStatsPatch(tokens);
   if (widgetType === 'bonus_hunt') return buildBonusHuntPatch(tokens);
-  if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens);
+  if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens, styleId);
   if (widgetType === 'giveaway') return buildGiveawayPatch(tokens);
   return {};
 }
 
-function filterUnsupportedSubElements(widgetType, subElements = {}) {
+function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = '') {
   const next = deepMergeV2(subElements);
-  if (widgetType === 'slot_requests' && next.slotImage) {
+  if (widgetType === 'slot_requests' && styleId !== 'v3_compact_editable' && next.slotImage) {
     delete next.slotImage.imageSize;
     delete next.slotImage.width;
     delete next.slotImage.height;
+    delete next.slotImage.imageFit;
+    delete next.slotImage.visible;
   }
   if (widgetType === 'bonus_hunt') {
     for (const elementId of ['slotImage', 'slotThumbnail', 'slotCarouselContainer', 'slotListContainer', 'slotRow', 'container', 'headerContainer', 'footerContainer']) {
@@ -814,7 +824,7 @@ export function applyWidgetAppearanceV2ToConfig(widget, config, appearance = {},
   const resolved = resolveWidgetAppearanceV2({ ...widget, config }, appearance, options);
   if (!resolved) return config;
   const isOriginalBaseline = resolved.tokens?.isOriginalBaseline || resolved.tokens?.material === 'original';
-  const patch = buildPatchForWidget(widget.widget_type, resolved.tokens);
+  const patch = buildPatchForWidget(widget.widget_type, resolved.tokens, resolved.styleId);
   const explicitSubElements = config.__appearanceExplicitSubElements || {};
   const generatedSubElements = patch.subElements || {};
   const v2ElementOverrides = resolved.appearance.elementOverrides || {};
@@ -826,7 +836,7 @@ export function applyWidgetAppearanceV2ToConfig(widget, config, appearance = {},
     generatedSubElements,
     explicitSubElements,
     v2ElementOverrides
-  ));
+  ), resolved.styleId);
   const next = {
     ...(isOriginalBaseline && widget.widget_type === 'bonus_hunt'
       ? stripInheritedBonusHuntVisualDefaults(config)

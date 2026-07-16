@@ -184,7 +184,7 @@ function getPreviewFrame(widgetType, config = {}) {
   if (widgetType === 'giveaway') return { width: 480, height: 360 };
   if (widgetType === 'slot_requests') {
     if (config.displayStyle === 'v2_card_stack') return { width: 560, height: 430 };
-    if (config.displayStyle === 'v3_compact') return { width: 560, height: 120 };
+    if (config.displayStyle === 'v3_compact' || config.displayStyle === 'v3_compact_editable') return { width: 560, height: 120 };
     return { width: 360, height: 520 };
   }
   return null;

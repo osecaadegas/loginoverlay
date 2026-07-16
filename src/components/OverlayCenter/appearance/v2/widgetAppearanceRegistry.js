@@ -1,3 +1,8 @@
+import {
+  getEditorReadyWidgetStyle,
+  shouldExposeEditorReadyStyle,
+} from '../../widgets/editorReadyWidgetRegistry.js';
+
 export const APPEARANCE_ENGINE_V2_WIDGETS = Object.freeze(['bh_stats', 'bonus_hunt', 'slot_requests', 'giveaway']);
 
 const COMMON_CAPABILITIES = Object.freeze({
@@ -528,6 +533,21 @@ export const widgetAppearanceRegistry = Object.freeze({
         elementIds: ['container', 'requestCard', 'position', 'slotImage', 'slotTitle', 'viewerName', 'footer', 'emptyState'],
         previewStateIds: ['with_requests', 'empty', 'busy_queue'],
       }),
+      freezeStyle({
+        id: 'v3_compact_editable',
+        label: 'Compact Overlay - Editable',
+        description: 'Editor-ready compact ticker using shared Slot Requests data and isolated CSS.',
+        recommended: false,
+        editorReady: true,
+        legacy: false,
+        featureFlag: 'appearanceEditablePilot',
+        hiddenInProduction: true,
+        capabilities: {
+          ...(getEditorReadyWidgetStyle('slot_requests', 'v3_compact_editable')?.capabilities || {}),
+        },
+        elementIds: getEditorReadyWidgetStyle('slot_requests', 'v3_compact_editable')?.editableElements || ['container'],
+        previewStateIds: ['with_requests', 'empty', 'busy_queue'],
+      }),
     ]),
     safeRanges: Object.freeze({
       scale: [0.75, 1.35],
@@ -884,7 +904,7 @@ export function getWidgetStyleCapability(widgetType, styleId) {
 export function getWidgetStyleOptionsForQuickEditor(widgetType) {
   const capability = getWidgetAppearanceCapability(widgetType);
   if (!capability || !Array.isArray(capability.styles)) return [];
-  return capability.styles.map(style => ({
+  return capability.styles.filter(style => shouldExposeAppearanceStyle(style)).map(style => ({
     id: style.id,
     label: style.label || style.id,
     description: style.description || '',
@@ -894,6 +914,11 @@ export function getWidgetStyleOptionsForQuickEditor(widgetType) {
     elementIds: style.elementIds || [],
     previewStateIds: style.previewStateIds || [],
   }));
+}
+
+function shouldExposeAppearanceStyle(style) {
+  if (!style?.hiddenInProduction) return true;
+  return shouldExposeEditorReadyStyle(style);
 }
 
 export function getWidgetStyleElements(widgetType, styleId) {
