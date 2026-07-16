@@ -63,6 +63,86 @@ const QUICK_CAPABILITY_KEYS = Object.freeze([
 
 const QUICK_CAPABILITY_SET = new Set(QUICK_CAPABILITY_KEYS);
 
+const QUICK_CONTROL_STYLE_REQUIREMENTS = Object.freeze({
+  material: ['colours', 'containers', 'transparentBackground'],
+  primaryColor: ['colours', 'positiveNegativeColours', 'progressBar'],
+  accentColor: ['colours', 'multipleColours', 'positiveNegativeColours', 'progressBar'],
+  fontFamily: ['fonts'],
+  textSize: ['fontSizes'],
+  boldText: ['fontWeights'],
+  imageVisibility: ['images', 'imageVisibility'],
+  imageSize: ['images', 'imageSize'],
+  imageShape: ['images', 'imageShape'],
+  imageFit: ['images', 'imageFit'],
+  shape: ['containers', 'containerShapes', 'borderRadius', 'borders', 'progressBar'],
+  density: ['spacing', 'layoutDensity'],
+  scale: ['layoutDensity'],
+  shadowStrength: ['shadows'],
+  glowStrength: ['glow', 'glowIntensity'],
+  carouselAutoplay: ['carousel', 'carouselAutoplay'],
+  carouselSpeed: ['carousel', 'carouselSpeed'],
+  carouselDirection: ['carousel', 'carouselDirection'],
+  animationEnabled: ['animations', 'carousel'],
+  animationSpeed: ['animations', 'animationSpeed', 'carouselSpeed'],
+  animationIntensity: ['animations', 'animationIntensity'],
+});
+
+const QUICK_CONTROL_ELEMENT_REQUIREMENTS = Object.freeze({
+  material: { wholeWidget: true },
+  primaryColor: {
+    capabilities: ['surface', 'border', 'shadow', 'shape', 'typography', 'progress', 'stateColor'],
+    kinds: ['surface', 'text', 'badge', 'progress', 'carousel'],
+    wholeWidget: true,
+  },
+  accentColor: {
+    capabilities: ['surface', 'border', 'shadow', 'shape', 'typography', 'progress', 'stateColor'],
+    kinds: ['surface', 'text', 'badge', 'progress', 'carousel'],
+    wholeWidget: true,
+  },
+  fontFamily: { capabilities: ['typography'], kinds: ['text', 'badge'], wholeWidget: true },
+  textSize: { capabilities: ['typography'], kinds: ['text', 'badge'], wholeWidget: true },
+  boldText: { capabilities: ['typography'], kinds: ['text', 'badge'], wholeWidget: true },
+  imageVisibility: { capabilities: ['image'], kinds: ['image'] },
+  imageSize: { capabilities: ['image'], kinds: ['image'] },
+  imageShape: { capabilities: ['image', 'shape'], kinds: ['image'] },
+  imageFit: { capabilities: ['image'], kinds: ['image'] },
+  shape: { capabilities: ['border', 'shape', 'progress'], kinds: ['badge', 'image', 'progress', 'carousel'], wholeWidget: true },
+  density: { capabilities: ['spacing', 'scale'], wholeWidget: true },
+  scale: { capabilities: ['scale'], wholeWidget: true },
+  shadowStrength: { capabilities: ['shadow'], kinds: ['carousel'], wholeWidget: true },
+  glowStrength: { capabilities: ['shadow'], kinds: ['carousel'], wholeWidget: true },
+  carouselAutoplay: { kinds: ['carousel'], wholeWidget: true },
+  carouselSpeed: { kinds: ['carousel'], wholeWidget: true },
+  carouselDirection: { kinds: ['carousel'], wholeWidget: true },
+  animationEnabled: { kinds: ['carousel'], wholeWidget: true },
+  animationSpeed: { kinds: ['carousel'], wholeWidget: true },
+  animationIntensity: { kinds: ['carousel'], wholeWidget: true },
+});
+
+const QUICK_CONTROL_FALLBACK_ORDER = Object.freeze([
+  'material',
+  'primaryColor',
+  'accentColor',
+  'fontFamily',
+  'textSize',
+  'boldText',
+  'imageVisibility',
+  'imageSize',
+  'imageShape',
+  'imageFit',
+  'shape',
+  'density',
+  'scale',
+  'shadowStrength',
+  'glowStrength',
+  'carouselAutoplay',
+  'carouselSpeed',
+  'carouselDirection',
+  'animationEnabled',
+  'animationSpeed',
+  'animationIntensity',
+]);
+
 const BASE_QUICK_CAPABILITIES = Object.freeze({
   colours: true,
   multipleColours: true,
@@ -962,6 +1042,60 @@ export function getWidgetStyleElements(widgetType, styleId) {
 export function styleSupportsQuickCapability(widgetType, styleId, key) {
   const style = getWidgetStyleCapability(widgetType, styleId);
   return !!style?.capabilities?.[key];
+}
+
+function supportsAnyStyleCapability(styleCapabilities = {}, keys = []) {
+  return keys.some(key => !!styleCapabilities[key]);
+}
+
+function isWholeWidgetElement(element) {
+  return !element || element.id === 'container' || element.id === 'root';
+}
+
+function elementHasAnyCapability(element, capabilities = []) {
+  const elementCapabilities = new Set(element?.capabilities || []);
+  return capabilities.some(capability => elementCapabilities.has(capability));
+}
+
+function elementHasAnyKind(element, kinds = []) {
+  if (!element?.kind) return false;
+  return kinds.includes(element.kind);
+}
+
+function getStyleQuickControlIds(widgetType, styleId, style) {
+  const editorReadyStyle = getEditorReadyWidgetStyle(widgetType, styleId);
+  const schemaControls = (editorReadyStyle?.quickEditorSchema || [])
+    .flatMap(section => section.controls || []);
+  if (schemaControls.length) return [...new Set(schemaControls)];
+  return QUICK_CONTROL_FALLBACK_ORDER.filter(control => {
+    const requirements = QUICK_CONTROL_STYLE_REQUIREMENTS[control] || [];
+    return !requirements.length || supportsAnyStyleCapability(style?.capabilities || {}, requirements);
+  });
+}
+
+export function quickControlAppliesToElement(widgetType, styleId, control, elementId) {
+  const style = getWidgetStyleCapability(widgetType, styleId);
+  if (!style) return false;
+  const controls = getStyleQuickControlIds(widgetType, styleId, style);
+  if (!controls.includes(control)) return false;
+  const styleRequirements = QUICK_CONTROL_STYLE_REQUIREMENTS[control] || [];
+  if (styleRequirements.length && !supportsAnyStyleCapability(style.capabilities || {}, styleRequirements)) return false;
+
+  const elements = getWidgetStyleElements(widgetType, styleId);
+  const element = elements.find(item => item.id === elementId) || elements[0] || null;
+  const rule = QUICK_CONTROL_ELEMENT_REQUIREMENTS[control];
+  if (!rule || !element) return true;
+  if (rule.wholeWidget && isWholeWidgetElement(element)) return true;
+  if (elementHasAnyCapability(element, rule.capabilities || [])) return true;
+  if (elementHasAnyKind(element, rule.kinds || [])) return true;
+  return false;
+}
+
+export function getWidgetStyleQuickControls(widgetType, styleId, elementId) {
+  const style = getWidgetStyleCapability(widgetType, styleId);
+  if (!style) return [];
+  return getStyleQuickControlIds(widgetType, styleId, style)
+    .filter(control => quickControlAppliesToElement(widgetType, styleId, control, elementId));
 }
 
 export function validateWidgetAppearanceRegistry(registry = widgetAppearanceRegistry) {
