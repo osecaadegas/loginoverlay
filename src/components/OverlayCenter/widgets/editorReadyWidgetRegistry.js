@@ -14,6 +14,22 @@ import {
   migrateCompactEditableSettings,
   validateCompactEditableSettings,
 } from './slot-requests/styles/compact-editable/compactEditable.migrations.js';
+import { classicRequestsEditableDefaults } from './bonus-hunt/styles/classic-requests-editable/classicRequestsEditable.defaults.js';
+import {
+  classicRequestsEditableCapabilities,
+  classicRequestsEditableSafeRanges,
+} from './bonus-hunt/styles/classic-requests-editable/classicRequestsEditable.capabilities.js';
+import {
+  classicRequestsEditableElementIds,
+  classicRequestsEditableElements,
+} from './bonus-hunt/styles/classic-requests-editable/classicRequestsEditable.elements.js';
+import { classicRequestsEditableQuickSchema } from './bonus-hunt/styles/classic-requests-editable/classicRequestsEditable.quickSchema.js';
+import { classicRequestsEditableAdvancedSchema } from './bonus-hunt/styles/classic-requests-editable/classicRequestsEditable.advancedSchema.js';
+import { classicRequestsEditablePreviewData } from './bonus-hunt/styles/classic-requests-editable/classicRequestsEditable.previewData.js';
+import {
+  migrateClassicRequestsEditableSettings,
+  validateClassicRequestsEditableSettings,
+} from './bonus-hunt/styles/classic-requests-editable/classicRequestsEditable.migrations.js';
 
 export const EDITOR_READY_WIDGET_CONTRACT_VERSION = 1;
 
@@ -120,6 +136,76 @@ function freezeStyle(style) {
 }
 
 export const editorReadyWidgetRegistry = Object.freeze({
+  bonus_hunt: Object.freeze({
+    id: 'bonus_hunt',
+    label: 'Bonus Hunt',
+    category: 'bonus_hunt',
+    contractVersion: EDITOR_READY_WIDGET_CONTRACT_VERSION,
+    styleConfigKey: 'displayStyle',
+    dataAdapter: 'useBonusHuntRequestsData',
+    notes: 'Classic + Requests is the next editor-ready migration. The original V12 renderer remains the production fallback.',
+    styles: Object.freeze({
+      v12_classic_sr: freezeStyle({
+        id: 'v12_classic_sr',
+        label: 'Classic + Requests - Original',
+        component: 'BonusHuntWidgetV12',
+        legacy: true,
+        editable: false,
+        productionFallback: true,
+        featureFlag: null,
+        fallbackStyleId: null,
+        defaultSettings: {},
+        editableElements: [],
+        quickEditorSchema: [],
+        advancedEditorSchema: [],
+        previewSampleData: classicRequestsEditablePreviewData,
+      }),
+      v12_classic_sr_editable: freezeStyle({
+        id: 'v12_classic_sr_editable',
+        label: 'Classic + Requests - Editable',
+        component: 'BonusHuntWidgetV12',
+        version: 1,
+        legacy: false,
+        editable: true,
+        productionFallback: false,
+        featureFlag: 'appearanceEditablePilot',
+        hiddenInProduction: true,
+        fallbackStyleId: 'v12_classic_sr',
+        defaultSettings: classicRequestsEditableDefaults,
+        capabilities: classicRequestsEditableCapabilities,
+        editableElements: classicRequestsEditableElementIds,
+        elements: classicRequestsEditableElements,
+        quickEditorSchema: classicRequestsEditableQuickSchema,
+        advancedEditorSchema: classicRequestsEditableAdvancedSchema,
+        previewSampleData: classicRequestsEditablePreviewData,
+        safeRanges: classicRequestsEditableSafeRanges,
+        minimumDimensions: Object.freeze({ width: 260, height: 520 }),
+        maximumDimensions: Object.freeze({ width: 900, height: 1080 }),
+        cssVariableMapping: Object.freeze({
+          container: ['--bht-text', '--bht-card-radius'],
+          headerContainer: ['--bht-header-bg', '--bht-header-accent'],
+          statCell: ['--bht-count-bg'],
+          slotCarouselContainer: ['--bht-current-bg', '--bht-current-accent'],
+          slotListContainer: ['--bht-list-bg', '--bht-list-accent'],
+          progressBar: ['--bht-progress-bg', '--bht-progress-fill'],
+          footerContainer: ['--bht-summary-bg', '--bht-total-pay-bg'],
+          requestsSectionContainer: ['--bht-list-bg', '--bht-list-accent'],
+        }),
+        obsSafety: Object.freeze({
+          transparentBackground: true,
+          noEditorChrome: true,
+          noGlobalCssClasses: false,
+          sharesDataAdapterWith: 'v12_classic_sr',
+          preservesOriginalRenderer: true,
+          avoidsAnimatedTransformOverride: true,
+          structuralCarouselDimensionsLocked: true,
+          embeddedRequestsShareDataAdapter: true,
+        }),
+        validateSettings: validateClassicRequestsEditableSettings,
+        migrateSettings: migrateClassicRequestsEditableSettings,
+      }),
+    }),
+  }),
   slot_requests: Object.freeze({
     id: 'slot_requests',
     label: 'Slot Requests',
