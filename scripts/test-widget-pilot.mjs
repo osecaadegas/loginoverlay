@@ -78,6 +78,7 @@ try {
   const resolverModule = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/v2/appearanceResolver.js');
   const {
     getWidgetStyleCapability,
+    getWidgetStyleQuickControls,
     styleSupportsQuickCapability,
     validateWidgetAppearanceRegistry,
   } = registryModule;
@@ -99,6 +100,83 @@ try {
   assert.equal(v2BonusHuntEditable.editorReady, true, 'appearance registry knows the editable Bonus Hunt Classic + Requests style');
   assert.equal(styleSupportsQuickCapability('bonus_hunt', 'v12_classic_sr_editable', 'carouselSpeed'), true, 'editable Bonus Hunt style exposes carousel speed');
   assert.equal(styleSupportsQuickCapability('bonus_hunt', 'v12_classic_sr_editable', 'imageSize'), false, 'editable Bonus Hunt style hides unsafe image size');
+
+  const bhTitleQuickControls = getWidgetStyleQuickControls('bonus_hunt', 'v12_classic_sr_editable', 'headerTitle');
+  assert.ok(bhTitleQuickControls.includes('fontFamily'), 'Bonus Hunt header title exposes text controls');
+  assert.ok(!bhTitleQuickControls.includes('shape'), 'Bonus Hunt header title hides shape controls');
+  assert.ok(!bhTitleQuickControls.includes('carouselSpeed'), 'Bonus Hunt header title hides carousel controls');
+  assert.ok(!bhTitleQuickControls.includes('animationSpeed'), 'Bonus Hunt header title hides motion controls');
+
+  const bhCarouselQuickControls = getWidgetStyleQuickControls('bonus_hunt', 'v12_classic_sr_editable', 'slotCarouselContainer');
+  assert.ok(bhCarouselQuickControls.includes('shape'), 'Bonus Hunt carousel exposes supported shape controls');
+  assert.ok(bhCarouselQuickControls.includes('carouselSpeed'), 'Bonus Hunt carousel exposes carousel speed');
+  assert.ok(!bhCarouselQuickControls.includes('fontFamily'), 'Bonus Hunt carousel hides unrelated text controls');
+
+  const bhRequestsQuickControls = getWidgetStyleQuickControls('bonus_hunt', 'v12_classic_sr_editable', 'requestsSectionContainer');
+  assert.ok(bhRequestsQuickControls.includes('shape'), 'Bonus Hunt requests panel exposes surface controls');
+  assert.ok(!bhRequestsQuickControls.includes('carouselSpeed'), 'Bonus Hunt requests panel hides carousel controls');
+
+  const bhSlotImageQuickControls = getWidgetStyleQuickControls('bonus_hunt', 'v12_classic_sr_editable', 'slotImage');
+  assert.ok(bhSlotImageQuickControls.includes('shape'), 'Bonus Hunt slot image exposes safe shape control');
+  assert.ok(!bhSlotImageQuickControls.includes('imageSize'), 'Bonus Hunt slot image hides unsafe image size quick control');
+  assert.ok(!bhSlotImageQuickControls.includes('carouselSpeed'), 'Bonus Hunt slot image hides carousel controls');
+
+  const srContainerQuickControls = getWidgetStyleQuickControls('slot_requests', 'v3_compact_editable', 'container');
+  assert.ok(srContainerQuickControls.includes('carouselSpeed'), 'Slot Requests whole widget exposes style motion controls');
+  assert.ok(srContainerQuickControls.includes('scale'), 'Slot Requests whole widget exposes scale');
+
+  const srImageQuickControls = getWidgetStyleQuickControls('slot_requests', 'v3_compact_editable', 'slotImage');
+  assert.ok(srImageQuickControls.includes('imageSize'), 'Slot Requests image element exposes image size');
+  assert.ok(srImageQuickControls.includes('imageFit'), 'Slot Requests image element exposes image fit');
+  assert.ok(!srImageQuickControls.includes('carouselSpeed'), 'Slot Requests image element hides carousel controls');
+
+  const srCardQuickControls = getWidgetStyleQuickControls('slot_requests', 'v3_compact_editable', 'requestCard');
+  assert.ok(srCardQuickControls.includes('shape'), 'Slot Requests card exposes shape controls');
+  assert.ok(srCardQuickControls.includes('shadowStrength'), 'Slot Requests card exposes supported shadow controls');
+  assert.ok(!srCardQuickControls.includes('imageSize'), 'Slot Requests card hides image controls');
+  assert.ok(!srCardQuickControls.includes('animationSpeed'), 'Slot Requests card hides motion controls');
+
+  const srEmptyQuickControls = getWidgetStyleQuickControls('slot_requests', 'v3_compact_editable', 'emptyState');
+  assert.ok(srEmptyQuickControls.includes('fontFamily'), 'Slot Requests empty state exposes text controls');
+  assert.ok(!srEmptyQuickControls.includes('shape'), 'Slot Requests empty state hides unsupported shape controls');
+  assert.ok(!srEmptyQuickControls.includes('shadowStrength'), 'Slot Requests empty state hides unsupported shadow controls');
+
+  const scopedBonusHuntWidget = {
+    id: 'bh-scoped',
+    widget_type: 'bonus_hunt',
+    config: {
+      displayStyle: 'v12_classic_sr_editable',
+      subElements: {},
+    },
+  };
+  const scopedBonusHuntAppearanceV2 = buildAppearanceV2ForStorage('bonus_hunt', {
+    material: 'original',
+    primaryColor: '#facc15',
+    textSize: 'large',
+  });
+  scopedBonusHuntAppearanceV2.elementOverrides = {
+    headerTitle: {
+      textColor: '#facc15',
+      fontSize: 24,
+    },
+    slotCarouselContainer: {
+      borderColor: '#facc15',
+    },
+  };
+  const scopedBonusHuntResolved = applyWidgetAppearanceV2ToConfig(scopedBonusHuntWidget, scopedBonusHuntWidget.config, {
+    widgets: {
+      'bh-scoped': {
+        styles: {
+          v12_classic_sr_editable: {
+            appearanceV2: scopedBonusHuntAppearanceV2,
+          },
+        },
+      },
+    },
+  }, { styleId: 'v12_classic_sr_editable' });
+  assert.equal(scopedBonusHuntResolved.subElements.headerTitle.fontSize, 24, 'Bonus Hunt scoped quick text size reaches the real subElement config');
+  assert.equal(scopedBonusHuntResolved.subElements.headerTitle.textColor, '#facc15', 'Bonus Hunt scoped quick text colour reaches the real subElement config');
+  assert.equal(scopedBonusHuntResolved.subElements.slotCarouselContainer.borderColor, '#facc15', 'Bonus Hunt scoped carousel surface colour reaches the real subElement config');
 
   const widget = {
     id: 'sr-pilot',
@@ -136,6 +214,38 @@ try {
   assert.equal(resolved.carouselAutoplay, false, 'carousel autoplay setting resolves to real widget config');
   assert.equal(resolved.subElements.slotImage.imageFit, 'contain', 'editable compact style receives image fit');
   assert.ok(resolved.subElements.slotImage.imageSize > 38, 'editable compact style receives large image size');
+
+  const scopedSlotRequestAppearanceV2 = buildAppearanceV2ForStorage('slot_requests', {
+    material: 'glass',
+    primaryColor: '#8b5cf6',
+    imageSize: 'large',
+    imageShape: 'circle',
+    imageFit: 'contain',
+  });
+  scopedSlotRequestAppearanceV2.elementOverrides = {
+    slotImage: {
+      imageSize: 52,
+      imageFit: 'contain',
+      radius: 999,
+    },
+    requestCard: {
+      shadow: '0 8px 24px rgba(139, 92, 246, 0.3)',
+    },
+  };
+  const scopedSlotRequestResolved = applyWidgetAppearanceV2ToConfig(widget, widget.config, {
+    widgets: {
+      'sr-pilot': {
+        styles: {
+          v3_compact_editable: {
+            appearanceV2: scopedSlotRequestAppearanceV2,
+          },
+        },
+      },
+    },
+  }, { styleId: 'v3_compact_editable' });
+  assert.equal(scopedSlotRequestResolved.subElements.slotImage.imageSize, 52, 'Slot Requests scoped image size reaches the real subElement config');
+  assert.equal(scopedSlotRequestResolved.subElements.slotImage.imageFit, 'contain', 'Slot Requests scoped image fit reaches the real subElement config');
+  assert.equal(scopedSlotRequestResolved.subElements.requestCard.shadow, '0 8px 24px rgba(139, 92, 246, 0.3)', 'Slot Requests scoped card effect reaches the real subElement config');
 
   const legacyWidget = {
     id: 'sr-legacy',
