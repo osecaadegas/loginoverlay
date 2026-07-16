@@ -35,7 +35,7 @@ import usePresets from '../../hooks/usePresets';
 import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
-import WidgetStudioV2 from './appearance/studio/WidgetStudioV2';
+import AppearanceCenter from './appearance/AppearanceCenter';
 import ConnectServicesStep from './setup/ConnectServicesStep';
 import { buildSyncedConfig } from './WidgetManager';
 import PresetLibrary from './PresetLibrary';
@@ -1654,10 +1654,18 @@ export default function OverlayControlCenter() {
 
         {currentPanel === 'appearance' && (
           <div data-tour="appearance-page">
-            <WidgetStudioV2
+            <AppearanceCenter
               user={user}
+              instance={instance}
+              theme={theme}
+              widgets={widgets}
               overlayState={overlayState}
+              saveTheme={saveTheme}
               updateState={updateState}
+              onOpenPreview={openPreview}
+              onFocusPreview={focusPreview}
+              onClosePreview={closePreview}
+              previewStatus={previewStatus}
             />
           </div>
         )}

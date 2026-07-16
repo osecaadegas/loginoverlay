@@ -5,7 +5,8 @@
  * and a fully functional Slot Requests widget embedded below the list.
  * The SR section is toggleable via config.showSlotRequests.
  */
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '../../../config/supabaseClient';
 import SlotImage from './SlotImage';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
 
@@ -51,10 +52,9 @@ function composeV12RootBackground(headerColor, rootBackground) {
   return `linear-gradient(160deg, ${color}, ${color})`;
 }
 
-export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests = [] }) {
+export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
-  const srRequests = Array.isArray(slotRequests) ? slotRequests : [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
@@ -140,6 +140,49 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
     const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), carouselSpeedMs);
     return () => clearInterval(id);
   }, [carouselAutoplay, bonuses.length, carouselSpeedMs]);
+
+  /* ─── Slot Requests data ─── */
+  const [srRequests, setSrRequests] = useState([]);
+  const srMounted = useRef(true);
+  // Stale-fetch guard: discard results from in-flight fetches that started
+  // before a newer fetch already completed.
+  const srFetchSeqRef = useRef(0);
+
+  const fetchSR = useCallback(async () => {
+    if (!userId || !showSR) return;
+    const seq = ++srFetchSeqRef.current;
+    const { data, error } = await supabase
+      .from('slot_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true })
+      .limit(20);
+    if (seq !== srFetchSeqRef.current) return; // stale — discard
+    if (!error && data && srMounted.current) setSrRequests(data);
+  }, [userId, showSR]);
+
+  useEffect(() => { fetchSR(); }, [fetchSR]);
+
+  /* ── SR Realtime — channel name is distinct from BonusHuntConfig's 'bh-sr-config-{id}' ── */
+  useEffect(() => {
+    if (!userId || !showSR) return;
+    const channel = supabase
+      .channel(`bh-sr-widget-${userId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'slot_requests',
+        filter: `user_id=eq.${userId}`,
+      }, () => fetchSR())
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [fetchSR, userId, showSR]);
+
+  /* ── NOTE: SR IRC listener moved to useSlotRequestListener.js (app-level) ── */
+
+  useEffect(() => {
+    srMounted.current = true;
+    return () => { srMounted.current = false; };
+  }, []);
 
   /* ─── Style vars (same as classic v1) ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
@@ -268,13 +311,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
   const srScrollSpeed = 20;
 
   return (
-    <div
-      className="oc-widget-inner oc-bonushunt oc-bonushunt--v12"
-      data-widget-id="bonus_hunt"
-      data-style-id={c.displayStyle || 'v12_classic_sr'}
-      data-widget-element="container"
-      style={{ ...rootStyle, height: '100%' }}
-    >
+    <div className="oc-widget-inner oc-bonushunt oc-bonushunt--v12" data-widget-element="container" style={{ ...rootStyle, height: '100%' }}>
 
       {/* ═══ Header — Classic full-card flip ═══ */}
       <div className="bht-card bht-header bht-header--fullflip" data-widget-element="headerContainer" style={{ ...headerContainerStyle, flex: '0 0 auto' }}>

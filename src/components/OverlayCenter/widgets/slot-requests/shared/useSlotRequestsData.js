@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../../../../../config/supabaseClient';
 
-export function useSlotRequestsData({ config = {}, userId, enabled = true, channelPrefix = 'sr-widget' } = {}) {
+export function useSlotRequestsData({ config = {}, userId } = {}) {
   const c = config || {};
   const maxDisplay = Number(c.maxDisplay) > 0 ? Number(c.maxDisplay) : 20;
   const previewRequests = useMemo(() => (
@@ -14,7 +14,6 @@ export function useSlotRequestsData({ config = {}, userId, enabled = true, chann
   const fetchSeqRef = useRef(0);
 
   const fetchRequests = useCallback(async () => {
-    if (!enabled) return;
     if (previewRequests) return;
     if (!userId) return;
     const seq = ++fetchSeqRef.current;
@@ -27,16 +26,11 @@ export function useSlotRequestsData({ config = {}, userId, enabled = true, chann
       .limit(maxDisplay);
     if (seq !== fetchSeqRef.current) return;
     if (!error && data && mountedRef.current) setRequests(data);
-  }, [enabled, userId, maxDisplay, previewRequests]);
+  }, [userId, maxDisplay, previewRequests]);
 
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
-
-  useEffect(() => {
-    if (enabled || previewRequests) return;
-    setRequests([]);
-  }, [enabled, previewRequests]);
 
   useEffect(() => {
     if (!previewRequests) return;
@@ -44,11 +38,10 @@ export function useSlotRequestsData({ config = {}, userId, enabled = true, chann
   }, [previewRequests]);
 
   useEffect(() => {
-    if (!enabled) return undefined;
     if (previewRequests) return undefined;
     if (!userId) return undefined;
     const channel = supabase
-      .channel(`${channelPrefix}-${userId}`)
+      .channel(`sr-widget-${userId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -57,14 +50,14 @@ export function useSlotRequestsData({ config = {}, userId, enabled = true, chann
       }, () => { fetchRequests(); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [channelPrefix, enabled, fetchRequests, previewRequests, userId]);
+  }, [fetchRequests, previewRequests, userId]);
 
   useEffect(() => (
     () => { mountedRef.current = false; }
   ), []);
 
   return {
-    requests: enabled ? requests : [],
+    requests,
     maxDisplay,
     isPreview: !!previewRequests,
     refresh: fetchRequests,

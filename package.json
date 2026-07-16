@@ -13,7 +13,6 @@
     "test:appearance-editor": "node scripts/test-appearance-editor.mjs",
     "test:appearance-v2": "node scripts/test-appearance-v2.mjs",
     "test:widget-pilot": "node scripts/test-widget-pilot.mjs",
-    "test:widget-studio-v2": "node scripts/test-widget-studio-v2.mjs",
     "test:service-setup": "node scripts/test-service-setup.mjs",
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",
     "test:slot-detector": "node scripts/test-slot-detector.mjs",

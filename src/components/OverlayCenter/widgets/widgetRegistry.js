@@ -67,8 +67,6 @@ export function registerWidget(definition) {
     icon: '📦',
     category: 'general',
     defaults: {},
-    appearanceEditorVersion: 'legacy',
-    supportsAppearanceStudio: false,
     ...definition,
     appearanceCapabilities: inferAppearanceCapabilities(definition),
   });

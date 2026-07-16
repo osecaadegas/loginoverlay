@@ -50,71 +50,6 @@ const SAMPLE_SLOT_REQUESTS = [
   },
 ];
 
-const SAMPLE_BONUS_HUNT_BONUSES = [
-  {
-    id: 'preview-bh-1',
-    slotName: 'Gates of Olympus 1000',
-    slot: {
-      name: 'Gates of Olympus 1000',
-      image: 'https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png',
-      provider: 'Pragmatic Play',
-    },
-    betSize: 1,
-    payout: 82,
-    opened: true,
-    isSuperBonus: true,
-  },
-  {
-    id: 'preview-bh-2',
-    slotName: 'Le Digger',
-    slot: {
-      name: 'Le Digger',
-      image: 'https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png',
-      provider: 'Hacksaw Gaming',
-    },
-    betSize: 2,
-    payout: 0,
-    opened: false,
-  },
-  {
-    id: 'preview-bh-3',
-    slotName: 'Big Bass Secrets of the Golden Lake',
-    slot: {
-      name: 'Big Bass Secrets of the Golden Lake',
-      image: 'https://images-cdn.softswiss.net/i/s2/pragmaticplay/BigBassSecretsOfTheGoldenLake.png',
-      provider: 'Pragmatic Play',
-    },
-    betSize: 1,
-    payout: 0,
-    opened: false,
-  },
-  {
-    id: 'preview-bh-4',
-    slotName: 'Cyber Runner',
-    slot: {
-      name: 'Cyber Runner',
-      image: '',
-      provider: 'Peter & Sons',
-    },
-    betSize: 1,
-    payout: 0,
-    opened: false,
-    isExtremeBonus: true,
-  },
-  {
-    id: 'preview-bh-5',
-    slotName: 'Banana Town',
-    slot: {
-      name: 'Banana Town',
-      image: 'https://images-cdn.softswiss.net/i/s2/evoplay/BananaTown.png',
-      provider: 'Evoplay',
-    },
-    betSize: 1,
-    payout: 0,
-    opened: false,
-  },
-];
-
 function hasPositiveBetPool(config = {}) {
   return Object.values(config.bets || {}).some(value => Number(value) > 0);
 }
@@ -237,34 +172,6 @@ function applySlotRequestsPreviewSample(config = {}) {
   };
 }
 
-function applyBonusHuntPreviewSample(config = {}) {
-  const previewState = config.__appearancePreviewState || 'hunt_live';
-  const requests = previewState === 'requests_empty'
-    ? []
-    : previewState === 'requests_busy'
-      ? [...SAMPLE_SLOT_REQUESTS, ...SAMPLE_SLOT_REQUESTS.map((item, index) => ({
-          ...item,
-          id: `${item.id}-bh-busy-${index}`,
-          requested_by: `viewer_${index + 8}`,
-        }))]
-      : SAMPLE_SLOT_REQUESTS;
-  return {
-    ...config,
-    displayStyle: config.displayStyle || 'v12_classic_sr',
-    huntName: config.huntName || 'Preview Hunt',
-    currency: config.currency || '€',
-    startMoney: Number(config.startMoney) > 0 ? config.startMoney : 1500,
-    stopLoss: Number(config.stopLoss) > 0 ? config.stopLoss : 200,
-    bonusOpening: previewState === 'opening' ? true : config.bonusOpening,
-    bonuses: Array.isArray(config.bonuses) && config.bonuses.length > 0
-      ? config.bonuses
-      : SAMPLE_BONUS_HUNT_BONUSES,
-    showSlotRequests: config.showSlotRequests !== false,
-    __appearancePreviewRequests: requests,
-    __appearancePreviewSample: true,
-  };
-}
-
 function getPreviewFrame(widgetType, config = {}) {
   if (widgetType === 'bets') {
     const isGrid = ['v2_grid', 'v3_grid_2x3'].includes(config.displayStyle);
@@ -275,11 +182,6 @@ function getPreviewFrame(widgetType, config = {}) {
     return { width: compact ? 460 : 420, height: compact ? 120 : 420 };
   }
   if (widgetType === 'giveaway') return { width: 480, height: 360 };
-  if (widgetType === 'bonus_hunt') {
-    if (config.displayStyle === 'v12_classic_sr' || config.displayStyle === 'v12_classic_sr_editable') {
-      return { width: 300, height: 820 };
-    }
-  }
   if (widgetType === 'slot_requests') {
     if (config.displayStyle === 'v2_card_stack') return { width: 560, height: 430 };
     if (config.displayStyle === 'v3_compact' || config.displayStyle === 'v3_compact_editable') return { width: 560, height: 120 };
@@ -293,7 +195,6 @@ function applyWidgetPreviewSample(widget, now) {
   if (widget.widget_type === 'bets') return { ...widget, config: applyBetsPreviewSample(widget.config || {}, now) };
   if (widget.widget_type === 'spotify_now_playing') return { ...widget, config: applySpotifyPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'giveaway') return { ...widget, config: applyGiveawayPreviewSample(widget.config || {}) };
-  if (widget.widget_type === 'bonus_hunt') return { ...widget, config: applyBonusHuntPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'slot_requests') return { ...widget, config: applySlotRequestsPreviewSample(widget.config || {}) };
   return widget;
 }

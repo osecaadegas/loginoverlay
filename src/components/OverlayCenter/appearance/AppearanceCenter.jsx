@@ -83,7 +83,6 @@ import {
 import {
   getWidgetStyleCapability,
   getWidgetStyleElements,
-  getWidgetStyleQuickControls,
   getWidgetStyleOptionsForQuickEditor,
   isWidgetAppearanceV2Enabled,
 } from './v2/widgetAppearanceRegistry';
@@ -148,18 +147,6 @@ const FALLBACK_QUICK_STYLE_CAPABILITIES = Object.freeze({
   layoutDensity: true,
   transparentBackground: true,
 });
-
-const WHOLE_WIDGET_ELEMENT_IDS = new Set(['container', 'root']);
-const GLOBAL_QUICK_STYLE_CONTROLS = new Set([
-  'material',
-  'scale',
-  'carouselAutoplay',
-  'carouselSpeed',
-  'carouselDirection',
-  'animationEnabled',
-  'animationSpeed',
-  'animationIntensity',
-]);
 
 function safeJson(value) {
   try {
@@ -262,102 +249,6 @@ function getFirstElementForStyle(widgetType, styleId) {
 
 function supportsAny(capabilities = {}, keys = []) {
   return keys.some(key => !!capabilities[key]);
-}
-
-function isWholeWidgetQuickElement(element) {
-  return !element?.id || WHOLE_WIDGET_ELEMENT_IDS.has(element.id);
-}
-
-function elementHasCapability(element, capability) {
-  return Array.isArray(element?.capabilities) && element.capabilities.includes(capability);
-}
-
-function canScopeQuickPatchToElement(element, patch = {}) {
-  if (isWholeWidgetQuickElement(element)) return false;
-  const keys = Object.keys(patch || {});
-  return keys.length > 0 && keys.every(key => !GLOBAL_QUICK_STYLE_CONTROLS.has(key));
-}
-
-function pxValue(value) {
-  return `${Math.round(Number(value) || 0)}px`;
-}
-
-function quickElementShadow(tokens = {}) {
-  const intensity = Number(tokens.materialTokens?.shadowIntensity || 0);
-  if (intensity <= 0.01) return undefined;
-  return `0 ${pxValue(intensity * 14)} ${pxValue(intensity * 34)} ${tokens.colors?.shadow || 'rgba(0,0,0,0.34)'}`;
-}
-
-function quickElementGlow(tokens = {}) {
-  const intensity = Number(tokens.materialTokens?.glowIntensity || 0);
-  if (intensity <= 0.01) return undefined;
-  return `0 0 ${pxValue(intensity * 38)} ${tokens.colors?.glow || tokens.colors?.primary || 'rgba(20,216,216,0.34)'}`;
-}
-
-function pickQuickElementFontSize(tokens = {}, element = {}) {
-  const id = String(element.id || '').toLowerCase();
-  if (id.includes('title') || id.includes('header')) return tokens.typography?.headerSize;
-  if (id.includes('label') || id.includes('description') || id.includes('viewer')) return tokens.typography?.labelSize;
-  if (id.includes('value') || id.includes('total')) return tokens.typography?.valueSize;
-  return tokens.typography?.bodySize;
-}
-
-function pickQuickElementRadius(tokens = {}, element = {}) {
-  if (element.kind === 'badge' || element.kind === 'progress') return tokens.shape?.badgeRadius;
-  if (element.kind === 'image') return tokens.image?.radius ?? tokens.shape?.cardRadius;
-  return tokens.shape?.cardRadius ?? tokens.shape?.rootRadius;
-}
-
-function buildElementQuickOverrideFromPatch(element, patch = {}, tokens = {}) {
-  const override = {};
-  const capabilities = new Set(element?.capabilities || []);
-  const isText = element?.kind === 'text' || capabilities.has('typography');
-  const isSurface = element?.kind === 'surface' || element?.kind === 'carousel' || capabilities.has('surface');
-  const isImage = element?.kind === 'image' || capabilities.has('image');
-  const isProgress = element?.kind === 'progress' || capabilities.has('progress');
-
-  if (patch.primaryColor !== undefined) {
-    if (isText && !isSurface) override.textColor = tokens.colors?.primary;
-    else if (isProgress) override.fillColor = tokens.colors?.primary;
-    else if (isImage) override.borderColor = tokens.colors?.primary;
-    else if (isSurface) {
-      override.background = tokens.colors?.secondarySurface;
-      override.borderColor = tokens.colors?.primary;
-      override.accentColor = tokens.colors?.primary;
-    }
-  }
-  if (patch.accentColor !== undefined || patch.useSecondColor !== undefined) {
-    if (isText && !isSurface) override.textColor = tokens.colors?.accent;
-    else if (isProgress) override.fillColor = tokens.colors?.accent;
-    else if (isImage) override.borderColor = tokens.colors?.accent;
-    else if (isSurface) {
-      override.borderColor = tokens.colors?.accent;
-      override.accentColor = tokens.colors?.accent;
-    }
-  }
-  if (patch.fontFamily !== undefined && isText) override.fontFamily = tokens.typography?.bodyFont;
-  if (patch.textSize !== undefined && isText) override.fontSize = pickQuickElementFontSize(tokens, element);
-  if (patch.boldText !== undefined && isText) override.fontWeight = patch.boldText ? tokens.typography?.valueWeight : tokens.typography?.bodyWeight;
-  if (patch.imageVisibility !== undefined && isImage) override.visible = patch.imageVisibility !== 'hidden';
-  if (patch.imageSize !== undefined && isImage) override.imageSize = Math.round(38 * (tokens.image?.sizeMultiplier || 1));
-  if (patch.imageShape !== undefined && (isImage || capabilities.has('shape'))) override.radius = pickQuickElementRadius(tokens, element);
-  if (patch.imageFit !== undefined && isImage) override.imageFit = tokens.image?.fit || 'cover';
-  if (patch.shape !== undefined && (capabilities.has('shape') || capabilities.has('border') || isSurface || isProgress)) {
-    override.radius = pickQuickElementRadius(tokens, element);
-  }
-  if (patch.density !== undefined && capabilities.has('spacing')) {
-    override.padding = tokens.spacing?.cardPadding;
-    override.gap = tokens.spacing?.itemGap;
-  }
-  if (patch.shadowStrength !== undefined && (capabilities.has('shadow') || element?.kind === 'carousel')) {
-    override.shadow = quickElementShadow(tokens);
-  }
-  if (patch.glowStrength !== undefined && (capabilities.has('shadow') || element?.kind === 'carousel')) {
-    const shadow = [override.shadow, quickElementGlow(tokens)].filter(Boolean).join(', ');
-    override.shadow = shadow || override.shadow;
-  }
-
-  return Object.fromEntries(Object.entries(override).filter(([, value]) => value !== undefined));
 }
 
 function styleEdited(appearance, widgetId, styleId) {
@@ -615,74 +506,67 @@ export default function AppearanceCenter({
       : getWidgetElementSchema(selectedWidgetType)),
     [selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]
   );
-  const selectedElement = useMemo(
-    () => selectedElements.find(element => element.id === selectedElementId) || selectedElements[0] || null,
-    [selectedElements, selectedElementId]
-  );
   const selectedStyleCapabilities = selectedStyleCapability?.capabilities || FALLBACK_QUICK_STYLE_CAPABILITIES;
-  const selectedQuickControls = useMemo(() => {
-    if (selectedWidgetUsesV2) {
-      return new Set(getWidgetStyleQuickControls(selectedWidgetType, selectedTarget.styleId, selectedElement?.id));
-    }
-    const controls = [];
-    if (supportsAny(selectedStyleCapabilities, ['colours', 'containers', 'transparentBackground'])) controls.push('material');
-    if (supportsAny(selectedStyleCapabilities, ['colours', 'multipleColours', 'positiveNegativeColours', 'progressBar'])) controls.push('primaryColor', 'accentColor');
-    if (selectedStyleCapabilities.fonts) controls.push('fontFamily');
-    if (selectedStyleCapabilities.fontSizes) controls.push('textSize');
-    if (selectedStyleCapabilities.fontWeights) controls.push('boldText');
-    if (selectedStyleCapabilities.images) controls.push('imageVisibility');
-    if (selectedStyleCapabilities.imageSize) controls.push('imageSize');
-    if (selectedStyleCapabilities.imageShape) controls.push('imageShape');
-    if (selectedStyleCapabilities.imageFit) controls.push('imageFit');
-    if (supportsAny(selectedStyleCapabilities, ['containerShapes', 'borderRadius'])) controls.push('shape');
-    if (selectedStyleCapabilities.layoutDensity) controls.push('density', 'scale');
-    if (selectedStyleCapabilities.shadows) controls.push('shadowStrength');
-    if (supportsAny(selectedStyleCapabilities, ['glow', 'glowIntensity'])) controls.push('glowStrength');
-    if (selectedStyleCapabilities.carouselAutoplay) controls.push('carouselAutoplay');
-    if (selectedStyleCapabilities.carouselSpeed) controls.push('carouselSpeed');
-    if (selectedStyleCapabilities.carouselDirection) controls.push('carouselDirection');
-    if (selectedStyleCapabilities.animations) controls.push('animationEnabled');
-    if (selectedStyleCapabilities.animationSpeed) controls.push('animationSpeed');
-    if (selectedStyleCapabilities.animationIntensity) controls.push('animationIntensity');
-    return new Set(controls);
-  }, [selectedElement?.id, selectedStyleCapabilities, selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]);
-  const hasQuickControl = useCallback((control) => selectedQuickControls.has(control), [selectedQuickControls]);
-  const hasAnyQuickControl = useCallback((controls = []) => controls.some(control => selectedQuickControls.has(control)), [selectedQuickControls]);
   const simpleSections = useMemo(() => {
     const sections = [];
     sections.push('widgetStyle');
     if (selectedElements.length > 1) sections.push('editing');
-    if (selectedQuickControls.has('material')) sections.push('material');
-    if (hasAnyQuickControl(['primaryColor', 'accentColor'])) sections.push('colours');
-    if (hasAnyQuickControl([
-      'fontFamily',
-      'textSize',
-      'boldText',
-      'imageVisibility',
+    if (supportsAny(selectedStyleCapabilities, [
+      'colours',
+      'containers',
+      'containerShapes',
+      'shadows',
+      'glow',
+      'transparentBackground',
+    ])) sections.push('material');
+    if (supportsAny(selectedStyleCapabilities, [
+      'colours',
+      'multipleColours',
+      'positiveNegativeColours',
+      'progressBar',
+    ])) sections.push('colours');
+    if (supportsAny(selectedStyleCapabilities, [
+      'fonts',
+      'fontSizes',
+      'fontWeights',
+      'textAlignment',
+      'images',
       'imageSize',
       'imageShape',
       'imageFit',
+      'imageVisibility',
     ])) sections.push('textImages');
-    if (hasAnyQuickControl([
-      'shape',
-      'density',
-      'scale',
-      'shadowStrength',
-      'glowStrength',
+    if (supportsAny(selectedStyleCapabilities, [
+      'containers',
+      'containerShapes',
+      'borderRadius',
+      'borders',
+      'shadows',
+      'glow',
+      'glowIntensity',
+      'spacing',
+      'layoutDensity',
+      'transparentBackground',
     ])) sections.push('shapeEffects');
-    if (hasAnyQuickControl([
-      'carouselAutoplay',
+    if (supportsAny(selectedStyleCapabilities, [
+      'carousel',
       'carouselSpeed',
       'carouselDirection',
-      'animationEnabled',
+      'carouselAutoplay',
+      'carouselPauseOnHover',
+      'animations',
       'animationSpeed',
       'animationIntensity',
     ])) sections.push('motion');
     sections.push('actions');
     return sections;
-  }, [hasAnyQuickControl, selectedElements.length, selectedQuickControls]);
+  }, [selectedElements.length, selectedStyleCapabilities]);
   const previewStateOptions = WIDGET_PREVIEW_STATES[selectedWidgetType] || [];
   const selectedPreviewState = previewStateByWidget[selectedWidget?.id] || previewStateOptions[0]?.id || '';
+  const selectedElement = useMemo(
+    () => selectedElements.find(element => element.id === selectedElementId) || selectedElements[0] || null,
+    [selectedElements, selectedElementId]
+  );
   const selectedLayerKey = layerKey(selectedWidget?.id, selectedElement?.id);
   const selectedLayerLocked = !!lockedLayers[selectedLayerKey];
   const dirty = safeJson(draft) !== lastPersistedDraftRef.current;
@@ -692,8 +576,7 @@ export default function AppearanceCenter({
   const advancedOverrideCount = useMemo(() => {
     if (!selectedTargetRoot) return 0;
     return countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.elements`))
-      + countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.subElements`))
-      + countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.appearanceV2.elementOverrides`));
+      + countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.subElements`));
   }, [draft, selectedTargetRoot]);
 
   const filteredWidgets = useMemo(() => {
@@ -870,42 +753,6 @@ export default function AppearanceCenter({
       return next;
     }, summary);
   }, [commitDraft, currentSimpleSettings, rememberColor, selectedTargetRoot, selectedWidgetType]);
-
-  const applyQuickSettings = useCallback((patch, summary = 'Quick style changed') => {
-    if (
-      selectedWidgetUsesV2
-      && selectedTargetRoot
-      && selectedElement?.id
-      && canScopeQuickPatchToElement(selectedElement, patch)
-    ) {
-      const nextSettings = normalizeSimpleSettings({ ...currentSimpleSettings, ...(patch || {}) });
-      if (patch?.primaryColor) rememberColor(nextSettings.primaryColor);
-      if (patch?.accentColor) rememberColor(nextSettings.accentColor);
-      commitDraft(prev => {
-        const currentV2 = getByPath(prev, `${selectedTargetRoot}.appearanceV2`) || {};
-        const tokenSettings = nextSettings.material === 'original'
-          ? { ...nextSettings, material: 'matte' }
-          : nextSettings;
-        const resolvedV2 = buildAppearanceV2ForStorage(selectedWidgetType, tokenSettings, currentV2);
-        const override = buildElementQuickOverrideFromPatch(selectedElement, patch, resolvedV2.generatedTokens || {});
-        if (!Object.keys(override).length) return prev;
-        const overridePath = `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
-        const currentOverride = getByPath(prev, overridePath) || {};
-        return setByPath(prev, overridePath, deepMerge(currentOverride, override));
-      }, summary);
-      return;
-    }
-    applySimpleSettings(patch, summary);
-  }, [
-    applySimpleSettings,
-    commitDraft,
-    currentSimpleSettings,
-    rememberColor,
-    selectedElement,
-    selectedTargetRoot,
-    selectedWidgetType,
-    selectedWidgetUsesV2,
-  ]);
 
   const restoreRecommendedStyle = useCallback(() => {
     if (selectedTargetRoot && selectedWidgetType === 'bonus_hunt') {
@@ -1183,10 +1030,7 @@ export default function AppearanceCenter({
     const legacyPath = selectedStateId && selectedStateId !== 'default'
       ? `${selectedTargetRoot}.subElements.${selectedElement.id}.states.${selectedStateId}`
       : `${selectedTargetRoot}.subElements.${selectedElement.id}`;
-    const v2Path = selectedStateId && selectedStateId !== 'default'
-      ? `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}.states.${selectedStateId}`
-      : `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
-    commitDraft(prev => omitPath(omitPath(omitPath(prev, modernPath), legacyPath), v2Path), `Reset ${selectedElement.id}`);
+    commitDraft(prev => omitPath(omitPath(prev, modernPath), legacyPath), `Reset ${selectedElement.id}`);
   }, [commitDraft, selectedElement?.id, selectedLayerLocked, selectedStateId, selectedTargetRoot]);
 
   const resetWidget = useCallback(() => {
@@ -1761,7 +1605,7 @@ export default function AppearanceCenter({
                       type="button"
                       className={`ve-material-card ve-material-card--${preset.id}${active ? ' is-active' : ''}`}
                       style={getSimplePresetVars(previewSettings)}
-                      onClick={() => applyQuickSettings({ material: preset.id }, `Choose ${preset.name}`)}
+                      onClick={() => applySimpleSettings({ material: preset.id }, `Choose ${preset.name}`)}
                     >
                       <span className="ve-material-card__preview" aria-hidden="true">
                         <span />
@@ -1794,7 +1638,7 @@ export default function AppearanceCenter({
                     type="button"
                     className={currentSimpleSettings.primaryColor === color.value ? 'is-active' : ''}
                     style={{ '--swatch': color.value }}
-                    onClick={() => applyQuickSettings({ primaryColor: color.value }, `Choose ${color.label}`)}
+                    onClick={() => applySimpleSettings({ primaryColor: color.value }, `Choose ${color.label}`)}
                     title={color.label}
                     aria-label={`Use ${color.label}`}
                   >
@@ -1807,7 +1651,7 @@ export default function AppearanceCenter({
                 <input
                   type="color"
                   value={currentSimpleSettings.primaryColor}
-                  onChange={event => applyQuickSettings({ primaryColor: event.target.value }, 'Choose custom colour')}
+                  onChange={event => applySimpleSettings({ primaryColor: event.target.value }, 'Choose custom colour')}
                   aria-label="Custom main colour"
                 />
               </label>
@@ -1822,7 +1666,7 @@ export default function AppearanceCenter({
                         type="button"
                         className={currentSimpleSettings.primaryColor === color ? 'is-active' : ''}
                         style={{ '--swatch': color }}
-                        onClick={() => applyQuickSettings({ primaryColor: color }, 'Use recent colour')}
+                        onClick={() => applySimpleSettings({ primaryColor: color }, 'Use recent colour')}
                         aria-label={`Use recent colour ${color}`}
                       >
                         <span />
@@ -1836,7 +1680,7 @@ export default function AppearanceCenter({
                 <input
                   type="checkbox"
                   checked={currentSimpleSettings.useSecondColor}
-                  onChange={event => applyQuickSettings({ useSecondColor: event.target.checked }, 'Toggle second colour')}
+                  onChange={event => applySimpleSettings({ useSecondColor: event.target.checked }, 'Toggle second colour')}
                 />
                 <span>Use a second colour</span>
               </label>
@@ -1849,7 +1693,7 @@ export default function AppearanceCenter({
                         type="button"
                         className={currentSimpleSettings.accentColor === color.value ? 'is-active' : ''}
                         style={{ '--swatch': color.value }}
-                        onClick={() => applyQuickSettings({ accentColor: color.value }, `Choose accent ${color.label}`)}
+                        onClick={() => applySimpleSettings({ accentColor: color.value }, `Choose accent ${color.label}`)}
                         title={color.label}
                         aria-label={`Use ${color.label} as second colour`}
                       >
@@ -1862,7 +1706,7 @@ export default function AppearanceCenter({
                     <input
                       type="color"
                       value={currentSimpleSettings.accentColor}
-                      onChange={event => applyQuickSettings({ accentColor: event.target.value }, 'Choose custom second colour')}
+                      onChange={event => applySimpleSettings({ accentColor: event.target.value }, 'Choose custom second colour')}
                       aria-label="Custom second colour"
                     />
                   </label>
@@ -1872,7 +1716,7 @@ export default function AppearanceCenter({
                 <div className="ve-warning">
                   <AlertTriangle size={15} />
                   <span>This colour may be hard to read.</span>
-                  <button type="button" onClick={() => applyQuickSettings({ material: 'matte' }, 'Fix contrast')}>Fix contrast</button>
+                  <button type="button" onClick={() => applySimpleSettings({ material: 'matte' }, 'Fix contrast')}>Fix contrast</button>
                 </div>
               )}
             </section>
@@ -1883,12 +1727,12 @@ export default function AppearanceCenter({
                 <header>
                   <h3>{quickNumber('textImages')}. Text and images</h3>
                 </header>
-                {hasQuickControl('fontFamily') && (
+                {selectedStyleCapabilities.fonts && (
                   <label className="ve-simple-select">
                     <span>Font style</span>
                     <select
                       value={currentSimpleSettings.fontFamily}
-                      onChange={event => applyQuickSettings({ fontFamily: event.target.value }, 'Change font')}
+                      onChange={event => applySimpleSettings({ fontFamily: event.target.value }, 'Change font')}
                     >
                       {FONT_OPTIONS.slice(0, 7).map(font => (
                         <option key={font.value} value={font.value}>{font.label}</option>
@@ -1896,33 +1740,32 @@ export default function AppearanceCenter({
                     </select>
                   </label>
                 )}
-                {hasQuickControl('textSize') && (
+                {selectedStyleCapabilities.fontSizes && (
                   <div className="ve-simple-choice-row">
                     {SIMPLE_TEXT_SIZES.map(size => (
                       <button
                         key={size.id}
                         type="button"
                         className={currentSimpleSettings.textSize === size.id ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ textSize: size.id }, `Choose ${size.label} text`)}
+                        onClick={() => applySimpleSettings({ textSize: size.id }, `Choose ${size.label} text`)}
                       >
                         {size.label}
                       </button>
                     ))}
                   </div>
                 )}
-                {hasQuickControl('boldText') && (
+                {selectedStyleCapabilities.fontWeights && (
                   <label className="ve-simple-toggle">
                     <input
                       type="checkbox"
                       checked={currentSimpleSettings.boldText}
-                      onChange={event => applyQuickSettings({ boldText: event.target.checked }, 'Toggle bold text')}
+                      onChange={event => applySimpleSettings({ boldText: event.target.checked }, 'Toggle bold text')}
                     />
                     <span>Bold text</span>
                   </label>
                 )}
-                {hasAnyQuickControl(['imageVisibility', 'imageSize', 'imageShape', 'imageFit']) && (
+                {selectedStyleCapabilities.images && (
                   <>
-                    {hasAnyQuickControl(['imageVisibility', 'imageSize']) && (
                     <div className="ve-simple-choice-row">
                       {SIMPLE_IMAGE_SIZES.map(size => {
                         const active = size.id === 'hidden'
@@ -1933,7 +1776,7 @@ export default function AppearanceCenter({
                             key={size.id}
                             type="button"
                             className={active ? 'is-active' : ''}
-                            onClick={() => applyQuickSettings({
+                            onClick={() => applySimpleSettings({
                               imageSize: size.id === 'hidden' ? currentSimpleSettings.imageSize || 'medium' : size.id,
                               imageVisibility: size.id === 'hidden' ? 'hidden' : 'show',
                             }, `Choose ${size.label} images`)}
@@ -1943,29 +1786,28 @@ export default function AppearanceCenter({
                         );
                       })}
                     </div>
-                    )}
-                    {hasQuickControl('imageShape') && (
+                    {selectedStyleCapabilities.imageShape && (
                       <div className="ve-simple-choice-row">
                         {SIMPLE_IMAGE_SHAPES.map(shape => (
                           <button
                             key={shape.id}
                             type="button"
                             className={currentSimpleSettings.imageShape === shape.id ? 'is-active' : ''}
-                            onClick={() => applyQuickSettings({ imageShape: shape.id }, `Choose ${shape.label} images`)}
+                            onClick={() => applySimpleSettings({ imageShape: shape.id }, `Choose ${shape.label} images`)}
                           >
                             {shape.label}
                           </button>
                         ))}
                       </div>
                     )}
-                    {hasQuickControl('imageFit') && (
+                    {selectedStyleCapabilities.imageFit && (
                       <div className="ve-simple-choice-row">
                         {['cover', 'contain'].map(fit => (
                           <button
                             key={fit}
                             type="button"
                             className={currentSimpleSettings.imageFit === fit ? 'is-active' : ''}
-                            onClick={() => applyQuickSettings({ imageFit: fit }, `Choose ${fit} image fit`)}
+                            onClick={() => applySimpleSettings({ imageFit: fit }, `Choose ${fit} image fit`)}
                           >
                             {fit === 'cover' ? 'Cover' : 'Contain'}
                           </button>
@@ -1982,7 +1824,7 @@ export default function AppearanceCenter({
                 <header>
                   <h3>{quickNumber('shapeEffects')}. Shape and effects</h3>
                 </header>
-                {hasQuickControl('shape') && (
+                {supportsAny(selectedStyleCapabilities, ['containerShapes', 'borderRadius']) && (
                   <div className="ve-simple-choice-row ve-shape-row">
                     {SIMPLE_SHAPES
                       .filter(shape => shape.id !== 'pill' || selectedStyleCapabilities.containerShapes)
@@ -1991,7 +1833,7 @@ export default function AppearanceCenter({
                         key={shape.id}
                         type="button"
                         className={currentSimpleSettings.shape === shape.id ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ shape: shape.id }, `Choose ${shape.label}`)}
+                        onClick={() => applySimpleSettings({ shape: shape.id }, `Choose ${shape.label}`)}
                       >
                         <span style={{ borderRadius: shape.radius >= 80 ? 999 : shape.radius }} />
                         {shape.label}
@@ -1999,23 +1841,20 @@ export default function AppearanceCenter({
                     ))}
                   </div>
                 )}
-                {hasAnyQuickControl(['density', 'scale']) && (
+                {selectedStyleCapabilities.layoutDensity && (
                   <>
-                    {hasQuickControl('density') && (
                     <div className="ve-simple-choice-row">
                       {SIMPLE_DENSITIES.map(size => (
                         <button
                           key={size.id}
                           type="button"
                           className={currentSimpleSettings.density === size.id ? 'is-active' : ''}
-                          onClick={() => applyQuickSettings({ density: size.id }, `Choose ${size.label}`)}
+                          onClick={() => applySimpleSettings({ density: size.id }, `Choose ${size.label}`)}
                         >
                           {size.label}
                         </button>
                       ))}
                     </div>
-                    )}
-                    {hasQuickControl('scale') && (
                     <label className="ve-simple-range">
                       <span>Widget size</span>
                       <input
@@ -2024,35 +1863,34 @@ export default function AppearanceCenter({
                         max="150"
                         step="5"
                         value={Math.round(currentSimpleSettings.scale * 100)}
-                        onChange={event => applyQuickSettings({ scale: Number(event.target.value) / 100 }, 'Change widget size')}
+                        onChange={event => applySimpleSettings({ scale: Number(event.target.value) / 100 }, 'Change widget size')}
                       />
                       <strong>{Math.round(currentSimpleSettings.scale * 100)}%</strong>
                     </label>
-                    )}
                   </>
                 )}
-                {hasQuickControl('shadowStrength') && (
+                {selectedStyleCapabilities.shadows && (
                   <div className="ve-simple-choice-row">
                     {SIMPLE_STRENGTHS.filter(item => ['off', 'soft', 'medium', 'strong'].includes(item.id)).map(item => (
                       <button
                         key={item.id}
                         type="button"
                         className={currentSimpleSettings.shadowStrength === item.id ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ shadowStrength: item.id }, `Choose ${item.label} shadow`)}
+                        onClick={() => applySimpleSettings({ shadowStrength: item.id }, `Choose ${item.label} shadow`)}
                       >
                         {item.label} shadow
                       </button>
                     ))}
                   </div>
                 )}
-                {hasQuickControl('glowStrength') && (
+                {supportsAny(selectedStyleCapabilities, ['glow', 'glowIntensity']) && (
                   <div className="ve-simple-choice-row">
                     {SIMPLE_STRENGTHS.filter(item => ['off', 'subtle', 'medium', 'strong'].includes(item.id)).map(item => (
                       <button
                         key={item.id}
                         type="button"
                         className={currentSimpleSettings.glowStrength === item.id ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ glowStrength: item.id }, `Choose ${item.label} glow`)}
+                        onClick={() => applySimpleSettings({ glowStrength: item.id }, `Choose ${item.label} glow`)}
                       >
                         {item.label} glow
                       </button>
@@ -2067,76 +1905,76 @@ export default function AppearanceCenter({
                 <header>
                   <h3>{quickNumber('motion')}. Motion</h3>
                 </header>
-                {hasQuickControl('carouselAutoplay') && (
+                {selectedStyleCapabilities.carouselAutoplay && (
                   <label className="ve-simple-toggle">
                     <input
                       type="checkbox"
                       checked={currentSimpleSettings.carouselAutoplay}
-                      onChange={event => applyQuickSettings({ carouselAutoplay: event.target.checked }, 'Toggle carousel autoplay')}
+                      onChange={event => applySimpleSettings({ carouselAutoplay: event.target.checked }, 'Toggle carousel autoplay')}
                     />
                     <span>Autoplay carousel</span>
                   </label>
                 )}
-                {hasQuickControl('carouselSpeed') && (
+                {selectedStyleCapabilities.carouselSpeed && (
                   <div className="ve-simple-choice-row">
                     {SIMPLE_MOTION_SPEEDS.map(speed => (
                       <button
                         key={speed.id}
                         type="button"
                         className={currentSimpleSettings.carouselSpeed === speed.id ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ carouselSpeed: speed.id }, `Choose ${speed.label} carousel speed`)}
+                        onClick={() => applySimpleSettings({ carouselSpeed: speed.id }, `Choose ${speed.label} carousel speed`)}
                       >
                         {speed.label} carousel
                       </button>
                     ))}
                   </div>
                 )}
-                {hasQuickControl('carouselDirection') && (
+                {selectedStyleCapabilities.carouselDirection && (
                   <div className="ve-simple-choice-row">
                     {['left', 'right'].map(direction => (
                       <button
                         key={direction}
                         type="button"
                         className={currentSimpleSettings.carouselDirection === direction ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ carouselDirection: direction }, `Choose ${direction} carousel direction`)}
+                        onClick={() => applySimpleSettings({ carouselDirection: direction }, `Choose ${direction} carousel direction`)}
                       >
                         {direction === 'left' ? 'Left' : 'Right'}
                       </button>
                     ))}
                   </div>
                 )}
-                {hasQuickControl('animationEnabled') && (
+                {selectedStyleCapabilities.animations && (
                   <label className="ve-simple-toggle">
                     <input
                       type="checkbox"
                       checked={currentSimpleSettings.animationEnabled}
-                      onChange={event => applyQuickSettings({ animationEnabled: event.target.checked }, 'Toggle animation')}
+                      onChange={event => applySimpleSettings({ animationEnabled: event.target.checked }, 'Toggle animation')}
                     />
                     <span>Animation</span>
                   </label>
                 )}
-                {hasQuickControl('animationSpeed') && (
+                {selectedStyleCapabilities.animationSpeed && (
                   <div className="ve-simple-choice-row">
                     {SIMPLE_MOTION_SPEEDS.map(speed => (
                       <button
                         key={speed.id}
                         type="button"
                         className={currentSimpleSettings.animationSpeed === speed.id ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ animationSpeed: speed.id }, `Choose ${speed.label} animation`)}
+                        onClick={() => applySimpleSettings({ animationSpeed: speed.id }, `Choose ${speed.label} animation`)}
                       >
                         {speed.label} animation
                       </button>
                     ))}
                   </div>
                 )}
-                {hasQuickControl('animationIntensity') && (
+                {selectedStyleCapabilities.animationIntensity && (
                   <div className="ve-simple-choice-row">
                     {['subtle', 'normal', 'strong'].map(intensity => (
                       <button
                         key={intensity}
                         type="button"
                         className={currentSimpleSettings.animationIntensity === intensity ? 'is-active' : ''}
-                        onClick={() => applyQuickSettings({ animationIntensity: intensity }, `Choose ${intensity} animation intensity`)}
+                        onClick={() => applySimpleSettings({ animationIntensity: intensity }, `Choose ${intensity} animation intensity`)}
                       >
                         {intensity[0].toUpperCase() + intensity.slice(1)}
                       </button>
