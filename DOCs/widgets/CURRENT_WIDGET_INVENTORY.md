@@ -6,7 +6,7 @@ Detailed per-widget rendering notes remain in `docs/overlay-appearance/widgets/*
 
 | Widget ID | Display Name | Category | Existing Styles | Main Component | CSS / Styling Sources | Data / Integrations | Migration Complexity |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `bonus_hunt` | Bonus Hunt | casino | `v3`, `v5_horizontal`, `v11_fever`, `v12_classic_sr`, hidden `v12_classic_sr_editable` pilot | `BonusHuntWidget.jsx`, `BonusHuntWidgetV*.jsx` | Large prefixed CSS in `OverlayRenderer.css`, inline style config, sub-elements | Bonus hunt config/data, slot images, embedded request section via shared request hook | Very high |
+| `bonus_hunt` | Bonus Hunt | casino | `v3`, `v5_horizontal`, `v11_fever`, `v12_classic_sr`, testing-visible `v12_classic_sr_editable` pilot | `BonusHuntWidget.jsx`, `BonusHuntWidgetV*.jsx` | Large prefixed CSS in `OverlayRenderer.css`, inline style config, sub-elements | Bonus hunt config/data, slot images, embedded request section via shared request hook | Very high |
 | `current_slot` | Current Slot | casino | `v1`, `v2`, `v3`, `v4` | `CurrentSlotWidget.jsx` | component styles and inline config | active slot / detected slot data | Medium |
 | `tournament` | Tournament | casino | `grid`, `showcase`, `vertical`, `bracket`, `neon`, `minimal`, `arena`, `futuristic` | `TournamentWidget.jsx` | component styles, global overlay styles | tournament setup data | High |
 | `giveaway` | Giveaway | casino | `v1`, `v2`, `v3`, `v4`, `metal`, `bh_stats`, `v12` | `GiveawayWidget.jsx` | component styles, appearance V2 mappings | giveaway participants, keyword, drawing state | High |
