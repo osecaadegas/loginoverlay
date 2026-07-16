@@ -811,6 +811,163 @@
   gap: 9px;
 }
 
+.ve-style-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.ve-style-card {
+  min-height: 148px;
+  display: grid;
+  grid-template-rows: 92px auto;
+  gap: 8px;
+  border: 1px solid var(--ve-line);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.58);
+  color: var(--ve-text);
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ve-style-card:hover,
+.ve-style-card:focus-visible,
+.ve-style-card.is-active {
+  border-color: rgba(94, 234, 212, 0.62);
+  background: rgba(20, 184, 166, 0.12);
+  outline: none;
+}
+
+.ve-style-card.is-active {
+  box-shadow: 0 0 0 2px rgba(94, 234, 212, 0.17);
+}
+
+.ve-style-card.is-edited:not(.is-active) {
+  border-color: rgba(245, 179, 1, 0.44);
+}
+
+.ve-style-card__preview {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 7px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(20, 216, 216, 0.14), transparent 36%),
+    rgba(2, 6, 23, 0.82);
+}
+
+.ve-style-card__preview .oc-preview-panel {
+  height: 92px;
+  min-height: 92px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ve-style-card__preview .oc-panel-header,
+.ve-style-card__preview .oc-preview-header,
+.ve-style-card__preview .oc-preview-hint {
+  display: none;
+}
+
+.ve-style-card__preview .oc-preview-canvas-wrap {
+  width: 100% !important;
+  height: 92px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  overflow: hidden !important;
+}
+
+.ve-style-card__body {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ve-style-card__body strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+}
+
+.ve-style-card__body em,
+.ve-style-card__body small {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.ve-style-card__body em {
+  background: rgba(20, 216, 216, 0.14);
+  border: 1px solid rgba(20, 216, 216, 0.3);
+  color: #7ff7ef;
+}
+
+.ve-style-card__body small {
+  background: rgba(245, 179, 1, 0.14);
+  border: 1px solid rgba(245, 179, 1, 0.3);
+  color: #fde68a;
+}
+
+.ve-edit-target-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ve-edit-target-grid button {
+  min-height: 48px;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  border: 1px solid var(--ve-line);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.58);
+  color: var(--ve-text);
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ve-edit-target-grid button:hover,
+.ve-edit-target-grid button:focus-visible,
+.ve-edit-target-grid button.is-active {
+  border-color: rgba(94, 234, 212, 0.56);
+  background: rgba(20, 184, 166, 0.14);
+  outline: none;
+}
+
+.ve-edit-target-grid button span {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ve-edit-target-grid button small {
+  color: var(--ve-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
 .ve-material-card {
   min-height: 138px;
   display: grid;

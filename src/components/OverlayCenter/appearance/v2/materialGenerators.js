@@ -36,6 +36,19 @@ export const DEFAULT_SIMPLE_APPEARANCE_V2 = Object.freeze({
   fontFamily: "'Inter', 'Segoe UI', sans-serif",
   textSize: 'standard',
   boldText: false,
+  carouselSpeed: 'normal',
+  carouselDirection: 'right',
+  carouselAutoplay: true,
+  carouselPauseOnHover: true,
+  animationEnabled: true,
+  animationSpeed: 'normal',
+  animationIntensity: 'normal',
+  shadowStrength: 'medium',
+  glowStrength: 'off',
+  imageVisibility: 'show',
+  imageSize: 'medium',
+  imageShape: 'rounded',
+  imageFit: 'cover',
 });
 
 export const SHAPE_RADII = Object.freeze({
@@ -57,6 +70,39 @@ export const TEXT_SIZE_TOKENS = Object.freeze({
   large: { bodySize: 17, labelSize: 13, valueSize: 21, headerSize: 24, lineHeight: 1.32 },
 });
 
+export const CAROUSEL_SPEED_TOKENS = Object.freeze({
+  slow: { intervalMs: 4200, label: 'Slow' },
+  normal: { intervalMs: 2600, label: 'Normal' },
+  fast: { intervalMs: 1400, label: 'Fast' },
+});
+
+export const ANIMATION_SPEED_TOKENS = Object.freeze({
+  slow: { durationMultiplier: 1.35, transitionDuration: 260 },
+  normal: { durationMultiplier: 1, transitionDuration: 180 },
+  fast: { durationMultiplier: 0.72, transitionDuration: 120 },
+});
+
+export const STRENGTH_TOKENS = Object.freeze({
+  off: 0,
+  subtle: 0.16,
+  soft: 0.2,
+  medium: 0.34,
+  strong: 0.52,
+});
+
+export const IMAGE_SIZE_TOKENS = Object.freeze({
+  hidden: 0,
+  small: 0.82,
+  medium: 1,
+  large: 1.18,
+});
+
+export const IMAGE_SHAPE_TOKENS = Object.freeze({
+  square: 0,
+  rounded: 12,
+  circle: 999,
+});
+
 function normalizeMaterialInput(input = {}) {
   const primary = normalizeHexColor(input.primaryColor, DEFAULT_SIMPLE_APPEARANCE_V2.primaryColor);
   return {
@@ -72,6 +118,19 @@ function normalizeMaterialInput(input = {}) {
     textSize: Object.prototype.hasOwnProperty.call(TEXT_SIZE_TOKENS, input.textSize) ? input.textSize : DEFAULT_SIMPLE_APPEARANCE_V2.textSize,
     fontFamily: input.fontFamily || DEFAULT_SIMPLE_APPEARANCE_V2.fontFamily,
     boldText: !!input.boldText,
+    carouselSpeed: Object.prototype.hasOwnProperty.call(CAROUSEL_SPEED_TOKENS, input.carouselSpeed) ? input.carouselSpeed : DEFAULT_SIMPLE_APPEARANCE_V2.carouselSpeed,
+    carouselDirection: ['left', 'right'].includes(input.carouselDirection) ? input.carouselDirection : DEFAULT_SIMPLE_APPEARANCE_V2.carouselDirection,
+    carouselAutoplay: input.carouselAutoplay !== false,
+    carouselPauseOnHover: input.carouselPauseOnHover !== false,
+    animationEnabled: input.animationEnabled !== false,
+    animationSpeed: Object.prototype.hasOwnProperty.call(ANIMATION_SPEED_TOKENS, input.animationSpeed) ? input.animationSpeed : DEFAULT_SIMPLE_APPEARANCE_V2.animationSpeed,
+    animationIntensity: ['subtle', 'normal', 'strong'].includes(input.animationIntensity) ? input.animationIntensity : DEFAULT_SIMPLE_APPEARANCE_V2.animationIntensity,
+    shadowStrength: Object.prototype.hasOwnProperty.call(STRENGTH_TOKENS, input.shadowStrength) ? input.shadowStrength : DEFAULT_SIMPLE_APPEARANCE_V2.shadowStrength,
+    glowStrength: Object.prototype.hasOwnProperty.call(STRENGTH_TOKENS, input.glowStrength) ? input.glowStrength : DEFAULT_SIMPLE_APPEARANCE_V2.glowStrength,
+    imageVisibility: ['show', 'hidden'].includes(input.imageVisibility) ? input.imageVisibility : DEFAULT_SIMPLE_APPEARANCE_V2.imageVisibility,
+    imageSize: Object.prototype.hasOwnProperty.call(IMAGE_SIZE_TOKENS, input.imageSize) ? input.imageSize : DEFAULT_SIMPLE_APPEARANCE_V2.imageSize,
+    imageShape: Object.prototype.hasOwnProperty.call(IMAGE_SHAPE_TOKENS, input.imageShape) ? input.imageShape : DEFAULT_SIMPLE_APPEARANCE_V2.imageShape,
+    imageFit: ['cover', 'contain'].includes(input.imageFit) ? input.imageFit : DEFAULT_SIMPLE_APPEARANCE_V2.imageFit,
   };
 }
 
@@ -152,6 +211,58 @@ function baseTokens(input) {
       durationMultiplier: 1,
       transitionDuration: 180,
       glowPulseIntensity: 0,
+      carouselSpeed: settings.carouselSpeed,
+      carouselIntervalMs: CAROUSEL_SPEED_TOKENS[settings.carouselSpeed].intervalMs,
+      carouselDirection: settings.carouselDirection,
+      carouselAutoplay: settings.carouselAutoplay,
+      carouselPauseOnHover: settings.carouselPauseOnHover,
+      animationSpeed: settings.animationSpeed,
+      animationIntensity: settings.animationIntensity,
+    },
+    image: {
+      visible: settings.imageVisibility !== 'hidden',
+      sizeMultiplier: IMAGE_SIZE_TOKENS[settings.imageSize],
+      radius: IMAGE_SHAPE_TOKENS[settings.imageShape],
+      fit: settings.imageFit,
+    },
+  };
+}
+
+function applySimpleControlStrengths(tokens, settings) {
+  if (tokens.isOriginalBaseline || tokens.material === 'original') return tokens;
+  const shadow = STRENGTH_TOKENS[settings.shadowStrength];
+  const glow = STRENGTH_TOKENS[settings.glowStrength];
+  const speed = ANIMATION_SPEED_TOKENS[settings.animationSpeed];
+  return {
+    ...tokens,
+    materialTokens: {
+      ...tokens.materialTokens,
+      shadowIntensity: settings.shadowStrength === DEFAULT_SIMPLE_APPEARANCE_V2.shadowStrength
+        ? tokens.materialTokens.shadowIntensity
+        : shadow,
+      glowIntensity: settings.glowStrength === DEFAULT_SIMPLE_APPEARANCE_V2.glowStrength
+        ? tokens.materialTokens.glowIntensity
+        : glow,
+    },
+    motion: {
+      ...tokens.motion,
+      motionEnabled: settings.animationEnabled,
+      durationMultiplier: speed.durationMultiplier,
+      transitionDuration: speed.transitionDuration,
+      carouselSpeed: settings.carouselSpeed,
+      carouselIntervalMs: CAROUSEL_SPEED_TOKENS[settings.carouselSpeed].intervalMs,
+      carouselDirection: settings.carouselDirection,
+      carouselAutoplay: settings.carouselAutoplay,
+      carouselPauseOnHover: settings.carouselPauseOnHover,
+      animationSpeed: settings.animationSpeed,
+      animationIntensity: settings.animationIntensity,
+    },
+    image: {
+      ...tokens.image,
+      visible: settings.imageVisibility !== 'hidden',
+      sizeMultiplier: IMAGE_SIZE_TOKENS[settings.imageSize],
+      radius: IMAGE_SHAPE_TOKENS[settings.imageShape],
+      fit: settings.imageFit,
     },
   };
 }
@@ -384,7 +495,10 @@ export function generateAppearanceTokens(input = {}, capability = {}) {
     minimal: generateMinimalTokens,
     transparent_obs: generateTransparentTokens,
   };
-  const generated = (generators[normalized.material] || generateMatteTokens)(normalized);
+  const generated = applySimpleControlStrengths(
+    (generators[normalized.material] || generateMatteTokens)(normalized),
+    normalized
+  );
   return filterUnsupportedTokens(generated, capability);
 }
 

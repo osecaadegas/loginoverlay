@@ -13,6 +13,85 @@ const COMMON_CAPABILITIES = Object.freeze({
   scale: ['widgetScale'],
 });
 
+const QUICK_CAPABILITY_KEYS = Object.freeze([
+  'colours',
+  'multipleColours',
+  'fonts',
+  'fontSizes',
+  'fontWeights',
+  'textAlignment',
+  'containers',
+  'containerShapes',
+  'borderRadius',
+  'borders',
+  'shadows',
+  'glow',
+  'glowIntensity',
+  'opacity',
+  'images',
+  'imageSize',
+  'imageShape',
+  'imageFit',
+  'imageVisibility',
+  'spacing',
+  'cardGap',
+  'layoutDensity',
+  'orientation',
+  'carousel',
+  'carouselSpeed',
+  'carouselDirection',
+  'carouselAutoplay',
+  'carouselPauseOnHover',
+  'animations',
+  'animationSpeed',
+  'animationIntensity',
+  'entranceAnimation',
+  'loopAnimation',
+  'progressBar',
+  'positiveNegativeColours',
+  'statCards',
+  'rows',
+  'columns',
+  'maximumVisibleItems',
+  'transparentBackground',
+]);
+
+const QUICK_CAPABILITY_SET = new Set(QUICK_CAPABILITY_KEYS);
+
+const BASE_QUICK_CAPABILITIES = Object.freeze({
+  colours: true,
+  multipleColours: true,
+  fonts: true,
+  fontSizes: true,
+  fontWeights: true,
+  containers: true,
+  containerShapes: true,
+  borderRadius: true,
+  borders: true,
+  shadows: true,
+  opacity: true,
+  spacing: true,
+  layoutDensity: true,
+  transparentBackground: true,
+});
+
+const IMAGE_QUICK_CAPABILITIES = Object.freeze({
+  images: true,
+  imageShape: true,
+  imageFit: true,
+  imageVisibility: true,
+});
+
+function freezeStyle(style) {
+  return Object.freeze({
+    ...style,
+    capabilities: Object.freeze({ ...(style.capabilities || {}) }),
+    elementIds: Object.freeze([...(style.elementIds || ['container'])]),
+    previewStateIds: Object.freeze([...(style.previewStateIds || [])]),
+    recommended: !!style.recommended,
+  });
+}
+
 export const widgetAppearanceRegistry = Object.freeze({
   bh_stats: Object.freeze({
     id: 'bh_stats',
@@ -32,6 +111,48 @@ export const widgetAppearanceRegistry = Object.freeze({
       scale: 1,
       textSize: 'standard',
     }),
+    styles: Object.freeze([
+      freezeStyle({
+        id: 'default',
+        label: 'Default Stats',
+        description: 'Compact stats panel with progress and best/worst values.',
+        recommended: true,
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          progressBar: true,
+          statCards: true,
+          positiveNegativeColours: true,
+        },
+        elementIds: ['container', 'statsCard', 'label', 'value', 'progressBar', 'bestStat', 'worstStat'],
+      }),
+      freezeStyle({
+        id: 'metal',
+        label: 'Metal Stats',
+        description: 'The same stats panel with stronger surfaces and borders.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          progressBar: true,
+          statCards: true,
+          positiveNegativeColours: true,
+          shadows: true,
+        },
+        elementIds: ['container', 'statsCard', 'label', 'value', 'progressBar', 'bestStat', 'worstStat'],
+      }),
+      freezeStyle({
+        id: 'glass',
+        label: 'Glass Stats',
+        description: 'Transparent stats panel for OBS scenes.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          progressBar: true,
+          statCards: true,
+          positiveNegativeColours: true,
+          transparentBackground: true,
+          opacity: true,
+        },
+        elementIds: ['container', 'statsCard', 'label', 'value', 'progressBar', 'bestStat', 'worstStat'],
+      }),
+    ]),
     safeRanges: Object.freeze({
       scale: [0.75, 1.5],
       rootRadius: [0, 80],
@@ -121,6 +242,93 @@ export const widgetAppearanceRegistry = Object.freeze({
       scale: 1,
       textSize: 'standard',
     }),
+    styles: Object.freeze([
+      freezeStyle({
+        id: 'v12_classic_sr',
+        label: 'Classic + Requests',
+        description: 'The polished vertical Bonus Hunt layout with carousel, list, footer and slot requests.',
+        recommended: true,
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          ...IMAGE_QUICK_CAPABILITIES,
+          carousel: true,
+          carouselSpeed: true,
+          carouselDirection: false,
+          carouselAutoplay: true,
+          progressBar: true,
+          positiveNegativeColours: true,
+          statCards: true,
+          rows: true,
+          maximumVisibleItems: true,
+          glow: true,
+          glowIntensity: true,
+        },
+        elementIds: [
+          'container',
+          'headerContainer',
+          'mainStatsContainer',
+          'statCell',
+          'slotCarouselContainer',
+          'slotImage',
+          'slotListContainer',
+          'slotRow',
+          'slotTitle',
+          'progressBar',
+          'footerContainer',
+          'requestsSectionContainer',
+        ],
+      }),
+      freezeStyle({
+        id: 'v5_horizontal',
+        label: 'Horizontal',
+        description: 'Wide stream bar with side stats and a horizontal scrolling bonus strip.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          ...IMAGE_QUICK_CAPABILITIES,
+          carousel: true,
+          carouselSpeed: true,
+          progressBar: true,
+          positiveNegativeColours: true,
+          rows: true,
+          columns: true,
+          glow: true,
+          glowIntensity: true,
+        },
+        elementIds: ['container', 'headerContainer', 'statCell', 'slotCarouselContainer', 'slotImage', 'slotTitle', 'progressBar', 'footerContainer'],
+      }),
+      freezeStyle({
+        id: 'v11_fever',
+        label: 'Advanced List',
+        description: 'Detailed list-style Bonus Hunt with stronger animated presentation.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          ...IMAGE_QUICK_CAPABILITIES,
+          progressBar: true,
+          positiveNegativeColours: true,
+          rows: true,
+          statCards: true,
+          glow: true,
+          glowIntensity: true,
+        },
+        elementIds: ['container', 'headerContainer', 'mainStatsContainer', 'statCell', 'slotListContainer', 'slotRow', 'slotImage', 'slotTitle', 'progressBar', 'footerContainer'],
+      }),
+      freezeStyle({
+        id: 'v3',
+        label: 'Flip Card',
+        description: 'Classic flipping card view for compact hunts.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          ...IMAGE_QUICK_CAPABILITIES,
+          carousel: true,
+          carouselSpeed: true,
+          progressBar: true,
+          positiveNegativeColours: true,
+          glow: true,
+          glowIntensity: true,
+        },
+        elementIds: ['container', 'headerTitle', 'slotCarouselContainer', 'slotImage', 'slotTitle', 'progressBar', 'footerContainer'],
+      }),
+    ]),
     safeRanges: Object.freeze({
       scale: [0.75, 1.35],
       rootRadius: [0, 64],
@@ -198,6 +406,11 @@ export const widgetAppearanceRegistry = Object.freeze({
         kind: 'text',
         capabilities: ['typography', 'stateColor'],
       }),
+      slotCarouselContainer: Object.freeze({
+        label: 'Slot carousel',
+        kind: 'carousel',
+        capabilities: ['surface', 'border', 'shadow', 'shape'],
+      }),
       slotListContainer: Object.freeze({
         label: 'Slot list',
         kind: 'surface',
@@ -265,6 +478,57 @@ export const widgetAppearanceRegistry = Object.freeze({
       scale: 1,
       textSize: 'standard',
     }),
+    styles: Object.freeze([
+      freezeStyle({
+        id: 'v1_minimal',
+        label: 'Modern Minimal',
+        description: 'Vertical request queue with slot images and clean list rows.',
+        recommended: true,
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          ...IMAGE_QUICK_CAPABILITIES,
+          rows: true,
+          maximumVisibleItems: true,
+        },
+        elementIds: ['container', 'header', 'queueContainer', 'requestCard', 'position', 'slotImage', 'slotTitle', 'viewerName', 'emptyState'],
+        previewStateIds: ['with_requests', 'empty', 'busy_queue'],
+      }),
+      freezeStyle({
+        id: 'v2_card_stack',
+        label: '3D Card Stack',
+        description: 'Animated 3D stack for showing the current request with side cards.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          ...IMAGE_QUICK_CAPABILITIES,
+          carousel: true,
+          carouselSpeed: true,
+          carouselAutoplay: true,
+          carouselPauseOnHover: false,
+          rows: true,
+          maximumVisibleItems: true,
+          glow: true,
+          glowIntensity: true,
+        },
+        elementIds: ['container', 'header', 'queueContainer', 'requestCard', 'position', 'slotImage', 'slotTitle', 'viewerName', 'footer', 'emptyState'],
+        previewStateIds: ['with_requests', 'empty', 'busy_queue'],
+      }),
+      freezeStyle({
+        id: 'v3_compact',
+        label: 'Compact Overlay',
+        description: 'Small ticker-style request card for tight stream layouts.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          ...IMAGE_QUICK_CAPABILITIES,
+          carousel: true,
+          carouselSpeed: true,
+          carouselAutoplay: true,
+          rows: true,
+          maximumVisibleItems: true,
+        },
+        elementIds: ['container', 'requestCard', 'position', 'slotImage', 'slotTitle', 'viewerName', 'footer', 'emptyState'],
+        previewStateIds: ['with_requests', 'empty', 'busy_queue'],
+      }),
+    ]),
     safeRanges: Object.freeze({
       scale: [0.75, 1.35],
       rootRadius: [0, 36],
@@ -388,6 +652,102 @@ export const widgetAppearanceRegistry = Object.freeze({
       scale: 1,
       textSize: 'standard',
     }),
+    styles: Object.freeze([
+      freezeStyle({
+        id: 'v1',
+        label: 'Classic',
+        description: 'Classic giveaway card with prize, keyword, entries and winner states.',
+        recommended: true,
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          positiveNegativeColours: true,
+          statCards: true,
+          glow: true,
+          glowIntensity: true,
+        },
+        elementIds: ['container', 'header', 'prize', 'keyword', 'participantCount', 'statusBadge', 'winnerArea', 'progressSection', 'emptyState'],
+        previewStateIds: ['live', 'drawing', 'winner', 'empty'],
+      }),
+      freezeStyle({
+        id: 'v2',
+        label: 'Compact',
+        description: 'Compact banner giveaway for lower-third stream space.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          positiveNegativeColours: true,
+          transparentBackground: true,
+        },
+        elementIds: ['container', 'progressSection', 'prize', 'keyword', 'participantCount', 'statusBadge', 'winnerArea', 'emptyState'],
+        previewStateIds: ['live', 'drawing', 'winner', 'empty'],
+      }),
+      freezeStyle({
+        id: 'v3',
+        label: 'Neon',
+        description: 'High-energy neon giveaway with glow and winner animation.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          glow: true,
+          glowIntensity: true,
+          positiveNegativeColours: true,
+          transparentBackground: true,
+        },
+        elementIds: ['container', 'progressSection', 'prize', 'keyword', 'participantCount', 'statusBadge', 'winnerArea', 'emptyState', 'celebration'],
+        previewStateIds: ['live', 'drawing', 'winner', 'empty'],
+      }),
+      freezeStyle({
+        id: 'v4',
+        label: 'Minimal',
+        description: 'Small transparent giveaway status with very low visual noise.',
+        capabilities: {
+          colours: true,
+          multipleColours: true,
+          fonts: true,
+          fontSizes: true,
+          fontWeights: true,
+          transparentBackground: true,
+        },
+        elementIds: ['container', 'prize', 'keyword', 'participantCount', 'statusBadge', 'winnerArea', 'emptyState'],
+        previewStateIds: ['live', 'winner', 'empty'],
+      }),
+      freezeStyle({
+        id: 'metal',
+        label: 'Metal',
+        description: 'Metallic giveaway panel with reflective surfaces.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          shadows: true,
+          positiveNegativeColours: true,
+        },
+        elementIds: ['container', 'header', 'prize', 'keyword', 'participantCount', 'statusBadge', 'winnerArea', 'emptyState'],
+        previewStateIds: ['live', 'drawing', 'winner', 'empty'],
+      }),
+      freezeStyle({
+        id: 'bh_stats',
+        label: 'Hunt Stats',
+        description: 'Giveaway styled like the Bonus Hunt stats panel.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          statCards: true,
+          positiveNegativeColours: true,
+        },
+        elementIds: ['container', 'header', 'progressSection', 'keyword', 'participantCount', 'statusBadge', 'winnerArea', 'emptyState'],
+        previewStateIds: ['live', 'drawing', 'winner', 'empty'],
+      }),
+      freezeStyle({
+        id: 'v12',
+        label: 'V12',
+        description: 'Giveaway layout matching the polished Bonus Hunt V12 surface language.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          statCards: true,
+          positiveNegativeColours: true,
+          glow: true,
+          glowIntensity: true,
+        },
+        elementIds: ['container', 'header', 'prize', 'keyword', 'participantCount', 'statusBadge', 'winnerArea', 'footer', 'emptyState'],
+        previewStateIds: ['live', 'drawing', 'winner', 'empty'],
+      }),
+    ]),
     safeRanges: Object.freeze({
       scale: [0.75, 1.35],
       rootRadius: [0, 36],
@@ -511,6 +871,44 @@ export function getWidgetAppearanceV2Elements(widgetType) {
   }));
 }
 
+export function getWidgetStyleCapability(widgetType, styleId) {
+  const capability = getWidgetAppearanceCapability(widgetType);
+  if (!capability) return null;
+  const styles = Array.isArray(capability.styles) ? capability.styles : [];
+  return styles.find(style => style.id === styleId)
+    || styles.find(style => style.id === capability.defaultStyleId)
+    || styles[0]
+    || null;
+}
+
+export function getWidgetStyleOptionsForQuickEditor(widgetType) {
+  const capability = getWidgetAppearanceCapability(widgetType);
+  if (!capability || !Array.isArray(capability.styles)) return [];
+  return capability.styles.map(style => ({
+    id: style.id,
+    label: style.label || style.id,
+    description: style.description || '',
+    recommended: !!style.recommended,
+    icon: style.icon || '',
+    capabilities: style.capabilities || {},
+    elementIds: style.elementIds || [],
+    previewStateIds: style.previewStateIds || [],
+  }));
+}
+
+export function getWidgetStyleElements(widgetType, styleId) {
+  const allElements = getWidgetAppearanceV2Elements(widgetType);
+  const style = getWidgetStyleCapability(widgetType, styleId);
+  if (!style?.elementIds?.length) return allElements;
+  const allowed = new Set(style.elementIds);
+  return allElements.filter(element => allowed.has(element.id));
+}
+
+export function styleSupportsQuickCapability(widgetType, styleId, key) {
+  const style = getWidgetStyleCapability(widgetType, styleId);
+  return !!style?.capabilities?.[key];
+}
+
 export function validateWidgetAppearanceRegistry(registry = widgetAppearanceRegistry) {
   const errors = [];
   for (const [id, entry] of Object.entries(registry || {})) {
@@ -519,6 +917,17 @@ export function validateWidgetAppearanceRegistry(registry = widgetAppearanceRegi
     if (!entry.renderer || !entry.previewRenderer) errors.push(`${id}: missing renderer references`);
     if (!entry.schemaVersion) errors.push(`${id}: missing schema version`);
     if (!entry.elements || !Object.keys(entry.elements).length) errors.push(`${id}: missing elements`);
+    if (!Array.isArray(entry.styles) || entry.styles.length === 0) errors.push(`${id}: missing styles`);
+    for (const style of entry.styles || []) {
+      if (!style.id) errors.push(`${id}: style missing id`);
+      if (!style.label) errors.push(`${id}.${style.id || 'style'}: missing style label`);
+      for (const key of Object.keys(style.capabilities || {})) {
+        if (!QUICK_CAPABILITY_SET.has(key)) errors.push(`${id}.${style.id}: unknown quick capability ${key}`);
+      }
+      for (const elementId of style.elementIds || []) {
+        if (!entry.elements?.[elementId]) errors.push(`${id}.${style.id}: unknown style element ${elementId}`);
+      }
+    }
     for (const [elementId, element] of Object.entries(entry.elements || {})) {
       if (!element.label) errors.push(`${id}.${elementId}: missing label`);
       if (!Array.isArray(element.capabilities) || element.capabilities.length === 0) errors.push(`${id}.${elementId}: missing capabilities`);

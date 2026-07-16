@@ -149,6 +149,33 @@ export const SIMPLE_TEXT_SIZES = [
   { id: 'large', label: 'Large', baseSize: 17, headingScale: 1.3 },
 ];
 
+export const SIMPLE_STRENGTHS = [
+  { id: 'off', label: 'Off' },
+  { id: 'subtle', label: 'Subtle' },
+  { id: 'soft', label: 'Soft' },
+  { id: 'medium', label: 'Medium' },
+  { id: 'strong', label: 'Strong' },
+];
+
+export const SIMPLE_MOTION_SPEEDS = [
+  { id: 'slow', label: 'Slow' },
+  { id: 'normal', label: 'Normal' },
+  { id: 'fast', label: 'Fast' },
+];
+
+export const SIMPLE_IMAGE_SIZES = [
+  { id: 'hidden', label: 'Hidden' },
+  { id: 'small', label: 'Small' },
+  { id: 'medium', label: 'Medium' },
+  { id: 'large', label: 'Large' },
+];
+
+export const SIMPLE_IMAGE_SHAPES = [
+  { id: 'square', label: 'Square' },
+  { id: 'rounded', label: 'Rounded' },
+  { id: 'circle', label: 'Circle' },
+];
+
 export const DEFAULT_SIMPLE_SETTINGS = Object.freeze({
   material: 'matte',
   primaryColor: '#14d8d8',
@@ -160,6 +187,19 @@ export const DEFAULT_SIMPLE_SETTINGS = Object.freeze({
   fontFamily: FONT_OPTIONS[0].value,
   textSize: 'standard',
   boldText: false,
+  carouselSpeed: 'normal',
+  carouselDirection: 'right',
+  carouselAutoplay: true,
+  carouselPauseOnHover: true,
+  animationEnabled: true,
+  animationSpeed: 'normal',
+  animationIntensity: 'normal',
+  shadowStrength: 'medium',
+  glowStrength: 'off',
+  imageVisibility: 'show',
+  imageSize: 'medium',
+  imageShape: 'rounded',
+  imageFit: 'cover',
 });
 
 function clamp(number, min, max) {
@@ -240,6 +280,10 @@ export function normalizeSimpleSettings(settings = {}) {
   const shapeIds = new Set(SIMPLE_SHAPES.map(item => item.id));
   const densityIds = new Set(SIMPLE_DENSITIES.map(item => item.id));
   const textSizeIds = new Set(SIMPLE_TEXT_SIZES.map(item => item.id));
+  const strengthIds = new Set(SIMPLE_STRENGTHS.map(item => item.id));
+  const motionSpeedIds = new Set(SIMPLE_MOTION_SPEEDS.map(item => item.id));
+  const imageSizeIds = new Set(SIMPLE_IMAGE_SIZES.map(item => item.id));
+  const imageShapeIds = new Set(SIMPLE_IMAGE_SHAPES.map(item => item.id));
   const fontValues = new Set(FONT_OPTIONS.map(item => item.value));
   const next = { ...DEFAULT_SIMPLE_SETTINGS, ...(settings || {}) };
   return {
@@ -254,6 +298,19 @@ export function normalizeSimpleSettings(settings = {}) {
     fontFamily: fontValues.has(next.fontFamily) ? next.fontFamily : DEFAULT_SIMPLE_SETTINGS.fontFamily,
     textSize: textSizeIds.has(next.textSize) ? next.textSize : DEFAULT_SIMPLE_SETTINGS.textSize,
     boldText: !!next.boldText,
+    carouselSpeed: motionSpeedIds.has(next.carouselSpeed) ? next.carouselSpeed : DEFAULT_SIMPLE_SETTINGS.carouselSpeed,
+    carouselDirection: ['left', 'right'].includes(next.carouselDirection) ? next.carouselDirection : DEFAULT_SIMPLE_SETTINGS.carouselDirection,
+    carouselAutoplay: next.carouselAutoplay !== false,
+    carouselPauseOnHover: next.carouselPauseOnHover !== false,
+    animationEnabled: next.animationEnabled !== false,
+    animationSpeed: motionSpeedIds.has(next.animationSpeed) ? next.animationSpeed : DEFAULT_SIMPLE_SETTINGS.animationSpeed,
+    animationIntensity: ['subtle', 'normal', 'strong'].includes(next.animationIntensity) ? next.animationIntensity : DEFAULT_SIMPLE_SETTINGS.animationIntensity,
+    shadowStrength: strengthIds.has(next.shadowStrength) ? next.shadowStrength : DEFAULT_SIMPLE_SETTINGS.shadowStrength,
+    glowStrength: strengthIds.has(next.glowStrength) ? next.glowStrength : DEFAULT_SIMPLE_SETTINGS.glowStrength,
+    imageVisibility: ['show', 'hidden'].includes(next.imageVisibility) ? next.imageVisibility : DEFAULT_SIMPLE_SETTINGS.imageVisibility,
+    imageSize: imageSizeIds.has(next.imageSize) ? next.imageSize : DEFAULT_SIMPLE_SETTINGS.imageSize,
+    imageShape: imageShapeIds.has(next.imageShape) ? next.imageShape : DEFAULT_SIMPLE_SETTINGS.imageShape,
+    imageFit: ['cover', 'contain'].includes(next.imageFit) ? next.imageFit : DEFAULT_SIMPLE_SETTINGS.imageFit,
   };
 }
 

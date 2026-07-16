@@ -39,6 +39,7 @@ import {
   getPerformanceTone,
   getTargetOverrideRoot,
   getWidgetActiveStyleId,
+  getWidgetStyleOptions,
   normalizeAppearance,
   omitPath,
   projectAppearanceToThemePatch,
@@ -53,8 +54,12 @@ import {
   FONT_OPTIONS,
   SIMPLE_COLOR_PALETTE,
   SIMPLE_DENSITIES,
+  SIMPLE_IMAGE_SHAPES,
+  SIMPLE_IMAGE_SIZES,
   SIMPLE_MATERIAL_PRESETS,
+  SIMPLE_MOTION_SPEEDS,
   SIMPLE_SHAPES,
+  SIMPLE_STRENGTHS,
   SIMPLE_TEXT_SIZES,
   WIDGET_CATEGORY_FILTERS,
   elementSupportsControl,
@@ -75,7 +80,12 @@ import {
   buildAppearanceV2ForStorage,
   getSimpleAppearanceV2Settings,
 } from './v2/appearanceResolver';
-import { isWidgetAppearanceV2Enabled } from './v2/widgetAppearanceRegistry';
+import {
+  getWidgetStyleCapability,
+  getWidgetStyleElements,
+  getWidgetStyleOptionsForQuickEditor,
+  isWidgetAppearanceV2Enabled,
+} from './v2/widgetAppearanceRegistry';
 import { LayerToggleButton, PropertyControl } from './propertyControls';
 import './AppearanceCenter.css';
 
@@ -119,6 +129,24 @@ const QUICK_WIDGET_CONTROLS = [
   { id: 'padding', label: 'Space inside', control: CONTROL_DEFINITIONS.padding, path: 'surfaces.padding' },
   { id: 'gap', label: 'Space between items', control: CONTROL_DEFINITIONS.gap, path: 'surfaces.gap' },
 ];
+
+const FALLBACK_QUICK_STYLE_CAPABILITIES = Object.freeze({
+  colours: true,
+  multipleColours: true,
+  fonts: true,
+  fontSizes: true,
+  fontWeights: true,
+  containers: true,
+  containerShapes: true,
+  borderRadius: true,
+  borders: true,
+  shadows: true,
+  glow: true,
+  opacity: true,
+  spacing: true,
+  layoutDensity: true,
+  transparentBackground: true,
+});
 
 function safeJson(value) {
   try {
@@ -210,6 +238,70 @@ function getFirstWidget(widgets = []) {
 
 function getFirstElement(widgetType) {
   return getWidgetElementSchema(widgetType)[0] || null;
+}
+
+function getFirstElementForStyle(widgetType, styleId) {
+  if (isWidgetAppearanceV2Enabled(widgetType)) {
+    return getWidgetStyleElements(widgetType, styleId)[0] || getFirstElement(widgetType);
+  }
+  return getFirstElement(widgetType);
+}
+
+function supportsAny(capabilities = {}, keys = []) {
+  return keys.some(key => !!capabilities[key]);
+}
+
+function styleEdited(appearance, widgetId, styleId) {
+  if (!widgetId || !styleId) return false;
+  return countObjectLeaves(getByPath(appearance, `widgets.${widgetId}.styles.${styleId}`)) > 0;
+}
+
+function StylePreviewCard({
+  widget,
+  option,
+  theme,
+  appearance,
+  userId,
+  selectedTarget,
+  previewState,
+  active,
+  edited,
+  onSelect,
+}) {
+  if (!widget || !option) return null;
+  const cardTarget = { ...selectedTarget, widgetId: widget.id, widgetType: widget.widget_type, styleId: option.id };
+  return (
+    <button
+      type="button"
+      className={`ve-style-card${active ? ' is-active' : ''}${edited ? ' is-edited' : ''}`}
+      onClick={() => onSelect?.(option.id)}
+      aria-pressed={active}
+    >
+      <span className="ve-style-card__preview" aria-hidden="true">
+        <OverlayPreview
+          widgets={[widget]}
+          theme={theme}
+          appearance={appearance}
+          userId={userId}
+          selectedWidgetId={widget.id}
+          selectedTarget={cardTarget}
+          selectedElementId=""
+          hiddenElementIds={[]}
+          styleSelections={{ [widget.id]: option.id }}
+          previewSampleStates={previewState ? { [widget.id]: previewState } : {}}
+          zoom="fit"
+          previewMode="fit-widget"
+          previewBackground="dark"
+          selectMode={false}
+        />
+      </span>
+      <span className="ve-style-card__body">
+        <strong>{option.label}</strong>
+        {option.recommended && <em>Recommended</em>}
+        {edited && <small>Edited</small>}
+      </span>
+    </button>
+  );
 }
 
 function resolveElementPath(root, elementId, property, stateId = 'default') {
@@ -329,7 +421,10 @@ export default function AppearanceCenter({
   const [mode, setMode] = useState(getInitialMode);
   const [draft, setDraft] = useState(() => serverState.draft);
   const [selectedTarget, setSelectedTarget] = useState(() => createTarget(firstWidget, serverState.draft));
-  const [selectedElementId, setSelectedElementId] = useState(() => getFirstElement(firstWidget?.widget_type)?.id || '');
+  const [selectedElementId, setSelectedElementId] = useState(() => {
+    const target = createTarget(firstWidget, serverState.draft);
+    return getFirstElementForStyle(firstWidget?.widget_type, target.styleId)?.id || '';
+  });
   const [selectedStateId, setSelectedStateId] = useState('default');
   const [sidebarTab, setSidebarTab] = useState('widgets');
   const [widgetSearch, setWidgetSearch] = useState('');
@@ -380,9 +475,94 @@ export default function AppearanceCenter({
     },
     [selectedWidgetType, selectedWidgetUsesV2]
   );
+  const registeredStyleOptions = useMemo(
+    () => getWidgetStyleOptions(selectedWidgetType, draft, selectedWidget?.id),
+    [draft, selectedWidget?.id, selectedWidgetType]
+  );
+  const quickStyleOptions = useMemo(() => {
+    const v2Options = selectedWidgetUsesV2 ? getWidgetStyleOptionsForQuickEditor(selectedWidgetType) : [];
+    const byId = new Map();
+    for (const option of v2Options) byId.set(option.id, option);
+    for (const option of registeredStyleOptions) {
+      byId.set(option.id, {
+        ...(byId.get(option.id) || {}),
+        ...option,
+        label: byId.get(option.id)?.label || option.label,
+        recommended: byId.get(option.id)?.recommended || false,
+      });
+    }
+    return [...byId.values()].map(option => ({
+      ...option,
+      edited: styleEdited(draft, selectedWidget?.id, option.id),
+    }));
+  }, [draft, registeredStyleOptions, selectedWidget?.id, selectedWidgetType, selectedWidgetUsesV2]);
+  const selectedStyleCapability = useMemo(
+    () => (selectedWidgetUsesV2 ? getWidgetStyleCapability(selectedWidgetType, selectedTarget.styleId) : null),
+    [selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]
+  );
+  const selectedElements = useMemo(
+    () => (selectedWidgetUsesV2
+      ? getWidgetStyleElements(selectedWidgetType, selectedTarget.styleId)
+      : getWidgetElementSchema(selectedWidgetType)),
+    [selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]
+  );
+  const selectedStyleCapabilities = selectedStyleCapability?.capabilities || FALLBACK_QUICK_STYLE_CAPABILITIES;
+  const simpleSections = useMemo(() => {
+    const sections = [];
+    sections.push('widgetStyle');
+    if (selectedElements.length > 1) sections.push('editing');
+    if (supportsAny(selectedStyleCapabilities, [
+      'colours',
+      'containers',
+      'containerShapes',
+      'shadows',
+      'glow',
+      'transparentBackground',
+    ])) sections.push('material');
+    if (supportsAny(selectedStyleCapabilities, [
+      'colours',
+      'multipleColours',
+      'positiveNegativeColours',
+      'progressBar',
+    ])) sections.push('colours');
+    if (supportsAny(selectedStyleCapabilities, [
+      'fonts',
+      'fontSizes',
+      'fontWeights',
+      'textAlignment',
+      'images',
+      'imageSize',
+      'imageShape',
+      'imageFit',
+      'imageVisibility',
+    ])) sections.push('textImages');
+    if (supportsAny(selectedStyleCapabilities, [
+      'containers',
+      'containerShapes',
+      'borderRadius',
+      'borders',
+      'shadows',
+      'glow',
+      'glowIntensity',
+      'spacing',
+      'layoutDensity',
+      'transparentBackground',
+    ])) sections.push('shapeEffects');
+    if (supportsAny(selectedStyleCapabilities, [
+      'carousel',
+      'carouselSpeed',
+      'carouselDirection',
+      'carouselAutoplay',
+      'carouselPauseOnHover',
+      'animations',
+      'animationSpeed',
+      'animationIntensity',
+    ])) sections.push('motion');
+    sections.push('actions');
+    return sections;
+  }, [selectedElements.length, selectedStyleCapabilities]);
   const previewStateOptions = WIDGET_PREVIEW_STATES[selectedWidgetType] || [];
   const selectedPreviewState = previewStateByWidget[selectedWidget?.id] || previewStateOptions[0]?.id || '';
-  const selectedElements = useMemo(() => getWidgetElementSchema(selectedWidgetType), [selectedWidgetType]);
   const selectedElement = useMemo(
     () => selectedElements.find(element => element.id === selectedElementId) || selectedElements[0] || null,
     [selectedElements, selectedElementId]
@@ -614,7 +794,7 @@ export default function AppearanceCenter({
       persistDraft(draft, 'widget-switch');
     }
     const target = createTarget(widget, draft);
-    const firstElement = getFirstElement(widget.widget_type);
+    const firstElement = getFirstElementForStyle(widget.widget_type, target.styleId);
     setSelectedTarget(target);
     setSelectedElementId(nextElementId || firstElement?.id || '');
     setSelectedStateId('default');
@@ -624,6 +804,22 @@ export default function AppearanceCenter({
       widget_type: target.widgetType,
     });
   }, [dirty, draft, mode, persistDraft]);
+
+  const selectStyle = useCallback((styleId) => {
+    if (!selectedWidget?.id || !styleId) return;
+    const nextTarget = {
+      scope: 'widget_instance',
+      widgetId: selectedWidget.id,
+      widgetType: selectedWidget.widget_type,
+      styleId,
+    };
+    setSelectedTarget(nextTarget);
+    const firstElement = getFirstElementForStyle(selectedWidget.widget_type, styleId);
+    setSelectedElementId(firstElement?.id || '');
+    setSelectedStateId('default');
+    const optionLabel = quickStyleOptions.find(option => option.id === styleId)?.label || styleId;
+    commitDraft(prev => setByPath(prev, `widgets.${selectedWidget.id}.activeStyleId`, styleId), `Select ${optionLabel} style`);
+  }, [commitDraft, quickStyleOptions, selectedWidget]);
 
   const handlePreviewWidgetSelect = useCallback((widget) => {
     selectWidget(widget);
@@ -1044,6 +1240,11 @@ export default function AppearanceCenter({
 
   const visibleLayerRows = Object.values(groupedLayers);
   const selectedWidgetOverrides = selectedTargetRoot ? countObjectLeaves(getByPath(draft, selectedTargetRoot)) : 0;
+  const selectedStyleLabel = quickStyleOptions.find(option => option.id === selectedTarget.styleId)?.label
+    || registeredStyleOptions.find(option => option.id === selectedTarget.styleId)?.label
+    || selectedTarget.styleId
+    || 'Default';
+  const quickNumber = id => Math.max(1, simpleSections.indexOf(id) + 1);
 
   return (
     <div className="appearance-center visual-editor" data-mode={mode}>
@@ -1288,7 +1489,7 @@ export default function AppearanceCenter({
           <div className="ve-properties-header ve-properties-header--simple">
             <div>
               <strong>Quick Style</strong>
-              <span>{selectedWidgetName} - Entire widget</span>
+              <span>{selectedWidgetName} - Style: {selectedStyleLabel} - Editing: {selectedElement?.label || 'Entire widget'}</span>
             </div>
             {selectedWidgetUsesV2 && <span className="ve-engine-badge">V2 pilot</span>}
           </div>
@@ -1325,6 +1526,7 @@ export default function AppearanceCenter({
                 <summary>Appearance V2 diagnostics</summary>
                 <dl>
                   <div><dt>Widget</dt><dd>{selectedWidgetType}</dd></div>
+                  <div><dt>Style</dt><dd>{selectedTarget.styleId}</dd></div>
                   <div><dt>Material</dt><dd>{currentSimpleSettings.material}</dd></div>
                   <div><dt>Primary</dt><dd>{currentSimpleSettings.primaryColor}</dd></div>
                   <div><dt>Shape</dt><dd>{currentSimpleSettings.shape}</dd></div>
@@ -1333,9 +1535,64 @@ export default function AppearanceCenter({
               </details>
             )}
 
+            {simpleSections.includes('widgetStyle') && (
+              <section className="ve-property-section ve-simple-section">
+                <header>
+                  <h3>{quickNumber('widgetStyle')}. Widget style</h3>
+                </header>
+                <p className="ve-simple-help">Choose the layout you want to edit. Each style keeps its own settings.</p>
+                <div className="ve-style-card-grid">
+                  {quickStyleOptions.map(option => (
+                    <StylePreviewCard
+                      key={option.id}
+                      widget={selectedWidget}
+                      option={option}
+                      theme={theme}
+                      appearance={draft}
+                      userId={null}
+                      selectedTarget={selectedTarget}
+                      previewState={option.previewStateIds?.[0] || selectedPreviewState}
+                      active={selectedTarget.styleId === option.id}
+                      edited={option.edited}
+                      onSelect={selectStyle}
+                    />
+                  ))}
+                  {!quickStyleOptions.length && (
+                    <div className="ve-simple-note">This widget does not declare multiple appearance styles yet.</div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {simpleSections.includes('editing') && (
+              <section className="ve-property-section ve-simple-section">
+                <header>
+                  <h3>{quickNumber('editing')}. Choose what to edit</h3>
+                </header>
+                <p className="ve-simple-help">The controls below only appear when they apply to this part.</p>
+                <div className="ve-edit-target-grid">
+                  {selectedElements.map(element => (
+                    <button
+                      key={element.id}
+                      type="button"
+                      className={selectedElement?.id === element.id ? 'is-active' : ''}
+                      onClick={() => {
+                        setSelectedElementId(element.id);
+                        setSelectedStateId('default');
+                      }}
+                    >
+                      <span>{element.label}</span>
+                      <small>{inferElementKind(element)}</small>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {simpleSections.includes('material') && (
             <section className="ve-property-section ve-simple-section">
               <header>
-                <h3>1. Choose a style</h3>
+                <h3>{quickNumber('material')}. Visual finish</h3>
               </header>
               <p className="ve-simple-help">Start by choosing the finish of your widget.</p>
               <div className="ve-material-grid">
@@ -1366,10 +1623,12 @@ export default function AppearanceCenter({
                 })}
               </div>
             </section>
+            )}
 
+            {simpleSections.includes('colours') && (
             <section className="ve-property-section ve-simple-section">
               <header>
-                <h3>2. Choose your colour</h3>
+                <h3>{quickNumber('colours')}. Choose your colour</h3>
               </header>
               <p className="ve-simple-help">Your colour automatically adapts to the selected style.</p>
               <div className="ve-swatch-grid" aria-label="Main colour">
@@ -1461,92 +1720,269 @@ export default function AppearanceCenter({
                 </div>
               )}
             </section>
+            )}
 
-            <section className="ve-property-section ve-simple-section">
-              <header>
-                <h3>3. Shape</h3>
-              </header>
-              <div className="ve-simple-choice-row ve-shape-row">
-                {SIMPLE_SHAPES.map(shape => (
-                  <button
-                    key={shape.id}
-                    type="button"
-                    className={currentSimpleSettings.shape === shape.id ? 'is-active' : ''}
-                    onClick={() => applySimpleSettings({ shape: shape.id }, `Choose ${shape.label}`)}
-                  >
-                    <span style={{ borderRadius: shape.radius >= 80 ? 999 : shape.radius }} />
-                    {shape.label}
-                  </button>
-                ))}
-              </div>
-            </section>
+            {simpleSections.includes('textImages') && (
+              <section className="ve-property-section ve-simple-section">
+                <header>
+                  <h3>{quickNumber('textImages')}. Text and images</h3>
+                </header>
+                {selectedStyleCapabilities.fonts && (
+                  <label className="ve-simple-select">
+                    <span>Font style</span>
+                    <select
+                      value={currentSimpleSettings.fontFamily}
+                      onChange={event => applySimpleSettings({ fontFamily: event.target.value }, 'Change font')}
+                    >
+                      {FONT_OPTIONS.slice(0, 7).map(font => (
+                        <option key={font.value} value={font.value}>{font.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {selectedStyleCapabilities.fontSizes && (
+                  <div className="ve-simple-choice-row">
+                    {SIMPLE_TEXT_SIZES.map(size => (
+                      <button
+                        key={size.id}
+                        type="button"
+                        className={currentSimpleSettings.textSize === size.id ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ textSize: size.id }, `Choose ${size.label} text`)}
+                      >
+                        {size.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedStyleCapabilities.fontWeights && (
+                  <label className="ve-simple-toggle">
+                    <input
+                      type="checkbox"
+                      checked={currentSimpleSettings.boldText}
+                      onChange={event => applySimpleSettings({ boldText: event.target.checked }, 'Toggle bold text')}
+                    />
+                    <span>Bold text</span>
+                  </label>
+                )}
+                {selectedStyleCapabilities.images && (
+                  <>
+                    <div className="ve-simple-choice-row">
+                      {SIMPLE_IMAGE_SIZES.map(size => {
+                        const active = size.id === 'hidden'
+                          ? currentSimpleSettings.imageVisibility === 'hidden'
+                          : currentSimpleSettings.imageVisibility !== 'hidden' && currentSimpleSettings.imageSize === size.id;
+                        return (
+                          <button
+                            key={size.id}
+                            type="button"
+                            className={active ? 'is-active' : ''}
+                            onClick={() => applySimpleSettings({
+                              imageSize: size.id === 'hidden' ? currentSimpleSettings.imageSize || 'medium' : size.id,
+                              imageVisibility: size.id === 'hidden' ? 'hidden' : 'show',
+                            }, `Choose ${size.label} images`)}
+                          >
+                            {size.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {selectedStyleCapabilities.imageShape && (
+                      <div className="ve-simple-choice-row">
+                        {SIMPLE_IMAGE_SHAPES.map(shape => (
+                          <button
+                            key={shape.id}
+                            type="button"
+                            className={currentSimpleSettings.imageShape === shape.id ? 'is-active' : ''}
+                            onClick={() => applySimpleSettings({ imageShape: shape.id }, `Choose ${shape.label} images`)}
+                          >
+                            {shape.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {selectedStyleCapabilities.imageFit && (
+                      <div className="ve-simple-choice-row">
+                        {['cover', 'contain'].map(fit => (
+                          <button
+                            key={fit}
+                            type="button"
+                            className={currentSimpleSettings.imageFit === fit ? 'is-active' : ''}
+                            onClick={() => applySimpleSettings({ imageFit: fit }, `Choose ${fit} image fit`)}
+                          >
+                            {fit === 'cover' ? 'Cover' : 'Contain'}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </section>
+            )}
 
-            <section className="ve-property-section ve-simple-section">
-              <header>
-                <h3>4. Size</h3>
-              </header>
-              <div className="ve-simple-choice-row">
-                {SIMPLE_DENSITIES.map(size => (
-                  <button
-                    key={size.id}
-                    type="button"
-                    className={currentSimpleSettings.density === size.id ? 'is-active' : ''}
-                    onClick={() => applySimpleSettings({ density: size.id }, `Choose ${size.label}`)}
-                  >
-                    {size.label}
-                  </button>
-                ))}
-              </div>
-              <label className="ve-simple-range">
-                <span>Widget size</span>
-                <input
-                  type="range"
-                  min="75"
-                  max="150"
-                  step="5"
-                  value={Math.round(currentSimpleSettings.scale * 100)}
-                  onChange={event => applySimpleSettings({ scale: Number(event.target.value) / 100 }, 'Change widget size')}
-                />
-                <strong>{Math.round(currentSimpleSettings.scale * 100)}%</strong>
-              </label>
-            </section>
+            {simpleSections.includes('shapeEffects') && (
+              <section className="ve-property-section ve-simple-section">
+                <header>
+                  <h3>{quickNumber('shapeEffects')}. Shape and effects</h3>
+                </header>
+                {supportsAny(selectedStyleCapabilities, ['containerShapes', 'borderRadius']) && (
+                  <div className="ve-simple-choice-row ve-shape-row">
+                    {SIMPLE_SHAPES
+                      .filter(shape => shape.id !== 'pill' || selectedStyleCapabilities.containerShapes)
+                      .map(shape => (
+                      <button
+                        key={shape.id}
+                        type="button"
+                        className={currentSimpleSettings.shape === shape.id ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ shape: shape.id }, `Choose ${shape.label}`)}
+                      >
+                        <span style={{ borderRadius: shape.radius >= 80 ? 999 : shape.radius }} />
+                        {shape.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedStyleCapabilities.layoutDensity && (
+                  <>
+                    <div className="ve-simple-choice-row">
+                      {SIMPLE_DENSITIES.map(size => (
+                        <button
+                          key={size.id}
+                          type="button"
+                          className={currentSimpleSettings.density === size.id ? 'is-active' : ''}
+                          onClick={() => applySimpleSettings({ density: size.id }, `Choose ${size.label}`)}
+                        >
+                          {size.label}
+                        </button>
+                      ))}
+                    </div>
+                    <label className="ve-simple-range">
+                      <span>Widget size</span>
+                      <input
+                        type="range"
+                        min="75"
+                        max="150"
+                        step="5"
+                        value={Math.round(currentSimpleSettings.scale * 100)}
+                        onChange={event => applySimpleSettings({ scale: Number(event.target.value) / 100 }, 'Change widget size')}
+                      />
+                      <strong>{Math.round(currentSimpleSettings.scale * 100)}%</strong>
+                    </label>
+                  </>
+                )}
+                {selectedStyleCapabilities.shadows && (
+                  <div className="ve-simple-choice-row">
+                    {SIMPLE_STRENGTHS.filter(item => ['off', 'soft', 'medium', 'strong'].includes(item.id)).map(item => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={currentSimpleSettings.shadowStrength === item.id ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ shadowStrength: item.id }, `Choose ${item.label} shadow`)}
+                      >
+                        {item.label} shadow
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {supportsAny(selectedStyleCapabilities, ['glow', 'glowIntensity']) && (
+                  <div className="ve-simple-choice-row">
+                    {SIMPLE_STRENGTHS.filter(item => ['off', 'subtle', 'medium', 'strong'].includes(item.id)).map(item => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={currentSimpleSettings.glowStrength === item.id ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ glowStrength: item.id }, `Choose ${item.label} glow`)}
+                      >
+                        {item.label} glow
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
 
-            <section className="ve-property-section ve-simple-section">
-              <header>
-                <h3>5. Text</h3>
-              </header>
-              <label className="ve-simple-select">
-                <span>Font style</span>
-                <select
-                  value={currentSimpleSettings.fontFamily}
-                  onChange={event => applySimpleSettings({ fontFamily: event.target.value }, 'Change font')}
-                >
-                  {FONT_OPTIONS.slice(0, 7).map(font => (
-                    <option key={font.value} value={font.value}>{font.label}</option>
-                  ))}
-                </select>
-              </label>
-              <div className="ve-simple-choice-row">
-                {SIMPLE_TEXT_SIZES.map(size => (
-                  <button
-                    key={size.id}
-                    type="button"
-                    className={currentSimpleSettings.textSize === size.id ? 'is-active' : ''}
-                    onClick={() => applySimpleSettings({ textSize: size.id }, `Choose ${size.label} text`)}
-                  >
-                    {size.label}
-                  </button>
-                ))}
-              </div>
-              <label className="ve-simple-toggle">
-                <input
-                  type="checkbox"
-                  checked={currentSimpleSettings.boldText}
-                  onChange={event => applySimpleSettings({ boldText: event.target.checked }, 'Toggle bold text')}
-                />
-                <span>Bold text</span>
-              </label>
-            </section>
+            {simpleSections.includes('motion') && (
+              <section className="ve-property-section ve-simple-section">
+                <header>
+                  <h3>{quickNumber('motion')}. Motion</h3>
+                </header>
+                {selectedStyleCapabilities.carouselAutoplay && (
+                  <label className="ve-simple-toggle">
+                    <input
+                      type="checkbox"
+                      checked={currentSimpleSettings.carouselAutoplay}
+                      onChange={event => applySimpleSettings({ carouselAutoplay: event.target.checked }, 'Toggle carousel autoplay')}
+                    />
+                    <span>Autoplay carousel</span>
+                  </label>
+                )}
+                {selectedStyleCapabilities.carouselSpeed && (
+                  <div className="ve-simple-choice-row">
+                    {SIMPLE_MOTION_SPEEDS.map(speed => (
+                      <button
+                        key={speed.id}
+                        type="button"
+                        className={currentSimpleSettings.carouselSpeed === speed.id ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ carouselSpeed: speed.id }, `Choose ${speed.label} carousel speed`)}
+                      >
+                        {speed.label} carousel
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedStyleCapabilities.carouselDirection && (
+                  <div className="ve-simple-choice-row">
+                    {['left', 'right'].map(direction => (
+                      <button
+                        key={direction}
+                        type="button"
+                        className={currentSimpleSettings.carouselDirection === direction ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ carouselDirection: direction }, `Choose ${direction} carousel direction`)}
+                      >
+                        {direction === 'left' ? 'Left' : 'Right'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedStyleCapabilities.animations && (
+                  <label className="ve-simple-toggle">
+                    <input
+                      type="checkbox"
+                      checked={currentSimpleSettings.animationEnabled}
+                      onChange={event => applySimpleSettings({ animationEnabled: event.target.checked }, 'Toggle animation')}
+                    />
+                    <span>Animation</span>
+                  </label>
+                )}
+                {selectedStyleCapabilities.animationSpeed && (
+                  <div className="ve-simple-choice-row">
+                    {SIMPLE_MOTION_SPEEDS.map(speed => (
+                      <button
+                        key={speed.id}
+                        type="button"
+                        className={currentSimpleSettings.animationSpeed === speed.id ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ animationSpeed: speed.id }, `Choose ${speed.label} animation`)}
+                      >
+                        {speed.label} animation
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedStyleCapabilities.animationIntensity && (
+                  <div className="ve-simple-choice-row">
+                    {['subtle', 'normal', 'strong'].map(intensity => (
+                      <button
+                        key={intensity}
+                        type="button"
+                        className={currentSimpleSettings.animationIntensity === intensity ? 'is-active' : ''}
+                        onClick={() => applySimpleSettings({ animationIntensity: intensity }, `Choose ${intensity} animation intensity`)}
+                      >
+                        {intensity[0].toUpperCase() + intensity.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
 
             {!!serverState.presets?.filter(preset => preset.isSimpleQuickStyle).length && (
               <section className="ve-property-section ve-simple-section">
@@ -1568,7 +2004,7 @@ export default function AppearanceCenter({
 
             <section className="ve-property-section ve-simple-section ve-simple-final">
               <header>
-                <h3>6. Final actions</h3>
+                <h3>{quickNumber('actions')}. Final actions</h3>
               </header>
               <div className="ve-simple-actions ve-simple-actions--final">
                 <button type="button" onClick={undo} disabled={!undoStack.length}>

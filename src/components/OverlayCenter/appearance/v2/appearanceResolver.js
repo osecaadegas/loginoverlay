@@ -285,6 +285,8 @@ function buildBonusHuntPatch(tokens) {
     fontSize: tokens.typography.bodySize,
     fontWeight: tokens.typography.bodyWeight,
     widgetScale: tokens.spacing.scale,
+    autoSpeed: tokens.motion?.carouselIntervalMs,
+    carouselAutoplay: tokens.motion?.carouselAutoplay,
     subElements: {
       huntTitle: {
         textColor: tokens.colors.text,
@@ -397,6 +399,8 @@ function buildSlotRequestsPatch(tokens) {
     cardBg: rowBackground,
     mutedColor: tokens.colors.mutedText,
     widgetScale: tokens.spacing.scale,
+    autoSpeed: tokens.motion?.carouselIntervalMs,
+    carouselAutoplay: tokens.motion?.carouselAutoplay,
     subElements: {
       ...common,
       container: {

@@ -25,6 +25,15 @@ try {
   assert.ok(registryModule.getWidgetAppearanceCapability('bonus_hunt').elements.slotRow, 'bonus hunt declares real slot row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('slot_requests').elements.requestCard, 'slot requests declares request row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('giveaway').elements.winnerArea, 'giveaway declares winner area element');
+  assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt').some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
+  assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('slot_requests').some(style => style.id === 'v2_card_stack'), 'Slot Requests exposes card-stack style option');
+  assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('giveaway').some(style => style.id === 'v4'), 'Giveaway exposes minimal style option');
+  assert.equal(registryModule.styleSupportsQuickCapability('slot_requests', 'v1_minimal', 'carouselSpeed'), false, 'Slot Requests list style hides carousel speed');
+  assert.equal(registryModule.styleSupportsQuickCapability('slot_requests', 'v2_card_stack', 'carouselSpeed'), true, 'Slot Requests card-stack style exposes carousel speed');
+  assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'containers'), false, 'Giveaway minimal style hides container controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'animations'), false, 'Quick Editor hides unimplemented animation controls');
+  assert.ok(registryModule.getWidgetStyleElements('bonus_hunt', 'v3').some(element => element.id === 'slotCarouselContainer'), 'Bonus Hunt flip-card style has carousel-specific elements');
+  assert.ok(!registryModule.getWidgetStyleElements('bonus_hunt', 'v3').some(element => element.id === 'slotRow'), 'Bonus Hunt flip-card style hides list-only row elements');
 
   assert.ok(materialModule.MATERIAL_IDS.includes('original'), 'Original material is available for baseline widgets');
   const originalTokens = materialModule.generateAppearanceTokens({
@@ -71,6 +80,15 @@ try {
   assert.equal(normalized.material, 'matte', 'invalid material falls back');
   assert.equal(normalized.primaryColor, '#14d8d8', 'invalid color falls back');
   assert.equal(normalized.scale, 1.5, 'scale clamps to safe max');
+  assert.equal(materialModule.normalizeSimpleAppearanceV2({ carouselSpeed: 'fast', carouselAutoplay: false }).carouselAutoplay, false, 'carousel autoplay setting is persisted');
+  const fastCarouselTokens = materialModule.generateAppearanceTokens({
+    material: 'neon',
+    primaryColor: '#14d8d8',
+    carouselSpeed: 'fast',
+    carouselAutoplay: false,
+  }, registryModule.getWidgetAppearanceCapability('slot_requests'));
+  assert.equal(fastCarouselTokens.motion.carouselIntervalMs, 1400, 'fast carousel maps to concrete renderer interval');
+  assert.equal(fastCarouselTokens.motion.carouselAutoplay, false, 'carousel autoplay token can disable cycling');
 
   const bhStatsWidget = {
     id: 'stats1',
@@ -114,6 +132,14 @@ try {
       prize: '1000 points',
       keyword: 'join',
       participants: [],
+      subElements: {},
+    },
+  };
+  const slotRequestsCarouselWidget = {
+    ...slotRequestsWidget,
+    id: 'sr2',
+    config: {
+      displayStyle: 'v2_card_stack',
       subElements: {},
     },
   };
@@ -172,6 +198,37 @@ try {
               density: 'standard',
               textSize: 'large',
               scale: 1.1,
+            }),
+          },
+        },
+      },
+    },
+  };
+  const carouselAppearance = {
+    widgets: {
+      sr2: {
+        activeStyleId: 'v2_card_stack',
+        styles: {
+          v2_card_stack: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('slot_requests', {
+              material: 'neon',
+              primaryColor: '#14d8d8',
+              shape: 'rounded',
+              density: 'standard',
+              textSize: 'standard',
+              scale: 1,
+              carouselSpeed: 'fast',
+              carouselAutoplay: false,
+            }),
+          },
+          v1_minimal: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('slot_requests', {
+              material: 'matte',
+              primaryColor: '#f97316',
+              shape: 'rounded',
+              density: 'standard',
+              textSize: 'standard',
+              scale: 1,
             }),
           },
         },
@@ -240,6 +297,14 @@ try {
   assert.ok(slotRequestsConfig.subElements.requestCard.states.playing.accentColor, 'Slot Requests keeps request state colors explicit');
   assert.equal(slotRequestsConfig.subElements.slotImage.imageSize, undefined, 'Slot Requests image size is intentionally unsupported');
   assert.ok(slotRequestsConfig.__appearanceV2.unsupportedProperties.includes('layout.cardStackTransform'), 'Slot Requests records animation-sensitive unsupported transforms');
+  const slotRequestsCarouselConfig = appearanceModel.resolveWidgetAppearanceConfig(slotRequestsCarouselWidget, carouselAppearance, {});
+  assert.equal(slotRequestsCarouselConfig.displayStyle, 'v2_card_stack', 'selected style switches the real Slot Requests renderer');
+  assert.equal(slotRequestsCarouselConfig.__appearanceV2.material, 'neon', 'selected style loads its own saved appearance');
+  assert.equal(slotRequestsCarouselConfig.autoSpeed, 1400, 'carousel speed resolves into the real widget config');
+  assert.equal(slotRequestsCarouselConfig.carouselAutoplay, false, 'carousel autoplay resolves into the real widget config');
+  const slotRequestsListConfig = appearanceModel.resolveWidgetAppearanceConfig(slotRequestsCarouselWidget, carouselAppearance, {}, { styleId: 'v1_minimal' });
+  assert.equal(slotRequestsListConfig.displayStyle, 'v1_minimal', 'style settings remain isolated by style id');
+  assert.equal(slotRequestsListConfig.__appearanceV2.material, 'matte', 'switching styles restores that style appearance');
 
   const giveawayConfig = appearanceModel.resolveWidgetAppearanceConfig(giveawayWidget, appearance, {});
   assert.equal(giveawayConfig.__appearanceV2.material, 'neon', 'Giveaway receives V2 material');

@@ -133,11 +133,13 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
   /* ─── Carousel ─── */
   const [carouselIdx, setCarouselIdx] = useState(0);
+  const carouselSpeedMs = Math.max(1000, Number(c.autoSpeed) || 2500);
+  const carouselAutoplay = c.carouselAutoplay !== false;
   useEffect(() => {
-    if (bonuses.length < 2) return;
-    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 2500);
+    if (!carouselAutoplay || bonuses.length < 2) return;
+    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), carouselSpeedMs);
     return () => clearInterval(id);
-  }, [bonuses.length]);
+  }, [carouselAutoplay, bonuses.length, carouselSpeedMs]);
 
   /* ─── Slot Requests data ─── */
   const [srRequests, setSrRequests] = useState([]);

@@ -101,11 +101,13 @@ function BonusHuntWidget({ config, theme, userId }) {
 
   /* ─── Classic: auto-rotating carousel during hunt ─── */
   const [carouselIdx, setCarouselIdx] = useState(0);
+  const carouselSpeedMs = Math.max(1000, Number(c.autoSpeed) || 2500);
+  const carouselAutoplay = c.carouselAutoplay !== false;
   useEffect(() => {
-    if (isCompactBH || bonuses.length < 2) return;
-    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 2500);
+    if (!carouselAutoplay || isCompactBH || bonuses.length < 2) return;
+    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), carouselSpeedMs);
     return () => clearInterval(id);
-  }, [isCompactBH, bonuses.length]);
+  }, [carouselAutoplay, isCompactBH, bonuses.length, carouselSpeedMs]);
 
   /* ─── Style switcher (early returns AFTER all hooks) ─── */
   if (c.displayStyle === 'v3') {

@@ -31,6 +31,7 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
   const fontSize     = c.fontSize      ? `${c.fontSize}px` : '14px';
   const fontWeight   = c.fontWeight    || '600';
   const autoSpeed    = Number(c.autoSpeed) || 3000;
+  const carouselAutoplay = c.carouselAutoplay !== false;
   const commandTrigger = c.commandTrigger || '!sr';
 
   const accentRgb = hex2rgb(accent);
@@ -45,14 +46,15 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
   /* Reset and restart the interval — called on manual navigation */
   const resetInterval = useCallback(() => {
     clearInterval(timerRef.current);
+    if (!carouselAutoplay) return;
     timerRef.current = setInterval(advance, autoSpeed);
-  }, [advance, autoSpeed]);
+  }, [advance, autoSpeed, carouselAutoplay]);
 
   useEffect(() => {
-    if (total <= 1) return;
+    if (!carouselAutoplay || total <= 1) return;
     timerRef.current = setInterval(advance, autoSpeed);
     return () => clearInterval(timerRef.current);
-  }, [total, autoSpeed, advance]);
+  }, [total, autoSpeed, advance, carouselAutoplay]);
 
   useEffect(() => {
     if (activeIdx >= total && total > 0) setActiveIdx(0);

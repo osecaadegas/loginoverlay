@@ -32,6 +32,7 @@ export default function SlotRequestsCardStack({ config, requests }) {
   const fontSize     = c.fontSize      ? `${c.fontSize}px` : '15px';
   const fontWeight   = c.fontWeight    || '700';
   const autoSpeed    = Number(c.autoSpeed) || 4000;
+  const carouselAutoplay = c.carouselAutoplay !== false;
   const commandTrigger = c.commandTrigger || '!sr';
 
   const accentRgb = hex2rgb(accent);
@@ -46,14 +47,15 @@ export default function SlotRequestsCardStack({ config, requests }) {
   /* Reset and restart the interval — called on manual navigation */
   const resetInterval = useCallback(() => {
     clearInterval(timerRef.current);
+    if (!carouselAutoplay) return;
     timerRef.current = setInterval(advance, autoSpeed);
-  }, [advance, autoSpeed]);
+  }, [advance, autoSpeed, carouselAutoplay]);
 
   useEffect(() => {
-    if (total <= 1) return;
+    if (!carouselAutoplay || total <= 1) return;
     timerRef.current = setInterval(advance, autoSpeed);
     return () => clearInterval(timerRef.current);
-  }, [total, autoSpeed, advance]);
+  }, [total, autoSpeed, advance, carouselAutoplay]);
 
   useEffect(() => {
     if (activeIdx >= total && total > 0) setActiveIdx(0);
