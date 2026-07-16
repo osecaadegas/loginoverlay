@@ -48,9 +48,10 @@ try {
 
   assert.ok(BUILT_IN_STYLE_PRESETS.length >= 9, 'built-in presets cover beginner starting points');
   assert.ok(BUILT_IN_STYLE_PRESETS.some(preset => preset.id === 'transparent_obs'), 'transparent OBS preset exists');
-  for (const material of ['matte', 'metallic', 'gradient', 'glass', 'neon', 'minimal', 'soft_shadow', 'transparent_obs']) {
+  for (const material of ['original', 'matte', 'metallic', 'gradient', 'glass', 'neon', 'minimal', 'soft_shadow', 'transparent_obs']) {
     assert.ok(SIMPLE_MATERIAL_PRESETS.some(preset => preset.id === material), `${material} simple material exists`);
   }
+  assert.equal(SIMPLE_MATERIAL_PRESETS.find(preset => preset.id === 'original')?.protected, true, 'Original is a protected built-in preset');
   assert.ok(SIMPLE_COLOR_PALETTE.length >= 8, 'simple mode exposes streamer-friendly colour swatches');
   assert.ok(SIMPLE_SHAPES.some(shape => shape.id === 'pill'), 'simple mode exposes pill shape');
   assert.ok(SIMPLE_DENSITIES.some(size => size.id === 'compact'), 'simple mode exposes compact size');
@@ -107,6 +108,12 @@ try {
   assert.equal(normalizedSimple.material, DEFAULT_SIMPLE_SETTINGS.material, 'invalid simple material falls back safely');
   assert.equal(normalizedSimple.primaryColor, DEFAULT_SIMPLE_SETTINGS.primaryColor, 'invalid simple colour falls back safely');
   assert.equal(normalizedSimple.scale, 1.5, 'simple scale is clamped');
+
+  const originalSimple = normalizeSimpleSettings({ material: 'original' });
+  assert.equal(originalSimple.material, 'original', 'Original material is accepted by Simple Mode');
+  const originalAppearance = generateSimpleAppearance(originalSimple);
+  assert.equal(originalAppearance.generatedTokens.material, 'original', 'Original simple appearance records original intent');
+  assert.equal(originalAppearance.surfaces, undefined, 'Original simple appearance does not generate generic surfaces');
 
   const metallicGold = generateSimpleAppearance({
     ...DEFAULT_SIMPLE_SETTINGS,

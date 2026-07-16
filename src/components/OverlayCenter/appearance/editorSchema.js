@@ -61,6 +61,13 @@ export const EDITOR_MODE_CAPABILITIES = Object.freeze({
 
 export const SIMPLE_MATERIAL_PRESETS = [
   {
+    id: 'original',
+    name: 'Original',
+    tip: 'Recommended production design.',
+    finish: 'stream-ready baseline',
+    protected: true,
+  },
+  {
     id: 'matte',
     name: 'Matte',
     tip: 'Clean, flat, and easy to read.',
@@ -562,6 +569,18 @@ function deepMergeSimple(base, override) {
 
 export function generateSimpleAppearance(input = {}) {
   const settings = normalizeSimpleSettings(input);
+  if (settings.material === 'original') {
+    return {
+      simpleSettings: settings,
+      generatedTokens: {
+        material: 'original',
+        primaryColor: settings.primaryColor,
+        accentColor: settings.accentColor,
+        readableTextColor: '#f8fafc',
+        contrastRatio: 7,
+      },
+    };
+  }
   const materialGenerators = {
     matte: generateMatteTheme,
     metallic: generateMetallicTheme,

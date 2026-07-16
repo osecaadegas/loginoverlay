@@ -95,6 +95,9 @@
       "routes": ["/overlay/:token", "/overlay/:token?widget=<id>"],
       "styleSources": ["OverlayRenderer.css", "inline styles", "subValue", "data-widget-element in V12", "widget CSS variables"],
       "dataSources": ["overlay_widgets.config", "bonus_hunt_history", "slot_requests in V12"],
+      "migrationStatus": "production-v2-original-baseline",
+      "runtimeRegistry": "src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js",
+      "defaultMaterial": "original",
       "elements": ["root", "header", "stats", "slotCard", "slotRow", "slotImage", "stateBadge", "progress", "requestQueue"],
       "safeRanges": {
         "scale": [0.75, 1.5],
@@ -102,11 +105,11 @@
         "glowBlurPx": [0, 20],
         "fontSizePx": [10, 28]
       },
-      "unsupportedSettings": ["carouselDistance", "3dTransformDistance", "huntMath", "openingStateLogic"],
+      "unsupportedSettings": ["carouselDistance", "3dTransformDistance", "carouselDimensions", "slotImageHeight", "rowDimensions", "rootFrame", "structuralGap", "huntMath", "openingStateLogic"],
       "animationDependencies": ["bht-stack-float", "bht-stack-tilt-left", "bht-stack-tilt-right", "bht-list-scroll", "bht-progress-swipe", "bht-super-trill"],
       "previewRenderer": "OverlayPreview.PreviewSlot",
       "obsRenderer": "OverlayRenderer.WidgetSlot",
-      "knownProblems": ["Only V12 has broad element markers", "Older styles have different DOM structures", "3D styles require visible overflow"],
+      "knownProblems": ["Original production CSS is the default baseline", "Material presets must not generate generic card layouts", "Only V12 has broad element markers", "Older styles have different DOM structures", "3D styles require visible overflow"],
       "risk": "high"
     },
     {
@@ -164,19 +167,23 @@
       "configPanel": "src/components/OverlayCenter/widgets/GiveawayConfig.jsx",
       "styleKey": "displayStyle",
       "styles": ["v1", "v2", "v3", "v4", "metal", "bh_stats", "v12"],
-      "styleSources": ["heavy inline styles", "subValue", "gradients", "animation names"],
+      "migrationStatus": "production-v2",
+      "runtimeRegistry": "src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js",
+      "styleSources": ["heavy inline styles", "subValue", "subElementStyle", "gradients", "animation names", "appearanceV2 generated tokens"],
       "dataSources": ["overlay_widgets.config", "chat participants", "preview sample data"],
-      "elements": ["root", "title", "prize", "keyword", "participantCount", "winner"],
+      "elements": ["container", "header", "prize", "keyword", "participantCount", "statusBadge", "winnerArea", "progressSection", "timer", "emptyState", "celebration", "footer"],
       "safeRanges": {
-        "fontSizePx": [10, 30],
-        "radiusPx": [0, 28],
-        "glowBlurPx": [0, 18]
+        "scale": [0.75, 1.35],
+        "fontSizePx": [10, 24],
+        "radiusPx": [0, 36],
+        "glowBlurPx": [0, 18],
+        "blurPx": [0, 14]
       },
-      "unsupportedSettings": ["winnerSelectionLogic", "participantLogic", "drawAnimationGeometry"],
-      "animationDependencies": ["pulse", "glow", "winner/draw animations"],
+      "unsupportedSettings": ["winnerSelectionLogic", "participantLogic", "drawAnimationGeometry", "reelDistance", "confettiPath", "winnerTransform"],
+      "animationDependencies": ["ga-pulse", "ga-glow", "ga-haptic", "ga-confetti-fall", "ga-winner-entrance", "ga-trophy-3d", "ga-name-shimmer"],
       "previewRenderer": "OverlayPreview.PreviewSlot",
       "obsRenderer": "OverlayRenderer.WidgetSlot",
-      "knownProblems": ["Preview can show sample participants", "No broad element markers", "Style variants differ heavily"],
+      "knownProblems": ["Style variants differ heavily", "Confetti and reel animations cannot be pixel-compared frame-by-frame", "Participant/chat business logic remains outside appearance engine"],
       "risk": "high"
     },
     {
@@ -355,20 +362,23 @@
       "configPanel": "src/components/OverlayCenter/widgets/SlotRequestsConfig.jsx",
       "styleKey": "displayStyle",
       "styles": ["v1_minimal", "v2_card_stack", "v3_compact"],
-      "styleSources": ["OverlayRenderer.css", "widget-specific CSS variables", "class styles"],
-      "dataSources": ["slot_requests", "chat command config"],
-      "elements": ["root", "header", "requestRow", "requestCard", "slotImage", "slotTitle", "requester", "queueNumber", "emptyState"],
+      "migrationStatus": "production-v2",
+      "runtimeRegistry": "src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js",
+      "styleSources": ["OverlayRenderer.css", "widget-specific CSS variables", "class styles", "subValue", "subElementStyle", "appearanceV2 generated tokens"],
+      "dataSources": ["slot_requests", "chat command config", "preview sample data"],
+      "elements": ["container", "header", "queueContainer", "requestCard", "position", "slotImage", "slotTitle", "viewerName", "costBadge", "emptyState", "footer"],
       "safeRanges": {
-        "fontSizePx": [10, 24],
-        "rowHeightPx": [44, 120],
-        "imageSizePx": [32, 96],
-        "radiusPx": [0, 24]
+        "scale": [0.75, 1.35],
+        "fontSizePx": [11, 20],
+        "radiusPx": [0, 36],
+        "cardRadiusPx": [0, 28],
+        "blurPx": [0, 14]
       },
-      "unsupportedSettings": ["chatCommandParsing", "queueLogic", "3dCardTransformDistance", "marqueeDistance"],
+      "unsupportedSettings": ["chatCommandParsing", "queueLogic", "3dCardTransformDistance", "marqueeDistance", "queueAnimationDistance", "autoCycleInterval", "slotImageSize"],
       "animationDependencies": ["sr-infinite-scroll", "sr-min-slide-in", "sr-cs-marquee", "sr-cs-float", "sr-cs-badge-pulse", "sr-co-pop"],
       "previewRenderer": "OverlayPreview.PreviewSlot",
       "obsRenderer": "OverlayRenderer.WidgetSlot",
-      "knownProblems": ["No broad element markers", "Three styles have different DOM and animation assumptions"],
+      "knownProblems": ["Three styles have different DOM and animation assumptions", "Image dimensions remain widget-controlled to protect queue animations"],
       "risk": "high"
     },
     {

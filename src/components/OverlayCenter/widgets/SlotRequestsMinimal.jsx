@@ -6,7 +6,7 @@
  * font sizing, and auto-scroll for long queues.
  */
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { subValue } from './shared/appearanceStyles';
+import { subElementStyle, subValue } from './shared/appearanceStyles';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -67,10 +67,16 @@ export default function SlotRequestsMinimal({ config, requests }) {
 
   const fs = manualSize || autoFontSize;
   const imgH = Math.max(28, fs * 2.4);
+  const rootStyle = subElementStyle(c, 'container', {
+    fontFamily,
+    fontSize: `${fs}px`,
+    color: textColor,
+  });
+  const rowStyle = subElementStyle(c, 'requestCard');
 
   return (
-    <div ref={containerRef} className="sr-min-root" style={{
-      fontFamily, fontSize: `${fs}px`, color: textColor,
+    <div ref={containerRef} className="sr-min-root" data-widget-element="container" style={{
+      ...rootStyle,
       '--sr-min-accent': accent,
       '--sr-min-muted': mutedColor,
       '--sr-min-bg': bgColor,
@@ -81,18 +87,18 @@ export default function SlotRequestsMinimal({ config, requests }) {
       '--sr-min-card-radius': `${cardRadius}px`,
     }}>
       {/* ── Header ── */}
-      <div className="sr-min-header">
+      <div className="sr-min-header" data-widget-element="header" style={subElementStyle(c, 'header')}>
         <span className="sr-min-header-icon">🎰</span>
-        <span className="sr-min-header-title" style={{ fontWeight: Number(fontWeight) }}>Slot Requests</span>
+        <span className="sr-min-header-title" data-widget-element="slotTitle" style={subElementStyle(c, 'slotTitle', { fontWeight: Number(fontWeight) })}>Slot Requests</span>
         {requests.length > 0 && (
-          <span className="sr-min-header-count">{requests.length}</span>
+          <span className="sr-min-header-count" data-widget-element="position" style={subElementStyle(c, 'position')}>{requests.length}</span>
         )}
       </div>
 
       {/* ── List ── */}
-      <div ref={listRef} className="sr-min-list">
+      <div ref={listRef} className="sr-min-list" data-widget-element="queueContainer" style={subElementStyle(c, 'queueContainer')}>
         {requests.length === 0 && (
-          <div className="sr-min-empty">
+          <div className="sr-min-empty" data-widget-element="emptyState" style={subElementStyle(c, 'emptyState')}>
             <span className="sr-min-empty-icon">🎰</span>
             <span>No requests yet</span>
             <span className="sr-min-empty-hint">Viewers type {commandTrigger} &lt;slot&gt;</span>
@@ -107,6 +113,8 @@ export default function SlotRequestsMinimal({ config, requests }) {
                 <div
                   key={`${setIdx}-${r.id}`}
                   className={`sr-min-row${setIdx === 0 && newIds.has(r.id) ? ' sr-min-row--enter' : ''}`}
+                  data-widget-element="requestCard"
+                  style={rowStyle}
                 >
                   <div
                     className="sr-min-row-bg"
@@ -115,21 +123,22 @@ export default function SlotRequestsMinimal({ config, requests }) {
                   <div className="sr-min-row-overlay" />
                   <div className="sr-min-row-content">
                     {showNumbers && (
-                      <span className="sr-min-row-idx">{i + 1}</span>
+                      <span className="sr-min-row-idx" data-widget-element="position" style={subElementStyle(c, 'position')}>{i + 1}</span>
                     )}
                     <img
                       src={r.slot_image || FALLBACK_IMG}
                       alt=""
                       className="sr-min-row-img"
+                      data-widget-element="slotImage"
                       style={{ width: imgH, height: imgH }}
                       onError={e => { e.target.src = FALLBACK_IMG; }}
                     />
                     <div className="sr-min-row-info">
-                      <span className="sr-min-row-name" style={{ fontWeight: Number(fontWeight) }}>
+                      <span className="sr-min-row-name" data-widget-element="slotTitle" style={subElementStyle(c, 'slotTitle', { fontWeight: Number(fontWeight) })}>
                         {r.slot_name}
                       </span>
                       {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
-                        <span className="sr-min-row-by">by {r.requested_by}</span>
+                        <span className="sr-min-row-by" data-widget-element="viewerName" style={subElementStyle(c, 'viewerName')}>by {r.requested_by}</span>
                       )}
                     </div>
                   </div>

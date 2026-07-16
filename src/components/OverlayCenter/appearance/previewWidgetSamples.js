@@ -19,6 +19,37 @@ const SAMPLE_GIVEAWAY_PARTICIPANTS = [
   'Sofia',
 ];
 
+const SAMPLE_SLOT_REQUESTS = [
+  {
+    id: 'preview-sr-1',
+    slot_name: 'Gates of Olympus 1000',
+    slot_image: 'https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png',
+    requested_by: 'brutuspolus',
+    created_at: '2026-07-16T10:00:00.000Z',
+  },
+  {
+    id: 'preview-sr-2',
+    slot_name: 'Le Digger',
+    slot_image: 'https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png',
+    requested_by: 'miguel',
+    created_at: '2026-07-16T10:01:00.000Z',
+  },
+  {
+    id: 'preview-sr-3',
+    slot_name: 'Big Bass Secrets of the Golden Lake',
+    slot_image: 'https://images-cdn.softswiss.net/i/s2/pragmaticplay/BigBassSecretsOfTheGoldenLake.png',
+    requested_by: 'viewer_42',
+    created_at: '2026-07-16T10:02:00.000Z',
+  },
+  {
+    id: 'preview-sr-4',
+    slot_name: 'Cyber Runner',
+    slot_image: '',
+    requested_by: 'sara',
+    created_at: '2026-07-16T10:03:00.000Z',
+  },
+];
+
 function hasPositiveBetPool(config = {}) {
   return Object.values(config.bets || {}).some(value => Number(value) > 0);
 }
@@ -68,6 +99,44 @@ function applySpotifyPreviewSample(config = {}) {
 }
 
 function applyGiveawayPreviewSample(config = {}) {
+  const previewState = config.__appearancePreviewState;
+  if (previewState) {
+    const base = {
+      ...config,
+      title: config.title || 'Giveaway',
+      prize: config.prize || '1000 points',
+      keyword: config.keyword || 'join',
+      participants: SAMPLE_GIVEAWAY_PARTICIPANTS,
+      winner: '',
+      spinningWinner: '',
+      isActive: true,
+      __appearancePreviewSample: true,
+    };
+    if (previewState === 'empty') {
+      return {
+        ...base,
+        participants: [],
+        winner: '',
+        spinningWinner: '',
+        isActive: false,
+      };
+    }
+    if (previewState === 'drawing') {
+      return {
+        ...base,
+        spinningWinner: 'Miguel',
+        isActive: false,
+      };
+    }
+    if (previewState === 'winner') {
+      return {
+        ...base,
+        winner: 'Miguel',
+        isActive: false,
+      };
+    }
+    return base;
+  }
   if (config.winner || config.spinningWinner || config.isActive || hasParticipants(config)) {
     return { ...config, __appearancePreviewSample: true };
   }
@@ -82,6 +151,27 @@ function applyGiveawayPreviewSample(config = {}) {
   };
 }
 
+function applySlotRequestsPreviewSample(config = {}) {
+  if (Array.isArray(config.__appearancePreviewRequests)) {
+    return { ...config, __appearancePreviewSample: true };
+  }
+  const state = config.__appearancePreviewState || 'with_requests';
+  const requests = state === 'empty'
+    ? []
+    : state === 'busy_queue'
+      ? [...SAMPLE_SLOT_REQUESTS, ...SAMPLE_SLOT_REQUESTS.map((item, index) => ({
+          ...item,
+          id: `${item.id}-busy-${index}`,
+          requested_by: `viewer_${index + 5}`,
+        }))]
+      : SAMPLE_SLOT_REQUESTS;
+  return {
+    ...config,
+    __appearancePreviewRequests: requests,
+    __appearancePreviewSample: true,
+  };
+}
+
 function getPreviewFrame(widgetType, config = {}) {
   if (widgetType === 'bets') {
     const isGrid = ['v2_grid', 'v3_grid_2x3'].includes(config.displayStyle);
@@ -92,6 +182,11 @@ function getPreviewFrame(widgetType, config = {}) {
     return { width: compact ? 460 : 420, height: compact ? 120 : 420 };
   }
   if (widgetType === 'giveaway') return { width: 480, height: 360 };
+  if (widgetType === 'slot_requests') {
+    if (config.displayStyle === 'v2_card_stack') return { width: 560, height: 430 };
+    if (config.displayStyle === 'v3_compact') return { width: 560, height: 120 };
+    return { width: 360, height: 520 };
+  }
   return null;
 }
 
@@ -100,6 +195,7 @@ function applyWidgetPreviewSample(widget, now) {
   if (widget.widget_type === 'bets') return { ...widget, config: applyBetsPreviewSample(widget.config || {}, now) };
   if (widget.widget_type === 'spotify_now_playing') return { ...widget, config: applySpotifyPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'giveaway') return { ...widget, config: applyGiveawayPreviewSample(widget.config || {}) };
+  if (widget.widget_type === 'slot_requests') return { ...widget, config: applySlotRequestsPreviewSample(widget.config || {}) };
   return widget;
 }
 

@@ -7,7 +7,7 @@
  */
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { hex2rgb } from './shared/colorUtils';
-import { subValue } from './shared/appearanceStyles';
+import { subElementStyle, subValue } from './shared/appearanceStyles';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -116,13 +116,19 @@ export default function SlotRequestsCardStack({ config, requests }) {
     '--sr-cs-img-radius': `${imageRadius}px`,
     '--sr-cs-card-radius': `${cardRadius}px`,
   };
+  const rootStyle = subElementStyle(c, 'container', {
+    fontFamily,
+    fontSize,
+    color: textColor,
+  });
+  const cardStyle = subElementStyle(c, 'requestCard');
 
   /* ── Empty state ── */
   if (total === 0) {
     return (
-      <div className="sr-cs-root" style={{ fontFamily, fontSize, fontWeight: Number(fontWeight), color: textColor, ...rootVars }}>
-        <div className="sr-cs-container">
-          <div className="sr-cs-empty">
+      <div className="sr-cs-root" data-widget-element="container" style={{ ...rootStyle, fontWeight: Number(fontWeight), ...rootVars }}>
+        <div className="sr-cs-container" data-widget-element="queueContainer" style={subElementStyle(c, 'queueContainer')}>
+          <div className="sr-cs-empty" data-widget-element="emptyState" style={subElementStyle(c, 'emptyState')}>
             <span className="sr-cs-empty-icon">🎰</span>
             <span>No requests yet</span>
             <span className="sr-cs-empty-hint">Viewers type {commandTrigger} &lt;slot&gt;</span>
@@ -133,11 +139,11 @@ export default function SlotRequestsCardStack({ config, requests }) {
   }
 
   return (
-    <div className="sr-cs-root" style={{ fontFamily, fontSize, color: textColor, ...rootVars }}>
-      <div className="sr-cs-container">
+    <div className="sr-cs-root" data-widget-element="container" style={{ ...rootStyle, ...rootVars }}>
+      <div className="sr-cs-container" data-widget-element="queueContainer" style={subElementStyle(c, 'queueContainer')}>
 
         {/* ── Top: Scrolling pill strip ── */}
-        <div className="sr-cs-strip">
+        <div className="sr-cs-strip" data-widget-element="header" style={subElementStyle(c, 'header')}>
           <div className="sr-cs-strip-scroll" style={{ '--sr-cs-pill-count': total }}>
             {[...requests, ...requests].map((r, i) => {
               const idx = i % total;
@@ -146,22 +152,24 @@ export default function SlotRequestsCardStack({ config, requests }) {
                 <button
                   key={`${r.id}-${i >= total ? 'c' : 'o'}`}
                   className={`sr-cs-pill${isActive ? ' sr-cs-pill--active' : ''}`}
+                  data-widget-element="requestCard"
                   onClick={() => { setActiveIdx(idx); resetInterval(); }}
                 >
                   <img
                     src={r.slot_image || FALLBACK_IMG}
                     alt="" className="sr-cs-pill-thumb"
+                    data-widget-element="slotImage"
                     onError={e => { e.target.src = FALLBACK_IMG; }}
                   />
-                  <span className="sr-cs-pill-name">{r.slot_name}</span>
+                  <span className="sr-cs-pill-name" data-widget-element="slotTitle" style={subElementStyle(c, 'slotTitle')}>{r.slot_name}</span>
                   {showRequester && r.requested_by !== 'anonymous' && (
-                    <span className="sr-cs-pill-by">{r.requested_by}</span>
+                    <span className="sr-cs-pill-by" data-widget-element="viewerName" style={subElementStyle(c, 'viewerName')}>{r.requested_by}</span>
                   )}
                 </button>
               );
             })}
           </div>
-          <span className="sr-cs-strip-count">{total}</span>
+          <span className="sr-cs-strip-count" data-widget-element="position" style={subElementStyle(c, 'position')}>{total}</span>
         </div>
 
         {/* ── Middle: 3D card carousel ── */}
@@ -171,23 +179,24 @@ export default function SlotRequestsCardStack({ config, requests }) {
               const isCenter = offset === 0;
               return (
                 <div key={req.id} className="sr-cs-card-wrap" style={cardTransform(offset)}>
-                  <div className={`sr-cs-card${isCenter ? ' sr-cs-card--active' : ''}`}>
+                  <div className={`sr-cs-card${isCenter ? ' sr-cs-card--active' : ''}`} data-widget-element="requestCard" style={cardStyle}>
                     <div className="sr-cs-card-img-wrap">
                       <img
                         src={req.slot_image || FALLBACK_IMG}
                         alt={req.slot_name}
                         className="sr-cs-card-img"
+                        data-widget-element="slotImage"
                         onError={e => { e.target.src = FALLBACK_IMG; }}
                       />
                     </div>
                     <div className="sr-cs-card-gradient" />
-                    {showNumbers && <div className="sr-cs-card-badge">#{idx + 1}</div>}
+                    {showNumbers && <div className="sr-cs-card-badge" data-widget-element="position" style={subElementStyle(c, 'position')}>#{idx + 1}</div>}
                     <div className="sr-cs-card-info">
-                      <div className="sr-cs-card-name" style={{ fontWeight: Number(fontWeight) }}>
+                      <div className="sr-cs-card-name" data-widget-element="slotTitle" style={subElementStyle(c, 'slotTitle', { fontWeight: Number(fontWeight) })}>
                         {req.slot_name}
                       </div>
                       {showRequester && req.requested_by !== 'anonymous' && (
-                        <div className="sr-cs-card-by">by {req.requested_by}</div>
+                        <div className="sr-cs-card-by" data-widget-element="viewerName" style={subElementStyle(c, 'viewerName')}>by {req.requested_by}</div>
                       )}
                     </div>
                     {isCenter && <div className="sr-cs-card-ring" />}
@@ -199,7 +208,7 @@ export default function SlotRequestsCardStack({ config, requests }) {
         </div>
 
         {/* ── Bottom: Stats bar ── */}
-        <div className="sr-cs-bottom">
+        <div className="sr-cs-bottom" data-widget-element="footer" style={subElementStyle(c, 'footer')}>
           <div className="sr-cs-stats">
             <span className="sr-cs-stat">🎰 {total} request{total !== 1 ? 's' : ''}</span>
             <span className="sr-cs-stat-divider" />

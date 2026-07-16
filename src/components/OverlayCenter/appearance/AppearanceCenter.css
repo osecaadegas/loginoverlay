@@ -56,6 +56,22 @@
   flex-wrap: wrap;
 }
 
+.ve-preview-state-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px;
+  border: 1px solid var(--ve-line);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.45);
+}
+
+.ve-preview-state-picker button {
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 0.78rem;
+}
+
 .ve-back-link,
 .ve-toolbar-button,
 .ve-canvas-actions button,
@@ -892,6 +908,20 @@
 .ve-material-card__copy {
   display: grid;
   gap: 2px;
+}
+
+.ve-material-card__copy strong em {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(20, 216, 216, 0.14);
+  border: 1px solid rgba(20, 216, 216, 0.3);
+  color: #7ff7ef;
+  font-size: 0.65rem;
+  font-style: normal;
+  font-weight: 800;
+  vertical-align: middle;
 }
 
 .ve-material-card__copy small {

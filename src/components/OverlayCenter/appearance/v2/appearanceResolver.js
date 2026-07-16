@@ -255,12 +255,18 @@ function buildBHStatsPatch(tokens) {
 }
 
 function buildBonusHuntPatch(tokens) {
+  if (tokens?.isOriginalBaseline || tokens?.material === 'original') {
+    return {};
+  }
   const common = commonSubElements(tokens);
   const headerBg = tokens.material === 'transparent_obs'
     ? tokens.colors.secondarySurface
     : tokens.colors.surface;
   return {
-    ...commonVisualPatch(tokens),
+    accentColor: tokens.colors.accent,
+    textColor: tokens.colors.text,
+    mutedTextColor: tokens.colors.mutedText,
+    statValueColor: tokens.colors.text,
     headerColor: headerBg,
     headerAccent: tokens.colors.accent,
     countCardColor: tokens.colors.secondarySurface,
@@ -273,32 +279,13 @@ function buildBonusHuntPatch(tokens) {
     totalPayText: tokens.colors.text,
     superBadgeColor: '#f5b301',
     extremeBadgeColor: tokens.colors.negative,
-    statValueColor: tokens.colors.text,
-    mutedTextColor: tokens.colors.mutedText,
     cardOutlineColor: tokens.colors.border,
-    cardOutlineWidth: tokens.shape.borderWidth,
-    cardPadding: tokens.spacing.cardPadding,
-    cardGap: tokens.spacing.itemGap,
+    cardOutlineWidth: tokens.material === 'minimal' || tokens.material === 'transparent_obs' ? 0 : 1,
+    fontFamily: tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    fontWeight: tokens.typography.bodyWeight,
+    widgetScale: tokens.spacing.scale,
     subElements: {
-      ...common,
-      header: {
-        background: headerBg,
-        accentColor: tokens.colors.accent,
-        textColor: tokens.colors.text,
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
-        radius: tokens.shape.cardRadius,
-        padding: tokens.spacing.cardPadding,
-      },
-      headerContainer: {
-        background: headerBg,
-        accentColor: tokens.colors.accent,
-        textColor: tokens.colors.text,
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
-        radius: tokens.shape.cardRadius,
-        padding: tokens.spacing.cardPadding,
-      },
       huntTitle: {
         textColor: tokens.colors.text,
         fontFamily: tokens.typography.headerFont,
@@ -311,49 +298,14 @@ function buildBonusHuntPatch(tokens) {
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
       },
-      mainStatsContainer: {
-        background: 'transparent',
-        gap: tokens.spacing.itemGap,
-      },
-      statCell: {
-        background: tokens.colors.elevatedSurface,
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
-        radius: tokens.shape.cardRadius,
-        padding: Math.max(4, Math.round(tokens.spacing.cardPadding * 0.75)),
-      },
       statLabel: common.label,
       statValue: common.value,
-      tagContainer: {
-        background: tokens.colors.elevatedSurface,
-        textColor: tokens.colors.text,
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
-        radius: tokens.shape.badgeRadius,
-      },
       tagText: {
         textColor: tokens.colors.text,
         fontWeight: tokens.typography.valueWeight,
       },
-      bonusCard: {
-        ...common.statsCard,
-        background: tokens.colors.secondarySurface,
-      },
-      slotListContainer: {
-        ...common.statsCard,
-        background: tokens.colors.secondarySurface,
-      },
-      slotCarouselContainer: {
-        gap: tokens.spacing.itemGap,
-        padding: tokens.spacing.itemGap,
-      },
       slotRow: {
-        background: tokens.colors.elevatedSurface,
         textColor: tokens.colors.text,
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
-        radius: tokens.shape.cardRadius,
-        padding: Math.max(4, Math.round(tokens.spacing.cardPadding * 0.72)),
       },
       slotTitle: {
         textColor: tokens.colors.text,
@@ -365,12 +317,6 @@ function buildBonusHuntPatch(tokens) {
         textColor: tokens.colors.mutedText,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.labelWeight,
-      },
-      slotThumbnail: {
-        radius: Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
-      },
-      slotImage: {
-        radius: Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
       },
       winLabel: common.label,
       multiplierLabel: common.label,
@@ -386,7 +332,6 @@ function buildBonusHuntPatch(tokens) {
       progressBarFill: {
         background: tokens.colors.primary,
         fillColor: tokens.colors.primary,
-        radius: tokens.shape.badgeRadius,
       },
       progressCount: {
         textColor: tokens.colors.mutedText,
@@ -394,12 +339,10 @@ function buildBonusHuntPatch(tokens) {
         fontWeight: tokens.typography.labelWeight,
       },
       profit: {
-        background: tokens.colors.elevatedSurface,
         textColor: tokens.colors.positive,
         accentColor: tokens.colors.positive,
       },
       loss: {
-        background: tokens.colors.elevatedSurface,
         textColor: tokens.colors.negative,
         accentColor: tokens.colors.negative,
       },
@@ -407,18 +350,7 @@ function buildBonusHuntPatch(tokens) {
         accentColor: '#f5b301',
       },
       footer: {
-        background: tokens.colors.elevatedSurface,
         textColor: tokens.colors.accent,
-        radius: tokens.shape.cardRadius,
-        padding: tokens.spacing.cardPadding,
-      },
-      footerContainer: {
-        background: tokens.colors.elevatedSurface,
-        textColor: tokens.colors.accent,
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
-        radius: tokens.shape.cardRadius,
-        padding: tokens.spacing.cardPadding,
       },
       footerLabel: common.label,
       footerTotalValue: {
@@ -429,13 +361,6 @@ function buildBonusHuntPatch(tokens) {
           success: { textColor: tokens.colors.positive },
           error: { textColor: tokens.colors.negative },
         },
-      },
-      requestsSectionContainer: {
-        background: tokens.colors.secondarySurface,
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
-        radius: tokens.shape.cardRadius,
-        padding: tokens.spacing.cardPadding,
       },
       requestsHeader: {
         textColor: tokens.colors.text,
@@ -449,22 +374,404 @@ function buildBonusHuntPatch(tokens) {
       },
       requestsEmpty: {
         textColor: tokens.colors.mutedText,
+      },
+    },
+  };
+}
+
+function buildSlotRequestsPatch(tokens) {
+  const common = commonSubElements(tokens);
+  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
+    ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 30)} ${tokens.colors.shadow}`
+    : undefined;
+  const activeShadow = tokens.materialTokens?.glowIntensity > 0.01
+    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 34)} ${tokens.colors.glow}`
+    : cardShadow;
+  const rowBackground = tokens.material === 'transparent_obs'
+    ? tokens.colors.elevatedSurface
+    : tokens.colors.secondarySurface;
+  return {
+    ...commonVisualPatch(tokens),
+    accentColor: tokens.colors.primary,
+    bgColor: tokens.colors.surface,
+    cardBg: rowBackground,
+    mutedColor: tokens.colors.mutedText,
+    widgetScale: tokens.spacing.scale,
+    subElements: {
+      ...common,
+      container: {
+        ...common.container,
+        background: tokens.colors.surface,
+        textColor: tokens.colors.text,
+      },
+      header: {
         background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.text,
         borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
         radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+        fontFamily: tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+      },
+      queueContainer: {
+        background: tokens.colors.secondarySurface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+        shadow: cardShadow,
+      },
+      requestCard: {
+        background: rowBackground,
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.primary,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: Math.max(4, Math.round(tokens.spacing.cardPadding * 0.82)),
+        gap: tokens.spacing.itemGap,
+        shadow: cardShadow,
+        states: {
+          selected: { borderColor: tokens.colors.primary, shadow: activeShadow },
+          playing: { borderColor: tokens.colors.warning, accentColor: tokens.colors.warning, shadow: activeShadow },
+          completed: { borderColor: tokens.colors.positive, accentColor: tokens.colors.positive },
+          rejected: { borderColor: tokens.colors.negative, accentColor: tokens.colors.negative },
+        },
+      },
+      position: {
+        background: tokens.colors.primary,
+        textColor: tokens.colors.surfaceReference === '#f8fafc' ? '#07111f' : '#020617',
+        accentColor: tokens.colors.primary,
+        borderColor: tokens.colors.highlight,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.badgeRadius,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      slotImage: {
+        radius: Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+      },
+      slotTitle: {
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      viewerName: {
+        textColor: tokens.colors.mutedText,
+        mutedColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.labelWeight,
+      },
+      costBadge: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.accent,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.badgeRadius,
+      },
+      emptyState: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        padding: tokens.spacing.rootPadding,
+      },
+      footer: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.mutedText,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+      },
+    },
+  };
+}
+
+function buildGiveawayPatch(tokens) {
+  const common = commonSubElements(tokens);
+  const liveColor = tokens.colors.positive;
+  const closedColor = tokens.colors.mutedText;
+  const winnerColor = tokens.colors.warning;
+  const statusShadow = tokens.materialTokens?.glowIntensity > 0.01
+    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 36)} ${tokens.colors.glow}`
+    : undefined;
+  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
+    ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 30)} ${tokens.colors.shadow}`
+    : undefined;
+  return {
+    ...commonVisualPatch(tokens),
+    accentColor: tokens.colors.primary,
+    bgColor: tokens.colors.surface,
+    cardBg: tokens.colors.secondarySurface,
+    mutedColor: tokens.colors.mutedText,
+    widgetScale: tokens.spacing.scale,
+    subElements: {
+      ...common,
+      container: {
+        ...common.container,
+        background: tokens.colors.surface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.rootRadius,
+        padding: tokens.spacing.rootPadding,
+      },
+      header: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+        fontFamily: tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+      },
+      prize: {
+        background: tokens.colors.secondarySurface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        fontFamily: tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+      },
+      keyword: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.primary,
+        accentColor: tokens.colors.primary,
+        borderColor: tokens.colors.highlight,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.badgeRadius,
+        padding: Math.max(3, Math.round(tokens.spacing.cardPadding * 0.65)),
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+        shadow: statusShadow,
+      },
+      counter: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      participantCount: {
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.primary,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      statusBadge: {
+        background: tokens.colors.elevatedSurface,
+        textColor: closedColor,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.badgeRadius,
+        padding: Math.max(3, Math.round(tokens.spacing.cardPadding * 0.55)),
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.labelWeight,
+        states: {
+          live: {
+            background: 'rgba(34,197,94,0.16)',
+            textColor: liveColor,
+            borderColor: 'rgba(34,197,94,0.36)',
+            shadow: statusShadow,
+          },
+          closed: {
+            background: tokens.colors.elevatedSurface,
+            textColor: closedColor,
+            borderColor: tokens.colors.border,
+          },
+          winner: {
+            background: 'rgba(245,179,1,0.16)',
+            textColor: winnerColor,
+            borderColor: 'rgba(245,179,1,0.42)',
+            shadow: statusShadow,
+          },
+        },
+      },
+      timer: {
+        textColor: liveColor,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.labelWeight,
+      },
+      winnerCard: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.text,
+        accentColor: winnerColor,
+        borderColor: tokens.colors.highlight,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        shadow: cardShadow || statusShadow,
+        states: {
+          winner: { accentColor: winnerColor, textColor: tokens.colors.text },
+          drawing: { accentColor: tokens.colors.primary, textColor: tokens.colors.text },
+        },
+      },
+      winnerArea: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.text,
+        accentColor: winnerColor,
+        borderColor: tokens.colors.highlight,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        shadow: cardShadow || statusShadow,
+      },
+      progressSection: {
+        background: tokens.colors.secondarySurface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+      },
+      participantList: {
+        background: tokens.colors.secondarySurface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+      },
+      emptyState: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        padding: tokens.spacing.rootPadding,
+      },
+      celebration: {
+        accentColor: tokens.colors.primary,
+        fillColor: tokens.colors.warning,
+        shadow: statusShadow,
+      },
+      footer: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.mutedText,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
       },
     },
   };
 }
 
 function buildPatchForWidget(widgetType, tokens) {
+  if (tokens?.isOriginalBaseline || tokens?.material === 'original') return {};
   if (widgetType === 'bh_stats') return buildBHStatsPatch(tokens);
   if (widgetType === 'bonus_hunt') return buildBonusHuntPatch(tokens);
+  if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens);
+  if (widgetType === 'giveaway') return buildGiveawayPatch(tokens);
   return {};
 }
 
+function filterUnsupportedSubElements(widgetType, subElements = {}) {
+  const next = deepMergeV2(subElements);
+  if (widgetType === 'slot_requests' && next.slotImage) {
+    delete next.slotImage.imageSize;
+    delete next.slotImage.width;
+    delete next.slotImage.height;
+  }
+  if (widgetType === 'bonus_hunt') {
+    for (const elementId of ['slotImage', 'slotThumbnail', 'slotCarouselContainer', 'slotListContainer', 'slotRow', 'container', 'headerContainer', 'footerContainer']) {
+      if (!next[elementId]) continue;
+      delete next[elementId].imageSize;
+      delete next[elementId].width;
+      delete next[elementId].height;
+      delete next[elementId].minHeight;
+      delete next[elementId].maxHeight;
+    }
+    for (const elementId of ['slotCarouselContainer', 'slotListContainer', 'slotRow', 'container', 'headerContainer', 'statCell', 'footerContainer']) {
+      if (!next[elementId]) continue;
+      delete next[elementId].padding;
+      delete next[elementId].gap;
+    }
+  }
+  return next;
+}
+
+const BONUS_HUNT_GENERIC_VISUAL_KEYS = Object.freeze([
+  'accentColor',
+  'bgColor',
+  'cardBg',
+  'textColor',
+  'mutedColor',
+  'borderColor',
+  'borderRadius',
+  'borderWidth',
+  'cardRadius',
+  'cardBorder',
+  'cardBorderWidth',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'progressColor',
+  'progressBgColor',
+  'bestColor',
+  'worstColor',
+  'shadowSize',
+  'shadowIntensity',
+  'widgetScale',
+  'headerColor',
+  'headerAccent',
+  'countCardColor',
+  'currentBonusColor',
+  'currentBonusAccent',
+  'listCardColor',
+  'listCardAccent',
+  'summaryColor',
+  'totalPayColor',
+  'totalPayText',
+  'superBadgeColor',
+  'extremeBadgeColor',
+  'statValueColor',
+  'mutedTextColor',
+  'cardOutlineColor',
+  'cardOutlineWidth',
+  'cardPadding',
+  'cardGap',
+  'slotImageHeight',
+]);
+
+function stripInheritedBonusHuntVisualDefaults(config = {}) {
+  const baseKeys = new Set(config.__appearanceBaseConfigKeys || []);
+  const next = { ...config };
+  for (const key of BONUS_HUNT_GENERIC_VISUAL_KEYS) {
+    if (!baseKeys.has(key)) delete next[key];
+  }
+  return next;
+}
+
 export function buildWidgetV2CssVars(tokens = {}) {
-  if (!tokens.colors) return {};
+  if (!tokens.colors || tokens.isOriginalBaseline || tokens.material === 'original') return {};
   return {
     '--sc-v2-primary': tokens.colors.primary,
     '--sc-v2-accent': tokens.colors.accent,
@@ -502,18 +809,24 @@ export function applyWidgetAppearanceV2ToConfig(widget, config, appearance = {},
   if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type)) return config;
   const resolved = resolveWidgetAppearanceV2({ ...widget, config }, appearance, options);
   if (!resolved) return config;
+  const isOriginalBaseline = resolved.tokens?.isOriginalBaseline || resolved.tokens?.material === 'original';
   const patch = buildPatchForWidget(widget.widget_type, resolved.tokens);
   const explicitSubElements = config.__appearanceExplicitSubElements || {};
   const generatedSubElements = patch.subElements || {};
   const v2ElementOverrides = resolved.appearance.elementOverrides || {};
-  const finalSubElements = deepMergeV2(
-    config.subElements || {},
+  const inheritedSubElements = widget.widget_type === 'bonus_hunt'
+    ? {}
+    : (config.subElements || {});
+  const finalSubElements = filterUnsupportedSubElements(widget.widget_type, deepMergeV2(
+    inheritedSubElements,
     generatedSubElements,
     explicitSubElements,
     v2ElementOverrides
-  );
+  ));
   const next = {
-    ...config,
+    ...(isOriginalBaseline && widget.widget_type === 'bonus_hunt'
+      ? stripInheritedBonusHuntVisualDefaults(config)
+      : config),
     ...patch,
     subElements: finalSubElements,
     __appearanceExplicitSubElements: finalSubElements,

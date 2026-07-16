@@ -7,7 +7,7 @@
  *   3. Listen to Twitch IRC for !sr commands (always-on when srChatEnabled)
  *   4. Delegate rendering to the active display style component
  */
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import SlotRequestsMinimal from './SlotRequestsMinimal';
 import SlotRequestsCardStack from './SlotRequestsCardStack';
@@ -16,13 +16,19 @@ import SlotRequestsCompactOverlay from './SlotRequestsCompactOverlay';
 export default function SlotRequestsWidget({ config, userId }) {
   const c = config || {};
   const maxDisplay = c.maxDisplay || 20;
-  const [requests, setRequests] = useState([]);
+  const previewRequests = useMemo(() => (
+    Array.isArray(c.__appearancePreviewRequests)
+      ? c.__appearancePreviewRequests.slice(0, maxDisplay)
+      : null
+  ), [c.__appearancePreviewRequests, maxDisplay]);
+  const [requests, setRequests] = useState(previewRequests || []);
   const mountedRef = useRef(true);
   // Monotonic counter — stale in-flight fetches are silently discarded.
   const fetchSeqRef = useRef(0);
 
   /* ── Fetch pending requests (stale-result protected) ── */
   const fetchRequests = useCallback(async () => {
+    if (previewRequests) return;
     if (!userId) return;
     const seq = ++fetchSeqRef.current;
     const { data, error } = await supabase
@@ -34,12 +40,18 @@ export default function SlotRequestsWidget({ config, userId }) {
       .limit(maxDisplay);
     if (seq !== fetchSeqRef.current) return; // stale result — discard
     if (!error && data && mountedRef.current) setRequests(data);
-  }, [userId, maxDisplay]);
+  }, [userId, maxDisplay, previewRequests]);
 
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
+  useEffect(() => {
+    if (!previewRequests) return;
+    setRequests(previewRequests);
+  }, [previewRequests]);
+
   /* ── Realtime subscription ── */
   useEffect(() => {
+    if (previewRequests) return;
     if (!userId) return;
     const channel = supabase
       .channel(`sr-widget-${userId}`)
@@ -51,7 +63,7 @@ export default function SlotRequestsWidget({ config, userId }) {
       }, () => { fetchRequests(); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetchRequests, userId]);
+  }, [fetchRequests, previewRequests, userId]);
 
   /* ── NOTE: Twitch IRC chat listener has been moved to useSlotRequestListener.js ── */
   /* ── (app-level persistent hook) — no widget-scoped WebSocket needed anymore ── */

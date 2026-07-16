@@ -72,3 +72,32 @@
 - Constrained: font sizes, participant badge size, shadow/glow.
 - Dangerous: changing draw/winner animation layout or compact dimensions without tests.
 - Not customizable: giveaway business logic, participant list, winner selection.
+
+## Production V2 migration
+
+Migrated on 2026-07-16 through `src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js` and `src/components/OverlayCenter/appearance/v2/appearanceResolver.js`.
+
+### Runtime mapping
+
+- Simple Mode materials map into `accentColor`, `bgColor`, `cardBg`, `textColor`, `mutedColor`, `borderColor`, `fontFamily`, and `widgetScale`.
+- Advanced Mode elements map into `subElements` for `container`, `header`, `prize`, `keyword`, `participantCount`, `statusBadge`, `winnerArea`, `progressSection`, `timer`, `emptyState`, `celebration`, and `footer`.
+- Existing inline variants now read V2 values through `subValue` and `subElementStyle` without changing participant/chat persistence.
+- Preview sample states are injected by `src/components/OverlayCenter/appearance/previewWidgetSamples.js`.
+
+### State behavior
+
+The V2 mapper keeps separate semantic state colors for:
+
+- `statusBadge.live`
+- `statusBadge.closed`
+- `statusBadge.winner`
+- `winnerCard.winner`
+- `winnerCard.drawing`
+
+### Still intentionally locked
+
+- Winner selection.
+- Participant collection.
+- Draw reel transform geometry.
+- Confetti path/timing.
+- Winner entrance choreography.

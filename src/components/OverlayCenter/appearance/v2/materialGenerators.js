@@ -15,6 +15,7 @@ import {
 export const APPEARANCE_V2_SCHEMA_VERSION = 1;
 
 export const MATERIAL_IDS = Object.freeze([
+  'original',
   'matte',
   'metallic',
   'gradient',
@@ -71,6 +72,26 @@ function normalizeMaterialInput(input = {}) {
     textSize: Object.prototype.hasOwnProperty.call(TEXT_SIZE_TOKENS, input.textSize) ? input.textSize : DEFAULT_SIMPLE_APPEARANCE_V2.textSize,
     fontFamily: input.fontFamily || DEFAULT_SIMPLE_APPEARANCE_V2.fontFamily,
     boldText: !!input.boldText,
+  };
+}
+
+export function generateOriginalTokens(input = {}) {
+  const settings = normalizeMaterialInput({ ...input, material: 'original' });
+  return {
+    schemaVersion: APPEARANCE_V2_SCHEMA_VERSION,
+    material: 'original',
+    isOriginalBaseline: true,
+    colors: {},
+    materialTokens: {},
+    typography: {},
+    shape: {},
+    spacing: { scale: settings.scale || 1 },
+    motion: {},
+    validation: [{
+      code: 'original-baseline',
+      severity: 'info',
+      message: 'Using the widget original production styling.',
+    }],
   };
 }
 
@@ -354,6 +375,7 @@ export function generateTransparentTokens(input = {}) {
 export function generateAppearanceTokens(input = {}, capability = {}) {
   const normalized = normalizeMaterialInput(input);
   const generators = {
+    original: generateOriginalTokens,
     matte: generateMatteTokens,
     metallic: generateMetallicTokens,
     gradient: generateGradientTokens,

@@ -92,7 +92,23 @@
 ## Customization safety
 
 - Safe: accent color, text color, muted color, state colors, simple root/card surface color in V12.
-- Constrained: font size, card radius, card padding, image size, glow, row height.
+- Constrained: font size, card radius, glow.
+- Widget-owned structural values: card padding, image size/height, row height, root frame, internal gaps, carousel dimensions.
 - Coupled: list/card width, carousel distances, overflow, progress animation timing.
 - Dangerous: changing 3D transforms, scroll distances, absolute positions inside variants.
 - Not customizable: hunt math, payout values, opening state, request logic.
+
+## Production V2 Baseline
+
+`bonus_hunt` is connected to Appearance Engine V2, but its default is the protected `Original` material. Original emits no generic visual overrides and lets the production Bonus Hunt CSS render as the baseline.
+
+Reset, Restore recommended style, no appearance record, and cleared overrides should all return to Original. Material presets such as Matte, Metallic, Glass and Neon are additive: they recolor safe existing variables and text/state colours while preserving the carousel, row dimensions, footer/header spacing, root frame and animations.
+
+Do not reintroduce generic generated sub-element patches for:
+
+- `headerContainer` padding/background/radius.
+- `statCell` card surfaces.
+- `slotCarouselContainer` gap/padding.
+- `slotRow` padding/background/radius.
+- `slotImage` height or image size.
+- `footerContainer` padding/background/radius.

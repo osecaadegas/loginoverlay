@@ -12,6 +12,46 @@ import { subElementStyle, subValue } from './shared/appearanceStyles';
 
 const FALLBACK_SR_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
+const V12_ORIGINAL_STYLE = Object.freeze({
+  rootBackground: 'linear-gradient(160deg, rgba(38,40,46,0.97), rgba(52,54,62,0.95))',
+  headerColor: 'rgba(38,40,46,0.95)',
+  headerAccent: '#2dd4bf',
+  countCardColor: 'rgba(255,255,255,0.04)',
+  currentBonusColor: 'rgba(28,30,34,0.72)',
+  currentBonusAccent: '#2dd4bf',
+  listCardColor: 'rgba(38,40,46,0.95)',
+  listCardAccent: '#cbd5e1',
+  summaryColor: 'rgba(38,40,46,0.95)',
+  totalPayColor: '#eab308',
+  totalPayText: '#ffffff',
+  superBadgeColor: '#eab308',
+  extremeBadgeColor: '#ef4444',
+  textColor: '#ffffff',
+  mutedTextColor: '#8baacf',
+  statValueColor: '#ffffff',
+  cardOutlineColor: 'transparent',
+  cardOutlineWidth: 0,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 15,
+  cardRadius: 0,
+  cardGap: 0,
+  cardPadding: 8,
+  slotImageHeight: 180,
+  listMaxHeight: 400,
+});
+
+function composeV12RootBackground(headerColor, rootBackground) {
+  const explicitRoot = String(rootBackground || '').trim();
+  if (explicitRoot) return explicitRoot;
+  const color = String(headerColor || '').trim();
+  if (!color) return V12_ORIGINAL_STYLE.rootBackground;
+  if (/gradient\(/i.test(color)) return color;
+  if (/^#[0-9a-f]{6}$/i.test(color)) {
+    return `linear-gradient(160deg, ${color}f8, ${color}f0)`;
+  }
+  return `linear-gradient(160deg, ${color}, ${color})`;
+}
+
 export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
@@ -149,30 +189,36 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
     : { subElements: c.subElements || {} };
   const scopedValue = (elementId, property, fallback, stateId = 'default') => subValue(explicitAppearanceConfig, elementId, property, fallback, stateId);
   const scopedValueWithLegacy = (elementId, legacyElementId, property, fallback, stateId = 'default') => scopedValue(elementId, property, scopedValue(legacyElementId, property, fallback, stateId), stateId);
-  const headerColor = scopedValueWithLegacy('headerContainer', 'header', 'background', c.headerColor || '#1e3a8a');
-  const headerAccent = scopedValueWithLegacy('headerContainer', 'header', 'accentColor', c.headerAccent || '#60a5fa');
-  const countCardColor = scopedValue('card', 'background', c.countCardColor || '#1e3a8a');
-  const currentBonusColor = scopedValue('highlight', 'background', c.currentBonusColor || '#166534');
-  const currentBonusAccent = scopedValue('highlight', 'accentColor', c.currentBonusAccent || '#86efac');
-  const listCardColor = scopedValue('bonusCard', 'background', c.listCardColor || '#581c87');
-  const listCardAccent = scopedValue('bonusCard', 'accentColor', c.listCardAccent || '#cbd5e1');
-  const summaryColor = scopedValue('value', 'background', c.summaryColor || '#1e3a8a');
-  const totalPayColor = scopedValue('profit', 'background', c.totalPayColor || '#eab308');
-  const totalPayText = scopedValue('profit', 'textColor', c.totalPayText || '#ffffff');
-  const superBadgeColor = scopedValue('openedState', 'accentColor', c.superBadgeColor || '#eab308');
-  const extremeBadgeColor = scopedValue('loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
-  const textColor = scopedValue('bonusCard', 'textColor', c.textColor || '#ffffff');
-  const mutedTextColor = scopedValue('label', 'textColor', c.mutedTextColor || '#93c5fd');
-  const statValueColor = scopedValue('value', 'textColor', c.statValueColor || '#ffffff');
-  const cardOutlineColor = scopedValue('bonusCard', 'borderColor', c.cardOutlineColor || 'transparent');
-  const cardOutlineWidth = scopedValue('bonusCard', 'borderWidth', c.cardOutlineWidth ?? 2);
-  const fontFamily = scopedValue('container', 'fontFamily', scopedValue('bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif"));
-  const fontSize = scopedValue('container', 'fontSize', scopedValue('bonusCard', 'fontSize', c.fontSize ?? 15));
-  const cardRadius = scopedValue('bonusCard', 'radius', c.cardRadius ?? 16);
-  const cardGap = scopedValue('bonusCard', 'gap', c.cardGap ?? 12);
-  const cardPadding = scopedValue('bonusCard', 'padding', c.cardPadding ?? 14);
-  const slotImageHeight = scopedValue('slotImage', 'height', c.slotImageHeight ?? 180);
-  const listMaxHeight = c.listMaxHeight ?? 400;
+  const headerColor = scopedValueWithLegacy('headerContainer', 'header', 'background', c.headerColor || V12_ORIGINAL_STYLE.headerColor);
+  const headerAccent = scopedValueWithLegacy('headerContainer', 'header', 'accentColor', c.headerAccent || V12_ORIGINAL_STYLE.headerAccent);
+  const countCardColor = scopedValue('card', 'background', c.countCardColor || V12_ORIGINAL_STYLE.countCardColor);
+  const currentBonusColor = scopedValue('highlight', 'background', c.currentBonusColor || V12_ORIGINAL_STYLE.currentBonusColor);
+  const currentBonusAccent = scopedValue('highlight', 'accentColor', c.currentBonusAccent || V12_ORIGINAL_STYLE.currentBonusAccent);
+  const listCardColor = scopedValue('bonusCard', 'background', c.listCardColor || V12_ORIGINAL_STYLE.listCardColor);
+  const listCardAccent = scopedValue('bonusCard', 'accentColor', c.listCardAccent || V12_ORIGINAL_STYLE.listCardAccent);
+  const summaryColor = scopedValue('value', 'background', c.summaryColor || V12_ORIGINAL_STYLE.summaryColor);
+  const totalPayColor = scopedValue('profit', 'background', c.totalPayColor || V12_ORIGINAL_STYLE.totalPayColor);
+  const totalPayText = scopedValue('profit', 'textColor', c.totalPayText || V12_ORIGINAL_STYLE.totalPayText);
+  const superBadgeColor = scopedValue('openedState', 'accentColor', c.superBadgeColor || V12_ORIGINAL_STYLE.superBadgeColor);
+  const extremeBadgeColor = scopedValue('loss', 'accentColor', c.extremeBadgeColor || V12_ORIGINAL_STYLE.extremeBadgeColor);
+  const textColor = scopedValue('bonusCard', 'textColor', c.textColor || V12_ORIGINAL_STYLE.textColor);
+  const mutedTextColor = scopedValue('label', 'textColor', c.mutedTextColor || V12_ORIGINAL_STYLE.mutedTextColor);
+  const statValueColor = scopedValue('value', 'textColor', c.statValueColor || V12_ORIGINAL_STYLE.statValueColor);
+  const cardOutlineColor = scopedValue('bonusCard', 'borderColor', c.cardOutlineColor || V12_ORIGINAL_STYLE.cardOutlineColor);
+  const cardOutlineWidth = scopedValue('bonusCard', 'borderWidth', c.cardOutlineWidth ?? V12_ORIGINAL_STYLE.cardOutlineWidth);
+  const fontFamily = scopedValue('container', 'fontFamily', scopedValue('bonusCard', 'fontFamily', c.fontFamily || V12_ORIGINAL_STYLE.fontFamily));
+  const fontSize = scopedValue('container', 'fontSize', scopedValue('bonusCard', 'fontSize', c.fontSize ?? V12_ORIGINAL_STYLE.fontSize));
+  const cardRadius = scopedValue('bonusCard', 'radius', c.cardRadius ?? V12_ORIGINAL_STYLE.cardRadius);
+  const cardGap = scopedValue('bonusCard', 'gap', c.cardGap ?? V12_ORIGINAL_STYLE.cardGap);
+  const cardPadding = scopedValue('bonusCard', 'padding', c.cardPadding ?? V12_ORIGINAL_STYLE.cardPadding);
+  const slotImageHeight = scopedValue('slotImage', 'height', c.slotImageHeight ?? V12_ORIGINAL_STYLE.slotImageHeight);
+  const listMaxHeight = c.listMaxHeight ?? V12_ORIGINAL_STYLE.listMaxHeight;
+  const hasHeaderBackgroundOverride = !!(
+    c.rootBackground
+    || c.headerColor
+    || explicitAppearanceConfig.subElements?.header?.background
+    || explicitAppearanceConfig.subElements?.headerContainer?.background
+  );
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -219,7 +265,10 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       fontFamily,
       fontSize: `${fontSize}px`,
       gap: `${cardGap}px`,
-      background: `linear-gradient(160deg, ${headerColor}f8, ${headerColor}f0)`,
+      background: composeV12RootBackground(
+        headerColor,
+        hasHeaderBackgroundOverride ? c.rootBackground : V12_ORIGINAL_STYLE.rootBackground
+      ),
       color: textColor,
     }),
     fontFamily,

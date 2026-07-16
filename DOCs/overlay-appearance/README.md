@@ -44,6 +44,8 @@ The audit inspected the current Vite/React/Vercel/Supabase repository, including
 - [Runtime verification notes](runtime-verification.md)
 - [Machine-readable audit](widget-capabilities.json)
 - [Appearance Engine V2 pilot implementation](implementation/pilot-appearance-v2.md)
+- [Bonus Hunt Original baseline regression fix](implementation/bonus-hunt-original-baseline.md)
+- [Slot Requests and Giveaway V2 migration](implementation/slot-requests-giveaway-v2.md)
 
 ## Per-widget references
 

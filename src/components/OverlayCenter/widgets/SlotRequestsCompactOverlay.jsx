@@ -8,7 +8,7 @@
  */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { hex2rgb } from './shared/colorUtils';
-import { subValue } from './shared/appearanceStyles';
+import { subElementStyle, subValue } from './shared/appearanceStyles';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -69,12 +69,18 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
     '--sr-co-card-radius': `${cardRadius}px`,
     '--sr-co-img-radius': `${imageRadius}px`,
   };
+  const rootStyle = subElementStyle(c, 'container', {
+    fontFamily,
+    fontSize,
+    color: textColor,
+  });
+  const cardStyle = subElementStyle(c, 'requestCard');
 
   /* ── Empty state ── */
   if (total === 0) {
     return (
-      <div className="sr-co-root" style={{ fontFamily, fontSize, fontWeight: Number(fontWeight), color: textColor, ...rootVars }}>
-        <div className="sr-co-empty">
+      <div className="sr-co-root" data-widget-element="container" style={{ ...rootStyle, fontWeight: Number(fontWeight), ...rootVars }}>
+        <div className="sr-co-empty" data-widget-element="emptyState" style={subElementStyle(c, 'emptyState')}>
           🎰 No requests — type {commandTrigger} &lt;slot&gt;
         </div>
       </div>
@@ -84,32 +90,33 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
   const current = requests[activeIdx] || requests[0];
 
   return (
-    <div className="sr-co-root" style={{ fontFamily, fontSize, color: textColor, ...rootVars }}>
+    <div className="sr-co-root" data-widget-element="container" style={{ ...rootStyle, ...rootVars }}>
       {/* ── Count badge ── */}
-      <div className="sr-co-badge">{total}</div>
+      <div className="sr-co-badge" data-widget-element="position" style={subElementStyle(c, 'position')}>{total}</div>
 
       {/* ── Active request card ── */}
-      <div className="sr-co-card" key={current?.id}>
+      <div className="sr-co-card" key={current?.id} data-widget-element="requestCard" style={cardStyle}>
         <img
           src={current?.slot_image || FALLBACK_IMG}
           alt=""
           className="sr-co-card-img"
+          data-widget-element="slotImage"
           onError={e => { e.target.src = FALLBACK_IMG; }}
         />
         <div className="sr-co-card-info">
-          <span className="sr-co-card-name" style={{ fontWeight: Number(fontWeight) }}>
+          <span className="sr-co-card-name" data-widget-element="slotTitle" style={subElementStyle(c, 'slotTitle', { fontWeight: Number(fontWeight) })}>
             {current?.slot_name || '—'}
           </span>
           {showRequester && current?.requested_by && current.requested_by !== 'anonymous' && (
-            <span className="sr-co-card-by">by {current.requested_by}</span>
+            <span className="sr-co-card-by" data-widget-element="viewerName" style={subElementStyle(c, 'viewerName')}>by {current.requested_by}</span>
           )}
         </div>
-        <span className="sr-co-card-idx">{c.showNumbers !== false ? `#${activeIdx + 1}` : null}</span>
+        <span className="sr-co-card-idx" data-widget-element="position" style={subElementStyle(c, 'position')}>{c.showNumbers !== false ? `#${activeIdx + 1}` : null}</span>
       </div>
 
       {/* ── Progress dots ── */}
       {total > 1 && total <= 12 && (
-        <div className="sr-co-dots">
+        <div className="sr-co-dots" data-widget-element="footer" style={subElementStyle(c, 'footer')}>
           {requests.map((_, i) => (
             <span
               key={i}

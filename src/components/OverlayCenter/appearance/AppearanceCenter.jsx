@@ -91,6 +91,20 @@ const PREVIEW_BACKGROUNDS = [
   { id: 'green', label: 'Green' },
 ];
 
+const WIDGET_PREVIEW_STATES = {
+  slot_requests: [
+    { id: 'with_requests', label: 'With requests' },
+    { id: 'empty', label: 'Empty' },
+    { id: 'busy_queue', label: 'Busy queue' },
+  ],
+  giveaway: [
+    { id: 'live', label: 'Live' },
+    { id: 'drawing', label: 'Drawing' },
+    { id: 'winner', label: 'Winner' },
+    { id: 'empty', label: 'Empty' },
+  ],
+};
+
 const ZOOM_STEPS = [25, 40, 50, 67, 75, 90, 100, 125, 150, 200];
 
 const QUICK_WIDGET_CONTROLS = [
@@ -152,6 +166,17 @@ function getSimpleSettingsAtRoot(appearance, root, widgetType) {
 }
 
 function getSimplePresetVars(settings) {
+  if (settings?.material === 'original') {
+    return {
+      '--preset-primary': '#14d8d8',
+      '--preset-accent': '#f5b301',
+      '--preset-surface': 'linear-gradient(160deg, rgba(30,58,138,0.95), rgba(15,23,42,0.96))',
+      '--preset-card': 'rgba(15, 23, 42, 0.72)',
+      '--preset-border': 'rgba(20, 216, 216, 0.46)',
+      '--preset-text': '#f8fafc',
+      '--preset-glow': '#14d8d8',
+    };
+  }
   const generated = generateSimpleAppearance(settings);
   return {
     '--preset-primary': generated.colors?.primary || settings.primaryColor,
@@ -311,6 +336,7 @@ export default function AppearanceCenter({
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [previewMode, setPreviewMode] = useState(() => EDITOR_MODE_CAPABILITIES[getInitialMode()]?.previewMode || 'fit-widget');
   const [previewBackground, setPreviewBackground] = useState('dark');
+  const [previewStateByWidget, setPreviewStateByWidget] = useState({});
   const [zoom, setZoom] = useState('fit');
   const [obsSafe, setObsSafe] = useState(true);
   const [showBefore, setShowBefore] = useState(false);
@@ -343,11 +369,19 @@ export default function AppearanceCenter({
     [currentSimpleSettings]
   );
   const visibleMaterialPresets = useMemo(
-    () => selectedWidgetUsesV2
-      ? SIMPLE_MATERIAL_PRESETS.filter(preset => preset.id !== 'soft_shadow')
-      : SIMPLE_MATERIAL_PRESETS,
-    [selectedWidgetUsesV2]
+    () => {
+      if (selectedWidgetType === 'bonus_hunt') {
+        return SIMPLE_MATERIAL_PRESETS.filter(preset => preset.id !== 'soft_shadow');
+      }
+      return SIMPLE_MATERIAL_PRESETS.filter(preset => (
+        preset.id !== 'original'
+        && (!selectedWidgetUsesV2 || preset.id !== 'soft_shadow')
+      ));
+    },
+    [selectedWidgetType, selectedWidgetUsesV2]
   );
+  const previewStateOptions = WIDGET_PREVIEW_STATES[selectedWidgetType] || [];
+  const selectedPreviewState = previewStateByWidget[selectedWidget?.id] || previewStateOptions[0]?.id || '';
   const selectedElements = useMemo(() => getWidgetElementSchema(selectedWidgetType), [selectedWidgetType]);
   const selectedElement = useMemo(
     () => selectedElements.find(element => element.id === selectedElementId) || selectedElements[0] || null,
@@ -515,6 +549,13 @@ export default function AppearanceCenter({
 
   const applySimpleSettings = useCallback((patch, summary = 'Quick style changed') => {
     const nextSettings = normalizeSimpleSettings({ ...currentSimpleSettings, ...(patch || {}) });
+    const restoreBonusHuntOriginal = selectedTargetRoot
+      && selectedWidgetType === 'bonus_hunt'
+      && nextSettings.material === 'original';
+    if (restoreBonusHuntOriginal) {
+      commitDraft(prev => omitPath(prev, selectedTargetRoot), summary || 'Restore original Bonus Hunt design');
+      return;
+    }
     const generated = generateSimpleAppearance(nextSettings);
     if (patch?.primaryColor) rememberColor(nextSettings.primaryColor);
     if (patch?.accentColor) rememberColor(nextSettings.accentColor);
@@ -534,6 +575,11 @@ export default function AppearanceCenter({
   }, [commitDraft, currentSimpleSettings, rememberColor, selectedTargetRoot, selectedWidgetType]);
 
   const restoreRecommendedStyle = useCallback(() => {
+    if (selectedTargetRoot && selectedWidgetType === 'bonus_hunt') {
+      commitDraft(prev => omitPath(prev, selectedTargetRoot), 'Restore original Bonus Hunt design');
+      setToast('Original Bonus Hunt design restored');
+      return;
+    }
     const generated = generateSimpleAppearance(DEFAULT_SIMPLE_SETTINGS);
     commitDraft(prev => {
       if (!selectedTargetRoot) return deepMerge(prev, generated);
@@ -1165,6 +1211,20 @@ export default function AppearanceCenter({
                 <>
                   <button type="button" className={previewMode === 'fit-widget' ? 'is-active' : ''} onClick={() => setPreviewMode('fit-widget')}>Focused Widget</button>
                   <button type="button" className={previewMode === 'full-overlay' ? 'is-active' : ''} onClick={() => setPreviewMode('full-overlay')}>Full Overlay</button>
+                  {!!previewStateOptions.length && (
+                    <span className="ve-preview-state-picker" role="group" aria-label="Preview state">
+                      {previewStateOptions.map(option => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={selectedPreviewState === option.id ? 'is-active' : ''}
+                          onClick={() => setPreviewStateByWidget(prev => ({ ...prev, [selectedWidget.id]: option.id }))}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </span>
+                  )}
                   <button type="button" className={showBefore ? 'is-active' : ''} onClick={() => setShowBefore(value => !value)}>
                     {showBefore ? 'Showing Before' : 'Before / After'}
                   </button>
@@ -1201,6 +1261,7 @@ export default function AppearanceCenter({
               theme={theme}
               appearance={showBefore ? serverState.published : draft}
               userId={user?.id}
+              previewSampleStates={previewStateByWidget}
               selectedWidgetId={selectedWidget?.id}
               selectedTarget={selectedTarget}
               selectedElementId={mode === 'advanced' ? selectedElement?.id : ''}
@@ -1294,7 +1355,10 @@ export default function AppearanceCenter({
                         <strong>Text</strong>
                       </span>
                       <span className="ve-material-card__copy">
-                        <strong>{preset.name}</strong>
+                        <strong>
+                          {preset.name}
+                          {preset.protected && <em>Recommended</em>}
+                        </strong>
                         <small>{preset.tip}</small>
                       </span>
                     </button>

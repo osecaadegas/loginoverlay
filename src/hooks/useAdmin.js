@@ -24,6 +24,8 @@ export const useAdmin = () => {
         return;
       }
 
+      setLoading(true);
+
       try {
         const { data, error } = await getUserRoles(user.id);
         

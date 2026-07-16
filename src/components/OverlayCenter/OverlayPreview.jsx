@@ -170,6 +170,7 @@ export default function OverlayPreview({
   selectedElementId,
   hiddenElementIds,
   styleSelections,
+  previewSampleStates = {},
   zoom = 'fit',
   previewMode = 'focus-widget',
   previewBackground = 'dark',
@@ -183,9 +184,19 @@ export default function OverlayPreview({
   const [scale, setScale] = useState(0.5);
   const resolvedAppearance = useMemo(() => normalizeAppearance(appearance || {}, { theme }), [appearance, theme]);
   const resolvedWidgets = useMemo(() => applyPreviewWidgetSamples(
-    resolveWidgetsForAppearance(widgets || [], resolvedAppearance, theme, { styleSelections: styleSelections || {} }),
+    resolveWidgetsForAppearance(widgets || [], resolvedAppearance, theme, { styleSelections: styleSelections || {} }).map(widget => {
+      const previewState = previewSampleStates?.[widget.id] || previewSampleStates?.[widget.widget_type];
+      if (!previewState) return widget;
+      return {
+        ...widget,
+        config: {
+          ...(widget.config || {}),
+          __appearancePreviewState: previewState,
+        },
+      };
+    }),
     { now: previewNowRef.current, expandFrames: !selectMode && ['focus-widget', 'fit-widget'].includes(previewMode) }
-  ), [widgets, resolvedAppearance, theme, styleSelections, previewMode, selectMode]);
+  ), [widgets, resolvedAppearance, theme, styleSelections, previewSampleStates, previewMode, selectMode]);
 
   const CANVAS_W = resolvedAppearance?.canvas?.width || theme?.canvas_width || DEFAULT_W;
   const CANVAS_H = resolvedAppearance?.canvas?.height || theme?.canvas_height || DEFAULT_H;

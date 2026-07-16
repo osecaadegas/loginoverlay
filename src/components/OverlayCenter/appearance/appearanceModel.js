@@ -2045,6 +2045,7 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
     ...next,
     ...typeOverride,
     ...instanceOverride,
+    __appearanceBaseConfigKeys: Object.keys(base || {}),
     __appearanceExplicitSubElements: explicitSubElements,
     subElements: deepMerge(
       buildSubElementDefaults(widget.widget_type, resolved),

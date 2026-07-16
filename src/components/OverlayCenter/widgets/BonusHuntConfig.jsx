@@ -26,6 +26,25 @@ const FONT_OPTIONS = [
   { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
 ];
 
+const BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS = Object.freeze({
+  headerColor: '#26282e',
+  headerAccent: '#2dd4bf',
+  countCardColor: '#30343d',
+  currentBonusColor: '#1c1e22',
+  currentBonusAccent: '#2dd4bf',
+  listCardColor: '#26282e',
+  listCardAccent: '#cbd5e1',
+  summaryColor: '#26282e',
+  cardOutlineColor: 'transparent',
+  superBadgeColor: '#eab308',
+  extremeBadgeColor: '#ef4444',
+  totalPayColor: '#eab308',
+  totalPayText: '#ffffff',
+  textColor: '#ffffff',
+  mutedTextColor: '#8baacf',
+  statValueColor: '#ffffff',
+});
+
 function BonusHuntProviderLogo({ provider }) {
   const [failed, setFailed] = useState(false);
   const logo = !failed ? getProviderImage(provider) : null;
@@ -158,6 +177,11 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
   const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
   const currentStyle = c.displayStyle || 'v3';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BONUS_HUNT_STYLE_KEYS);
+  const colorDefault = (key, fallback) => (
+    currentStyle === 'v12_classic_sr'
+      ? (BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS[key] ?? fallback)
+      : fallback
+  );
 
   // Auth for history
   const { user } = useAuth();
@@ -306,34 +330,34 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
           {['v3','v5_horizontal','v11_fever','v12_classic_sr'].includes(currentStyle) && (<>
             <h4 className="nb-subtitle">Card Colors</h4>
             <div className="nb-color-grid">
-              <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
-              <ColorPicker label="Header Accent" value={c.headerAccent || '#60a5fa'} onChange={v => set('headerAccent', v)} />
+              <ColorPicker label="Header BG" value={c.headerColor || colorDefault('headerColor', '#1e3a8a')} onChange={v => set('headerColor', v)} />
+              <ColorPicker label="Header Accent" value={c.headerAccent || colorDefault('headerAccent', '#60a5fa')} onChange={v => set('headerAccent', v)} />
               {currentStyle !== 'v3' && <>
-                <ColorPicker label="Count Card BG" value={c.countCardColor || '#1e3a8a'} onChange={v => set('countCardColor', v)} />
-                <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || '#334155'} onChange={v => set('currentBonusColor', v)} />
-                <ColorPicker label="Current Accent" value={c.currentBonusAccent || '#dbe2e8'} onChange={v => set('currentBonusAccent', v)} />
+                <ColorPicker label="Count Card BG" value={c.countCardColor || colorDefault('countCardColor', '#1e3a8a')} onChange={v => set('countCardColor', v)} />
+                <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || colorDefault('currentBonusColor', '#334155')} onChange={v => set('currentBonusColor', v)} />
+                <ColorPicker label="Current Accent" value={c.currentBonusAccent || colorDefault('currentBonusAccent', '#dbe2e8')} onChange={v => set('currentBonusAccent', v)} />
               </>}
-              <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
+              <ColorPicker label="Slot List BG" value={c.listCardColor || colorDefault('listCardColor', '#581c87')} onChange={v => set('listCardColor', v)} />
               {currentStyle !== 'v3' &&
-                <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#cbd5e1'} onChange={v => set('listCardAccent', v)} />
+                <ColorPicker label="Slot List Accent" value={c.listCardAccent || colorDefault('listCardAccent', '#cbd5e1')} onChange={v => set('listCardAccent', v)} />
               }
-              <ColorPicker label="Summary BG" value={c.summaryColor || '#1e3a8a'} onChange={v => set('summaryColor', v)} />
-              <ColorPicker label="Card Outline" value={c.cardOutlineColor || 'transparent'} onChange={v => set('cardOutlineColor', v)} />
+              <ColorPicker label="Summary BG" value={c.summaryColor || colorDefault('summaryColor', '#1e3a8a')} onChange={v => set('summaryColor', v)} />
+              <ColorPicker label="Card Outline" value={c.cardOutlineColor || colorDefault('cardOutlineColor', 'transparent')} onChange={v => set('cardOutlineColor', v)} />
             </div>
 
             <h4 className="nb-subtitle">Badge Colors</h4>
             <div className="nb-color-grid">
-              <ColorPicker label="Super Badge" value={c.superBadgeColor || '#eab308'} onChange={v => set('superBadgeColor', v)} />
-              <ColorPicker label="Extreme Badge" value={c.extremeBadgeColor || '#ef4444'} onChange={v => set('extremeBadgeColor', v)} />
-              <ColorPicker label="Total Pay BG" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
-              <ColorPicker label="Total Pay Text" value={c.totalPayText || '#ffffff'} onChange={v => set('totalPayText', v)} />
+              <ColorPicker label="Super Badge" value={c.superBadgeColor || colorDefault('superBadgeColor', '#eab308')} onChange={v => set('superBadgeColor', v)} />
+              <ColorPicker label="Extreme Badge" value={c.extremeBadgeColor || colorDefault('extremeBadgeColor', '#ef4444')} onChange={v => set('extremeBadgeColor', v)} />
+              <ColorPicker label="Total Pay BG" value={c.totalPayColor || colorDefault('totalPayColor', '#eab308')} onChange={v => set('totalPayColor', v)} />
+              <ColorPicker label="Total Pay Text" value={c.totalPayText || colorDefault('totalPayText', '#ffffff')} onChange={v => set('totalPayText', v)} />
             </div>
 
             <h4 className="nb-subtitle">Text Colors</h4>
             <div className="nb-color-grid">
-              <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
-              <ColorPicker label="Muted Text" value={c.mutedTextColor || '#93c5fd'} onChange={v => set('mutedTextColor', v)} />
-              <ColorPicker label="Stat Values" value={c.statValueColor || '#ffffff'} onChange={v => set('statValueColor', v)} />
+              <ColorPicker label="Main Text" value={c.textColor || colorDefault('textColor', '#ffffff')} onChange={v => set('textColor', v)} />
+              <ColorPicker label="Muted Text" value={c.mutedTextColor || colorDefault('mutedTextColor', '#93c5fd')} onChange={v => set('mutedTextColor', v)} />
+              <ColorPicker label="Stat Values" value={c.statValueColor || colorDefault('statValueColor', '#ffffff')} onChange={v => set('statValueColor', v)} />
             </div>
 
             <h4 className="nb-subtitle">Typography</h4>
