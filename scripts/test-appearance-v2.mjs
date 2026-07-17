@@ -20,18 +20,23 @@ try {
   assert.equal(registryResult.valid, true, `registry should validate: ${registryResult.errors.join(', ')}`);
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('bh_stats'), true, 'BH Stats is a V2 pilot');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('rtp_stats'), true, 'RTP Stats Bar is migrated to V2');
+  assert.equal(registryModule.isWidgetAppearanceV2Enabled('navbar'), true, 'Navbar is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('bonus_hunt'), true, 'Bonus Hunt is a V2 pilot');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('slot_requests'), true, 'Slot Requests is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('giveaway'), true, 'Giveaway is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('spotify_now_playing'), true, 'Spotify is enabled for style-by-style V2 migration');
   assert.ok(registryModule.getWidgetAppearanceCapability('bonus_hunt').elements.slotRow, 'bonus hunt declares real slot row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('rtp_stats').elements.rtpValue, 'RTP Stats declares real RTP value element');
+  assert.ok(registryModule.getWidgetAppearanceCapability('navbar').elements.displayName, 'Navbar declares display name element');
   assert.ok(registryModule.getWidgetAppearanceCapability('slot_requests').elements.requestCard, 'slot requests declares request row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('giveaway').elements.winnerArea, 'giveaway declares winner area element');
   assert.ok(registryModule.getWidgetAppearanceCapability('spotify_now_playing').elements.albumArt, 'Spotify declares album art as an editable element');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt').some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
   ['v1', 'vertical', 'neon', 'minimal', 'glass'].forEach(styleId => {
     assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('rtp_stats').some(style => style.id === styleId), `RTP Stats exposes ${styleId} style option`);
+  });
+  ['v1', 'metallic', 'glass', 'retro'].forEach(styleId => {
+    assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('navbar').some(style => style.id === styleId), `Navbar exposes ${styleId} style option`);
   });
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('slot_requests').some(style => style.id === 'v2_card_stack'), 'Slot Requests exposes card-stack style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('giveaway').some(style => style.id === 'v4'), 'Giveaway exposes minimal style option');
@@ -77,6 +82,25 @@ try {
   const rtpMinimalElements = registryModule.getWidgetStyleElements('rtp_stats', 'minimal');
   assert.ok(!rtpMinimalElements.some(element => element.id === 'spinner'), 'RTP minimal hides spinner element controls');
   assert.ok(!rtpMinimalElements.some(element => element.id === 'divider'), 'RTP minimal hides divider element controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('navbar', 'v1', 'fonts'), true, 'Navbar classic exposes typography controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('navbar', 'v1', 'imageSize'), true, 'Navbar classic exposes image size controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('navbar', 'v1', 'imageVisibility'), false, 'Navbar classic hides unsupported image visibility');
+  assert.equal(registryModule.styleSupportsQuickCapability('navbar', 'glass', 'glowIntensity'), true, 'Navbar glass exposes glow controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('navbar', 'retro', 'carouselSpeed'), false, 'Navbar retro hides carousel controls');
+  const navbarContainerControls = registryModule.getWidgetStyleQuickControls('navbar', 'v1', 'container');
+  assert.ok(navbarContainerControls.includes('material'), 'Navbar container exposes material');
+  assert.ok(navbarContainerControls.includes('fontFamily'), 'Navbar container exposes font family');
+  assert.ok(!navbarContainerControls.includes('imageSize'), 'Navbar container hides image controls');
+  assert.ok(!navbarContainerControls.includes('carouselSpeed'), 'Navbar container hides carousel controls');
+  const navbarAvatarControls = registryModule.getWidgetStyleQuickControls('navbar', 'v1', 'avatar');
+  assert.ok(navbarAvatarControls.includes('imageSize'), 'Navbar avatar exposes image size');
+  assert.ok(navbarAvatarControls.includes('imageShape'), 'Navbar avatar exposes image shape');
+  assert.ok(navbarAvatarControls.includes('imageFit'), 'Navbar avatar exposes image fit');
+  assert.ok(!navbarAvatarControls.includes('imageVisibility'), 'Navbar avatar hides unsupported image visibility');
+  assert.ok(!navbarAvatarControls.includes('fontFamily'), 'Navbar avatar hides typography controls');
+  const navbarNameControls = registryModule.getWidgetStyleQuickControls('navbar', 'v1', 'displayName');
+  assert.ok(navbarNameControls.includes('fontFamily'), 'Navbar display name exposes typography controls');
+  assert.ok(!navbarNameControls.includes('imageSize'), 'Navbar display name hides image controls');
   assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'containers'), false, 'Giveaway minimal style hides container controls');
   assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'animations'), false, 'Quick Editor hides unimplemented animation controls');
   assert.equal(registryModule.styleSupportsQuickCapability('spotify_now_playing', 'album_card', 'fonts'), true, 'Spotify album-card exposes typography controls');
@@ -259,6 +283,20 @@ try {
       subElements: {},
     },
   };
+  const navbarWidget = {
+    id: 'nav1',
+    widget_type: 'navbar',
+    width: 1200,
+    height: 80,
+    config: {
+      displayStyle: 'glass',
+      streamerName: 'Streamer',
+      motto: 'Just Content',
+      showAvatar: true,
+      showClock: true,
+      subElements: {},
+    },
+  };
   const slotRequestsWidget = {
     id: 'sr1',
     widget_type: 'slot_requests',
@@ -425,6 +463,36 @@ try {
               density: 'standard',
               textSize: 'standard',
               scale: 1,
+            }),
+          },
+        },
+      },
+      nav1: {
+        styles: {
+          glass: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('navbar', {
+              material: 'glass',
+              primaryColor: '#38bdf8',
+              shape: 'pill',
+              density: 'standard',
+              textSize: 'large',
+              scale: 1.05,
+              imageSize: 'large',
+              imageShape: 'round',
+              imageFit: 'contain',
+            }),
+          },
+          retro: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('navbar', {
+              material: 'matte',
+              primaryColor: '#ff6b2b',
+              shape: 'square',
+              density: 'compact',
+              textSize: 'small',
+              scale: 1,
+              imageSize: 'small',
+              imageShape: 'square',
+              imageFit: 'cover',
             }),
           },
         },
@@ -698,6 +766,25 @@ try {
   assert.equal(rtpGlassConfig.displayStyle, 'glass', 'RTP Stats can switch to glass style appearance');
   assert.equal(rtpGlassConfig.__appearanceV2.material, 'glass', 'RTP Stats loads glass style-specific appearance');
 
+  const navbarConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, appearance, {});
+  assert.equal(navbarConfig.__appearanceV2.material, 'glass', 'Navbar receives V2 material');
+  assert.equal(navbarConfig.displayStyle, 'glass', 'Navbar keeps the selected renderer style');
+  assert.ok(navbarConfig.accentColor, 'Navbar maps accent color to widget config');
+  assert.ok(navbarConfig.bgColor, 'Navbar maps background color to widget config');
+  assert.ok(navbarConfig.ctaColor, 'Navbar maps sponsor CTA color to widget config');
+  assert.ok(navbarConfig.cryptoUpColor, 'Navbar maps crypto positive color to widget config');
+  assert.ok(navbarConfig.cryptoDownColor, 'Navbar maps crypto negative color to widget config');
+  assert.ok(navbarConfig.subElements.avatar.imageSize > 42, 'Navbar avatar resolves large image size');
+  assert.equal(navbarConfig.subElements.avatar.imageFit, 'contain', 'Navbar avatar resolves image fit');
+  assert.ok(navbarConfig.subElements.badgeImage.imageSize > 54, 'Navbar badge image resolves large image size');
+  assert.ok(navbarConfig.subElements.clock.background, 'Navbar clock receives generated surface');
+  assert.ok(navbarConfig.subElements.music.states.connected.accentColor, 'Navbar music connected state remains explicit');
+  assert.ok(navbarConfig.__appearanceV2.unsupportedProperties.includes('layout.sectionOrder'), 'Navbar records section ordering as unsupported');
+  const navbarRetroConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, appearance, {}, { styleId: 'retro' });
+  assert.equal(navbarRetroConfig.displayStyle, 'retro', 'Navbar can switch to retro style appearance');
+  assert.equal(navbarRetroConfig.__appearanceV2.material, 'matte', 'Navbar loads retro style-specific appearance');
+  assert.ok(navbarRetroConfig.subElements.avatar.imageSize < navbarConfig.subElements.avatar.imageSize, 'Navbar style isolation preserves image sizes per style');
+
   const slotRequestsConfig = appearanceModel.resolveWidgetAppearanceConfig(slotRequestsWidget, appearance, {});
   assert.equal(slotRequestsConfig.__appearanceV2.material, 'glass', 'Slot Requests receives V2 material');
   assert.equal(slotRequestsConfig.displayStyle, 'v1_minimal', 'Slot Requests keeps selected renderer style');
@@ -836,6 +923,7 @@ try {
     bhStatsWidget,
     bonusHuntWidget,
     rtpStatsWidget,
+    navbarWidget,
     slotRequestsWidget,
     giveawayWidget,
     spotifyWidget,
@@ -850,20 +938,22 @@ try {
   assert.equal(resolvedWidgets[0].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves simple pilot');
   assert.equal(resolvedWidgets[1].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves complex pilot');
   assert.equal(resolvedWidgets[2].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves RTP Stats');
-  assert.equal(resolvedWidgets[3].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Slot Requests');
-  assert.equal(resolvedWidgets[4].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Giveaway');
-  assert.equal(resolvedWidgets[5].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify mini-player');
-  assert.equal(resolvedWidgets[6].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify album-card');
-  assert.equal(resolvedWidgets[7].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify compact-bar');
-  assert.equal(resolvedWidgets[8].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify glass');
-  assert.equal(resolvedWidgets[9].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify wave');
-  assert.equal(resolvedWidgets[10].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Spotify neon');
-  assert.equal(resolvedWidgets[11].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify metal');
-  assert.equal(resolvedWidgets[12].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify vinyl');
-  assert.notEqual(resolvedWidgets[3].config.bgColor, resolvedWidgets[4].config.bgColor, 'Slot Requests and Giveaway styles do not leak between widgets');
+  assert.equal(resolvedWidgets[3].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Navbar');
+  assert.equal(resolvedWidgets[4].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Slot Requests');
+  assert.equal(resolvedWidgets[5].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Giveaway');
+  assert.equal(resolvedWidgets[6].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify mini-player');
+  assert.equal(resolvedWidgets[7].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify album-card');
+  assert.equal(resolvedWidgets[8].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify compact-bar');
+  assert.equal(resolvedWidgets[9].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify glass');
+  assert.equal(resolvedWidgets[10].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify wave');
+  assert.equal(resolvedWidgets[11].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Spotify neon');
+  assert.equal(resolvedWidgets[12].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify metal');
+  assert.equal(resolvedWidgets[13].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify vinyl');
+  assert.notEqual(resolvedWidgets[4].config.bgColor, resolvedWidgets[5].config.bgColor, 'Slot Requests and Giveaway styles do not leak between widgets');
 
   const bhStatsElements = editorSchema.getWidgetElementSchema('bh_stats');
   const rtpStatsElements = editorSchema.getWidgetElementSchema('rtp_stats');
+  const navbarElements = editorSchema.getWidgetElementSchema('navbar');
   const bonusElements = editorSchema.getWidgetElementSchema('bonus_hunt');
   const slotRequestElements = editorSchema.getWidgetElementSchema('slot_requests');
   const giveawayElements = editorSchema.getWidgetElementSchema('giveaway');
@@ -871,6 +961,8 @@ try {
   assert.ok(bhStatsElements.some(element => element.id === 'statsCard'), 'Advanced Mode schema for BH Stats comes from V2 registry');
   assert.ok(rtpStatsElements.some(element => element.id === 'rtpValue'), 'Advanced Mode schema for RTP Stats comes from V2 registry');
   assert.ok(rtpStatsElements.some(element => element.id === 'personalBest'), 'Advanced Mode schema for RTP Stats personal best comes from V2 registry');
+  assert.ok(navbarElements.some(element => element.id === 'displayName'), 'Advanced Mode schema for Navbar display name comes from V2 registry');
+  assert.ok(navbarElements.some(element => element.id === 'avatar'), 'Advanced Mode schema for Navbar avatar comes from V2 registry');
   assert.ok(bonusElements.some(element => element.id === 'slotRow'), 'Advanced Mode schema for Bonus Hunt comes from V2 registry');
   assert.ok(slotRequestElements.some(element => element.id === 'requestCard'), 'Advanced Mode schema for Slot Requests comes from V2 registry');
   assert.ok(giveawayElements.some(element => element.id === 'winnerArea'), 'Advanced Mode schema for Giveaway comes from V2 registry');

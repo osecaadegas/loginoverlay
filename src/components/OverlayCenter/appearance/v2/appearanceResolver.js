@@ -1169,6 +1169,146 @@ function buildRtpStatsPatch(tokens, styleId) {
   };
 }
 
+function buildNavbarPatch(tokens, styleId) {
+  const common = commonSubElements(tokens);
+  const isRetro = styleId === 'retro';
+  const isGlass = styleId === 'glass';
+  const isMetallic = styleId === 'metallic';
+  const shadow = tokens.materialTokens?.shadowIntensity > 0.02
+    ? `0 ${px(tokens.materialTokens.shadowIntensity * 16)} ${px(tokens.materialTokens.shadowIntensity * 42)} ${tokens.colors.shadow}`
+    : undefined;
+  const glow = tokens.materialTokens?.glowIntensity > 0.01
+    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 42)} ${tokens.colors.glow}`
+    : undefined;
+  const combinedShadow = [shadow, glow].filter(Boolean).join(', ') || undefined;
+  const imageSize = Math.round(42 * (tokens.image?.sizeMultiplier || 1));
+  const logoImageSize = Math.round(54 * (tokens.image?.sizeMultiplier || 1));
+
+  return {
+    ...commonVisualPatch(tokens),
+    displayStyle: styleId,
+    accentColor: tokens.colors.primary,
+    bgColor: tokens.colors.surface,
+    textColor: tokens.colors.text,
+    mutedColor: tokens.colors.mutedText,
+    ctaColor: isRetro ? tokens.colors.warning : tokens.colors.accent,
+    cryptoUpColor: tokens.colors.positive,
+    cryptoDownColor: tokens.colors.negative,
+    fontFamily: isRetro ? "'Press Start 2P', 'Courier New', monospace" : tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    borderWidth: isRetro ? Math.max(2, tokens.shape.borderWidth) : tokens.shape.borderWidth,
+    borderRadius: tokens.shape.rootRadius,
+    barHeight: Math.max(48, Math.min(92, Math.round(56 * tokens.spacing.scale))),
+    maxWidth: 1200,
+    shadowSize: Math.round((tokens.materialTokens?.shadowIntensity || 0) * 32),
+    shadowIntensity: Math.round((tokens.materialTokens?.shadowIntensity || 0) * 100),
+    subElements: {
+      ...common,
+      container: {
+        ...common.container,
+        background: tokens.colors.surface,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.border,
+        borderWidth: isRetro ? Math.max(2, tokens.shape.borderWidth) : tokens.shape.borderWidth,
+        radius: tokens.shape.rootRadius,
+        padding: tokens.spacing.rootPadding,
+        gap: tokens.spacing.itemGap,
+        shadow: combinedShadow,
+        glow,
+        ...(isGlass ? { backdropBlur: tokens.materialTokens?.blurStrength || 12 } : {}),
+      },
+      logo: {
+        accentColor: tokens.colors.primary,
+        radius: tokens.shape.badgeRadius,
+      },
+      avatar: {
+        imageSize,
+        imageFit: tokens.image?.fit || 'cover',
+        radius: tokens.image?.radius ?? tokens.shape.badgeRadius,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+      },
+      badgeImage: {
+        imageSize: logoImageSize,
+        imageFit: tokens.image?.fit || 'contain',
+        radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+      },
+      displayName: {
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.primary,
+        fontFamily: isRetro ? "'Press Start 2P', 'Courier New', monospace" : tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+      },
+      clock: {
+        background: isMetallic ? tokens.colors.elevatedSurface : tokens.colors.primary,
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.primary,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.badgeRadius,
+        padding: tokens.spacing.cardPadding,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+        shadow: combinedShadow,
+      },
+      music: {
+        textColor: tokens.colors.mutedText,
+        accentColor: tokens.colors.primary,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        fontWeight: tokens.typography.bodyWeight,
+        states: {
+          connected: { textColor: tokens.colors.text, accentColor: tokens.colors.primary },
+          disconnected: { textColor: tokens.colors.mutedText, accentColor: tokens.colors.mutedText },
+        },
+      },
+      sponsor: {
+        background: tokens.colors.accent,
+        textColor: '#ffffff',
+        accentColor: tokens.colors.accent,
+        borderColor: tokens.colors.highlight,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.badgeRadius,
+        padding: tokens.spacing.cardPadding,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.valueWeight,
+        shadow: combinedShadow,
+      },
+      crypto: {
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.negative,
+        fillColor: tokens.colors.positive,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        fontWeight: tokens.typography.valueWeight,
+        states: {
+          positive: { textColor: tokens.colors.positive, fillColor: tokens.colors.positive },
+          negative: { textColor: tokens.colors.negative, accentColor: tokens.colors.negative },
+        },
+      },
+      casino: {
+        textColor: tokens.colors.primary,
+        accentColor: tokens.colors.primary,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.valueWeight,
+        imageSize: logoImageSize,
+        imageFit: tokens.image?.fit || 'contain',
+        radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+      },
+      separator: {
+        background: tokens.colors.border,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        opacity: 0.7,
+      },
+    },
+  };
+}
+
 function buildGiveawayPatch(tokens) {
   const common = commonSubElements(tokens);
   const liveColor = tokens.colors.positive;
@@ -1357,6 +1497,7 @@ function buildPatchForWidget(widgetType, tokens, styleId) {
   if (tokens?.isOriginalBaseline || tokens?.material === 'original') return {};
   if (widgetType === 'bh_stats') return buildBHStatsPatch(tokens);
   if (widgetType === 'rtp_stats') return buildRtpStatsPatch(tokens, styleId);
+  if (widgetType === 'navbar') return buildNavbarPatch(tokens, styleId);
   if (widgetType === 'spotify_now_playing') return buildSpotifyPatch(tokens, styleId);
   if (widgetType === 'bonus_hunt') return buildBonusHuntPatch(tokens);
   if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens, styleId);

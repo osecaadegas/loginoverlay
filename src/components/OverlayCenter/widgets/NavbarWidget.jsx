@@ -211,6 +211,28 @@ function NavbarWidget({ config, widgetId, userId }) {
   const barHeight = c.barHeight ?? 64;
   const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999));
   const fontSize = subValue(c, 'displayName', 'fontSize', c.fontSize ?? (isRetro ? 13 : 15));
+  const fontWeight = subValue(c, 'displayName', 'fontWeight', 700);
+  const containerShadow = subValue(c, 'container', 'shadow', undefined);
+  const containerGlow = subValue(c, 'container', 'glow', undefined);
+  const containerBlur = subValue(c, 'container', 'backdropBlur', 0);
+  const widgetScale = Number(c.widgetScale || 1);
+  const avatarImageSize = subValue(c, 'avatar', 'imageSize', null);
+  const avatarRadius = subValue(c, 'avatar', 'radius', '50%');
+  const avatarBorderColor = subValue(c, 'avatar', 'borderColor', 'transparent');
+  const avatarBorderWidth = subValue(c, 'avatar', 'borderWidth', 0);
+  const avatarFit = subValue(c, 'avatar', 'imageFit', 'cover');
+  const badgeImageSize = subValue(c, 'badgeImage', 'imageSize', null);
+  const badgeImageRadius = subValue(c, 'badgeImage', 'radius', 0);
+  const badgeImageFit = subValue(c, 'badgeImage', 'imageFit', 'contain');
+  const casinoImageSize = subValue(c, 'casino', 'imageSize', null);
+  const casinoImageRadius = subValue(c, 'casino', 'radius', isMetal ? 6 : isRetro ? 2 : 8);
+  const casinoImageFit = subValue(c, 'casino', 'imageFit', 'contain');
+  const casinoTextColor = subValue(c, 'casino', 'textColor', accentColor);
+  const clockBg = subValue(c, 'clock', 'background', undefined);
+  const clockTextColor = subValue(c, 'clock', 'textColor', textColor);
+  const clockRadius = subValue(c, 'clock', 'radius', isRetro ? 2 : isGlass ? 14 : isMetal ? 10 : 999);
+  const clockFontSize = subValue(c, 'clock', 'fontSize', fontSize * 0.92);
+  const clockFontWeight = subValue(c, 'clock', 'fontWeight', 700);
   const textShadow = '0 1px 4px rgba(0,0,0,0.6)';
   const ctaColor = subValue(c, 'sponsor', 'background', c.ctaColor || (isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e'));
   const cryptoUpColor = subValue(c, 'crypto', 'fillColor', c.cryptoUpColor || '#34d399');
@@ -266,30 +288,53 @@ function NavbarWidget({ config, widgetId, userId }) {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
+    backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: 'center',
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isCarbon ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(180deg, ${bgColor}, #060606)`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
+    backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: 'center',
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isFuturistic ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.95), rgba(${bgColorRGB},0.88))`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
+    backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: 'center',
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.92), rgba(${bgColorRGB},0.85))`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
+    backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: 'center',
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isRetro ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
     padding: '0 8px', color: textColor, fontSize, gap: 0,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: 'center',
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
     borderTop: '2px solid rgba(255,255,255,0.15)',
@@ -297,6 +342,9 @@ function NavbarWidget({ config, widgetId, userId }) {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: 'center',
     overflow: 'visible',
     ...(needsFilter && { filter: filterStr }),
   };
@@ -329,11 +377,15 @@ function NavbarWidget({ config, widgetId, userId }) {
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             {c.showAvatar !== false && (
+              (() => {
+                const size = avatarImageSize || (barHeight * 0.72 * ((c.avatarSize ?? 100) / 100));
+                return (
               <div style={{
                 position: 'relative',
-                width: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
-                height: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
-                borderRadius: '50%',
+                width: size,
+                height: size,
+                borderRadius: avatarRadius,
+                border: avatarBorderWidth ? `${avatarBorderWidth}px solid ${avatarBorderColor}` : undefined,
                 background: 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
@@ -341,8 +393,8 @@ function NavbarWidget({ config, widgetId, userId }) {
                 {c.avatarUrl ? (
                   <img src={c.avatarUrl} alt="" style={{
                     width: '100%', height: '100%',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
+                    borderRadius: avatarRadius,
+                    objectFit: avatarFit,
                     background: 'transparent',
                     imageRendering: 'auto',
                     backfaceVisibility: 'hidden',
@@ -350,7 +402,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                 ) : (
                   <div style={{
                     width: '100%', height: '100%',
-                    borderRadius: '50%',
+                    borderRadius: avatarRadius,
                     background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: fontSize * 0.7, fontWeight: 700, letterSpacing: '0.12em',
@@ -360,6 +412,8 @@ function NavbarWidget({ config, widgetId, userId }) {
                   </div>
                 )}
               </div>
+                );
+              })()
             )}
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 }}>
               <span style={{
@@ -371,7 +425,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                   ? `linear-gradient(to right, ${accentColor}, ${ctaColor}, ${accentColor})`
                   : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #94a3b8, #64748b)`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                fontSize: fontSize * 1.2, fontWeight: (isMetal || isRetro) ? 700 : 700,
+                fontSize: fontSize * 1.2, fontWeight,
                 letterSpacing: isMetal ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
               }}>
                 {c.streamerName || 'STREAMER'}
@@ -397,9 +451,10 @@ function NavbarWidget({ config, widgetId, userId }) {
             height: barHeight, flexShrink: 0, padding: '2px 0',
           }}>
             <img src={c.badgeImage} alt="" style={{
-              height: barHeight * 0.85 * ((c.badgeSize ?? 100) / 100),
-              minWidth: barHeight * 1.2 * ((c.badgeSize ?? 100) / 100),
-              objectFit: 'contain',
+              height: badgeImageSize || (barHeight * 0.85 * ((c.badgeSize ?? 100) / 100)),
+              minWidth: badgeImageSize || (barHeight * 1.2 * ((c.badgeSize ?? 100) / 100)),
+              objectFit: badgeImageFit,
+              borderRadius: badgeImageRadius,
               filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)` : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
             }} />
           </div>
@@ -410,33 +465,33 @@ function NavbarWidget({ config, widgetId, userId }) {
         if (c.showClock === false) return null;
         return (
           <div style={isMetal ? {
-            borderRadius: 10, padding: '6px 22px',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+            borderRadius: clockRadius, padding: '6px 22px',
+            background: clockBg || 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
             border: '1px solid rgba(255,255,255,0.08)',
-            color: textColor,
-            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.28em',
+            color: clockTextColor,
+            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.28em',
             boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
             flexShrink: 0,
           } : isGlass ? {
-            borderRadius: 14, padding: '6px 20px',
-            background: 'rgba(255,255,255,0.08)',
+            borderRadius: clockRadius, padding: '6px 20px',
+            background: clockBg || 'rgba(255,255,255,0.08)',
             border: '1px solid rgba(255,255,255,0.15)',
             backdropFilter: 'blur(8px)',
-            color: textColor,
-            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.25em',
+            color: clockTextColor,
+            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
             flexShrink: 0,
           } : isRetro ? {
-            borderRadius: 2, padding: '6px 14px',
-            background: '#000',
+            borderRadius: clockRadius, padding: '6px 14px',
+            background: clockBg || '#000',
             border: `2px solid ${accentColor}88`,
-            color: accentColor,
-            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.15em',
+            color: clockTextColor || accentColor,
+            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.15em',
             flexShrink: 0,
           } : {
-            borderRadius: 999, padding: '6px 20px',
-            background: `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
-            color: textColor,
-            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.25em',
+            borderRadius: clockRadius, padding: '6px 20px',
+            background: clockBg || `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
+            color: clockTextColor,
+            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
             boxShadow: `0 0 18px ${accentColor}e6`,
             flexShrink: 0,
           }}>
@@ -555,9 +610,9 @@ function NavbarWidget({ config, widgetId, userId }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {c.casinoLogoUrl && (
               <img src={c.casinoLogoUrl} alt="" style={{
-                height: barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100),
-                maxWidth: barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100),
-                objectFit: 'contain', borderRadius: isMetal ? 6 : isRetro ? 2 : 8,
+                height: casinoImageSize || (barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100)),
+                maxWidth: casinoImageSize ? casinoImageSize * 1.8 : (barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100)),
+                objectFit: casinoImageFit, borderRadius: casinoImageRadius,
                 filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))` : 'none',
               }} />
             )}
@@ -565,7 +620,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               <span style={{
                 fontSize: fontSize * 0.9, fontWeight: 700,
                 letterSpacing: '0.15em', textTransform: 'uppercase',
-                color: accentColor,
+                color: casinoTextColor,
                 textShadow: isMetal ? `0 0 10px rgba(${accentColorRGB},0.3)` : isRetro ? `0 0 8px ${accentColor}` : 'none',
               }}>
                 {c.casinoName}
