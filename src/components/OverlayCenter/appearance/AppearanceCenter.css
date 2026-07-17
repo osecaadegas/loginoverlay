@@ -1216,7 +1216,16 @@
 
 .ve-simple-actions--final {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ve-simple-actions--final button {
+  min-width: 0;
+  padding: 0 6px;
+  white-space: nowrap;
+  font-size: 0.74rem;
+  line-height: 1;
 }
 
 .ve-simple-actions button:disabled {
@@ -1225,7 +1234,7 @@
 }
 
 .ve-simple-publish {
-  min-height: 42px !important;
+  min-height: 34px !important;
   background: linear-gradient(135deg, #14b8a6, #0f766e) !important;
   border-color: rgba(94, 234, 212, 0.58) !important;
   color: #ffffff !important;

@@ -2169,21 +2169,21 @@ export default function AppearanceCenter({
                 <h3>{quickNumber('actions')}. Final actions</h3>
               </header>
               <div className="ve-simple-actions ve-simple-actions--final">
-                <button type="button" onClick={undo} disabled={!undoStack.length}>
+                <button type="button" onClick={undo} disabled={!undoStack.length} aria-label="Undo" title="Undo">
                   <Undo2 size={15} />
                   Undo
                 </button>
-                <button type="button" onClick={restoreRecommendedStyle}>
+                <button type="button" onClick={restoreRecommendedStyle} aria-label="Restore recommended style" title="Restore recommended style">
                   <RotateCcw size={15} />
-                  Restore recommended style
+                  Restore
                 </button>
-                <button type="button" onClick={saveCurrentPreset}>
+                <button type="button" onClick={saveCurrentPreset} aria-label="Save as My Preset" title="Save as My Preset">
                   <Save size={15} />
-                  Save as My Preset
+                  Preset
                 </button>
-                <button type="button" className="ve-simple-publish" onClick={publish}>
+                <button type="button" className="ve-simple-publish" onClick={publish} aria-label="Publish to OBS" title="Publish to OBS">
                   <ExternalLink size={15} />
-                  Publish to OBS
+                  Publish
                 </button>
               </div>
             </section>

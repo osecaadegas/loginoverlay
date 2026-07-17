@@ -255,6 +255,526 @@ function buildBHStatsPatch(tokens) {
   };
 }
 
+function buildSpotifyPatch(tokens, styleId) {
+  if (!['album_card', 'mini_player', 'vinyl', 'glass', 'wave', 'neon', 'metal', 'compact_bar'].includes(styleId)) return {};
+  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
+    ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 28)} ${tokens.colors.shadow}`
+    : undefined;
+  const imageSize = Math.round(44 * (tokens.image?.sizeMultiplier || 1));
+  const animationDuration = Number((0.4 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  const baseSpotifyPatch = {
+    ...commonVisualPatch(tokens),
+    accentColor: tokens.colors.primary,
+    bgColor: tokens.colors.surface,
+    textColor: tokens.colors.text,
+    mutedColor: tokens.colors.mutedText,
+    fontFamily: tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    fontWeight: tokens.typography.bodyWeight,
+    borderRadius: tokens.shape.rootRadius,
+    borderWidth: tokens.shape.borderWidth,
+  };
+  if (styleId === 'album_card') {
+    const albumSizePercent = Math.round(42 * (tokens.image?.sizeMultiplier || 1));
+    const pulseDuration = Number((1.5 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+    return {
+      ...commonVisualPatch(tokens),
+      displayStyle: 'album_card',
+      accentColor: tokens.colors.primary,
+      bgColor: tokens.colors.surface,
+      textColor: tokens.colors.text,
+      mutedColor: tokens.colors.mutedText,
+      fontFamily: tokens.typography.bodyFont,
+      fontSize: tokens.typography.bodySize,
+      fontWeight: tokens.typography.bodyWeight,
+      borderRadius: tokens.shape.rootRadius,
+      borderWidth: tokens.shape.borderWidth,
+      subElements: {
+        container: {
+          background: tokens.colors.surface,
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: tokens.typography.bodySize,
+          fontWeight: tokens.typography.bodyWeight,
+          radius: tokens.shape.rootRadius,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+          ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+        },
+        albumArt: {
+          visible: tokens.image?.visible !== false,
+          imageSize: albumSizePercent,
+          sizePercent: albumSizePercent,
+          imageFit: tokens.image?.fit || 'cover',
+          radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        trackTitle: {
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: Math.max(14, tokens.typography.valueSize + 1),
+          fontWeight: tokens.typography.valueWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        artistName: {
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(12, tokens.typography.labelSize + 3),
+          fontWeight: tokens.typography.labelWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        playbackState: {
+          accentColor: tokens.colors.primary,
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(11, tokens.typography.labelSize + 1),
+          fontWeight: tokens.typography.labelWeight,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration: pulseDuration,
+        },
+        spotifyBadge: {
+          accentColor: tokens.colors.primary,
+          textColor: tokens.colors.primary,
+        },
+      },
+    };
+  }
+  if (styleId === 'glass') {
+    const glassAnimationDuration = Number((1.2 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+    return {
+      ...commonVisualPatch(tokens),
+      displayStyle: 'glass',
+      accentColor: tokens.colors.primary,
+      bgColor: tokens.colors.surface,
+      textColor: tokens.colors.text,
+      mutedColor: tokens.colors.mutedText,
+      fontFamily: tokens.typography.bodyFont,
+      fontSize: tokens.typography.bodySize,
+      fontWeight: tokens.typography.bodyWeight,
+      borderRadius: tokens.shape.rootRadius,
+      borderWidth: tokens.shape.borderWidth,
+      subElements: {
+        container: {
+          background: tokens.colors.surface,
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: tokens.typography.bodySize,
+          fontWeight: tokens.typography.bodyWeight,
+          radius: tokens.shape.rootRadius,
+          padding: tokens.spacing.rootPadding,
+          gap: tokens.spacing.itemGap + 7,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+          backdropBlur: tokens.materialTokens?.blurStrength || 18,
+        },
+        albumArt: {
+          visible: tokens.image?.visible !== false,
+          imageSize: Math.round(72 * (tokens.image?.sizeMultiplier || 1)),
+          imageFit: tokens.image?.fit || 'cover',
+          radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        trackTitle: {
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: Math.max(13, tokens.typography.bodySize + 3),
+          fontWeight: tokens.typography.valueWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        artistName: {
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(11, tokens.typography.labelSize + 3),
+          fontWeight: tokens.typography.labelWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        playbackState: {
+          accentColor: tokens.colors.primary,
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(10, tokens.typography.labelSize + 1),
+          fontWeight: tokens.typography.labelWeight,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration: glassAnimationDuration,
+        },
+      },
+    };
+  }
+  if (styleId === 'wave') {
+    const waveAnimationDuration = Number((0.32 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+    return {
+      ...baseSpotifyPatch,
+      displayStyle: 'wave',
+      subElements: {
+        container: {
+          background: tokens.colors.surface,
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: tokens.typography.bodySize,
+          fontWeight: tokens.typography.bodyWeight,
+          radius: tokens.shape.rootRadius,
+          padding: Math.max(8, Math.round(tokens.spacing.rootPadding * 0.7)),
+          gap: tokens.spacing.itemGap + 5,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        albumArt: {
+          visible: tokens.image?.visible !== false,
+          imageSize: Math.round(50 * (tokens.image?.sizeMultiplier || 1)),
+          imageFit: tokens.image?.fit || 'cover',
+          radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        trackTitle: {
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: Math.max(12, tokens.typography.bodySize + 2),
+          fontWeight: tokens.typography.valueWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        artistName: {
+          textColor: tokens.colors.primary,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(10, tokens.typography.labelSize + 2),
+          fontWeight: tokens.typography.labelWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        waveform: {
+          accentColor: tokens.colors.primary,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration: waveAnimationDuration,
+        },
+        equalizer: {
+          accentColor: tokens.colors.primary,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration,
+        },
+      },
+    };
+  }
+  if (styleId === 'neon') {
+    const pulseDuration = Number((1.1 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+    return {
+      ...baseSpotifyPatch,
+      displayStyle: 'neon',
+      subElements: {
+        container: {
+          background: tokens.colors.surface,
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: tokens.typography.bodySize,
+          fontWeight: tokens.typography.bodyWeight,
+          radius: tokens.shape.rootRadius,
+          padding: Math.max(8, Math.round(tokens.spacing.rootPadding * 0.78)),
+          gap: tokens.spacing.itemGap + 7,
+          borderColor: tokens.colors.primary,
+          borderWidth: Math.max(1, tokens.shape.borderWidth),
+          shadow: `0 0 ${px((tokens.materialTokens?.glowIntensity || 0.2) * 44)} ${tokens.colors.primary}`,
+        },
+        albumArt: {
+          visible: tokens.image?.visible !== false,
+          imageSize: Math.round(56 * (tokens.image?.sizeMultiplier || 1)),
+          imageFit: tokens.image?.fit || 'cover',
+          radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+          borderColor: tokens.colors.primary,
+          borderWidth: 2,
+          shadow: `0 0 ${px((tokens.materialTokens?.glowIntensity || 0.22) * 56)} ${tokens.colors.primary}`,
+        },
+        trackTitle: {
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: Math.max(13, tokens.typography.bodySize + 3),
+          fontWeight: tokens.typography.valueWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        artistName: {
+          textColor: tokens.colors.primary,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(11, tokens.typography.labelSize + 3),
+          fontWeight: tokens.typography.labelWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        playbackState: {
+          accentColor: tokens.colors.primary,
+          textColor: tokens.colors.primary,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(10, tokens.typography.labelSize + 1),
+          fontWeight: tokens.typography.labelWeight,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration: pulseDuration,
+        },
+      },
+    };
+  }
+  if (styleId === 'metal') {
+    const metalAnimationDuration = Number((0.4 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+    return {
+      ...baseSpotifyPatch,
+      displayStyle: 'metal',
+      subElements: {
+        container: {
+          background: tokens.colors.surface,
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: tokens.typography.bodySize,
+          fontWeight: tokens.typography.bodyWeight,
+          radius: tokens.shape.rootRadius,
+          padding: Math.max(8, Math.round(tokens.spacing.rootPadding * 0.72)),
+          gap: tokens.spacing.itemGap + 5,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        albumArt: {
+          visible: tokens.image?.visible !== false,
+          imageSize: Math.round(52 * (tokens.image?.sizeMultiplier || 1)),
+          imageFit: tokens.image?.fit || 'cover',
+          radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        trackTitle: {
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: Math.max(12, tokens.typography.bodySize + 2),
+          fontWeight: tokens.typography.valueWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        artistName: {
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(10, tokens.typography.labelSize + 2),
+          fontWeight: tokens.typography.labelWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        playbackState: {
+          accentColor: tokens.colors.primary,
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(10, tokens.typography.labelSize + 1),
+          fontWeight: tokens.typography.labelWeight,
+        },
+        equalizer: {
+          accentColor: tokens.colors.primary,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration: metalAnimationDuration,
+        },
+      },
+    };
+  }
+  if (styleId === 'vinyl') {
+    const recordSizePercent = Math.round(55 * clamp(tokens.spacing?.scale || 1, 0.75, 1.3));
+    const spinDuration = Number((3 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+    return {
+      ...baseSpotifyPatch,
+      displayStyle: 'vinyl',
+      subElements: {
+        container: {
+          background: tokens.colors.surface,
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: tokens.typography.bodySize,
+          fontWeight: tokens.typography.bodyWeight,
+          radius: tokens.shape.rootRadius,
+          gap: tokens.spacing.itemGap + 3,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        vinylRecord: {
+          background: tokens.colors.secondarySurface,
+          accentColor: tokens.colors.primary,
+          sizePercent: recordSizePercent,
+          radius: 999,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration: spinDuration,
+        },
+        albumArt: {
+          visible: tokens.image?.visible !== false,
+          imageFit: tokens.image?.fit || 'cover',
+          radius: 999,
+          borderColor: tokens.colors.primary,
+          borderWidth: 2,
+          shadow: `0 0 ${px((tokens.materialTokens?.glowIntensity || 0.18) * 44)} ${tokens.colors.primary}`,
+        },
+        trackTitle: {
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: Math.max(12, tokens.typography.bodySize + 2),
+          fontWeight: tokens.typography.valueWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        artistName: {
+          textColor: tokens.colors.primary,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: Math.max(10, tokens.typography.labelSize + 2),
+          fontWeight: tokens.typography.labelWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+      },
+    };
+  }
+  if (styleId === 'mini_player') {
+    return {
+      ...commonVisualPatch(tokens),
+      displayStyle: 'mini_player',
+      accentColor: tokens.colors.primary,
+      bgColor: tokens.colors.surface,
+      textColor: tokens.colors.text,
+      mutedColor: tokens.colors.mutedText,
+      fontFamily: tokens.typography.bodyFont,
+      fontSize: tokens.typography.bodySize,
+      fontWeight: tokens.typography.bodyWeight,
+      borderRadius: tokens.shape.rootRadius,
+      borderWidth: tokens.shape.borderWidth,
+      subElements: {
+        container: {
+          background: tokens.colors.surface,
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: tokens.typography.bodySize,
+          fontWeight: tokens.typography.bodyWeight,
+          radius: tokens.shape.rootRadius,
+          padding: Math.max(6, Math.round(tokens.spacing.rootPadding * 0.58)),
+          gap: tokens.spacing.itemGap + 3,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+          ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+        },
+        albumArt: {
+          visible: tokens.image?.visible !== false,
+          imageSize,
+          imageFit: tokens.image?.fit || 'cover',
+          radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+          borderColor: tokens.colors.border,
+          borderWidth: tokens.shape.borderWidth,
+          shadow: cardShadow,
+        },
+        trackTitle: {
+          textColor: tokens.colors.text,
+          fontFamily: tokens.typography.bodyFont,
+          fontSize: Math.max(12, tokens.typography.bodySize + 1),
+          fontWeight: tokens.typography.valueWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        artistName: {
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: tokens.typography.labelSize + 2,
+          fontWeight: tokens.typography.labelWeight,
+          lineHeight: tokens.typography.lineHeight,
+        },
+        playbackState: {
+          accentColor: tokens.colors.primary,
+          textColor: tokens.colors.mutedText,
+          fontFamily: tokens.typography.labelFont,
+          fontSize: tokens.typography.labelSize,
+          fontWeight: tokens.typography.labelWeight,
+        },
+        equalizer: {
+          accentColor: tokens.colors.primary,
+          animationEnabled: tokens.motion?.motionEnabled !== false,
+          animationDuration,
+        },
+      },
+    };
+  }
+
+  const compactAnimationDuration = Number((0.35 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  return {
+    ...commonVisualPatch(tokens),
+    displayStyle: 'compact_bar',
+    accentColor: tokens.colors.primary,
+    bgColor: tokens.colors.surface,
+    textColor: tokens.colors.text,
+    mutedColor: tokens.colors.mutedText,
+    progressColor: tokens.colors.primary,
+    progressBgColor: tokens.colors.secondarySurface,
+    fontFamily: tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    fontWeight: tokens.typography.bodyWeight,
+    borderRadius: tokens.shape.rootRadius,
+    borderWidth: tokens.shape.borderWidth,
+    subElements: {
+      container: {
+        background: tokens.colors.surface,
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        fontWeight: tokens.typography.bodyWeight,
+        radius: tokens.shape.rootRadius,
+        padding: Math.max(6, Math.round(tokens.spacing.rootPadding * 0.66)),
+        gap: tokens.spacing.itemGap,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        shadow: cardShadow,
+        ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+      },
+      albumArt: {
+        visible: tokens.image?.visible !== false,
+        imageSize,
+        imageFit: tokens.image?.fit || 'cover',
+        radius: tokens.image?.radius ?? tokens.shape.cardRadius,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        shadow: cardShadow,
+      },
+      spotifyBadge: {
+        accentColor: tokens.colors.primary,
+        textColor: tokens.colors.primary,
+      },
+      listenerBadge: {
+        textColor: tokens.colors.mutedText,
+      },
+      trackTitle: {
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        fontWeight: tokens.typography.valueWeight,
+        lineHeight: tokens.typography.lineHeight,
+      },
+      artistName: {
+        textColor: tokens.colors.primary,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize + 1,
+        fontWeight: tokens.typography.labelWeight,
+        lineHeight: tokens.typography.lineHeight,
+      },
+      progressBar: {
+        background: tokens.colors.secondarySurface,
+        fillColor: tokens.colors.primary,
+        radius: Math.max(2, Math.round(tokens.shape.badgeRadius * 0.25)),
+      },
+      timeLabel: {
+        textColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: Math.max(9, tokens.typography.labelSize - 1),
+        fontWeight: tokens.typography.labelWeight,
+        lineHeight: tokens.typography.lineHeight,
+      },
+      equalizer: {
+        accentColor: tokens.colors.primary,
+        animationEnabled: tokens.motion?.motionEnabled !== false,
+        animationDuration: compactAnimationDuration,
+      },
+    },
+  };
+}
+
 function buildBonusHuntPatch(tokens) {
   if (tokens?.isOriginalBaseline || tokens?.material === 'original') {
     return {};
@@ -699,6 +1219,7 @@ function buildGiveawayPatch(tokens) {
 function buildPatchForWidget(widgetType, tokens, styleId) {
   if (tokens?.isOriginalBaseline || tokens?.material === 'original') return {};
   if (widgetType === 'bh_stats') return buildBHStatsPatch(tokens);
+  if (widgetType === 'spotify_now_playing') return buildSpotifyPatch(tokens, styleId);
   if (widgetType === 'bonus_hunt') return buildBonusHuntPatch(tokens);
   if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens, styleId);
   if (widgetType === 'giveaway') return buildGiveawayPatch(tokens);
