@@ -8119,6 +8119,9 @@ body.wm-resizing {
   box-sizing: border-box;
   gap: clamp(5px, 0.65vw, 9px);
   min-height: 40px;
+  box-shadow: var(--rtp-shadow, 0 0 0 transparent), var(--rtp-glow, 0 0 0 transparent);
+  backdrop-filter: blur(var(--rtp-blur, 0));
+  -webkit-backdrop-filter: blur(var(--rtp-blur, 0));
 }
 
 /* -- Left section (provider + slot name + stats) -- */
@@ -8136,7 +8139,7 @@ body.wm-resizing {
   min-width: 0;
   color: var(--rtp-provider, #ffffff);
   font-size: var(--rtp-provider-size, 16px);
-  font-weight: 700;
+  font-weight: var(--rtp-provider-weight, 700);
   letter-spacing: 0.5px;
   white-space: nowrap;
   text-shadow: 0 1px 4px rgba(0,0,0,0.6);
@@ -8205,7 +8208,8 @@ body.wm-resizing {
 
 .rtp-stats-slot-name {
   color: var(--rtp-slot-name, #ffffff);
-  font-weight: 700;
+  font-size: var(--rtp-slot-size, 1em);
+  font-weight: var(--rtp-slot-weight, 700);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -8239,9 +8243,15 @@ body.wm-resizing {
 
 .rtp-stats-value {
   color: var(--rtp-text, #ffffff);
-  font-weight: 700;
+  font-size: var(--rtp-value-size, 1em);
+  font-weight: var(--rtp-value-weight, 700);
   text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
+
+.rtp-stats-item--rtp .rtp-stats-value { color: var(--rtp-value-rtp, var(--rtp-text, #ffffff)); }
+.rtp-stats-item--potential .rtp-stats-value { color: var(--rtp-value-potential, var(--rtp-text, #ffffff)); }
+.rtp-stats-item--volatility .rtp-stats-value { color: var(--rtp-value-volatility, var(--rtp-text, #ffffff)); }
+.rtp-stats-item--bestwin .rtp-stats-value { color: var(--rtp-value-bestwin, var(--rtp-text, #ffffff)); }
 
 .rtp-stats-item--bestwin > .rtp-stats-value:not(.rtp-stats-value--bestwin-current) {
   display: none;
@@ -8249,8 +8259,8 @@ body.wm-resizing {
 
 .rtp-stats-label {
   color: var(--rtp-label, #94a3b8);
-  font-size: 0.88em;
-  font-weight: 700;
+  font-size: var(--rtp-label-size, 0.88em);
+  font-weight: var(--rtp-label-weight, 700);
   letter-spacing: 0.3px;
   text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
@@ -10681,7 +10691,7 @@ body.wm-resizing {
 /* --- RTP Stats: Neon --- */
 .rtp-stats-bar--neon .rtp-stats-inner {
   border: 1px solid var(--rtp-accent, #00ffcc) !important;
-  box-shadow: 0 0 15px color-mix(in srgb, var(--rtp-accent, #00ffcc) 20%, transparent),
+  box-shadow: var(--rtp-glow, 0 0 15px color-mix(in srgb, var(--rtp-accent, #00ffcc) 20%, transparent)),
               inset 0 0 20px color-mix(in srgb, var(--rtp-accent, #00ffcc) 5%, transparent);
 }
 .rtp-stats-bar--neon .rtp-stats-slot-name {
@@ -10717,7 +10727,7 @@ body.wm-resizing {
 .rtp-stats-bar--glass .rtp-stats-inner {
   background: linear-gradient(135deg, rgba(30,30,60,0.88), rgba(20,20,50,0.92)) !important;
   border: 1px solid rgba(255,255,255,0.15) !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: var(--rtp-shadow, 0 8px 32px rgba(0,0,0,0.2)), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 /* --- Tournament: Neon --- */

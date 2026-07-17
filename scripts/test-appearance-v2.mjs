@@ -19,15 +19,20 @@ try {
   const registryResult = registryModule.validateWidgetAppearanceRegistry();
   assert.equal(registryResult.valid, true, `registry should validate: ${registryResult.errors.join(', ')}`);
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('bh_stats'), true, 'BH Stats is a V2 pilot');
+  assert.equal(registryModule.isWidgetAppearanceV2Enabled('rtp_stats'), true, 'RTP Stats Bar is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('bonus_hunt'), true, 'Bonus Hunt is a V2 pilot');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('slot_requests'), true, 'Slot Requests is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('giveaway'), true, 'Giveaway is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('spotify_now_playing'), true, 'Spotify is enabled for style-by-style V2 migration');
   assert.ok(registryModule.getWidgetAppearanceCapability('bonus_hunt').elements.slotRow, 'bonus hunt declares real slot row element');
+  assert.ok(registryModule.getWidgetAppearanceCapability('rtp_stats').elements.rtpValue, 'RTP Stats declares real RTP value element');
   assert.ok(registryModule.getWidgetAppearanceCapability('slot_requests').elements.requestCard, 'slot requests declares request row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('giveaway').elements.winnerArea, 'giveaway declares winner area element');
   assert.ok(registryModule.getWidgetAppearanceCapability('spotify_now_playing').elements.albumArt, 'Spotify declares album art as an editable element');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt').some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
+  ['v1', 'vertical', 'neon', 'minimal', 'glass'].forEach(styleId => {
+    assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('rtp_stats').some(style => style.id === styleId), `RTP Stats exposes ${styleId} style option`);
+  });
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('slot_requests').some(style => style.id === 'v2_card_stack'), 'Slot Requests exposes card-stack style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('giveaway').some(style => style.id === 'v4'), 'Giveaway exposes minimal style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === 'mini_player'), 'Spotify exposes mini-player style option');
@@ -55,6 +60,23 @@ try {
   assert.ok(slotRequestsEditableImageControls.includes('imageSize'), 'Slot Requests editable compact slot image exposes size');
   assert.ok(slotRequestsEditableImageControls.includes('imageFit'), 'Slot Requests editable compact slot image exposes fit');
   assert.ok(!registryModule.getWidgetStyleQuickControls('slot_requests', 'v3_compact_editable', 'slotTitle').includes('imageSize'), 'Slot Requests editable compact text hides image controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'v1', 'fonts'), true, 'RTP Stats classic exposes typography controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'v1', 'imageSize'), false, 'RTP Stats classic hides image controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'neon', 'glowIntensity'), true, 'RTP Stats neon exposes glow controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'minimal', 'shadows'), false, 'RTP Stats minimal hides unsupported shadow controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'glass', 'glowIntensity'), true, 'RTP Stats glass exposes glow controls');
+  const rtpContainerControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'container');
+  assert.ok(rtpContainerControls.includes('material'), 'RTP Stats container exposes material');
+  assert.ok(rtpContainerControls.includes('fontFamily'), 'RTP Stats container exposes font family');
+  assert.ok(!rtpContainerControls.includes('imageSize'), 'RTP Stats container hides image controls');
+  assert.ok(!rtpContainerControls.includes('carouselSpeed'), 'RTP Stats container hides carousel controls');
+  const rtpValueControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'rtpValue');
+  assert.ok(rtpValueControls.includes('fontFamily'), 'RTP value exposes typography controls');
+  assert.ok(rtpValueControls.includes('primaryColor'), 'RTP value exposes color controls');
+  assert.ok(!rtpValueControls.includes('imageFit'), 'RTP value hides image fit');
+  const rtpMinimalElements = registryModule.getWidgetStyleElements('rtp_stats', 'minimal');
+  assert.ok(!rtpMinimalElements.some(element => element.id === 'spinner'), 'RTP minimal hides spinner element controls');
+  assert.ok(!rtpMinimalElements.some(element => element.id === 'divider'), 'RTP minimal hides divider element controls');
   assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'containers'), false, 'Giveaway minimal style hides container controls');
   assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'animations'), false, 'Quick Editor hides unimplemented animation controls');
   assert.equal(registryModule.styleSupportsQuickCapability('spotify_now_playing', 'album_card', 'fonts'), true, 'Spotify album-card exposes typography controls');
@@ -226,6 +248,17 @@ try {
       subElements: {},
     },
   };
+  const rtpStatsWidget = {
+    id: 'rtp1',
+    widget_type: 'rtp_stats',
+    width: 720,
+    height: 72,
+    config: {
+      displayStyle: 'neon',
+      previewMode: true,
+      subElements: {},
+    },
+  };
   const slotRequestsWidget = {
     id: 'sr1',
     widget_type: 'slot_requests',
@@ -367,6 +400,31 @@ try {
               density: 'standard',
               textSize: 'standard',
               scale: 1.05,
+            }),
+          },
+        },
+      },
+      rtp1: {
+        styles: {
+          neon: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('rtp_stats', {
+              material: 'neon',
+              primaryColor: '#00ffcc',
+              shape: 'pill',
+              density: 'compact',
+              textSize: 'large',
+              scale: 1.04,
+              glowStrength: 'strong',
+            }),
+          },
+          glass: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('rtp_stats', {
+              material: 'glass',
+              primaryColor: '#38bdf8',
+              shape: 'rounded',
+              density: 'standard',
+              textSize: 'standard',
+              scale: 1,
             }),
           },
         },
@@ -623,6 +681,23 @@ try {
   assert.ok(huntConfig.headerColor, 'Bonus Hunt material presets recolor the original surface variables');
   assert.ok(huntConfig.subElements.footerTotalValue.states.success.textColor, 'Bonus Hunt state-specific success style remains explicit');
 
+  const rtpConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, appearance, {});
+  assert.equal(rtpConfig.__appearanceV2.material, 'neon', 'RTP Stats receives V2 material');
+  assert.equal(rtpConfig.displayStyle, 'neon', 'RTP Stats keeps the selected renderer style');
+  assert.ok(rtpConfig.barBgFrom, 'RTP Stats receives generated bar background');
+  assert.ok(rtpConfig.borderColor, 'RTP Stats receives generated border color');
+  assert.ok(rtpConfig.rtpIconColor, 'RTP Stats maps RTP icon color to widget config');
+  assert.ok(rtpConfig.bestWinIconColor, 'RTP Stats maps personal best icon color to widget config');
+  assert.ok(rtpConfig.spinnerColor, 'RTP Stats maps spinner color to widget config');
+  assert.equal(rtpConfig.subElements.container.radius, rtpConfig.borderRadius, 'RTP Stats container radius mirrors the real CSS variable');
+  assert.ok(rtpConfig.subElements.rtpValue.accentColor, 'RTP Stats RTP value receives generated accent');
+  assert.ok(rtpConfig.subElements.personalBest.accentColor, 'RTP Stats personal best receives generated accent');
+  assert.ok(rtpConfig.subElements.statCard.states.highlight.accentColor, 'RTP Stats keeps highlighted stat state explicit');
+  assert.ok(rtpConfig.__appearanceV2.unsupportedProperties.includes('layout.providerLogoDimensions'), 'RTP Stats records provider-logo dimensions as unsupported');
+  const rtpGlassConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, appearance, {}, { styleId: 'glass' });
+  assert.equal(rtpGlassConfig.displayStyle, 'glass', 'RTP Stats can switch to glass style appearance');
+  assert.equal(rtpGlassConfig.__appearanceV2.material, 'glass', 'RTP Stats loads glass style-specific appearance');
+
   const slotRequestsConfig = appearanceModel.resolveWidgetAppearanceConfig(slotRequestsWidget, appearance, {});
   assert.equal(slotRequestsConfig.__appearanceV2.material, 'glass', 'Slot Requests receives V2 material');
   assert.equal(slotRequestsConfig.displayStyle, 'v1_minimal', 'Slot Requests keeps selected renderer style');
@@ -760,6 +835,7 @@ try {
   const resolvedWidgets = appearanceModel.resolveWidgetsForAppearance([
     bhStatsWidget,
     bonusHuntWidget,
+    rtpStatsWidget,
     slotRequestsWidget,
     giveawayWidget,
     spotifyWidget,
@@ -773,24 +849,28 @@ try {
   ], appearance, {});
   assert.equal(resolvedWidgets[0].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves simple pilot');
   assert.equal(resolvedWidgets[1].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves complex pilot');
-  assert.equal(resolvedWidgets[2].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Slot Requests');
-  assert.equal(resolvedWidgets[3].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Giveaway');
-  assert.equal(resolvedWidgets[4].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify mini-player');
-  assert.equal(resolvedWidgets[5].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify album-card');
-  assert.equal(resolvedWidgets[6].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify compact-bar');
-  assert.equal(resolvedWidgets[7].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify glass');
-  assert.equal(resolvedWidgets[8].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify wave');
-  assert.equal(resolvedWidgets[9].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Spotify neon');
-  assert.equal(resolvedWidgets[10].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify metal');
-  assert.equal(resolvedWidgets[11].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify vinyl');
-  assert.notEqual(resolvedWidgets[2].config.bgColor, resolvedWidgets[3].config.bgColor, 'Slot Requests and Giveaway styles do not leak between widgets');
+  assert.equal(resolvedWidgets[2].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves RTP Stats');
+  assert.equal(resolvedWidgets[3].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Slot Requests');
+  assert.equal(resolvedWidgets[4].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Giveaway');
+  assert.equal(resolvedWidgets[5].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify mini-player');
+  assert.equal(resolvedWidgets[6].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify album-card');
+  assert.equal(resolvedWidgets[7].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify compact-bar');
+  assert.equal(resolvedWidgets[8].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify glass');
+  assert.equal(resolvedWidgets[9].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify wave');
+  assert.equal(resolvedWidgets[10].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Spotify neon');
+  assert.equal(resolvedWidgets[11].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify metal');
+  assert.equal(resolvedWidgets[12].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify vinyl');
+  assert.notEqual(resolvedWidgets[3].config.bgColor, resolvedWidgets[4].config.bgColor, 'Slot Requests and Giveaway styles do not leak between widgets');
 
   const bhStatsElements = editorSchema.getWidgetElementSchema('bh_stats');
+  const rtpStatsElements = editorSchema.getWidgetElementSchema('rtp_stats');
   const bonusElements = editorSchema.getWidgetElementSchema('bonus_hunt');
   const slotRequestElements = editorSchema.getWidgetElementSchema('slot_requests');
   const giveawayElements = editorSchema.getWidgetElementSchema('giveaway');
   const spotifyElements = editorSchema.getWidgetElementSchema('spotify_now_playing');
   assert.ok(bhStatsElements.some(element => element.id === 'statsCard'), 'Advanced Mode schema for BH Stats comes from V2 registry');
+  assert.ok(rtpStatsElements.some(element => element.id === 'rtpValue'), 'Advanced Mode schema for RTP Stats comes from V2 registry');
+  assert.ok(rtpStatsElements.some(element => element.id === 'personalBest'), 'Advanced Mode schema for RTP Stats personal best comes from V2 registry');
   assert.ok(bonusElements.some(element => element.id === 'slotRow'), 'Advanced Mode schema for Bonus Hunt comes from V2 registry');
   assert.ok(slotRequestElements.some(element => element.id === 'requestCard'), 'Advanced Mode schema for Slot Requests comes from V2 registry');
   assert.ok(giveawayElements.some(element => element.id === 'winnerArea'), 'Advanced Mode schema for Giveaway comes from V2 registry');

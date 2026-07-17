@@ -1032,6 +1032,143 @@ function buildSlotRequestsPatch(tokens, styleId) {
   };
 }
 
+function buildRtpStatsPatch(tokens, styleId) {
+  const common = commonSubElements(tokens);
+  const isNeon = styleId === 'neon';
+  const isMinimal = styleId === 'minimal';
+  const isGlass = styleId === 'glass';
+  const surface = tokens.colors.surface;
+  const secondary = tokens.colors.secondarySurface;
+  const elevated = tokens.colors.elevatedSurface;
+  const shadow = tokens.materialTokens?.shadowIntensity > 0.02
+    ? `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 48)} ${tokens.colors.shadow}`
+    : undefined;
+  const glow = tokens.materialTokens?.glowIntensity > 0.01
+    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 46)} ${tokens.colors.glow}`
+    : undefined;
+  const combinedShadow = [shadow, glow].filter(Boolean).join(', ') || undefined;
+  const barBgFrom = isNeon ? '#050510' : surface;
+  const barBgVia = isMinimal ? surface : (isGlass ? elevated : secondary);
+  const barBgTo = isNeon ? '#050510' : surface;
+  const accent = tokens.colors.primary;
+  const warning = tokens.colors.warning;
+
+  return {
+    ...commonVisualPatch(tokens),
+    displayStyle: styleId,
+    barBgFrom,
+    barBgVia,
+    barBgTo,
+    borderColor: isMinimal ? 'rgba(255,255,255,0.08)' : tokens.colors.border,
+    borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
+    borderRadius: tokens.shape.rootRadius,
+    textColor: tokens.colors.text,
+    providerColor: tokens.colors.text,
+    slotNameColor: tokens.colors.text,
+    labelColor: tokens.colors.mutedText,
+    rtpIconColor: accent,
+    potentialIconColor: warning,
+    volatilityIconColor: tokens.colors.accent,
+    bestWinIconColor: tokens.colors.positive,
+    dividerColor: tokens.colors.border,
+    spinnerColor: accent,
+    fontFamily: tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    providerFontSize: tokens.typography.headerSize,
+    fontWeight: tokens.typography.valueWeight,
+    labelFontWeight: tokens.typography.labelWeight,
+    paddingX: Math.max(2, Math.min(tokens.spacing.rootPadding, 14)),
+    paddingY: Math.max(1, Math.min(tokens.spacing.cardPadding, 8)),
+    widgetScale: tokens.spacing.scale,
+    subElements: {
+      ...common,
+      container: {
+        ...common.container,
+        background: surface,
+        textColor: tokens.colors.text,
+        borderColor: isMinimal ? 'transparent' : tokens.colors.border,
+        borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
+        radius: tokens.shape.rootRadius,
+        padding: tokens.spacing.rootPadding,
+        gap: tokens.spacing.itemGap,
+        shadow: combinedShadow,
+        glow,
+      },
+      provider: {
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.accent,
+        fontFamily: tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+      },
+      slotTitle: {
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      rtpValue: {
+        textColor: tokens.colors.text,
+        accentColor: accent,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      maxWin: {
+        textColor: tokens.colors.text,
+        accentColor: warning,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      volatility: {
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.accent,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      personalBest: {
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.positive,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      statCard: {
+        background: secondary,
+        textColor: tokens.colors.text,
+        accentColor: accent,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+        states: {
+          positive: { textColor: tokens.colors.positive, accentColor: tokens.colors.positive },
+          negative: { textColor: tokens.colors.negative, accentColor: tokens.colors.negative },
+          highlight: { textColor: tokens.colors.warning, accentColor: tokens.colors.warning },
+        },
+      },
+      label: {
+        textColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.labelWeight,
+      },
+      divider: {
+        background: tokens.colors.border,
+        borderColor: tokens.colors.border,
+        accentColor: tokens.colors.border,
+      },
+      spinner: {
+        textColor: accent,
+        accentColor: accent,
+      },
+    },
+  };
+}
+
 function buildGiveawayPatch(tokens) {
   const common = commonSubElements(tokens);
   const liveColor = tokens.colors.positive;
@@ -1219,6 +1356,7 @@ function buildGiveawayPatch(tokens) {
 function buildPatchForWidget(widgetType, tokens, styleId) {
   if (tokens?.isOriginalBaseline || tokens?.material === 'original') return {};
   if (widgetType === 'bh_stats') return buildBHStatsPatch(tokens);
+  if (widgetType === 'rtp_stats') return buildRtpStatsPatch(tokens, styleId);
   if (widgetType === 'spotify_now_playing') return buildSpotifyPatch(tokens, styleId);
   if (widgetType === 'bonus_hunt') return buildBonusHuntPatch(tokens);
   if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens, styleId);

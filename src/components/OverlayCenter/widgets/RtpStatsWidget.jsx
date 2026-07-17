@@ -446,14 +446,28 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const rtpIconColor = subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || '#60a5fa');
   const potentialIconColor = subValue(c, 'maxWin', 'accentColor', c.potentialIconColor || '#facc15');
   const volatilityIconColor = subValue(c, 'volatility', 'accentColor', c.volatilityIconColor || '#3b82f6');
-  const dividerColor = subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6');
+  const dividerColor = subValue(c, 'divider', 'background', subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6'));
   const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
   const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 14);
   const providerFontSize = subValue(c, 'provider', 'fontSize', c.providerFontSize ?? 16);
+  const providerFontWeight = subValue(c, 'provider', 'fontWeight', c.fontWeight || 700);
+  const slotTitleFontSize = subValue(c, 'slotTitle', 'fontSize', fontSize);
+  const slotTitleFontWeight = subValue(c, 'slotTitle', 'fontWeight', c.fontWeight || 700);
+  const valueFontSize = subValue(c, 'rtpValue', 'fontSize', fontSize);
+  const valueFontWeight = subValue(c, 'statCard', 'fontWeight', c.fontWeight || 700);
+  const labelFontSize = subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(fontSize) * 0.88)));
+  const labelFontWeight = subValue(c, 'label', 'fontWeight', c.labelFontWeight || 700);
+  const rtpValueColor = subValue(c, 'rtpValue', 'textColor', textColor);
+  const potentialValueColor = subValue(c, 'maxWin', 'textColor', textColor);
+  const volatilityValueColor = subValue(c, 'volatility', 'textColor', textColor);
+  const bestWinValueColor = subValue(c, 'personalBest', 'textColor', textColor);
   const paddingX = subValue(c, 'container', 'padding', c.paddingX ?? 10);
   const paddingY = subValue(c, 'container', 'gap', c.paddingY ?? 4);
   const compactPaddingX = Math.max(2, Math.min(Number(paddingX) || 10, 10));
   const compactPaddingY = Math.max(1, Math.min(Number(paddingY) || 4, 4));
+  const shadow = subValue(c, 'container', 'shadow', undefined);
+  const glow = subValue(c, 'container', 'glow', undefined);
+  const backdropBlur = subValue(c, 'container', 'backdropBlur', 0);
   const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
   const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
   const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
@@ -525,6 +539,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     width: '100%',
     height: '100%',
     overflow: 'hidden',
+    transform: c.widgetScale && Number(c.widgetScale) !== 1 ? `scale(${Number(c.widgetScale)})` : undefined,
+    transformOrigin: 'center',
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
       : undefined,
@@ -538,6 +554,10 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-provider': providerColor,
     '--rtp-slot-name': slotNameColor,
     '--rtp-label': labelColor,
+    '--rtp-value-rtp': rtpValueColor,
+    '--rtp-value-potential': potentialValueColor,
+    '--rtp-value-volatility': volatilityValueColor,
+    '--rtp-value-bestwin': bestWinValueColor,
     '--rtp-icon-rtp': rtpIconColor,
     '--rtp-icon-potential': potentialIconColor,
     '--rtp-icon-volatility': volatilityIconColor,
@@ -546,7 +566,17 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-px': `${compactPaddingX}px`,
     '--rtp-py': `${compactPaddingY}px`,
     '--rtp-provider-size': `${providerFontSize}px`,
+    '--rtp-provider-weight': providerFontWeight,
+    '--rtp-slot-size': `${slotTitleFontSize}px`,
+    '--rtp-slot-weight': slotTitleFontWeight,
+    '--rtp-value-size': `${valueFontSize}px`,
+    '--rtp-value-weight': valueFontWeight,
+    '--rtp-label-size': `${labelFontSize}px`,
+    '--rtp-label-weight': labelFontWeight,
     '--rtp-icon-bestwin': bestWinIconColor,
+    '--rtp-shadow': shadow,
+    '--rtp-glow': glow,
+    '--rtp-blur': `${Number(backdropBlur) || 0}px`,
     ...(isNeon ? { '--rtp-accent': borderColor } : {}),
   };
 
