@@ -559,7 +559,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           glow: true,
           glowIntensity: true,
         },
-        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'casino', 'separator'],
+        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],
       }),
       freezeStyle({
@@ -577,7 +577,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           glow: true,
           glowIntensity: true,
         },
-        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'casino', 'separator'],
+        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],
       }),
       freezeStyle({
@@ -597,7 +597,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           opacity: true,
           transparentBackground: true,
         },
-        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'casino', 'separator'],
+        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],
       }),
       freezeStyle({
@@ -625,7 +625,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           opacity: true,
           transparentBackground: true,
         },
-        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'casino', 'separator'],
+        elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],
       }),
     ]),
@@ -705,6 +705,11 @@ export const widgetAppearanceRegistry = Object.freeze({
       }),
       crypto: Object.freeze({
         label: 'Crypto ticker',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+      }),
+      balance: Object.freeze({
+        label: 'Start balance',
         kind: 'text',
         capabilities: ['typography', 'stateColor'],
       }),

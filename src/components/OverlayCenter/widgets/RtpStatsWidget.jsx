@@ -449,12 +449,25 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const dividerColor = subValue(c, 'divider', 'background', subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6'));
   const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
   const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 14);
+  const providerFontFamily = subValue(c, 'provider', 'fontFamily', fontFamily);
   const providerFontSize = subValue(c, 'provider', 'fontSize', c.providerFontSize ?? 16);
   const providerFontWeight = subValue(c, 'provider', 'fontWeight', c.fontWeight || 700);
+  const slotTitleFontFamily = subValue(c, 'slotTitle', 'fontFamily', fontFamily);
   const slotTitleFontSize = subValue(c, 'slotTitle', 'fontSize', fontSize);
   const slotTitleFontWeight = subValue(c, 'slotTitle', 'fontWeight', c.fontWeight || 700);
-  const valueFontSize = subValue(c, 'rtpValue', 'fontSize', fontSize);
-  const valueFontWeight = subValue(c, 'statCard', 'fontWeight', c.fontWeight || 700);
+  const rtpValueFontFamily = subValue(c, 'rtpValue', 'fontFamily', fontFamily);
+  const rtpValueFontSize = subValue(c, 'rtpValue', 'fontSize', fontSize);
+  const rtpValueFontWeight = subValue(c, 'rtpValue', 'fontWeight', c.fontWeight || 700);
+  const potentialValueFontFamily = subValue(c, 'maxWin', 'fontFamily', fontFamily);
+  const potentialValueFontSize = subValue(c, 'maxWin', 'fontSize', fontSize);
+  const potentialValueFontWeight = subValue(c, 'maxWin', 'fontWeight', c.fontWeight || 700);
+  const volatilityValueFontFamily = subValue(c, 'volatility', 'fontFamily', fontFamily);
+  const volatilityValueFontSize = subValue(c, 'volatility', 'fontSize', fontSize);
+  const volatilityValueFontWeight = subValue(c, 'volatility', 'fontWeight', c.fontWeight || 700);
+  const bestWinValueFontFamily = subValue(c, 'personalBest', 'fontFamily', fontFamily);
+  const bestWinValueFontSize = subValue(c, 'personalBest', 'fontSize', fontSize);
+  const bestWinValueFontWeight = subValue(c, 'personalBest', 'fontWeight', c.fontWeight || 700);
+  const labelFontFamily = subValue(c, 'label', 'fontFamily', fontFamily);
   const labelFontSize = subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(fontSize) * 0.88)));
   const labelFontWeight = subValue(c, 'label', 'fontWeight', c.labelFontWeight || 700);
   const rtpValueColor = subValue(c, 'rtpValue', 'textColor', textColor);
@@ -565,12 +578,25 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-spinner': spinnerColor,
     '--rtp-px': `${compactPaddingX}px`,
     '--rtp-py': `${compactPaddingY}px`,
+    '--rtp-provider-family': providerFontFamily,
     '--rtp-provider-size': `${providerFontSize}px`,
     '--rtp-provider-weight': providerFontWeight,
+    '--rtp-slot-family': slotTitleFontFamily,
     '--rtp-slot-size': `${slotTitleFontSize}px`,
     '--rtp-slot-weight': slotTitleFontWeight,
-    '--rtp-value-size': `${valueFontSize}px`,
-    '--rtp-value-weight': valueFontWeight,
+    '--rtp-value-rtp-family': rtpValueFontFamily,
+    '--rtp-value-rtp-size': `${rtpValueFontSize}px`,
+    '--rtp-value-rtp-weight': rtpValueFontWeight,
+    '--rtp-value-potential-family': potentialValueFontFamily,
+    '--rtp-value-potential-size': `${potentialValueFontSize}px`,
+    '--rtp-value-potential-weight': potentialValueFontWeight,
+    '--rtp-value-volatility-family': volatilityValueFontFamily,
+    '--rtp-value-volatility-size': `${volatilityValueFontSize}px`,
+    '--rtp-value-volatility-weight': volatilityValueFontWeight,
+    '--rtp-value-bestwin-family': bestWinValueFontFamily,
+    '--rtp-value-bestwin-size': `${bestWinValueFontSize}px`,
+    '--rtp-value-bestwin-weight': bestWinValueFontWeight,
+    '--rtp-label-family': labelFontFamily,
     '--rtp-label-size': `${labelFontSize}px`,
     '--rtp-label-weight': labelFontWeight,
     '--rtp-icon-bestwin': bestWinIconColor,

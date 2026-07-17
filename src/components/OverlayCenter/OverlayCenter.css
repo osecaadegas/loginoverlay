@@ -8138,6 +8138,7 @@ body.wm-resizing {
   align-items: center;
   min-width: 0;
   color: var(--rtp-provider, #ffffff);
+  font-family: var(--rtp-provider-family, inherit);
   font-size: var(--rtp-provider-size, 16px);
   font-weight: var(--rtp-provider-weight, 700);
   letter-spacing: 0.5px;
@@ -8208,6 +8209,7 @@ body.wm-resizing {
 
 .rtp-stats-slot-name {
   color: var(--rtp-slot-name, #ffffff);
+  font-family: var(--rtp-slot-family, inherit);
   font-size: var(--rtp-slot-size, 1em);
   font-weight: var(--rtp-slot-weight, 700);
   white-space: nowrap;
@@ -8243,15 +8245,36 @@ body.wm-resizing {
 
 .rtp-stats-value {
   color: var(--rtp-text, #ffffff);
-  font-size: var(--rtp-value-size, 1em);
-  font-weight: var(--rtp-value-weight, 700);
   text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
-.rtp-stats-item--rtp .rtp-stats-value { color: var(--rtp-value-rtp, var(--rtp-text, #ffffff)); }
-.rtp-stats-item--potential .rtp-stats-value { color: var(--rtp-value-potential, var(--rtp-text, #ffffff)); }
-.rtp-stats-item--volatility .rtp-stats-value { color: var(--rtp-value-volatility, var(--rtp-text, #ffffff)); }
-.rtp-stats-item--bestwin .rtp-stats-value { color: var(--rtp-value-bestwin, var(--rtp-text, #ffffff)); }
+.rtp-stats-item--rtp .rtp-stats-value {
+  color: var(--rtp-value-rtp, var(--rtp-text, #ffffff));
+  font-family: var(--rtp-value-rtp-family, inherit);
+  font-size: var(--rtp-value-rtp-size, 1em);
+  font-weight: var(--rtp-value-rtp-weight, 700);
+}
+
+.rtp-stats-item--potential .rtp-stats-value {
+  color: var(--rtp-value-potential, var(--rtp-text, #ffffff));
+  font-family: var(--rtp-value-potential-family, inherit);
+  font-size: var(--rtp-value-potential-size, 1em);
+  font-weight: var(--rtp-value-potential-weight, 700);
+}
+
+.rtp-stats-item--volatility .rtp-stats-value {
+  color: var(--rtp-value-volatility, var(--rtp-text, #ffffff));
+  font-family: var(--rtp-value-volatility-family, inherit);
+  font-size: var(--rtp-value-volatility-size, 1em);
+  font-weight: var(--rtp-value-volatility-weight, 700);
+}
+
+.rtp-stats-item--bestwin .rtp-stats-value {
+  color: var(--rtp-value-bestwin, var(--rtp-text, #ffffff));
+  font-family: var(--rtp-value-bestwin-family, inherit);
+  font-size: var(--rtp-value-bestwin-size, 1em);
+  font-weight: var(--rtp-value-bestwin-weight, 700);
+}
 
 .rtp-stats-item--bestwin > .rtp-stats-value:not(.rtp-stats-value--bestwin-current) {
   display: none;
@@ -8259,6 +8282,7 @@ body.wm-resizing {
 
 .rtp-stats-label {
   color: var(--rtp-label, #94a3b8);
+  font-family: var(--rtp-label-family, inherit);
   font-size: var(--rtp-label-size, 0.88em);
   font-weight: var(--rtp-label-weight, 700);
   letter-spacing: 0.3px;

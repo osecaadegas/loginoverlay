@@ -1289,6 +1289,14 @@ function buildNavbarPatch(tokens, styleId) {
           negative: { textColor: tokens.colors.negative, accentColor: tokens.colors.negative },
         },
       },
+      balance: {
+        textColor: tokens.colors.text,
+        accentColor: tokens.colors.primary,
+        borderColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+      },
       casino: {
         textColor: tokens.colors.primary,
         accentColor: tokens.colors.primary,

@@ -101,6 +101,10 @@ try {
   const navbarNameControls = registryModule.getWidgetStyleQuickControls('navbar', 'v1', 'displayName');
   assert.ok(navbarNameControls.includes('fontFamily'), 'Navbar display name exposes typography controls');
   assert.ok(!navbarNameControls.includes('imageSize'), 'Navbar display name hides image controls');
+  const navbarBalanceControls = registryModule.getWidgetStyleQuickControls('navbar', 'v1', 'balance');
+  assert.ok(navbarBalanceControls.includes('fontFamily'), 'Navbar balance exposes typography controls');
+  assert.ok(navbarBalanceControls.includes('primaryColor'), 'Navbar balance exposes color controls');
+  assert.ok(!navbarBalanceControls.includes('imageSize'), 'Navbar balance hides image controls');
   assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'containers'), false, 'Giveaway minimal style hides container controls');
   assert.equal(registryModule.styleSupportsQuickCapability('giveaway', 'v4', 'animations'), false, 'Quick Editor hides unimplemented animation controls');
   assert.equal(registryModule.styleSupportsQuickCapability('spotify_now_playing', 'album_card', 'fonts'), true, 'Spotify album-card exposes typography controls');
@@ -762,6 +766,14 @@ try {
   assert.ok(rtpConfig.subElements.personalBest.accentColor, 'RTP Stats personal best receives generated accent');
   assert.ok(rtpConfig.subElements.statCard.states.highlight.accentColor, 'RTP Stats keeps highlighted stat state explicit');
   assert.ok(rtpConfig.__appearanceV2.unsupportedProperties.includes('layout.providerLogoDimensions'), 'RTP Stats records provider-logo dimensions as unsupported');
+  const rtpWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/RtpStatsWidget.jsx', import.meta.url), 'utf8');
+  const overlayCssSource = readFileSync(new URL('../src/components/OverlayCenter/OverlayCenter.css', import.meta.url), 'utf8');
+  assert.ok(rtpWidgetSource.includes('--rtp-value-rtp-family'), 'RTP Stats renderer maps RTP value font family to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-value-potential-family'), 'RTP Stats renderer maps max-win font family to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-value-volatility-family'), 'RTP Stats renderer maps volatility font family to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-value-bestwin-family'), 'RTP Stats renderer maps personal-best font family to CSS');
+  assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-rtp-family'), 'RTP Stats CSS consumes per-value RTP font family');
+  assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-bestwin-family'), 'RTP Stats CSS consumes per-value personal-best font family');
   const rtpGlassConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, appearance, {}, { styleId: 'glass' });
   assert.equal(rtpGlassConfig.displayStyle, 'glass', 'RTP Stats can switch to glass style appearance');
   assert.equal(rtpGlassConfig.__appearanceV2.material, 'glass', 'RTP Stats loads glass style-specific appearance');
@@ -779,7 +791,14 @@ try {
   assert.ok(navbarConfig.subElements.badgeImage.imageSize > 54, 'Navbar badge image resolves large image size');
   assert.ok(navbarConfig.subElements.clock.background, 'Navbar clock receives generated surface');
   assert.ok(navbarConfig.subElements.music.states.connected.accentColor, 'Navbar music connected state remains explicit');
+  assert.ok(navbarConfig.subElements.balance.fontFamily, 'Navbar balance receives generated typography');
   assert.ok(navbarConfig.__appearanceV2.unsupportedProperties.includes('layout.sectionOrder'), 'Navbar records section ordering as unsupported');
+  const navbarWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/NavbarWidget.jsx', import.meta.url), 'utf8');
+  assert.ok(navbarWidgetSource.includes('containerFontFamily'), 'Navbar renderer maps container font family');
+  assert.ok(navbarWidgetSource.includes('musicFontFamily'), 'Navbar renderer maps music font family');
+  assert.ok(navbarWidgetSource.includes('cryptoFontFamily'), 'Navbar renderer maps crypto font family');
+  assert.ok(navbarWidgetSource.includes('sponsorFontFamily'), 'Navbar renderer maps sponsor font family');
+  assert.ok(navbarWidgetSource.includes('balanceFontFamily'), 'Navbar renderer maps balance font family');
   const navbarRetroConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, appearance, {}, { styleId: 'retro' });
   assert.equal(navbarRetroConfig.displayStyle, 'retro', 'Navbar can switch to retro style appearance');
   assert.equal(navbarRetroConfig.__appearanceV2.material, 'matte', 'Navbar loads retro style-specific appearance');
@@ -919,6 +938,43 @@ try {
   }, appearance, {});
   assert.equal(giveawayOverride.subElements.keyword.textColor, '#ff00ff', 'Giveaway advanced override wins over generated keyword token');
 
+  const rtpOverrideConfig = appearanceModel.resolveWidgetAppearanceConfig({
+    ...rtpStatsWidget,
+    config: {
+      ...rtpStatsWidget.config,
+      __appearanceExplicitSubElements: {
+        rtpValue: { fontFamily: 'Orbitron', fontSize: 19, fontWeight: 400 },
+        maxWin: { fontFamily: 'Montserrat', fontSize: 17, fontWeight: 800 },
+        label: { fontFamily: 'Oxanium', fontSize: 12, fontWeight: 500 },
+      },
+    },
+  }, appearance, {});
+  assert.equal(rtpOverrideConfig.subElements.rtpValue.fontFamily, 'Orbitron', 'RTP value explicit font family wins over generated tokens');
+  assert.equal(rtpOverrideConfig.subElements.maxWin.fontSize, 17, 'RTP max-win explicit font size wins over generated tokens');
+  assert.equal(rtpOverrideConfig.subElements.label.fontWeight, 500, 'RTP label explicit font weight wins over generated tokens');
+
+  const navbarOverrideConfig = appearanceModel.resolveWidgetAppearanceConfig({
+    ...navbarWidget,
+    config: {
+      ...navbarWidget.config,
+      __appearanceExplicitSubElements: {
+        displayName: { fontFamily: 'Rajdhani', fontSize: 20, fontWeight: 600 },
+        music: { fontFamily: 'Poppins', fontSize: 13, fontWeight: 500 },
+        sponsor: { fontFamily: 'Space Grotesk', fontSize: 12, fontWeight: 700 },
+        crypto: { fontFamily: 'Orbitron', fontSize: 14, fontWeight: 800 },
+        balance: { fontFamily: 'Oxanium', fontSize: 16, fontWeight: 600 },
+        casino: { fontFamily: 'Montserrat', fontSize: 12, fontWeight: 700 },
+        clock: { fontFamily: 'Inter', fontSize: 15, fontWeight: 500 },
+      },
+    },
+  }, appearance, {});
+  assert.equal(navbarOverrideConfig.subElements.displayName.fontFamily, 'Rajdhani', 'Navbar display name explicit font family wins over generated tokens');
+  assert.equal(navbarOverrideConfig.subElements.music.fontFamily, 'Poppins', 'Navbar music explicit font family wins over generated tokens');
+  assert.equal(navbarOverrideConfig.subElements.sponsor.fontSize, 12, 'Navbar sponsor explicit font size wins over generated tokens');
+  assert.equal(navbarOverrideConfig.subElements.crypto.fontWeight, 800, 'Navbar crypto explicit font weight wins over generated tokens');
+  assert.equal(navbarOverrideConfig.subElements.balance.fontFamily, 'Oxanium', 'Navbar balance explicit font family wins over generated tokens');
+  assert.equal(navbarOverrideConfig.subElements.clock.fontWeight, 500, 'Navbar clock explicit font weight wins over generated tokens');
+
   const resolvedWidgets = appearanceModel.resolveWidgetsForAppearance([
     bhStatsWidget,
     bonusHuntWidget,
@@ -963,6 +1019,7 @@ try {
   assert.ok(rtpStatsElements.some(element => element.id === 'personalBest'), 'Advanced Mode schema for RTP Stats personal best comes from V2 registry');
   assert.ok(navbarElements.some(element => element.id === 'displayName'), 'Advanced Mode schema for Navbar display name comes from V2 registry');
   assert.ok(navbarElements.some(element => element.id === 'avatar'), 'Advanced Mode schema for Navbar avatar comes from V2 registry');
+  assert.ok(navbarElements.some(element => element.id === 'balance'), 'Advanced Mode schema for Navbar balance comes from V2 registry');
   assert.ok(bonusElements.some(element => element.id === 'slotRow'), 'Advanced Mode schema for Bonus Hunt comes from V2 registry');
   assert.ok(slotRequestElements.some(element => element.id === 'requestCard'), 'Advanced Mode schema for Slot Requests comes from V2 registry');
   assert.ok(giveawayElements.some(element => element.id === 'winnerArea'), 'Advanced Mode schema for Giveaway comes from V2 registry');

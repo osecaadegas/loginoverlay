@@ -203,18 +203,23 @@ function NavbarWidget({ config, widgetId, userId }) {
   const textColor = subValue(c, 'displayName', 'textColor', c.textColor || (isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9'));
   const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
   const borderColor = subValue(c, 'separator', 'borderColor', c.borderColor || accentColor);
-  const fontFamily = subValue(c, 'displayName', 'fontFamily', c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
+  const containerFontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
+  const fontFamily = subValue(c, 'displayName', 'fontFamily', containerFontFamily);
   const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
   const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
   const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
   const borderWidth = subValue(c, 'separator', 'borderWidth', c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3));
   const barHeight = c.barHeight ?? 64;
   const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999));
-  const fontSize = subValue(c, 'displayName', 'fontSize', c.fontSize ?? (isRetro ? 13 : 15));
+  const containerFontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? (isRetro ? 13 : 15));
+  const fontSize = subValue(c, 'displayName', 'fontSize', containerFontSize);
   const fontWeight = subValue(c, 'displayName', 'fontWeight', 700);
+  const mottoFontSize = Math.max(8, Number(fontSize) * 0.82);
+  const mottoFontWeight = subValue(c, 'displayName', 'fontWeight', 700);
   const containerShadow = subValue(c, 'container', 'shadow', undefined);
   const containerGlow = subValue(c, 'container', 'glow', undefined);
   const containerBlur = subValue(c, 'container', 'backdropBlur', 0);
+  const containerPadding = subValue(c, 'container', 'padding', 10);
   const widgetScale = Number(c.widgetScale || 1);
   const avatarImageSize = subValue(c, 'avatar', 'imageSize', null);
   const avatarRadius = subValue(c, 'avatar', 'radius', '50%');
@@ -228,15 +233,41 @@ function NavbarWidget({ config, widgetId, userId }) {
   const casinoImageRadius = subValue(c, 'casino', 'radius', isMetal ? 6 : isRetro ? 2 : 8);
   const casinoImageFit = subValue(c, 'casino', 'imageFit', 'contain');
   const casinoTextColor = subValue(c, 'casino', 'textColor', accentColor);
+  const casinoFontFamily = subValue(c, 'casino', 'fontFamily', containerFontFamily);
+  const casinoFontSize = subValue(c, 'casino', 'fontSize', fontSize * 0.9);
+  const casinoFontWeight = subValue(c, 'casino', 'fontWeight', 700);
   const clockBg = subValue(c, 'clock', 'background', undefined);
   const clockTextColor = subValue(c, 'clock', 'textColor', textColor);
   const clockRadius = subValue(c, 'clock', 'radius', isRetro ? 2 : isGlass ? 14 : isMetal ? 10 : 999);
+  const clockFontFamily = subValue(c, 'clock', 'fontFamily', containerFontFamily);
   const clockFontSize = subValue(c, 'clock', 'fontSize', fontSize * 0.92);
   const clockFontWeight = subValue(c, 'clock', 'fontWeight', 700);
+  const clockPadding = subValue(c, 'clock', 'padding', null);
+  const musicFontFamily = subValue(c, 'music', 'fontFamily', containerFontFamily);
+  const musicFontSize = subValue(c, 'music', 'fontSize', containerFontSize);
+  const musicFontWeight = subValue(c, 'music', 'fontWeight', 700);
   const textShadow = '0 1px 4px rgba(0,0,0,0.6)';
   const ctaColor = subValue(c, 'sponsor', 'background', c.ctaColor || (isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e'));
+  const sponsorTextColor = subValue(c, 'sponsor', 'textColor', '#fff');
+  const sponsorFontFamily = subValue(c, 'sponsor', 'fontFamily', containerFontFamily);
+  const sponsorFontSize = subValue(c, 'sponsor', 'fontSize', fontSize * 0.82);
+  const sponsorFontWeight = subValue(c, 'sponsor', 'fontWeight', isGlass || !isMetal && !isRetro ? 600 : 700);
+  const sponsorRadius = subValue(c, 'sponsor', 'radius', null);
+  const sponsorPadding = subValue(c, 'sponsor', 'padding', null);
   const cryptoUpColor = subValue(c, 'crypto', 'fillColor', c.cryptoUpColor || '#34d399');
   const cryptoDownColor = subValue(c, 'crypto', 'accentColor', c.cryptoDownColor || '#f87171');
+  const cryptoTextColor = subValue(c, 'crypto', 'textColor', textColor);
+  const cryptoFontFamily = subValue(c, 'crypto', 'fontFamily', containerFontFamily);
+  const cryptoFontSize = subValue(c, 'crypto', 'fontSize', containerFontSize);
+  const cryptoFontWeight = subValue(c, 'crypto', 'fontWeight', 700);
+  const balanceTextColor = subValue(c, 'balance', 'textColor', textColor);
+  const balanceAccentColor = subValue(c, 'balance', 'accentColor', accentColor);
+  const balanceMutedColor = subValue(c, 'balance', 'borderColor', mutedColor);
+  const balanceFontFamily = subValue(c, 'balance', 'fontFamily', containerFontFamily);
+  const balanceFontSize = subValue(c, 'balance', 'fontSize', fontSize * 1.1);
+  const balanceFontWeight = subValue(c, 'balance', 'fontWeight', 700);
+  const separatorColor = subValue(c, 'separator', 'background', borderColor);
+  const separatorOpacity = subValue(c, 'separator', 'opacity', 0.7);
   const bgColorRGB = hexToRgb(bgColor);
   const ctaColorRGB = hexToRgb(ctaColor);
 
@@ -255,39 +286,39 @@ function NavbarWidget({ config, widgetId, userId }) {
     width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
     padding: `${borderWidth}px`,
-    fontFamily,
+    fontFamily: containerFontFamily,
   } : isCarbon ? {
     width: '100%', height: '100%', boxSizing: 'border-box',
     background: `repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), ${bgColor}`,
     padding: `${borderWidth}px`,
-    fontFamily,
+    fontFamily: containerFontFamily,
   } : isFuturistic ? {
     width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(0,255,204,0.06), transparent 40%, rgba(0,255,204,0.04))`,
     padding: `${borderWidth}px`,
-    fontFamily,
+    fontFamily: containerFontFamily,
   } : isGlass ? {
     width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(30,30,60,0.82), rgba(20,20,50,0.88))`,
     padding: `${borderWidth}px`,
-    fontFamily,
+    fontFamily: containerFontFamily,
   } : isRetro ? {
     width: '100%', height: '100%', boxSizing: 'border-box',
     background: `${borderColor}`,
     padding: `${borderWidth}px`,
-    fontFamily,
+    fontFamily: containerFontFamily,
     imageRendering: 'pixelated',
   } : {
     width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(to bottom, ${borderColor}e6, ${borderColor}cc)`,
     padding: `${borderWidth}px`,
-    fontFamily,
+    fontFamily: containerFontFamily,
   };
 
   const barInner = isMetal ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
-    padding: '0 10px', color: textColor, fontSize, gap: 0,
+    padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
     boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
     backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
@@ -298,7 +329,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   } : isCarbon ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(180deg, ${bgColor}, #060606)`,
-    padding: '0 10px', color: textColor, fontSize, gap: 0,
+    padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
     boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
     backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
@@ -309,7 +340,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   } : isFuturistic ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.95), rgba(${bgColorRGB},0.88))`,
-    padding: '0 10px', color: textColor, fontSize, gap: 0,
+    padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
     boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
     backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
@@ -320,7 +351,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.92), rgba(${bgColorRGB},0.85))`,
-    padding: '0 10px', color: textColor, fontSize, gap: 0,
+    padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
     boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
     backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
@@ -331,7 +362,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   } : isRetro ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
-    padding: '0 8px', color: textColor, fontSize, gap: 0,
+    padding: `0 ${Math.max(6, Number(containerPadding) || 8)}px`, color: textColor, fontSize, gap: 0,
     boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
     transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
     transformOrigin: 'center',
@@ -341,7 +372,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   } : {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
-    padding: '0 10px', color: textColor, fontSize, gap: 0,
+    padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
     boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
     transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
     transformOrigin: 'center',
@@ -351,19 +382,23 @@ function NavbarWidget({ config, widgetId, userId }) {
 
   const sep = isMetal ? {
     width: 1, height: barHeight * 0.5,
-    background: `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
+    background: separatorColor || `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
+    opacity: separatorOpacity,
     flexShrink: 0, margin: '0 3px',
   } : isGlass ? {
     width: 1, height: barHeight * 0.5,
-    background: `linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)`,
+    background: separatorColor || 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)',
+    opacity: separatorOpacity,
     flexShrink: 0, margin: '0 3px',
   } : isRetro ? {
     width: 2, height: barHeight * 0.6,
-    background: `${accentColor}88`,
+    background: separatorColor || `${accentColor}88`,
+    opacity: separatorOpacity,
     flexShrink: 0, margin: '0 2px',
   } : {
     width: 1, height: barHeight * 0.55,
-    background: `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
+    background: separatorColor || `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
+    opacity: separatorOpacity,
     flexShrink: 0, margin: '0 3px',
   };
 
@@ -425,6 +460,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                   ? `linear-gradient(to right, ${accentColor}, ${ctaColor}, ${accentColor})`
                   : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #94a3b8, #64748b)`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                fontFamily,
                 fontSize: fontSize * 1.2, fontWeight,
                 letterSpacing: isMetal ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
               }}>
@@ -432,7 +468,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               </span>
               {c.motto && (
                 <span style={{
-                  marginTop: 2, fontSize: fontSize * 0.82, fontWeight: 700,
+                  marginTop: 2, fontFamily, fontSize: mottoFontSize, fontWeight: mottoFontWeight,
                   letterSpacing: isMetal ? '0.4em' : isRetro ? '0.2em' : '0.35em',
                   textTransform: 'uppercase', color: mutedColor, textShadow,
                 }}>
@@ -465,33 +501,33 @@ function NavbarWidget({ config, widgetId, userId }) {
         if (c.showClock === false) return null;
         return (
           <div style={isMetal ? {
-            borderRadius: clockRadius, padding: '6px 22px',
+            borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.6)}px` : '6px 22px',
             background: clockBg || 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
             border: '1px solid rgba(255,255,255,0.08)',
             color: clockTextColor,
-            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.28em',
+            fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.28em',
             boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
             flexShrink: 0,
           } : isGlass ? {
-            borderRadius: clockRadius, padding: '6px 20px',
+            borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.5)}px` : '6px 20px',
             background: clockBg || 'rgba(255,255,255,0.08)',
             border: '1px solid rgba(255,255,255,0.15)',
             backdropFilter: 'blur(8px)',
             color: clockTextColor,
-            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
+            fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
             flexShrink: 0,
           } : isRetro ? {
-            borderRadius: clockRadius, padding: '6px 14px',
+            borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.2)}px` : '6px 14px',
             background: clockBg || '#000',
             border: `2px solid ${accentColor}88`,
             color: clockTextColor || accentColor,
-            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.15em',
+            fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.15em',
             flexShrink: 0,
           } : {
-            borderRadius: clockRadius, padding: '6px 20px',
+            borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.5)}px` : '6px 20px',
             background: clockBg || `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
             color: clockTextColor,
-            fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
+            fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
             boxShadow: `0 0 18px ${accentColor}e6`,
             flexShrink: 0,
           }}>
@@ -506,10 +542,12 @@ function NavbarWidget({ config, widgetId, userId }) {
           <NowPlayingDisplay
             data={displayNowPlaying}
             musicDisplayStyle={c.musicDisplayStyle || 'text'}
-            fontSize={fontSize}
             textColor={textColor}
             mutedColor={mutedColor}
             accentColor={accentColor}
+            fontSize={musicFontSize}
+            fontFamily={musicFontFamily}
+            fontWeight={musicFontWeight}
             isMetal={isMetal}
             barHeight={barHeight}
           />
@@ -525,8 +563,11 @@ function NavbarWidget({ config, widgetId, userId }) {
             mode={cryptoMode}
             index={cryptoIndex}
             fading={cryptoFading}
-            fontSize={fontSize}
+            fontSize={cryptoFontSize}
             bgColor={bgColor}
+            textColor={cryptoTextColor}
+            fontFamily={cryptoFontFamily}
+            fontWeight={cryptoFontWeight}
             cryptoUpColor={cryptoUpColor}
             cryptoDownColor={cryptoDownColor}
             metallic={isMetal || isGlass || isRetro}
@@ -539,40 +580,44 @@ function NavbarWidget({ config, widgetId, userId }) {
         return (
           <div style={isMetal ? {
             display: 'flex', alignItems: 'center', gap: 8,
-            borderRadius: 10, padding: '7px 20px',
+            borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
             background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
             border: `1px solid rgba(${ctaColorRGB},0.25)`,
-            color: ctaColor,
-            fontSize: fontSize * 0.82, fontWeight: 700,
+            color: sponsorTextColor || ctaColor,
+            fontFamily: sponsorFontFamily,
+            fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
             letterSpacing: '0.24em', textTransform: 'uppercase',
             boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(${ctaColorRGB},0.1)`,
             flexShrink: 0,
           } : isGlass ? {
             display: 'flex', alignItems: 'center', gap: 8,
-            borderRadius: 14, padding: '7px 18px',
+            borderRadius: sponsorRadius ?? 14, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.5)}px` : '7px 18px',
             background: `${ctaColor}22`,
             border: `1px solid ${ctaColor}33`,
             backdropFilter: 'blur(6px)',
-            color: '#fff',
-            fontSize: fontSize * 0.82, fontWeight: 600,
+            color: sponsorTextColor,
+            fontFamily: sponsorFontFamily,
+            fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
             letterSpacing: '0.24em', textTransform: 'uppercase',
             flexShrink: 0,
           } : isRetro ? {
             display: 'flex', alignItems: 'center', gap: 6,
-            borderRadius: 2, padding: '6px 14px',
+            borderRadius: sponsorRadius ?? 2, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.3)}px` : '6px 14px',
             background: ctaColor,
             border: '2px solid #000',
             boxShadow: '2px 2px 0 #000',
-            color: '#fff',
-            fontSize: fontSize * 0.82, fontWeight: 700,
+            color: sponsorTextColor,
+            fontFamily: sponsorFontFamily,
+            fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
             letterSpacing: '0.12em', textTransform: 'uppercase',
             flexShrink: 0,
           } : {
             display: 'flex', alignItems: 'center', gap: 8,
-            borderRadius: 999, padding: '6px 18px',
+            borderRadius: sponsorRadius ?? 999, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.8)}px` : '6px 18px',
             background: `linear-gradient(to bottom, ${ctaColor}, ${ctaColor}cc)`,
-            color: '#fff',
-            fontSize: fontSize * 0.82, fontWeight: 600,
+            color: sponsorTextColor,
+            fontFamily: sponsorFontFamily,
+            fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
             letterSpacing: '0.24em', textTransform: 'uppercase',
             boxShadow: `0 0 24px ${ctaColor}d9`,
             flexShrink: 0,
@@ -591,13 +636,14 @@ function NavbarWidget({ config, widgetId, userId }) {
         return (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            fontSize: fontSize * 1.1, fontWeight: 700, color: textColor,
+            fontFamily: balanceFontFamily,
+            fontSize: balanceFontSize, fontWeight: balanceFontWeight, color: balanceTextColor,
             letterSpacing: '0.1em', flexShrink: 0, textShadow,
           }}>
-            <span style={{ fontSize: fontSize * 0.85, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>
+            <span style={{ fontSize: balanceFontSize * 0.78, color: balanceMutedColor, textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: balanceFontWeight }}>
               START
             </span>
-            <span style={{ fontWeight: 800, color: accentColor }}>
+            <span style={{ fontWeight: Math.max(700, Number(balanceFontWeight) || 700), color: balanceAccentColor }}>
               {c.balanceCurrency || '€'}{Number(c.startBalance).toLocaleString()}
             </span>
           </div>
@@ -618,7 +664,8 @@ function NavbarWidget({ config, widgetId, userId }) {
             )}
             {c.casinoName && (
               <span style={{
-                fontSize: fontSize * 0.9, fontWeight: 700,
+                fontFamily: casinoFontFamily,
+                fontSize: casinoFontSize, fontWeight: casinoFontWeight,
                 letterSpacing: '0.15em', textTransform: 'uppercase',
                 color: casinoTextColor,
                 textShadow: isMetal ? `0 0 10px rgba(${accentColorRGB},0.3)` : isRetro ? `0 0 8px ${accentColor}` : 'none',
@@ -706,7 +753,7 @@ function NavbarWidget({ config, widgetId, userId }) {
 }
 
 /* ─── Single Crypto Coin — plain text, no card ─── */
-function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownColor, metallic, style }) {
+function CryptoCoin({ coin, price, fontSize, bgColor, textColor, fontFamily, fontWeight, cryptoUpColor, cryptoDownColor, metallic, style }) {
   const isUp = price.change >= 0;
   const changeColor = isUp ? cryptoUpColor : cryptoDownColor;
   const logoUrl = CRYPTO_LOGOS[coin];
@@ -715,6 +762,7 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
       fontSize: fontSize * 0.95,
+      fontFamily,
       flexShrink: 0,
       ...style,
     }}>
@@ -736,13 +784,13 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
         </div>
       )}
       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-        <span style={{ fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 4, letterSpacing: '0.04em', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+        <span style={{ fontWeight, color: textColor, display: 'flex', alignItems: 'center', gap: 4, letterSpacing: '0.04em', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
           {coin.toUpperCase()}
           <span style={{ color: changeColor, fontSize: fontSize * 0.85 }}>{isUp ? '▲' : '▼'}</span>
         </span>
-        <span style={{ fontSize: fontSize * 0.88, color: changeColor, opacity: 0.95, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+        <span style={{ fontSize: fontSize * 0.88, color: changeColor, opacity: 0.95, fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
           ${price.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-          <span style={{ fontWeight: 700 }}>{isUp ? '+' : ''}{price.change?.toFixed(2)}%</span>
+          <span style={{ fontWeight }}>{isUp ? '+' : ''}{price.change?.toFixed(2)}%</span>
         </span>
       </div>
     </div>
@@ -750,7 +798,7 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
 }
 
 /* ─── Crypto Ticker with display modes ─── */
-function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, cryptoUpColor, cryptoDownColor, metallic }) {
+function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, textColor, fontFamily, fontWeight, cryptoUpColor, cryptoDownColor, metallic }) {
   const safeIdx = index % coins.length;
   const coin = coins[safeIdx];
 
@@ -771,6 +819,7 @@ function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, c
       <div style={animStyle}>
         <CryptoCoin coin={coin} price={prices[coin]}
           fontSize={fontSize} bgColor={bgColor}
+          textColor={textColor} fontFamily={fontFamily} fontWeight={fontWeight}
           cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
           metallic={metallic} />
       </div>
@@ -820,40 +869,42 @@ function ScrollText({ text, style }) {
 /* ═══════════════════════════════════════════════════════
    Now Playing — multiple display styles for navbar
    ═══════════════════════════════════════════════════════════ */
-function NowPlayingDisplay({ data, musicDisplayStyle, fontSize, textColor, mutedColor, accentColor, isMetal, barHeight }) {
+function NowPlayingDisplay({ data, musicDisplayStyle, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight, isMetal, barHeight }) {
+  const typography = { fontFamily, fontWeight };
   switch (musicDisplayStyle) {
-    case 'pill':      return <NP_Pill data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} />;
-    case 'marquee':   return <NP_Marquee data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
-    case 'albumart':  return <NP_AlbumArt data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} />;
-    case 'equalizer': return <NP_Equalizer data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
-    case 'vinyl':     return <NP_Vinyl data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} />;
-    case 'minimal':   return <NP_Minimal data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
-    case 'wave':      return <NP_Wave data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} />;
+    case 'pill':      return <NP_Pill data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} {...typography} />;
+    case 'marquee':   return <NP_Marquee data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
+    case 'albumart':  return <NP_AlbumArt data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} {...typography} />;
+    case 'equalizer': return <NP_Equalizer data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
+    case 'vinyl':     return <NP_Vinyl data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} {...typography} />;
+    case 'minimal':   return <NP_Minimal data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
+    case 'wave':      return <NP_Wave data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} {...typography} />;
     case 'text':
-    default:          return <NP_Text data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} />;
+    default:          return <NP_Text data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} {...typography} />;
   }
 }
 
 /* Style 1: Text (original) */
-function NP_Text({ data, fontSize, textColor, mutedColor }) {
+function NP_Text({ data, fontSize, textColor, mutedColor, fontFamily, fontWeight }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 160, maxWidth: 300, overflow: 'hidden' }}>
-      <span style={{ fontSize: fontSize * 0.85, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: mutedColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 160, maxWidth: 300, overflow: 'hidden', fontFamily }}>
+      <span style={{ fontSize: fontSize * 0.85, fontWeight, letterSpacing: '0.28em', textTransform: 'uppercase', color: mutedColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
         Now Playing
       </span>
-      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.95, fontWeight: 600, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
-      <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight: 700, letterSpacing: '0.04em', color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.95, fontWeight, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+      <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight, letterSpacing: '0.04em', color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
     </div>
   );
 }
 
 /* Style 2: Pill — compact with album art, transparent */
-function NP_Pill({ data, fontSize, textColor, mutedColor, accentColor, isMetal, barHeight }) {
+function NP_Pill({ data, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight, isMetal, barHeight }) {
   const h = barHeight * 0.65;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
       maxWidth: 320, overflow: 'hidden',
+      fontFamily,
     }}>
       {data.albumArt ? (
         <img src={data.albumArt} alt="" style={{
@@ -868,18 +919,18 @@ function NP_Pill({ data, fontSize, textColor, mutedColor, accentColor, isMetal, 
         }}>🎵</div>
       )}
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.85, color: mutedColor, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.85, color: mutedColor, fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
 }
 
 /* Style 3: Marquee — scrolling ticker */
-function NP_Marquee({ data, fontSize, textColor, mutedColor, accentColor }) {
+function NP_Marquee({ data, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight }) {
   const text = `♫ ${data.track}  —  ${data.artist}  `;
   return (
-    <div style={{ minWidth: 160, maxWidth: 320, overflow: 'hidden', position: 'relative' }}>
+    <div style={{ minWidth: 160, maxWidth: 320, overflow: 'hidden', position: 'relative', fontFamily }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2,
       }}>
@@ -890,13 +941,13 @@ function NP_Marquee({ data, fontSize, textColor, mutedColor, accentColor }) {
           animation: data.isPlaying ? 'spotifyPulse 1.5s ease-in-out infinite' : 'none',
           flexShrink: 0,
         }} />
-        <span style={{ fontSize: fontSize * 0.82, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+        <span style={{ fontSize: fontSize * 0.82, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
           Now Playing
         </span>
       </div>
       <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
         <span className="nb-marquee-scroll" style={{
-          display: 'inline-block', fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+          display: 'inline-block', fontSize: fontSize * 1.05, fontWeight, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)',
           animation: data.isPlaying ? 'nbMarquee 12s linear infinite' : 'none',
           paddingRight: 60,
         }}>
@@ -908,10 +959,10 @@ function NP_Marquee({ data, fontSize, textColor, mutedColor, accentColor }) {
 }
 
 /* Style 4: Album Art — prominent art with info */
-function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, isMetal, barHeight }) {
+function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight, isMetal, barHeight }) {
   const sz = barHeight * 0.72;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 340, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 340, overflow: 'hidden', fontFamily }}>
       {data.albumArt ? (
         <div style={{
           width: sz, height: sz, borderRadius: isMetal ? 10 : 8, overflow: 'hidden', flexShrink: 0,
@@ -928,8 +979,8 @@ function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, isMet
         }}>🎵</div>
       )}
       <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, marginTop: 1, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, marginTop: 1, fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
@@ -938,7 +989,7 @@ function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, isMet
               height: data.isPlaying ? undefined : 3,
             }} />
           ))}
-          <span style={{ fontSize: fontSize * 0.78, color: `${accentColor}cc`, marginLeft: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+          <span style={{ fontSize: fontSize * 0.78, color: `${accentColor}cc`, marginLeft: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
             {data.isPlaying ? 'Live' : 'Paused'}
           </span>
         </div>
@@ -948,9 +999,9 @@ function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, isMet
 }
 
 /* Style 5: Equalizer — animated bars + info */
-function NP_Equalizer({ data, fontSize, textColor, mutedColor, accentColor }) {
+function NP_Equalizer({ data, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 160, maxWidth: 320, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 160, maxWidth: 320, overflow: 'hidden', fontFamily }}>
       {/* Eq bars */}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 16, flexShrink: 0 }}>
         {[0, 1, 2, 3, 4].map(i => (
@@ -965,18 +1016,18 @@ function NP_Equalizer({ data, fontSize, textColor, mutedColor, accentColor }) {
       </div>
       {/* Info */}
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: accentColor, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: accentColor, fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
 }
 
 /* Style 6: Vinyl — spinning record disc, no background */
-function NP_Vinyl({ data, fontSize, textColor, mutedColor, accentColor, barHeight }) {
+function NP_Vinyl({ data, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight, barHeight }) {
   const sz = barHeight * 0.72;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 340, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 340, overflow: 'hidden', fontFamily }}>
       {/* Spinning disc */}
       <div style={{
         width: sz, height: sz, borderRadius: '50%', flexShrink: 0,
@@ -996,32 +1047,32 @@ function NP_Vinyl({ data, fontSize, textColor, mutedColor, accentColor, barHeigh
         }} />
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, marginTop: 1, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, marginTop: 1, fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
 }
 
 /* Style 7: Minimal — just an icon + single line, no background */
-function NP_Minimal({ data, fontSize, textColor, mutedColor, accentColor }) {
+function NP_Minimal({ data, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 320, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 320, overflow: 'hidden', fontFamily }}>
       <span style={{
         fontSize: fontSize * 1.1, color: accentColor, flexShrink: 0,
         animation: data.isPlaying ? 'spotifyPulse 1.8s ease-in-out infinite' : 'none',
       }}>♫</span>
-      <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight: 700, color: textColor, flex: 1, minWidth: 0, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+      <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight, color: textColor, flex: 1, minWidth: 0, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       <span style={{ fontSize: fontSize * 0.85, color: mutedColor, flexShrink: 0, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>—</span>
-      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, flex: 1, minWidth: 0, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, flex: 1, minWidth: 0, fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
     </div>
   );
 }
 
 /* Style 8: Wave — sound wave animation + info, no background */
-function NP_Wave({ data, fontSize, textColor, mutedColor, accentColor, barHeight }) {
+function NP_Wave({ data, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight, barHeight }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 320, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 320, overflow: 'hidden', fontFamily }}>
       {/* Wave bars */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 1.5, height: 26, flexShrink: 0 }}>
         {[0, 1, 2, 3, 4, 5, 6].map(i => (
@@ -1037,8 +1088,8 @@ function NP_Wave({ data, fontSize, textColor, mutedColor, accentColor, barHeight
         ))}
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, fontWeight, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
