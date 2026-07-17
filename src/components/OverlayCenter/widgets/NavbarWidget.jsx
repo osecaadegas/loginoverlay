@@ -202,14 +202,15 @@ function NavbarWidget({ config, widgetId, userId }) {
   const bgColor = subValue(c, 'container', 'background', c.bgColor || (isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318'));
   const textColor = subValue(c, 'displayName', 'textColor', c.textColor || (isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9'));
   const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
-  const borderColor = subValue(c, 'separator', 'borderColor', c.borderColor || accentColor);
+  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || accentColor);
   const containerFontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
   const fontFamily = subValue(c, 'displayName', 'fontFamily', containerFontFamily);
   const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
   const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
   const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
-  const borderWidth = subValue(c, 'separator', 'borderWidth', c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3));
-  const barHeight = c.barHeight ?? 64;
+  const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3));
+  const barHeight = subValue(c, 'container', 'height', c.barHeight ?? 64);
+  const barMaxWidth = subValue(c, 'container', 'maxWidth', c.maxWidth ?? null);
   const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999));
   const containerFontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? (isRetro ? 13 : 15));
   const fontSize = subValue(c, 'displayName', 'fontSize', containerFontSize);
@@ -239,6 +240,9 @@ function NavbarWidget({ config, widgetId, userId }) {
   const clockBg = subValue(c, 'clock', 'background', undefined);
   const clockTextColor = subValue(c, 'clock', 'textColor', textColor);
   const clockRadius = subValue(c, 'clock', 'radius', isRetro ? 2 : isGlass ? 14 : isMetal ? 10 : 999);
+  const clockBorderColor = subValue(c, 'clock', 'borderColor', isRetro ? `${accentColor}88` : 'rgba(255,255,255,0.12)');
+  const clockBorderWidth = subValue(c, 'clock', 'borderWidth', isRetro ? 2 : 1);
+  const clockShadow = subValue(c, 'clock', 'shadow', undefined);
   const clockFontFamily = subValue(c, 'clock', 'fontFamily', containerFontFamily);
   const clockFontSize = subValue(c, 'clock', 'fontSize', fontSize * 0.92);
   const clockFontWeight = subValue(c, 'clock', 'fontWeight', 700);
@@ -254,6 +258,9 @@ function NavbarWidget({ config, widgetId, userId }) {
   const sponsorFontWeight = subValue(c, 'sponsor', 'fontWeight', isGlass || !isMetal && !isRetro ? 600 : 700);
   const sponsorRadius = subValue(c, 'sponsor', 'radius', null);
   const sponsorPadding = subValue(c, 'sponsor', 'padding', null);
+  const sponsorBorderColor = subValue(c, 'sponsor', 'borderColor', null);
+  const sponsorBorderWidth = subValue(c, 'sponsor', 'borderWidth', 1);
+  const sponsorShadow = subValue(c, 'sponsor', 'shadow', undefined);
   const cryptoUpColor = subValue(c, 'crypto', 'fillColor', c.cryptoUpColor || '#34d399');
   const cryptoDownColor = subValue(c, 'crypto', 'accentColor', c.cryptoDownColor || '#f87171');
   const cryptoTextColor = subValue(c, 'crypto', 'textColor', textColor);
@@ -266,7 +273,8 @@ function NavbarWidget({ config, widgetId, userId }) {
   const balanceFontFamily = subValue(c, 'balance', 'fontFamily', containerFontFamily);
   const balanceFontSize = subValue(c, 'balance', 'fontSize', fontSize * 1.1);
   const balanceFontWeight = subValue(c, 'balance', 'fontWeight', 700);
-  const separatorColor = subValue(c, 'separator', 'background', borderColor);
+  const separatorColor = subValue(c, 'separator', 'background', subValue(c, 'separator', 'borderColor', borderColor));
+  const separatorWidth = subValue(c, 'separator', 'borderWidth', 1);
   const separatorOpacity = subValue(c, 'separator', 'opacity', 0.7);
   const bgColorRGB = hexToRgb(bgColor);
   const ctaColorRGB = hexToRgb(ctaColor);
@@ -381,25 +389,33 @@ function NavbarWidget({ config, widgetId, userId }) {
   };
 
   const sep = isMetal ? {
-    width: 1, height: barHeight * 0.5,
+    width: separatorWidth, height: barHeight * 0.5,
     background: separatorColor || `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
     opacity: separatorOpacity,
     flexShrink: 0, margin: '0 3px',
   } : isGlass ? {
-    width: 1, height: barHeight * 0.5,
+    width: separatorWidth, height: barHeight * 0.5,
     background: separatorColor || 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)',
     opacity: separatorOpacity,
     flexShrink: 0, margin: '0 3px',
   } : isRetro ? {
-    width: 2, height: barHeight * 0.6,
+    width: Math.max(1, Number(separatorWidth) || 2), height: barHeight * 0.6,
     background: separatorColor || `${accentColor}88`,
     opacity: separatorOpacity,
     flexShrink: 0, margin: '0 2px',
   } : {
-    width: 1, height: barHeight * 0.55,
+    width: separatorWidth, height: barHeight * 0.55,
     background: separatorColor || `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
     opacity: separatorOpacity,
     flexShrink: 0, margin: '0 3px',
+  };
+
+  const barOuterSized = {
+    ...barOuter,
+    height: `${barHeight}px`,
+    maxHeight: '100%',
+    maxWidth: barMaxWidth != null ? `${barMaxWidth}px` : undefined,
+    clipPath: clipOuter,
   };
 
   /* ─── Dynamic section layout ─── */
@@ -503,32 +519,35 @@ function NavbarWidget({ config, widgetId, userId }) {
           <div style={isMetal ? {
             borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.6)}px` : '6px 22px',
             background: clockBg || 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: `${clockBorderWidth}px solid ${clockBorderColor}`,
             color: clockTextColor,
             fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.28em',
-            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
+            boxShadow: clockShadow || `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
             flexShrink: 0,
           } : isGlass ? {
             borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.5)}px` : '6px 20px',
             background: clockBg || 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            border: `${clockBorderWidth}px solid ${clockBorderColor}`,
             backdropFilter: 'blur(8px)',
             color: clockTextColor,
             fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
+            boxShadow: clockShadow,
             flexShrink: 0,
           } : isRetro ? {
             borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.2)}px` : '6px 14px',
             background: clockBg || '#000',
-            border: `2px solid ${accentColor}88`,
+            border: `${clockBorderWidth}px solid ${clockBorderColor}`,
             color: clockTextColor || accentColor,
             fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.15em',
+            boxShadow: clockShadow,
             flexShrink: 0,
           } : {
             borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.5)}px` : '6px 20px',
             background: clockBg || `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
             color: clockTextColor,
             fontFamily: clockFontFamily, fontSize: clockFontSize, fontWeight: clockFontWeight, letterSpacing: '0.25em',
-            boxShadow: `0 0 18px ${accentColor}e6`,
+            border: `${clockBorderWidth}px solid ${clockBorderColor}`,
+            boxShadow: clockShadow || `0 0 18px ${accentColor}e6`,
             flexShrink: 0,
           }}>
             {time || '--:--:--'}
@@ -582,18 +601,18 @@ function NavbarWidget({ config, widgetId, userId }) {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
             background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
-            border: `1px solid rgba(${ctaColorRGB},0.25)`,
+            border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || `rgba(${ctaColorRGB},0.25)`}`,
             color: sponsorTextColor || ctaColor,
             fontFamily: sponsorFontFamily,
             fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
             letterSpacing: '0.24em', textTransform: 'uppercase',
-            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(${ctaColorRGB},0.1)`,
+            boxShadow: sponsorShadow || `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(${ctaColorRGB},0.1)`,
             flexShrink: 0,
           } : isGlass ? {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 14, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.5)}px` : '7px 18px',
             background: `${ctaColor}22`,
-            border: `1px solid ${ctaColor}33`,
+            border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || `${ctaColor}33`}`,
             backdropFilter: 'blur(6px)',
             color: sponsorTextColor,
             fontFamily: sponsorFontFamily,
@@ -604,8 +623,8 @@ function NavbarWidget({ config, widgetId, userId }) {
             display: 'flex', alignItems: 'center', gap: 6,
             borderRadius: sponsorRadius ?? 2, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.3)}px` : '6px 14px',
             background: ctaColor,
-            border: '2px solid #000',
-            boxShadow: '2px 2px 0 #000',
+            border: `${sponsorBorderWidth || 2}px solid ${sponsorBorderColor || '#000'}`,
+            boxShadow: sponsorShadow || '2px 2px 0 #000',
             color: sponsorTextColor,
             fontFamily: sponsorFontFamily,
             fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
@@ -618,8 +637,9 @@ function NavbarWidget({ config, widgetId, userId }) {
             color: sponsorTextColor,
             fontFamily: sponsorFontFamily,
             fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
+            border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || 'transparent'}`,
             letterSpacing: '0.24em', textTransform: 'uppercase',
-            boxShadow: `0 0 24px ${ctaColor}d9`,
+            boxShadow: sponsorShadow || `0 0 24px ${ctaColor}d9`,
             flexShrink: 0,
           }}>
             <span>{c.ctaText}</span>
@@ -695,8 +715,8 @@ function NavbarWidget({ config, widgetId, userId }) {
 
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%', clipPath: clipOuter }}>
-      <div style={barOuter}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+      <div style={barOuterSized}>
         <div style={barInner}>
           {/* Metallic shine overlay */}
           {isMetal && (

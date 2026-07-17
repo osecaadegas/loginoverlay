@@ -118,6 +118,17 @@ const WIDGET_PREVIEW_STATES = {
 
 const ZOOM_STEPS = [25, 40, 50, 67, 75, 90, 100, 125, 150, 200];
 
+const NAVBAR_MUSIC_DISPLAY_STYLES = [
+  { id: 'text', label: 'Text' },
+  { id: 'pill', label: 'Pill' },
+  { id: 'marquee', label: 'Marquee' },
+  { id: 'albumart', label: 'Album art' },
+  { id: 'equalizer', label: 'Equalizer' },
+  { id: 'vinyl', label: 'Vinyl' },
+  { id: 'minimal', label: 'Minimal' },
+  { id: 'wave', label: 'Wave' },
+];
+
 const QUICK_WIDGET_CONTROLS = [
   { id: 'mainColor', label: 'Main color', control: CONTROL_DEFINITIONS.backgroundColor, path: 'colors.primary' },
   { id: 'accentColor', label: 'Accent color', control: CONTROL_DEFINITIONS.backgroundColor, path: 'colors.accent' },
@@ -159,6 +170,9 @@ const GLOBAL_QUICK_STYLE_CONTROLS = new Set([
   'animationEnabled',
   'animationSpeed',
   'animationIntensity',
+  'barHeight',
+  'maxWidth',
+  'musicDisplayStyle',
 ]);
 
 function safeJson(value) {
@@ -662,6 +676,7 @@ export default function AppearanceCenter({
       'imageSize',
       'imageShape',
       'imageFit',
+      'musicDisplayStyle',
     ])) sections.push('textImages');
     if (hasAnyQuickControl([
       'shape',
@@ -669,6 +684,8 @@ export default function AppearanceCenter({
       'scale',
       'shadowStrength',
       'glowStrength',
+      'barHeight',
+      'maxWidth',
     ])) sections.push('shapeEffects');
     if (hasAnyQuickControl([
       'carouselAutoplay',
@@ -1920,6 +1937,19 @@ export default function AppearanceCenter({
                     <span>Bold text</span>
                   </label>
                 )}
+                {hasQuickControl('musicDisplayStyle') && (
+                  <label className="ve-simple-select">
+                    <span>Spotify style</span>
+                    <select
+                      value={currentSimpleSettings.musicDisplayStyle}
+                      onChange={event => applyQuickSettings({ musicDisplayStyle: event.target.value }, 'Change Spotify style')}
+                    >
+                      {NAVBAR_MUSIC_DISPLAY_STYLES.map(style => (
+                        <option key={style.id} value={style.id}>{style.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
                 {hasAnyQuickControl(['imageVisibility', 'imageSize', 'imageShape', 'imageFit']) && (
                   <>
                     {hasAnyQuickControl(['imageVisibility', 'imageSize']) && (
@@ -2027,6 +2057,34 @@ export default function AppearanceCenter({
                         onChange={event => applyQuickSettings({ scale: Number(event.target.value) / 100 }, 'Change widget size')}
                       />
                       <strong>{Math.round(currentSimpleSettings.scale * 100)}%</strong>
+                    </label>
+                    )}
+                    {hasQuickControl('barHeight') && (
+                    <label className="ve-simple-range">
+                      <span>Bar height</span>
+                      <input
+                        type="range"
+                        min="32"
+                        max="160"
+                        step="1"
+                        value={Math.round(currentSimpleSettings.barHeight || (selectedWidgetType === 'rtp_stats' ? 54 : 64))}
+                        onChange={event => applyQuickSettings({ barHeight: Number(event.target.value) }, 'Change bar height')}
+                      />
+                      <strong>{Math.round(currentSimpleSettings.barHeight || (selectedWidgetType === 'rtp_stats' ? 54 : 64))}px</strong>
+                    </label>
+                    )}
+                    {hasQuickControl('maxWidth') && (
+                    <label className="ve-simple-range">
+                      <span>Bar width</span>
+                      <input
+                        type="range"
+                        min={selectedWidgetType === 'rtp_stats' ? '280' : '480'}
+                        max="1600"
+                        step="10"
+                        value={Math.round(currentSimpleSettings.maxWidth || (selectedWidgetType === 'rtp_stats' ? 960 : 1200))}
+                        onChange={event => applyQuickSettings({ maxWidth: Number(event.target.value) }, 'Change bar width')}
+                      />
+                      <strong>{Math.round(currentSimpleSettings.maxWidth || (selectedWidgetType === 'rtp_stats' ? 960 : 1200))}px</strong>
                     </label>
                     )}
                   </>

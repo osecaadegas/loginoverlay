@@ -59,6 +59,8 @@ const QUICK_CAPABILITY_KEYS = Object.freeze([
   'columns',
   'maximumVisibleItems',
   'transparentBackground',
+  'barDimensions',
+  'musicDisplayStyle',
 ]);
 
 const QUICK_CAPABILITY_SET = new Set(QUICK_CAPABILITY_KEYS);
@@ -85,6 +87,9 @@ const QUICK_CONTROL_STYLE_REQUIREMENTS = Object.freeze({
   animationEnabled: ['animations', 'carousel'],
   animationSpeed: ['animations', 'animationSpeed', 'carouselSpeed'],
   animationIntensity: ['animations', 'animationIntensity'],
+  barHeight: ['barDimensions'],
+  maxWidth: ['barDimensions'],
+  musicDisplayStyle: ['musicDisplayStyle'],
 });
 
 const QUICK_CONTROL_ELEMENT_REQUIREMENTS = Object.freeze({
@@ -117,6 +122,9 @@ const QUICK_CONTROL_ELEMENT_REQUIREMENTS = Object.freeze({
   animationEnabled: { kinds: ['carousel'], wholeWidget: true },
   animationSpeed: { kinds: ['carousel'], wholeWidget: true },
   animationIntensity: { kinds: ['carousel'], wholeWidget: true },
+  barHeight: { wholeWidget: true },
+  maxWidth: { wholeWidget: true },
+  musicDisplayStyle: { wholeWidget: true },
 });
 
 const QUICK_CONTROL_FALLBACK_ORDER = Object.freeze([
@@ -141,6 +149,9 @@ const QUICK_CONTROL_FALLBACK_ORDER = Object.freeze([
   'animationEnabled',
   'animationSpeed',
   'animationIntensity',
+  'barHeight',
+  'maxWidth',
+  'musicDisplayStyle',
 ]);
 
 const BASE_QUICK_CAPABILITIES = Object.freeze({
@@ -340,6 +351,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           shadows: true,
           glow: true,
           glowIntensity: true,
+          barDimensions: true,
+          imageSize: true,
         },
         elementIds: ['container', 'provider', 'slotTitle', 'rtpValue', 'maxWin', 'volatility', 'personalBest', 'statCard', 'label', 'divider', 'spinner'],
         previewStateIds: ['live', 'preview', 'empty'],
@@ -356,6 +369,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           glow: true,
           glowIntensity: true,
           orientation: true,
+          barDimensions: true,
+          imageSize: true,
         },
         elementIds: ['container', 'provider', 'slotTitle', 'rtpValue', 'maxWin', 'volatility', 'personalBest', 'statCard', 'label', 'divider', 'spinner'],
         previewStateIds: ['live', 'preview', 'empty'],
@@ -372,6 +387,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           glow: true,
           glowIntensity: true,
           transparentBackground: true,
+          barDimensions: true,
+          imageSize: true,
         },
         elementIds: ['container', 'provider', 'slotTitle', 'rtpValue', 'maxWin', 'volatility', 'personalBest', 'statCard', 'label', 'divider', 'spinner'],
         previewStateIds: ['live', 'preview', 'empty'],
@@ -394,6 +411,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           layoutDensity: true,
           transparentBackground: true,
           positiveNegativeColours: true,
+          barDimensions: true,
+          imageSize: true,
         },
         elementIds: ['container', 'provider', 'slotTitle', 'rtpValue', 'maxWin', 'volatility', 'personalBest', 'statCard', 'label'],
         previewStateIds: ['live', 'preview', 'empty'],
@@ -411,6 +430,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           glowIntensity: true,
           opacity: true,
           transparentBackground: true,
+          barDimensions: true,
+          imageSize: true,
         },
         elementIds: ['container', 'provider', 'slotTitle', 'rtpValue', 'maxWin', 'volatility', 'personalBest', 'statCard', 'label', 'divider', 'spinner'],
         previewStateIds: ['live', 'preview', 'empty'],
@@ -432,11 +453,9 @@ export const widgetAppearanceRegistry = Object.freeze({
       'image.imageFit',
       'motion.carouselDistance',
       'motion.autoCycleInterval',
-      'layout.providerLogoDimensions',
     ]),
     animationSensitiveProperties: Object.freeze([
       'spinnerAnimation',
-      'providerLogoDimensions',
       'barLayoutDirection',
     ]),
     responsive: Object.freeze({
@@ -456,8 +475,8 @@ export const widgetAppearanceRegistry = Object.freeze({
       }),
       provider: Object.freeze({
         label: 'Provider',
-        kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        kind: 'badge',
+        capabilities: ['typography', 'stateColor', 'image'],
         cssVariables: ['--rtp-provider', '--rtp-provider-size'],
       }),
       slotTitle: Object.freeze({
@@ -558,6 +577,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           shadows: true,
           glow: true,
           glowIntensity: true,
+          barDimensions: true,
+          musicDisplayStyle: true,
         },
         elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],
@@ -576,6 +597,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           shadows: true,
           glow: true,
           glowIntensity: true,
+          barDimensions: true,
+          musicDisplayStyle: true,
         },
         elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],
@@ -596,6 +619,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           glowIntensity: true,
           opacity: true,
           transparentBackground: true,
+          barDimensions: true,
+          musicDisplayStyle: true,
         },
         elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],
@@ -624,6 +649,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           shadows: true,
           opacity: true,
           transparentBackground: true,
+          barDimensions: true,
+          musicDisplayStyle: true,
         },
         elementIds: ['container', 'logo', 'avatar', 'badgeImage', 'displayName', 'clock', 'music', 'sponsor', 'crypto', 'balance', 'casino', 'separator'],
         previewStateIds: ['default', 'music', 'crypto'],

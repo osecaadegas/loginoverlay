@@ -449,9 +449,13 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const dividerColor = subValue(c, 'divider', 'background', subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6'));
   const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
   const fontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? 14);
+  const barHeight = subValue(c, 'container', 'height', c.barHeight ?? null);
+  const maxWidth = subValue(c, 'container', 'maxWidth', c.maxWidth ?? null);
   const providerFontFamily = subValue(c, 'provider', 'fontFamily', fontFamily);
   const providerFontSize = subValue(c, 'provider', 'fontSize', c.providerFontSize ?? 16);
   const providerFontWeight = subValue(c, 'provider', 'fontWeight', c.fontWeight || 700);
+  const providerLogoHeight = subValue(c, 'provider', 'imageSize', c.providerLogoHeight ?? 34);
+  const providerLogoWidth = subValue(c, 'provider', 'width', c.providerLogoWidth ?? Math.round((Number(providerLogoHeight) || 34) * 4.7));
   const slotTitleFontFamily = subValue(c, 'slotTitle', 'fontFamily', fontFamily);
   const slotTitleFontSize = subValue(c, 'slotTitle', 'fontSize', fontSize);
   const slotTitleFontWeight = subValue(c, 'slotTitle', 'fontWeight', c.fontWeight || 700);
@@ -476,8 +480,9 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const bestWinValueColor = subValue(c, 'personalBest', 'textColor', textColor);
   const paddingX = subValue(c, 'container', 'padding', c.paddingX ?? 10);
   const paddingY = subValue(c, 'container', 'gap', c.paddingY ?? 4);
-  const compactPaddingX = Math.max(2, Math.min(Number(paddingX) || 10, 10));
-  const compactPaddingY = Math.max(1, Math.min(Number(paddingY) || 4, 4));
+  const compactPaddingX = Math.max(0, Math.min(Number(paddingX) || 10, 32));
+  const compactPaddingY = Math.max(0, Math.min(Number(paddingY) || 4, 18));
+  const itemGap = Math.max(0, Math.min(subValue(c, 'container', 'gap', c.gap ?? 7), 32));
   const shadow = subValue(c, 'container', 'shadow', undefined);
   const glow = subValue(c, 'container', 'glow', undefined);
   const backdropBlur = subValue(c, 'container', 'backdropBlur', 0);
@@ -552,6 +557,9 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     width: '100%',
     height: '100%',
     overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     transform: c.widgetScale && Number(c.widgetScale) !== 1 ? `scale(${Number(c.widgetScale)})` : undefined,
     transformOrigin: 'center',
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
@@ -581,6 +589,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-provider-family': providerFontFamily,
     '--rtp-provider-size': `${providerFontSize}px`,
     '--rtp-provider-weight': providerFontWeight,
+    '--rtp-provider-logo-width': `${providerLogoWidth}px`,
+    '--rtp-provider-logo-height': `${providerLogoHeight}px`,
     '--rtp-slot-family': slotTitleFontFamily,
     '--rtp-slot-size': `${slotTitleFontSize}px`,
     '--rtp-slot-weight': slotTitleFontWeight,
@@ -599,6 +609,21 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-label-family': labelFontFamily,
     '--rtp-label-size': `${labelFontSize}px`,
     '--rtp-label-weight': labelFontWeight,
+    '--rtp-label-rtp-family': subValue(c, 'label', 'fontFamily', rtpValueFontFamily),
+    '--rtp-label-rtp-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(rtpValueFontSize) * 0.88)))}px`,
+    '--rtp-label-rtp-weight': subValue(c, 'label', 'fontWeight', rtpValueFontWeight),
+    '--rtp-label-potential-family': subValue(c, 'label', 'fontFamily', potentialValueFontFamily),
+    '--rtp-label-potential-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(potentialValueFontSize) * 0.88)))}px`,
+    '--rtp-label-potential-weight': subValue(c, 'label', 'fontWeight', potentialValueFontWeight),
+    '--rtp-label-volatility-family': subValue(c, 'label', 'fontFamily', volatilityValueFontFamily),
+    '--rtp-label-volatility-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(volatilityValueFontSize) * 0.88)))}px`,
+    '--rtp-label-volatility-weight': subValue(c, 'label', 'fontWeight', volatilityValueFontWeight),
+    '--rtp-label-bestwin-family': subValue(c, 'label', 'fontFamily', bestWinValueFontFamily),
+    '--rtp-label-bestwin-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(bestWinValueFontSize) * 0.88)))}px`,
+    '--rtp-label-bestwin-weight': subValue(c, 'label', 'fontWeight', bestWinValueFontWeight),
+    '--rtp-gap': `${itemGap}px`,
+    '--rtp-bar-height': barHeight != null ? `${barHeight}px` : '100%',
+    '--rtp-max-width': maxWidth != null ? `${maxWidth}px` : '100%',
     '--rtp-icon-bestwin': bestWinIconColor,
     '--rtp-shadow': shadow,
     '--rtp-glow': glow,

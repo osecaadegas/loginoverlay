@@ -202,6 +202,9 @@ export const DEFAULT_SIMPLE_SETTINGS = Object.freeze({
   imageSize: 'medium',
   imageShape: 'rounded',
   imageFit: 'cover',
+  barHeight: null,
+  maxWidth: null,
+  musicDisplayStyle: 'text',
 });
 
 function clamp(number, min, max) {
@@ -313,6 +316,11 @@ export function normalizeSimpleSettings(settings = {}) {
     imageSize: imageSizeIds.has(next.imageSize) ? next.imageSize : DEFAULT_SIMPLE_SETTINGS.imageSize,
     imageShape: imageShapeIds.has(next.imageShape) ? next.imageShape : DEFAULT_SIMPLE_SETTINGS.imageShape,
     imageFit: ['cover', 'contain'].includes(next.imageFit) ? next.imageFit : DEFAULT_SIMPLE_SETTINGS.imageFit,
+    barHeight: next.barHeight != null && next.barHeight !== '' && Number.isFinite(Number(next.barHeight)) ? clamp(Number(next.barHeight), 32, 220) : null,
+    maxWidth: next.maxWidth != null && next.maxWidth !== '' && Number.isFinite(Number(next.maxWidth)) ? clamp(Number(next.maxWidth), 240, 1920) : null,
+    musicDisplayStyle: ['text', 'pill', 'marquee', 'albumart', 'equalizer', 'vinyl', 'minimal', 'wave'].includes(next.musicDisplayStyle)
+      ? next.musicDisplayStyle
+      : DEFAULT_SIMPLE_SETTINGS.musicDisplayStyle,
   };
 }
 

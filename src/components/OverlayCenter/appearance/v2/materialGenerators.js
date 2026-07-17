@@ -49,6 +49,9 @@ export const DEFAULT_SIMPLE_APPEARANCE_V2 = Object.freeze({
   imageSize: 'medium',
   imageShape: 'rounded',
   imageFit: 'cover',
+  barHeight: null,
+  maxWidth: null,
+  musicDisplayStyle: 'text',
 });
 
 export const SHAPE_RADII = Object.freeze({
@@ -131,6 +134,11 @@ function normalizeMaterialInput(input = {}) {
     imageSize: Object.prototype.hasOwnProperty.call(IMAGE_SIZE_TOKENS, input.imageSize) ? input.imageSize : DEFAULT_SIMPLE_APPEARANCE_V2.imageSize,
     imageShape: Object.prototype.hasOwnProperty.call(IMAGE_SHAPE_TOKENS, input.imageShape) ? input.imageShape : DEFAULT_SIMPLE_APPEARANCE_V2.imageShape,
     imageFit: ['cover', 'contain'].includes(input.imageFit) ? input.imageFit : DEFAULT_SIMPLE_APPEARANCE_V2.imageFit,
+    barHeight: input.barHeight != null && input.barHeight !== '' && Number.isFinite(Number(input.barHeight)) ? clamp(Number(input.barHeight), 32, 220) : null,
+    maxWidth: input.maxWidth != null && input.maxWidth !== '' && Number.isFinite(Number(input.maxWidth)) ? clamp(Number(input.maxWidth), 240, 1920) : null,
+    musicDisplayStyle: ['text', 'pill', 'marquee', 'albumart', 'equalizer', 'vinyl', 'minimal', 'wave'].includes(input.musicDisplayStyle)
+      ? input.musicDisplayStyle
+      : DEFAULT_SIMPLE_APPEARANCE_V2.musicDisplayStyle,
   };
 }
 
@@ -145,6 +153,11 @@ export function generateOriginalTokens(input = {}) {
     typography: {},
     shape: {},
     spacing: { scale: settings.scale || 1 },
+    layout: {
+      barHeight: settings.barHeight,
+      maxWidth: settings.maxWidth,
+      musicDisplayStyle: settings.musicDisplayStyle,
+    },
     motion: {},
     validation: [{
       code: 'original-baseline',
@@ -205,6 +218,11 @@ function baseTokens(input) {
     spacing: {
       ...density,
       scale: settings.scale,
+    },
+    layout: {
+      barHeight: settings.barHeight,
+      maxWidth: settings.maxWidth,
+      musicDisplayStyle: settings.musicDisplayStyle,
     },
     motion: {
       motionEnabled: true,

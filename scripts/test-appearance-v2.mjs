@@ -66,15 +66,19 @@ try {
   assert.ok(slotRequestsEditableImageControls.includes('imageFit'), 'Slot Requests editable compact slot image exposes fit');
   assert.ok(!registryModule.getWidgetStyleQuickControls('slot_requests', 'v3_compact_editable', 'slotTitle').includes('imageSize'), 'Slot Requests editable compact text hides image controls');
   assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'v1', 'fonts'), true, 'RTP Stats classic exposes typography controls');
-  assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'v1', 'imageSize'), false, 'RTP Stats classic hides image controls');
+  assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'v1', 'imageSize'), true, 'RTP Stats classic exposes provider logo size controls');
   assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'neon', 'glowIntensity'), true, 'RTP Stats neon exposes glow controls');
   assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'minimal', 'shadows'), false, 'RTP Stats minimal hides unsupported shadow controls');
   assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'glass', 'glowIntensity'), true, 'RTP Stats glass exposes glow controls');
   const rtpContainerControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'container');
   assert.ok(rtpContainerControls.includes('material'), 'RTP Stats container exposes material');
   assert.ok(rtpContainerControls.includes('fontFamily'), 'RTP Stats container exposes font family');
+  assert.ok(rtpContainerControls.includes('barHeight'), 'RTP Stats container exposes bar height');
+  assert.ok(rtpContainerControls.includes('maxWidth'), 'RTP Stats container exposes bar width');
   assert.ok(!rtpContainerControls.includes('imageSize'), 'RTP Stats container hides image controls');
   assert.ok(!rtpContainerControls.includes('carouselSpeed'), 'RTP Stats container hides carousel controls');
+  const rtpProviderControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'provider');
+  assert.ok(rtpProviderControls.includes('imageSize'), 'RTP provider exposes logo size controls');
   const rtpValueControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'rtpValue');
   assert.ok(rtpValueControls.includes('fontFamily'), 'RTP value exposes typography controls');
   assert.ok(rtpValueControls.includes('primaryColor'), 'RTP value exposes color controls');
@@ -90,6 +94,9 @@ try {
   const navbarContainerControls = registryModule.getWidgetStyleQuickControls('navbar', 'v1', 'container');
   assert.ok(navbarContainerControls.includes('material'), 'Navbar container exposes material');
   assert.ok(navbarContainerControls.includes('fontFamily'), 'Navbar container exposes font family');
+  assert.ok(navbarContainerControls.includes('barHeight'), 'Navbar container exposes bar height');
+  assert.ok(navbarContainerControls.includes('maxWidth'), 'Navbar container exposes bar width');
+  assert.ok(navbarContainerControls.includes('musicDisplayStyle'), 'Navbar container exposes Spotify style');
   assert.ok(!navbarContainerControls.includes('imageSize'), 'Navbar container hides image controls');
   assert.ok(!navbarContainerControls.includes('carouselSpeed'), 'Navbar container hides carousel controls');
   const navbarAvatarControls = registryModule.getWidgetStyleQuickControls('navbar', 'v1', 'avatar');
@@ -762,18 +769,26 @@ try {
   assert.ok(rtpConfig.bestWinIconColor, 'RTP Stats maps personal best icon color to widget config');
   assert.ok(rtpConfig.spinnerColor, 'RTP Stats maps spinner color to widget config');
   assert.equal(rtpConfig.subElements.container.radius, rtpConfig.borderRadius, 'RTP Stats container radius mirrors the real CSS variable');
+  assert.ok(rtpConfig.barHeight >= 42, 'RTP Stats receives generated bar height');
+  assert.ok(rtpConfig.maxWidth >= 280, 'RTP Stats receives generated max width');
+  assert.ok(rtpConfig.subElements.provider.imageSize > 0, 'RTP Stats provider receives generated logo size');
   assert.ok(rtpConfig.subElements.rtpValue.accentColor, 'RTP Stats RTP value receives generated accent');
   assert.ok(rtpConfig.subElements.personalBest.accentColor, 'RTP Stats personal best receives generated accent');
   assert.ok(rtpConfig.subElements.statCard.states.highlight.accentColor, 'RTP Stats keeps highlighted stat state explicit');
-  assert.ok(rtpConfig.__appearanceV2.unsupportedProperties.includes('layout.providerLogoDimensions'), 'RTP Stats records provider-logo dimensions as unsupported');
+  assert.ok(!rtpConfig.__appearanceV2.unsupportedProperties.includes('layout.providerLogoDimensions'), 'RTP Stats provider logo dimensions are now supported');
   const rtpWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/RtpStatsWidget.jsx', import.meta.url), 'utf8');
   const overlayCssSource = readFileSync(new URL('../src/components/OverlayCenter/OverlayCenter.css', import.meta.url), 'utf8');
   assert.ok(rtpWidgetSource.includes('--rtp-value-rtp-family'), 'RTP Stats renderer maps RTP value font family to CSS');
   assert.ok(rtpWidgetSource.includes('--rtp-value-potential-family'), 'RTP Stats renderer maps max-win font family to CSS');
   assert.ok(rtpWidgetSource.includes('--rtp-value-volatility-family'), 'RTP Stats renderer maps volatility font family to CSS');
   assert.ok(rtpWidgetSource.includes('--rtp-value-bestwin-family'), 'RTP Stats renderer maps personal-best font family to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-provider-logo-width'), 'RTP Stats renderer maps provider logo width to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-bar-height'), 'RTP Stats renderer maps bar height to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-max-width'), 'RTP Stats renderer maps max width to CSS');
   assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-rtp-family'), 'RTP Stats CSS consumes per-value RTP font family');
   assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-bestwin-family'), 'RTP Stats CSS consumes per-value personal-best font family');
+  assert.ok(overlayCssSource.includes('var(--rtp-label-rtp-family'), 'RTP Stats CSS lets value font cascade into RTP label text');
+  assert.ok(overlayCssSource.includes('max-width: var(--rtp-max-width'), 'RTP Stats CSS consumes max width');
   const rtpGlassConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, appearance, {}, { styleId: 'glass' });
   assert.equal(rtpGlassConfig.displayStyle, 'glass', 'RTP Stats can switch to glass style appearance');
   assert.equal(rtpGlassConfig.__appearanceV2.material, 'glass', 'RTP Stats loads glass style-specific appearance');
@@ -786,6 +801,9 @@ try {
   assert.ok(navbarConfig.ctaColor, 'Navbar maps sponsor CTA color to widget config');
   assert.ok(navbarConfig.cryptoUpColor, 'Navbar maps crypto positive color to widget config');
   assert.ok(navbarConfig.cryptoDownColor, 'Navbar maps crypto negative color to widget config');
+  assert.ok(navbarConfig.barHeight >= 48, 'Navbar receives generated bar height');
+  assert.ok(navbarConfig.maxWidth >= 480, 'Navbar receives generated max width');
+  assert.equal(navbarConfig.musicDisplayStyle, 'text', 'Navbar receives default Spotify style');
   assert.ok(navbarConfig.subElements.avatar.imageSize > 42, 'Navbar avatar resolves large image size');
   assert.equal(navbarConfig.subElements.avatar.imageFit, 'contain', 'Navbar avatar resolves image fit');
   assert.ok(navbarConfig.subElements.badgeImage.imageSize > 54, 'Navbar badge image resolves large image size');
@@ -799,6 +817,8 @@ try {
   assert.ok(navbarWidgetSource.includes('cryptoFontFamily'), 'Navbar renderer maps crypto font family');
   assert.ok(navbarWidgetSource.includes('sponsorFontFamily'), 'Navbar renderer maps sponsor font family');
   assert.ok(navbarWidgetSource.includes('balanceFontFamily'), 'Navbar renderer maps balance font family');
+  assert.ok(navbarWidgetSource.includes('barOuterSized'), 'Navbar renderer applies bar frame sizing');
+  assert.ok(navbarWidgetSource.includes('sponsorBorderColor'), 'Navbar renderer maps CTA border controls');
   const navbarRetroConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, appearance, {}, { styleId: 'retro' });
   assert.equal(navbarRetroConfig.displayStyle, 'retro', 'Navbar can switch to retro style appearance');
   assert.equal(navbarRetroConfig.__appearanceV2.material, 'matte', 'Navbar loads retro style-specific appearance');
@@ -974,6 +994,52 @@ try {
   assert.equal(navbarOverrideConfig.subElements.crypto.fontWeight, 800, 'Navbar crypto explicit font weight wins over generated tokens');
   assert.equal(navbarOverrideConfig.subElements.balance.fontFamily, 'Oxanium', 'Navbar balance explicit font family wins over generated tokens');
   assert.equal(navbarOverrideConfig.subElements.clock.fontWeight, 500, 'Navbar clock explicit font weight wins over generated tokens');
+
+  const rtpDimensionConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, {
+    widgets: {
+      rtp1: {
+        styles: {
+          neon: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('rtp_stats', {
+              material: 'glass',
+              primaryColor: '#14d8d8',
+              shape: 'rounded',
+              density: 'large',
+              barHeight: 72,
+              maxWidth: 840,
+              imageSize: 'large',
+            }),
+          },
+        },
+      },
+    },
+  }, {});
+  assert.equal(rtpDimensionConfig.barHeight, 72, 'RTP Stats simple bar height reaches widget config');
+  assert.equal(rtpDimensionConfig.maxWidth, 840, 'RTP Stats simple max width reaches widget config');
+  assert.ok(rtpDimensionConfig.subElements.provider.imageSize >= 34, 'RTP Stats simple image size reaches provider logo');
+
+  const navbarDimensionConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, {
+    widgets: {
+      nav1: {
+        styles: {
+          glass: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('navbar', {
+              material: 'metallic',
+              primaryColor: '#f59e0b',
+              shape: 'pill',
+              density: 'standard',
+              barHeight: 88,
+              maxWidth: 980,
+              musicDisplayStyle: 'vinyl',
+            }),
+          },
+        },
+      },
+    },
+  }, {});
+  assert.equal(navbarDimensionConfig.barHeight, 88, 'Navbar simple bar height reaches widget config');
+  assert.equal(navbarDimensionConfig.maxWidth, 980, 'Navbar simple max width reaches widget config');
+  assert.equal(navbarDimensionConfig.musicDisplayStyle, 'vinyl', 'Navbar simple Spotify style reaches widget config');
 
   const resolvedWidgets = appearanceModel.resolveWidgetsForAppearance([
     bhStatsWidget,

@@ -1052,6 +1052,9 @@ function buildRtpStatsPatch(tokens, styleId) {
   const barBgTo = isNeon ? '#050510' : surface;
   const accent = tokens.colors.primary;
   const warning = tokens.colors.warning;
+  const barHeight = tokens.layout?.barHeight || Math.max(42, Math.min(92, Math.round(48 * tokens.spacing.scale)));
+  const maxWidth = tokens.layout?.maxWidth || 960;
+  const providerLogoHeight = Math.round(34 * (tokens.image?.sizeMultiplier || 1));
 
   return {
     ...commonVisualPatch(tokens),
@@ -1079,6 +1082,8 @@ function buildRtpStatsPatch(tokens, styleId) {
     labelFontWeight: tokens.typography.labelWeight,
     paddingX: Math.max(2, Math.min(tokens.spacing.rootPadding, 14)),
     paddingY: Math.max(1, Math.min(tokens.spacing.cardPadding, 8)),
+    barHeight,
+    maxWidth,
     widgetScale: tokens.spacing.scale,
     subElements: {
       ...common,
@@ -1090,6 +1095,8 @@ function buildRtpStatsPatch(tokens, styleId) {
         borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
         radius: tokens.shape.rootRadius,
         padding: tokens.spacing.rootPadding,
+        height: barHeight,
+        maxWidth,
         gap: tokens.spacing.itemGap,
         shadow: combinedShadow,
         glow,
@@ -1100,6 +1107,7 @@ function buildRtpStatsPatch(tokens, styleId) {
         fontFamily: tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
+        imageSize: providerLogoHeight,
       },
       slotTitle: {
         textColor: tokens.colors.text,
@@ -1183,6 +1191,8 @@ function buildNavbarPatch(tokens, styleId) {
   const combinedShadow = [shadow, glow].filter(Boolean).join(', ') || undefined;
   const imageSize = Math.round(42 * (tokens.image?.sizeMultiplier || 1));
   const logoImageSize = Math.round(54 * (tokens.image?.sizeMultiplier || 1));
+  const barHeight = tokens.layout?.barHeight || Math.max(48, Math.min(92, Math.round(56 * tokens.spacing.scale)));
+  const maxWidth = tokens.layout?.maxWidth || 1200;
 
   return {
     ...commonVisualPatch(tokens),
@@ -1198,8 +1208,9 @@ function buildNavbarPatch(tokens, styleId) {
     fontSize: tokens.typography.bodySize,
     borderWidth: isRetro ? Math.max(2, tokens.shape.borderWidth) : tokens.shape.borderWidth,
     borderRadius: tokens.shape.rootRadius,
-    barHeight: Math.max(48, Math.min(92, Math.round(56 * tokens.spacing.scale))),
-    maxWidth: 1200,
+    barHeight,
+    maxWidth,
+    musicDisplayStyle: tokens.layout?.musicDisplayStyle || 'text',
     shadowSize: Math.round((tokens.materialTokens?.shadowIntensity || 0) * 32),
     shadowIntensity: Math.round((tokens.materialTokens?.shadowIntensity || 0) * 100),
     subElements: {
@@ -1212,6 +1223,8 @@ function buildNavbarPatch(tokens, styleId) {
         borderWidth: isRetro ? Math.max(2, tokens.shape.borderWidth) : tokens.shape.borderWidth,
         radius: tokens.shape.rootRadius,
         padding: tokens.spacing.rootPadding,
+        height: barHeight,
+        maxWidth,
         gap: tokens.spacing.itemGap,
         shadow: combinedShadow,
         glow,
