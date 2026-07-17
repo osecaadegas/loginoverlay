@@ -139,6 +139,7 @@ try {
   assert.ok(!spotifyContainerQuickControls.includes('carouselSpeed'), 'Spotify mini-player container hides carousel controls');
   const spotifyAlbumArtQuickControls = registryModule.getWidgetStyleQuickControls('spotify_now_playing', 'mini_player', 'albumArt');
   assert.ok(spotifyAlbumArtQuickControls.includes('imageSize'), 'Spotify album art exposes image size');
+  assert.ok(spotifyAlbumArtQuickControls.includes('imageShape'), 'Spotify album art exposes image shape');
   assert.ok(spotifyAlbumArtQuickControls.includes('imageFit'), 'Spotify album art exposes image fit');
   assert.ok(spotifyAlbumArtQuickControls.includes('imageVisibility'), 'Spotify album art exposes image visibility');
   assert.ok(!spotifyAlbumArtQuickControls.includes('fontFamily'), 'Spotify album art hides typography controls');
@@ -158,6 +159,8 @@ try {
   assert.ok(!spotifyCompactTimeControls.includes('imageSize'), 'Spotify compact-bar time label hides image controls');
   const spotifyCompactAlbumControls = registryModule.getWidgetStyleQuickControls('spotify_now_playing', 'compact_bar', 'albumArt');
   assert.ok(spotifyCompactAlbumControls.includes('imageVisibility'), 'Spotify compact-bar album art exposes visibility');
+  assert.ok(spotifyCompactAlbumControls.includes('imageSize'), 'Spotify compact-bar album art exposes size');
+  assert.ok(spotifyCompactAlbumControls.includes('imageShape'), 'Spotify compact-bar album art exposes shape');
   assert.ok(!spotifyCompactAlbumControls.includes('fontFamily'), 'Spotify compact-bar album art hides typography controls');
   const spotifyCompactEqualizerControls = registryModule.getWidgetStyleQuickControls('spotify_now_playing', 'compact_bar', 'equalizer');
   assert.ok(spotifyCompactEqualizerControls.includes('animationSpeed'), 'Spotify compact-bar equalizer exposes animation speed');
@@ -169,6 +172,7 @@ try {
   assert.ok(!spotifyAlbumContainerControls.includes('progressBar'), 'Spotify album-card container hides progress controls');
   const spotifyAlbumArtControls = registryModule.getWidgetStyleQuickControls('spotify_now_playing', 'album_card', 'albumArt');
   assert.ok(spotifyAlbumArtControls.includes('imageSize'), 'Spotify album-card album art exposes image size');
+  assert.ok(spotifyAlbumArtControls.includes('imageShape'), 'Spotify album-card album art exposes image shape');
   assert.ok(spotifyAlbumArtControls.includes('imageFit'), 'Spotify album-card album art exposes image fit');
   assert.ok(spotifyAlbumArtControls.includes('imageVisibility'), 'Spotify album-card album art exposes visibility');
   assert.ok(!spotifyAlbumArtControls.includes('fontFamily'), 'Spotify album-card album art hides typography controls');
@@ -182,6 +186,7 @@ try {
   assert.ok(!spotifyGlassContainerControls.includes('progressBar'), 'Spotify glass container hides progress controls');
   const spotifyGlassArtControls = registryModule.getWidgetStyleQuickControls('spotify_now_playing', 'glass', 'albumArt');
   assert.ok(spotifyGlassArtControls.includes('imageSize'), 'Spotify glass album art exposes image size');
+  assert.ok(spotifyGlassArtControls.includes('imageShape'), 'Spotify glass album art exposes image shape');
   assert.ok(spotifyGlassArtControls.includes('imageFit'), 'Spotify glass album art exposes image fit');
   assert.ok(spotifyGlassArtControls.includes('imageVisibility'), 'Spotify glass album art exposes visibility');
   assert.ok(!spotifyGlassArtControls.includes('fontFamily'), 'Spotify glass album art hides typography controls');
@@ -196,6 +201,7 @@ try {
     assert.ok(!controls.includes('progressBar'), `Spotify ${styleId} container hides progress controls`);
     const albumControls = registryModule.getWidgetStyleQuickControls('spotify_now_playing', styleId, 'albumArt');
     assert.ok(albumControls.includes('imageSize'), `Spotify ${styleId} album art exposes image size`);
+    assert.ok(albumControls.includes('imageShape'), `Spotify ${styleId} album art exposes image shape`);
     assert.ok(albumControls.includes('imageFit'), `Spotify ${styleId} album art exposes image fit`);
     assert.ok(albumControls.includes('imageVisibility'), `Spotify ${styleId} album art exposes visibility`);
     assert.ok(!albumControls.includes('fontFamily'), `Spotify ${styleId} album art hides typography controls`);
@@ -489,7 +495,7 @@ try {
               textSize: 'large',
               scale: 1.05,
               imageSize: 'large',
-              imageShape: 'round',
+              imageShape: 'circle',
               imageFit: 'contain',
             }),
           },
@@ -547,6 +553,7 @@ try {
               textSize: 'large',
               imageVisibility: 'hidden',
               imageSize: 'large',
+              imageShape: 'circle',
               imageFit: 'contain',
               animationSpeed: 'fast',
             }),
@@ -564,6 +571,7 @@ try {
               textSize: 'large',
               imageVisibility: 'show',
               imageSize: 'large',
+              imageShape: 'square',
               imageFit: 'contain',
               animationSpeed: 'fast',
             }),
@@ -581,6 +589,7 @@ try {
               textSize: 'small',
               imageVisibility: 'show',
               imageSize: 'small',
+              imageShape: 'circle',
               imageFit: 'cover',
               animationSpeed: 'slow',
             }),
@@ -666,6 +675,8 @@ try {
               textSize: 'standard',
               scale: 1.2,
               imageVisibility: 'show',
+              imageSize: 'large',
+              imageShape: 'square',
               imageFit: 'contain',
               animationSpeed: 'fast',
             }),
@@ -824,6 +835,11 @@ try {
   assert.equal(navbarRetroConfig.__appearanceV2.material, 'matte', 'Navbar loads retro style-specific appearance');
   assert.ok(navbarRetroConfig.subElements.avatar.imageSize < navbarConfig.subElements.avatar.imageSize, 'Navbar style isolation preserves image sizes per style');
 
+  const spotifyWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/SpotifyWidget.jsx', import.meta.url), 'utf8');
+  assert.ok(spotifyWidgetSource.includes('spotifyAlbumArtStyle'), 'Spotify renderer centralizes album-art size and radius controls');
+  assert.ok(spotifyWidgetSource.includes('spotifyAlbumArtPercent'), 'Spotify renderer supports percentage artwork sizing for album/vinyl styles');
+  assert.ok(!spotifyWidgetSource.includes("width: '38%'"), 'Spotify vinyl center art is no longer hardcoded to a fixed size');
+
   const slotRequestsConfig = appearanceModel.resolveWidgetAppearanceConfig(slotRequestsWidget, appearance, {});
   assert.equal(slotRequestsConfig.__appearanceV2.material, 'glass', 'Slot Requests receives V2 material');
   assert.equal(slotRequestsConfig.displayStyle, 'v1_minimal', 'Slot Requests keeps selected renderer style');
@@ -852,6 +868,7 @@ try {
   assert.equal(spotifyConfig.displayStyle, 'mini_player', 'Spotify mini-player quick style switches the real renderer');
   assert.equal(spotifyConfig.subElements.albumArt.visible, false, 'Spotify mini-player resolves image visibility into album art config');
   assert.ok(spotifyConfig.subElements.albumArt.imageSize > 44, 'Spotify mini-player resolves large album art size');
+  assert.equal(spotifyConfig.subElements.albumArt.radius, 999, 'Spotify mini-player resolves round album art shape');
   assert.equal(spotifyConfig.subElements.albumArt.imageFit, 'contain', 'Spotify mini-player resolves album art fit');
   assert.equal(spotifyConfig.subElements.trackTitle.fontSize, 18, 'Spotify mini-player large text reaches the track title');
   assert.ok(spotifyConfig.subElements.equalizer.animationDuration < 0.4, 'Spotify mini-player fast animation maps to equalizer duration');
@@ -862,6 +879,7 @@ try {
   assert.equal(spotifyAlbumConfig.subElements.container.radius, 0, 'Spotify album-card resolves square container shape');
   assert.equal(spotifyAlbumConfig.subElements.albumArt.visible, true, 'Spotify album-card keeps album art visible');
   assert.ok(spotifyAlbumConfig.subElements.albumArt.sizePercent > 42, 'Spotify album-card resolves large artwork as a card percentage');
+  assert.equal(spotifyAlbumConfig.subElements.albumArt.radius, 0, 'Spotify album-card resolves square album art shape');
   assert.equal(spotifyAlbumConfig.subElements.albumArt.imageFit, 'contain', 'Spotify album-card resolves album art fit');
   assert.equal(spotifyAlbumConfig.subElements.trackTitle.fontSize, 22, 'Spotify album-card large text reaches the track title');
   assert.ok(spotifyAlbumConfig.subElements.playbackState.animationDuration < 1.5, 'Spotify album-card fast animation maps to playback pulse');
@@ -872,6 +890,7 @@ try {
   assert.ok(spotifyGlassConfig.subElements.container.backdropBlur > 0, 'Spotify glass resolves frosted backdrop blur');
   assert.equal(spotifyGlassConfig.subElements.albumArt.visible, true, 'Spotify glass keeps album art visible');
   assert.ok(spotifyGlassConfig.subElements.albumArt.imageSize > 72, 'Spotify glass resolves large album art tile');
+  assert.equal(typeof spotifyGlassConfig.subElements.albumArt.radius, 'number', 'Spotify glass resolves album art radius');
   assert.equal(spotifyGlassConfig.subElements.albumArt.imageFit, 'contain', 'Spotify glass resolves album art fit');
   assert.equal(spotifyGlassConfig.subElements.trackTitle.fontSize, 20, 'Spotify glass large text reaches the track title');
   assert.ok(spotifyGlassConfig.subElements.playbackState.animationDuration < 1.2, 'Spotify glass fast animation maps to playback pulse');
@@ -903,6 +922,8 @@ try {
   assert.equal(spotifyVinylConfig.displayStyle, 'vinyl', 'Spotify vinyl quick style switches the real renderer');
   assert.ok(spotifyVinylConfig.subElements.vinylRecord.sizePercent > 55, 'Spotify vinyl resolves scaled record size');
   assert.ok(spotifyVinylConfig.subElements.vinylRecord.animationDuration < 3, 'Spotify vinyl fast animation maps to spin speed');
+  assert.ok(spotifyVinylConfig.subElements.albumArt.sizePercent > 38, 'Spotify vinyl resolves center album-art size');
+  assert.equal(spotifyVinylConfig.subElements.albumArt.radius, 0, 'Spotify vinyl center album art can be square');
   assert.equal(spotifyVinylConfig.subElements.albumArt.imageFit, 'contain', 'Spotify vinyl resolves center album-art fit');
 
   const spotifyCompactConfig = appearanceModel.resolveWidgetAppearanceConfig(spotifyCompactWidget, appearance, {});
@@ -910,6 +931,7 @@ try {
   assert.equal(spotifyCompactConfig.displayStyle, 'compact_bar', 'Spotify compact-bar quick style switches the real renderer');
   assert.equal(spotifyCompactConfig.subElements.albumArt.visible, true, 'Spotify compact-bar keeps album art visible');
   assert.ok(spotifyCompactConfig.subElements.albumArt.imageSize < 44, 'Spotify compact-bar resolves small album art size');
+  assert.equal(spotifyCompactConfig.subElements.albumArt.radius, 999, 'Spotify compact-bar resolves round album art shape');
   assert.equal(spotifyCompactConfig.subElements.progressBar.fillColor, '#00d4c8', 'Spotify compact-bar maps primary color to progress fill');
   assert.ok(spotifyCompactConfig.subElements.progressBar.background, 'Spotify compact-bar resolves progress background');
   assert.equal(spotifyCompactConfig.subElements.timeLabel.fontSize, 9, 'Spotify compact-bar resolves compact time label text');

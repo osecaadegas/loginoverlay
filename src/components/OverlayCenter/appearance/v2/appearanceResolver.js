@@ -574,6 +574,7 @@ function buildSpotifyPatch(tokens, styleId) {
   }
   if (styleId === 'vinyl') {
     const recordSizePercent = Math.round(55 * clamp(tokens.spacing?.scale || 1, 0.75, 1.3));
+    const labelSizePercent = Math.round(38 * (tokens.image?.sizeMultiplier || 1));
     const spinDuration = Number((3 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
     return {
       ...baseSpotifyPatch,
@@ -604,8 +605,10 @@ function buildSpotifyPatch(tokens, styleId) {
         },
         albumArt: {
           visible: tokens.image?.visible !== false,
+          imageSize: labelSizePercent,
+          sizePercent: labelSizePercent,
           imageFit: tokens.image?.fit || 'cover',
-          radius: 999,
+          radius: tokens.image?.radius ?? 999,
           borderColor: tokens.colors.primary,
           borderWidth: 2,
           shadow: `0 0 ${px((tokens.materialTokens?.glowIntensity || 0.18) * 44)} ${tokens.colors.primary}`,

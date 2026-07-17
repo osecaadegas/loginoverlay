@@ -30,6 +30,27 @@ function numericSubValue(config, elementId, property, fallback) {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function spotifyAlbumArtStyle(c, fallbackSize, fallbackRadius, fallback = {}) {
+  const size = numericSubValue(c, 'albumArt', 'imageSize', fallbackSize);
+  return subElementStyle(c, 'albumArt', {
+    width: size,
+    height: size,
+    borderRadius: spotifyArtRadius(c, fallbackRadius),
+    flexShrink: 0,
+    ...fallback,
+  });
+}
+
+function spotifyAlbumArtPercent(c, fallbackPercent) {
+  const percent = numericSubValue(
+    c,
+    'albumArt',
+    'sizePercent',
+    numericSubValue(c, 'albumArt', 'imageSize', fallbackPercent),
+  );
+  return Math.max(12, Math.min(percent, 92));
+}
+
 /* ═══════════════════════════════════════════════════════
    Spotify Now Playing Widget — 6 embedded styles
    ═══════════════════════════════════════════════════════ */
@@ -129,7 +150,7 @@ function AlbumCard({ data, c }) {
   const bgColor = subValue(c, 'container', 'background', c.bgColor || '#0a0a0f');
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
-  const albumSizePercent = numericSubValue(c, 'albumArt', 'sizePercent', 42);
+  const albumSizePercent = spotifyAlbumArtPercent(c, 42);
   const albumBorderColor = subValue(c, 'albumArt', 'borderColor', 'transparent');
   const albumBorderWidth = numericSubValue(c, 'albumArt', 'borderWidth', 0);
   const albumShadow = subValue(c, 'albumArt', 'shadow', `0 8px 32px rgba(0,0,0,0.6), 0 0 40px ${accent}33`);
@@ -166,9 +187,10 @@ function AlbumCard({ data, c }) {
       }}>
         {showAlbumArt && data.albumArt && (
           <div style={{
+            ...subElementStyle(c, 'albumArt', {}),
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -60%)',
-            width: `${albumSizePercent}%`, aspectRatio: '1', borderRadius: artRadius,
+            width: `${albumSizePercent}%`, height: undefined, aspectRatio: '1', borderRadius: artRadius,
             border: albumBorderWidth > 0 ? `${albumBorderWidth}px solid ${albumBorderColor}` : undefined,
             boxShadow: albumShadow,
             overflow: 'hidden',
@@ -237,7 +259,6 @@ function MiniPlayer({ data, c }) {
   const accent = spotifyAccent(c);
   const titleColor = spotifyText(c);
   const artistColor = spotifyMuted(c, '#b3b3b3');
-  const artRadius = spotifyArtRadius(c, 6);
   const bgColor = subValue(c, 'container', 'background', c.bgColor || 'linear-gradient(135deg, #181818, #121212)');
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
@@ -261,12 +282,8 @@ function MiniPlayer({ data, c }) {
     <div className="oc-spotify oc-spotify--mini" style={containerStyle}>
       {showAlbumArt && data.albumArt ? (
         <img src={data.albumArt} alt="" style={{
-          ...subElementStyle(c, 'albumArt', {
-            width: 44,
-            height: 44,
-            borderRadius: artRadius,
+          ...spotifyAlbumArtStyle(c, 44, 6, {
             objectFit: imageFit,
-            flexShrink: 0,
           }),
           objectFit: imageFit,
           flexShrink: 0,
@@ -274,11 +291,7 @@ function MiniPlayer({ data, c }) {
         }} />
       ) : showAlbumArt ? (
         <div style={{
-          ...subElementStyle(c, 'albumArt', {
-            width: 44,
-            height: 44,
-            borderRadius: artRadius,
-            flexShrink: 0,
+          ...spotifyAlbumArtStyle(c, 44, 6, {
             background: '#282828',
           }),
           flexShrink: 0,
@@ -336,6 +349,9 @@ function VinylSpin({ data, c }) {
   const artistColor = spotifyMuted(c, accent);
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
+  const artRadius = spotifyArtRadius(c, '50%');
+  const labelSizePercent = spotifyAlbumArtPercent(c, 38);
+  const albumArtElementStyle = subElementStyle(c, 'albumArt', {});
   const recordSizePercent = numericSubValue(c, 'vinylRecord', 'sizePercent', 55);
   const recordColor = subValue(c, 'vinylRecord', 'background', '#111');
   const recordAccent = subValue(c, 'vinylRecord', 'accentColor', accent);
@@ -380,11 +396,12 @@ function VinylSpin({ data, c }) {
         ))}
         {/* Center label */}
         <div style={{
+          ...albumArtElementStyle,
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '38%', aspectRatio: '1', borderRadius: '50%',
-          overflow: 'hidden', border: `2px solid ${recordAccent}44`,
-          boxShadow: `0 0 20px ${recordAccent}22`,
+          width: `${labelSizePercent}%`, height: undefined, aspectRatio: '1', borderRadius: artRadius,
+          overflow: 'hidden', border: albumArtElementStyle.border || `2px solid ${recordAccent}44`,
+          boxShadow: albumArtElementStyle.boxShadow || `0 0 20px ${recordAccent}22`,
         }}>
           {showAlbumArt && data.albumArt ? (
             <img src={data.albumArt} alt="" style={{ width: '100%', height: '100%', objectFit: imageFit }} />
@@ -436,7 +453,6 @@ function GlassCard({ data, c }) {
   const artistColor = spotifyMuted(c, 'rgba(255,255,255,0.75)');
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
-  const artRadius = spotifyArtRadius(c, 12);
   const playbackColor = subValue(c, 'playbackState', 'accentColor', accent);
   const playbackTextColor = subValue(c, 'playbackState', 'textColor', 'rgba(255,255,255,0.55)');
   const playbackEnabled = subValue(c, 'playbackState', 'animationEnabled', true) !== false;
@@ -487,13 +503,9 @@ function GlassCard({ data, c }) {
       }}>
         {showAlbumArt && data.albumArt && (
           <div style={{
-            ...subElementStyle(c, 'albumArt', {
-              width: 72,
-              height: 72,
-              borderRadius: artRadius,
+            ...spotifyAlbumArtStyle(c, 72, 12, {
               boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
               border: '1px solid rgba(255,255,255,0.1)',
-              flexShrink: 0,
             }),
             aspectRatio: '1',
             overflow: 'hidden',
@@ -563,7 +575,6 @@ function WaveStyle({ data, c }) {
   const artistColor = spotifyMuted(c, accent);
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
-  const artRadius = spotifyArtRadius(c, 8);
   const waveformColor = subValue(c, 'waveform', 'accentColor', accent);
   const waveformEnabled = subValue(c, 'waveform', 'animationEnabled', true) !== false;
   const waveformDuration = numericSubValue(c, 'waveform', 'animationDuration', 0.32);
@@ -606,12 +617,8 @@ function WaveStyle({ data, c }) {
       {/* Album art */}
       {showAlbumArt && data.albumArt && (
         <div style={{
-          ...subElementStyle(c, 'albumArt', {
-            width: 50,
-            height: 50,
-            borderRadius: artRadius,
+          ...spotifyAlbumArtStyle(c, 50, 8, {
             boxShadow: `0 0 16px ${accent}33`,
-            flexShrink: 0,
           }),
           overflow: 'hidden', position: 'relative', zIndex: 1, flexShrink: 0,
         }}>
@@ -672,7 +679,6 @@ function NeonStyle({ data, c }) {
   const artistColor = spotifyMuted(c, accent);
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
-  const artRadius = spotifyArtRadius(c, 10);
   const playbackTextColor = subValue(c, 'playbackState', 'textColor', `${accent}99`);
   const playbackEnabled = subValue(c, 'playbackState', 'animationEnabled', true) !== false;
   const playbackDuration = numericSubValue(c, 'playbackState', 'animationDuration', 1.1);
@@ -703,14 +709,10 @@ function NeonStyle({ data, c }) {
       {/* Album art with neon border */}
       {showAlbumArt && data.albumArt ? (
         <div style={{
-          ...subElementStyle(c, 'albumArt', {
-            width: 56,
-            height: 56,
-            borderRadius: artRadius,
+          ...spotifyAlbumArtStyle(c, 56, 10, {
             borderColor: accent,
             borderWidth: 2,
             boxShadow: `0 0 12px ${accent}66, 0 0 4px ${accent}44`,
-            flexShrink: 0,
           }),
           overflow: 'hidden', flexShrink: 0,
           position: 'relative', zIndex: 1,
@@ -719,15 +721,11 @@ function NeonStyle({ data, c }) {
         </div>
       ) : showAlbumArt ? (
         <div style={{
-          ...subElementStyle(c, 'albumArt', {
-            width: 56,
-            height: 56,
-            borderRadius: artRadius,
+          ...spotifyAlbumArtStyle(c, 56, 10, {
             borderColor: accent,
             borderWidth: 2,
             background: '#111',
             boxShadow: `0 0 12px ${accent}66`,
-            flexShrink: 0,
           }),
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 24, position: 'relative', zIndex: 1,
@@ -784,7 +782,6 @@ function MetalPlayer({ data, c }) {
   const artistColor = spotifyMuted(c, '#8a94a8');
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
-  const artRadius = spotifyArtRadius(c, 8);
   const playbackColor = subValue(c, 'playbackState', 'accentColor', accent || '#8a9aaa');
   const playbackTextColor = subValue(c, 'playbackState', 'textColor', artistColor);
   const equalizerColor = subValue(c, 'equalizer', 'accentColor', playbackColor);
@@ -808,13 +805,9 @@ function MetalPlayer({ data, c }) {
     <div className="oc-spotify oc-spotify--metal" style={containerStyle}>
       {showAlbumArt && data.albumArt ? (
         <div style={{
-          ...subElementStyle(c, 'albumArt', {
-            width: 52,
-            height: 52,
-            borderRadius: artRadius,
+          ...spotifyAlbumArtStyle(c, 52, 8, {
             border: '1px solid rgba(200,210,225,0.15)',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)',
-            flexShrink: 0,
           }),
           overflow: 'hidden', flexShrink: 0,
         }}>
@@ -822,13 +815,9 @@ function MetalPlayer({ data, c }) {
         </div>
       ) : showAlbumArt ? (
         <div style={{
-          ...subElementStyle(c, 'albumArt', {
-            width: 52,
-            height: 52,
-            borderRadius: artRadius,
+          ...spotifyAlbumArtStyle(c, 52, 8, {
             background: 'linear-gradient(135deg, #555a65, #3a3e48)',
             border: '1px solid rgba(200,210,225,0.15)',
-            flexShrink: 0,
           }),
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
         }}>🎵</div>
@@ -920,7 +909,6 @@ function CompactBar({ data, c }) {
   const artistColor = subValue(c, 'artistName', 'textColor', accent);
   const showAlbumArt = subValue(c, 'albumArt', 'visible', true) !== false;
   const imageFit = subValue(c, 'albumArt', 'imageFit', 'cover');
-  const artRadius = spotifyArtRadius(c, 7);
   const progressBackground = subValue(c, 'progressBar', 'background', c.progressBgColor || 'rgba(255,255,255,0.1)');
   const progressFill = subValue(c, 'progressBar', 'fillColor', c.progressColor || accent);
   const progressRadius = subValue(c, 'progressBar', 'radius', 2);
@@ -951,12 +939,8 @@ function CompactBar({ data, c }) {
       <div style={{ position: 'relative', flexShrink: 0 }}>
         {data.albumArt ? (
           <img src={data.albumArt} alt="" style={{
-            ...subElementStyle(c, 'albumArt', {
-              width: 44,
-              height: 44,
-              borderRadius: artRadius,
+            ...spotifyAlbumArtStyle(c, 44, 7, {
               objectFit: imageFit,
-              flexShrink: 0,
             }),
             objectFit: imageFit,
             flexShrink: 0,
@@ -965,12 +949,8 @@ function CompactBar({ data, c }) {
           }} />
         ) : (
           <div style={{
-            ...subElementStyle(c, 'albumArt', {
-              width: 44,
-              height: 44,
-              borderRadius: artRadius,
+            ...spotifyAlbumArtStyle(c, 44, 7, {
               background: '#1a3333',
-              flexShrink: 0,
             }),
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
           }}>🎵</div>
