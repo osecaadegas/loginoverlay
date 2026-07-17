@@ -929,7 +929,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         recommended: true,
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
-          ...IMAGE_QUICK_CAPABILITIES,
+          imageShape: true,
           rows: true,
           maximumVisibleItems: true,
         },
@@ -942,7 +942,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         description: 'Animated 3D stack for showing the current request with side cards.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
-          ...IMAGE_QUICK_CAPABILITIES,
+          imageShape: true,
           carousel: true,
           carouselSpeed: true,
           carouselAutoplay: true,
@@ -961,7 +961,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         description: 'Small ticker-style request card for tight stream layouts.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
-          ...IMAGE_QUICK_CAPABILITIES,
+          imageShape: true,
           carousel: true,
           carouselSpeed: true,
           carouselAutoplay: true,
