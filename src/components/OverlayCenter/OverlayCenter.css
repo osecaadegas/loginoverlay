@@ -8151,6 +8151,7 @@ body.wm-resizing {
 .rtp-stats-provider--logo {
   width: var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px));
   height: var(--rtp-provider-logo-height, clamp(30px, 3.15vw, 38px));
+  border-radius: var(--rtp-provider-logo-radius, 0);
   justify-content: center;
   flex: 0 0 auto;
   line-height: 1;
@@ -8175,8 +8176,9 @@ body.wm-resizing {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
+  object-fit: var(--rtp-provider-logo-fit, contain);
   object-position: center;
+  border-radius: var(--rtp-provider-logo-radius, 0);
   background: transparent;
   filter:
     drop-shadow(0 1px 2px rgba(0, 0, 0, 0.72))

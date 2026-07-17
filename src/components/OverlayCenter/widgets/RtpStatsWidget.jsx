@@ -456,6 +456,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const providerFontWeight = subValue(c, 'provider', 'fontWeight', c.fontWeight || 700);
   const providerLogoHeight = subValue(c, 'provider', 'imageSize', c.providerLogoHeight ?? 34);
   const providerLogoWidth = subValue(c, 'provider', 'width', c.providerLogoWidth ?? Math.round((Number(providerLogoHeight) || 34) * 4.7));
+  const providerLogoRadius = subValue(c, 'provider', 'radius', c.providerLogoRadius ?? 0);
+  const providerLogoFit = subValue(c, 'provider', 'imageFit', c.providerLogoFit || 'contain');
   const slotTitleFontFamily = subValue(c, 'slotTitle', 'fontFamily', fontFamily);
   const slotTitleFontSize = subValue(c, 'slotTitle', 'fontSize', fontSize);
   const slotTitleFontWeight = subValue(c, 'slotTitle', 'fontWeight', c.fontWeight || 700);
@@ -517,7 +519,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const displayProvider = isLive
     ? (slotInfo?.provider || activeSlot.provider || currentBonus?.slot?.provider || '')
     : (showDemoData ? demoProvider : '');
-  const displayProviderLogo = displayProvider ? getProviderImage(displayProvider) : null;
+  const configuredProviderLogo = subValue(c, 'provider', 'imageUrl', c.providerLogoUrl || c.providerImageUrl || '');
+  const displayProviderLogo = configuredProviderLogo || (displayProvider ? getProviderImage(displayProvider) : null);
   const displayInfo = isLive ? (slotInfo || localSlotInfo) : (showDemoData ? demoInfo : null);
   const currentHuntBestWin = useMemo(() => {
     if (!isLive) return null;
@@ -591,6 +594,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-provider-weight': providerFontWeight,
     '--rtp-provider-logo-width': `${providerLogoWidth}px`,
     '--rtp-provider-logo-height': `${providerLogoHeight}px`,
+    '--rtp-provider-logo-radius': typeof providerLogoRadius === 'number' ? `${providerLogoRadius}px` : providerLogoRadius,
+    '--rtp-provider-logo-fit': providerLogoFit,
     '--rtp-slot-family': slotTitleFontFamily,
     '--rtp-slot-size': `${slotTitleFontSize}px`,
     '--rtp-slot-weight': slotTitleFontWeight,
@@ -609,18 +614,18 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-label-family': labelFontFamily,
     '--rtp-label-size': `${labelFontSize}px`,
     '--rtp-label-weight': labelFontWeight,
-    '--rtp-label-rtp-family': subValue(c, 'label', 'fontFamily', rtpValueFontFamily),
-    '--rtp-label-rtp-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(rtpValueFontSize) * 0.88)))}px`,
-    '--rtp-label-rtp-weight': subValue(c, 'label', 'fontWeight', rtpValueFontWeight),
-    '--rtp-label-potential-family': subValue(c, 'label', 'fontFamily', potentialValueFontFamily),
-    '--rtp-label-potential-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(potentialValueFontSize) * 0.88)))}px`,
-    '--rtp-label-potential-weight': subValue(c, 'label', 'fontWeight', potentialValueFontWeight),
-    '--rtp-label-volatility-family': subValue(c, 'label', 'fontFamily', volatilityValueFontFamily),
-    '--rtp-label-volatility-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(volatilityValueFontSize) * 0.88)))}px`,
-    '--rtp-label-volatility-weight': subValue(c, 'label', 'fontWeight', volatilityValueFontWeight),
-    '--rtp-label-bestwin-family': subValue(c, 'label', 'fontFamily', bestWinValueFontFamily),
-    '--rtp-label-bestwin-size': `${subValue(c, 'label', 'fontSize', Math.max(10, Math.round(Number(bestWinValueFontSize) * 0.88)))}px`,
-    '--rtp-label-bestwin-weight': subValue(c, 'label', 'fontWeight', bestWinValueFontWeight),
+    '--rtp-label-rtp-family': rtpValueFontFamily,
+    '--rtp-label-rtp-size': `${Math.max(10, Math.round(Number(rtpValueFontSize) * 0.88))}px`,
+    '--rtp-label-rtp-weight': rtpValueFontWeight,
+    '--rtp-label-potential-family': potentialValueFontFamily,
+    '--rtp-label-potential-size': `${Math.max(10, Math.round(Number(potentialValueFontSize) * 0.88))}px`,
+    '--rtp-label-potential-weight': potentialValueFontWeight,
+    '--rtp-label-volatility-family': volatilityValueFontFamily,
+    '--rtp-label-volatility-size': `${Math.max(10, Math.round(Number(volatilityValueFontSize) * 0.88))}px`,
+    '--rtp-label-volatility-weight': volatilityValueFontWeight,
+    '--rtp-label-bestwin-family': bestWinValueFontFamily,
+    '--rtp-label-bestwin-size': `${Math.max(10, Math.round(Number(bestWinValueFontSize) * 0.88))}px`,
+    '--rtp-label-bestwin-weight': bestWinValueFontWeight,
     '--rtp-gap': `${itemGap}px`,
     '--rtp-bar-height': barHeight != null ? `${barHeight}px` : '100%',
     '--rtp-max-width': maxWidth != null ? `${maxWidth}px` : '100%',

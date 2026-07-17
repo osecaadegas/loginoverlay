@@ -108,13 +108,15 @@ export const IMAGE_SHAPE_TOKENS = Object.freeze({
 
 function normalizeMaterialInput(input = {}) {
   const primary = normalizeHexColor(input.primaryColor, DEFAULT_SIMPLE_APPEARANCE_V2.primaryColor);
+  const useAccentColor = !!(input.useAccentColor || input.useSecondColor);
   return {
     ...DEFAULT_SIMPLE_APPEARANCE_V2,
     ...input,
     material: MATERIAL_IDS.includes(input.material) ? input.material : DEFAULT_SIMPLE_APPEARANCE_V2.material,
     primaryColor: primary,
-    accentColor: deriveAccentColor(primary, input.accentColor, input.useAccentColor),
-    useAccentColor: !!input.useAccentColor,
+    accentColor: deriveAccentColor(primary, input.accentColor, useAccentColor),
+    useAccentColor,
+    useSecondColor: useAccentColor,
     shape: Object.prototype.hasOwnProperty.call(SHAPE_RADII, input.shape) ? input.shape : DEFAULT_SIMPLE_APPEARANCE_V2.shape,
     density: Object.prototype.hasOwnProperty.call(DENSITY_TOKENS, input.density) ? input.density : DEFAULT_SIMPLE_APPEARANCE_V2.density,
     scale: clamp(input.scale ?? DEFAULT_SIMPLE_APPEARANCE_V2.scale, 0.75, 1.5),
@@ -175,6 +177,8 @@ function baseTokens(input) {
   return {
     schemaVersion: APPEARANCE_V2_SCHEMA_VERSION,
     material: settings.material,
+    useAccentColor: settings.useAccentColor,
+    useSecondColor: settings.useSecondColor,
     validation: [],
     colors: {
       primary: settings.primaryColor,

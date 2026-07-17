@@ -8,6 +8,7 @@ import {
   getWidgetAppearanceCapability,
   isWidgetAppearanceV2Enabled,
 } from './widgetAppearanceRegistry';
+import { mixHex, toRgba } from './colorUtils';
 
 function isObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value);
@@ -1040,9 +1041,15 @@ function buildRtpStatsPatch(tokens, styleId) {
   const isNeon = styleId === 'neon';
   const isMinimal = styleId === 'minimal';
   const isGlass = styleId === 'glass';
+  const hasSecondColor = tokens.useAccentColor || tokens.useSecondColor;
   const surface = tokens.colors.surface;
   const secondary = tokens.colors.secondarySurface;
   const elevated = tokens.colors.elevatedSurface;
+  const accent = tokens.colors.primary;
+  const secondAccent = tokens.colors.accent || accent;
+  const accentSurface = isGlass
+    ? toRgba(secondAccent, hasSecondColor ? 0.28 : 0.16)
+    : hasSecondColor ? mixHex(secondary, secondAccent, 0.28) : secondary;
   const shadow = tokens.materialTokens?.shadowIntensity > 0.02
     ? `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 48)} ${tokens.colors.shadow}`
     : undefined;
@@ -1051,13 +1058,13 @@ function buildRtpStatsPatch(tokens, styleId) {
     : undefined;
   const combinedShadow = [shadow, glow].filter(Boolean).join(', ') || undefined;
   const barBgFrom = isNeon ? '#050510' : surface;
-  const barBgVia = isMinimal ? surface : (isGlass ? elevated : secondary);
+  const barBgVia = isMinimal ? surface : accentSurface;
   const barBgTo = isNeon ? '#050510' : surface;
-  const accent = tokens.colors.primary;
   const warning = tokens.colors.warning;
   const barHeight = tokens.layout?.barHeight || Math.max(42, Math.min(92, Math.round(48 * tokens.spacing.scale)));
   const maxWidth = tokens.layout?.maxWidth || 960;
   const providerLogoHeight = Math.round(34 * (tokens.image?.sizeMultiplier || 1));
+  const providerLogoRadius = tokens.image?.radius ?? 0;
 
   return {
     ...commonVisualPatch(tokens),
@@ -1074,9 +1081,9 @@ function buildRtpStatsPatch(tokens, styleId) {
     labelColor: tokens.colors.mutedText,
     rtpIconColor: accent,
     potentialIconColor: warning,
-    volatilityIconColor: tokens.colors.accent,
+    volatilityIconColor: secondAccent,
     bestWinIconColor: tokens.colors.positive,
-    dividerColor: tokens.colors.border,
+    dividerColor: hasSecondColor ? secondAccent : tokens.colors.border,
     spinnerColor: accent,
     fontFamily: tokens.typography.bodyFont,
     fontSize: tokens.typography.bodySize,
@@ -1106,11 +1113,13 @@ function buildRtpStatsPatch(tokens, styleId) {
       },
       provider: {
         textColor: tokens.colors.text,
-        accentColor: tokens.colors.accent,
+        accentColor: secondAccent,
         fontFamily: tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
         imageSize: providerLogoHeight,
+        radius: providerLogoRadius,
+        imageFit: tokens.image?.fit || 'contain',
       },
       slotTitle: {
         textColor: tokens.colors.text,
@@ -1134,7 +1143,7 @@ function buildRtpStatsPatch(tokens, styleId) {
       },
       volatility: {
         textColor: tokens.colors.text,
-        accentColor: tokens.colors.accent,
+        accentColor: secondAccent,
         fontFamily: tokens.typography.valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,
@@ -1168,9 +1177,9 @@ function buildRtpStatsPatch(tokens, styleId) {
         fontWeight: tokens.typography.labelWeight,
       },
       divider: {
-        background: tokens.colors.border,
-        borderColor: tokens.colors.border,
-        accentColor: tokens.colors.border,
+        background: hasSecondColor ? secondAccent : tokens.colors.border,
+        borderColor: hasSecondColor ? secondAccent : tokens.colors.border,
+        accentColor: hasSecondColor ? secondAccent : tokens.colors.border,
       },
       spinner: {
         textColor: accent,

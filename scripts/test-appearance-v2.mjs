@@ -79,6 +79,8 @@ try {
   assert.ok(!rtpContainerControls.includes('carouselSpeed'), 'RTP Stats container hides carousel controls');
   const rtpProviderControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'provider');
   assert.ok(rtpProviderControls.includes('imageSize'), 'RTP provider exposes logo size controls');
+  assert.ok(rtpProviderControls.includes('imageShape'), 'RTP provider exposes logo shape controls');
+  assert.ok(rtpProviderControls.includes('imageFit'), 'RTP provider exposes logo fit controls');
   const rtpValueControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'rtpValue');
   assert.ok(rtpValueControls.includes('fontFamily'), 'RTP value exposes typography controls');
   assert.ok(rtpValueControls.includes('primaryColor'), 'RTP value exposes color controls');
@@ -783,10 +785,13 @@ try {
   assert.ok(rtpConfig.barHeight >= 42, 'RTP Stats receives generated bar height');
   assert.ok(rtpConfig.maxWidth >= 280, 'RTP Stats receives generated max width');
   assert.ok(rtpConfig.subElements.provider.imageSize > 0, 'RTP Stats provider receives generated logo size');
+  assert.ok(rtpConfig.subElements.provider.imageFit, 'RTP Stats provider receives generated logo fit');
   assert.ok(rtpConfig.subElements.rtpValue.accentColor, 'RTP Stats RTP value receives generated accent');
   assert.ok(rtpConfig.subElements.personalBest.accentColor, 'RTP Stats personal best receives generated accent');
   assert.ok(rtpConfig.subElements.statCard.states.highlight.accentColor, 'RTP Stats keeps highlighted stat state explicit');
   assert.ok(!rtpConfig.__appearanceV2.unsupportedProperties.includes('layout.providerLogoDimensions'), 'RTP Stats provider logo dimensions are now supported');
+  assert.ok(!rtpConfig.__appearanceV2.unsupportedProperties.includes('image.imageSize'), 'RTP Stats provider logo size is not reported as unsupported');
+  assert.ok(!rtpConfig.__appearanceV2.unsupportedProperties.includes('image.imageFit'), 'RTP Stats provider logo fit is not reported as unsupported');
   const rtpWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/RtpStatsWidget.jsx', import.meta.url), 'utf8');
   const overlayCssSource = readFileSync(new URL('../src/components/OverlayCenter/OverlayCenter.css', import.meta.url), 'utf8');
   assert.ok(rtpWidgetSource.includes('--rtp-value-rtp-family'), 'RTP Stats renderer maps RTP value font family to CSS');
@@ -794,15 +799,21 @@ try {
   assert.ok(rtpWidgetSource.includes('--rtp-value-volatility-family'), 'RTP Stats renderer maps volatility font family to CSS');
   assert.ok(rtpWidgetSource.includes('--rtp-value-bestwin-family'), 'RTP Stats renderer maps personal-best font family to CSS');
   assert.ok(rtpWidgetSource.includes('--rtp-provider-logo-width'), 'RTP Stats renderer maps provider logo width to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-provider-logo-radius'), 'RTP Stats renderer maps provider logo radius to CSS');
+  assert.ok(rtpWidgetSource.includes('--rtp-provider-logo-fit'), 'RTP Stats renderer maps provider logo fit to CSS');
+  assert.ok(rtpWidgetSource.includes('providerLogoUrl'), 'RTP Stats renderer supports configured provider logo images');
   assert.ok(rtpWidgetSource.includes('--rtp-bar-height'), 'RTP Stats renderer maps bar height to CSS');
   assert.ok(rtpWidgetSource.includes('--rtp-max-width'), 'RTP Stats renderer maps max width to CSS');
   assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-rtp-family'), 'RTP Stats CSS consumes per-value RTP font family');
   assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-bestwin-family'), 'RTP Stats CSS consumes per-value personal-best font family');
   assert.ok(overlayCssSource.includes('var(--rtp-label-rtp-family'), 'RTP Stats CSS lets value font cascade into RTP label text');
+  assert.ok(overlayCssSource.includes('object-fit: var(--rtp-provider-logo-fit'), 'RTP Stats CSS consumes provider logo fit');
+  assert.ok(overlayCssSource.includes('border-radius: var(--rtp-provider-logo-radius'), 'RTP Stats CSS consumes provider logo radius');
   assert.ok(overlayCssSource.includes('max-width: var(--rtp-max-width'), 'RTP Stats CSS consumes max width');
   const rtpGlassConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, appearance, {}, { styleId: 'glass' });
   assert.equal(rtpGlassConfig.displayStyle, 'glass', 'RTP Stats can switch to glass style appearance');
   assert.equal(rtpGlassConfig.__appearanceV2.material, 'glass', 'RTP Stats loads glass style-specific appearance');
+  assert.equal(rtpGlassConfig.subElements.provider.label, undefined, 'RTP Stats provider style does not inject non-rendered labels');
 
   const navbarConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, appearance, {});
   assert.equal(navbarConfig.__appearanceV2.material, 'glass', 'Navbar receives V2 material');
@@ -1030,6 +1041,8 @@ try {
               barHeight: 72,
               maxWidth: 840,
               imageSize: 'large',
+              imageShape: 'circle',
+              imageFit: 'cover',
             }),
           },
         },
@@ -1039,6 +1052,35 @@ try {
   assert.equal(rtpDimensionConfig.barHeight, 72, 'RTP Stats simple bar height reaches widget config');
   assert.equal(rtpDimensionConfig.maxWidth, 840, 'RTP Stats simple max width reaches widget config');
   assert.ok(rtpDimensionConfig.subElements.provider.imageSize >= 34, 'RTP Stats simple image size reaches provider logo');
+  assert.equal(rtpDimensionConfig.subElements.provider.radius, 999, 'RTP Stats simple image shape reaches provider logo');
+  assert.equal(rtpDimensionConfig.subElements.provider.imageFit, 'cover', 'RTP Stats simple image fit reaches provider logo');
+
+  const rtpClientGlassConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, {
+    widgets: {
+      rtp1: {
+        styles: {
+          glass: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('rtp_stats', {
+              material: 'metallic',
+              primaryColor: '#7c3aed',
+              accentColor: '#ef4444',
+              useSecondColor: true,
+              shape: 'pill',
+              density: 'standard',
+              fontFamily: 'Rajdhani',
+              textSize: 'large',
+            }),
+          },
+        },
+      },
+    },
+  }, {}, { styleId: 'glass' });
+  assert.equal(rtpClientGlassConfig.displayStyle, 'glass', 'RTP Stats keeps glass renderer style when material/texture changes');
+  assert.equal(rtpClientGlassConfig.__appearanceV2.simple.useAccentColor, true, 'RTP Stats maps Use second colour into V2 accent tokens');
+  assert.equal(rtpClientGlassConfig.dividerColor, '#ef4444', 'RTP Stats second colour reaches visible dividers');
+  assert.equal(rtpClientGlassConfig.volatilityIconColor, '#ef4444', 'RTP Stats second colour reaches visible stat icons');
+  assert.equal(rtpClientGlassConfig.borderRadius, 80, 'RTP Stats rounded-corner control reaches bar radius');
+  assert.equal(rtpClientGlassConfig.subElements.rtpValue.fontFamily, 'Rajdhani', 'RTP Stats generated value fonts use selected font');
 
   const navbarDimensionConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, {
     widgets: {
