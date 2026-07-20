@@ -110,6 +110,19 @@ function FormSelect({ label, help, value, onChange, children }) {
   );
 }
 
+function BrandOptions({ brands, publicBrands }) {
+  return (
+    <>
+      {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+      {!!publicBrands.length && (
+        <optgroup label="From /offers">
+          {publicBrands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+        </optgroup>
+      )}
+    </>
+  );
+}
+
 function StatBox({ label, value }) {
   return (
     <article className="admin-affiliates-stat">
@@ -199,6 +212,9 @@ export default function AdminAffiliatesPage() {
   }, [data, query]);
 
   const brands = data?.brands || [];
+  const publicOfferBrands = data?.publicOfferBrands || [];
+  const brandSlugs = new Set(brands.map((brand) => brand.slug));
+  const importablePublicBrands = publicOfferBrands.filter((brand) => !brandSlugs.has(brand.slug));
   const offers = data?.offers || [];
   const links = data?.links || [];
 
@@ -208,6 +224,18 @@ export default function AdminAffiliatesPage() {
   const updateLink = updateForm(setLinkForm);
   const updateStats = updateForm(setStatsForm);
   const updateCsv = updateForm(setCsvForm);
+
+  const applyPublicBrand = (publicBrandId) => {
+    const publicBrand = publicOfferBrands.find((brand) => brand.id === publicBrandId);
+    if (!publicBrand) return;
+    setBrandForm((current) => ({
+      ...current,
+      name: publicBrand.name,
+      slug: publicBrand.slug,
+      logo_url: publicBrand.logoUrl || '',
+      website_url: publicBrand.websiteUrl || '',
+    }));
+  };
 
   const submitBrand = () => run(async () => {
     await saveAffiliateBrand({ values: brandForm });
@@ -340,6 +368,15 @@ export default function AdminAffiliatesPage() {
             <span>Used by: /go brand slug</span>
           </div>
           <div className="admin-affiliates-form">
+            <FormSelect
+              label="Fetch brand from /offers"
+              help="Loads the public brand name/logo used on https://streamerscenter.com/offers into this brand form."
+              value=""
+              onChange={applyPublicBrand}
+            >
+              <option value="">Choose public offer brand</option>
+              {publicOfferBrands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+            </FormSelect>
             <FormInput label="Name" help="Shown as the brand label on admin tables and affiliate link rows." value={brandForm.name} onChange={(value) => updateBrand('name', value)} />
             <FormInput label="Slug" help="Used in public URLs: /go/brand-slug/short-code. Leave empty to auto-create from the name." value={brandForm.slug} onChange={(value) => updateBrand('slug', value)} placeholder="auto from name" />
             <FormInput label="Logo URL" help="Logo shown beside the brand in tracking link lists." value={brandForm.logo_url} onChange={(value) => updateBrand('logo_url', value)} />
@@ -365,9 +402,9 @@ export default function AdminAffiliatesPage() {
             <span>Reported: CPA/rev share</span>
           </div>
           <div className="admin-affiliates-form">
-            <FormSelect label="Brand" help="Which partner owns this offer." value={offerForm.brand_id} onChange={(value) => updateOffer('brand_id', value)}>
+            <FormSelect label="Brand" help="Which partner owns this offer. Public /offers brands are imported automatically when saved." value={offerForm.brand_id} onChange={(value) => updateOffer('brand_id', value)}>
               <option value="">Choose brand</option>
-              {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+              <BrandOptions brands={brands} publicBrands={importablePublicBrands} />
             </FormSelect>
             <FormInput label="Name" help="Short internal/display name shown beside affiliate links." value={offerForm.name} onChange={(value) => updateOffer('name', value)} />
             <FormInput label="Slug" help="Unique offer identifier inside this brand." value={offerForm.slug} onChange={(value) => updateOffer('slug', value)} />
@@ -399,9 +436,9 @@ export default function AdminAffiliatesPage() {
               <option value="">Choose user</option>
               {users.map((user) => <option key={user.id} value={user.id}>{user.displayName || user.email}</option>)}
             </FormSelect>
-            <FormSelect label="Brand" help="The brand slug becomes the first part of the public tracking URL." value={linkForm.brand_id} onChange={(value) => updateLink('brand_id', value)}>
+            <FormSelect label="Brand" help="The brand slug becomes the first part of the public tracking URL. Public /offers brands are imported automatically when saved." value={linkForm.brand_id} onChange={(value) => updateLink('brand_id', value)}>
               <option value="">Choose brand</option>
-              {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+              <BrandOptions brands={brands} publicBrands={importablePublicBrands} />
             </FormSelect>
             <FormSelect label="Offer" help="Optional commercial offer attached to this link. Shown beside the link in dashboards." value={linkForm.offer_id} onChange={(value) => updateLink('offer_id', value)}>
               <option value="">Default offer</option>
@@ -442,9 +479,9 @@ export default function AdminAffiliatesPage() {
               <option value="">Choose user</option>
               {users.map((user) => <option key={user.id} value={user.id}>{user.displayName || user.email}</option>)}
             </FormSelect>
-            <FormSelect label="Brand" help="Partner/casino that supplied this report." value={statsForm.brand_id} onChange={(value) => updateStats('brand_id', value)}>
+            <FormSelect label="Brand" help="Partner/casino that supplied this report. Public /offers brands are imported automatically when saved." value={statsForm.brand_id} onChange={(value) => updateStats('brand_id', value)}>
               <option value="">Choose brand</option>
-              {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+              <BrandOptions brands={brands} publicBrands={importablePublicBrands} />
             </FormSelect>
             <FormSelect label="Tracking link" help="Optional. Choose a link when the partner report can be tied to a specific tracking URL." value={statsForm.tracking_link_id} onChange={(value) => updateStats('tracking_link_id', value)}>
               <option value="">No link</option>
@@ -476,9 +513,9 @@ export default function AdminAffiliatesPage() {
             <span>Imports partner stats</span>
           </div>
           <div className="admin-affiliates-form">
-            <FormSelect label="Brand" help="The partner/casino this CSV came from." value={csvForm.brandId} onChange={(value) => updateCsv('brandId', value)}>
+            <FormSelect label="Brand" help="The partner/casino this CSV came from. Public /offers brands are imported automatically when the CSV is committed." value={csvForm.brandId} onChange={(value) => updateCsv('brandId', value)}>
               <option value="">Choose brand</option>
-              {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+              <BrandOptions brands={brands} publicBrands={importablePublicBrands} />
             </FormSelect>
             <FormInput label="Filename" help="Reference name stored with the import audit." value={csvForm.filename} onChange={(value) => updateCsv('filename', value)} />
             <Field label="CSV content" help="Paste the full CSV. Use Preview to inspect parsed rows before Import.">

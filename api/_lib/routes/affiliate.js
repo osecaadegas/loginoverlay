@@ -88,6 +88,96 @@ function mapBrand(row = {}) {
   };
 }
 
+function getPublicOfferBrandLogo(row = {}) {
+  return row.partner_logo_url || row.image_url || row.list_image_url || row.cover_image_url || '';
+}
+
+function getPublicOfferBrandWebsite(row = {}) {
+  return row.application_url || row.bonus_link || row.terms_url || '';
+}
+
+function mapPublicOfferBrands(rows = []) {
+  const bySlug = new Map();
+  for (const row of rows || []) {
+    const name = String(row.casino_name || '').trim();
+    const slug = normalizeSlug(name || row.slug);
+    if (!name || !slug || bySlug.has(slug)) continue;
+    bySlug.set(slug, {
+      id: `public:${slug}`,
+      source: 'public_offers',
+      name,
+      slug,
+      logoUrl: getPublicOfferBrandLogo(row),
+      websiteUrl: getPublicOfferBrandWebsite(row),
+      offerId: row.id,
+      offerSlug: row.slug || '',
+    });
+  }
+  return Array.from(bySlug.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function fetchPublicOfferBrands(supabase) {
+  const { data, error } = await supabase
+    .from('casino_offers')
+    .select('id,casino_name,slug,partner_logo_url,image_url,list_image_url,cover_image_url,bonus_link,application_url,terms_url')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
+  if (error) throw error;
+  return mapPublicOfferBrands(data || []);
+}
+
+async function resolveBrandId(supabase, user, brandId) {
+  const raw = String(brandId || '');
+  if (!raw.startsWith('public:')) return brandId;
+  const publicSlug = normalizeSlug(raw.slice('public:'.length));
+  if (!publicSlug) throw Object.assign(new Error('Public offer brand is invalid.'), { statusCode: 400 });
+  const publicBrand = (await fetchPublicOfferBrands(supabase)).find((brand) => brand.slug === publicSlug);
+  if (!publicBrand) throw Object.assign(new Error('Public offer brand was not found.'), { statusCode: 404 });
+
+  const { data: existing, error: existingError } = await supabase
+    .from('affiliate_brands')
+    .select('*')
+    .eq('slug', publicBrand.slug)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) return existing.id;
+
+  const values = {
+    name: publicBrand.name,
+    slug: publicBrand.slug,
+    logo_url: publicBrand.logoUrl || null,
+    website_url: publicBrand.websiteUrl || null,
+    default_currency: 'EUR',
+    status: 'active',
+    reporting_mode: 'manual',
+    parameter_mapping: {
+      source_parameter: 'utm_source',
+      campaign_parameter: 'utm_campaign',
+      click_id_parameter: 'click_id',
+    },
+    tracking_notes: 'Imported from public /offers partnerships.',
+  };
+  const { data: created, error: createError } = await supabase
+    .from('affiliate_brands')
+    .insert(values)
+    .select('*')
+    .single();
+  if (createError) {
+    if (createError.code === '23505') {
+      const { data: raced, error: racedError } = await supabase
+        .from('affiliate_brands')
+        .select('id')
+        .eq('slug', publicBrand.slug)
+        .maybeSingle();
+      if (racedError) throw racedError;
+      if (raced) return raced.id;
+    }
+    throw createError;
+  }
+  await writeAudit(supabase, user.id, 'brand_created_from_public_offer', 'affiliate_brand', created.id, null, created, `Imported ${publicBrand.name} from /offers`);
+  return created.id;
+}
+
 function mapOffer(row = {}) {
   return {
     id: row.id,
@@ -391,11 +481,12 @@ function aggregateRows(rows, field) {
 }
 
 async function handleAdminOverview(req, res, supabase) {
-  const [usersResult, brandsResult, offersResult, links] = await Promise.all([
+  const [usersResult, brandsResult, offersResult, links, publicOfferBrands] = await Promise.all([
     supabase.rpc('get_all_auth_users'),
     supabase.from('affiliate_brands').select('*').order('name'),
     supabase.from('affiliate_offers').select('*, affiliate_brands(name,slug)').order('created_at', { ascending: false }),
     fetchLinksWithTotals(supabase, req),
+    fetchPublicOfferBrands(supabase),
   ]);
   if (usersResult.error) throw usersResult.error;
   if (brandsResult.error) throw brandsResult.error;
@@ -448,6 +539,7 @@ async function handleAdminOverview(req, res, supabase) {
   return res.status(200).json({
     users,
     brands: (brandsResult.data || []).map(mapBrand),
+    publicOfferBrands,
     offers: (offersResult.data || []).map(mapOffer),
     links,
     notes: notes || [],
@@ -491,6 +583,7 @@ async function handleSaveBrand(req, res, supabase, user) {
 async function handleSaveOffer(req, res, supabase, user) {
   const body = parseBody(req);
   const values = pick(body.values || body, ADMIN_ENTITY_FIELDS.offer);
+  values.brand_id = await resolveBrandId(supabase, user, values.brand_id);
   values.slug = normalizeSlug(values.slug || values.name);
   values.allowed_countries = parseJsonField(values.allowed_countries, []);
   values.restricted_countries = parseJsonField(values.restricted_countries, []);
@@ -527,6 +620,7 @@ async function handleSaveLink(req, res, supabase, user) {
   const body = parseBody(req);
   const raw = body.values || body;
   const values = pick(raw, ADMIN_ENTITY_FIELDS.link);
+  values.brand_id = await resolveBrandId(supabase, user, values.brand_id);
   const validation = validateDestinationUrl(values.destination_url);
   if (!validation.ok) return res.status(400).json({ error: validation.error });
   values.destination_url = validation.url;
@@ -615,10 +709,11 @@ async function handleRoleAction(req, res, supabase, user) {
 async function handleStats(req, res, supabase, user) {
   const body = parseBody(req);
   const values = body.values || body;
+  const brandId = await resolveBrandId(supabase, user, values.brand_id);
   const payload = {
     affiliate_user_id: values.affiliate_user_id,
     tracking_link_id: values.tracking_link_id || null,
-    brand_id: values.brand_id,
+    brand_id: brandId,
     offer_id: values.offer_id || null,
     partner_clicks: Number(values.partner_clicks || 0),
     registrations: Number(values.registrations || 0),
@@ -680,13 +775,14 @@ function normalizeCsvStat(row, mapping) {
 async function handleCsvImport(req, res, supabase, user) {
   const body = parseBody(req);
   const csv = String(body.csv || '');
-  const brandId = body.brandId;
-  if (!csv || !brandId) return res.status(400).json({ error: 'CSV content and brand are required.' });
+  const requestedBrandId = body.brandId;
+  if (!csv || !requestedBrandId) return res.status(400).json({ error: 'CSV content and brand are required.' });
   const fileHash = createHash('sha256').update(csv).digest('hex');
   const rows = rowsToObjects(parseCsv(csv));
   const mapping = body.mapping || {};
   const normalizedRows = rows.map((row) => ({ ...row, normalized: normalizeCsvStat(row, mapping) }));
   if (body.previewOnly) return res.status(200).json({ rowsTotal: rows.length, previewRows: normalizedRows.slice(0, 20), fileHash });
+  const brandId = await resolveBrandId(supabase, user, requestedBrandId);
 
   const { data: existing } = await supabase.from('affiliate_imports').select('id,status').eq('brand_id', brandId).eq('file_hash', fileHash).maybeSingle();
   if (existing && !body.confirmDuplicate) return res.status(409).json({ error: 'This CSV appears to have already been imported.', code: 'duplicate_import', importId: existing.id });
