@@ -1498,6 +1498,7 @@
 .pill-dot.admin { background: #ef4444; }
 .pill-dot.premium { background: #22c55e; }
 .pill-dot.modder { background: #f59e0b; }
+.pill-dot.affiliate { background: #67e8f9; }
 
 /* Data Table */
 .data-table-wrapper {
@@ -1660,6 +1661,11 @@
 .role-tag.role-moderator {
   background: rgba(59, 130, 246, 0.15);
   color: #60a5fa;
+}
+
+.role-tag.role-affiliate {
+  background: rgba(103, 232, 249, 0.15);
+  color: #67e8f9;
 }
 
 .role-tag.role-none {
@@ -2971,6 +2977,13 @@
   color: #a5f3fc;
   border-color: rgba(98, 230, 247, 0.32);
   background: rgba(8, 145, 178, 0.18);
+}
+
+.admin-panel.admin-panel-modern .role-affiliate,
+.admin-panel.admin-panel-modern .role-chip.role-affiliate {
+  color: #bae6fd;
+  border-color: rgba(103, 232, 249, 0.34);
+  background: rgba(8, 145, 178, 0.2);
 }
 
 .admin-panel.admin-panel-modern .empty-state,

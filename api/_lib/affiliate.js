@@ -204,7 +204,9 @@ export async function requireAdminUser(supabase, user) {
 }
 
 export async function requireAffiliateUser(supabase, user) {
-  if (!await userHasRole(supabase, user.id, 'affiliate')) {
+  const hasAffiliateAccess = await userHasRole(supabase, user.id, ['affiliate', 'admin', 'superadmin']);
+  const hasAdminAccess = await userHasRole(supabase, user.id, ['admin', 'superadmin']);
+  if (!hasAffiliateAccess) {
     const err = new Error('Affiliate access is not enabled for this account.');
     err.statusCode = 403;
     throw err;
@@ -215,7 +217,15 @@ export async function requireAffiliateUser(supabase, user) {
     .eq('user_id', user.id)
     .maybeSingle();
   if (error) throw error;
-  if (!profile || profile.status !== 'active') {
+  if (hasAdminAccess && !profile) {
+    return {
+      user_id: user.id,
+      status: 'active',
+      display_name: user.user_metadata?.name || user.email || 'Admin',
+      payment_currency: 'EUR',
+    };
+  }
+  if (!profile || (profile.status !== 'active' && !hasAdminAccess)) {
     const err = new Error(profile?.status === 'suspended' ? 'Affiliate access is suspended.' : 'Affiliate access is not active.');
     err.statusCode = 403;
     err.code = profile?.status || 'inactive';

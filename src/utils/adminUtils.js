@@ -109,8 +109,8 @@ export const getUserRole = async (userId) => {
     return { data: { role: 'user', is_active: true, moderator_permissions: {} }, error: null };
   }
   
-  // Priority: admin > slot_modder > moderator > premium > user
-  const rolePriority = { admin: 5, slot_modder: 4, moderator: 3, premium: 2, user: 1 };
+  // Priority: admin > slot_modder > moderator > premium > affiliate > user
+  const rolePriority = { admin: 6, slot_modder: 5, moderator: 4, premium: 3, affiliate: 2, user: 1 };
   const highestRole = data.reduce((highest, current) => {
     const currentPriority = rolePriority[current.role] || 0;
     const highestPriority = rolePriority[highest.role] || 0;
@@ -291,11 +291,21 @@ export const addUserRole = async (userId, role, accessExpiresAt = null, moderato
 
     const { data, error } = await supabase
       .from('user_roles')
-      .insert([insertData])
+      .upsert(insertData, { onConflict: 'user_id,role' })
       .select()
       .single();
 
     if (error) throw error;
+
+    if (role === 'affiliate') {
+      await supabase
+        .from('affiliate_profiles')
+        .upsert({
+          user_id: userId,
+          status: 'active',
+          affiliate_access_granted_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+    }
 
     return { data, error: null };
   } catch (error) {
@@ -313,6 +323,13 @@ export const removeUserRole = async (userId, role) => {
       .eq('role', role);
 
     if (error) throw error;
+
+    if (role === 'affiliate') {
+      await supabase
+        .from('affiliate_profiles')
+        .update({ status: 'inactive', updated_at: new Date().toISOString() })
+        .eq('user_id', userId);
+    }
 
     return { success: true, error: null };
   } catch (error) {

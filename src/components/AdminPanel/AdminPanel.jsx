@@ -1374,7 +1374,7 @@ export default function AdminPanel() {
       {/* User Management Tab */}
       {activeTab === 'users' && (
         <>
-          <StatsGrid columns={6}>
+          <StatsGrid columns={7}>
             <StatsCard
               icon="👥"
               value={users.length}
@@ -1407,6 +1407,12 @@ export default function AdminPanel() {
             />
             <StatsCard
               icon="✅"
+              value={users.filter(u => u.roles?.some(r => r.role === 'affiliate')).length}
+              label="Affiliates"
+              color="primary"
+            />
+            <StatsCard
+              icon="AF"
               value={users.filter(u => u.is_active).length}
               label="Active Users"
               color="success"
@@ -1469,6 +1475,13 @@ export default function AdminPanel() {
                   >
                     <span className="pill-dot modder"></span>
                     Modders
+                  </button>
+                  <button
+                    className={`filter-pill ${roleFilter === 'affiliate' ? 'active' : ''}`}
+                    onClick={() => setRoleFilter(roleFilter === 'affiliate' ? null : 'affiliate')}
+                  >
+                    <span className="pill-dot affiliate"></span>
+                    Affiliates
                   </button>
                 </div>
               </div>
@@ -1556,6 +1569,7 @@ export default function AdminPanel() {
                                     {roleObj.role === 'premium' && '⭐'}
                                     {roleObj.role === 'slot_modder' && '🎰'}
                                     {roleObj.role === 'moderator' && '🔧'}
+                                    {roleObj.role === 'affiliate' && 'AF'}
                                     {roleObj.role.replace('_', ' ')}
                                   </span>
                                 ))
@@ -1741,6 +1755,7 @@ export default function AdminPanel() {
                           {roleObj.role === 'slot_modder' && '🎰'}
                           {roleObj.role === 'moderator' && '🔧'}
                         </span>
+                        {roleObj.role === 'affiliate' && 'AF'}
                         <span className="role-chip-name">{roleObj.role.replace('_', ' ')}</span>
                         {roleObj.access_expires_at && (
                           <span className="role-chip-expiry">
@@ -1779,6 +1794,7 @@ export default function AdminPanel() {
                       <option value="slot_modder">🎰 Slot Modder</option>
                       <option value="moderator">🔧 Moderator</option>
                       <option value="admin">🛡️ Admin</option>
+                      <option value="affiliate">Affiliate</option>
                     </select>
 
                     {editingUser.newRole === 'moderator' && (
