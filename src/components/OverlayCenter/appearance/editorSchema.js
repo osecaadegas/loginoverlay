@@ -744,6 +744,10 @@ export const CONTROL_DEFINITIONS = {
 
   background: { id: 'background', label: 'Background', type: 'color', simple: true, group: 'Background' },
   backgroundColor: { id: 'backgroundColor', label: 'Background color', type: 'color', simple: true, group: 'Background' },
+  accentColor: { id: 'accentColor', label: 'Accent color', type: 'color', simple: true, group: 'Color' },
+  mutedColor: { id: 'mutedColor', label: 'Muted color', type: 'color', group: 'Color' },
+  fillColor: { id: 'fillColor', label: 'Fill color', type: 'color', simple: true, group: 'Color' },
+  negativeColor: { id: 'negativeColor', label: 'Negative color', type: 'color', group: 'Color' },
   backgroundOpacity: { id: 'backgroundOpacity', label: 'Background opacity', type: 'range', min: 0, max: 1, step: 0.05, group: 'Background' },
   backgroundType: { id: 'backgroundType', label: 'Background type', type: 'segmented', options: ['transparent', 'solid', 'gradient'], simple: true, group: 'Background' },
   gradientFrom: { id: 'gradientFrom', label: 'Gradient start', type: 'color', group: 'Background' },
@@ -972,9 +976,8 @@ function declaredProperties(element = {}) {
 
 export function elementSupportsControl(element = {}, controlId) {
   const explicitControls = Array.isArray(element.controls) && element.controls.length ? element.controls : null;
+  if (explicitControls) return explicitControls.includes(controlId);
   const kind = inferElementKind(element);
-  if (explicitControls && kind === 'image' && [...IMAGE_CONTROLS, ...SIZE_CONTROLS].includes(controlId)) return explicitControls.includes(controlId);
-  if (explicitControls && kind === 'progress' && [...PROGRESS_CONTROLS, ...SIZE_CONTROLS].includes(controlId)) return explicitControls.includes(controlId);
   const props = declaredProperties(element);
   if (props.has(controlId)) return true;
   const definition = CONTROL_DEFINITIONS[controlId];

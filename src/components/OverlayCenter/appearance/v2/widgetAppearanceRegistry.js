@@ -1942,7 +1942,7 @@ function controlsForCapabilities(capabilities = []) {
     if (capability === 'border') ['borderColor', 'borderWidth', 'radius'].forEach(control => controls.add(control));
     if (capability === 'shadow') ['shadowBlur', 'shadowOpacity'].forEach(control => controls.add(control));
     if (capability === 'shape') controls.add('radius');
-    if (capability === 'typography') ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'].forEach(control => controls.add(control));
+    if (capability === 'typography') ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'textAlign', 'lineHeight', 'letterSpacing', 'textTransform'].forEach(control => controls.add(control));
     if (capability === 'spacing') ['padding', 'gap'].forEach(control => controls.add(control));
     if (capability === 'progress') ['background', 'fillColor', 'radius'].forEach(control => controls.add(control));
     if (capability === 'image') ['imageUrl', 'imageSize', 'imageFit', 'radius'].forEach(control => controls.add(control));

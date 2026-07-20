@@ -415,6 +415,13 @@ function resolveElementPath(root, elementId, property, stateId = 'default') {
   return `${root}.elements.${elementId}.${propertyPath}`;
 }
 
+function resolveV2ElementOverridePath(root, elementId, property, stateId = 'default') {
+  if (stateId && stateId !== 'default') {
+    return `${root}.appearanceV2.elementOverrides.${elementId}.states.${stateId}.${property}`;
+  }
+  return `${root}.appearanceV2.elementOverrides.${elementId}.${property}`;
+}
+
 function resolveLegacyElementPath(root, elementId, property, stateId = 'default') {
   if (stateId && stateId !== 'default') {
     return `${root}.subElements.${elementId}.states.${stateId}.${property}`;
@@ -689,7 +696,7 @@ export default function AppearanceCenter({
       return new Set(getWidgetStyleQuickControls(
         selectedWidgetType,
         selectedTarget.styleId,
-        mode === 'advanced' ? selectedElement?.id : null
+        selectedElement?.id || null
       ));
     }
     const controls = [];
@@ -713,7 +720,7 @@ export default function AppearanceCenter({
     if (selectedStyleCapabilities.animationSpeed) controls.push('animationSpeed');
     if (selectedStyleCapabilities.animationIntensity) controls.push('animationIntensity');
     return new Set(controls);
-  }, [mode, selectedElement?.id, selectedStyleCapabilities, selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]);
+  }, [selectedElement?.id, selectedStyleCapabilities, selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]);
   const hasQuickControl = useCallback((control) => selectedQuickControls.has(control), [selectedQuickControls]);
   const hasAnyQuickControl = useCallback((controls = []) => controls.some(control => selectedQuickControls.has(control)), [selectedQuickControls]);
   const simpleSections = useMemo(() => {
@@ -956,7 +963,6 @@ export default function AppearanceCenter({
       selectedWidgetUsesV2
       && selectedTargetRoot
       && selectedElement?.id
-      && mode === 'advanced'
       && canScopeQuickPatchToElement(selectedElement, patch)
     ) {
       const nextSettings = normalizeSimpleSettings({ ...currentSimpleSettings, ...(patch || {}) });
@@ -981,7 +987,6 @@ export default function AppearanceCenter({
     applySimpleSettings,
     commitDraft,
     currentSimpleSettings,
-    mode,
     rememberColor,
     selectedElement,
     selectedTargetRoot,
@@ -1193,15 +1198,18 @@ export default function AppearanceCenter({
   const updateElementControl = useCallback((control, value) => {
     if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked) return;
     const normalized = validateEditorValue(control, value);
-    const path = resolveElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
+    const path = selectedWidgetUsesV2
+      ? resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId)
+      : resolveElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
     commitDraft(prev => setByPath(prev, path, normalized), `${selectedElement.id}.${control.id}`);
-  }, [commitDraft, selectedElement?.id, selectedLayerLocked, selectedStateId, selectedTargetRoot]);
+  }, [commitDraft, selectedElement?.id, selectedLayerLocked, selectedStateId, selectedTargetRoot, selectedWidgetUsesV2]);
 
   const resetElementControl = useCallback((control) => {
     if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked) return;
+    const v2Path = resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
     const modernPath = resolveElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
     const legacyPath = resolveLegacyElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    commitDraft(prev => omitPath(omitPath(prev, modernPath), legacyPath), `Reset ${selectedElement.id}.${control.id}`);
+    commitDraft(prev => omitPath(omitPath(omitPath(prev, v2Path), modernPath), legacyPath), `Reset ${selectedElement.id}.${control.id}`);
   }, [commitDraft, selectedElement?.id, selectedLayerLocked, selectedStateId, selectedTargetRoot]);
 
   const updateWidgetControl = useCallback((item, value) => {
@@ -1429,11 +1437,13 @@ export default function AppearanceCenter({
 
   const renderElementControl = (control) => {
     if (!selectedTargetRoot || !selectedElement?.id) return null;
+    const v2Path = resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
     const path = resolveElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
     const legacyPath = resolveLegacyElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
+    const v2Value = getByPath(draft, v2Path);
     const value = getByPath(draft, path);
     const legacyValue = getByPath(draft, legacyPath);
-    const resolvedValue = value !== undefined ? value : legacyValue;
+    const resolvedValue = v2Value !== undefined ? v2Value : value !== undefined ? value : legacyValue;
     return (
       <PropertyControl
         key={control.id}
@@ -2442,17 +2452,19 @@ export default function AppearanceCenter({
                   )}
                 </CollapsibleSection>
 
-                <CollapsibleSection
-                  id="surfaceBackground"
-                  title="Surface and background"
-                  meta={`${selectedWidgetOverrides} custom values`}
-                  openSections={openAdvancedSections}
-                  onToggle={toggleAdvancedSection}
-                >
-                  <div className="ve-control-grid">
-                    {QUICK_WIDGET_CONTROLS.map(renderQuickControl)}
-                  </div>
-                </CollapsibleSection>
+                {!selectedWidgetUsesV2 && (
+                  <CollapsibleSection
+                    id="surfaceBackground"
+                    title="Surface and background"
+                    meta={`${selectedWidgetOverrides} custom values`}
+                    openSections={openAdvancedSections}
+                    onToggle={toggleAdvancedSection}
+                  >
+                    <div className="ve-control-grid">
+                      {QUICK_WIDGET_CONTROLS.map(renderQuickControl)}
+                    </div>
+                  </CollapsibleSection>
+                )}
               </>
             )}
 
@@ -2474,7 +2486,7 @@ export default function AppearanceCenter({
                     Editing the "{selectedStateId}" state for this element.
                   </div>
                 )}
-                {controlGroups.map(group => (
+                {controlGroups.length ? controlGroups.map(group => (
                   <CollapsibleSection
                     key={group.id}
                     id={`control-${group.id}`}
@@ -2487,7 +2499,9 @@ export default function AppearanceCenter({
                       {group.controls.map(renderElementControl)}
                     </div>
                   </CollapsibleSection>
-                ))}
+                )) : (
+                  <EmptyState title="No controls for this element">This widget style does not expose editable appearance options for the selected part.</EmptyState>
+                )}
               </>
             ) : (
               <EmptyState title="No element selected">Click a title, card, image or row in the preview to edit it directly.</EmptyState>
