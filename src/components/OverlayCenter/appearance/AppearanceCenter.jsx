@@ -560,6 +560,28 @@ function CollapsibleSection({ id, title, meta, openSections, onToggle, children,
   );
 }
 
+function SectionTabs({ sections = [], openSections = [], onToggle }) {
+  if (!sections.length) return null;
+  return (
+    <nav className="ve-section-tabs" aria-label="Settings sections">
+      {sections.map(section => {
+        const active = openSections.includes(section.id);
+        return (
+          <button
+            key={section.id}
+            type="button"
+            className={active ? 'is-active' : ''}
+            onClick={() => onToggle(section.id)}
+            aria-pressed={active}
+          >
+            {section.label}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 function EmptyState({ title, children }) {
   return (
     <div className="ve-empty-state">
@@ -760,6 +782,20 @@ export default function AppearanceCenter({
     sections.push('actions');
     return sections;
   }, [hasAnyQuickControl, selectedElements.length, selectedQuickControls]);
+  const simpleSectionTabs = useMemo(() => {
+    const labels = {
+      widgetStyle: 'Style',
+      editing: 'Part',
+      material: 'Surface',
+      colours: 'Colour',
+      textImages: 'Type',
+      shapeEffects: 'Shape',
+      motion: 'Motion',
+    };
+    return simpleSections
+      .filter(id => id !== 'actions')
+      .map(id => ({ id, label: labels[id] || id }));
+  }, [simpleSections]);
   const previewStateOptions = WIDGET_PREVIEW_STATES[selectedWidgetType] || [];
   const selectedPreviewState = previewStateByWidget[selectedWidget?.id] || previewStateOptions[0]?.id || '';
   const selectedLayerKey = layerKey(selectedWidget?.id, selectedElement?.id);
@@ -1579,6 +1615,17 @@ export default function AppearanceCenter({
   const visibleLayerRows = Object.values(groupedLayers);
   const selectedWidgetOverrides = selectedTargetRoot ? countObjectLeaves(getByPath(draft, selectedTargetRoot)) : 0;
   const editingWholeWidget = !selectedElement || ['container', 'root'].includes(selectedElement.id);
+  const advancedSectionTabs = [
+    ...(editingWholeWidget
+      ? [
+          { id: 'stylePreset', label: 'Style' },
+          ...(!selectedWidgetUsesV2 ? [{ id: 'surfaceBackground', label: 'Surface' }] : []),
+        ]
+      : []),
+    ...controlGroups.map(group => ({ id: `control-${group.id}`, label: mapControlGroupTitle(group.label) })),
+    ...(mode === 'advanced' && editingWholeWidget ? [{ id: 'spacingSizing', label: 'Size' }] : []),
+    { id: 'advanced', label: 'Checks' },
+  ];
   const selectedStyleLabel = quickStyleOptions.find(option => option.id === selectedTarget.styleId)?.label
     || registeredStyleOptions.find(option => option.id === selectedTarget.styleId)?.label
     || selectedTarget.styleId
@@ -1832,6 +1879,8 @@ export default function AppearanceCenter({
                 </dl>
               </details>
             )}
+
+            <SectionTabs sections={simpleSectionTabs} openSections={openSimpleSections} onToggle={toggleSimpleSection} />
 
             {simpleSections.includes('widgetStyle') && (
               <CollapsibleSection
@@ -2417,6 +2466,8 @@ export default function AppearanceCenter({
           )}
 
           <div className="ve-properties-scroll">
+            <SectionTabs sections={advancedSectionTabs} openSections={openAdvancedSections} onToggle={toggleAdvancedSection} />
+
             {editingWholeWidget && (
               <>
                 <CollapsibleSection
