@@ -4,14 +4,14 @@
  */
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { MetricCard, PreviewPanel, SectionHeader, StatusBadge } from './ui';
+import { FONT_OPTIONS } from './appearance/editorSchema';
+import { FontSelectInput } from './appearance/propertyControls';
 
 const PRESETS = {
   glass: { opacity: 0.85, blur_intensity: 14, shadow_strength: 0.4, glow_intensity: 0.3, bg_texture: 'none', border_radius: 14 },
   matte: { opacity: 1, blur_intensity: 0, shadow_strength: 0.6, glow_intensity: 0, bg_texture: 'none', border_radius: 8 },
   neon:  { opacity: 0.7, blur_intensity: 10, shadow_strength: 0.3, glow_intensity: 0.9, bg_texture: 'none', border_radius: 16 },
 };
-
-const FONTS = ['Inter', 'Poppins', 'Roboto', 'Montserrat', 'Oswald', 'Rajdhani', 'Orbitron', 'Play', 'Bebas Neue'];
 
 export default function ThemeEditor({ theme, onSave }) {
   const [draft, setDraft] = useState(theme || {});
@@ -120,9 +120,12 @@ export default function ThemeEditor({ theme, onSave }) {
       <section className="oc-theme-section">
         <h3 className="oc-theme-section-title">Typography</h3>
         <div className="oc-font-row">
-          <select value={draft.font_family || 'Inter'} onChange={e => update('font_family', e.target.value)} className="oc-select">
-            {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
+          <FontSelectInput
+            value={draft.font_family || "'Inter', 'Segoe UI', sans-serif"}
+            options={FONT_OPTIONS}
+            onChange={value => update('font_family', value)}
+            className="oc-config-font-select"
+          />
           <select value={draft.font_weight || 500} onChange={e => update('font_weight', +e.target.value)} className="oc-select">
             {[300, 400, 500, 600, 700, 800, 900].map(w => <option key={w} value={w}>{w}</option>)}
           </select>

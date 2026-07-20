@@ -2,16 +2,8 @@ import React, { useState } from 'react';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { IMAGE_SLIDESHOW_STYLE_KEYS } from './styleKeysRegistry';
 import TabBar from './shared/TabBar';
-
-const FONT_OPTIONS = [
-  "'Inter', sans-serif",
-  "'Roboto', sans-serif",
-  "'Poppins', sans-serif",
-  "'Montserrat', sans-serif",
-  "'Fira Code', monospace",
-  "'Arial', sans-serif",
-  "'Georgia', serif",
-];
+import { FONT_OPTIONS } from '../appearance/editorSchema';
+import { FontSelectInput } from '../appearance/propertyControls';
 
 const ANIM_OPTIONS = [
   { value: 'fade',  icon: '🌫️', label: 'Fade' },
@@ -272,9 +264,12 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
 
               <label className="nb-field">
                 <span>Font</span>
-                <select value={c.captionFont || "'Inter', sans-serif"} onChange={e => set('captionFont', e.target.value)}>
-                  {FONT_OPTIONS.map(f => <option key={f} value={f}>{f.split("'")[1] || f}</option>)}
-                </select>
+                <FontSelectInput
+                  value={c.captionFont || "'Inter', sans-serif"}
+                  options={FONT_OPTIONS}
+                  onChange={value => set('captionFont', value)}
+                  className="oc-config-font-select"
+                />
               </label>
             </>
           )}

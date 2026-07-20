@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Copy,
   FileSpreadsheet,
+  HelpCircle,
   Link2,
   Plus,
   RefreshCw,
@@ -71,26 +72,39 @@ function hasAffiliateRole(user) {
   return (user.roles || []).some((role) => role.role === 'affiliate' && role.is_active);
 }
 
-function Field({ label, children }) {
+function InfoHint({ text }) {
+  if (!text) return null;
+  return (
+    <span className="admin-affiliates-help" tabIndex={0}>
+      <HelpCircle size={14} aria-hidden="true" />
+      <span className="admin-affiliates-tooltip">{text}</span>
+    </span>
+  );
+}
+
+function Field({ label, help, children }) {
   return (
     <label className="admin-affiliates-field">
-      <span>{label}</span>
+      <span className="admin-affiliates-field__label">
+        {label}
+        <InfoHint text={help} />
+      </span>
       {children}
     </label>
   );
 }
 
-function FormInput({ label, value, onChange, ...props }) {
+function FormInput({ label, help, value, onChange, ...props }) {
   return (
-    <Field label={label}>
+    <Field label={label} help={help}>
       <input value={value || ''} onChange={(event) => onChange(event.target.value)} {...props} />
     </Field>
   );
 }
 
-function FormSelect({ label, value, onChange, children }) {
+function FormSelect({ label, help, value, onChange, children }) {
   return (
-    <Field label={label}>
+    <Field label={label} help={help}>
       <select value={value || ''} onChange={(event) => onChange(event.target.value)}>{children}</select>
     </Field>
   );
@@ -101,6 +115,18 @@ function StatBox({ label, value }) {
     <article className="admin-affiliates-stat">
       <span>{label}</span>
       <strong>{value}</strong>
+    </article>
+  );
+}
+
+function FlowStep({ number, title, detail }) {
+  return (
+    <article className="admin-affiliates-flow__step">
+      <strong>{number}</strong>
+      <div>
+        <span>{title}</span>
+        <small>{detail}</small>
+      </div>
     </article>
   );
 }
@@ -256,10 +282,21 @@ export default function AdminAffiliatesPage() {
         <StatBox label="FTDs" value={data?.totals?.ftds || 0} />
       </section>
 
+      <section className="admin-affiliates-flow" aria-label="Affiliate setup order">
+        <FlowStep number="1" title="Grant role" detail="Lets a user open /affiliate." />
+        <FlowStep number="2" title="Create brand" detail="Casino or partner shown on links." />
+        <FlowStep number="3" title="Create offer" detail="Commercial terms for that brand." />
+        <FlowStep number="4" title="Create tracking link" detail="Public /go link the affiliate shares." />
+        <FlowStep number="5" title="Add reports" detail="Partner stats shown beside tracked clicks." />
+      </section>
+
       <section className="admin-affiliates-layout">
         <div className="admin-affiliates-panel admin-affiliates-panel--wide">
           <div className="admin-affiliates-panel__head">
-            <h2>Users</h2>
+            <div>
+              <h2>Users</h2>
+              <p className="admin-affiliates-panel__intro">Grant or suspend affiliate access. Use in link only fills the affiliate selector below.</p>
+            </div>
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search users" />
           </div>
           <div className="admin-affiliates-users">
@@ -279,14 +316,14 @@ export default function AdminAffiliatesPage() {
                     <span>{user.totalFtds}<small>FTD</small></span>
                   </div>
                   <div className="admin-affiliates-actions">
-                    <button type="button" onClick={() => roleAction(user, affiliate ? 'remove' : 'grant')}>
+                    <button type="button" title="Adds or removes the affiliate role and profile access." onClick={() => roleAction(user, affiliate ? 'remove' : 'grant')}>
                       {affiliate ? <ShieldOff size={15} /> : <UserPlus size={15} />}
                       {affiliate ? 'Remove' : 'Grant'}
                     </button>
-                    <button type="button" onClick={() => roleAction(user, suspended ? 'reactivate' : 'suspend')}>
+                    <button type="button" title="Suspended users keep history, but cannot access the affiliate dashboard." onClick={() => roleAction(user, suspended ? 'reactivate' : 'suspend')}>
                       {suspended ? 'Reactivate' : 'Suspend'}
                     </button>
-                    <button type="button" onClick={() => setLinkForm((current) => ({ ...current, affiliate_user_id: user.id }))}>Use in link</button>
+                    <button type="button" title="Prefills this user in the Tracking links form." onClick={() => setLinkForm((current) => ({ ...current, affiliate_user_id: user.id }))}>Use in link</button>
                   </div>
                 </article>
               );
@@ -296,18 +333,24 @@ export default function AdminAffiliatesPage() {
 
         <div className="admin-affiliates-panel">
           <h2>Brand</h2>
+          <p className="admin-affiliates-panel__intro">The partner/casino identity. Brand name and logo appear on admin lists and affiliate link rows.</p>
+          <div className="admin-affiliates-output-tags">
+            <span>Displayed: brand name</span>
+            <span>Displayed: logo</span>
+            <span>Used by: /go brand slug</span>
+          </div>
           <div className="admin-affiliates-form">
-            <FormInput label="Name" value={brandForm.name} onChange={(value) => updateBrand('name', value)} />
-            <FormInput label="Slug" value={brandForm.slug} onChange={(value) => updateBrand('slug', value)} placeholder="auto from name" />
-            <FormInput label="Logo URL" value={brandForm.logo_url} onChange={(value) => updateBrand('logo_url', value)} />
-            <FormInput label="Website URL" value={brandForm.website_url} onChange={(value) => updateBrand('website_url', value)} />
-            <FormSelect label="Reporting" value={brandForm.reporting_mode} onChange={(value) => updateBrand('reporting_mode', value)}>
+            <FormInput label="Name" help="Shown as the brand label on admin tables and affiliate link rows." value={brandForm.name} onChange={(value) => updateBrand('name', value)} />
+            <FormInput label="Slug" help="Used in public URLs: /go/brand-slug/short-code. Leave empty to auto-create from the name." value={brandForm.slug} onChange={(value) => updateBrand('slug', value)} placeholder="auto from name" />
+            <FormInput label="Logo URL" help="Logo shown beside the brand in tracking link lists." value={brandForm.logo_url} onChange={(value) => updateBrand('logo_url', value)} />
+            <FormInput label="Website URL" help="Reference website for admins. The actual redirect URL is set per tracking link." value={brandForm.website_url} onChange={(value) => updateBrand('website_url', value)} />
+            <FormSelect label="Reporting" help="How this partner sends results: manual entry, CSV report, API sync, or postback." value={brandForm.reporting_mode} onChange={(value) => updateBrand('reporting_mode', value)}>
               <option value="manual">Manual</option>
               <option value="csv">CSV</option>
               <option value="api">API</option>
               <option value="postback">Postback</option>
             </FormSelect>
-            <Field label="Parameter mapping">
+            <Field label="Parameter mapping" help="JSON names for URL parameters added during redirect. Example: click_id_parameter sends the generated click id to the partner.">
               <textarea value={brandForm.parameter_mapping} onChange={(event) => updateBrand('parameter_mapping', event.target.value)} rows={3} />
             </Field>
             <button type="button" onClick={submitBrand} disabled={busy}><Plus size={16} /> Save brand</button>
@@ -316,23 +359,28 @@ export default function AdminAffiliatesPage() {
 
         <div className="admin-affiliates-panel">
           <h2>Offer</h2>
+          <p className="admin-affiliates-panel__intro">The deal terms attached to a brand. Affiliates see this name next to their tracking link.</p>
+          <div className="admin-affiliates-output-tags">
+            <span>Displayed: offer name</span>
+            <span>Reported: CPA/rev share</span>
+          </div>
           <div className="admin-affiliates-form">
-            <FormSelect label="Brand" value={offerForm.brand_id} onChange={(value) => updateOffer('brand_id', value)}>
+            <FormSelect label="Brand" help="Which partner owns this offer." value={offerForm.brand_id} onChange={(value) => updateOffer('brand_id', value)}>
               <option value="">Choose brand</option>
               {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
             </FormSelect>
-            <FormInput label="Name" value={offerForm.name} onChange={(value) => updateOffer('name', value)} />
-            <FormInput label="Slug" value={offerForm.slug} onChange={(value) => updateOffer('slug', value)} />
-            <FormInput label="Title" value={offerForm.title} onChange={(value) => updateOffer('title', value)} />
-            <FormSelect label="Type" value={offerForm.offer_type} onChange={(value) => updateOffer('offer_type', value)}>
+            <FormInput label="Name" help="Short internal/display name shown beside affiliate links." value={offerForm.name} onChange={(value) => updateOffer('name', value)} />
+            <FormInput label="Slug" help="Unique offer identifier inside this brand." value={offerForm.slug} onChange={(value) => updateOffer('slug', value)} />
+            <FormInput label="Title" help="Optional longer title for reporting and future public display." value={offerForm.title} onChange={(value) => updateOffer('title', value)} />
+            <FormSelect label="Type" help="Commercial model used when reading partner stats." value={offerForm.offer_type} onChange={(value) => updateOffer('offer_type', value)}>
               <option value="cpa">CPA</option>
               <option value="revenue_share">Rev share</option>
               <option value="hybrid">Hybrid</option>
               <option value="flat_fee">Flat fee</option>
             </FormSelect>
             <div className="admin-affiliates-form__split">
-              <FormInput label="CPA" value={offerForm.cpa_amount} onChange={(value) => updateOffer('cpa_amount', value)} />
-              <FormInput label="Rev share %" value={offerForm.revenue_share_percentage} onChange={(value) => updateOffer('revenue_share_percentage', value)} />
+              <FormInput label="CPA" help="Expected CPA amount, entered in normal currency units." value={offerForm.cpa_amount} onChange={(value) => updateOffer('cpa_amount', value)} />
+              <FormInput label="Rev share %" help="Expected revenue share percentage for this offer." value={offerForm.revenue_share_percentage} onChange={(value) => updateOffer('revenue_share_percentage', value)} />
             </div>
             <button type="button" onClick={submitOffer} disabled={busy}><Plus size={16} /> Save offer</button>
           </div>
@@ -340,23 +388,29 @@ export default function AdminAffiliatesPage() {
 
         <div className="admin-affiliates-panel admin-affiliates-panel--wide">
           <h2>Tracking links</h2>
+          <p className="admin-affiliates-panel__intro">This is where the public affiliate URL is created. The generated tracking URL is what the affiliate copies and shares.</p>
+          <div className="admin-affiliates-output-tags">
+            <span>Creates: /go/brand/code</span>
+            <span>Displayed: affiliate dashboard</span>
+            <span>Tracks: first-party clicks</span>
+          </div>
           <div className="admin-affiliates-form admin-affiliates-form--grid">
-            <FormSelect label="Affiliate user" value={linkForm.affiliate_user_id} onChange={(value) => updateLink('affiliate_user_id', value)}>
+            <FormSelect label="Affiliate user" help="Who owns this link. This user sees it on /affiliate." value={linkForm.affiliate_user_id} onChange={(value) => updateLink('affiliate_user_id', value)}>
               <option value="">Choose user</option>
               {users.map((user) => <option key={user.id} value={user.id}>{user.displayName || user.email}</option>)}
             </FormSelect>
-            <FormSelect label="Brand" value={linkForm.brand_id} onChange={(value) => updateLink('brand_id', value)}>
+            <FormSelect label="Brand" help="The brand slug becomes the first part of the public tracking URL." value={linkForm.brand_id} onChange={(value) => updateLink('brand_id', value)}>
               <option value="">Choose brand</option>
               {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
             </FormSelect>
-            <FormSelect label="Offer" value={linkForm.offer_id} onChange={(value) => updateLink('offer_id', value)}>
+            <FormSelect label="Offer" help="Optional commercial offer attached to this link. Shown beside the link in dashboards." value={linkForm.offer_id} onChange={(value) => updateLink('offer_id', value)}>
               <option value="">Default offer</option>
               {offers.filter((offer) => !linkForm.brand_id || offer.brandId === linkForm.brand_id).map((offer) => <option key={offer.id} value={offer.id}>{offer.name}</option>)}
             </FormSelect>
-            <FormInput label="Short code" value={linkForm.short_code} onChange={(value) => updateLink('short_code', value)} placeholder="optional" />
-            <FormInput label="Campaign" value={linkForm.campaign_name} onChange={(value) => updateLink('campaign_name', value)} />
-            <FormInput label="Source" value={linkForm.source_name} onChange={(value) => updateLink('source_name', value)} />
-            <Field label="Destination URL">
+            <FormInput label="Short code" help="Second part of the public URL. Leave empty to generate one automatically." value={linkForm.short_code} onChange={(value) => updateLink('short_code', value)} placeholder="optional" />
+            <FormInput label="Campaign" help="Optional campaign label appended to partner URL using the brand parameter mapping." value={linkForm.campaign_name} onChange={(value) => updateLink('campaign_name', value)} />
+            <FormInput label="Source" help="Traffic source label, such as twitch, youtube, website, discord, or other." value={linkForm.source_name} onChange={(value) => updateLink('source_name', value)} />
+            <Field label="Destination URL" help="The final partner URL visitors are redirected to. It must start with https:// or http://.">
               <textarea value={linkForm.destination_url} onChange={(event) => updateLink('destination_url', event.target.value)} rows={2} />
             </Field>
             <button type="button" onClick={submitLink} disabled={busy}><Link2 size={16} /> Create safe link</button>
@@ -369,8 +423,8 @@ export default function AdminAffiliatesPage() {
                   <strong>{link.brandName} · {link.affiliateDisplayName || link.affiliateEmail}</strong>
                   <code>{link.trackingUrl}</code>
                 </div>
-                <span>{link.clickTotals?.humanClicks || 0} clicks</span>
-                <button type="button" onClick={() => copyText(link.trackingUrl)}><Copy size={15} /> Copy</button>
+                <span title="First-party human clicks tracked before redirect.">{link.clickTotals?.humanClicks || 0} clicks</span>
+                <button type="button" title="Copy the public tracking URL for the affiliate." onClick={() => copyText(link.trackingUrl)}><Copy size={15} /> Copy</button>
               </article>
             ))}
           </div>
@@ -378,32 +432,37 @@ export default function AdminAffiliatesPage() {
 
         <div className="admin-affiliates-panel">
           <h2>Manual partner stats</h2>
+          <p className="admin-affiliates-panel__intro">Use this when a partner sends numbers manually. These values appear as partner-reported results beside Streamers Center tracked clicks.</p>
+          <div className="admin-affiliates-output-tags">
+            <span>Displayed: affiliate dashboard</span>
+            <span>Source: partner report</span>
+          </div>
           <div className="admin-affiliates-form">
-            <FormSelect label="Affiliate user" value={statsForm.affiliate_user_id} onChange={(value) => updateStats('affiliate_user_id', value)}>
+            <FormSelect label="Affiliate user" help="The affiliate this partner report belongs to." value={statsForm.affiliate_user_id} onChange={(value) => updateStats('affiliate_user_id', value)}>
               <option value="">Choose user</option>
               {users.map((user) => <option key={user.id} value={user.id}>{user.displayName || user.email}</option>)}
             </FormSelect>
-            <FormSelect label="Brand" value={statsForm.brand_id} onChange={(value) => updateStats('brand_id', value)}>
+            <FormSelect label="Brand" help="Partner/casino that supplied this report." value={statsForm.brand_id} onChange={(value) => updateStats('brand_id', value)}>
               <option value="">Choose brand</option>
               {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
             </FormSelect>
-            <FormSelect label="Tracking link" value={statsForm.tracking_link_id} onChange={(value) => updateStats('tracking_link_id', value)}>
+            <FormSelect label="Tracking link" help="Optional. Choose a link when the partner report can be tied to a specific tracking URL." value={statsForm.tracking_link_id} onChange={(value) => updateStats('tracking_link_id', value)}>
               <option value="">No link</option>
               {links.filter((link) => !statsForm.affiliate_user_id || link.affiliateUserId === statsForm.affiliate_user_id).map((link) => <option key={link.id} value={link.id}>{link.brandName} · {link.shortCode}</option>)}
             </FormSelect>
             <div className="admin-affiliates-form__split">
-              <FormInput label="Start" type="date" value={statsForm.reporting_period_start} onChange={(value) => updateStats('reporting_period_start', value)} />
-              <FormInput label="End" type="date" value={statsForm.reporting_period_end} onChange={(value) => updateStats('reporting_period_end', value)} />
+              <FormInput label="Start" help="First date covered by the partner report." type="date" value={statsForm.reporting_period_start} onChange={(value) => updateStats('reporting_period_start', value)} />
+              <FormInput label="End" help="Last date covered by the partner report." type="date" value={statsForm.reporting_period_end} onChange={(value) => updateStats('reporting_period_end', value)} />
             </div>
             <div className="admin-affiliates-form__split">
-              <FormInput label="Partner clicks" value={statsForm.partner_clicks} onChange={(value) => updateStats('partner_clicks', value)} />
-              <FormInput label="Registrations" value={statsForm.registrations} onChange={(value) => updateStats('registrations', value)} />
-              <FormInput label="FTDs" value={statsForm.ftds} onChange={(value) => updateStats('ftds', value)} />
+              <FormInput label="Partner clicks" help="Clicks reported by the partner. This can differ from Streamers Center tracked clicks." value={statsForm.partner_clicks} onChange={(value) => updateStats('partner_clicks', value)} />
+              <FormInput label="Registrations" help="Signups reported by the partner." value={statsForm.registrations} onChange={(value) => updateStats('registrations', value)} />
+              <FormInput label="FTDs" help="First-time deposits reported by the partner." value={statsForm.ftds} onChange={(value) => updateStats('ftds', value)} />
             </div>
             <div className="admin-affiliates-form__split">
-              <FormInput label="Deposits" value={statsForm.deposit_amount} onChange={(value) => updateStats('deposit_amount', value)} />
-              <FormInput label="CPA" value={statsForm.cpa_commission} onChange={(value) => updateStats('cpa_commission', value)} />
-              <FormInput label="Rev share" value={statsForm.revenue_share_commission} onChange={(value) => updateStats('revenue_share_commission', value)} />
+              <FormInput label="Deposits" help="Total deposit amount in normal currency units." value={statsForm.deposit_amount} onChange={(value) => updateStats('deposit_amount', value)} />
+              <FormInput label="CPA" help="CPA commission amount in normal currency units." value={statsForm.cpa_commission} onChange={(value) => updateStats('cpa_commission', value)} />
+              <FormInput label="Rev share" help="Revenue-share commission amount in normal currency units." value={statsForm.revenue_share_commission} onChange={(value) => updateStats('revenue_share_commission', value)} />
             </div>
             <button type="button" onClick={submitStats} disabled={busy}><Plus size={16} /> Add stats</button>
           </div>
@@ -411,13 +470,18 @@ export default function AdminAffiliatesPage() {
 
         <div className="admin-affiliates-panel">
           <h2>CSV import</h2>
+          <p className="admin-affiliates-panel__intro">Paste a partner CSV to preview matching before import. Rows can match by short code, tracking link id, or affiliate email.</p>
+          <div className="admin-affiliates-output-tags">
+            <span>Preview first</span>
+            <span>Imports partner stats</span>
+          </div>
           <div className="admin-affiliates-form">
-            <FormSelect label="Brand" value={csvForm.brandId} onChange={(value) => updateCsv('brandId', value)}>
+            <FormSelect label="Brand" help="The partner/casino this CSV came from." value={csvForm.brandId} onChange={(value) => updateCsv('brandId', value)}>
               <option value="">Choose brand</option>
               {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
             </FormSelect>
-            <FormInput label="Filename" value={csvForm.filename} onChange={(value) => updateCsv('filename', value)} />
-            <Field label="CSV content">
+            <FormInput label="Filename" help="Reference name stored with the import audit." value={csvForm.filename} onChange={(value) => updateCsv('filename', value)} />
+            <Field label="CSV content" help="Paste the full CSV. Use Preview to inspect parsed rows before Import.">
               <textarea value={csvForm.csv} onChange={(event) => updateCsv('csv', event.target.value)} rows={8} placeholder="Paste partner CSV here" />
             </Field>
             <div className="admin-affiliates-button-row">

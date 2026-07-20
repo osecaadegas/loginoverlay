@@ -12,6 +12,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { triggerShoutout, triggerTestShoutout, getShoutoutHistory } from '../../../services/shoutoutService';
 import { supabase } from '../../../config/supabaseClient';
 import TabBar from './shared/TabBar';
+import { FONT_OPTIONS } from '../appearance/editorSchema';
+import { FontSelectInput } from '../appearance/propertyControls';
 
 /* ─── Constants ─── */
 const ENTER_ANIMATIONS = [
@@ -30,16 +32,6 @@ const EXIT_ANIMATIONS = [
   { value: 'slideRight', icon: '➡️', label: 'Slide Right' },
   { value: 'zoomOut',    icon: '🔍', label: 'Zoom Out' },
   { value: 'fadeOut',    icon: '🌫️', label: 'Fade' },
-];
-
-const FONT_OPTIONS = [
-  "'Inter', sans-serif",
-  "'Roboto', sans-serif",
-  "'Poppins', sans-serif",
-  "'Montserrat', sans-serif",
-  "'Fira Code', monospace",
-  "'Arial', sans-serif",
-  "'Georgia', serif",
 ];
 
 /* ─── Helpers ─── */
@@ -214,19 +206,12 @@ export default function RaidShoutoutConfig({ config, onChange, allWidgets }) {
           <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Typography</h4>
           <label className="nb-select-field" style={{ display: 'block', marginBottom: 8 }}>
             <span style={{ fontSize: 12, color: '#cbd5e1', display: 'block', marginBottom: 4 }}>Font Family</span>
-            <select
+            <FontSelectInput
               value={c.fontFamily || "'Inter', sans-serif"}
-              onChange={e => set('fontFamily', e.target.value)}
-              style={{
-                width: '100%', padding: '6px 10px', borderRadius: 6,
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                color: '#e2e8f0', fontSize: 12,
-              }}
-            >
-              {FONT_OPTIONS.map(f => (
-                <option key={f} value={f} style={{ fontFamily: f }}>{f.split("'")[1]}</option>
-              ))}
-            </select>
+              options={FONT_OPTIONS}
+              onChange={value => set('fontFamily', value)}
+              className="oc-config-font-select"
+            />
           </label>
 
           <SliderField label="Border Radius" value={c.borderRadius ?? 16} onChange={v => set('borderRadius', v)} min={0} max={32} suffix="px" />

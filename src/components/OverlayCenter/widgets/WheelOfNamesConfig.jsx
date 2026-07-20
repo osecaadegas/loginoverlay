@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import TabBar from './shared/TabBar';
-
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-];
+import { FONT_OPTIONS } from '../appearance/editorSchema';
+import { FontSelectInput } from '../appearance/propertyControls';
 
 export default function WheelOfNamesConfig({ config, onChange, allWidgets, mode }) {
   const c = config || {};
@@ -154,9 +147,13 @@ export default function WheelOfNamesConfig({ config, onChange, allWidgets, mode 
           <label className="nb-field"><span>Muted</span><input type="color" value={c.mutedColor || '#94a3b8'} onChange={e => set('mutedColor', e.target.value)} /></label>
           <h4 className="nb-subtitle">Typography</h4>
           <label className="nb-field"><span>Font</span>
-            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select></label>
+            <FontSelectInput
+              value={c.fontFamily || "'Inter', sans-serif"}
+              options={FONT_OPTIONS}
+              onChange={value => set('fontFamily', value)}
+              className="oc-config-font-select"
+            />
+          </label>
           <h4 className="nb-subtitle">Custom CSS</h4>
           <textarea className="oc-widget-css-input" value={c.custom_css || ''} onChange={e => set('custom_css', e.target.value)}
             rows={4} placeholder="/* custom CSS */" spellCheck={false} />

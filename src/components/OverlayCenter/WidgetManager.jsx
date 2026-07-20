@@ -7,6 +7,8 @@ import { swapStyleConfig } from './widgets/shared/perStyleConfig';
 import { getStyleKeysForWidget } from './widgets/styleKeysRegistry';
 import { useAuth } from '../../context/AuthContext';
 import buildThemeVars from './themeVarsBuilder';
+import { FONT_OPTIONS } from './appearance/editorSchema';
+import { FontSelectInput } from './appearance/propertyControls';
 import './OverlayRenderer.css';
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
@@ -1291,18 +1293,12 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     <div className="wm-ctx-section-body">
                       <div className="wm-ctx-select-row">
                         <label className="wm-ctx-input-label">Font</label>
-                        <select className="wm-ctx-select" value={w.config?.fontFamily || "'Inter', sans-serif"}
-                          onChange={e => ctxUpdateConfig('fontFamily', e.target.value)}>
-                          <option value="'Inter', sans-serif">Inter</option>
-                          <option value="'Poppins', sans-serif">Poppins</option>
-                          <option value="'Roboto', sans-serif">Roboto</option>
-                          <option value="'Oswald', sans-serif">Oswald</option>
-                          <option value="'Montserrat', sans-serif">Montserrat</option>
-                          <option value="'Fira Code', monospace">Fira Code</option>
-                          <option value="'Bebas Neue', cursive">Bebas Neue</option>
-                          <option value="'Press Start 2P', cursive">Press Start 2P</option>
-                          <option value="'Orbitron', sans-serif">Orbitron</option>
-                        </select>
+                        <FontSelectInput
+                          value={w.config?.fontFamily || "'Inter', sans-serif"}
+                          options={FONT_OPTIONS}
+                          onChange={value => ctxUpdateConfig('fontFamily', value)}
+                          className="oc-config-font-select"
+                        />
                       </div>
                       <div className="wm-ctx-slider-row">
                         <label className="wm-ctx-slider-label">Size</label>
@@ -1419,7 +1415,15 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                                 return (
                                   <div key={pr.p} className={`wm-ctx-adv-row ${isSet ? 'wm-ctx-adv-row--active' : ''}`}>
                                     <label className="wm-ctx-adv-label" title={pr.p}>{pr.label}</label>
-                                    {pr.type === 'select' ? (
+                                    {pr.type === 'select' && pr.p === 'font-family' ? (
+                                      <FontSelectInput
+                                        value={val || ''}
+                                        options={FONT_OPTIONS}
+                                        onChange={value => setAdv(pr.p, value)}
+                                        inheritedLabel="—"
+                                        className="oc-config-font-select"
+                                      />
+                                    ) : pr.type === 'select' ? (
                                       <select className="wm-ctx-adv-input" value={val || ''}
                                         onChange={e => setAdv(pr.p, e.target.value)}>
                                         <option value="">—</option>
@@ -1581,7 +1585,15 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                                       return (
                                         <div key={pr.p} className={`wm-ctx-adv-row ${val ? 'wm-ctx-adv-row--active' : ''}`}>
                                           <label className="wm-ctx-adv-label">{pr.label}</label>
-                                          {pr.type === 'select' ? (
+                                          {pr.type === 'select' && pr.p === 'font-family' ? (
+                                            <FontSelectInput
+                                              value={val || ''}
+                                              options={[{ value: 'inherit', label: 'inherit' }, ...FONT_OPTIONS]}
+                                              onChange={value => setEl(sel, pr.p, value)}
+                                              inheritedLabel="—"
+                                              className="oc-config-font-select"
+                                            />
+                                          ) : pr.type === 'select' ? (
                                             <select className="wm-ctx-adv-input" value={val || ''} onChange={e => setEl(sel, pr.p, e.target.value)}>
                                               <option value="">—</option>
                                               {pr.opts.map(o => <option key={o} value={o}>{o}</option>)}

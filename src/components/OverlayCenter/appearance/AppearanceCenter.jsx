@@ -429,6 +429,39 @@ function formatStatus(status, dirty) {
   return 'Saved';
 }
 
+function formatDraftStatus(status, dirty) {
+  if (status === 'saving') return 'Saving draft...';
+  if (status === 'failed') return 'Draft save failed';
+  if (dirty) return 'Unsaved draft';
+  return 'Draft saved';
+}
+
+function formatPublishStatus(status, hasUnpublishedChanges) {
+  if (status === 'publishing') return 'Publishing...';
+  if (status === 'failed') return 'Publish failed';
+  if (status === 'published') return 'Published to OBS';
+  if (hasUnpublishedChanges || status === 'unpublished') return 'Unpublished changes';
+  return 'Published to OBS';
+}
+
+function publishStatusClass(status, hasUnpublishedChanges) {
+  if (status === 'publishing') return 'publishing';
+  if (status === 'failed') return 'failed';
+  if (status === 'published') return 'published';
+  if (hasUnpublishedChanges || status === 'unpublished') return 'unpublished';
+  return 'published';
+}
+
+function mapControlGroupTitle(label = '') {
+  const key = label.toLowerCase();
+  if (key.includes('font') || key.includes('text') || key.includes('type')) return 'Typography';
+  if (key.includes('space') || key.includes('size') || key.includes('layout') || key.includes('position')) return 'Spacing and sizing';
+  if (key.includes('border') || key.includes('radius') || key.includes('shape')) return 'Border and shape';
+  if (key.includes('effect') || key.includes('shadow') || key.includes('glow') || key.includes('animation') || key.includes('motion')) return 'Effects and animation';
+  if (key.includes('background') || key.includes('surface') || key.includes('color') || key.includes('colour') || key.includes('finish')) return 'Surface and background';
+  return label || 'Advanced';
+}
+
 function layerKey(widgetId, elementId) {
   return `${widgetId || 'overlay'}:${elementId || 'container'}`;
 }
@@ -492,6 +525,33 @@ function ToolbarButton({ children, icon: Icon, active = false, primary = false, 
   );
 }
 
+function ToolbarGroup({ label, children }) {
+  return (
+    <span className="ve-toolbar-group" role="group" aria-label={label}>
+      <span className="ve-toolbar-group__label">{label}</span>
+      <span className="ve-toolbar-group__items">{children}</span>
+    </span>
+  );
+}
+
+function CollapsibleSection({ id, title, meta, openSections, onToggle, children, className = '' }) {
+  const open = openSections.includes(id);
+  return (
+    <section className={`ve-property-section ve-collapsible-section ${className}${open ? ' is-open' : ''}`}>
+      <button
+        type="button"
+        className="ve-collapsible-section__header"
+        onClick={() => onToggle(id)}
+        aria-expanded={open}
+      >
+        <span>{title}</span>
+        {meta && <em>{meta}</em>}
+      </button>
+      {open && <div className="ve-collapsible-section__body">{children}</div>}
+    </section>
+  );
+}
+
 function EmptyState({ title, children }) {
   return (
     <div className="ve-empty-state">
@@ -540,7 +600,10 @@ export default function AppearanceCenter({
   const [obsSafe, setObsSafe] = useState(true);
   const [showBefore, setShowBefore] = useState(false);
   const [saveStatus, setSaveStatus] = useState('saved');
+  const [publishStatus, setPublishStatus] = useState('published');
   const [statusMessage, setStatusMessage] = useState('');
+  const [openSimpleSections, setOpenSimpleSections] = useState(['widgetStyle', 'editing']);
+  const [openAdvancedSections, setOpenAdvancedSections] = useState(['stylePreset', 'partSelection']);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [hiddenLayers, setHiddenLayers] = useState({});
@@ -548,7 +611,9 @@ export default function AppearanceCenter({
   const [tourVisible, setTourVisible] = useState(getInitialTourVisible);
   const [recentColors, setRecentColors] = useState(getInitialRecentColors);
   const [toast, setToast] = useState('');
+  const canvasPanelRef = useRef(null);
   const lastPersistedDraftRef = useRef(safeJson(serverState.draft));
+  const lastPublishedRef = useRef(safeJson(serverState.published || {}));
   const lastRevisionRef = useRef(serverState.revision);
 
   const selectedWidget = useMemo(
@@ -692,6 +757,7 @@ export default function AppearanceCenter({
   const selectedLayerKey = layerKey(selectedWidget?.id, selectedElement?.id);
   const selectedLayerLocked = !!lockedLayers[selectedLayerKey];
   const dirty = safeJson(draft) !== lastPersistedDraftRef.current;
+  const hasUnpublishedChanges = safeJson(draft) !== lastPublishedRef.current;
   const warnings = useMemo(() => getAppearanceWarnings(draft), [draft]);
   const performance = useMemo(() => getPerformanceTone(draft), [draft]);
   const groupedLayers = useMemo(() => groupLayers(selectedElements), [selectedElements]);
@@ -752,6 +818,7 @@ export default function AppearanceCenter({
   useEffect(() => {
     if (lastRevisionRef.current === serverState.revision) return;
     lastRevisionRef.current = serverState.revision;
+    lastPublishedRef.current = safeJson(serverState.published || {});
     if (dirty || saveStatus === 'saving') return;
     setDraft(serverState.draft);
     lastPersistedDraftRef.current = safeJson(serverState.draft);
@@ -834,6 +901,7 @@ export default function AppearanceCenter({
       setUndoStack(stack => [...stack.slice(-49), { targetKey: targetKey(selectedTarget), draft: prev, summary }]);
       setRedoStack([]);
       setSaveStatus('dirty');
+      setPublishStatus('unpublished');
       setStatusMessage('Preview updated instantly. Draft will be saved shortly.');
       trackEvent(ANALYTICS_EVENTS.APPEARANCE_SETTING_CHANGED || 'appearance_setting_changed', {
         summary,
@@ -1027,6 +1095,7 @@ export default function AppearanceCenter({
     })
       .then(() => {
         setToast(`${getWidgetDisplayName(currentWidget)} position saved`);
+        setPublishStatus('unpublished');
         setPreviewPositions(prev => {
           const next = { ...prev };
           delete next[widget.id];
@@ -1039,6 +1108,18 @@ export default function AppearanceCenter({
       });
   }, [saveWidget, widgets]);
 
+  const toggleWidgetVisibility = useCallback((widget, event) => {
+    event?.stopPropagation();
+    if (!widget?.id || !saveWidget) return;
+    const nextVisible = !widget.is_visible;
+    saveWidget({ ...widget, is_visible: nextVisible })
+      .then(() => setToast(`${getWidgetDisplayName(widget)} ${nextVisible ? 'enabled' : 'disabled'}`))
+      .catch(err => {
+        console.error('[AppearanceCenter] widget visibility update failed', err);
+        setToast('Widget visibility could not be changed');
+      });
+  }, [saveWidget]);
+
   const undo = useCallback(() => {
     setUndoStack(stack => {
       if (!stack.length) return stack;
@@ -1046,6 +1127,7 @@ export default function AppearanceCenter({
       setRedoStack(next => [{ targetKey: targetKey(selectedTarget), draft, summary: 'Redo style change' }, ...next].slice(0, 50));
       setDraft(entry.draft);
       setSaveStatus('dirty');
+      setPublishStatus('unpublished');
       setStatusMessage('Undo applied.');
       return stack.slice(0, -1);
     });
@@ -1058,6 +1140,7 @@ export default function AppearanceCenter({
       setUndoStack(next => [...next.slice(-49), { targetKey: targetKey(selectedTarget), draft, summary: 'Undo redo' }]);
       setDraft(entry.draft);
       setSaveStatus('dirty');
+      setPublishStatus('unpublished');
       setStatusMessage('Redo applied.');
       return stack.slice(1);
     });
@@ -1066,6 +1149,7 @@ export default function AppearanceCenter({
   const publish = useCallback(async () => {
     clearTimeout(saveTimerRef.current);
     setSaveStatus('saving');
+    setPublishStatus('publishing');
     setStatusMessage('Publishing to OBS...');
     try {
       const normalized = normalizeAppearance(draft, { theme });
@@ -1087,8 +1171,11 @@ export default function AppearanceCenter({
       };
       await updateState({ overlayAppearance: nextRoot });
       if (saveTheme) await saveTheme(projectAppearanceToThemePatch(normalized));
-      lastPersistedDraftRef.current = safeJson(normalized);
+      const normalizedJson = safeJson(normalized);
+      lastPersistedDraftRef.current = normalizedJson;
+      lastPublishedRef.current = normalizedJson;
       setSaveStatus('saved');
+      setPublishStatus('published');
       setStatusMessage('Published. OBS browser sources will use this design.');
       setToast('Published to OBS');
       trackEvent(ANALYTICS_EVENTS.APPEARANCE_PUBLISHED || 'appearance_published', {
@@ -1097,6 +1184,7 @@ export default function AppearanceCenter({
     } catch (err) {
       console.error('[AppearanceCenter] publish failed', err);
       setSaveStatus('failed');
+      setPublishStatus('failed');
       setStatusMessage('Publish failed.');
       setToast('Publish failed');
     }
@@ -1248,8 +1336,9 @@ export default function AppearanceCenter({
     setDraft(serverState.draft);
     lastPersistedDraftRef.current = safeJson(serverState.draft);
     setSaveStatus('saved');
+    setPublishStatus(safeJson(serverState.draft) === safeJson(serverState.published || {}) ? 'published' : 'unpublished');
     setStatusMessage('Unsaved changes discarded.');
-  }, [serverState.draft]);
+  }, [serverState.draft, serverState.published]);
 
   const setTourHidden = useCallback((hidden) => {
     setTourVisible(!hidden);
@@ -1268,6 +1357,34 @@ export default function AppearanceCenter({
       : Math.max(0, index - 1);
     setZoom(ZOOM_STEPS[nextIndex]);
   }, [zoom]);
+
+  const toggleSimpleSection = useCallback((id) => {
+    setOpenSimpleSections(prev => {
+      if (prev.includes(id)) return prev.filter(item => item !== id);
+      return [id, ...prev].slice(0, 2);
+    });
+  }, []);
+
+  const toggleAdvancedSection = useCallback((id) => {
+    setOpenAdvancedSections(prev => {
+      if (prev.includes(id)) return prev.filter(item => item !== id);
+      return [id, ...prev].slice(0, 2);
+    });
+  }, []);
+
+  const enterCanvasFullscreen = useCallback(async () => {
+    const target = canvasPanelRef.current;
+    if (!target?.requestFullscreen) {
+      setToast('Fullscreen is not available in this browser');
+      return;
+    }
+    try {
+      await target.requestFullscreen();
+    } catch (err) {
+      console.error('[AppearanceCenter] fullscreen failed', err);
+      setToast('Fullscreen could not be opened');
+    }
+  }, []);
 
   useEffect(() => {
     function onKeyDown(event) {
@@ -1330,6 +1447,39 @@ export default function AppearanceCenter({
     );
   };
 
+  const renderWidgetCard = (widget, simple = false) => {
+    const active = selectedWidget?.id === widget.id;
+    const edited = !!getByPath(draft, `widgets.${widget.id}`);
+    const categoryLabel = WIDGET_CATEGORY_FILTERS.find(item => item.id === getWidgetCategory(widget))?.label || 'Other';
+    return (
+      <div
+        key={widget.id}
+        className={`ve-widget-card${active ? ' is-active' : ''}${simple ? ' ve-widget-card--simple' : ''}`}
+      >
+        <button type="button" className="ve-widget-card__select" onClick={() => selectWidget(widget)}>
+          <span className="ve-widget-card__thumb">
+            <WidgetIcon icon={getWidgetIcon(widget)} />
+          </span>
+          <span className="ve-widget-card__body">
+            <strong>{getWidgetDisplayName(widget)}</strong>
+            <small>Category: {categoryLabel}</small>
+          </span>
+        </button>
+        <button
+          type="button"
+          className={`ve-widget-toggle${widget.is_visible ? ' is-on' : ''}`}
+          onClick={(event) => toggleWidgetVisibility(widget, event)}
+          title={widget.is_visible ? 'Disable widget on overlay' : 'Enable widget on overlay'}
+          aria-pressed={widget.is_visible}
+        >
+          <span />
+          <strong>{widget.is_visible ? 'Enabled' : 'Disabled'}</strong>
+        </button>
+        {edited && <span className="ve-edited-dot" title="Style edited" />}
+      </div>
+    );
+  };
+
   const renderWidgetSelector = (simple = false) => (
     <div className={`ve-sidebar-scroll${simple ? ' ve-sidebar-scroll--simple' : ''}`}>
       {simple && (
@@ -1348,27 +1498,7 @@ export default function AppearanceCenter({
         />
       </div>
       <div className="ve-widget-list">
-        {filteredWidgets.map(widget => {
-          const active = selectedWidget?.id === widget.id;
-          const edited = !!getByPath(draft, `widgets.${widget.id}`);
-          return (
-            <button
-              key={widget.id}
-              type="button"
-              className={`ve-widget-card${active ? ' is-active' : ''}${simple ? ' ve-widget-card--simple' : ''}`}
-              onClick={() => selectWidget(widget)}
-            >
-              <span className="ve-widget-card__thumb">
-                <WidgetIcon icon={getWidgetIcon(widget)} />
-              </span>
-              <span className="ve-widget-card__body">
-                <strong>{getWidgetDisplayName(widget)}</strong>
-                <small>{widget.is_visible ? 'Enabled' : 'Disabled'} - {WIDGET_CATEGORY_FILTERS.find(item => item.id === getWidgetCategory(widget))?.label || 'Other'}</small>
-              </span>
-              {edited && <span className="ve-edited-dot" title="Edited" />}
-            </button>
-          );
-        })}
+        {filteredWidgets.map(widget => renderWidgetCard(widget, simple))}
         {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search.</EmptyState>}
       </div>
     </div>
@@ -1425,6 +1555,16 @@ export default function AppearanceCenter({
     return getElementControlGroups(selectedElement, mode).filter(group => group.controls.some(control => elementSupportsControl(selectedElement, control.id)));
   }, [mode, selectedElement]);
 
+  useEffect(() => {
+    if (mode !== 'advanced') return;
+    const preferredSection = selectedElement ? `control-${controlGroups[0]?.id || ''}` : 'stylePreset';
+    if (!preferredSection || preferredSection === 'control-') return;
+    setOpenAdvancedSections(prev => {
+      if (prev.includes(preferredSection)) return prev.length <= 2 ? prev : prev.slice(0, 2);
+      return [preferredSection, ...prev].slice(0, 2);
+    });
+  }, [controlGroups, mode, selectedElement?.id]);
+
   const visibleLayerRows = Object.values(groupedLayers);
   const selectedWidgetOverrides = selectedTargetRoot ? countObjectLeaves(getByPath(draft, selectedTargetRoot)) : 0;
   const editingWholeWidget = !selectedElement || ['container', 'root'].includes(selectedElement.id);
@@ -1432,8 +1572,6 @@ export default function AppearanceCenter({
     || registeredStyleOptions.find(option => option.id === selectedTarget.styleId)?.label
     || selectedTarget.styleId
     || 'Default';
-  const quickNumber = id => Math.max(1, simpleSections.indexOf(id) + 1);
-
   return (
     <div className="appearance-center visual-editor" data-mode={mode}>
       <div className="ve-topbar">
@@ -1446,58 +1584,75 @@ export default function AppearanceCenter({
             <span>{selectedWidgetName}</span>
             <small>{mode === 'simple' ? 'Entire widget' : selectedElement ? getFriendlyElementLabel(selectedElement.id, selectedElement.label) : 'Choose an element'}</small>
           </div>
-          <span className={`ve-save-status ve-save-status--${saveStatus}${dirty ? ' ve-save-status--dirty' : ''}`}>
-            {saveStatus === 'saved' && !dirty ? <CheckCircle2 size={14} /> : <span className="ve-status-dot" />}
-            {formatStatus(saveStatus, dirty)}
+          <span className="ve-status-stack" aria-label="Draft and OBS publish status">
+            <span className={`ve-save-status ve-save-status--${saveStatus}${dirty ? ' ve-save-status--dirty' : ''}`}>
+              {saveStatus === 'saved' && !dirty ? <CheckCircle2 size={14} /> : <span className="ve-status-dot" />}
+              {formatDraftStatus(saveStatus, dirty)}
+            </span>
+            <span className={`ve-live-status ve-live-status--${publishStatusClass(publishStatus, hasUnpublishedChanges || dirty)}`}>
+              {formatPublishStatus(publishStatus, hasUnpublishedChanges || dirty)}
+            </span>
           </span>
         </div>
         <div className="ve-topbar__tools" role="toolbar" aria-label="Appearance editor tools">
-          <ToolbarButton icon={Undo2} disabled={!undoStack.length} onClick={undo} title="Undo (Ctrl+Z)" />
-          <ToolbarButton icon={Redo2} disabled={!redoStack.length} onClick={redo} title="Redo (Ctrl+Shift+Z)" />
-          <span className="ve-toolbar-divider" />
-          <ToolbarButton icon={MonitorPlay} active={previewMode === 'fit-widget'} onClick={() => setPreviewMode('fit-widget')}>Focused</ToolbarButton>
-          <ToolbarButton icon={Monitor} active={previewMode === 'full-overlay'} onClick={() => setPreviewMode('full-overlay')}>Overlay</ToolbarButton>
-          <span className="ve-toolbar-backgrounds" role="group" aria-label="Canvas background">
-            {PREVIEW_BACKGROUNDS.map(item => (
-              <button key={item.id} type="button" className={previewBackground === item.id ? 'is-active' : ''} onClick={() => setPreviewBackground(item.id)}>
-                {item.label}
-              </button>
-            ))}
-          </span>
-          {!!previewStateOptions.length && selectedWidget?.id && (
-            <span className="ve-preview-state-picker" role="group" aria-label="Preview state">
-              {previewStateOptions.map(option => (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={selectedPreviewState === option.id ? 'is-active' : ''}
-                  onClick={() => setPreviewStateByWidget(prev => ({ ...prev, [selectedWidget.id]: option.id }))}
-                >
-                  {option.label}
+          <ToolbarGroup label="Editing">
+            <ToolbarButton icon={Undo2} disabled={!undoStack.length} onClick={undo} title="Undo (Ctrl+Z)" />
+            <ToolbarButton icon={Redo2} disabled={!redoStack.length} onClick={redo} title="Redo (Ctrl+Shift+Z)" />
+            <ToolbarButton icon={MonitorPlay} active={previewMode === 'fit-widget'} onClick={() => setPreviewMode('fit-widget')}>Focused</ToolbarButton>
+            <ToolbarButton icon={Monitor} active={previewMode === 'full-overlay'} onClick={() => setPreviewMode('full-overlay')}>Full Overlay</ToolbarButton>
+          </ToolbarGroup>
+
+          <ToolbarGroup label="Preview">
+            <span className="ve-toolbar-backgrounds" role="group" aria-label="Canvas background">
+              {PREVIEW_BACKGROUNDS.map(item => (
+                <button key={item.id} type="button" className={previewBackground === item.id ? 'is-active' : ''} onClick={() => setPreviewBackground(item.id)}>
+                  {item.id === 'green' ? 'Green Screen' : item.label}
                 </button>
               ))}
             </span>
-          )}
-          <ToolbarButton active={showBefore} onClick={() => setShowBefore(value => !value)}>Before</ToolbarButton>
-          <label className="ve-toolbar-check">
-            <input type="checkbox" checked={obsSafe} onChange={event => setObsSafe(event.target.checked)} />
-            Safe
-          </label>
-          <ToolbarButton icon={ExternalLink} onClick={onOpenPreview}>Pop-out</ToolbarButton>
-          {previewStatus?.open && <ToolbarButton icon={Eye} onClick={onFocusPreview}>Focus</ToolbarButton>}
-          <span className="ve-toolbar-divider" />
-          <ToolbarButton icon={Maximize2} active={zoom === 'fit'} onClick={() => updateZoom('fit')} title="Fit preview" />
-          <ToolbarButton icon={ZoomOut} onClick={() => updateZoom('out')} title="Zoom out" />
-          <span className="ve-zoom-label">{zoom === 'fit' ? 'Fit' : `${zoom}%`}</span>
-          <ToolbarButton icon={ZoomIn} onClick={() => updateZoom('in')} title="Zoom in" />
-          <span className="ve-toolbar-divider" />
-          <div className="ve-mode-switch" role="group" aria-label="Editor mode">
-            <button type="button" className={mode === 'simple' ? 'is-active' : ''} onClick={() => handleModeChange('simple')}>Simple</button>
-            <button type="button" className={mode === 'advanced' ? 'is-active' : ''} onClick={() => handleModeChange('advanced')}>Advanced</button>
-          </div>
-          <ToolbarButton icon={RotateCcw} onClick={resetWidget}>Reset</ToolbarButton>
-          <ToolbarButton icon={Save} onClick={() => persistDraft(draft, 'manual')}>Save Draft</ToolbarButton>
-          <ToolbarButton icon={ExternalLink} primary onClick={publish}>Publish to OBS</ToolbarButton>
+            <ToolbarButton active={showBefore} onClick={() => setShowBefore(value => !value)}>Before</ToolbarButton>
+            <label className="ve-toolbar-check">
+              <input type="checkbox" checked={obsSafe} onChange={event => setObsSafe(event.target.checked)} />
+              Safe frame
+            </label>
+            {!!previewStateOptions.length && selectedWidget?.id && (
+              <span className="ve-preview-state-picker" role="group" aria-label="Preview state">
+                {previewStateOptions.map(option => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={selectedPreviewState === option.id ? 'is-active' : ''}
+                    onClick={() => setPreviewStateByWidget(prev => ({ ...prev, [selectedWidget.id]: option.id }))}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </span>
+            )}
+          </ToolbarGroup>
+
+          <ToolbarGroup label="View">
+            <ToolbarButton icon={ExternalLink} onClick={onOpenPreview}>Pop-out</ToolbarButton>
+            {previewStatus?.open && <ToolbarButton icon={Eye} onClick={onFocusPreview}>Focus</ToolbarButton>}
+            <ToolbarButton icon={Maximize2} onClick={enterCanvasFullscreen}>Fullscreen</ToolbarButton>
+            <ToolbarButton active={zoom === 'fit'} onClick={() => updateZoom('fit')}>Fit</ToolbarButton>
+            <ToolbarButton icon={ZoomOut} onClick={() => updateZoom('out')} title="Zoom out" />
+            <span className="ve-zoom-label">{zoom === 'fit' ? 'Fit' : `${zoom}%`}</span>
+            <ToolbarButton icon={ZoomIn} onClick={() => updateZoom('in')} title="Zoom in" />
+          </ToolbarGroup>
+
+          <ToolbarGroup label="Mode">
+            <div className="ve-mode-switch" role="group" aria-label="Editor mode">
+              <button type="button" className={mode === 'simple' ? 'is-active' : ''} onClick={() => handleModeChange('simple')}>Simple</button>
+              <button type="button" className={mode === 'advanced' ? 'is-active' : ''} onClick={() => handleModeChange('advanced')}>Advanced</button>
+            </div>
+          </ToolbarGroup>
+
+          <ToolbarGroup label="Actions">
+            <ToolbarButton icon={RotateCcw} onClick={resetWidget}>Reset</ToolbarButton>
+            <ToolbarButton icon={Save} onClick={() => persistDraft(draft, 'manual')}>Save Draft</ToolbarButton>
+            <ToolbarButton icon={ExternalLink} primary onClick={publish} disabled={publishStatus === 'publishing'}>Publish to OBS</ToolbarButton>
+          </ToolbarGroup>
         </div>
       </div>
 
@@ -1535,27 +1690,7 @@ export default function AppearanceCenter({
                 />
               </div>
               <div className="ve-widget-list">
-                {filteredWidgets.map(widget => {
-                  const active = selectedWidget?.id === widget.id;
-                  const edited = !!getByPath(draft, `widgets.${widget.id}`);
-                  return (
-                    <button
-                      key={widget.id}
-                      type="button"
-                      className={`ve-widget-card${active ? ' is-active' : ''}`}
-                      onClick={() => selectWidget(widget)}
-                    >
-                      <span className="ve-widget-card__thumb">
-                        <WidgetIcon icon={getWidgetIcon(widget)} />
-                      </span>
-                      <span className="ve-widget-card__body">
-                        <strong>{getWidgetDisplayName(widget)}</strong>
-                        <small>{widget.is_visible ? 'Enabled' : 'Disabled'} · {WIDGET_CATEGORY_FILTERS.find(item => item.id === getWidgetCategory(widget))?.label || 'Other'}</small>
-                      </span>
-                      {edited && <span className="ve-edited-dot" title="Edited" />}
-                    </button>
-                  );
-                })}
+                {filteredWidgets.map(widget => renderWidgetCard(widget))}
                 {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search.</EmptyState>}
               </div>
             </div>
@@ -1606,7 +1741,7 @@ export default function AppearanceCenter({
           )}
         </aside>
 
-        <main className="ve-canvas-panel">
+        <main className="ve-canvas-panel" ref={canvasPanelRef}>
           <div className={`ve-preview-shell${obsSafe ? ' ve-preview-shell--safe' : ''}`}>
             <OverlayPreview
               widgets={previewWidgets}
@@ -1688,10 +1823,13 @@ export default function AppearanceCenter({
             )}
 
             {simpleSections.includes('widgetStyle') && (
-              <section className="ve-property-section ve-simple-section">
-                <header>
-                  <h3>{quickNumber('widgetStyle')}. Widget style</h3>
-                </header>
+              <CollapsibleSection
+                id="widgetStyle"
+                title="Style preset"
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
                 <p className="ve-simple-help">Choose the layout you want to edit. Each style keeps its own settings.</p>
                 <div className="ve-style-card-grid">
                   {quickStyleOptions.map(option => (
@@ -1708,14 +1846,17 @@ export default function AppearanceCenter({
                     <div className="ve-simple-note">This widget does not declare multiple appearance styles yet.</div>
                   )}
                 </div>
-              </section>
+              </CollapsibleSection>
             )}
 
             {simpleSections.includes('editing') && (
-              <section className="ve-property-section ve-simple-section">
-                <header>
-                  <h3>{quickNumber('editing')}. Choose what to edit</h3>
-                </header>
+              <CollapsibleSection
+                id="editing"
+                title="Part selection"
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
                 <label className="ve-edit-target-select">
                   <span>Part</span>
                   <select
@@ -1732,14 +1873,17 @@ export default function AppearanceCenter({
                     ))}
                   </select>
                 </label>
-              </section>
+              </CollapsibleSection>
             )}
 
             {simpleSections.includes('material') && (
-            <section className="ve-property-section ve-simple-section">
-              <header>
-                <h3>{quickNumber('material')}. Visual finish</h3>
-              </header>
+            <CollapsibleSection
+              id="material"
+              title="Surface and background"
+              openSections={openSimpleSections}
+              onToggle={toggleSimpleSection}
+              className="ve-simple-section"
+            >
               <p className="ve-simple-help">Start by choosing the finish of your widget.</p>
               <div className="ve-material-grid">
                 {visibleMaterialPresets.map(preset => {
@@ -1768,14 +1912,17 @@ export default function AppearanceCenter({
                   );
                 })}
               </div>
-            </section>
+            </CollapsibleSection>
             )}
 
             {simpleSections.includes('colours') && (
-            <section className="ve-property-section ve-simple-section">
-              <header>
-                <h3>{quickNumber('colours')}. Choose your colour</h3>
-              </header>
+            <CollapsibleSection
+              id="colours"
+              title="Colour"
+              openSections={openSimpleSections}
+              onToggle={toggleSimpleSection}
+              className="ve-simple-section"
+            >
               <p className="ve-simple-help">Your colour automatically adapts to the selected style.</p>
               <div className="ve-swatch-grid" aria-label="Main colour">
                 {SIMPLE_COLOR_PALETTE.map(color => (
@@ -1865,14 +2012,17 @@ export default function AppearanceCenter({
                   <button type="button" onClick={() => applyQuickSettings({ material: 'matte' }, 'Fix contrast')}>Fix contrast</button>
                 </div>
               )}
-            </section>
+            </CollapsibleSection>
             )}
 
             {simpleSections.includes('textImages') && (
-              <section className="ve-property-section ve-simple-section">
-                <header>
-                  <h3>{quickNumber('textImages')}. Text and images</h3>
-                </header>
+              <CollapsibleSection
+                id="textImages"
+                title="Typography"
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
                 {hasQuickControl('fontFamily') && (
                   <label className="ve-simple-select">
                     <span>Font style</span>
@@ -1975,14 +2125,17 @@ export default function AppearanceCenter({
                     )}
                   </>
                 )}
-              </section>
+              </CollapsibleSection>
             )}
 
             {simpleSections.includes('shapeEffects') && (
-              <section className="ve-property-section ve-simple-section">
-                <header>
-                  <h3>{quickNumber('shapeEffects')}. Shape and effects</h3>
-                </header>
+              <CollapsibleSection
+                id="shapeEffects"
+                title="Border and shape"
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
                 {hasQuickControl('shape') && (
                   <div className="ve-simple-choice-row ve-shape-row">
                     {SIMPLE_SHAPES
@@ -2088,14 +2241,17 @@ export default function AppearanceCenter({
                     ))}
                   </div>
                 )}
-              </section>
+              </CollapsibleSection>
             )}
 
             {simpleSections.includes('motion') && (
-              <section className="ve-property-section ve-simple-section">
-                <header>
-                  <h3>{quickNumber('motion')}. Motion</h3>
-                </header>
+              <CollapsibleSection
+                id="motion"
+                title="Effects and animation"
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
                 {hasQuickControl('carouselAutoplay') && (
                   <label className="ve-simple-toggle">
                     <input
@@ -2172,14 +2328,17 @@ export default function AppearanceCenter({
                     ))}
                   </div>
                 )}
-              </section>
+              </CollapsibleSection>
             )}
 
             {!!serverState.presets?.filter(preset => preset.isSimpleQuickStyle).length && (
-              <section className="ve-property-section ve-simple-section">
-                <header>
-                  <h3>My presets</h3>
-                </header>
+              <CollapsibleSection
+                id="advanced"
+                title="Advanced"
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
                 <div className="ve-user-presets">
                   {serverState.presets.filter(preset => preset.isSimpleQuickStyle).map(preset => (
                     <div key={preset.id} className="ve-user-preset-row">
@@ -2190,13 +2349,13 @@ export default function AppearanceCenter({
                     </div>
                   ))}
                 </div>
-              </section>
+              </CollapsibleSection>
             )}
 
           </div>
           <section className="ve-simple-final">
             <header>
-              <h3>{quickNumber('actions')}. Final actions</h3>
+              <h3>Draft tools</h3>
             </header>
             <div className="ve-simple-actions ve-simple-actions--final">
               <button type="button" onClick={undo} disabled={!undoStack.length} aria-label="Undo" title="Undo">
@@ -2210,10 +2369,6 @@ export default function AppearanceCenter({
               <button type="button" onClick={saveCurrentPreset} aria-label="Save as My Preset" title="Save as My Preset">
                 <Save size={15} />
                 Preset
-              </button>
-              <button type="button" className="ve-simple-publish" onClick={publish} aria-label="Publish to OBS" title="Publish to OBS">
-                <ExternalLink size={15} />
-                Publish
               </button>
             </div>
           </section>
@@ -2253,11 +2408,16 @@ export default function AppearanceCenter({
           <div className="ve-properties-scroll">
             {editingWholeWidget && (
               <>
-                <section className="ve-property-section">
-                  <header>
-                    <h3>Presets</h3>
+                <CollapsibleSection
+                  id="stylePreset"
+                  title="Style preset"
+                  meta={`${serverState.presets?.length || 0} saved`}
+                  openSections={openAdvancedSections}
+                  onToggle={toggleAdvancedSection}
+                >
+                  <div className="ve-section-tools">
                     <button type="button" onClick={saveCurrentPreset}>Save current style</button>
-                  </header>
+                  </div>
                   <div className="ve-preset-grid">
                     {BUILT_IN_STYLE_PRESETS.map(preset => (
                       <button key={preset.id} type="button" className="ve-preset-card" onClick={() => applyPreset(preset)}>
@@ -2280,17 +2440,19 @@ export default function AppearanceCenter({
                       ))}
                     </div>
                   )}
-                </section>
+                </CollapsibleSection>
 
-                <section className="ve-property-section">
-                  <header>
-                    <h3>Widget style</h3>
-                    <span>{selectedWidgetOverrides} custom values</span>
-                  </header>
+                <CollapsibleSection
+                  id="surfaceBackground"
+                  title="Surface and background"
+                  meta={`${selectedWidgetOverrides} custom values`}
+                  openSections={openAdvancedSections}
+                  onToggle={toggleAdvancedSection}
+                >
                   <div className="ve-control-grid">
                     {QUICK_WIDGET_CONTROLS.map(renderQuickControl)}
                   </div>
-                </section>
+                </CollapsibleSection>
               </>
             )}
 
@@ -2313,14 +2475,18 @@ export default function AppearanceCenter({
                   </div>
                 )}
                 {controlGroups.map(group => (
-                  <section key={group.id} className="ve-property-section">
-                    <header>
-                      <h3>{group.label}</h3>
-                    </header>
+                  <CollapsibleSection
+                    key={group.id}
+                    id={`control-${group.id}`}
+                    title={mapControlGroupTitle(group.label)}
+                    meta={group.label}
+                    openSections={openAdvancedSections}
+                    onToggle={toggleAdvancedSection}
+                  >
                     <div className="ve-control-grid">
                       {group.controls.map(renderElementControl)}
                     </div>
-                  </section>
+                  </CollapsibleSection>
                 ))}
               </>
             ) : (
@@ -2328,22 +2494,26 @@ export default function AppearanceCenter({
             )}
 
             {mode === 'advanced' && editingWholeWidget && (
-              <section className="ve-property-section">
-                <header>
-                  <h3>Responsive overrides</h3>
-                  <span>Advanced</span>
-                </header>
+              <CollapsibleSection
+                id="spacingSizing"
+                title="Spacing and sizing"
+                meta="Advanced"
+                openSections={openAdvancedSections}
+                onToggle={toggleAdvancedSection}
+              >
                 <div className="ve-context-note">
                   OBS is the primary target. Device-specific overrides inherit the default value until you set one here.
                 </div>
-              </section>
+              </CollapsibleSection>
             )}
 
-            <section className="ve-property-section">
-              <header>
-                <h3>Validation</h3>
-                <span>{warnings.length} warning{warnings.length === 1 ? '' : 's'}</span>
-              </header>
+            <CollapsibleSection
+              id="advanced"
+              title="Advanced"
+              meta={`${warnings.length} warning${warnings.length === 1 ? '' : 's'}`}
+              openSections={openAdvancedSections}
+              onToggle={toggleAdvancedSection}
+            >
               <div className="ve-warning-list">
                 {!warnings.length && <p>No obvious design problems found.</p>}
                 {warnings.map(warning => (
@@ -2362,7 +2532,7 @@ export default function AppearanceCenter({
                   </>
                 )}
               </div>
-            </section>
+            </CollapsibleSection>
           </div>
         </aside>
         )}

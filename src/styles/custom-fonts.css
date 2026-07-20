@@ -1,6 +1,8 @@
 ﻿/* Generated from C:\Users\miguel\Downloads\fonts_styles. */
 /* Keep this list in sync with src/components/OverlayCenter/appearance/customFontOptions.js. */
 
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @font-face {
   font-family: 'SC Custom Ancient Ad';
   src: url('/fonts/custom/ancient-ad-ancient-ad.ttf') format('truetype');

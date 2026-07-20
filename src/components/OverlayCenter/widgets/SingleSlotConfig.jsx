@@ -5,15 +5,8 @@ import { findUserSlotRecord } from '../../../services/slotRecordService';
 import { configStyles } from './shared/configStyles';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { SINGLE_SLOT_STYLE_KEYS } from './styleKeysRegistry';
-
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-];
+import { FONT_OPTIONS } from '../appearance/editorSchema';
+import { FontSelectInput } from '../appearance/propertyControls';
 
 export default function SingleSlotConfig({ config, onChange, allWidgets, mode }) {
   const { user } = useAuth();
@@ -474,9 +467,12 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
 
           <div style={S.section}>
             <label style={S.label}>Font</label>
-            <select style={S.select} value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
+            <FontSelectInput
+              value={c.fontFamily || "'Inter', sans-serif"}
+              options={FONT_OPTIONS}
+              onChange={value => set('fontFamily', value)}
+              className="oc-config-font-select"
+            />
           </div>
         </div>
       )}

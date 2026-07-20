@@ -31,6 +31,7 @@ export const WIDGET_CATEGORY_FILTERS = [
 
 export const FONT_OPTIONS = [
   { value: "'Inter', 'Segoe UI', sans-serif", label: 'Inter' },
+  { value: "'Roboto', 'Segoe UI', sans-serif", label: 'Roboto' },
   { value: "'Rajdhani', 'Segoe UI', sans-serif", label: 'Rajdhani' },
   { value: "'Montserrat', 'Segoe UI', sans-serif", label: 'Montserrat' },
   { value: "'Poppins', 'Segoe UI', sans-serif", label: 'Poppins' },
@@ -39,8 +40,11 @@ export const FONT_OPTIONS = [
   { value: "'Oxanium', 'Segoe UI', sans-serif", label: 'Oxanium' },
   { value: "'Bebas Neue', 'Arial Narrow', sans-serif", label: 'Bebas Neue' },
   { value: "'Oswald', 'Arial Narrow', sans-serif", label: 'Oswald' },
+  { value: "'Fira Code', monospace", label: 'Fira Code' },
+  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
   { value: 'Arial, sans-serif', label: 'Arial' },
   { value: 'Georgia, serif', label: 'Georgia' },
+  { value: "'Courier New', monospace", label: 'Courier New' },
   { value: 'monospace', label: 'Monospace' },
   { value: 'system-ui', label: 'System' },
   ...CUSTOM_FONT_OPTIONS,

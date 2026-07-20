@@ -4075,6 +4075,110 @@ body.wm-resizing {
   box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.08);
 }
 
+.ve-font-select {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+
+.ve-font-select__button {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--ve-line, rgba(148, 163, 184, 0.2));
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.72);
+  color: #ffffff;
+  padding: 0 10px;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+}
+
+.ve-font-select__button span {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ve-font-select__button em {
+  flex: 0 0 auto;
+  color: #9fb0cc;
+  font-style: normal;
+  font-size: 0.78rem;
+}
+
+.ve-font-select__button:focus-visible {
+  outline: 2px solid rgba(94, 234, 212, 0.7);
+  outline-offset: 2px;
+}
+
+.ve-font-select__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.ve-font-select__menu {
+  position: absolute;
+  z-index: 180;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: min(320px, 48vh);
+  overflow-y: auto;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 10px;
+  background: #0b1020;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  padding: 5px;
+}
+
+.ve-font-select__option {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #f8fafc;
+  padding: 7px 9px;
+  font-size: 0.9rem;
+  font-weight: 750;
+  text-align: left;
+}
+
+.ve-font-select__option:hover,
+.ve-font-select__option.is-selected {
+  background: rgba(94, 234, 212, 0.16);
+  color: #ffffff;
+}
+
+.ve-font-select__option svg {
+  flex: 0 0 auto;
+  color: #7dd3fc;
+}
+
+.oc-config-font-select {
+  flex: 1;
+}
+
+.nb-field > .oc-config-font-select,
+.wm-ctx-select-row > .oc-config-font-select,
+.wm-ctx-adv-row > .oc-config-font-select,
+.oc-font-row > .oc-config-font-select {
+  min-width: 0;
+}
+
 .oc-custom-css {
   width: 100%;
   padding: 14px 16px;

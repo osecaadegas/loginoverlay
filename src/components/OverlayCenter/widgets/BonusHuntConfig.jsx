@@ -14,17 +14,8 @@ import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
 import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
 import { getProviderImage } from '../../../utils/gameProviders';
 import SlotImage from './SlotImage';
-
-const FONT_OPTIONS = [
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
-  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
-];
+import { FONT_OPTIONS } from '../appearance/editorSchema';
+import { FontSelectInput } from '../appearance/propertyControls';
 
 const BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS = Object.freeze({
   headerColor: '#26282e',
@@ -363,9 +354,12 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             <h4 className="nb-subtitle">Typography</h4>
             <label className="nb-field">
               <span>Font</span>
-              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
+              <FontSelectInput
+                value={c.fontFamily || "'Inter', sans-serif"}
+                options={FONT_OPTIONS}
+                onChange={value => set('fontFamily', value)}
+                className="oc-config-font-select"
+              />
             </label>
             <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={22} step={1} unit="px"
               onChange={v => set('fontSize', v)} />

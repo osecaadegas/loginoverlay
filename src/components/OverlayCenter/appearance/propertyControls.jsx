@@ -22,6 +22,19 @@ function optionLabel(option) {
   return typeof option === 'object' ? option.label || option.value : String(option);
 }
 
+function primaryFontName(value = '') {
+  return String(value)
+    .split(',')[0]
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .toLowerCase();
+}
+
+function fontOptionMatches(option, value) {
+  const nextValue = optionValue(option);
+  return nextValue === value || primaryFontName(nextValue) === primaryFontName(value);
+}
+
 function iconForSegment(value) {
   if (value === 'left') return <AlignLeft size={15} />;
   if (value === 'center') return <AlignCenter size={15} />;
@@ -163,7 +176,7 @@ export function FontSelectInput({
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const selectedOption = useMemo(
-    () => options.find(option => optionValue(option) === value),
+    () => options.find(option => fontOptionMatches(option, value)),
     [options, value]
   );
   const selectedLabel = selectedOption ? optionLabel(selectedOption) : (inheritedLabel || 'Choose font');
@@ -218,7 +231,7 @@ export function FontSelectInput({
           {options.map(option => {
             const nextValue = optionValue(option);
             const label = optionLabel(option);
-            const selected = nextValue === value;
+            const selected = fontOptionMatches(option, value);
             return (
               <button
                 key={nextValue}

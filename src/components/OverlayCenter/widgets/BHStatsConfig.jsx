@@ -6,17 +6,8 @@ import React from 'react';
 import ColorPicker from './shared/ColorPicker';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BH_STATS_STYLE_KEYS } from './styleKeysRegistry';
-
-const FONT_OPTIONS = [
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Fira Code', monospace", label: 'Fira Code' },
-  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
-  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
-];
+import { FONT_OPTIONS } from '../appearance/editorSchema';
+import { FontSelectInput } from '../appearance/propertyControls';
 
 const S = {
   section: { display: 'flex', flexDirection: 'column', gap: 10 },
@@ -101,9 +92,12 @@ export default function BHStatsConfig({ config, onChange, allWidgets }) {
         <p style={S.label}>🔤 Typography</p>
         <label style={{ ...S.field, marginBottom: 6 }}>
           Font
-          <select value={c.fontFamily || "'Poppins', sans-serif"} onChange={e => set('fontFamily', e.target.value)} style={S.input}>
-            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-          </select>
+          <FontSelectInput
+            value={c.fontFamily || "'Poppins', sans-serif"}
+            options={FONT_OPTIONS}
+            onChange={value => set('fontFamily', value)}
+            className="oc-config-font-select"
+          />
         </label>
         <label style={{ ...S.field, marginBottom: 6 }}>
           Size
