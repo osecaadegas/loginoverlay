@@ -644,7 +644,6 @@ function ToolWorkspace({
   copiedWidgetId,
 }) {
   const [previewActive, setPreviewActive] = useState(false);
-  const previewSectionRef = useRef(null);
   const definitions = getAllWidgetDefs();
   const definitionMap = new Map(definitions.map(def => [def.type, def]));
   const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
@@ -682,15 +681,12 @@ function ToolWorkspace({
     />
   );
 
-  const toggleInlinePreview = () => {
+  const toggleInlinePreview = (event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+    event?.currentTarget?.blur?.();
     setPreviewActive((active) => {
-      const nextActive = !active;
-      if (nextActive) {
-        requestAnimationFrame(() => {
-          previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-      }
-      return nextActive;
+      return !active;
     });
   };
 
@@ -712,7 +708,6 @@ function ToolWorkspace({
       {previewActive ? (
         <section
           id="oc2-tools-inline-preview"
-          ref={previewSectionRef}
           className="oc2-tool-preview-layout"
           data-tour="your-tools"
           aria-label="Expanded live preview with active tools"
