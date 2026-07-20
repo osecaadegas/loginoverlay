@@ -592,6 +592,106 @@ function ToolSection({ title, subtitle, tools, emptyText, children, tourId }) {
   );
 }
 
+function PreviewToolRailCard({ tool, side, onOpen }) {
+  const { type, def, copy, status } = tool;
+  return (
+    <article className={`oc2-preview-tool-card oc2-preview-tool-card--${side}`}>
+      <div className="oc2-preview-tool-card__icon" aria-hidden="true">
+        <span>{String(def.icon || '').slice(0, 2) || 'SC'}</span>
+      </div>
+      <div className="oc2-preview-tool-card__body">
+        <strong>{copy.title || def.label}</strong>
+        <small>{status.label}</small>
+      </div>
+      <button type="button" className="oc2-preview-tool-card__action" onClick={() => onOpen(type)}>
+        Configure
+      </button>
+    </article>
+  );
+}
+
+function ToolsLivePreviewDock({
+  expanded,
+  onToggle,
+  previewUrl,
+  previewStatus,
+  leftTools,
+  rightTools,
+  onOpenTool,
+}) {
+  const toggleInlinePreview = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.blur();
+    onToggle();
+  };
+
+  const renderRailCard = (tool, side) => (
+    <PreviewToolRailCard
+      key={`preview-${side}-${tool.type}`}
+      tool={tool}
+      side={side}
+      onOpen={onOpenTool}
+    />
+  );
+
+  return (
+    <section className={`oc2-tools-preview-dock${expanded ? ' oc2-tools-preview-dock--open' : ''}`}>
+      <div className="oc2-tools-preview-dock__bar">
+        <button
+          type="button"
+          className={`oc2-btn oc2-btn--primary oc2-live-preview-toggle${expanded ? ' oc2-live-preview-toggle--active' : ''}`}
+          data-action="toggle-tools-inline-preview"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={toggleInlinePreview}
+          aria-expanded={expanded}
+          aria-controls="oc2-tools-inline-preview"
+        >
+          <MonitorPlay size={16} />
+          {expanded ? 'Collapse preview' : 'Expand preview'}
+        </button>
+      </div>
+
+      {expanded && (
+        <div
+          id="oc2-tools-inline-preview"
+          className="oc2-tools-preview-dock__stage"
+          data-tour="your-tools"
+          aria-label="Expanded live preview with active tools"
+        >
+          <div className="oc2-tools-preview-dock__side oc2-tools-preview-dock__side--left">
+            {leftTools.length > 0
+              ? leftTools.map(tool => renderRailCard(tool, 'left'))
+              : <div className="oc2-empty-strip">No enabled tools yet.</div>}
+          </div>
+
+          <div className="oc2-tools-preview-dock__frame">
+            <div className="oc2-tools-preview-dock__frame-top">
+              <span className={`oc2-status-dot oc2-status-dot--${previewStatus || 'closed'}`} />
+              <strong>Live preview</strong>
+            </div>
+            {previewUrl ? (
+              <iframe
+                title="Overlay live preview"
+                src={previewUrl}
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              />
+            ) : (
+              <div className="oc2-empty-strip">No overlay URL is available yet.</div>
+            )}
+          </div>
+
+          <div className="oc2-tools-preview-dock__side oc2-tools-preview-dock__side--right">
+            {rightTools.length > 0
+              ? rightTools.map(tool => renderRailCard(tool, 'right'))
+              : <div className="oc2-empty-strip">Add more tools to fill this side.</div>}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function QuickSettings({ isAdmin }) {
   const settings = [
     { title: 'Appearance', description: 'Canvas, colours and global theme.', to: '/overlay-center/appearance', icon: Palette },
@@ -682,60 +782,19 @@ function ToolWorkspace({
     />
   );
 
-  const toggleInlinePreview = (event) => {
-    event?.preventDefault();
-    event?.stopPropagation();
-    event?.currentTarget?.blur?.();
-    onPreviewToggle?.();
-  };
-
   return (
-    <div className={`oc2-tool-workspace${previewActive ? ' oc2-tool-workspace--preview' : ''}`}>
-      <div className="oc2-tool-workspace__bar">
-        <button
-          type="button"
-          className={`oc2-btn oc2-btn--primary oc2-live-preview-toggle${previewActive ? ' oc2-live-preview-toggle--active' : ''}`}
-          data-action="toggle-tools-inline-preview"
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={toggleInlinePreview}
-          aria-expanded={previewActive}
-          aria-controls="oc2-tools-inline-preview"
-        >
-          <MonitorPlay size={16} />
-          {previewActive ? 'Collapse preview' : 'Expand preview'}
-        </button>
-      </div>
+    <div className="oc2-tool-workspace">
+      <ToolsLivePreviewDock
+        expanded={previewActive}
+        onToggle={onPreviewToggle}
+        previewUrl={previewUrl}
+        previewStatus={previewStatus}
+        leftTools={leftPreviewTools}
+        rightTools={rightPreviewTools}
+        onOpenTool={onOpenTool}
+      />
 
-      {previewActive ? (
-        <section
-          id="oc2-tools-inline-preview"
-          className="oc2-tool-preview-layout"
-          data-tour="your-tools"
-          aria-label="Expanded live preview with active tools"
-        >
-          <div className="oc2-tool-side oc2-tool-side--left">
-            {leftPreviewTools.length > 0
-              ? leftPreviewTools.map(tool => renderCard(tool, 'preview-left'))
-              : <div className="oc2-empty-strip">No enabled tools yet.</div>}
-          </div>
-          <div className="oc2-tool-live-preview">
-            <div className="oc2-tool-live-preview__top">
-              <span className={`oc2-status-dot oc2-status-dot--${previewStatus || 'closed'}`} />
-              <strong>Live preview</strong>
-            </div>
-            {previewUrl ? (
-              <iframe title="Overlay live preview" src={previewUrl} />
-            ) : (
-              <div className="oc2-empty-strip">No overlay URL is available yet.</div>
-            )}
-          </div>
-          <div className="oc2-tool-side oc2-tool-side--right">
-            {rightPreviewTools.length > 0
-              ? rightPreviewTools.map(tool => renderCard(tool, 'preview-right'))
-              : <div className="oc2-empty-strip">Add more tools to fill this side.</div>}
-          </div>
-        </section>
-      ) : (
+      {!previewActive && (
         <ToolSection
           title="Your tools"
           emptyText="No enabled tools yet."
