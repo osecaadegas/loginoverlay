@@ -636,6 +636,8 @@ function ToolWorkspace({
   isAdmin,
   previewUrl,
   previewStatus,
+  previewActive,
+  onPreviewToggle,
   onOpenTool,
   onToggleTool,
   onAddTool,
@@ -643,7 +645,6 @@ function ToolWorkspace({
   onCopyToolObsUrl,
   copiedWidgetId,
 }) {
-  const [previewActive, setPreviewActive] = useState(false);
   const definitions = getAllWidgetDefs();
   const definitionMap = new Map(definitions.map(def => [def.type, def]));
   const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
@@ -685,9 +686,7 @@ function ToolWorkspace({
     event?.preventDefault();
     event?.stopPropagation();
     event?.currentTarget?.blur?.();
-    setPreviewActive((active) => {
-      return !active;
-    });
+    onPreviewToggle?.();
   };
 
   return (
@@ -696,6 +695,8 @@ function ToolWorkspace({
         <button
           type="button"
           className={`oc2-btn oc2-btn--primary oc2-live-preview-toggle${previewActive ? ' oc2-live-preview-toggle--active' : ''}`}
+          data-action="toggle-tools-inline-preview"
+          onPointerDown={(event) => event.stopPropagation()}
           onClick={toggleInlinePreview}
           aria-expanded={previewActive}
           aria-controls="oc2-tools-inline-preview"
@@ -1408,6 +1409,7 @@ export default function OverlayControlCenter() {
   const [copyMsg, setCopyMsg] = useState('');
   const [copiedWidgetId, setCopiedWidgetId] = useState('');
   const [guidedTutorialActive, setGuidedTutorialActive] = useState(false);
+  const [toolsPreviewExpanded, setToolsPreviewExpanded] = useState(false);
 
   const overlayUrl = useMemo(() => getOverlayUrl(instance), [instance]);
   const previewUrl = useMemo(() => getOverlayUrl(instance, { preview: true }), [instance]);
@@ -1510,6 +1512,12 @@ export default function OverlayControlCenter() {
       navigate('/overlay-center', { replace: true });
     }
   }, [location.pathname, navigate]);
+
+  useEffect(() => {
+    if (currentPanel !== 'home' && toolsPreviewExpanded) {
+      setToolsPreviewExpanded(false);
+    }
+  }, [currentPanel, toolsPreviewExpanded]);
 
   useEffect(() => {
     if (currentPanel === 'tutorial') setGuidedTutorialActive(true);
@@ -1696,6 +1704,8 @@ export default function OverlayControlCenter() {
             isAdmin={isAdmin}
             previewUrl={previewUrl}
             previewStatus={previewStatus}
+            previewActive={toolsPreviewExpanded}
+            onPreviewToggle={() => setToolsPreviewExpanded(active => !active)}
             onOpenTool={(type) => {
               trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, { widget_type: type });
               navigate(`/overlay-center/widgets/${toSlug(type)}`);
