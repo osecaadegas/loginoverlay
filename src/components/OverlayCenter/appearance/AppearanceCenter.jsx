@@ -1427,6 +1427,7 @@ export default function AppearanceCenter({
 
   const visibleLayerRows = Object.values(groupedLayers);
   const selectedWidgetOverrides = selectedTargetRoot ? countObjectLeaves(getByPath(draft, selectedTargetRoot)) : 0;
+  const editingWholeWidget = !selectedElement || ['container', 'root'].includes(selectedElement.id);
   const selectedStyleLabel = quickStyleOptions.find(option => option.id === selectedTarget.styleId)?.label
     || registeredStyleOptions.find(option => option.id === selectedTarget.styleId)?.label
     || selectedTarget.styleId
@@ -2250,44 +2251,48 @@ export default function AppearanceCenter({
           )}
 
           <div className="ve-properties-scroll">
-            <section className="ve-property-section">
-              <header>
-                <h3>Presets</h3>
-                <button type="button" onClick={saveCurrentPreset}>Save current style</button>
-              </header>
-              <div className="ve-preset-grid">
-                {BUILT_IN_STYLE_PRESETS.map(preset => (
-                  <button key={preset.id} type="button" className="ve-preset-card" onClick={() => applyPreset(preset)}>
-                    <span style={{ background: preset.tint }} />
-                    <strong>{preset.name}</strong>
-                    <small>{preset.description}</small>
-                  </button>
-                ))}
-              </div>
-              {!!serverState.presets?.length && (
-                <div className="ve-user-presets">
-                  <h4>Saved presets</h4>
-                  {serverState.presets.map(preset => (
-                    <div key={preset.id} className="ve-user-preset-row">
-                      <button type="button" onClick={() => applyPreset(preset)}>{preset.name}</button>
-                      <button type="button" onClick={() => duplicatePreset(preset)} title="Duplicate preset"><Copy size={14} /></button>
-                      <button type="button" onClick={() => renamePreset(preset)} title="Rename preset">Rename</button>
-                      <button type="button" onClick={() => deletePreset(preset)} title="Delete preset"><Trash2 size={14} /></button>
+            {editingWholeWidget && (
+              <>
+                <section className="ve-property-section">
+                  <header>
+                    <h3>Presets</h3>
+                    <button type="button" onClick={saveCurrentPreset}>Save current style</button>
+                  </header>
+                  <div className="ve-preset-grid">
+                    {BUILT_IN_STYLE_PRESETS.map(preset => (
+                      <button key={preset.id} type="button" className="ve-preset-card" onClick={() => applyPreset(preset)}>
+                        <span style={{ background: preset.tint }} />
+                        <strong>{preset.name}</strong>
+                        <small>{preset.description}</small>
+                      </button>
+                    ))}
+                  </div>
+                  {!!serverState.presets?.length && (
+                    <div className="ve-user-presets">
+                      <h4>Saved presets</h4>
+                      {serverState.presets.map(preset => (
+                        <div key={preset.id} className="ve-user-preset-row">
+                          <button type="button" onClick={() => applyPreset(preset)}>{preset.name}</button>
+                          <button type="button" onClick={() => duplicatePreset(preset)} title="Duplicate preset"><Copy size={14} /></button>
+                          <button type="button" onClick={() => renamePreset(preset)} title="Rename preset">Rename</button>
+                          <button type="button" onClick={() => deletePreset(preset)} title="Delete preset"><Trash2 size={14} /></button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
-            </section>
+                  )}
+                </section>
 
-            <section className="ve-property-section">
-              <header>
-                <h3>Widget style</h3>
-                <span>{selectedWidgetOverrides} custom values</span>
-              </header>
-              <div className="ve-control-grid">
-                {QUICK_WIDGET_CONTROLS.map(renderQuickControl)}
-              </div>
-            </section>
+                <section className="ve-property-section">
+                  <header>
+                    <h3>Widget style</h3>
+                    <span>{selectedWidgetOverrides} custom values</span>
+                  </header>
+                  <div className="ve-control-grid">
+                    {QUICK_WIDGET_CONTROLS.map(renderQuickControl)}
+                  </div>
+                </section>
+              </>
+            )}
 
             {selectedElement ? (
               <>
@@ -2322,7 +2327,7 @@ export default function AppearanceCenter({
               <EmptyState title="No element selected">Click a title, card, image or row in the preview to edit it directly.</EmptyState>
             )}
 
-            {mode === 'advanced' && (
+            {mode === 'advanced' && editingWholeWidget && (
               <section className="ve-property-section">
                 <header>
                   <h3>Responsive overrides</h3>
@@ -2350,8 +2355,12 @@ export default function AppearanceCenter({
               </div>
               <div className="ve-reset-row">
                 <button type="button" onClick={resetElement} disabled={!selectedElement || selectedLayerLocked}>Reset element</button>
-                <button type="button" onClick={resetWidget}>Reset widget</button>
-                <button type="button" className="danger" onClick={resetAll}>Reset all</button>
+                {editingWholeWidget && (
+                  <>
+                    <button type="button" onClick={resetWidget}>Reset widget</button>
+                    <button type="button" className="danger" onClick={resetAll}>Reset all</button>
+                  </>
+                )}
               </div>
             </section>
           </div>

@@ -85,6 +85,19 @@ try {
   assert.ok(elementSupportsControl(surface, 'background'), 'surface layer supports background');
   assert.ok(elementSupportsControl(surface, 'radius'), 'surface layer supports rounded corners');
 
+  const navbarElements = getWidgetElementSchema('navbar');
+  const navbarAvatar = navbarElements.find(element => element.id === 'avatar');
+  assert.ok(navbarAvatar, 'navbar exposes avatar as an editable element');
+  assert.equal(navbarAvatar.kind, 'image', 'navbar avatar is treated as an image element');
+  const avatarControlIds = getElementControlGroups(navbarAvatar, 'advanced').flatMap(group => group.controls.map(control => control.id));
+  for (const expected of ['imageUrl', 'imageSize', 'imageFit', 'radius', 'borderColor', 'borderWidth']) {
+    assert.ok(avatarControlIds.includes(expected), `navbar avatar exposes ${expected}`);
+  }
+  for (const forbidden of ['fontFamily', 'textColor', 'background', 'padding', 'gap', 'width', 'height']) {
+    assert.ok(!avatarControlIds.includes(forbidden), `navbar avatar hides unrelated ${forbidden} control`);
+  }
+  assert.ok(getElementControlGroups(navbarAvatar, 'advanced').some(group => group.label === 'Image'), 'avatar image controls are grouped as Image');
+
   assert.equal(validateEditorValue(CONTROL_DEFINITIONS.fontSize, 999), CONTROL_DEFINITIONS.fontSize.max);
   assert.equal(validateEditorValue(CONTROL_DEFINITIONS.opacity, -4), 0);
   assert.equal(validateEditorValue(CONTROL_DEFINITIONS.textColor, 'not-a-color'), '#ffffff');

@@ -746,7 +746,7 @@ export const CONTROL_DEFINITIONS = {
   gradientTo: { id: 'gradientTo', label: 'Gradient end', type: 'color', group: 'Background' },
   gradientAngle: { id: 'gradientAngle', label: 'Gradient angle', type: 'range', min: 0, max: 360, step: 1, unit: 'deg', group: 'Background' },
   imageUrl: { id: 'imageUrl', label: 'Image URL', type: 'text', group: 'Image' },
-  imageSize: { id: 'imageSize', label: 'Image size', type: 'range', min: 30, max: 220, step: 1, unit: 'px', group: 'Background' },
+  imageSize: { id: 'imageSize', label: 'Image size', type: 'range', min: 30, max: 220, step: 1, unit: 'px', group: 'Image' },
   imageFit: { id: 'imageFit', label: 'Image fit', type: 'segmented', options: ['cover', 'contain', 'fill'], group: 'Image' },
   backgroundSize: { id: 'backgroundSize', label: 'Image fit', type: 'segmented', options: ['cover', 'contain', 'fill'], group: 'Background' },
   backgroundPosition: { id: 'backgroundPosition', label: 'Image position', type: 'select', options: ['center', 'top', 'bottom', 'left', 'right'], group: 'Background' },
