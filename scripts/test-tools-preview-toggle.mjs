@@ -25,7 +25,14 @@ assert.ok(/const \[toolsPreviewExpanded, setToolsPreviewExpanded\] = useState\(f
 assert.ok(/previewActive=\{toolsPreviewExpanded\}/.test(source), 'Tools page passes preview state into ToolWorkspace');
 assert.ok(/onPreviewToggle=\{\(\) => setToolsPreviewExpanded\(active => !active\)\}/.test(source), 'Tools page flips preview state with a functional update');
 assert.ok(/className="oc2-tools-preview-dock__stage"/.test(source), 'expanded preview renders the rebuilt dock stage');
-assert.ok(/<iframe[\s\S]*?title="Overlay live preview"[\s\S]*?src=\{previewUrl\}[\s\S]*?\/>/.test(source), 'expanded preview renders inline iframe');
+assert.ok(/<OverlayPreview[\s\S]*?widgets=\{widgets\}[\s\S]*?appearance=\{appearance\}[\s\S]*?\/>/.test(source), 'expanded preview renders the local OverlayPreview component');
+assert.ok(/previewWidgets=\{toolsPreviewWidgets\}/.test(source), 'Tools page passes visible widgets into the preview dock');
+assert.ok(/appearance=\{overlayAppearanceState\.draft\}/.test(source), 'Tools page passes current appearance state into the preview dock');
+const dockStart = source.indexOf('function ToolsLivePreviewDock(');
+const quickSettingsStart = source.indexOf('function QuickSettings(', dockStart);
+assert.ok(dockStart !== -1 && quickSettingsStart !== -1, 'preview dock component can be isolated for audit');
+const dockSource = source.slice(dockStart, quickSettingsStart);
+assert.ok(!/<iframe/.test(dockSource), 'tools preview dock does not mount an iframe');
 assert.ok(!/oc2-tool-preview-layout/.test(source), 'old preview layout is not rendered anymore');
 
 const toggleHandlerMatch = source.match(/const toggleInlinePreview = \(event\) => \{[\s\S]*?\n\s*\};/);

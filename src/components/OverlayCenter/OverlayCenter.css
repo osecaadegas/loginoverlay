@@ -24315,12 +24315,27 @@ body.wm-resizing {
   font-size: 0.86rem;
 }
 
-.oc2-tools-preview-dock__frame iframe {
-  width: 100%;
-  height: 100%;
+.oc2-tools-preview-dock__frame-top small {
+  margin-left: auto;
+  color: #8fa3ba;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.oc2-tools-preview-dock__frame .oc-preview-panel {
   min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   border: 0;
-  background: #020617;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.oc2-tools-preview-dock__frame .oc-preview-canvas-wrap {
+  align-self: center;
+  justify-self: center;
 }
 
 @keyframes oc2-slide-tools-left {
@@ -24409,7 +24424,7 @@ body.wm-resizing {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  .oc2-tools-preview-dock__frame iframe {
+  .oc2-tools-preview-dock__frame .oc-preview-panel {
     min-height: 360px;
   }
 }

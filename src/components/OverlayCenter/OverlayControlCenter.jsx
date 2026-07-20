@@ -37,6 +37,7 @@ import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import AppearanceCenter from './appearance/AppearanceCenter';
+import OverlayPreview from './OverlayPreview';
 import ConnectServicesStep from './setup/ConnectServicesStep';
 import { buildSyncedConfig } from './WidgetManager';
 import PresetLibrary from './PresetLibrary';
@@ -51,6 +52,7 @@ import {
   TOOL_STATUS,
   resolveToolStatus,
 } from './toolStatusResolver';
+import { buildOverlayAppearanceState } from './appearance/appearanceModel';
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
 import {
@@ -613,8 +615,11 @@ function PreviewToolRailCard({ tool, side, onOpen }) {
 function ToolsLivePreviewDock({
   expanded,
   onToggle,
-  previewUrl,
   previewStatus,
+  widgets,
+  theme,
+  appearance,
+  userId,
   leftTools,
   rightTools,
   onOpenTool,
@@ -669,15 +674,20 @@ function ToolsLivePreviewDock({
             <div className="oc2-tools-preview-dock__frame-top">
               <span className={`oc2-status-dot oc2-status-dot--${previewStatus || 'closed'}`} />
               <strong>Live preview</strong>
+              <small>No iframe reload</small>
             </div>
-            {previewUrl ? (
-              <iframe
-                title="Overlay live preview"
-                src={previewUrl}
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            {widgets.length > 0 ? (
+              <OverlayPreview
+                widgets={widgets}
+                theme={theme}
+                appearance={appearance}
+                userId={userId}
+                zoom="fit"
+                previewMode="full-overlay"
+                previewBackground="dark"
               />
             ) : (
-              <div className="oc2-empty-strip">No overlay URL is available yet.</div>
+              <div className="oc2-empty-strip">No enabled tools yet.</div>
             )}
           </div>
 
@@ -734,8 +744,11 @@ function ToolWorkspace({
   widgets,
   integrations,
   isAdmin,
-  previewUrl,
   previewStatus,
+  previewWidgets,
+  theme,
+  appearance,
+  userId,
   previewActive,
   onPreviewToggle,
   onOpenTool,
@@ -787,8 +800,11 @@ function ToolWorkspace({
       <ToolsLivePreviewDock
         expanded={previewActive}
         onToggle={onPreviewToggle}
-        previewUrl={previewUrl}
         previewStatus={previewStatus}
+        widgets={previewWidgets}
+        theme={theme}
+        appearance={appearance}
+        userId={userId}
         leftTools={leftPreviewTools}
         rightTools={rightPreviewTools}
         onOpenTool={onOpenTool}
@@ -1472,6 +1488,14 @@ export default function OverlayControlCenter() {
 
   const overlayUrl = useMemo(() => getOverlayUrl(instance), [instance]);
   const previewUrl = useMemo(() => getOverlayUrl(instance, { preview: true }), [instance]);
+  const overlayAppearanceState = useMemo(
+    () => buildOverlayAppearanceState(overlayState || {}, { theme, widgets }),
+    [overlayState, theme, widgets]
+  );
+  const toolsPreviewWidgets = useMemo(
+    () => (widgets || []).filter(widget => widget.is_visible !== false),
+    [widgets]
+  );
   const setup = useMemo(() => mergeSetupState(overlayState?.overlaySetup, widgets, theme, instance), [overlayState?.overlaySetup, widgets, theme, instance]);
   const tutorial = overlayState?.overlayTutorial || { status: 'not_started', completed: false };
   const setupComplete = setup.status === 'completed';
@@ -1761,8 +1785,11 @@ export default function OverlayControlCenter() {
             widgets={widgets}
             integrations={integrations}
             isAdmin={isAdmin}
-            previewUrl={previewUrl}
             previewStatus={previewStatus}
+            previewWidgets={toolsPreviewWidgets}
+            theme={theme}
+            appearance={overlayAppearanceState.draft}
+            userId={user?.id}
             previewActive={toolsPreviewExpanded}
             onPreviewToggle={() => setToolsPreviewExpanded(active => !active)}
             onOpenTool={(type) => {

@@ -451,8 +451,8 @@
 }
 
 .ve-right-panel--simple .ve-properties-scroll {
-  padding-bottom: 128px;
-  scroll-padding-bottom: 128px;
+  padding-bottom: 160px;
+  scroll-padding-bottom: 160px;
 }
 
 .ve-sidebar-scroll--simple {
@@ -933,9 +933,11 @@
 }
 
 .ve-quick-style {
-  display: grid;
-  align-content: start;
-  gap: 8px;
+  display: block;
+}
+
+.ve-quick-style > * + * {
+  margin-top: 8px;
 }
 
 .ve-section-tabs {
@@ -1677,7 +1679,11 @@
 .ve-collapsible-section {
   gap: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.ve-collapsible-section.is-open {
+  padding-bottom: 8px;
 }
 
 .ve-collapsible-section__header {
@@ -1740,7 +1746,9 @@
 .ve-collapsible-section__body {
   display: grid;
   gap: 10px;
-  padding: 0 0 12px;
+  min-height: 0;
+  overflow: visible;
+  padding: 2px 0 12px;
 }
 
 .ve-section-tools {
