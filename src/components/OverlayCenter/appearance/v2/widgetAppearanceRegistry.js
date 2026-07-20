@@ -13,7 +13,7 @@ const COMMON_CAPABILITIES = Object.freeze({
   typography: ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight'],
   spacing: ['padding', 'gap', 'density'],
   progress: ['progressBackground', 'progressFill'],
-  image: ['imageSize', 'imageRadius'],
+  image: ['imageUrl', 'imageSize', 'imageRadius', 'imageFit'],
   stateColor: ['positive', 'negative', 'warning'],
   scale: ['widgetScale'],
 });
@@ -72,7 +72,7 @@ const QUICK_CONTROL_STYLE_REQUIREMENTS = Object.freeze({
   fontFamily: ['fonts'],
   textSize: ['fontSizes'],
   boldText: ['fontWeights'],
-  imageVisibility: ['images', 'imageVisibility'],
+  imageVisibility: ['imageVisibility'],
   imageSize: ['images', 'imageSize'],
   imageShape: ['images', 'imageShape'],
   imageFit: ['images', 'imageFit'],
@@ -346,6 +346,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         recommended: true,
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
+          images: true,
           statCards: true,
           positiveNegativeColours: true,
           shadows: true,
@@ -365,6 +366,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         description: 'Stacked RTP layout for narrower stream placements.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
+          images: true,
           statCards: true,
           positiveNegativeColours: true,
           shadows: true,
@@ -385,6 +387,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         description: 'High-contrast RTP bar with glow on the border, icons and values.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
+          images: true,
           statCards: true,
           positiveNegativeColours: true,
           shadows: true,
@@ -418,6 +421,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           transparentBackground: true,
           positiveNegativeColours: true,
           barDimensions: true,
+          images: true,
           imageSize: true,
           imageShape: true,
           imageFit: true,
@@ -431,6 +435,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         description: 'Frosted glass RTP bar with blur, soft borders and reflective shadow.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
+          images: true,
           statCards: true,
           positiveNegativeColours: true,
           shadows: true,
@@ -577,6 +582,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         recommended: true,
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
+          images: true,
           imageSize: true,
           imageShape: true,
           imageFit: true,
@@ -597,6 +603,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         description: 'Metallic navbar with stronger border, shine overlays and reflective surfaces.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
+          images: true,
           imageSize: true,
           imageShape: true,
           imageFit: true,
@@ -617,6 +624,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         description: 'Frosted glass navbar with blur, soft borders and translucent panels.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
+          images: true,
           imageSize: true,
           imageShape: true,
           imageFit: true,
@@ -647,6 +655,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           containerShapes: true,
           borderRadius: true,
           borders: true,
+          images: true,
           imageSize: true,
           imageShape: true,
           imageFit: true,
@@ -1774,14 +1783,27 @@ export function isWidgetAppearanceV2Enabled(widgetType) {
   return APPEARANCE_ENGINE_V2_WIDGETS.includes(widgetType);
 }
 
-export function getWidgetAppearanceV2Elements(widgetType) {
+function getEditorReadyControlMap(style) {
+  return new Map((style?.advancedEditorSchema || [])
+    .filter(section => section?.elementId && Array.isArray(section.controls))
+    .map(section => [section.elementId, [...new Set(section.controls)]]));
+}
+
+export function getWidgetAppearanceV2Elements(widgetType, styleId = null) {
   const capability = getWidgetAppearanceCapability(widgetType);
   if (!capability) return [];
+  const editorReadyStyle = styleId ? getEditorReadyWidgetStyle(widgetType, styleId) : null;
+  const editorReadyControls = getEditorReadyControlMap(editorReadyStyle);
+  const editorReadyElements = editorReadyStyle?.elements || {};
   return Object.entries(capability.elements || {}).map(([id, element]) => ({
     id,
     ...element,
-    controls: controlsForCapabilities(element.capabilities || []),
-    safeRanges: capability.safeRanges || {},
+    ...(editorReadyElements[id] || {}),
+    controls: editorReadyControls.get(id)
+      || element.controls
+      || editorReadyElements[id]?.controls
+      || controlsForCapabilities((editorReadyElements[id] || element).capabilities || []),
+    safeRanges: editorReadyStyle?.safeRanges || capability.safeRanges || {},
   }));
 }
 
@@ -1816,7 +1838,7 @@ function shouldExposeAppearanceStyle(style) {
 }
 
 export function getWidgetStyleElements(widgetType, styleId) {
-  const allElements = getWidgetAppearanceV2Elements(widgetType);
+  const allElements = getWidgetAppearanceV2Elements(widgetType, styleId);
   const style = getWidgetStyleCapability(widgetType, styleId);
   if (!style?.elementIds?.length) return allElements;
   const allowed = new Set(style.elementIds);
@@ -1864,6 +1886,7 @@ export function quickControlAppliesToElement(widgetType, styleId, control, eleme
   if (!controls.includes(control)) return false;
   const styleRequirements = QUICK_CONTROL_STYLE_REQUIREMENTS[control] || [];
   if (styleRequirements.length && !supportsAnyStyleCapability(style.capabilities || {}, styleRequirements)) return false;
+  if (!elementId) return true;
 
   const elements = getWidgetStyleElements(widgetType, styleId);
   const element = elements.find(item => item.id === elementId) || elements[0] || null;
@@ -1922,7 +1945,7 @@ function controlsForCapabilities(capabilities = []) {
     if (capability === 'typography') ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'].forEach(control => controls.add(control));
     if (capability === 'spacing') ['padding', 'gap'].forEach(control => controls.add(control));
     if (capability === 'progress') ['background', 'fillColor', 'radius'].forEach(control => controls.add(control));
-    if (capability === 'image') ['imageSize', 'radius'].forEach(control => controls.add(control));
+    if (capability === 'image') ['imageUrl', 'imageSize', 'imageFit', 'radius'].forEach(control => controls.add(control));
     if (capability === 'stateColor') ['textColor', 'accentColor'].forEach(control => controls.add(control));
   }
   return [...controls];

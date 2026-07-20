@@ -37,6 +37,7 @@ export default function SlotRequestsCompactEditable({ config, requests = [] }) {
   const imageRadius = subValue(c, 'slotImage', 'radius', c.imageRadius || compactEditableDefaults.imageRadius);
   const imageSize = subValue(c, 'slotImage', 'imageSize', c.imageSize || compactEditableDefaults.imageSize);
   const imageFit = subValue(c, 'slotImage', 'imageFit', c.imageFit || compactEditableDefaults.imageFit);
+  const customImageUrl = subValue(c, 'slotImage', 'imageUrl', '');
   const imageVisible = boolValue(subValue(c, 'slotImage', 'visible', c.imageVisibility !== 'hidden'));
   const showRequester = c.showRequester !== false;
   const fontFamily = c.fontFamily || compactEditableDefaults.fontFamily;
@@ -118,7 +119,7 @@ export default function SlotRequestsCompactEditable({ config, requests = [] }) {
 
       <div className={styles.srceCard} key={current?.id} data-widget-element="requestCard" style={cardStyle}>
         <img
-          src={current?.slot_image || FALLBACK_IMG}
+          src={customImageUrl || current?.slot_image || FALLBACK_IMG}
           alt=""
           className={`${styles.srceImage}${imageVisible ? '' : ` ${styles.srceImageHidden}`}`}
           data-widget-element="slotImage"

@@ -382,17 +382,11 @@ function styleEdited(appearance, widgetId, styleId) {
 function StylePreviewCard({
   widget,
   option,
-  theme,
-  appearance,
-  userId,
-  selectedTarget,
-  previewState,
   active,
   edited,
   onSelect,
 }) {
   if (!widget || !option) return null;
-  const cardTarget = { ...selectedTarget, widgetId: widget.id, widgetType: widget.widget_type, styleId: option.id };
   return (
     <button
       type="button"
@@ -400,28 +394,14 @@ function StylePreviewCard({
       onClick={() => onSelect?.(option.id)}
       aria-pressed={active}
     >
-      <span className="ve-style-card__preview" aria-hidden="true">
-        <OverlayPreview
-          widgets={[widget]}
-          theme={theme}
-          appearance={appearance}
-          userId={userId}
-          selectedWidgetId={widget.id}
-          selectedTarget={cardTarget}
-          selectedElementId=""
-          hiddenElementIds={[]}
-          styleSelections={{ [widget.id]: option.id }}
-          previewSampleStates={previewState ? { [widget.id]: previewState } : {}}
-          zoom="fit"
-          previewMode="fit-widget"
-          previewBackground="dark"
-          selectMode={false}
-        />
-      </span>
+      <span className="ve-style-card__mark" aria-hidden="true"><span /></span>
       <span className="ve-style-card__body">
         <strong>{option.label}</strong>
+        {option.description && <small>{option.description}</small>}
+      </span>
+      <span className="ve-style-card__meta">
         {option.recommended && <em>Recommended</em>}
-        {edited && <small>Edited</small>}
+        {edited && <em>Edited</em>}
       </span>
     </button>
   );
@@ -551,7 +531,6 @@ export default function AppearanceCenter({
   const [selectedStateId, setSelectedStateId] = useState('default');
   const [sidebarTab, setSidebarTab] = useState('widgets');
   const [widgetSearch, setWidgetSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const [previewMode, setPreviewMode] = useState(() => EDITOR_MODE_CAPABILITIES[getInitialMode()]?.previewMode || 'fit-widget');
   const [previewBackground, setPreviewBackground] = useState('dark');
   const [previewStateByWidget, setPreviewStateByWidget] = useState({});
@@ -636,7 +615,11 @@ export default function AppearanceCenter({
   const selectedStyleCapabilities = selectedStyleCapability?.capabilities || FALLBACK_QUICK_STYLE_CAPABILITIES;
   const selectedQuickControls = useMemo(() => {
     if (selectedWidgetUsesV2) {
-      return new Set(getWidgetStyleQuickControls(selectedWidgetType, selectedTarget.styleId, selectedElement?.id));
+      return new Set(getWidgetStyleQuickControls(
+        selectedWidgetType,
+        selectedTarget.styleId,
+        mode === 'advanced' ? selectedElement?.id : null
+      ));
     }
     const controls = [];
     if (supportsAny(selectedStyleCapabilities, ['colours', 'containers', 'transparentBackground'])) controls.push('material');
@@ -659,7 +642,7 @@ export default function AppearanceCenter({
     if (selectedStyleCapabilities.animationSpeed) controls.push('animationSpeed');
     if (selectedStyleCapabilities.animationIntensity) controls.push('animationIntensity');
     return new Set(controls);
-  }, [selectedElement?.id, selectedStyleCapabilities, selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]);
+  }, [mode, selectedElement?.id, selectedStyleCapabilities, selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2]);
   const hasQuickControl = useCallback((control) => selectedQuickControls.has(control), [selectedQuickControls]);
   const hasAnyQuickControl = useCallback((controls = []) => controls.some(control => selectedQuickControls.has(control)), [selectedQuickControls]);
   const simpleSections = useMemo(() => {
@@ -718,11 +701,9 @@ export default function AppearanceCenter({
     return widgets.filter(widget => {
       const name = getWidgetDisplayName(widget).toLowerCase();
       const type = String(widget.widget_type || '').toLowerCase();
-      const category = getWidgetCategory(widget);
-      if (categoryFilter !== 'all' && category !== categoryFilter) return false;
       return !term || name.includes(term) || type.includes(term);
     });
-  }, [widgets, widgetSearch, categoryFilter]);
+  }, [widgets, widgetSearch]);
 
   const styleSelections = useMemo(() => {
     if (!selectedWidget?.id || !selectedTarget.styleId) return {};
@@ -893,6 +874,7 @@ export default function AppearanceCenter({
       selectedWidgetUsesV2
       && selectedTargetRoot
       && selectedElement?.id
+      && mode === 'advanced'
       && canScopeQuickPatchToElement(selectedElement, patch)
     ) {
       const nextSettings = normalizeSimpleSettings({ ...currentSimpleSettings, ...(patch || {}) });
@@ -917,6 +899,7 @@ export default function AppearanceCenter({
     applySimpleSettings,
     commitDraft,
     currentSimpleSettings,
+    mode,
     rememberColor,
     selectedElement,
     selectedTargetRoot,
@@ -1321,18 +1304,6 @@ export default function AppearanceCenter({
           aria-label="Search widgets"
         />
       </div>
-      <div className="ve-category-chips" aria-label="Widget category filters">
-        {WIDGET_CATEGORY_FILTERS.map(item => (
-          <button
-            key={item.id}
-            type="button"
-            className={categoryFilter === item.id ? 'is-active' : ''}
-            onClick={() => setCategoryFilter(item.id)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
       <div className="ve-widget-list">
         {filteredWidgets.map(widget => {
           const active = selectedWidget?.id === widget.id;
@@ -1355,7 +1326,7 @@ export default function AppearanceCenter({
             </button>
           );
         })}
-        {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search or category.</EmptyState>}
+        {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search.</EmptyState>}
       </div>
     </div>
   );
@@ -1440,8 +1411,37 @@ export default function AppearanceCenter({
           <ToolbarButton icon={Undo2} disabled={!undoStack.length} onClick={undo} title="Undo (Ctrl+Z)" />
           <ToolbarButton icon={Redo2} disabled={!redoStack.length} onClick={redo} title="Redo (Ctrl+Shift+Z)" />
           <span className="ve-toolbar-divider" />
-          <ToolbarButton icon={MonitorPlay} active={previewMode === 'fit-widget'} onClick={() => setPreviewMode('fit-widget')}>{mode === 'simple' ? 'Focused Widget' : 'OBS'}</ToolbarButton>
-          <ToolbarButton icon={Monitor} active={previewMode === 'full-overlay'} onClick={() => setPreviewMode('full-overlay')}>{mode === 'simple' ? 'Full Overlay' : 'Desktop'}</ToolbarButton>
+          <ToolbarButton icon={MonitorPlay} active={previewMode === 'fit-widget'} onClick={() => setPreviewMode('fit-widget')}>Focused</ToolbarButton>
+          <ToolbarButton icon={Monitor} active={previewMode === 'full-overlay'} onClick={() => setPreviewMode('full-overlay')}>Overlay</ToolbarButton>
+          <span className="ve-toolbar-backgrounds" role="group" aria-label="Canvas background">
+            {PREVIEW_BACKGROUNDS.map(item => (
+              <button key={item.id} type="button" className={previewBackground === item.id ? 'is-active' : ''} onClick={() => setPreviewBackground(item.id)}>
+                {item.label}
+              </button>
+            ))}
+          </span>
+          {!!previewStateOptions.length && selectedWidget?.id && (
+            <span className="ve-preview-state-picker" role="group" aria-label="Preview state">
+              {previewStateOptions.map(option => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={selectedPreviewState === option.id ? 'is-active' : ''}
+                  onClick={() => setPreviewStateByWidget(prev => ({ ...prev, [selectedWidget.id]: option.id }))}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </span>
+          )}
+          <ToolbarButton active={showBefore} onClick={() => setShowBefore(value => !value)}>Before</ToolbarButton>
+          <label className="ve-toolbar-check">
+            <input type="checkbox" checked={obsSafe} onChange={event => setObsSafe(event.target.checked)} />
+            Safe
+          </label>
+          <ToolbarButton icon={ExternalLink} onClick={onOpenPreview}>Pop-out</ToolbarButton>
+          {previewStatus?.open && <ToolbarButton icon={Eye} onClick={onFocusPreview}>Focus</ToolbarButton>}
+          <span className="ve-toolbar-divider" />
           <ToolbarButton icon={Maximize2} active={zoom === 'fit'} onClick={() => updateZoom('fit')} title="Fit preview" />
           <ToolbarButton icon={ZoomOut} onClick={() => updateZoom('out')} title="Zoom out" />
           <span className="ve-zoom-label">{zoom === 'fit' ? 'Fit' : `${zoom}%`}</span>
@@ -1490,18 +1490,6 @@ export default function AppearanceCenter({
                   aria-label="Search widgets"
                 />
               </div>
-              <div className="ve-category-chips" aria-label="Widget category filters">
-                {WIDGET_CATEGORY_FILTERS.map(item => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={categoryFilter === item.id ? 'is-active' : ''}
-                    onClick={() => setCategoryFilter(item.id)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
               <div className="ve-widget-list">
                 {filteredWidgets.map(widget => {
                   const active = selectedWidget?.id === widget.id;
@@ -1524,7 +1512,7 @@ export default function AppearanceCenter({
                     </button>
                   );
                 })}
-                {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search or category.</EmptyState>}
+                {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search.</EmptyState>}
               </div>
             </div>
           ) : (
@@ -1575,60 +1563,6 @@ export default function AppearanceCenter({
         </aside>
 
         <main className="ve-canvas-panel">
-          <div className="ve-canvas-header">
-            <div>
-              <strong>{mode === 'simple' ? 'Focused preview' : 'Live canvas'}</strong>
-              <span>{mode === 'simple' ? 'Choose a style and colour, then publish when it looks right.' : 'Preview uses the same widget components and appearance model as OBS.'}</span>
-            </div>
-            <div className="ve-canvas-actions">
-              {mode === 'simple' && (
-                <>
-                  <button type="button" className={previewMode === 'fit-widget' ? 'is-active' : ''} onClick={() => setPreviewMode('fit-widget')}>Focused Widget</button>
-                  <button type="button" className={previewMode === 'full-overlay' ? 'is-active' : ''} onClick={() => setPreviewMode('full-overlay')}>Full Overlay</button>
-                  {!!previewStateOptions.length && (
-                    <span className="ve-preview-state-picker" role="group" aria-label="Preview state">
-                      {previewStateOptions.map(option => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          className={selectedPreviewState === option.id ? 'is-active' : ''}
-                          onClick={() => setPreviewStateByWidget(prev => ({ ...prev, [selectedWidget.id]: option.id }))}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </span>
-                  )}
-                  <button type="button" className={showBefore ? 'is-active' : ''} onClick={() => setShowBefore(value => !value)}>
-                    {showBefore ? 'Showing Before' : 'Before / After'}
-                  </button>
-                </>
-              )}
-              <label className="ve-toggle-inline">
-                <input type="checkbox" checked={obsSafe} onChange={event => setObsSafe(event.target.checked)} />
-                OBS safe frame
-              </label>
-              <button type="button" onClick={onOpenPreview}>
-                <ExternalLink size={15} />
-                Pop-out
-              </button>
-              {previewStatus?.open && (
-                <button type="button" onClick={onFocusPreview}>
-                  <Eye size={15} />
-                  Focus
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="ve-background-switcher" role="group" aria-label="Canvas background">
-            {PREVIEW_BACKGROUNDS.map(item => (
-              <button key={item.id} type="button" className={previewBackground === item.id ? 'is-active' : ''} onClick={() => setPreviewBackground(item.id)}>
-                {item.label}
-              </button>
-            ))}
-          </div>
-
           <div className={`ve-preview-shell${obsSafe ? ' ve-preview-shell--safe' : ''}`}>
             <OverlayPreview
               widgets={widgets}
@@ -1638,15 +1572,15 @@ export default function AppearanceCenter({
               previewSampleStates={previewStateByWidget}
               selectedWidgetId={selectedWidget?.id}
               selectedTarget={selectedTarget}
-              selectedElementId={mode === 'advanced' ? selectedElement?.id : ''}
+              selectedElementId={selectedElement?.id || ''}
               hiddenElementIds={mode === 'advanced' ? selectedHiddenElementIds : []}
               styleSelections={styleSelections}
               zoom={zoom === 'fit' ? 'fit' : `${zoom}%`}
               previewMode={previewMode}
               previewBackground={previewBackground}
-              selectMode={mode === 'advanced'}
-              onSelectWidget={mode === 'advanced' ? handlePreviewWidgetSelect : undefined}
-              onSelectElement={mode === 'advanced' ? handlePreviewElementSelect : undefined}
+              selectMode={selectedElements.length > 1}
+              onSelectWidget={handlePreviewWidgetSelect}
+              onSelectElement={handlePreviewElementSelect}
               onResizeWidget={mode === 'advanced' ? handlePreviewResize : undefined}
             />
           </div>
@@ -1720,11 +1654,6 @@ export default function AppearanceCenter({
                       key={option.id}
                       widget={selectedWidget}
                       option={option}
-                      theme={theme}
-                      appearance={draft}
-                      userId={null}
-                      selectedTarget={selectedTarget}
-                      previewState={option.previewStateIds?.[0] || selectedPreviewState}
                       active={selectedTarget.styleId === option.id}
                       edited={option.edited}
                       onSelect={selectStyle}
@@ -1742,23 +1671,22 @@ export default function AppearanceCenter({
                 <header>
                   <h3>{quickNumber('editing')}. Choose what to edit</h3>
                 </header>
-                <p className="ve-simple-help">The controls below only appear when they apply to this part.</p>
-                <div className="ve-edit-target-grid">
-                  {selectedElements.map(element => (
-                    <button
-                      key={element.id}
-                      type="button"
-                      className={selectedElement?.id === element.id ? 'is-active' : ''}
-                      onClick={() => {
-                        setSelectedElementId(element.id);
-                        setSelectedStateId('default');
-                      }}
-                    >
-                      <span>{element.label}</span>
-                      <small>{inferElementKind(element)}</small>
-                    </button>
-                  ))}
-                </div>
+                <label className="ve-edit-target-select">
+                  <span>Part</span>
+                  <select
+                    value={selectedElement?.id || ''}
+                    onChange={event => {
+                      setSelectedElementId(event.target.value);
+                      setSelectedStateId('default');
+                    }}
+                  >
+                    {selectedElements.map(element => (
+                      <option key={element.id} value={element.id}>
+                        {element.label} - {inferElementKind(element)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </section>
             )}
 
@@ -2222,30 +2150,30 @@ export default function AppearanceCenter({
               </section>
             )}
 
-            <section className="ve-property-section ve-simple-section ve-simple-final">
-              <header>
-                <h3>{quickNumber('actions')}. Final actions</h3>
-              </header>
-              <div className="ve-simple-actions ve-simple-actions--final">
-                <button type="button" onClick={undo} disabled={!undoStack.length} aria-label="Undo" title="Undo">
-                  <Undo2 size={15} />
-                  Undo
-                </button>
-                <button type="button" onClick={restoreRecommendedStyle} aria-label="Restore recommended style" title="Restore recommended style">
-                  <RotateCcw size={15} />
-                  Restore
-                </button>
-                <button type="button" onClick={saveCurrentPreset} aria-label="Save as My Preset" title="Save as My Preset">
-                  <Save size={15} />
-                  Preset
-                </button>
-                <button type="button" className="ve-simple-publish" onClick={publish} aria-label="Publish to OBS" title="Publish to OBS">
-                  <ExternalLink size={15} />
-                  Publish
-                </button>
-              </div>
-            </section>
           </div>
+          <section className="ve-simple-final">
+            <header>
+              <h3>{quickNumber('actions')}. Final actions</h3>
+            </header>
+            <div className="ve-simple-actions ve-simple-actions--final">
+              <button type="button" onClick={undo} disabled={!undoStack.length} aria-label="Undo" title="Undo">
+                <Undo2 size={15} />
+                Undo
+              </button>
+              <button type="button" onClick={restoreRecommendedStyle} aria-label="Restore recommended style" title="Restore recommended style">
+                <RotateCcw size={15} />
+                Restore
+              </button>
+              <button type="button" onClick={saveCurrentPreset} aria-label="Save as My Preset" title="Save as My Preset">
+                <Save size={15} />
+                Preset
+              </button>
+              <button type="button" className="ve-simple-publish" onClick={publish} aria-label="Publish to OBS" title="Publish to OBS">
+                <ExternalLink size={15} />
+                Publish
+              </button>
+            </div>
+          </section>
         </aside>
         ) : (
         <aside className="ve-right-panel">

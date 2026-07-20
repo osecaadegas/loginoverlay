@@ -745,7 +745,9 @@ export const CONTROL_DEFINITIONS = {
   gradientFrom: { id: 'gradientFrom', label: 'Gradient start', type: 'color', group: 'Background' },
   gradientTo: { id: 'gradientTo', label: 'Gradient end', type: 'color', group: 'Background' },
   gradientAngle: { id: 'gradientAngle', label: 'Gradient angle', type: 'range', min: 0, max: 360, step: 1, unit: 'deg', group: 'Background' },
+  imageUrl: { id: 'imageUrl', label: 'Image URL', type: 'text', group: 'Image' },
   imageSize: { id: 'imageSize', label: 'Image size', type: 'range', min: 30, max: 220, step: 1, unit: 'px', group: 'Background' },
+  imageFit: { id: 'imageFit', label: 'Image fit', type: 'segmented', options: ['cover', 'contain', 'fill'], group: 'Image' },
   backgroundSize: { id: 'backgroundSize', label: 'Image fit', type: 'segmented', options: ['cover', 'contain', 'fill'], group: 'Background' },
   backgroundPosition: { id: 'backgroundPosition', label: 'Image position', type: 'select', options: ['center', 'top', 'bottom', 'left', 'right'], group: 'Background' },
 
@@ -784,7 +786,7 @@ const PROGRESS_IDS = /progress|bar|fill|meter/i;
 
 const TEXT_CONTROLS = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'textColor', 'textAlign', 'lineHeight', 'letterSpacing', 'textTransform', 'textShadow'];
 const SURFACE_CONTROLS = ['background', 'backgroundColor', 'borderColor', 'borderWidth', 'borderStyle', 'radius', 'padding', 'gap', 'opacity', 'shadowBlur', 'shadowOpacity', 'glowBlur', 'glowOpacity', 'blur'];
-const IMAGE_CONTROLS = ['imageSize', 'backgroundSize', 'backgroundPosition', 'radius', 'opacity', 'borderColor', 'borderWidth'];
+const IMAGE_CONTROLS = ['imageUrl', 'imageSize', 'imageFit', 'backgroundSize', 'backgroundPosition', 'radius', 'opacity', 'borderColor', 'borderWidth'];
 const PROGRESS_CONTROLS = ['background', 'backgroundColor', 'borderColor', 'borderWidth', 'radius', 'height', 'opacity'];
 const SIZE_CONTROLS = ['width', 'height', 'minWidth', 'minHeight', 'padding', 'margin', 'gap'];
 const ADVANCED_CORNER_CONTROLS = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
@@ -965,11 +967,14 @@ function declaredProperties(element = {}) {
 }
 
 export function elementSupportsControl(element = {}, controlId) {
+  const explicitControls = Array.isArray(element.controls) && element.controls.length ? element.controls : null;
+  const kind = inferElementKind(element);
+  if (explicitControls && kind === 'image' && [...IMAGE_CONTROLS, ...SIZE_CONTROLS].includes(controlId)) return explicitControls.includes(controlId);
+  if (explicitControls && kind === 'progress' && [...PROGRESS_CONTROLS, ...SIZE_CONTROLS].includes(controlId)) return explicitControls.includes(controlId);
   const props = declaredProperties(element);
   if (props.has(controlId)) return true;
   const definition = CONTROL_DEFINITIONS[controlId];
   if (!definition) return false;
-  const kind = inferElementKind(element);
   if (kind === 'text') return TEXT_CONTROLS.includes(controlId) || ['opacity', 'shadowBlur', 'shadowOpacity'].includes(controlId);
   if (kind === 'surface') return SURFACE_CONTROLS.includes(controlId) || SIZE_CONTROLS.includes(controlId);
   if (kind === 'image') return IMAGE_CONTROLS.includes(controlId) || SIZE_CONTROLS.includes(controlId);
@@ -979,9 +984,13 @@ export function elementSupportsControl(element = {}, controlId) {
 
 export function getElementControlGroups(element = {}, mode = 'simple') {
   const advanced = mode === 'advanced';
+  const explicitControls = Array.isArray(element.controls) ? element.controls : [];
   const base = [
+    ...explicitControls,
     ...TEXT_CONTROLS,
     ...SURFACE_CONTROLS,
+    ...IMAGE_CONTROLS,
+    ...PROGRESS_CONTROLS,
     ...SIZE_CONTROLS,
     ...(advanced ? [...ADVANCED_CORNER_CONTROLS, ...ANIMATION_CONTROLS] : []),
   ];

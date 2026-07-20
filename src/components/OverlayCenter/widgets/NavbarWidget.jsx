@@ -227,12 +227,15 @@ function NavbarWidget({ config, widgetId, userId }) {
   const avatarBorderColor = subValue(c, 'avatar', 'borderColor', 'transparent');
   const avatarBorderWidth = subValue(c, 'avatar', 'borderWidth', 0);
   const avatarFit = subValue(c, 'avatar', 'imageFit', 'cover');
+  const avatarUrl = subValue(c, 'avatar', 'imageUrl', c.avatarUrl || '');
   const badgeImageSize = subValue(c, 'badgeImage', 'imageSize', null);
   const badgeImageRadius = subValue(c, 'badgeImage', 'radius', 0);
   const badgeImageFit = subValue(c, 'badgeImage', 'imageFit', 'contain');
+  const badgeImageUrl = subValue(c, 'badgeImage', 'imageUrl', c.badgeImage || '');
   const casinoImageSize = subValue(c, 'casino', 'imageSize', null);
   const casinoImageRadius = subValue(c, 'casino', 'radius', isMetal ? 6 : isRetro ? 2 : 8);
   const casinoImageFit = subValue(c, 'casino', 'imageFit', 'contain');
+  const casinoLogoUrl = subValue(c, 'casino', 'imageUrl', c.casinoLogoUrl || '');
   const casinoTextColor = subValue(c, 'casino', 'textColor', accentColor);
   const casinoFontFamily = subValue(c, 'casino', 'fontFamily', containerFontFamily);
   const casinoFontSize = subValue(c, 'casino', 'fontSize', fontSize * 0.9);
@@ -441,8 +444,8 @@ function NavbarWidget({ config, widgetId, userId }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }}>
-                {c.avatarUrl ? (
-                  <img src={c.avatarUrl} alt="" style={{
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" style={{
                     width: '100%', height: '100%',
                     borderRadius: avatarRadius,
                     objectFit: avatarFit,
@@ -496,13 +499,13 @@ function NavbarWidget({ config, widgetId, userId }) {
         );
 
       case 'badge': {
-        if (!c.badgeImage) return null;
+        if (!badgeImageUrl) return null;
         return (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             height: barHeight, flexShrink: 0, padding: '2px 0',
           }}>
-            <img src={c.badgeImage} alt="" style={{
+            <img src={badgeImageUrl} alt="" style={{
               height: badgeImageSize || (barHeight * 0.85 * ((c.badgeSize ?? 100) / 100)),
               minWidth: badgeImageSize || (barHeight * 1.2 * ((c.badgeSize ?? 100) / 100)),
               objectFit: badgeImageFit,
@@ -671,11 +674,11 @@ function NavbarWidget({ config, widgetId, userId }) {
       }
 
       case 'casino': {
-        if (!c.showCasino || (!c.casinoName && !c.casinoLogoUrl)) return null;
+        if (!c.showCasino || (!c.casinoName && !casinoLogoUrl)) return null;
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            {c.casinoLogoUrl && (
-              <img src={c.casinoLogoUrl} alt="" style={{
+            {casinoLogoUrl && (
+              <img src={casinoLogoUrl} alt="" style={{
                 height: casinoImageSize || (barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100)),
                 maxWidth: casinoImageSize ? casinoImageSize * 1.8 : (barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100)),
                 objectFit: casinoImageFit, borderRadius: casinoImageRadius,

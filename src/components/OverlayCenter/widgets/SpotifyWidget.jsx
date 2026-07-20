@@ -114,11 +114,13 @@ function SpotifyWidget({ config, widgetId, userId }) {
   }, [c.spotify_access_token, widgetId, userId]);
 
   /* ── Manual fallback ── */
-  const data = nowPlaying
+  const baseData = nowPlaying
     ? nowPlaying
     : (c.manualArtist || c.manualTrack)
       ? { artist: c.manualArtist || '', track: c.manualTrack || '', isPlaying: true, albumArt: c.manualAlbumArt || '' }
       : null;
+  const customAlbumArt = subValue(c, 'albumArt', 'imageUrl', '');
+  const data = baseData && customAlbumArt ? { ...baseData, albumArt: customAlbumArt } : baseData;
 
   const style = c.displayStyle || 'album_card';
 

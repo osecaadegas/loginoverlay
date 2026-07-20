@@ -13,7 +13,7 @@ export const compactEditableAdvancedSchema = Object.freeze([
   }),
   Object.freeze({
     elementId: 'slotImage',
-    controls: ['imageSize', 'backgroundSize', 'radius', 'opacity', 'borderColor', 'borderWidth'],
+    controls: ['imageUrl', 'imageSize', 'imageFit', 'radius', 'opacity', 'borderColor', 'borderWidth'],
   }),
   Object.freeze({
     elementId: 'slotTitle',
