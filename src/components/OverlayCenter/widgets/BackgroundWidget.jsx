@@ -441,7 +441,14 @@ function GlimpseLayer({ type, color, speed }) {
 /* ═══════════════════════════════════════════════
    MATRIX RAIN – CSS-animated falling characters
    ═══════════════════════════════════════════════ */
+function secondsSpeedFactor(speed, fallback = 8) {
+  const seconds = Number(speed);
+  const safeSeconds = Number.isFinite(seconds) ? seconds : fallback;
+  return Math.min(Math.max(safeSeconds, 2), 30) / fallback;
+}
+
 function MatrixRain({ color, speed }) {
+  const speedFactor = secondsSpeedFactor(speed, 8);
   const columns = useMemo(() => {
     const cols = [];
     const count = 30;
@@ -450,7 +457,7 @@ function MatrixRain({ color, speed }) {
       cols.push({
         x: (i / count) * 100 + rng() * (100 / count),
         delay: rng() * 10,
-        dur: (rng() * 6 + 3) * ((100 - speed * 5) / 50 + 0.5),
+        dur: (rng() * 6 + 3) * speedFactor,
         opacity: rng() * 0.6 + 0.2,
         chars: Array.from({ length: Math.floor(rng() * 12 + 8) }, () =>
           String.fromCharCode(0x30A0 + Math.floor(rng() * 96))
@@ -459,7 +466,7 @@ function MatrixRain({ color, speed }) {
       });
     }
     return cols;
-  }, [speed]);
+  }, [speedFactor]);
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
@@ -488,6 +495,7 @@ function MatrixRain({ color, speed }) {
    STARFIELD CANVAS – CSS-animated flying stars
    ═══════════════════════════════════════════════ */
 function StarfieldCanvas({ color, speed }) {
+  const speedFactor = secondsSpeedFactor(speed, 8);
   const stars = useMemo(() => {
     const arr = [];
     const count = 80;
@@ -499,12 +507,12 @@ function StarfieldCanvas({ color, speed }) {
         y: rng() * 100,
         size: (layer + 1) * (rng() * 0.8 + 0.6),
         opacity: 0.3 + layer * 0.25 + rng() * 0.2,
-        dur: (8 - layer * 2) * ((100 - speed * 5) / 50 + 0.5),
+        dur: (8 - layer * 2) * speedFactor,
         delay: rng() * 5,
       });
     }
     return arr;
-  }, [speed]);
+  }, [speedFactor]);
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>

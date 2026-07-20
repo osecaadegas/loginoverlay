@@ -1785,7 +1785,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           animations: true,
           animationSpeed: true,
         },
-        elementIds: ['canvas', 'source', 'texture', 'tint', 'effects'],
+        elementIds: ['canvas', 'source', 'texture', 'media', 'tint', 'effects'],
       }),
       freezeStyle({
         id: 'matrix',
@@ -1801,7 +1801,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           animations: true,
           animationSpeed: true,
         },
-        elementIds: ['canvas', 'source', 'texture', 'tint', 'effects'],
+        elementIds: ['canvas', 'source', 'texture', 'media', 'tint', 'effects'],
       }),
       freezeStyle({
         id: 'starfield',
@@ -1817,7 +1817,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           animations: true,
           animationSpeed: true,
         },
-        elementIds: ['canvas', 'source', 'texture', 'tint', 'effects'],
+        elementIds: ['canvas', 'source', 'texture', 'media', 'tint', 'effects'],
       }),
       freezeStyle({
         id: 'waves',
@@ -1833,7 +1833,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           animations: true,
           animationSpeed: true,
         },
-        elementIds: ['canvas', 'source', 'texture', 'tint', 'effects'],
+        elementIds: ['canvas', 'source', 'texture', 'media', 'tint', 'effects'],
       }),
       freezeStyle({
         id: 'geometric',
@@ -1849,7 +1849,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           animations: true,
           animationSpeed: true,
         },
-        elementIds: ['canvas', 'source', 'texture', 'tint', 'effects'],
+        elementIds: ['canvas', 'source', 'texture', 'media', 'tint', 'effects'],
       }),
     ]),
     safeRanges: Object.freeze({

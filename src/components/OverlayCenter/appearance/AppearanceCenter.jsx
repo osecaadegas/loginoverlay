@@ -510,6 +510,47 @@ function normalizeControl(control, label) {
   return label ? { ...control, label } : control;
 }
 
+function normalizeBackgroundControl(control, elementId) {
+  if (!control) return control;
+  const labels = {
+    canvas: {
+      background: 'Fallback colour',
+      opacity: 'Layer opacity',
+      radius: 'Canvas radius',
+    },
+    texture: {
+      background: 'Colour 1',
+      accentColor: 'Colour 2',
+      fillColor: 'Colour 3',
+      animSpeed: 'Animation duration',
+    },
+    media: {
+      opacity: 'Media opacity',
+      backgroundPosition: 'Position',
+    },
+    tint: {
+      background: 'Tint colour',
+      opacity: 'Tint opacity',
+    },
+    effects: {
+      fxGlimpse: 'Light sweep',
+      fxGlimpseColor: 'Light colour',
+      fxParticleColor: 'Particle colour',
+      fxFogColor: 'Fog colour',
+    },
+  };
+  return labels[elementId]?.[control.id] ? { ...control, label: labels[elementId][control.id] } : control;
+}
+
+const BACKGROUND_SPECIAL_STYLE_IDS = new Set(['aurora', 'matrix', 'starfield', 'waves', 'geometric']);
+const BACKGROUND_TEXTURE_SOURCE_CONTROLS = new Set(['textureType', 'background', 'accentColor', 'fillColor', 'gradientAngle', 'patternSize', 'animSpeed']);
+const BACKGROUND_SPECIAL_SOURCE_CONTROLS = new Set(['background', 'accentColor', 'fillColor', 'gradientAngle', 'animSpeed']);
+const BACKGROUND_MEDIA_ALWAYS_CONTROLS = new Set(['imageUrl', 'videoUrl']);
+const BACKGROUND_MEDIA_ACTIVE_CONTROLS = new Set(['imageFit', 'backgroundPosition', 'brightness', 'contrast', 'saturation', 'blur', 'hueRotate', 'grayscale', 'sepia', 'opacity']);
+const BACKGROUND_PARTICLE_DETAIL_CONTROLS = new Set(['fxParticleColor', 'fxParticleCount', 'fxParticleSpeed', 'fxParticleSize']);
+const BACKGROUND_FOG_DETAIL_CONTROLS = new Set(['fxFogColor']);
+const BACKGROUND_LIGHT_DETAIL_CONTROLS = new Set(['fxGlimpseColor', 'fxGlimpseSpeed']);
+
 function WidgetIcon({ icon }) {
   if (typeof icon === 'string' && icon.length <= 3) return <span className="ve-widget-card__emoji">{icon}</span>;
   return <Palette size={18} />;
@@ -657,6 +698,7 @@ export default function AppearanceCenter({
   const selectedWidgetName = selectedWidget ? getWidgetDisplayName(selectedWidget) : 'Overlay';
   const selectedWidgetType = selectedWidget?.widget_type || selectedTarget.widgetType || '';
   const selectedWidgetUsesV2 = isWidgetAppearanceV2Enabled(selectedWidgetType);
+  const selectedWidgetIsBackground = selectedWidgetType === 'background';
   const selectedTargetRoot = useMemo(() => getTargetOverrideRoot(selectedTarget), [selectedTarget]);
   const currentSimpleSettings = useMemo(
     () => getSimpleSettingsAtRoot(draft, selectedTargetRoot, selectedWidgetType),
@@ -713,6 +755,10 @@ export default function AppearanceCenter({
     () => selectedElements.find(element => element.id === selectedElementId) || selectedElements[0] || null,
     [selectedElements, selectedElementId]
   );
+  const backgroundElements = useMemo(
+    () => (selectedWidgetIsBackground ? selectedElements : []),
+    [selectedElements, selectedWidgetIsBackground]
+  );
   const selectedStyleCapabilities = selectedStyleCapability?.capabilities || FALLBACK_QUICK_STYLE_CAPABILITIES;
   const selectedQuickControls = useMemo(() => {
     if (selectedWidgetUsesV2) {
@@ -750,7 +796,11 @@ export default function AppearanceCenter({
     const sections = [];
     sections.push('widgetStyle');
     if (selectedElements.length > 1) sections.push('editing');
-    if (selectedWidgetType === 'background' && selectedElement?.id) sections.push('backgroundControls');
+    if (selectedWidgetIsBackground) {
+      sections.push('backgroundControls');
+      sections.push('actions');
+      return sections;
+    }
     if (selectedQuickControls.has('material')) sections.push('material');
     if (hasAnyQuickControl(['primaryColor', 'accentColor'])) sections.push('colours');
     if (hasAnyQuickControl([
@@ -782,7 +832,7 @@ export default function AppearanceCenter({
     ])) sections.push('motion');
     sections.push('actions');
     return sections;
-  }, [hasAnyQuickControl, selectedElement?.id, selectedElements.length, selectedQuickControls, selectedWidgetType]);
+  }, [hasAnyQuickControl, selectedElements.length, selectedQuickControls, selectedWidgetIsBackground]);
   const simpleSectionTabs = useMemo(() => {
     const labels = {
       widgetStyle: 'Style',
@@ -1234,22 +1284,37 @@ export default function AppearanceCenter({
     }
   }, [draft, saveTheme, selectedWidgetName, selectedWidgetType, serverState, theme, updateState, user?.id]);
 
-  const updateElementControl = useCallback((control, value) => {
-    if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked) return;
+  const isElementLocked = useCallback((elementId) => {
+    if (!selectedWidget?.id || !elementId) return false;
+    return !!lockedLayers[layerKey(selectedWidget.id, elementId)];
+  }, [lockedLayers, selectedWidget?.id]);
+
+  const updateElementControlFor = useCallback((elementId, control, value) => {
+    if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
     const normalized = validateEditorValue(control, value);
     const path = selectedWidgetUsesV2
-      ? resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId)
-      : resolveElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    commitDraft(prev => setByPath(prev, path, normalized), `${selectedElement.id}.${control.id}`);
-  }, [commitDraft, selectedElement?.id, selectedLayerLocked, selectedStateId, selectedTargetRoot, selectedWidgetUsesV2]);
+      ? resolveV2ElementOverridePath(selectedTargetRoot, elementId, control.id, selectedStateId)
+      : resolveElementPath(selectedTargetRoot, elementId, control.id, selectedStateId);
+    commitDraft(prev => setByPath(prev, path, normalized), `${elementId}.${control.id}`);
+  }, [commitDraft, isElementLocked, selectedStateId, selectedTargetRoot, selectedWidgetUsesV2]);
+
+  const updateElementControl = useCallback((control, value) => {
+    if (!selectedElement?.id) return;
+    updateElementControlFor(selectedElement.id, control, value);
+  }, [selectedElement?.id, updateElementControlFor]);
+
+  const resetElementControlFor = useCallback((elementId, control) => {
+    if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+    const v2Path = resolveV2ElementOverridePath(selectedTargetRoot, elementId, control.id, selectedStateId);
+    const modernPath = resolveElementPath(selectedTargetRoot, elementId, control.id, selectedStateId);
+    const legacyPath = resolveLegacyElementPath(selectedTargetRoot, elementId, control.id, selectedStateId);
+    commitDraft(prev => omitPath(omitPath(omitPath(prev, v2Path), modernPath), legacyPath), `Reset ${elementId}.${control.id}`);
+  }, [commitDraft, isElementLocked, selectedStateId, selectedTargetRoot]);
 
   const resetElementControl = useCallback((control) => {
-    if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked) return;
-    const v2Path = resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    const modernPath = resolveElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    const legacyPath = resolveLegacyElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    commitDraft(prev => omitPath(omitPath(omitPath(prev, v2Path), modernPath), legacyPath), `Reset ${selectedElement.id}.${control.id}`);
-  }, [commitDraft, selectedElement?.id, selectedLayerLocked, selectedStateId, selectedTargetRoot]);
+    if (!selectedElement?.id) return;
+    resetElementControlFor(selectedElement.id, control);
+  }, [resetElementControlFor, selectedElement?.id]);
 
   const updateWidgetControl = useCallback((item, value) => {
     const root = selectedTargetRoot;
@@ -1457,6 +1522,69 @@ export default function AppearanceCenter({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [draft, mode, persistDraft, redo, resetElement, selectedElement, selectedLayerLocked, undo]);
 
+  useEffect(() => {
+    if (!selectedWidgetIsBackground) return;
+    setOpenSimpleSections(prev => (
+      prev.includes('backgroundControls')
+        ? prev
+        : ['backgroundControls', ...prev.filter(id => id !== 'actions')].slice(0, 2)
+    ));
+  }, [selectedWidgetIsBackground]);
+
+  const getElementControlValueFor = useCallback((elementId, controlId) => {
+    if (!selectedTargetRoot || !elementId || !controlId) return undefined;
+    const v2Path = resolveV2ElementOverridePath(selectedTargetRoot, elementId, controlId, selectedStateId);
+    const path = resolveElementPath(selectedTargetRoot, elementId, controlId, selectedStateId);
+    const legacyPath = resolveLegacyElementPath(selectedTargetRoot, elementId, controlId, selectedStateId);
+    const v2Value = getByPath(draft, v2Path);
+    if (v2Value !== undefined) return v2Value;
+    const value = getByPath(draft, path);
+    if (value !== undefined) return value;
+    return getByPath(draft, legacyPath);
+  }, [draft, selectedStateId, selectedTargetRoot]);
+
+  const backgroundSourceMode = useMemo(() => {
+    const sourceMode = getElementControlValueFor('source', 'bgMode');
+    if (sourceMode) return sourceMode;
+    return BACKGROUND_SPECIAL_STYLE_IDS.has(selectedTarget.styleId) ? 'special' : 'texture';
+  }, [getElementControlValueFor, selectedTarget.styleId]);
+
+  const backgroundParticleMode = getElementControlValueFor('effects', 'fxParticles') || 'none';
+  const backgroundFogMode = getElementControlValueFor('effects', 'fxFog') || 'none';
+  const backgroundLightMode = getElementControlValueFor('effects', 'fxGlimpse') || 'none';
+
+  const shouldShowBackgroundControl = useCallback((elementId, controlId) => {
+    if (!selectedWidgetIsBackground) return true;
+    if (elementId === 'texture') {
+      if (backgroundSourceMode === 'texture') return BACKGROUND_TEXTURE_SOURCE_CONTROLS.has(controlId);
+      if (backgroundSourceMode === 'special') return BACKGROUND_SPECIAL_SOURCE_CONTROLS.has(controlId);
+      return false;
+    }
+    if (elementId === 'media') {
+      if (BACKGROUND_MEDIA_ALWAYS_CONTROLS.has(controlId)) return true;
+      return ['image', 'video'].includes(backgroundSourceMode) && BACKGROUND_MEDIA_ACTIVE_CONTROLS.has(controlId);
+    }
+    if (elementId === 'effects') {
+      if (BACKGROUND_PARTICLE_DETAIL_CONTROLS.has(controlId)) return backgroundParticleMode !== 'none';
+      if (BACKGROUND_FOG_DETAIL_CONTROLS.has(controlId)) return backgroundFogMode !== 'none';
+      if (BACKGROUND_LIGHT_DETAIL_CONTROLS.has(controlId)) return backgroundLightMode !== 'none';
+      return true;
+    }
+    return true;
+  }, [backgroundFogMode, backgroundLightMode, backgroundParticleMode, backgroundSourceMode, selectedWidgetIsBackground]);
+
+  const getBackgroundElementControlGroups = useCallback((element) => {
+    if (!element) return [];
+    return getElementControlGroups(element, 'advanced')
+      .map(group => ({
+        ...group,
+        controls: group.controls
+          .filter(control => shouldShowBackgroundControl(element.id, control.id))
+          .map(control => normalizeBackgroundControl(control, element.id)),
+      }))
+      .filter(group => group.controls.length);
+  }, [shouldShowBackgroundControl]);
+
   const renderQuickControl = (item) => {
     const root = selectedTargetRoot;
     const path = root ? `${root}.appearance.${item.path}` : item.path;
@@ -1474,27 +1602,26 @@ export default function AppearanceCenter({
     );
   };
 
-  const renderElementControl = (control) => {
-    if (!selectedTargetRoot || !selectedElement?.id) return null;
-    const v2Path = resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    const path = resolveElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    const legacyPath = resolveLegacyElementPath(selectedTargetRoot, selectedElement.id, control.id, selectedStateId);
-    const v2Value = getByPath(draft, v2Path);
-    const value = getByPath(draft, path);
-    const legacyValue = getByPath(draft, legacyPath);
-    const resolvedValue = v2Value !== undefined ? v2Value : value !== undefined ? value : legacyValue;
+  const renderElementControlFor = (element, control) => {
+    if (!selectedTargetRoot || !element?.id) return null;
+    const resolvedValue = getElementControlValueFor(element.id, control.id);
+    const locked = isElementLocked(element.id);
     return (
       <PropertyControl
-        key={control.id}
+        key={`${element.id}-${control.id}`}
         control={control}
         value={resolvedValue}
-        onChange={(next) => updateElementControl(control, next)}
-        onReset={() => resetElementControl(control)}
+        onChange={(next) => updateElementControlFor(element.id, control, next)}
+        onReset={() => resetElementControlFor(element.id, control)}
         inheritedLabel={resolvedValue === undefined ? 'Inherited' : 'Custom'}
-        disabled={selectedLayerLocked}
+        disabled={locked}
       />
     );
   };
+
+  const renderElementControl = (control) => (
+    selectedElement ? renderElementControlFor(selectedElement, control) : null
+  );
 
   const renderWidgetCard = (widget, simple = false) => {
     const active = selectedWidget?.id === widget.id;
@@ -1938,22 +2065,46 @@ export default function AppearanceCenter({
               </CollapsibleSection>
             )}
 
-            {simpleSections.includes('backgroundControls') && selectedElement && (
+            {simpleSections.includes('backgroundControls') && selectedWidgetIsBackground && (
               <CollapsibleSection
                 id="backgroundControls"
-                title={`${selectedElement.label} controls`}
+                title="Background controls"
                 openSections={openSimpleSections}
                 onToggle={toggleSimpleSection}
                 className="ve-simple-section"
               >
-                <p className="ve-simple-help">Only controls supported by this background part are shown.</p>
-                <div className="ve-control-groups ve-control-groups--background">
-                  {getElementControlGroups(selectedElement, 'advanced').map(group => (
-                    <div key={group.id} className="ve-control-group">
-                      <h4>{mapControlGroupTitle(group.label)}</h4>
-                      {group.controls.map(renderElementControl)}
-                    </div>
-                  ))}
+                <p className="ve-simple-help">Only live Background controls are shown. Choose Texture, Image URL, Video URL, or Animated in Source.</p>
+                <div className="ve-background-control-stack">
+                  {backgroundElements.map(element => {
+                    const groups = getBackgroundElementControlGroups(element);
+                    if (!groups.length) return null;
+                    return (
+                      <div
+                        key={element.id}
+                        className={`ve-background-part${selectedElement?.id === element.id ? ' is-active' : ''}`}
+                      >
+                        <button
+                          type="button"
+                          className="ve-background-part__header"
+                          onClick={() => {
+                            setSelectedElementId(element.id);
+                            setSelectedStateId('default');
+                          }}
+                        >
+                          <span>{element.label}</span>
+                          <small>{inferElementKind(element)}</small>
+                        </button>
+                        <div className="ve-control-groups ve-control-groups--background">
+                          {groups.map(group => (
+                            <div key={`${element.id}-${group.id}`} className="ve-control-group">
+                              <h4>{mapControlGroupTitle(group.label)}</h4>
+                              {group.controls.map(control => renderElementControlFor(element, control))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </CollapsibleSection>
             )}

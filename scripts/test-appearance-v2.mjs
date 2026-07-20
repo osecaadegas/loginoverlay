@@ -66,6 +66,11 @@ try {
   assert.ok(backgroundMediaControls.includes('brightness'), 'Background media part exposes filter controls');
   assert.ok(backgroundEffectsControls.includes('fxParticles'), 'Background effects part exposes particles');
   assert.ok(backgroundEffectsControls.includes('fxFog'), 'Background effects part exposes fog');
+  ['aurora', 'matrix', 'starfield', 'waves', 'geometric'].forEach(styleId => {
+    const specialMediaControls = registryModule.getWidgetStyleElements('background', styleId).find(element => element.id === 'media')?.controls || [];
+    assert.ok(specialMediaControls.includes('imageUrl'), `Background ${styleId} keeps image URL controls available`);
+    assert.ok(specialMediaControls.includes('videoUrl'), `Background ${styleId} keeps video URL controls available`);
+  });
   const betsGridElements = registryModule.getWidgetStyleElements('bets', 'v3_grid_2x3');
   const betsWidgetBackground = betsGridElements.find(element => element.id === 'widgetBackground');
   const betsCards = betsGridElements.find(element => element.id === 'betCards');
@@ -1151,6 +1156,11 @@ try {
   assert.equal(backgroundConfig.subElements.effects.fxParticles, 'snow', 'Background effects part persists particle effect');
   const backgroundWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/BackgroundWidget.jsx', import.meta.url), 'utf8');
   assertRendererPartTargets(backgroundWidgetSource, 'Background', ['canvas', 'texture', 'media', 'tint', 'effects']);
+  assert.ok(backgroundWidgetSource.includes('secondsSpeedFactor'), 'Background animated styles clamp seconds-based animation speed');
+  assert.ok(!backgroundWidgetSource.includes('100 - speed * 5'), 'Background special animation speed no longer creates negative durations');
+  const appearanceCenterSource = readFileSync(new URL('../src/components/OverlayCenter/appearance/AppearanceCenter.jsx', import.meta.url), 'utf8');
+  assert.ok(appearanceCenterSource.includes('BACKGROUND_MEDIA_ALWAYS_CONTROLS'), 'Background quick panel keeps image/video link controls visible');
+  assert.ok(appearanceCenterSource.includes('selectedWidgetIsBackground'), 'Background quick panel uses a dedicated background-only control flow');
 
   const spotifyConfig = appearanceModel.resolveWidgetAppearanceConfig(spotifyWidget, appearance, {});
   assert.equal(spotifyConfig.__appearanceV2.material, 'matte', 'Spotify mini-player receives V2 material');

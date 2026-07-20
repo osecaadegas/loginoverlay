@@ -1090,6 +1090,57 @@
   margin: -4px 0 2px;
 }
 
+.ve-background-control-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.ve-background-part {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.2);
+}
+
+.ve-background-part.is-active {
+  border-color: rgba(94, 234, 212, 0.48);
+  background: rgba(20, 184, 166, 0.08);
+}
+
+.ve-background-part__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #f8fafc;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ve-background-part__header span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.86rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ve-background-part__header small {
+  flex: 0 0 auto;
+  color: var(--ve-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
 .ve-material-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
