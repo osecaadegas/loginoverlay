@@ -246,6 +246,134 @@ function commonSubElements(tokens) {
   };
 }
 
+function buildBetsPatch(tokens, styleId) {
+  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
+    ? `0 ${px(tokens.materialTokens.shadowIntensity * 14)} ${px(tokens.materialTokens.shadowIntensity * 34)} ${tokens.colors.shadow}`
+    : undefined;
+  const glowShadow = tokens.materialTokens?.glowIntensity > 0.01
+    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 38)} ${tokens.colors.glow}`
+    : undefined;
+  const shadow = [cardShadow, glowShadow].filter(Boolean).join(', ') || undefined;
+  const statSurface = {
+    background: tokens.colors.secondarySurface,
+    textColor: tokens.colors.text,
+    fontFamily: tokens.typography.valueFont,
+    fontSize: tokens.typography.labelSize,
+    fontWeight: tokens.typography.valueWeight,
+    radius: tokens.shape.cardRadius,
+    padding: tokens.spacing.cardPadding,
+    borderColor: tokens.colors.border,
+    borderWidth: tokens.shape.borderWidth,
+  };
+  const textBase = {
+    textColor: tokens.colors.text,
+    fontFamily: tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    fontWeight: tokens.typography.bodyWeight,
+    lineHeight: tokens.typography.lineHeight,
+  };
+  return {
+    ...commonVisualPatch(tokens),
+    displayStyle: styleId || 'v3_grid_2x3',
+    bgColor: tokens.colors.surface,
+    headerBg: tokens.colors.secondarySurface,
+    headerText: tokens.colors.text,
+    textColor: tokens.colors.text,
+    mutedColor: tokens.colors.mutedText,
+    borderColor: tokens.colors.border,
+    borderRadius: tokens.shape.rootRadius,
+    cardRadius: tokens.shape.cardRadius,
+    cardBg: tokens.colors.secondarySurface,
+    progressColor: tokens.colors.primary,
+    progressBgColor: tokens.colors.elevatedSurface,
+    subElements: {
+      widgetBackground: {
+        background: tokens.colors.surface,
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        fontWeight: tokens.typography.bodyWeight,
+        radius: tokens.shape.rootRadius,
+        padding: tokens.spacing.rootPadding,
+        gap: tokens.spacing.sectionGap,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        shadow,
+        ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+      },
+      header: {
+        background: tokens.colors.secondarySurface,
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+      },
+      poolStat: statSurface,
+      timerStat: statSurface,
+      betsStat: statSurface,
+      betCards: {
+        background: tokens.colors.secondarySurface,
+        textColor: tokens.colors.text,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.cardPadding,
+        gap: tokens.spacing.itemGap,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        shadow,
+        states: {
+          leading: { borderColor: tokens.colors.primary, shadow: glowShadow },
+          winner: { borderColor: tokens.colors.positive, shadow: glowShadow },
+          loser: { opacity: 0.72 },
+          closed: { opacity: 0.88 },
+        },
+      },
+      cardNumberBadge: {
+        background: tokens.colors.primary,
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.valueWeight,
+        radius: tokens.shape.badgeRadius,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+      },
+      cardRangeText: {
+        ...textBase,
+        fontWeight: tokens.typography.valueWeight,
+      },
+      cardPercentageText: {
+        textColor: tokens.colors.primary,
+        fontFamily: tokens.typography.valueFont,
+        fontSize: tokens.typography.valueSize,
+        fontWeight: tokens.typography.valueWeight,
+        lineHeight: tokens.typography.lineHeight,
+      },
+      cardLabel: {
+        ...textBase,
+        textColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.labelWeight,
+      },
+      footerInstruction: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.mutedText,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.labelWeight,
+        radius: tokens.shape.cardRadius,
+        padding: tokens.spacing.itemGap,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+      },
+    },
+  };
+}
+
 function buildBHStatsPatch(tokens) {
   return {
     ...commonVisualPatch(tokens),
@@ -1535,6 +1663,7 @@ function buildPatchForWidget(widgetType, tokens, styleId) {
   if (widgetType === 'bonus_hunt') return buildBonusHuntPatch(tokens);
   if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens, styleId);
   if (widgetType === 'giveaway') return buildGiveawayPatch(tokens);
+  if (widgetType === 'bets') return buildBetsPatch(tokens, styleId);
   return {};
 }
 
@@ -1563,6 +1692,33 @@ function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = ''
     }
   }
   return next;
+}
+
+function migrateBetsLegacySubElements(subElements = {}) {
+  if (!isObject(subElements)) return {};
+  const mapped = {};
+  const copyLegacy = (from, to) => {
+    if (isObject(subElements[from])) mapped[to] = deepMergeV2(mapped[to] || {}, subElements[from]);
+  };
+  copyLegacy('container', 'widgetBackground');
+  copyLegacy('title', 'header');
+  copyLegacy('header', 'header');
+  copyLegacy('statistics', 'poolStat');
+  copyLegacy('statistics', 'timerStat');
+  copyLegacy('statistics', 'betsStat');
+  copyLegacy('optionCard', 'betCards');
+  copyLegacy('optionRow', 'betCards');
+  copyLegacy('optionNumber', 'cardNumberBadge');
+  copyLegacy('optionLabel', 'cardRangeText');
+  copyLegacy('percentage', 'cardPercentageText');
+  copyLegacy('footer', 'footerInstruction');
+  return deepMergeV2(mapped, subElements);
+}
+
+function inheritedSubElementsForWidget(widgetType, config = {}) {
+  if (widgetType === 'bonus_hunt') return {};
+  if (widgetType === 'bets') return migrateBetsLegacySubElements(config.subElements || {});
+  return config.subElements || {};
 }
 
 const BONUS_HUNT_GENERIC_VISUAL_KEYS = Object.freeze([
@@ -1661,15 +1817,11 @@ export function applyWidgetAppearanceV2ToConfig(widget, config, appearance = {},
   const explicitSubElements = config.__appearanceExplicitSubElements || {};
   const generatedSubElements = patch.subElements || {};
   const v2ElementOverrides = resolved.appearance.elementOverrides || {};
-  const inheritedSubElements = widget.widget_type === 'bonus_hunt'
-    ? {}
-    : (config.subElements || {});
-  const finalSubElements = filterUnsupportedSubElements(widget.widget_type, deepMergeV2(
-    inheritedSubElements,
-    generatedSubElements,
-    explicitSubElements,
-    v2ElementOverrides
-  ), resolved.styleId);
+  const inheritedSubElements = inheritedSubElementsForWidget(widget.widget_type, config);
+  const mergedSubElements = widget.widget_type === 'bets'
+    ? deepMergeV2(generatedSubElements, inheritedSubElements, explicitSubElements, v2ElementOverrides)
+    : deepMergeV2(inheritedSubElements, generatedSubElements, explicitSubElements, v2ElementOverrides);
+  const finalSubElements = filterUnsupportedSubElements(widget.widget_type, mergedSubElements, resolved.styleId);
   const next = {
     ...(isOriginalBaseline && widget.widget_type === 'bonus_hunt'
       ? stripInheritedBonusHuntVisualDefaults(config)

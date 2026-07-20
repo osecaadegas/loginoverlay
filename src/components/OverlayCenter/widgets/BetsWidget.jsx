@@ -93,6 +93,14 @@ function elementStyle(config, elementId, fallback = {}, legacyElementId, stateId
   return subElementStyle(explicitConfig, elementId, legacyFallback, stateId);
 }
 
+function partAttrs(partId, stateId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+    ...(stateId ? { 'data-widget-state': stateId } : {}),
+  };
+}
+
 function optionStateId({ isWin, isLose, isLead, status }) {
   if (isWin) return 'winner';
   if (isLose) return 'loser';
@@ -125,27 +133,28 @@ function BetsWidget({ config }) {
   const barColorMode = c.barColorMode  || 'rainbow';
 
   const preset      = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
-  const bgColor     = elementValue(c, 'container', 'background', c.bgColor || preset.bgColor);
-  const textColor   = elementValue(c, 'container', 'textColor', c.textColor || preset.textColor);
-  const borderColor = elementValue(c, 'container', 'borderColor', c.borderColor || 'rgba(148,163,184,0.12)');
-  const borderWidth = elementValue(c, 'container', 'borderWidth', c.borderWidth ?? c.cardBorderWidth ?? 1);
-  const headerBg    = elementValue(c, 'title', 'background', scopedSubValue(c, 'header', 'background', c.headerBg || preset.headerBg), 'question');
-  const headerText  = elementValue(c, 'title', 'textColor', scopedSubValue(c, 'header', 'textColor', c.headerText || preset.headerText), 'question');
+  const bgColor     = elementValue(c, 'widgetBackground', 'background', c.bgColor || preset.bgColor, 'container');
+  const textColor   = elementValue(c, 'widgetBackground', 'textColor', c.textColor || preset.textColor, 'container');
+  const borderColor = elementValue(c, 'widgetBackground', 'borderColor', c.borderColor || 'rgba(148,163,184,0.12)', 'container');
+  const borderWidth = elementValue(c, 'widgetBackground', 'borderWidth', c.borderWidth ?? 1, 'container');
+  const widgetRadius = elementValue(c, 'widgetBackground', 'radius', c.borderRadius ?? 0, 'container');
+  const headerBg    = elementValue(c, 'header', 'background', c.headerBg || preset.headerBg, 'title');
+  const headerText  = elementValue(c, 'header', 'textColor', c.headerText || preset.headerText, 'title');
   const barBg       = elementValue(c, 'progressBar', 'background', c.barBg || c.progressBgColor || preset.barBg);
   const barFill     = elementValue(c, 'progressBar', 'fillColor', c.barFill || c.progressColor || preset.barFill);
-  const accentColor = elementValue(c, 'optionNumber', 'background', scopedSubValue(c, 'optionCard', 'accentColor', c.accentColor || preset.accentColor), 'optionCard');
-  const optionBg    = elementValue(c, 'optionRow', 'background', scopedSubValue(c, 'optionCard', 'background', c.cardBg || barBg), 'optionCard');
-  const optionText  = elementValue(c, 'optionLabel', 'textColor', scopedSubValue(c, 'optionCard', 'textColor', textColor), 'optionCard');
+  const accentColor = elementValue(c, 'cardNumberBadge', 'background', scopedSubValue(c, 'optionCard', 'accentColor', c.accentColor || preset.accentColor), 'optionNumber');
+  const optionBg    = elementValue(c, 'betCards', 'background', scopedSubValue(c, 'optionCard', 'background', c.cardBg || barBg), 'optionRow');
+  const optionText  = elementValue(c, 'cardRangeText', 'textColor', scopedSubValue(c, 'optionCard', 'textColor', textColor), 'optionLabel');
   const timerText   = elementValue(c, 'status', 'textColor', scopedSubValue(c, 'timer', 'textColor', headerText), 'timer', status || 'default');
   const timerBg     = elementValue(c, 'status', 'background', scopedSubValue(c, 'timer', 'background', 'rgba(99,102,241,0.18)'), 'timer', status || 'default');
-  const winText     = elementValue(c, 'optionRow', 'textColor', scopedSubValue(c, 'winningState', 'textColor', '#4ade80'), 'optionCard', 'winner');
-  const winBg       = elementValue(c, 'optionRow', 'background', scopedSubValue(c, 'winningState', 'background', 'rgba(34,197,94,0.14)'), 'optionCard', 'winner');
-  const loseText    = elementValue(c, 'optionRow', 'textColor', scopedSubValue(c, 'losingState', 'textColor', '#f87171'), 'optionCard', 'loser');
-  const loseBg      = elementValue(c, 'optionRow', 'background', scopedSubValue(c, 'losingState', 'background', 'rgba(239,68,68,0.14)'), 'optionCard', 'loser');
-  const radius      = elementValue(c, 'optionRow', 'radius', scopedSubValue(c, 'optionCard', 'radius', c.cardRadius ?? 12), 'optionCard');
+  const winText     = elementValue(c, 'betCards', 'textColor', scopedSubValue(c, 'winningState', 'textColor', '#4ade80'), 'optionRow', 'winner');
+  const winBg       = elementValue(c, 'betCards', 'background', scopedSubValue(c, 'winningState', 'background', 'rgba(34,197,94,0.14)'), 'optionRow', 'winner');
+  const loseText    = elementValue(c, 'betCards', 'textColor', scopedSubValue(c, 'losingState', 'textColor', '#f87171'), 'optionRow', 'loser');
+  const loseBg      = elementValue(c, 'betCards', 'background', scopedSubValue(c, 'losingState', 'background', 'rgba(239,68,68,0.14)'), 'optionRow', 'loser');
+  const radius      = elementValue(c, 'betCards', 'radius', scopedSubValue(c, 'optionCard', 'radius', c.cardRadius ?? 12), 'optionRow');
   const progressHeight = elementValue(c, 'progressBar', 'height', c.barHeight || 8);
   const progressRadius = elementValue(c, 'progressBar', 'radius', 4);
-  const containerStyle = elementStyle(c, 'container', {
+  const containerStyle = elementStyle(c, 'widgetBackground', {
     fontFamily: font,
     fontSize: `${baseFontSize}px`,
     lineHeight: defaultLineHeight,
@@ -155,9 +164,9 @@ function BetsWidget({ config }) {
     background: bgColor,
     color: textColor,
     border: `${Number(borderWidth) || 0}px solid ${borderColor}`,
-    borderRadius: toCssLength(c.borderRadius ?? c.cardRadius, '0px'),
-  });
-  const titleStyle = elementStyle(c, 'title', {
+    borderRadius: toCssLength(widgetRadius, '0px'),
+  }, 'container');
+  const titleStyle = elementStyle(c, 'header', {
     color: headerText,
     fontFamily: headingFont,
     fontSize: `${Math.round(baseFontSize * headingScale)}px`,
@@ -166,11 +175,13 @@ function BetsWidget({ config }) {
     letterSpacing: defaultLetterSpacing,
     textTransform: defaultTextTransform,
     textAlign: defaultTextAlign,
-  }, 'question');
+  }, 'title');
   const headerStyle = {
     background: titleStyle.background || headerBg,
+    color: titleStyle.color || headerText,
     ...(titleStyle.padding ? { padding: titleStyle.padding } : {}),
     ...(titleStyle.borderRadius ? { borderRadius: titleStyle.borderRadius } : {}),
+    ...(titleStyle.border ? { border: titleStyle.border } : {}),
   };
   const statusStyle = elementStyle(c, 'status', {
     background: timerBg,
@@ -182,7 +193,7 @@ function BetsWidget({ config }) {
     letterSpacing: defaultLetterSpacing,
     textTransform: 'uppercase',
   }, 'timer', status || 'default');
-  const statisticsStyle = elementStyle(c, 'statistics', {
+  const statisticsStyle = elementStyle(c, 'poolStat', {
     color: headerText,
     fontFamily: numberFont,
     fontSize: `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
@@ -191,9 +202,11 @@ function BetsWidget({ config }) {
     letterSpacing: defaultLetterSpacing,
     textTransform: defaultTextTransform,
     textAlign: 'center',
-  });
-  const statisticsTextStyle = pickTextStyle(statisticsStyle);
-  const footerStyle = elementStyle(c, 'footer', {
+  }, 'statistics');
+  const poolStatStyle = elementStyle(c, 'poolStat', statisticsStyle, 'statistics');
+  const timerStatStyle = elementStyle(c, 'timerStat', statisticsStyle, 'statistics');
+  const betsStatStyle = elementStyle(c, 'betsStat', statisticsStyle, 'statistics');
+  const footerStyle = elementStyle(c, 'footerInstruction', {
     background: 'rgba(0,0,0,0.12)',
     color: 'rgba(255,255,255,0.45)',
     fontFamily: font,
@@ -201,7 +214,7 @@ function BetsWidget({ config }) {
     lineHeight: defaultLineHeight,
     letterSpacing: defaultLetterSpacing,
     textTransform: defaultTextTransform,
-  });
+  }, 'footer');
 
   /* Countdown timer */
   const [countdown, setCountdown] = useState(0);
@@ -276,7 +289,14 @@ function BetsWidget({ config }) {
     '--bets-accent':   accentColor,
     '--bets-card-bg':  optionBg,
     '--bets-card-text': optionText,
+    '--bets-widget-background-radius': toCssLength(widgetRadius, '0px'),
     '--bets-card-radius': toCssLength(radius, '12px'),
+    '--bets-header-radius': toCssLength(elementValue(c, 'header', 'radius', 0, 'title'), '0px'),
+    '--bets-pool-stat-radius': toCssLength(elementValue(c, 'poolStat', 'radius', 0, 'statistics'), '0px'),
+    '--bets-timer-stat-radius': toCssLength(elementValue(c, 'timerStat', 'radius', 0, 'statistics'), '0px'),
+    '--bets-bets-stat-radius': toCssLength(elementValue(c, 'betsStat', 'radius', 0, 'statistics'), '0px'),
+    '--bets-card-number-badge-radius': toCssLength(elementValue(c, 'cardNumberBadge', 'radius', 8, 'optionNumber'), '8px'),
+    '--bets-footer-radius': toCssLength(elementValue(c, 'footerInstruction', 'radius', 0, 'footer'), '0px'),
     '--bets-progress-height': toCssLength(progressHeight, '8px'),
     '--bets-progress-radius': toCssLength(progressRadius, '4px'),
     '--bets-timer-text': timerText,
@@ -298,40 +318,40 @@ function BetsWidget({ config }) {
         isGrid2x3 && 'bets-ov--grid-2x3',
       ].filter(Boolean).join(' ')}
       data-widget-type="bets"
-      data-widget-element="container"
+      {...partAttrs('widgetBackground')}
       style={{ ...cssVars, ...containerStyle }}
     >
       {/* ── Header ── */}
-      <div className="bets-ov__header" data-widget-element="title" style={headerStyle}>
-        <span className="bets-ov__title" data-widget-element="title" style={pickTextStyle(titleStyle)}>
+      <div className="bets-ov__header" {...partAttrs('header')} style={headerStyle}>
+        <span className="bets-ov__title" {...partAttrs('header')} style={pickTextStyle(titleStyle)}>
           {title}
         </span>
         {status === 'result' && <span className="bets-ov__trophy">🏆</span>}
-        <span className={`bets-ov__status bets-ov__status--${status}`} data-widget-element="status" data-widget-state={status || 'default'} style={statusStyle}>
+        <span className={`bets-ov__status bets-ov__status--${status}`} {...partAttrs('header', status || 'default')} style={statusStyle}>
           {status === 'open' && <span className="bets-ov__live-dot" />}
           {statusLabel}
         </span>
       </div>
 
       {/* ── Stats strip ── */}
-      <div className="bets-ov__stats" data-widget-element="statistics" style={statisticsStyle}>
-        <div className="bets-ov__stat">
-          <span className="bets-ov__stat-val" style={statisticsTextStyle}>{totalPool.toLocaleString()}</span>
-          <span className="bets-ov__stat-lbl" style={statisticsTextStyle}>💰 Pool</span>
+      <div className="bets-ov__stats">
+        <div className="bets-ov__stat" {...partAttrs('poolStat')} style={poolStatStyle}>
+          <span className="bets-ov__stat-val">{totalPool.toLocaleString()}</span>
+          <span className="bets-ov__stat-lbl">💰 Pool</span>
         </div>
-        <div className="bets-ov__stat bets-ov__stat--center">
-          <span className="bets-ov__stat-val" style={statisticsTextStyle}>
+        <div className="bets-ov__stat bets-ov__stat--center" {...partAttrs('timerStat')} style={timerStatStyle}>
+          <span className="bets-ov__stat-val">
             {status === 'open' && countdown > 0 ? fmt(countdown) :
              status === 'open' ? '∞' :
              status === 'locked' ? '🔒' : '🏆'}
           </span>
-          <span className="bets-ov__stat-lbl" style={statisticsTextStyle}>
+          <span className="bets-ov__stat-lbl">
             {status === 'open' ? '⏱ Timer' : 'Status'}
           </span>
         </div>
-        <div className="bets-ov__stat">
-          <span className="bets-ov__stat-val" style={statisticsTextStyle}>{totalBetters}</span>
-          <span className="bets-ov__stat-lbl" style={statisticsTextStyle}>👥 Bets</span>
+        <div className="bets-ov__stat" {...partAttrs('betsStat')} style={betsStatStyle}>
+          <span className="bets-ov__stat-val">{totalBetters}</span>
+          <span className="bets-ov__stat-lbl">👥 Bets</span>
         </div>
       </div>
 
@@ -349,19 +369,20 @@ function BetsWidget({ config }) {
             const optColor = getOptColor(i);
             const stateId  = optionStateId({ isWin, isLose, isLead, status });
             const progressStateId = isWin ? 'winner' : isLose ? 'loser' : 'default';
-            const optionRowStyle = elementStyle(c, 'optionRow', {
+            const sharedCardStyle = elementStyle(c, 'betCards', {
               background: optionBg,
               color: optionText,
               borderRadius: toCssLength(radius, '12px'),
             }, 'optionCard', stateId);
-            const optionNumberStyle = elementStyle(c, 'optionNumber', {
+            const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, 'optionRow', `card_${i + 1}`);
+            const optionNumberStyle = elementStyle(c, 'cardNumberBadge', {
               background: optColor || accentColor,
               color: '#ffffff',
               fontFamily: numberFont,
               fontSize: `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
               fontWeight: 800,
-            }, undefined, stateId);
-            const optionLabelStyle = elementStyle(c, 'optionLabel', {
+            }, 'optionNumber', stateId);
+            const optionLabelStyle = elementStyle(c, 'cardRangeText', {
               color: optionText,
               fontFamily: font,
               fontSize: `${baseFontSize}px`,
@@ -370,12 +391,20 @@ function BetsWidget({ config }) {
               letterSpacing: defaultLetterSpacing,
               textTransform: defaultTextTransform,
               textAlign: defaultTextAlign,
-            }, undefined, stateId);
-            const percentageStyle = elementStyle(c, 'percentage', {
+            }, 'optionLabel', stateId);
+            const percentageStyle = elementStyle(c, 'cardPercentageText', {
               color: optColor || accentColor,
               fontFamily: numberFont,
               fontSize: `${Math.round(baseFontSize * 1.2)}px`,
               fontWeight: 900,
+              lineHeight: 1,
+              letterSpacing: defaultLetterSpacing,
+            }, 'percentage', stateId);
+            const cardLabelStyle = elementStyle(c, 'cardLabel', {
+              color: 'rgba(255,255,255,0.62)',
+              fontFamily: font,
+              fontSize: `${Math.max(9, Math.round(baseFontSize * 0.7))}px`,
+              fontWeight: 700,
               lineHeight: 1,
               letterSpacing: defaultLetterSpacing,
             }, undefined, stateId);
@@ -396,14 +425,13 @@ function BetsWidget({ config }) {
               <div
                 key={`${i}-${status}`}
                 className={classes}
-                data-widget-element="optionRow"
-                data-widget-state={stateId}
+                {...partAttrs('betCards', stateId)}
+                data-appearance-index={i}
                 style={{ animationDelay: `${i * 0.07}s`, '--opt-color': optColor, ...optionRowStyle }}
               >
                 <div
                   className="bets-ov__card-fill"
-                  data-widget-element="progressBar"
-                  data-widget-state={progressStateId}
+                  {...partAttrs('progressBar', progressStateId)}
                   style={{
                     height: `${fillH}%`,
                     background: `linear-gradient(180deg, transparent 0%, ${progressFill} 100%)`,
@@ -412,13 +440,13 @@ function BetsWidget({ config }) {
                 />
                 <div className="bets-ov__card-body">
                   <div className="bets-ov__card-head">
-                    <span className="bets-ov__card-num" data-widget-element="optionNumber" data-widget-state={stateId} style={optionNumberStyle}>{i + 1}</span>
+                    <span className="bets-ov__card-num" {...partAttrs('cardNumberBadge', stateId)} style={optionNumberStyle}>{i + 1}</span>
                     <span className={`bets-ov__card-crown${isWin ? '' : ' bets-ov__card-crown--hidden'}`}>👑</span>
                   </div>
-                  <span className="bets-ov__card-label" data-widget-element="optionLabel" data-widget-state={stateId} style={optionLabelStyle}>{label}</span>
+                  <span className="bets-ov__card-label" {...partAttrs('cardRangeText', stateId)} style={optionLabelStyle}>{label}</span>
                   <div className="bets-ov__card-footer">
-                    <span className="bets-ov__card-pct" data-widget-element="percentage" data-widget-state={stateId} style={percentageStyle}>{pct}%</span>
-                    <span className="bets-ov__card-cmd">{cmd} {i + 1}</span>
+                    <span className="bets-ov__card-pct" {...partAttrs('cardPercentageText', stateId)} style={percentageStyle}>{pct}%</span>
+                    <span className="bets-ov__card-cmd" {...partAttrs('cardLabel', stateId)} style={cardLabelStyle}>{cmd} {i + 1}</span>
                   </div>
                 </div>
               </div>
@@ -436,19 +464,20 @@ function BetsWidget({ config }) {
             const optColor = getOptColor(i);
             const stateId  = optionStateId({ isWin, isLose, isLead, status });
             const progressStateId = isWin ? 'winner' : isLose ? 'loser' : 'default';
-            const optionRowStyle = elementStyle(c, 'optionRow', {
+            const sharedCardStyle = elementStyle(c, 'betCards', {
               background: optionBg,
               color: optionText,
               borderRadius: toCssLength(radius, '10px'),
             }, 'optionCard', stateId);
-            const optionNumberStyle = elementStyle(c, 'optionNumber', {
+            const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, 'optionRow', `card_${i + 1}`);
+            const optionNumberStyle = elementStyle(c, 'cardNumberBadge', {
               background: optColor || accentColor,
               color: '#ffffff',
               fontFamily: numberFont,
               fontSize: `${Math.max(11, Math.round(baseFontSize * 0.8))}px`,
               fontWeight: 800,
-            }, undefined, stateId);
-            const optionLabelStyle = elementStyle(c, 'optionLabel', {
+            }, 'optionNumber', stateId);
+            const optionLabelStyle = elementStyle(c, 'cardRangeText', {
               color: optionText,
               fontFamily: font,
               fontSize: `${baseFontSize}px`,
@@ -457,8 +486,8 @@ function BetsWidget({ config }) {
               letterSpacing: defaultLetterSpacing,
               textTransform: defaultTextTransform,
               textAlign: defaultTextAlign,
-            }, undefined, stateId);
-            const percentageStyle = elementStyle(c, 'percentage', {
+            }, 'optionLabel', stateId);
+            const percentageStyle = elementStyle(c, 'cardPercentageText', {
               color: optColor || accentColor,
               fontFamily: numberFont,
               fontSize: `${Math.round(baseFontSize * 1.02)}px`,
@@ -466,7 +495,7 @@ function BetsWidget({ config }) {
               lineHeight: 1,
               letterSpacing: defaultLetterSpacing,
               textAlign: 'right',
-            }, undefined, stateId);
+            }, 'percentage', stateId);
             const progressStyle = elementStyle(c, 'progressBar', {
               background: barBg,
               height: toCssLength(progressHeight, '8px'),
@@ -484,16 +513,16 @@ function BetsWidget({ config }) {
               <div
                 key={`${i}-${status}`}
                 className={classes}
-                data-widget-element="optionRow"
-                data-widget-state={stateId}
+                {...partAttrs('betCards', stateId)}
+                data-appearance-index={i}
                 style={{ animationDelay: `${i * 0.05}s`, '--opt-color': optColor, ...optionRowStyle }}
               >
                 <div className="bets-ov__row-meta">
-                  <span className="bets-ov__row-num" data-widget-element="optionNumber" data-widget-state={stateId} style={optionNumberStyle}>{i + 1}</span>
-                  <span className="bets-ov__row-label" data-widget-element="optionLabel" data-widget-state={stateId} style={optionLabelStyle}>{isWin ? '👑 ' : ''}{label}</span>
-                  <span className="bets-ov__row-pct" data-widget-element="percentage" data-widget-state={stateId} style={percentageStyle}>{pct}%</span>
+                  <span className="bets-ov__row-num" {...partAttrs('cardNumberBadge', stateId)} style={optionNumberStyle}>{i + 1}</span>
+                  <span className="bets-ov__row-label" {...partAttrs('cardRangeText', stateId)} style={optionLabelStyle}>{isWin ? '👑 ' : ''}{label}</span>
+                  <span className="bets-ov__row-pct" {...partAttrs('cardPercentageText', stateId)} style={percentageStyle}>{pct}%</span>
                 </div>
-                <div className="bets-ov__row-bar" data-widget-element="progressBar" data-widget-state={progressStateId} style={progressStyle}>
+                <div className="bets-ov__row-bar" {...partAttrs('progressBar', progressStateId)} style={progressStyle}>
                   <div className="bets-ov__row-fill" style={{ width: `${pct}%`, background: progressFill, borderRadius: progressStyle.borderRadius }} />
                 </div>
               </div>
@@ -504,7 +533,7 @@ function BetsWidget({ config }) {
 
       {/* ── Footer hint ── */}
       {status === 'open' && (
-        <div className="bets-ov__hint" data-widget-element="footer" style={footerStyle}>
+        <div className="bets-ov__hint" {...partAttrs('footerInstruction')} style={footerStyle}>
           Type <strong>{cmd} &lt;number&gt;</strong> to bet
         </div>
       )}

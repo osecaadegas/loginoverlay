@@ -25,12 +25,15 @@ try {
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('slot_requests'), true, 'Slot Requests is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('giveaway'), true, 'Giveaway is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('spotify_now_playing'), true, 'Spotify is enabled for style-by-style V2 migration');
+  assert.equal(registryModule.isWidgetAppearanceV2Enabled('bets'), true, 'Bets is migrated to part-scoped V2');
   assert.ok(registryModule.getWidgetAppearanceCapability('bonus_hunt').elements.slotRow, 'bonus hunt declares real slot row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('rtp_stats').elements.rtpValue, 'RTP Stats declares real RTP value element');
   assert.ok(registryModule.getWidgetAppearanceCapability('navbar').elements.displayName, 'Navbar declares display name element');
   assert.ok(registryModule.getWidgetAppearanceCapability('slot_requests').elements.requestCard, 'slot requests declares request row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('giveaway').elements.winnerArea, 'giveaway declares winner area element');
   assert.ok(registryModule.getWidgetAppearanceCapability('spotify_now_playing').elements.albumArt, 'Spotify declares album art as an editable element');
+  assert.ok(registryModule.getWidgetAppearanceCapability('bets').elements.widgetBackground, 'Bets declares an outer widget background part');
+  assert.ok(registryModule.getWidgetAppearanceCapability('bets').elements.betCards, 'Bets declares independent bet card parts');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt').some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
   ['v1', 'vertical', 'neon', 'minimal', 'glass'].forEach(styleId => {
     assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('rtp_stats').some(style => style.id === styleId), `RTP Stats exposes ${styleId} style option`);
@@ -42,6 +45,19 @@ try {
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('giveaway').some(style => style.id === 'v4'), 'Giveaway exposes minimal style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === 'mini_player'), 'Spotify exposes mini-player style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === 'compact_bar'), 'Spotify exposes compact-bar style option');
+  assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bets').some(style => style.id === 'v3_grid_2x3'), 'Bets exposes Grid 2x3 style option');
+  const betsGridElements = registryModule.getWidgetStyleElements('bets', 'v3_grid_2x3');
+  const betsWidgetBackground = betsGridElements.find(element => element.id === 'widgetBackground');
+  const betsCards = betsGridElements.find(element => element.id === 'betCards');
+  const betsRangeText = betsGridElements.find(element => element.id === 'cardRangeText');
+  assert.ok(betsWidgetBackground?.controls.includes('radius'), 'Bets widget background exposes its own radius control');
+  assert.ok(betsWidgetBackground?.controls.includes('background'), 'Bets widget background exposes surface controls');
+  assert.ok(betsCards?.controls.includes('radius'), 'Bets card group exposes its own radius control');
+  assert.ok(!betsRangeText?.controls.includes('background'), 'Bets range text hides unrelated background controls');
+  assert.ok(!betsRangeText?.controls.includes('radius'), 'Bets range text hides unrelated shape controls');
+  assert.ok(registryModule.getWidgetStyleQuickControls('bets', 'v3_grid_2x3', 'widgetBackground').includes('shape'), 'Bets widget background simple shape control is scoped');
+  assert.ok(registryModule.getWidgetStyleQuickControls('bets', 'v3_grid_2x3', 'betCards').includes('shape'), 'Bets card simple shape control is scoped');
+  assert.ok(!registryModule.getWidgetStyleQuickControls('bets', 'v3_grid_2x3', 'cardRangeText').includes('shape'), 'Bets text simple panel hides card shape controls');
   ['wave', 'neon', 'metal', 'vinyl'].forEach(styleId => {
     assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === styleId), `Spotify exposes ${styleId} style option`);
   });
@@ -376,6 +392,33 @@ try {
       subElements: {},
     },
   };
+  const betsWidget = {
+    id: 'bets1',
+    widget_type: 'bets',
+    width: 520,
+    height: 300,
+    config: {
+      displayStyle: 'v3_grid_2x3',
+      gameStatus: 'open',
+      options: [
+        { label: '0 - 99' },
+        { label: '100 - 199' },
+        { label: '200 - 299' },
+        { label: '300 - 399' },
+        { label: '400 - 499' },
+        { label: '500 - 599' },
+      ],
+      bets: {
+        opt_0: 230,
+        opt_1: 150,
+        opt_2: 270,
+        opt_3: 70,
+        opt_4: 170,
+        opt_5: 110,
+      },
+      subElements: {},
+    },
+  };
   const spotifyWidget = {
     id: 'spotify1',
     widget_type: 'spotify_now_playing',
@@ -576,6 +619,31 @@ try {
               density: 'standard',
               textSize: 'large',
               scale: 1.1,
+            }),
+          },
+        },
+      },
+      bets1: {
+        styles: {
+          v3_grid_2x3: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('bets', {
+              material: 'matte',
+              primaryColor: '#22d3ee',
+              shape: 'rounded',
+              density: 'standard',
+              textSize: 'standard',
+              scale: 1,
+            }, {
+              elementOverrides: {
+                widgetBackground: {
+                  radius: 88,
+                  background: 'rgba(15,23,42,0.92)',
+                },
+                betCards: {
+                  radius: 12,
+                  background: 'rgba(30,41,59,0.85)',
+                },
+              },
             }),
           },
         },
@@ -910,6 +978,20 @@ try {
   assert.ok(giveawayConfig.subElements.statusBadge.states.live.textColor, 'Giveaway live state remains semantic');
   assert.notEqual(giveawayConfig.subElements.statusBadge.states.live.textColor, giveawayConfig.subElements.statusBadge.states.closed.textColor, 'Giveaway live and closed states remain distinguishable');
 
+  const betsConfig = appearanceModel.resolveWidgetAppearanceConfig(betsWidget, appearance, {});
+  assert.equal(betsConfig.__appearanceV2.material, 'matte', 'Bets receives V2 material');
+  assert.equal(betsConfig.displayStyle, 'v3_grid_2x3', 'Bets keeps selected Grid 2x3 renderer style');
+  assert.equal(betsConfig.subElements.widgetBackground.radius, 88, 'Bets widget background radius persists independently');
+  assert.equal(betsConfig.subElements.betCards.radius, 12, 'Bets card radius does not inherit widget background radius');
+  assert.notEqual(betsConfig.subElements.poolStat.radius, betsConfig.subElements.widgetBackground.radius, 'Bets stat cells do not inherit widget background radius');
+  assert.notEqual(betsConfig.subElements.cardNumberBadge.radius, betsConfig.subElements.widgetBackground.radius, 'Bets badges do not inherit widget background radius');
+  const betsRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/BetsWidget.jsx', import.meta.url), 'utf8');
+  const rendererCssSource = readFileSync(new URL('../src/components/OverlayCenter/OverlayRenderer.css', import.meta.url), 'utf8');
+  assert.ok(betsRendererSource.includes("partAttrs('widgetBackground')"), 'Bets renderer tags the widget background part');
+  assert.ok(betsRendererSource.includes("partAttrs('betCards'"), 'Bets renderer tags bet cards as a distinct part');
+  assert.ok(rendererCssSource.includes('--bets-widget-background-radius'), 'Bets CSS consumes outer background radius variable');
+  assert.ok(rendererCssSource.includes('--bets-card-radius'), 'Bets CSS consumes independent card radius variable');
+
   const spotifyConfig = appearanceModel.resolveWidgetAppearanceConfig(spotifyWidget, appearance, {});
   assert.equal(spotifyConfig.__appearanceV2.material, 'matte', 'Spotify mini-player receives V2 material');
   assert.equal(spotifyConfig.displayStyle, 'mini_player', 'Spotify mini-player quick style switches the real renderer');
@@ -1148,6 +1230,7 @@ try {
     navbarWidget,
     slotRequestsWidget,
     giveawayWidget,
+    betsWidget,
     spotifyWidget,
     spotifyAlbumWidget,
     spotifyCompactWidget,
@@ -1163,14 +1246,17 @@ try {
   assert.equal(resolvedWidgets[3].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Navbar');
   assert.equal(resolvedWidgets[4].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Slot Requests');
   assert.equal(resolvedWidgets[5].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Giveaway');
-  assert.equal(resolvedWidgets[6].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify mini-player');
-  assert.equal(resolvedWidgets[7].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify album-card');
-  assert.equal(resolvedWidgets[8].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify compact-bar');
-  assert.equal(resolvedWidgets[9].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify glass');
-  assert.equal(resolvedWidgets[10].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify wave');
-  assert.equal(resolvedWidgets[11].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Spotify neon');
-  assert.equal(resolvedWidgets[12].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify metal');
-  assert.equal(resolvedWidgets[13].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify vinyl');
+  assert.equal(resolvedWidgets[6].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Bets');
+  assert.equal(resolvedWidgets[6].config.subElements.widgetBackground.radius, 88, 'preview/OBS shared resolver preserves Bets widget background radius');
+  assert.equal(resolvedWidgets[6].config.subElements.betCards.radius, 12, 'preview/OBS shared resolver preserves Bets card radius');
+  assert.equal(resolvedWidgets[7].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify mini-player');
+  assert.equal(resolvedWidgets[8].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify album-card');
+  assert.equal(resolvedWidgets[9].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify compact-bar');
+  assert.equal(resolvedWidgets[10].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify glass');
+  assert.equal(resolvedWidgets[11].config.__appearanceV2.material, 'matte', 'preview/OBS shared resolver resolves Spotify wave');
+  assert.equal(resolvedWidgets[12].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Spotify neon');
+  assert.equal(resolvedWidgets[13].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify metal');
+  assert.equal(resolvedWidgets[14].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify vinyl');
   assert.notEqual(resolvedWidgets[4].config.bgColor, resolvedWidgets[5].config.bgColor, 'Slot Requests and Giveaway styles do not leak between widgets');
 
   const bhStatsElements = editorSchema.getWidgetElementSchema('bh_stats');
@@ -1179,6 +1265,7 @@ try {
   const bonusElements = editorSchema.getWidgetElementSchema('bonus_hunt');
   const slotRequestElements = editorSchema.getWidgetElementSchema('slot_requests');
   const giveawayElements = editorSchema.getWidgetElementSchema('giveaway');
+  const betsElements = editorSchema.getWidgetElementSchema('bets');
   const spotifyElements = editorSchema.getWidgetElementSchema('spotify_now_playing');
   assert.ok(bhStatsElements.some(element => element.id === 'statsCard'), 'Advanced Mode schema for BH Stats comes from V2 registry');
   assert.ok(rtpStatsElements.some(element => element.id === 'rtpValue'), 'Advanced Mode schema for RTP Stats comes from V2 registry');
@@ -1189,6 +1276,9 @@ try {
   assert.ok(bonusElements.some(element => element.id === 'slotRow'), 'Advanced Mode schema for Bonus Hunt comes from V2 registry');
   assert.ok(slotRequestElements.some(element => element.id === 'requestCard'), 'Advanced Mode schema for Slot Requests comes from V2 registry');
   assert.ok(giveawayElements.some(element => element.id === 'winnerArea'), 'Advanced Mode schema for Giveaway comes from V2 registry');
+  assert.ok(betsElements.some(element => element.id === 'widgetBackground'), 'Advanced Mode schema for Bets exposes widget background part');
+  assert.ok(betsElements.some(element => element.id === 'betCards'), 'Advanced Mode schema for Bets exposes bet card part');
+  assert.ok(!betsElements.find(element => element.id === 'cardRangeText')?.controls.includes('background'), 'Advanced Mode schema for Bets text hides surface controls');
   assert.ok(spotifyElements.some(element => element.id === 'albumArt'), 'Advanced Mode schema for Spotify comes from V2 registry');
   assert.ok(spotifyElements.some(element => element.id === 'progressBar'), 'Advanced Mode schema for Spotify compact-bar progress comes from V2 registry');
   assert.ok(spotifyElements.some(element => element.id === 'waveform'), 'Advanced Mode schema for Spotify waveform comes from V2 registry');

@@ -319,6 +319,7 @@ function pickQuickElementFontSize(tokens = {}, element = {}) {
 function pickQuickElementRadius(tokens = {}, element = {}) {
   if (element.kind === 'badge' || element.kind === 'progress') return tokens.shape?.badgeRadius;
   if (element.kind === 'image') return tokens.image?.radius ?? tokens.shape?.cardRadius;
+  if (['widgetBackground', 'container', 'root'].includes(element.id)) return tokens.shape?.rootRadius;
   return tokens.shape?.cardRadius ?? tokens.shape?.rootRadius;
 }
 
