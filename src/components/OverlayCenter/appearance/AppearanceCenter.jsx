@@ -87,7 +87,7 @@ import {
   getWidgetStyleOptionsForQuickEditor,
   isWidgetAppearanceV2Enabled,
 } from './v2/widgetAppearanceRegistry';
-import { LayerToggleButton, PropertyControl } from './propertyControls';
+import { FontSelectInput, LayerToggleButton, PropertyControl } from './propertyControls';
 import './AppearanceCenter.css';
 
 const TOUR_STORAGE_KEY = 'streamers_center_appearance_tour_hidden';
@@ -509,6 +509,7 @@ export default function AppearanceCenter({
   widgets = [],
   overlayState,
   saveTheme,
+  saveWidget,
   updateState,
   onOpenPreview,
   onFocusPreview,
@@ -534,6 +535,7 @@ export default function AppearanceCenter({
   const [previewMode, setPreviewMode] = useState(() => EDITOR_MODE_CAPABILITIES[getInitialMode()]?.previewMode || 'fit-widget');
   const [previewBackground, setPreviewBackground] = useState('dark');
   const [previewStateByWidget, setPreviewStateByWidget] = useState({});
+  const [previewPositions, setPreviewPositions] = useState({});
   const [zoom, setZoom] = useState('fit');
   const [obsSafe, setObsSafe] = useState(true);
   const [showBefore, setShowBefore] = useState(false);
@@ -553,6 +555,10 @@ export default function AppearanceCenter({
     () => widgets.find(widget => widget.id === selectedTarget.widgetId) || firstWidget,
     [widgets, selectedTarget.widgetId, firstWidget]
   );
+  const previewWidgets = useMemo(() => widgets.map(widget => {
+    const position = previewPositions[widget.id];
+    return position ? { ...widget, position_x: position.x, position_y: position.y } : widget;
+  }), [previewPositions, widgets]);
   const selectedWidgetName = selectedWidget ? getWidgetDisplayName(selectedWidget) : 'Overlay';
   const selectedWidgetType = selectedWidget?.widget_type || selectedTarget.widgetType || '';
   const selectedWidgetUsesV2 = isWidgetAppearanceV2Enabled(selectedWidgetType);
@@ -704,6 +710,14 @@ export default function AppearanceCenter({
       return !term || name.includes(term) || type.includes(term);
     });
   }, [widgets, widgetSearch]);
+
+  useEffect(() => {
+    const widgetIds = new Set(widgets.map(widget => widget.id));
+    setPreviewPositions(prev => {
+      const next = Object.fromEntries(Object.entries(prev).filter(([id]) => widgetIds.has(id)));
+      return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+    });
+  }, [widgets]);
 
   const styleSelections = useMemo(() => {
     if (!selectedWidget?.id || !selectedTarget.styleId) return {};
@@ -995,6 +1009,35 @@ export default function AppearanceCenter({
       return next;
     }, `Resize ${getWidgetDisplayName(widget)}`);
   }, [commitDraft, draft]);
+
+  const handlePreviewMove = useCallback((widget, position, meta = {}) => {
+    if (!widget?.id || widget.widget_type === 'background') return;
+    const nextPosition = {
+      x: Math.round(Number(position?.x) || 0),
+      y: Math.round(Number(position?.y) || 0),
+    };
+    setPreviewPositions(prev => ({ ...prev, [widget.id]: nextPosition }));
+
+    if (!meta.commit || !saveWidget) return;
+    const currentWidget = widgets.find(item => item.id === widget.id) || widget;
+    saveWidget({
+      ...currentWidget,
+      position_x: nextPosition.x,
+      position_y: nextPosition.y,
+    })
+      .then(() => {
+        setToast(`${getWidgetDisplayName(currentWidget)} position saved`);
+        setPreviewPositions(prev => {
+          const next = { ...prev };
+          delete next[widget.id];
+          return next;
+        });
+      })
+      .catch(err => {
+        console.error('[AppearanceCenter] widget position save failed', err);
+        setToast('Widget position could not be saved');
+      });
+  }, [saveWidget, widgets]);
 
   const undo = useCallback(() => {
     setUndoStack(stack => {
@@ -1565,7 +1608,7 @@ export default function AppearanceCenter({
         <main className="ve-canvas-panel">
           <div className={`ve-preview-shell${obsSafe ? ' ve-preview-shell--safe' : ''}`}>
             <OverlayPreview
-              widgets={widgets}
+              widgets={previewWidgets}
               theme={theme}
               appearance={showBefore ? serverState.published : draft}
               userId={user?.id}
@@ -1582,6 +1625,7 @@ export default function AppearanceCenter({
               onSelectWidget={handlePreviewWidgetSelect}
               onSelectElement={handlePreviewElementSelect}
               onResizeWidget={mode === 'advanced' ? handlePreviewResize : undefined}
+              onMoveWidget={handlePreviewMove}
             />
           </div>
 
@@ -1831,14 +1875,12 @@ export default function AppearanceCenter({
                 {hasQuickControl('fontFamily') && (
                   <label className="ve-simple-select">
                     <span>Font style</span>
-                    <select
+                    <FontSelectInput
                       value={currentSimpleSettings.fontFamily}
-                      onChange={event => applyQuickSettings({ fontFamily: event.target.value }, 'Change font')}
-                    >
-                      {FONT_OPTIONS.map(font => (
-                        <option key={font.value} value={font.value}>{font.label}</option>
-                      ))}
-                    </select>
+                      options={FONT_OPTIONS}
+                      onChange={fontFamily => applyQuickSettings({ fontFamily }, 'Change font')}
+                      className="ve-font-select--simple"
+                    />
                   </label>
                 )}
                 {hasQuickControl('textSize') && (

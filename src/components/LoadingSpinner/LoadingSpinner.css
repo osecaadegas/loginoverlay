@@ -1,6 +1,6 @@
 .app-loading-shell {
-  --app-loading-size: 100px;
-  --app-loading-text-size: 20px;
+  --app-loading-size: 142px;
+  --app-loading-text-size: 22px;
   --app-loading-text-color: #cecece;
   --app-loading-ring-one: #5c5edc;
   --app-loading-ring-two: #9147ff;
@@ -10,13 +10,16 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 120px;
+  min-height: 180px;
   padding: 24px;
   color: var(--app-loading-text-color);
 }
 
 .app-loading-shell--full {
+  --app-loading-size: 176px;
+  --app-loading-text-size: 24px;
   min-height: 100vh;
+  min-height: 100dvh;
   background:
     radial-gradient(circle at 20% 20%, rgba(145, 71, 255, 0.16), transparent 34rem),
     radial-gradient(circle at 80% 15%, rgba(59, 130, 246, 0.14), transparent 30rem),
@@ -33,14 +36,24 @@
   perspective: 780px;
 }
 
+.app-loading::before {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(145, 71, 255, 0.22), transparent 68%);
+  filter: blur(8px);
+  opacity: 0.8;
+}
+
 .app-loading--small {
-  --app-loading-size: 68px;
+  --app-loading-size: 82px;
   --app-loading-text-size: 14px;
 }
 
 .app-loading--compact {
-  --app-loading-size: 82px;
-  --app-loading-text-size: 16px;
+  --app-loading-size: 106px;
+  --app-loading-text-size: 17px;
 }
 
 .app-loading__text {
@@ -62,20 +75,20 @@
 
 .app-loading__ring--one {
   inset: 0 auto auto 0;
-  border-bottom: 3px solid var(--app-loading-ring-one);
-  animation: appLoadingRotateOne 1.15s linear infinite;
+  border-bottom: 5px solid var(--app-loading-ring-one);
+  animation: appLoadingRotateOne 0.95s linear infinite;
 }
 
 .app-loading__ring--two {
   inset: 0 0 auto auto;
-  border-right: 3px solid var(--app-loading-ring-two);
-  animation: appLoadingRotateTwo 1.15s 0.1s linear infinite;
+  border-right: 5px solid var(--app-loading-ring-two);
+  animation: appLoadingRotateTwo 0.95s 0.08s linear infinite;
 }
 
 .app-loading__ring--three {
   inset: auto 0 0 auto;
-  border-top: 3px solid var(--app-loading-ring-three);
-  animation: appLoadingRotateThree 1.15s 0.15s linear infinite;
+  border-top: 5px solid var(--app-loading-ring-three);
+  animation: appLoadingRotateThree 0.95s 0.12s linear infinite;
 }
 
 @keyframes appLoadingRotateOne {

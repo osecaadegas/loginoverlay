@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlignCenter,
   AlignLeft,
@@ -116,6 +116,19 @@ export function RangeControl({ control, value, onChange, onReset, inheritedLabel
 
 export function SelectControl({ control, value, onChange, onReset, inheritedLabel, disabled }) {
   const options = control.type === 'font' ? FONT_OPTIONS : control.options || [];
+  if (control.type === 'font') {
+    return (
+      <ControlShell control={control} value={value} onReset={onReset} inheritedLabel={inheritedLabel} disabled={disabled}>
+        <FontSelectInput
+          value={value}
+          options={options}
+          onChange={nextValue => onChange(validateEditorValue(control, nextValue))}
+          disabled={disabled}
+          inheritedLabel="Use inherited"
+        />
+      </ControlShell>
+    );
+  }
   return (
     <ControlShell control={control} value={value} onReset={onReset} inheritedLabel={inheritedLabel} disabled={disabled}>
       <select
@@ -136,6 +149,97 @@ export function SelectControl({ control, value, onChange, onReset, inheritedLabe
         ))}
       </select>
     </ControlShell>
+  );
+}
+
+export function FontSelectInput({
+  value,
+  options = FONT_OPTIONS,
+  onChange,
+  disabled = false,
+  inheritedLabel = '',
+  className = '',
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const selectedOption = useMemo(
+    () => options.find(option => optionValue(option) === value),
+    [options, value]
+  );
+  const selectedLabel = selectedOption ? optionLabel(selectedOption) : (inheritedLabel || 'Choose font');
+  const selectedFont = selectedOption ? optionValue(selectedOption) : undefined;
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const handlePointerDown = (event) => {
+      if (!wrapRef.current?.contains(event.target)) setOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className={`ve-font-select ${className}`.trim()} ref={wrapRef}>
+      <button
+        type="button"
+        className="ve-font-select__button"
+        onClick={() => setOpen(current => !current)}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        style={selectedFont ? { fontFamily: selectedFont } : undefined}
+      >
+        <span>{selectedLabel}</span>
+        <em aria-hidden="true">v</em>
+      </button>
+      {open && (
+        <div className="ve-font-select__menu" role="listbox" aria-label="Font choices">
+          {inheritedLabel && (
+            <button
+              type="button"
+              className={`ve-font-select__option${!value ? ' is-selected' : ''}`}
+              onClick={() => {
+                onChange('');
+                setOpen(false);
+              }}
+              role="option"
+              aria-selected={!value}
+            >
+              {inheritedLabel}
+            </button>
+          )}
+          {options.map(option => {
+            const nextValue = optionValue(option);
+            const label = optionLabel(option);
+            const selected = nextValue === value;
+            return (
+              <button
+                key={nextValue}
+                type="button"
+                className={`ve-font-select__option${selected ? ' is-selected' : ''}`}
+                onClick={() => {
+                  onChange(nextValue);
+                  setOpen(false);
+                }}
+                role="option"
+                aria-selected={selected}
+                style={{ fontFamily: nextValue }}
+              >
+                <span>{label}</span>
+                {selected && <Check size={14} aria-hidden="true" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

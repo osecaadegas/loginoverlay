@@ -200,6 +200,7 @@ function normalizeOffer(raw) {
     trafficRequirements: raw.traffic_requirements || '',
     restrictions: raw.restrictions || raw.details || '',
     promoCode: raw.promo_code || '',
+    license: raw.license || raw.licence || raw.casino_license || raw.gaming_license || raw.regulator || raw.licensed_by || '',
     termsUrl: raw.terms_url || raw.bonus_link || '',
     applicationUrl: raw.application_url || raw.bonus_link || '',
     applicationStatus,
@@ -265,6 +266,36 @@ function getPrimaryDetailItems(offer) {
     offer.paymentFrequency ? `${offer.paymentFrequency} payments` : '',
     offer.minFtdRequirement ? `${offer.minFtdRequirement} min. FTD` : '',
   ].filter(Boolean).slice(0, 3);
+}
+
+function findFreeSpinsLabel(offer) {
+  const text = `${offer.playerPromotion || ''} ${offer.mainTerms || ''} ${offer.shortDescription || ''}`;
+  const match = text.match(/(?:up to\s*)?\d+[\s-]*(?:free\s*)?spins?/i);
+  if (!match) return '-';
+  return match[0].replace(/\s+/g, ' ');
+}
+
+function getDepositLabel(offer) {
+  if (offer.minimumDeposit === '' || offer.minimumDeposit === null || offer.minimumDeposit === undefined) return '-';
+  if (typeof offer.minimumDeposit === 'number') return formatMoney(offer.minimumDeposit, offer.minimumDepositCurrency);
+  return String(offer.minimumDeposit);
+}
+
+function getCardBonusLabel(offer) {
+  const percentage = `${offer.playerPromotion || ''} ${offer.mainTerms || ''}`.match(/[+]?\d+%/);
+  if (percentage) return percentage[0];
+  return offer.mainTerms || offer.playerPromotion || '-';
+}
+
+function getOfferStatItems(offer) {
+  return [
+    { label: 'Min deposit', value: getDepositLabel(offer), icon: BadgeEuro },
+    { label: 'Bonus', value: getCardBonusLabel(offer), icon: Sparkles },
+    { label: 'Free spins', value: findFreeSpinsLabel(offer), icon: Star },
+    { label: 'Withdraw', value: offer.paymentFrequency || '-', icon: CalendarClock },
+    { label: 'License', value: offer.license || 'Not listed', icon: ShieldCheck },
+    { label: 'Code', value: offer.promoCode || '-', icon: Bookmark },
+  ];
 }
 
 function openExternal(url) {
@@ -659,12 +690,30 @@ function OfferCard({
   isAuthenticated,
 }) {
   const detailItems = getPrimaryDetailItems(offer);
+  const statItems = getOfferStatItems(offer);
+  const heroSubtitle = offer.playerPromotion || offer.shortDescription;
 
   return (
     <article className="offer-card">
       <div className="offer-card-media">
         <OfferImage offer={offer} />
         <OfferBadges offer={offer} compact />
+        <div className="offer-card-logo offer-card-logo--media">
+          <PartnerLogo offer={offer} />
+        </div>
+        <div className="offer-card-hero-copy">
+          <span>Claim the</span>
+          <strong>{offer.partnerName} boost</strong>
+          <b>{offer.mainTerms}</b>
+          {heroSubtitle && <small>{heroSubtitle}</small>}
+          <div className="offer-card-hero-actions">
+            <ApplyButton offer={offer} application={application} onApply={onApply} className="offer-card-claim" isAuthenticated={isAuthenticated} />
+            <button type="button" className="offer-card-more" onClick={() => onView(offer)}>
+              More info
+              <ChevronRight size={15} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="offer-card-body">
@@ -679,19 +728,24 @@ function OfferCard({
           {offer.isVerified && <CheckCircle2 className="offer-verified-icon" size={18} aria-label="Verified partner" />}
         </div>
 
-        <p className="offer-description">{offer.shortDescription}</p>
-        <OfferTerms offer={offer} />
-
-        <div className="offer-chip-row">
-          {offer.supportedGeos.slice(0, 3).map((geo) => <span key={`${offer.id}-geo-${geo}`}>{geo}</span>)}
-          {offer.supportedPlatforms.slice(0, 3).map((platform) => <span key={`${offer.id}-platform-${platform}`}>{platform}</span>)}
+        <div className="offer-stat-grid" aria-label={`${offer.partnerName} partnership details`}>
+          {statItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={`${offer.id}-${item.label}`} className="offer-stat-tile">
+                <Icon size={18} aria-hidden="true" />
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            );
+          })}
         </div>
 
-        {detailItems.length > 0 && (
-          <ul className="offer-detail-list">
-            {detailItems.map((item) => <li key={`${offer.id}-${item}`}>{item}</li>)}
-          </ul>
-        )}
+        <div className="offer-chip-row">
+          {offer.supportedGeos.slice(0, 2).map((geo) => <span key={`${offer.id}-geo-${geo}`}>{geo}</span>)}
+          {offer.supportedPlatforms.slice(0, 3).map((platform) => <span key={`${offer.id}-platform-${platform}`}>{platform}</span>)}
+          {detailItems.slice(0, 1).map((item) => <span key={`${offer.id}-${item}`}>{item}</span>)}
+        </div>
 
         <div className="offer-card-footer">
           <span>{offer.lastUpdatedAt ? `Updated ${formatDate(offer.lastUpdatedAt)}` : getApplicationsLabel(offer)}</span>
@@ -700,10 +754,6 @@ function OfferCard({
       </div>
 
       <div className="offer-card-actions">
-        <button type="button" className="primary-action" onClick={() => onView(offer)}>
-          View Partnership
-        </button>
-        <ApplyButton offer={offer} application={application} onApply={onApply} isAuthenticated={isAuthenticated} />
         <div className="offer-utility-actions">
           <button type="button" onClick={() => onToggleSave(offer.id)} aria-label={isSaved ? `Remove ${offer.partnerName} from saved partnerships` : `Save ${offer.partnerName}`}>
             {isSaved ? <BookmarkCheck size={17} aria-hidden="true" /> : <Bookmark size={17} aria-hidden="true" />}

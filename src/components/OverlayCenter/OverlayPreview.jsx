@@ -69,6 +69,7 @@ const PreviewSlot = memo(function PreviewSlot({
   onSelectWidget,
   onSelectElement,
   onResizeWidget,
+  onMoveWidget,
 }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
@@ -82,6 +83,7 @@ const PreviewSlot = memo(function PreviewSlot({
   const slotSize = getWidgetSlotSize(widget);
   const { needsVisibleOverflow } = getWidgetSlotBehavior(widget);
   const highlighted = isWidgetHighlighted(widget, selectedTarget, selectedWidgetId);
+  const draggingRef = useRef(false);
   const selectionCss = selectMode && highlighted
     ? buildElementSelectionCss(widget.id, selectedElementId, hiddenElementIds)
     : '';
@@ -105,6 +107,38 @@ const PreviewSlot = memo(function PreviewSlot({
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp, { once: true });
   };
+  const startMove = (event) => {
+    if (isBg || !onMoveWidget || event.button !== 0 || event.target?.closest?.('.oc-preview-resize-handle')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startLeft = Number(widget.position_x) || 0;
+    const startTop = Number(widget.position_y) || 0;
+    const divisor = Math.max(0.1, Number(scale) || 1);
+    let hasMoved = false;
+    draggingRef.current = false;
+    const moveToEvent = (moveEvent, commit = false) => {
+      const nextX = clamp(Math.round(startLeft + ((moveEvent.clientX - startX) / divisor)), 0, Math.max(0, canvasWidth - slotSize.width));
+      const nextY = clamp(Math.round(startTop + ((moveEvent.clientY - startY) / divisor)), 0, Math.max(0, canvasHeight - slotSize.height));
+      if (Math.abs(nextX - startLeft) > 2 || Math.abs(nextY - startTop) > 2) {
+        draggingRef.current = true;
+        hasMoved = true;
+      }
+      onMoveWidget(widget, { x: nextX, y: nextY }, { commit });
+    };
+    const onMove = (moveEvent) => moveToEvent(moveEvent, false);
+    const onUp = (upEvent) => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      if (hasMoved) moveToEvent(upEvent, true);
+      window.setTimeout(() => {
+        draggingRef.current = false;
+      }, 0);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+  };
 
   return (
     <div
@@ -116,12 +150,17 @@ const PreviewSlot = memo(function PreviewSlot({
       data-widget-type={widget.widget_type}
       data-appearance-version={cfg.__appearanceV2?.schemaVersion ? `v2-${cfg.__appearanceV2.schemaVersion}` : undefined}
       data-material={cfg.__appearanceV2?.material || undefined}
-      onClick={selectMode ? (event) => {
+      onClick={(onSelectWidget || onSelectElement) ? (event) => {
+        if (draggingRef.current) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
         event.preventDefault();
         event.stopPropagation();
         const elementNode = event.target?.closest?.('[data-widget-element]');
         const elementInsideWidget = elementNode && event.currentTarget.contains(elementNode);
-        if (elementInsideWidget) {
+        if (elementInsideWidget && onSelectElement) {
           onSelectElement?.({
             widget,
             elementId: elementNode.getAttribute('data-widget-element'),
@@ -131,6 +170,7 @@ const PreviewSlot = memo(function PreviewSlot({
         }
         onSelectWidget?.(widget);
       } : undefined}
+      onPointerDown={startMove}
       style={{
       position: 'absolute',
       left: isBg ? 0 : widget.position_x,
@@ -139,7 +179,7 @@ const PreviewSlot = memo(function PreviewSlot({
       height: isBg ? canvasHeight : slotSize.height,
       zIndex: widget.z_index || 1,
       overflow: isBg || needsVisibleOverflow ? 'visible' : 'hidden',
-      cursor: selectMode ? 'crosshair' : undefined,
+      cursor: isBg ? undefined : onMoveWidget ? 'grab' : selectMode ? 'crosshair' : undefined,
       opacity: dimmed ? 0.24 : 1,
       transition: 'opacity 140ms ease',
       ...buildWidgetAppearanceVars(cfg),
@@ -178,6 +218,7 @@ export default function OverlayPreview({
   onSelectWidget,
   onSelectElement,
   onResizeWidget,
+  onMoveWidget,
 }) {
   const wrapRef = useRef(null);
   const previewNowRef = useRef(Date.now());
@@ -327,6 +368,7 @@ export default function OverlayPreview({
               onSelectWidget={onSelectWidget}
               onSelectElement={onSelectElement}
               onResizeWidget={onResizeWidget}
+              onMoveWidget={onMoveWidget}
             />
           ))}
           {visibleWidgets.length === 0 && (

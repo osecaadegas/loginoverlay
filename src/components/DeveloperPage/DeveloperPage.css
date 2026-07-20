@@ -6,11 +6,12 @@
   min-height: 100vh;
   background: var(--theme-bg-primary, #0a0a14);
   color: var(--theme-text-primary, #e0e0f0);
-  padding: 24px;
+  padding: 24px clamp(24px, 4vw, 64px) 56px;
 }
 
 .dev-layout {
-  max-width: 1100px;
+  width: min(100%, 1480px);
+  max-width: 1480px;
   margin: 0 auto;
 }
 
@@ -65,6 +66,7 @@
   display: flex;
   gap: 4px;
   margin-bottom: 20px;
+  width: 100%;
   background: rgba(255, 255, 255, 0.03);
   padding: 4px;
   border-radius: 10px;
@@ -102,6 +104,7 @@
 
 /* ── Content / Panel ── */
 .dev-content {
+  width: 100%;
   animation: devFadeIn 0.2s ease;
 }
 
@@ -114,7 +117,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  padding: 20px;
+  padding: clamp(18px, 2vw, 26px);
 }
 
 .dev-panel-title {
@@ -140,8 +143,8 @@
 /* ── Info Cards Grid ── */
 .dev-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .dev-info-card {

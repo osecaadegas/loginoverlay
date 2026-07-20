@@ -1,6 +1,6 @@
 .apps-page {
   min-height: calc(100vh - 72px);
-  padding: 36px 64px 64px;
+  padding: 34px 64px 64px;
   color: #f8fafc;
   background:
     radial-gradient(circle at 18% 8%, rgba(45, 212, 191, 0.12), transparent 34%),
@@ -36,18 +36,16 @@
 }
 
 .apps-grid {
-  max-width: 1120px;
+  max-width: 1240px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
 .apps-tile {
   --tile-accent: #2dd4bf;
-  --tile-image: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72));
-  --tile-position: center;
-  min-height: 132px;
+  min-height: 118px;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -55,12 +53,14 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 8px;
-  padding: 20px;
+  gap: 7px;
+  padding: 16px;
   border-radius: 8px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   color: #cbd5e1;
-  background: rgba(15, 23, 42, 0.76);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(8, 13, 22, 0.94)),
+    rgba(15, 23, 42, 0.84);
   text-align: left;
   text-decoration: none;
   font: inherit;
@@ -81,19 +81,13 @@
   inset: 0;
   z-index: 0;
   background:
-    linear-gradient(90deg, rgba(3, 7, 18, 0.96) 0%, rgba(5, 10, 19, 0.9) 42%, rgba(5, 10, 19, 0.42) 72%, rgba(5, 10, 19, 0.18) 100%),
-    linear-gradient(180deg, rgba(3, 7, 18, 0.02) 0%, rgba(3, 7, 18, 0.2) 100%),
-    var(--tile-image);
-  background-position: center, center, var(--tile-position);
-  background-repeat: no-repeat;
-  background-size: auto, auto, cover;
-  opacity: 0.98;
-  filter: saturate(1.18) contrast(1.08);
+    linear-gradient(135deg, color-mix(in srgb, var(--tile-accent) 18%, transparent), transparent 38%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 13px);
+  opacity: 0.42;
   transform: scale(1);
   transition:
     opacity 180ms ease,
-    transform 180ms ease,
-    filter 180ms ease;
+    transform 180ms ease;
   pointer-events: none;
 }
 
@@ -104,9 +98,9 @@
   z-index: 0;
   border-radius: inherit;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--tile-accent) 15%, transparent), transparent 34%),
-    linear-gradient(180deg, transparent 52%, rgba(3, 7, 18, 0.24) 100%);
-  opacity: 0.72;
+    radial-gradient(circle at calc(100% - 30px) 24px, color-mix(in srgb, var(--tile-accent) 22%, transparent), transparent 58px),
+    linear-gradient(180deg, transparent 52%, rgba(3, 7, 18, 0.18) 100%);
+  opacity: 0.86;
   pointer-events: none;
 }
 
@@ -120,22 +114,22 @@
 }
 
 .apps-tile:hover::before {
-  opacity: 1;
-  filter: saturate(1.28) contrast(1.1) brightness(1.08);
-  transform: scale(1.035);
+  opacity: 0.62;
+  transform: scale(1.02);
 }
 
 .apps-tile__icon {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   position: relative;
   z-index: 1;
   display: grid;
   place-items: center;
   border-radius: 8px;
   color: var(--tile-accent);
-  background: color-mix(in srgb, var(--tile-accent) 16%, rgba(3, 7, 18, 0.78));
-  border: 1px solid color-mix(in srgb, var(--tile-accent) 36%, rgba(148, 163, 184, 0.2));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tile-accent) 20%, rgba(3, 7, 18, 0.78)), rgba(3, 7, 18, 0.76));
+  border: 1px solid color-mix(in srgb, var(--tile-accent) 46%, rgba(148, 163, 184, 0.2));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 10px 22px rgba(0, 0, 0, 0.26);
@@ -149,7 +143,7 @@
 .apps-tile strong {
   position: relative;
   z-index: 1;
-  max-width: 58%;
+  max-width: 100%;
   color: #f8fafc;
   font-size: 18px;
   line-height: 1.1;
@@ -159,7 +153,7 @@
 .apps-tile__desc {
   position: relative;
   z-index: 1;
-  max-width: 58%;
+  max-width: 100%;
   color: #b8c7dc;
   font-size: 13px;
   font-weight: 800;
@@ -187,26 +181,6 @@
 .apps-tile--red,
 .apps-tile--danger { --tile-accent: #f87171; }
 
-.apps-tile--art-admin { --tile-image: url('/apps-tiles/admin.jpg'); --tile-position: 58% center; }
-.apps-tile--art-analytics { --tile-image: url('/apps-tiles/analytics.jpg'); --tile-position: 62% center; }
-.apps-tile--art-approvals { --tile-image: url('/apps-tiles/approvals.jpg'); --tile-position: 62% center; }
-.apps-tile--art-bonus-hunt { --tile-image: url('/apps-tiles/bonus-hunt.jpg'); --tile-position: 64% center; }
-.apps-tile--art-deals { --tile-image: url('/apps-tiles/deals.jpg'); --tile-position: 58% center; }
-.apps-tile--art-developer { --tile-image: url('/apps-tiles/developer.jpg'); --tile-position: 60% center; }
-.apps-tile--art-guided-setup { --tile-image: url('/apps-tiles/guided-setup.jpg'); --tile-position: 62% center; }
-.apps-tile--art-login { --tile-image: url('/apps-tiles/login.jpg'); --tile-position: 60% center; }
-.apps-tile--art-logout { --tile-image: url('/apps-tiles/logout.jpg'); --tile-position: 60% center; }
-.apps-tile--art-overlay-center { --tile-image: url('/apps-tiles/overlay-center.jpg'); --tile-position: 62% center; }
-.apps-tile--art-premium { --tile-image: url('/apps-tiles/premium.jpg'); --tile-position: 58% center; }
-.apps-tile--art-presets { --tile-image: url('/apps-tiles/presets.jpg'); --tile-position: 62% center; }
-.apps-tile--art-profile { --tile-image: url('/apps-tiles/profile.jpg'); --tile-position: 62% center; }
-.apps-tile--art-restart-tutorial { --tile-image: url('/apps-tiles/restart-tutorial.jpg'); --tile-position: 66% center; }
-.apps-tile--art-screensplit { --tile-image: url('/apps-tiles/screensplit.jpg'); --tile-position: 62% center; }
-.apps-tile--art-slot-manager { --tile-image: url('/apps-tiles/slot-manager.jpg'); --tile-position: 62% center; }
-.apps-tile--art-slot-detector { --tile-image: url('/apps-tiles/analytics.jpg'); --tile-position: 62% center; }
-.apps-tile--art-streamer-home { --tile-image: url('/apps-tiles/streamer-home.jpg'); --tile-position: 62% center; }
-.apps-tile--art-subscriptions { --tile-image: url('/apps-tiles/premium.jpg'); --tile-position: 44% center; }
-
 @media (max-width: 820px) {
   .apps-page {
     padding: 24px 16px 42px;
@@ -222,7 +196,7 @@
 
   .apps-tile strong,
   .apps-tile__desc {
-    max-width: 64%;
+    max-width: 100%;
   }
 }
 

@@ -16,6 +16,7 @@ import {
   Grid3X3,
   Link2,
   Lock,
+  MonitorPlay,
   MoreVertical,
   Palette,
   PlugZap,
@@ -629,7 +630,20 @@ function QuickSettings({ isAdmin }) {
   );
 }
 
-function ToolWorkspace({ widgets, integrations, isAdmin, onOpenTool, onToggleTool, onAddTool, onRemoveTool, onCopyToolObsUrl, copiedWidgetId }) {
+function ToolWorkspace({
+  widgets,
+  integrations,
+  isAdmin,
+  previewUrl,
+  previewStatus,
+  onOpenTool,
+  onToggleTool,
+  onAddTool,
+  onRemoveTool,
+  onCopyToolObsUrl,
+  copiedWidgetId,
+}) {
+  const [previewActive, setPreviewActive] = useState(false);
   const definitions = getAllWidgetDefs();
   const definitionMap = new Map(definitions.map(def => [def.type, def]));
   const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
@@ -649,6 +663,9 @@ function ToolWorkspace({ widgets, integrations, isAdmin, onOpenTool, onToggleToo
 
   const yourTools = tools.filter(tool => tool.widget && tool.widget.is_visible !== false);
   const addMoreTools = tools.filter(tool => !tool.widget || tool.widget.is_visible === false);
+  const splitIndex = Math.ceil(yourTools.length / 2);
+  const leftPreviewTools = yourTools.slice(0, splitIndex);
+  const rightPreviewTools = yourTools.slice(splitIndex);
 
   const renderCard = (tool, mode) => (
     <ToolCard
@@ -665,25 +682,60 @@ function ToolWorkspace({ widgets, integrations, isAdmin, onOpenTool, onToggleToo
   );
 
   return (
-    <>
-      <ToolSection
-        title="Your tools"
-        subtitle="Enabled tools currently shown on your overlay."
-        emptyText="No enabled tools yet."
-        tools={yourTools.map(tool => renderCard(tool, 'active'))}
-        tourId="your-tools"
-      />
+    <div className={`oc2-tool-workspace${previewActive ? ' oc2-tool-workspace--preview' : ''}`}>
+      <div className="oc2-tool-workspace__bar">
+        <button
+          type="button"
+          className={`oc2-btn oc2-btn--primary oc2-live-preview-toggle${previewActive ? ' oc2-live-preview-toggle--active' : ''}`}
+          onClick={() => setPreviewActive((active) => !active)}
+        >
+          <MonitorPlay size={16} />
+          {previewActive ? 'Hide live preview' : 'Live preview'}
+        </button>
+      </div>
+
+      {previewActive ? (
+        <section className="oc2-tool-preview-layout" data-tour="your-tools" aria-label="Live preview with active tools">
+          <div className="oc2-tool-side oc2-tool-side--left">
+            {leftPreviewTools.length > 0
+              ? leftPreviewTools.map(tool => renderCard(tool, 'preview-left'))
+              : <div className="oc2-empty-strip">No enabled tools yet.</div>}
+          </div>
+          <div className="oc2-tool-live-preview">
+            <div className="oc2-tool-live-preview__top">
+              <span className={`oc2-status-dot oc2-status-dot--${previewStatus || 'closed'}`} />
+              <strong>Live preview</strong>
+            </div>
+            {previewUrl ? (
+              <iframe title="Overlay live preview" src={previewUrl} />
+            ) : (
+              <div className="oc2-empty-strip">No overlay URL is available yet.</div>
+            )}
+          </div>
+          <div className="oc2-tool-side oc2-tool-side--right">
+            {rightPreviewTools.length > 0
+              ? rightPreviewTools.map(tool => renderCard(tool, 'preview-right'))
+              : <div className="oc2-empty-strip">Add more tools to fill this side.</div>}
+          </div>
+        </section>
+      ) : (
+        <ToolSection
+          title="Your tools"
+          emptyText="No enabled tools yet."
+          tools={yourTools.map(tool => renderCard(tool, 'active'))}
+          tourId="your-tools"
+        />
+      )}
 
       <ToolSection
         title="Add more tools"
-        subtitle="Install a new tool or re-enable one you disabled."
         emptyText="All available tools are already active."
         tools={addMoreTools.map(tool => renderCard(tool, 'add'))}
         tourId="add-tools"
       />
 
       <QuickSettings isAdmin={isAdmin} />
-    </>
+    </div>
   );
 }
 
@@ -1594,7 +1646,14 @@ export default function OverlayControlCenter() {
         setupComplete={setupComplete}
       />
 
-      <main className={`oc2-main${currentPanel === 'appearance' ? ' oc2-main--appearance' : ''}`}>
+      <main
+        className={[
+          'oc2-main',
+          currentPanel === 'appearance' ? 'oc2-main--appearance' : '',
+          currentPanel === 'integrations' ? 'oc2-main--integrations' : '',
+          currentPanel === 'home' ? 'oc2-main--tools' : '',
+        ].filter(Boolean).join(' ')}
+      >
         {currentPanel === 'setup' && (
           <SetupWizard
             setup={setup}
@@ -1619,15 +1678,12 @@ export default function OverlayControlCenter() {
             {previewStatus === 'blocked' && (
               <div className="oc2-warning">Your browser blocked the preview window. Allow pop-ups for Streamers Center and try again.</div>
             )}
-            <div className="oc2-section-heading">
-              <span className="oc2-eyebrow">Tools</span>
-              <h1>Manage your overlay</h1>
-              <p>Active tools, setup warnings and global settings are separated so you can get to the right place fast.</p>
-            </div>
             <ToolWorkspace
               widgets={widgets}
               integrations={integrations}
               isAdmin={isAdmin}
+              previewUrl={previewUrl}
+              previewStatus={previewStatus}
               onOpenTool={(type) => {
                 trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, { widget_type: type });
                 navigate(`/overlay-center/widgets/${toSlug(type)}`);
@@ -1661,6 +1717,7 @@ export default function OverlayControlCenter() {
               widgets={widgets}
               overlayState={overlayState}
               saveTheme={saveTheme}
+              saveWidget={saveWidget}
               updateState={updateState}
               onOpenPreview={openPreview}
               onFocusPreview={focusPreview}
