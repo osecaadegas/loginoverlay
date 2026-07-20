@@ -644,6 +644,7 @@ function ToolWorkspace({
   copiedWidgetId,
 }) {
   const [previewActive, setPreviewActive] = useState(false);
+  const previewSectionRef = useRef(null);
   const definitions = getAllWidgetDefs();
   const definitionMap = new Map(definitions.map(def => [def.type, def]));
   const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
@@ -681,21 +682,41 @@ function ToolWorkspace({
     />
   );
 
+  const toggleInlinePreview = () => {
+    setPreviewActive((active) => {
+      const nextActive = !active;
+      if (nextActive) {
+        requestAnimationFrame(() => {
+          previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+      return nextActive;
+    });
+  };
+
   return (
     <div className={`oc2-tool-workspace${previewActive ? ' oc2-tool-workspace--preview' : ''}`}>
       <div className="oc2-tool-workspace__bar">
         <button
           type="button"
           className={`oc2-btn oc2-btn--primary oc2-live-preview-toggle${previewActive ? ' oc2-live-preview-toggle--active' : ''}`}
-          onClick={() => setPreviewActive((active) => !active)}
+          onClick={toggleInlinePreview}
+          aria-expanded={previewActive}
+          aria-controls="oc2-tools-inline-preview"
         >
           <MonitorPlay size={16} />
-          {previewActive ? 'Hide live preview' : 'Live preview'}
+          {previewActive ? 'Collapse preview' : 'Expand preview'}
         </button>
       </div>
 
       {previewActive ? (
-        <section className="oc2-tool-preview-layout" data-tour="your-tools" aria-label="Live preview with active tools">
+        <section
+          id="oc2-tools-inline-preview"
+          ref={previewSectionRef}
+          className="oc2-tool-preview-layout"
+          data-tour="your-tools"
+          aria-label="Expanded live preview with active tools"
+        >
           <div className="oc2-tool-side oc2-tool-side--left">
             {leftPreviewTools.length > 0
               ? leftPreviewTools.map(tool => renderCard(tool, 'preview-left'))
@@ -1674,27 +1695,22 @@ export default function OverlayControlCenter() {
         )}
 
         {currentPanel === 'home' && (
-          <>
-            {previewStatus === 'blocked' && (
-              <div className="oc2-warning">Your browser blocked the preview window. Allow pop-ups for Streamers Center and try again.</div>
-            )}
-            <ToolWorkspace
-              widgets={widgets}
-              integrations={integrations}
-              isAdmin={isAdmin}
-              previewUrl={previewUrl}
-              previewStatus={previewStatus}
-              onOpenTool={(type) => {
-                trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, { widget_type: type });
-                navigate(`/overlay-center/widgets/${toSlug(type)}`);
-              }}
-              onToggleTool={handleToggleTool}
-              onAddTool={handleAddTool}
-              onRemoveTool={handleRemoveTool}
-              onCopyToolObsUrl={copyToolObsUrl}
-              copiedWidgetId={copiedWidgetId}
-            />
-          </>
+          <ToolWorkspace
+            widgets={widgets}
+            integrations={integrations}
+            isAdmin={isAdmin}
+            previewUrl={previewUrl}
+            previewStatus={previewStatus}
+            onOpenTool={(type) => {
+              trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, { widget_type: type });
+              navigate(`/overlay-center/widgets/${toSlug(type)}`);
+            }}
+            onToggleTool={handleToggleTool}
+            onAddTool={handleAddTool}
+            onRemoveTool={handleRemoveTool}
+            onCopyToolObsUrl={copyToolObsUrl}
+            copiedWidgetId={copiedWidgetId}
+          />
         )}
 
         {currentPanel === 'widget-detail' && (
