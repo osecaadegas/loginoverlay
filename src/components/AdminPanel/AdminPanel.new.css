@@ -3320,3 +3320,18 @@
     width: 100%;
   }
 }
+.admin-affiliate-shortcut {
+  min-height: 44px;
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  border-radius: 12px;
+  padding: 0 16px;
+  color: #ecfeff;
+  background: linear-gradient(135deg, rgba(103, 232, 249, 0.18), rgba(139, 92, 246, 0.18));
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-affiliate-shortcut:hover {
+  color: #06111f;
+  background: linear-gradient(135deg, #67e8f9, #8b5cf6);
+}

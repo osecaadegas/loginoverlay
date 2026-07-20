@@ -7,6 +7,7 @@ import {
   Crown,
   Database,
   Download,
+  Handshake,
   LogIn,
   LogOut,
   MonitorUp,
@@ -26,7 +27,7 @@ const SCREEN_SPLIT_DOWNLOAD_URL = 'https://mega.nz/folder/2yRmlAKT#tJsEhmABpz6ON
 
 export default function AppsPage() {
   const { user, signOut } = useAuth();
-  const { isAdmin, isModerator, isSlotModder, isPremium } = useAdmin();
+  const { isAdmin, isModerator, isSlotModder, isPremium, isAffiliate } = useAdmin();
   const location = useLocation();
   const navigate = useNavigate();
   const hasOverlayAccess = isAdmin || isModerator || isPremium;
@@ -44,9 +45,11 @@ export default function AppsPage() {
       { to: '/overlay-center/tutorial', label: 'Restart Tutorial', desc: 'Walk through Overlay Center again', icon: CircleHelp, tone: 'cyan', art: 'restart-tutorial' },
     ] : []),
     { to: '/offers', label: 'Deals', desc: 'Casino offers and partners', icon: Tags, tone: 'lime', art: 'deals' },
+    ...(isAffiliate ? [{ to: '/affiliate', label: 'Affiliate', desc: 'Your tracking links and stats', icon: Handshake, tone: 'teal', art: 'deals' }] : []),
     { to: '/premium', label: 'Premium', desc: 'Plans and access', icon: Crown, tone: 'gold', art: 'premium' },
     ...(isAdmin ? [
       { to: '/admin', label: 'Admin Panel', desc: 'Platform management', icon: ShieldCheck, tone: 'red', art: 'admin' },
+      { to: '/admin/affiliates', label: 'Affiliate Manager', desc: 'Links, roles and partner stats', icon: Handshake, tone: 'emerald', art: 'deals' },
       { to: '/admin/subscriptions', label: 'Subscriptions', desc: 'Plans, trials and pricing copy', icon: CreditCard, tone: 'amber', art: 'subscriptions' },
       { to: '/overlay-center/approvals', label: 'Approvals', desc: 'Review submitted slots', icon: ClipboardCheck, tone: 'rose', art: 'approvals' },
       { to: '/analytics', label: 'Analytics', desc: 'Platform statistics', icon: BarChart3, tone: 'blue', art: 'analytics' },

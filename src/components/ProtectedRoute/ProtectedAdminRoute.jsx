@@ -8,11 +8,12 @@ export default function ProtectedAdminRoute({
   allowPremium = false,
   allowModerator = false,
   allowSlotModder = false,
+  allowAffiliate = false,
   redirectTo = '/premium',
 }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  const { isAdmin, isModerator, isSlotModder, isPremium, loading: adminLoading } = useAdmin();
+  const { isAdmin, isModerator, isSlotModder, isPremium, isAffiliate, loading: adminLoading } = useAdmin();
 
   if (loading || adminLoading) {
     return <LoadingSpinner text="Loading..." fullPage />;
@@ -26,7 +27,8 @@ export default function ProtectedAdminRoute({
     isAdmin ||
     (allowPremium && isPremium) ||
     (allowModerator && isModerator) ||
-    (allowSlotModder && isSlotModder);
+    (allowSlotModder && isSlotModder) ||
+    (allowAffiliate && isAffiliate);
 
   if (!hasAccess) {
     return <Navigate to={redirectTo} replace state={{ from: `${location.pathname}${location.search}` }} />;

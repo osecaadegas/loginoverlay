@@ -1325,6 +1325,13 @@ export default function AdminPanel() {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          className="admin-affiliate-shortcut"
+          onClick={() => navigate('/admin/affiliates')}
+        >
+          Affiliate Manager
+        </button>
         <div className="admin-dropdown-wrapper admin-dropdown-wrapper-clean">
           <select
             className="admin-dropdown-select"

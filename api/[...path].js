@@ -1,5 +1,6 @@
 import analyticsHandler from './_lib/routes/analytics.js';
 import autoDrawWinnersHandler from './_lib/routes/auto-draw-winners.js';
+import affiliateHandler from './_lib/routes/affiliate.js';
 import bettingHandler from './_lib/routes/betting.js';
 import playerSubscriptionHandler from './_lib/routes/player-subscription.js';
 import premiumHandler from './_lib/routes/premium.js';
@@ -7,6 +8,7 @@ import serviceReadinessHandler from './_lib/routes/service-readiness.js';
 import streamerDataHandler from './_lib/streamer-data.js';
 
 const ROUTES = {
+  affiliate: affiliateHandler,
   analytics: analyticsHandler,
   'auto-draw-winners': autoDrawWinnersHandler,
   betting: bettingHandler,

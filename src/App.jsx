@@ -36,7 +36,9 @@ import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
 const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'));
+const AdminAffiliatesPage = lazy(() => import('./components/AdminAffiliates/AdminAffiliatesPage'));
 const AdminSubscriptionsPage = lazy(() => import('./components/AdminSubscriptions/AdminSubscriptionsPage'));
+const AffiliateDashboard = lazy(() => import('./components/AffiliateDashboard/AffiliateDashboard'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
@@ -315,6 +317,11 @@ function App() {
 
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/premium" element={<PricingPage />} />
+                <Route path="/affiliate" element={
+                  <ProtectedAdminRoute allowAffiliate redirectTo="/apps">
+                    <AffiliateDashboard />
+                  </ProtectedAdminRoute>
+                } />
                 <Route path="/player/subscription" element={<PlayerSubscriptionPage />} />
                 <Route path="/player/bonus-hunt" element={
                   <ProtectedPlayerRoute>
@@ -354,6 +361,11 @@ function App() {
                 <Route path="/admin/subscriptions" element={
                   <ProtectedAdminRoute>
                     <AdminSubscriptionsPage />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/affiliates" element={
+                  <ProtectedAdminRoute>
+                    <AdminAffiliatesPage />
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/overlay-center/*" element={

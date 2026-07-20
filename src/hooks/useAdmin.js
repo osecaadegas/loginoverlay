@@ -9,6 +9,7 @@ export const useAdmin = () => {
   const [isModerator, setIsModerator] = useState(false);
   const [isSlotModder, setIsSlotModder] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [isAffiliate, setIsAffiliate] = useState(false);
   const [userRoles, setUserRoles] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,6 +20,7 @@ export const useAdmin = () => {
         setIsModerator(false);
         setIsSlotModder(false);
         setIsPremium(false);
+        setIsAffiliate(false);
         setUserRoles([]);
         setLoading(false);
         return;
@@ -35,6 +37,7 @@ export const useAdmin = () => {
           setIsModerator(false);
           setIsSlotModder(false);
           setIsPremium(false);
+          setIsAffiliate(false);
           setUserRoles([]);
         } else {
           const roles = data || [];
@@ -62,6 +65,7 @@ export const useAdmin = () => {
           setIsModerator(roleNames.includes('moderator') || roleNames.includes('admin') || roleNames.includes('superadmin'));
           setIsSlotModder(roleNames.includes('slot_modder') || roleNames.includes('admin') || roleNames.includes('superadmin'));
           setIsPremium(hasStreamerEntitlement || roleNames.includes('premium') || roleNames.includes('admin') || roleNames.includes('superadmin'));
+          setIsAffiliate(roleNames.includes('affiliate') || roleNames.includes('admin') || roleNames.includes('superadmin'));
         }
       } catch (error) {
         console.error('Error in useAdmin:', error);
@@ -69,6 +73,7 @@ export const useAdmin = () => {
         setIsModerator(false);
         setIsSlotModder(false);
         setIsPremium(false);
+        setIsAffiliate(false);
         setUserRoles([]);
       } finally {
         setLoading(false);
@@ -78,5 +83,5 @@ export const useAdmin = () => {
     checkAdminStatus();
   }, [user]);
 
-  return { isAdmin, isModerator, isSlotModder, isPremium, userRoles, loading };
+  return { isAdmin, isModerator, isSlotModder, isPremium, isAffiliate, userRoles, loading };
 };

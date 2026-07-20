@@ -42,6 +42,14 @@
       "destination": "/api/chat-commands?cmd=image-search"
     },
     {
+      "source": "/go/:brandSlug/:shortCode",
+      "destination": "/api/affiliate?action=redirect&brandSlug=:brandSlug&shortCode=:shortCode"
+    },
+    {
+      "source": "/api/affiliate/postback/:brandSlug",
+      "destination": "/api/affiliate?action=postback&brandSlug=:brandSlug"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
