@@ -915,6 +915,27 @@ function buildBonusHuntPatch(tokens) {
   const headerBg = tokens.material === 'transparent_obs'
     ? tokens.colors.secondarySurface
     : tokens.colors.surface;
+  const cardSurface = {
+    ...common.card,
+    background: tokens.colors.secondarySurface,
+    accentColor: tokens.colors.accent,
+  };
+  const listRowSurface = {
+    ...common.card,
+    background: tokens.colors.elevatedSurface,
+    textColor: tokens.colors.text,
+    states: {
+      active: {
+        borderColor: tokens.colors.primary,
+        shadow: tokens.materialTokens?.glowIntensity > 0.01
+          ? `0 0 ${px(tokens.materialTokens.glowIntensity * 32)} ${tokens.colors.glow}`
+          : undefined,
+      },
+      opened: {
+        opacity: 0.76,
+      },
+    },
+  };
   return {
     accentColor: tokens.colors.accent,
     textColor: tokens.colors.text,
@@ -941,6 +962,37 @@ function buildBonusHuntPatch(tokens) {
     autoSpeed: tokens.motion?.carouselIntervalMs,
     carouselAutoplay: tokens.motion?.carouselAutoplay,
     subElements: {
+      container: {
+        ...common.container,
+        background: tokens.colors.surface,
+      },
+      headerContainer: {
+        ...common.card,
+        background: headerBg,
+        accentColor: tokens.colors.accent,
+      },
+      mainStatsContainer: {
+        background: 'transparent',
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+      },
+      statCell: common.statsCard,
+      slotCarouselContainer: {
+        ...common.card,
+        background: tokens.colors.elevatedSurface,
+      },
+      slotListContainer: cardSurface,
+      bonusCard: cardSurface,
+      slotRow: listRowSurface,
+      requestsSectionContainer: {
+        ...cardSurface,
+        background: tokens.colors.secondarySurface,
+      },
+      footerContainer: {
+        ...common.card,
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.mutedText,
+      },
       huntTitle: {
         textColor: tokens.colors.text,
         fontFamily: tokens.typography.headerFont,
@@ -958,9 +1010,6 @@ function buildBonusHuntPatch(tokens) {
       tagText: {
         textColor: tokens.colors.text,
         fontWeight: tokens.typography.valueWeight,
-      },
-      slotRow: {
-        textColor: tokens.colors.text,
       },
       slotTitle: {
         textColor: tokens.colors.text,
@@ -1028,6 +1077,8 @@ function buildBonusHuntPatch(tokens) {
         fontSize: tokens.typography.labelSize,
       },
       requestsEmpty: {
+        ...common.card,
+        background: tokens.colors.elevatedSurface,
         textColor: tokens.colors.mutedText,
       },
     },

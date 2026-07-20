@@ -48,6 +48,14 @@ const DEFAULT_SECTION_LAYOUT = [
   { id: 'casino', zone: 'right' },
 ];
 
+function partAttrs(partId, stateId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+    ...(stateId ? { 'data-widget-state': stateId } : {}),
+  };
+}
+
 async function fetchCryptoPrices(coins) {
   if (!coins || coins.length === 0) return {};
   const ids = coins.map(c => CRYPTO_IDS[c]).filter(Boolean).join(',');
@@ -429,12 +437,12 @@ function NavbarWidget({ config, widgetId, userId }) {
     switch (sectionId) {
       case 'identity':
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+          <div {...partAttrs('displayName')} style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             {c.showAvatar !== false && (
               (() => {
                 const size = avatarImageSize || (barHeight * 0.72 * ((c.avatarSize ?? 100) / 100));
                 return (
-              <div style={{
+              <div {...partAttrs('avatar')} style={{
                 position: 'relative',
                 width: size,
                 height: size,
@@ -445,7 +453,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                 flexShrink: 0,
               }}>
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="" style={{
+                  <img src={avatarUrl} alt="" {...partAttrs('avatar')} style={{
                     width: '100%', height: '100%',
                     borderRadius: avatarRadius,
                     objectFit: avatarFit,
@@ -470,7 +478,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               })()
             )}
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 }}>
-              <span style={{
+              <span {...partAttrs('displayName')} style={{
                 backgroundImage: isMetal
                   ? `linear-gradient(135deg, ${textColor}, ${mutedColor}, ${textColor}, ${mutedColor})`
                   : isGlass
@@ -501,11 +509,11 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'badge': {
         if (!badgeImageUrl) return null;
         return (
-          <div style={{
+          <div {...partAttrs('badgeImage')} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             height: barHeight, flexShrink: 0, padding: '2px 0',
           }}>
-            <img src={badgeImageUrl} alt="" style={{
+            <img src={badgeImageUrl} alt="" {...partAttrs('badgeImage')} style={{
               height: badgeImageSize || (barHeight * 0.85 * ((c.badgeSize ?? 100) / 100)),
               minWidth: badgeImageSize || (barHeight * 1.2 * ((c.badgeSize ?? 100) / 100)),
               objectFit: badgeImageFit,
@@ -519,7 +527,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'clock': {
         if (c.showClock === false) return null;
         return (
-          <div style={isMetal ? {
+          <div {...partAttrs('clock')} style={isMetal ? {
             borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.6)}px` : '6px 22px',
             background: clockBg || 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
             border: `${clockBorderWidth}px solid ${clockBorderColor}`,
@@ -561,46 +569,50 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'nowPlaying': {
         if (c.showNowPlaying === false || !displayNowPlaying) return null;
         return (
-          <NowPlayingDisplay
-            data={displayNowPlaying}
-            musicDisplayStyle={c.musicDisplayStyle || 'text'}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            fontSize={musicFontSize}
-            fontFamily={musicFontFamily}
-            fontWeight={musicFontWeight}
-            isMetal={isMetal}
-            barHeight={barHeight}
-          />
+          <div {...partAttrs('music')} style={{ display: 'flex', alignItems: 'center', minWidth: 0, flexShrink: 1 }}>
+            <NowPlayingDisplay
+              data={displayNowPlaying}
+              musicDisplayStyle={c.musicDisplayStyle || 'text'}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              fontSize={musicFontSize}
+              fontFamily={musicFontFamily}
+              fontWeight={musicFontWeight}
+              isMetal={isMetal}
+              barHeight={barHeight}
+            />
+          </div>
         );
       }
 
       case 'crypto': {
         if (!c.showCrypto || activeCoins.length === 0) return null;
         return (
-          <CryptoTicker
-            coins={activeCoins}
-            prices={cryptoPrices}
-            mode={cryptoMode}
-            index={cryptoIndex}
-            fading={cryptoFading}
-            fontSize={cryptoFontSize}
-            bgColor={bgColor}
-            textColor={cryptoTextColor}
-            fontFamily={cryptoFontFamily}
-            fontWeight={cryptoFontWeight}
-            cryptoUpColor={cryptoUpColor}
-            cryptoDownColor={cryptoDownColor}
-            metallic={isMetal || isGlass || isRetro}
-          />
+          <div {...partAttrs('crypto')} style={{ display: 'flex', alignItems: 'center', minWidth: 0, flexShrink: 0 }}>
+            <CryptoTicker
+              coins={activeCoins}
+              prices={cryptoPrices}
+              mode={cryptoMode}
+              index={cryptoIndex}
+              fading={cryptoFading}
+              fontSize={cryptoFontSize}
+              bgColor={bgColor}
+              textColor={cryptoTextColor}
+              fontFamily={cryptoFontFamily}
+              fontWeight={cryptoFontWeight}
+              cryptoUpColor={cryptoUpColor}
+              cryptoDownColor={cryptoDownColor}
+              metallic={isMetal || isGlass || isRetro}
+            />
+          </div>
         );
       }
 
       case 'cta': {
         if (!c.showCTA || !c.ctaText) return null;
         return (
-          <div style={isMetal ? {
+          <div {...partAttrs('sponsor')} style={isMetal ? {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
             background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
@@ -657,7 +669,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'balance': {
         if (!c.showStartBalance || !c.startBalance) return null;
         return (
-          <div style={{
+          <div {...partAttrs('balance')} style={{
             display: 'flex', alignItems: 'center', gap: 8,
             fontFamily: balanceFontFamily,
             fontSize: balanceFontSize, fontWeight: balanceFontWeight, color: balanceTextColor,
@@ -676,9 +688,9 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'casino': {
         if (!c.showCasino || (!c.casinoName && !casinoLogoUrl)) return null;
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div {...partAttrs('casino')} style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {casinoLogoUrl && (
-              <img src={casinoLogoUrl} alt="" style={{
+              <img src={casinoLogoUrl} alt="" {...partAttrs('casino')} style={{
                 height: casinoImageSize || (barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100)),
                 maxWidth: casinoImageSize ? casinoImageSize * 1.8 : (barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100)),
                 objectFit: casinoImageFit, borderRadius: casinoImageRadius,
@@ -686,7 +698,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               }} />
             )}
             {c.casinoName && (
-              <span style={{
+              <span {...partAttrs('casino')} style={{
                 fontFamily: casinoFontFamily,
                 fontSize: casinoFontSize, fontWeight: casinoFontWeight,
                 letterSpacing: '0.15em', textTransform: 'uppercase',
@@ -712,14 +724,14 @@ function NavbarWidget({ config, widgetId, userId }) {
     return sections.flatMap((s, i) =>
       i === 0
         ? [<React.Fragment key={s.id}>{s.el}</React.Fragment>]
-        : [<div key={`sep-${s.id}`} style={sep} />, <React.Fragment key={s.id}>{s.el}</React.Fragment>]
+        : [<div key={`sep-${s.id}`} {...partAttrs('separator')} style={sep} />, <React.Fragment key={s.id}>{s.el}</React.Fragment>]
     );
   };
 
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
-      <div style={barOuterSized}>
+      <div {...partAttrs('container')} style={barOuterSized}>
         <div style={barInner}>
           {/* Metallic shine overlay */}
           {isMetal && (

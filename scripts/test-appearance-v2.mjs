@@ -2,6 +2,15 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 
+function assertRendererPartTargets(source, widgetLabel, partIds) {
+  for (const partId of partIds) {
+    assert.ok(
+      source.includes(`partAttrs('${partId}'`) || source.includes(`data-widget-element="${partId}"`),
+      `${widgetLabel} renderer exposes ${partId} as a selectable appearance part`
+    );
+  }
+}
+
 const server = await createServer({
   logLevel: 'silent',
   server: { middlewareMode: true },
@@ -871,11 +880,55 @@ try {
   const huntConfig = appearanceModel.resolveWidgetAppearanceConfig(bonusHuntWidget, appearance, {});
   assert.equal(huntConfig.__appearanceV2.material, 'metallic', 'Bonus Hunt receives V2 material');
   assert.equal(huntConfig.displayStyle, 'v12_classic_sr', 'Bonus Hunt keeps selected renderer style');
+  assert.equal(typeof huntConfig.subElements.container?.radius, 'number', 'Bonus Hunt container receives its own generated surface radius');
+  assert.equal(typeof huntConfig.subElements.bonusCard?.radius, 'number', 'Bonus Hunt cards receive their own generated radius');
+  assert.notEqual(huntConfig.subElements.container.radius, huntConfig.subElements.bonusCard.radius, 'Bonus Hunt container radius does not leak into internal cards');
+  assert.notEqual(huntConfig.subElements.container.radius, huntConfig.subElements.statCell.radius, 'Bonus Hunt container radius does not leak into stat cells');
   assert.equal(huntConfig.subElements.headerContainer?.padding, undefined, 'Bonus Hunt material presets do not alter structural header padding');
   assert.equal(huntConfig.subElements.slotRow?.padding, undefined, 'Bonus Hunt material presets do not alter structural slot row padding');
   assert.equal(huntConfig.subElements.slotImage?.height, undefined, 'Bonus Hunt material presets do not alter carousel image dimensions');
   assert.ok(huntConfig.headerColor, 'Bonus Hunt material presets recolor the original surface variables');
   assert.ok(huntConfig.subElements.footerTotalValue.states.success.textColor, 'Bonus Hunt state-specific success style remains explicit');
+  assert.ok(bonusHuntV12Source.includes('data-appearance-part'), 'Bonus Hunt renderer marks selectable appearance parts');
+
+  const scopedBonusHuntAppearance = {
+    widgets: {
+      hunt1: {
+        styles: {
+          v12_classic_sr: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('bonus_hunt', {
+              material: 'matte',
+              primaryColor: '#14d8d8',
+              shape: 'pill',
+              density: 'standard',
+              textSize: 'standard',
+              scale: 1,
+            }, {
+              elementOverrides: {
+                container: {
+                  radius: 64,
+                  borderWidth: 3,
+                },
+                bonusCard: {
+                  radius: 10,
+                },
+                statCell: {
+                  radius: 6,
+                },
+              },
+            }),
+          },
+        },
+      },
+    },
+  };
+  const scopedHuntConfig = appearanceModel.resolveWidgetAppearanceConfig(bonusHuntWidget, scopedBonusHuntAppearance, {});
+  assert.equal(scopedHuntConfig.subElements.container.radius, 64, 'Bonus Hunt surface override reaches only the container');
+  assert.equal(scopedHuntConfig.subElements.container.borderWidth, 3, 'Bonus Hunt surface border width remains scoped to the container');
+  assert.equal(scopedHuntConfig.subElements.bonusCard.radius, 10, 'Bonus Hunt card radius remains independently editable');
+  assert.equal(scopedHuntConfig.subElements.statCell.radius, 6, 'Bonus Hunt stat radius remains independently editable');
+  assert.notEqual(scopedHuntConfig.subElements.bonusCard.radius, scopedHuntConfig.subElements.container.radius, 'Bonus Hunt card radius does not inherit the surface override');
+  assert.notEqual(scopedHuntConfig.subElements.statCell.radius, scopedHuntConfig.subElements.container.radius, 'Bonus Hunt stat radius does not inherit the surface override');
 
   const rtpConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, appearance, {});
   assert.equal(rtpConfig.__appearanceV2.material, 'neon', 'RTP Stats receives V2 material');
@@ -908,6 +961,19 @@ try {
   assert.ok(rtpWidgetSource.includes('providerLogoUrl'), 'RTP Stats renderer supports configured provider logo images');
   assert.ok(rtpWidgetSource.includes('--rtp-bar-height'), 'RTP Stats renderer maps bar height to CSS');
   assert.ok(rtpWidgetSource.includes('--rtp-max-width'), 'RTP Stats renderer maps max width to CSS');
+  assertRendererPartTargets(rtpWidgetSource, 'RTP Stats', [
+    'container',
+    'provider',
+    'slotTitle',
+    'rtpValue',
+    'maxWin',
+    'volatility',
+    'personalBest',
+    'statCard',
+    'label',
+    'divider',
+    'spinner',
+  ]);
   assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-rtp-family'), 'RTP Stats CSS consumes per-value RTP font family');
   assert.ok(overlayCssSource.includes('font-family: var(--rtp-value-bestwin-family'), 'RTP Stats CSS consumes per-value personal-best font family');
   assert.ok(overlayCssSource.includes('var(--rtp-label-rtp-family'), 'RTP Stats CSS lets value font cascade into RTP label text');
@@ -945,6 +1011,19 @@ try {
   assert.ok(navbarWidgetSource.includes('balanceFontFamily'), 'Navbar renderer maps balance font family');
   assert.ok(navbarWidgetSource.includes('barOuterSized'), 'Navbar renderer applies bar frame sizing');
   assert.ok(navbarWidgetSource.includes('sponsorBorderColor'), 'Navbar renderer maps CTA border controls');
+  assertRendererPartTargets(navbarWidgetSource, 'Navbar', [
+    'container',
+    'avatar',
+    'badgeImage',
+    'displayName',
+    'clock',
+    'music',
+    'sponsor',
+    'crypto',
+    'balance',
+    'casino',
+    'separator',
+  ]);
   const navbarRetroConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, appearance, {}, { styleId: 'retro' });
   assert.equal(navbarRetroConfig.displayStyle, 'retro', 'Navbar can switch to retro style appearance');
   assert.equal(navbarRetroConfig.__appearanceV2.material, 'matte', 'Navbar loads retro style-specific appearance');

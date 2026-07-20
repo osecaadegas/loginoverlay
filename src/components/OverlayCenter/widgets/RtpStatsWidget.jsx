@@ -116,6 +116,14 @@ function pickBestWinRecord(records) {
 }
 
 /* ─── Main widget ─── */
+function partAttrs(partId, stateId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+    ...(stateId ? { 'data-widget-state': stateId } : {}),
+  };
+}
+
 function RtpStatsProviderMark({ provider, logo }) {
   const [failedLogo, setFailedLogo] = useState('');
 
@@ -130,6 +138,7 @@ function RtpStatsProviderMark({ provider, logo }) {
     <span
       className={`rtp-stats-provider ${canShowLogo ? 'rtp-stats-provider--logo' : 'rtp-stats-provider--text'}`}
       title={label}
+      {...partAttrs('provider')}
     >
       {canShowLogo ? (
         <img
@@ -637,8 +646,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   };
 
   return (
-    <div className={`oc-widget-inner rtp-stats-bar${styleClass}`} style={rootStyle}>
-      <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''} ${showEmptyState ? 'rtp-stats-inner--empty' : ''}`}>
+    <div className={`oc-widget-inner rtp-stats-bar${styleClass}`} {...partAttrs('container')} style={rootStyle}>
+      <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''} ${showEmptyState ? 'rtp-stats-inner--empty' : ''}`} {...partAttrs('statCard')}>
 
         {/* Preview badge */}
         {!isLive && previewMode && (
@@ -650,27 +659,27 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
           {showProvider && displayProvider && (
             <>
               <RtpStatsProviderMark provider={displayProvider} logo={displayProviderLogo} />
-              <div className="rtp-stats-divider" />
+              <div className="rtp-stats-divider" {...partAttrs('divider')} />
             </>
           )}
           <div className="rtp-stats-slot">
             {showSpinner && (
-              <svg className="rtp-stats-spinner" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="rtp-stats-spinner" {...partAttrs('spinner')} width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2a10 10 0 1 0 10 10H12V2z" opacity="0.25" />
                 <path d="M22 12A10 10 0 0 1 12 22v-2a8 8 0 0 0 8-8z" />
               </svg>
             )}
-            <span className="rtp-stats-slot-name">{(displaySlotName || '').toUpperCase()}</span>
+            <span className="rtp-stats-slot-name" {...partAttrs('slotTitle')}>{(displaySlotName || '').toUpperCase()}</span>
           </div>
 
           {/* Stats inline with left section */}
           {showRtp && (
             <>
-              <div className="rtp-stats-divider" />
-              <div className="rtp-stats-item rtp-stats-item--rtp">
+              <div className="rtp-stats-divider" {...partAttrs('divider')} />
+              <div className="rtp-stats-item rtp-stats-item--rtp" {...partAttrs('rtpValue')}>
                 <span className="rtp-stats-icon">⚡</span>
                 <span className="rtp-stats-value">
-                  <span className="rtp-stats-label">RTP </span>
+                  <span className="rtp-stats-label" {...partAttrs('label')}>RTP </span>
                   {displayInfo?.rtp ? `${displayInfo.rtp}%` : '—'}
                 </span>
               </div>
@@ -678,20 +687,20 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
           )}
 
           {showPotential && (
-            <div className="rtp-stats-item rtp-stats-item--potential">
+            <div className="rtp-stats-item rtp-stats-item--potential" {...partAttrs('maxWin')}>
               <span className="rtp-stats-icon">⚡</span>
               <span className="rtp-stats-value">
-                <span className="rtp-stats-label">POTENTIAL </span>
+                <span className="rtp-stats-label" {...partAttrs('label')}>POTENTIAL </span>
                 {fmtMultiplier(displayInfo?.max_win_multiplier)}
               </span>
             </div>
           )}
 
           {showVolatility && (
-            <div className="rtp-stats-item rtp-stats-item--volatility">
+            <div className="rtp-stats-item rtp-stats-item--volatility" {...partAttrs('volatility')}>
               <span className="rtp-stats-icon">⚡</span>
               <span className="rtp-stats-value">
-                <span className="rtp-stats-label">VOLATILITY </span>
+                <span className="rtp-stats-label" {...partAttrs('label')}>VOLATILITY </span>
                 {fmtVolatility(displayInfo?.volatility)}
               </span>
             </div>
@@ -701,10 +710,10 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         {/* ═══ Right Section — Best Win ═══ */}
         {showBestWin && (
           <div className="rtp-stats-right">
-            <div className="rtp-stats-item rtp-stats-item--bestwin">
+            <div className="rtp-stats-item rtp-stats-item--bestwin" {...partAttrs('personalBest')}>
               <span className="rtp-stats-icon">🏆</span>
               <span className="rtp-stats-value">
-                <span className="rtp-stats-label">BEST WIN </span>
+                <span className="rtp-stats-label" {...partAttrs('label')}>BEST WIN </span>
                 {displayBestWin?.best_win
                   ? `€${Number(displayBestWin.best_win).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : '—'}
@@ -713,7 +722,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
                   : ''}
               </span>
               <span className="rtp-stats-value rtp-stats-value--bestwin-current">
-                <span className="rtp-stats-label">BEST WIN </span>
+                <span className="rtp-stats-label" {...partAttrs('label')}>BEST WIN </span>
                 {displayBestWin?.best_win
                   ? `${currency}${Number(displayBestWin.best_win).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : bestWinEmptyText}

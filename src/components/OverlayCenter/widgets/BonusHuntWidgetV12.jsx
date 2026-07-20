@@ -51,6 +51,14 @@ function composeV12RootBackground(headerColor, rootBackground) {
   return `linear-gradient(160deg, ${color}, ${color})`;
 }
 
+function partAttrs(partId, stateId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+    ...(stateId ? { 'data-widget-state': stateId } : {}),
+  };
+}
+
 export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests = [] }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
@@ -272,12 +280,12 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
       className="oc-widget-inner oc-bonushunt oc-bonushunt--v12"
       data-widget-id="bonus_hunt"
       data-style-id={c.displayStyle || 'v12_classic_sr'}
-      data-widget-element="container"
+      {...partAttrs('container')}
       style={{ ...rootStyle, height: '100%' }}
     >
 
       {/* ═══ Header — Classic full-card flip ═══ */}
-      <div className="bht-card bht-header bht-header--fullflip" data-widget-element="headerContainer" style={{ ...headerContainerStyle, flex: '0 0 auto' }}>
+      <div className="bht-card bht-header bht-header--fullflip" {...partAttrs('headerContainer')} style={{ ...headerContainerStyle, flex: '0 0 auto' }}>
         <div className={`bht-fullflip-container${statsFlipped ? ' bht-fullflip-container--flipped' : ''}`}>
           <div className="bht-fullflip-face bht-fullflip-front">
             <div className="bht-header-center">
@@ -291,23 +299,23 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
                   </svg>
                 </div>
               )}
-              <div className="bht-title" data-widget-element="headerTitle" style={headerTitleStyle}>{huntTitle}</div>
+              <div className="bht-title" {...partAttrs('headerTitle')} style={headerTitleStyle}>{huntTitle}</div>
             </div>
-            <div className="bht-header-stats bht-header-stats--4col" data-widget-element="mainStatsContainer" style={mainStatsContainerStyle}>
+            <div className="bht-header-stats bht-header-stats--4col" {...partAttrs('mainStatsContainer')} style={mainStatsContainerStyle}>
               <div className="bht-flip-face bht-flip-front">
-                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                <div className="bht-stat-box" {...partAttrs('statCell')} style={statCellStyle}>
                   <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>START</div>
                   <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue')}>{currency}{startMoney.toFixed(0)}</div>
                 </div>
-                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                <div className="bht-stat-box" {...partAttrs('statCell')} style={statCellStyle}>
                   <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>STOP</div>
                   <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue')}>{currency}{stopLoss.toFixed(0)}</div>
                 </div>
-                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                <div className="bht-stat-box" {...partAttrs('statCell')} style={statCellStyle}>
                   <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>B.E.</div>
                   <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue', { color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }, stats.liveBE >= 100 ? 'negative' : 'positive')}>{stats.liveBE.toFixed(0)}x</div>
                 </div>
-                <div className="bht-stat-box" data-widget-element="statCell" style={statCellStyle}>
+                <div className="bht-stat-box" {...partAttrs('statCell')} style={statCellStyle}>
                   <div className="bht-stat-label" data-widget-element="statLabel" style={statLabelStyle}>AVG</div>
                   <div className="bht-stat-value" data-widget-element="statValue" style={scopedStyle('statValue', { color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }, stats.avgMulti >= 100 ? 'positive' : 'negative')}>{stats.avgMulti.toFixed(0)}x</div>
                 </div>
@@ -361,9 +369,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" data-widget-element="slotListContainer" style={{ ...slotListContainerStyle, flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '2.65 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+        <div className="bht-card bht-list-card" {...partAttrs('slotListContainer')} style={{ ...slotListContainerStyle, flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '2.65 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
           {/* ── 3D Animated Card Carousel ── */}
-          <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`} data-widget-element="slotCarouselContainer" style={slotCarouselContainerStyle}>
+          <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`} {...partAttrs('slotCarouselContainer')} style={slotCarouselContainerStyle}>
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
@@ -395,7 +403,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
             const pct = total > 0 ? (opened / total) * 100 : 0;
             return (
               <div className="bht-progress">
-                <div className="bht-progress-bar" data-widget-element="progressBar" style={progressBarStyle}>
+                <div className="bht-progress-bar" {...partAttrs('progressBar')} style={progressBarStyle}>
                   <div className="bht-progress-fill" data-widget-element="progressBarFill" style={{ ...progressBarFillStyle, width: `${pct}%` }} />
                 </div>
                 <span className="bht-progress-meta" data-widget-element="progressCount" style={progressCountStyle}>
@@ -415,7 +423,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
             );
           })()}
           {/* ── Vertical list rows (half-height) ── */}
-          <div className="bht-list-rows" data-widget-element="slotListContainer" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+          <div className="bht-list-rows" {...partAttrs('slotListContainer')} style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', position: 'relative' }}>
             <div className="bht-list-fade bht-list-fade--top" />
             <div className="bht-list-fade bht-list-fade--bottom" />
             {(() => {
@@ -431,7 +439,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
                       return (
                         <div key={`lr-${bonus.id || i}-o`}
                           className={`bht-list-row${i === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}
-                          data-widget-element="slotRow"
+                          {...partAttrs('slotRow', i === currentIndex ? 'active' : bonus.opened ? 'opened' : 'default')}
                           style={scopedStyle('slotRow', {}, i === currentIndex ? 'active' : bonus.opened ? 'opened' : 'default')}>
                           <span className="bht-list-row-idx" data-widget-element="slotPositionNumber" style={slotPositionNumberStyle}>{i + 1}</span>
                           <div className="bht-list-row-thumb" data-widget-element="slotThumbnail" style={slotThumbnailStyle}>
@@ -472,7 +480,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
                 return (
                   <div key={key}
                     className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}
-                    data-widget-element="slotRow"
+                    {...partAttrs('slotRow', idx === currentIndex ? 'active' : bonus.opened ? 'opened' : 'default')}
                     style={scopedStyle('slotRow', {}, idx === currentIndex ? 'active' : bonus.opened ? 'opened' : 'default')}>
                     <span className="bht-list-row-idx" data-widget-element="slotPositionNumber" style={slotPositionNumberStyle}>{idx + 1}</span>
                     <div className="bht-list-row-thumb" data-widget-element="slotThumbnail" style={slotThumbnailStyle}>
@@ -520,7 +528,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
       {/* ═══ Slot Requests Section ═══ */}
       {srVisible && (
         <div className={`bht-card bht-v12-sr bht-v12-sr--${srAnim}`}
-          data-widget-element="requestsSectionContainer"
+          {...partAttrs('requestsSectionContainer')}
           style={{
             ...requestsSectionContainerStyle,
             flex: (srAnim === 'slide-down' || srAnim === 'shrink-list') ? '0 0 0px' : '1 1 0',
@@ -545,7 +553,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
                 style={srNeedsScroll ? { '--sr-scroll-duration': `${Math.max(8, srRequests.length * srScrollSpeed / 3)}s` } : undefined}>
                 {[...(srNeedsScroll ? [0, 1] : [0])].map(setIdx =>
                   srRequests.map((r, i) => (
-                    <div key={`${setIdx}-${r.id}`} className="bht-v12-sr-row" data-widget-element="slotRow" style={scopedStyle('slotRow')}>
+                    <div key={`${setIdx}-${r.id}`} className="bht-v12-sr-row" {...partAttrs('slotRow')} style={scopedStyle('slotRow')}>
                       <div className="bht-v12-sr-row-bg"
                         style={{ backgroundImage: `url(${r.slot_image || FALLBACK_SR_IMG})` }} />
                       <div className="bht-v12-sr-row-overlay" />
@@ -574,7 +582,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
       )}
 
       {/* ═══ Total Pay Footer ═══ */}
-      <div className="bht-card bht-footer" data-widget-element="footerContainer" style={{ ...footerContainerStyle, flex: '0 0 auto' }}>
+      <div className="bht-card bht-footer" {...partAttrs('footerContainer')} style={{ ...footerContainerStyle, flex: '0 0 auto' }}>
         <div className="bht-footer-flip-wrap">
           <div className={`bht-footer-flip${statsFlipped ? ' bht-footer-flip--flipped' : ''}`}>
             <div className="bht-footer-flip-face bht-footer-flip-front">
