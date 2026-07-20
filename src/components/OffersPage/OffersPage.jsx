@@ -335,6 +335,61 @@ function PartnerLogo({ offer }) {
   return <img src={offer.logo} alt={`${offer.partnerName} logo`} loading="lazy" onError={() => setFailed(true)} />;
 }
 
+function PlatformLogo({ platform }) {
+  const key = String(platform || '').toLowerCase().replace(/\s+/g, '');
+  if (key.includes('twitch')) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 3h16v11l-4 4h-4l-3 3H8v-3H3V7l2-4Z" />
+        <path d="M8 6v9h3v2l2-2h4l2-2V6H8Z" />
+        <path d="M12 8h2v5h-2V8Zm4 0h2v5h-2V8Z" />
+      </svg>
+    );
+  }
+  if (key.includes('kick')) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 4h6v5h2.4L17 4h5l-4.8 6.6L22 20h-6l-2.9-5H11v5H5V4Z" />
+      </svg>
+    );
+  }
+  if (key.includes('youtube')) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21.3 7.2a2.7 2.7 0 0 0-1.9-1.9C17.8 5 12 5 12 5s-5.8 0-7.4.3a2.7 2.7 0 0 0-1.9 1.9A28 28 0 0 0 2.4 12a28 28 0 0 0 .3 4.8 2.7 2.7 0 0 0 1.9 1.9c1.6.3 7.4.3 7.4.3s5.8 0 7.4-.3a2.7 2.7 0 0 0 1.9-1.9 28 28 0 0 0 .3-4.8 28 28 0 0 0-.3-4.8Z" />
+        <path d="m10 15.4 5.2-3.4L10 8.6v6.8Z" className="platform-logo-cutout" />
+      </svg>
+    );
+  }
+  if (key.includes('tiktok')) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 3c.5 3.1 2.3 5 5 5.3v4.2a8.4 8.4 0 0 1-5-1.6v5.4c0 3.1-2.5 5.7-5.8 5.7A5.6 5.6 0 0 1 3.5 16c0-3.7 3.5-6.3 7.1-5.5v4.4c-1.3-.5-2.8.4-2.8 1.8 0 1.1.9 1.9 2 1.9s1.9-.8 1.9-1.9V3H15Z" />
+      </svg>
+    );
+  }
+  if (key.includes('website')) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.7 9h-3.2a15 15 0 0 0-1.2-5.1A8 8 0 0 1 18.7 11ZM12 4.1c.7 1 1.4 3.2 1.6 6.9H10.4c.2-3.7.9-5.9 1.6-6.9ZM4.2 13h3.2c.2 2 .6 3.8 1.2 5.1A8 8 0 0 1 4.2 13Zm3.2-2H4.2a8 8 0 0 1 4.4-5.1A15 15 0 0 0 7.4 11ZM12 19.9c-.7-1-1.4-3.2-1.6-6.9h3.2c-.2 3.7-.9 5.9-1.6 6.9Zm3.4-1.8c.6-1.3 1-3.1 1.2-5.1h3.2a8 8 0 0 1-4.4 5.1Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3 3 8l9 5 9-5-9-5Zm-7 8v5l7 4 7-4v-5l-7 4-7-4Z" />
+    </svg>
+  );
+}
+
+function PlatformChip({ platform }) {
+  return (
+    <span className="offer-platform-chip" title={platform} aria-label={platform}>
+      <PlatformLogo platform={platform} />
+    </span>
+  );
+}
+
 function OfferBadges({ offer, compact = false }) {
   const badges = [
     offer.isVerified && { label: 'Verified Partner', className: 'verified', icon: ShieldCheck },
@@ -689,85 +744,118 @@ function OfferCard({
   onToggleCompare,
   isAuthenticated,
 }) {
+  const [infoOpen, setInfoOpen] = useState(false);
   const detailItems = getPrimaryDetailItems(offer);
   const statItems = getOfferStatItems(offer);
   const heroSubtitle = offer.playerPromotion || offer.shortDescription;
+  const backDetails = [
+    offer.shortDescription,
+    offer.playerPromotion,
+    offer.mainTerms,
+    offer.trafficRequirements,
+    offer.restrictions,
+  ].filter(Boolean);
 
   return (
-    <article className="offer-card">
-      <div className="offer-card-media">
-        <OfferImage offer={offer} />
-        <OfferBadges offer={offer} compact />
-        <div className="offer-card-logo offer-card-logo--media">
-          <PartnerLogo offer={offer} />
-        </div>
-        <div className="offer-card-hero-copy">
-          <span>Claim the</span>
-          <strong>{offer.partnerName} boost</strong>
-          <b>{offer.mainTerms}</b>
-          {heroSubtitle && <small>{heroSubtitle}</small>}
-          <div className="offer-card-hero-actions">
-            <ApplyButton offer={offer} application={application} onApply={onApply} className="offer-card-claim" isAuthenticated={isAuthenticated} />
-            <button type="button" className="offer-card-more" onClick={() => onView(offer)}>
-              More info
-              <ChevronRight size={15} aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="offer-card-body">
-        <div className="offer-card-head">
-          <div className="offer-card-logo">
-            <PartnerLogo offer={offer} />
-          </div>
-          <div>
-            <p className="offer-card-category">{offer.categoryLabel}</p>
-            <h2>{offer.partnerName}</h2>
-          </div>
-          {offer.isVerified && <CheckCircle2 className="offer-verified-icon" size={18} aria-label="Verified partner" />}
-        </div>
-
-        <div className="offer-stat-grid" aria-label={`${offer.partnerName} partnership details`}>
-          {statItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={`${offer.id}-${item.label}`} className="offer-stat-tile">
-                <Icon size={18} aria-hidden="true" />
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
+    <article className={`offer-card${infoOpen ? ' is-flipped' : ''}`}>
+      <div className="offer-card-flip">
+        <div className="offer-card-face offer-card-front" aria-hidden={infoOpen} inert={infoOpen ? '' : undefined}>
+          <div className="offer-card-media">
+            <OfferImage offer={offer} />
+            <div className="offer-card-logo offer-card-logo--media">
+              <PartnerLogo offer={offer} />
+            </div>
+            <div className="offer-card-hero-copy">
+              <span>Claim the</span>
+              <strong>{offer.partnerName} boost</strong>
+              <b>{offer.mainTerms}</b>
+              {heroSubtitle && <small>{heroSubtitle}</small>}
+              <div className="offer-card-hero-actions">
+                <ApplyButton offer={offer} application={application} onApply={onApply} className="offer-card-claim" isAuthenticated={isAuthenticated} />
+                <button type="button" className="offer-card-more" onClick={() => setInfoOpen(true)} aria-pressed={infoOpen}>
+                  More info
+                  <ChevronRight size={15} aria-hidden="true" />
+                </button>
               </div>
-            );
-          })}
+            </div>
+          </div>
+
+          <div className="offer-card-body">
+            <div className="offer-stat-grid" aria-label={`${offer.partnerName} partnership details`}>
+              {statItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={`${offer.id}-${item.label}`} className="offer-stat-tile">
+                    <Icon size={18} aria-hidden="true" />
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="offer-chip-row">
+              {offer.supportedGeos.slice(0, 2).map((geo) => <span key={`${offer.id}-geo-${geo}`}>{geo}</span>)}
+              {offer.supportedPlatforms.slice(0, 4).map((platform) => <PlatformChip key={`${offer.id}-platform-${platform}`} platform={platform} />)}
+            </div>
+          </div>
+
+          <div className="offer-card-actions">
+            <div className="offer-utility-actions">
+              <button type="button" onClick={() => onToggleSave(offer.id)} aria-label={isSaved ? `Remove ${offer.partnerName} from saved partnerships` : `Save ${offer.partnerName}`}>
+                {isSaved ? <BookmarkCheck size={17} aria-hidden="true" /> : <Bookmark size={17} aria-hidden="true" />}
+                {isSaved ? 'Saved' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={() => onToggleCompare(offer.id)}
+                disabled={compareDisabled && !isCompared}
+                aria-label={isCompared ? `Remove ${offer.partnerName} from comparison` : `Compare ${offer.partnerName}`}
+              >
+                <GitCompareArrows size={17} aria-hidden="true" />
+                {isCompared ? 'Comparing' : 'Compare'}
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="offer-chip-row">
-          {offer.supportedGeos.slice(0, 2).map((geo) => <span key={`${offer.id}-geo-${geo}`}>{geo}</span>)}
-          {offer.supportedPlatforms.slice(0, 3).map((platform) => <span key={`${offer.id}-platform-${platform}`}>{platform}</span>)}
-          {detailItems.slice(0, 1).map((item) => <span key={`${offer.id}-${item}`}>{item}</span>)}
-        </div>
+        <div className="offer-card-face offer-card-back" aria-hidden={!infoOpen} inert={!infoOpen ? '' : undefined}>
+          <div className="offer-card-back-head">
+            <div className="offer-card-logo">
+              <PartnerLogo offer={offer} />
+            </div>
+            <div>
+              <p className="offer-card-category">{offer.categoryLabel}</p>
+              <h2>{offer.partnerName}</h2>
+            </div>
+          </div>
 
-        <div className="offer-card-footer">
-          <span>{offer.lastUpdatedAt ? `Updated ${formatDate(offer.lastUpdatedAt)}` : getApplicationsLabel(offer)}</span>
-          {offer.applicationsCloseAt && !isClosed(offer) && <span>Closes {formatDate(offer.applicationsCloseAt)}</span>}
-        </div>
-      </div>
+          <OfferTerms offer={offer} />
 
-      <div className="offer-card-actions">
-        <div className="offer-utility-actions">
-          <button type="button" onClick={() => onToggleSave(offer.id)} aria-label={isSaved ? `Remove ${offer.partnerName} from saved partnerships` : `Save ${offer.partnerName}`}>
-            {isSaved ? <BookmarkCheck size={17} aria-hidden="true" /> : <Bookmark size={17} aria-hidden="true" />}
-            {isSaved ? 'Saved' : 'Save'}
-          </button>
-          <button
-            type="button"
-            onClick={() => onToggleCompare(offer.id)}
-            disabled={compareDisabled && !isCompared}
-            aria-label={isCompared ? `Remove ${offer.partnerName} from comparison` : `Compare ${offer.partnerName}`}
-          >
-            <GitCompareArrows size={17} aria-hidden="true" />
-            {isCompared ? 'Comparing' : 'Compare'}
-          </button>
+          <div className="offer-back-copy">
+            {backDetails.length ? (
+              backDetails.slice(0, 4).map((detail, index) => <p key={`${offer.id}-detail-${index}`}>{detail}</p>)
+            ) : (
+              <p>Full partnership details are available when you apply for this deal.</p>
+            )}
+          </div>
+
+          <div className="offer-back-meta">
+            {detailItems.slice(0, 4).map((item) => <span key={`${offer.id}-back-${item}`}>{item}</span>)}
+            {offer.applicationsCloseAt && !isClosed(offer) && <span>Closes {formatDate(offer.applicationsCloseAt)}</span>}
+          </div>
+
+          <div className="offer-chip-row offer-chip-row--back">
+            {offer.supportedGeos.slice(0, 4).map((geo) => <span key={`${offer.id}-back-geo-${geo}`}>{geo}</span>)}
+            {offer.supportedPlatforms.slice(0, 5).map((platform) => <PlatformChip key={`${offer.id}-back-platform-${platform}`} platform={platform} />)}
+          </div>
+
+          <div className="offer-back-actions">
+            <button type="button" className="offer-card-more" onClick={() => setInfoOpen(false)}>
+              Back
+            </button>
+            <ApplyButton offer={offer} application={application} onApply={onApply} className="offer-card-claim" isAuthenticated={isAuthenticated} />
+          </div>
         </div>
       </div>
     </article>

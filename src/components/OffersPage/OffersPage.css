@@ -546,13 +546,28 @@
 
 .offer-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .offer-card {
-  display: grid;
-  grid-template-rows: minmax(250px, 0.9fr) auto auto;
+  position: relative;
+  min-width: 0;
+  perspective: 1600px;
+}
+
+.offer-card-flip {
+  position: relative;
+  min-height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.offer-card.is-flipped .offer-card-flip {
+  transform: rotateY(180deg);
+}
+
+.offer-card-face {
   min-width: 0;
   border: 1px solid rgba(125, 211, 252, 0.2);
   border-radius: 18px;
@@ -561,18 +576,42 @@
     rgba(15, 23, 42, 0.9);
   box-shadow: 0 16px 44px rgba(0, 0, 0, 0.24);
   overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.offer-card-front {
+  display: grid;
+  grid-template-rows: minmax(236px, 0.9fr) auto auto;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.offer-card:hover {
+.offer-card-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100%;
+  padding: 16px;
+  transform: rotateY(180deg);
+  overflow-y: auto;
+}
+
+.offer-card:hover .offer-card-front {
   transform: translateY(-3px);
+  border-color: rgba(103, 232, 249, 0.3);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.34), 0 0 34px rgba(34, 211, 238, 0.08);
+}
+
+.offer-card.is-flipped:hover .offer-card-back {
+  transform: rotateY(180deg) translateY(-3px);
   border-color: rgba(103, 232, 249, 0.3);
   box-shadow: 0 22px 54px rgba(0, 0, 0, 0.34), 0 0 34px rgba(34, 211, 238, 0.08);
 }
 
 .offer-card-media {
   position: relative;
-  min-height: 250px;
+  min-height: 236px;
   aspect-ratio: 1.62 / 1;
   overflow: hidden;
   background: #020617;
@@ -599,18 +638,18 @@
 .offer-card-hero-copy {
   position: absolute;
   z-index: 3;
-  inset: 24px 22px 20px;
+  inset: 18px 16px 16px;
   display: flex;
-  width: min(78%, 420px);
+  width: min(82%, 360px);
   flex-direction: column;
   justify-content: end;
-  gap: 8px;
+  gap: 7px;
   pointer-events: none;
 }
 
 .offer-card-hero-copy > span {
   color: #f8fafc;
-  font-size: clamp(1.35rem, 2.1vw, 2rem);
+  font-size: clamp(1.05rem, 1.35vw, 1.45rem);
   font-weight: 950;
   line-height: 0.95;
   text-transform: uppercase;
@@ -619,7 +658,7 @@
 
 .offer-card-hero-copy > strong {
   color: #ffffff;
-  font-size: clamp(1.35rem, 2.2vw, 2.15rem);
+  font-size: clamp(1.05rem, 1.45vw, 1.55rem);
   font-weight: 950;
   line-height: 0.95;
   text-transform: uppercase;
@@ -628,7 +667,7 @@
 
 .offer-card-hero-copy > b {
   color: #67e8f9;
-  font-size: clamp(2.25rem, 4.4vw, 4rem);
+  font-size: clamp(2rem, 3vw, 3.15rem);
   font-weight: 950;
   line-height: 0.92;
   text-transform: uppercase;
@@ -637,10 +676,10 @@
 
 .offer-card-hero-copy > small {
   display: -webkit-box;
-  max-width: 360px;
+  max-width: 300px;
   overflow: hidden;
   color: #f8fafc;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   font-weight: 850;
   line-height: 1.25;
   text-transform: uppercase;
@@ -659,10 +698,10 @@
 
 .offer-card-claim,
 .offer-card-more {
-  min-height: 38px;
+  min-height: 34px;
   border-radius: 999px;
-  padding: 0 16px;
-  font-size: 0.82rem;
+  padding: 0 13px;
+  font-size: 0.74rem;
   font-weight: 950;
   text-transform: uppercase;
 }
@@ -741,8 +780,8 @@
 
 .offer-card-body {
   display: grid;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
   background: rgba(2, 6, 23, 0.86);
 }
 
@@ -820,20 +859,20 @@
 .offer-stat-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
+  gap: 6px;
 }
 
 .offer-stat-tile {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 26px minmax(0, 1fr);
   grid-template-areas:
     "icon label"
     "icon value";
   align-items: center;
   min-width: 0;
-  min-height: 66px;
-  gap: 2px 9px;
-  padding: 9px;
+  min-height: 58px;
+  gap: 2px 7px;
+  padding: 7px;
   border: 1px solid rgba(148, 163, 184, 0.13);
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.5);
@@ -841,9 +880,9 @@
 
 .offer-stat-tile svg {
   grid-area: icon;
-  width: 30px;
-  height: 30px;
-  padding: 6px;
+  width: 26px;
+  height: 26px;
+  padding: 5px;
   border: 1px solid rgba(103, 232, 249, 0.24);
   border-radius: 999px;
   color: #67e8f9;
@@ -855,7 +894,7 @@
   min-width: 0;
   overflow: hidden;
   color: #94a3b8;
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 950;
   line-height: 1;
   text-overflow: ellipsis;
@@ -868,7 +907,7 @@
   min-width: 0;
   overflow: hidden;
   color: #ffffff;
-  font-size: 0.96rem;
+  font-size: 0.82rem;
   font-weight: 950;
   line-height: 1.08;
   text-overflow: ellipsis;
@@ -902,7 +941,7 @@
 .offer-chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
 }
 
 .offer-chip-row span {
@@ -916,6 +955,79 @@
   color: #cbd5e1;
   font-size: 0.7rem;
   font-weight: 800;
+}
+
+.offer-platform-chip {
+  width: 26px;
+  min-width: 26px;
+  justify-content: center;
+  padding: 0;
+}
+
+.offer-platform-chip svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.offer-platform-chip .platform-logo-cutout {
+  fill: #020617;
+}
+
+.offer-card-back-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.offer-card-back-head h2 {
+  margin: 0;
+}
+
+.offer-back-copy {
+  display: grid;
+  gap: 8px;
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.offer-back-copy p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.offer-back-meta {
+  display: grid;
+  gap: 7px;
+  margin-top: auto;
+}
+
+.offer-back-meta span {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.42);
+  color: #dbeafe;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.offer-chip-row--back {
+  margin-top: 0;
+}
+
+.offer-back-actions {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
 }
 
 .offer-detail-list,
