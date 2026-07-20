@@ -384,6 +384,107 @@ function buildBHStatsPatch(tokens) {
   };
 }
 
+function buildBackgroundPatch(tokens, styleId) {
+  const specialStyles = new Set(['aurora', 'matrix', 'starfield', 'waves', 'geometric']);
+  const isSpecial = specialStyles.has(styleId);
+  const primary = tokens.colors?.primary || '#0f172a';
+  const accent = tokens.colors?.accent || '#14d8d8';
+  const fill = tokens.colors?.secondarySurface || tokens.colors?.elevatedSurface || '#1e293b';
+  const bgMode = isSpecial ? 'special' : 'texture';
+  const displayStyle = isSpecial ? styleId : 'v1';
+  return {
+    displayStyle,
+    bgMode,
+    textureType: tokens.material === 'metallic'
+      ? 'metallic'
+      : tokens.material === 'glass'
+        ? 'gloss'
+        : tokens.material === 'neon'
+          ? 'chameleon'
+          : 'gradient',
+    color1: primary,
+    color2: accent,
+    color3: fill,
+    gradientAngle: tokens.material === 'gradient' ? 135 : 145,
+    animSpeed: tokens.motion?.durationMultiplier
+      ? Math.round(clamp(8 * tokens.motion.durationMultiplier, 2, 30))
+      : 8,
+    opacity: 100,
+    borderRadius: tokens.shape?.rootRadius || 0,
+    overlayColor: tokens.material === 'glass' ? '#020617' : '#000000',
+    overlayOpacity: tokens.material === 'glass' ? 10 : 0,
+    imageFit: tokens.image?.fit || 'cover',
+    imagePosition: 'center',
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    blur: 0,
+    hueRotate: 0,
+    grayscale: 0,
+    sepia: 0,
+    fxParticles: 'none',
+    fxFog: 'none',
+    fxGlimpse: tokens.materialTokens?.glowIntensity > 0.1 ? 'pulse' : 'none',
+    fxGlimpseColor: accent,
+    fxGlimpseSpeed: 50,
+    subElements: {
+      canvas: {
+        background: primary,
+        opacity: 1,
+        radius: tokens.shape?.rootRadius || 0,
+      },
+      source: {
+        bgMode,
+      },
+      texture: {
+        textureType: tokens.material === 'metallic'
+          ? 'metallic'
+          : tokens.material === 'glass'
+            ? 'gloss'
+            : tokens.material === 'neon'
+              ? 'chameleon'
+              : 'gradient',
+        background: primary,
+        accentColor: accent,
+        fillColor: fill,
+        gradientAngle: tokens.material === 'gradient' ? 135 : 145,
+        patternSize: 24,
+        animSpeed: tokens.motion?.durationMultiplier
+          ? Math.round(clamp(8 * tokens.motion.durationMultiplier, 2, 30))
+          : 8,
+      },
+      media: {
+        imageFit: tokens.image?.fit || 'cover',
+        backgroundPosition: 'center',
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+        blur: 0,
+        hueRotate: 0,
+        grayscale: 0,
+        sepia: 0,
+        opacity: 1,
+      },
+      tint: {
+        background: tokens.material === 'glass' ? '#020617' : '#000000',
+        opacity: tokens.material === 'glass' ? 0.1 : 0,
+      },
+      effects: {
+        fxParticles: 'none',
+        fxParticleColor: accent,
+        fxParticleCount: 25,
+        fxParticleSpeed: 50,
+        fxParticleSize: 50,
+        fxFog: 'none',
+        fxFogColor: '#000000',
+        fxGlimpse: tokens.materialTokens?.glowIntensity > 0.1 ? 'pulse' : 'none',
+        fxGlimpseColor: accent,
+        fxGlimpseSpeed: 50,
+      },
+    },
+  };
+}
+
 function buildSpotifyPatch(tokens, styleId) {
   if (!['album_card', 'mini_player', 'vinyl', 'glass', 'wave', 'neon', 'metal', 'compact_bar'].includes(styleId)) return {};
   const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
@@ -1715,6 +1816,7 @@ function buildPatchForWidget(widgetType, tokens, styleId) {
   if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens, styleId);
   if (widgetType === 'giveaway') return buildGiveawayPatch(tokens);
   if (widgetType === 'bets') return buildBetsPatch(tokens, styleId);
+  if (widgetType === 'background') return buildBackgroundPatch(tokens, styleId);
   return {};
 }
 

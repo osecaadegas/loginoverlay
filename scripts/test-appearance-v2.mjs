@@ -35,6 +35,7 @@ try {
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('giveaway'), true, 'Giveaway is migrated to V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('spotify_now_playing'), true, 'Spotify is enabled for style-by-style V2 migration');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('bets'), true, 'Bets is migrated to part-scoped V2');
+  assert.equal(registryModule.isWidgetAppearanceV2Enabled('background'), true, 'Background is migrated to part-scoped V2');
   assert.ok(registryModule.getWidgetAppearanceCapability('bonus_hunt').elements.slotRow, 'bonus hunt declares real slot row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('rtp_stats').elements.rtpValue, 'RTP Stats declares real RTP value element');
   assert.ok(registryModule.getWidgetAppearanceCapability('navbar').elements.displayName, 'Navbar declares display name element');
@@ -43,6 +44,8 @@ try {
   assert.ok(registryModule.getWidgetAppearanceCapability('spotify_now_playing').elements.albumArt, 'Spotify declares album art as an editable element');
   assert.ok(registryModule.getWidgetAppearanceCapability('bets').elements.widgetBackground, 'Bets declares an outer widget background part');
   assert.ok(registryModule.getWidgetAppearanceCapability('bets').elements.betCards, 'Bets declares independent bet card parts');
+  assert.ok(registryModule.getWidgetAppearanceCapability('background').elements.media, 'Background declares media URL controls');
+  assert.ok(registryModule.getWidgetAppearanceCapability('background').elements.effects, 'Background declares effect controls');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt').some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
   ['v1', 'vertical', 'neon', 'minimal', 'glass'].forEach(styleId => {
     assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('rtp_stats').some(style => style.id === styleId), `RTP Stats exposes ${styleId} style option`);
@@ -55,6 +58,14 @@ try {
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === 'mini_player'), 'Spotify exposes mini-player style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === 'compact_bar'), 'Spotify exposes compact-bar style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bets').some(style => style.id === 'v3_grid_2x3'), 'Bets exposes Grid 2x3 style option');
+  assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('background').some(style => style.id === 'aurora'), 'Background exposes Aurora style option');
+  const backgroundMediaControls = registryModule.getWidgetStyleElements('background', 'v1').find(element => element.id === 'media')?.controls || [];
+  const backgroundEffectsControls = registryModule.getWidgetStyleElements('background', 'v1').find(element => element.id === 'effects')?.controls || [];
+  assert.ok(backgroundMediaControls.includes('imageUrl'), 'Background media part exposes image URL');
+  assert.ok(backgroundMediaControls.includes('videoUrl'), 'Background media part exposes video URL');
+  assert.ok(backgroundMediaControls.includes('brightness'), 'Background media part exposes filter controls');
+  assert.ok(backgroundEffectsControls.includes('fxParticles'), 'Background effects part exposes particles');
+  assert.ok(backgroundEffectsControls.includes('fxFog'), 'Background effects part exposes fog');
   const betsGridElements = registryModule.getWidgetStyleElements('bets', 'v3_grid_2x3');
   const betsWidgetBackground = betsGridElements.find(element => element.id === 'widgetBackground');
   const betsCards = betsGridElements.find(element => element.id === 'betCards');
@@ -428,6 +439,18 @@ try {
       subElements: {},
     },
   };
+  const backgroundWidget = {
+    id: 'bg1',
+    widget_type: 'background',
+    width: 1920,
+    height: 1080,
+    config: {
+      displayStyle: 'v1',
+      bgMode: 'texture',
+      textureType: 'gradient',
+      subElements: {},
+    },
+  };
   const spotifyWidget = {
     id: 'spotify1',
     widget_type: 'spotify_now_playing',
@@ -651,6 +674,50 @@ try {
                 betCards: {
                   radius: 12,
                   background: 'rgba(30,41,59,0.85)',
+                },
+              },
+            }),
+          },
+        },
+      },
+      bg1: {
+        activeStyleId: 'v1',
+        styles: {
+          v1: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('background', {
+              material: 'gradient',
+              primaryColor: '#102030',
+              accentColor: '#40e0d0',
+              useAccentColor: true,
+              shape: 'square',
+              animationSpeed: 'fast',
+            }, {
+              elementOverrides: {
+                source: {
+                  bgMode: 'image',
+                },
+                media: {
+                  imageUrl: 'https://example.com/background.jpg',
+                  imageFit: 'contain',
+                  backgroundPosition: 'top',
+                  brightness: 125,
+                  contrast: 110,
+                },
+                texture: {
+                  textureType: 'grid',
+                  background: '#010203',
+                  accentColor: '#abcdef',
+                  patternSize: 32,
+                },
+                tint: {
+                  background: '#112233',
+                  opacity: 0.35,
+                },
+                effects: {
+                  fxParticles: 'snow',
+                  fxParticleColor: '#ffffff',
+                  fxFog: 'light',
+                  fxFogColor: '#000000',
                 },
               },
             }),
@@ -1071,6 +1138,20 @@ try {
   assert.ok(rendererCssSource.includes('--bets-widget-background-radius'), 'Bets CSS consumes outer background radius variable');
   assert.ok(rendererCssSource.includes('--bets-card-radius'), 'Bets CSS consumes independent card radius variable');
 
+  const backgroundConfig = appearanceModel.resolveWidgetAppearanceConfig(backgroundWidget, appearance, {});
+  assert.equal(backgroundConfig.__appearanceV2.material, 'gradient', 'Background receives V2 material');
+  assert.equal(backgroundConfig.displayStyle, 'v1', 'Background keeps selected renderer style');
+  assert.equal(backgroundConfig.subElements.source.bgMode, 'image', 'Background source part persists image mode');
+  assert.equal(backgroundConfig.subElements.media.imageUrl, 'https://example.com/background.jpg', 'Background media part persists image URL');
+  assert.equal(backgroundConfig.subElements.media.imageFit, 'contain', 'Background media part persists image fit');
+  assert.equal(backgroundConfig.subElements.media.brightness, 125, 'Background media part persists filters');
+  assert.equal(backgroundConfig.subElements.texture.textureType, 'grid', 'Background texture part persists texture type');
+  assert.equal(backgroundConfig.subElements.texture.patternSize, 32, 'Background texture part persists pattern size');
+  assert.equal(backgroundConfig.subElements.tint.opacity, 0.35, 'Background tint part persists overlay opacity');
+  assert.equal(backgroundConfig.subElements.effects.fxParticles, 'snow', 'Background effects part persists particle effect');
+  const backgroundWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/BackgroundWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(backgroundWidgetSource, 'Background', ['canvas', 'texture', 'media', 'tint', 'effects']);
+
   const spotifyConfig = appearanceModel.resolveWidgetAppearanceConfig(spotifyWidget, appearance, {});
   assert.equal(spotifyConfig.__appearanceV2.material, 'matte', 'Spotify mini-player receives V2 material');
   assert.equal(spotifyConfig.displayStyle, 'mini_player', 'Spotify mini-player quick style switches the real renderer');
@@ -1318,6 +1399,7 @@ try {
     spotifyNeonWidget,
     spotifyMetalWidget,
     spotifyVinylWidget,
+    backgroundWidget,
   ], appearance, {});
   assert.equal(resolvedWidgets[0].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves simple pilot');
   assert.equal(resolvedWidgets[1].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves complex pilot');
@@ -1336,6 +1418,8 @@ try {
   assert.equal(resolvedWidgets[12].config.__appearanceV2.material, 'neon', 'preview/OBS shared resolver resolves Spotify neon');
   assert.equal(resolvedWidgets[13].config.__appearanceV2.material, 'metallic', 'preview/OBS shared resolver resolves Spotify metal');
   assert.equal(resolvedWidgets[14].config.__appearanceV2.material, 'glass', 'preview/OBS shared resolver resolves Spotify vinyl');
+  assert.equal(resolvedWidgets[15].config.__appearanceV2.material, 'gradient', 'preview/OBS shared resolver resolves Background');
+  assert.equal(resolvedWidgets[15].config.subElements.media.imageUrl, 'https://example.com/background.jpg', 'preview/OBS shared resolver preserves Background image URL');
   assert.notEqual(resolvedWidgets[4].config.bgColor, resolvedWidgets[5].config.bgColor, 'Slot Requests and Giveaway styles do not leak between widgets');
 
   const bhStatsElements = editorSchema.getWidgetElementSchema('bh_stats');
@@ -1346,6 +1430,7 @@ try {
   const giveawayElements = editorSchema.getWidgetElementSchema('giveaway');
   const betsElements = editorSchema.getWidgetElementSchema('bets');
   const spotifyElements = editorSchema.getWidgetElementSchema('spotify_now_playing');
+  const backgroundElements = editorSchema.getWidgetElementSchema('background');
   assert.ok(bhStatsElements.some(element => element.id === 'statsCard'), 'Advanced Mode schema for BH Stats comes from V2 registry');
   assert.ok(rtpStatsElements.some(element => element.id === 'rtpValue'), 'Advanced Mode schema for RTP Stats comes from V2 registry');
   assert.ok(rtpStatsElements.some(element => element.id === 'personalBest'), 'Advanced Mode schema for RTP Stats personal best comes from V2 registry');
@@ -1362,6 +1447,9 @@ try {
   assert.ok(spotifyElements.some(element => element.id === 'progressBar'), 'Advanced Mode schema for Spotify compact-bar progress comes from V2 registry');
   assert.ok(spotifyElements.some(element => element.id === 'waveform'), 'Advanced Mode schema for Spotify waveform comes from V2 registry');
   assert.ok(spotifyElements.some(element => element.id === 'vinylRecord'), 'Advanced Mode schema for Spotify vinyl record comes from V2 registry');
+  assert.ok(backgroundElements.some(element => element.id === 'media'), 'Advanced Mode schema for Background comes from V2 registry');
+  assert.ok(backgroundElements.find(element => element.id === 'media')?.controls.includes('imageUrl'), 'Background media schema exposes image URL');
+  assert.ok(backgroundElements.find(element => element.id === 'effects')?.controls.includes('fxParticles'), 'Background effects schema exposes particles');
   assert.ok(!slotRequestElements.find(element => element.id === 'slotImage')?.controls.includes('imageSize'), 'Slot Requests hides unsafe image-size control');
   assert.ok(!slotRequestElements.find(element => element.id === 'slotImage')?.controls.includes('imageFit'), 'Slot Requests hides unsafe image-fit control');
   assert.ok(!slotRequestElements.find(element => element.id === 'slotImage')?.controls.includes('imageUrl'), 'Slot Requests hides unsafe custom image URL control');

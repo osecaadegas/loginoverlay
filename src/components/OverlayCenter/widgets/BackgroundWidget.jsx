@@ -8,6 +8,13 @@ const toPercentOpacity = (value, fallback = 0) => {
   return number <= 1 ? number * 100 : number;
 };
 
+function partAttrs(partId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+  };
+}
+
 /* ─── Texture CSS generators ─── */
 const TEXTURES = {
   none: () => ({}),
@@ -89,19 +96,23 @@ function BackgroundWidget({ config, theme }) {
   const displayStyle = c.displayStyle || 'v1';
   const isSpecialBg = ['aurora', 'matrix', 'starfield', 'waves', 'geometric'].includes(displayStyle);
 
-  const textureType = c.textureType || 'gradient';
-  const bgMode = isSpecialBg ? 'special' : (c.bgMode || 'texture');  // 'texture' | 'image' | 'video' | 'special'
-  const imageUrl = c.imageUrl || '';
-  const videoUrl = c.videoUrl || '';
-  const imageFit = c.imageFit || 'cover';
-  const imagePosition = c.imagePosition || 'center';
+  const textureType = subValue(c, 'texture', 'textureType', c.textureType || 'gradient');
+  const sourceMode = subValue(c, 'source', 'bgMode', undefined);
+  const bgMode = sourceMode || (isSpecialBg ? 'special' : (c.bgMode || 'texture'));  // 'texture' | 'image' | 'video' | 'special'
+  const imageUrl = subValue(c, 'media', 'imageUrl', c.imageUrl || '');
+  const videoUrl = subValue(c, 'media', 'videoUrl', c.videoUrl || '');
+  const imageFit = subValue(c, 'media', 'imageFit', c.imageFit || 'cover');
+  const imagePosition = subValue(c, 'media', 'backgroundPosition', c.imagePosition || 'center');
   const opacity = toPercentOpacity(subValue(c, 'canvas', 'opacity', c.opacity ?? 100), 100);
   const borderRadius = subValue(c, 'canvas', 'radius', c.borderRadius ?? 0);
   const textureConfig = {
     ...c,
-    color1: subValue(c, 'gradient', 'background', c.color1 || '#0f172a'),
-    color2: subValue(c, 'gradient', 'accentColor', c.color2 || '#2a3139'),
-    color3: subValue(c, 'gradient', 'fillColor', c.color3 || '#0f172a'),
+    color1: subValue(c, 'texture', 'background', subValue(c, 'gradient', 'background', c.color1 || '#0f172a')),
+    color2: subValue(c, 'texture', 'accentColor', subValue(c, 'gradient', 'accentColor', c.color2 || '#2a3139')),
+    color3: subValue(c, 'texture', 'fillColor', subValue(c, 'gradient', 'fillColor', c.color3 || '#0f172a')),
+    gradientAngle: subValue(c, 'texture', 'gradientAngle', c.gradientAngle ?? 135),
+    patternSize: subValue(c, 'texture', 'patternSize', c.patternSize ?? 20),
+    animSpeed: subValue(c, 'texture', 'animSpeed', c.animSpeed || 8),
   };
   const brightness = subValue(c, 'media', 'brightness', c.brightness ?? 100);
   const contrast = subValue(c, 'media', 'contrast', c.contrast ?? 100);
@@ -114,16 +125,16 @@ function BackgroundWidget({ config, theme }) {
   const overlayOpacity = toPercentOpacity(subValue(c, 'tint', 'opacity', c.overlayOpacity ?? 0));
 
   /* ─── Effects config ─── */
-  const fxParticles = c.fxParticles || 'none';     // none | orbs | fireflies | bokeh | snow | rain
-  const fxParticleColor = subValue(c, 'texture', 'accentColor', c.fxParticleColor || '#ffffff');
-  const fxParticleCount = c.fxParticleCount ?? 25;
-  const fxParticleSpeed = c.fxParticleSpeed ?? 50;
-  const fxParticleSize = c.fxParticleSize ?? 50;
-  const fxFog = c.fxFog || 'none';                 // none | light | medium | heavy
-  const fxFogColor = subValue(c, 'vignette', 'background', c.fxFogColor || '#000000');
-  const fxGlimpse = c.fxGlimpse || 'none';         // none | sweep | pulse | flicker
-  const fxGlimpseColor = subValue(c, 'texture', 'fillColor', c.fxGlimpseColor || '#ffffff');
-  const fxGlimpseSpeed = c.fxGlimpseSpeed ?? 50;
+  const fxParticles = subValue(c, 'effects', 'fxParticles', c.fxParticles || 'none');     // none | orbs | fireflies | bokeh | snow | rain
+  const fxParticleColor = subValue(c, 'effects', 'fxParticleColor', c.fxParticleColor || '#ffffff');
+  const fxParticleCount = subValue(c, 'effects', 'fxParticleCount', c.fxParticleCount ?? 25);
+  const fxParticleSpeed = subValue(c, 'effects', 'fxParticleSpeed', c.fxParticleSpeed ?? 50);
+  const fxParticleSize = subValue(c, 'effects', 'fxParticleSize', c.fxParticleSize ?? 50);
+  const fxFog = subValue(c, 'effects', 'fxFog', c.fxFog || 'none');                 // none | light | medium | heavy
+  const fxFogColor = subValue(c, 'effects', 'fxFogColor', c.fxFogColor || '#000000');
+  const fxGlimpse = subValue(c, 'effects', 'fxGlimpse', c.fxGlimpse || 'none');         // none | sweep | pulse | flicker
+  const fxGlimpseColor = subValue(c, 'effects', 'fxGlimpseColor', c.fxGlimpseColor || '#ffffff');
+  const fxGlimpseSpeed = subValue(c, 'effects', 'fxGlimpseSpeed', c.fxGlimpseSpeed ?? 50);
 
   /* ─── Build CSS filter ─── */
   const filterParts = [];
@@ -149,9 +160,11 @@ function BackgroundWidget({ config, theme }) {
     overflow: 'hidden',
     opacity: opacity / 100,
     position: 'relative',
+    background: subValue(c, 'canvas', 'background', 'transparent'),
   };
 
-  const mediaStyle = {
+  const mediaOpacity = toPercentOpacity(subValue(c, 'media', 'opacity', 100), 100);
+  const layerStyle = {
     position: 'absolute',
     inset: 0,
     width: '100%',
@@ -159,13 +172,17 @@ function BackgroundWidget({ config, theme }) {
     filter: filterStr,
     borderRadius: `${borderRadius}px`,
   };
+  const mediaStyle = {
+    ...layerStyle,
+    opacity: mediaOpacity / 100,
+  };
 
   return (
-    <div className="oc-bg-widget" style={rootStyle}>
+    <div className="oc-bg-widget" style={rootStyle} {...partAttrs('canvas')}>
 
       {/* ── Texture / Solid background ── */}
       {bgMode === 'texture' && (
-        <div className="oc-bg-layer oc-bg-texture" style={{ ...mediaStyle, ...textureStyle }} />
+        <div className="oc-bg-layer oc-bg-texture" style={{ ...layerStyle, ...textureStyle }} {...partAttrs('texture')} />
       )}
 
       {/* ── Image background ── */}
@@ -174,6 +191,7 @@ function BackgroundWidget({ config, theme }) {
           className="oc-bg-layer oc-bg-image"
           src={imageUrl}
           alt=""
+          {...partAttrs('media')}
           style={{
             ...mediaStyle,
             objectFit: imageFit,
@@ -192,6 +210,7 @@ function BackgroundWidget({ config, theme }) {
           loop
           muted
           playsInline
+          {...partAttrs('media')}
           style={{
             ...mediaStyle,
             objectFit: imageFit,
@@ -204,45 +223,45 @@ function BackgroundWidget({ config, theme }) {
       {/* ── Special animated backgrounds ── */}
       {bgMode === 'special' && displayStyle === 'aurora' && (
         <div className="oc-bg-layer oc-bg-aurora" style={{
-          ...mediaStyle,
-          background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#0d1117'}, ${c.color2 || '#232a33'}, ${c.color3 || '#141a20'})`,
-        }}>
-          <div className="oc-bg-aurora-band oc-bg-aurora-1" style={{ '--aurora-c1': c.color2 || '#dbe2e8', '--aurora-c2': c.color3 || '#8f98a3' }} />
-          <div className="oc-bg-aurora-band oc-bg-aurora-2" style={{ '--aurora-c1': c.color3 || '#bcc4cc', '--aurora-c2': c.color1 || '#6b7480' }} />
-          <div className="oc-bg-aurora-band oc-bg-aurora-3" style={{ '--aurora-c1': c.color1 || '#eef2f5', '--aurora-c2': c.color2 || '#dbe2e8' }} />
+          ...layerStyle,
+          background: `linear-gradient(${textureConfig.gradientAngle ?? 135}deg, ${textureConfig.color1 || '#0d1117'}, ${textureConfig.color2 || '#232a33'}, ${textureConfig.color3 || '#141a20'})`,
+        }} {...partAttrs('texture')}>
+          <div className="oc-bg-aurora-band oc-bg-aurora-1" style={{ '--aurora-c1': textureConfig.color2 || '#dbe2e8', '--aurora-c2': textureConfig.color3 || '#8f98a3' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-2" style={{ '--aurora-c1': textureConfig.color3 || '#bcc4cc', '--aurora-c2': textureConfig.color1 || '#6b7480' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-3" style={{ '--aurora-c1': textureConfig.color1 || '#eef2f5', '--aurora-c2': textureConfig.color2 || '#dbe2e8' }} />
         </div>
       )}
 
       {bgMode === 'special' && displayStyle === 'matrix' && (
-        <div className="oc-bg-layer oc-bg-matrix" style={{ ...mediaStyle, background: c.color1 || '#000800' }}>
-          <MatrixRain color={c.color2 || '#dbe2e8'} speed={c.animSpeed || 8} />
+        <div className="oc-bg-layer oc-bg-matrix" style={{ ...layerStyle, background: textureConfig.color1 || '#000800' }} {...partAttrs('texture')}>
+          <MatrixRain color={textureConfig.color2 || '#dbe2e8'} speed={textureConfig.animSpeed || 8} />
         </div>
       )}
 
       {bgMode === 'special' && displayStyle === 'starfield' && (
-        <div className="oc-bg-layer oc-bg-starfield" style={{ ...mediaStyle, background: c.color1 || '#000005' }}>
-          <StarfieldCanvas color={c.color2 || '#ffffff'} speed={c.animSpeed || 8} />
+        <div className="oc-bg-layer oc-bg-starfield" style={{ ...layerStyle, background: textureConfig.color1 || '#000005' }} {...partAttrs('texture')}>
+          <StarfieldCanvas color={textureConfig.color2 || '#ffffff'} speed={textureConfig.animSpeed || 8} />
         </div>
       )}
 
       {bgMode === 'special' && displayStyle === 'waves' && (
         <div className="oc-bg-layer oc-bg-waves" style={{
-          ...mediaStyle,
-          background: c.color1 || '#0a0a2e',
-        }}>
-          <div className="oc-bg-wave oc-bg-wave-1" style={{ '--wave-color': c.color2 || 'rgba(219,226,232,0.15)' }} />
-          <div className="oc-bg-wave oc-bg-wave-2" style={{ '--wave-color': c.color3 || 'rgba(188,196,204,0.1)' }} />
-          <div className="oc-bg-wave oc-bg-wave-3" style={{ '--wave-color': c.color2 || 'rgba(143,152,163,0.08)' }} />
+          ...layerStyle,
+          background: textureConfig.color1 || '#0a0a2e',
+        }} {...partAttrs('texture')}>
+          <div className="oc-bg-wave oc-bg-wave-1" style={{ '--wave-color': textureConfig.color2 || 'rgba(219,226,232,0.15)' }} />
+          <div className="oc-bg-wave oc-bg-wave-2" style={{ '--wave-color': textureConfig.color3 || 'rgba(188,196,204,0.1)' }} />
+          <div className="oc-bg-wave oc-bg-wave-3" style={{ '--wave-color': textureConfig.color2 || 'rgba(143,152,163,0.08)' }} />
         </div>
       )}
 
       {bgMode === 'special' && displayStyle === 'geometric' && (
         <div className="oc-bg-layer oc-bg-geometric" style={{
-          ...mediaStyle,
-          background: c.color1 || '#0a0a1a',
-        }}>
-          <div className="oc-bg-geo-grid" style={{ '--geo-color': c.color2 || 'rgba(200,208,216,0.12)' }} />
-          <div className="oc-bg-geo-shapes" style={{ '--geo-accent': c.color3 || 'rgba(188,196,204,0.15)' }} />
+          ...layerStyle,
+          background: textureConfig.color1 || '#0a0a1a',
+        }} {...partAttrs('texture')}>
+          <div className="oc-bg-geo-grid" style={{ '--geo-color': textureConfig.color2 || 'rgba(200,208,216,0.12)' }} />
+          <div className="oc-bg-geo-shapes" style={{ '--geo-accent': textureConfig.color3 || 'rgba(188,196,204,0.15)' }} />
         </div>
       )}
 
@@ -250,8 +269,9 @@ function BackgroundWidget({ config, theme }) {
       {overlayColor && overlayOpacity > 0 && (
         <div
           className="oc-bg-layer oc-bg-overlay"
+          {...partAttrs('tint')}
           style={{
-            ...mediaStyle,
+            ...layerStyle,
             background: overlayColor,
             opacity: overlayOpacity / 100,
             filter: undefined,
@@ -261,7 +281,7 @@ function BackgroundWidget({ config, theme }) {
 
       {/* ── Animated Effects Layer ── */}
       {(fxParticles !== 'none' || fxFog !== 'none' || fxGlimpse !== 'none') && (
-        <div className="oc-bg-layer oc-bg-fx" style={{ ...mediaStyle, filter: undefined, zIndex: 2, pointerEvents: 'none' }}>
+        <div className="oc-bg-layer oc-bg-fx" style={{ ...layerStyle, filter: undefined, zIndex: 2, pointerEvents: 'none' }} {...partAttrs('effects')}>
 
           {/* Particles / Snow / Rain / Fireflies / Bokeh / Orbs */}
           {fxParticles !== 'none' && (

@@ -750,6 +750,7 @@ export default function AppearanceCenter({
     const sections = [];
     sections.push('widgetStyle');
     if (selectedElements.length > 1) sections.push('editing');
+    if (selectedWidgetType === 'background' && selectedElement?.id) sections.push('backgroundControls');
     if (selectedQuickControls.has('material')) sections.push('material');
     if (hasAnyQuickControl(['primaryColor', 'accentColor'])) sections.push('colours');
     if (hasAnyQuickControl([
@@ -781,11 +782,12 @@ export default function AppearanceCenter({
     ])) sections.push('motion');
     sections.push('actions');
     return sections;
-  }, [hasAnyQuickControl, selectedElements.length, selectedQuickControls]);
+  }, [hasAnyQuickControl, selectedElement?.id, selectedElements.length, selectedQuickControls, selectedWidgetType]);
   const simpleSectionTabs = useMemo(() => {
     const labels = {
       widgetStyle: 'Style',
       editing: 'Part',
+      backgroundControls: 'Controls',
       material: 'Surface',
       colours: 'Colour',
       textImages: 'Type',
@@ -1933,6 +1935,26 @@ export default function AppearanceCenter({
                     ))}
                   </select>
                 </label>
+              </CollapsibleSection>
+            )}
+
+            {simpleSections.includes('backgroundControls') && selectedElement && (
+              <CollapsibleSection
+                id="backgroundControls"
+                title={`${selectedElement.label} controls`}
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
+                <p className="ve-simple-help">Only controls supported by this background part are shown.</p>
+                <div className="ve-control-groups ve-control-groups--background">
+                  {getElementControlGroups(selectedElement, 'advanced').map(group => (
+                    <div key={group.id} className="ve-control-group">
+                      <h4>{mapControlGroupTitle(group.label)}</h4>
+                      {group.controls.map(renderElementControl)}
+                    </div>
+                  ))}
+                </div>
               </CollapsibleSection>
             )}
 
