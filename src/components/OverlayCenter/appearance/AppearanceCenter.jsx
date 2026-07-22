@@ -50,7 +50,6 @@ import {
   setByPath,
 } from './appearanceModel';
 import {
-  BUILT_IN_STYLE_PRESETS,
   CONTROL_DEFINITIONS,
   DEFAULT_SIMPLE_SETTINGS,
   EDITOR_MODE_CAPABILITIES,
@@ -794,7 +793,7 @@ export default function AppearanceCenter({
   const [publishStatus, setPublishStatus] = useState('published');
   const [statusMessage, setStatusMessage] = useState('');
   const [openSimpleSections, setOpenSimpleSections] = useState(['widgetStyle', 'editing']);
-  const [openAdvancedSections, setOpenAdvancedSections] = useState(['stylePreset', 'partSelection']);
+  const [openAdvancedSections, setOpenAdvancedSections] = useState(['partSelection']);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [hiddenLayers, setHiddenLayers] = useState({});
@@ -2090,7 +2089,7 @@ export default function AppearanceCenter({
 
   useEffect(() => {
     if (mode !== 'advanced') return;
-    const preferredSection = selectedElement ? `control-${controlGroups[0]?.id || ''}` : 'stylePreset';
+    const preferredSection = selectedElement ? `control-${controlGroups[0]?.id || ''}` : 'advanced';
     if (!preferredSection || preferredSection === 'control-') return;
     setOpenAdvancedSections(prev => {
       if (prev.includes(preferredSection)) return prev.length <= 2 ? prev : prev.slice(0, 2);
@@ -2104,7 +2103,6 @@ export default function AppearanceCenter({
   const advancedSectionTabs = [
     ...(editingWholeWidget
       ? [
-          { id: 'stylePreset', label: 'Style' },
           ...(!selectedWidgetUsesV2 ? [{ id: 'surfaceBackground', label: 'Surface' }] : []),
         ]
       : []),
@@ -2954,40 +2952,6 @@ export default function AppearanceCenter({
 
             {editingWholeWidget && (
               <>
-                <CollapsibleSection
-                  id="stylePreset"
-                  title="Style preset"
-                  meta={`${serverState.presets?.length || 0} saved`}
-                  openSections={openAdvancedSections}
-                  onToggle={toggleAdvancedSection}
-                >
-                  <div className="ve-section-tools">
-                    <button type="button" onClick={saveCurrentPreset}>Save current style</button>
-                  </div>
-                  <div className="ve-preset-grid">
-                    {BUILT_IN_STYLE_PRESETS.map(preset => (
-                      <button key={preset.id} type="button" className="ve-preset-card" onClick={() => applyPreset(preset)}>
-                        <span style={{ background: preset.tint }} />
-                        <strong>{preset.name}</strong>
-                        <small>{preset.description}</small>
-                      </button>
-                    ))}
-                  </div>
-                  {!!serverState.presets?.length && (
-                    <div className="ve-user-presets">
-                      <h4>Saved presets</h4>
-                      {serverState.presets.map(preset => (
-                        <div key={preset.id} className="ve-user-preset-row">
-                          <button type="button" onClick={() => applyPreset(preset)}>{preset.name}</button>
-                          <button type="button" onClick={() => duplicatePreset(preset)} title="Duplicate preset"><Copy size={14} /></button>
-                          <button type="button" onClick={() => renamePreset(preset)} title="Rename preset">Rename</button>
-                          <button type="button" onClick={() => deletePreset(preset)} title="Delete preset"><Trash2 size={14} /></button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CollapsibleSection>
-
                 {!selectedWidgetUsesV2 && (
                   <CollapsibleSection
                     id="surfaceBackground"
