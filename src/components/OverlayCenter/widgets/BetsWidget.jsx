@@ -397,13 +397,13 @@ function BetsWidget({ config }) {
               background: optColor || accentColor,
               color: elementValue(c, 'cardNumberBadge', 'textColor', '#ffffff', 'optionNumber', stateId),
               fontFamily: numberFont,
-              fontSize: `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
+              fontSize: isStyleSeca ? `clamp(10px, min(2.7cqw, 2.7cqh), ${Math.max(11, Math.round(baseFontSize * 0.92))}px)` : `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
               fontWeight: 800,
             }, 'optionNumber', stateId);
             const optionLabelStyle = elementStyle(c, 'cardRangeText', {
               color: optionText,
               fontFamily: font,
-              fontSize: `${baseFontSize}px`,
+              fontSize: isStyleSeca ? `clamp(10px, min(2.65cqw, 2.85cqh), ${baseFontSize}px)` : `${baseFontSize}px`,
               fontWeight: 700,
               lineHeight: defaultLineHeight,
               letterSpacing: defaultLetterSpacing,
@@ -413,7 +413,7 @@ function BetsWidget({ config }) {
             const percentageStyle = elementStyle(c, 'cardPercentageText', {
               color: isStyleSeca ? styleSecaText : (optColor || accentColor),
               fontFamily: numberFont,
-              fontSize: `${Math.round(baseFontSize * 1.2)}px`,
+              fontSize: isStyleSeca ? `clamp(12px, min(3.1cqw, 3.4cqh), ${Math.round(baseFontSize * 1.2)}px)` : `${Math.round(baseFontSize * 1.2)}px`,
               fontWeight: 900,
               lineHeight: 1,
               letterSpacing: defaultLetterSpacing,
@@ -421,7 +421,7 @@ function BetsWidget({ config }) {
             const cardLabelStyle = elementStyle(c, 'cardLabel', {
               color: isStyleSeca ? 'rgba(248,251,255,0.9)' : 'rgba(255,255,255,0.62)',
               fontFamily: font,
-              fontSize: `${Math.max(9, Math.round(baseFontSize * 0.7))}px`,
+              fontSize: isStyleSeca ? `clamp(8px, min(1.75cqw, 2cqh), ${Math.max(9, Math.round(baseFontSize * 0.7))}px)` : `${Math.max(9, Math.round(baseFontSize * 0.7))}px`,
               fontWeight: 700,
               lineHeight: 1,
               letterSpacing: defaultLetterSpacing,
