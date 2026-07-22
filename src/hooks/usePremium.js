@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
+import { fetchWithTimeout } from '../utils/asyncTimeout';
 
 export function usePremium() {
   const { user } = useAuth();
@@ -21,9 +22,9 @@ export function usePremium() {
         const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData.session?.access_token;
         if (token) {
-          const response = await fetch('/api/premium?action=status', {
+          const response = await fetchWithTimeout('/api/premium?action=status', {
             headers: { Authorization: `Bearer ${token}` },
-          });
+          }, { timeoutMs: 8000, label: 'Premium entitlement check' });
           if (response.ok) {
             const payload = await response.json();
             const access = payload.access || {};

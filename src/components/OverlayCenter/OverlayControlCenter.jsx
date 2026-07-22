@@ -1474,7 +1474,7 @@ export default function OverlayControlCenter() {
   const navigate = useNavigate();
   const location = useLocation();
   const {
-    instance, theme, widgets, overlayState, loading,
+    instance, theme, widgets, overlayState, loading, error: overlayError,
     saveTheme, addWidget, saveWidget, removeWidget,
     updateState, regenToken,
   } = useOverlay();
@@ -1741,6 +1741,20 @@ export default function OverlayControlCenter() {
       <div className="oc-page oc2-page">
         <section className="oc2-empty-state">
           <LoadingSpinner text="Loading your overlay..." />
+        </section>
+      </div>
+    );
+  }
+
+  if (overlayError) {
+    return (
+      <div className="oc-page oc2-page">
+        <section className="oc2-empty-state">
+          <h1>Overlay Center could not load</h1>
+          <p>{overlayError.message || 'The overlay data request did not complete. Please try again.'}</p>
+          <button type="button" className="oc2-btn oc2-btn--primary" onClick={() => window.location.reload()}>
+            Retry
+          </button>
         </section>
       </div>
     );

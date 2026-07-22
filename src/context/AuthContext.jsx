@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
+import { withTimeout } from '../utils/asyncTimeout';
 
 
 const AuthContext = createContext({});
@@ -38,19 +39,42 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    // Check active session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      await syncExperiencePreference(session?.user);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
+    const syncExperiencePreferenceInBackground = (authUser) => {
+      if (!authUser) return;
+      withTimeout(
+        syncExperiencePreference(authUser),
+        5000,
+        'Experience preference sync'
+      ).catch((error) => {
+        console.warn('[Auth] Failed to sync selected experience:', error);
+      });
+    };
 
-    });
+    let mounted = true;
+
+    const initializeSession = async () => {
+      try {
+        const { data: { session } } = await withTimeout(
+          supabase.auth.getSession(),
+          10000,
+          'Auth session check'
+        );
+        syncExperiencePreferenceInBackground(session?.user);
+        if (mounted) setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('[Auth] Failed to initialize session:', error);
+        if (mounted) setUser(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    initializeSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (_event === 'SIGNED_IN' && session?.user) {
-        await syncExperiencePreference(session.user);
+        syncExperiencePreferenceInBackground(session.user);
       }
       setUser(session?.user ?? null);
       
@@ -61,7 +85,10 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
   
   const signUp = async (email, password) => {

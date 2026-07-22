@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
 import { findUserSlotRecord } from '../services/slotRecordService';
+import { withTimeout } from '../utils/asyncTimeout';
 import {
   getOrCreateInstance,
   getTheme,
@@ -28,25 +29,36 @@ export function useOverlay() {
   const [widgets, setWidgets] = useState([]);
   const [overlayState, setOverlayState] = useState({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const channelRef = useRef(null);
 
   // ── Load everything on mount ──
   const loadAll = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setError(null);
     try {
-      const inst = await getOrCreateInstance(user.id, user.user_metadata?.full_name || user.email);
-      const [th, wdgs, st] = await Promise.all([
-        getTheme(user.id, inst.id),
-        getWidgets(user.id, inst.id),
-        getOverlayState(user.id, inst.id),
-      ]);
+      const inst = await withTimeout(
+        getOrCreateInstance(user.id, user.user_metadata?.full_name || user.email),
+        12000,
+        'Overlay setup'
+      );
+      const [th, wdgs, st] = await withTimeout(
+        Promise.all([
+          getTheme(user.id, inst.id),
+          getWidgets(user.id, inst.id),
+          getOverlayState(user.id, inst.id),
+        ]),
+        12000,
+        'Overlay data load'
+      );
       setInstance(inst);
       setTheme(th);
       setWidgets(wdgs);
       setOverlayState(st);
     } catch (err) {
       console.error('[useOverlay] load error:', err);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -238,6 +250,7 @@ export function useOverlay() {
     widgets,
     overlayState,
     loading,
+    error,
     saveTheme,
     addWidget,
     saveWidget,

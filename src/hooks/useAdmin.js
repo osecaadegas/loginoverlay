@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserRoles } from '../utils/adminUtils';
 import { supabase } from '../config/supabaseClient';
+import { fetchWithTimeout } from '../utils/asyncTimeout';
 
 export const useAdmin = () => {
   const { user } = useAuth();
@@ -48,9 +49,9 @@ export const useAdmin = () => {
             const { data: sessionData } = await supabase.auth.getSession();
             const token = sessionData.session?.access_token;
             if (token) {
-              const response = await fetch('/api/premium?action=status', {
+              const response = await fetchWithTimeout('/api/premium?action=status', {
                 headers: { Authorization: `Bearer ${token}` },
-              });
+              }, { timeoutMs: 8000, label: 'Premium entitlement check' });
               if (response.ok) {
                 const payload = await response.json();
                 hasStreamerEntitlement = !!payload.access?.hasStreamerAccess;
