@@ -135,20 +135,21 @@ function BetsWidget({ config }) {
   const colorTheme   = c.colorTheme    || 'dark';
   const barColorMode = c.barColorMode  || (isStyleSeca ? 'solid' : 'rainbow');
   const styleSecaValue = (value, fallback) => isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
+  const styleSecaText = '#f8fbff';
 
   const preset      = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
   const bgColor     = styleSecaValue(elementValue(c, 'widgetBackground', 'background', c.bgColor || (isStyleSeca ? styleSecaSurfaceGradient() : preset.bgColor), 'container'), styleSecaSurfaceGradient());
-  const textColor   = styleSecaValue(elementValue(c, 'widgetBackground', 'textColor', c.textColor || (isStyleSeca ? STYLE_SECA.text : preset.textColor), 'container'), STYLE_SECA.text);
+  const textColor   = styleSecaValue(elementValue(c, 'widgetBackground', 'textColor', c.textColor || (isStyleSeca ? styleSecaText : preset.textColor), 'container'), styleSecaText);
   const borderColor = styleSecaValue(elementValue(c, 'widgetBackground', 'borderColor', c.borderColor || (isStyleSeca ? STYLE_SECA.border : 'rgba(148,163,184,0.12)'), 'container'), STYLE_SECA.border);
   const borderWidth = elementValue(c, 'widgetBackground', 'borderWidth', c.borderWidth ?? 1, 'container');
   const widgetRadius = elementValue(c, 'widgetBackground', 'radius', c.borderRadius ?? (isStyleSeca ? 12 : 0), 'container');
   const headerBg    = styleSecaValue(elementValue(c, 'header', 'background', c.headerBg || (isStyleSeca ? styleSecaHeaderGradient() : preset.headerBg), 'title'), styleSecaHeaderGradient());
-  const headerText  = styleSecaValue(elementValue(c, 'header', 'textColor', c.headerText || (isStyleSeca ? STYLE_SECA.text : preset.headerText), 'title'), STYLE_SECA.text);
+  const headerText  = styleSecaValue(elementValue(c, 'header', 'textColor', c.headerText || (isStyleSeca ? styleSecaText : preset.headerText), 'title'), styleSecaText);
   const barBg       = styleSecaValue(elementValue(c, 'progressBar', 'background', c.barBg || c.progressBgColor || (isStyleSeca ? STYLE_SECA.secondarySurface : preset.barBg)), STYLE_SECA.secondarySurface);
   const barFill     = styleSecaValue(elementValue(c, 'progressBar', 'fillColor', c.barFill || c.progressColor || (isStyleSeca ? STYLE_SECA.primary : preset.barFill)), STYLE_SECA.primary);
   const accentColor = styleSecaValue(elementValue(c, 'cardNumberBadge', 'background', scopedSubValue(c, 'optionCard', 'accentColor', c.accentColor || (isStyleSeca ? STYLE_SECA.primary : preset.accentColor)), 'optionNumber'), STYLE_SECA.primary);
   const optionBg    = styleSecaValue(elementValue(c, 'betCards', 'background', scopedSubValue(c, 'optionCard', 'background', c.cardBg || (isStyleSeca ? STYLE_SECA.cardSurface : barBg)), 'optionRow'), STYLE_SECA.cardSurface);
-  const optionText  = styleSecaValue(elementValue(c, 'cardRangeText', 'textColor', scopedSubValue(c, 'optionCard', 'textColor', isStyleSeca ? STYLE_SECA.text : textColor), 'optionLabel'), STYLE_SECA.text);
+  const optionText  = styleSecaValue(elementValue(c, 'cardRangeText', 'textColor', scopedSubValue(c, 'optionCard', 'textColor', isStyleSeca ? styleSecaText : textColor), 'optionLabel'), styleSecaText);
   const timerText   = styleSecaValue(elementValue(c, 'status', 'textColor', scopedSubValue(c, 'timer', 'textColor', isStyleSeca ? STYLE_SECA.darkText : headerText), 'timer', status || 'default'), STYLE_SECA.darkText);
   const timerBg     = styleSecaValue(elementValue(c, 'status', 'background', scopedSubValue(c, 'timer', 'background', isStyleSeca ? STYLE_SECA.primary : 'rgba(99,102,241,0.18)'), 'timer', status || 'default'), STYLE_SECA.primary);
   const winText     = elementValue(c, 'betCards', 'textColor', scopedSubValue(c, 'winningState', 'textColor', '#4ade80'), 'optionRow', 'winner');
@@ -160,7 +161,7 @@ function BetsWidget({ config }) {
   const progressRadius = elementValue(c, 'progressBar', 'radius', isStyleSeca ? 8 : 4);
   const rawContainerStyle = elementStyle(c, 'widgetBackground', {
     fontFamily: font,
-    fontSize: `${baseFontSize}px`,
+    fontSize: isStyleSeca ? `clamp(11px, min(3.1cqw, 4.1cqh), ${baseFontSize}px)` : `${baseFontSize}px`,
     lineHeight: defaultLineHeight,
     letterSpacing: defaultLetterSpacing,
     textTransform: defaultTextTransform,
@@ -410,7 +411,7 @@ function BetsWidget({ config }) {
               textAlign: defaultTextAlign,
             }, 'optionLabel', stateId);
             const percentageStyle = elementStyle(c, 'cardPercentageText', {
-              color: optColor || accentColor,
+              color: isStyleSeca ? styleSecaText : (optColor || accentColor),
               fontFamily: numberFont,
               fontSize: `${Math.round(baseFontSize * 1.2)}px`,
               fontWeight: 900,
@@ -418,7 +419,7 @@ function BetsWidget({ config }) {
               letterSpacing: defaultLetterSpacing,
             }, 'percentage', stateId);
             const cardLabelStyle = elementStyle(c, 'cardLabel', {
-              color: 'rgba(255,255,255,0.62)',
+              color: isStyleSeca ? 'rgba(248,251,255,0.9)' : 'rgba(255,255,255,0.62)',
               fontFamily: font,
               fontSize: `${Math.max(9, Math.round(baseFontSize * 0.7))}px`,
               fontWeight: 700,

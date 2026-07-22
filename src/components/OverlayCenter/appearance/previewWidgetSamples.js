@@ -316,6 +316,7 @@ function applyBonusHuntPreviewSample(config = {}) {
 
 function getPreviewFrame(widgetType, config = {}) {
   if (widgetType === 'bets') {
+    if (config.displayStyle === 'StyleSecaBets') return { width: 480, height: 330 };
     const isGrid = ['v2_grid', 'v3_grid_2x3', 'StyleSecaBets'].includes(config.displayStyle);
     return { width: isGrid ? 620 : 560, height: isGrid ? 430 : 460 };
   }

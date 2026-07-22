@@ -259,8 +259,8 @@ function buildBetsPatch(tokens, styleId) {
   const elevated = isStyleSeca ? STYLE_SECA.elevated : tokens.colors.elevatedSurface;
   const primary = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
   const secondaryAccent = isStyleSeca ? STYLE_SECA.secondary : tokens.colors.accent;
-  const text = isStyleSeca ? STYLE_SECA.text : tokens.colors.text;
-  const muted = isStyleSeca ? STYLE_SECA.muted : tokens.colors.mutedText;
+  const text = isStyleSeca ? '#f8fbff' : tokens.colors.text;
+  const muted = isStyleSeca ? 'rgba(248,251,255,0.82)' : tokens.colors.mutedText;
   const border = isStyleSeca ? STYLE_SECA.border : tokens.colors.border;
   const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
     ? `0 ${px(tokens.materialTokens.shadowIntensity * 14)} ${px(tokens.materialTokens.shadowIntensity * 34)} ${tokens.colors.shadow}`
@@ -381,7 +381,7 @@ function buildBetsPatch(tokens, styleId) {
         fontWeight: tokens.typography.valueWeight,
       },
       cardPercentageText: {
-        textColor: primary,
+        textColor: isStyleSeca ? text : primary,
         fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,

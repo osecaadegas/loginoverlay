@@ -4325,28 +4325,58 @@
 
 .bets-ov--styleseca .bets-ov__grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(5px, min(1.5cqw, 1.8cqh), 8px);
+  padding: clamp(6px, min(1.6cqw, 1.8cqh), 10px);
 }
 
 .bets-ov--styleseca .bets-ov__card {
   min-height: 0;
+  border-width: 1px;
+  border-top-width: 2px;
 }
 
 .bets-ov--styleseca .bets-ov__card-body {
-  gap: 5px;
-  padding: 8px 6px;
+  justify-content: center;
+  gap: clamp(2px, min(1.2cqw, 1.4cqh), 6px);
+  padding: clamp(5px, min(1.4cqw, 1.7cqh), 8px) clamp(5px, min(1.3cqw, 1.5cqh), 8px);
+}
+
+.bets-ov--styleseca .bets-ov__card-head {
+  position: absolute;
+  top: clamp(5px, min(1.3cqw, 1.4cqh), 8px);
+  left: clamp(5px, min(1.3cqw, 1.4cqh), 8px);
+  right: clamp(5px, min(1.3cqw, 1.4cqh), 8px);
+}
+
+.bets-ov--styleseca .bets-ov__card-num {
+  width: clamp(18px, min(5.2cqw, 5.2cqh), 26px);
+  height: clamp(18px, min(5.2cqw, 5.2cqh), 26px);
+  font-size: clamp(0.72em, min(2.6cqw, 2.6cqh), 0.9em);
 }
 
 .bets-ov--styleseca .bets-ov__card-label {
-  font-size: clamp(0.74em, 2.25cqw, 0.92em);
+  width: 100%;
+  margin-top: clamp(12px, min(4.5cqw, 4.5cqh), 22px);
+  font-size: clamp(0.78em, min(2.5cqw, 3.2cqh), 0.96em);
+  color: #f8fbff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(255,255,255,0.18);
   min-height: 0;
 }
 
 .bets-ov--styleseca .bets-ov__card-pct {
-  font-size: clamp(1em, 3cqw, 1.28em);
+  font-size: clamp(0.92em, min(3cqw, 3.6cqh), 1.22em);
+  color: #f8fbff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.82), 0 0 9px rgba(255,255,255,0.2);
 }
 
 .bets-ov--styleseca .bets-ov__card-cmd {
-  font-size: clamp(0.6em, 1.6cqw, 0.72em);
+  font-size: clamp(0.58em, min(1.55cqw, 1.9cqh), 0.72em);
+  color: rgba(248,251,255,0.9);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.82);
+}
+
+.bets-ov--styleseca .bets-ov__card-footer {
+  gap: clamp(1px, min(0.8cqw, 0.8cqh), 3px);
 }
 
 /* ── Hint footer ── */
