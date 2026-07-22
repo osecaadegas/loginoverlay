@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
 import { withTimeout } from '../utils/asyncTimeout';
+import { getSessionWithFallback } from '../utils/authSession';
 
 
 const AuthContext = createContext({});
@@ -54,15 +55,11 @@ export const AuthProvider = ({ children }) => {
 
     const initializeSession = async () => {
       try {
-        const { data: { session } } = await withTimeout(
-          supabase.auth.getSession(),
-          10000,
-          'Auth session check'
-        );
+        const session = await getSessionWithFallback({ timeoutMs: 12000, label: 'Auth session check' });
         syncExperiencePreferenceInBackground(session?.user);
         if (mounted) setUser(session?.user ?? null);
       } catch (error) {
-        console.error('[Auth] Failed to initialize session:', error);
+        console.warn('[Auth] Session unavailable:', error);
         if (mounted) setUser(null);
       } finally {
         if (mounted) setLoading(false);

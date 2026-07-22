@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserRoles } from '../utils/adminUtils';
-import { supabase } from '../config/supabaseClient';
-import { fetchWithTimeout } from '../utils/asyncTimeout';
+import { getAccessTokenWithFallback } from '../utils/authSession';
+import { fetchWithTimeout, withTimeout } from '../utils/asyncTimeout';
 
 export const useAdmin = () => {
   const { user } = useAuth();
@@ -30,10 +30,36 @@ export const useAdmin = () => {
       setLoading(true);
 
       try {
-        const { data, error } = await getUserRoles(user.id);
+        let roles = [];
+        let rolesError = null;
+
+        try {
+          const result = await withTimeout(getUserRoles(user.id), 8000, 'Role access check');
+          roles = result.data || [];
+          rolesError = result.error || null;
+        } catch (error) {
+          rolesError = error;
+        }
+
+        let hasStreamerEntitlement = false;
+
+        try {
+          const token = await getAccessTokenWithFallback({ timeoutMs: 6000, label: 'Premium session token check' });
+          if (token) {
+            const response = await fetchWithTimeout('/api/premium?action=status', {
+              headers: { Authorization: `Bearer ${token}` },
+            }, { timeoutMs: 8000, label: 'Premium entitlement check' });
+            if (response.ok) {
+              const payload = await response.json();
+              hasStreamerEntitlement = !!payload.access?.hasStreamerAccess;
+            }
+          }
+        } catch (error) {
+          console.warn('Premium entitlement check failed:', error);
+        }
         
-        if (error) {
-          console.error('Error checking admin status:', error);
+        if (rolesError && !hasStreamerEntitlement) {
+          console.error('Error checking admin status:', rolesError);
           setIsAdmin(false);
           setIsModerator(false);
           setIsSlotModder(false);
@@ -41,25 +67,7 @@ export const useAdmin = () => {
           setIsAffiliate(false);
           setUserRoles([]);
         } else {
-          const roles = data || [];
           const roleNames = roles.map(r => r.role);
-          let hasStreamerEntitlement = false;
-
-          try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData.session?.access_token;
-            if (token) {
-              const response = await fetchWithTimeout('/api/premium?action=status', {
-                headers: { Authorization: `Bearer ${token}` },
-              }, { timeoutMs: 8000, label: 'Premium entitlement check' });
-              if (response.ok) {
-                const payload = await response.json();
-                hasStreamerEntitlement = !!payload.access?.hasStreamerAccess;
-              }
-            }
-          } catch (error) {
-            console.warn('Premium entitlement check failed:', error);
-          }
           
           setUserRoles(roles);
           setIsAdmin(roleNames.includes('admin') || roleNames.includes('superadmin'));

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
 import { fetchWithTimeout } from '../utils/asyncTimeout';
+import { getAccessTokenWithFallback } from '../utils/authSession';
 
 export function usePremium() {
   const { user } = useAuth();
@@ -19,8 +20,7 @@ export function usePremium() {
       }
 
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
+        const token = await getAccessTokenWithFallback({ timeoutMs: 6000, label: 'Premium session token check' });
         if (token) {
           const response = await fetchWithTimeout('/api/premium?action=status', {
             headers: { Authorization: `Bearer ${token}` },

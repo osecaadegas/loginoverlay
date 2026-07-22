@@ -317,7 +317,7 @@ export async function resolvePremiumAccess(supabase, userId) {
     supabase.from('user_trials').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('user_product_subscriptions').select('*').eq('user_id', userId).eq('product_code', PRODUCT_TYPES.player.productCode).maybeSingle(),
     supabase.from('billing_subscriptions').select('*').eq('user_id', userId).eq('product_code', PRODUCT_TYPES.streamer.productCode).order('current_period_end', { ascending: false }).limit(1).maybeSingle(),
-    supabase.from('user_roles').select('*').eq('user_id', userId).eq('role', 'premium').eq('is_active', true),
+    supabase.from('user_roles').select('*').eq('user_id', userId).in('role', ['premium', 'admin', 'superadmin']).eq('is_active', true),
   ]);
 
   const firstError = [trialResult, playerResult, streamerResult, roleResult]
