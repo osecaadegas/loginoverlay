@@ -320,6 +320,22 @@ function buildBetsPatch(tokens, styleId) {
       poolStat: statSurface,
       timerStat: statSurface,
       betsStat: statSurface,
+      status: {
+        background: tokens.colors.elevatedSurface,
+        textColor: tokens.colors.primary,
+        fontFamily: tokens.typography.labelFont,
+        fontSize: tokens.typography.labelSize,
+        fontWeight: tokens.typography.labelWeight,
+        radius: tokens.shape.badgeRadius,
+        padding: tokens.spacing.itemGap,
+        borderColor: tokens.colors.border,
+        borderWidth: tokens.shape.borderWidth,
+        states: {
+          open: { background: tokens.colors.elevatedSurface, textColor: tokens.colors.primary },
+          locked: { background: tokens.colors.elevatedSurface, textColor: tokens.colors.negative },
+          result: { background: tokens.colors.elevatedSurface, textColor: tokens.colors.positive },
+        },
+      },
       betCards: {
         background: tokens.colors.secondarySurface,
         textColor: tokens.colors.text,

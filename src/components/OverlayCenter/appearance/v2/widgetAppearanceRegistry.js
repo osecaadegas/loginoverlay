@@ -895,7 +895,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           rows: true,
           barDimensions: true,
         },
-        elementIds: ['widgetBackground', 'header', 'poolStat', 'timerStat', 'betsStat', 'betCards', 'cardNumberBadge', 'cardRangeText', 'cardPercentageText', 'cardLabel', 'footerInstruction'],
+        elementIds: ['widgetBackground', 'header', 'status', 'poolStat', 'timerStat', 'betsStat', 'betCards', 'individualBetCard', 'cardNumberBadge', 'cardRangeText', 'cardPercentageText', 'cardLabel', 'progressBar', 'footerInstruction'],
         previewStateIds: ['default', 'leading', 'winner', 'loser', 'closed'],
       }),
       freezeStyle({
@@ -911,7 +911,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           rows: true,
           barDimensions: true,
         },
-        elementIds: ['widgetBackground', 'header', 'poolStat', 'timerStat', 'betsStat', 'betCards', 'individualBetCard', 'cardNumberBadge', 'cardRangeText', 'cardPercentageText', 'cardLabel', 'footerInstruction'],
+        elementIds: ['widgetBackground', 'header', 'status', 'poolStat', 'timerStat', 'betsStat', 'betCards', 'individualBetCard', 'cardNumberBadge', 'cardRangeText', 'cardPercentageText', 'cardLabel', 'progressBar', 'footerInstruction'],
         previewStateIds: ['default', 'leading', 'winner', 'loser', 'closed'],
       }),
       freezeStyle({
@@ -928,7 +928,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           rows: true,
           barDimensions: true,
         },
-        elementIds: ['widgetBackground', 'header', 'poolStat', 'timerStat', 'betsStat', 'betCards', 'individualBetCard', 'cardNumberBadge', 'cardRangeText', 'cardPercentageText', 'cardLabel', 'footerInstruction'],
+        elementIds: ['widgetBackground', 'header', 'status', 'poolStat', 'timerStat', 'betsStat', 'betCards', 'individualBetCard', 'cardNumberBadge', 'cardRangeText', 'cardPercentageText', 'cardLabel', 'progressBar', 'footerInstruction'],
         previewStateIds: ['default', 'leading', 'winner', 'loser', 'closed'],
       }),
     ]),
@@ -969,6 +969,12 @@ export const widgetAppearanceRegistry = Object.freeze({
         capabilities: ['surface', 'border', 'shape', 'spacing', 'typography', 'stateColor'],
         cssVariables: ['--bets-header-bg', '--bets-header-radius', '--bets-header-text'],
       }),
+      status: Object.freeze({
+        label: 'Status badge',
+        kind: 'badge',
+        capabilities: ['surface', 'border', 'shape', 'spacing', 'typography', 'stateColor'],
+        cssVariables: ['--bets-timer-bg', '--bets-timer-text'],
+      }),
       poolStat: Object.freeze({
         label: 'Pool stat',
         kind: 'surface',
@@ -990,13 +996,13 @@ export const widgetAppearanceRegistry = Object.freeze({
       betCards: Object.freeze({
         label: 'Bet cards',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'],
         cssVariables: ['--bets-card-bg', '--bets-card-radius', '--bets-card-border'],
       }),
       individualBetCard: Object.freeze({
         label: 'Individual bet card',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'],
         cssVariables: ['--bets-individual-card-radius'],
       }),
       cardNumberBadge: Object.freeze({
@@ -1018,10 +1024,16 @@ export const widgetAppearanceRegistry = Object.freeze({
         cssVariables: ['--bets-card-percentage-text'],
       }),
       cardLabel: Object.freeze({
-        label: 'Card label',
+        label: 'Card command label',
         kind: 'text',
         capabilities: ['typography', 'stateColor'],
         cssVariables: ['--bets-card-label-text'],
+      }),
+      progressBar: Object.freeze({
+        label: 'Card progress bar',
+        kind: 'progress',
+        capabilities: ['surface', 'shape', 'progress'],
+        cssVariables: ['--bets-progress-bg', '--bets-progress-fill'],
       }),
       footerInstruction: Object.freeze({
         label: 'Footer instruction',

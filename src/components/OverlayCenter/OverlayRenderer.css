@@ -3969,6 +3969,22 @@
   border: 1px solid var(--bets-border, rgba(148,163,184,0.12));
   color: var(--bets-text, #d4dce8);
   animation: bets-open 0.55s cubic-bezier(0.16,1,0.3,1) both;
+  -webkit-font-smoothing: subpixel-antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.or-canvas,
+.or-widget-slot,
+.or-widget-slot img,
+.or-widget-slot canvas,
+.or-widget-slot video {
+  image-rendering: auto;
+}
+
+.or-widget-slot img,
+.or-widget-slot video {
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* ── Header ── */
@@ -3988,7 +4004,7 @@
   font-weight: 800;
   letter-spacing: 0.3px;
   color: var(--bets-hdr-txt, #eef2f5);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.45);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4051,7 +4067,7 @@
   font-size: 1.2em;
   font-weight: 800;
   color: #eef2f5;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.32);
   line-height: 1;
 }
 .bets-ov__stat-lbl {
@@ -4250,7 +4266,7 @@
   font-size: 0.9em;
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.72);
   line-height: 1.15;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -4269,7 +4285,7 @@
   font-size: 1.32em;
   font-weight: 900;
   color: var(--opt-color, #fff);
-  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.56);
   letter-spacing: -0.03em;
   line-height: 1;
 }

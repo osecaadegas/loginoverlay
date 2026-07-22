@@ -327,7 +327,7 @@ function BetsWidget({ config }) {
           {title}
         </span>
         {status === 'result' && <span className="bets-ov__trophy">🏆</span>}
-        <span className={`bets-ov__status bets-ov__status--${status}`} {...partAttrs('header', status || 'default')} style={statusStyle}>
+        <span className={`bets-ov__status bets-ov__status--${status}`} {...partAttrs('status', status || 'default')} style={statusStyle}>
           {status === 'open' && <span className="bets-ov__live-dot" />}
           {statusLabel}
         </span>
@@ -336,28 +336,28 @@ function BetsWidget({ config }) {
       {/* ── Stats strip ── */}
       <div className="bets-ov__stats">
         <div className="bets-ov__stat" {...partAttrs('poolStat')} style={poolStatStyle}>
-          <span className="bets-ov__stat-val">{totalPool.toLocaleString()}</span>
-          <span className="bets-ov__stat-lbl">💰 Pool</span>
+          <span className="bets-ov__stat-val" style={pickTextStyle(poolStatStyle)}>{totalPool.toLocaleString()}</span>
+          <span className="bets-ov__stat-lbl" style={pickTextStyle(poolStatStyle)}>💰 Pool</span>
         </div>
         <div className="bets-ov__stat bets-ov__stat--center" {...partAttrs('timerStat')} style={timerStatStyle}>
-          <span className="bets-ov__stat-val">
+          <span className="bets-ov__stat-val" style={pickTextStyle(timerStatStyle)}>
             {status === 'open' && countdown > 0 ? fmt(countdown) :
              status === 'open' ? '∞' :
              status === 'locked' ? '🔒' : '🏆'}
           </span>
-          <span className="bets-ov__stat-lbl">
+          <span className="bets-ov__stat-lbl" style={pickTextStyle(timerStatStyle)}>
             {status === 'open' ? '⏱ Timer' : 'Status'}
           </span>
         </div>
         <div className="bets-ov__stat" {...partAttrs('betsStat')} style={betsStatStyle}>
-          <span className="bets-ov__stat-val">{totalBetters}</span>
-          <span className="bets-ov__stat-lbl">👥 Bets</span>
+          <span className="bets-ov__stat-val" style={pickTextStyle(betsStatStyle)}>{totalBetters}</span>
+          <span className="bets-ov__stat-lbl" style={pickTextStyle(betsStatStyle)}>👥 Bets</span>
         </div>
       </div>
 
       {/* ── Options ── */}
       {isGrid ? (
-        <div className="bets-ov__grid">
+        <div className="bets-ov__grid" {...partAttrs('betCards')}>
           {options.map((opt, i) => {
             const amount   = bets[`opt_${i}`] || 0;
             const pct      = pcts[i];
@@ -377,7 +377,7 @@ function BetsWidget({ config }) {
             const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, undefined, `card_${i + 1}`);
             const optionNumberStyle = elementStyle(c, 'cardNumberBadge', {
               background: optColor || accentColor,
-              color: '#ffffff',
+              color: elementValue(c, 'cardNumberBadge', 'textColor', '#ffffff', 'optionNumber', stateId),
               fontFamily: numberFont,
               fontSize: `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
               fontWeight: 800,
@@ -414,6 +414,7 @@ function BetsWidget({ config }) {
               borderRadius: toCssLength(progressRadius, '4px'),
             }, undefined, progressStateId);
             const progressFill = elementValue(c, 'progressBar', 'fillColor', optColor || barFill, undefined, progressStateId);
+            const cardTextInheritanceStyle = pickTextStyle(optionRowStyle);
             const classes  = [
               'bets-ov__card',
               isWin  && 'bets-ov__card--win',
@@ -425,7 +426,7 @@ function BetsWidget({ config }) {
               <div
                 key={`${i}-${status}`}
                 className={classes}
-                {...partAttrs('betCards', stateId)}
+                {...partAttrs('individualBetCard', stateId)}
                 data-appearance-index={i}
                 style={{ animationDelay: `${i * 0.07}s`, '--opt-color': optColor, ...optionRowStyle }}
               >
@@ -438,7 +439,7 @@ function BetsWidget({ config }) {
                     borderRadius: progressStyle.borderRadius,
                   }}
                 />
-                <div className="bets-ov__card-body">
+                <div className="bets-ov__card-body" style={cardTextInheritanceStyle}>
                   <div className="bets-ov__card-head">
                     <span className="bets-ov__card-num" {...partAttrs('cardNumberBadge', stateId)} style={optionNumberStyle}>{i + 1}</span>
                     <span className={`bets-ov__card-crown${isWin ? '' : ' bets-ov__card-crown--hidden'}`}>👑</span>
@@ -454,7 +455,7 @@ function BetsWidget({ config }) {
           })}
         </div>
       ) : (
-        <div className="bets-ov__list">
+        <div className="bets-ov__list" {...partAttrs('betCards')}>
           {options.map((opt, i) => {
             const pct      = pcts[i];
             const isWin    = winnerIdx === i;
@@ -472,7 +473,7 @@ function BetsWidget({ config }) {
             const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, undefined, `card_${i + 1}`);
             const optionNumberStyle = elementStyle(c, 'cardNumberBadge', {
               background: optColor || accentColor,
-              color: '#ffffff',
+              color: elementValue(c, 'cardNumberBadge', 'textColor', '#ffffff', 'optionNumber', stateId),
               fontFamily: numberFont,
               fontSize: `${Math.max(11, Math.round(baseFontSize * 0.8))}px`,
               fontWeight: 800,
@@ -513,7 +514,7 @@ function BetsWidget({ config }) {
               <div
                 key={`${i}-${status}`}
                 className={classes}
-                {...partAttrs('betCards', stateId)}
+                {...partAttrs('individualBetCard', stateId)}
                 data-appearance-index={i}
                 style={{ animationDelay: `${i * 0.05}s`, '--opt-color': optColor, ...optionRowStyle }}
               >
