@@ -32,6 +32,7 @@ export const useAdmin = () => {
       try {
         let roles = [];
         let rolesError = null;
+        let serverRoleNames = [];
 
         try {
           const result = await withTimeout(getUserRoles(user.id), 8000, 'Role access check');
@@ -52,6 +53,11 @@ export const useAdmin = () => {
             if (response.ok) {
               const payload = await response.json();
               hasStreamerEntitlement = !!payload.access?.hasStreamerAccess;
+              serverRoleNames = Array.isArray(payload.access?.roleNames) ? payload.access.roleNames : [];
+              if ((!roles.length || roles.every((role) => role.role === 'user')) && Array.isArray(payload.access?.roles)) {
+                roles = payload.access.roles;
+                rolesError = null;
+              }
             }
           }
         } catch (error) {
@@ -67,7 +73,7 @@ export const useAdmin = () => {
           setIsAffiliate(false);
           setUserRoles([]);
         } else {
-          const roleNames = roles.map(r => r.role);
+          const roleNames = [...new Set([...roles.map(r => r.role), ...serverRoleNames])];
           
           setUserRoles(roles);
           setIsAdmin(roleNames.includes('admin') || roleNames.includes('superadmin'));
