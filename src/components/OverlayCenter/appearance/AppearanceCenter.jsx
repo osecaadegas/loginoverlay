@@ -184,6 +184,8 @@ const GLOBAL_QUICK_STYLE_CONTROLS = new Set([
   'musicDisplayStyle',
 ]);
 
+const NAVBAR_APPEARANCE_SECTION_ID = 'navbarSections';
+
 function compareWidgetLayer(a, b) {
   const az = Number(a?.z_index) || 0;
   const bz = Number(b?.z_index) || 0;
@@ -497,6 +499,20 @@ function resolveLegacyElementPath(root, elementId, property, stateId = 'default'
   return `${root}.subElements.${elementId}.${property}`;
 }
 
+function getElementVisibleFromAppearance(appearance, root, elementId) {
+  if (!appearance || !root || !elementId) return true;
+  const paths = [
+    resolveV2ElementOverridePath(root, elementId, 'visible'),
+    resolveElementPath(root, elementId, 'visible'),
+    resolveLegacyElementPath(root, elementId, 'visible'),
+  ];
+  for (const path of paths) {
+    const value = getByPath(appearance, path);
+    if (value !== undefined) return value !== false;
+  }
+  return true;
+}
+
 function formatStatus(status, dirty) {
   if (status === 'saving') return 'Saving...';
   if (status === 'failed') return 'Save failed';
@@ -796,7 +812,6 @@ export default function AppearanceCenter({
   const [openAdvancedSections, setOpenAdvancedSections] = useState(['partSelection']);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
-  const [hiddenLayers, setHiddenLayers] = useState({});
   const [lockedLayers, setLockedLayers] = useState({});
   const [tourVisible, setTourVisible] = useState(getInitialTourVisible);
   const [recentColors, setRecentColors] = useState(getInitialRecentColors);
@@ -950,6 +965,7 @@ export default function AppearanceCenter({
       'imageFit',
       'musicDisplayStyle',
     ])) sections.push('textImages');
+    if (selectedWidgetType === 'navbar') sections.push(NAVBAR_APPEARANCE_SECTION_ID);
     if (hasAnyQuickControl([
       'shape',
       'density',
@@ -969,7 +985,7 @@ export default function AppearanceCenter({
     ])) sections.push('motion');
     sections.push('actions');
     return sections;
-  }, [hasAnyQuickControl, selectedElements.length, selectedQuickControls, selectedWidgetIsBackground]);
+  }, [hasAnyQuickControl, selectedElements.length, selectedQuickControls, selectedWidgetIsBackground, selectedWidgetType]);
   const simpleSectionTabs = useMemo(() => {
     const labels = {
       widgetStyle: 'Layout',
@@ -1024,10 +1040,12 @@ export default function AppearanceCenter({
   }, [selectedWidget?.id, selectedTarget.styleId]);
 
   const selectedHiddenElementIds = useMemo(() => (
-    Object.entries(hiddenLayers)
-      .filter(([key, value]) => value && key.startsWith(`${selectedWidget?.id || ''}:`))
-      .map(([key]) => key.split(':').slice(1).join(':'))
-  ), [hiddenLayers, selectedWidget?.id]);
+    selectedTargetRoot
+      ? selectedElements
+        .filter(element => !getElementVisibleFromAppearance(draft, selectedTargetRoot, element.id))
+        .map(element => element.id)
+      : []
+  ), [draft, selectedElements, selectedTargetRoot]);
 
   useEffect(() => {
     trackEvent(ANALYTICS_EVENTS.APPEARANCE_CENTER_OPENED || 'appearance_center_opened', {
@@ -1219,6 +1237,17 @@ export default function AppearanceCenter({
     selectedWidgetType,
     selectedWidgetUsesV2,
   ]);
+
+  const updateSelectedWidgetConfig = useCallback((patch, summary = 'Widget settings updated') => {
+    if (!selectedWidget?.id || !saveWidget) return;
+    const nextConfig = { ...(selectedWidget.config || {}), ...(patch || {}) };
+    saveWidget({ ...selectedWidget, config: nextConfig })
+      .then(() => setToast(summary))
+      .catch(err => {
+        console.error('[AppearanceCenter] widget config update failed', err);
+        setToast('Widget settings could not be updated');
+      });
+  }, [saveWidget, selectedWidget]);
 
   const restoreRecommendedStyle = useCallback(() => {
     if (selectedTargetRoot && selectedWidgetType === 'bonus_hunt') {
@@ -1504,6 +1533,15 @@ export default function AppearanceCenter({
     if (!selectedWidget?.id || !elementId) return false;
     return !!lockedLayers[layerKey(selectedWidget.id, elementId)];
   }, [lockedLayers, selectedWidget?.id]);
+
+  const toggleElementVisibility = useCallback((elementId) => {
+    if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+    const nextVisible = !getElementVisibleFromAppearance(draft, selectedTargetRoot, elementId);
+    const path = selectedWidgetUsesV2
+      ? resolveV2ElementOverridePath(selectedTargetRoot, elementId, 'visible')
+      : resolveElementPath(selectedTargetRoot, elementId, 'visible');
+    commitDraft(prev => setByPath(prev, path, nextVisible), `${elementId}.${nextVisible ? 'show' : 'hide'}`);
+  }, [commitDraft, draft, isElementLocked, selectedTargetRoot, selectedWidgetUsesV2]);
 
   const updateElementControlFor = useCallback((elementId, control, value) => {
     if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
@@ -2048,7 +2086,7 @@ export default function AppearanceCenter({
           {group.items.map(element => {
             const key = layerKey(selectedWidget?.id, element.id);
             const active = element.id === selectedElement?.id;
-            const hidden = !!hiddenLayers[key];
+            const hidden = !getElementVisibleFromAppearance(draft, selectedTargetRoot, element.id);
             const locked = !!lockedLayers[key];
             return (
               <div key={element.id} className={`ve-layer-row${active ? ' is-active' : ''}`}>
@@ -2065,8 +2103,8 @@ export default function AppearanceCenter({
                 <LayerToggleButton
                   active={!hidden}
                   type="visible"
-                  label={hidden ? 'Show layer in preview' : 'Hide layer in preview'}
-                  onClick={() => setHiddenLayers(prev => ({ ...prev, [key]: !hidden }))}
+                  label={hidden ? 'Show layer' : 'Hide layer'}
+                  onClick={() => toggleElementVisibility(element.id)}
                 />
                 <LayerToggleButton
                   active={locked}
@@ -2666,6 +2704,57 @@ export default function AppearanceCenter({
                       </div>
                     )}
                   </>
+                )}
+              </CollapsibleSection>
+            )}
+
+            {simpleSections.includes(NAVBAR_APPEARANCE_SECTION_ID) && (
+              <CollapsibleSection
+                id={NAVBAR_APPEARANCE_SECTION_ID}
+                title="Navbar Sections"
+                openSections={openSimpleSections}
+                onToggle={toggleSimpleSection}
+                className="ve-simple-section"
+              >
+                <label className="ve-simple-toggle">
+                  <input
+                    type="checkbox"
+                    checked={!!selectedWidget?.config?.showCTA}
+                    onChange={event => updateSelectedWidgetConfig({ showCTA: event.target.checked }, event.target.checked ? 'CTA enabled' : 'CTA hidden')}
+                  />
+                  <span>Show CTA badge</span>
+                </label>
+                {!!selectedWidget?.config?.showCTA && (
+                  <label className="ve-simple-select">
+                    <span>CTA text</span>
+                    <input
+                      type="text"
+                      value={selectedWidget?.config?.ctaText || ''}
+                      onChange={event => updateSelectedWidgetConfig({ ctaText: event.target.value }, 'CTA text updated')}
+                      placeholder="Be Gamble Aware!"
+                    />
+                  </label>
+                )}
+                <label className="ve-simple-toggle">
+                  <input
+                    type="checkbox"
+                    checked={!!selectedWidget?.config?.showNowPlaying}
+                    onChange={event => updateSelectedWidgetConfig({ showNowPlaying: event.target.checked }, event.target.checked ? 'Spotify section enabled' : 'Spotify section hidden')}
+                  />
+                  <span>Show Spotify / music</span>
+                </label>
+                {hasQuickControl('musicDisplayStyle') && (
+                  <label className="ve-simple-select">
+                    <span>Spotify style</span>
+                    <select
+                      value={currentSimpleSettings.musicDisplayStyle}
+                      onChange={event => applyQuickSettings({ musicDisplayStyle: event.target.value }, 'Change Spotify style')}
+                    >
+                      {NAVBAR_MUSIC_DISPLAY_STYLES.map(style => (
+                        <option key={style.id} value={style.id}>{style.label}</option>
+                      ))}
+                    </select>
+                  </label>
                 )}
               </CollapsibleSection>
             )}

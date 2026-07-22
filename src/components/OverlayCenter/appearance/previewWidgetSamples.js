@@ -192,6 +192,15 @@ function applySpotifyPreviewSample(config = {}) {
   };
 }
 
+function applyNavbarPreviewSample(config = {}) {
+  if (config.showNowPlaying === false) return config;
+  const sampledMusic = applySpotifyPreviewSample(config);
+  return {
+    ...sampledMusic,
+    musicSource: sampledMusic.musicSource || 'manual',
+  };
+}
+
 function applyGiveawayPreviewSample(config = {}) {
   const previewState = config.__appearancePreviewState;
   if (previewState) {
@@ -307,7 +316,7 @@ function applyBonusHuntPreviewSample(config = {}) {
 
 function getPreviewFrame(widgetType, config = {}) {
   if (widgetType === 'bets') {
-    const isGrid = ['v2_grid', 'v3_grid_2x3'].includes(config.displayStyle);
+    const isGrid = ['v2_grid', 'v3_grid_2x3', 'StyleSecaBets'].includes(config.displayStyle);
     return { width: isGrid ? 620 : 560, height: isGrid ? 430 : 460 };
   }
   if (widgetType === 'spotify_now_playing') {
@@ -332,6 +341,7 @@ function getPreviewFrame(widgetType, config = {}) {
 function applyWidgetPreviewSample(widget, now) {
   if (!widget) return widget;
   if (widget.widget_type === 'bets') return { ...widget, config: applyBetsPreviewSample(widget.config || {}, now) };
+  if (widget.widget_type === 'navbar') return { ...widget, config: applyNavbarPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'spotify_now_playing') return { ...widget, config: applySpotifyPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'giveaway') return { ...widget, config: applyGiveawayPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'chat') return { ...widget, config: applyChatPreviewSample(widget.config || {}) };

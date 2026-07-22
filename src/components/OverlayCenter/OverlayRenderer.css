@@ -3963,6 +3963,7 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
+  container-type: size;
   background: var(--bets-bg, rgba(10,14,20,0.94));
   border-radius: var(--bets-widget-background-radius, 0);
   overflow: hidden;
@@ -4182,8 +4183,8 @@
   display: grid;
   grid-template-columns: repeat(var(--bets-cols, 4), 1fr);
   grid-auto-rows: minmax(0, 1fr);
-  gap: 8px;
-  padding: 10px;
+  gap: clamp(4px, 1.5cqw, 8px);
+  padding: clamp(6px, 1.8cqw, 10px);
   overflow: hidden;
 }
 .bets-ov__card {
@@ -4195,7 +4196,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  min-height: 92px;
+  min-height: 0;
   border: 1px solid var(--bets-border, rgba(255,255,255,0.04));
   border-top: 2px solid var(--opt-color, transparent);
   animation: bets-card-in 0.42s cubic-bezier(0.16,1,0.3,1) both;
@@ -4228,8 +4229,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  padding: 8px 6px 9px;
+  gap: clamp(2px, 1.25cqh, 6px);
+  padding: clamp(4px, 1.5cqh, 9px) clamp(4px, 1.2cqw, 7px);
   width: 100%;
   height: 100%;
   text-align: center;
@@ -4263,7 +4264,7 @@
   box-shadow: 0 6px 12px rgba(0,0,0,0.18);
 }
 .bets-ov__card-label {
-  font-size: 0.9em;
+  font-size: clamp(0.74em, 2.25cqw, 0.92em);
   font-weight: 800;
   color: #fff;
   text-shadow: 0 1px 1px rgba(0,0,0,0.72);
@@ -4272,7 +4273,7 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-  min-height: 2.2em;
+  min-height: 0;
 }
 .bets-ov__card-footer {
   display: flex;
@@ -4282,7 +4283,7 @@
   width: 100%;
 }
 .bets-ov__card-pct {
-  font-size: 1.32em;
+  font-size: clamp(1em, 3cqw, 1.32em);
   font-weight: 900;
   color: var(--opt-color, #fff);
   text-shadow: 0 1px 1px rgba(0,0,0,0.56);
@@ -4336,16 +4337,16 @@
 }
 
 .bets-ov--styleseca .bets-ov__card-label {
-  font-size: 0.82em;
-  min-height: 2.1em;
+  font-size: clamp(0.74em, 2.25cqw, 0.92em);
+  min-height: 0;
 }
 
 .bets-ov--styleseca .bets-ov__card-pct {
-  font-size: 1.16em;
+  font-size: clamp(1em, 3cqw, 1.28em);
 }
 
 .bets-ov--styleseca .bets-ov__card-cmd {
-  font-size: 0.64em;
+  font-size: clamp(0.6em, 1.6cqw, 0.72em);
 }
 
 /* ── Hint footer ── */

@@ -8303,7 +8303,7 @@ body.wm-resizing {
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  max-width: min(34%, 220px);
+  max-width: min(100%, 260px);
   overflow: hidden;
   color: var(--rtp-provider, #ffffff);
   font-family: var(--rtp-provider-family, inherit);
@@ -8315,12 +8315,12 @@ body.wm-resizing {
 }
 
 .rtp-stats-provider--logo {
-  width: min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 34%);
+  width: min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 100%);
   height: var(--rtp-provider-logo-height, clamp(30px, 3.15vw, 38px));
   border-radius: var(--rtp-provider-logo-radius, 0);
   justify-content: center;
-  flex: 0 1 min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 34%);
-  max-width: 34%;
+  flex: 0 1 min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 100%);
+  max-width: min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 100%);
   max-height: 100%;
   line-height: 1;
   box-sizing: border-box;
@@ -8368,7 +8368,7 @@ body.wm-resizing {
   gap: 8px;
   flex: 1 1 140px;
   min-width: 0;
-  max-width: min(36%, 280px);
+  max-width: min(100%, 360px);
   overflow: hidden;
 }
 
@@ -8400,9 +8400,9 @@ body.wm-resizing {
   display: flex;
   align-items: center;
   gap: var(--rtp-gap, clamp(8px, 0.9vw, 14px));
-  flex: 0 1 42%;
+  flex: 0 1 auto;
   min-width: 0;
-  max-width: 42%;
+  max-width: 52%;
   overflow: hidden;
   justify-content: flex-end;
 }

@@ -39,6 +39,10 @@ const {
   normalizeAppearance,
 } = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/appearanceModel.js');
 
+const {
+  subElementStyle,
+} = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/appearanceStyles.js');
+
 try {
   assert.equal(getModeLabel('simple'), 'Simple Mode');
   assert.equal(getModeLabel('advanced'), 'Advanced Mode');
@@ -116,6 +120,11 @@ try {
   assert.equal(sizeConfig.widgetHeight, 160, 'widget height maps into shared widget config');
   const scaledConfig = appearanceToWidgetConfigDefaults({ spacing: { widgetScale: 1.35 } });
   assert.equal(scaledConfig.widgetScale, 1.35, 'simple widget scale maps into shared widget config');
+  assert.equal(
+    subElementStyle({ subElements: { clock: { visible: false, background: '#ffffff' } } }, 'clock', { display: 'flex' }).display,
+    'none',
+    'hidden layer visibility renders the element as display none'
+  );
 
   const normalizedSimple = normalizeSimpleSettings({ material: 'unknown', primaryColor: 'bad', scale: 9 });
   assert.equal(normalizedSimple.material, DEFAULT_SIMPLE_SETTINGS.material, 'invalid simple material falls back safely');

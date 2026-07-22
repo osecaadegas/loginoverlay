@@ -118,6 +118,7 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
   const sourceStateId = stateId !== 'default' ? stateId : (aliased?.[1] || stateId);
   const element = getSubElementState(config, sourceElementId, sourceStateId);
   const style = { ...fallback };
+  if (element.visible === false) return { ...style, display: 'none' };
   const background = getElementProperty(element, 'background');
   const radius = getElementProperty(element, 'radius');
   const shadowBlur = getElementProperty(element, 'shadowBlur');

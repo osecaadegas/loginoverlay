@@ -1306,31 +1306,31 @@ export const widgetAppearanceRegistry = Object.freeze({
       slotTitle: Object.freeze({
         label: 'Slot name',
         kind: 'text',
-        capabilities: ['typography'],
+        capabilities: ['typography', 'spacing'],
         cssVariables: ['--rtp-slot-name'],
       }),
       rtpValue: Object.freeze({
         label: 'RTP value',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'spacing'],
         cssVariables: ['--rtp-icon-rtp', '--rtp-text'],
       }),
       maxWin: Object.freeze({
         label: 'Potential max win',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'spacing'],
         cssVariables: ['--rtp-icon-potential', '--rtp-text'],
       }),
       volatility: Object.freeze({
         label: 'Volatility',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'spacing'],
         cssVariables: ['--rtp-icon-volatility', '--rtp-text'],
       }),
       personalBest: Object.freeze({
         label: 'Personal best',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'spacing'],
         cssVariables: ['--rtp-icon-bestwin', '--rtp-text'],
       }),
       statCard: Object.freeze({

@@ -26,7 +26,7 @@ export function brushedMetalBackground(baseBackground, accentColor = '#e8a020', 
 
   return [
     `linear-gradient(${angle}, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.025) 14%, transparent 30%, rgba(0,0,0,0.22) 54%, rgba(255,255,255,0.065) 73%, rgba(0,0,0,0.28) 100%)`,
-    `repeating-linear-gradient(90deg, rgba(255,255,255,${grain}) 0px, rgba(255,255,255,${grain}) 1px, rgba(0,0,0,0.025) 2px, transparent 5px)`,
+    `linear-gradient(90deg, rgba(255,255,255,${grain}) 0%, transparent 42%, rgba(0,0,0,0.018) 64%, rgba(255,255,255,${grain * 0.6}) 100%)`,
     `linear-gradient(180deg, rgba(${accentRgb},${highlight}) 0%, transparent 36%, rgba(${accentRgb},${highlight * 0.55}) 74%, rgba(0,0,0,0.18) 100%)`,
     base,
   ].join(', ');

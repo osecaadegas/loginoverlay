@@ -126,6 +126,20 @@ function partAttrs(partId, stateId) {
   };
 }
 
+function flexSizedStyle(style = {}, fallbackDisplay) {
+  if (!style || typeof style !== 'object') return style;
+  const next = { ...style };
+  if (fallbackDisplay && (!next.display || next.display === 'inline-block')) next.display = fallbackDisplay;
+  if (next.width != null) {
+    next.flex = next.flex || `0 1 ${next.width}`;
+    next.maxWidth = next.maxWidth ?? next.width;
+  } else if (next.maxWidth != null) {
+    next.flex = next.flex || `0 1 ${next.maxWidth}`;
+  }
+  if (next.height != null) next.maxHeight = next.maxHeight ?? next.height;
+  return next;
+}
+
 function RtpStatsProviderMark({ provider, logo, style }) {
   const [failedLogo, setFailedLogo] = useState('');
 
@@ -537,6 +551,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     : (showDemoData ? demoProvider : '');
   const configuredProviderLogo = subValue(c, 'provider', 'imageUrl', c.providerLogoUrl || c.providerImageUrl || '');
   const displayProviderLogo = configuredProviderLogo || (displayProvider ? getProviderImage(displayProvider) : null);
+  const providerExplicitWidth = subValue(c, 'provider', 'width', null);
+  const providerExplicitHeight = subValue(c, 'provider', 'height', null);
   const displayInfo = isLive ? (slotInfo || localSlotInfo) : (showDemoData ? demoInfo : null);
   const currentHuntBestWin = useMemo(() => {
     if (!isLive) return null;
@@ -676,12 +692,18 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     borderColor: cardSurfaceStyle.borderColor || metalBorderColor(rtpIconColor, 0.24),
     boxShadow: cardSurfaceStyle.boxShadow || metalSurfaceShadow(rtpIconColor, 0.72),
   } : cardSurfaceStyle;
-  const providerStyle = subElementStyle(c, 'provider');
-  const slotTitleStyle = subElementStyle(c, 'slotTitle');
-  const rtpValueStyle = subElementStyle(c, 'rtpValue');
-  const maxWinStyle = subElementStyle(c, 'maxWin');
-  const volatilityStyle = subElementStyle(c, 'volatility');
-  const personalBestStyle = subElementStyle(c, 'personalBest');
+  const rawProviderStyle = subElementStyle(c, 'provider');
+  const providerStyle = flexSizedStyle(displayProviderLogo ? {
+    ...rawProviderStyle,
+    width: providerExplicitWidth != null ? rawProviderStyle.width : `${providerLogoWidth}px`,
+    height: providerExplicitHeight != null ? rawProviderStyle.height : `${providerLogoHeight}px`,
+    maxWidth: rawProviderStyle.maxWidth ?? (providerExplicitWidth != null ? rawProviderStyle.width : `${providerLogoWidth}px`),
+  } : rawProviderStyle, 'inline-flex');
+  const slotTitleStyle = flexSizedStyle(subElementStyle(c, 'slotTitle'));
+  const rtpValueStyle = flexSizedStyle(subElementStyle(c, 'rtpValue'), 'flex');
+  const maxWinStyle = flexSizedStyle(subElementStyle(c, 'maxWin'), 'flex');
+  const volatilityStyle = flexSizedStyle(subElementStyle(c, 'volatility'), 'flex');
+  const personalBestStyle = flexSizedStyle(subElementStyle(c, 'personalBest'), 'flex');
   const labelStyle = subElementStyle(c, 'label');
   const dividerStyle = subElementStyle(c, 'divider');
   const spinnerStyle = subElementStyle(c, 'spinner');

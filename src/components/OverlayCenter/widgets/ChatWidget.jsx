@@ -727,15 +727,21 @@ function ChatWidget({ config, theme }) {
                 borderBottom: `${Number(borderWidth) || 1}px solid ${borderColor}`,
                 background: brushedMetalBackground(messageBg || 'rgba(34,36,42,0.34)', headerText, { highlightOpacity: 0.035, grainOpacity: 0.02 }),
               })}>
-                {showBadges && (
-                  <span {...partAttrs('badge')} style={badgeStyle({
-                    background: badgeBg,
-                    color: badgeText, fontSize: '0.82em', fontWeight: 800,
-                    padding: '2px 6px', borderRadius: 3, marginRight: 6,
-                    border: `1px solid ${borderColor}`,
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
-                  })}>{plt.icon}</span>
-                )}
+                <ChatAvatar msg={msg} fallback={(msg.username || plt.icon || '?').charAt(0).toUpperCase()} style={avatarStyle({
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: avatarBg,
+                  border: `1px solid ${avatarBorder}`,
+                  color: avatarText,
+                  fontSize: '0.78em',
+                  fontWeight: 800,
+                  flex: '0 0 28px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 10px rgba(255,255,255,0.04)',
+                })} />
                 <div className="ov-chat-msg-body" {...partAttrs('message')}>
                   <span {...partAttrs('username')} style={usernameStyle({
                     fontWeight: 700, fontSize: '0.95em',
