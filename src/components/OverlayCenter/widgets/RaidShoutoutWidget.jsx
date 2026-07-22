@@ -48,6 +48,13 @@ function getProxiedVideoUrl(alert) {
   return params.length > 0 ? `/api/clip-video?${params.join('&')}` : null;
 }
 
+function partAttrs(partId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+  };
+}
+
 /* ─── Main Widget ─── */
 function RaidShoutoutWidget({ config, theme, allWidgets }) {
   const c = config || {};
@@ -171,10 +178,10 @@ function RaidShoutoutWidget({ config, theme, allWidgets }) {
   /* ── Idle state ── */
   if (!currentAlert || phase === 'idle') {
     return (
-      <div className="rs-alert-wrapper rs-phase-visible" style={wrapperStyle}>
-        <div className="rs-alert-card rs-alert-card--clip-only">
-          <div className="rs-no-clip">
-            <div className="rs-no-clip-avatar-large">
+      <div className="rs-alert-wrapper rs-phase-visible" {...partAttrs('container')} style={wrapperStyle}>
+        <div className="rs-alert-card rs-alert-card--clip-only" {...partAttrs('clipFrame')}>
+          <div className="rs-no-clip" {...partAttrs('clipFrame')}>
+            <div className="rs-no-clip-avatar-large" {...partAttrs('avatar')}>
               <span>⚡</span>
             </div>
           </div>
@@ -195,15 +202,16 @@ function RaidShoutoutWidget({ config, theme, allWidgets }) {
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={wrapperClass} style={wrapperStyle}>
-      <div className="rs-alert-card rs-alert-card--clip-only">
+    <div className={wrapperClass} {...partAttrs('container')} style={wrapperStyle}>
+      <div className="rs-alert-card rs-alert-card--clip-only" {...partAttrs('clipFrame')}>
         {canPlayVideo ? (
           /* ── Proxied <video> — bypasses Twitch content warning entirely ── */
-          <div className="rs-clip-container">
+          <div className="rs-clip-container" {...partAttrs('clipFrame')}>
             <video
               key={currentAlert.id + '-video'}
               ref={videoCallbackRef}
               className="rs-clip-video"
+              {...partAttrs('clip')}
               src={proxyVideoUrl}
               autoPlay
               muted
@@ -217,14 +225,14 @@ function RaidShoutoutWidget({ config, theme, allWidgets }) {
           </div>
         ) : (
           /* ── Fallback: raider info (NO iframe — avoids content gate) ── */
-          <div className="rs-no-clip rs-no-clip--shoutout">
+          <div className="rs-no-clip rs-no-clip--shoutout" {...partAttrs('clipFrame')}>
             {currentAlert.raider_avatar_url && (
-              <img className="rs-shoutout-avatar" src={currentAlert.raider_avatar_url} alt="" />
+              <img className="rs-shoutout-avatar" {...partAttrs('avatar')} src={currentAlert.raider_avatar_url} alt="" />
             )}
-            <div className="rs-shoutout-info">
-              <span className="rs-shoutout-name">{currentAlert.raider_display_name || currentAlert.raider_username}</span>
+            <div className="rs-shoutout-info" {...partAttrs('subtitle')}>
+              <span className="rs-shoutout-name" {...partAttrs('title')}>{currentAlert.raider_display_name || currentAlert.raider_username}</span>
               {currentAlert.raider_game && (
-                <span className="rs-shoutout-game">Playing {currentAlert.raider_game}</span>
+                <span className="rs-shoutout-game" {...partAttrs('subtitle')}>Playing {currentAlert.raider_game}</span>
               )}
             </div>
           </div>

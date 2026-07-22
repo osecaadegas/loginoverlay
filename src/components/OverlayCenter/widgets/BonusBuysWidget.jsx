@@ -30,6 +30,13 @@ const fmtShort = (v, cur) => {
 };
 const fmtMulti = (v) => `${(Number(v) || 0).toFixed(1)}x`;
 
+function partAttrs(partId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+  };
+}
+
 function BonusBuysWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
@@ -116,7 +123,7 @@ function BonusBuysWidget({ config }) {
 
   /* Empty state */
   if (!c.slotName) return (
-    <div style={{
+    <div {...partAttrs('sessionCard')} style={{
       width: '100%', height: '100%', display: 'flex', alignItems: 'center',
       justifyContent: 'center', fontFamily: font, color: muted,
       fontSize: 'clamp(11px, 5cqi, 18px)', containerType: 'inline-size',
@@ -155,7 +162,7 @@ function BonusBuysWidget({ config }) {
   const padY = 'clamp(6px, 3cqi, 16px)';
 
   return (
-    <div style={{
+    <div {...partAttrs('sessionCard')} style={{
       width: '100%', height: '100%', fontFamily: font,
       display: 'flex', flexDirection: 'column',
       background: cardBg, borderRadius: cardRadius != null ? `${cardRadius}px` : 'clamp(6px, 2.5cqi, 16px)',
@@ -164,21 +171,21 @@ function BonusBuysWidget({ config }) {
     }}>
 
       {/* ─── HEADER ─── */}
-      <div style={{
+      <div {...partAttrs('header')} style={{
         padding: `${padY} ${pad}`,
         background: headerBg,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         borderBottom: cardBorder, flexShrink: 0,
         gap: 'clamp(4px, 2cqi, 10px)',
       }}>
-        <span style={{
+        <span {...partAttrs('header')} style={{
           fontWeight: 900, fontSize: 'clamp(15px, 7cqi, 30px)',
           letterSpacing: '0.08em', textTransform: 'uppercase', color: accent,
           whiteSpace: 'nowrap',
         }}>
           BONUS BUYS
         </span>
-        <span style={{
+        <span {...partAttrs('status')} style={{
           fontWeight: 700, fontSize: 'clamp(14px, 6cqi, 26px)',
           color: accent, opacity: 0.8, flexShrink: 0,
         }}>
@@ -187,7 +194,7 @@ function BonusBuysWidget({ config }) {
       </div>
 
       {/* ─── START / BONUSES COUNT ─── */}
-      <div style={{
+      <div {...partAttrs('status')} style={{
         padding: `clamp(5px, 2.5cqi, 12px) ${pad}`,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         fontSize: 'clamp(12px, 5cqi, 18px)',
@@ -195,23 +202,23 @@ function BonusBuysWidget({ config }) {
         background: `rgba(${accentRgb}, 0.04)`,
         borderBottom: cardBorder, flexShrink: 0,
       }}>
-        <span>START <span style={{ color: cardText }}>{fmt(startMoney, currency)}</span></span>
-        <span>🎰 <span style={{ color: cardText }}>{filled.length}/{plannedBonuses}</span></span>
+        <span {...partAttrs('label')}>START <span {...partAttrs('status')} style={{ color: cardText }}>{fmt(startMoney, currency)}</span></span>
+        <span {...partAttrs('label')}>🎰 <span {...partAttrs('status')} style={{ color: cardText }}>{filled.length}/{plannedBonuses}</span></span>
       </div>
 
       {/* ─── SLOT IMAGE ─── */}
-      <div style={{
+      <div {...partAttrs('slotArtwork')} style={{
         position: 'relative',
         flex: '0 0 clamp(130px, 80cqi, 450px)',
         minHeight: 0, overflow: 'hidden',
       }}>
         {img ? (
-          <img src={img} alt={name} style={{
+          <img {...partAttrs('slotArtwork')} src={img} alt={name} style={{
             width: '100%', height: '100%', objectFit: 'cover', display: 'block',
             borderRadius: imageRadius ? `${imageRadius}px` : undefined,
           }} />
         ) : (
-          <div style={{
+          <div {...partAttrs('slotArtwork')} style={{
             width: '100%', height: '100%',
             background: `linear-gradient(135deg, rgba(${accentRgb}, 0.25), rgba(${accentRgb}, 0.05))`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -227,7 +234,7 @@ function BonusBuysWidget({ config }) {
       </div>
 
       {/* ─── DIVIDER BAR ─── */}
-      <div style={{
+      <div {...partAttrs('progressBar')} style={{
         height: 'clamp(3px, 1cqi, 5px)',
         background: progressColor,
         flexShrink: 0,
@@ -244,7 +251,7 @@ function BonusBuysWidget({ config }) {
             ? (row.win >= row.cost ? winColor : lossColor)
             : cardMuted;
           return (
-            <div key={i} style={{
+            <div key={i} {...partAttrs('status')} style={{
               display: 'grid', gridTemplateColumns: 'auto 1fr 1fr auto',
               alignItems: 'center',
               gap: 'clamp(6px, 3cqi, 14px)',
@@ -255,22 +262,22 @@ function BonusBuysWidget({ config }) {
               opacity: row.ok ? 1 : 0.35,
             }}>
               {/* # */}
-              <span style={{
+              <span {...partAttrs('label')} style={{
                 fontWeight: 900, color: accent,
                 minWidth: 'clamp(22px, 8cqi, 40px)', textAlign: 'center',
               }}>
                 #{row.idx}
               </span>
               {/* Cost */}
-              <span style={{ fontWeight: 600, color: cardMuted }}>
+              <span {...partAttrs('label')} style={{ fontWeight: 600, color: cardMuted }}>
                 {fmt(row.cost, currency)}
               </span>
               {/* Win */}
-              <span style={{ fontWeight: 700, color: rowColor, textAlign: 'right' }}>
+              <span {...partAttrs(row.ok && row.win < row.cost ? 'loss' : 'payout')} style={{ fontWeight: 700, color: rowColor, textAlign: 'right' }}>
                 {row.ok ? fmt(row.win, currency) : '—'}
               </span>
               {/* Multi */}
-              <span style={{
+              <span {...partAttrs('payout')} style={{
                 fontWeight: 800, color: row.ok ? accent : cardMuted,
                 minWidth: 'clamp(40px, 14cqi, 70px)', textAlign: 'right',
               }}>
@@ -282,32 +289,40 @@ function BonusBuysWidget({ config }) {
       </div>
 
       {/* ─── FOOTER ─── */}
-      <div style={{
+      <div {...partAttrs('status')} style={{
         padding: `${padY} ${pad}`,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         borderTop: cardBorder, background: headerBg, flexShrink: 0,
       }}>
         <div>
-          <div style={{
+          <div {...partAttrs('label')} style={{
             fontSize: 'clamp(14px, 4cqi, 15px)', color: cardMuted,
             fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}>Average</div>
-          <div style={{
+          <div {...partAttrs('payout')} style={{
             fontWeight: 900, fontSize: 'clamp(18px, 8cqi, 32px)', color: accent,
           }}>
             {fmtMulti(avgMulti)}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{
+          <div {...partAttrs('label')} style={{
             fontSize: 'clamp(14px, 4cqi, 15px)', color: cardMuted,
             fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}>Profit / Loss</div>
-          <div style={{
-            fontWeight: 900, fontSize: 'clamp(18px, 8cqi, 32px)', color: profitColor,
-          }}>
-            {profitLoss >= 0 ? '+' : ''}{fmt(profitLoss, currency)}
-          </div>
+          {profitLoss >= 0 ? (
+            <div {...partAttrs('profit')} style={{
+              fontWeight: 900, fontSize: 'clamp(18px, 8cqi, 32px)', color: profitColor,
+            }}>
+              +{fmt(profitLoss, currency)}
+            </div>
+          ) : (
+            <div {...partAttrs('loss')} style={{
+              fontWeight: 900, fontSize: 'clamp(18px, 8cqi, 32px)', color: profitColor,
+            }}>
+              {fmt(profitLoss, currency)}
+            </div>
+          )}
         </div>
       </div>
     </div>

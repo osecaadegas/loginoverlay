@@ -1,6 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { subValue } from './shared/appearanceStyles';
 
+function partAttrs(partId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+  };
+}
+
 /**
  * ImageSlideshowWidget — double-buffered crossfade.
  *
@@ -101,7 +108,7 @@ function ImageSlideshowWidget({ config, theme }) {
   /* ─── Empty state (inline, still rendered) ─── */
   if (images.length === 0) {
     return (
-      <div className="ov-slideshow-empty" style={{
+      <div className="ov-slideshow-empty" {...partAttrs('container')} style={{
         width: '100%', height: '100%',
         borderRadius: `${borderRadius}px`,
         border: `${borderWidth}px solid ${borderColor}`,
@@ -209,6 +216,7 @@ function ImageSlideshowWidget({ config, theme }) {
       return (
         <video
           key={key}
+          {...partAttrs('image')}
           src={src}
           style={style}
           autoPlay
@@ -222,6 +230,7 @@ function ImageSlideshowWidget({ config, theme }) {
     return (
       <img
         key={key}
+        {...partAttrs('image')}
         src={src}
         alt="Slideshow"
         style={style}
@@ -233,6 +242,7 @@ function ImageSlideshowWidget({ config, theme }) {
   return (
     <div
       className="ov-slideshow-widget"
+      {...partAttrs('container')}
       style={containerStyle}
       onMouseEnter={() => { if (pauseOnHover) paused.current = true; }}
       onMouseLeave={() => { if (pauseOnHover) paused.current = false; }}
@@ -243,7 +253,7 @@ function ImageSlideshowWidget({ config, theme }) {
       {images.length > 1 && renderMedia(images[safe(nextIdx)], nextLayerStyle, `nxt-${safe(nextIdx)}`)}
 
       {!isClean && showGradient && (
-        <div style={{
+        <div {...partAttrs('caption')} style={{
           position: 'absolute', inset: 0, zIndex: 3,
           background: isV12
             ? 'linear-gradient(to top, rgba(38,40,46,0.92), transparent 50%)'
@@ -255,7 +265,7 @@ function ImageSlideshowWidget({ config, theme }) {
       )}
 
       {!isClean && (isMetal || isV12) && (
-        <div style={{
+        <div {...partAttrs('caption')} style={{
           position: 'absolute', inset: 0, zIndex: 3,
           background: 'linear-gradient(145deg, rgba(200,210,225,0.04), transparent 50%)',
           pointerEvents: 'none',
@@ -263,7 +273,7 @@ function ImageSlideshowWidget({ config, theme }) {
       )}
 
       {!isClean && showCaption && (
-        <div className="ov-slideshow-caption" style={{
+        <div className="ov-slideshow-caption" {...partAttrs('caption')} style={{
           fontFamily: isV12 ? "'Inter', sans-serif" : captionFont,
           fontSize: isV12 ? `${Math.max(captionSize, 13)}px` : `${captionSize}px`,
           color: isV12 ? '#fff' : isMetal ? '#d4d8e0' : captionColor,
@@ -282,12 +292,13 @@ function ImageSlideshowWidget({ config, theme }) {
       )}
 
       {!isClean && images.length > 1 && c.showDots && (
-        <div className="ov-slideshow-dots" style={{ zIndex: 5 }}>
+        <div className="ov-slideshow-dots" {...partAttrs('dots')} style={{ zIndex: 5 }}>
           {images.map((_, i) => {
             const active = i === safe(transitioning ? nextIdx : currentIdx);
             return (
               <span key={i}
                 className={`ov-slideshow-dot ${active ? 'ov-slideshow-dot--active' : ''}`}
+                {...partAttrs('dots')}
                 style={isV12 ? {
                   background: active ? '#fff' : 'rgba(255,255,255,0.25)',
                   width: active ? 8 : 6, height: active ? 8 : 6,

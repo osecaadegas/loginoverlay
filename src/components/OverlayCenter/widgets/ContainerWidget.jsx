@@ -2,6 +2,13 @@ import React, { useMemo } from 'react';
 import { getWidgetDef } from './widgetRegistry';
 import { subValue } from './shared/appearanceStyles';
 
+function partAttrs(partId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+  };
+}
+
 /**
  * ContainerWidget — groups multiple child widgets inside a single slot.
  *
@@ -59,7 +66,7 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
 
   if (childWidgets.length === 0) {
     return (
-      <div style={{ ...wrapStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.35)', fontSize: 14, gap: 6 }}>
+      <div {...partAttrs('container')} style={{ ...wrapStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.35)', fontSize: 14, gap: 6 }}>
         <span style={{ fontSize: 28 }}>📦</span>
         <span>Container — add widgets via config</span>
       </div>
@@ -67,7 +74,7 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
   }
 
   return (
-    <div style={wrapStyle}>
+    <div {...partAttrs('container')} style={wrapStyle}>
       {childWidgets.map((child, idx) => {
         const def = getWidgetDef(child.widget_type);
         const Comp = def?.component;
@@ -96,6 +103,7 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
         return (
           <div
             key={child.id}
+            {...partAttrs('childArea')}
             style={{
               ...childStyle,
               overflow: 'hidden',

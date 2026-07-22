@@ -34,6 +34,13 @@ function cssLengthAdd(value, delta) {
   return `calc(${value} + ${delta}px)`;
 }
 
+function partAttrs(partId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+  };
+}
+
 /**
  * TournamentWidget — OBS overlay display for the unified tournament engine.
  * Reads match data from config.data (tournament blob created by TournamentConfig).
@@ -109,14 +116,14 @@ function TournamentWidget({ config, theme }) {
   /* ─── Style config ─── */
   const showBg = c.showBg !== false;
   const bgColor = showBg ? subValue(c, 'container', 'background', c.bgColor || elementToken('container', 'background', widgetToken('surface'))) : 'transparent';
-  const cardBg = subValue(c, 'participantCard', 'background', c.cardBg || elementToken('participant-card', 'background', widgetToken('card-bg')));
-  const cardBorder = subValue(c, 'participantCard', 'borderColor', c.cardBorder || elementToken('participant-card', 'border-color', widgetToken('border-color')));
-  const cardRadius = subValue(c, 'participantCard', 'radius', c.cardRadius ?? elementToken('participant-card', 'radius', widgetToken('radius')));
-  const cardBorderWidth = subValue(c, 'participantCard', 'borderWidth', c.cardBorderWidth ?? elementToken('participant-card', 'border-width', widgetToken('border-width')));
-  const nameColor = subValue(c, 'participantCard', 'textColor', c.nameColor || elementToken('participant-card', 'text-color', widgetToken('text')));
-  const nameSize = subValue(c, 'participantCard', 'fontSize', c.nameSize ?? elementToken('participant-card', 'font-size', widgetToken('font-size')));
-  const accentColor = subValue(c, 'score', 'textColor', c.multiColor || elementToken('score', 'text-color', widgetToken('accent')));
-  const resultSize = subValue(c, 'score', 'fontSize', c.multiSize ?? elementToken('score', 'font-size', widgetToken('font-size')));
+  const cardBg = subValue(c, 'matchCard', 'background', subValue(c, 'participantCard', 'background', c.cardBg || elementToken('participant-card', 'background', widgetToken('card-bg'))));
+  const cardBorder = subValue(c, 'matchCard', 'borderColor', subValue(c, 'participantCard', 'borderColor', c.cardBorder || elementToken('participant-card', 'border-color', widgetToken('border-color'))));
+  const cardRadius = subValue(c, 'matchCard', 'radius', subValue(c, 'participantCard', 'radius', c.cardRadius ?? elementToken('participant-card', 'radius', widgetToken('radius'))));
+  const cardBorderWidth = subValue(c, 'matchCard', 'borderWidth', subValue(c, 'participantCard', 'borderWidth', c.cardBorderWidth ?? elementToken('participant-card', 'border-width', widgetToken('border-width'))));
+  const nameColor = subValue(c, 'playerName', 'textColor', subValue(c, 'participantCard', 'textColor', c.nameColor || elementToken('participant-card', 'text-color', widgetToken('text'))));
+  const nameSize = subValue(c, 'playerName', 'fontSize', subValue(c, 'participantCard', 'fontSize', c.nameSize ?? elementToken('participant-card', 'font-size', widgetToken('font-size'))));
+  const accentColor = subValue(c, 'scoreValue', 'textColor', subValue(c, 'score', 'textColor', c.multiColor || elementToken('score', 'text-color', widgetToken('accent'))));
+  const resultSize = subValue(c, 'scoreValue', 'fontSize', subValue(c, 'score', 'fontSize', c.multiSize ?? elementToken('score', 'font-size', widgetToken('font-size'))));
   const eliminatedOpacity = subValue(c, 'eliminatedState', 'opacity', c.eliminatedOpacity ?? stateToken('participant-card', 'eliminated', 'opacity', widgetToken('opacity')));
   const showSlotName = isMinimalLayout ? false : c.showSlotName !== false;
   const slotNameColor = subValue(c, 'label', 'textColor', c.slotNameColor || elementToken('label', 'text-color', widgetToken('text')));
@@ -125,7 +132,7 @@ function TournamentWidget({ config, theme }) {
   const borderRadius = showBg ? subValue(c, 'container', 'radius', c.borderRadius ?? widgetToken('radius')) : 0;
   const borderWidth = showBg ? subValue(c, 'container', 'borderWidth', c.borderWidth ?? widgetToken('border-width')) : 0;
   const borderColor = showBg ? subValue(c, 'container', 'borderColor', c.borderColor || widgetToken('border-color')) : 'transparent';
-  const gap = subValue(c, 'participantCard', 'gap', c.cardGap ?? elementToken('participant-card', 'gap', widgetToken('gap')));
+  const gap = subValue(c, 'matchCard', 'gap', subValue(c, 'participantCard', 'gap', c.cardGap ?? elementToken('participant-card', 'gap', widgetToken('gap'))));
   const padding = subValue(c, 'container', 'padding', c.containerPadding ?? widgetToken('padding'));
   const swordColor = subValue(c, 'connector', 'textColor', c.swordColor || elementToken('connector', 'text-color', widgetToken('accent')));
   const swordBg = subValue(c, 'connector', 'background', c.swordBg || elementToken('connector', 'background', widgetToken('card-bg')));
@@ -136,10 +143,10 @@ function TournamentWidget({ config, theme }) {
   const emptyFontSize = subValue(c, 'emptyState', 'fontSize', c.emptyFontSize ?? elementToken('empty-state', 'font-size', widgetToken('font-size')));
   const slotImageRadius = subValue(c, 'slotImage', 'radius', c.slotImageRadius ?? elementToken('slot-image', 'radius', widgetToken('radius')));
   const slotImageFallbackBg = subValue(c, 'slotImage', 'background', c.slotImageFallbackBg || elementToken('slot-image', 'background', widgetToken('card-bg')));
-  const scoreNeutralColor = subValue(c, 'score', 'mutedColor', c.scoreNeutralColor || widgetToken('muted'));
-  const scoreNegativeColor = subValue(c, 'score', 'negativeColor', c.scoreNegativeColor || widgetToken('negative'));
-  const activeStatusColor = subValue(c, 'timer', 'textColor', c.activeStatusColor || elementToken('timer', 'text-color', widgetToken('accent')));
-  const statusBadgeBg = subValue(c, 'timer', 'background', c.statusBadgeBg || elementToken('timer', 'background', widgetToken('card-bg')));
+  const scoreNeutralColor = subValue(c, 'scoreValue', 'mutedColor', subValue(c, 'score', 'mutedColor', c.scoreNeutralColor || widgetToken('muted')));
+  const scoreNegativeColor = subValue(c, 'scoreValue', 'negativeColor', subValue(c, 'score', 'negativeColor', c.scoreNegativeColor || widgetToken('negative')));
+  const activeStatusColor = subValue(c, 'statusBadge', 'textColor', subValue(c, 'timer', 'textColor', c.activeStatusColor || elementToken('timer', 'text-color', widgetToken('accent'))));
+  const statusBadgeBg = subValue(c, 'statusBadge', 'background', subValue(c, 'timer', 'background', c.statusBadgeBg || elementToken('timer', 'background', widgetToken('card-bg'))));
   const currency = c.currency || c.arenaCurrency || '€';
 
   /* ─── Engine helpers ─── */
@@ -179,7 +186,7 @@ function TournamentWidget({ config, theme }) {
   /* ─── Empty state ─── */
   if (matches.length === 0) {
     return (
-      <div className="tw-root tw-empty" style={{
+      <div className="tw-root tw-empty" {...partAttrs('container')} style={{
         width: '100%', height: '100%', fontFamily,
         background: bgColor, borderRadius: cssLength(borderRadius),
         border: `${cssLength(borderWidth)} solid ${borderColor}`,
@@ -228,7 +235,7 @@ function TournamentWidget({ config, theme }) {
     const minimal = isMinimalLayout;
 
     return (
-      <div className="tw-player-row" style={{
+      <div className="tw-player-row" {...partAttrs('matchCard')} style={{
         display: 'flex',
         alignItems: minimal ? 'stretch' : 'center',
         gap: minimal ? 0 : cssLength(gap),
@@ -236,20 +243,20 @@ function TournamentWidget({ config, theme }) {
         flexDirection: isRight ? 'row-reverse' : 'row',
       }}>
         {/* Slot thumbnail */}
-        <div className="tw-slot-thumb" style={{
+        <div className="tw-slot-thumb" {...partAttrs('slotImage')} style={{
           position: 'relative', flexShrink: 0, overflow: 'hidden',
           ...(minimal
             ? { width: 'clamp(56px, 38%, 160px)', borderRadius: 0 }
             : { width: 'clamp(40px, 20%, 100px)', aspectRatio: '1 / 1', borderRadius: cssLength(slotImageRadius) }),
         }}>
           {slotImage ? (
-            <img src={slotImage} alt={slotName} style={{
+            <img {...partAttrs('slotImage')} src={slotImage} alt={slotName} style={{
               width: '100%', height: '100%',
               objectFit: 'cover', display: 'block',
               borderRadius: minimal ? 0 : cssLength(slotImageRadius),
             }} />
           ) : (
-            <div style={{ width: '100%', height: '100%', background: slotImageFallbackBg, borderRadius: minimal ? 0 : cssLength(slotImageRadius) }} />
+            <div {...partAttrs('slotImage')} style={{ width: '100%', height: '100%', background: slotImageFallbackBg, borderRadius: minimal ? 0 : cssLength(slotImageRadius) }} />
           )}
           {isEliminated && (
             <div style={{
@@ -276,7 +283,7 @@ function TournamentWidget({ config, theme }) {
           textAlign: isRight ? 'right' : 'left',
           ...(minimal ? { padding: '2px 6px' } : {}),
         }}>
-          <span style={{
+          <span {...partAttrs('playerName')} style={{
             fontWeight: 700, color: nameColor, fontFamily,
             maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis',
             lineHeight: 1.2,
@@ -285,14 +292,14 @@ function TournamentWidget({ config, theme }) {
               : { fontSize: cssLengthAdd(nameSize, 2), whiteSpace: 'nowrap' }),
           }}>{name}</span>
           {match.activePlayer === playerKey && !match.winner && (
-            <span style={{
+            <span {...partAttrs('statusBadge')} style={{
               fontSize: minimal ? 'clamp(8px, 1.2vw, 10px)' : 8,
               fontWeight: 800, color: activeStatusColor, fontFamily,
               letterSpacing: '0.5px', lineHeight: 1,
             }}>▶ PLAYING</span>
           )}
           {showSlotName && slotName && (
-            <span style={{
+            <span {...partAttrs('label')} style={{
               fontSize: minimal ? 'clamp(11px, 1.8vw, 15px)' : cssLength(slotNameSize),
               color: slotNameColor, fontFamily,
               opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -300,7 +307,7 @@ function TournamentWidget({ config, theme }) {
               lineHeight: 1.2,
             }}>{slotName}</span>
           )}
-          <span style={{
+          <span {...partAttrs('scoreValue')} style={{
             fontWeight: 700, fontFamily,
             color: valColor(result, match), lineHeight: 1.2,
             ...(minimal
@@ -316,7 +323,7 @@ function TournamentWidget({ config, theme }) {
      SWORD ICON (shared across layouts)
      ═══════════════════════════════════════════════════════════════ */
   const renderSword = (hasWinner, isCurrentMatch, size = swordSize) => (
-    <div className="tw-sword-icon" style={{
+    <div className="tw-sword-icon" {...partAttrs('connector')} style={{
       position: 'absolute',
       top: '50%', left: '50%',
       width: cssLengthAdd(size, 16), height: cssLengthAdd(size, 16),
@@ -350,7 +357,7 @@ function TournamentWidget({ config, theme }) {
         const isCurrentMatch = idx === currentMatchIdx && !hasWinner;
 
         return (
-          <div key={idx} style={{
+          <div key={idx} {...partAttrs('matchCard')} style={{
             flex: 1, minHeight: 0,
             background: cardBg,
             border: `${cssLength(cardBorderWidth)} solid ${isCurrentMatch ? swordColor : cardBorder}`,
@@ -410,7 +417,7 @@ function TournamentWidget({ config, theme }) {
       const vals = getPlayerValues(match, playerKey);
 
       return (
-        <div style={{
+        <div {...partAttrs('bracketLine')} style={{
           flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
           borderRadius: cssLength(cardRadius), overflow: 'hidden', position: 'relative',
           border: `${cssLength(cardBorderWidth)} solid ${isWinner ? arenaWinColor : cardBorder}`,
@@ -421,7 +428,7 @@ function TournamentWidget({ config, theme }) {
         }}>
           {/* Winner badge */}
           {isWinner && (
-            <div style={{
+            <div {...partAttrs('header')} style={{
               position: 'absolute', top: 8,
               left: playerKey === 'player1' ? 'auto' : 8,
               right: playerKey === 'player1' ? 8 : 'auto',
@@ -2043,7 +2050,7 @@ function TournamentWidget({ config, theme }) {
      MAIN RETURN
      ═══════════════════════════════════════════════════════════════ */
   return (
-    <div className={`tw-root${isMinimalLayout ? ' tw-root--minimal' : ''}`} style={{
+    <div className={`tw-root${isMinimalLayout ? ' tw-root--minimal' : ''}`} {...partAttrs('container')} style={{
       width: '100%', height: '100%', fontFamily,
       background: bgColor, borderRadius: `${borderRadius}px`,
       border: `${borderWidth}px solid ${borderColor}`,

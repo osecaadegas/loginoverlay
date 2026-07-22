@@ -1521,6 +1521,8 @@ try {
   assert.ok(currentSlotConfig.subElements.slotTitle.fontSize >= 18, 'Current Slot title receives large typography');
   assert.ok(currentSlotConfig.subElements.provider.textColor, 'Current Slot provider part is renderer-addressable');
   assert.ok(currentSlotConfig.subElements.stake.borderColor, 'Current Slot stake part is renderer-addressable');
+  const currentSlotRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/CurrentSlotWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(currentSlotRendererSource, 'Current Slot', ['container', 'slotImage', 'slotTitle', 'provider', 'stake', 'stat']);
 
   const tournamentConfig = appearanceModel.resolveWidgetAppearanceConfig(tournamentWidget, appearance, {});
   assert.equal(tournamentConfig.__appearanceV2.material, 'metallic', 'Tournament receives V2 material');
@@ -1529,6 +1531,12 @@ try {
   assert.ok(tournamentConfig.subElements.playerName.fontFamily, 'Tournament player names receive typography');
   assert.ok(tournamentConfig.subElements.slotImage.imageFit, 'Tournament slot images receive image controls');
   assert.ok(tournamentConfig.subElements.statusBadge.background, 'Tournament status badges receive badge controls');
+  const tournamentRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/TournamentWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(tournamentRendererSource, 'Tournament', ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue', 'statusBadge', 'bracketLine']);
+  assert.ok(tournamentRendererSource.includes("subValue(c, 'matchCard'"), 'Tournament renderer reads schema matchCard settings before legacy participantCard settings');
+  assert.ok(tournamentRendererSource.includes("subValue(c, 'playerName'"), 'Tournament renderer reads schema playerName settings before legacy participantCard text settings');
+  assert.ok(tournamentRendererSource.includes("subValue(c, 'scoreValue'"), 'Tournament renderer reads schema scoreValue settings before legacy score settings');
+  assert.ok(tournamentRendererSource.includes("subValue(c, 'statusBadge'"), 'Tournament renderer reads schema statusBadge settings before legacy timer settings');
 
   const chatConfig = appearanceModel.resolveWidgetAppearanceConfig(chatWidget, appearance, {});
   assert.equal(chatConfig.__appearanceV2.material, 'glass', 'Chat receives V2 material');
@@ -1537,6 +1545,8 @@ try {
   assert.ok(chatConfig.subElements.message.background, 'Chat message part receives generated surface');
   assert.ok(chatConfig.subElements.username.textColor, 'Chat username part receives generated text color');
   assert.ok(chatConfig.subElements.avatar.background, 'Chat avatar bubble receives generated badge surface');
+  const chatRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/ChatWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(chatRendererSource, 'Chat', ['container', 'header', 'message', 'username', 'avatar', 'badge']);
 
   const slideshowConfig = appearanceModel.resolveWidgetAppearanceConfig(slideshowWidget, appearance, {});
   assert.equal(slideshowConfig.__appearanceV2.material, 'glass', 'Image Slideshow receives V2 material');
@@ -1544,6 +1554,8 @@ try {
   assert.equal(slideshowConfig.borderRadius, slideshowConfig.subElements.image.radius, 'Image Slideshow image radius mirrors direct renderer config');
   assert.ok(slideshowConfig.captionFont, 'Image Slideshow caption font reaches direct renderer config');
   assert.ok(slideshowConfig.subElements.caption.background, 'Image Slideshow caption part receives generated surface');
+  const slideshowRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/ImageSlideshowWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(slideshowRendererSource, 'Image Slideshow', ['container', 'image', 'caption', 'dots']);
 
   const raidConfig = appearanceModel.resolveWidgetAppearanceConfig(raidWidget, appearance, {});
   assert.equal(raidConfig.__appearanceV2.material, 'matte', 'Raid Shoutout receives V2 material');
@@ -1551,6 +1563,8 @@ try {
   assert.ok(raidConfig.subElements.avatar.radius, 'Raid Shoutout avatar receives shape controls');
   assert.ok(raidConfig.subElements.subtitle.textColor, 'Raid Shoutout subtitle receives text controls');
   assert.ok(raidConfig.subElements.clipFrame.background, 'Raid Shoutout clip frame receives surface controls');
+  const raidRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/RaidShoutoutWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(raidRendererSource, 'Raid Shoutout', ['container', 'avatar', 'title', 'subtitle', 'clipFrame']);
 
   const bonusBuysConfig = appearanceModel.resolveWidgetAppearanceConfig(bonusBuysWidget, appearance, {});
   assert.equal(bonusBuysConfig.__appearanceV2.material, 'neon', 'Bonus Buys receives V2 material');
@@ -1559,12 +1573,16 @@ try {
   assert.ok(bonusBuysConfig.subElements.slotArtwork.imageSize > 0, 'Bonus Buys slot artwork receives image controls');
   assert.ok(bonusBuysConfig.subElements.profit.textColor, 'Bonus Buys profit values receive semantic color');
   assert.notEqual(bonusBuysConfig.subElements.profit.textColor, bonusBuysConfig.subElements.loss.textColor, 'Bonus Buys profit and loss colors stay independent');
+  const bonusBuysRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/BonusBuysWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(bonusBuysRendererSource, 'Bonus Buys', ['sessionCard', 'header', 'slotArtwork', 'label', 'status', 'profit', 'loss', 'payout', 'progressBar']);
 
   const containerConfig = appearanceModel.resolveWidgetAppearanceConfig(containerWidget, appearance, {});
   assert.equal(containerConfig.__appearanceV2.material, 'glass', 'Container receives V2 material');
   assert.equal(containerConfig.cardRadius, containerConfig.subElements.container.radius, 'Container radius reaches the renderer config key');
   assert.ok(containerConfig.bgColor, 'Container direct background color is generated');
   assert.ok(containerConfig.subElements.childArea.background, 'Container child area receives part-scoped surface');
+  const containerRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/ContainerWidget.jsx', import.meta.url), 'utf8');
+  assertRendererPartTargets(containerRendererSource, 'Container', ['container', 'childArea']);
 
   const spotifyConfig = appearanceModel.resolveWidgetAppearanceConfig(spotifyWidget, appearance, {});
   assert.equal(spotifyConfig.__appearanceV2.material, 'matte', 'Spotify mini-player receives V2 material');

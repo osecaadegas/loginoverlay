@@ -20,11 +20,18 @@ const BADGE_DEFS = [
   { key: 'isFirstMsg',    label: 'NEW',   bg: '#0ea5e9', icon: '✨' },
 ];
 
+function partAttrs(partId) {
+  return {
+    'data-widget-element': partId,
+    'data-appearance-part': partId,
+  };
+}
+
 function TwitchBadges({ msg }) {
   return BADGE_DEFS
     .filter(b => msg[b.key])
     .map(b => (
-      <span key={b.key} className="ov-cards-badge" style={{ background: b.bg }}>
+      <span key={b.key} className="ov-cards-badge" {...partAttrs('badge')} style={{ background: b.bg }}>
         <span className="ov-cards-badge-icon">{b.icon}</span> {b.label}
       </span>
     ));
@@ -222,7 +229,7 @@ function ChatWidget({ config, theme }) {
   const modeClass = ` ov-chat-widget--${chatStyle}`;
 
   return (
-    <div className={`ov-chat-widget${modeClass}`} style={style}>
+    <div className={`ov-chat-widget${modeClass}`} {...partAttrs('container')} style={style}>
       <style>{`
         @keyframes ov-float-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes ov-pop-in{from{opacity:0;transform:scale(0.8) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -232,29 +239,29 @@ function ChatWidget({ config, theme }) {
       `}</style>
 
       {showHeader && chatStyle === 'cards' && (
-        <div className="ov-cards-header">
+        <div className="ov-cards-header" {...partAttrs('header')}>
           <div className="ov-cards-header-left">
-            <span className="ov-cards-live-dot" />
-            <span className="ov-cards-header-label">CHAT</span>
+            <span className="ov-cards-live-dot" {...partAttrs('badge')} />
+            <span className="ov-cards-header-label" {...partAttrs('header')}>CHAT</span>
           </div>
-          <span className="ov-cards-header-channel">
+          <span className="ov-cards-header-channel" {...partAttrs('header')}>
             {(c.twitchChannel || autoChannel) ? (c.twitchChannel || autoChannel).toUpperCase() : 'CHANNEL'}
           </span>
         </div>
       )}
 
       {showHeader && chatStyle === 'metal' && (
-        <div style={{
+        <div {...partAttrs('header')} style={{
           padding: '8px 14px',
           background: headerBg,
           borderBottom: `1px solid ${borderColor}`,
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
-          <span style={{
+          <span {...partAttrs('header')} style={{
             fontSize: '0.85em', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase',
             color: headerText,
           }}>LIVE CHAT</span>
-          <span style={{
+          <span {...partAttrs('badge')} style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5,
             fontSize: '0.78em', fontWeight: 700, color: badgeText,
             letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -301,11 +308,11 @@ function ChatWidget({ config, theme }) {
       )}
 
       {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && chatStyle !== 'bh_stats' && (
-        <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
-          <span className="ov-chat-header-title">Live Chat</span>
-          <div className="ov-chat-header-badges">
+        <div className="ov-chat-header" {...partAttrs('header')} style={{ background: headerBg, color: headerText }}>
+          <span className="ov-chat-header-title" {...partAttrs('header')}>Live Chat</span>
+          <div className="ov-chat-header-badges" {...partAttrs('badge')}>
             {allPlatforms.map(p => (
-              <span key={p} className="ov-chat-platform-badge" style={{
+              <span key={p} className="ov-chat-platform-badge" {...partAttrs('badge')} style={{
                 background: PLATFORM_META[p].color + (enabledPlatforms.includes(p) ? '33' : '15'),
                 color: PLATFORM_META[p].color,
                 opacity: enabledPlatforms.includes(p) ? 1 : 0.35,
@@ -317,7 +324,7 @@ function ChatWidget({ config, theme }) {
         </div>
       )}
 
-      <div className="ov-chat-messages" ref={scrollRef} style={{ lineHeight: msgLineHeight }}>
+      <div className="ov-chat-messages" {...partAttrs('message')} ref={scrollRef} style={{ lineHeight: msgLineHeight }}>
         {messages.map((msg, msgIdx) => {
           const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
           const nameColor = c.useNativeColors && msg.color ? msg.color : usernameColor;
@@ -330,7 +337,7 @@ function ChatWidget({ config, theme }) {
           /* ── Style: Floating — transparent bg, floating pill bubbles ── */
           if (chatStyle === 'floating') {
             return (
-              <div key={msg.id} className="ov-chat-msg ov-chat-msg--floating" style={{
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--floating" {...partAttrs('message')} style={{
                 padding: `${msgSpacing + 1}px 4px`, animation: 'ov-float-in 0.35s ease-out',
               }}>
                 <div style={{
@@ -339,15 +346,15 @@ function ChatWidget({ config, theme }) {
                   maxWidth: '92%',
                   border: `1px solid ${borderColor}`,
                 }}>
-                  <span style={{
+                  <span {...partAttrs('avatar')} style={{
                     width: 22, height: 22, borderRadius: '50%',
                     background: avatarBg, color: avatarText,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '0.82em', fontWeight: 800, flexShrink: 0, marginTop: 1,
                   }}>{msg.username.charAt(0).toUpperCase()}</span>
                   <div style={{ minWidth: 0 }}>
-                    <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.92em', lineHeight: 1.2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
-                    <div style={{ color: textColor, lineHeight: 1.35, wordBreak: 'break-word', opacity: 0.92, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</div>
+                    <span {...partAttrs('username')} style={{ color: nameColor, fontWeight: 700, fontSize: '0.92em', lineHeight: 1.2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
+                    <div {...partAttrs('message')} style={{ color: textColor, lineHeight: 1.35, wordBreak: 'break-word', opacity: 0.92, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</div>
                   </div>
                 </div>
               </div>
@@ -357,11 +364,11 @@ function ChatWidget({ config, theme }) {
           /* ── Style: Bubble — social media speech bubbles with tail ── */
           if (chatStyle === 'bubble') {
             return (
-              <div key={msg.id} className="ov-chat-msg ov-chat-msg--bubble" style={{
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--bubble" {...partAttrs('message')} style={{
                 padding: `${msgSpacing + 1}px ${msgPadH}px`,
                 animation: 'ov-pop-in 0.3s ease-out',
               }}>
-                <div style={{
+                <div {...partAttrs('avatar')} style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0, marginTop: 2,
                     background: avatarBg,
                     border: `1.5px solid ${avatarBorder}`,
@@ -369,10 +376,10 @@ function ChatWidget({ config, theme }) {
                   color: avatarText, fontSize: '0.85em', fontWeight: 800,
                 }}>{msg.username.charAt(0).toUpperCase()}</div>
                 <div style={{ minWidth: 0, maxWidth: '85%' }}>
-                  <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.88em', display: 'block', marginBottom: 2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                  <span {...partAttrs('username')} style={{ color: nameColor, fontWeight: 700, fontSize: '0.88em', display: 'block', marginBottom: 2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                     {msg.username}
                   </span>
-                  <div style={{
+                  <div {...partAttrs('message')} style={{
                     background: messageBg || 'rgba(255,255,255,0.06)', borderRadius: `${borderRadius}px ${borderRadius}px ${borderRadius}px 4px`,
                     padding: '7px 12px', position: 'relative',
                     border: `1px solid ${borderColor}`,
@@ -390,16 +397,16 @@ function ChatWidget({ config, theme }) {
             const age = messages.length - 1 - msgIdx;
             const opacity = age < totalVisible ? 1 - (age / totalVisible) * 0.75 : 0.15;
             return (
-              <div key={msg.id} className="ov-chat-msg ov-chat-msg--stack" style={{
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--stack" {...partAttrs('message')} style={{
                 padding: `${msgSpacing + 1}px ${msgPadH}px`,
                 opacity, transition: 'opacity 0.5s ease',
                 animation: age === 0 ? 'ov-float-in 0.3s ease-out' : 'none',
               }}>
-                <span style={{
+                <span {...partAttrs('username')} style={{
                   color: nameColor, fontWeight: 700, fontSize: '0.95em', flexShrink: 0,
                 }}>{msg.username}</span>
                 <span style={{ color: borderColor, margin: '0 5px', flexShrink: 0 }}>›</span>
-                <span style={{ wordBreak: 'break-word', opacity: 0.9, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
+                <span {...partAttrs('message')} style={{ wordBreak: 'break-word', opacity: 0.9, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
               </div>
             );
           }
@@ -407,15 +414,15 @@ function ChatWidget({ config, theme }) {
           /* ── Style: Typewriter — terminal / monospace green-on-dark ── */
           if (chatStyle === 'typewriter') {
             return (
-              <div key={msg.id} className="ov-chat-msg ov-chat-msg--typewriter" style={{
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--typewriter" {...partAttrs('message')} style={{
                 padding: `${msgSpacing}px ${msgPadH}px`,
                 fontFamily: "'Fira Code', 'JetBrains Mono', 'Courier New', monospace",
                 animation: 'ov-slide-left 0.25s ease-out',
               }}>
                 <span style={{ color: '#4ade80', fontWeight: 700, fontSize: '0.92em', opacity: 0.7 }}>{'>'}</span>
-                <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.95em', marginLeft: 4, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
+                <span {...partAttrs('username')} style={{ color: nameColor, fontWeight: 700, fontSize: '0.95em', marginLeft: 4, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
                 <span style={{ color: 'rgba(74,222,128,0.3)', margin: '0 6px' }}>$</span>
-                <span style={{ color: '#d1fae5', wordBreak: 'break-word', opacity: 0.85, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
+                <span {...partAttrs('message')} style={{ color: '#d1fae5', wordBreak: 'break-word', opacity: 0.85, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
               </div>
             );
           }
@@ -423,20 +430,20 @@ function ChatWidget({ config, theme }) {
           /* ── Style: Sidebar — vertical strip with platform color border ── */
           if (chatStyle === 'sidebar') {
             return (
-              <div key={msg.id} className="ov-chat-msg ov-chat-msg--sidebar" style={{
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--sidebar" {...partAttrs('message')} style={{
                 padding: `${msgSpacing + 2}px ${msgPadH}px`,
                 borderLeft: `3px solid ${plt.color}`,
                 animation: 'ov-slide-left 0.3s ease-out',
                 display: 'flex', flexDirection: 'column', gap: 1,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{
+                  <span {...partAttrs('badge')} style={{
                     fontSize: '0.78em', fontWeight: 800, color: plt.color,
                     textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.7, textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                   }}>{plt.label}</span>
-                  <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.92em', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
+                  <span {...partAttrs('username')} style={{ color: nameColor, fontWeight: 700, fontSize: '0.92em', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
                 </div>
-                <span style={{ color: textColor, wordBreak: 'break-word', opacity: 0.88, paddingLeft: 1, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
+                <span {...partAttrs('message')} style={{ color: textColor, wordBreak: 'break-word', opacity: 0.88, paddingLeft: 1, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
               </div>
             );
           }
@@ -446,21 +453,21 @@ function ChatWidget({ config, theme }) {
             const nameClr = c.useNativeColors && msg.color ? msg.color : usernameColor;
             const isRaider = !!msg.isRaidParticipant;
             return (
-              <div key={msg.id} className="ov-cards-msg" style={{
+              <div key={msg.id} className="ov-cards-msg" {...partAttrs('message')} style={{
                 animation: 'ov-cards-slide-in 0.3s ease-out',
               }}>
                 <div className="ov-cards-msg-header">
-                  <span className="ov-cards-username" style={{ color: nameClr }}>@{msg.username}</span>
-                  <div className="ov-cards-badges">
+                  <span className="ov-cards-username" {...partAttrs('username')} style={{ color: nameClr }}>@{msg.username}</span>
+                  <div className="ov-cards-badges" {...partAttrs('badge')}>
                     <TwitchBadges msg={msg} />
                     {isRaider && (
-                      <span className="ov-cards-badge" style={{ background: '#7c3aed' }}>
+                      <span className="ov-cards-badge" {...partAttrs('badge')} style={{ background: '#7c3aed' }}>
                         <span className="ov-cards-badge-icon">⚔️</span> RAID
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="ov-cards-msg-text">{msg.message}</div>
+                <div className="ov-cards-msg-text" {...partAttrs('message')}>{msg.message}</div>
               </div>
             );
           }
@@ -468,13 +475,13 @@ function ChatWidget({ config, theme }) {
           /* ── Style: Metal — brushed steel look ── */
           if (chatStyle === 'metal') {
             return (
-              <div key={msg.id} className="ov-chat-msg ov-chat-msg--metal" style={{
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--metal" {...partAttrs('message')} style={{
                 padding: `${msgSpacing + 1}px ${msgPadH}px`,
                 animation: 'ov-float-in 0.25s ease-out',
                 borderBottom: '1px solid rgba(200,210,225,0.06)',
               }}>
                 {showBadges && (
-                  <span style={{
+                  <span {...partAttrs('badge')} style={{
                     background: badgeBg,
                     color: badgeText, fontSize: '0.82em', fontWeight: 800,
                     padding: '2px 6px', borderRadius: 3, marginRight: 6,
@@ -482,13 +489,13 @@ function ChatWidget({ config, theme }) {
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
                   }}>{plt.icon}</span>
                 )}
-                <div className="ov-chat-msg-body">
-                  <span style={{
+                <div className="ov-chat-msg-body" {...partAttrs('message')}>
+                  <span {...partAttrs('username')} style={{
                     fontWeight: 700, fontSize: '0.95em',
                     color: nameColor,
                     marginRight: 6,
                   }}>{msg.username}</span>
-                  <span style={{ color: textColor, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{msg.message}</span>
+                  <span {...partAttrs('message')} style={{ color: textColor, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{msg.message}</span>
                 </div>
               </div>
             );
@@ -497,13 +504,13 @@ function ChatWidget({ config, theme }) {
           /* ── Style: BH Stats — matches Bonus Hunt stats widget ── */
           if (chatStyle === 'bh_stats') {
             return (
-              <div key={msg.id} className="ov-chat-msg ov-chat-msg--bh-stats" style={{
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--bh-stats" {...partAttrs('message')} style={{
                 padding: `${msgSpacing + 2}px ${msgPadH}px`,
                 animation: 'ov-float-in 0.3s ease-out',
                 display: 'flex', alignItems: 'flex-start', gap: 8,
               }}>
                 {/* Avatar circle */}
-                <span style={{
+                <span {...partAttrs('avatar')} style={{
                   width: 24, height: 24, borderRadius: '50%', flexShrink: 0, marginTop: 1,
                   background: avatarBg,
                   border: `1px solid ${avatarBorder}`,
@@ -511,19 +518,19 @@ function ChatWidget({ config, theme }) {
                   color: avatarText, fontSize: '0.78em', fontWeight: 800,
                 }}>{msg.username.charAt(0).toUpperCase()}</span>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <span style={{
+                  <span {...partAttrs('username')} style={{
                     color: nameColor, fontWeight: 700, fontSize: '0.88em',
                     marginRight: 6,
                   }}>{msg.username}</span>
                   {showBadges && (
-                    <span style={{
+                    <span {...partAttrs('badge')} style={{
                       background: badgeBg, color: badgeText,
                       fontSize: '0.68em', fontWeight: 700, padding: '1px 5px',
                       borderRadius: 4, marginRight: 4, verticalAlign: 'middle',
                       textTransform: 'uppercase', letterSpacing: '0.06em',
                     }}>{plt.icon}</span>
                   )}
-                  <div style={{
+                  <div {...partAttrs('message')} style={{
                     color: textColor, wordBreak: 'break-word', lineHeight: 1.4,
                     marginTop: 2, opacity: 0.92,
                   }}>{msg.message}</div>
@@ -534,18 +541,18 @@ function ChatWidget({ config, theme }) {
 
           /* ── Default: Classic ── */
           return (
-            <div key={msg.id} className="ov-chat-msg" style={{ padding: `${msgSpacing}px ${msgPadH}px` }}>
+            <div key={msg.id} className="ov-chat-msg" {...partAttrs('message')} style={{ padding: `${msgSpacing}px ${msgPadH}px` }}>
               {showBadges && (
-                <span className="ov-chat-badge" style={{
+                <span className="ov-chat-badge" {...partAttrs('badge')} style={{
                   background: plt.color + '33',
                   color: plt.color,
                 }}>{plt.icon}</span>
               )}
-              <div className="ov-chat-msg-body">
-                <span className="ov-chat-username" style={{ color: nameColor, fontWeight: nameBold ? 700 : 500 }}>
+              <div className="ov-chat-msg-body" {...partAttrs('message')}>
+                <span className="ov-chat-username" {...partAttrs('username')} style={{ color: nameColor, fontWeight: nameBold ? 700 : 500 }}>
                   {msg.username}
                 </span>
-                <span className="ov-chat-text">{msg.message}</span>
+                <span className="ov-chat-text" {...partAttrs('message')}>{msg.message}</span>
               </div>
             </div>
           );
@@ -576,33 +583,33 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
   /* ── Cards style raid ── */
   if (chatStyle === 'cards') {
     return (
-      <div className="ov-cards-msg ov-cards-msg--raid" style={{
+      <div className="ov-cards-msg ov-cards-msg--raid" {...partAttrs('highlightedMessage')} style={{
         animation: 'ov-cards-slide-in 0.35s ease-out',
       }}>
         <div className="ov-cards-msg-header">
-          <span className="ov-cards-username" style={{ color: '#cbd5e1' }}>@{msg.username}</span>
-          <div className="ov-cards-badges">
-            <span className="ov-cards-badge" style={{ background: '#7c3aed' }}>
+          <span className="ov-cards-username" {...partAttrs('username')} style={{ color: '#cbd5e1' }}>@{msg.username}</span>
+          <div className="ov-cards-badges" {...partAttrs('badge')}>
+            <span className="ov-cards-badge" {...partAttrs('badge')} style={{ background: '#7c3aed' }}>
               <span className="ov-cards-badge-icon">⚔️</span> RAID
             </span>
             {msg.raidViewers > 0 && (
-              <span className="ov-cards-badge" style={{ background: 'rgba(100,116,139,0.5)' }}>
+              <span className="ov-cards-badge" {...partAttrs('badge')} style={{ background: 'rgba(100,116,139,0.5)' }}>
                 👥 {msg.raidViewers}
               </span>
             )}
           </div>
         </div>
-        <div className="ov-cards-msg-text" style={{ color: '#f5f3ff' }}>{msg.message}</div>
+        <div className="ov-cards-msg-text" {...partAttrs('highlightedMessage')} style={{ color: '#f5f3ff' }}>{msg.message}</div>
       </div>
     );
   }
 
   if (chatStyle === 'floating' || chatStyle === 'stack') {
     return (
-      <div className="ov-chat-msg ov-chat-raid" style={{
+      <div className="ov-chat-msg ov-chat-raid" {...partAttrs('highlightedMessage')} style={{
         padding: `${msgSpacing + 2}px 4px`, animation: 'ov-float-in 0.4s ease-out',
       }}>
-        <div style={{
+        <div {...partAttrs('highlightedMessage')} style={{
           display: 'inline-flex', flexDirection: 'column',
           background: raidBg, borderRadius: 16,
           padding: '8px 14px', maxWidth: '90%', backdropFilter: 'blur(4px)',
@@ -621,7 +628,7 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
 
   if (chatStyle === 'typewriter') {
     return (
-      <div className="ov-chat-msg ov-chat-raid" style={{
+      <div className="ov-chat-msg ov-chat-raid" {...partAttrs('highlightedMessage')} style={{
         padding: `${msgSpacing + 2}px ${msgPadH}px`,
         fontFamily: "'Fira Code', monospace",
         background: raidBg, borderLeft: `3px solid ${raidBorder}`,
@@ -637,7 +644,7 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
 
   if (chatStyle === 'sidebar') {
     return (
-      <div className="ov-chat-msg ov-chat-raid" style={{
+      <div className="ov-chat-msg ov-chat-raid" {...partAttrs('highlightedMessage')} style={{
         padding: `${msgSpacing + 3}px ${msgPadH}px`,
         borderLeft: '3px solid #64748b', background: 'rgba(148,163,184,0.14)',
         animation: 'ov-slide-left 0.3s ease-out',
@@ -654,7 +661,7 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
 
   /* Default raid (classic, bubble) */
   return (
-    <div className="ov-chat-msg ov-chat-raid" style={{
+    <div className="ov-chat-msg ov-chat-raid" {...partAttrs('highlightedMessage')} style={{
       padding: `${msgSpacing + 4}px 10px`,
       background: raidBg, border: `2px solid ${raidBorder}`,
       borderRadius: '8px', margin: `${msgSpacing}px 6px`,
@@ -662,7 +669,7 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
       animation: 'ov-raid-glow 2s ease-in-out 3',
     }}>
       {showAvatar && msg.raidAvatar && (
-        <img src={msg.raidAvatar} alt={msg.username} className="ov-chat-raid-avatar" style={{
+        <img {...partAttrs('avatar')} src={msg.raidAvatar} alt={msg.username} className="ov-chat-raid-avatar" style={{
           width: '42px', height: '42px', borderRadius: '50%',
           border: `2px solid ${raidBorder}`, flexShrink: 0,
         }} />
@@ -674,11 +681,11 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
             borderRadius: '4px', fontSize: '0.75em', fontWeight: 700,
             letterSpacing: '0.05em', textTransform: 'uppercase',
           }}>⚔️ RAID</span>
-          <span className="ov-chat-username" style={{ color: raidText, fontWeight: 700, fontSize: '1.05em' }}>
+          <span className="ov-chat-username" {...partAttrs('username')} style={{ color: raidText, fontWeight: 700, fontSize: '1.05em' }}>
             {msg.username}
           </span>
         </div>
-        <span className="ov-chat-text" style={{ color: raidText, opacity: 0.92 }}>{msg.message}</span>
+        <span className="ov-chat-text" {...partAttrs('highlightedMessage')} style={{ color: raidText, opacity: 0.92 }}>{msg.message}</span>
       </div>
       {msg.raidViewers > 0 && (
         <span style={{
