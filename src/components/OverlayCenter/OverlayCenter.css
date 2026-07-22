@@ -7800,6 +7800,16 @@ body.wm-resizing {
    ----------------------------------------------------------- */
 .ov-chat-widget {
   box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.ov-chat-widget *,
+.ov-chat-widget *::before,
+.ov-chat-widget *::after {
+  box-sizing: border-box;
 }
 .ov-chat-header {
   display: flex;
@@ -7831,7 +7841,12 @@ body.wm-resizing {
 }
 .ov-chat-messages {
   flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -7858,7 +7873,11 @@ body.wm-resizing {
 .ov-chat-msg {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   transition: background 0.15s;
 }
 .ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
@@ -7877,16 +7896,51 @@ body.wm-resizing {
 .ov-chat-msg-body {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   line-height: 1.45;
 }
 .ov-chat-username {
   font-weight: 600;
   margin-right: 5px;
+  max-width: min(42%, 220px);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .ov-chat-username::after { content: ':'; }
 .ov-chat-text {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   word-break: break-word;
+  white-space: normal;
+}
+.ov-chat-widget [data-widget-element="messageList"] {
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.ov-chat-widget [data-widget-element="message"] {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+.ov-chat-widget [data-widget-element="username"] {
+  min-width: 0;
+  max-width: min(42%, 220px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ov-chat-widget [data-widget-element="messageText"] {
+  flex: 1 1 12ch;
+  min-width: min(100%, 12ch);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 .ov-chat-legend {
   display: flex;

@@ -308,6 +308,16 @@ const CHAT_SURFACE_CONTROLS = Object.freeze([
   'shadowOpacity',
 ]);
 
+const CHAT_BOX_CONTROLS = Object.freeze([
+  ...CHAT_SURFACE_CONTROLS,
+  'width',
+  'height',
+  'minWidth',
+  'minHeight',
+  'maxWidth',
+  'maxHeight',
+]);
+
 const CHAT_TEXT_CONTROLS = Object.freeze([
   'textColor',
   'fontFamily',
@@ -763,17 +773,17 @@ export const widgetAppearanceRegistry = Object.freeze({
       makeRuntimeStyle('metal', 'Metal', 'Metallic chat panel.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
       makeRuntimeStyle('bh_stats', 'Hunt', 'Chat layout matching Bonus Hunt stats styling.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'avatar', 'badge', 'highlightedMessage'] }),
     ],
-    responsive: { minWidth: 220, minHeight: 180, maxWidth: 1920, maxHeight: 1080 },
+    responsive: { minWidth: 160, minHeight: 90, maxWidth: 1920, maxHeight: 1080 },
     elements: {
       container: Object.freeze({ ...BASIC_WIDGET_ELEMENTS.container, label: 'Chat widget surface', controls: CHAT_CONTAINER_CONTROLS }),
       header: Object.freeze({ ...BASIC_WIDGET_ELEMENTS.header, label: 'Header bar', controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS] }),
-      messageList: Object.freeze({ label: 'Message list', kind: 'surface', capabilities: ['surface', 'spacing'], controls: ['background', 'opacity', 'padding', 'gap'] }),
-      message: Object.freeze({ label: 'Message row or card', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'], controls: CHAT_SURFACE_CONTROLS }),
+      messageList: Object.freeze({ label: 'Message list', kind: 'surface', capabilities: ['surface', 'spacing'], controls: ['background', 'opacity', 'padding', 'gap', 'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] }),
+      message: Object.freeze({ label: 'Message row or card', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'], controls: CHAT_BOX_CONTROLS }),
       username: Object.freeze({ label: 'Viewer name', kind: 'text', capabilities: ['typography', 'stateColor'], controls: CHAT_TEXT_CONTROLS }),
       messageText: Object.freeze({ label: 'Message text', kind: 'text', capabilities: ['typography', 'stateColor'], controls: CHAT_TEXT_CONTROLS }),
       avatar: Object.freeze({ label: 'Avatar bubble', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'], controls: CHAT_BADGE_CONTROLS }),
       badge: Object.freeze({ label: 'Platform badges', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'], controls: CHAT_BADGE_CONTROLS }),
-      highlightedMessage: Object.freeze({ label: 'Raid/highlight message', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'], controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS] }),
+      highlightedMessage: Object.freeze({ label: 'Raid/highlight message', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'], controls: [...CHAT_BOX_CONTROLS, ...CHAT_TEXT_CONTROLS] }),
       platformLegend: Object.freeze({ label: 'Platform legend', kind: 'surface', capabilities: ['surface', 'border', 'shape', 'spacing', 'typography'], controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS] }),
     },
   }),

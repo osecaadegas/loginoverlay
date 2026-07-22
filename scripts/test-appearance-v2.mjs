@@ -137,6 +137,8 @@ try {
   assert.ok(chatContainer?.controls.includes('width'), 'Chat container exposes scoped width controls');
   assert.ok(chatContainer?.controls.includes('height'), 'Chat container exposes scoped height controls');
   assert.ok(chatMessageRow?.controls.includes('radius'), 'Chat message rows expose shape controls');
+  assert.ok(chatMessageRow?.controls.includes('width'), 'Chat message rows expose horizontal size controls');
+  assert.ok(chatMessageRow?.controls.includes('height'), 'Chat message rows expose vertical size controls');
   assert.ok(!chatMessageText?.controls.includes('background'), 'Chat message text hides unrelated background controls');
   assert.ok(chatMessageText?.controls.includes('fontSize'), 'Chat message text exposes typography controls');
   assert.ok(registryModule.getWidgetStyleQuickControls('chat', 'classic', 'message').includes('shape'), 'Chat message row simple controls include shape');
