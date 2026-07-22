@@ -63,8 +63,9 @@ function withElementOffset(config, partId, style = {}) {
   return {
     ...style,
     position: style.position || 'relative',
+    left: style.left ?? `${offsetX}px`,
+    top: style.top ?? `${offsetY}px`,
     zIndex: style.zIndex ?? 3,
-    transform: [style.transform, `translate3d(${offsetX}px, ${offsetY}px, 0)`].filter(Boolean).join(' '),
   };
 }
 

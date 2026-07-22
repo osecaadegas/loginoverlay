@@ -130,8 +130,10 @@ const PreviewSlot = memo(function PreviewSlot({
     let hasMoved = false;
     draggingRef.current = false;
     const moveToEvent = (moveEvent, commit = false) => {
-      const nextOffsetX = clamp(Math.round(startOffset.x + ((moveEvent.clientX - startX) / divisor)), -slotSize.width, slotSize.width);
-      const nextOffsetY = clamp(Math.round(startOffset.y + ((moveEvent.clientY - startY) / divisor)), -slotSize.height, slotSize.height);
+      const maxOffsetX = Math.max(canvasWidth, slotSize.width * 2);
+      const maxOffsetY = Math.max(canvasHeight, slotSize.height * 2);
+      const nextOffsetX = clamp(Math.round(startOffset.x + ((moveEvent.clientX - startX) / divisor)), -maxOffsetX, maxOffsetX);
+      const nextOffsetY = clamp(Math.round(startOffset.y + ((moveEvent.clientY - startY) / divisor)), -maxOffsetY, maxOffsetY);
       if (Math.abs(nextOffsetX - startOffset.x) > 2 || Math.abs(nextOffsetY - startOffset.y) > 2) {
         draggingRef.current = true;
         hasMoved = true;
@@ -155,8 +157,15 @@ const PreviewSlot = memo(function PreviewSlot({
     if (isBg || !onMoveWidget || event.button !== 0 || event.target?.closest?.('.oc-preview-resize-handle')) return;
     const elementNode = selectMode && highlighted ? event.target?.closest?.('[data-widget-element]') : null;
     const elementInsideWidget = elementNode && event.currentTarget.contains(elementNode);
-    const elementId = elementInsideWidget ? elementNode.getAttribute('data-widget-element') : '';
+    const clickedElementId = elementInsideWidget ? elementNode.getAttribute('data-widget-element') : '';
+    const selectedMovableElementId = selectedElementId && selectedElementId !== 'container' ? selectedElementId : '';
+    const elementId = clickedElementId && clickedElementId !== 'container' ? clickedElementId : selectedMovableElementId;
     if (elementId && startElementMove(event, elementId)) return;
+    if (selectMode && highlighted && selectedMovableElementId) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     const startX = event.clientX;
