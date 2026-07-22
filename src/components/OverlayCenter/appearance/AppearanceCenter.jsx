@@ -269,7 +269,11 @@ function getFirstElement(widgetType) {
 
 function getFirstElementForStyle(widgetType, styleId) {
   if (isWidgetAppearanceV2Enabled(widgetType)) {
-    return getWidgetStyleElements(widgetType, styleId)[0] || getFirstElement(widgetType);
+    const elements = getWidgetStyleElements(widgetType, styleId);
+    if (widgetType === 'background') {
+      return elements.find(element => element.id === 'texture') || elements[0] || getFirstElement(widgetType);
+    }
+    return elements[0] || getFirstElement(widgetType);
   }
   return getFirstElement(widgetType);
 }
@@ -512,16 +516,26 @@ function normalizeControl(control, label) {
 
 function normalizeBackgroundControl(control, elementId) {
   if (!control) return control;
+  if (elementId === 'source' && control.id === 'bgMode') {
+    return {
+      ...control,
+      label: 'Source',
+      options: [
+        { value: 'texture', label: 'Texture' },
+        { value: 'image', label: 'Image' },
+      ],
+    };
+  }
   const labels = {
     canvas: {
-      background: 'Fallback colour',
+      background: 'Fallback frame colour',
       opacity: 'Layer opacity',
       radius: 'Canvas radius',
     },
     texture: {
-      background: 'Colour 1',
-      accentColor: 'Colour 2',
-      fillColor: 'Colour 3',
+      background: 'Base colour',
+      accentColor: 'Accent colour',
+      fillColor: 'Depth colour',
       animSpeed: 'Animation duration',
     },
     media: {
@@ -544,12 +558,51 @@ function normalizeBackgroundControl(control, elementId) {
 
 const BACKGROUND_SPECIAL_STYLE_IDS = new Set(['aurora', 'matrix', 'starfield', 'waves', 'geometric']);
 const BACKGROUND_TEXTURE_SOURCE_CONTROLS = new Set(['textureType', 'background', 'accentColor', 'fillColor', 'gradientAngle', 'patternSize', 'animSpeed']);
-const BACKGROUND_SPECIAL_SOURCE_CONTROLS = new Set(['background', 'accentColor', 'fillColor', 'gradientAngle', 'animSpeed']);
-const BACKGROUND_MEDIA_ALWAYS_CONTROLS = new Set(['imageUrl', 'videoUrl']);
+const BACKGROUND_SOLID_TEXTURE_CONTROLS = new Set(['textureType', 'background']);
+const BACKGROUND_TWO_COLOR_TEXTURE_CONTROLS = new Set(['textureType', 'background', 'accentColor']);
+const BACKGROUND_THREE_COLOR_TEXTURE_CONTROLS = new Set(['textureType', 'background', 'accentColor', 'fillColor']);
+const BACKGROUND_ANGLED_TEXTURES = new Set(['gradient', 'metallic', 'pearl', 'gloss', 'conic', 'diagonal']);
+const BACKGROUND_PATTERN_TEXTURES = new Set(['dots', 'grid', 'diagonal', 'carbon']);
+const BACKGROUND_ANIMATED_TEXTURES = new Set(['chameleon']);
+const BACKGROUND_MEDIA_ALWAYS_CONTROLS = new Set(['imageUrl']);
 const BACKGROUND_MEDIA_ACTIVE_CONTROLS = new Set(['imageFit', 'backgroundPosition', 'brightness', 'contrast', 'saturation', 'blur', 'hueRotate', 'grayscale', 'sepia', 'opacity']);
 const BACKGROUND_PARTICLE_DETAIL_CONTROLS = new Set(['fxParticleColor', 'fxParticleCount', 'fxParticleSpeed', 'fxParticleSize']);
 const BACKGROUND_FOG_DETAIL_CONTROLS = new Set(['fxFogColor']);
 const BACKGROUND_LIGHT_DETAIL_CONTROLS = new Set(['fxGlimpseColor', 'fxGlimpseSpeed']);
+
+function getBackgroundTextureControlIds(sourceMode, styleId, textureType) {
+  if (sourceMode === 'special') {
+    const controls = new Set(['background', 'accentColor', 'animSpeed']);
+    if (['aurora', 'waves', 'geometric'].includes(styleId)) controls.add('fillColor');
+    if (styleId === 'aurora') controls.add('gradientAngle');
+    return controls;
+  }
+  if (sourceMode !== 'texture') return new Set();
+
+  const currentTexture = textureType || 'gradient';
+  if (currentTexture === 'none') return BACKGROUND_SOLID_TEXTURE_CONTROLS;
+  if (['gradient', 'pearl', 'chameleon', 'conic'].includes(currentTexture)) {
+    const controls = new Set(BACKGROUND_THREE_COLOR_TEXTURE_CONTROLS);
+    if (BACKGROUND_ANGLED_TEXTURES.has(currentTexture)) controls.add('gradientAngle');
+    if (BACKGROUND_ANIMATED_TEXTURES.has(currentTexture)) controls.add('animSpeed');
+    return controls;
+  }
+  if (['metallic', 'gloss', 'radial', 'vignette', 'dots', 'grid', 'diagonal', 'carbon', 'scanlines'].includes(currentTexture)) {
+    const controls = new Set(BACKGROUND_TWO_COLOR_TEXTURE_CONTROLS);
+    if (BACKGROUND_ANGLED_TEXTURES.has(currentTexture)) controls.add('gradientAngle');
+    if (BACKGROUND_PATTERN_TEXTURES.has(currentTexture)) controls.add('patternSize');
+    return controls;
+  }
+  if (currentTexture === 'noise') return BACKGROUND_SOLID_TEXTURE_CONTROLS;
+  return BACKGROUND_TEXTURE_SOURCE_CONTROLS;
+}
+
+function getSimpleBackgroundElements(elements = [], sourceMode = 'texture') {
+  const allowed = new Set(['source', 'effects']);
+  if (sourceMode === 'texture' || sourceMode === 'special') allowed.add('texture');
+  if (sourceMode === 'image') allowed.add('media');
+  return elements.filter(element => allowed.has(element.id));
+}
 
 function WidgetIcon({ icon }) {
   if (typeof icon === 'string' && icon.length <= 3) return <span className="ve-widget-card__emoji">{icon}</span>;
@@ -1613,16 +1666,19 @@ export default function AppearanceCenter({
     return BACKGROUND_SPECIAL_STYLE_IDS.has(selectedTarget.styleId) ? 'special' : 'texture';
   }, [getElementControlValueFor, selectedTarget.styleId]);
 
+  const backgroundTextureType = getElementControlValueFor('texture', 'textureType') || 'gradient';
   const backgroundParticleMode = getElementControlValueFor('effects', 'fxParticles') || 'none';
   const backgroundFogMode = getElementControlValueFor('effects', 'fxFog') || 'none';
   const backgroundLightMode = getElementControlValueFor('effects', 'fxGlimpse') || 'none';
+  const simpleBackgroundElements = useMemo(
+    () => getSimpleBackgroundElements(backgroundElements, backgroundSourceMode),
+    [backgroundElements, backgroundSourceMode]
+  );
 
   const shouldShowBackgroundControl = useCallback((elementId, controlId) => {
     if (!selectedWidgetIsBackground) return true;
     if (elementId === 'texture') {
-      if (backgroundSourceMode === 'texture') return BACKGROUND_TEXTURE_SOURCE_CONTROLS.has(controlId);
-      if (backgroundSourceMode === 'special') return BACKGROUND_SPECIAL_SOURCE_CONTROLS.has(controlId);
-      return false;
+      return getBackgroundTextureControlIds(backgroundSourceMode, selectedTarget.styleId, backgroundTextureType).has(controlId);
     }
     if (elementId === 'media') {
       if (BACKGROUND_MEDIA_ALWAYS_CONTROLS.has(controlId)) return true;
@@ -1635,7 +1691,15 @@ export default function AppearanceCenter({
       return true;
     }
     return true;
-  }, [backgroundFogMode, backgroundLightMode, backgroundParticleMode, backgroundSourceMode, selectedWidgetIsBackground]);
+  }, [
+    backgroundFogMode,
+    backgroundLightMode,
+    backgroundParticleMode,
+    backgroundSourceMode,
+    backgroundTextureType,
+    selectedTarget.styleId,
+    selectedWidgetIsBackground,
+  ]);
 
   const getBackgroundElementControlGroups = useCallback((element) => {
     if (!element) return [];
@@ -2140,7 +2204,7 @@ export default function AppearanceCenter({
               >
                 <p className="ve-simple-help">Only live Background controls are shown. Choose Texture, Image URL, Video URL, or Animated in Source.</p>
                 <div className="ve-background-control-stack">
-                  {backgroundElements.map(element => {
+                  {simpleBackgroundElements.map(element => {
                     const groups = getBackgroundElementControlGroups(element);
                     if (!groups.length) return null;
                     return (

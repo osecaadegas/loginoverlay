@@ -6,8 +6,11 @@ function clamp(value, min, max) {
 
 export function getWidgetSlotSize(widget) {
   const frame = getWidgetPreviewFrame(widget);
-  const configuredWidth = Number(widget.config?.widgetWidth);
-  const configuredHeight = Number(widget.config?.widgetHeight);
+  const containerAppearance = widget.config?.__appearanceExplicitSubElements?.container
+    || widget.config?.subElements?.container
+    || {};
+  const configuredWidth = Number(widget.config?.widgetWidth ?? containerAppearance.width);
+  const configuredHeight = Number(widget.config?.widgetHeight ?? containerAppearance.height);
   const scale = clamp(Number(widget.config?.widgetScale) || 1, 0.75, 1.5);
   const baseWidth = configuredWidth || frame?.width || widget.width;
   const baseHeight = configuredHeight || frame?.height || widget.height;

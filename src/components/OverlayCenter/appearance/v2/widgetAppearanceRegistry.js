@@ -207,6 +207,16 @@ const BONUS_HUNT_SURFACE_CONTROLS = Object.freeze([
   'gap',
 ]);
 
+const BONUS_HUNT_CONTAINER_CONTROLS = Object.freeze([
+  ...BONUS_HUNT_SURFACE_CONTROLS,
+  'width',
+  'height',
+  'minWidth',
+  'minHeight',
+  'maxWidth',
+  'maxHeight',
+]);
+
 const BONUS_HUNT_TEXT_CONTROLS = Object.freeze([
   'textColor',
   'fontFamily',
@@ -1865,8 +1875,8 @@ export const widgetAppearanceRegistry = Object.freeze({
       container: Object.freeze({
         label: 'Entire widget',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shadow', 'shape', 'scale', 'typography'],
-        controls: [...BONUS_HUNT_SURFACE_CONTROLS, ...BONUS_HUNT_TEXT_CONTROLS],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'scale', 'typography', 'spacing'],
+        controls: [...BONUS_HUNT_CONTAINER_CONTROLS, ...BONUS_HUNT_TEXT_CONTROLS],
         cssVariables: ['--bht-text', '--bht-card-radius'],
       }),
       headerContainer: Object.freeze({
@@ -2423,19 +2433,19 @@ export const widgetAppearanceRegistry = Object.freeze({
     }),
     elements: Object.freeze({
       canvas: Object.freeze({
-        label: 'Background layer',
+        label: 'Fallback canvas',
         kind: 'surface',
         capabilities: ['surface', 'border', 'shape'],
         controls: ['background', 'opacity', 'radius'],
       }),
       source: Object.freeze({
-        label: 'Source',
+        label: 'Background source',
         kind: 'surface',
         capabilities: ['surface'],
         controls: ['bgMode'],
       }),
       texture: Object.freeze({
-        label: 'Texture and colours',
+        label: 'Visible texture and colours',
         kind: 'surface',
         capabilities: ['surface'],
         controls: ['textureType', 'background', 'accentColor', 'fillColor', 'gradientAngle', 'patternSize', 'animSpeed'],

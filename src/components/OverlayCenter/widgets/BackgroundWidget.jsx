@@ -17,7 +17,9 @@ function partAttrs(partId) {
 
 /* ─── Texture CSS generators ─── */
 const TEXTURES = {
-  none: () => ({}),
+  none: (c) => ({
+    background: c.color1 || '#0f172a',
+  }),
 
   gradient: (c) => ({
     background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#0f172a'}, ${c.color2 || '#2a3139'}, ${c.color3 || '#0f172a'})`,
@@ -80,8 +82,8 @@ const TEXTURES = {
 
   carbon: (c) => ({
     background: c.color1 || '#111111',
-    backgroundImage: `repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px), repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px)`,
-    backgroundSize: '4px 4px',
+    backgroundImage: `repeating-linear-gradient(0deg, ${c.color2 || 'rgba(255,255,255,0.02)'} 0px, ${c.color2 || 'rgba(255,255,255,0.02)'} 1px, transparent 1px, transparent 3px), repeating-linear-gradient(90deg, ${c.color2 || 'rgba(255,255,255,0.02)'} 0px, ${c.color2 || 'rgba(255,255,255,0.02)'} 1px, transparent 1px, transparent 3px)`,
+    backgroundSize: `${Math.max(Number(c.patternSize) || 4, 4)}px ${Math.max(Number(c.patternSize) || 4, 4)}px`,
   }),
 
   scanlines: (c) => ({
@@ -152,6 +154,7 @@ function BackgroundWidget({ config, theme }) {
     const gen = TEXTURES[textureType] || TEXTURES.gradient;
     return gen(textureConfig);
   }, [textureType, textureConfig]);
+  const specialSpeedFactor = secondsSpeedFactor(textureConfig.animSpeed, 8);
 
   const rootStyle = {
     width: '100%',
@@ -226,9 +229,9 @@ function BackgroundWidget({ config, theme }) {
           ...layerStyle,
           background: `linear-gradient(${textureConfig.gradientAngle ?? 135}deg, ${textureConfig.color1 || '#0d1117'}, ${textureConfig.color2 || '#232a33'}, ${textureConfig.color3 || '#141a20'})`,
         }} {...partAttrs('texture')}>
-          <div className="oc-bg-aurora-band oc-bg-aurora-1" style={{ '--aurora-c1': textureConfig.color2 || '#dbe2e8', '--aurora-c2': textureConfig.color3 || '#8f98a3' }} />
-          <div className="oc-bg-aurora-band oc-bg-aurora-2" style={{ '--aurora-c1': textureConfig.color3 || '#bcc4cc', '--aurora-c2': textureConfig.color1 || '#6b7480' }} />
-          <div className="oc-bg-aurora-band oc-bg-aurora-3" style={{ '--aurora-c1': textureConfig.color1 || '#eef2f5', '--aurora-c2': textureConfig.color2 || '#dbe2e8' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-1" style={{ '--aurora-c1': textureConfig.color2 || '#dbe2e8', '--aurora-c2': textureConfig.color3 || '#8f98a3', animationDuration: `${12 * specialSpeedFactor}s` }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-2" style={{ '--aurora-c1': textureConfig.color3 || '#bcc4cc', '--aurora-c2': textureConfig.color1 || '#6b7480', animationDuration: `${15 * specialSpeedFactor}s` }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-3" style={{ '--aurora-c1': textureConfig.color1 || '#eef2f5', '--aurora-c2': textureConfig.color2 || '#dbe2e8', animationDuration: `${18 * specialSpeedFactor}s` }} />
         </div>
       )}
 
@@ -249,9 +252,9 @@ function BackgroundWidget({ config, theme }) {
           ...layerStyle,
           background: textureConfig.color1 || '#0a0a2e',
         }} {...partAttrs('texture')}>
-          <div className="oc-bg-wave oc-bg-wave-1" style={{ '--wave-color': textureConfig.color2 || 'rgba(219,226,232,0.15)' }} />
-          <div className="oc-bg-wave oc-bg-wave-2" style={{ '--wave-color': textureConfig.color3 || 'rgba(188,196,204,0.1)' }} />
-          <div className="oc-bg-wave oc-bg-wave-3" style={{ '--wave-color': textureConfig.color2 || 'rgba(143,152,163,0.08)' }} />
+          <div className="oc-bg-wave oc-bg-wave-1" style={{ '--wave-color': textureConfig.color2 || 'rgba(219,226,232,0.15)', animationDuration: `${8 * specialSpeedFactor}s` }} />
+          <div className="oc-bg-wave oc-bg-wave-2" style={{ '--wave-color': textureConfig.color3 || 'rgba(188,196,204,0.1)', animationDuration: `${10 * specialSpeedFactor}s` }} />
+          <div className="oc-bg-wave oc-bg-wave-3" style={{ '--wave-color': textureConfig.color2 || 'rgba(143,152,163,0.08)', animationDuration: `${12 * specialSpeedFactor}s` }} />
         </div>
       )}
 
@@ -260,8 +263,8 @@ function BackgroundWidget({ config, theme }) {
           ...layerStyle,
           background: textureConfig.color1 || '#0a0a1a',
         }} {...partAttrs('texture')}>
-          <div className="oc-bg-geo-grid" style={{ '--geo-color': textureConfig.color2 || 'rgba(200,208,216,0.12)' }} />
-          <div className="oc-bg-geo-shapes" style={{ '--geo-accent': textureConfig.color3 || 'rgba(188,196,204,0.15)' }} />
+          <div className="oc-bg-geo-grid" style={{ '--geo-color': textureConfig.color2 || 'rgba(200,208,216,0.12)', animationDuration: `${6 * specialSpeedFactor}s` }} />
+          <div className="oc-bg-geo-shapes" style={{ '--geo-accent': textureConfig.color3 || 'rgba(188,196,204,0.15)', animationDuration: `${20 * specialSpeedFactor}s` }} />
         </div>
       )}
 

@@ -256,6 +256,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
 
   const rootStyle = {
+    fontFamily,
+    width: '100%',
+    height: '100%',
     ...scopedStyle('container', {
       fontFamily,
       fontSize: `${fontSize}px`,
@@ -266,9 +269,6 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
       ),
       color: textColor,
     }),
-    fontFamily,
-    width: '100%',
-    height: '100%',
     overflow: 'hidden',
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
@@ -309,7 +309,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
       data-widget-id="bonus_hunt"
       data-style-id={c.displayStyle || 'v12_classic_sr'}
       {...partAttrs('container')}
-      style={{ ...rootStyle, height: '100%' }}
+      style={rootStyle}
     >
 
       {/* ═══ Header — Classic full-card flip ═══ */}

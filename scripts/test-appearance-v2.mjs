@@ -24,6 +24,7 @@ try {
   const resolverModule = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/v2/appearanceResolver.js');
   const appearanceModel = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/appearanceModel.js');
   const editorSchema = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/editorSchema.js');
+  const widgetSlotModule = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/v2/widgetSlot.js');
 
   const registryResult = registryModule.validateWidgetAppearanceRegistry();
   assert.equal(registryResult.valid, true, `registry should validate: ${registryResult.errors.join(', ')}`);
@@ -369,6 +370,9 @@ try {
     assert.ok(advancedControlCount > 0, `Bonus Hunt Classic + Requests ${element.id} has usable editor controls`);
   });
   const bonusHuntTitleControls = bonusHuntClassicElements.find(element => element.id === 'headerTitle')?.controls || [];
+  const bonusHuntContainerControls = bonusHuntClassicElements.find(element => element.id === 'container')?.controls || [];
+  assert.ok(bonusHuntContainerControls.includes('width'), 'Bonus Hunt Classic container exposes horizontal size');
+  assert.ok(bonusHuntContainerControls.includes('height'), 'Bonus Hunt Classic container exposes vertical size');
   assert.ok(bonusHuntTitleControls.includes('fontFamily'), 'Bonus Hunt Classic title exposes typography controls');
   assert.ok(!bonusHuntTitleControls.includes('background'), 'Bonus Hunt Classic title hides surface controls');
   assert.ok(!bonusHuntTitleControls.includes('imageSize'), 'Bonus Hunt Classic title hides image controls');
@@ -1261,6 +1265,8 @@ try {
                 container: {
                   radius: 64,
                   borderWidth: 3,
+                  width: 760,
+                  height: 860,
                 },
                 bonusCard: {
                   radius: 10,
@@ -1278,6 +1284,11 @@ try {
   const scopedHuntConfig = appearanceModel.resolveWidgetAppearanceConfig(bonusHuntWidget, scopedBonusHuntAppearance, {});
   assert.equal(scopedHuntConfig.subElements.container.radius, 64, 'Bonus Hunt surface override reaches only the container');
   assert.equal(scopedHuntConfig.subElements.container.borderWidth, 3, 'Bonus Hunt surface border width remains scoped to the container');
+  assert.equal(scopedHuntConfig.subElements.container.width, 760, 'Bonus Hunt horizontal size remains scoped to the container');
+  assert.equal(scopedHuntConfig.subElements.container.height, 860, 'Bonus Hunt vertical size remains scoped to the container');
+  const scopedHuntSlotSize = widgetSlotModule.getWidgetSlotSize({ ...bonusHuntWidget, config: scopedHuntConfig });
+  assert.equal(scopedHuntSlotSize.width, 760, 'Bonus Hunt preview and OBS slot width use the container width override');
+  assert.equal(scopedHuntSlotSize.height, 860, 'Bonus Hunt preview and OBS slot height use the container height override');
   assert.equal(scopedHuntConfig.subElements.bonusCard.radius, 10, 'Bonus Hunt card radius remains independently editable');
   assert.equal(scopedHuntConfig.subElements.statCell.radius, 6, 'Bonus Hunt stat radius remains independently editable');
   assert.notEqual(scopedHuntConfig.subElements.bonusCard.radius, scopedHuntConfig.subElements.container.radius, 'Bonus Hunt card radius does not inherit the surface override');
@@ -1506,13 +1517,36 @@ try {
   assert.equal(backgroundConfig.subElements.texture.patternSize, 32, 'Background texture part persists pattern size');
   assert.equal(backgroundConfig.subElements.tint.opacity, 0.35, 'Background tint part persists overlay opacity');
   assert.equal(backgroundConfig.subElements.effects.fxParticles, 'snow', 'Background effects part persists particle effect');
+  const backgroundNeonConfig = appearanceModel.resolveWidgetAppearanceConfig(backgroundWidget, {
+    widgets: {
+      bg1: {
+        styles: {
+          v1: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('background', {
+              material: 'neon',
+              primaryColor: '#22d3ee',
+              shape: 'rounded',
+              glowStrength: 'strong',
+            }),
+          },
+        },
+      },
+    },
+  }, {});
+  assert.equal(backgroundNeonConfig.subElements.texture.textureType, 'gradient', 'Background neon material does not auto-select an animated texture');
+  assert.equal(backgroundNeonConfig.subElements.effects.fxGlimpse, 'none', 'Background generated colours do not auto-enable light effects');
   const backgroundWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/BackgroundWidget.jsx', import.meta.url), 'utf8');
   assertRendererPartTargets(backgroundWidgetSource, 'Background', ['canvas', 'texture', 'media', 'tint', 'effects']);
+  assert.ok(backgroundWidgetSource.includes("none: (c) => ({"), 'Background solid texture renderer consumes the base color');
+  assert.ok(backgroundWidgetSource.includes('animationDuration'), 'Background animated styles consume the configured animation duration');
   assert.ok(backgroundWidgetSource.includes('secondsSpeedFactor'), 'Background animated styles clamp seconds-based animation speed');
   assert.ok(!backgroundWidgetSource.includes('100 - speed * 5'), 'Background special animation speed no longer creates negative durations');
   const appearanceCenterSource = readFileSync(new URL('../src/components/OverlayCenter/appearance/AppearanceCenter.jsx', import.meta.url), 'utf8');
   assert.ok(appearanceCenterSource.includes('BACKGROUND_MEDIA_ALWAYS_CONTROLS'), 'Background quick panel keeps image/video link controls visible');
   assert.ok(appearanceCenterSource.includes('selectedWidgetIsBackground'), 'Background quick panel uses a dedicated background-only control flow');
+  assert.ok(appearanceCenterSource.includes("widgetType === 'background'"), 'Background quick panel defaults to the visible texture/color part');
+  assert.ok(appearanceCenterSource.includes('getBackgroundTextureControlIds'), 'Background quick panel hides texture controls that do not affect the active renderer');
+  assert.ok(appearanceCenterSource.includes('getSimpleBackgroundElements'), 'Background simple panel only shows source, active background, and opt-in effects');
 
   const currentSlotConfig = appearanceModel.resolveWidgetAppearanceConfig(currentSlotWidget, appearance, {});
   assert.equal(currentSlotConfig.__appearanceV2.material, 'neon', 'Current Slot receives V2 material');

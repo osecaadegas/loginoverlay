@@ -635,9 +635,7 @@ function buildBackgroundPatch(tokens, styleId) {
       ? 'metallic'
       : tokens.material === 'glass'
         ? 'gloss'
-        : tokens.material === 'neon'
-          ? 'chameleon'
-          : 'gradient',
+        : 'gradient',
     color1: primary,
     color2: accent,
     color3: fill,
@@ -660,7 +658,7 @@ function buildBackgroundPatch(tokens, styleId) {
     sepia: 0,
     fxParticles: 'none',
     fxFog: 'none',
-    fxGlimpse: tokens.materialTokens?.glowIntensity > 0.1 ? 'pulse' : 'none',
+    fxGlimpse: 'none',
     fxGlimpseColor: accent,
     fxGlimpseSpeed: 50,
     subElements: {
@@ -677,9 +675,7 @@ function buildBackgroundPatch(tokens, styleId) {
           ? 'metallic'
           : tokens.material === 'glass'
             ? 'gloss'
-            : tokens.material === 'neon'
-              ? 'chameleon'
-              : 'gradient',
+            : 'gradient',
         background: primary,
         accentColor: accent,
         fillColor: fill,
@@ -713,7 +709,7 @@ function buildBackgroundPatch(tokens, styleId) {
         fxParticleSize: 50,
         fxFog: 'none',
         fxFogColor: '#000000',
-        fxGlimpse: tokens.materialTokens?.glowIntensity > 0.1 ? 'pulse' : 'none',
+        fxGlimpse: 'none',
         fxGlimpseColor: accent,
         fxGlimpseSpeed: 50,
       },
