@@ -134,6 +134,7 @@ function BetsWidget({ config }) {
   const defaultTextAlign = c.textAlign || undefined;
   const colorTheme   = c.colorTheme    || 'dark';
   const barColorMode = c.barColorMode  || (isStyleSeca ? 'solid' : 'rainbow');
+  const effectiveBarColorMode = isStyleSeca ? 'solid' : barColorMode;
   const styleSecaValue = (value, fallback) => isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
   const styleSecaText = '#f8fbff';
 
@@ -281,7 +282,7 @@ function BetsWidget({ config }) {
   const gridCols  = getGridCols(options.length, layout);
 
   const getOptColor = (i) =>
-    barColorMode === 'rainbow' ? PALETTE[i % PALETTE.length] : barFill;
+    effectiveBarColorMode === 'rainbow' ? PALETTE[i % PALETTE.length] : barFill;
 
   const cssVars = {
     fontFamily:        font,
@@ -435,7 +436,8 @@ function BetsWidget({ config }) {
               ...rawProgressStyle,
               background: styleSecaValue(rawProgressStyle.background, barBg),
             } : rawProgressStyle;
-            const progressFill = elementValue(c, 'progressBar', 'fillColor', optColor || barFill, undefined, progressStateId);
+            const rawProgressFill = elementValue(c, 'progressBar', 'fillColor', optColor || barFill, undefined, progressStateId);
+            const progressFill = isStyleSeca ? styleSecaValue(rawProgressFill, barFill) : rawProgressFill;
             const cardTextInheritanceStyle = pickTextStyle(optionRowStyle);
             const classes  = [
               'bets-ov__card',
