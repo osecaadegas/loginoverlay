@@ -1634,15 +1634,18 @@
 }
 .oc-bonushunt--v12 .bht-flip-front {
   gap: 0;
-  background: rgba(255,255,255,0.04);
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.06);
-  overflow: hidden;
+  background: transparent;
+  border-radius: 0;
+  border: 0;
+  overflow: visible;
 }
 .oc-bonushunt--v12 .bht-stat-box {
   padding: 6px 4px;
   text-align: center;
   position: relative;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 .oc-bonushunt--v12 .bht-stat-box + .bht-stat-box::before {
   content: '';
@@ -1705,10 +1708,26 @@
 .oc-bonushunt--v12 .bht-stack {
   height: 150px;
   margin: -8px 0 0;
+  position: relative;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  isolation: isolate;
+}
+.oc-bonushunt--v12 .bht-stack-backdrop {
+  position: absolute;
+  inset: 12px 20px 8px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 16px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 .oc-bonushunt--v12 .bht-stack-card {
   width: 106px;
   height: 138px;
+  z-index: 1;
 }
 .oc-bonushunt--v12 .bht-stack-card--far-left {
   transform: translateX(-184px) translateZ(-120px) rotateY(35deg) scale(0.65);
@@ -1871,6 +1890,13 @@
 .oc-bonushunt--v12 .bht-list-row--active {
   background: rgba(255,255,255,0.05);
   border-bottom-color: rgba(255,255,255,0.06);
+}
+.oc-bonushunt--v12 .bht-list-row-stats {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
 }
 .oc-bonushunt--v12 .bht-list-row--super {
   background: color-mix(in srgb, var(--bht-super-badge, #eab308) 6%, transparent);

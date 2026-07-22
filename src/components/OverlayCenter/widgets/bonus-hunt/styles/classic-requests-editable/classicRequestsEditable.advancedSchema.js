@@ -21,7 +21,11 @@ export const classicRequestsEditableAdvancedSchema = Object.freeze([
   }),
   Object.freeze({
     elementId: 'slotCarouselContainer',
-    controls: ['background', 'borderColor', 'borderWidth', 'radius', 'shadowBlur', 'shadowOpacity'],
+    controls: ['padding', 'gap'],
+  }),
+  Object.freeze({
+    elementId: 'carouselBackdrop',
+    controls: ['background', 'borderColor', 'borderWidth', 'radius', 'shadowBlur', 'shadowOpacity', 'opacity'],
   }),
   Object.freeze({
     elementId: 'slotListContainer',
@@ -42,6 +46,18 @@ export const classicRequestsEditableAdvancedSchema = Object.freeze([
   Object.freeze({
     elementId: 'progressBar',
     controls: ['background', 'borderColor', 'borderWidth', 'radius'],
+  }),
+  Object.freeze({
+    elementId: 'progressBarFill',
+    controls: ['background', 'borderColor', 'borderWidth', 'radius', 'opacity'],
+  }),
+  Object.freeze({
+    elementId: 'progressCount',
+    controls: ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'],
+  }),
+  Object.freeze({
+    elementId: 'rowStatsContainer',
+    controls: ['background', 'borderColor', 'borderWidth', 'radius', 'opacity'],
   }),
   Object.freeze({
     elementId: 'requestsSectionContainer',

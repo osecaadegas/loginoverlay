@@ -667,6 +667,7 @@ export default function AppearanceCenter({
   const [previewBackground, setPreviewBackground] = useState('dark');
   const [previewStateByWidget, setPreviewStateByWidget] = useState({});
   const [previewPositions, setPreviewPositions] = useState({});
+  const [previewElementOffsets, setPreviewElementOffsets] = useState({});
   const [zoom, setZoom] = useState('fit');
   const [obsSafe, setObsSafe] = useState(true);
   const [showBefore, setShowBefore] = useState(false);
@@ -695,6 +696,22 @@ export default function AppearanceCenter({
     const position = previewPositions[widget.id];
     return position ? { ...widget, position_x: position.x, position_y: position.y } : widget;
   }), [previewPositions, widgets]);
+  const previewAppearance = useMemo(() => {
+    if (showBefore) return serverState.published;
+    if (!Object.keys(previewElementOffsets).length) return draft;
+    let next = draft;
+    for (const [widgetId, offsetsByElement] of Object.entries(previewElementOffsets)) {
+      const widget = widgets.find(item => item.id === widgetId);
+      if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type)) continue;
+      const root = getTargetOverrideRoot(createTarget(widget, next));
+      if (!root) continue;
+      for (const [elementId, offsets] of Object.entries(offsetsByElement || {})) {
+        next = setByPath(next, resolveV2ElementOverridePath(root, elementId, 'offsetX', offsets.stateId), offsets.offsetX);
+        next = setByPath(next, resolveV2ElementOverridePath(root, elementId, 'offsetY', offsets.stateId), offsets.offsetY);
+      }
+    }
+    return next;
+  }, [draft, previewElementOffsets, serverState.published, showBefore, widgets]);
   const selectedWidgetName = selectedWidget ? getWidgetDisplayName(selectedWidget) : 'Overlay';
   const selectedWidgetType = selectedWidget?.widget_type || selectedTarget.widgetType || '';
   const selectedWidgetUsesV2 = isWidgetAppearanceV2Enabled(selectedWidgetType);
@@ -1203,6 +1220,51 @@ export default function AppearanceCenter({
         setToast('Widget position could not be saved');
       });
   }, [saveWidget, widgets]);
+
+  const handlePreviewElementMove = useCallback((widget, movement, meta = {}) => {
+    if (!widget?.id || !movement?.elementId || !isWidgetAppearanceV2Enabled(widget.widget_type)) return;
+    const moveTarget = createTarget(widget, draft);
+    const root = getTargetOverrideRoot(moveTarget);
+    const stateId = movement.stateId || 'default';
+    const element = getWidgetStyleElements(widget.widget_type, moveTarget.styleId)
+      .find(item => item.id === movement.elementId);
+    if (!root || !elementSupportsControl(element, 'offsetX') || !elementSupportsControl(element, 'offsetY')) return;
+
+    const nextOffsets = {
+      offsetX: Math.round(Number(movement.offsetX) || 0),
+      offsetY: Math.round(Number(movement.offsetY) || 0),
+      stateId,
+    };
+
+    setSelectedTarget(moveTarget);
+    setSelectedElementId(movement.elementId);
+    setSelectedStateId(stateId);
+
+    if (!meta.commit) {
+      setPreviewElementOffsets(prev => ({
+        ...prev,
+        [widget.id]: {
+          ...(prev[widget.id] || {}),
+          [movement.elementId]: nextOffsets,
+        },
+      }));
+      return;
+    }
+
+    setPreviewElementOffsets(prev => {
+      const widgetOffsets = { ...(prev[widget.id] || {}) };
+      delete widgetOffsets[movement.elementId];
+      const next = { ...prev };
+      if (Object.keys(widgetOffsets).length) next[widget.id] = widgetOffsets;
+      else delete next[widget.id];
+      return next;
+    });
+    commitDraft(prev => {
+      let next = setByPath(prev, resolveV2ElementOverridePath(root, movement.elementId, 'offsetX', stateId), nextOffsets.offsetX);
+      next = setByPath(next, resolveV2ElementOverridePath(root, movement.elementId, 'offsetY', stateId), nextOffsets.offsetY);
+      return next;
+    }, `Move ${element.label || movement.elementId}`);
+  }, [commitDraft, draft]);
 
   const toggleWidgetVisibility = useCallback((widget, event) => {
     event?.stopPropagation();
@@ -1935,7 +1997,7 @@ export default function AppearanceCenter({
             <OverlayPreview
               widgets={previewWidgets}
               theme={theme}
-              appearance={showBefore ? serverState.published : draft}
+              appearance={previewAppearance}
               userId={user?.id}
               previewSampleStates={previewStateByWidget}
               selectedWidgetId={selectedWidget?.id}
@@ -1951,6 +2013,7 @@ export default function AppearanceCenter({
               onSelectElement={handlePreviewElementSelect}
               onResizeWidget={mode === 'advanced' ? handlePreviewResize : undefined}
               onMoveWidget={handlePreviewMove}
+              onMoveElement={selectedWidgetType === 'navbar' ? handlePreviewElementMove : undefined}
             />
           </div>
 

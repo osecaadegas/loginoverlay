@@ -33,6 +33,7 @@ const COMMON_CAPABILITIES = Object.freeze({
   image: ['imageUrl', 'imageSize', 'imageRadius', 'imageFit'],
   stateColor: ['positive', 'negative', 'warning'],
   scale: ['widgetScale'],
+  position: ['offsetX', 'offsetY'],
 });
 
 const QUICK_CAPABILITY_KEYS = Object.freeze([
@@ -204,10 +205,6 @@ const BONUS_HUNT_SURFACE_CONTROLS = Object.freeze([
   'radius',
   'padding',
   'gap',
-  'width',
-  'height',
-  'minWidth',
-  'minHeight',
 ]);
 
 const BONUS_HUNT_TEXT_CONTROLS = Object.freeze([
@@ -221,8 +218,6 @@ const BONUS_HUNT_TEXT_CONTROLS = Object.freeze([
   'letterSpacing',
   'textTransform',
   'opacity',
-  'width',
-  'height',
 ]);
 
 const BONUS_HUNT_IMAGE_CONTROLS = Object.freeze([
@@ -279,12 +274,14 @@ const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = Object.freeze([
   'tagContainer',
   'tagText',
   'slotCarouselContainer',
+  'carouselBackdrop',
   'slotImage',
   'progressBar',
   'progressBarFill',
   'progressCount',
   'slotListContainer',
   'slotRow',
+  'rowStatsContainer',
   'slotPositionNumber',
   'slotThumbnail',
   'slotTitle',
@@ -1332,57 +1329,57 @@ export const widgetAppearanceRegistry = Object.freeze({
       logo: Object.freeze({
         label: 'Accent/logo color',
         kind: 'badge',
-        capabilities: ['stateColor', 'shape'],
+        capabilities: ['stateColor', 'shape', 'position'],
       }),
       avatar: Object.freeze({
         label: 'Avatar',
         kind: 'image',
-        capabilities: ['image', 'shape', 'border'],
+        capabilities: ['image', 'shape', 'border', 'position'],
       }),
       badgeImage: Object.freeze({
         label: 'Badge image',
         kind: 'image',
-        capabilities: ['image', 'shape'],
+        capabilities: ['image', 'shape', 'position'],
       }),
       displayName: Object.freeze({
         label: 'Display name',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'position'],
       }),
       clock: Object.freeze({
         label: 'Clock',
         kind: 'badge',
-        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor', 'position'],
       }),
       music: Object.freeze({
         label: 'Music information',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'position'],
       }),
       sponsor: Object.freeze({
         label: 'CTA sponsor',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor', 'position'],
       }),
       crypto: Object.freeze({
         label: 'Crypto ticker',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'position'],
       }),
       balance: Object.freeze({
         label: 'Start balance',
         kind: 'text',
-        capabilities: ['typography', 'stateColor'],
+        capabilities: ['typography', 'stateColor', 'position'],
       }),
       casino: Object.freeze({
         label: 'Casino area',
         kind: 'image',
-        capabilities: ['image', 'shape', 'typography', 'stateColor'],
+        capabilities: ['image', 'shape', 'typography', 'stateColor', 'position'],
       }),
       separator: Object.freeze({
         label: 'Separators',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'stateColor'],
+        capabilities: ['surface', 'border', 'stateColor', 'position'],
       }),
     }),
     previewSampleData: Object.freeze({
@@ -1932,8 +1929,15 @@ export const widgetAppearanceRegistry = Object.freeze({
       slotCarouselContainer: Object.freeze({
         label: 'Slot carousel',
         kind: 'carousel',
-        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'],
+        capabilities: ['spacing'],
+        controls: ['padding', 'gap'],
+      }),
+      carouselBackdrop: Object.freeze({
+        label: 'Carousel backing box',
+        kind: 'surface',
+        capabilities: ['surface', 'border', 'shadow', 'shape'],
         controls: BONUS_HUNT_SURFACE_CONTROLS,
+        cssVariables: ['--bht-current-bg', '--bht-current-accent'],
       }),
       slotListContainer: Object.freeze({
         label: 'Slot list',
@@ -1947,6 +1951,12 @@ export const widgetAppearanceRegistry = Object.freeze({
         kind: 'surface',
         capabilities: ['surface', 'border', 'shape', 'spacing', 'stateColor'],
         controls: [...BONUS_HUNT_SURFACE_CONTROLS, 'textColor', 'accentColor'],
+      }),
+      rowStatsContainer: Object.freeze({
+        label: 'Row stats area',
+        kind: 'surface',
+        capabilities: ['surface', 'border', 'shape'],
+        controls: BONUS_HUNT_SURFACE_CONTROLS,
       }),
       slotImage: Object.freeze({
         label: 'Slot image',
@@ -2846,6 +2856,7 @@ function controlsForCapabilities(capabilities = []) {
     if (capability === 'progress') ['background', 'fillColor', 'radius', 'width', 'height', 'maxWidth', 'maxHeight'].forEach(control => controls.add(control));
     if (capability === 'image') ['imageUrl', 'imageSize', 'imageFit', 'radius', 'width', 'height', 'maxWidth', 'maxHeight'].forEach(control => controls.add(control));
     if (capability === 'stateColor') ['textColor', 'accentColor'].forEach(control => controls.add(control));
+    if (capability === 'position') ['offsetX', 'offsetY'].forEach(control => controls.add(control));
   }
   return [...controls];
 }

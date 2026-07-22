@@ -39,7 +39,13 @@ export const classicRequestsEditableElements = Object.freeze({
   slotCarouselContainer: Object.freeze({
     label: 'Slot carousel',
     kind: 'carousel',
+    capabilities: ['spacing'],
+  }),
+  carouselBackdrop: Object.freeze({
+    label: 'Carousel backing box',
+    kind: 'surface',
     capabilities: ['surface', 'border', 'shadow', 'shape'],
+    cssVariables: ['--bht-current-bg', '--bht-current-accent'],
   }),
   slotListContainer: Object.freeze({
     label: 'Bonus list',
@@ -65,6 +71,21 @@ export const classicRequestsEditableElements = Object.freeze({
     label: 'Progress bar',
     kind: 'progress',
     capabilities: ['progress', 'shape'],
+  }),
+  progressBarFill: Object.freeze({
+    label: 'Progress fill',
+    kind: 'progress',
+    capabilities: ['progress', 'shape'],
+  }),
+  progressCount: Object.freeze({
+    label: 'Progress count',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
+  rowStatsContainer: Object.freeze({
+    label: 'Row stats area',
+    kind: 'surface',
+    capabilities: ['surface', 'border', 'shape'],
   }),
   footerContainer: Object.freeze({
     label: 'Footer',

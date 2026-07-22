@@ -803,6 +803,8 @@ export const CONTROL_DEFINITIONS = {
   padding: { id: 'padding', label: 'Space inside', type: 'range', min: 0, max: 80, step: 1, unit: 'px', simple: true, group: 'Size and spacing' },
   margin: { id: 'margin', label: 'Space outside', type: 'range', min: 0, max: 80, step: 1, unit: 'px', group: 'Size and spacing' },
   gap: { id: 'gap', label: 'Space between items', type: 'range', min: 0, max: 60, step: 1, unit: 'px', simple: true, group: 'Size and spacing' },
+  offsetX: { id: 'offsetX', label: 'Horizontal position', type: 'range', min: -960, max: 960, step: 1, unit: 'px', group: 'Position' },
+  offsetY: { id: 'offsetY', label: 'Vertical position', type: 'range', min: -540, max: 540, step: 1, unit: 'px', group: 'Position' },
   opacity: { id: 'opacity', label: 'Opacity', type: 'range', min: 0, max: 1, step: 0.05, simple: true, group: 'Effects', help: 'How see-through this part is.' },
   shadowBlur: { id: 'shadowBlur', label: 'Shadow softness', type: 'range', min: 0, max: 100, step: 1, unit: 'px', group: 'Effects' },
   shadowOpacity: { id: 'shadowOpacity', label: 'Shadow strength', type: 'range', min: 0, max: 1, step: 0.05, group: 'Effects' },
@@ -841,6 +843,7 @@ const SURFACE_CONTROLS = ['background', 'backgroundColor', 'borderColor', 'borde
 const IMAGE_CONTROLS = ['imageUrl', 'imageSize', 'imageFit', 'backgroundSize', 'backgroundPosition', 'radius', 'opacity', 'borderColor', 'borderWidth'];
 const PROGRESS_CONTROLS = ['background', 'backgroundColor', 'borderColor', 'borderWidth', 'radius', 'height', 'opacity'];
 const SIZE_CONTROLS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight', 'padding', 'margin', 'gap'];
+const POSITION_CONTROLS = ['offsetX', 'offsetY'];
 const ADVANCED_CORNER_CONTROLS = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
 const ANIMATION_CONTROLS = ['animation', 'duration', 'delay'];
 
@@ -995,7 +998,10 @@ export function getFriendlyElementLabel(elementId, fallback = '') {
     .replace(/^statValue$/i, 'Stat value')
     .replace(/^slotListContainer$/i, 'Slot list')
     .replace(/^slotRow$/i, 'Slot row')
+    .replace(/^rowStatsContainer$/i, 'Row stats area')
+    .replace(/^carouselBackdrop$/i, 'Carousel backing box')
     .replace(/^slotImage$/i, 'Slot image')
+    .replace(/^progressCount$/i, 'Progress count')
     .replace(/^progressBarFill$/i, 'Progress fill')
     .replace(/^progressBar$/i, 'Progress bar')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -1043,6 +1049,7 @@ export function getElementControlGroups(element = {}, mode = 'simple') {
     ...IMAGE_CONTROLS,
     ...PROGRESS_CONTROLS,
     ...SIZE_CONTROLS,
+    ...POSITION_CONTROLS,
     ...(advanced ? [...ADVANCED_CORNER_CONTROLS, ...ANIMATION_CONTROLS] : []),
   ];
   const seen = new Set();

@@ -56,6 +56,18 @@ function partAttrs(partId, stateId) {
   };
 }
 
+function withElementOffset(config, partId, style = {}) {
+  const offsetX = Math.round(Number(subValue(config, partId, 'offsetX', 0)) || 0);
+  const offsetY = Math.round(Number(subValue(config, partId, 'offsetY', 0)) || 0);
+  if (!offsetX && !offsetY) return style;
+  return {
+    ...style,
+    position: style.position || 'relative',
+    zIndex: style.zIndex ?? 3,
+    transform: [style.transform, `translate3d(${offsetX}px, ${offsetY}px, 0)`].filter(Boolean).join(' '),
+  };
+}
+
 async function fetchCryptoPrices(coins) {
   if (!coins || coins.length === 0) return {};
   const ids = coins.map(c => CRYPTO_IDS[c]).filter(Boolean).join(',');
@@ -437,12 +449,12 @@ function NavbarWidget({ config, widgetId, userId }) {
     switch (sectionId) {
       case 'identity':
         return (
-          <div {...partAttrs('displayName')} style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             {c.showAvatar !== false && (
               (() => {
                 const size = avatarImageSize || (barHeight * 0.72 * ((c.avatarSize ?? 100) / 100));
                 return (
-              <div {...partAttrs('avatar')} style={{
+              <div {...partAttrs('avatar')} style={withElementOffset(c, 'avatar', {
                 position: 'relative',
                 width: size,
                 height: size,
@@ -451,7 +463,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                 background: 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
-              }}>
+              })}>
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" {...partAttrs('avatar')} style={{
                     width: '100%', height: '100%',
@@ -477,8 +489,8 @@ function NavbarWidget({ config, widgetId, userId }) {
                 );
               })()
             )}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 }}>
-              <span {...partAttrs('displayName')} style={{
+            <div {...partAttrs('displayName')} style={withElementOffset(c, 'displayName', { display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 })}>
+              <span style={{
                 backgroundImage: isMetal
                   ? `linear-gradient(135deg, ${textColor}, ${mutedColor}, ${textColor}, ${mutedColor})`
                   : isGlass
@@ -509,10 +521,10 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'badge': {
         if (!badgeImageUrl) return null;
         return (
-          <div {...partAttrs('badgeImage')} style={{
+          <div {...partAttrs('badgeImage')} style={withElementOffset(c, 'badgeImage', {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             height: barHeight, flexShrink: 0, padding: '2px 0',
-          }}>
+          })}>
             <img src={badgeImageUrl} alt="" {...partAttrs('badgeImage')} style={{
               height: badgeImageSize || (barHeight * 0.85 * ((c.badgeSize ?? 100) / 100)),
               minWidth: badgeImageSize || (barHeight * 1.2 * ((c.badgeSize ?? 100) / 100)),
@@ -527,7 +539,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'clock': {
         if (c.showClock === false) return null;
         return (
-          <div {...partAttrs('clock')} style={isMetal ? {
+          <div {...partAttrs('clock')} style={withElementOffset(c, 'clock', isMetal ? {
             borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.6)}px` : '6px 22px',
             background: clockBg || 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
             border: `${clockBorderWidth}px solid ${clockBorderColor}`,
@@ -560,7 +572,7 @@ function NavbarWidget({ config, widgetId, userId }) {
             border: `${clockBorderWidth}px solid ${clockBorderColor}`,
             boxShadow: clockShadow || `0 0 18px ${accentColor}e6`,
             flexShrink: 0,
-          }}>
+          })}>
             {time || '--:--:--'}
           </div>
         );
@@ -569,7 +581,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'nowPlaying': {
         if (c.showNowPlaying === false || !displayNowPlaying) return null;
         return (
-          <div {...partAttrs('music')} style={{ display: 'flex', alignItems: 'center', minWidth: 0, flexShrink: 1 }}>
+          <div {...partAttrs('music')} style={withElementOffset(c, 'music', { display: 'flex', alignItems: 'center', minWidth: 0, flexShrink: 1 })}>
             <NowPlayingDisplay
               data={displayNowPlaying}
               musicDisplayStyle={c.musicDisplayStyle || 'text'}
@@ -589,7 +601,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'crypto': {
         if (!c.showCrypto || activeCoins.length === 0) return null;
         return (
-          <div {...partAttrs('crypto')} style={{ display: 'flex', alignItems: 'center', minWidth: 0, flexShrink: 0 }}>
+          <div {...partAttrs('crypto')} style={withElementOffset(c, 'crypto', { display: 'flex', alignItems: 'center', minWidth: 0, flexShrink: 0 })}>
             <CryptoTicker
               coins={activeCoins}
               prices={cryptoPrices}
@@ -612,7 +624,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'cta': {
         if (!c.showCTA || !c.ctaText) return null;
         return (
-          <div {...partAttrs('sponsor')} style={isMetal ? {
+          <div {...partAttrs('sponsor')} style={withElementOffset(c, 'sponsor', isMetal ? {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
             background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
@@ -656,7 +668,7 @@ function NavbarWidget({ config, widgetId, userId }) {
             letterSpacing: '0.24em', textTransform: 'uppercase',
             boxShadow: sponsorShadow || `0 0 24px ${ctaColor}d9`,
             flexShrink: 0,
-          }}>
+          })}>
             <span>{c.ctaText}</span>
           </div>
         );
@@ -669,12 +681,12 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'balance': {
         if (!c.showStartBalance || !c.startBalance) return null;
         return (
-          <div {...partAttrs('balance')} style={{
+          <div {...partAttrs('balance')} style={withElementOffset(c, 'balance', {
             display: 'flex', alignItems: 'center', gap: 8,
             fontFamily: balanceFontFamily,
             fontSize: balanceFontSize, fontWeight: balanceFontWeight, color: balanceTextColor,
             letterSpacing: '0.1em', flexShrink: 0, textShadow,
-          }}>
+          })}>
             <span style={{ fontSize: balanceFontSize * 0.78, color: balanceMutedColor, textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: balanceFontWeight }}>
               START
             </span>
@@ -688,7 +700,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'casino': {
         if (!c.showCasino || (!c.casinoName && !casinoLogoUrl)) return null;
         return (
-          <div {...partAttrs('casino')} style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div {...partAttrs('casino')} style={withElementOffset(c, 'casino', { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 })}>
             {casinoLogoUrl && (
               <img src={casinoLogoUrl} alt="" {...partAttrs('casino')} style={{
                 height: casinoImageSize || (barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100)),
@@ -724,7 +736,7 @@ function NavbarWidget({ config, widgetId, userId }) {
     return sections.flatMap((s, i) =>
       i === 0
         ? [<React.Fragment key={s.id}>{s.el}</React.Fragment>]
-        : [<div key={`sep-${s.id}`} {...partAttrs('separator')} style={sep} />, <React.Fragment key={s.id}>{s.el}</React.Fragment>]
+        : [<div key={`sep-${s.id}`} {...partAttrs('separator')} style={withElementOffset(c, 'separator', sep)} />, <React.Fragment key={s.id}>{s.el}</React.Fragment>]
     );
   };
 

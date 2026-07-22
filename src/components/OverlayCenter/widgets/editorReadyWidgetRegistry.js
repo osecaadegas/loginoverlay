@@ -187,7 +187,7 @@ export const editorReadyWidgetRegistry = Object.freeze({
           container: ['--bht-text', '--bht-card-radius'],
           headerContainer: ['--bht-header-bg', '--bht-header-accent'],
           statCell: ['--bht-count-bg'],
-          slotCarouselContainer: ['--bht-current-bg', '--bht-current-accent'],
+          carouselBackdrop: ['--bht-current-bg', '--bht-current-accent'],
           slotListContainer: ['--bht-list-bg', '--bht-list-accent'],
           progressBar: ['--bht-progress-bg', '--bht-progress-fill'],
           footerContainer: ['--bht-summary-bg', '--bht-total-pay-bg'],

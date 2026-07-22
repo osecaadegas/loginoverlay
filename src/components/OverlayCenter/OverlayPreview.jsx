@@ -46,6 +46,15 @@ function buildElementSelectionCss(widgetId, selectedElementId, hiddenElementIds 
   return rules.join('\n');
 }
 
+function getElementOffsets(config = {}, elementId = '') {
+  const subElements = config.__appearanceExplicitSubElements || config.subElements || {};
+  const element = subElements?.[elementId] || {};
+  return {
+    x: Math.round(Number(element.offsetX) || 0),
+    y: Math.round(Number(element.offsetY) || 0),
+  };
+}
+
 function isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) {
   if (selectedWidgetId) return widget.id === selectedWidgetId;
   if (selectedTarget?.scope === 'widget_type' && selectedTarget.widgetType) return widget.widget_type === selectedTarget.widgetType;
@@ -70,6 +79,7 @@ const PreviewSlot = memo(function PreviewSlot({
   onSelectElement,
   onResizeWidget,
   onMoveWidget,
+  onMoveElement,
 }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
@@ -107,8 +117,46 @@ const PreviewSlot = memo(function PreviewSlot({
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp, { once: true });
   };
+  const startElementMove = (event, elementId) => {
+    if (!onMoveElement || !highlighted || !elementId || elementId === 'container' || event.button !== 0) return false;
+    event.preventDefault();
+    event.stopPropagation();
+    const stateId = event.target?.closest?.('[data-widget-element]')?.getAttribute('data-widget-state') || 'default';
+    onSelectElement?.({ widget, elementId, stateId });
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startOffset = getElementOffsets(cfg, elementId);
+    const divisor = Math.max(0.1, Number(scale) || 1);
+    let hasMoved = false;
+    draggingRef.current = false;
+    const moveToEvent = (moveEvent, commit = false) => {
+      const nextOffsetX = clamp(Math.round(startOffset.x + ((moveEvent.clientX - startX) / divisor)), -slotSize.width, slotSize.width);
+      const nextOffsetY = clamp(Math.round(startOffset.y + ((moveEvent.clientY - startY) / divisor)), -slotSize.height, slotSize.height);
+      if (Math.abs(nextOffsetX - startOffset.x) > 2 || Math.abs(nextOffsetY - startOffset.y) > 2) {
+        draggingRef.current = true;
+        hasMoved = true;
+      }
+      onMoveElement(widget, { elementId, offsetX: nextOffsetX, offsetY: nextOffsetY, stateId }, { commit });
+    };
+    const onMove = (moveEvent) => moveToEvent(moveEvent, false);
+    const onUp = (upEvent) => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      if (hasMoved) moveToEvent(upEvent, true);
+      window.setTimeout(() => {
+        draggingRef.current = false;
+      }, 0);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    return true;
+  };
   const startMove = (event) => {
     if (isBg || !onMoveWidget || event.button !== 0 || event.target?.closest?.('.oc-preview-resize-handle')) return;
+    const elementNode = selectMode && highlighted ? event.target?.closest?.('[data-widget-element]') : null;
+    const elementInsideWidget = elementNode && event.currentTarget.contains(elementNode);
+    const elementId = elementInsideWidget ? elementNode.getAttribute('data-widget-element') : '';
+    if (elementId && startElementMove(event, elementId)) return;
     event.preventDefault();
     event.stopPropagation();
     const startX = event.clientX;
@@ -219,6 +267,7 @@ export default function OverlayPreview({
   onSelectElement,
   onResizeWidget,
   onMoveWidget,
+  onMoveElement,
 }) {
   const wrapRef = useRef(null);
   const previewNowRef = useRef(Date.now());
@@ -369,6 +418,7 @@ export default function OverlayPreview({
               onSelectElement={onSelectElement}
               onResizeWidget={onResizeWidget}
               onMoveWidget={onMoveWidget}
+              onMoveElement={onMoveElement}
             />
           ))}
           {visibleWidgets.length === 0 && (

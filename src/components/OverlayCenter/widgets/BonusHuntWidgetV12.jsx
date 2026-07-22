@@ -59,6 +59,31 @@ function partAttrs(partId, stateId) {
   };
 }
 
+const SURFACE_PAINT_STYLE_KEYS = new Set([
+  'background',
+  'backgroundColor',
+  'border',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'borderRadius',
+  'boxShadow',
+  'filter',
+  'opacity',
+  'backdropFilter',
+  'WebkitBackdropFilter',
+]);
+
+function splitStyleByKeys(style, keys) {
+  const picked = {};
+  const omitted = {};
+  Object.entries(style || {}).forEach(([key, value]) => {
+    if (keys.has(key)) picked[key] = value;
+    else omitted[key] = value;
+  });
+  return [picked, omitted];
+}
+
 export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests = [] }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
@@ -200,12 +225,15 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
   const statLabelStyle = scopedStyle('statLabel');
   const tagContainerStyle = scopedStyle('tagContainer');
   const tagTextStyle = scopedStyle('tagText');
-  const slotCarouselContainerStyle = scopedStyleWithLegacy('slotCarouselContainer', 'carousel');
+  const slotCarouselContainerRawStyle = scopedStyleWithLegacy('slotCarouselContainer', 'carousel');
+  const [legacyCarouselBackdropStyle, slotCarouselContainerStyle] = splitStyleByKeys(slotCarouselContainerRawStyle, SURFACE_PAINT_STYLE_KEYS);
+  const carouselBackdropStyle = scopedStyle('carouselBackdrop', legacyCarouselBackdropStyle);
   const slotImageStyle = scopedStyle('slotImage');
   const progressBarStyle = scopedStyle('progressBar');
   const progressBarFillStyle = scopedStyle('progressBarFill');
   const progressCountStyle = scopedStyle('progressCount');
   const slotListContainerStyle = scopedStyleWithLegacy('slotListContainer', 'bonusCard');
+  const rowStatsContainerStyle = scopedStyle('rowStatsContainer');
   const slotPositionNumberStyle = scopedStyle('slotPositionNumber');
   const slotThumbnailStyle = scopedStyle('slotThumbnail', slotImageStyle);
   const slotTitleStyle = scopedStyle('slotTitle');
@@ -372,6 +400,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
         <div className="bht-card bht-list-card" {...partAttrs('slotListContainer')} style={{ ...slotListContainerStyle, flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '2.65 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`} {...partAttrs('slotCarouselContainer')} style={slotCarouselContainerStyle}>
+            <div className="bht-stack-backdrop" {...partAttrs('carouselBackdrop')} style={carouselBackdropStyle} />
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
@@ -404,9 +433,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
             return (
               <div className="bht-progress">
                 <div className="bht-progress-bar" {...partAttrs('progressBar')} style={progressBarStyle}>
-                  <div className="bht-progress-fill" data-widget-element="progressBarFill" style={{ ...progressBarFillStyle, width: `${pct}%` }} />
+                  <div className="bht-progress-fill" {...partAttrs('progressBarFill')} style={{ ...progressBarFillStyle, width: `${pct}%` }} />
                 </div>
-                <span className="bht-progress-meta" data-widget-element="progressCount" style={progressCountStyle}>
+                <span className="bht-progress-meta" {...partAttrs('progressCount')} style={progressCountStyle}>
                   {(stats.superCount > 0 || stats.extremeCount > 0) && (
                     <span className="bht-progress-specials" aria-label={`${stats.superCount} super bonuses and ${stats.extremeCount} extreme bonuses`}>
                       {stats.superCount > 0 && (
@@ -453,7 +482,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
                               <span className="bht-list-row-requester" data-widget-element="requestsDescription" style={requestsDescriptionStyle}>by {bonus.requestedBy}</span>
                             )}
                           </div>
-                          <div className="bht-list-row-stats">
+                          <div className="bht-list-row-stats" {...partAttrs('rowStatsContainer')} style={rowStatsContainerStyle}>
                             <div className="bht-list-row-col">
                               <span className="bht-list-row-col-label" data-widget-element="winLabel" style={winLabelStyle}>WIN</span>
                               <span className="bht-list-row-col-val" data-widget-element="winValue" style={winValueStyle}>{currency}{payout.toFixed(0)}</span>
@@ -494,7 +523,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId, slotRequests
                         <span className="bht-list-row-requester" data-widget-element="requestsDescription" style={requestsDescriptionStyle}>by {bonus.requestedBy}</span>
                       )}
                     </div>
-                    <div className="bht-list-row-stats">
+                    <div className="bht-list-row-stats" {...partAttrs('rowStatsContainer')} style={rowStatsContainerStyle}>
                       <div className="bht-list-row-col">
                         <span className="bht-list-row-col-label" data-widget-element="winLabel" style={winLabelStyle}>WIN</span>
                         <span className="bht-list-row-col-val" data-widget-element="winValue" style={winValueStyle}>{currency}{payout.toFixed(0)}</span>

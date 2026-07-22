@@ -1310,17 +1310,29 @@ function buildBonusHuntPatch(tokens) {
       },
       mainStatsContainer: {
         background: 'transparent',
-        borderColor: tokens.colors.border,
-        borderWidth: tokens.shape.borderWidth,
+        borderColor: 'transparent',
+        borderWidth: 0,
       },
       statCell: common.statsCard,
       slotCarouselContainer: {
+        padding: 0,
+        gap: 0,
+      },
+      carouselBackdrop: {
         ...common.card,
         background: tokens.colors.elevatedSurface,
       },
       slotListContainer: cardSurface,
       bonusCard: cardSurface,
       slotRow: listRowSurface,
+      rowStatsContainer: {
+        background: 'transparent',
+        borderColor: 'transparent',
+        borderWidth: 0,
+        radius: 0,
+        padding: 0,
+        opacity: 1,
+      },
       requestsSectionContainer: {
         ...cardSurface,
         background: tokens.colors.secondarySurface,
@@ -2075,7 +2087,7 @@ function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = ''
     delete next.slotImage.visible;
   }
   if (widgetType === 'bonus_hunt') {
-    for (const elementId of ['slotImage', 'slotThumbnail', 'slotCarouselContainer', 'slotListContainer', 'slotRow', 'container', 'headerContainer', 'footerContainer']) {
+    for (const elementId of ['slotImage', 'slotThumbnail', 'slotListContainer', 'slotRow', 'container', 'headerContainer', 'footerContainer']) {
       if (!next[elementId]) continue;
       delete next[elementId].imageSize;
       delete next[elementId].width;
@@ -2083,7 +2095,7 @@ function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = ''
       delete next[elementId].minHeight;
       delete next[elementId].maxHeight;
     }
-    for (const elementId of ['slotCarouselContainer', 'slotListContainer', 'slotRow', 'container', 'headerContainer', 'statCell', 'footerContainer']) {
+    for (const elementId of ['slotListContainer', 'slotRow', 'container', 'headerContainer', 'statCell', 'footerContainer']) {
       if (!next[elementId]) continue;
       delete next[elementId].padding;
       delete next[elementId].gap;
