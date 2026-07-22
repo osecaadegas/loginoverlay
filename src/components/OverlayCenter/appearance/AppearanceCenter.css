@@ -93,6 +93,10 @@
   gap: 4px;
 }
 
+.ve-file-input {
+  display: none;
+}
+
 .ve-preview-state-picker,
 .ve-toolbar-backgrounds {
   display: inline-flex;

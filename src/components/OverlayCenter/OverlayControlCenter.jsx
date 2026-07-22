@@ -1825,6 +1825,7 @@ export default function OverlayControlCenter() {
               overlayState={overlayState}
               saveTheme={saveTheme}
               saveWidget={saveWidget}
+              addWidget={addWidget}
               updateState={updateState}
               onOpenPreview={openPreview}
               onFocusPreview={focusPreview}

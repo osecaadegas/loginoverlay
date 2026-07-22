@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Copy,
+  Download,
   ExternalLink,
   Eye,
   Layers,
@@ -19,6 +20,7 @@ import {
   Sparkles,
   Trash2,
   Undo2,
+  Upload,
   Wand2,
   X,
   ZoomIn,
@@ -87,7 +89,13 @@ import {
   getWidgetStyleOptionsForQuickEditor,
   isWidgetAppearanceV2Enabled,
 } from './v2/widgetAppearanceRegistry';
+import { getWidgetDef } from '../widgets/widgetRegistry';
 import { FontSelectInput, LayerToggleButton, PropertyControl } from './propertyControls';
+import {
+  applyWidgetStylePack,
+  createWidgetStylePack,
+  validateWidgetStylePack,
+} from './widgetStyleTransfer';
 import './AppearanceCenter.css';
 
 const TOUR_STORAGE_KEY = 'streamers_center_appearance_tour_hidden';
@@ -186,6 +194,25 @@ function safeJson(value) {
 function createClientId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return `${CLIENT_ID_PREFIX}_${crypto.randomUUID()}`;
   return `${CLIENT_ID_PREFIX}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+}
+
+function downloadJsonFile(filename, data) {
+  if (typeof document === 'undefined' || typeof Blob === 'undefined' || typeof URL === 'undefined') return false;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+  return true;
+}
+
+function stylePackFilename() {
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  return `streamers-center-widget-styles-${stamp}.json`;
 }
 
 function getInitialMode() {
@@ -694,6 +721,7 @@ export default function AppearanceCenter({
   overlayState,
   saveTheme,
   saveWidget,
+  addWidget,
   updateState,
   onOpenPreview,
   onFocusPreview,
@@ -701,6 +729,7 @@ export default function AppearanceCenter({
 }) {
   const clientIdRef = useRef(createClientId());
   const saveTimerRef = useRef(null);
+  const importStylesInputRef = useRef(null);
   const serverState = useMemo(
     () => buildOverlayAppearanceState(overlayState || {}, { theme, widgets }),
     [overlayState, theme, widgets]
@@ -1535,6 +1564,75 @@ export default function AppearanceCenter({
     setToast('Preset duplicated');
   }, [serverState, updateState]);
 
+  const exportWidgetStyles = useCallback(() => {
+    const pack = createWidgetStylePack({ appearance: draft, widgets });
+    if (!pack.widgets.length) {
+      setToast('No widget styles to export');
+      return;
+    }
+    const downloaded = downloadJsonFile(stylePackFilename(), pack);
+    setToast(downloaded ? `Exported styles for ${pack.widgets.length} widgets` : 'Export is not available in this browser');
+  }, [draft, widgets]);
+
+  const importWidgetStyles = useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const pack = JSON.parse(text);
+      const validation = validateWidgetStylePack(pack);
+      if (!validation.valid) {
+        setToast(validation.error);
+        return;
+      }
+      let targetWidgets = widgets;
+      let createdCount = 0;
+      if (addWidget) {
+        const importCounts = new Map();
+        for (const item of pack.widgets || []) {
+          if (!item?.widgetType) continue;
+          importCounts.set(item.widgetType, (importCounts.get(item.widgetType) || 0) + 1);
+        }
+        const localCounts = new Map();
+        for (const widget of widgets || []) {
+          localCounts.set(widget.widget_type, (localCounts.get(widget.widget_type) || 0) + 1);
+        }
+        const createdWidgets = [];
+        for (const [widgetType, count] of importCounts.entries()) {
+          const missing = Math.max(0, count - (localCounts.get(widgetType) || 0));
+          const def = getWidgetDef(widgetType);
+          if (!def || !missing) continue;
+          for (let index = 0; index < missing; index += 1) {
+            const created = await addWidget(widgetType, def.defaults || {});
+            if (created?.id) createdWidgets.push(created);
+          }
+        }
+        if (createdWidgets.length) {
+          createdCount = createdWidgets.length;
+          targetWidgets = [...widgets, ...createdWidgets];
+        }
+      }
+      const result = applyWidgetStylePack({ appearance: draft, widgets: targetWidgets, pack });
+      if (result.error) {
+        setToast(result.error);
+        return;
+      }
+      if (!result.applied) {
+        setToast('No matching widgets found for this style pack');
+        return;
+      }
+      commitDraft(result.appearance, `Import widget style pack (${result.applied} widgets)`);
+      const skippedCount = result.skipped.reduce((sum, item) => sum + Number(item.count || 0), 0);
+      const createdText = createdCount ? `, created ${createdCount}` : '';
+      const skippedText = skippedCount ? `, skipped ${skippedCount}` : '';
+      setToast(`Imported styles for ${result.applied} widgets${createdText}${skippedText}`);
+    } catch (err) {
+      console.error('[AppearanceCenter] style pack import failed', err);
+      setToast('Could not import style pack');
+    }
+  }, [addWidget, commitDraft, draft, widgets]);
+
   const resetElement = useCallback(() => {
     if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked) return;
     const modernPath = selectedStateId && selectedStateId !== 'default'
@@ -1964,6 +2062,17 @@ export default function AppearanceCenter({
           </ToolbarGroup>
 
           <ToolbarGroup label="Actions">
+            <input
+              ref={importStylesInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="ve-file-input"
+              onChange={importWidgetStyles}
+              aria-hidden="true"
+              tabIndex={-1}
+            />
+            <ToolbarButton icon={Download} onClick={exportWidgetStyles}>Export Styles</ToolbarButton>
+            <ToolbarButton icon={Upload} onClick={() => importStylesInputRef.current?.click()}>Import Styles</ToolbarButton>
             <ToolbarButton icon={RotateCcw} onClick={resetWidget}>Reset</ToolbarButton>
             <ToolbarButton icon={Save} onClick={() => persistDraft(draft, 'manual')}>Save Draft</ToolbarButton>
             <ToolbarButton icon={ExternalLink} primary onClick={publish} disabled={publishStatus === 'publishing'}>Publish to OBS</ToolbarButton>

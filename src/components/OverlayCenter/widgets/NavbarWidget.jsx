@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchNowPlaying, serverRefreshToken } from '../../../utils/spotifyAuth';
-import { subValue } from './shared/appearanceStyles';
+import { subElementStyle, subValue } from './shared/appearanceStyles';
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {
@@ -57,11 +57,13 @@ function partAttrs(partId, stateId) {
 }
 
 function withElementOffset(config, partId, style = {}) {
+  const scoped = subElementStyle(config, partId, style);
   const offsetX = Math.round(Number(subValue(config, partId, 'offsetX', 0)) || 0);
   const offsetY = Math.round(Number(subValue(config, partId, 'offsetY', 0)) || 0);
-  if (!offsetX && !offsetY) return style;
+  if (!offsetX && !offsetY) return scoped;
+  const { transform, ...styleWithoutTransform } = scoped;
   return {
-    ...style,
+    ...styleWithoutTransform,
     position: style.position || 'relative',
     left: style.left ?? `${offsetX}px`,
     top: style.top ?? `${offsetY}px`,

@@ -25,6 +25,45 @@ try {
   const appearanceModel = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/appearanceModel.js');
   const editorSchema = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/editorSchema.js');
   const widgetSlotModule = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/v2/widgetSlot.js');
+  const styleModule = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/appearanceStyles.js');
+  const styleTransferModule = await server.ssrLoadModule('/src/components/OverlayCenter/appearance/widgetStyleTransfer.js');
+
+  const layoutControlStyle = styleModule.subElementStyle({
+    __appearanceExplicitSubElements: {
+      panel: {
+        width: 640,
+        height: 140,
+        minWidth: 220,
+        minHeight: 80,
+        maxWidth: 1920,
+        maxHeight: 320,
+        padding: 18,
+        gap: 12,
+      },
+    },
+  }, 'panel');
+  assert.equal(layoutControlStyle.width, '640px', 'part-scoped width control reaches rendered style');
+  assert.equal(layoutControlStyle.height, '140px', 'part-scoped height control reaches rendered style');
+  assert.equal(layoutControlStyle.minWidth, '220px', 'part-scoped min-width control reaches rendered style');
+  assert.equal(layoutControlStyle.minHeight, '80px', 'part-scoped min-height control reaches rendered style');
+  assert.equal(layoutControlStyle.maxWidth, '1920px', 'part-scoped max-width control reaches rendered style');
+  assert.equal(layoutControlStyle.maxHeight, '320px', 'part-scoped max-height control reaches rendered style');
+  assert.equal(layoutControlStyle.padding, '18px', 'part-scoped padding control reaches rendered style');
+  assert.equal(layoutControlStyle.gap, '12px', 'part-scoped gap control reaches rendered style');
+
+  const imageLayoutStyle = styleModule.subElementStyle({
+    __appearanceExplicitSubElements: {
+      logo: {
+        imageSize: 72,
+        width: 180,
+        height: 52,
+        maxWidth: 240,
+      },
+    },
+  }, 'logo');
+  assert.equal(imageLayoutStyle.width, '180px', 'explicit width overrides image-size preset on image parts');
+  assert.equal(imageLayoutStyle.height, '52px', 'explicit height overrides image-size preset on image parts');
+  assert.equal(imageLayoutStyle.maxWidth, '240px', 'image parts preserve max-width controls');
 
   const registryResult = registryModule.validateWidgetAppearanceRegistry();
   assert.equal(registryResult.valid, true, `registry should validate: ${registryResult.errors.join(', ')}`);
@@ -1157,6 +1196,61 @@ try {
       },
     },
   };
+  const stylePack = styleTransferModule.createWidgetStylePack({
+    appearance,
+    widgets: [navbarWidget, betsWidget, backgroundWidget],
+    exportedAt: '2026-07-22T00:00:00.000Z',
+  });
+  assert.equal(stylePack.kind, styleTransferModule.WIDGET_STYLE_PACK_KIND, 'Widget style export uses the style-pack contract');
+  assert.equal(stylePack.widgets.length, 3, 'Widget style export includes selected widget style entries');
+  assert.equal(stylePack.widgets.find(item => item.widgetType === 'navbar')?.style.activeStyleId, 'glass', 'Widget style export keeps active style id');
+  assert.equal(JSON.stringify(stylePack).includes('Streamer'), false, 'Widget style export does not copy widget config identity values');
+  assert.equal(JSON.stringify(stylePack).includes('Just Content'), false, 'Widget style export does not copy widget config text values');
+  const importedStyleResult = styleTransferModule.applyWidgetStylePack({
+    appearance: {
+      widgets: {
+        receiverNav: {
+          activeStyleId: 'v1',
+          styles: {
+            v1: {
+              appearanceV2: resolverModule.buildAppearanceV2ForStorage('navbar', {
+                material: 'matte',
+                primaryColor: '#ffffff',
+                shape: 'square',
+              }),
+            },
+          },
+        },
+      },
+    },
+    widgets: [
+      {
+        id: 'receiverNav',
+        widget_type: 'navbar',
+        config: {
+          streamerName: 'Receiver',
+          motto: 'Own values stay',
+        },
+      },
+      {
+        id: 'receiverBets',
+        widget_type: 'bets',
+        config: {
+          options: [{ label: 'A' }],
+          bets: { a: 100 },
+        },
+      },
+    ],
+    pack: stylePack,
+  });
+  assert.equal(importedStyleResult.error, '', 'Widget style import accepts a valid style pack');
+  assert.equal(importedStyleResult.applied, 2, 'Widget style import applies only matching local widgets');
+  assert.ok(importedStyleResult.skipped.some(item => item.widgetType === 'background'), 'Widget style import reports missing widget types');
+  assert.equal(importedStyleResult.appearance.widgets.receiverNav.activeStyleId, 'glass', 'Widget style import maps active style to receiver widget id');
+  assert.equal(importedStyleResult.appearance.widgets.receiverNav.styles.glass.appearanceV2.simple.material, 'glass', 'Widget style import maps style payload to receiver widget id');
+  assert.equal(importedStyleResult.appearance.widgets.receiverBets.styles.v3_grid_2x3.appearanceV2.elementOverrides.widgetBackground.radius, 88, 'Widget style import preserves part-scoped element overrides');
+  assert.equal(JSON.stringify(importedStyleResult.appearance).includes('Receiver'), false, 'Widget style import does not write receiver config values into appearance');
+
   const carouselAppearance = {
     widgets: {
       sr2: {
@@ -1445,6 +1539,7 @@ try {
   assert.ok(navbarWidgetSource.includes('sponsorFontFamily'), 'Navbar renderer maps sponsor font family');
   assert.ok(navbarWidgetSource.includes('balanceFontFamily'), 'Navbar renderer maps balance font family');
   assert.ok(navbarWidgetSource.includes('barOuterSized'), 'Navbar renderer applies bar frame sizing');
+  assert.ok(navbarWidgetSource.includes('subElementStyle(config, partId, style)'), 'Navbar element helper applies part-scoped sizing and spacing styles');
   assert.ok(navbarWidgetSource.includes('sponsorBorderColor'), 'Navbar renderer maps CTA border controls');
   assertRendererPartTargets(navbarWidgetSource, 'Navbar', [
     'container',

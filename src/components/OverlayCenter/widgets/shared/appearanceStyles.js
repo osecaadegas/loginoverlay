@@ -160,6 +160,10 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
     const borderStyle = element.borderStyle ?? fallback.borderStyle ?? 'solid';
     style.border = `${px(width)} ${borderStyle} ${color}`;
   }
+  if (element.imageSize != null) {
+    style.width = px(element.imageSize);
+    style.height = px(element.imageSize);
+  }
   if (element.width != null) style.width = px(element.width);
   if (element.height != null) style.height = px(element.height);
   if (element.minWidth != null) style.minWidth = px(element.minWidth);
@@ -178,10 +182,6 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
   }
   if (hasLayoutSizing(element) && style.display == null) {
     style.display = 'inline-block';
-  }
-  if (element.imageSize != null) {
-    style.width = px(element.imageSize);
-    style.height = px(element.imageSize);
   }
   if (element.imageUrl != null && String(element.imageUrl).trim()) {
     style.backgroundImage = `url("${String(element.imageUrl).replace(/"/g, '')}")`;
