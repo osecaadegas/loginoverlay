@@ -304,7 +304,7 @@ function buildBetsPatch(tokens, styleId) {
     progressColor: primary,
     progressBgColor: elevated,
     fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
-    ...(isStyleSeca ? { barColorMode: 'solid', barHeight: 18 } : {}),
+    ...(isStyleSeca ? { barColorMode: 'solid', barHeight: 18, widgetWidth: 420, widgetHeight: 430 } : {}),
     subElements: {
       widgetBackground: {
         background: surface,
