@@ -521,9 +521,26 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
         textColor: tokens.colors.text,
         gap: tokens.spacing.itemGap,
       }),
+      messageList: {
+        background: 'transparent',
+        gap: tokens.spacing.itemGap,
+      },
+      messageText: textSubElement(tokens, 'text', {
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        lineHeight: tokens.typography.lineHeight,
+      }),
       username: textSubElement(tokens, 'accent', { fontWeight: tokens.typography.valueWeight }),
       avatar: surfaceSubElement(tokens, 'badge'),
       badge: surfaceSubElement(tokens, 'badge', { background: tokens.colors.secondarySurface }),
+      highlightedMessage: surfaceSubElement(tokens, 'card', {
+        background: tokens.colors.accent,
+        textColor: tokens.colors.text,
+        borderColor: tokens.colors.primary,
+      }),
+      platformLegend: surfaceSubElement(tokens, 'header', {
+        textColor: tokens.colors.mutedText,
+      }),
     };
   }
 
@@ -1628,10 +1645,8 @@ function buildRtpStatsPatch(tokens, styleId) {
         borderColor: isMinimal ? 'transparent' : tokens.colors.border,
         borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
         radius: tokens.shape.rootRadius,
-        padding: tokens.spacing.rootPadding,
         height: barHeight,
         maxWidth,
-        gap: tokens.spacing.itemGap,
         shadow: combinedShadow,
         glow,
       },

@@ -374,7 +374,7 @@ function BetsWidget({ config }) {
               color: optionText,
               borderRadius: toCssLength(radius, '12px'),
             }, 'optionCard', stateId);
-            const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, 'optionRow', `card_${i + 1}`);
+            const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, undefined, `card_${i + 1}`);
             const optionNumberStyle = elementStyle(c, 'cardNumberBadge', {
               background: optColor || accentColor,
               color: '#ffffff',
@@ -469,7 +469,7 @@ function BetsWidget({ config }) {
               color: optionText,
               borderRadius: toCssLength(radius, '10px'),
             }, 'optionCard', stateId);
-            const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, 'optionRow', `card_${i + 1}`);
+            const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, undefined, `card_${i + 1}`);
             const optionNumberStyle = elementStyle(c, 'cardNumberBadge', {
               background: optColor || accentColor,
               color: '#ffffff',

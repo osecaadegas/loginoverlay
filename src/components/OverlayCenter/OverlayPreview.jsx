@@ -15,6 +15,15 @@ import './widgets/builtinWidgets';
 const DEFAULT_W = 1920;
 const DEFAULT_H = 1080;
 
+function compareWidgetLayer(a, b) {
+  const az = Number(a?.z_index) || 0;
+  const bz = Number(b?.z_index) || 0;
+  if (az !== bz) return az - bz;
+  if (a?.widget_type === 'background' && b?.widget_type !== 'background') return -1;
+  if (a?.widget_type !== 'background' && b?.widget_type === 'background') return 1;
+  return String(a?.id || '').localeCompare(String(b?.id || ''));
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
@@ -161,7 +170,7 @@ const PreviewSlot = memo(function PreviewSlot({
     const selectedMovableElementId = selectedElementId && selectedElementId !== 'container' ? selectedElementId : '';
     const elementId = clickedElementId && clickedElementId !== 'container' ? clickedElementId : selectedMovableElementId;
     if (elementId && startElementMove(event, elementId)) return;
-    if (selectMode && highlighted && selectedMovableElementId) {
+    if (selectMode && highlighted && selectedMovableElementId && onMoveElement) {
       event.preventDefault();
       event.stopPropagation();
       return;
@@ -300,7 +309,9 @@ export default function OverlayPreview({
   const CANVAS_W = resolvedAppearance?.canvas?.width || theme?.canvas_width || DEFAULT_W;
   const CANVAS_H = resolvedAppearance?.canvas?.height || theme?.canvas_height || DEFAULT_H;
 
-  const baseVisibleWidgets = useMemo(() => (resolvedWidgets || []).filter(w => w.is_visible), [resolvedWidgets]);
+  const baseVisibleWidgets = useMemo(() => (resolvedWidgets || [])
+    .filter(w => w.is_visible)
+    .sort(compareWidgetLayer), [resolvedWidgets]);
 
   const focusWidget = useMemo(() => {
     if (selectedWidgetId) return baseVisibleWidgets.find(widget => widget.id === selectedWidgetId) || null;

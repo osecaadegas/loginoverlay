@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   CheckCircle2,
   Copy,
   Download,
@@ -182,6 +184,19 @@ const GLOBAL_QUICK_STYLE_CONTROLS = new Set([
   'maxWidth',
   'musicDisplayStyle',
 ]);
+
+function compareWidgetLayer(a, b) {
+  const az = Number(a?.z_index) || 0;
+  const bz = Number(b?.z_index) || 0;
+  if (az !== bz) return az - bz;
+  if (a?.widget_type === 'background' && b?.widget_type !== 'background') return -1;
+  if (a?.widget_type !== 'background' && b?.widget_type === 'background') return 1;
+  return String(a?.id || '').localeCompare(String(b?.id || ''));
+}
+
+function getOrderedLayerWidgets(widgets = []) {
+  return [...widgets].sort(compareWidgetLayer);
+}
 
 function safeJson(value) {
   try {
@@ -452,6 +467,28 @@ function resolveV2ElementOverridePath(root, elementId, property, stateId = 'defa
     return `${root}.appearanceV2.elementOverrides.${elementId}.states.${stateId}.${property}`;
   }
   return `${root}.appearanceV2.elementOverrides.${elementId}.${property}`;
+}
+
+function setWidgetSizeOverridePaths(source, root, dimension, value, includeV2 = false) {
+  if (!root || !['width', 'height'].includes(dimension)) return source;
+  const visualKey = dimension === 'width' ? 'widgetWidth' : 'widgetHeight';
+  let next = setByPath(source, `${root}.appearance.container.${dimension}`, value);
+  next = setByPath(next, `${root}.visual.${visualKey}`, value);
+  if (includeV2) {
+    next = setByPath(next, resolveV2ElementOverridePath(root, 'container', dimension), value);
+  }
+  return next;
+}
+
+function omitWidgetSizeOverridePaths(source, root, dimension, includeV2 = false) {
+  if (!root || !['width', 'height'].includes(dimension)) return source;
+  const visualKey = dimension === 'width' ? 'widgetWidth' : 'widgetHeight';
+  let next = omitPath(source, `${root}.appearance.container.${dimension}`);
+  next = omitPath(next, `${root}.visual.${visualKey}`);
+  if (includeV2) {
+    next = omitPath(next, resolveV2ElementOverridePath(root, 'container', dimension));
+  }
+  return next;
 }
 
 function resolveLegacyElementPath(root, elementId, property, stateId = 'default') {
@@ -967,7 +1004,7 @@ export default function AppearanceCenter({
 
   const filteredWidgets = useMemo(() => {
     const term = widgetSearch.trim().toLowerCase();
-    return widgets.filter(widget => {
+    return getOrderedLayerWidgets(widgets).reverse().filter(widget => {
       const name = getWidgetDisplayName(widget).toLowerCase();
       const type = String(widget.widget_type || '').toLowerCase();
       return !term || name.includes(term) || type.includes(term);
@@ -1267,8 +1304,8 @@ export default function AppearanceCenter({
     if (!root) return;
     setSelectedTarget(resizeTarget);
     commitDraft(prev => {
-      let next = setByPath(prev, `${root}.appearance.container.width`, size.width);
-      next = setByPath(next, `${root}.appearance.container.height`, size.height);
+      let next = setWidgetSizeOverridePaths(prev, root, 'width', size.width, isWidgetAppearanceV2Enabled(widget.widget_type));
+      next = setWidgetSizeOverridePaths(next, root, 'height', size.height, isWidgetAppearanceV2Enabled(widget.widget_type));
       return next;
     }, `Resize ${getWidgetDisplayName(widget)}`);
   }, [commitDraft, draft]);
@@ -1360,6 +1397,40 @@ export default function AppearanceCenter({
       });
   }, [saveWidget]);
 
+  const moveWidgetLayer = useCallback((widget, direction, event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (!widget?.id || !saveWidget) return;
+
+    const ordered = getOrderedLayerWidgets(widgets);
+    const currentIndex = ordered.findIndex(item => item.id === widget.id);
+    if (currentIndex < 0) return;
+
+    const targetIndex = direction === 'up' ? currentIndex + 1 : currentIndex - 1;
+    if (targetIndex < 0 || targetIndex >= ordered.length) return;
+
+    const normalized = ordered.map((item, index) => ({ ...item, z_index: index + 1 }));
+    const current = normalized[currentIndex];
+    const target = normalized[targetIndex];
+    normalized[currentIndex] = { ...target, z_index: currentIndex + 1 };
+    normalized[targetIndex] = { ...current, z_index: targetIndex + 1 };
+
+    const changed = normalized.filter(next => {
+      const original = widgets.find(item => item.id === next.id);
+      return original && Number(original.z_index || 0) !== Number(next.z_index || 0);
+    });
+
+    Promise.all(changed.map(next => saveWidget(next)))
+      .then(() => {
+        setPublishStatus('unpublished');
+        setToast(`${getWidgetDisplayName(widget)} moved ${direction === 'up' ? 'above' : 'below'}`);
+      })
+      .catch(err => {
+        console.error('[AppearanceCenter] widget layer update failed', err);
+        setToast('Widget layer order could not be changed');
+      });
+  }, [saveWidget, widgets]);
+
   const undo = useCallback(() => {
     setUndoStack(stack => {
       if (!stack.length) return stack;
@@ -1438,6 +1509,17 @@ export default function AppearanceCenter({
   const updateElementControlFor = useCallback((elementId, control, value) => {
     if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
     const normalized = validateEditorValue(control, value);
+    if (
+      elementId === 'container'
+      && ['width', 'height'].includes(control.id)
+      && (!selectedStateId || selectedStateId === 'default')
+    ) {
+      commitDraft(
+        prev => setWidgetSizeOverridePaths(prev, selectedTargetRoot, control.id, normalized, selectedWidgetUsesV2),
+        `${elementId}.${control.id}`
+      );
+      return;
+    }
     const path = selectedWidgetUsesV2
       ? resolveV2ElementOverridePath(selectedTargetRoot, elementId, control.id, selectedStateId)
       : resolveElementPath(selectedTargetRoot, elementId, control.id, selectedStateId);
@@ -1451,11 +1533,22 @@ export default function AppearanceCenter({
 
   const resetElementControlFor = useCallback((elementId, control) => {
     if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+    if (
+      elementId === 'container'
+      && ['width', 'height'].includes(control.id)
+      && (!selectedStateId || selectedStateId === 'default')
+    ) {
+      commitDraft(
+        prev => omitWidgetSizeOverridePaths(prev, selectedTargetRoot, control.id, selectedWidgetUsesV2),
+        `Reset ${elementId}.${control.id}`
+      );
+      return;
+    }
     const v2Path = resolveV2ElementOverridePath(selectedTargetRoot, elementId, control.id, selectedStateId);
     const modernPath = resolveElementPath(selectedTargetRoot, elementId, control.id, selectedStateId);
     const legacyPath = resolveLegacyElementPath(selectedTargetRoot, elementId, control.id, selectedStateId);
     commitDraft(prev => omitPath(omitPath(omitPath(prev, v2Path), modernPath), legacyPath), `Reset ${elementId}.${control.id}`);
-  }, [commitDraft, isElementLocked, selectedStateId, selectedTargetRoot]);
+  }, [commitDraft, isElementLocked, selectedStateId, selectedTargetRoot, selectedWidgetUsesV2]);
 
   const resetElementControl = useCallback((control) => {
     if (!selectedElement?.id) return;
@@ -1465,15 +1558,25 @@ export default function AppearanceCenter({
   const updateWidgetControl = useCallback((item, value) => {
     const root = selectedTargetRoot;
     const normalized = validateEditorValue(item.control, value);
+    if (root && (item.id === 'widgetWidth' || item.id === 'widgetHeight')) {
+      const dimension = item.id === 'widgetWidth' ? 'width' : 'height';
+      commitDraft(prev => setWidgetSizeOverridePaths(prev, root, dimension, normalized, selectedWidgetUsesV2), item.label);
+      return;
+    }
     const path = root ? `${root}.appearance.${item.path}` : item.path;
     commitDraft(prev => setByPath(prev, path, normalized), item.label);
-  }, [commitDraft, selectedTargetRoot]);
+  }, [commitDraft, selectedTargetRoot, selectedWidgetUsesV2]);
 
   const resetWidgetControl = useCallback((item) => {
     const root = selectedTargetRoot;
+    if (root && (item.id === 'widgetWidth' || item.id === 'widgetHeight')) {
+      const dimension = item.id === 'widgetWidth' ? 'width' : 'height';
+      commitDraft(prev => omitWidgetSizeOverridePaths(prev, root, dimension, selectedWidgetUsesV2), `Reset ${item.label}`);
+      return;
+    }
     const path = root ? `${root}.appearance.${item.path}` : item.path;
     commitDraft(prev => omitPath(prev, path), `Reset ${item.label}`);
-  }, [commitDraft, selectedTargetRoot]);
+  }, [commitDraft, selectedTargetRoot, selectedWidgetUsesV2]);
 
   const applyPreset = useCallback((preset) => {
     const appearance = getPresetAppearance(preset);
@@ -1853,6 +1956,11 @@ export default function AppearanceCenter({
     const active = selectedWidget?.id === widget.id;
     const edited = !!getByPath(draft, `widgets.${widget.id}`);
     const categoryLabel = WIDGET_CATEGORY_FILTERS.find(item => item.id === getWidgetCategory(widget))?.label || 'Other';
+    const orderedLayers = getOrderedLayerWidgets(widgets);
+    const layerIndex = orderedLayers.findIndex(item => item.id === widget.id);
+    const layerNumber = layerIndex >= 0 ? layerIndex + 1 : Number(widget.z_index) || 1;
+    const canMoveDown = layerIndex > 0;
+    const canMoveUp = layerIndex >= 0 && layerIndex < orderedLayers.length - 1;
     return (
       <div
         key={widget.id}
@@ -1867,16 +1975,39 @@ export default function AppearanceCenter({
             <small>Category: {categoryLabel}</small>
           </span>
         </button>
-        <button
-          type="button"
-          className={`ve-widget-toggle${widget.is_visible ? ' is-on' : ''}`}
-          onClick={(event) => toggleWidgetVisibility(widget, event)}
-          title={widget.is_visible ? 'Disable widget on overlay' : 'Enable widget on overlay'}
-          aria-pressed={widget.is_visible}
-        >
-          <span />
-          <strong>{widget.is_visible ? 'Enabled' : 'Disabled'}</strong>
-        </button>
+        <div className="ve-widget-card__actions">
+          <button
+            type="button"
+            className={`ve-widget-toggle${widget.is_visible ? ' is-on' : ''}`}
+            onClick={(event) => toggleWidgetVisibility(widget, event)}
+            title={widget.is_visible ? 'Disable widget on overlay' : 'Enable widget on overlay'}
+            aria-pressed={widget.is_visible}
+          >
+            <span />
+            <strong>{widget.is_visible ? 'Enabled' : 'Disabled'}</strong>
+          </button>
+          <div className="ve-widget-layer-controls" aria-label={`${getWidgetDisplayName(widget)} layer order`}>
+            <button
+              type="button"
+              onClick={(event) => moveWidgetLayer(widget, 'up', event)}
+              disabled={!canMoveUp}
+              title="Move above"
+              aria-label={`Move ${getWidgetDisplayName(widget)} above`}
+            >
+              <ArrowUp size={13} />
+            </button>
+            <span title="Layer position">L{layerNumber}</span>
+            <button
+              type="button"
+              onClick={(event) => moveWidgetLayer(widget, 'down', event)}
+              disabled={!canMoveDown}
+              title="Move below"
+              aria-label={`Move ${getWidgetDisplayName(widget)} below`}
+            >
+              <ArrowDown size={13} />
+            </button>
+          </div>
+        </div>
         {edited && <span className="ve-edited-dot" title="Style edited" />}
       </div>
     );

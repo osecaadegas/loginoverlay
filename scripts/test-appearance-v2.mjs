@@ -111,6 +111,9 @@ try {
   assert.ok(registryModule.getWidgetAppearanceCapability('bets').elements.betCards, 'Bets declares independent bet card parts');
   assert.ok(registryModule.getWidgetAppearanceCapability('background').elements.media, 'Background declares media URL controls');
   assert.ok(registryModule.getWidgetAppearanceCapability('background').elements.effects, 'Background declares effect controls');
+  assert.ok(registryModule.getWidgetAppearanceCapability('chat').elements.messageList, 'Chat declares the message list as an editable V2 part');
+  assert.ok(registryModule.getWidgetAppearanceCapability('chat').elements.messageText, 'Chat declares message text separately from message rows');
+  assert.equal(registryModule.getWidgetAppearanceCapability('chat').responsive.maxWidth, 1920, 'Chat can be sized to full 1920px canvas width');
   const bonusHuntQuickOptions = registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt');
   assert.ok(bonusHuntQuickOptions.some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
   assert.equal(bonusHuntQuickOptions.some(style => style.id === 'v12_classic_sr_editable'), false, 'Bonus Hunt hides editor migration variants from the user-facing layout picker');
@@ -127,6 +130,19 @@ try {
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === 'compact_bar'), 'Spotify exposes compact-bar style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bets').some(style => style.id === 'v3_grid_2x3'), 'Bets exposes Grid 2x3 style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('background').some(style => style.id === 'aurora'), 'Background exposes Aurora style option');
+  const chatClassicElements = registryModule.getWidgetStyleElements('chat', 'classic');
+  const chatContainer = chatClassicElements.find(element => element.id === 'container');
+  const chatMessageRow = chatClassicElements.find(element => element.id === 'message');
+  const chatMessageText = chatClassicElements.find(element => element.id === 'messageText');
+  assert.ok(chatContainer?.controls.includes('width'), 'Chat container exposes scoped width controls');
+  assert.ok(chatContainer?.controls.includes('height'), 'Chat container exposes scoped height controls');
+  assert.ok(chatMessageRow?.controls.includes('radius'), 'Chat message rows expose shape controls');
+  assert.ok(!chatMessageText?.controls.includes('background'), 'Chat message text hides unrelated background controls');
+  assert.ok(chatMessageText?.controls.includes('fontSize'), 'Chat message text exposes typography controls');
+  assert.ok(registryModule.getWidgetStyleQuickControls('chat', 'classic', 'message').includes('shape'), 'Chat message row simple controls include shape');
+  assert.ok(!registryModule.getWidgetStyleQuickControls('chat', 'classic', 'messageText').includes('shape'), 'Chat text simple controls hide row shape');
+  assert.ok(registryModule.getWidgetStyleQuickControls('chat', 'metal', 'container').includes('primaryColor'), 'Chat Metal container exposes quick colour controls');
+  assert.ok(registryModule.getWidgetStyleQuickControls('chat', 'metal', 'message').includes('accentColor'), 'Chat Metal message rows expose accent colour controls');
   for (const widgetType of registryModule.APPEARANCE_ENGINE_V2_WIDGETS) {
     const capabilityStyleIds = new Set((registryModule.getWidgetAppearanceCapability(widgetType)?.styles || []).map(style => style.id));
     const exposedStyleIds = registryModule.getWidgetStyleOptionsForQuickEditor(widgetType).map(style => style.id);
@@ -197,9 +213,11 @@ try {
   assert.equal(registryModule.styleSupportsQuickCapability('rtp_stats', 'glass', 'glowIntensity'), true, 'RTP Stats glass exposes glow controls');
   const rtpContainerControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1', 'container');
   assert.ok(rtpContainerControls.includes('material'), 'RTP Stats container exposes material');
-  assert.ok(rtpContainerControls.includes('fontFamily'), 'RTP Stats container exposes font family');
   assert.ok(rtpContainerControls.includes('barHeight'), 'RTP Stats container exposes bar height');
   assert.ok(rtpContainerControls.includes('maxWidth'), 'RTP Stats container exposes bar width');
+  assert.ok(!rtpContainerControls.includes('fontFamily'), 'RTP Stats container hides typography controls owned by child parts');
+  assert.ok(!rtpContainerControls.includes('textSize'), 'RTP Stats container hides text sizing controls owned by child parts');
+  assert.ok(!rtpContainerControls.includes('density'), 'RTP Stats container hides inner spacing controls');
   assert.ok(!rtpContainerControls.includes('imageSize'), 'RTP Stats container hides image controls');
   assert.ok(!rtpContainerControls.includes('carouselSpeed'), 'RTP Stats container hides carousel controls');
   const rtpStyleLevelQuickControls = registryModule.getWidgetStyleQuickControls('rtp_stats', 'v1');
@@ -431,6 +449,17 @@ try {
   for (const expected of ['height', 'maxWidth', 'maxHeight']) {
     assert.ok(rtpContainerControlIds.includes(expected), `RTP Stats container exposes ${expected}`);
   }
+  for (const hidden of ['padding', 'gap', 'fontFamily', 'fontSize']) {
+    assert.ok(!rtpContainerControlIds.includes(hidden), `RTP Stats container does not expose child ${hidden}`);
+  }
+  const rtpStatCard = registryModule.getWidgetStyleElements('rtp_stats', 'v1').find(element => element.id === 'statCard');
+  const rtpStatCardControlIds = editorSchema.getElementControlGroups(rtpStatCard, 'advanced').flatMap(group => group.controls.map(control => control.id));
+  for (const expected of ['padding', 'gap']) {
+    assert.ok(rtpStatCardControlIds.includes(expected), `RTP Stats stat card owns ${expected}`);
+  }
+  for (const hidden of ['fontFamily', 'fontSize']) {
+    assert.ok(!rtpStatCardControlIds.includes(hidden), `RTP Stats stat card hides value ${hidden}`);
+  }
   const navbarContainer = registryModule.getWidgetStyleElements('navbar', 'v1').find(element => element.id === 'container');
   const navbarContainerControlIds = editorSchema.getElementControlGroups(navbarContainer, 'advanced').flatMap(group => group.controls.map(control => control.id));
   for (const expected of ['height', 'maxWidth', 'maxHeight']) {
@@ -438,6 +467,7 @@ try {
   }
   assert.equal(registryModule.getWidgetAppearanceCapability('rtp_stats').responsive.maxWidth, 1920, 'RTP Stats can be sized to full 1920px canvas width');
   assert.equal(registryModule.getWidgetAppearanceCapability('navbar').responsive.maxWidth, 1920, 'Navbar can be sized to full 1920px canvas width');
+  assert.equal(registryModule.getWidgetAppearanceCapability('bonus_hunt').responsive.maxWidth, 1920, 'Bonus Hunt can be sized to full 1920px canvas width');
   assert.ok(registryModule.getWidgetStyleElements('bonus_hunt', 'v3').some(element => element.id === 'slotCarouselContainer'), 'Bonus Hunt flip-card style has carousel-specific elements');
   assert.ok(!registryModule.getWidgetStyleElements('bonus_hunt', 'v3').some(element => element.id === 'slotRow'), 'Bonus Hunt flip-card style hides list-only row elements');
 
@@ -1383,6 +1413,39 @@ try {
   const scopedHuntSlotSize = widgetSlotModule.getWidgetSlotSize({ ...bonusHuntWidget, config: scopedHuntConfig });
   assert.equal(scopedHuntSlotSize.width, 760, 'Bonus Hunt preview and OBS slot width use the container width override');
   assert.equal(scopedHuntSlotSize.height, 860, 'Bonus Hunt preview and OBS slot height use the container height override');
+  const visualSizedHuntAppearance = {
+    widgets: {
+      hunt1: {
+        styles: {
+          v12_classic_sr: {
+            appearance: {
+              container: {
+                width: 1040,
+                height: 920,
+              },
+            },
+            visual: {
+              widgetWidth: 1040,
+              widgetHeight: 920,
+            },
+          },
+        },
+      },
+    },
+  };
+  const visualSizedHuntConfig = appearanceModel.resolveWidgetAppearanceConfig({
+    ...bonusHuntWidget,
+    config: {
+      ...bonusHuntWidget.config,
+      widgetWidth: 400,
+      widgetHeight: 720,
+    },
+  }, visualSizedHuntAppearance, {});
+  const visualSizedHuntSlotSize = widgetSlotModule.getWidgetSlotSize({ ...bonusHuntWidget, config: visualSizedHuntConfig });
+  assert.equal(visualSizedHuntConfig.widgetWidth, 1040, 'Bonus Hunt appearance width overrides existing widget config width');
+  assert.equal(visualSizedHuntConfig.widgetHeight, 920, 'Bonus Hunt appearance height overrides existing widget config height');
+  assert.equal(visualSizedHuntSlotSize.width, 1040, 'Bonus Hunt visual width drives preview and OBS slot width');
+  assert.equal(visualSizedHuntSlotSize.height, 920, 'Bonus Hunt visual height drives preview and OBS slot height');
   assert.equal(scopedHuntConfig.subElements.bonusCard.radius, 10, 'Bonus Hunt card radius remains independently editable');
   assert.equal(scopedHuntConfig.subElements.statCell.radius, 6, 'Bonus Hunt stat radius remains independently editable');
   assert.notEqual(scopedHuntConfig.subElements.bonusCard.radius, scopedHuntConfig.subElements.container.radius, 'Bonus Hunt card radius does not inherit the surface override');
@@ -1594,10 +1657,41 @@ try {
   assert.equal(betsConfig.subElements.betCards.radius, 12, 'Bets card radius does not inherit widget background radius');
   assert.notEqual(betsConfig.subElements.poolStat.radius, betsConfig.subElements.widgetBackground.radius, 'Bets stat cells do not inherit widget background radius');
   assert.notEqual(betsConfig.subElements.cardNumberBadge.radius, betsConfig.subElements.widgetBackground.radius, 'Bets badges do not inherit widget background radius');
+  const betsColourConfig = appearanceModel.resolveWidgetAppearanceConfig(betsWidget, {
+    widgets: {
+      bets1: {
+        styles: {
+          v3_grid_2x3: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('bets', {
+              material: 'matte',
+              primaryColor: '#22d3ee',
+            }, {
+              elementOverrides: {
+                betCards: {
+                  background: '#112233',
+                  textColor: '#ddeeff',
+                  borderColor: '#445566',
+                },
+                cardRangeText: { textColor: '#abcdef' },
+                cardPercentageText: { textColor: '#fedcba' },
+                cardNumberBadge: { background: '#123456' },
+              },
+            }),
+          },
+        },
+      },
+    },
+  }, {});
+  assert.equal(betsColourConfig.subElements.betCards.background, '#112233', 'Bets grid card background resolves from betCards part');
+  assert.equal(betsColourConfig.subElements.betCards.textColor, '#ddeeff', 'Bets grid card text resolves from betCards part');
+  assert.equal(betsColourConfig.subElements.cardRangeText.textColor, '#abcdef', 'Bets grid range text resolves from its own part');
+  assert.equal(betsColourConfig.subElements.cardPercentageText.textColor, '#fedcba', 'Bets grid percentage text resolves from its own part');
+  assert.equal(betsColourConfig.subElements.cardNumberBadge.background, '#123456', 'Bets grid badge colour resolves from its own part');
   const betsRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/BetsWidget.jsx', import.meta.url), 'utf8');
   const rendererCssSource = readFileSync(new URL('../src/components/OverlayCenter/OverlayRenderer.css', import.meta.url), 'utf8');
   assert.ok(betsRendererSource.includes("partAttrs('widgetBackground')"), 'Bets renderer tags the widget background part');
   assert.ok(betsRendererSource.includes("partAttrs('betCards'"), 'Bets renderer tags bet cards as a distinct part');
+  assert.ok(betsRendererSource.includes("elementStyle(c, 'individualBetCard', sharedCardStyle, undefined"), 'Bets individual cards do not use legacy optionRow fallback over grid colours');
   assert.ok(rendererCssSource.includes('--bets-widget-background-radius'), 'Bets CSS consumes outer background radius variable');
   assert.ok(rendererCssSource.includes('--bets-card-radius'), 'Bets CSS consumes independent card radius variable');
 
@@ -1642,6 +1736,13 @@ try {
   assert.ok(appearanceCenterSource.includes("widgetType === 'background'"), 'Background quick panel defaults to the visible texture/color part');
   assert.ok(appearanceCenterSource.includes('getBackgroundTextureControlIds'), 'Background quick panel hides texture controls that do not affect the active renderer');
   assert.ok(appearanceCenterSource.includes('getSimpleBackgroundElements'), 'Background simple panel only shows source, active background, and opt-in effects');
+  assert.ok(appearanceCenterSource.includes('moveWidgetLayer'), 'Appearance Center exposes saved widget layer movement');
+  assert.ok(appearanceCenterSource.includes('ve-widget-layer-controls'), 'Appearance Center widget list renders compact layer controls');
+  const overlayPreviewSource = readFileSync(new URL('../src/components/OverlayCenter/OverlayPreview.jsx', import.meta.url), 'utf8');
+  const overlayRendererSource = readFileSync(new URL('../src/components/OverlayCenter/OverlayRenderer.jsx', import.meta.url), 'utf8');
+  assert.ok(overlayPreviewSource.includes('sort(compareWidgetLayer)'), 'Live preview renders widgets in normalized z-index order');
+  assert.ok(overlayRendererSource.includes('sort(compareWidgetLayer)'), 'OBS renderer renders widgets in normalized z-index order');
+  assert.ok(overlayPreviewSource.includes('selectedMovableElementId && onMoveElement'), 'Live preview only blocks widget dragging when element dragging is supported');
 
   const currentSlotConfig = appearanceModel.resolveWidgetAppearanceConfig(currentSlotWidget, appearance, {});
   assert.equal(currentSlotConfig.__appearanceV2.material, 'neon', 'Current Slot receives V2 material');
@@ -1672,10 +1773,35 @@ try {
   assert.equal(chatConfig.chatStyle, 'bubble', 'Chat writes selected style to the real chatStyle config key');
   assert.ok(chatConfig.headerBg, 'Chat direct header background is generated');
   assert.ok(chatConfig.subElements.message.background, 'Chat message part receives generated surface');
+  assert.ok(chatConfig.subElements.messageText.fontSize, 'Chat message text receives generated typography');
+  assert.ok(chatConfig.subElements.messageList.gap !== undefined, 'Chat message list receives generated spacing');
   assert.ok(chatConfig.subElements.username.textColor, 'Chat username part receives generated text color');
   assert.ok(chatConfig.subElements.avatar.background, 'Chat avatar bubble receives generated badge surface');
+  const chatMetalConfig = appearanceModel.resolveWidgetAppearanceConfig(chatWidget, {
+    widgets: {
+      chat1: {
+        styles: {
+          metal: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('chat', {
+              material: 'metallic',
+              primaryColor: '#ef4444',
+              accentColor: '#22c55e',
+              useSecondColor: true,
+            }),
+          },
+        },
+      },
+    },
+  }, {}, { styleId: 'metal' });
+  assert.equal(chatMetalConfig.chatStyle, 'metal', 'Chat Metal writes selected style to the real chatStyle config key');
+  assert.equal(chatMetalConfig.subElements.container.background, chatMetalConfig.bgColor, 'Chat Metal container uses generated colour surface');
+  assert.equal(chatMetalConfig.subElements.message.background, chatMetalConfig.cardBg, 'Chat Metal message rows use generated colour surface');
+  assert.equal(chatMetalConfig.subElements.username.textColor, '#ef4444', 'Chat Metal username colour follows generated primary colour');
   const chatRendererSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/ChatWidget.jsx', import.meta.url), 'utf8');
-  assertRendererPartTargets(chatRendererSource, 'Chat', ['container', 'header', 'message', 'username', 'avatar', 'badge']);
+  assertRendererPartTargets(chatRendererSource, 'Chat', ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'avatar', 'badge', 'platformLegend', 'highlightedMessage']);
+  assert.ok(chatRendererSource.includes("subElementStyle(c, 'messageText'"), 'Chat renderer consumes message text V2 styles');
+  assert.ok(chatRendererSource.includes("subElementStyle(c, 'messageList'"), 'Chat renderer consumes message list V2 styles');
+  assert.ok(chatRendererSource.includes("c.bgColor || bgDefaults[chatStyle]"), 'Chat Metal renderer lets generated background colours override metal defaults');
 
   const slideshowConfig = appearanceModel.resolveWidgetAppearanceConfig(slideshowWidget, appearance, {});
   assert.equal(slideshowConfig.__appearanceV2.material, 'glass', 'Image Slideshow receives V2 material');
@@ -1890,6 +2016,10 @@ try {
   }, {});
   assert.equal(rtpDimensionConfig.barHeight, 72, 'RTP Stats simple bar height reaches widget config');
   assert.equal(rtpDimensionConfig.maxWidth, 840, 'RTP Stats simple max width reaches widget config');
+  assert.equal(rtpDimensionConfig.subElements.container.padding, undefined, 'RTP Stats container generated config does not own internal padding');
+  assert.equal(rtpDimensionConfig.subElements.container.gap, undefined, 'RTP Stats container generated config does not own internal gaps');
+  assert.ok(rtpDimensionConfig.subElements.statCard.padding !== undefined, 'RTP Stats stat card generated config owns internal padding');
+  assert.ok(rtpDimensionConfig.subElements.statCard.gap !== undefined, 'RTP Stats stat card generated config owns internal gaps');
   assert.ok(rtpDimensionConfig.subElements.provider.imageSize >= 34, 'RTP Stats simple image size reaches provider logo');
   assert.equal(rtpDimensionConfig.subElements.provider.radius, 999, 'RTP Stats simple image shape reaches provider logo');
   assert.equal(rtpDimensionConfig.subElements.provider.imageFit, 'cover', 'RTP Stats simple image fit reaches provider logo');

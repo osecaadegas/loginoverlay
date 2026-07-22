@@ -50,6 +50,35 @@ const SAMPLE_SLOT_REQUESTS = [
   },
 ];
 
+const SAMPLE_CHAT_MESSAGES = [
+  {
+    id: 'preview-chat-1',
+    platform: 'twitch',
+    username: 'brutuspolus',
+    message: 'This chat preview uses the saved widget style.',
+    color: '#a78bfa',
+    timestamp: Date.now() - 15000,
+    isBroadcaster: true,
+  },
+  {
+    id: 'preview-chat-2',
+    platform: 'kick',
+    username: 'miguel',
+    message: 'Edit header, message row, name, badges and text separately.',
+    color: '#22c55e',
+    timestamp: Date.now() - 9000,
+    isVip: true,
+  },
+  {
+    id: 'preview-chat-3',
+    platform: 'youtube',
+    username: 'viewer_42',
+    message: 'Nothing here is shared with the live chat feed.',
+    color: '#ef4444',
+    timestamp: Date.now() - 3000,
+  },
+];
+
 const SAMPLE_BONUS_HUNT_BONUSES = [
   {
     id: 'preview-bh-1',
@@ -237,6 +266,17 @@ function applySlotRequestsPreviewSample(config = {}) {
   };
 }
 
+function applyChatPreviewSample(config = {}) {
+  if (Array.isArray(config.__appearancePreviewMessages)) {
+    return { ...config, __appearancePreviewSample: true };
+  }
+  return {
+    ...config,
+    __appearancePreviewMessages: SAMPLE_CHAT_MESSAGES,
+    __appearancePreviewSample: true,
+  };
+}
+
 function applyBonusHuntPreviewSample(config = {}) {
   const previewState = config.__appearancePreviewState || 'hunt_live';
   const requests = previewState === 'requests_empty'
@@ -275,6 +315,7 @@ function getPreviewFrame(widgetType, config = {}) {
     return { width: compact ? 460 : 420, height: compact ? 120 : 420 };
   }
   if (widgetType === 'giveaway') return { width: 480, height: 360 };
+  if (widgetType === 'chat') return { width: 420, height: 520 };
   if (widgetType === 'bonus_hunt') {
     if (config.displayStyle === 'v12_classic_sr' || config.displayStyle === 'v12_classic_sr_editable') {
       return { width: 300, height: 820 };
@@ -293,6 +334,7 @@ function applyWidgetPreviewSample(widget, now) {
   if (widget.widget_type === 'bets') return { ...widget, config: applyBetsPreviewSample(widget.config || {}, now) };
   if (widget.widget_type === 'spotify_now_playing') return { ...widget, config: applySpotifyPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'giveaway') return { ...widget, config: applyGiveawayPreviewSample(widget.config || {}) };
+  if (widget.widget_type === 'chat') return { ...widget, config: applyChatPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'bonus_hunt') return { ...widget, config: applyBonusHuntPreviewSample(widget.config || {}) };
   if (widget.widget_type === 'slot_requests') return { ...widget, config: applySlotRequestsPreviewSample(widget.config || {}) };
   return widget;

@@ -35,6 +35,15 @@ import './OverlayCenter.css';
 // Register built-in widgets
 import './widgets/builtinWidgets';
 
+function compareWidgetLayer(a, b) {
+  const az = Number(a?.z_index) || 0;
+  const bz = Number(b?.z_index) || 0;
+  if (az !== bz) return az - bz;
+  if (a?.widget_type === 'background' && b?.widget_type !== 'background') return -1;
+  if (a?.widget_type !== 'background' && b?.widget_type === 'background') return 1;
+  return String(a?.id || '').localeCompare(String(b?.id || ''));
+}
+
 // ─── Single widget wrapper with animation + scale-to-fit ───
 const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting, userId, suppressAnimations = false }) {
   const def = getWidgetDef(widget.widget_type);
@@ -289,9 +298,9 @@ export default function OverlayRenderer() {
 
   const visibleWidgets = useMemo(() => {
     // Standalone URL (?widget=id): always render the requested widget even if hidden
-    if (singleWidgetId) return renderedWidgets.filter(w => w.id === singleWidgetId);
+    if (singleWidgetId) return renderedWidgets.filter(w => w.id === singleWidgetId).sort(compareWidgetLayer);
     // Exclude widgets that are children of a container — they render inside their parent
-    return renderedWidgets.filter(w => w.is_visible && !containerChildIds.has(w.id));
+    return renderedWidgets.filter(w => w.is_visible && !containerChildIds.has(w.id)).sort(compareWidgetLayer);
   }, [renderedWidgets, singleWidgetId, containerChildIds]);
 
   // Detect newly-hidden widgets and keep them for exit animation

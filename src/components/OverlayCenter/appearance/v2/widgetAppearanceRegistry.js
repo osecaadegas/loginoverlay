@@ -272,6 +272,94 @@ const BONUS_HUNT_BADGE_CONTROLS = Object.freeze([
   'textTransform',
 ]);
 
+const CHAT_CONTAINER_CONTROLS = Object.freeze([
+  'background',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'radius',
+  'width',
+  'height',
+  'minWidth',
+  'minHeight',
+  'maxWidth',
+  'maxHeight',
+  'padding',
+  'gap',
+  'fontFamily',
+  'fontSize',
+  'lineHeight',
+  'brightness',
+  'contrast',
+  'saturation',
+]);
+
+const CHAT_SURFACE_CONTROLS = Object.freeze([
+  'background',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'radius',
+  'padding',
+  'gap',
+  'shadowBlur',
+  'shadowOpacity',
+]);
+
+const CHAT_TEXT_CONTROLS = Object.freeze([
+  'textColor',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'fontStyle',
+  'lineHeight',
+  'letterSpacing',
+  'textTransform',
+  'textAlign',
+  'opacity',
+]);
+
+const CHAT_BADGE_CONTROLS = Object.freeze([
+  'background',
+  'textColor',
+  'accentColor',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'radius',
+  'padding',
+  'width',
+  'height',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+]);
+
+const RTP_CONTAINER_CONTROLS = Object.freeze([
+  'background',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'radius',
+  'width',
+  'height',
+  'minWidth',
+  'minHeight',
+  'maxWidth',
+  'maxHeight',
+  'shadowBlur',
+  'shadowOpacity',
+  'glowBlur',
+  'glowOpacity',
+  'brightness',
+  'contrast',
+  'saturation',
+]);
+
 const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = Object.freeze([
   'container',
   'headerContainer',
@@ -655,24 +743,28 @@ export const widgetAppearanceRegistry = Object.freeze({
       accentColor: '#22d3ee',
     },
     styles: [
-      makeRuntimeStyle('classic', 'Classic', 'Classic chat panel with header and messages.', { recommended: true, capabilities: { rows: true }, elementIds: ['container', 'header', 'message', 'username', 'avatar', 'badge'] }),
-      makeRuntimeStyle('floating', 'Floating', 'Floating transparent chat messages.', { capabilities: { transparentBackground: true, rows: true, shadows: true }, elementIds: ['container', 'message', 'username', 'avatar'] }),
-      makeRuntimeStyle('bubble', 'Bubble', 'Speech-bubble chat layout.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'message', 'username', 'avatar'] }),
-      makeRuntimeStyle('stack', 'Stack', 'Stacked chat cards.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'message', 'username'] }),
-      makeRuntimeStyle('typewriter', 'Terminal', 'Terminal-style chat text.', { capabilities: { transparentBackground: true, rows: true }, elementIds: ['container', 'header', 'message', 'username'] }),
-      makeRuntimeStyle('sidebar', 'Sidebar', 'Sidebar chat rail.', { capabilities: { rows: true, barDimensions: true }, elementIds: ['container', 'header', 'message', 'username', 'avatar'] }),
-      makeRuntimeStyle('cards', 'Cards', 'Chat messages as individual cards.', { capabilities: { rows: true, statCards: true, shadows: true }, elementIds: ['container', 'header', 'message', 'username', 'badge'] }),
-      makeRuntimeStyle('metal', 'Metal', 'Metallic chat panel.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'header', 'message', 'username', 'badge'] }),
-      makeRuntimeStyle('bh_stats', 'Hunt', 'Chat layout matching Bonus Hunt stats styling.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'header', 'message', 'username', 'badge'] }),
+      makeRuntimeStyle('classic', 'Classic', 'Classic chat panel with header and messages.', { recommended: true, capabilities: { rows: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'platformLegend', 'highlightedMessage'] }),
+      makeRuntimeStyle('floating', 'Floating', 'Floating transparent chat messages.', { capabilities: { transparentBackground: true, rows: true, shadows: true }, elementIds: ['container', 'messageList', 'message', 'username', 'messageText', 'avatar', 'highlightedMessage'] }),
+      makeRuntimeStyle('bubble', 'Bubble', 'Speech-bubble chat layout.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'messageList', 'message', 'username', 'messageText', 'avatar', 'highlightedMessage'] }),
+      makeRuntimeStyle('stack', 'Stack', 'Stacked chat cards.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'messageList', 'message', 'username', 'messageText', 'highlightedMessage'] }),
+      makeRuntimeStyle('typewriter', 'Terminal', 'Terminal-style chat text.', { capabilities: { transparentBackground: true, rows: true }, elementIds: ['container', 'messageList', 'message', 'username', 'messageText', 'highlightedMessage'] }),
+      makeRuntimeStyle('sidebar', 'Sidebar', 'Sidebar chat rail.', { capabilities: { rows: true, barDimensions: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
+      makeRuntimeStyle('cards', 'Cards', 'Chat messages as individual cards.', { capabilities: { rows: true, statCards: true, shadows: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
+      makeRuntimeStyle('metal', 'Metal', 'Metallic chat panel.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
+      makeRuntimeStyle('bh_stats', 'Hunt', 'Chat layout matching Bonus Hunt stats styling.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'avatar', 'badge', 'highlightedMessage'] }),
     ],
-    responsive: { minWidth: 220, minHeight: 180, maxWidth: 900, maxHeight: 1080 },
+    responsive: { minWidth: 220, minHeight: 180, maxWidth: 1920, maxHeight: 1080 },
     elements: {
-      container: BASIC_WIDGET_ELEMENTS.container,
-      header: BASIC_WIDGET_ELEMENTS.header,
-      message: Object.freeze({ label: 'Message body', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'] }),
-      username: Object.freeze({ label: 'Viewer name', kind: 'text', capabilities: ['typography', 'stateColor'] }),
-      avatar: Object.freeze({ label: 'Avatar bubble', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'] }),
-      badge: Object.freeze({ label: 'Platform badges', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'] }),
+      container: Object.freeze({ ...BASIC_WIDGET_ELEMENTS.container, label: 'Chat widget surface', controls: CHAT_CONTAINER_CONTROLS }),
+      header: Object.freeze({ ...BASIC_WIDGET_ELEMENTS.header, label: 'Header bar', controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS] }),
+      messageList: Object.freeze({ label: 'Message list', kind: 'surface', capabilities: ['surface', 'spacing'], controls: ['background', 'opacity', 'padding', 'gap'] }),
+      message: Object.freeze({ label: 'Message row or card', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'], controls: CHAT_SURFACE_CONTROLS }),
+      username: Object.freeze({ label: 'Viewer name', kind: 'text', capabilities: ['typography', 'stateColor'], controls: CHAT_TEXT_CONTROLS }),
+      messageText: Object.freeze({ label: 'Message text', kind: 'text', capabilities: ['typography', 'stateColor'], controls: CHAT_TEXT_CONTROLS }),
+      avatar: Object.freeze({ label: 'Avatar bubble', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'], controls: CHAT_BADGE_CONTROLS }),
+      badge: Object.freeze({ label: 'Platform badges', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'], controls: CHAT_BADGE_CONTROLS }),
+      highlightedMessage: Object.freeze({ label: 'Raid/highlight message', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'], controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS] }),
+      platformLegend: Object.freeze({ label: 'Platform legend', kind: 'surface', capabilities: ['surface', 'border', 'shape', 'spacing', 'typography'], controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS] }),
     },
   }),
   image_slideshow: makeBasicWidgetCapability({
@@ -1105,9 +1197,11 @@ export const widgetAppearanceRegistry = Object.freeze({
     }),
     elements: Object.freeze({
       container: Object.freeze({
-        label: 'Entire bar',
+        label: 'Main bar card',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'scale', 'typography'],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'scale'],
+        controls: RTP_CONTAINER_CONTROLS,
+        quickControls: ['material', 'primaryColor', 'accentColor', 'shape', 'scale', 'shadowStrength', 'glowStrength', 'barHeight', 'maxWidth'],
         cssVariables: ['--rtp-bg-from', '--rtp-bg-via', '--rtp-bg-to', '--rtp-border-color', '--rtp-border-radius'],
       }),
       provider: Object.freeze({
@@ -1149,7 +1243,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       statCard: Object.freeze({
         label: 'Stat values',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shape', 'spacing', 'typography', 'stateColor'],
+        capabilities: ['surface', 'border', 'shape', 'spacing'],
         cssVariables: ['--rtp-text', '--rtp-divider'],
       }),
       label: Object.freeze({
@@ -1868,7 +1962,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       aspectRatioLocked: false,
       minWidth: 260,
       minHeight: 360,
-      maxWidth: 900,
+      maxWidth: 1920,
       maxHeight: 1080,
     }),
     elements: Object.freeze({
@@ -2809,6 +2903,7 @@ export function quickControlAppliesToElement(widgetType, styleId, control, eleme
 
   const elements = getWidgetStyleElements(widgetType, styleId);
   const element = elements.find(item => item.id === elementId) || elements[0] || null;
+  if (element?.quickControls?.length && !element.quickControls.includes(control)) return false;
   const rule = QUICK_CONTROL_ELEMENT_REQUIREMENTS[control];
   if (!rule || !element) return true;
   if (rule.wholeWidget && isWholeWidgetElement(element)) return true;
