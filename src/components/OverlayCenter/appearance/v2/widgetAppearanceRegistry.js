@@ -178,6 +178,114 @@ const IMAGE_QUICK_CAPABILITIES = Object.freeze({
   imageVisibility: true,
 });
 
+const BONUS_HUNT_SURFACE_CONTROLS = Object.freeze([
+  'background',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'radius',
+  'padding',
+  'gap',
+  'width',
+  'height',
+  'minWidth',
+  'minHeight',
+]);
+
+const BONUS_HUNT_TEXT_CONTROLS = Object.freeze([
+  'textColor',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'fontStyle',
+  'textAlign',
+  'lineHeight',
+  'letterSpacing',
+  'textTransform',
+  'opacity',
+  'width',
+  'height',
+]);
+
+const BONUS_HUNT_IMAGE_CONTROLS = Object.freeze([
+  'imageSize',
+  'width',
+  'height',
+  'radius',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+]);
+
+const BONUS_HUNT_PROGRESS_CONTROLS = Object.freeze([
+  'background',
+  'fillColor',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'radius',
+  'height',
+]);
+
+const BONUS_HUNT_BADGE_CONTROLS = Object.freeze([
+  'background',
+  'textColor',
+  'accentColor',
+  'opacity',
+  'borderColor',
+  'borderWidth',
+  'borderStyle',
+  'radius',
+  'padding',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'fontStyle',
+  'textAlign',
+  'lineHeight',
+  'letterSpacing',
+  'textTransform',
+]);
+
+const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = Object.freeze([
+  'container',
+  'headerContainer',
+  'headerIcon',
+  'headerTitle',
+  'mainStatsContainer',
+  'statCell',
+  'statLabel',
+  'statValue',
+  'tagContainer',
+  'tagText',
+  'slotCarouselContainer',
+  'slotImage',
+  'progressBar',
+  'progressBarFill',
+  'progressCount',
+  'slotListContainer',
+  'slotRow',
+  'slotPositionNumber',
+  'slotThumbnail',
+  'slotTitle',
+  'winLabel',
+  'winValue',
+  'multiplierLabel',
+  'multiplierValue',
+  'betLabel',
+  'betValue',
+  'requestsSectionContainer',
+  'requestsHeader',
+  'requestsDescription',
+  'requestsEmpty',
+  'footerContainer',
+  'footerLabel',
+  'footerTotalValue',
+]);
+
 function freezeStyle(style) {
   return Object.freeze({
     ...style,
@@ -648,7 +756,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       aspectRatioLocked: false,
       minWidth: 280,
       minHeight: 42,
-      maxWidth: 1080,
+      maxWidth: 1920,
       maxHeight: 220,
     }),
     elements: Object.freeze({
@@ -875,7 +983,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       aspectRatioLocked: false,
       minWidth: 480,
       minHeight: 48,
-      maxWidth: 1600,
+      maxWidth: 1920,
       maxHeight: 140,
     }),
     elements: Object.freeze({
@@ -1313,20 +1421,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           glow: true,
           glowIntensity: true,
         },
-        elementIds: [
-          'container',
-          'headerContainer',
-          'mainStatsContainer',
-          'statCell',
-          'slotCarouselContainer',
-          'slotImage',
-          'slotListContainer',
-          'slotRow',
-          'slotTitle',
-          'progressBar',
-          'footerContainer',
-          'requestsSectionContainer',
-        ],
+        elementIds: BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS,
       }),
       freezeStyle({
         id: 'v12_classic_sr_editable',
@@ -1436,103 +1531,206 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: 'Entire widget',
         kind: 'surface',
         capabilities: ['surface', 'border', 'shadow', 'shape', 'scale', 'typography'],
+        controls: [...BONUS_HUNT_SURFACE_CONTROLS, ...BONUS_HUNT_TEXT_CONTROLS],
         cssVariables: ['--bht-text', '--bht-card-radius'],
       }),
       headerContainer: Object.freeze({
         label: 'Header',
         kind: 'surface',
         capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'],
+        controls: BONUS_HUNT_SURFACE_CONTROLS,
         legacyElement: 'header',
         cssVariables: ['--bht-header-bg', '--bht-header-accent'],
+      }),
+      headerIcon: Object.freeze({
+        label: 'Header icon or avatar',
+        kind: 'image',
+        capabilities: ['image', 'surface', 'border', 'shape'],
+        controls: BONUS_HUNT_IMAGE_CONTROLS,
       }),
       headerTitle: Object.freeze({
         label: 'Header title',
         kind: 'text',
         capabilities: ['typography'],
+        controls: BONUS_HUNT_TEXT_CONTROLS,
         legacyElement: 'huntTitle',
       }),
       mainStatsContainer: Object.freeze({
         label: 'Main stats',
         kind: 'surface',
-        capabilities: ['surface', 'border'],
+        capabilities: ['surface', 'border', 'shape', 'spacing'],
+        controls: BONUS_HUNT_SURFACE_CONTROLS,
       }),
       statCell: Object.freeze({
         label: 'Stat cards',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shape'],
+        capabilities: ['surface', 'border', 'shape', 'spacing'],
+        controls: BONUS_HUNT_SURFACE_CONTROLS,
       }),
       statLabel: Object.freeze({
         label: 'Stat labels',
         kind: 'text',
         capabilities: ['typography'],
+        controls: BONUS_HUNT_TEXT_CONTROLS,
       }),
       statValue: Object.freeze({
         label: 'Stat values',
         kind: 'text',
         capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
+      }),
+      tagContainer: Object.freeze({
+        label: 'Badge container',
+        kind: 'badge',
+        capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'],
+        controls: BONUS_HUNT_BADGE_CONTROLS,
+      }),
+      tagText: Object.freeze({
+        label: 'Badge text',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
       }),
       slotCarouselContainer: Object.freeze({
         label: 'Slot carousel',
         kind: 'carousel',
-        capabilities: ['surface', 'border', 'shadow', 'shape'],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'],
+        controls: BONUS_HUNT_SURFACE_CONTROLS,
       }),
       slotListContainer: Object.freeze({
         label: 'Slot list',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shadow', 'shape'],
+        capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'],
+        controls: BONUS_HUNT_SURFACE_CONTROLS,
         legacyElement: 'bonusCard',
       }),
       slotRow: Object.freeze({
         label: 'Slot rows',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shape', 'stateColor'],
+        capabilities: ['surface', 'border', 'shape', 'spacing', 'stateColor'],
+        controls: [...BONUS_HUNT_SURFACE_CONTROLS, 'textColor', 'accentColor'],
       }),
       slotImage: Object.freeze({
         label: 'Slot image',
         kind: 'image',
-        capabilities: ['shape'],
+        capabilities: ['image', 'border', 'shape'],
+        controls: BONUS_HUNT_IMAGE_CONTROLS,
+      }),
+      slotPositionNumber: Object.freeze({
+        label: 'Slot position number',
+        kind: 'badge',
+        capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'],
+        controls: BONUS_HUNT_BADGE_CONTROLS,
+      }),
+      slotThumbnail: Object.freeze({
+        label: 'Slot thumbnail frame',
+        kind: 'image',
+        capabilities: ['image', 'border', 'shape'],
+        controls: BONUS_HUNT_IMAGE_CONTROLS,
       }),
       slotTitle: Object.freeze({
         label: 'Slot title',
         kind: 'text',
         capabilities: ['typography'],
+        controls: BONUS_HUNT_TEXT_CONTROLS,
       }),
       progressBar: Object.freeze({
-        label: 'Progress bar',
+        label: 'Progress track',
         kind: 'progress',
         capabilities: ['progress', 'shape'],
+        controls: BONUS_HUNT_PROGRESS_CONTROLS,
+      }),
+      progressBarFill: Object.freeze({
+        label: 'Progress fill',
+        kind: 'progress',
+        capabilities: ['progress', 'shape'],
+        controls: BONUS_HUNT_PROGRESS_CONTROLS,
+      }),
+      progressCount: Object.freeze({
+        label: 'Progress count',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
       }),
       footerContainer: Object.freeze({
         label: 'Footer',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shape'],
+        capabilities: ['surface', 'border', 'shape', 'spacing', 'typography'],
+        controls: [...BONUS_HUNT_SURFACE_CONTROLS, ...BONUS_HUNT_TEXT_CONTROLS],
         legacyElement: 'footer',
+      }),
+      footerLabel: Object.freeze({
+        label: 'Footer label',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
       }),
       footerTotalValue: Object.freeze({
         label: 'Total payout',
         kind: 'text',
         capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
         legacyElement: 'footer',
       }),
       requestsSectionContainer: Object.freeze({
         label: 'Slot requests',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'shape'],
+        capabilities: ['surface', 'border', 'shape', 'spacing'],
+        controls: BONUS_HUNT_SURFACE_CONTROLS,
       }),
       requestsHeader: Object.freeze({
         label: 'Requests title',
         kind: 'text',
         capabilities: ['typography'],
+        controls: BONUS_HUNT_TEXT_CONTROLS,
       }),
       requestsDescription: Object.freeze({
         label: 'Requests helper text',
         kind: 'text',
         capabilities: ['typography'],
+        controls: BONUS_HUNT_TEXT_CONTROLS,
       }),
       requestsEmpty: Object.freeze({
         label: 'Requests empty state',
         kind: 'surface',
-        capabilities: ['surface', 'typography'],
+        capabilities: ['surface', 'border', 'shape', 'spacing', 'typography'],
+        controls: [...BONUS_HUNT_SURFACE_CONTROLS, ...BONUS_HUNT_TEXT_CONTROLS],
+      }),
+      winLabel: Object.freeze({
+        label: 'Win label',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
+      }),
+      winValue: Object.freeze({
+        label: 'Win value',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
+      }),
+      multiplierLabel: Object.freeze({
+        label: 'Multiplier label',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
+      }),
+      multiplierValue: Object.freeze({
+        label: 'Multiplier value',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
+      }),
+      betLabel: Object.freeze({
+        label: 'Bet label',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
+      }),
+      betValue: Object.freeze({
+        label: 'Bet value',
+        kind: 'text',
+        capabilities: ['typography', 'stateColor'],
+        controls: [...BONUS_HUNT_TEXT_CONTROLS, 'accentColor'],
       }),
     }),
     previewSampleData: Object.freeze({
@@ -2300,14 +2498,14 @@ export function validateWidgetAppearanceRegistry(registry = widgetAppearanceRegi
 function controlsForCapabilities(capabilities = []) {
   const controls = new Set();
   for (const capability of capabilities) {
-    if (capability === 'surface') ['background', 'opacity'].forEach(control => controls.add(control));
+    if (capability === 'surface') ['background', 'opacity', 'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'].forEach(control => controls.add(control));
     if (capability === 'border') ['borderColor', 'borderWidth', 'radius'].forEach(control => controls.add(control));
     if (capability === 'shadow') ['shadowBlur', 'shadowOpacity'].forEach(control => controls.add(control));
     if (capability === 'shape') controls.add('radius');
     if (capability === 'typography') ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'textAlign', 'lineHeight', 'letterSpacing', 'textTransform'].forEach(control => controls.add(control));
-    if (capability === 'spacing') ['padding', 'gap'].forEach(control => controls.add(control));
-    if (capability === 'progress') ['background', 'fillColor', 'radius'].forEach(control => controls.add(control));
-    if (capability === 'image') ['imageUrl', 'imageSize', 'imageFit', 'radius'].forEach(control => controls.add(control));
+    if (capability === 'spacing') ['padding', 'gap', 'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'].forEach(control => controls.add(control));
+    if (capability === 'progress') ['background', 'fillColor', 'radius', 'width', 'height', 'maxWidth', 'maxHeight'].forEach(control => controls.add(control));
+    if (capability === 'image') ['imageUrl', 'imageSize', 'imageFit', 'radius', 'width', 'height', 'maxWidth', 'maxHeight'].forEach(control => controls.add(control));
     if (capability === 'stateColor') ['textColor', 'accentColor'].forEach(control => controls.add(control));
   }
   return [...controls];

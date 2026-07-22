@@ -2436,7 +2436,7 @@ export default function AppearanceCenter({
                       <input
                         type="range"
                         min={selectedWidgetType === 'rtp_stats' ? '280' : '480'}
-                        max="1600"
+                        max="1920"
                         step="10"
                         value={Math.round(currentSimpleSettings.maxWidth || (selectedWidgetType === 'rtp_stats' ? 960 : 1200))}
                         onChange={event => applyQuickSettings({ maxWidth: Number(event.target.value) }, 'Change bar width')}

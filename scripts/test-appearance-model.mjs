@@ -116,7 +116,12 @@ const inheritedResolved = resolveAppearanceForTarget(withoutInstance, {
   widgetId: 'widget_a',
   widgetType: 'appearance_test_widget',
 });
-assert.equal(inheritedResolved.borders.radius, 20, 'removing instance override restores type override');
+assert.equal(inheritedResolved.borders.radius, 18, 'removing instance override restores global/default value without applying type override');
+const explicitTypeResolved = resolveAppearanceForTarget(withoutInstance, {
+  scope: 'widget_type',
+  widgetType: 'appearance_test_widget',
+});
+assert.equal(explicitTypeResolved.borders.radius, 20, 'explicit widget-type target can still inspect type override');
 
 const widgetConfig = resolveWidgetAppearanceConfig({
   id: 'widget_a',
@@ -124,7 +129,7 @@ const widgetConfig = resolveWidgetAppearanceConfig({
   config: { bgColor: '#101010', borderRadius: 12, textColor: '#ffffff', fontFamily: 'Test Sans' },
 }, baseAppearance);
 assert.equal(widgetConfig.borderRadius, 24, 'widget config receives resolved instance radius');
-assert.equal(widgetConfig.bgColor, '#333333', 'widget config receives resolved type background');
+assert.notEqual(widgetConfig.bgColor, '#333333', 'widget config ignores user type background during normal instance rendering');
 
 const registryDefaultConfig = resolveWidgetAppearanceConfig({
   id: 'widget_registry_defaults',
@@ -275,12 +280,12 @@ assert.equal(renderedWidgets[1].config.borderRadius, 44, 'second widget keeps a 
 const customStyleConfig = resolveWidgetAppearanceConfig(widgetA, styleScopedAppearance, null, { styleSelections: { widget_a: 'custom_red' } });
 assert.equal(customStyleConfig.displayStyle, 'compact_horizontal', 'custom style renders through its base registered style');
 assert.equal(customStyleConfig.__appearanceStyleId, 'custom_red', 'custom style keeps its editable style identity');
-assert.equal(customStyleConfig.borderRadius, 30, 'custom style inherits type defaults from its base registered style');
+assert.notEqual(customStyleConfig.borderRadius, 30, 'custom style does not inherit user type defaults from its base registered style');
 assert.equal(customStyleConfig.accentColor, '#ff0000', 'custom style stores independent visual values');
 
 const resetStyleRadius = omitPath(styleScopedAppearance, 'widgets.widget_a.styles.compact_horizontal.appearance.borders.radius');
 const resetConfig = resolveWidgetAppearanceConfig(widgetA, resetStyleRadius);
-assert.equal(resetConfig.borderRadius, 30, 'resetting a style override restores the inherited type/style value');
+assert.notEqual(resetConfig.borderRadius, 30, 'resetting a style override does not restore a user type/style value');
 assert.equal(getWidgetOverrideCount(styleScopedAppearance, 'widget_a', 'compact_horizontal'), 2, 'style-specific override count only includes that style root');
 
 const elementStateAppearance = {
@@ -421,6 +426,11 @@ const bonusHuntV12Appearance = {
             slotRow: { states: { active: { colors: { background: '#010203' } } } },
           },
         },
+        v3: {
+          elements: {
+            headerTitle: { typography: { fontSize: 20 } },
+          },
+        },
       },
     },
     bonus_hunt_v12_b: {
@@ -548,14 +558,15 @@ const otherWidgetContracts = [
   },
 ];
 for (const contract of otherWidgetContracts) {
+  const widgetId = `${contract.widgetType}_contract_widget`;
   const resolvedConfig = resolveWidgetAppearanceConfig({
-    id: `${contract.widgetType}_contract_widget`,
+    id: widgetId,
     widget_type: contract.widgetType,
     config: {},
   }, {
     themeId: 'classic',
-    widgetTypes: {
-      [contract.widgetType]: {
+    widgets: {
+      [widgetId]: {
         subElements: {
           [contract.elementId]: contract.values,
         },
@@ -703,22 +714,23 @@ const widgetTypographyConfig = resolveWidgetAppearanceConfig(widgetA, {
     },
   },
 });
-assert.equal(widgetTypographyConfig.subElements.label.fontFamily, 'Type Sans', 'widget config carries type-level typography sub-element overrides');
-assert.equal(widgetTypographyConfig.subElements.label.lineHeight, 1.7, 'widget config carries line-height sub-element overrides');
+assert.notEqual(widgetTypographyConfig.subElements.label.fontFamily, 'Type Sans', 'user widget-type typography sub-element overrides do not leak into widget instances');
+assert.notEqual(widgetTypographyConfig.subElements.label.lineHeight, 1.7, 'user widget-type line-height sub-element overrides do not leak into widget instances');
 assert.equal(widgetTypographyConfig.subElements.label.states.selected.textTransform, 'uppercase', 'widget config carries state typography overrides');
 
 for (const widgetDefinitionEntry of getAllWidgetDefs()) {
   const keys = getSupportedVisualKeys(widgetDefinitionEntry.type);
   assert.ok(keys.length > 0, `${widgetDefinitionEntry.type} exposes supported appearance visual keys`);
   const visual = Object.fromEntries(keys.map(key => [key, sampleValueForVisualKey(key)]));
+  const widgetId = `registry_smoke_${widgetDefinitionEntry.type}`;
   const resolvedConfig = resolveWidgetAppearanceConfig({
-    id: `registry_smoke_${widgetDefinitionEntry.type}`,
+    id: widgetId,
     widget_type: widgetDefinitionEntry.type,
     config: { ...(widgetDefinitionEntry.defaults || {}) },
   }, {
     themeId: 'classic',
-    widgetTypes: {
-      [widgetDefinitionEntry.type]: { visual },
+    widgets: {
+      [widgetId]: { visual },
     },
   });
   for (const key of keys) {

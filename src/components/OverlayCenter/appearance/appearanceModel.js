@@ -1730,16 +1730,11 @@ export function resolveAppearance({
 export function resolveAppearanceForTarget(appearance, target, theme) {
   const normalized = normalizeAppearance(appearance, { theme });
   const styleId = target?.styleId || '';
-  const typeStyleId = target?.scope === 'widget_instance'
-    ? normalized.widgets?.[target.widgetId]?.customStyles?.[styleId]?.baseStyleId || styleId
-    : styleId;
   const typeEntry = target?.scope === 'widget_type'
     ? normalized.widgetTypes?.[target.widgetType]
-    : target?.scope === 'widget_instance'
-      ? normalized.widgetTypes?.[target.widgetType]
-      : null;
-  const typeStyleEntry = styleId && (target?.scope === 'widget_type' || target?.scope === 'widget_instance')
-    ? normalized.widgetTypes?.[target.widgetType]?.styles?.[typeStyleId]
+    : null;
+  const typeStyleEntry = styleId && target?.scope === 'widget_type'
+    ? normalized.widgetTypes?.[target.widgetType]?.styles?.[styleId]
     : null;
   const instanceEntry = target?.scope === 'widget_instance'
     ? normalized.widgets?.[target.widgetId]
@@ -1842,6 +1837,7 @@ export function resolveWidgetAppearance({
   elementAppearance = {},
   responsiveAppearance = {},
   draftAppearance = {},
+  allowWidgetTypeAppearance = false,
 } = {}) {
   const normalized = normalizeAppearance(globalAppearance, { theme });
   const def = getWidgetDef(widgetType);
@@ -1849,8 +1845,12 @@ export function resolveWidgetAppearance({
   const renderStyleId = widgetId
     ? getWidgetStyleRenderId({ id: widgetId, widget_type: widgetType, config: {} }, requestedStyleId, normalized)
     : requestedStyleId;
-  const typeEntry = readOverrideEntry(typeAppearance ?? normalized.widgetTypes?.[widgetType]);
-  const typeStyleEntry = readOverrideEntry(styleAppearance ?? normalized.widgetTypes?.[widgetType]?.styles?.[renderStyleId]);
+  const typeEntry = readOverrideEntry(typeAppearance ?? (
+    allowWidgetTypeAppearance ? normalized.widgetTypes?.[widgetType] : undefined
+  ));
+  const typeStyleEntry = readOverrideEntry(styleAppearance ?? (
+    allowWidgetTypeAppearance ? normalized.widgetTypes?.[widgetType]?.styles?.[renderStyleId] : undefined
+  ));
   const instanceEntry = readOverrideEntry(instanceAppearance ?? normalized.widgets?.[widgetId]);
   const instanceStyleEntry = readOverrideEntry(widgetId ? normalized.widgets?.[widgetId]?.styles?.[requestedStyleId] : {});
   const responsiveEntry = collectResponsiveOverrides(normalized, viewport);
@@ -1896,9 +1896,6 @@ export function resolveWidgetAppearance({
 export function getAppearancePropertyState({ appearance, target, path, theme, draftAppearance } = {}) {
   const normalized = normalizeAppearance(appearance, { theme });
   const styleId = target?.styleId || '';
-  const typeStyleId = target?.scope === 'widget_instance'
-    ? normalized.widgets?.[target.widgetId]?.customStyles?.[styleId]?.baseStyleId || styleId
-    : styleId;
   const globalResolved = resolveAppearance({
     systemDefaults: SYSTEM_APPEARANCE,
     theme: getThemeAppearance(normalized.themeId || theme?.style_preset || 'classic'),
@@ -1906,11 +1903,9 @@ export function getAppearancePropertyState({ appearance, target, path, theme, dr
   });
   const typeEntry = target?.scope === 'widget_type'
     ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]).appearance
-    : target?.scope === 'widget_instance'
-      ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]).appearance
-      : {};
-  const typeStyleEntry = styleId && (target?.scope === 'widget_type' || target?.scope === 'widget_instance')
-    ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]?.styles?.[typeStyleId]).appearance
+    : {};
+  const typeStyleEntry = styleId && target?.scope === 'widget_type'
+    ? readOverrideEntry(normalized.widgetTypes?.[target.widgetType]?.styles?.[styleId]).appearance
     : {};
   const instanceEntry = target?.scope === 'widget_instance'
     ? readOverrideEntry(normalized.widgets?.[target.widgetId]).appearance
@@ -1988,8 +1983,13 @@ export function resolveWidgetAppearanceConfig(widget, appearance, theme, options
   const normalized = normalizeAppearance(appearance, { theme });
   const requestedStyleId = options.styleId || options.styleSelections?.[widget.id] || normalized.widgets?.[widget.id]?.activeStyleId || base[getWidgetStyleConfigKey(widget.widget_type)] || def?.styles?.[0]?.id || 'default';
   const renderStyleId = getWidgetStyleRenderId(widget, requestedStyleId, normalized);
-  const typeEntry = readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]);
-  const typeStyleEntry = readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]?.styles?.[renderStyleId]);
+  const allowWidgetTypeAppearance = options.allowWidgetTypeAppearance === true;
+  const typeEntry = allowWidgetTypeAppearance
+    ? readOverrideEntry(normalized.widgetTypes?.[widget.widget_type])
+    : readOverrideEntry();
+  const typeStyleEntry = allowWidgetTypeAppearance
+    ? readOverrideEntry(normalized.widgetTypes?.[widget.widget_type]?.styles?.[renderStyleId])
+    : readOverrideEntry();
   const registryTypeDefaults = readOverrideEntry(WIDGET_TYPE_APPEARANCE_DEFAULTS[widget.widget_type] || def?.appearanceDefaults);
   const registryStyleDefaults = readOverrideEntry((WIDGET_TYPE_APPEARANCE_DEFAULTS[widget.widget_type]?.styles || def?.appearanceDefaults?.styles)?.[renderStyleId]);
   const instanceEntry = readOverrideEntry(normalized.widgets?.[widget.id]);

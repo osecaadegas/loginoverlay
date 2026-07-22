@@ -53,12 +53,17 @@ function readLegacySimpleSettings(entry) {
   return {};
 }
 
-function readCandidateEntries(appearance = {}, widget, styleId) {
+function readCandidateEntries(appearance = {}, widget, styleId, options = {}) {
   const widgetType = widget?.widget_type;
   const widgetId = widget?.id;
+  const typeEntries = options.allowWidgetTypeAppearance === true
+    ? [
+      appearance.widgetTypes?.[widgetType],
+      appearance.widgetTypes?.[widgetType]?.styles?.[styleId],
+    ]
+    : [];
   return [
-    appearance.widgetTypes?.[widgetType],
-    appearance.widgetTypes?.[widgetType]?.styles?.[styleId],
+    ...typeEntries,
     appearance.widgets?.[widgetId],
     appearance.widgets?.[widgetId]?.styles?.[styleId],
   ].filter(Boolean);
@@ -119,7 +124,7 @@ export function resolveWidgetAppearanceV2(widget, appearance = {}, options = {})
   if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type)) return null;
   const capability = getWidgetAppearanceCapability(widget.widget_type);
   const styleId = options.styleId || widget.config?.__appearanceStyleId || widget.config?.displayStyle || capability?.defaultStyleId || 'default';
-  const entries = readCandidateEntries(appearance, widget, styleId);
+  const entries = readCandidateEntries(appearance, widget, styleId, options);
   const hasStoredV2OrLegacySimple = entries.some(entry => (
     Object.keys(readEntryAppearanceV2(entry)).length > 0
     || Object.keys(readLegacySimpleSettings(entry)).length > 0

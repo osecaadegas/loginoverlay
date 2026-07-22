@@ -289,6 +289,77 @@ try {
   assert.ok(spotifyWaveformControls.includes('animationSpeed'), 'Spotify wave waveform exposes animation speed');
   const spotifyVinylRecordControls = registryModule.getWidgetStyleQuickControls('spotify_now_playing', 'vinyl', 'vinylRecord');
   assert.ok(spotifyVinylRecordControls.includes('animationSpeed'), 'Spotify vinyl record exposes spin speed');
+  const bonusHuntClassicElements = registryModule.getWidgetStyleElements('bonus_hunt', 'v12_classic_sr');
+  const bonusHuntClassicElementIds = bonusHuntClassicElements.map(element => element.id);
+  [
+    'container',
+    'headerContainer',
+    'headerIcon',
+    'headerTitle',
+    'mainStatsContainer',
+    'statCell',
+    'statLabel',
+    'statValue',
+    'tagContainer',
+    'tagText',
+    'slotCarouselContainer',
+    'slotImage',
+    'progressBar',
+    'progressBarFill',
+    'progressCount',
+    'slotListContainer',
+    'slotRow',
+    'slotPositionNumber',
+    'slotThumbnail',
+    'slotTitle',
+    'winLabel',
+    'winValue',
+    'multiplierLabel',
+    'multiplierValue',
+    'betLabel',
+    'betValue',
+    'requestsSectionContainer',
+    'requestsHeader',
+    'requestsDescription',
+    'requestsEmpty',
+    'footerContainer',
+    'footerLabel',
+    'footerTotalValue',
+  ].forEach(elementId => {
+    assert.ok(bonusHuntClassicElementIds.includes(elementId), `Bonus Hunt Classic + Requests exposes ${elementId}`);
+  });
+  bonusHuntClassicElements.forEach(element => {
+    const advancedControlCount = editorSchema.getElementControlGroups(element, 'advanced')
+      .reduce((total, group) => total + group.controls.length, 0);
+    assert.ok(advancedControlCount > 0, `Bonus Hunt Classic + Requests ${element.id} has usable editor controls`);
+  });
+  const bonusHuntTitleControls = bonusHuntClassicElements.find(element => element.id === 'headerTitle')?.controls || [];
+  assert.ok(bonusHuntTitleControls.includes('fontFamily'), 'Bonus Hunt Classic title exposes typography controls');
+  assert.ok(!bonusHuntTitleControls.includes('background'), 'Bonus Hunt Classic title hides surface controls');
+  assert.ok(!bonusHuntTitleControls.includes('imageSize'), 'Bonus Hunt Classic title hides image controls');
+  const bonusHuntSlotImageControls = bonusHuntClassicElements.find(element => element.id === 'slotImage')?.controls || [];
+  assert.ok(bonusHuntSlotImageControls.includes('imageSize'), 'Bonus Hunt Classic slot image exposes image size controls');
+  assert.ok(bonusHuntSlotImageControls.includes('radius'), 'Bonus Hunt Classic slot image exposes radius controls');
+  assert.ok(!bonusHuntSlotImageControls.includes('fontFamily'), 'Bonus Hunt Classic slot image hides typography controls');
+  const bonusHuntRequestsControls = bonusHuntClassicElements.find(element => element.id === 'requestsSectionContainer')?.controls || [];
+  assert.ok(bonusHuntRequestsControls.includes('background'), 'Bonus Hunt Classic requests panel exposes surface controls');
+  assert.ok(bonusHuntRequestsControls.includes('padding'), 'Bonus Hunt Classic requests panel exposes spacing controls');
+  assert.ok(!bonusHuntRequestsControls.includes('imageSize'), 'Bonus Hunt Classic requests panel hides image controls');
+  const bonusHuntProgressFillControls = bonusHuntClassicElements.find(element => element.id === 'progressBarFill')?.controls || [];
+  assert.ok(bonusHuntProgressFillControls.includes('fillColor'), 'Bonus Hunt Classic progress fill exposes fill controls');
+  assert.ok(!bonusHuntProgressFillControls.includes('fontFamily'), 'Bonus Hunt Classic progress fill hides typography controls');
+  const rtpContainer = registryModule.getWidgetStyleElements('rtp_stats', 'v1').find(element => element.id === 'container');
+  const rtpContainerControlIds = editorSchema.getElementControlGroups(rtpContainer, 'advanced').flatMap(group => group.controls.map(control => control.id));
+  for (const expected of ['height', 'maxWidth', 'maxHeight']) {
+    assert.ok(rtpContainerControlIds.includes(expected), `RTP Stats container exposes ${expected}`);
+  }
+  const navbarContainer = registryModule.getWidgetStyleElements('navbar', 'v1').find(element => element.id === 'container');
+  const navbarContainerControlIds = editorSchema.getElementControlGroups(navbarContainer, 'advanced').flatMap(group => group.controls.map(control => control.id));
+  for (const expected of ['height', 'maxWidth', 'maxHeight']) {
+    assert.ok(navbarContainerControlIds.includes(expected), `Navbar container exposes ${expected}`);
+  }
+  assert.equal(registryModule.getWidgetAppearanceCapability('rtp_stats').responsive.maxWidth, 1920, 'RTP Stats can be sized to full 1920px canvas width');
+  assert.equal(registryModule.getWidgetAppearanceCapability('navbar').responsive.maxWidth, 1920, 'Navbar can be sized to full 1920px canvas width');
   assert.ok(registryModule.getWidgetStyleElements('bonus_hunt', 'v3').some(element => element.id === 'slotCarouselContainer'), 'Bonus Hunt flip-card style has carousel-specific elements');
   assert.ok(!registryModule.getWidgetStyleElements('bonus_hunt', 'v3').some(element => element.id === 'slotRow'), 'Bonus Hunt flip-card style hides list-only row elements');
 
@@ -1001,6 +1072,33 @@ try {
   assert.equal(scopedHuntConfig.subElements.statCell.radius, 6, 'Bonus Hunt stat radius remains independently editable');
   assert.notEqual(scopedHuntConfig.subElements.bonusCard.radius, scopedHuntConfig.subElements.container.radius, 'Bonus Hunt card radius does not inherit the surface override');
   assert.notEqual(scopedHuntConfig.subElements.statCell.radius, scopedHuntConfig.subElements.container.radius, 'Bonus Hunt stat radius does not inherit the surface override');
+  const siblingBonusHuntWidget = { ...bonusHuntWidget, id: 'hunt2' };
+  const siblingHuntConfig = appearanceModel.resolveWidgetAppearanceConfig(siblingBonusHuntWidget, scopedBonusHuntAppearance, {});
+  assert.equal(siblingHuntConfig.__appearanceV2, undefined, 'Bonus Hunt V2 instance override does not activate a sibling widget');
+  assert.notEqual(siblingHuntConfig.subElements.container?.radius, 64, 'Bonus Hunt V2 instance radius does not leak to a sibling widget');
+
+  const typeScopedHuntAppearance = {
+    widgetTypes: {
+      bonus_hunt: {
+        styles: {
+          v12_classic_sr: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('bonus_hunt', {
+              material: 'matte',
+              primaryColor: '#f97316',
+              shape: 'pill',
+            }, {
+              elementOverrides: {
+                container: { radius: 72 },
+              },
+            }),
+          },
+        },
+      },
+    },
+  };
+  const ignoredTypeScopedHuntConfig = appearanceModel.resolveWidgetAppearanceConfig(bonusHuntWidget, typeScopedHuntAppearance, {});
+  assert.equal(ignoredTypeScopedHuntConfig.__appearanceV2, undefined, 'User widget-type V2 appearance is ignored during normal instance rendering');
+  assert.notEqual(ignoredTypeScopedHuntConfig.subElements.container?.radius, 72, 'User widget-type V2 element override does not leak into widget instances');
 
   const rtpConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, appearance, {});
   assert.equal(rtpConfig.__appearanceV2.material, 'neon', 'RTP Stats receives V2 material');
@@ -1056,6 +1154,28 @@ try {
   assert.equal(rtpGlassConfig.displayStyle, 'glass', 'RTP Stats can switch to glass style appearance');
   assert.equal(rtpGlassConfig.__appearanceV2.material, 'glass', 'RTP Stats loads glass style-specific appearance');
   assert.equal(rtpGlassConfig.subElements.provider.label, undefined, 'RTP Stats provider style does not inject non-rendered labels');
+  const fullWidthRtpConfig = appearanceModel.resolveWidgetAppearanceConfig(rtpStatsWidget, {
+    widgets: {
+      rtp1: {
+        styles: {
+          neon: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('rtp_stats', {
+              material: 'neon',
+              maxWidth: 1920,
+              barHeight: 96,
+            }, {
+              elementOverrides: {
+                container: { maxWidth: 1920, height: 96 },
+              },
+            }),
+          },
+        },
+      },
+    },
+  }, {});
+  assert.equal(fullWidthRtpConfig.maxWidth, 1920, 'RTP Stats simple bar width resolves to 1920');
+  assert.equal(fullWidthRtpConfig.subElements.container.maxWidth, 1920, 'RTP Stats container maxWidth reaches renderer sub-elements');
+  assert.equal(fullWidthRtpConfig.subElements.container.height, 96, 'RTP Stats container height reaches renderer sub-elements');
 
   const navbarConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, appearance, {});
   assert.equal(navbarConfig.__appearanceV2.material, 'glass', 'Navbar receives V2 material');
@@ -1075,6 +1195,28 @@ try {
   assert.ok(navbarConfig.subElements.music.states.connected.accentColor, 'Navbar music connected state remains explicit');
   assert.ok(navbarConfig.subElements.balance.fontFamily, 'Navbar balance receives generated typography');
   assert.ok(navbarConfig.__appearanceV2.unsupportedProperties.includes('layout.sectionOrder'), 'Navbar records section ordering as unsupported');
+  const fullWidthNavbarConfig = appearanceModel.resolveWidgetAppearanceConfig(navbarWidget, {
+    widgets: {
+      nav1: {
+        styles: {
+          glass: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('navbar', {
+              material: 'glass',
+              maxWidth: 1920,
+              barHeight: 104,
+            }, {
+              elementOverrides: {
+                container: { maxWidth: 1920, height: 104 },
+              },
+            }),
+          },
+        },
+      },
+    },
+  }, {});
+  assert.equal(fullWidthNavbarConfig.maxWidth, 1920, 'Navbar simple bar width resolves to 1920');
+  assert.equal(fullWidthNavbarConfig.subElements.container.maxWidth, 1920, 'Navbar container maxWidth reaches renderer sub-elements');
+  assert.equal(fullWidthNavbarConfig.subElements.container.height, 104, 'Navbar container height reaches renderer sub-elements');
   const navbarWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/NavbarWidget.jsx', import.meta.url), 'utf8');
   assert.ok(navbarWidgetSource.includes('containerFontFamily'), 'Navbar renderer maps container font family');
   assert.ok(navbarWidgetSource.includes('musicFontFamily'), 'Navbar renderer maps music font family');

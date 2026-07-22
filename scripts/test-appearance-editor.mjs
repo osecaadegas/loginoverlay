@@ -90,10 +90,10 @@ try {
   assert.ok(navbarAvatar, 'navbar exposes avatar as an editable element');
   assert.equal(navbarAvatar.kind, 'image', 'navbar avatar is treated as an image element');
   const avatarControlIds = getElementControlGroups(navbarAvatar, 'advanced').flatMap(group => group.controls.map(control => control.id));
-  for (const expected of ['imageUrl', 'imageSize', 'imageFit', 'radius', 'borderColor', 'borderWidth']) {
+  for (const expected of ['imageUrl', 'imageSize', 'imageFit', 'radius', 'borderColor', 'borderWidth', 'width', 'height', 'maxWidth', 'maxHeight']) {
     assert.ok(avatarControlIds.includes(expected), `navbar avatar exposes ${expected}`);
   }
-  for (const forbidden of ['fontFamily', 'textColor', 'background', 'padding', 'gap', 'width', 'height']) {
+  for (const forbidden of ['fontFamily', 'textColor', 'background']) {
     assert.ok(!avatarControlIds.includes(forbidden), `navbar avatar hides unrelated ${forbidden} control`);
   }
   assert.ok(getElementControlGroups(navbarAvatar, 'advanced').some(group => group.label === 'Image'), 'avatar image controls are grouped as Image');

@@ -798,6 +798,8 @@ export const CONTROL_DEFINITIONS = {
   height: { id: 'height', label: 'Height', type: 'range', min: 60, max: 1080, step: 1, unit: 'px', simple: true, group: 'Size and spacing' },
   minWidth: { id: 'minWidth', label: 'Minimum width', type: 'range', min: 0, max: 1920, step: 1, unit: 'px', group: 'Size and spacing' },
   minHeight: { id: 'minHeight', label: 'Minimum height', type: 'range', min: 0, max: 1080, step: 1, unit: 'px', group: 'Size and spacing' },
+  maxWidth: { id: 'maxWidth', label: 'Maximum width', type: 'range', min: 0, max: 1920, step: 1, unit: 'px', group: 'Size and spacing' },
+  maxHeight: { id: 'maxHeight', label: 'Maximum height', type: 'range', min: 0, max: 1080, step: 1, unit: 'px', group: 'Size and spacing' },
   padding: { id: 'padding', label: 'Space inside', type: 'range', min: 0, max: 80, step: 1, unit: 'px', simple: true, group: 'Size and spacing' },
   margin: { id: 'margin', label: 'Space outside', type: 'range', min: 0, max: 80, step: 1, unit: 'px', group: 'Size and spacing' },
   gap: { id: 'gap', label: 'Space between items', type: 'range', min: 0, max: 60, step: 1, unit: 'px', simple: true, group: 'Size and spacing' },
@@ -838,7 +840,7 @@ const TEXT_CONTROLS = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'tex
 const SURFACE_CONTROLS = ['background', 'backgroundColor', 'borderColor', 'borderWidth', 'borderStyle', 'radius', 'padding', 'gap', 'opacity', 'shadowBlur', 'shadowOpacity', 'glowBlur', 'glowOpacity', 'blur'];
 const IMAGE_CONTROLS = ['imageUrl', 'imageSize', 'imageFit', 'backgroundSize', 'backgroundPosition', 'radius', 'opacity', 'borderColor', 'borderWidth'];
 const PROGRESS_CONTROLS = ['background', 'backgroundColor', 'borderColor', 'borderWidth', 'radius', 'height', 'opacity'];
-const SIZE_CONTROLS = ['width', 'height', 'minWidth', 'minHeight', 'padding', 'margin', 'gap'];
+const SIZE_CONTROLS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight', 'padding', 'margin', 'gap'];
 const ADVANCED_CORNER_CONTROLS = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
 const ANIMATION_CONTROLS = ['animation', 'duration', 'delay'];
 
