@@ -2077,7 +2077,7 @@ function buildPatchForWidget(widgetType, tokens, styleId) {
   return {};
 }
 
-function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = '') {
+function filterGeneratedSubElements(widgetType, subElements = {}, styleId = '') {
   const next = deepMergeV2(subElements);
   if (widgetType === 'slot_requests' && styleId !== 'v3_compact_editable' && next.slotImage) {
     delete next.slotImage.imageSize;
@@ -2100,6 +2100,18 @@ function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = ''
       delete next[elementId].padding;
       delete next[elementId].gap;
     }
+  }
+  return next;
+}
+
+function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = '') {
+  const next = deepMergeV2(subElements);
+  if (widgetType === 'slot_requests' && styleId !== 'v3_compact_editable' && next.slotImage) {
+    delete next.slotImage.imageSize;
+    delete next.slotImage.width;
+    delete next.slotImage.height;
+    delete next.slotImage.imageFit;
+    delete next.slotImage.visible;
   }
   return next;
 }
@@ -2225,7 +2237,7 @@ export function applyWidgetAppearanceV2ToConfig(widget, config, appearance = {},
   const isOriginalBaseline = resolved.tokens?.isOriginalBaseline || resolved.tokens?.material === 'original';
   const patch = buildPatchForWidget(widget.widget_type, resolved.tokens, resolved.styleId);
   const explicitSubElements = config.__appearanceExplicitSubElements || {};
-  const generatedSubElements = patch.subElements || {};
+  const generatedSubElements = filterGeneratedSubElements(widget.widget_type, patch.subElements || {}, resolved.styleId);
   const v2ElementOverrides = resolved.appearance.elementOverrides || {};
   const inheritedSubElements = inheritedSubElementsForWidget(widget.widget_type, config);
   const mergedSubElements = widget.widget_type === 'bets'

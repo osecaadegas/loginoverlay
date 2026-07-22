@@ -58,6 +58,17 @@ function px(value) {
   return typeof value === 'number' ? `${value}px` : value;
 }
 
+function hasLayoutSizing(element = {}) {
+  return [
+    'width',
+    'height',
+    'minWidth',
+    'maxWidth',
+    'minHeight',
+    'maxHeight',
+  ].some(key => element[key] !== undefined && element[key] !== null && element[key] !== '');
+}
+
 function clamp01(value, fallback = 0) {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
@@ -155,6 +166,19 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
   if (element.maxWidth != null) style.maxWidth = px(element.maxWidth);
   if (element.minHeight != null) style.minHeight = px(element.minHeight);
   if (element.maxHeight != null) style.maxHeight = px(element.maxHeight);
+  const offsetX = Number(element.offsetX || 0);
+  const offsetY = Number(element.offsetY || 0);
+  if ((Number.isFinite(offsetX) && offsetX !== 0) || (Number.isFinite(offsetY) && offsetY !== 0)) {
+    style.position = style.position || 'relative';
+    style.zIndex = style.zIndex ?? 3;
+    style.transform = [
+      style.transform,
+      `translate3d(${Number.isFinite(offsetX) ? Math.round(offsetX) : 0}px, ${Number.isFinite(offsetY) ? Math.round(offsetY) : 0}px, 0)`,
+    ].filter(Boolean).join(' ');
+  }
+  if (hasLayoutSizing(element) && style.display == null) {
+    style.display = 'inline-block';
+  }
   if (element.imageSize != null) {
     style.width = px(element.imageSize);
     style.height = px(element.imageSize);
