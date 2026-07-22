@@ -524,17 +524,20 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
   }
 
   if (widgetType === 'chat') {
-    patch.headerBg = tokens.colors.secondarySurface;
-    patch.headerText = tokens.colors.mutedText;
+    const isGlowPanel = styleId === 'glow_panel';
+    patch.headerBg = isGlowPanel ? 'rgba(2,12,25,0.82)' : tokens.colors.secondarySurface;
+    patch.headerText = isGlowPanel ? tokens.colors.primary : tokens.colors.mutedText;
     patch.msgSpacing = tokens.spacing.itemGap;
     patch.msgPadH = tokens.spacing.cardPadding;
     patch.msgLineHeight = tokens.typography.lineHeight;
     patch.subElements = {
       ...patch.subElements,
       message: surfaceSubElement(tokens, 'card', {
+        background: isGlowPanel ? 'transparent' : tokens.colors.secondarySurface,
         fontFamily: tokens.typography.bodyFont,
         fontSize: tokens.typography.bodySize,
         textColor: tokens.colors.text,
+        borderColor: isGlowPanel ? 'rgba(34,211,238,0.045)' : tokens.colors.border,
         gap: tokens.spacing.itemGap,
       }),
       messageList: {
@@ -548,7 +551,7 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
       }),
       username: textSubElement(tokens, 'accent', { fontWeight: tokens.typography.valueWeight }),
       avatar: surfaceSubElement(tokens, 'badge'),
-      badge: surfaceSubElement(tokens, 'badge', { background: tokens.colors.secondarySurface }),
+      badge: surfaceSubElement(tokens, 'badge', { background: isGlowPanel ? tokens.colors.primary : tokens.colors.secondarySurface }),
       highlightedMessage: surfaceSubElement(tokens, 'card', {
         background: tokens.colors.accent,
         textColor: tokens.colors.text,
@@ -2128,6 +2131,10 @@ function filterGeneratedSubElements(widgetType, subElements = {}, styleId = '') 
       delete next[elementId].gap;
     }
   }
+  if (widgetType === 'rtp_stats' && next.container) {
+    delete next.container.padding;
+    delete next.container.gap;
+  }
   return next;
 }
 
@@ -2139,6 +2146,10 @@ function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = ''
     delete next.slotImage.height;
     delete next.slotImage.imageFit;
     delete next.slotImage.visible;
+  }
+  if (widgetType === 'rtp_stats' && next.container) {
+    delete next.container.padding;
+    delete next.container.gap;
   }
   return next;
 }

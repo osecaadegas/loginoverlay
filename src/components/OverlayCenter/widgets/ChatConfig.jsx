@@ -45,6 +45,18 @@ export default function ChatConfig({ config, onChange }) {
     { id: 'platforms', label: '📡 Platforms' },
     { id: 'presets', label: '💾 Presets' },
   ];
+  const styleOptions = [
+    { id: 'classic', icon: '📺', label: 'Classic' },
+    { id: 'glow_panel', icon: '💠', label: 'Glow Panel' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
+    { id: 'cards', icon: '🃏', label: 'Cards' },
+    { id: 'floating', icon: '☁️', label: 'Floating' },
+    { id: 'bubble', icon: '💬', label: 'Bubble' },
+    { id: 'stack', icon: '📚', label: 'Stack' },
+    { id: 'sidebar', icon: '📌', label: 'Sidebar' },
+    { id: 'typewriter', icon: '⌨️', label: 'Terminal' },
+    { id: 'bh_stats', icon: '🎰', label: 'Hunt' },
+  ];
 
   return (
     <div className="bh-config">
@@ -54,6 +66,20 @@ export default function ChatConfig({ config, onChange }) {
       {/* ═══════ PLATFORMS TAB ═══════ */}
       {activeTab === 'platforms' && (
         <div className="nb-section">
+
+          <h4 className="nb-subtitle">Display Style</h4>
+          <div className="nb-style-toggle" style={{ marginBottom: 12 }}>
+            {styleOptions.map(option => (
+              <button
+                key={option.id}
+                type="button"
+                className={`nb-style-btn${currentStyle === option.id ? ' nb-style-btn--active' : ''}`}
+                onClick={() => set('chatStyle', option.id)}
+              >
+                {option.icon} {option.label}
+              </button>
+            ))}
+          </div>
 
           <h4 className="nb-subtitle">Platforms & Channels</h4>
           <p className="oc-config-hint" style={{ marginBottom: 8 }}>

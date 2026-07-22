@@ -3,6 +3,7 @@ import { supabase } from '../../../config/supabaseClient';
 import { findUserSlotRecord, getSlotIdentity, hydrateSlotPersonalBestFromHistory, recordMatchesSlot } from '../../../services/slotRecordService';
 import { getProviderImage } from '../../../utils/gameProviders';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
+import { brushedMetalBackground, metalBorderColor, metalSurfaceShadow } from './shared/metalTexture';
 
 /* ─── Fetch slot info from the database (slots table) ─── */
 async function fetchSlotFromDB(slotRef) {
@@ -440,20 +441,21 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   /* ── Style config ── */
   const displayStyle = c.displayStyle || 'v1';
   const isVertical = displayStyle === 'vertical';
+  const isMetal = displayStyle === 'metal';
   const isNeon = displayStyle === 'neon';
   const isMinimal = displayStyle === 'minimal';
   const isGlassStyle = displayStyle === 'glass';
-  const barBgFrom = subValue(c, 'container', 'background', c.barBgFrom || (isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827'));
-  const barBgVia = c.barBgVia || (isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f');
-  const barBgTo = c.barBgTo || (isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
-  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8'));
-  const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMinimal ? 0 : isNeon ? 1 : isGlassStyle ? 1 : 1));
-  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMinimal ? 4 : isGlassStyle ? 16 : 8));
-  const textColor = subValue(c, 'statCard', 'textColor', c.textColor || '#ffffff');
-  const providerColor = subValue(c, 'provider', 'textColor', c.providerColor || '#ffffff');
-  const slotNameColor = subValue(c, 'slotTitle', 'textColor', c.slotNameColor || '#ffffff');
-  const labelColor = subValue(c, 'label', 'textColor', c.labelColor || '#94a3b8');
-  const rtpIconColor = subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || '#60a5fa');
+  const barBgFrom = subValue(c, 'container', 'background', c.barBgFrom || (isMetal ? '#1e1e22' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827'));
+  const barBgVia = c.barBgVia || (isMetal ? '#17181c' : isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f');
+  const barBgTo = c.barBgTo || (isMetal ? '#242428' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
+  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8'));
+  const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMinimal ? 0 : 1));
+  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 10 : isMinimal ? 4 : isGlassStyle ? 16 : 8));
+  const textColor = subValue(c, 'statCard', 'textColor', c.textColor || (isMetal ? '#d4d4d8' : '#ffffff'));
+  const providerColor = subValue(c, 'provider', 'textColor', c.providerColor || (isMetal ? '#d4d4d8' : '#ffffff'));
+  const slotNameColor = subValue(c, 'slotTitle', 'textColor', c.slotNameColor || (isMetal ? '#f1f5f9' : '#ffffff'));
+  const labelColor = subValue(c, 'label', 'textColor', c.labelColor || (isMetal ? '#8a8f98' : '#94a3b8'));
+  const rtpIconColor = subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || (isMetal ? '#e8a020' : '#60a5fa'));
   const potentialIconColor = subValue(c, 'maxWin', 'accentColor', c.potentialIconColor || '#facc15');
   const volatilityIconColor = subValue(c, 'volatility', 'accentColor', c.volatilityIconColor || '#3b82f6');
   const dividerColor = subValue(c, 'divider', 'background', subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6'));
@@ -498,9 +500,9 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const shadow = subValue(c, 'container', 'shadow', undefined);
   const glow = subValue(c, 'container', 'glow', undefined);
   const backdropBlur = subValue(c, 'container', 'backdropBlur', 0);
-  const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
-  const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
-  const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
+  const brightness = c.brightness ?? 100;
+  const contrast = c.contrast ?? 100;
+  const saturation = c.saturation ?? 100;
   const showSpinner = c.showSpinner !== false;
   const showProvider = c.showProvider !== false;
   const showRtp = c.showRtp !== false;
@@ -559,6 +561,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const bestWinEmptyText = isLive ? 'No personal best yet' : '-';
 
   const styleClass = isVertical ? ' rtp-stats-bar--vertical'
+    : isMetal ? ' rtp-stats-bar--metal'
     : isNeon ? ' rtp-stats-bar--neon'
     : isMinimal ? ' rtp-stats-bar--minimal'
     : isGlassStyle ? ' rtp-stats-bar--glass'
@@ -645,7 +648,23 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     '--rtp-blur': `${Number(backdropBlur) || 0}px`,
     ...(isNeon ? { '--rtp-accent': borderColor } : {}),
   };
+  const containerStyle = subElementStyle(c, 'container');
   const statCardStyle = subElementStyle(c, 'statCard');
+  const cardSurfaceStyle = {
+    ...statCardStyle,
+    ...containerStyle,
+  };
+  const resolvedStatCardStyle = isMetal ? {
+    ...cardSurfaceStyle,
+    background: brushedMetalBackground(
+      cardSurfaceStyle.background || `linear-gradient(to right, ${barBgFrom}, ${barBgVia}, ${barBgTo})`,
+      rtpIconColor,
+      { highlightOpacity: 0.06, grainOpacity: 0.028 }
+    ),
+    border: cardSurfaceStyle.border || `${borderWidth}px solid ${cardSurfaceStyle.borderColor || metalBorderColor(rtpIconColor, 0.24)}`,
+    borderColor: cardSurfaceStyle.borderColor || metalBorderColor(rtpIconColor, 0.24),
+    boxShadow: cardSurfaceStyle.boxShadow || metalSurfaceShadow(rtpIconColor, 0.72),
+  } : cardSurfaceStyle;
   const providerStyle = subElementStyle(c, 'provider');
   const slotTitleStyle = subElementStyle(c, 'slotTitle');
   const rtpValueStyle = subElementStyle(c, 'rtpValue');
@@ -658,7 +677,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
 
   return (
     <div className={`oc-widget-inner rtp-stats-bar${styleClass}`} {...partAttrs('container')} style={rootStyle}>
-      <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''} ${showEmptyState ? 'rtp-stats-inner--empty' : ''}`} {...partAttrs('statCard')} style={statCardStyle}>
+      <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''} ${showEmptyState ? 'rtp-stats-inner--empty' : ''}`} {...partAttrs('statCard')} style={resolvedStatCardStyle}>
 
         {/* Preview badge */}
         {!isLive && previewMode && (

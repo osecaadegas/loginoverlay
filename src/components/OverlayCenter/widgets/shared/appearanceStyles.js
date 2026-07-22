@@ -97,6 +97,21 @@ function alphaColor(value, opacity) {
   return `rgba(45,212,191,${opacity})`;
 }
 
+function elementAnimation(element = {}) {
+  const animation = String(element.animation || 'none');
+  if (!animation || animation === 'none') return undefined;
+  const duration = Math.max(0, Number(element.duration ?? 450));
+  const delay = Math.max(0, Number(element.delay ?? 0));
+  const timing = 'ease-out';
+  const common = `${Math.round(duration)}ms ${timing} ${Math.round(delay)}ms both`;
+  if (animation === 'fade') return `ov-fade-in ${common}`;
+  if (animation === 'slide') return `ov-slide-left ${common}`;
+  if (animation === 'scale') return `ov-pop ${common}`;
+  if (animation === 'pulse') return `wm-pulse ${Math.max(900, Math.round(duration || 1200))}ms ease-in-out ${Math.round(delay)}ms infinite`;
+  if (animation === 'glow') return `ov-raid-glow ${Math.max(1000, Math.round(duration || 1600))}ms ease-in-out ${Math.round(delay)}ms infinite`;
+  return undefined;
+}
+
 export function subElementStyle(config = {}, elementId, fallback = {}, stateId = 'default') {
   const aliased = STATE_ELEMENT_ALIASES[elementId];
   const sourceElementId = aliased?.[0] || elementId;
@@ -196,6 +211,8 @@ export function subElementStyle(config = {}, elementId, fallback = {}, stateId =
     style.objectPosition = backgroundPosition;
     style.backgroundPosition = backgroundPosition;
   }
+  const animation = elementAnimation(element);
+  if (animation) style.animation = animation;
   const filters = [];
   if (element.blur != null) filters.push(`blur(${px(element.blur)})`);
   if (element.brightness != null) filters.push(`brightness(${element.brightness}%)`);

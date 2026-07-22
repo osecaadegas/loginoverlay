@@ -3,6 +3,7 @@ import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
+import { brushedMetalBackground, metalBorderColor, metalSurfaceShadow } from './shared/metalTexture';
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -94,21 +95,22 @@ function ChatWidget({ config, theme }) {
   const maxMessages = c.maxMessages || 50;
   const chatStyle = c.chatStyle || 'classic';
   const isMetal = chatStyle === 'metal';
+  const isGlowPanel = chatStyle === 'glow_panel';
   const isBH = chatStyle === 'bh_stats';
 
   /* Style config */
-  const textColor = subValue(c, 'messageText', 'textColor', subValue(c, 'message', 'textColor', c.textColor || (isMetal ? '#d4d8e0' : isBH ? '#f1f5f9' : '#e2e8f0')));
-  const headerBg = subValue(c, 'header', 'background', c.headerBg || (isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isBH ? 'rgba(255,255,255,0.04)' : 'rgba(30,41,59,0.5)'));
-  const headerText = subValue(c, 'header', 'textColor', c.headerText || (isMetal ? '#a8b0c0' : isBH ? '#64748b' : '#94a3b8'));
+  const textColor = subValue(c, 'messageText', 'textColor', subValue(c, 'message', 'textColor', c.textColor || (isMetal ? '#d4d8e0' : isGlowPanel ? '#dbeafe' : isBH ? '#f1f5f9' : '#e2e8f0')));
+  const headerBg = subValue(c, 'header', 'background', c.headerBg || (isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isGlowPanel ? 'rgba(2,12,25,0.82)' : isBH ? 'rgba(255,255,255,0.04)' : 'rgba(30,41,59,0.5)'));
+  const headerText = subValue(c, 'header', 'textColor', c.headerText || (isMetal ? '#a8b0c0' : isGlowPanel ? '#22d3ee' : isBH ? '#64748b' : '#94a3b8'));
   const fontFamily = subValue(c, 'container', 'fontFamily', subValue(c, 'messageText', 'fontFamily', subValue(c, 'message', 'fontFamily', isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif"))));
   const fontSize = subValue(c, 'container', 'fontSize', subValue(c, 'messageText', 'fontSize', subValue(c, 'message', 'fontSize', c.fontSize || 15)));
   const msgSpacing = subValue(c, 'messageList', 'gap', subValue(c, 'message', 'gap', c.msgSpacing ?? 2));
-  const borderRadius = subValue(c, 'message', 'radius', c.borderRadius ?? (isMetal ? 10 : isBH ? 14 : 12));
+  const borderRadius = subValue(c, 'message', 'radius', c.borderRadius ?? (isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
   const borderWidth = subValue(c, 'message', 'borderWidth', c.borderWidth ?? 1);
-  const borderColor = subValue(c, 'message', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
-  const containerRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 10 : isBH ? 14 : 12));
+  const borderColor = subValue(c, 'message', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.22)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
+  const containerRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
   const containerBorderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? 1);
-  const containerBorderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
+  const containerBorderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.26)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
   const nameBold = c.nameBold ?? true;
   const msgLineHeight = subValue(c, 'messageText', 'lineHeight', subValue(c, 'message', 'lineHeight', c.msgLineHeight ?? 1.45));
   const msgPadH = subValue(c, 'message', 'padding', c.msgPadH ?? 10);
@@ -130,14 +132,15 @@ function ChatWidget({ config, theme }) {
     sidebar: 'rgba(10,12,20,0.9)',
     cards: 'rgba(18,10,35,0.95)',
     metal: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
+    glow_panel: 'rgba(2,8,18,0.94)',
     bh_stats: 'rgba(15, 23, 42, 0.9)',
   };
   const bgColor = subValue(c, 'container', 'background', c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic);
 
   /* Which features each style shows */
-  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal' || chatStyle === 'bh_stats') ? (c.showHeader !== false) : false;
+  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal' || chatStyle === 'glow_panel' || chatStyle === 'bh_stats') ? (c.showHeader !== false) : false;
   const showLegend = (chatStyle === 'classic') ? (c.showLegend !== false) : false;
-  const showBadges = (chatStyle === 'classic' || chatStyle === 'metal' || chatStyle === 'bh_stats') ? (c.showBadges !== false) : false;
+  const showBadges = (chatStyle === 'classic' || chatStyle === 'metal' || chatStyle === 'glow_panel' || chatStyle === 'bh_stats') ? (c.showBadges !== false) : false;
 
   /* Bots to hide from overlay chat */
   const HIDDEN_BOTS = ['streamelements', 'nightbot', 'moobot'];
@@ -236,11 +239,22 @@ function ChatWidget({ config, theme }) {
     '--chat-badge-bg': badgeBg,
     '--chat-badge-text': badgeText,
   });
+  const rootStyle = isMetal ? {
+    ...style,
+    background: brushedMetalBackground(style.background || bgColor, headerText, { highlightOpacity: 0.06, grainOpacity: 0.03 }),
+    borderColor: style.borderColor || metalBorderColor(headerText, 0.24),
+    boxShadow: style.boxShadow || metalSurfaceShadow(headerText, 0.9),
+  } : isGlowPanel ? {
+    ...style,
+    background: style.background || bgColor,
+    border: `${containerBorderWidth}px solid ${containerBorderColor}`,
+    boxShadow: style.boxShadow || `0 0 18px rgba(34,211,238,0.14), inset 0 1px 0 rgba(255,255,255,0.05)`,
+  } : style;
 
   const modeClass = ` ov-chat-widget--${chatStyle}`;
 
   return (
-    <div className={`ov-chat-widget${modeClass}`} {...partAttrs('container')} style={style}>
+    <div className={`ov-chat-widget${modeClass}`} {...partAttrs('container')} style={rootStyle}>
       <style>{`
         @keyframes ov-float-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes ov-pop-in{from{opacity:0;transform:scale(0.8) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -264,8 +278,8 @@ function ChatWidget({ config, theme }) {
       {showHeader && chatStyle === 'metal' && (
         <div {...partAttrs('header')} style={headerPartStyle({
           padding: '8px 14px',
-          background: headerBg,
-          borderBottom: `1px solid ${borderColor}`,
+          background: brushedMetalBackground(headerBg, headerText, { highlightOpacity: 0.05, grainOpacity: 0.025 }),
+          borderBottom: `1px solid ${metalBorderColor(headerText, 0.26)}`,
           display: 'flex', alignItems: 'center', gap: 8,
         })}>
           <span {...partAttrs('header')} style={{
@@ -286,6 +300,33 @@ function ChatWidget({ config, theme }) {
             }} />
             Live
           </span>
+        </div>
+      )}
+
+      {showHeader && chatStyle === 'glow_panel' && (
+        <div {...partAttrs('header')} style={headerPartStyle({
+          padding: '9px 14px',
+          background: headerBg,
+          borderBottom: `${containerBorderWidth}px solid ${containerBorderColor}`,
+          display: 'flex', alignItems: 'center', gap: 8,
+          boxShadow: '0 1px 0 rgba(255,255,255,0.04), 0 8px 18px rgba(2,8,18,0.28)',
+        })}>
+          <span {...partAttrs('badge')} style={badgeStyle({
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: headerText,
+            boxShadow: `0 0 10px ${headerText}`,
+            display: 'inline-block',
+          })} />
+          <span {...partAttrs('header')} style={{
+            fontSize: '0.78em',
+            fontWeight: 900,
+            letterSpacing: '0.24em',
+            textTransform: 'uppercase',
+            color: headerText,
+            textShadow: `0 0 8px ${headerText}66`,
+          }}>CHAT</span>
         </div>
       )}
 
@@ -318,7 +359,7 @@ function ChatWidget({ config, theme }) {
         </div>
       )}
 
-      {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && chatStyle !== 'bh_stats' && (
+      {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && chatStyle !== 'glow_panel' && chatStyle !== 'bh_stats' && (
         <div className="ov-chat-header" {...partAttrs('header')} style={headerPartStyle({ background: headerBg, color: headerText })}>
           <span className="ov-chat-header-title" {...partAttrs('header')}>Live Chat</span>
           <div className="ov-chat-header-badges" {...partAttrs('badge')}>
@@ -490,6 +531,7 @@ function ChatWidget({ config, theme }) {
                 padding: `${msgSpacing + 1}px ${msgPadH}px`,
                 animation: 'ov-float-in 0.25s ease-out',
                 borderBottom: `${Number(borderWidth) || 1}px solid ${borderColor}`,
+                background: brushedMetalBackground(messageBg || 'rgba(34,36,42,0.34)', headerText, { highlightOpacity: 0.035, grainOpacity: 0.02 }),
               })}>
                 {showBadges && (
                   <span {...partAttrs('badge')} style={badgeStyle({
@@ -508,6 +550,47 @@ function ChatWidget({ config, theme }) {
                   })}>{msg.username}</span>
                   <span {...partAttrs('messageText')} style={messageTextStyle({ color: textColor, textShadow: '0 1px 2px rgba(0,0,0,0.5)' })}>{msg.message}</span>
                 </div>
+              </div>
+            );
+          }
+
+          /* ── Style: Glow Panel — compact dark chat like stream panels ── */
+          if (chatStyle === 'glow_panel') {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--glow-panel" {...partAttrs('message')} style={messagePartStyle({
+                padding: `${Math.max(2, msgSpacing + 1)}px ${msgPadH}px`,
+                animation: 'ov-slide-left 0.22s ease-out',
+                background: messageBg || 'transparent',
+                borderBottom: borderWidth ? `${Math.max(1, Number(borderWidth) || 1)}px solid rgba(34,211,238,0.045)` : 'none',
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 6,
+              })}>
+                {showBadges && msg.badges?.length > 0 && (
+                  <span {...partAttrs('badge')} style={badgeStyle({
+                    color: badgeText,
+                    background: badgeBg,
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: 3,
+                    padding: '1px 5px',
+                    fontSize: '0.72em',
+                    fontWeight: 800,
+                    flexShrink: 0,
+                  })}>{plt.icon}</span>
+                )}
+                <span {...partAttrs('username')} style={usernameStyle({
+                  color: nameColor,
+                  fontWeight: nameBold ? 900 : 700,
+                  textShadow: `0 0 8px ${nameColor}55`,
+                  flexShrink: 0,
+                })}>{msg.username}:</span>
+                <span {...partAttrs('messageText')} style={messageTextStyle({
+                  color: textColor,
+                  wordBreak: 'break-word',
+                  lineHeight: msgLineHeight,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.55)',
+                  minWidth: 0,
+                })}>{msg.message}</span>
               </div>
             );
           }

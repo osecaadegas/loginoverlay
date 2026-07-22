@@ -1,6 +1,13 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchNowPlaying, serverRefreshToken } from '../../../utils/spotifyAuth';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
+import {
+  brushedMetalBackground,
+  brushedMetalTextBackground,
+  colorToRgbString,
+  metalBorderColor,
+  metalSurfaceShadow,
+} from './shared/metalTexture';
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {
@@ -221,9 +228,10 @@ function NavbarWidget({ config, widgetId, userId }) {
   const isCarbon = (c.displayStyle === 'carbon');
   const isFuturistic = (c.displayStyle === 'futuristic');
   const accentColor = subValue(c, 'logo', 'accentColor', c.accentColor || (isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b'));
-  const accentColorRGB = hexToRgb(accentColor);
+  const accentColorRGB = colorToRgbString(accentColor);
   const bgColor = subValue(c, 'container', 'background', c.bgColor || (isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318'));
   const textColor = subValue(c, 'displayName', 'textColor', c.textColor || (isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9'));
+  const displayNameAccentColor = subValue(c, 'displayName', 'accentColor', accentColor);
   const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
   const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || accentColor);
   const containerFontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
@@ -287,6 +295,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   const sponsorBorderColor = subValue(c, 'sponsor', 'borderColor', null);
   const sponsorBorderWidth = subValue(c, 'sponsor', 'borderWidth', 1);
   const sponsorShadow = subValue(c, 'sponsor', 'shadow', undefined);
+  const sponsorAccentColor = subValue(c, 'sponsor', 'accentColor', ctaColor);
   const cryptoUpColor = subValue(c, 'crypto', 'fillColor', c.cryptoUpColor || '#34d399');
   const cryptoDownColor = subValue(c, 'crypto', 'accentColor', c.cryptoDownColor || '#f87171');
   const cryptoTextColor = subValue(c, 'crypto', 'textColor', textColor);
@@ -302,8 +311,8 @@ function NavbarWidget({ config, widgetId, userId }) {
   const separatorColor = subValue(c, 'separator', 'background', subValue(c, 'separator', 'borderColor', borderColor));
   const separatorWidth = subValue(c, 'separator', 'borderWidth', 1);
   const separatorOpacity = subValue(c, 'separator', 'opacity', 0.7);
-  const bgColorRGB = hexToRgb(bgColor);
-  const ctaColorRGB = hexToRgb(ctaColor);
+  const bgColorRGB = colorToRgbString(bgColor);
+  const ctaColorRGB = colorToRgbString(sponsorAccentColor || ctaColor);
 
   // Only apply CSS filter when values differ from defaults — filter forces rasterisation
   // which degrades image sharpness and sub-pixel text rendering
@@ -318,7 +327,7 @@ function NavbarWidget({ config, widgetId, userId }) {
 
   const barOuter = isMetal ? {
     width: '100%', height: '100%', boxSizing: 'border-box',
-    background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
+    background: brushedMetalBackground('linear-gradient(135deg, rgba(42,43,48,0.96), rgba(17,18,22,0.98))', accentColor, { highlightOpacity: 0.05, grainOpacity: 0.025 }),
     padding: `${borderWidth}px`,
     fontFamily: containerFontFamily,
   } : isCarbon ? {
@@ -351,9 +360,9 @@ function NavbarWidget({ config, widgetId, userId }) {
 
   const barInner = isMetal ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
+    background: brushedMetalBackground(`linear-gradient(170deg, rgba(${accentColorRGB},0.05) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.035) 60%, ${bgColor} 100%)`, accentColor),
     padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
-    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : undefined,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : metalSurfaceShadow(accentColor, 0.85),
     backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
@@ -495,16 +504,17 @@ function NavbarWidget({ config, widgetId, userId }) {
             <div {...partAttrs('displayName')} style={withElementOffset(c, 'displayName', { display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 })}>
               <span style={{
                 backgroundImage: isMetal
-                  ? `linear-gradient(135deg, ${textColor}, ${mutedColor}, ${textColor}, ${mutedColor})`
+                  ? brushedMetalTextBackground(textColor, displayNameAccentColor)
                   : isGlass
-                  ? `linear-gradient(to right, ${textColor}, ${accentColor}, ${textColor})`
+                  ? `linear-gradient(to right, ${textColor}, ${displayNameAccentColor}, ${textColor})`
                   : isRetro
-                  ? `linear-gradient(to right, ${accentColor}, ${ctaColor}, ${accentColor})`
-                  : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #94a3b8, #64748b)`),
+                  ? `linear-gradient(to right, ${displayNameAccentColor}, ${ctaColor}, ${displayNameAccentColor})`
+                  : (c.nameGradient || `linear-gradient(to right, ${displayNameAccentColor}, ${textColor}, ${displayNameAccentColor})`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 fontFamily,
                 fontSize: fontSize * 1.2, fontWeight,
                 letterSpacing: isMetal ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
+                display: 'block', maxWidth: 'min(30vw, 420px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {c.streamerName || 'STREAMER'}
               </span>
@@ -584,7 +594,15 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'nowPlaying': {
         if (c.showNowPlaying === false || !displayNowPlaying) return null;
         return (
-          <div {...partAttrs('music')} style={withElementOffset(c, 'music', { display: 'flex', alignItems: 'center', minWidth: 0, flexShrink: 1 })}>
+          <div {...partAttrs('music')} style={withElementOffset(c, 'music', {
+            display: 'flex',
+            alignItems: 'center',
+            minWidth: 0,
+            width: '100%',
+            maxWidth: 'min(34vw, 380px)',
+            flex: '1 1 220px',
+            overflow: 'hidden',
+          })}>
             <NowPlayingDisplay
               data={displayNowPlaying}
               musicDisplayStyle={c.musicDisplayStyle || 'text'}
@@ -630,14 +648,14 @@ function NavbarWidget({ config, widgetId, userId }) {
           <div {...partAttrs('sponsor')} style={withElementOffset(c, 'sponsor', isMetal ? {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
-            background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
-            border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || `rgba(${ctaColorRGB},0.25)`}`,
+            background: brushedMetalBackground(`linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`, sponsorAccentColor),
+            border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || metalBorderColor(sponsorAccentColor, 0.32)}`,
             color: sponsorTextColor || ctaColor,
             fontFamily: sponsorFontFamily,
             fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
             letterSpacing: '0.24em', textTransform: 'uppercase',
-            boxShadow: sponsorShadow || `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(${ctaColorRGB},0.1)`,
-            flexShrink: 0,
+            boxShadow: sponsorShadow || metalSurfaceShadow(sponsorAccentColor, 0.64),
+            flexShrink: 0, maxWidth: 'min(28vw, 360px)', overflow: 'hidden',
           } : isGlass ? {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 14, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.5)}px` : '7px 18px',
@@ -670,9 +688,9 @@ function NavbarWidget({ config, widgetId, userId }) {
             border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || 'transparent'}`,
             letterSpacing: '0.24em', textTransform: 'uppercase',
             boxShadow: sponsorShadow || `0 0 24px ${ctaColor}d9`,
-            flexShrink: 0,
+            flexShrink: 0, maxWidth: 'min(28vw, 360px)', overflow: 'hidden',
           })}>
-            <span>{c.ctaText}</span>
+            <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.ctaText}</span>
           </div>
         );
       }
@@ -900,7 +918,7 @@ function ScrollText({ text, style }) {
   const duration = Math.max((text || '').length * 0.28, 4);
 
   return (
-    <div ref={containerRef} style={{ ...style, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: shouldScroll ? 'unset' : 'ellipsis' }}>
+    <div ref={containerRef} style={{ minWidth: 0, maxWidth: '100%', ...style, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: shouldScroll ? 'unset' : 'ellipsis' }}>
       <span
         ref={textRef}
         style={{
@@ -921,17 +939,20 @@ function ScrollText({ text, style }) {
    ═══════════════════════════════════════════════════════════ */
 function NowPlayingDisplay({ data, musicDisplayStyle, fontSize, textColor, mutedColor, accentColor, fontFamily, fontWeight, isMetal, barHeight }) {
   const typography = { fontFamily, fontWeight };
-  switch (musicDisplayStyle) {
-    case 'pill':      return <NP_Pill data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} {...typography} />;
-    case 'marquee':   return <NP_Marquee data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
-    case 'albumart':  return <NP_AlbumArt data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} {...typography} />;
-    case 'equalizer': return <NP_Equalizer data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
-    case 'vinyl':     return <NP_Vinyl data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} {...typography} />;
-    case 'minimal':   return <NP_Minimal data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
-    case 'wave':      return <NP_Wave data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} {...typography} />;
-    case 'text':
-    default:          return <NP_Text data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} {...typography} />;
-  }
+  const content = (() => {
+    switch (musicDisplayStyle) {
+      case 'pill':      return <NP_Pill data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} {...typography} />;
+      case 'marquee':   return <NP_Marquee data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
+      case 'albumart':  return <NP_AlbumArt data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} {...typography} />;
+      case 'equalizer': return <NP_Equalizer data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
+      case 'vinyl':     return <NP_Vinyl data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} {...typography} />;
+      case 'minimal':   return <NP_Minimal data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} {...typography} />;
+      case 'wave':      return <NP_Wave data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} {...typography} />;
+      case 'text':
+      default:          return <NP_Text data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} {...typography} />;
+    }
+  })();
+  return <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>{content}</div>;
 }
 
 /* Style 1: Text (original) */

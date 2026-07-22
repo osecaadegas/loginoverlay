@@ -5093,7 +5093,7 @@ body.wm-resizing {
   font-size: 10.5px;
   font-weight: 600;
   padding: 0 12px;
-  min-height: 40px;
+  min-height: 24px;
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(255, 255, 255, 0.04);

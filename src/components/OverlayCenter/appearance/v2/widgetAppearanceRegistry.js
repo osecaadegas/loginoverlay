@@ -358,7 +358,16 @@ const RTP_CONTAINER_CONTROLS = Object.freeze([
   'brightness',
   'contrast',
   'saturation',
+  'animation',
+  'duration',
+  'delay',
 ]);
+
+const RTP_CONTAINER_CONTROL_OVERRIDES = Object.freeze({
+  height: Object.freeze({ min: 24, max: 220, help: 'Visible height for the RTP bar card.' }),
+  minHeight: Object.freeze({ min: 0, max: 220 }),
+  maxHeight: Object.freeze({ min: 0, max: 220 }),
+});
 
 const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = Object.freeze([
   'container',
@@ -750,6 +759,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       makeRuntimeStyle('typewriter', 'Terminal', 'Terminal-style chat text.', { capabilities: { transparentBackground: true, rows: true }, elementIds: ['container', 'messageList', 'message', 'username', 'messageText', 'highlightedMessage'] }),
       makeRuntimeStyle('sidebar', 'Sidebar', 'Sidebar chat rail.', { capabilities: { rows: true, barDimensions: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
       makeRuntimeStyle('cards', 'Cards', 'Chat messages as individual cards.', { capabilities: { rows: true, statCards: true, shadows: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
+      makeRuntimeStyle('glow_panel', 'Glow Panel', 'Dark stream chat panel with cyan glow frame and compact text rows.', { capabilities: { rows: true, shadows: true, glow: true, glowIntensity: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
       makeRuntimeStyle('metal', 'Metal', 'Metallic chat panel.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'badge', 'highlightedMessage'] }),
       makeRuntimeStyle('bh_stats', 'Hunt', 'Chat layout matching Bonus Hunt stats styling.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'header', 'messageList', 'message', 'username', 'messageText', 'avatar', 'badge', 'highlightedMessage'] }),
     ],
@@ -1089,6 +1099,26 @@ export const widgetAppearanceRegistry = Object.freeze({
         previewStateIds: ['live', 'preview', 'empty'],
       }),
       freezeStyle({
+        id: 'metal',
+        label: 'Metal',
+        description: 'Brushed-metal RTP bar matching the Bonus Hunt metal palette.',
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          images: true,
+          statCards: true,
+          positiveNegativeColours: true,
+          shadows: true,
+          glow: true,
+          glowIntensity: true,
+          barDimensions: true,
+          imageSize: true,
+          imageShape: true,
+          imageFit: true,
+        },
+        elementIds: ['container', 'provider', 'slotTitle', 'rtpValue', 'maxWin', 'volatility', 'personalBest', 'statCard', 'label', 'divider', 'spinner'],
+        previewStateIds: ['live', 'preview', 'empty'],
+      }),
+      freezeStyle({
         id: 'vertical',
         label: 'Vertical',
         description: 'Stacked RTP layout for narrower stream placements.',
@@ -1213,6 +1243,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         kind: 'surface',
         capabilities: ['surface', 'border', 'shadow', 'shape', 'scale'],
         controls: RTP_CONTAINER_CONTROLS,
+        controlOverrides: RTP_CONTAINER_CONTROL_OVERRIDES,
         quickControls: ['material', 'primaryColor', 'accentColor', 'shape', 'scale', 'shadowStrength', 'glowStrength', 'barHeight', 'maxWidth'],
         cssVariables: ['--rtp-bg-from', '--rtp-bg-via', '--rtp-bg-to', '--rtp-border-color', '--rtp-border-radius'],
       }),

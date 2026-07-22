@@ -46,6 +46,14 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
     { id: 'visibility', label: '👁️ Visibility' },
     { id: 'presets', label: '💾 Presets' },
   ];
+  const styleOptions = [
+    { id: 'v1', icon: '📊', label: 'Classic' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
+    { id: 'vertical', icon: '📋', label: 'Vertical' },
+    { id: 'neon', icon: '💡', label: 'Neon' },
+    { id: 'minimal', icon: '✦', label: 'Minimal' },
+    { id: 'glass', icon: '🪟', label: 'Glass' },
+  ];
 
   return (
     <div className="bh-config">
@@ -88,6 +96,20 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
       {/* ═══════ VISIBILITY TAB ═══════ */}
       {activeTab === 'visibility' && (
         <div className="nb-section">
+          <h4 className="nb-subtitle">Display Style</h4>
+          <div className="nb-style-toggle" style={{ marginBottom: 12 }}>
+            {styleOptions.map(option => (
+              <button
+                key={option.id}
+                type="button"
+                className={`nb-style-btn${currentStyle === option.id ? ' nb-style-btn--active' : ''}`}
+                onClick={() => set('displayStyle', option.id)}
+              >
+                {option.icon} {option.label}
+              </button>
+            ))}
+          </div>
+
           <h4 className="nb-subtitle">Show / Hide Sections</h4>
           <p className="oc-config-hint" style={{ marginBottom: 8 }}>
             Toggle which info sections appear on the bar.

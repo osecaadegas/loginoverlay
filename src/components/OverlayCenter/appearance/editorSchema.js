@@ -1042,6 +1042,7 @@ export function elementSupportsControl(element = {}, controlId) {
 export function getElementControlGroups(element = {}, mode = 'simple') {
   const advanced = mode === 'advanced';
   const explicitControls = Array.isArray(element.controls) ? element.controls : [];
+  const controlOverrides = element.controlOverrides || {};
   const base = [
     ...explicitControls,
     ...TEXT_CONTROLS,
@@ -1062,7 +1063,7 @@ export function getElementControlGroups(element = {}, mode = 'simple') {
       if (!advanced && !definition.simple) return false;
       return elementSupportsControl(element, id);
     })
-    .map(id => CONTROL_DEFINITIONS[id]);
+    .map(id => ({ ...CONTROL_DEFINITIONS[id], ...(controlOverrides[id] || {}) }));
 
   return Object.values(controls.reduce((groups, control) => {
     const groupName = control.group || 'Style';

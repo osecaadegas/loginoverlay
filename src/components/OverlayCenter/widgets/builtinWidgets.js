@@ -238,6 +238,7 @@ registerWidget({
     { id: 'typewriter', icon: '⌨️', label: 'Terminal' },
     { id: 'sidebar',    icon: '📌', label: 'Sidebar' },
     { id: 'cards',      icon: '🃏', label: 'Cards' },
+    { id: 'glow_panel', icon: '💠', label: 'Glow Panel' },
     { id: 'metal',      icon: '⚙️', label: 'Metal' },
     { id: 'bh_stats',   icon: '🎰', label: 'Hunt' },
   ],
@@ -355,6 +356,7 @@ registerWidget({
   },
   styles: [
     { id: 'v1', icon: '📊', label: 'Classic' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
     { id: 'vertical', icon: '📋', label: 'Vertical' },
     { id: 'neon', icon: '💡', label: 'Neon' },
     { id: 'minimal', icon: '✦', label: 'Minimal' },
