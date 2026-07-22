@@ -3,7 +3,24 @@ import {
   shouldExposeEditorReadyStyle,
 } from '../../widgets/editorReadyWidgetRegistry.js';
 
-export const APPEARANCE_ENGINE_V2_WIDGETS = Object.freeze(['bh_stats', 'rtp_stats', 'navbar', 'bonus_hunt', 'slot_requests', 'giveaway', 'spotify_now_playing', 'bets', 'background']);
+export const APPEARANCE_ENGINE_V2_WIDGETS = Object.freeze([
+  'bh_stats',
+  'current_slot',
+  'tournament',
+  'giveaway',
+  'navbar',
+  'chat',
+  'image_slideshow',
+  'rtp_stats',
+  'background',
+  'raid_shoutout',
+  'spotify_now_playing',
+  'slot_requests',
+  'bonus_hunt',
+  'bonus_buys',
+  'bets',
+  'container',
+]);
 
 const COMMON_CAPABILITIES = Object.freeze({
   surface: ['surface', 'secondarySurface', 'elevatedSurface', 'opacity'],
@@ -296,6 +313,129 @@ function freezeStyle(style) {
   });
 }
 
+function makeRuntimeStyle(id, label, description, overrides = {}) {
+  return freezeStyle({
+    id,
+    label,
+    description,
+    capabilities: {
+      ...BASE_QUICK_CAPABILITIES,
+      ...(overrides.capabilities || {}),
+    },
+    elementIds: overrides.elementIds || ['container'],
+    previewStateIds: overrides.previewStateIds || ['default'],
+    recommended: !!overrides.recommended,
+  });
+}
+
+const STANDARD_SAFE_RANGES = Object.freeze({
+  scale: [0.6, 1.75],
+  rootRadius: [0, 96],
+  cardRadius: [0, 64],
+  badgeRadius: [0, 999],
+  rootPadding: [0, 40],
+  cardPadding: [0, 32],
+  fontSize: [8, 42],
+  shadowIntensity: [0, 0.65],
+  glowIntensity: [0, 0.55],
+  blurStrength: [0, 24],
+});
+
+const BASIC_WIDGET_ELEMENTS = Object.freeze({
+  container: Object.freeze({
+    label: 'Entire widget',
+    kind: 'surface',
+    capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'scale', 'typography'],
+  }),
+  header: Object.freeze({
+    label: 'Header',
+    kind: 'surface',
+    capabilities: ['surface', 'border', 'shape', 'spacing', 'typography'],
+  }),
+  title: Object.freeze({
+    label: 'Title',
+    kind: 'text',
+    capabilities: ['typography', 'stateColor'],
+  }),
+  bodyText: Object.freeze({
+    label: 'Body text',
+    kind: 'text',
+    capabilities: ['typography', 'stateColor'],
+  }),
+  card: Object.freeze({
+    label: 'Cards',
+    kind: 'surface',
+    capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'],
+  }),
+  badge: Object.freeze({
+    label: 'Badges',
+    kind: 'badge',
+    capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'],
+  }),
+  image: Object.freeze({
+    label: 'Image',
+    kind: 'image',
+    capabilities: ['image', 'border', 'shape', 'spacing'],
+  }),
+  progressBar: Object.freeze({
+    label: 'Progress bar',
+    kind: 'progress',
+    capabilities: ['progress', 'shape'],
+  }),
+});
+
+function makeBasicWidgetCapability({
+  id,
+  label,
+  category,
+  defaultStyleId,
+  defaultAppearance = {},
+  styles,
+  elements = BASIC_WIDGET_ELEMENTS,
+  safeRanges = STANDARD_SAFE_RANGES,
+  responsive = {},
+  migrationStatus = 'production-v2',
+}) {
+  return Object.freeze({
+    id,
+    widgetType: id,
+    label,
+    category,
+    renderer: 'registered-widget-component',
+    previewRenderer: 'registered-widget-component',
+    schemaVersion: 1,
+    migrationStatus,
+    defaultStyleId,
+    defaultAppearance: Object.freeze({
+      material: 'matte',
+      primaryColor: '#14d8d8',
+      accentColor: '#8b5cf6',
+      shape: 'rounded',
+      density: 'standard',
+      scale: 1,
+      textSize: 'standard',
+      ...defaultAppearance,
+    }),
+    styles: Object.freeze(styles),
+    safeRanges,
+    responsive: Object.freeze({
+      safeToResize: true,
+      aspectRatioLocked: false,
+      minWidth: 180,
+      minHeight: 80,
+      maxWidth: 1920,
+      maxHeight: 1080,
+      ...responsive,
+    }),
+    elements: Object.freeze(elements),
+    previewSampleData: Object.freeze({
+      needsAllWidgets: false,
+      states: ['default'],
+      source: 'previewWidgetSamples.applyPreviewWidgetSamples',
+    }),
+  });
+}
+
 export const widgetAppearanceRegistry = Object.freeze({
   bh_stats: Object.freeze({
     id: 'bh_stats',
@@ -427,6 +567,203 @@ export const widgetAppearanceRegistry = Object.freeze({
       needsAllWidgets: true,
       source: 'previewWidgetSamples.applyPreviewWidgetSamples',
     }),
+  }),
+  current_slot: makeBasicWidgetCapability({
+    id: 'current_slot',
+    label: 'Current Slot',
+    category: 'casino',
+    defaultStyleId: 'v1',
+    defaultAppearance: {
+      primaryColor: '#f59e0b',
+      accentColor: '#22d3ee',
+    },
+    styles: [
+      makeRuntimeStyle('v1', 'Classic', 'Classic current-slot card with image, provider and stake details.', {
+        recommended: true,
+        capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, positiveNegativeColours: true },
+        elementIds: ['container', 'slotImage', 'slotTitle', 'provider', 'stake', 'stat'],
+      }),
+      makeRuntimeStyle('v2', 'Neon', 'Current-slot card with stronger glow and neon borders.', {
+        capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, positiveNegativeColours: true, glow: true, glowIntensity: true },
+        elementIds: ['container', 'slotImage', 'slotTitle', 'provider', 'stake', 'stat'],
+      }),
+      makeRuntimeStyle('v3', 'Minimal', 'Small low-noise current-slot label for compact scenes.', {
+        capabilities: { ...IMAGE_QUICK_CAPABILITIES, transparentBackground: true },
+        elementIds: ['container', 'slotImage', 'slotTitle', 'provider', 'stake', 'stat'],
+      }),
+      makeRuntimeStyle('v4', 'Compact Bar', 'Horizontal current-slot bar for lower-third placement.', {
+        capabilities: { ...IMAGE_QUICK_CAPABILITIES, barDimensions: true, rows: true },
+        elementIds: ['container', 'slotImage', 'slotTitle', 'provider', 'stake', 'stat'],
+      }),
+    ],
+    responsive: { minWidth: 180, minHeight: 90, maxWidth: 1200, maxHeight: 720 },
+    elements: {
+      container: BASIC_WIDGET_ELEMENTS.container,
+      slotImage: Object.freeze({ label: 'Slot image', kind: 'image', capabilities: ['image', 'border', 'shape', 'spacing'] }),
+      slotTitle: Object.freeze({ label: 'Slot title', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      provider: Object.freeze({ label: 'Provider label', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      stake: Object.freeze({ label: 'Stake value', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'] }),
+      stat: Object.freeze({ label: 'RTP/stat value', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+    },
+  }),
+  tournament: makeBasicWidgetCapability({
+    id: 'tournament',
+    label: 'Tournament',
+    category: 'casino',
+    defaultStyleId: 'grid',
+    defaultAppearance: {
+      primaryColor: '#38bdf8',
+      accentColor: '#f59e0b',
+    },
+    styles: [
+      makeRuntimeStyle('grid', 'Grid', 'Tournament cards arranged in a grid.', { recommended: true, capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, columns: true, rows: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue', 'statusBadge'] }),
+      makeRuntimeStyle('showcase', 'Showcase', 'Large tournament showcase layout.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, glow: true, glowIntensity: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue', 'statusBadge'] }),
+      makeRuntimeStyle('vertical', 'Vertical', 'Stacked tournament list.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, rows: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue'] }),
+      makeRuntimeStyle('bracket', 'Bracket', 'Tournament bracket with connector lines.', { capabilities: { statCards: true, rows: true, columns: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'scoreValue', 'bracketLine', 'statusBadge'] }),
+      makeRuntimeStyle('neon', 'Neon', 'Glow-heavy tournament layout.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, glow: true, glowIntensity: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue', 'statusBadge'] }),
+      makeRuntimeStyle('minimal', 'Minimal', 'Compact tournament status with reduced surfaces.', { capabilities: { transparentBackground: true, rows: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'scoreValue'] }),
+      makeRuntimeStyle('arena', 'Arena', 'Arena-style matchup layout.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, positiveNegativeColours: true, glow: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue', 'statusBadge'] }),
+      makeRuntimeStyle('futuristic', 'Futuristic', 'Futuristic tournament board.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, glow: true, glowIntensity: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue', 'statusBadge'] }),
+      makeRuntimeStyle('esports', 'Esports', 'Esports scoreboard style.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, rows: true, columns: true }, elementIds: ['container', 'header', 'matchCard', 'playerName', 'slotImage', 'scoreValue', 'statusBadge'] }),
+    ],
+    responsive: { minWidth: 320, minHeight: 220, maxWidth: 1920, maxHeight: 1080 },
+    elements: {
+      container: BASIC_WIDGET_ELEMENTS.container,
+      header: BASIC_WIDGET_ELEMENTS.header,
+      matchCard: Object.freeze({ label: 'Match cards', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'] }),
+      playerName: Object.freeze({ label: 'Player names', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      slotImage: Object.freeze({ label: 'Slot images', kind: 'image', capabilities: ['image', 'border', 'shape', 'spacing'] }),
+      scoreValue: Object.freeze({ label: 'Score values', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      bracketLine: Object.freeze({ label: 'Bracket lines', kind: 'progress', capabilities: ['progress', 'shape'] }),
+      statusBadge: Object.freeze({ label: 'Status badges', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'] }),
+    },
+  }),
+  chat: makeBasicWidgetCapability({
+    id: 'chat',
+    label: 'Chat',
+    category: 'stream',
+    defaultStyleId: 'classic',
+    defaultAppearance: {
+      primaryColor: '#8b5cf6',
+      accentColor: '#22d3ee',
+    },
+    styles: [
+      makeRuntimeStyle('classic', 'Classic', 'Classic chat panel with header and messages.', { recommended: true, capabilities: { rows: true }, elementIds: ['container', 'header', 'message', 'username', 'avatar', 'badge'] }),
+      makeRuntimeStyle('floating', 'Floating', 'Floating transparent chat messages.', { capabilities: { transparentBackground: true, rows: true, shadows: true }, elementIds: ['container', 'message', 'username', 'avatar'] }),
+      makeRuntimeStyle('bubble', 'Bubble', 'Speech-bubble chat layout.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'message', 'username', 'avatar'] }),
+      makeRuntimeStyle('stack', 'Stack', 'Stacked chat cards.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'message', 'username'] }),
+      makeRuntimeStyle('typewriter', 'Terminal', 'Terminal-style chat text.', { capabilities: { transparentBackground: true, rows: true }, elementIds: ['container', 'header', 'message', 'username'] }),
+      makeRuntimeStyle('sidebar', 'Sidebar', 'Sidebar chat rail.', { capabilities: { rows: true, barDimensions: true }, elementIds: ['container', 'header', 'message', 'username', 'avatar'] }),
+      makeRuntimeStyle('cards', 'Cards', 'Chat messages as individual cards.', { capabilities: { rows: true, statCards: true, shadows: true }, elementIds: ['container', 'header', 'message', 'username', 'badge'] }),
+      makeRuntimeStyle('metal', 'Metal', 'Metallic chat panel.', { capabilities: { rows: true, shadows: true }, elementIds: ['container', 'header', 'message', 'username', 'badge'] }),
+      makeRuntimeStyle('bh_stats', 'Hunt', 'Chat layout matching Bonus Hunt stats styling.', { capabilities: { rows: true, statCards: true }, elementIds: ['container', 'header', 'message', 'username', 'badge'] }),
+    ],
+    responsive: { minWidth: 220, minHeight: 180, maxWidth: 900, maxHeight: 1080 },
+    elements: {
+      container: BASIC_WIDGET_ELEMENTS.container,
+      header: BASIC_WIDGET_ELEMENTS.header,
+      message: Object.freeze({ label: 'Message body', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography', 'stateColor'] }),
+      username: Object.freeze({ label: 'Viewer name', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      avatar: Object.freeze({ label: 'Avatar bubble', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'] }),
+      badge: Object.freeze({ label: 'Platform badges', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'] }),
+    },
+  }),
+  image_slideshow: makeBasicWidgetCapability({
+    id: 'image_slideshow',
+    label: 'Image Slideshow',
+    category: 'stream',
+    defaultStyleId: 'v1',
+    defaultAppearance: {
+      primaryColor: '#38bdf8',
+      accentColor: '#8b5cf6',
+    },
+    styles: [
+      makeRuntimeStyle('v1', 'Classic', 'Classic rotating image frame.', { recommended: true, capabilities: { ...IMAGE_QUICK_CAPABILITIES, animations: true, animationSpeed: true }, elementIds: ['container', 'image', 'caption', 'dots'] }),
+      makeRuntimeStyle('metal', 'Metal', 'Metallic slideshow frame.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, animations: true, animationSpeed: true, shadows: true }, elementIds: ['container', 'image', 'caption', 'dots'] }),
+      makeRuntimeStyle('v12', 'V12', 'Polished V12 slideshow frame.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, animations: true, animationSpeed: true, glow: true }, elementIds: ['container', 'image', 'caption', 'dots'] }),
+    ],
+    responsive: { minWidth: 220, minHeight: 140, maxWidth: 1920, maxHeight: 1080 },
+    elements: {
+      container: BASIC_WIDGET_ELEMENTS.container,
+      image: Object.freeze({ label: 'Slide image', kind: 'image', capabilities: ['image', 'border', 'shape', 'spacing'] }),
+      caption: Object.freeze({ label: 'Caption', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      dots: Object.freeze({ label: 'Navigation dots', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'stateColor'] }),
+    },
+  }),
+  raid_shoutout: makeBasicWidgetCapability({
+    id: 'raid_shoutout',
+    label: 'Raid Shoutout',
+    category: 'stream',
+    defaultStyleId: 'v1',
+    defaultAppearance: {
+      primaryColor: '#9146ff',
+      accentColor: '#22d3ee',
+    },
+    styles: [
+      makeRuntimeStyle('v1', 'Classic', 'Animated raid alert with streamer details and optional clip.', {
+        recommended: true,
+        capabilities: { ...IMAGE_QUICK_CAPABILITIES, animations: true, animationSpeed: true, statCards: true },
+        elementIds: ['container', 'avatar', 'title', 'subtitle', 'viewerCount', 'clipFrame'],
+      }),
+    ],
+    responsive: { minWidth: 280, minHeight: 120, maxWidth: 1200, maxHeight: 720 },
+    elements: {
+      container: BASIC_WIDGET_ELEMENTS.container,
+      avatar: Object.freeze({ label: 'Avatar', kind: 'image', capabilities: ['image', 'border', 'shape', 'spacing'] }),
+      title: BASIC_WIDGET_ELEMENTS.title,
+      subtitle: Object.freeze({ label: 'Subtitle', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      viewerCount: Object.freeze({ label: 'Viewer count', kind: 'badge', capabilities: ['surface', 'border', 'shape', 'typography', 'stateColor'] }),
+      clipFrame: Object.freeze({ label: 'Clip frame', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing'] }),
+    },
+  }),
+  bonus_buys: makeBasicWidgetCapability({
+    id: 'bonus_buys',
+    label: 'Bonus Buys',
+    category: 'casino',
+    defaultStyleId: 'v1',
+    defaultAppearance: {
+      primaryColor: '#3b82f6',
+      accentColor: '#f59e0b',
+    },
+    styles: [
+      makeRuntimeStyle('v1', 'Dark Blue', 'Dark blue bonus-buy tracker.', { recommended: true, capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, positiveNegativeColours: true, progressBar: true }, elementIds: ['sessionCard', 'header', 'slotArtwork', 'label', 'status', 'profit', 'loss', 'payout', 'progressBar'] }),
+      makeRuntimeStyle('v2_neon', 'Neon', 'Neon bonus-buy tracker.', { capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, positiveNegativeColours: true, progressBar: true, glow: true, glowIntensity: true }, elementIds: ['sessionCard', 'header', 'slotArtwork', 'label', 'status', 'profit', 'loss', 'payout', 'progressBar'] }),
+      makeRuntimeStyle('v3_minimal', 'Minimal', 'Minimal bonus-buy tracker.', { capabilities: { positiveNegativeColours: true, transparentBackground: true, rows: true }, elementIds: ['sessionCard', 'header', 'label', 'status', 'profit', 'loss', 'payout'] }),
+    ],
+    responsive: { minWidth: 260, minHeight: 160, maxWidth: 1200, maxHeight: 900 },
+    elements: {
+      sessionCard: Object.freeze({ label: 'Session card', kind: 'surface', capabilities: ['surface', 'border', 'shadow', 'shape', 'spacing', 'typography'] }),
+      header: BASIC_WIDGET_ELEMENTS.header,
+      slotArtwork: Object.freeze({ label: 'Slot artwork', kind: 'image', capabilities: ['image', 'border', 'shape', 'spacing'] }),
+      label: Object.freeze({ label: 'Labels', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      status: Object.freeze({ label: 'Status rows', kind: 'surface', capabilities: ['surface', 'border', 'shape', 'spacing', 'typography', 'stateColor'] }),
+      profit: Object.freeze({ label: 'Profit values', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      loss: Object.freeze({ label: 'Loss values', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      payout: Object.freeze({ label: 'Payout values', kind: 'text', capabilities: ['typography', 'stateColor'] }),
+      progressBar: BASIC_WIDGET_ELEMENTS.progressBar,
+    },
+  }),
+  container: makeBasicWidgetCapability({
+    id: 'container',
+    label: 'Container',
+    category: 'layout',
+    defaultStyleId: 'default',
+    defaultAppearance: {
+      primaryColor: '#14d8d8',
+      accentColor: '#8b5cf6',
+    },
+    styles: [
+      makeRuntimeStyle('default', 'Default', 'Generic widget group container.', {
+        recommended: true,
+        capabilities: { rows: true, columns: true, barDimensions: true },
+        elementIds: ['container', 'childArea'],
+      }),
+    ],
+    responsive: { minWidth: 120, minHeight: 80, maxWidth: 1920, maxHeight: 1080 },
+    elements: {
+      container: BASIC_WIDGET_ELEMENTS.container,
+      childArea: Object.freeze({ label: 'Child area', kind: 'surface', capabilities: ['surface', 'border', 'shape', 'spacing'] }),
+    },
   }),
   bets: Object.freeze({
     id: 'bets',
@@ -1432,6 +1769,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         legacy: false,
         featureFlag: null,
         hiddenInProduction: false,
+        hiddenInQuickEditor: true,
         capabilities: {
           ...(getEditorReadyWidgetStyle('bonus_hunt', 'v12_classic_sr_editable')?.capabilities || {}),
         },
@@ -2393,6 +2731,7 @@ export function getWidgetStyleOptionsForQuickEditor(widgetType) {
 }
 
 function shouldExposeAppearanceStyle(style) {
+  if (style?.hiddenInQuickEditor || style?.quickEditorHidden) return false;
   if (!style?.hiddenInProduction) return true;
   return shouldExposeEditorReadyStyle(style);
 }

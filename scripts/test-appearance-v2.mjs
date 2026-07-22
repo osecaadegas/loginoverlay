@@ -36,6 +36,31 @@ try {
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('spotify_now_playing'), true, 'Spotify is enabled for style-by-style V2 migration');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('bets'), true, 'Bets is migrated to part-scoped V2');
   assert.equal(registryModule.isWidgetAppearanceV2Enabled('background'), true, 'Background is migrated to part-scoped V2');
+  const runtimeStyleCoverage = {
+    bonus_hunt: ['v3', 'v5_horizontal', 'v11_fever', 'v12_classic_sr'],
+    current_slot: ['v1', 'v2', 'v3', 'v4'],
+    tournament: ['grid', 'showcase', 'vertical', 'bracket', 'neon', 'minimal', 'arena', 'futuristic', 'esports'],
+    giveaway: ['v1', 'v2', 'v3', 'v4', 'metal', 'bh_stats', 'v12'],
+    navbar: ['v1', 'metallic', 'glass', 'retro'],
+    chat: ['classic', 'floating', 'bubble', 'stack', 'typewriter', 'sidebar', 'cards', 'metal', 'bh_stats'],
+    image_slideshow: ['v1', 'metal', 'v12'],
+    rtp_stats: ['v1', 'vertical', 'neon', 'minimal', 'glass'],
+    background: ['v1', 'aurora', 'matrix', 'starfield', 'waves', 'geometric'],
+    raid_shoutout: ['v1'],
+    spotify_now_playing: ['album_card', 'mini_player', 'vinyl', 'glass', 'wave', 'neon', 'metal', 'compact_bar'],
+    slot_requests: ['v1_minimal', 'v2_card_stack', 'v3_compact'],
+    bh_stats: ['default', 'metal', 'glass'],
+    bonus_buys: ['v1', 'v2_neon', 'v3_minimal'],
+    bets: ['v1_list', 'v2_grid', 'v3_grid_2x3'],
+    container: ['default'],
+  };
+  for (const [widgetType, styleIds] of Object.entries(runtimeStyleCoverage)) {
+    assert.equal(registryModule.isWidgetAppearanceV2Enabled(widgetType), true, `${widgetType} is enabled for V2 quick editing`);
+    const quickStyleIds = registryModule.getWidgetStyleOptionsForQuickEditor(widgetType).map(style => style.id);
+    for (const styleId of styleIds) {
+      assert.ok(quickStyleIds.includes(styleId), `${widgetType} exposes runtime style ${styleId} in the quick layout picker`);
+    }
+  }
   assert.ok(registryModule.getWidgetAppearanceCapability('bonus_hunt').elements.slotRow, 'bonus hunt declares real slot row element');
   assert.ok(registryModule.getWidgetAppearanceCapability('rtp_stats').elements.rtpValue, 'RTP Stats declares real RTP value element');
   assert.ok(registryModule.getWidgetAppearanceCapability('navbar').elements.displayName, 'Navbar declares display name element');
@@ -46,7 +71,10 @@ try {
   assert.ok(registryModule.getWidgetAppearanceCapability('bets').elements.betCards, 'Bets declares independent bet card parts');
   assert.ok(registryModule.getWidgetAppearanceCapability('background').elements.media, 'Background declares media URL controls');
   assert.ok(registryModule.getWidgetAppearanceCapability('background').elements.effects, 'Background declares effect controls');
-  assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt').some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
+  const bonusHuntQuickOptions = registryModule.getWidgetStyleOptionsForQuickEditor('bonus_hunt');
+  assert.ok(bonusHuntQuickOptions.some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
+  assert.equal(bonusHuntQuickOptions.some(style => style.id === 'v12_classic_sr_editable'), false, 'Bonus Hunt hides editor migration variants from the user-facing layout picker');
+  assert.ok(registryModule.getWidgetStyleCapability('bonus_hunt', 'v12_classic_sr_editable'), 'Bonus Hunt editable migration style remains addressable when explicitly selected');
   ['v1', 'vertical', 'neon', 'minimal', 'glass'].forEach(styleId => {
     assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('rtp_stats').some(style => style.id === styleId), `RTP Stats exposes ${styleId} style option`);
   });
@@ -59,6 +87,13 @@ try {
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('spotify_now_playing').some(style => style.id === 'compact_bar'), 'Spotify exposes compact-bar style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('bets').some(style => style.id === 'v3_grid_2x3'), 'Bets exposes Grid 2x3 style option');
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('background').some(style => style.id === 'aurora'), 'Background exposes Aurora style option');
+  for (const widgetType of registryModule.APPEARANCE_ENGINE_V2_WIDGETS) {
+    const capabilityStyleIds = new Set((registryModule.getWidgetAppearanceCapability(widgetType)?.styles || []).map(style => style.id));
+    const exposedStyleIds = registryModule.getWidgetStyleOptionsForQuickEditor(widgetType).map(style => style.id);
+    for (const styleId of exposedStyleIds) {
+      assert.ok(capabilityStyleIds.has(styleId), `${widgetType} quick layout picker exposes only V2 registry styles (${styleId})`);
+    }
+  }
   const backgroundMediaControls = registryModule.getWidgetStyleElements('background', 'v1').find(element => element.id === 'media')?.controls || [];
   const backgroundEffectsControls = registryModule.getWidgetStyleElements('background', 'v1').find(element => element.id === 'effects')?.controls || [];
   assert.ok(backgroundMediaControls.includes('imageUrl'), 'Background media part exposes image URL');
@@ -617,6 +652,83 @@ try {
       subElements: {},
     },
   };
+  const currentSlotWidget = {
+    id: 'current1',
+    widget_type: 'current_slot',
+    width: 360,
+    height: 160,
+    config: {
+      displayStyle: 'v2',
+      slotName: 'Gates of Olympus',
+      provider: 'Pragmatic Play',
+      imageUrl: 'https://example.com/slot.jpg',
+      subElements: {},
+    },
+  };
+  const tournamentWidget = {
+    id: 'tournament1',
+    widget_type: 'tournament',
+    width: 720,
+    height: 480,
+    config: {
+      layout: 'arena',
+      title: 'Slot Battle',
+      subElements: {},
+    },
+  };
+  const chatWidget = {
+    id: 'chat1',
+    widget_type: 'chat',
+    width: 360,
+    height: 520,
+    config: {
+      chatStyle: 'bubble',
+      subElements: {},
+    },
+  };
+  const slideshowWidget = {
+    id: 'slides1',
+    widget_type: 'image_slideshow',
+    width: 640,
+    height: 360,
+    config: {
+      displayStyle: 'v12',
+      images: ['https://example.com/slide.jpg'],
+      subElements: {},
+    },
+  };
+  const raidWidget = {
+    id: 'raid1',
+    widget_type: 'raid_shoutout',
+    width: 640,
+    height: 220,
+    config: {
+      displayStyle: 'v1',
+      subElements: {},
+    },
+  };
+  const bonusBuysWidget = {
+    id: 'buys1',
+    widget_type: 'bonus_buys',
+    width: 360,
+    height: 620,
+    config: {
+      displayStyle: 'v2_neon',
+      slotName: 'Sweet Bonanza',
+      subElements: {},
+    },
+  };
+  const containerWidget = {
+    id: 'container1',
+    widget_type: 'container',
+    width: 800,
+    height: 600,
+    config: {
+      children: [],
+      layout: 'horizontal',
+      subElements: {},
+    },
+  };
 
   const appearance = {
     widgets: {
@@ -796,6 +908,104 @@ try {
                   fxFogColor: '#000000',
                 },
               },
+            }),
+          },
+        },
+      },
+      current1: {
+        activeStyleId: 'v2',
+        styles: {
+          v2: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('current_slot', {
+              material: 'neon',
+              primaryColor: '#f59e0b',
+              shape: 'pill',
+              textSize: 'large',
+              imageSize: 'large',
+              imageFit: 'contain',
+            }),
+          },
+        },
+      },
+      tournament1: {
+        activeStyleId: 'arena',
+        styles: {
+          arena: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('tournament', {
+              material: 'metallic',
+              primaryColor: '#38bdf8',
+              shape: 'rounded',
+              density: 'compact',
+              textSize: 'large',
+            }),
+          },
+        },
+      },
+      chat1: {
+        activeStyleId: 'bubble',
+        styles: {
+          bubble: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('chat', {
+              material: 'glass',
+              primaryColor: '#8b5cf6',
+              shape: 'rounded',
+              density: 'standard',
+              textSize: 'standard',
+            }),
+          },
+        },
+      },
+      slides1: {
+        activeStyleId: 'v12',
+        styles: {
+          v12: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('image_slideshow', {
+              material: 'glass',
+              primaryColor: '#22d3ee',
+              shape: 'rounded',
+              textSize: 'standard',
+              animationSpeed: 'fast',
+            }),
+          },
+        },
+      },
+      raid1: {
+        activeStyleId: 'v1',
+        styles: {
+          v1: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('raid_shoutout', {
+              material: 'matte',
+              primaryColor: '#9146ff',
+              shape: 'rounded',
+              textSize: 'large',
+              imageShape: 'circle',
+            }),
+          },
+        },
+      },
+      buys1: {
+        activeStyleId: 'v2_neon',
+        styles: {
+          v2_neon: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('bonus_buys', {
+              material: 'neon',
+              primaryColor: '#22c55e',
+              shape: 'rounded',
+              textSize: 'large',
+              imageSize: 'large',
+            }),
+          },
+        },
+      },
+      container1: {
+        activeStyleId: 'default',
+        styles: {
+          default: {
+            appearanceV2: resolverModule.buildAppearanceV2ForStorage('container', {
+              material: 'glass',
+              primaryColor: '#14d8d8',
+              shape: 'slightly_rounded',
+              density: 'compact',
             }),
           },
         },
@@ -1303,6 +1513,58 @@ try {
   const appearanceCenterSource = readFileSync(new URL('../src/components/OverlayCenter/appearance/AppearanceCenter.jsx', import.meta.url), 'utf8');
   assert.ok(appearanceCenterSource.includes('BACKGROUND_MEDIA_ALWAYS_CONTROLS'), 'Background quick panel keeps image/video link controls visible');
   assert.ok(appearanceCenterSource.includes('selectedWidgetIsBackground'), 'Background quick panel uses a dedicated background-only control flow');
+
+  const currentSlotConfig = appearanceModel.resolveWidgetAppearanceConfig(currentSlotWidget, appearance, {});
+  assert.equal(currentSlotConfig.__appearanceV2.material, 'neon', 'Current Slot receives V2 material');
+  assert.equal(currentSlotConfig.displayStyle, 'v2', 'Current Slot keeps selected renderer style');
+  assert.equal(currentSlotConfig.subElements.slotImage.imageFit, 'contain', 'Current Slot slot image receives image fit');
+  assert.ok(currentSlotConfig.subElements.slotTitle.fontSize >= 18, 'Current Slot title receives large typography');
+  assert.ok(currentSlotConfig.subElements.provider.textColor, 'Current Slot provider part is renderer-addressable');
+  assert.ok(currentSlotConfig.subElements.stake.borderColor, 'Current Slot stake part is renderer-addressable');
+
+  const tournamentConfig = appearanceModel.resolveWidgetAppearanceConfig(tournamentWidget, appearance, {});
+  assert.equal(tournamentConfig.__appearanceV2.material, 'metallic', 'Tournament receives V2 material');
+  assert.equal(tournamentConfig.layout, 'arena', 'Tournament writes selected style to the real layout config key');
+  assert.ok(tournamentConfig.subElements.matchCard.background, 'Tournament match cards receive generated surface');
+  assert.ok(tournamentConfig.subElements.playerName.fontFamily, 'Tournament player names receive typography');
+  assert.ok(tournamentConfig.subElements.slotImage.imageFit, 'Tournament slot images receive image controls');
+  assert.ok(tournamentConfig.subElements.statusBadge.background, 'Tournament status badges receive badge controls');
+
+  const chatConfig = appearanceModel.resolveWidgetAppearanceConfig(chatWidget, appearance, {});
+  assert.equal(chatConfig.__appearanceV2.material, 'glass', 'Chat receives V2 material');
+  assert.equal(chatConfig.chatStyle, 'bubble', 'Chat writes selected style to the real chatStyle config key');
+  assert.ok(chatConfig.headerBg, 'Chat direct header background is generated');
+  assert.ok(chatConfig.subElements.message.background, 'Chat message part receives generated surface');
+  assert.ok(chatConfig.subElements.username.textColor, 'Chat username part receives generated text color');
+  assert.ok(chatConfig.subElements.avatar.background, 'Chat avatar bubble receives generated badge surface');
+
+  const slideshowConfig = appearanceModel.resolveWidgetAppearanceConfig(slideshowWidget, appearance, {});
+  assert.equal(slideshowConfig.__appearanceV2.material, 'glass', 'Image Slideshow receives V2 material');
+  assert.equal(slideshowConfig.displayStyle, 'v12', 'Image Slideshow keeps selected renderer style');
+  assert.equal(slideshowConfig.borderRadius, slideshowConfig.subElements.image.radius, 'Image Slideshow image radius mirrors direct renderer config');
+  assert.ok(slideshowConfig.captionFont, 'Image Slideshow caption font reaches direct renderer config');
+  assert.ok(slideshowConfig.subElements.caption.background, 'Image Slideshow caption part receives generated surface');
+
+  const raidConfig = appearanceModel.resolveWidgetAppearanceConfig(raidWidget, appearance, {});
+  assert.equal(raidConfig.__appearanceV2.material, 'matte', 'Raid Shoutout receives V2 material');
+  assert.equal(raidConfig.displayStyle, 'v1', 'Raid Shoutout keeps selected renderer style');
+  assert.ok(raidConfig.subElements.avatar.radius, 'Raid Shoutout avatar receives shape controls');
+  assert.ok(raidConfig.subElements.subtitle.textColor, 'Raid Shoutout subtitle receives text controls');
+  assert.ok(raidConfig.subElements.clipFrame.background, 'Raid Shoutout clip frame receives surface controls');
+
+  const bonusBuysConfig = appearanceModel.resolveWidgetAppearanceConfig(bonusBuysWidget, appearance, {});
+  assert.equal(bonusBuysConfig.__appearanceV2.material, 'neon', 'Bonus Buys receives V2 material');
+  assert.equal(bonusBuysConfig.displayStyle, 'v2_neon', 'Bonus Buys keeps selected renderer style');
+  assert.ok(bonusBuysConfig.subElements.sessionCard.background, 'Bonus Buys session card receives generated surface');
+  assert.ok(bonusBuysConfig.subElements.slotArtwork.imageSize > 0, 'Bonus Buys slot artwork receives image controls');
+  assert.ok(bonusBuysConfig.subElements.profit.textColor, 'Bonus Buys profit values receive semantic color');
+  assert.notEqual(bonusBuysConfig.subElements.profit.textColor, bonusBuysConfig.subElements.loss.textColor, 'Bonus Buys profit and loss colors stay independent');
+
+  const containerConfig = appearanceModel.resolveWidgetAppearanceConfig(containerWidget, appearance, {});
+  assert.equal(containerConfig.__appearanceV2.material, 'glass', 'Container receives V2 material');
+  assert.equal(containerConfig.cardRadius, containerConfig.subElements.container.radius, 'Container radius reaches the renderer config key');
+  assert.ok(containerConfig.bgColor, 'Container direct background color is generated');
+  assert.ok(containerConfig.subElements.childArea.background, 'Container child area receives part-scoped surface');
 
   const spotifyConfig = appearanceModel.resolveWidgetAppearanceConfig(spotifyWidget, appearance, {});
   assert.equal(spotifyConfig.__appearanceV2.material, 'matte', 'Spotify mini-player receives V2 material');

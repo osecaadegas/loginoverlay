@@ -726,9 +726,11 @@ export default function AppearanceCenter({
   );
   const quickStyleOptions = useMemo(() => {
     const v2Options = selectedWidgetUsesV2 ? getWidgetStyleOptionsForQuickEditor(selectedWidgetType) : [];
+    const customOptions = registeredStyleOptions.filter(option => option.custom);
+    const sourceOptions = selectedWidgetUsesV2 ? customOptions : registeredStyleOptions;
     const byId = new Map();
     for (const option of v2Options) byId.set(option.id, option);
-    for (const option of registeredStyleOptions) {
+    for (const option of sourceOptions) {
       byId.set(option.id, {
         ...(byId.get(option.id) || {}),
         ...option,
@@ -835,7 +837,7 @@ export default function AppearanceCenter({
   }, [hasAnyQuickControl, selectedElements.length, selectedQuickControls, selectedWidgetIsBackground]);
   const simpleSectionTabs = useMemo(() => {
     const labels = {
-      widgetStyle: 'Style',
+      widgetStyle: 'Layout',
       editing: 'Part',
       backgroundControls: 'Controls',
       material: 'Surface',
@@ -2014,12 +2016,12 @@ export default function AppearanceCenter({
             {simpleSections.includes('widgetStyle') && (
               <CollapsibleSection
                 id="widgetStyle"
-                title="Style preset"
+                title="Widget layout"
                 openSections={openSimpleSections}
                 onToggle={toggleSimpleSection}
                 className="ve-simple-section"
               >
-                <p className="ve-simple-help">Choose the layout you want to edit. Each style keeps its own settings.</p>
+                <p className="ve-simple-help">Choose the widget layout or variant. Visual presets are in Surface and background.</p>
                 <div className="ve-style-card-grid">
                   {quickStyleOptions.map(option => (
                     <StylePreviewCard
@@ -2112,7 +2114,7 @@ export default function AppearanceCenter({
             {simpleSections.includes('material') && (
             <CollapsibleSection
               id="material"
-              title="Surface and background"
+              title="Surface style preset"
               openSections={openSimpleSections}
               onToggle={toggleSimpleSection}
               className="ve-simple-section"

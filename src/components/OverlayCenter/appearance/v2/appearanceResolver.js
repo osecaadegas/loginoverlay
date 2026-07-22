@@ -389,6 +389,237 @@ function buildBHStatsPatch(tokens) {
   };
 }
 
+const STYLE_CONFIG_KEYS = Object.freeze({
+  chat: 'chatStyle',
+  tournament: 'layout',
+  container: null,
+});
+
+function styleKeyForWidget(widgetType) {
+  if (Object.prototype.hasOwnProperty.call(STYLE_CONFIG_KEYS, widgetType)) return STYLE_CONFIG_KEYS[widgetType];
+  return 'displayStyle';
+}
+
+function imageSubElement(tokens, extra = {}) {
+  return {
+    borderColor: tokens.colors.border,
+    borderWidth: tokens.shape.borderWidth,
+    radius: tokens.shape.cardRadius,
+    imageFit: tokens.image?.fit || 'cover',
+    imageSize: Math.round(44 * (tokens.image?.sizeMultiplier || 1)),
+    ...extra,
+  };
+}
+
+function textSubElement(tokens, tone = 'text', extra = {}) {
+  const isMuted = tone === 'muted';
+  const isAccent = tone === 'accent';
+  const isPositive = tone === 'positive';
+  const isNegative = tone === 'negative';
+  return {
+    textColor: isPositive
+      ? tokens.colors.positive
+      : isNegative
+        ? tokens.colors.negative
+        : isAccent
+          ? tokens.colors.primary
+          : isMuted
+            ? tokens.colors.mutedText
+            : tokens.colors.text,
+    fontFamily: tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    fontWeight: isAccent ? tokens.typography.valueWeight : tokens.typography.bodyWeight,
+    lineHeight: tokens.typography.lineHeight,
+    ...extra,
+  };
+}
+
+function surfaceSubElement(tokens, variant = 'card', extra = {}) {
+  const common = commonSubElements(tokens);
+  if (variant === 'container') return { ...common.container, ...extra };
+  if (variant === 'header') return {
+    ...common.card,
+    background: tokens.colors.secondarySurface,
+    fontFamily: tokens.typography.headerFont,
+    fontSize: tokens.typography.headerSize,
+    fontWeight: tokens.typography.headerWeight,
+    ...extra,
+  };
+  if (variant === 'badge') return {
+    background: tokens.colors.primary,
+    textColor: tokens.colors.text,
+    accentColor: tokens.colors.accent,
+    radius: tokens.shape.badgeRadius,
+    padding: tokens.spacing.itemGap,
+    borderColor: tokens.colors.border,
+    borderWidth: tokens.shape.borderWidth,
+    ...extra,
+  };
+  return { ...common.card, ...extra };
+}
+
+function buildGenericWidgetPatch(widgetType, tokens, styleId) {
+  const styleKey = styleKeyForWidget(widgetType);
+  const common = commonVisualPatch(tokens);
+  const sub = commonSubElements(tokens);
+  const patch = {
+    ...common,
+    bgColor: tokens.colors.surface,
+    textColor: tokens.colors.text,
+    mutedColor: tokens.colors.mutedText,
+    borderColor: tokens.colors.border,
+    borderWidth: tokens.shape.borderWidth,
+    borderRadius: tokens.shape.rootRadius,
+    cardRadius: tokens.shape.cardRadius,
+    fontFamily: tokens.typography.bodyFont,
+    fontSize: tokens.typography.bodySize,
+    subElements: {
+      ...sub,
+      header: surfaceSubElement(tokens, 'header'),
+      title: textSubElement(tokens, 'text', {
+        fontFamily: tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+      }),
+      bodyText: textSubElement(tokens, 'text'),
+      badge: surfaceSubElement(tokens, 'badge'),
+      image: imageSubElement(tokens),
+    },
+  };
+  if (styleKey) patch[styleKey] = styleId;
+
+  if (widgetType === 'current_slot') {
+    patch.subElements = {
+      ...patch.subElements,
+      slotImage: imageSubElement(tokens, { borderColor: tokens.colors.primary }),
+      slotTitle: textSubElement(tokens, 'text', {
+        fontFamily: tokens.typography.headerFont,
+        fontSize: tokens.typography.headerSize,
+        fontWeight: tokens.typography.headerWeight,
+      }),
+      provider: textSubElement(tokens, 'muted'),
+      stake: surfaceSubElement(tokens, 'badge', {
+        textColor: tokens.colors.primary,
+        accentColor: tokens.colors.primary,
+        borderColor: tokens.colors.primary,
+      }),
+      stat: textSubElement(tokens, 'accent'),
+    };
+  }
+
+  if (widgetType === 'chat') {
+    patch.headerBg = tokens.colors.secondarySurface;
+    patch.headerText = tokens.colors.mutedText;
+    patch.msgSpacing = tokens.spacing.itemGap;
+    patch.msgPadH = tokens.spacing.cardPadding;
+    patch.msgLineHeight = tokens.typography.lineHeight;
+    patch.subElements = {
+      ...patch.subElements,
+      message: surfaceSubElement(tokens, 'card', {
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+        textColor: tokens.colors.text,
+        gap: tokens.spacing.itemGap,
+      }),
+      username: textSubElement(tokens, 'accent', { fontWeight: tokens.typography.valueWeight }),
+      avatar: surfaceSubElement(tokens, 'badge'),
+      badge: surfaceSubElement(tokens, 'badge', { background: tokens.colors.secondarySurface }),
+    };
+  }
+
+  if (widgetType === 'tournament') {
+    patch.subElements = {
+      ...patch.subElements,
+      matchCard: surfaceSubElement(tokens, 'card'),
+      playerName: textSubElement(tokens, 'text', { fontWeight: tokens.typography.valueWeight }),
+      slotImage: imageSubElement(tokens),
+      scoreValue: textSubElement(tokens, 'accent', { fontWeight: tokens.typography.valueWeight }),
+      bracketLine: {
+        background: tokens.colors.secondarySurface,
+        fillColor: tokens.colors.primary,
+        radius: tokens.shape.badgeRadius,
+      },
+      statusBadge: surfaceSubElement(tokens, 'badge'),
+    };
+  }
+
+  if (widgetType === 'image_slideshow') {
+    patch.gradientColor = tokens.colors.surface;
+    patch.captionColor = tokens.colors.text;
+    patch.captionSize = tokens.typography.bodySize;
+    patch.captionFont = tokens.typography.bodyFont;
+    patch.borderRadius = tokens.shape.rootRadius;
+    patch.borderColor = tokens.colors.border;
+    patch.borderWidth = tokens.shape.borderWidth;
+    patch.subElements = {
+      ...patch.subElements,
+      image: imageSubElement(tokens, {
+        borderColor: tokens.colors.border,
+        radius: tokens.shape.rootRadius,
+      }),
+      caption: surfaceSubElement(tokens, 'card', {
+        textColor: tokens.colors.text,
+        fontFamily: tokens.typography.bodyFont,
+        fontSize: tokens.typography.bodySize,
+      }),
+      dots: surfaceSubElement(tokens, 'badge', { background: tokens.colors.primary }),
+    };
+  }
+
+  if (widgetType === 'raid_shoutout') {
+    patch.accentColor = tokens.colors.primary;
+    patch.bgColor = tokens.colors.surface;
+    patch.subtextColor = tokens.colors.mutedText;
+    patch.alertDuration = undefined;
+    patch.subElements = {
+      ...patch.subElements,
+      avatar: imageSubElement(tokens, { borderColor: tokens.colors.primary, radius: tokens.shape.badgeRadius }),
+      subtitle: textSubElement(tokens, 'muted'),
+      viewerCount: surfaceSubElement(tokens, 'badge', { background: tokens.colors.primary }),
+      clipFrame: surfaceSubElement(tokens, 'card'),
+    };
+  }
+
+  if (widgetType === 'bonus_buys') {
+    patch.subElements = {
+      ...patch.subElements,
+      sessionCard: surfaceSubElement(tokens, 'container', {
+        accentColor: tokens.colors.primary,
+        fontFamily: tokens.typography.bodyFont,
+      }),
+      header: surfaceSubElement(tokens, 'header', {
+        textColor: tokens.colors.primary,
+        accentColor: tokens.colors.primary,
+      }),
+      slotArtwork: imageSubElement(tokens, { radius: tokens.shape.cardRadius }),
+      label: textSubElement(tokens, 'muted'),
+      status: surfaceSubElement(tokens, 'card'),
+      profit: textSubElement(tokens, 'positive', { fontWeight: tokens.typography.valueWeight }),
+      loss: textSubElement(tokens, 'negative', { fontWeight: tokens.typography.valueWeight }),
+      payout: textSubElement(tokens, 'positive', { fontWeight: tokens.typography.valueWeight }),
+      progressBar: {
+        background: tokens.colors.secondarySurface,
+        fillColor: tokens.colors.primary,
+        radius: tokens.shape.badgeRadius,
+      },
+    };
+  }
+
+  if (widgetType === 'container') {
+    patch.bgColor = tokens.colors.surface;
+    patch.bgOpacity = Math.round((tokens.surfaces?.opacity || 0.94) * 100);
+    patch.gap = tokens.spacing.itemGap;
+    patch.padding = tokens.spacing.rootPadding;
+    patch.cardRadius = tokens.shape.rootRadius;
+    patch.subElements = {
+      container: surfaceSubElement(tokens, 'container'),
+      childArea: surfaceSubElement(tokens, 'card'),
+    };
+  }
+
+  return Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined));
+}
+
 function buildBackgroundPatch(tokens, styleId) {
   const specialStyles = new Set(['aurora', 'matrix', 'starfield', 'waves', 'geometric']);
   const isSpecial = specialStyles.has(styleId);
@@ -1822,6 +2053,15 @@ function buildPatchForWidget(widgetType, tokens, styleId) {
   if (widgetType === 'giveaway') return buildGiveawayPatch(tokens);
   if (widgetType === 'bets') return buildBetsPatch(tokens, styleId);
   if (widgetType === 'background') return buildBackgroundPatch(tokens, styleId);
+  if ([
+    'current_slot',
+    'tournament',
+    'chat',
+    'image_slideshow',
+    'raid_shoutout',
+    'bonus_buys',
+    'container',
+  ].includes(widgetType)) return buildGenericWidgetPatch(widgetType, tokens, styleId);
   return {};
 }
 
