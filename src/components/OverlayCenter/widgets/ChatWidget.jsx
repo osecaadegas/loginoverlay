@@ -21,6 +21,30 @@ const BADGE_DEFS = [
   { key: 'isFirstMsg',    label: 'NEW',   bg: '#0ea5e9', icon: '✨' },
 ];
 
+const MESSAGE_TTL_MS = 120 * 1000;
+const HIDDEN_BOTS = new Set(['streamelements', 'nightbot', 'moobot']);
+
+function normalizedUsername(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isFollowerMessage(msg = {}) {
+  const type = String(msg.type || msg.eventType || msg.systemType || msg.noticeType || '').toLowerCase();
+  const message = String(msg.message || '').toLowerCase();
+  return Boolean(
+    msg.isFollower ||
+    msg.isNewFollower ||
+    msg.isFollow ||
+    msg.isFollowEvent ||
+    type === 'follow' ||
+    type === 'follower' ||
+    type === 'new_follower' ||
+    message.includes('new follower') ||
+    message.includes('just followed') ||
+    message.includes('followed the channel')
+  );
+}
+
 function partAttrs(partId) {
   return {
     'data-widget-element': partId,
@@ -97,20 +121,21 @@ function ChatWidget({ config, theme }) {
   const isMetal = chatStyle === 'metal';
   const isGlowPanel = chatStyle === 'glow_panel';
   const isBH = chatStyle === 'bh_stats';
+  const isStyleSeca = chatStyle === 'StyleSecaChat';
 
   /* Style config */
-  const textColor = subValue(c, 'messageText', 'textColor', subValue(c, 'message', 'textColor', c.textColor || (isMetal ? '#d4d8e0' : isGlowPanel ? '#dbeafe' : isBH ? '#f1f5f9' : '#e2e8f0')));
-  const headerBg = subValue(c, 'header', 'background', c.headerBg || (isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isGlowPanel ? 'rgba(2,12,25,0.82)' : isBH ? 'rgba(255,255,255,0.04)' : 'rgba(30,41,59,0.5)'));
-  const headerText = subValue(c, 'header', 'textColor', c.headerText || (isMetal ? '#a8b0c0' : isGlowPanel ? '#22d3ee' : isBH ? '#64748b' : '#94a3b8'));
-  const fontFamily = subValue(c, 'container', 'fontFamily', subValue(c, 'messageText', 'fontFamily', subValue(c, 'message', 'fontFamily', isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif"))));
+  const textColor = subValue(c, 'messageText', 'textColor', subValue(c, 'message', 'textColor', c.textColor || (isStyleSeca ? '#f8ecd2' : isMetal ? '#d4d8e0' : isGlowPanel ? '#dbeafe' : isBH ? '#f1f5f9' : '#e2e8f0')));
+  const headerBg = subValue(c, 'header', 'background', c.headerBg || (isStyleSeca ? 'linear-gradient(135deg, rgba(232,160,32,0.14), rgba(100,116,139,0.08))' : isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isGlowPanel ? 'rgba(2,12,25,0.82)' : isBH ? 'rgba(255,255,255,0.04)' : 'rgba(30,41,59,0.5)'));
+  const headerText = subValue(c, 'header', 'textColor', c.headerText || (isStyleSeca ? '#e8a020' : isMetal ? '#a8b0c0' : isGlowPanel ? '#22d3ee' : isBH ? '#64748b' : '#94a3b8'));
+  const fontFamily = subValue(c, 'container', 'fontFamily', subValue(c, 'messageText', 'fontFamily', subValue(c, 'message', 'fontFamily', isStyleSeca ? "'Rajdhani', 'Barlow Condensed', sans-serif" : isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif"))));
   const fontSize = subValue(c, 'container', 'fontSize', subValue(c, 'messageText', 'fontSize', subValue(c, 'message', 'fontSize', c.fontSize || 15)));
   const msgSpacing = subValue(c, 'messageList', 'gap', subValue(c, 'message', 'gap', c.msgSpacing ?? 2));
-  const borderRadius = subValue(c, 'message', 'radius', c.borderRadius ?? (isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
+  const borderRadius = subValue(c, 'message', 'radius', c.borderRadius ?? (isStyleSeca ? 10 : isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
   const borderWidth = subValue(c, 'message', 'borderWidth', c.borderWidth ?? 1);
-  const borderColor = subValue(c, 'message', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.22)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
-  const containerRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
+  const borderColor = subValue(c, 'message', 'borderColor', c.borderColor || (isStyleSeca ? 'rgba(232,160,32,0.34)' : isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.22)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
+  const containerRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isStyleSeca ? 12 : isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
   const containerBorderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? 1);
-  const containerBorderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.26)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
+  const containerBorderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? 'rgba(232,160,32,0.42)' : isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.26)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)'));
   const nameBold = c.nameBold ?? true;
   const msgLineHeight = subValue(c, 'messageText', 'lineHeight', subValue(c, 'message', 'lineHeight', c.msgLineHeight ?? 1.45));
   const msgPadH = subValue(c, 'message', 'padding', c.msgPadH ?? 10);
@@ -133,26 +158,34 @@ function ChatWidget({ config, theme }) {
     cards: 'rgba(18,10,35,0.95)',
     metal: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
     glow_panel: 'rgba(2,8,18,0.94)',
+    StyleSecaChat: 'linear-gradient(145deg, rgba(18,18,20,0.96) 0%, rgba(9,10,12,0.98) 52%, rgba(39,34,21,0.94) 100%)',
     bh_stats: 'rgba(15, 23, 42, 0.9)',
   };
   const bgColor = subValue(c, 'container', 'background', c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic);
 
   /* Which features each style shows */
-  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal' || chatStyle === 'glow_panel' || chatStyle === 'bh_stats') ? (c.showHeader !== false) : false;
+  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal' || chatStyle === 'glow_panel' || chatStyle === 'StyleSecaChat' || chatStyle === 'bh_stats') ? (c.showHeader !== false) : false;
   const showLegend = (chatStyle === 'classic') ? (c.showLegend !== false) : false;
-  const showBadges = (chatStyle === 'classic' || chatStyle === 'metal' || chatStyle === 'glow_panel' || chatStyle === 'bh_stats') ? (c.showBadges !== false) : false;
-
-  /* Bots to hide from overlay chat */
-  const HIDDEN_BOTS = ['streamelements', 'nightbot', 'moobot'];
+  const showBadges = (chatStyle === 'classic' || chatStyle === 'metal' || chatStyle === 'glow_panel' || chatStyle === 'StyleSecaChat' || chatStyle === 'bh_stats') ? (c.showBadges !== false) : false;
 
   const handleMessage = useCallback((msg) => {
-    // Filter out known bot messages
-    if (msg.username && HIDDEN_BOTS.includes(msg.username.toLowerCase())) return;
+    const now = Date.now();
+    if (HIDDEN_BOTS.has(normalizedUsername(msg.username))) return;
+    const stampedMessage = { ...msg, timestamp: Number(msg.timestamp) || now };
     setMessages(prev => {
-      const next = [...prev, msg];
+      const recent = prev.filter(item => now - (Number(item.timestamp) || now) < MESSAGE_TTL_MS);
+      const next = [...recent, stampedMessage];
       return next.length > maxMessages ? next.slice(-maxMessages) : next;
     });
   }, [maxMessages]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+      setMessages(prev => prev.filter(item => now - (Number(item.timestamp) || now) < MESSAGE_TTL_MS));
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   /* Connect to enabled platforms */
   const autoChannel = useTwitchChannel();
@@ -215,6 +248,10 @@ function ChatWidget({ config, theme }) {
     flexDirection: 'column',
     overflow: 'hidden',
     filter: filterStyle,
+    ...(isStyleSeca && {
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
+    }),
     ...(isBH && {
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale',
@@ -244,6 +281,11 @@ function ChatWidget({ config, theme }) {
     background: brushedMetalBackground(style.background || bgColor, headerText, { highlightOpacity: 0.06, grainOpacity: 0.03 }),
     borderColor: style.borderColor || metalBorderColor(headerText, 0.24),
     boxShadow: style.boxShadow || metalSurfaceShadow(headerText, 0.9),
+  } : isStyleSeca ? {
+    ...style,
+    background: brushedMetalBackground(style.background || bgColor, headerText, { highlightOpacity: 0.075, grainOpacity: 0.035 }),
+    border: `${containerBorderWidth}px solid ${containerBorderColor}`,
+    boxShadow: style.boxShadow || `${metalSurfaceShadow(headerText, 1.05)}, 0 0 28px rgba(232,160,32,0.16)`,
   } : isGlowPanel ? {
     ...style,
     background: style.background || bgColor,
@@ -261,6 +303,7 @@ function ChatWidget({ config, theme }) {
         @keyframes ov-slide-left{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
         @keyframes ov-cursor-blink{0%,50%{opacity:1}51%,100%{opacity:0}}
         @keyframes ov-live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.2)}}
+        @keyframes ov-seca-highlight-glow{0%,100%{box-shadow:0 0 14px rgba(232,160,32,.28), inset 0 1px 0 rgba(255,255,255,.08)}50%{box-shadow:0 0 26px rgba(232,160,32,.54), inset 0 1px 0 rgba(255,255,255,.12)}}
       `}</style>
 
       {showHeader && chatStyle === 'cards' && (
@@ -330,6 +373,42 @@ function ChatWidget({ config, theme }) {
         </div>
       )}
 
+      {showHeader && chatStyle === 'StyleSecaChat' && (
+        <div {...partAttrs('header')} style={headerPartStyle({
+          padding: '9px 14px',
+          background: brushedMetalBackground(headerBg, headerText, { highlightOpacity: 0.055, grainOpacity: 0.025 }),
+          borderBottom: `${containerBorderWidth}px solid ${containerBorderColor}`,
+          display: 'flex', alignItems: 'center', gap: 9,
+          boxShadow: `0 10px 22px rgba(0,0,0,0.24), 0 0 18px ${headerText}22`,
+        })}>
+          <span {...partAttrs('badge')} style={badgeStyle({
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: headerText,
+            boxShadow: `0 0 12px ${headerText}`,
+            display: 'inline-block',
+            animation: 'ov-live-pulse 2s ease-in-out infinite',
+          })} />
+          <span {...partAttrs('header')} style={{
+            fontSize: '0.84em',
+            fontWeight: 900,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: headerText,
+            textShadow: `0 0 10px ${headerText}66`,
+          }}>StyleSeca Chat</span>
+          <span {...partAttrs('header')} style={{
+            marginLeft: 'auto',
+            color: '#64748b',
+            fontSize: '0.72em',
+            fontWeight: 800,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+          }}>Live</span>
+        </div>
+      )}
+
       {showHeader && chatStyle === 'bh_stats' && (
         <div {...partAttrs('header')} style={headerPartStyle({
           padding: '10px 14px',
@@ -359,7 +438,7 @@ function ChatWidget({ config, theme }) {
         </div>
       )}
 
-      {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && chatStyle !== 'glow_panel' && chatStyle !== 'bh_stats' && (
+      {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && chatStyle !== 'glow_panel' && chatStyle !== 'StyleSecaChat' && chatStyle !== 'bh_stats' && (
         <div className="ov-chat-header" {...partAttrs('header')} style={headerPartStyle({ background: headerBg, color: headerText })}>
           <span className="ov-chat-header-title" {...partAttrs('header')}>Live Chat</span>
           <div className="ov-chat-header-badges" {...partAttrs('badge')}>
@@ -380,10 +459,88 @@ function ChatWidget({ config, theme }) {
         {renderMessages.map((msg, msgIdx) => {
           const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
           const nameColor = c.useNativeColors && msg.color ? msg.color : usernameColor;
+          const followerMessage = isFollowerMessage(msg);
 
           /* ── Raid message ── */
           if (msg.isRaid) {
             return <RaidMessage key={msg.id} msg={msg} chatStyle={chatStyle} msgSpacing={msgSpacing} msgPadH={msgPadH} c={c} />;
+          }
+
+          /* ── Style: StyleSeca Chat — two-colour metallic hunt chat ── */
+          if (chatStyle === 'StyleSecaChat') {
+            const rowPart = followerMessage ? 'highlightedMessage' : 'message';
+            const rowStyle = subElementStyle(c, rowPart, {
+              padding: `${Math.max(4, msgSpacing + 3)}px ${msgPadH}px`,
+              animation: followerMessage ? 'ov-slide-left 0.25s ease-out, ov-seca-highlight-glow 2.4s ease-in-out infinite' : 'ov-slide-left 0.24s ease-out',
+              background: followerMessage
+                ? 'linear-gradient(135deg, rgba(232,160,32,0.18), rgba(100,116,139,0.13))'
+                : brushedMetalBackground(messageBg || 'rgba(17,18,22,0.42)', headerText, { highlightOpacity: 0.035, grainOpacity: 0.02 }),
+              border: `${Number(borderWidth) || 1}px solid ${followerMessage ? headerText : borderColor}`,
+              borderRadius,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 8,
+              margin: `${Math.max(2, Math.floor(msgSpacing / 2))}px ${Math.max(4, Math.floor(msgPadH / 2))}px`,
+              boxShadow: followerMessage ? `0 0 20px ${headerText}55` : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            });
+            return (
+              <div key={msg.id} className={`ov-chat-msg ov-chat-msg--styleseca${followerMessage ? ' ov-chat-msg--styleseca-follow' : ''}`} {...partAttrs(rowPart)} style={rowStyle}>
+                <span {...partAttrs('avatar')} style={avatarStyle({
+                  width: 26,
+                  height: 26,
+                  borderRadius: 8,
+                  background: followerMessage ? headerText : avatarBg,
+                  border: `1px solid ${followerMessage ? '#f8ecd2' : avatarBorder}`,
+                  color: followerMessage ? '#15110a' : avatarText,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.82em',
+                  fontWeight: 900,
+                  flexShrink: 0,
+                  boxShadow: followerMessage ? `0 0 14px ${headerText}88` : undefined,
+                })}>{followerMessage ? 'F' : msg.username.charAt(0).toUpperCase()}</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, flexWrap: 'wrap' }}>
+                    <span {...partAttrs('username')} style={usernameStyle({
+                      color: nameColor,
+                      fontWeight: nameBold ? 900 : 700,
+                      textShadow: `0 0 9px ${nameColor}55`,
+                    })}>{msg.username}</span>
+                    {followerMessage && (
+                      <span {...partAttrs('badge')} style={badgeStyle({
+                        color: '#15110a',
+                        background: headerText,
+                        borderRadius: 4,
+                        padding: '1px 6px',
+                        fontSize: '0.68em',
+                        fontWeight: 900,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                      })}>Follow</span>
+                    )}
+                    {showBadges && !followerMessage && (
+                      <span {...partAttrs('badge')} style={badgeStyle({
+                        color: badgeText,
+                        background: badgeBg,
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: 4,
+                        padding: '1px 5px',
+                        fontSize: '0.7em',
+                        fontWeight: 900,
+                      })}>{plt.icon}</span>
+                    )}
+                  </div>
+                  <div {...partAttrs(followerMessage ? 'highlightedMessage' : 'messageText')} style={messageTextStyle({
+                    color: followerMessage ? '#fff4da' : textColor,
+                    wordBreak: 'break-word',
+                    lineHeight: msgLineHeight,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.58)',
+                    marginTop: 2,
+                  })}>{msg.message}</div>
+                </div>
+              </div>
+            );
           }
 
           /* ── Style: Floating — transparent bg, floating pill bubbles ── */
@@ -677,6 +834,48 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
   const raidUsernameStyle = (fallback = {}) => subElementStyle(c, 'username', fallback);
   const raidAvatarStyle = (fallback = {}) => subElementStyle(c, 'avatar', fallback);
   const raidBadgeStyle = (fallback = {}) => subElementStyle(c, 'badge', fallback);
+
+  if (chatStyle === 'StyleSecaChat') {
+    return (
+      <div className="ov-chat-msg ov-chat-raid ov-chat-raid--styleseca" {...partAttrs('highlightedMessage')} style={highlightedStyle({
+        padding: `${msgSpacing + 5}px ${msgPadH}px`,
+        margin: `${msgSpacing}px ${Math.max(6, Math.floor(msgPadH / 2))}px`,
+        background: brushedMetalBackground(raidBg || 'linear-gradient(135deg, rgba(232,160,32,0.22), rgba(100,116,139,0.16))', raidBorder, { highlightOpacity: 0.08, grainOpacity: 0.03 }),
+        border: `2px solid ${raidBorder}`,
+        borderRadius: 12,
+        display: 'flex', alignItems: 'center', gap: 10,
+        animation: 'ov-slide-left 0.28s ease-out, ov-seca-highlight-glow 2.2s ease-in-out infinite',
+        boxShadow: `0 0 26px ${raidBorder}66, inset 0 1px 0 rgba(255,255,255,0.08)`,
+      })}>
+        {showAvatar && msg.raidAvatar && (
+          <img {...partAttrs('avatar')} src={msg.raidAvatar} alt={msg.username} className="ov-chat-raid-avatar" style={raidAvatarStyle({
+            width: 40, height: 40, borderRadius: 10,
+            border: `2px solid ${raidBorder}`, flexShrink: 0,
+            boxShadow: `0 0 14px ${raidBorder}66`,
+          })} />
+        )}
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
+            <span {...partAttrs('badge')} style={raidBadgeStyle({
+              background: raidBorder,
+              color: '#15110a',
+              padding: '2px 7px',
+              borderRadius: 4,
+              fontSize: '0.72em',
+              fontWeight: 900,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+            })}>Raid</span>
+            <span {...partAttrs('username')} style={raidUsernameStyle({ color: raidText, fontWeight: 900, textShadow: `0 0 10px ${raidBorder}88` })}>
+              {msg.username}
+            </span>
+            {msg.raidViewers > 0 && <span style={{ color: raidText, opacity: 0.78, fontWeight: 800 }}>{msg.raidViewers} viewers</span>}
+          </div>
+          <div {...partAttrs('highlightedMessage')} style={highlightedStyle({ color: raidText, marginTop: 2, lineHeight: 1.35, wordBreak: 'break-word' })}>{msg.message}</div>
+        </div>
+      </div>
+    );
+  }
 
   /* ── Cards style raid ── */
   if (chatStyle === 'cards') {

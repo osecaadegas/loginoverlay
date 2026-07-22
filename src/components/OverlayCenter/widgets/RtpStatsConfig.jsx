@@ -49,6 +49,7 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
   const styleOptions = [
     { id: 'v1', icon: '📊', label: 'Classic' },
     { id: 'metal', icon: '⚙️', label: 'Metal' },
+    { id: 'StyleSecaRTP', icon: '✦', label: 'StyleSeca' },
     { id: 'vertical', icon: '📋', label: 'Vertical' },
     { id: 'neon', icon: '💡', label: 'Neon' },
     { id: 'minimal', icon: '✦', label: 'Minimal' },

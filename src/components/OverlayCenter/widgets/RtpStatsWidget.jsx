@@ -442,24 +442,26 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const displayStyle = c.displayStyle || 'v1';
   const isVertical = displayStyle === 'vertical';
   const isMetal = displayStyle === 'metal';
+  const isStyleSeca = displayStyle === 'StyleSecaRTP';
+  const isMetalSurface = isMetal || isStyleSeca;
   const isNeon = displayStyle === 'neon';
   const isMinimal = displayStyle === 'minimal';
   const isGlassStyle = displayStyle === 'glass';
-  const barBgFrom = subValue(c, 'container', 'background', c.barBgFrom || (isMetal ? '#1e1e22' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827'));
-  const barBgVia = c.barBgVia || (isMetal ? '#17181c' : isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f');
-  const barBgTo = c.barBgTo || (isMetal ? '#242428' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
-  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isMetal ? 'rgba(200,210,225,0.18)' : isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8'));
+  const barBgFrom = subValue(c, 'container', 'background', c.barBgFrom || (isStyleSeca ? '#111114' : isMetal ? '#1e1e22' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827'));
+  const barBgVia = c.barBgVia || (isStyleSeca ? '#27221a' : isMetal ? '#17181c' : isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f');
+  const barBgTo = c.barBgTo || (isStyleSeca ? '#141417' : isMetal ? '#242428' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
+  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? 'rgba(232,160,32,0.42)' : isMetal ? 'rgba(200,210,225,0.18)' : isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8'));
   const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMinimal ? 0 : 1));
-  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 10 : isMinimal ? 4 : isGlassStyle ? 16 : 8));
-  const textColor = subValue(c, 'statCard', 'textColor', c.textColor || (isMetal ? '#d4d4d8' : '#ffffff'));
-  const providerColor = subValue(c, 'provider', 'textColor', c.providerColor || (isMetal ? '#d4d4d8' : '#ffffff'));
-  const slotNameColor = subValue(c, 'slotTitle', 'textColor', c.slotNameColor || (isMetal ? '#f1f5f9' : '#ffffff'));
-  const labelColor = subValue(c, 'label', 'textColor', c.labelColor || (isMetal ? '#8a8f98' : '#94a3b8'));
-  const rtpIconColor = subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || (isMetal ? '#e8a020' : '#60a5fa'));
-  const potentialIconColor = subValue(c, 'maxWin', 'accentColor', c.potentialIconColor || '#facc15');
-  const volatilityIconColor = subValue(c, 'volatility', 'accentColor', c.volatilityIconColor || '#3b82f6');
+  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isStyleSeca ? 10 : isMetal ? 10 : isMinimal ? 4 : isGlassStyle ? 16 : 8));
+  const textColor = subValue(c, 'statCard', 'textColor', c.textColor || (isStyleSeca ? '#f8ecd2' : isMetal ? '#d4d4d8' : '#ffffff'));
+  const providerColor = subValue(c, 'provider', 'textColor', c.providerColor || (isStyleSeca ? '#f8ecd2' : isMetal ? '#d4d4d8' : '#ffffff'));
+  const slotNameColor = subValue(c, 'slotTitle', 'textColor', c.slotNameColor || (isStyleSeca ? '#fff4da' : isMetal ? '#f1f5f9' : '#ffffff'));
+  const labelColor = subValue(c, 'label', 'textColor', c.labelColor || (isStyleSeca ? '#8f7b56' : isMetal ? '#8a8f98' : '#94a3b8'));
+  const rtpIconColor = subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || (isStyleSeca ? '#e8a020' : isMetal ? '#e8a020' : '#60a5fa'));
+  const potentialIconColor = subValue(c, 'maxWin', 'accentColor', c.potentialIconColor || (isStyleSeca ? '#f2c96d' : '#facc15'));
+  const volatilityIconColor = subValue(c, 'volatility', 'accentColor', c.volatilityIconColor || (isStyleSeca ? '#64748b' : '#3b82f6'));
   const dividerColor = subValue(c, 'divider', 'background', subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6'));
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isStyleSeca ? "'Rajdhani', 'Barlow Condensed', sans-serif" : "'Inter', sans-serif"));
   const fontSize = c.fontSize ?? 14;
   const barHeight = subValue(c, 'container', 'height', c.barHeight ?? null);
   const maxWidth = subValue(c, 'container', 'maxWidth', c.maxWidth ?? null);
@@ -561,6 +563,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const bestWinEmptyText = isLive ? 'No personal best yet' : '-';
 
   const styleClass = isVertical ? ' rtp-stats-bar--vertical'
+    : isStyleSeca ? ' rtp-stats-bar--styleseca rtp-stats-bar--metal'
     : isMetal ? ' rtp-stats-bar--metal'
     : isNeon ? ' rtp-stats-bar--neon'
     : isMinimal ? ' rtp-stats-bar--minimal'
@@ -654,16 +657,16 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     ...statCardStyle,
     ...containerStyle,
   };
-  const resolvedStatCardStyle = isMetal ? {
+  const resolvedStatCardStyle = isMetalSurface ? {
     ...cardSurfaceStyle,
     background: brushedMetalBackground(
       cardSurfaceStyle.background || `linear-gradient(to right, ${barBgFrom}, ${barBgVia}, ${barBgTo})`,
       rtpIconColor,
-      { highlightOpacity: 0.06, grainOpacity: 0.028 }
+      { highlightOpacity: isStyleSeca ? 0.08 : 0.06, grainOpacity: 0.028 }
     ),
     border: cardSurfaceStyle.border || `${borderWidth}px solid ${cardSurfaceStyle.borderColor || metalBorderColor(rtpIconColor, 0.24)}`,
     borderColor: cardSurfaceStyle.borderColor || metalBorderColor(rtpIconColor, 0.24),
-    boxShadow: cardSurfaceStyle.boxShadow || metalSurfaceShadow(rtpIconColor, 0.72),
+    boxShadow: cardSurfaceStyle.boxShadow || metalSurfaceShadow(rtpIconColor, isStyleSeca ? 0.95 : 0.72),
   } : cardSurfaceStyle;
   const providerStyle = subElementStyle(c, 'provider');
   const slotTitleStyle = subElementStyle(c, 'slotTitle');

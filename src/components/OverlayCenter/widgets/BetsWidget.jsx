@@ -9,7 +9,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
 
 function getGridCols(count, layout) {
-  if (layout === 'v3_grid_2x3') return 3;
+  if (layout === 'v3_grid_2x3' || layout === 'StyleSecaBets') return 3;
   if (count <= 6) return 2;
   if (count <= 9) return 3;
   return 4;
@@ -119,7 +119,9 @@ function BetsWidget({ config }) {
   const betters      = c.betters       || {};
   const timer        = c.timerSeconds  || 0;
   const cmd          = c.chatCommand   || '!bet';
-  const font         = c.bodyFont || c.fontFamily || "'Inter', sans-serif";
+  const layout       = c.displayStyle  || 'v1_list';
+  const isStyleSeca  = layout === 'StyleSecaBets';
+  const font         = c.bodyFont || c.fontFamily || (isStyleSeca ? "'Rajdhani', 'Barlow Condensed', sans-serif" : "'Inter', sans-serif");
   const headingFont  = c.headingFont || font;
   const numberFont   = c.numberFont || font;
   const baseFontSize = Number(c.fontSize) || 14;
@@ -128,32 +130,31 @@ function BetsWidget({ config }) {
   const defaultLetterSpacing = typeof c.letterSpacing === 'number' ? `${c.letterSpacing}em` : c.letterSpacing;
   const defaultTextTransform = c.textTransform || 'none';
   const defaultTextAlign = c.textAlign || undefined;
-  const layout       = c.displayStyle  || 'v1_list';
   const colorTheme   = c.colorTheme    || 'dark';
-  const barColorMode = c.barColorMode  || 'rainbow';
+  const barColorMode = c.barColorMode  || (isStyleSeca ? 'solid' : 'rainbow');
 
   const preset      = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
-  const bgColor     = elementValue(c, 'widgetBackground', 'background', c.bgColor || preset.bgColor, 'container');
-  const textColor   = elementValue(c, 'widgetBackground', 'textColor', c.textColor || preset.textColor, 'container');
-  const borderColor = elementValue(c, 'widgetBackground', 'borderColor', c.borderColor || 'rgba(148,163,184,0.12)', 'container');
+  const bgColor     = elementValue(c, 'widgetBackground', 'background', c.bgColor || (isStyleSeca ? 'linear-gradient(145deg, rgba(17,17,20,0.96), rgba(39,34,21,0.94))' : preset.bgColor), 'container');
+  const textColor   = elementValue(c, 'widgetBackground', 'textColor', c.textColor || (isStyleSeca ? '#f8ecd2' : preset.textColor), 'container');
+  const borderColor = elementValue(c, 'widgetBackground', 'borderColor', c.borderColor || (isStyleSeca ? 'rgba(232,160,32,0.34)' : 'rgba(148,163,184,0.12)'), 'container');
   const borderWidth = elementValue(c, 'widgetBackground', 'borderWidth', c.borderWidth ?? 1, 'container');
-  const widgetRadius = elementValue(c, 'widgetBackground', 'radius', c.borderRadius ?? 0, 'container');
-  const headerBg    = elementValue(c, 'header', 'background', c.headerBg || preset.headerBg, 'title');
-  const headerText  = elementValue(c, 'header', 'textColor', c.headerText || preset.headerText, 'title');
-  const barBg       = elementValue(c, 'progressBar', 'background', c.barBg || c.progressBgColor || preset.barBg);
-  const barFill     = elementValue(c, 'progressBar', 'fillColor', c.barFill || c.progressColor || preset.barFill);
-  const accentColor = elementValue(c, 'cardNumberBadge', 'background', scopedSubValue(c, 'optionCard', 'accentColor', c.accentColor || preset.accentColor), 'optionNumber');
-  const optionBg    = elementValue(c, 'betCards', 'background', scopedSubValue(c, 'optionCard', 'background', c.cardBg || barBg), 'optionRow');
-  const optionText  = elementValue(c, 'cardRangeText', 'textColor', scopedSubValue(c, 'optionCard', 'textColor', textColor), 'optionLabel');
-  const timerText   = elementValue(c, 'status', 'textColor', scopedSubValue(c, 'timer', 'textColor', headerText), 'timer', status || 'default');
-  const timerBg     = elementValue(c, 'status', 'background', scopedSubValue(c, 'timer', 'background', 'rgba(99,102,241,0.18)'), 'timer', status || 'default');
+  const widgetRadius = elementValue(c, 'widgetBackground', 'radius', c.borderRadius ?? (isStyleSeca ? 12 : 0), 'container');
+  const headerBg    = elementValue(c, 'header', 'background', c.headerBg || (isStyleSeca ? 'linear-gradient(135deg, rgba(232,160,32,0.18), rgba(100,116,139,0.10))' : preset.headerBg), 'title');
+  const headerText  = elementValue(c, 'header', 'textColor', c.headerText || (isStyleSeca ? '#e8a020' : preset.headerText), 'title');
+  const barBg       = elementValue(c, 'progressBar', 'background', c.barBg || c.progressBgColor || (isStyleSeca ? 'rgba(100,116,139,0.22)' : preset.barBg));
+  const barFill     = elementValue(c, 'progressBar', 'fillColor', c.barFill || c.progressColor || (isStyleSeca ? '#e8a020' : preset.barFill));
+  const accentColor = elementValue(c, 'cardNumberBadge', 'background', scopedSubValue(c, 'optionCard', 'accentColor', c.accentColor || (isStyleSeca ? '#e8a020' : preset.accentColor)), 'optionNumber');
+  const optionBg    = elementValue(c, 'betCards', 'background', scopedSubValue(c, 'optionCard', 'background', c.cardBg || (isStyleSeca ? 'rgba(16,17,20,0.82)' : barBg)), 'optionRow');
+  const optionText  = elementValue(c, 'cardRangeText', 'textColor', scopedSubValue(c, 'optionCard', 'textColor', isStyleSeca ? '#fff4da' : textColor), 'optionLabel');
+  const timerText   = elementValue(c, 'status', 'textColor', scopedSubValue(c, 'timer', 'textColor', isStyleSeca ? '#15110a' : headerText), 'timer', status || 'default');
+  const timerBg     = elementValue(c, 'status', 'background', scopedSubValue(c, 'timer', 'background', isStyleSeca ? '#e8a020' : 'rgba(99,102,241,0.18)'), 'timer', status || 'default');
   const winText     = elementValue(c, 'betCards', 'textColor', scopedSubValue(c, 'winningState', 'textColor', '#4ade80'), 'optionRow', 'winner');
   const winBg       = elementValue(c, 'betCards', 'background', scopedSubValue(c, 'winningState', 'background', 'rgba(34,197,94,0.14)'), 'optionRow', 'winner');
   const loseText    = elementValue(c, 'betCards', 'textColor', scopedSubValue(c, 'losingState', 'textColor', '#f87171'), 'optionRow', 'loser');
   const loseBg      = elementValue(c, 'betCards', 'background', scopedSubValue(c, 'losingState', 'background', 'rgba(239,68,68,0.14)'), 'optionRow', 'loser');
   const radius      = elementValue(c, 'betCards', 'radius', scopedSubValue(c, 'optionCard', 'radius', c.cardRadius ?? 12), 'optionRow');
-  const progressHeight = elementValue(c, 'progressBar', 'height', c.barHeight || 8);
-  const progressRadius = elementValue(c, 'progressBar', 'radius', 4);
+  const progressHeight = elementValue(c, 'progressBar', 'height', c.barHeight || (isStyleSeca ? 18 : 8));
+  const progressRadius = elementValue(c, 'progressBar', 'radius', isStyleSeca ? 8 : 4);
   const containerStyle = elementStyle(c, 'widgetBackground', {
     fontFamily: font,
     fontSize: `${baseFontSize}px`,
@@ -165,6 +166,7 @@ function BetsWidget({ config }) {
     color: textColor,
     border: `${Number(borderWidth) || 0}px solid ${borderColor}`,
     borderRadius: toCssLength(widgetRadius, '0px'),
+    boxShadow: isStyleSeca ? '0 18px 44px rgba(0,0,0,0.34), 0 0 30px rgba(232,160,32,0.12)' : undefined,
   }, 'container');
   const titleStyle = elementStyle(c, 'header', {
     color: headerText,
@@ -265,7 +267,7 @@ function BetsWidget({ config }) {
     status === 'locked' ? 'LOCKED' :
     status === 'result' ? 'RESULT' : '';
 
-  const isGrid2x3 = layout === 'v3_grid_2x3';
+  const isGrid2x3 = layout === 'v3_grid_2x3' || isStyleSeca;
   const isGrid    = layout === 'v2_grid' || isGrid2x3;
   const gridCols  = getGridCols(options.length, layout);
 
@@ -316,6 +318,7 @@ function BetsWidget({ config }) {
         `bets-ov--theme-${colorTheme}`,
         isGrid && 'bets-ov--grid',
         isGrid2x3 && 'bets-ov--grid-2x3',
+        isStyleSeca && 'bets-ov--styleseca',
       ].filter(Boolean).join(' ')}
       data-widget-type="bets"
       {...partAttrs('widgetBackground')}
@@ -362,6 +365,7 @@ function BetsWidget({ config }) {
             const amount   = bets[`opt_${i}`] || 0;
             const pct      = pcts[i];
             const fillH    = maxBet > 0 ? (amount / maxBet) * 100 : 0;
+            const displayFillH = isStyleSeca && amount > 0 ? Math.max(12, fillH) : fillH;
             const isWin    = winnerIdx === i;
             const isLose   = winnerIdx !== null && winnerIdx !== i;
             const isLead   = leadingIdx === i;
@@ -434,9 +438,13 @@ function BetsWidget({ config }) {
                   className="bets-ov__card-fill"
                   {...partAttrs('progressBar', progressStateId)}
                   style={{
-                    height: `${fillH}%`,
-                    background: `linear-gradient(180deg, transparent 0%, ${progressFill} 100%)`,
+                    height: `${displayFillH}%`,
+                    background: isStyleSeca
+                      ? `linear-gradient(180deg, rgba(232,160,32,0.08) 0%, ${progressFill} 76%, ${progressFill} 100%)`
+                      : `linear-gradient(180deg, transparent 0%, ${progressFill} 100%)`,
                     borderRadius: progressStyle.borderRadius,
+                    opacity: isStyleSeca ? 0.86 : undefined,
+                    boxShadow: isStyleSeca ? `0 -10px 22px ${progressFill}44` : undefined,
                   }}
                 />
                 <div className="bets-ov__card-body" style={cardTextInheritanceStyle}>

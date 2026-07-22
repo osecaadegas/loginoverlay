@@ -223,26 +223,28 @@ function NavbarWidget({ config, widgetId, userId }) {
 
   /* ─── Style vars from config ─── */
   const isMetal = (c.displayStyle === 'metallic');
+  const isStyleSeca = (c.displayStyle === 'StyleSecaNav');
+  const isMetalSurface = isMetal || isStyleSeca;
   const isGlass = (c.displayStyle === 'glass');
   const isRetro = (c.displayStyle === 'retro');
   const isCarbon = (c.displayStyle === 'carbon');
   const isFuturistic = (c.displayStyle === 'futuristic');
-  const accentColor = subValue(c, 'logo', 'accentColor', c.accentColor || (isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b'));
+  const accentColor = subValue(c, 'logo', 'accentColor', c.accentColor || (isStyleSeca ? '#e8a020' : isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b'));
   const accentColorRGB = colorToRgbString(accentColor);
-  const bgColor = subValue(c, 'container', 'background', c.bgColor || (isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318'));
-  const textColor = subValue(c, 'displayName', 'textColor', c.textColor || (isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9'));
+  const bgColor = subValue(c, 'container', 'background', c.bgColor || (isStyleSeca ? '#111114' : isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318'));
+  const textColor = subValue(c, 'displayName', 'textColor', c.textColor || (isStyleSeca ? '#f8ecd2' : isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9'));
   const displayNameAccentColor = subValue(c, 'displayName', 'accentColor', accentColor);
-  const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
-  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || accentColor);
-  const containerFontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
+  const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isStyleSeca ? '#8f7b56' : isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
+  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? '#64748b' : accentColor));
+  const containerFontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isStyleSeca ? "'Rajdhani', 'Barlow Condensed', sans-serif" : isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
   const fontFamily = subValue(c, 'displayName', 'fontFamily', containerFontFamily);
   const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
   const contrast = subValue(c, 'container', 'contrast', c.contrast ?? 100);
   const saturation = subValue(c, 'container', 'saturation', c.saturation ?? 100);
-  const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3));
+  const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMetalSurface ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3));
   const barHeight = subValue(c, 'container', 'height', c.barHeight ?? 64);
   const barMaxWidth = subValue(c, 'container', 'maxWidth', c.maxWidth ?? null);
-  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999));
+  const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isStyleSeca ? 12 : isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999));
   const containerFontSize = subValue(c, 'container', 'fontSize', c.fontSize ?? (isRetro ? 13 : 15));
   const fontSize = subValue(c, 'displayName', 'fontSize', containerFontSize);
   const fontWeight = subValue(c, 'displayName', 'fontWeight', 700);
@@ -264,7 +266,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   const badgeImageFit = subValue(c, 'badgeImage', 'imageFit', 'contain');
   const badgeImageUrl = subValue(c, 'badgeImage', 'imageUrl', c.badgeImage || '');
   const casinoImageSize = subValue(c, 'casino', 'imageSize', null);
-  const casinoImageRadius = subValue(c, 'casino', 'radius', isMetal ? 6 : isRetro ? 2 : 8);
+  const casinoImageRadius = subValue(c, 'casino', 'radius', isMetalSurface ? 6 : isRetro ? 2 : 8);
   const casinoImageFit = subValue(c, 'casino', 'imageFit', 'contain');
   const casinoLogoUrl = subValue(c, 'casino', 'imageUrl', c.casinoLogoUrl || '');
   const casinoTextColor = subValue(c, 'casino', 'textColor', accentColor);
@@ -273,7 +275,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   const casinoFontWeight = subValue(c, 'casino', 'fontWeight', 700);
   const clockBg = subValue(c, 'clock', 'background', undefined);
   const clockTextColor = subValue(c, 'clock', 'textColor', textColor);
-  const clockRadius = subValue(c, 'clock', 'radius', isRetro ? 2 : isGlass ? 14 : isMetal ? 10 : 999);
+  const clockRadius = subValue(c, 'clock', 'radius', isRetro ? 2 : isGlass ? 14 : isMetalSurface ? 10 : 999);
   const clockBorderColor = subValue(c, 'clock', 'borderColor', isRetro ? `${accentColor}88` : 'rgba(255,255,255,0.12)');
   const clockBorderWidth = subValue(c, 'clock', 'borderWidth', isRetro ? 2 : 1);
   const clockShadow = subValue(c, 'clock', 'shadow', undefined);
@@ -285,11 +287,11 @@ function NavbarWidget({ config, widgetId, userId }) {
   const musicFontSize = subValue(c, 'music', 'fontSize', containerFontSize);
   const musicFontWeight = subValue(c, 'music', 'fontWeight', 700);
   const textShadow = '0 1px 4px rgba(0,0,0,0.6)';
-  const ctaColor = subValue(c, 'sponsor', 'background', c.ctaColor || (isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e'));
-  const sponsorTextColor = subValue(c, 'sponsor', 'textColor', '#fff');
+  const ctaColor = subValue(c, 'sponsor', 'background', c.ctaColor || (isStyleSeca ? '#e8a020' : isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e'));
+  const sponsorTextColor = subValue(c, 'sponsor', 'textColor', isStyleSeca ? '#15110a' : '#fff');
   const sponsorFontFamily = subValue(c, 'sponsor', 'fontFamily', containerFontFamily);
   const sponsorFontSize = subValue(c, 'sponsor', 'fontSize', fontSize * 0.82);
-  const sponsorFontWeight = subValue(c, 'sponsor', 'fontWeight', isGlass || !isMetal && !isRetro ? 600 : 700);
+  const sponsorFontWeight = subValue(c, 'sponsor', 'fontWeight', isGlass || !isMetalSurface && !isRetro ? 600 : 700);
   const sponsorRadius = subValue(c, 'sponsor', 'radius', null);
   const sponsorPadding = subValue(c, 'sponsor', 'padding', null);
   const sponsorBorderColor = subValue(c, 'sponsor', 'borderColor', null);
@@ -325,9 +327,9 @@ function NavbarWidget({ config, widgetId, userId }) {
      black-corner artefact on GPU-promoted layers (OBS browser source). */
   const clipOuter = `inset(0 round ${borderRadius}px)`;
 
-  const barOuter = isMetal ? {
+  const barOuter = isMetalSurface ? {
     width: '100%', height: '100%', boxSizing: 'border-box',
-    background: brushedMetalBackground('linear-gradient(135deg, rgba(42,43,48,0.96), rgba(17,18,22,0.98))', accentColor, { highlightOpacity: 0.05, grainOpacity: 0.025 }),
+    background: brushedMetalBackground(isStyleSeca ? 'linear-gradient(135deg, rgba(40,37,28,0.98), rgba(13,14,17,0.99))' : 'linear-gradient(135deg, rgba(42,43,48,0.96), rgba(17,18,22,0.98))', accentColor, { highlightOpacity: isStyleSeca ? 0.07 : 0.05, grainOpacity: 0.025 }),
     padding: `${borderWidth}px`,
     fontFamily: containerFontFamily,
   } : isCarbon ? {
@@ -358,11 +360,11 @@ function NavbarWidget({ config, widgetId, userId }) {
     fontFamily: containerFontFamily,
   };
 
-  const barInner = isMetal ? {
+  const barInner = isMetalSurface ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    background: brushedMetalBackground(`linear-gradient(170deg, rgba(${accentColorRGB},0.05) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.035) 60%, ${bgColor} 100%)`, accentColor),
+    background: brushedMetalBackground(`linear-gradient(170deg, rgba(${accentColorRGB},${isStyleSeca ? 0.1 : 0.05}) 0%, ${bgColor} 30%, rgba(${accentColorRGB},${isStyleSeca ? 0.065 : 0.035}) 60%, ${bgColor} 100%)`, accentColor),
     padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
-    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : metalSurfaceShadow(accentColor, 0.85),
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : metalSurfaceShadow(accentColor, isStyleSeca ? 1.05 : 0.85),
     backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
@@ -423,7 +425,7 @@ function NavbarWidget({ config, widgetId, userId }) {
     ...(needsFilter && { filter: filterStr }),
   };
 
-  const sep = isMetal ? {
+  const sep = isMetalSurface ? {
     width: separatorWidth, height: barHeight * 0.5,
     background: separatorColor || `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
     opacity: separatorOpacity,
@@ -503,7 +505,7 @@ function NavbarWidget({ config, widgetId, userId }) {
             )}
             <div {...partAttrs('displayName')} style={withElementOffset(c, 'displayName', { display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 })}>
               <span style={{
-                backgroundImage: isMetal
+                backgroundImage: isMetalSurface
                   ? brushedMetalTextBackground(textColor, displayNameAccentColor)
                   : isGlass
                   ? `linear-gradient(to right, ${textColor}, ${displayNameAccentColor}, ${textColor})`
@@ -513,7 +515,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 fontFamily,
                 fontSize: fontSize * 1.2, fontWeight,
-                letterSpacing: isMetal ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
+                letterSpacing: isMetalSurface ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
                 display: 'block', maxWidth: 'min(30vw, 420px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {c.streamerName || 'STREAMER'}
@@ -521,7 +523,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               {c.motto && (
                 <span style={{
                   marginTop: 2, fontFamily, fontSize: mottoFontSize, fontWeight: mottoFontWeight,
-                  letterSpacing: isMetal ? '0.4em' : isRetro ? '0.2em' : '0.35em',
+                  letterSpacing: isMetalSurface ? '0.4em' : isRetro ? '0.2em' : '0.35em',
                   textTransform: 'uppercase', color: mutedColor, textShadow,
                 }}>
                   {c.motto}
@@ -543,7 +545,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               minWidth: badgeImageSize || (barHeight * 1.2 * ((c.badgeSize ?? 100) / 100)),
               objectFit: badgeImageFit,
               borderRadius: badgeImageRadius,
-              filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)` : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
+                filter: isMetalSurface ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)` : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
             }} />
           </div>
         );
@@ -552,7 +554,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'clock': {
         if (c.showClock === false) return null;
         return (
-          <div {...partAttrs('clock')} style={withElementOffset(c, 'clock', isMetal ? {
+          <div {...partAttrs('clock')} style={withElementOffset(c, 'clock', isMetalSurface ? {
             borderRadius: clockRadius, padding: clockPadding != null ? `${clockPadding}px ${Math.round(clockPadding * 2.6)}px` : '6px 22px',
             background: clockBg || 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
             border: `${clockBorderWidth}px solid ${clockBorderColor}`,
@@ -612,7 +614,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               fontSize={musicFontSize}
               fontFamily={musicFontFamily}
               fontWeight={musicFontWeight}
-              isMetal={isMetal}
+              isMetal={isMetalSurface}
               barHeight={barHeight}
             />
           </div>
@@ -636,7 +638,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               fontWeight={cryptoFontWeight}
               cryptoUpColor={cryptoUpColor}
               cryptoDownColor={cryptoDownColor}
-              metallic={isMetal || isGlass || isRetro}
+              metallic={isMetalSurface || isGlass || isRetro}
             />
           </div>
         );
@@ -645,7 +647,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'cta': {
         if (!c.showCTA || !c.ctaText) return null;
         return (
-          <div {...partAttrs('sponsor')} style={withElementOffset(c, 'sponsor', isMetal ? {
+          <div {...partAttrs('sponsor')} style={withElementOffset(c, 'sponsor', isMetalSurface ? {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
             background: brushedMetalBackground(`linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`, sponsorAccentColor),
@@ -727,7 +729,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                 height: casinoImageSize || (barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100)),
                 maxWidth: casinoImageSize ? casinoImageSize * 1.8 : (barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100)),
                 objectFit: casinoImageFit, borderRadius: casinoImageRadius,
-                filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))` : 'none',
+                filter: isMetalSurface ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))` : 'none',
               }} />
             )}
             {c.casinoName && (
@@ -736,7 +738,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                 fontSize: casinoFontSize, fontWeight: casinoFontWeight,
                 letterSpacing: '0.15em', textTransform: 'uppercase',
                 color: casinoTextColor,
-                textShadow: isMetal ? `0 0 10px rgba(${accentColorRGB},0.3)` : isRetro ? `0 0 8px ${accentColor}` : 'none',
+                textShadow: isMetalSurface ? `0 0 10px rgba(${accentColorRGB},0.3)` : isRetro ? `0 0 8px ${accentColor}` : 'none',
               }}>
                 {c.casinoName}
               </span>
@@ -767,14 +769,14 @@ function NavbarWidget({ config, widgetId, userId }) {
       <div {...partAttrs('container')} style={barOuterSized}>
         <div style={barInner}>
           {/* Metallic shine overlay */}
-          {isMetal && (
+          {isMetalSurface && (
             <div style={{
               position: 'absolute', inset: 0,
               background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.015) 30%, rgba(255,255,255,0.04) 48%, rgba(255,255,255,0.015) 52%, transparent 70%)',
               pointerEvents: 'none', zIndex: 0,
             }} />
           )}
-          {isMetal && (
+          {isMetalSurface && (
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0,
               height: barHeight * 0.45,

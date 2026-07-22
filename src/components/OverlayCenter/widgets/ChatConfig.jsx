@@ -49,6 +49,7 @@ export default function ChatConfig({ config, onChange }) {
     { id: 'classic', icon: '📺', label: 'Classic' },
     { id: 'glow_panel', icon: '💠', label: 'Glow Panel' },
     { id: 'metal', icon: '⚙️', label: 'Metal' },
+    { id: 'StyleSecaChat', icon: '✦', label: 'StyleSeca' },
     { id: 'cards', icon: '🃏', label: 'Cards' },
     { id: 'floating', icon: '☁️', label: 'Floating' },
     { id: 'bubble', icon: '💬', label: 'Bubble' },

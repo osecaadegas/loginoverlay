@@ -81,17 +81,17 @@ try {
     current_slot: ['v1', 'v2', 'v3', 'v4'],
     tournament: ['grid', 'showcase', 'vertical', 'bracket', 'neon', 'minimal', 'arena', 'futuristic', 'esports'],
     giveaway: ['v1', 'v2', 'v3', 'v4', 'metal', 'bh_stats', 'v12'],
-    navbar: ['v1', 'metallic', 'glass', 'retro'],
-    chat: ['classic', 'floating', 'bubble', 'stack', 'typewriter', 'sidebar', 'cards', 'metal', 'bh_stats'],
+    navbar: ['v1', 'metallic', 'StyleSecaNav', 'glass', 'retro'],
+    chat: ['classic', 'floating', 'bubble', 'stack', 'typewriter', 'sidebar', 'cards', 'metal', 'StyleSecaChat', 'bh_stats'],
     image_slideshow: ['v1', 'metal', 'v12'],
-    rtp_stats: ['v1', 'vertical', 'neon', 'minimal', 'glass'],
+    rtp_stats: ['v1', 'StyleSecaRTP', 'vertical', 'neon', 'minimal', 'glass'],
     background: ['v1', 'aurora', 'matrix', 'starfield', 'waves', 'geometric'],
     raid_shoutout: ['v1'],
     spotify_now_playing: ['album_card', 'mini_player', 'vinyl', 'glass', 'wave', 'neon', 'metal', 'compact_bar'],
     slot_requests: ['v1_minimal', 'v2_card_stack', 'v3_compact'],
     bh_stats: ['default', 'metal', 'glass'],
     bonus_buys: ['v1', 'v2_neon', 'v3_minimal'],
-    bets: ['v1_list', 'v2_grid', 'v3_grid_2x3'],
+    bets: ['v1_list', 'v2_grid', 'v3_grid_2x3', 'StyleSecaBets'],
     container: ['default'],
   };
   for (const [widgetType, styleIds] of Object.entries(runtimeStyleCoverage)) {
@@ -118,10 +118,10 @@ try {
   assert.ok(bonusHuntQuickOptions.some(style => style.id === 'v12_classic_sr'), 'Bonus Hunt exposes style-specific Quick Editor options');
   assert.equal(bonusHuntQuickOptions.some(style => style.id === 'v12_classic_sr_editable'), false, 'Bonus Hunt hides editor migration variants from the user-facing layout picker');
   assert.ok(registryModule.getWidgetStyleCapability('bonus_hunt', 'v12_classic_sr_editable'), 'Bonus Hunt editable migration style remains addressable when explicitly selected');
-  ['v1', 'vertical', 'neon', 'minimal', 'glass'].forEach(styleId => {
+  ['v1', 'StyleSecaRTP', 'vertical', 'neon', 'minimal', 'glass'].forEach(styleId => {
     assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('rtp_stats').some(style => style.id === styleId), `RTP Stats exposes ${styleId} style option`);
   });
-  ['v1', 'metallic', 'glass', 'retro'].forEach(styleId => {
+  ['v1', 'metallic', 'StyleSecaNav', 'glass', 'retro'].forEach(styleId => {
     assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('navbar').some(style => style.id === styleId), `Navbar exposes ${styleId} style option`);
   });
   assert.ok(registryModule.getWidgetStyleOptionsForQuickEditor('slot_requests').some(style => style.id === 'v2_card_stack'), 'Slot Requests exposes card-stack style option');

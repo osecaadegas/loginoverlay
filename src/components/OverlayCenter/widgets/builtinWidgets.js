@@ -174,6 +174,7 @@ registerWidget({
   styles: [
     { id: 'v1', icon: '📌', label: 'Classic' },
     { id: 'metallic', icon: '⚙️', label: 'Metallic' },
+    { id: 'StyleSecaNav', icon: '✦', label: 'StyleSeca Nav' },
     { id: 'glass', icon: '🪟', label: 'Glass' },
     { id: 'retro', icon: '📺', label: 'Retro' },
   ],
@@ -240,6 +241,7 @@ registerWidget({
     { id: 'cards',      icon: '🃏', label: 'Cards' },
     { id: 'glow_panel', icon: '💠', label: 'Glow Panel' },
     { id: 'metal',      icon: '⚙️', label: 'Metal' },
+    { id: 'StyleSecaChat', icon: '✦', label: 'StyleSeca Chat' },
     { id: 'bh_stats',   icon: '🎰', label: 'Hunt' },
   ],
   styleConfigKey: 'chatStyle',
@@ -357,6 +359,7 @@ registerWidget({
   styles: [
     { id: 'v1', icon: '📊', label: 'Classic' },
     { id: 'metal', icon: '⚙️', label: 'Metal' },
+    { id: 'StyleSecaRTP', icon: '✦', label: 'StyleSeca RTP' },
     { id: 'vertical', icon: '📋', label: 'Vertical' },
     { id: 'neon', icon: '💡', label: 'Neon' },
     { id: 'minimal', icon: '✦', label: 'Minimal' },
@@ -658,6 +661,7 @@ registerWidget({
     { id: 'v1_list', icon: '📋', label: 'List' },
     { id: 'v2_grid', icon: '⊞',  label: 'Grid' },
     { id: 'v3_grid_2x3', icon: '▦', label: 'Grid 2x3' },
+    { id: 'StyleSecaBets', icon: '✦', label: 'StyleSeca Bets' },
   ],
   styleConfigKey: 'displayStyle',
   appearanceCapabilities: {

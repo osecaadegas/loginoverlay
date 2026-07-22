@@ -169,6 +169,11 @@ export default function NavbarConfig({ config, onChange }) {
               onClick={() => set('displayStyle', 'metallic')}>
               ⚙️ Metallic
             </button>
+            <button type="button"
+              className={`nb-style-btn${c.displayStyle === 'StyleSecaNav' ? ' nb-style-btn--active' : ''}`}
+              onClick={() => set('displayStyle', 'StyleSecaNav')}>
+              ✦ StyleSeca
+            </button>
           </div>
 
           {/* Twitch sync */}
