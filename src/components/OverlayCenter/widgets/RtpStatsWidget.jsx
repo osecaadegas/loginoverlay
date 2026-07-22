@@ -4,6 +4,7 @@ import { findUserSlotRecord, getSlotIdentity, hydrateSlotPersonalBestFromHistory
 import { getProviderImage } from '../../../utils/gameProviders';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
 import { brushedMetalBackground, metalBorderColor, metalSurfaceShadow } from './shared/metalTexture';
+import { STYLE_SECA, resolveStyleSecaValue, styleSecaSurfaceGradient } from './shared/styleSecaTheme';
 
 /* ─── Fetch slot info from the database (slots table) ─── */
 async function fetchSlotFromDB(slotRef) {
@@ -444,22 +445,23 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const isMetal = displayStyle === 'metal';
   const isStyleSeca = displayStyle === 'StyleSecaRTP';
   const isMetalSurface = isMetal || isStyleSeca;
+  const styleSecaValue = (value, fallback) => isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
   const isNeon = displayStyle === 'neon';
   const isMinimal = displayStyle === 'minimal';
   const isGlassStyle = displayStyle === 'glass';
-  const barBgFrom = subValue(c, 'container', 'background', c.barBgFrom || (isStyleSeca ? '#111114' : isMetal ? '#1e1e22' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827'));
-  const barBgVia = c.barBgVia || (isStyleSeca ? '#27221a' : isMetal ? '#17181c' : isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f');
-  const barBgTo = c.barBgTo || (isStyleSeca ? '#141417' : isMetal ? '#242428' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
-  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? 'rgba(232,160,32,0.42)' : isMetal ? 'rgba(200,210,225,0.18)' : isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8'));
+  const barBgFrom = styleSecaValue(subValue(c, 'container', 'background', c.barBgFrom || (isStyleSeca ? STYLE_SECA.surface : isMetal ? '#1e1e22' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827')), STYLE_SECA.surface);
+  const barBgVia = styleSecaValue(c.barBgVia || (isStyleSeca ? STYLE_SECA.elevated : isMetal ? '#17181c' : isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f'), STYLE_SECA.elevated);
+  const barBgTo = styleSecaValue(c.barBgTo || (isStyleSeca ? STYLE_SECA.surface : isMetal ? '#242428' : isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827'), STYLE_SECA.surface);
+  const borderColor = styleSecaValue(subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? STYLE_SECA.border : isMetal ? 'rgba(200,210,225,0.18)' : isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8')), STYLE_SECA.border);
   const borderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? (isMinimal ? 0 : 1));
   const borderRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isStyleSeca ? 10 : isMetal ? 10 : isMinimal ? 4 : isGlassStyle ? 16 : 8));
-  const textColor = subValue(c, 'statCard', 'textColor', c.textColor || (isStyleSeca ? '#f8ecd2' : isMetal ? '#d4d4d8' : '#ffffff'));
-  const providerColor = subValue(c, 'provider', 'textColor', c.providerColor || (isStyleSeca ? '#f8ecd2' : isMetal ? '#d4d4d8' : '#ffffff'));
-  const slotNameColor = subValue(c, 'slotTitle', 'textColor', c.slotNameColor || (isStyleSeca ? '#fff4da' : isMetal ? '#f1f5f9' : '#ffffff'));
-  const labelColor = subValue(c, 'label', 'textColor', c.labelColor || (isStyleSeca ? '#8f7b56' : isMetal ? '#8a8f98' : '#94a3b8'));
-  const rtpIconColor = subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || (isStyleSeca ? '#e8a020' : isMetal ? '#e8a020' : '#60a5fa'));
-  const potentialIconColor = subValue(c, 'maxWin', 'accentColor', c.potentialIconColor || (isStyleSeca ? '#f2c96d' : '#facc15'));
-  const volatilityIconColor = subValue(c, 'volatility', 'accentColor', c.volatilityIconColor || (isStyleSeca ? '#64748b' : '#3b82f6'));
+  const textColor = styleSecaValue(subValue(c, 'statCard', 'textColor', c.textColor || (isStyleSeca ? STYLE_SECA.text : isMetal ? '#d4d4d8' : '#ffffff')), STYLE_SECA.text);
+  const providerColor = styleSecaValue(subValue(c, 'provider', 'textColor', c.providerColor || (isStyleSeca ? STYLE_SECA.text : isMetal ? '#d4d4d8' : '#ffffff')), STYLE_SECA.text);
+  const slotNameColor = styleSecaValue(subValue(c, 'slotTitle', 'textColor', c.slotNameColor || (isStyleSeca ? STYLE_SECA.text : isMetal ? '#f1f5f9' : '#ffffff')), STYLE_SECA.text);
+  const labelColor = styleSecaValue(subValue(c, 'label', 'textColor', c.labelColor || (isStyleSeca ? STYLE_SECA.muted : isMetal ? '#8a8f98' : '#94a3b8')), STYLE_SECA.muted);
+  const rtpIconColor = styleSecaValue(subValue(c, 'rtpValue', 'accentColor', c.rtpIconColor || (isStyleSeca ? STYLE_SECA.primary : isMetal ? '#e8a020' : '#60a5fa')), STYLE_SECA.primary);
+  const potentialIconColor = styleSecaValue(subValue(c, 'maxWin', 'accentColor', c.potentialIconColor || (isStyleSeca ? STYLE_SECA.primary : '#facc15')), STYLE_SECA.primary);
+  const volatilityIconColor = styleSecaValue(subValue(c, 'volatility', 'accentColor', c.volatilityIconColor || (isStyleSeca ? STYLE_SECA.secondary : '#3b82f6')), STYLE_SECA.secondary);
   const dividerColor = subValue(c, 'divider', 'background', subValue(c, 'statCard', 'borderColor', c.dividerColor || '#3b82f6'));
   const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isStyleSeca ? "'Rajdhani', 'Barlow Condensed', sans-serif" : "'Inter', sans-serif"));
   const fontSize = c.fontSize ?? 14;
@@ -657,16 +659,22 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     ...statCardStyle,
     ...containerStyle,
   };
-  const resolvedStatCardStyle = isMetalSurface ? {
+  const resolvedStatCardStyle = isStyleSeca ? {
+    ...cardSurfaceStyle,
+    background: styleSecaValue(cardSurfaceStyle.background, styleSecaSurfaceGradient('90deg')),
+    border: cardSurfaceStyle.border || `${borderWidth}px solid ${cardSurfaceStyle.borderColor || STYLE_SECA.border}`,
+    borderColor: cardSurfaceStyle.borderColor || STYLE_SECA.border,
+    boxShadow: cardSurfaceStyle.boxShadow || `0 16px 34px rgba(0,0,0,0.34), 0 0 24px ${STYLE_SECA.glow}`,
+  } : isMetal ? {
     ...cardSurfaceStyle,
     background: brushedMetalBackground(
       cardSurfaceStyle.background || `linear-gradient(to right, ${barBgFrom}, ${barBgVia}, ${barBgTo})`,
       rtpIconColor,
-      { highlightOpacity: isStyleSeca ? 0.08 : 0.06, grainOpacity: 0.028 }
+      { highlightOpacity: 0.06, grainOpacity: 0.028 }
     ),
     border: cardSurfaceStyle.border || `${borderWidth}px solid ${cardSurfaceStyle.borderColor || metalBorderColor(rtpIconColor, 0.24)}`,
     borderColor: cardSurfaceStyle.borderColor || metalBorderColor(rtpIconColor, 0.24),
-    boxShadow: cardSurfaceStyle.boxShadow || metalSurfaceShadow(rtpIconColor, isStyleSeca ? 0.95 : 0.72),
+    boxShadow: cardSurfaceStyle.boxShadow || metalSurfaceShadow(rtpIconColor, 0.72),
   } : cardSurfaceStyle;
   const providerStyle = subElementStyle(c, 'provider');
   const slotTitleStyle = subElementStyle(c, 'slotTitle');

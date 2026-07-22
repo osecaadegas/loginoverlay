@@ -8,6 +8,7 @@ import {
   metalBorderColor,
   metalSurfaceShadow,
 } from './shared/metalTexture';
+import { STYLE_SECA, resolveStyleSecaValue, styleSecaHeaderGradient, styleSecaSurfaceGradient } from './shared/styleSecaTheme';
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {
@@ -225,17 +226,18 @@ function NavbarWidget({ config, widgetId, userId }) {
   const isMetal = (c.displayStyle === 'metallic');
   const isStyleSeca = (c.displayStyle === 'StyleSecaNav');
   const isMetalSurface = isMetal || isStyleSeca;
+  const styleSecaValue = (value, fallback) => isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
   const isGlass = (c.displayStyle === 'glass');
   const isRetro = (c.displayStyle === 'retro');
   const isCarbon = (c.displayStyle === 'carbon');
   const isFuturistic = (c.displayStyle === 'futuristic');
-  const accentColor = subValue(c, 'logo', 'accentColor', c.accentColor || (isStyleSeca ? '#e8a020' : isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b'));
+  const accentColor = styleSecaValue(subValue(c, 'logo', 'accentColor', c.accentColor || (isStyleSeca ? STYLE_SECA.primary : isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b')), STYLE_SECA.primary);
   const accentColorRGB = colorToRgbString(accentColor);
-  const bgColor = subValue(c, 'container', 'background', c.bgColor || (isStyleSeca ? '#111114' : isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318'));
-  const textColor = subValue(c, 'displayName', 'textColor', c.textColor || (isStyleSeca ? '#f8ecd2' : isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9'));
+  const bgColor = styleSecaValue(subValue(c, 'container', 'background', c.bgColor || (isStyleSeca ? STYLE_SECA.surface : isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318')), STYLE_SECA.surface);
+  const textColor = styleSecaValue(subValue(c, 'displayName', 'textColor', c.textColor || (isStyleSeca ? STYLE_SECA.text : isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9')), STYLE_SECA.text);
   const displayNameAccentColor = subValue(c, 'displayName', 'accentColor', accentColor);
-  const mutedColor = subValue(c, 'music', 'textColor', c.mutedColor || (isStyleSeca ? '#8f7b56' : isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8'));
-  const borderColor = subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? '#64748b' : accentColor));
+  const mutedColor = styleSecaValue(subValue(c, 'music', 'textColor', c.mutedColor || (isStyleSeca ? STYLE_SECA.muted : isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8')), STYLE_SECA.muted);
+  const borderColor = styleSecaValue(subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? STYLE_SECA.border : accentColor)), STYLE_SECA.border);
   const containerFontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || (isStyleSeca ? "'Rajdhani', 'Barlow Condensed', sans-serif" : isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif"));
   const fontFamily = subValue(c, 'displayName', 'fontFamily', containerFontFamily);
   const brightness = subValue(c, 'container', 'brightness', c.brightness ?? 100);
@@ -287,8 +289,8 @@ function NavbarWidget({ config, widgetId, userId }) {
   const musicFontSize = subValue(c, 'music', 'fontSize', containerFontSize);
   const musicFontWeight = subValue(c, 'music', 'fontWeight', 700);
   const textShadow = '0 1px 4px rgba(0,0,0,0.6)';
-  const ctaColor = subValue(c, 'sponsor', 'background', c.ctaColor || (isStyleSeca ? '#e8a020' : isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e'));
-  const sponsorTextColor = subValue(c, 'sponsor', 'textColor', isStyleSeca ? '#15110a' : '#fff');
+  const ctaColor = styleSecaValue(subValue(c, 'sponsor', 'background', c.ctaColor || (isStyleSeca ? STYLE_SECA.primary : isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e')), STYLE_SECA.primary);
+  const sponsorTextColor = styleSecaValue(subValue(c, 'sponsor', 'textColor', isStyleSeca ? STYLE_SECA.darkText : '#fff'), STYLE_SECA.darkText);
   const sponsorFontFamily = subValue(c, 'sponsor', 'fontFamily', containerFontFamily);
   const sponsorFontSize = subValue(c, 'sponsor', 'fontSize', fontSize * 0.82);
   const sponsorFontWeight = subValue(c, 'sponsor', 'fontWeight', isGlass || !isMetalSurface && !isRetro ? 600 : 700);
@@ -327,9 +329,14 @@ function NavbarWidget({ config, widgetId, userId }) {
      black-corner artefact on GPU-promoted layers (OBS browser source). */
   const clipOuter = `inset(0 round ${borderRadius}px)`;
 
-  const barOuter = isMetalSurface ? {
+  const barOuter = isStyleSeca ? {
     width: '100%', height: '100%', boxSizing: 'border-box',
-    background: brushedMetalBackground(isStyleSeca ? 'linear-gradient(135deg, rgba(40,37,28,0.98), rgba(13,14,17,0.99))' : 'linear-gradient(135deg, rgba(42,43,48,0.96), rgba(17,18,22,0.98))', accentColor, { highlightOpacity: isStyleSeca ? 0.07 : 0.05, grainOpacity: 0.025 }),
+    background: styleSecaHeaderGradient(),
+    padding: `${borderWidth}px`,
+    fontFamily: containerFontFamily,
+  } : isMetal ? {
+    width: '100%', height: '100%', boxSizing: 'border-box',
+    background: brushedMetalBackground('linear-gradient(135deg, rgba(42,43,48,0.96), rgba(17,18,22,0.98))', accentColor, { highlightOpacity: 0.05, grainOpacity: 0.025 }),
     padding: `${borderWidth}px`,
     fontFamily: containerFontFamily,
   } : isCarbon ? {
@@ -360,11 +367,22 @@ function NavbarWidget({ config, widgetId, userId }) {
     fontFamily: containerFontFamily,
   };
 
-  const barInner = isMetalSurface ? {
+  const barInner = isStyleSeca ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    background: brushedMetalBackground(`linear-gradient(170deg, rgba(${accentColorRGB},${isStyleSeca ? 0.1 : 0.05}) 0%, ${bgColor} 30%, rgba(${accentColorRGB},${isStyleSeca ? 0.065 : 0.035}) 60%, ${bgColor} 100%)`, accentColor),
+    background: styleSecaSurfaceGradient('170deg'),
     padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
-    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : metalSurfaceShadow(accentColor, isStyleSeca ? 1.05 : 0.85),
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : `0 16px 34px rgba(0,0,0,0.36), 0 0 24px ${STYLE_SECA.glow}`,
+    backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: 'center',
+    overflow: 'visible', position: 'relative',
+    ...(needsFilter && { filter: filterStr }),
+  } : isMetal ? {
+    display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
+    background: brushedMetalBackground(`linear-gradient(170deg, rgba(${accentColorRGB},0.05) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.035) 60%, ${bgColor} 100%)`, accentColor),
+    padding: `0 ${containerPadding}px`, color: textColor, fontSize, gap: 0,
+    boxShadow: containerShadow || containerGlow ? [containerShadow, containerGlow].filter(Boolean).join(', ') : metalSurfaceShadow(accentColor, 0.85),
     backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     WebkitBackdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
     transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
@@ -647,7 +665,18 @@ function NavbarWidget({ config, widgetId, userId }) {
       case 'cta': {
         if (!c.showCTA || !c.ctaText) return null;
         return (
-          <div {...partAttrs('sponsor')} style={withElementOffset(c, 'sponsor', isMetalSurface ? {
+          <div {...partAttrs('sponsor')} style={withElementOffset(c, 'sponsor', isStyleSeca ? {
+            display: 'flex', alignItems: 'center', gap: 8,
+            borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
+            background: styleSecaHeaderGradient(),
+            border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || STYLE_SECA.border}`,
+            color: sponsorTextColor || STYLE_SECA.darkText,
+            fontFamily: sponsorFontFamily,
+            fontSize: sponsorFontSize, fontWeight: sponsorFontWeight,
+            letterSpacing: '0.24em', textTransform: 'uppercase',
+            boxShadow: sponsorShadow || `0 8px 18px rgba(0,0,0,0.24), 0 0 16px ${STYLE_SECA.glow}`,
+            flexShrink: 0, maxWidth: 'min(28vw, 360px)', overflow: 'hidden',
+          } : isMetal ? {
             display: 'flex', alignItems: 'center', gap: 8,
             borderRadius: sponsorRadius ?? 10, padding: sponsorPadding != null ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px` : '7px 20px',
             background: brushedMetalBackground(`linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`, sponsorAccentColor),

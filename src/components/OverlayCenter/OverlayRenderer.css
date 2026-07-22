@@ -4322,6 +4322,32 @@
   font-size: 0.64em;
 }
 
+.bets-ov--styleseca .bets-ov__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bets-ov--styleseca .bets-ov__card {
+  min-height: 0;
+}
+
+.bets-ov--styleseca .bets-ov__card-body {
+  gap: 5px;
+  padding: 8px 6px;
+}
+
+.bets-ov--styleseca .bets-ov__card-label {
+  font-size: 0.82em;
+  min-height: 2.1em;
+}
+
+.bets-ov--styleseca .bets-ov__card-pct {
+  font-size: 1.16em;
+}
+
+.bets-ov--styleseca .bets-ov__card-cmd {
+  font-size: 0.64em;
+}
+
 /* ── Hint footer ── */
 .bets-ov__hint {
   text-align: center;

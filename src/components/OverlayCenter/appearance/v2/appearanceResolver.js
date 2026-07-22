@@ -9,6 +9,7 @@ import {
   isWidgetAppearanceV2Enabled,
 } from './widgetAppearanceRegistry';
 import { mixHex, toRgba } from './colorUtils';
+import { STYLE_SECA, styleSecaHeaderGradient, styleSecaSurfaceGradient } from '../../widgets/shared/styleSecaTheme';
 
 function isObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value);
@@ -253,7 +254,7 @@ function commonSubElements(tokens) {
 
 function buildBetsPatch(tokens, styleId) {
   const isStyleSeca = styleId === 'StyleSecaBets';
-  const surface = isStyleSeca ? `linear-gradient(145deg, ${STYLE_SECA.surface}, ${STYLE_SECA.elevated})` : tokens.colors.surface;
+  const surface = isStyleSeca ? styleSecaSurfaceGradient() : tokens.colors.surface;
   const secondary = isStyleSeca ? STYLE_SECA.secondarySurface : tokens.colors.secondarySurface;
   const elevated = isStyleSeca ? STYLE_SECA.elevated : tokens.colors.elevatedSurface;
   const primary = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
@@ -320,7 +321,7 @@ function buildBetsPatch(tokens, styleId) {
         ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
       },
       header: {
-        background: isStyleSeca ? `linear-gradient(135deg, ${toRgba(STYLE_SECA.primary, 0.18)}, ${toRgba(STYLE_SECA.secondary, 0.12)})` : tokens.colors.secondarySurface,
+        background: isStyleSeca ? styleSecaHeaderGradient() : tokens.colors.secondarySurface,
         textColor: isStyleSeca ? primary : text,
         fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
@@ -434,20 +435,6 @@ const STYLE_CONFIG_KEYS = Object.freeze({
   chat: 'chatStyle',
   tournament: 'layout',
   container: null,
-});
-
-const STYLE_SECA = Object.freeze({
-  primary: '#e8a020',
-  secondary: '#64748b',
-  surface: '#111114',
-  elevated: 'rgba(39,34,21,0.94)',
-  secondarySurface: 'rgba(100,116,139,0.16)',
-  text: '#f8ecd2',
-  muted: '#8f7b56',
-  darkText: '#15110a',
-  border: 'rgba(232,160,32,0.38)',
-  glow: 'rgba(232,160,32,0.34)',
-  font: "'Rajdhani', 'Barlow Condensed', sans-serif",
 });
 
 function styleKeyForWidget(widgetType) {
@@ -565,12 +552,12 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
   if (widgetType === 'chat') {
     const isGlowPanel = styleId === 'glow_panel';
     const isStyleSeca = styleId === 'StyleSecaChat';
-    patch.bgColor = isStyleSeca ? `linear-gradient(145deg, ${STYLE_SECA.surface}, ${STYLE_SECA.elevated})` : patch.bgColor;
+    patch.bgColor = isStyleSeca ? styleSecaSurfaceGradient() : patch.bgColor;
     patch.textColor = isStyleSeca ? STYLE_SECA.text : patch.textColor;
     patch.borderColor = isStyleSeca ? STYLE_SECA.border : patch.borderColor;
     patch.fontFamily = isStyleSeca ? STYLE_SECA.font : patch.fontFamily;
     patch.borderRadius = isStyleSeca ? 12 : patch.borderRadius;
-    patch.headerBg = isStyleSeca ? `linear-gradient(135deg, ${toRgba(STYLE_SECA.primary, 0.16)}, ${toRgba(STYLE_SECA.secondary, 0.12)})` : isGlowPanel ? 'rgba(2,12,25,0.82)' : tokens.colors.secondarySurface;
+    patch.headerBg = isStyleSeca ? styleSecaHeaderGradient() : isGlowPanel ? 'rgba(2,12,25,0.82)' : tokens.colors.secondarySurface;
     patch.headerText = isStyleSeca ? STYLE_SECA.primary : isGlowPanel ? tokens.colors.primary : tokens.colors.mutedText;
     patch.msgSpacing = tokens.spacing.itemGap;
     patch.msgPadH = tokens.spacing.cardPadding;
@@ -580,7 +567,7 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
       container: {
         ...patch.subElements.container,
         ...(isStyleSeca ? {
-          background: `linear-gradient(145deg, ${STYLE_SECA.surface}, ${STYLE_SECA.elevated})`,
+          background: styleSecaSurfaceGradient(),
           textColor: STYLE_SECA.text,
           borderColor: STYLE_SECA.border,
           borderWidth: tokens.shape.borderWidth,
@@ -591,7 +578,7 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
         } : {}),
       },
       header: surfaceSubElement(tokens, 'header', isStyleSeca ? {
-        background: `linear-gradient(135deg, ${toRgba(STYLE_SECA.primary, 0.16)}, ${toRgba(STYLE_SECA.secondary, 0.12)})`,
+        background: styleSecaHeaderGradient(),
         textColor: STYLE_SECA.primary,
         fontFamily: STYLE_SECA.font,
         fontWeight: tokens.typography.headerWeight,
@@ -599,7 +586,7 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
         borderWidth: tokens.shape.borderWidth,
       } : {}),
       message: surfaceSubElement(tokens, 'card', {
-        background: isStyleSeca ? 'rgba(17,18,22,0.58)' : isGlowPanel ? 'transparent' : tokens.colors.secondarySurface,
+        background: isStyleSeca ? STYLE_SECA.cardSurface : isGlowPanel ? 'transparent' : tokens.colors.secondarySurface,
         fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
         fontSize: tokens.typography.bodySize,
         textColor: isStyleSeca ? STYLE_SECA.text : tokens.colors.text,
@@ -620,7 +607,7 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
       avatar: surfaceSubElement(tokens, 'badge'),
       badge: surfaceSubElement(tokens, 'badge', { background: isStyleSeca ? STYLE_SECA.primary : isGlowPanel ? tokens.colors.primary : tokens.colors.secondarySurface, textColor: isStyleSeca ? STYLE_SECA.darkText : tokens.colors.text }),
       highlightedMessage: surfaceSubElement(tokens, 'card', {
-        background: isStyleSeca ? `linear-gradient(135deg, ${toRgba(STYLE_SECA.primary, 0.22)}, ${toRgba(STYLE_SECA.secondary, 0.16)})` : tokens.colors.accent,
+        background: isStyleSeca ? styleSecaHeaderGradient() : tokens.colors.accent,
         textColor: isStyleSeca ? '#fff4da' : tokens.colors.text,
         borderColor: isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary,
         shadow: isStyleSeca ? `0 0 26px ${STYLE_SECA.glow}` : undefined,
