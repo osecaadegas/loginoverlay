@@ -1,11 +1,13 @@
 import {
   deepMerge,
   getByPath,
+  getSupportedVisualKeys,
   getWidgetActiveStyleId,
   normalizeAppearance,
   setByPath,
 } from './appearanceModel';
 import { getWidgetDef } from '../widgets/widgetRegistry';
+import { getStyleKeysForWidget } from '../widgets/styleKeysRegistry';
 
 export const WIDGET_STYLE_PACK_KIND = 'streamers-center.widget-style-pack';
 export const WIDGET_STYLE_PACK_VERSION = 1;
@@ -53,6 +55,91 @@ function sanitizeStyleEntry(entry = {}) {
   return next;
 }
 
+const BLOCKED_CONFIG_STYLE_KEYS = new Set([
+  'apiKey',
+  'authToken',
+  'channelId',
+  'channelName',
+  'clientId',
+  'clientSecret',
+  'displayName',
+  'email',
+  'jwtToken',
+  'password',
+  'profileUrl',
+  'secret',
+  'socialHandle',
+  'streamerName',
+  'token',
+  'userId',
+  'username',
+  'webhookUrl',
+]);
+
+const BASE_TRANSFER_STYLE_KEYS = [
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'lineHeight',
+  'letterSpacing',
+  'textTransform',
+  'textAlign',
+  'width',
+  'height',
+  'minWidth',
+  'maxWidth',
+  'minHeight',
+  'maxHeight',
+  'widgetWidth',
+  'widgetHeight',
+  'widgetScale',
+  'barHeight',
+];
+
+function isBlockedConfigStyleKey(key) {
+  if (BLOCKED_CONFIG_STYLE_KEYS.has(key)) return true;
+  return /(?:api|auth|credential|password|secret|token)$/i.test(key);
+}
+
+function extractWidgetConfigStyle(widget = {}) {
+  const config = isPlainObject(widget.config) ? widget.config : {};
+  const styleKeys = new Set([
+    ...BASE_TRANSFER_STYLE_KEYS,
+    ...getSupportedVisualKeys(widget.widget_type),
+    ...(getStyleKeysForWidget(widget.widget_type) || []),
+  ]);
+  const visual = {};
+  for (const key of styleKeys) {
+    if (isBlockedConfigStyleKey(key)) continue;
+    if (!Object.prototype.hasOwnProperty.call(config, key)) continue;
+    const cloned = cloneJson(config[key]);
+    if (cloned !== undefined) visual[key] = cloned;
+  }
+  return visual;
+}
+
+function mergeConfigStyleIntoEntry(entry, activeStyleId, visual = {}) {
+  if (!Object.keys(visual).length) return entry;
+  if (!activeStyleId) {
+    return {
+      ...entry,
+      visual: deepMerge(entry.visual || {}, visual),
+    };
+  }
+  const styles = isPlainObject(entry.styles) ? entry.styles : {};
+  const styleEntry = isPlainObject(styles[activeStyleId]) ? styles[activeStyleId] : {};
+  return {
+    ...entry,
+    styles: {
+      ...styles,
+      [activeStyleId]: {
+        ...styleEntry,
+        visual: deepMerge(styleEntry.visual || {}, visual),
+      },
+    },
+  };
+}
+
 export function createWidgetStylePack({ appearance, widgets = [], exportedAt = new Date().toISOString() } = {}) {
   const normalized = normalizeAppearance(appearance || {});
   const exportedWidgets = (widgets || [])
@@ -60,12 +147,13 @@ export function createWidgetStylePack({ appearance, widgets = [], exportedAt = n
     .map(widget => {
       const entry = sanitizeStyleEntry(normalized.widgets?.[widget.id] || {});
       const activeStyleId = entry.activeStyleId || getWidgetActiveStyleId(widget, normalized);
+      const styleWithConfig = mergeConfigStyleIntoEntry(entry, activeStyleId, extractWidgetConfigStyle(widget));
       return {
         widgetType: widget.widget_type,
         widgetLabel: getWidgetDef(widget.widget_type)?.label || widget.widget_type,
         activeStyleId,
         style: {
-          ...entry,
+          ...styleWithConfig,
           activeStyleId,
         },
       };

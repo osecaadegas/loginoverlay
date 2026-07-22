@@ -2102,67 +2102,9 @@ export default function AppearanceCenter({
           </div>
           )}
 
-          {mode === 'simple' ? renderWidgetSelector(true) : sidebarTab === 'widgets' ? (
-            <div className="ve-sidebar-scroll">
-              <div className="ve-search">
-                <Search size={15} />
-                <input
-                  value={widgetSearch}
-                  onChange={event => setWidgetSearch(event.target.value)}
-                  placeholder="Search widgets"
-                  aria-label="Search widgets"
-                />
-              </div>
-              <div className="ve-widget-list">
-                {filteredWidgets.map(widget => renderWidgetCard(widget))}
-                {!filteredWidgets.length && <EmptyState title="No widgets found">Try another search.</EmptyState>}
-              </div>
-            </div>
-          ) : (
-            <div className="ve-sidebar-scroll ve-layers">
-              <div className="ve-layer-intro">
-                <MousePointer2 size={17} />
-                <span>Click the preview or choose a layer. The right panel will only show controls for that part.</span>
-              </div>
-              {visibleLayerRows.map(group => (
-                <section key={group.id} className="ve-layer-group">
-                  <h3>{group.label}</h3>
-                  {group.items.map(element => {
-                    const key = layerKey(selectedWidget?.id, element.id);
-                    const active = element.id === selectedElement?.id;
-                    const hidden = !!hiddenLayers[key];
-                    const locked = !!lockedLayers[key];
-                    return (
-                      <div key={element.id} className={`ve-layer-row${active ? ' is-active' : ''}`}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedElementId(element.id);
-                            setSelectedStateId('default');
-                          }}
-                        >
-                          <span>{element.label}</span>
-                          <small>{inferElementKind(element)}</small>
-                        </button>
-                        <LayerToggleButton
-                          active={!hidden}
-                          type="visible"
-                          label={hidden ? 'Show layer in preview' : 'Hide layer in preview'}
-                          onClick={() => setHiddenLayers(prev => ({ ...prev, [key]: !hidden }))}
-                        />
-                        <LayerToggleButton
-                          active={locked}
-                          type="locked"
-                          label={locked ? 'Unlock layer editing' : 'Lock layer editing'}
-                          onClick={() => setLockedLayers(prev => ({ ...prev, [key]: !locked }))}
-                        />
-                      </div>
-                    );
-                  })}
-                </section>
-              ))}
-            </div>
-          )}
+          {mode === 'simple' || sidebarTab === 'widgets'
+            ? renderWidgetSelector(true)
+            : renderLayersPanel()}
         </aside>
 
         <main className="ve-canvas-panel" ref={canvasPanelRef}>
