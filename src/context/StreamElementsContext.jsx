@@ -11,6 +11,10 @@ function isMissingRedemptionTable(error) {
     || (text.includes('point_redemptions') && (text.includes('could not find') || text.includes('schema cache')));
 }
 
+function shouldPollRedemptionNotifications() {
+  return typeof window !== 'undefined' && window.location.pathname === '/admin-overlay';
+}
+
 export function useStreamElements() {
   const context = useContext(StreamElementsContext);
   if (!context) {
@@ -442,7 +446,7 @@ export function StreamElementsProvider({ children }) {
 
   // Poll for redemptions from database
   useEffect(() => {
-    if (!user) return;
+    if (!user || !seAccount || !shouldPollRedemptionNotifications()) return;
     redemptionPollingDisabled.current = false;
 
     const checkRedemptions = async () => {
@@ -506,7 +510,7 @@ export function StreamElementsProvider({ children }) {
     const interval = setInterval(checkRedemptions, 60000);
 
     return () => clearInterval(interval);
-  }, [user?.id]);
+  }, [user?.id, seAccount?.id]);
 
   const value = {
     seAccount,

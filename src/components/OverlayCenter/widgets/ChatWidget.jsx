@@ -1030,7 +1030,7 @@ function ChatWidget({ config, theme, allWidgets }) {
               Live Chat
             </span>
             <div className="ov-chat-header-badges" {...partAttrs("badge")}>
-              {allPlatforms.map((p) => (
+              {CHAT_PLATFORMS.map((p) => (
                 <span
                   key={p}
                   className="ov-chat-platform-badge"

@@ -15,10 +15,18 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+let supabase;
+
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) return null;
+  if (!supabase) {
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return supabase;
+}
 
 // ─── Rate limiter (in-memory, per-key) ──────────────────
 const rateLimits = new Map();
@@ -65,6 +73,11 @@ export default async function handler(req, res) {
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed. Use GET.' });
+  }
+
+  supabase = getSupabaseClient();
+  if (!supabase) {
+    return res.status(500).json({ error: 'Server config error' });
   }
 
   // ─── Extract API key ───────────────────────────────────
