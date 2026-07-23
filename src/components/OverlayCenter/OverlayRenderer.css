@@ -1276,6 +1276,11 @@
 .bht-stack-card--opened {
   opacity: 0.5;
 }
+.bht-stack-card--hidden.bht-stack-card--opened {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
 .bht-stack-card--center.bht-stack-card--opened {
   opacity: 1;
 }

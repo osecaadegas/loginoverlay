@@ -490,7 +490,7 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
   const currentBonus = bonuses.find((b) => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
-  const huntComplete = !!c.bonusOpening && bonuses.length > 0 && currentIndex < 0;
+  const huntComplete = bonuses.length > 0 && bonuses.every((bonus) => bonus.opened);
 
   const rootStyle = {
     ...scopedStyle("container", {
