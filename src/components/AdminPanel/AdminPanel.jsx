@@ -41,6 +41,7 @@ import {
 const DEFAULT_ADMIN_TAB = 'users';
 const VALID_TABS = ['users', 'offers', 'apikeys'];
 const getValidAdminTab = (tab) => (VALID_TABS.includes(tab) ? tab : DEFAULT_ADMIN_TAB);
+const SLOT_CATALOG_SELECT = 'id, name, provider, image, rtp, volatility, max_win_multiplier, status, is_featured, sort_order';
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -644,7 +645,7 @@ export default function AdminPanel() {
       while (hasMore) {
         const { data, error } = await supabase
           .from('slots')
-          .select('*')
+          .select(SLOT_CATALOG_SELECT)
           .order('name', { ascending: true })
           .range(page * pageSize, (page + 1) * pageSize - 1);
 

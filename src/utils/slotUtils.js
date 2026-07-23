@@ -7,6 +7,7 @@ export const DEFAULT_SLOT_IMAGE = 'https://i.imgur.com/8E3ucNx.png';
 let slotsCache = null;
 let cacheTimestamp = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const SLOT_CATALOG_SELECT = 'id, name, provider, image, rtp, volatility, max_win_multiplier, status, is_featured, sort_order';
 
 /**
  * Fetch all slots from Supabase with caching
@@ -28,7 +29,7 @@ export async function getAllSlots() {
     while (hasMore) {
       const { data, error } = await supabase
         .from('slots')
-        .select('*')
+        .select(SLOT_CATALOG_SELECT)
         .order('name', { ascending: true })
         .range(from, from + batchSize - 1);
 
