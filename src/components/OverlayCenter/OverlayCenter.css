@@ -8530,6 +8530,57 @@ body.wm-resizing {
   pointer-events: none;
 }
 
+.rtp-stats-bar--styleseca .rtp-stats-inner {
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  background:
+    linear-gradient(90deg, rgba(8, 20, 52, 0.98) 0%, rgba(12, 32, 78, 0.94) 48%, rgba(8, 20, 52, 0.98) 100%);
+  border-color: rgba(34, 211, 238, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.055),
+    0 14px 32px rgba(0,0,0,0.3),
+    0 0 22px rgba(34,211,238,0.18);
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-left,
+.rtp-stats-bar--styleseca .rtp-stats-right {
+  flex-wrap: nowrap;
+  max-width: none;
+  overflow: hidden;
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-left {
+  flex: 1 1 auto;
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-right {
+  flex: 0 1 auto;
+  justify-content: flex-end;
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-provider--logo {
+  flex: 0 0 var(--rtp-provider-logo-width, 132px);
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-slot {
+  flex: 1 1 128px;
+  max-width: none;
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-item {
+  flex: 0 1 auto;
+  min-width: max-content;
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-value,
+.rtp-stats-bar--styleseca .rtp-stats-label {
+  color: inherit;
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-label {
+  color: rgba(159, 183, 216, 0.9);
+}
+
 
 /* -----------------------------------------------------------
    17. BACKGROUND WIDGET
@@ -10212,6 +10263,13 @@ body.wm-resizing {
   color: #dde5ec;
   border: 1px solid rgba(22, 163, 74, 0.25);
 }
+.pl-card__badge--backup {
+  left: 8px;
+  right: auto;
+  background: rgba(34, 211, 238, 0.18);
+  color: #a5f3fc;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+}
 
 /* Card body */
 .pl-card__body {
@@ -10670,6 +10728,12 @@ body.wm-resizing {
   background: rgba(71, 85, 105, 0.16);
   color: #b8c8d8;
   border-color: rgba(71, 85, 105, 0.24);
+}
+
+[data-tour="presets-page"] .pl-card__badge--backup {
+  background: rgba(34, 211, 238, 0.14);
+  color: #a5f3fc;
+  border-color: rgba(34, 211, 238, 0.24);
 }
 
 [data-tour="presets-page"] .pl-card__btn--share {

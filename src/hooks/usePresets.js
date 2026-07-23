@@ -3,11 +3,32 @@
  * Manages global presets (overlay_state), shared presets (shared_overlay_presets table),
  * and preset load/save/delete operations.
  */
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { getSharedPresets, saveSharedPreset, deleteSharedPreset } from '../services/overlayService';
 
-/* ── User-data config keys to SKIP in presets (per widget type).
-   Only styling/layout/color keys get saved & applied; user content stays individual. ── */
+/* ── Keys that should never travel inside reusable/shared backups. */
+const SECRET_CONFIG_KEYS = new Set([
+  'spotify_access_token',
+  'spotify_refresh_token',
+  'spotify_expires_at',
+  'youtubeApiKey',
+  'se_jwt_token',
+  'accessToken',
+  'refreshToken',
+  'apiKey',
+  'token',
+  'secret',
+]);
+
+const RUNTIME_CONFIG_KEYS = new Set([
+  'spinning',
+  'picking',
+  'winner',
+  'spinningWinner',
+  '_openedAt',
+]);
+
+/* ── Legacy style-preset config keys to SKIP (old presets were style/layout only). ── */
 const USER_DATA_KEYS = {
   stats:              ['totalBet', 'totalWin', 'highestWin', 'highestMulti', 'sessionProfit', 'currency'],
   bonus_hunt:         ['bonuses', 'huntActive', 'currency', 'startMoney', 'targetMoney', 'stopLoss', 'showStatistics', 'animatedTracker', 'bonusOpening'],
@@ -29,24 +50,84 @@ const USER_DATA_KEYS = {
   bonus_buys:         ['slotName', 'provider', 'imageUrl', 'bonuses', 'startMoney', 'betCost', 'plannedBonuses', 'sessionNumber'],
 };
 
+function isSensitiveKey(key) {
+  const normalized = String(key || '').toLowerCase();
+  return SECRET_CONFIG_KEYS.has(key) || RUNTIME_CONFIG_KEYS.has(key)
+    || normalized.includes('token')
+    || normalized.includes('secret')
+    || normalized.includes('apikey')
+    || normalized.includes('api_key');
+}
+
+function sanitizeConfigForBackup(config = {}) {
+  const clean = {};
+  for (const [key, value] of Object.entries(config || {})) {
+    if (isSensitiveKey(key)) continue;
+    clean[key] = value;
+  }
+  return clean;
+}
+
 /** Strip user-data keys from a widget config, keeping only styling/layout */
 function stripUserData(widgetType, config) {
   const skip = new Set(USER_DATA_KEYS[widgetType] || []);
   const clean = {};
   for (const [key, value] of Object.entries(config || {})) {
-    if (!skip.has(key)) clean[key] = value;
+    if (!skip.has(key) && !isSensitiveKey(key)) clean[key] = value;
   }
   return clean;
 }
 
+function mergeFullBackupConfig(existingConfig = {}, backupConfig = {}) {
+  const merged = { ...backupConfig };
+  for (const [key, value] of Object.entries(existingConfig)) {
+    if (isSensitiveKey(key)) merged[key] = value;
+  }
+  return merged;
+}
+
 /** Merge preset config into existing config — keep user data, apply styling only */
-function mergePresetConfig(widgetType, existingConfig, presetConfig) {
+function mergePresetConfig(widgetType, existingConfig = {}, presetConfig = {}) {
   const skip = new Set(USER_DATA_KEYS[widgetType] || []);
-  const merged = { ...(existingConfig || {}) };
-  for (const [key, value] of Object.entries(presetConfig || {})) {
+  const merged = { ...existingConfig };
+  for (const [key, value] of Object.entries(presetConfig)) {
     if (!skip.has(key)) merged[key] = value;
   }
   return merged;
+}
+
+function buildPresetWidgetPayload(widget, snap, isFullBackup) {
+  const config = isFullBackup
+    ? mergeFullBackupConfig(widget.config, snap.config)
+    : mergePresetConfig(widget.widget_type, widget.config, snap.config);
+
+  return {
+    ...widget,
+    config,
+    is_visible: snap.is_visible,
+    position_x: snap.position_x,
+    position_y: snap.position_y,
+    width: snap.width,
+    height: snap.height,
+    z_index: snap.z_index,
+    animation: snap.animation,
+  };
+}
+
+function findPresetTarget(widgets, snap, claimed) {
+  return widgets.find(w => w.id === snap.id && !claimed.has(w.id))
+    || widgets.find(w => w.widget_type === snap.widget_type && !claimed.has(w.id));
+}
+
+function sanitizePresetForSharing(preset) {
+  return {
+    ...preset,
+    snapshot: (preset?.snapshot || []).map(snap => ({
+      ...snap,
+      config: stripUserData(snap.widget_type, snap.config || {}),
+    })),
+    fullBackup: false,
+  };
 }
 
 export default function usePresets({ user, isAdmin, overlayState, updateState, widgets, saveWidget, addWidget }) {
@@ -64,7 +145,8 @@ export default function usePresets({ user, isAdmin, overlayState, updateState, w
   const sharePreset = useCallback(async (preset) => {
     if (!user || !isAdmin) return;
     try {
-      await saveSharedPreset(preset.name, preset.snapshot, user.id);
+      const safePreset = sanitizePresetForSharing(preset);
+      await saveSharedPreset(safePreset.name, safePreset.snapshot, user.id);
       const refreshed = await getSharedPresets();
       setSharedPresets(refreshed);
       setPresetMsg(`"${preset.name}" shared globally!`);
@@ -100,7 +182,7 @@ export default function usePresets({ user, isAdmin, overlayState, updateState, w
       id: w.id,
       widget_type: w.widget_type,
       label: w.label,
-      config: stripUserData(w.widget_type, w.config),
+      config: sanitizeConfigForBackup(w.config),
       is_visible: w.is_visible,
       position_x: w.position_x,
       position_y: w.position_y,
@@ -109,7 +191,7 @@ export default function usePresets({ user, isAdmin, overlayState, updateState, w
       z_index: w.z_index,
       animation: w.animation,
     }));
-    const entry = { name, snapshot, savedAt: Date.now() };
+    const entry = { name, snapshot, savedAt: Date.now(), fullBackup: true, version: 2 };
     const existing = [...globalPresets];
     const idx = existing.findIndex(p => p.name === name);
     const updated = idx >= 0
@@ -123,49 +205,22 @@ export default function usePresets({ user, isAdmin, overlayState, updateState, w
 
   const loadGlobalPreset = useCallback(async (preset) => {
     if (!preset?.snapshot) return;
+    const isFullBackup = preset.fullBackup === true;
 
     // Track which local widgets have been claimed so we don't double-match
     const claimed = new Set();
 
     for (const snap of preset.snapshot) {
-      // 1) Try exact id match (same user reloading their own preset)
-      let target = widgets.find(w => w.id === snap.id && !claimed.has(w.id));
-
-      // 2) Fall back to widget_type match (different user loading shared preset)
-      if (!target) {
-        target = widgets.find(
-          w => w.widget_type === snap.widget_type && !claimed.has(w.id)
-        );
-      }
+      const target = findPresetTarget(widgets, snap, claimed);
 
       if (target) {
         claimed.add(target.id);
-        await saveWidget({
-          ...target,
-          config: mergePresetConfig(target.widget_type, target.config, snap.config),
-          is_visible: snap.is_visible,
-          position_x: snap.position_x,
-          position_y: snap.position_y,
-          width: snap.width,
-          height: snap.height,
-          z_index: snap.z_index,
-          animation: snap.animation,
-        });
+        await saveWidget(buildPresetWidgetPayload(target, snap, isFullBackup));
       } else {
         // 3) Widget type doesn't exist yet — create it with merged config
         const created = await addWidget(snap.widget_type, {});
         if (created) {
-          await saveWidget({
-            ...created,
-            config: mergePresetConfig(created.widget_type, created.config, snap.config),
-            is_visible: snap.is_visible,
-            position_x: snap.position_x,
-            position_y: snap.position_y,
-            width: snap.width,
-            height: snap.height,
-            z_index: snap.z_index,
-            animation: snap.animation,
-          });
+          await saveWidget(buildPresetWidgetPayload(created, snap, isFullBackup));
         }
       }
     }

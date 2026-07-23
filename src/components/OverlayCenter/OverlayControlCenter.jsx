@@ -706,7 +706,7 @@ function QuickSettings({ isAdmin }) {
   const settings = [
     { title: 'Appearance', description: 'Canvas, colours and global theme.', to: '/overlay-center/appearance', icon: Palette },
     { title: 'Integrations', description: 'Connect chat, points and music.', to: '/overlay-center/integrations', icon: Link2 },
-    { title: 'Presets', description: 'Save and reuse overlay layouts.', to: '/overlay-center/presets', icon: SlidersHorizontal },
+    { title: 'Widget Library', description: 'Save and restore full widget builds.', to: '/overlay-center/presets', icon: SlidersHorizontal },
   ];
 
   if (isAdmin) {

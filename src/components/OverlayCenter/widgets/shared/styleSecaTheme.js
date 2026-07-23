@@ -1,15 +1,15 @@
 export const STYLE_SECA = Object.freeze({
   primary: '#f2b84b',
-  secondary: '#4d7cff',
+  secondary: '#22d3ee',
   surface: '#081434',
-  elevated: 'rgba(16,34,79,0.94)',
-  secondarySurface: 'rgba(21,44,95,0.88)',
-  cardSurface: 'rgba(12,28,66,0.88)',
+  elevated: 'rgba(11,29,72,0.94)',
+  secondarySurface: 'rgba(12,32,78,0.9)',
+  cardSurface: 'rgba(8,26,67,0.9)',
   text: '#f7fbff',
-  muted: '#9db2e3',
+  muted: '#9fb7d8',
   darkText: '#06142e',
-  border: 'rgba(86,132,230,0.42)',
-  glow: 'rgba(69,124,255,0.32)',
+  border: 'rgba(34,211,238,0.46)',
+  glow: 'rgba(34,211,238,0.28)',
   font: "'Rajdhani', 'Barlow Condensed', sans-serif",
 });
 

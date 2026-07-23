@@ -81,23 +81,26 @@ const PresetThumbnail = memo(function PresetThumbnail({ snapshot, theme }) {
 });
 
 /* ─── Preset Card ─── */
+function getPresetDate(preset) {
+  if (preset?.savedAt) return new Date(preset.savedAt);
+  if (preset?.created_at) return new Date(preset.created_at);
+  return null;
+}
+
 function PresetCard({
   preset, type, theme, isAdmin,
   onLoad, onDelete, onShare, onUnshare,
 }) {
   const [hovered, setHovered] = useState(false);
   const name = preset.name || 'Untitled';
-  const date = preset.savedAt
-    ? new Date(preset.savedAt)
-    : preset.created_at
-      ? new Date(preset.created_at)
-      : null;
+  const date = getPresetDate(preset);
   const snapshot = preset.snapshot || [];
   const widgetCount = snapshot.filter(s => s.is_visible !== false).length;
   const widgetTypes = [...new Set(snapshot.map(s => {
     const def = getWidgetDef(s.widget_type);
     return def?.icon || '🧩';
   }))];
+  const backupLabel = preset.fullBackup ? 'Full backup' : 'Style preset';
 
   return (
     <div
@@ -114,6 +117,9 @@ function PresetCard({
         {type === 'personal' && (
           <span className="pl-card__badge pl-card__badge--personal">👤 Mine</span>
         )}
+        {preset.fullBackup && (
+          <span className="pl-card__badge pl-card__badge--backup">Full backup</span>
+        )}
       </div>
 
       {/* Info */}
@@ -127,7 +133,7 @@ function PresetCard({
 
         <div className="pl-card__meta">
           <span className="pl-card__widget-count">
-            {widgetTypes.slice(0, 6).join(' ')} · {widgetCount} widget{widgetCount !== 1 ? 's' : ''}
+            {widgetTypes.slice(0, 6).join(' ')} · {widgetCount} widget{widgetCount !== 1 ? 's' : ''} · {backupLabel}
           </span>
         </div>
 
@@ -214,6 +220,15 @@ export default function PresetLibrary({
     if (onUnsharePreset) onUnsharePreset(id);
   }, [onUnsharePreset]);
 
+  const handleLoadPreset = useCallback((preset) => {
+    const name = preset?.name || 'this saved build';
+    const message = preset?.fullBackup
+      ? `Load "${name}" and restore its saved widget setup? Current widget settings will be replaced, but connected account secrets stay untouched.`
+      : `Load "${name}" and apply its saved widget styles/layout?`;
+    if (typeof window !== 'undefined' && !window.confirm(message)) return;
+    onLoadPreset?.(preset);
+  }, [onLoadPreset]);
+
   const personalCount = (globalPresets || []).length;
   const sharedCount = (sharedPresets || []).length;
   const totalCount = personalCount + sharedCount;
@@ -231,18 +246,18 @@ export default function PresetLibrary({
   }, null);
   const sharedRatio = totalCount > 0 ? Math.round((sharedCount / totalCount) * 100) : 0;
   const pageNote = totalCount > 0
-    ? 'Preview live layout snapshots, keep a clean personal catalog, and promote the strongest presets into the shared gallery when they are stream-ready.'
-    : 'Save the current overlay state to start building a reusable preset library for fast scene swaps and experiments.';
+    ? 'Preview saved widget builds, restore older versions after experiments, and promote sanitized style presets into the shared gallery when they are stream-ready.'
+    : 'Save the current overlay as a full widget backup before big edits, so you can return to a working build if something goes wrong.';
 
   return (
     <div className="pl-page" data-tour="presets-page">
       <div className="pl-page-shell">
       <div className="pl-hero">
         <div className="pl-hero__copy">
-          <span className="pl-hero__eyebrow">Layout Vault</span>
-          <h2 className="pl-hero__title">Preset library</h2>
+          <span className="pl-hero__eyebrow">Widget Backup Vault</span>
+          <h2 className="pl-hero__title">Widget library</h2>
           <p className="pl-hero__subtitle">
-            Save overlay compositions, compare live previews, and switch between personal and shared broadcast setups from one polished gallery.
+            Save full widget builds, compare live previews, and reload stable overlay versions from one polished gallery.
           </p>
           <p className="pl-hero__note">{pageNote}</p>
         </div>
@@ -274,8 +289,8 @@ export default function PresetLibrary({
       {/* Save new preset */}
       <div className="pl-section-heading">
         <div>
-          <span className="pl-section-heading__eyebrow">Save & Snapshot</span>
-          <h3 className="pl-section-heading__title">Capture the current overlay into the preset vault</h3>
+          <span className="pl-section-heading__eyebrow">Save Backup</span>
+          <h3 className="pl-section-heading__title">Capture the current overlay into your widget library</h3>
         </div>
         <span className="pl-section-heading__pill">{totalVisibleWidgets} widgets across all presets</span>
       </div>
@@ -285,7 +300,7 @@ export default function PresetLibrary({
           <input
             className="pl-save-bar__input"
             type="text"
-            placeholder="Preset name…"
+            placeholder="Backup name..."
             value={presetName || ''}
             onChange={e => setPresetName?.(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') onSavePreset?.(); }}
@@ -295,12 +310,12 @@ export default function PresetLibrary({
             onClick={onSavePreset}
             disabled={!(presetName || '').trim() || !widgets?.length}
           >
-            ➕ Save New Preset
+            Save Widget Backup
           </button>
           {presetMsg && <span className="pl-save-bar__msg">{presetMsg}</span>}
         </div>
         <p className="pl-save-card__note">
-          Save the current widget layout exactly as it stands, then reload it later from the gallery or share it globally when you want a default stack for the team.
+          Save the current widget setup, positions, sizes, visibility, and non-secret configuration so you can restore a working build after major edits.
         </p>
       </div>
 
@@ -370,8 +385,8 @@ export default function PresetLibrary({
         <>
           <div className="pl-section-heading pl-section-heading--compact">
             <div>
-              <span className="pl-section-heading__eyebrow">Gallery</span>
-              <h3 className="pl-section-heading__title">Browse visual snapshots and load the right layout in one click</h3>
+              <span className="pl-section-heading__eyebrow">Backup Gallery</span>
+              <h3 className="pl-section-heading__title">Browse saved builds and restore the right version</h3>
             </div>
             <span className="pl-section-heading__pill">{sortBy}</span>
           </div>
@@ -384,7 +399,7 @@ export default function PresetLibrary({
                 type={preset._type}
                 theme={theme}
                 isAdmin={isAdmin}
-                onLoad={onLoadPreset}
+                onLoad={handleLoadPreset}
                 onDelete={preset._type === 'personal' ? handleDeletePersonal : handleDeleteShared}
                 onShare={onSharePreset}
                 onUnshare={onUnsharePreset}
