@@ -684,7 +684,13 @@ function cloneStyleMap(value) {
   return structuredClone(value || {});
 }
 
-function updateWidgetAdvancedCss({ handleConfigChange, prop, value, widget, widgets }) {
+function updateWidgetAdvancedCss({
+  handleConfigChange,
+  prop,
+  value,
+  widget,
+  widgets,
+}) {
   const latest = getLatestWidget(widgets, widget);
   const advancedCSS = { ...latest.config?.advancedCSS };
   if (value === "" || value === undefined) {
@@ -708,21 +714,32 @@ function updateWidgetElementCss({
   elementCSS[selector] = elementCSS[selector] || {};
   if (value === "" || value === undefined) {
     delete elementCSS[selector][prop];
-    if (Object.keys(elementCSS[selector]).length === 0) delete elementCSS[selector];
+    if (Object.keys(elementCSS[selector]).length === 0)
+      delete elementCSS[selector];
   } else {
     elementCSS[selector][prop] = value;
   }
   handleConfigChange(latest, { ...latest.config, elementCSS });
 }
 
-function removeWidgetElementTarget({ handleConfigChange, selector, widget, widgets }) {
+function removeWidgetElementTarget({
+  handleConfigChange,
+  selector,
+  widget,
+  widgets,
+}) {
   const latest = getLatestWidget(widgets, widget);
   const elementCSS = cloneStyleMap(latest.config?.elementCSS);
   delete elementCSS[selector];
   handleConfigChange(latest, { ...latest.config, elementCSS });
 }
 
-function clearInitialElementTarget({ handleConfigChange, selector, widget, widgets }) {
+function clearInitialElementTarget({
+  handleConfigChange,
+  selector,
+  widget,
+  widgets,
+}) {
   const latest = getLatestWidget(widgets, widget);
   const elementCSS = cloneStyleMap(latest.config?.elementCSS);
   if (!elementCSS[selector]?._init) return;
@@ -744,8 +761,9 @@ function getAvailableElementTargetGroups(targets, activeTargets) {
 
 function getElementTargetLabel(targets, selector) {
   return (
-    targets.flatMap((group) => group.items).find((item) => item.sel === selector)
-      ?.label || selector
+    targets
+      .flatMap((group) => group.items)
+      .find((item) => item.sel === selector)?.label || selector
   );
 }
 
@@ -797,15 +815,18 @@ function AdvancedCssControl({ prop, value, onChange }) {
     );
   }
   if (prop.type === "presets") {
-    const selectedValue = value && prop.opts.includes(value) ? value : "__custom";
-    const customLabel = value && !prop.opts.includes(value) ? value : "— pick —";
+    const selectedValue =
+      value && prop.opts.includes(value) ? value : "__custom";
+    const customLabel =
+      value && !prop.opts.includes(value) ? value : "— pick —";
     return (
       <div className="wm-ctx-adv-combo">
         <select
           className="wm-ctx-adv-combo-select"
           value={selectedValue}
           onChange={(event) => {
-            if (event.target.value !== "__custom") onChange(prop.p, event.target.value);
+            if (event.target.value !== "__custom")
+              onChange(prop.p, event.target.value);
           }}
         >
           <option value="__custom">{customLabel}</option>
@@ -924,8 +945,10 @@ function ElementStyleControl({ prop, selector, value, onChange }) {
     );
   }
   if (prop.type === "presets") {
-    const selectedValue = value && prop.opts.includes(value) ? value : "__custom";
-    const customLabel = value && !prop.opts.includes(value) ? value : "— pick —";
+    const selectedValue =
+      value && prop.opts.includes(value) ? value : "__custom";
+    const customLabel =
+      value && !prop.opts.includes(value) ? value : "— pick —";
     return (
       <div className="wm-ctx-adv-combo">
         <select
@@ -1144,7 +1167,18 @@ const ELEMENT_STYLE_PROPS = [
     p: "font-weight",
     label: "Weight",
     type: "select",
-    opts: ["inherit", "100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    opts: [
+      "inherit",
+      "100",
+      "200",
+      "300",
+      "400",
+      "500",
+      "600",
+      "700",
+      "800",
+      "900",
+    ],
   },
   { p: "color", label: "Color", type: "color" },
   { p: "background", label: "BG", type: "color" },
@@ -1188,7 +1222,12 @@ const ELEMENT_STYLE_PROPS = [
     p: "border",
     label: "Border",
     type: "presets",
-    opts: ["none", "1px solid #fff", "1px solid rgba(255,255,255,0.15)", "2px solid #94a3b8"],
+    opts: [
+      "none",
+      "1px solid #fff",
+      "1px solid rgba(255,255,255,0.15)",
+      "2px solid #94a3b8",
+    ],
   },
   {
     p: "opacity",
@@ -1203,7 +1242,12 @@ function resetWidgetElementStyles({ handleConfigChange, widget, widgets }) {
   handleConfigChange(latest, { ...latest.config, elementCSS: {} });
 }
 
-function ElementStylesEditor({ handleConfigChange, setCtxHoverSel, widget, widgets }) {
+function ElementStylesEditor({
+  handleConfigChange,
+  setCtxHoverSel,
+  widget,
+  widgets,
+}) {
   const elCSS = widget.config?.elementCSS || {};
   const activeTargets = Object.keys(elCSS);
   const availableTargetGroups = getAvailableElementTargetGroups(
@@ -1221,12 +1265,22 @@ function ElementStylesEditor({ handleConfigChange, setCtxHoverSel, widget, widge
     });
   };
   const removeTarget = (selector) => {
-    removeWidgetElementTarget({ handleConfigChange, selector, widget, widgets });
+    removeWidgetElementTarget({
+      handleConfigChange,
+      selector,
+      widget,
+      widgets,
+    });
   };
   const addTarget = (selector) => {
     setElementValue(selector, "_init", "1");
     setCtxHoverSel(null);
-    scheduleClearInitialElementTarget({ handleConfigChange, selector, widget, widgets });
+    scheduleClearInitialElementTarget({
+      handleConfigChange,
+      selector,
+      widget,
+      widgets,
+    });
   };
   const addCustomTarget = () => {
     const selector = prompt(
@@ -1241,7 +1295,9 @@ function ElementStylesEditor({ handleConfigChange, setCtxHoverSel, widget, widge
     <>
       <div className="wm-ctx-els-add">
         <details className="wm-ctx-els-dropdown">
-          <summary className="wm-ctx-els-target-select">＋ Add element target…</summary>
+          <summary className="wm-ctx-els-target-select">
+            ＋ Add element target…
+          </summary>
           <div
             className="wm-ctx-els-dropdown-list"
             onMouseLeave={() => setCtxHoverSel(null)}
@@ -1293,8 +1349,17 @@ function ElementStylesEditor({ handleConfigChange, setCtxHoverSel, widget, widge
   );
 }
 
-function getActiveTileClassName({ isContainerChild, isDragOver, isDragging, isVisible }) {
-  const classes = ["wm-tile", "wm-tile--active", isVisible ? "wm-tile--on" : "wm-tile--paused"];
+function getActiveTileClassName({
+  isContainerChild,
+  isDragOver,
+  isDragging,
+  isVisible,
+}) {
+  const classes = [
+    "wm-tile",
+    "wm-tile--active",
+    isVisible ? "wm-tile--on" : "wm-tile--paused",
+  ];
   if (isDragOver) classes.push("wm-tile--drag-over");
   if (isDragging) classes.push("wm-tile--dragging");
   if (isContainerChild) classes.push("wm-tile--in-container");
@@ -2125,9 +2190,7 @@ export default function WidgetManager({
                       aria-label="Widget quick settings"
                     >
                       {/* Header — draggable */}
-                      <div
-                        className="wm-ctx-header"
-                      >
+                      <div className="wm-ctx-header">
                         <button
                           type="button"
                           className="wm-ctx-header-drag"
@@ -3321,7 +3384,10 @@ export default function WidgetManager({
         {widgets.length > 0 && (
           <div className="wm-section" data-tour="active-widgets">
             <h3 className="wm-section-title wm-section-title--active">
-              <span className="wm-section-dot wm-section-dot--active" aria-hidden="true" />
+              <span
+                className="wm-section-dot wm-section-dot--active"
+                aria-hidden="true"
+              />
               {"Active Widgets"}
               <span className="wm-section-count">{widgets.length}</span>
               <span className="wm-layer-hint">← back · front →</span>
@@ -3493,7 +3559,10 @@ export default function WidgetManager({
         {inactiveDefs.length > 0 && (
           <div className="wm-section" data-tour="available-widgets">
             <h3 className="wm-section-title wm-section-title--inactive">
-              <span className="wm-section-dot wm-section-dot--inactive" aria-hidden="true" />
+              <span
+                className="wm-section-dot wm-section-dot--inactive"
+                aria-hidden="true"
+              />
               {"Available Widgets"}
               <span className="wm-section-count">
                 {filteredInactiveDefs.length}/{inactiveDefs.length}
