@@ -141,6 +141,14 @@ function stripStyleSecaLayout(style = {}) {
   );
 }
 
+function styleSecaOr(enabled, styleSecaValue, regularValue) {
+  return enabled ? styleSecaValue : regularValue;
+}
+
+function scaledFontSize(baseFontSize, scale, minimum = 0) {
+  return Math.max(minimum, Math.round(baseFontSize * scale));
+}
+
 function getExplicitAppearanceConfig(config = {}) {
   return Object.prototype.hasOwnProperty.call(
     config,
@@ -234,6 +242,46 @@ function BetsWidget({ config, allWidgets }) {
   const numberFont = c.numberFont || font;
   const baseFontSize = Number(c.fontSize) || 14;
   const headingScale = Number(c.headingScale) || 1.16;
+  const compactHeadingScale = styleSecaOr(
+    isStyleSeca,
+    Math.min(headingScale, 0.96),
+    headingScale,
+  );
+  const titleFontSize = Math.round(baseFontSize * compactHeadingScale);
+  const statusFontSize = scaledFontSize(
+    baseFontSize,
+    styleSecaOr(isStyleSeca, 0.66, 0.76),
+    9,
+  );
+  const statFontSize = scaledFontSize(
+    baseFontSize,
+    styleSecaOr(isStyleSeca, 0.78, 0.92),
+    10,
+  );
+  const footerFontSize = scaledFontSize(
+    baseFontSize,
+    styleSecaOr(isStyleSeca, 0.6, 0.76),
+    8,
+  );
+  const cardNumberFontSize = scaledFontSize(
+    baseFontSize,
+    styleSecaOr(isStyleSeca, 0.72, 0.92),
+    10,
+  );
+  const cardRangeFontSize = scaledFontSize(baseFontSize, 0.8, 10);
+  const cardRangeFontCss = styleSecaOr(
+    isStyleSeca,
+    `${cardRangeFontSize}px`,
+    `${baseFontSize}px`,
+  );
+  const cardPercentageFontSize = Math.round(
+    baseFontSize * styleSecaOr(isStyleSeca, 1.02, 1.2),
+  );
+  const cardCommandFontSize = scaledFontSize(
+    baseFontSize,
+    styleSecaOr(isStyleSeca, 0.56, 0.7),
+    8,
+  );
   const defaultLineHeight = Number(c.lineHeight) || 1.2;
   const defaultLetterSpacing =
     typeof c.letterSpacing === "number"
@@ -502,7 +550,7 @@ function BetsWidget({ config, allWidgets }) {
     {
       color: headerText,
       fontFamily: headingFont,
-      fontSize: `${Math.round(baseFontSize * headingScale)}px`,
+      fontSize: `${titleFontSize}px`,
       fontWeight: 800,
       lineHeight: defaultLineHeight,
       letterSpacing: defaultLetterSpacing,
@@ -529,7 +577,7 @@ function BetsWidget({ config, allWidgets }) {
       background: timerBg,
       color: timerText,
       fontFamily: font,
-      fontSize: `${Math.max(10, Math.round(baseFontSize * 0.76))}px`,
+      fontSize: `${statusFontSize}px`,
       fontWeight: 700,
       lineHeight: 1,
       letterSpacing: defaultLetterSpacing,
@@ -544,7 +592,7 @@ function BetsWidget({ config, allWidgets }) {
     {
       color: headerText,
       fontFamily: numberFont,
-      fontSize: `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
+      fontSize: `${statFontSize}px`,
       fontWeight: 800,
       lineHeight: 1,
       letterSpacing: defaultLetterSpacing,
@@ -578,7 +626,7 @@ function BetsWidget({ config, allWidgets }) {
       background: "rgba(0,0,0,0.12)",
       color: "rgba(255,255,255,0.45)",
       fontFamily: font,
-      fontSize: `${Math.max(10, Math.round(baseFontSize * 0.76))}px`,
+      fontSize: `${footerFontSize}px`,
       lineHeight: defaultLineHeight,
       letterSpacing: defaultLetterSpacing,
       textTransform: defaultTextTransform,
@@ -906,7 +954,7 @@ function BetsWidget({ config, allWidgets }) {
                   stateId,
                 ),
                 fontFamily: numberFont,
-                fontSize: `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
+                fontSize: `${cardNumberFontSize}px`,
                 fontWeight: 800,
               },
               "optionNumber",
@@ -918,7 +966,7 @@ function BetsWidget({ config, allWidgets }) {
               {
                 color: optionText,
                 fontFamily: font,
-                fontSize: `${baseFontSize}px`,
+                fontSize: cardRangeFontCss,
                 fontWeight: 700,
                 lineHeight: defaultLineHeight,
                 letterSpacing: defaultLetterSpacing,
@@ -934,7 +982,7 @@ function BetsWidget({ config, allWidgets }) {
               {
                 color: isStyleSeca ? styleSecaText : optColor || accentColor,
                 fontFamily: numberFont,
-                fontSize: `${Math.round(baseFontSize * 1.2)}px`,
+                fontSize: `${cardPercentageFontSize}px`,
                 fontWeight: 900,
                 lineHeight: 1,
                 letterSpacing: defaultLetterSpacing,
@@ -950,7 +998,7 @@ function BetsWidget({ config, allWidgets }) {
                   ? "rgba(248,251,255,0.9)"
                   : "rgba(255,255,255,0.62)",
                 fontFamily: font,
-                fontSize: `${Math.max(9, Math.round(baseFontSize * 0.7))}px`,
+                fontSize: `${cardCommandFontSize}px`,
                 fontWeight: 700,
                 lineHeight: 1,
                 letterSpacing: defaultLetterSpacing,
