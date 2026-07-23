@@ -396,19 +396,6 @@ export default function AdminPanel() {
     });
   };
 
-          .insert([{ ...offerFormData, created_by: (await supabase.auth.getUser()).data.user?.id }]);
-
-        if (error) throw error;
-        setSuccess('Offer created successfully!');
-      }
-
-      closeOfferModal();
-      loadOffers();
-    } catch (err) {
-      setError('Failed to save offer: ' + err.message);
-    }
-  };
-
   const deleteOffer = async (offerId) => {
     setError('');
     setSuccess('');
