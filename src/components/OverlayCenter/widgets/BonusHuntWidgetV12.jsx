@@ -96,6 +96,29 @@ function splitStyleByKeys(style, keys) {
   return [picked, omitted];
 }
 
+const STRUCTURAL_LAYOUT_STYLE_KEYS = new Set([
+  "display",
+  "flex",
+  "flexBasis",
+  "flexDirection",
+  "flexGrow",
+  "flexShrink",
+  "height",
+  "maxHeight",
+  "minHeight",
+  "overflow",
+  "position",
+  "width",
+]);
+
+function omitStyleKeys(style, keys) {
+  const next = { ...style };
+  keys.forEach((key) => {
+    delete next[key];
+  });
+  return next;
+}
+
 export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer split should be handled as a dedicated visual refactor
   config,
   theme,
@@ -454,15 +477,22 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
     "footerTotalValue",
     "footer",
   );
+  const slotListCardStyle = omitStyleKeys(
+    slotListContainerStyle,
+    STRUCTURAL_LAYOUT_STYLE_KEYS,
+  );
+  const slotRowStyle = (stateId = "default") =>
+    omitStyleKeys(
+      scopedStyle("slotRow", {}, stateId),
+      STRUCTURAL_LAYOUT_STYLE_KEYS,
+    );
 
   const currentBonus = bonuses.find((b) => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
+  const huntComplete = !!c.bonusOpening && bonuses.length > 0 && currentIndex < 0;
 
   const rootStyle = {
-    fontFamily,
-    width: "100%",
-    height: "100%",
     ...scopedStyle("container", {
       fontFamily,
       fontSize: `${fontSize}px`,
@@ -475,6 +505,12 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
       ),
       color: textColor,
     }),
+    fontFamily,
+    width: "100%",
+    height: "100%",
+    minHeight: 0,
+    display: "flex",
+    flexDirection: "column",
     overflow: "hidden",
     filter:
       brightness !== 100 || contrast !== 100 || saturation !== 100
@@ -849,7 +885,7 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
           className="bht-card bht-list-card"
           {...partAttrs("slotListContainer")}
           style={{
-            ...slotListContainerStyle,
+            ...slotListCardStyle,
             flex:
               srVisible && srAnim !== "slide-down" && srAnim !== "shrink-list"
                 ? "2.65 1 0"
@@ -863,7 +899,7 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
         >
           {/* ── 3D Animated Card Carousel ── */}
           <div
-            className={`bht-stack${!isOpening ? " bht-stack--spinning" : ""}`}
+            className={`bht-stack${!isOpening && !huntComplete ? " bht-stack--spinning" : ""}${huntComplete ? " bht-stack--complete" : ""}`}
             {...partAttrs("slotCarouselContainer")}
             style={slotCarouselContainerStyle}
           >
@@ -875,10 +911,15 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
-              const ci =
-                isOpening && currentIndex >= 0
-                  ? currentIndex
-                  : carouselIdx % total;
+              let ci = carouselIdx % total;
+              if (isOpening && currentIndex >= 0) ci = currentIndex;
+              if (huntComplete) {
+                ci = bonuses.reduce(
+                  (lastOpenedIndex, bonus, bonusIndex) =>
+                    bonus.opened ? bonusIndex : lastOpenedIndex,
+                  0,
+                );
+              }
               const posMap = {
                 "-2": "bht-stack-card--far-left",
                 "-1": "bht-stack-card--left",
@@ -890,7 +931,11 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
                 const rawDist = (((bIdx - ci) % total) + total) % total;
                 const dist =
                   rawDist <= Math.floor(total / 2) ? rawDist : rawDist - total;
-                const posCls = posMap[String(dist)] || "bht-stack-card--hidden";
+                let posCls = posMap[String(dist)] || "bht-stack-card--hidden";
+                if (huntComplete) {
+                  posCls =
+                    bIdx === ci ? posMap[0] : "bht-stack-card--hidden";
+                }
                 return (
                   <div
                     key={`stk-${bonus.id || bonus.slotName || bonus.slot?.name || bIdx}`}
@@ -998,7 +1043,7 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
                           key={`lr-${bonus.id || i}-o`}
                           className={`bht-list-row${i === currentIndex ? " bht-list-row--active" : ""}${bonus.opened ? " bht-list-row--opened" : ""}${bonus.isSuperBonus ? " bht-list-row--super" : ""}${bonus.isExtremeBonus || bonus.isExtreme ? " bht-list-row--extreme" : ""}`}
                           {...partAttrs("slotRow", stateId)}
-                          style={scopedStyle("slotRow", {}, stateId)}
+                          style={slotRowStyle(stateId)}
                         >
                           <span
                             className="bht-list-row-idx"
@@ -1115,7 +1160,7 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
                     key={key}
                     className={`bht-list-row${idx === currentIndex ? " bht-list-row--active" : ""}${bonus.opened ? " bht-list-row--opened" : ""}${bonus.isSuperBonus ? " bht-list-row--super" : ""}${bonus.isExtremeBonus || bonus.isExtreme ? " bht-list-row--extreme" : ""}`}
                     {...partAttrs("slotRow", stateId)}
-                    style={scopedStyle("slotRow", {}, stateId)}
+                    style={slotRowStyle(stateId)}
                   >
                     <span
                       className="bht-list-row-idx"
