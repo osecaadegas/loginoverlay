@@ -41,8 +41,8 @@ function clamp(value, min, max) {
 
 function escapeCssAttr(value) {
   return String(value || "")
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"');
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll('"', String.raw`\"`);
 }
 
 function buildElementSelectionCss(
@@ -89,6 +89,342 @@ function isWidgetHighlighted(widget, selectedTarget, selectedWidgetId) {
   return false;
 }
 
+function createDragEndHandler({ draggingRef, didMove, moveToEvent, onMove }) {
+  return function onPointerUp(upEvent) {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onPointerUp);
+    if (didMove()) moveToEvent(upEvent, true);
+    window.setTimeout(() => {
+      draggingRef.current = false;
+    }, 0);
+  };
+}
+
+function getPreviewSlotCursor({ isBg, onMoveWidget, selectMode }) {
+  if (isBg) return undefined;
+  if (onMoveWidget) return "grab";
+  if (selectMode) return "crosshair";
+  return undefined;
+}
+
+function getFocusCoordinate(focusWidget, axis) {
+  if (!focusWidget || focusWidget.widget_type === "background") return 0;
+  const key = axis === "x" ? "position_x" : "position_y";
+  return Number(focusWidget[key]) || 0;
+}
+
+function getViewportDimension({
+  canvasSize,
+  contextFocusActive,
+  fitWidgetActive,
+  focusMargin,
+  focusSize,
+  minimumSize,
+}) {
+  if (fitWidgetActive) return focusSize;
+  if (!contextFocusActive) return canvasSize;
+  return Math.min(
+    canvasSize,
+    Math.max(focusSize + focusMargin * 2, minimumSize),
+  );
+}
+
+function getPreviewMaxScale({ contextFocusActive, fitWidgetActive }) {
+  if (fitWidgetActive) return 2.5;
+  if (contextFocusActive) return 1.75;
+  return 0.65;
+}
+
+function getPreviewBackground(previewBackground) {
+  if (previewBackground === "light") return "#f8fafc";
+  if (previewBackground === "green") return "#00b140";
+  if (previewBackground === "checkerboard") {
+    return "linear-gradient(45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,0.22) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,0.22) 75%)";
+  }
+  return "#020617";
+}
+
+function startPreviewSlotResize({
+  event,
+  onResizeWidget,
+  scale,
+  slotSize,
+  widget,
+}) {
+  event.preventDefault();
+  event.stopPropagation();
+  const startX = event.clientX;
+  const startY = event.clientY;
+  const startWidth = slotSize.width;
+  const startHeight = slotSize.height;
+  const divisor = Math.max(0.1, Number(scale) || 1);
+  const onMove = (moveEvent) => {
+    const width = clamp(
+      Math.round(startWidth + (moveEvent.clientX - startX) / divisor),
+      80,
+      3840,
+    );
+    const height = clamp(
+      Math.round(startHeight + (moveEvent.clientY - startY) / divisor),
+      50,
+      2160,
+    );
+    onResizeWidget?.(widget, { width, height });
+  };
+  const onUp = () => {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+  };
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp, { once: true });
+}
+
+function selectPreviewElement({
+  event,
+  onSelectElement,
+  onSelectWidget,
+  widget,
+}) {
+  event.preventDefault();
+  event.stopPropagation();
+  const elementNode = event.target?.closest?.("[data-widget-element]");
+  const elementInsideWidget =
+    elementNode && event.currentTarget.contains(elementNode);
+  if (elementInsideWidget && onSelectElement) {
+    onSelectElement?.({
+      widget,
+      appearanceId: elementNode.dataset?.appearanceId || "",
+      elementId: elementNode.dataset?.widgetElement,
+      stateId: elementNode.dataset?.widgetState || "default",
+    });
+    return;
+  }
+  onSelectWidget?.(widget);
+}
+
+function getMovableElementId({ clickedElementId, selectedElementId }) {
+  if (clickedElementId && clickedElementId !== "container") {
+    return clickedElementId;
+  }
+  if (selectedElementId && selectedElementId !== "container") {
+    return selectedElementId;
+  }
+  return "";
+}
+
+function startPreviewElementMove({
+  canvasHeight,
+  canvasWidth,
+  cfg,
+  draggingRef,
+  elementId,
+  event,
+  highlighted,
+  onMoveElement,
+  onSelectElement,
+  scale,
+  slotSize,
+  widget,
+}) {
+  if (
+    !onMoveElement ||
+    !highlighted ||
+    !elementId ||
+    elementId === "container"
+  ) {
+    return false;
+  }
+  if (event.button !== 0) return false;
+  event.preventDefault();
+  event.stopPropagation();
+  const appearanceNode = event.target?.closest?.("[data-widget-element]");
+  const stateId = appearanceNode?.dataset?.widgetState || "default";
+  onSelectElement?.({
+    widget,
+    appearanceId: appearanceNode?.dataset?.appearanceId || "",
+    elementId,
+    stateId,
+  });
+  const startX = event.clientX;
+  const startY = event.clientY;
+  const startOffset = getElementOffsets(cfg, elementId);
+  const divisor = Math.max(0.1, Number(scale) || 1);
+  let hasMoved = false;
+  draggingRef.current = false;
+  const moveToEvent = (moveEvent, commit = false) => {
+    const maxOffsetX = Math.max(canvasWidth, slotSize.width * 2);
+    const maxOffsetY = Math.max(canvasHeight, slotSize.height * 2);
+    const nextOffsetX = clamp(
+      Math.round(startOffset.x + (moveEvent.clientX - startX) / divisor),
+      -maxOffsetX,
+      maxOffsetX,
+    );
+    const nextOffsetY = clamp(
+      Math.round(startOffset.y + (moveEvent.clientY - startY) / divisor),
+      -maxOffsetY,
+      maxOffsetY,
+    );
+    if (
+      Math.abs(nextOffsetX - startOffset.x) > 2 ||
+      Math.abs(nextOffsetY - startOffset.y) > 2
+    ) {
+      draggingRef.current = true;
+      hasMoved = true;
+    }
+    onMoveElement(
+      widget,
+      { elementId, offsetX: nextOffsetX, offsetY: nextOffsetY, stateId },
+      { commit },
+    );
+  };
+  const onMove = (moveEvent) => moveToEvent(moveEvent, false);
+  const onUp = createDragEndHandler({
+    draggingRef,
+    didMove: () => hasMoved,
+    moveToEvent,
+    onMove,
+  });
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp, { once: true });
+  return true;
+}
+
+function startPreviewWidgetMove({
+  canvasHeight,
+  canvasWidth,
+  draggingRef,
+  event,
+  onMoveWidget,
+  scale,
+  slotSize,
+  widget,
+}) {
+  event.preventDefault();
+  event.stopPropagation();
+  const startX = event.clientX;
+  const startY = event.clientY;
+  const startLeft = Number(widget.position_x) || 0;
+  const startTop = Number(widget.position_y) || 0;
+  const divisor = Math.max(0.1, Number(scale) || 1);
+  let hasMoved = false;
+  draggingRef.current = false;
+  const moveToEvent = (moveEvent, commit = false) => {
+    const nextX = clamp(
+      Math.round(startLeft + (moveEvent.clientX - startX) / divisor),
+      0,
+      Math.max(0, canvasWidth - slotSize.width),
+    );
+    const nextY = clamp(
+      Math.round(startTop + (moveEvent.clientY - startY) / divisor),
+      0,
+      Math.max(0, canvasHeight - slotSize.height),
+    );
+    if (Math.abs(nextX - startLeft) > 2 || Math.abs(nextY - startTop) > 2) {
+      draggingRef.current = true;
+      hasMoved = true;
+    }
+    onMoveWidget(widget, { x: nextX, y: nextY }, { commit });
+  };
+  const onMove = (moveEvent) => moveToEvent(moveEvent, false);
+  const onUp = createDragEndHandler({
+    draggingRef,
+    didMove: () => hasMoved,
+    moveToEvent,
+    onMove,
+  });
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp, { once: true });
+}
+
+function getPreviewSlotViewportStyle({
+  isBg,
+  isNavbar,
+  needsClip,
+  needsVisibleOverflow,
+  widgetRadius,
+}) {
+  const clipContent = !isBg && !isNavbar && needsClip;
+  const overflow =
+    isBg || isNavbar || needsVisibleOverflow || needsClip
+      ? "visible"
+      : "hidden";
+  return {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    overflow,
+    ...(clipContent
+      ? { clipPath: `inset(0 round ${widgetRadius}px)`, overflow: "hidden" }
+      : {}),
+  };
+}
+
+function getPreviewSlotClassName({ dimmed, highlighted }) {
+  return (
+    [
+      highlighted ? "oc-preview-selected-widget" : "",
+      dimmed ? "oc-preview-dimmed-widget" : "",
+    ]
+      .filter(Boolean)
+      .join(" ") || undefined
+  );
+}
+
+function getPreviewSelectionCss({
+  hiddenElementIds,
+  highlighted,
+  selectMode,
+  selectedElementId,
+  widgetId,
+}) {
+  if (!selectMode || !highlighted) return "";
+  return buildElementSelectionCss(
+    widgetId,
+    selectedElementId,
+    hiddenElementIds,
+  );
+}
+
+function getAppearanceVersion(config = {}) {
+  const schemaVersion = config.__appearanceV2?.schemaVersion;
+  return schemaVersion ? `v2-${schemaVersion}` : undefined;
+}
+
+function getPreviewSlotStyle({
+  canvasHeight,
+  canvasWidth,
+  cfg,
+  dimmed,
+  hasShadow,
+  isBg,
+  onMoveWidget,
+  scale,
+  selectMode,
+  shadowIntensity,
+  shadowSize,
+  slotSize,
+  widget,
+}) {
+  return {
+    position: "absolute",
+    left: isBg ? 0 : widget.position_x,
+    top: isBg ? 0 : widget.position_y,
+    width: isBg ? canvasWidth : slotSize.width,
+    height: isBg ? canvasHeight : slotSize.height,
+    zIndex: widget.z_index || 1,
+    overflow: "visible",
+    cursor: getPreviewSlotCursor({ isBg, onMoveWidget, selectMode }),
+    opacity: dimmed ? 0.24 : 1,
+    transition: "opacity 140ms ease",
+    ...buildWidgetAppearanceVars(cfg),
+    ...(hasShadow
+      ? {
+          filter: `drop-shadow(0 ${Math.round(shadowSize * 0.35)}px ${Math.round(shadowSize * 0.7)}px rgba(0,0,0,${(shadowIntensity / 100).toFixed(2)}))`,
+        }
+      : {}),
+  };
+}
+
 const PreviewSlot = memo(function PreviewSlot({
   widget,
   theme,
@@ -109,9 +445,9 @@ const PreviewSlot = memo(function PreviewSlot({
   onMoveWidget,
   onMoveElement,
 }) {
+  const draggingRef = useRef(false);
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
-  if (!Component) return null;
 
   const isBg = widget.widget_type === "background";
   const cfg = widget.config || {};
@@ -122,122 +458,28 @@ const PreviewSlot = memo(function PreviewSlot({
   const slotBehavior = getWidgetSlotBehavior(widget);
   const { needsVisibleOverflow, needsClip, widgetRadius, isNavbar } =
     slotBehavior;
-  const clipContent = !isBg && !isNavbar && needsClip;
-  const viewportOverflow =
-    isBg || isNavbar || needsVisibleOverflow || needsClip
-      ? "visible"
-      : "hidden";
-  const viewportStyle = {
-    position: "relative",
-    width: "100%",
-    height: "100%",
-    overflow: viewportOverflow,
-    ...(clipContent
-      ? { clipPath: `inset(0 round ${widgetRadius}px)`, overflow: "hidden" }
-      : {}),
-  };
+  const viewportStyle = getPreviewSlotViewportStyle({
+    isBg,
+    isNavbar,
+    needsClip,
+    needsVisibleOverflow,
+    widgetRadius,
+  });
   const highlighted = isWidgetHighlighted(
     widget,
     selectedTarget,
     selectedWidgetId,
   );
-  const draggingRef = useRef(false);
-  const selectionCss =
-    selectMode && highlighted
-      ? buildElementSelectionCss(widget.id, selectedElementId, hiddenElementIds)
-      : "";
-  const startResize = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startWidth = slotSize.width;
-    const startHeight = slotSize.height;
-    const divisor = Math.max(0.1, Number(scale) || 1);
-    const onMove = (moveEvent) => {
-      const width = clamp(
-        Math.round(startWidth + (moveEvent.clientX - startX) / divisor),
-        80,
-        3840,
-      );
-      const height = clamp(
-        Math.round(startHeight + (moveEvent.clientY - startY) / divisor),
-        50,
-        2160,
-      );
-      onResizeWidget?.(widget, { width, height });
-    };
-    const onUp = () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp, { once: true });
-  };
-  const startElementMove = (event, elementId) => {
-    if (
-      !onMoveElement ||
-      !highlighted ||
-      !elementId ||
-      elementId === "container" ||
-      event.button !== 0
-    )
-      return false;
-    event.preventDefault();
-    event.stopPropagation();
-    const appearanceNode = event.target?.closest?.("[data-widget-element]");
-    const stateId = appearanceNode?.dataset?.widgetState || "default";
-    onSelectElement?.({
-      widget,
-      appearanceId: appearanceNode?.dataset?.appearanceId || "",
-      elementId,
-      stateId,
-    });
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startOffset = getElementOffsets(cfg, elementId);
-    const divisor = Math.max(0.1, Number(scale) || 1);
-    let hasMoved = false;
-    draggingRef.current = false;
-    const moveToEvent = (moveEvent, commit = false) => {
-      const maxOffsetX = Math.max(canvasWidth, slotSize.width * 2);
-      const maxOffsetY = Math.max(canvasHeight, slotSize.height * 2);
-      const nextOffsetX = clamp(
-        Math.round(startOffset.x + (moveEvent.clientX - startX) / divisor),
-        -maxOffsetX,
-        maxOffsetX,
-      );
-      const nextOffsetY = clamp(
-        Math.round(startOffset.y + (moveEvent.clientY - startY) / divisor),
-        -maxOffsetY,
-        maxOffsetY,
-      );
-      if (
-        Math.abs(nextOffsetX - startOffset.x) > 2 ||
-        Math.abs(nextOffsetY - startOffset.y) > 2
-      ) {
-        draggingRef.current = true;
-        hasMoved = true;
-      }
-      onMoveElement(
-        widget,
-        { elementId, offsetX: nextOffsetX, offsetY: nextOffsetY, stateId },
-        { commit },
-      );
-    };
-    const onMove = (moveEvent) => moveToEvent(moveEvent, false);
-    const onUp = (upEvent) => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      if (hasMoved) moveToEvent(upEvent, true);
-      window.setTimeout(() => {
-        draggingRef.current = false;
-      }, 0);
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp, { once: true });
-    return true;
-  };
+  if (!Component) return null;
+  const selectionCss = getPreviewSelectionCss({
+    hiddenElementIds,
+    highlighted,
+    selectMode,
+    selectedElementId,
+    widgetId: widget.id,
+  });
+  const startResize = (event) =>
+    startPreviewSlotResize({ event, onResizeWidget, scale, slotSize, widget });
   const startMove = (event) => {
     if (
       isBg ||
@@ -252,77 +494,62 @@ const PreviewSlot = memo(function PreviewSlot({
         : null;
     const elementInsideWidget =
       elementNode && event.currentTarget.contains(elementNode);
-      const clickedElementId = elementInsideWidget
-        ? elementNode.dataset?.widgetElement
-        : "";
-    const selectedMovableElementId =
-      selectedElementId && selectedElementId !== "container"
-        ? selectedElementId
-        : "";
-    const elementId =
-      clickedElementId && clickedElementId !== "container"
-        ? clickedElementId
-        : selectedMovableElementId;
-    if (elementId && startElementMove(event, elementId)) return;
-    if (
-      selectMode &&
-      highlighted &&
-      selectedMovableElementId &&
-      onMoveElement
-    ) {
+    const clickedElementId = elementInsideWidget
+      ? elementNode.dataset?.widgetElement
+      : "";
+    const elementId = getMovableElementId({
+      clickedElementId,
+      selectedElementId,
+    });
+    const movedElement = startPreviewElementMove({
+      canvasHeight,
+      canvasWidth,
+      cfg,
+      draggingRef,
+      elementId,
+      event,
+      highlighted,
+      onMoveElement,
+      onSelectElement,
+      scale,
+      slotSize,
+      widget,
+    });
+    if (movedElement) return;
+    if (selectMode && highlighted && elementId && onMoveElement) {
       event.preventDefault();
       event.stopPropagation();
       return;
     }
-    event.preventDefault();
-    event.stopPropagation();
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startLeft = Number(widget.position_x) || 0;
-    const startTop = Number(widget.position_y) || 0;
-    const divisor = Math.max(0.1, Number(scale) || 1);
-    let hasMoved = false;
-    draggingRef.current = false;
-    const moveToEvent = (moveEvent, commit = false) => {
-      const nextX = clamp(
-        Math.round(startLeft + (moveEvent.clientX - startX) / divisor),
-        0,
-        Math.max(0, canvasWidth - slotSize.width),
-      );
-      const nextY = clamp(
-        Math.round(startTop + (moveEvent.clientY - startY) / divisor),
-        0,
-        Math.max(0, canvasHeight - slotSize.height),
-      );
-      if (Math.abs(nextX - startLeft) > 2 || Math.abs(nextY - startTop) > 2) {
-        draggingRef.current = true;
-        hasMoved = true;
-      }
-      onMoveWidget(widget, { x: nextX, y: nextY }, { commit });
-    };
-    const onMove = (moveEvent) => moveToEvent(moveEvent, false);
-    const onUp = (upEvent) => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      if (hasMoved) moveToEvent(upEvent, true);
-      window.setTimeout(() => {
-        draggingRef.current = false;
-      }, 0);
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp, { once: true });
+    startPreviewWidgetMove({
+      canvasHeight,
+      canvasWidth,
+      draggingRef,
+      event,
+      onMoveWidget,
+      scale,
+      slotSize,
+      widget,
+    });
+  };
+
+  const hasSelectionHandler = !!(onSelectWidget || onSelectElement);
+  const handleSlotClick = (event) => {
+    if (draggingRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    selectPreviewElement({ event, onSelectElement, onSelectWidget, widget });
+  };
+  const handleSlotKeyDown = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    handleSlotClick(event);
   };
 
   return (
     <div
-      className={
-        [
-          highlighted ? "oc-preview-selected-widget" : "",
-          dimmed ? "oc-preview-dimmed-widget" : "",
-        ]
-          .filter(Boolean)
-          .join(" ") || undefined
-      }
+      className={getPreviewSlotClassName({ dimmed, highlighted })}
       data-widget-id={widget.id}
       data-widget-type={widget.widget_type}
       {...appearanceAttrs({
@@ -331,67 +558,32 @@ const PreviewSlot = memo(function PreviewSlot({
         widgetType: widget.widget_type,
         elementId: "container",
       })}
-      data-appearance-version={
-        cfg.__appearanceV2?.schemaVersion
-          ? `v2-${cfg.__appearanceV2.schemaVersion}`
-          : undefined
-      }
+      data-appearance-version={getAppearanceVersion(cfg)}
       data-material={cfg.__appearanceV2?.material || undefined}
-      onClick={
-        onSelectWidget || onSelectElement
-          ? (event) => {
-              if (draggingRef.current) {
-                event.preventDefault();
-                event.stopPropagation();
-                return;
-              }
-              event.preventDefault();
-              event.stopPropagation();
-              const elementNode = event.target?.closest?.(
-                "[data-widget-element]",
-              );
-              const elementInsideWidget =
-                elementNode && event.currentTarget.contains(elementNode);
-              if (elementInsideWidget && onSelectElement) {
-                onSelectElement?.({
-                  widget,
-                  appearanceId: elementNode.dataset?.appearanceId || "",
-                  elementId: elementNode.dataset?.widgetElement,
-                  stateId: elementNode.dataset?.widgetState || "default",
-                });
-                return;
-              }
-              onSelectWidget?.(widget);
-            }
-          : undefined
-      }
+      onClick={hasSelectionHandler ? handleSlotClick : undefined}
+      onKeyDown={hasSelectionHandler ? handleSlotKeyDown : undefined}
       onPointerDown={startMove}
-      style={{
-        position: "absolute",
-        left: isBg ? 0 : widget.position_x,
-        top: isBg ? 0 : widget.position_y,
-        width: isBg ? canvasWidth : slotSize.width,
-        height: isBg ? canvasHeight : slotSize.height,
-        zIndex: widget.z_index || 1,
-        overflow: "visible",
-        cursor: isBg
-          ? undefined
-          : onMoveWidget
-            ? "grab"
-            : selectMode
-              ? "crosshair"
-              : undefined,
-        opacity: dimmed ? 0.24 : 1,
-        transition: "opacity 140ms ease",
-        ...buildWidgetAppearanceVars(cfg),
-        ...(hasShadow
-          ? {
-              filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))`,
-            }
-          : {}),
-      }}
+      role={hasSelectionHandler ? "application" : undefined}
+      tabIndex={hasSelectionHandler ? 0 : undefined}
+      style={getPreviewSlotStyle({
+        canvasHeight,
+        canvasWidth,
+        cfg,
+        dimmed,
+        hasShadow,
+        isBg,
+        onMoveWidget,
+        scale,
+        selectMode,
+        shadowIntensity: si,
+        shadowSize: ss,
+        slotSize,
+        widget,
+      })}
     >
-      {selectionCss && <style>{selectionCss}</style>}
+      {selectionCss && (
+        <style dangerouslySetInnerHTML={{ __html: selectionCss }} />
+      )}
       <div className="oc-preview-widget-viewport" style={viewportStyle}>
         <Component
           config={widget.config}
@@ -452,10 +644,11 @@ export default function OverlayPreview({
             previewSampleStates?.[widget.id] ||
             previewSampleStates?.[widget.widget_type];
           if (!previewState) return widget;
+          const currentConfig = widget.config ? { ...widget.config } : {};
           return {
             ...widget,
             config: {
-              ...(widget.config || {}),
+              ...currentConfig,
               __appearancePreviewState: previewState,
             },
           };
@@ -543,29 +736,27 @@ export default function OverlayPreview({
     : { width: CANVAS_W, height: CANVAS_H };
   const focusWidth = Math.max(1, Number(focusSize.width) || 1);
   const focusHeight = Math.max(1, Number(focusSize.height) || 1);
-  const focusX = focusWidget
-    ? focusWidget.widget_type === "background"
-      ? 0
-      : Number(focusWidget.position_x) || 0
-    : 0;
-  const focusY = focusWidget
-    ? focusWidget.widget_type === "background"
-      ? 0
-      : Number(focusWidget.position_y) || 0
-    : 0;
+  const focusX = getFocusCoordinate(focusWidget, "x");
+  const focusY = getFocusCoordinate(focusWidget, "y");
   const focusMargin = contextFocusActive
     ? Math.max(96, Math.round(Math.max(focusWidth, focusHeight) * 0.28))
     : 0;
-  const viewportWidth = fitWidgetActive
-    ? focusWidth
-    : contextFocusActive
-      ? Math.min(CANVAS_W, Math.max(focusWidth + focusMargin * 2, 640))
-      : CANVAS_W;
-  const viewportHeight = fitWidgetActive
-    ? focusHeight
-    : contextFocusActive
-      ? Math.min(CANVAS_H, Math.max(focusHeight + focusMargin * 2, 360))
-      : CANVAS_H;
+  const viewportWidth = getViewportDimension({
+    canvasSize: CANVAS_W,
+    contextFocusActive,
+    fitWidgetActive,
+    focusMargin,
+    focusSize: focusWidth,
+    minimumSize: 640,
+  });
+  const viewportHeight = getViewportDimension({
+    canvasSize: CANVAS_H,
+    contextFocusActive,
+    fitWidgetActive,
+    focusMargin,
+    focusSize: focusHeight,
+    minimumSize: 360,
+  });
   const focusLeft =
     contextFocusActive || fitWidgetActive
       ? clamp(
@@ -599,7 +790,10 @@ export default function OverlayPreview({
       }
       const targetW =
         contextFocusActive || fitWidgetActive ? viewportWidth : CANVAS_W;
-      const maxScale = fitWidgetActive ? 2.5 : contextFocusActive ? 1.75 : 0.65;
+      const maxScale = getPreviewMaxScale({
+        contextFocusActive,
+        fitWidgetActive,
+      });
       setScale(fixedZoom || Math.min(availW / targetW, maxScale));
     }
     calcScale();
@@ -615,14 +809,7 @@ export default function OverlayPreview({
     viewportWidth,
   ]);
 
-  const previewBg =
-    previewBackground === "light"
-      ? "#f8fafc"
-      : previewBackground === "green"
-        ? "#00b140"
-        : previewBackground === "checkerboard"
-          ? "linear-gradient(45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,0.22) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,0.22) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,0.22) 75%)"
-          : "#020617";
+  const previewBg = getPreviewBackground(previewBackground);
   const previewBgSize =
     previewBackground === "checkerboard" ? "24px 24px" : undefined;
   const previewBgPosition =
