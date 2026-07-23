@@ -1868,6 +1868,26 @@ export default function AppearanceCenter({
         persistDraft(draft, 'keyboard');
       } else if (event.key === 'Escape') {
         setSelectedElementId('');
+      } else if (mode === 'advanced' && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key) && selectedElement?.id && !selectedLayerLocked) {
+        const canNudgeElement = ['navbar', 'rtp_stats'].includes(selectedWidgetType)
+          && selectedTargetRoot
+          && selectedElement.id !== 'container'
+          && elementSupportsControl(selectedElement, 'offsetX')
+          && elementSupportsControl(selectedElement, 'offsetY');
+        if (canNudgeElement && selectedWidget) {
+          event.preventDefault();
+          const step = event.shiftKey ? 10 : 1;
+          const currentX = Number(getByPath(draft, resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, 'offsetX', selectedStateId)) || 0);
+          const currentY = Number(getByPath(draft, resolveV2ElementOverridePath(selectedTargetRoot, selectedElement.id, 'offsetY', selectedStateId)) || 0);
+          const deltaX = event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0;
+          const deltaY = event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0;
+          handlePreviewElementMove(selectedWidget, {
+            elementId: selectedElement.id,
+            offsetX: currentX + deltaX,
+            offsetY: currentY + deltaY,
+            stateId: selectedStateId,
+          }, { commit: true });
+        }
       } else if (mode === 'advanced' && event.key === 'Delete' && selectedElement?.id && !selectedLayerLocked) {
         event.preventDefault();
         if (window.confirm(`Reset ${selectedElement.label}?`)) resetElement();
@@ -1875,7 +1895,7 @@ export default function AppearanceCenter({
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [draft, mode, persistDraft, redo, resetElement, selectedElement, selectedLayerLocked, undo]);
+  }, [draft, handlePreviewElementMove, mode, persistDraft, redo, resetElement, selectedElement, selectedLayerLocked, selectedStateId, selectedTargetRoot, selectedWidget, selectedWidgetType, undo]);
 
   useEffect(() => {
     if (!selectedWidgetIsBackground) return;
@@ -2295,7 +2315,7 @@ export default function AppearanceCenter({
               onSelectElement={handlePreviewElementSelect}
               onResizeWidget={mode === 'advanced' ? handlePreviewResize : undefined}
               onMoveWidget={handlePreviewMove}
-              onMoveElement={selectedWidgetType === 'navbar' ? handlePreviewElementMove : undefined}
+              onMoveElement={['navbar', 'rtp_stats'].includes(selectedWidgetType) ? handlePreviewElementMove : undefined}
             />
           </div>
 

@@ -625,7 +625,7 @@ function NavbarWidget({ config, widgetId, userId }) {
           })}>
             <NowPlayingDisplay
               data={displayNowPlaying}
-              musicDisplayStyle={c.musicDisplayStyle || 'text'}
+              musicDisplayStyle={subValue(c, 'music', 'musicDisplayStyle', c.musicDisplayStyle || 'text')}
               textColor={textColor}
               mutedColor={mutedColor}
               accentColor={accentColor}

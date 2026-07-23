@@ -1300,37 +1300,37 @@ export const widgetAppearanceRegistry = Object.freeze({
       provider: Object.freeze({
         label: 'Provider logo / name',
         kind: 'image',
-        capabilities: ['image', 'shape', 'typography', 'stateColor'],
+        capabilities: ['image', 'shape', 'typography', 'stateColor', 'position'],
         cssVariables: ['--rtp-provider', '--rtp-provider-size', '--rtp-provider-logo-width', '--rtp-provider-logo-height', '--rtp-provider-logo-radius'],
       }),
       slotTitle: Object.freeze({
         label: 'Slot name',
         kind: 'text',
-        capabilities: ['typography', 'spacing'],
+        capabilities: ['typography', 'spacing', 'position'],
         cssVariables: ['--rtp-slot-name'],
       }),
       rtpValue: Object.freeze({
         label: 'RTP value',
         kind: 'text',
-        capabilities: ['typography', 'stateColor', 'spacing'],
+        capabilities: ['typography', 'stateColor', 'spacing', 'position'],
         cssVariables: ['--rtp-icon-rtp', '--rtp-text'],
       }),
       maxWin: Object.freeze({
         label: 'Potential max win',
         kind: 'text',
-        capabilities: ['typography', 'stateColor', 'spacing'],
+        capabilities: ['typography', 'stateColor', 'spacing', 'position'],
         cssVariables: ['--rtp-icon-potential', '--rtp-text'],
       }),
       volatility: Object.freeze({
         label: 'Volatility',
         kind: 'text',
-        capabilities: ['typography', 'stateColor', 'spacing'],
+        capabilities: ['typography', 'stateColor', 'spacing', 'position'],
         cssVariables: ['--rtp-icon-volatility', '--rtp-text'],
       }),
       personalBest: Object.freeze({
         label: 'Personal best',
         kind: 'text',
-        capabilities: ['typography', 'stateColor', 'spacing'],
+        capabilities: ['typography', 'stateColor', 'spacing', 'position'],
         cssVariables: ['--rtp-icon-bestwin', '--rtp-text'],
       }),
       statCard: Object.freeze({
@@ -1348,13 +1348,13 @@ export const widgetAppearanceRegistry = Object.freeze({
       divider: Object.freeze({
         label: 'Dividers',
         kind: 'surface',
-        capabilities: ['surface', 'border', 'stateColor'],
+        capabilities: ['surface', 'border', 'stateColor', 'position'],
         cssVariables: ['--rtp-divider'],
       }),
       spinner: Object.freeze({
         label: 'Spinner',
         kind: 'badge',
-        capabilities: ['stateColor'],
+        capabilities: ['stateColor', 'position'],
         cssVariables: ['--rtp-spinner'],
       }),
     }),
@@ -1573,6 +1573,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: 'Music information',
         kind: 'text',
         capabilities: ['typography', 'stateColor', 'position'],
+        controls: ['musicDisplayStyle', 'fontFamily', 'fontSize', 'fontWeight', 'textColor', 'accentColor', 'offsetX', 'offsetY'],
       }),
       sponsor: Object.freeze({
         label: 'CTA sponsor',
