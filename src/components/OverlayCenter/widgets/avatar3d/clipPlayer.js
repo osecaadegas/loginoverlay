@@ -70,7 +70,7 @@ function loadClip(name) {
           // Strip mixamorig: prefix from track names to match our bone naming
           for (const track of clip.tracks) {
             if (track.name) {
-              track.name = track.name.replace(/mixamorig:/g, '');
+              track.name = track.name.replaceAll('mixamorig:', '');
             }
           }
           clip.name = name;
