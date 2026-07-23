@@ -3,18 +3,16 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { StreamElementsProvider } from './context/StreamElementsContext';
+import { StreamElementsProvider, useStreamElements } from './context/StreamElementsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import LandingPage from './components/LandingPage/LandingPage';
 import TopNavigation from './components/Navigation/TopNavigation';
 import OffersPage from './components/OffersPage/OffersPage';
-import AboutPage from './components/AboutPage/AboutPage';
 
 import { checkUserAccess } from './utils/adminUtils';
 import TwitchChat from './components/TwitchChat/TwitchChat';
 import SlotManagerPage from './components/SlotManager/SlotManagerPage';
-import { useStreamElements } from './context/StreamElementsContext';
 import ProtectedAdminRoute from './components/ProtectedRoute/ProtectedAdminRoute';
 
 import ProfilePage from './components/ProfilePage/ProfilePage';
@@ -129,11 +127,6 @@ function AppContent({ isAdminOverlay = false }) {
       window.removeEventListener('chatSettingsUpdated', handleChatSettingsUpdate);
     };
   }, []);
-
-  const handleBonusClick = (bonusId) => {
-    setSelectedBonusId(bonusId);
-    setShowBonusOpening(true);
-  };
 
   const handleMenuSelect = (menuId) => {
     console.log('Menu selected:', menuId);

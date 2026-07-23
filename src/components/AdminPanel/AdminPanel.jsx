@@ -19,8 +19,180 @@ const DEFAULT_ADMIN_TAB = 'users';
 const VALID_TABS = new Set(['users', 'offers', 'apikeys']);
 const getValidAdminTab = (tab) => (VALID_TABS.has(tab) ? tab : DEFAULT_ADMIN_TAB);
 const SLOT_CATALOG_SELECT = 'id, name, provider, image, rtp, volatility, max_win_multiplier, status, is_featured, sort_order';
+const CASINO_OFFER_ALLOWED_COLS = [
+  'casino_name','bonus_link','title','image_url','list_image_url',
+  'badge','badge_class','min_deposit','max_withdrawal','withdrawal_time',
+  'cashback','bonus_value','free_spins','game_providers','total_games',
+  'license','welcome_bonus','languages','established','live_support',
+  'details','deposit_methods','video_url','promo_code',
+  'crypto_friendly','vpn_friendly','is_premium','is_active','display_order',
+  'highlights',
+  'landing_tag','landing_tag_color','landing_model','landing_badges',
+  'landing_accent_color','landing_logo_bg',
+  'slug','partner_logo_url','cover_image_url','partnership_category',
+  'short_description','is_verified','is_featured','is_exclusive','is_new',
+  'is_hot','has_direct_manager','streamer_balance_available',
+  'application_status','applications_close_at','application_url','terms_url',
+  'visibility','deal_model','cpa_amount','cpa_currency','revenue_share_percent',
+  'fixed_fee_amount','fixed_fee_currency','hybrid_terms','min_ftd_requirement',
+  'minimum_deposit','minimum_deposit_currency','cookie_duration_days',
+  'payment_frequency','payment_methods','player_promotion','traffic_requirements',
+  'restrictions','supported_geos','supported_platforms','public_notes',
+  'private_notes','last_updated_at','archived_at'
+];
+const CASINO_OFFER_LIST_KEYS = ['supported_geos', 'supported_platforms', 'payment_methods'];
 
-export default function AdminPanel() {
+function getSessionStatusLabel(status) {
+  if (status === 'active') return '🟢 Active';
+  if (status === 'completed') return '✅ Completed';
+  return '🚫 Cancelled';
+}
+
+function getTransferPasswordButtonLabel(isLoading, activePassword) {
+  if (isLoading) return '⏳...';
+  if (activePassword) return '🔄 Regenerate';
+  return '🔐 Generate';
+}
+
+function getOfferClickRowBackground(isExpanded, index) {
+  if (isExpanded) return 'rgba(99,102,241,0.06)';
+  return index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)';
+}
+
+function Show({ when, children }) {
+  return when ? children : null;
+}
+
+function parseCasinoOfferList(value) {
+  if (typeof value !== 'string') return value;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return value.split(/[\n,;]+/).map(item => item.trim()).filter(Boolean);
+  }
+}
+
+function buildCasinoOfferPayload(formData) {
+  const payload = {};
+  for (const key of CASINO_OFFER_ALLOWED_COLS) {
+    if (key in formData) payload[key] = formData[key];
+  }
+  if (typeof payload.game_providers === 'string') {
+    try { payload.game_providers = JSON.parse(payload.game_providers); } catch { payload.game_providers = []; }
+  }
+  for (const key of CASINO_OFFER_LIST_KEYS) {
+    payload[key] = parseCasinoOfferList(payload[key]);
+  }
+  return payload;
+}
+
+function getGuessSessionTotals(formData, slots) {
+  const startVal = Number.parseFloat(formData.start_value) || 0;
+  const finalBal = formData.final_balance ? Number.parseFloat(formData.final_balance) : null;
+  const totalBets = slots.reduce((sum, slot) => sum + (Number.parseFloat(slot.bet_value) || 0), 0);
+  const beMultiplier = startVal > 0 && totalBets > 0 && finalBal ? (finalBal / startVal) / totalBets : 1.0;
+  return { startVal, finalBal, totalBets, beMultiplier };
+}
+
+async function fetchSlotCatalog() {
+  let allSlots = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('slots')
+      .select(SLOT_CATALOG_SELECT)
+      .order('name', { ascending: true })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) throw error;
+    allSlots = [...allSlots, ...(data || [])];
+    page++;
+    hasMore = (data || []).length === pageSize;
+  }
+
+  return allSlots;
+}
+
+async function fetchGuessBalanceSessions() {
+  const { data, error } = await supabase
+    .from('guess_balance_sessions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchGuessBalanceSlots(sessionId) {
+  const { data, error } = await supabase
+    .from('guess_balance_slots')
+    .select('*')
+    .eq('session_id', sessionId)
+    .order('display_order', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+function createUsernameMap(connections) {
+  const usernameMap = {};
+  (connections || []).forEach(conn => {
+    usernameMap[conn.user_id] = conn.se_username;
+  });
+  return usernameMap;
+}
+
+async function fetchUsernamesForRows(rows) {
+  const userIds = [...new Set((rows || []).map(row => row.user_id))];
+  const { data } = await supabase
+    .from('streamelements_connections')
+    .select('user_id, se_username')
+    .in('user_id', userIds);
+  return createUsernameMap(data);
+}
+
+async function fetchSessionGuesses(sessionId) {
+  const { data, error } = await supabase
+    .from('guess_balance_guesses')
+    .select('*')
+    .eq('session_id', sessionId)
+    .order('guessed_at', { ascending: true });
+
+  if (error) throw error;
+  const usernameMap = await fetchUsernamesForRows(data);
+  return (data || []).map(guess => ({
+    ...guess,
+    display_name: usernameMap[guess.user_id] || guess.user_id?.slice(0, 8)
+  }));
+}
+
+async function fetchSessionVotes(sessionId) {
+  const { data: votesData, error: votesError } = await supabase
+    .from('guess_balance_slot_votes')
+    .select('*')
+    .eq('session_id', sessionId)
+    .order('voted_at', { ascending: true });
+
+  if (votesError) throw votesError;
+  const { data: slotsData } = await supabase
+    .from('guess_balance_slots')
+    .select('id, slot_name')
+    .eq('session_id', sessionId);
+  const usernameMap = await fetchUsernamesForRows(votesData);
+  const slotsMap = Object.fromEntries((slotsData || []).map(slot => [slot.id, slot.slot_name]));
+
+  return (votesData || []).map(vote => ({
+    ...vote,
+    slot_name: slotsMap[vote.slot_id] || 'Unknown Slot',
+    display_name: usernameMap[vote.user_id] || vote.user_id?.slice(0, 8)
+  }));
+}
+
+export default function AdminPanel() { // NOSONAR - legacy admin screen split should be handled as a dedicated refactor
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -56,28 +228,6 @@ export default function AdminPanel() {
   const [offers, setOffers] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
-  const [offerFormData, setOfferFormData] = useState({
-    casino_name: '',
-    title: '',
-    image_url: '',
-    bonus_link: '',
-    badge: '',
-    badge_class: '',
-    min_deposit: '',
-    cashback: '',
-    bonus_value: '',
-    free_spins: '',
-    deposit_methods: '',
-    vpn_friendly: false,
-    is_premium: false,
-    details: '',
-    is_active: true,
-    display_order: 0,
-    game_providers: '',
-    total_games: '',
-    license: '',
-    welcome_bonus: ''
-  });
 
   // Daily Wheel State
   const [wheelPrizes, setWheelPrizes] = useState([]);
@@ -337,32 +487,8 @@ export default function AdminPanel() {
 
   const openOfferModal = (offer = null) => {
     if (offer) {
-      setOfferFormData(offer);
       setEditingOffer(offer);
     } else {
-      setOfferFormData({
-        casino_name: '',
-        title: '',
-        image_url: '',
-        list_image_url: '',
-        bonus_link: '',
-        badge: '',
-        badge_class: '',
-        min_deposit: '',
-        cashback: '',
-        bonus_value: '',
-        free_spins: '',
-        is_premium: false,
-        details: '',
-        is_active: true,
-        display_order: offers.length,
-        deposit_methods: '',
-        vpn_friendly: false,
-        game_providers: '',
-        total_games: '',
-        license: '',
-        welcome_bonus: ''
-      });
       setEditingOffer(null);
     }
     setShowOfferModal(true);
@@ -371,29 +497,6 @@ export default function AdminPanel() {
   const closeOfferModal = () => {
     setShowOfferModal(false);
     setEditingOffer(null);
-    setOfferFormData({
-      casino_name: '',
-      title: '',
-      image_url: '',
-      list_image_url: '',
-      bonus_link: '',
-      badge: '',
-      badge_class: '',
-      min_deposit: '',
-      cashback: '',
-      bonus_value: '',
-      free_spins: '',
-      deposit_methods: '',
-      vpn_friendly: false,
-      is_premium: false,
-      details: '',
-      is_active: true,
-      display_order: 0,
-      game_providers: '',
-      total_games: '',
-      license: '',
-      welcome_bonus: ''
-    });
   };
 
   const deleteOffer = async (offerId) => {
@@ -556,30 +659,7 @@ export default function AdminPanel() {
 
   const loadSlotCatalog = async () => {
     try {
-      // Supabase has a 1000 row default limit, so we need to paginate
-      let allSlots = [];
-      let page = 0;
-      const pageSize = 1000;
-      let hasMore = true;
-
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from('slots')
-          .select(SLOT_CATALOG_SELECT)
-          .order('name', { ascending: true })
-          .range(page * pageSize, (page + 1) * pageSize - 1);
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          allSlots = [...allSlots, ...data];
-          page++;
-          hasMore = data.length === pageSize; // If we got full page, there might be more
-        } else {
-          hasMore = false;
-        }
-      }
-
+      const allSlots = await fetchSlotCatalog();
       console.log(`Loaded ${allSlots.length} slots from catalog`);
       setSlotCatalog(allSlots);
     } catch (err) {
@@ -589,13 +669,7 @@ export default function AdminPanel() {
 
   const loadGuessBalanceSessions = async () => {
     try {
-      const { data, error } = await supabase
-        .from('guess_balance_sessions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setGuessBalanceSessions(data || []);
+      setGuessBalanceSessions(await fetchGuessBalanceSessions());
     } catch (err) {
       console.error('Error loading guess balance sessions:', err);
     }
@@ -603,14 +677,7 @@ export default function AdminPanel() {
 
   const loadGuessBalanceSlots = async (sessionId) => {
     try {
-      const { data, error } = await supabase
-        .from('guess_balance_slots')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setGuessBalanceSlots(data || []);
+      setGuessBalanceSlots(await fetchGuessBalanceSlots(sessionId));
     } catch (err) {
       console.error('Error loading slots:', err);
     }
@@ -619,32 +686,7 @@ export default function AdminPanel() {
   // Load guesses for a session
   const loadSessionGuesses = async (sessionId) => {
     try {
-      const { data, error } = await supabase
-        .from('guess_balance_guesses')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('guessed_at', { ascending: true });
-
-      if (error) throw error;
-
-      // Get SE usernames from streamelements_connections
-      const userIds = [...new Set((data || []).map(g => g.user_id))];
-      const { data: seConnections } = await supabase
-        .from('streamelements_connections')
-        .select('user_id, se_username')
-        .in('user_id', userIds);
-
-      const usernameMap = {};
-      (seConnections || []).forEach(conn => {
-        usernameMap[conn.user_id] = conn.se_username;
-      });
-
-      const guessesWithNames = (data || []).map(guess => ({
-        ...guess,
-        display_name: usernameMap[guess.user_id] || guess.user_id?.slice(0, 8)
-      }));
-
-      setSessionGuesses(guessesWithNames);
+      setSessionGuesses(await fetchSessionGuesses(sessionId));
     } catch (err) {
       console.error('Error loading guesses:', err);
     }
@@ -653,46 +695,7 @@ export default function AdminPanel() {
   // Load votes for a session
   const loadSessionVotes = async (sessionId) => {
     try {
-      // Get votes with slot info
-      const { data: votesData, error: votesError } = await supabase
-        .from('guess_balance_slot_votes')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('voted_at', { ascending: true });
-
-      if (votesError) throw votesError;
-
-      // Get slots for this session to match names
-      const { data: slotsData } = await supabase
-        .from('guess_balance_slots')
-        .select('id, slot_name')
-        .eq('session_id', sessionId);
-
-      // Get SE usernames from streamelements_connections
-      const userIds = [...new Set((votesData || []).map(v => v.user_id))];
-      const { data: seConnections } = await supabase
-        .from('streamelements_connections')
-        .select('user_id, se_username')
-        .in('user_id', userIds);
-
-      const usernameMap = {};
-      (seConnections || []).forEach(conn => {
-        usernameMap[conn.user_id] = conn.se_username;
-      });
-
-      // Map slot names to votes
-      const slotsMap = {};
-      (slotsData || []).forEach(slot => {
-        slotsMap[slot.id] = slot.slot_name;
-      });
-
-      const votesWithSlotNames = (votesData || []).map(vote => ({
-        ...vote,
-        slot_name: slotsMap[vote.slot_id] || 'Unknown Slot',
-        display_name: usernameMap[vote.user_id] || vote.user_id?.slice(0, 8)
-      }));
-
-      setSessionVotes(votesWithSlotNames);
+      setSessionVotes(await fetchSessionVotes(sessionId));
     } catch (err) {
       console.error('Error loading votes:', err);
     }
@@ -806,15 +809,7 @@ export default function AdminPanel() {
 
     try {
       // Calculate auto values
-      const startVal = Number.parseFloat(guessSessionFormData.start_value) || 0;
-      const finalBal = guessSessionFormData.final_balance ? Number.parseFloat(guessSessionFormData.final_balance) : null;
-      const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (Number.parseFloat(s.bet_value) || 0), 0);
-
-      // BE Multiplier = (Final Balance / Start Value) / Total Bets
-      let beMultiplier = 1.0;
-      if (startVal > 0 && totalBets > 0 && finalBal) {
-        beMultiplier = (finalBal / startVal) / totalBets;
-      }
+      const { startVal, finalBal, totalBets, beMultiplier } = getGuessSessionTotals(guessSessionFormData, sessionSlotsInModal);
 
       const sessionData = {
         title: guessSessionFormData.title,
@@ -1057,7 +1052,7 @@ export default function AdminPanel() {
 
   // Save current slot result and move to next
   const saveSlotResult = async (slot, autoAdvance = true) => {
-    if (!slot || !slot.id) return;
+    if (!slot?.id) return;
 
     try {
       const { error } = await supabase
@@ -1107,8 +1102,10 @@ export default function AdminPanel() {
   const generateRandomPassword = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     let result = '';
+    const randomValues = new Uint32Array(8);
+    crypto.getRandomValues(randomValues);
     for (let i = 0; i < 8; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+      result += chars.charAt(randomValues[i] % chars.length);
     }
     return result;
   };
@@ -1293,7 +1290,7 @@ export default function AdminPanel() {
       </div>
 
       {/* User Management Tab */}
-      {activeTab === 'users' && (
+      <Show when={activeTab === 'users'}>
         <>
           <StatsGrid columns={7}>
             <StatsCard
@@ -1380,28 +1377,28 @@ export default function AdminPanel() {
                     className={`filter-pill ${roleFilter === 'admin' ? 'active' : ''}`}
                     onClick={() => setRoleFilter(roleFilter === 'admin' ? null : 'admin')}
                   >
-                    <span className="pill-dot admin"></span>
+                    <span className="pill-dot admin"></span>{' '}
                     Admins
                   </button>
                   <button
                     className={`filter-pill ${roleFilter === 'premium' ? 'active' : ''}`}
                     onClick={() => setRoleFilter(roleFilter === 'premium' ? null : 'premium')}
                   >
-                    <span className="pill-dot premium"></span>
+                    <span className="pill-dot premium"></span>{' '}
                     Premium
                   </button>
                   <button
                     className={`filter-pill ${roleFilter === 'slot_modder' ? 'active' : ''}`}
                     onClick={() => setRoleFilter(roleFilter === 'slot_modder' ? null : 'slot_modder')}
                   >
-                    <span className="pill-dot modder"></span>
+                    <span className="pill-dot modder"></span>{' '}
                     Modders
                   </button>
                   <button
                     className={`filter-pill ${roleFilter === 'affiliate' ? 'active' : ''}`}
                     onClick={() => setRoleFilter(roleFilter === 'affiliate' ? null : 'affiliate')}
                   >
-                    <span className="pill-dot affiliate"></span>
+                    <span className="pill-dot affiliate"></span>{' '}
                     Affiliates
                   </button>
                 </div>
@@ -1484,14 +1481,14 @@ export default function AdminPanel() {
                           <td className="col-roles">
                             <div className="roles-list">
                               {significantRoles.length > 0 ? (
-                                significantRoles.map((roleObj, idx) => (
-                                  <span key={idx} className={`role-tag role-${roleObj.role}`}>
+                                significantRoles.map((roleObj) => (
+                                  <span key={`${user.id}-${roleObj.role}`} className={`role-tag role-${roleObj.role}`}>
                                     {roleObj.role === 'admin' && '🛡️'}
                                     {roleObj.role === 'premium' && '⭐'}
                                     {roleObj.role === 'slot_modder' && '🎰'}
                                     {roleObj.role === 'moderator' && '🔧'}
                                     {roleObj.role === 'affiliate' && 'AF'}
-                                    {roleObj.role.replace('_', ' ')}
+                                    {roleObj.role.replaceAll('_', ' ')}
                                   </span>
                                 ))
                               ) : (
@@ -1668,8 +1665,8 @@ export default function AdminPanel() {
                     <h4>Roles</h4>
                   </div>
                   <div className="roles-manager">
-                    {(editingUser.roles || []).filter(r => r.role !== 'user').map((roleObj, idx) => (
-                      <div key={idx} className={`role-chip role-${roleObj.role}`}>
+                    {(editingUser.roles || []).filter(r => r.role !== 'user').map((roleObj) => (
+                      <div key={`${editingUser.id}-${roleObj.role}`} className={`role-chip role-${roleObj.role}`}>
                         <span className="role-chip-icon">
                           {roleObj.role === 'admin' && '🛡️'}
                           {roleObj.role === 'premium' && '⭐'}
@@ -1677,7 +1674,7 @@ export default function AdminPanel() {
                           {roleObj.role === 'moderator' && '🔧'}
                         </span>
                         {roleObj.role === 'affiliate' && 'AF'}
-                        <span className="role-chip-name">{roleObj.role.replace('_', ' ')}</span>
+                        <span className="role-chip-name">{roleObj.role.replaceAll('_', ' ')}</span>
                         {roleObj.access_expires_at && (
                           <span className="role-chip-expiry">
                             {new Date(roleObj.access_expires_at).toLocaleDateString()}
@@ -1729,7 +1726,7 @@ export default function AdminPanel() {
                                 checked={!!editingUser.newRoleModeratorPermissions?.[key]}
                                 onChange={() => toggleModeratorPermission(key)}
                               />
-                              <span>{key.replace(/_/g, ' ')}</span>
+                              <span>{key.replaceAll('_', ' ')}</span>
                             </label>
                           ))}
                         </div>
@@ -1785,10 +1782,10 @@ export default function AdminPanel() {
             )}
           </SidePanel>
         </>
-      )}
+      </Show>
 
       {/* Streamer Partnerships Tab */}
-      {activeTab === 'offers' && (
+      <Show when={activeTab === 'offers'}>
         <div className="offers-management">
           <div className="offers-header">
             <h2>Streamer Partnerships</h2>
@@ -1916,11 +1913,13 @@ export default function AdminPanel() {
           {/* ── ANALYTICS SUB-TAB ── */}
           {offerSubTab === 'analytics' && (
             <div style={{ marginTop: 16 }}>
-              {clicksLoading ? (
+              {clicksLoading && (
                 <p style={{ color: '#94a3b8', textAlign: 'center', padding: 40 }}>Loading click data…</p>
-              ) : offerClicks.length === 0 ? (
+              )}
+              {!clicksLoading && offerClicks.length === 0 && (
                 <p style={{ color: '#94a3b8', textAlign: 'center', padding: 40 }}>No clicks recorded yet. Clicks will appear here once viewers start clicking offer cards.</p>
-              ) : (
+              )}
+              {!clicksLoading && offerClicks.length > 0 && (
                 <>
                   {/* Summary cards */}
                   {(() => {
@@ -2060,9 +2059,9 @@ export default function AdminPanel() {
                               }
                               return true;
                             });
-                            if (filtered.length === 0) return (
-                              <tr><td colSpan={8} style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>No clicks match your filters</td></tr>
-                            );
+                            if (filtered.length === 0) return [
+                              <tr key="no-click-matches"><td colSpan={8} style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>No clicks match your filters</td></tr>
+                            ];
                             return filtered.slice(0, 500).map((click, idx) => {
                               const isExpanded = expandedClickId === click.id;
                               const dt = new Date(click.created_at);
@@ -2073,7 +2072,7 @@ export default function AdminPanel() {
                                 <React.Fragment key={click.id}>
                                   <tr
                                     onClick={() => setExpandedClickId(isExpanded ? null : click.id)}
-                                    style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', background: isExpanded ? 'rgba(99,102,241,0.06)' : idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
+                                    style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', background: getOfferClickRowBackground(isExpanded, idx) }}
                                   >
                                     <td style={{ padding: '6px 8px', color: '#64748b', fontSize: 10 }}>{isExpanded ? '▼' : '▶'}</td>
                                     <td style={{ padding: '6px 12px', color: '#e2e8f0', fontWeight: 600 }}>{click.casino_name || '—'}</td>
@@ -2143,7 +2142,7 @@ export default function AdminPanel() {
             </div>
           )}
         </div>
-      )}
+      </Show>
 
       {/* Casino Offer Modal - New Isolated Component */}
       <CasinoOfferModal
@@ -2151,49 +2150,7 @@ export default function AdminPanel() {
         onClose={closeOfferModal}
         onSave={async (formData) => {
           try {
-            // Only send known DB columns to avoid 400 errors from unknown fields
-            const ALLOWED_COLS = [
-              'casino_name','bonus_link','title','image_url','list_image_url',
-              'badge','badge_class','min_deposit','max_withdrawal','withdrawal_time',
-              'cashback','bonus_value','free_spins','game_providers','total_games',
-              'license','welcome_bonus','languages','established','live_support',
-              'details','deposit_methods','video_url','promo_code',
-              'crypto_friendly','vpn_friendly','is_premium','is_active','display_order',
-              'highlights',
-              'landing_tag','landing_tag_color','landing_model','landing_badges',
-              'landing_accent_color','landing_logo_bg',
-              'slug','partner_logo_url','cover_image_url','partnership_category',
-              'short_description','is_verified','is_featured','is_exclusive','is_new',
-              'is_hot','has_direct_manager','streamer_balance_available',
-              'application_status','applications_close_at','application_url','terms_url',
-              'visibility','deal_model','cpa_amount','cpa_currency','revenue_share_percent',
-              'fixed_fee_amount','fixed_fee_currency','hybrid_terms','min_ftd_requirement',
-              'minimum_deposit','minimum_deposit_currency','cookie_duration_days',
-              'payment_frequency','payment_methods','player_promotion','traffic_requirements',
-              'restrictions','supported_geos','supported_platforms','public_notes',
-              'private_notes','last_updated_at','archived_at'
-            ];
-            const payload = {};
-            for (const key of ALLOWED_COLS) {
-              if (key in formData) payload[key] = formData[key];
-            }
-            // Parse game_providers from JSON string to array for JSONB column
-            if (typeof payload.game_providers === 'string') {
-              try { payload.game_providers = JSON.parse(payload.game_providers); } catch { payload.game_providers = []; }
-            }
-            for (const jsonListKey of ['supported_geos', 'supported_platforms', 'payment_methods']) {
-              if (typeof payload[jsonListKey] === 'string') {
-                try {
-                  const parsed = JSON.parse(payload[jsonListKey]);
-                  payload[jsonListKey] = Array.isArray(parsed) ? parsed : [];
-                } catch {
-                  payload[jsonListKey] = payload[jsonListKey]
-                    .split(/[\n,;]+/)
-                    .map(item => item.trim())
-                    .filter(Boolean);
-                }
-              }
-            }
+            const payload = buildCasinoOfferPayload(formData);
 
             if (editingOffer) {
               const { error } = await supabase
@@ -2216,7 +2173,10 @@ export default function AdminPanel() {
         }}
         onDelete={async (offerId) => {
           try {
-            const { error } = await supabase.from('casino_offers').delete().eq('id', offerId);
+            const { error } = await supabase
+              .from('casino_offers')
+              .delete()
+              .eq('id', offerId);
             if (error) throw error;
             closeOfferModal();
             loadOffers();
@@ -2230,7 +2190,7 @@ export default function AdminPanel() {
       />
 
       {/* Daily Wheel Tab */}
-      {activeTab === 'wheel' && (
+      <Show when={activeTab === 'wheel'}>
         <>
           <div className="admin-section">
             <div className="section-header">
@@ -2304,8 +2264,9 @@ export default function AdminPanel() {
               <div style={{ flex: 1, overflow: 'auto', padding: '0' }}>
                 <div className="form-section">
                   <div className="form-group">
-                    <label>Label *</label>
+                    <label htmlFor="wheel-prize-label">Label *</label>
                     <input
+                      id="wheel-prize-label"
                       type="text"
                       value={prizeFormData.label}
                       onChange={(e) => setPrizeFormData({...prizeFormData, label: e.target.value})}
@@ -2315,8 +2276,9 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="form-group">
-                    <label>Icon (Emoji) *</label>
+                    <label htmlFor="wheel-prize-icon">Icon (Emoji) *</label>
                     <input
+                      id="wheel-prize-icon"
                       type="text"
                       value={prizeFormData.icon}
                       onChange={(e) => setPrizeFormData({...prizeFormData, icon: e.target.value})}
@@ -2328,13 +2290,15 @@ export default function AdminPanel() {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Background Color *</label>
+                      <label htmlFor="wheel-prize-bg-color">Background Color *</label>
                       <input
+                        id="wheel-prize-bg-color"
                         type="color"
                         value={prizeFormData.color}
                         onChange={(e) => setPrizeFormData({...prizeFormData, color: e.target.value})}
                       />
                       <input
+                        aria-label="Background color hex"
                         type="text"
                         value={prizeFormData.color}
                         onChange={(e) => setPrizeFormData({...prizeFormData, color: e.target.value})}
@@ -2344,13 +2308,15 @@ export default function AdminPanel() {
                     </div>
 
                     <div className="form-group">
-                      <label>Text Color *</label>
+                      <label htmlFor="wheel-prize-text-color">Text Color *</label>
                       <input
+                        id="wheel-prize-text-color"
                         type="color"
                         value={prizeFormData.text_color}
                         onChange={(e) => setPrizeFormData({...prizeFormData, text_color: e.target.value})}
                       />
                       <input
+                        aria-label="Text color hex"
                         type="text"
                         value={prizeFormData.text_color}
                         onChange={(e) => setPrizeFormData({...prizeFormData, text_color: e.target.value})}
@@ -2362,8 +2328,9 @@ export default function AdminPanel() {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>StreamElements Points</label>
+                      <label htmlFor="wheel-prize-points">StreamElements Points</label>
                       <input
+                        id="wheel-prize-points"
                         type="number"
                         value={prizeFormData.se_points}
                         onChange={(e) => setPrizeFormData({...prizeFormData, se_points: e.target.value})}
@@ -2374,8 +2341,9 @@ export default function AdminPanel() {
                     </div>
 
                     <div className="form-group">
-                      <label>Probability Weight *</label>
+                      <label htmlFor="wheel-prize-probability">Probability Weight *</label>
                       <input
+                        id="wheel-prize-probability"
                         type="number"
                         value={prizeFormData.probability}
                         onChange={(e) => setPrizeFormData({...prizeFormData, probability: e.target.value})}
@@ -2388,8 +2356,9 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="form-group">
-                    <label>Display Order</label>
+                    <label htmlFor="wheel-prize-display-order">Display Order</label>
                     <input
+                      id="wheel-prize-display-order"
                       type="number"
                       value={prizeFormData.display_order}
                       onChange={(e) => setPrizeFormData({...prizeFormData, display_order: e.target.value})}
@@ -2412,7 +2381,7 @@ export default function AdminPanel() {
 
                   {/* Preview */}
                   <div className="form-group">
-                    <label>Preview</label>
+                    <div className="form-label">Preview</div>
                     <div className="prize-preview-box" style={{
                       backgroundColor: prizeFormData.color,
                       color: prizeFormData.text_color,
@@ -2445,12 +2414,12 @@ export default function AdminPanel() {
             </form>
           </SidePanel>
         </>
-      )}
+      </Show>
 
       {/* Season Pass tab removed */}
 
       {/* Guess Balance Management Tab */}
-      {activeTab === 'guessbalance' && (
+      <Show when={activeTab === 'guessbalance'}>
         <>
           <div className="guess-balance-admin-section">
             <div className="section-header">
@@ -2554,13 +2523,11 @@ export default function AdminPanel() {
                     <div
                       key={session.id}
                       className={`session-card ${selectedSessionForSlots?.id === session.id ? 'selected' : ''} ${session.status}`}
-                      onClick={() => selectSessionForSlots(session)}
                     >
                       <div className="session-card-header">
                         <h3>{session.title}</h3>
                         <span className={`status-badge ${session.status}`}>
-                          {session.status === 'active' ? '🟢 Active' :
-                           session.status === 'completed' ? '✅ Completed' : '🚫 Cancelled'}
+                          {getSessionStatusLabel(session.status)}
                         </span>
                       </div>
 
@@ -2604,6 +2571,9 @@ export default function AdminPanel() {
                       </div>
 
                       <div className="session-actions">
+                        <button className="btn-view-slots" onClick={() => selectSessionForSlots(session)}>
+                          🎰 Select
+                        </button>
                         <button className="btn-edit" onClick={(e) => { e.stopPropagation(); openGuessSessionModal(session); }}>
                           ✏️ Edit
                         </button>
@@ -2753,7 +2723,7 @@ export default function AdminPanel() {
                         onClick={generateTransferPassword}
                         disabled={transferPasswordLoading}
                       >
-                        {transferPasswordLoading ? '⏳...' : activeTransferPassword ? '🔄 Regenerate' : '🔐 Generate'}
+                        {getTransferPasswordButtonLabel(transferPasswordLoading, activeTransferPassword)}
                       </button>
                       {activeTransferPassword && (
                         <button
@@ -2788,8 +2758,9 @@ export default function AdminPanel() {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Title *</label>
+                      <label htmlFor="guess-session-title">Title *</label>
                       <input
+                        id="guess-session-title"
                         type="text"
                         value={guessSessionFormData.title}
                         onChange={(e) => setGuessSessionFormData({...guessSessionFormData, title: e.target.value})}
@@ -2798,8 +2769,9 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Status</label>
+                      <label htmlFor="guess-session-status">Status</label>
                       <select
+                        id="guess-session-status"
                         value={guessSessionFormData.status}
                         onChange={(e) => setGuessSessionFormData({...guessSessionFormData, status: e.target.value})}
                       >
@@ -2811,8 +2783,9 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="form-group">
-                    <label>Description</label>
+                    <label htmlFor="guess-session-description">Description</label>
                     <textarea
+                      id="guess-session-description"
                       value={guessSessionFormData.description}
                       onChange={(e) => setGuessSessionFormData({...guessSessionFormData, description: e.target.value})}
                       placeholder="Optional description..."
@@ -2823,8 +2796,9 @@ export default function AdminPanel() {
                   <div className="form-section-title">💵 Money Settings</div>
                   <div className="form-row two-cols">
                     <div className="form-group">
-                      <label>Start Value (€)</label>
+                      <label htmlFor="guess-session-start-value">Start Value (€)</label>
                       <input
+                        id="guess-session-start-value"
                         type="number"
                         step="0.01"
                         value={guessSessionFormData.start_value}
@@ -2833,8 +2807,9 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Final Balance (€)</label>
+                      <label htmlFor="guess-session-final-balance">Final Balance (€)</label>
                       <input
+                        id="guess-session-final-balance"
                         type="number"
                         step="0.01"
                         value={guessSessionFormData.final_balance}
@@ -2846,8 +2821,9 @@ export default function AdminPanel() {
                   </div>
                   <div className="form-row two-cols">
                     <div className="form-group">
-                      <label>Amount Expended (€)</label>
+                      <label htmlFor="guess-session-amount-expended">Amount Expended (€)</label>
                       <input
+                        id="guess-session-amount-expended"
                         type="number"
                         step="0.01"
                         value={sessionSlotsInModal.reduce((sum, s) => sum + (Number.parseFloat(s.bet_value) || 0), 0).toFixed(2)}
@@ -2857,8 +2833,9 @@ export default function AdminPanel() {
                       <small className="form-hint">Auto-calculated from slots</small>
                     </div>
                     <div className="form-group">
-                      <label>BE Multiplier (x)</label>
+                      <label htmlFor="guess-session-be-multiplier">BE Multiplier (x)</label>
                       <input
+                        id="guess-session-be-multiplier"
                         type="number"
                         step="0.01"
                         value={(() => {
@@ -2881,8 +2858,9 @@ export default function AdminPanel() {
                   <div className="form-section-title">🏰 Casino Info</div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Casino Brand</label>
+                      <label htmlFor="guess-session-casino-brand">Casino Brand</label>
                       <input
+                        id="guess-session-casino-brand"
                         type="text"
                         value={guessSessionFormData.casino_brand}
                         onChange={(e) => setGuessSessionFormData({...guessSessionFormData, casino_brand: e.target.value})}
@@ -2890,8 +2868,9 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Casino Logo URL</label>
+                      <label htmlFor="guess-session-casino-logo">Casino Logo URL</label>
                       <input
+                        id="guess-session-casino-logo"
                         type="url"
                         value={guessSessionFormData.casino_image_url}
                         onChange={(e) => setGuessSessionFormData({...guessSessionFormData, casino_image_url: e.target.value})}
@@ -2927,8 +2906,9 @@ export default function AdminPanel() {
                   <div className="slot-picker-section">
                     <div className="slot-picker-controls">
                       <div className="form-group slot-search-group">
-                        <label>Search Slots</label>
+                        <label htmlFor="guess-session-slot-search">Search Slots</label>
                         <input
+                          id="guess-session-slot-search"
                           type="text"
                           value={slotSearchQuery}
                           onChange={(e) => setSlotSearchQuery(e.target.value)}
@@ -2938,8 +2918,9 @@ export default function AdminPanel() {
                       </div>
                       <div className="slot-picker-row">
                         <div className="form-group bet-group">
-                          <label>Bet Value (€)</label>
+                          <label htmlFor="guess-session-new-slot-bet">Bet Value (€)</label>
                           <input
+                            id="guess-session-new-slot-bet"
                             type="number"
                             step="0.01"
                             value={newSlotBetValue}
@@ -2972,7 +2953,8 @@ export default function AdminPanel() {
                         ) : (
                           <div className="slot-catalog-grid">
                             {filteredSlotCatalog.slice(0, 20).map((slot) => (
-                              <div
+                              <button
+                                type="button"
                                 key={slot.id}
                                 className="slot-catalog-item"
                                 onClick={() => addSlotToSession(slot)}
@@ -2982,8 +2964,8 @@ export default function AdminPanel() {
                                   <span className="slot-catalog-name">{slot.name}</span>
                                   <span className="slot-catalog-provider">{slot.provider}</span>
                                 </div>
-                                <button type="button" className="add-slot-btn">+</button>
-                              </div>
+                                <span className="add-slot-btn" aria-hidden="true">+</span>
+                              </button>
                             ))}
                           </div>
                         )}
@@ -3056,8 +3038,9 @@ export default function AdminPanel() {
             <form className="slot-form">
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Slot Name *</label>
+                      <label htmlFor="guess-slot-name">Slot Name *</label>
                       <input
+                        id="guess-slot-name"
                         type="text"
                         value={slotFormData.slot_name}
                         onChange={(e) => setSlotFormData({...slotFormData, slot_name: e.target.value})}
@@ -3066,8 +3049,9 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Provider</label>
+                      <label htmlFor="guess-slot-provider">Provider</label>
                       <input
+                        id="guess-slot-provider"
                         type="text"
                         value={slotFormData.provider}
                         onChange={(e) => setSlotFormData({...slotFormData, provider: e.target.value})}
@@ -3077,8 +3061,9 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="form-group">
-                    <label>Slot Image URL</label>
+                    <label htmlFor="guess-slot-image-url">Slot Image URL</label>
                     <input
+                      id="guess-slot-image-url"
                       type="url"
                       value={slotFormData.slot_image_url}
                       onChange={(e) => setSlotFormData({...slotFormData, slot_image_url: e.target.value})}
@@ -3091,8 +3076,9 @@ export default function AdminPanel() {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Bet Value (€)</label>
+                      <label htmlFor="guess-slot-bet-value">Bet Value (€)</label>
                       <input
+                        id="guess-slot-bet-value"
                         type="number"
                         step="0.01"
                         value={slotFormData.bet_value}
@@ -3101,8 +3087,9 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Display Order</label>
+                      <label htmlFor="guess-slot-display-order">Display Order</label>
                       <input
+                        id="guess-slot-display-order"
                         type="number"
                         value={slotFormData.display_order}
                         onChange={(e) => setSlotFormData({...slotFormData, display_order: e.target.value})}
@@ -3125,8 +3112,9 @@ export default function AdminPanel() {
                   <div className="form-section-title">🏆 Results (optional - fill when bonus opens)</div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Bonus Win (€)</label>
+                      <label htmlFor="guess-slot-bonus-win">Bonus Win (€)</label>
                       <input
+                        id="guess-slot-bonus-win"
                         type="number"
                         step="0.01"
                         value={slotFormData.bonus_win}
@@ -3135,8 +3123,9 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Multiplier (x)</label>
+                      <label htmlFor="guess-slot-multiplier">Multiplier (x)</label>
                       <input
+                        id="guess-slot-multiplier"
                         type="number"
                         step="0.01"
                         value={slotFormData.multiplier}
@@ -3218,8 +3207,9 @@ export default function AdminPanel() {
 
                         <div className="result-inputs">
                           <div className="input-group">
-                            <label>💰 Bonus Win (€)</label>
+                            <label htmlFor={`slot-result-bonus-win-${currentSlot.id}`}>💰 Bonus Win (€)</label>
                             <input
+                              id={`slot-result-bonus-win-${currentSlot.id}`}
                               type="number"
                               step="0.01"
                               value={currentSlot.bonus_win || ''}
@@ -3267,7 +3257,7 @@ export default function AdminPanel() {
                     <div className="slot-dots">
                       {guessBalanceSlots.map((slot, idx) => (
                         <button
-                          key={idx}
+                          key={slot.id}
                           className={`dot ${idx === currentSlotIndex ? 'active' : ''} ${slot.bonus_win ? 'completed' : ''}`}
                           onClick={() => goToSlot(idx)}
                           title={slot.slot_name}
@@ -3382,12 +3372,12 @@ export default function AdminPanel() {
             </div>
           </SidePanel>
         </>
-      )}
+      </Show>
 
       {/* API Keys Tab */}
-      {activeTab === 'apikeys' && (
+      <Show when={activeTab === 'apikeys'}>
         <ApiKeysAdmin />
-      )}
+      </Show>
     </div>
   );
 }
