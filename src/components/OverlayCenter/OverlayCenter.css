@@ -8315,12 +8315,12 @@ body.wm-resizing {
 }
 
 .rtp-stats-provider--logo {
-  width: min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 100%);
-  height: var(--rtp-provider-logo-height, clamp(30px, 3.15vw, 38px));
+  width: min(var(--rtp-provider-logo-width, clamp(78px, 7vw, 112px)), 100%);
+  height: var(--rtp-provider-logo-height, clamp(22px, 2.4vw, 30px));
   border-radius: var(--rtp-provider-logo-radius, 0);
   justify-content: center;
-  flex: 0 1 min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 100%);
-  max-width: min(var(--rtp-provider-logo-width, clamp(132px, 10.5vw, 178px)), 100%);
+  flex: 0 0 min(var(--rtp-provider-logo-width, clamp(78px, 7vw, 112px)), 100%);
+  max-width: min(var(--rtp-provider-logo-width, clamp(78px, 7vw, 112px)), 100%);
   max-height: 100%;
   line-height: 1;
   box-sizing: border-box;
@@ -8328,7 +8328,7 @@ body.wm-resizing {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
-  padding: 1px 3px !important;
+  padding: 0 !important;
   margin: 0;
 }
 
@@ -8348,9 +8348,21 @@ body.wm-resizing {
   object-position: center;
   border-radius: var(--rtp-provider-logo-radius, 0);
   background: transparent;
+  padding: 0 !important;
   filter:
     drop-shadow(0 1px 2px rgba(0, 0, 0, 0.72))
     drop-shadow(0 0 9px rgba(226, 246, 255, 0.1));
+}
+
+.rtp-stats-bar:not(.rtp-stats-bar--vertical) .rtp-stats-inner,
+.rtp-stats-bar:not(.rtp-stats-bar--vertical) .rtp-stats-left,
+.rtp-stats-bar:not(.rtp-stats-bar--vertical) .rtp-stats-right,
+.rtp-stats-bar:not(.rtp-stats-bar--vertical) .rtp-stats-slot,
+.rtp-stats-bar:not(.rtp-stats-bar--vertical) .rtp-stats-item,
+.rtp-stats-bar:not(.rtp-stats-bar--vertical) .rtp-stats-value,
+.rtp-stats-bar:not(.rtp-stats-bar--vertical) .rtp-stats-label {
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
 }
 
 .rtp-stats-divider {
@@ -8400,10 +8412,10 @@ body.wm-resizing {
   display: flex;
   align-items: center;
   gap: var(--rtp-gap, clamp(8px, 0.9vw, 14px));
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: 52%;
-  overflow: hidden;
+  flex: 0 0 auto;
+  min-width: max-content;
+  max-width: none;
+  overflow: visible;
   justify-content: flex-end;
 }
 

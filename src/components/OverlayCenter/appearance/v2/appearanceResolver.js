@@ -1682,7 +1682,8 @@ function buildRtpStatsPatch(tokens, styleId) {
   const warning = isStyleSeca ? '#f2c96d' : tokens.colors.warning;
   const barHeight = tokens.layout?.barHeight || Math.max(42, Math.min(92, Math.round(48 * tokens.spacing.scale)));
   const maxWidth = tokens.layout?.maxWidth || 960;
-  const providerLogoHeight = Math.round(34 * (tokens.image?.sizeMultiplier || 1));
+  const providerLogoHeight = Math.round(29 * (tokens.image?.sizeMultiplier || 1));
+  const providerLogoWidth = Math.round(providerLogoHeight * 3.25);
   const providerLogoRadius = tokens.image?.radius ?? 0;
 
   return {
@@ -1735,6 +1736,8 @@ function buildRtpStatsPatch(tokens, styleId) {
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
         imageSize: providerLogoHeight,
+        width: providerLogoWidth,
+        height: providerLogoHeight,
         radius: providerLogoRadius,
         imageFit: tokens.image?.fit || 'contain',
       },

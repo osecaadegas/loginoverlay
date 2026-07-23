@@ -484,8 +484,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const providerFontFamily = subValue(c, 'provider', 'fontFamily', fontFamily);
   const providerFontSize = subValue(c, 'provider', 'fontSize', c.providerFontSize ?? 16);
   const providerFontWeight = subValue(c, 'provider', 'fontWeight', c.fontWeight || 700);
-  const providerLogoHeight = subValue(c, 'provider', 'imageSize', c.providerLogoHeight ?? 34);
-  const providerLogoWidth = subValue(c, 'provider', 'width', c.providerLogoWidth ?? Math.round((Number(providerLogoHeight) || 34) * 4.7));
+  const providerLogoHeight = subValue(c, 'provider', 'imageSize', c.providerLogoHeight ?? 29);
+  const providerLogoWidth = subValue(c, 'provider', 'width', c.providerLogoWidth ?? Math.round((Number(providerLogoHeight) || 29) * 3.25));
   const providerLogoRadius = subValue(c, 'provider', 'radius', c.providerLogoRadius ?? 0);
   const providerLogoFit = subValue(c, 'provider', 'imageFit', c.providerLogoFit || 'contain');
   const slotTitleFontFamily = subValue(c, 'slotTitle', 'fontFamily', fontFamily);
@@ -704,7 +704,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const maxWinStyle = flexSizedStyle(subElementStyle(c, 'maxWin'), 'flex');
   const volatilityStyle = flexSizedStyle(subElementStyle(c, 'volatility'), 'flex');
   const rawPersonalBestStyle = flexSizedStyle(subElementStyle(c, 'personalBest'), 'flex');
-  const personalBestStyle = isStyleSeca ? {
+  const nonVerticalNoWrap = !isVertical;
+  const personalBestStyle = nonVerticalNoWrap ? {
     ...rawPersonalBestStyle,
     display: 'inline-flex',
     flex: '0 0 auto',
@@ -717,14 +718,14 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     whiteSpace: 'nowrap',
   } : rawPersonalBestStyle;
   const labelStyle = subElementStyle(c, 'label');
-  const bestWinLabelStyle = isStyleSeca ? {
+  const bestWinLabelStyle = nonVerticalNoWrap ? {
     ...labelStyle,
     display: 'inline',
     width: 'auto',
     maxWidth: 'none',
     whiteSpace: 'nowrap',
   } : labelStyle;
-  const bestWinValueStyle = isStyleSeca ? {
+  const bestWinValueStyle = nonVerticalNoWrap ? {
     display: 'inline-flex',
     flexDirection: 'row',
     flexWrap: 'nowrap',
@@ -734,11 +735,13 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     minWidth: 'max-content',
     whiteSpace: 'nowrap',
   } : undefined;
-  const bestWinGroupStyle = isStyleSeca ? {
+  const bestWinGroupStyle = nonVerticalNoWrap ? {
     display: 'inline-flex',
     flex: '0 0 auto',
     flexWrap: 'nowrap',
     minWidth: 'max-content',
+    maxWidth: 'none',
+    overflow: 'visible',
   } : undefined;
   const dividerStyle = subElementStyle(c, 'divider');
   const spinnerStyle = subElementStyle(c, 'spinner');
