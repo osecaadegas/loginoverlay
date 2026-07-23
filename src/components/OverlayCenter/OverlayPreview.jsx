@@ -58,14 +58,10 @@ function buildElementSelectionCss(
         outline: 3px solid rgba(94, 234, 212, 0.98) !important;
         outline-offset: 4px;
         box-shadow: 0 0 0 5px rgba(20, 184, 166, 0.18) !important;
-    const appearanceNode = event.target?.closest?.("[data-widget-element]");
-    const stateId = appearanceNode?.dataset?.widgetState || "default";
-    onSelectElement?.({
-      widget,
-      appearanceId: appearanceNode?.dataset?.appearanceId || "",
-      elementId,
-      stateId,
-    });
+      }
+    `);
+  }
+  for (const elementId of hiddenElementIds || []) {
     rules.push(`
       ${widgetSelector} [data-widget-element="${escapeCssAttr(elementId)}"] {
         opacity: 0.18 !important;
@@ -189,10 +185,14 @@ const PreviewSlot = memo(function PreviewSlot({
       return false;
     event.preventDefault();
     event.stopPropagation();
-    const stateId =
-      event.target?.closest?.("[data-widget-element]")?.dataset
-        ?.widgetState || "default";
-    onSelectElement?.({ widget, elementId, stateId });
+    const appearanceNode = event.target?.closest?.("[data-widget-element]");
+    const stateId = appearanceNode?.dataset?.widgetState || "default";
+    onSelectElement?.({
+      widget,
+      appearanceId: appearanceNode?.dataset?.appearanceId || "",
+      elementId,
+      stateId,
+    });
     const startX = event.clientX;
     const startY = event.clientY;
     const startOffset = getElementOffsets(cfg, elementId);
@@ -416,9 +416,9 @@ const PreviewSlot = memo(function PreviewSlot({
 
 export default function OverlayPreview({
   widgets,
-                  appearanceId: elementNode.dataset?.appearanceId || "",
-                  elementId: elementNode.dataset?.widgetElement,
-                  stateId: elementNode.dataset?.widgetState || "default",
+  theme,
+  appearance,
+  userId,
   selectedWidgetId,
   selectedTarget,
   selectedElementId,
