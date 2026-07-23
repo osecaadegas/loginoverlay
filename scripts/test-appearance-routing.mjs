@@ -99,6 +99,121 @@ try {
   );
   assert.equal(routing.getScopedAppearanceValue(state, betsRoute), "#666666");
 
+  let scopedConfig = routing.setScopedAppearanceConfigValue(
+    { displayStyle: "v12_classic_sr" },
+    bonusSlotCardRoute,
+    "#225577",
+  );
+  scopedConfig = routing.setScopedAppearanceConfigValue(
+    scopedConfig,
+    {
+      ...bonusSlotCardRoute,
+      stateId: "opened",
+    },
+    "#113355",
+  );
+  assert.equal(
+    routing.getScopedAppearanceConfigValue(scopedConfig, bonusSlotCardRoute),
+    "#225577",
+  );
+  assert.equal(
+    routing.getScopedAppearanceConfigValue(scopedConfig, {
+      ...bonusSlotCardRoute,
+      stateId: "opened",
+    }),
+    "#113355",
+  );
+  assert.equal(
+    scopedConfig.__appearanceExplicitSubElements.slotRow.backgroundColor,
+    "#225577",
+    "Scoped config writes renderer-compatible explicit element values",
+  );
+  assert.equal(
+    scopedConfig.__appearanceExplicitSubElements.slotRow.states.opened
+      .backgroundColor,
+    "#113355",
+    "Scoped config writes renderer-compatible explicit state values",
+  );
+
+  scopedConfig = routing.setScopedAppearanceConfigValue(
+    scopedConfig,
+    {
+      widgetType: "bonus_hunt",
+      widgetVariant: "v12_classic_sr",
+      elementId: "slotRow",
+      propertyId: "visible",
+    },
+    false,
+  );
+  assert.equal(
+    routing.getScopedAppearanceConfigValue(scopedConfig, {
+      widgetType: "bonus_hunt",
+      widgetVariant: "v12_classic_sr",
+      elementId: "slotRow",
+      propertyId: "visible",
+    }),
+    false,
+    "Route-level visibility writes are scoped to the selected element",
+  );
+
+  scopedConfig = routing.removeScopedAppearanceConfigValue(
+    scopedConfig,
+    bonusSlotCardRoute,
+  );
+  assert.equal(
+    routing.getScopedAppearanceConfigValue(scopedConfig, bonusSlotCardRoute),
+    undefined,
+    "Scoped config resets remove canonical default-state values",
+  );
+  assert.equal(
+    scopedConfig.__appearanceExplicitSubElements.slotRow.backgroundColor,
+    undefined,
+    "Scoped config resets remove renderer default-state values",
+  );
+
+  const migratedConfig = routing.normalizeScopedAppearanceConfig(
+    {
+      displayStyle: "v12_classic_sr",
+      subElements: {
+        slotRow: {
+          backgroundColor: "#101010",
+          imageSize: 500,
+          states: {
+            opened: {
+              backgroundColor: "#202020",
+              imageSize: 300,
+            },
+          },
+        },
+      },
+    },
+    { widgetType: "bonus_hunt", widgetVariant: "v12_classic_sr" },
+  );
+  assert.equal(
+    routing.getScopedAppearanceConfigValue(migratedConfig, bonusSlotCardRoute),
+    "#101010",
+    "Legacy subElements migrate into canonical scoped state",
+  );
+  assert.equal(
+    routing.getScopedAppearanceConfigValue(migratedConfig, {
+      ...bonusSlotCardRoute,
+      stateId: "opened",
+    }),
+    "#202020",
+    "Legacy state subElements migrate into canonical scoped state",
+  );
+  assert.equal(
+    migratedConfig.__appearanceExplicitSubElements.slotRow.imageSize,
+    undefined,
+    "Unsupported legacy element properties do not enter renderer-compatible explicit state",
+  );
+  assert.equal(
+    migratedConfig.__appearanceExplicitSubElements.slotRow.states.opened
+      .imageSize,
+    undefined,
+    "Unsupported legacy state properties do not enter renderer-compatible explicit state",
+  );
+
   assert.notEqual(
     routing.getScopedAppearanceValue(state, bonusBackgroundRoute),
     routing.getScopedAppearanceValue(state, bonusSlotCardRoute),
@@ -144,6 +259,22 @@ try {
       ),
     /Invalid appearance route/,
     "Invalid element routes do not fallback-update another element",
+  );
+
+  assert.throws(
+    () =>
+      routing.setScopedAppearanceConfigValue(
+        {},
+        {
+          widgetType: "bonus_hunt",
+          widgetVariant: "v12_classic_sr",
+          elementId: "statCell",
+          propertyId: "imageSize",
+        },
+        250,
+      ),
+    /Invalid appearance route/,
+    "Unsupported controls do not write scoped config",
   );
 
   const domAttrs = routing.getAppearanceDomAttributes({

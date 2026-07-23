@@ -6,6 +6,10 @@ import {
 
 export const SCOPED_APPEARANCE_SCHEMA_VERSION = 3;
 
+export const SCOPED_APPEARANCE_CONFIG_KEY = "__appearanceScopedState";
+export const EXPLICIT_SUB_ELEMENTS_CONFIG_KEY =
+  "__appearanceExplicitSubElements";
+
 const WIDGET_TYPE_ALIASES = Object.freeze({
   bonus_hunt: "bonusHunt",
   current_slot: "currentSlot",
@@ -255,7 +259,13 @@ export function validateAppearanceRoute(route) {
   const controls = new Set(element?.controls || []);
   const validationProperty =
     PROPERTY_CONTROL_ALIASES[route.propertyId] || route.propertyId;
-  if (element && controls.size && !controls.has(validationProperty)) {
+  const isRouteLevelProperty = validationProperty === "visible";
+  if (
+    element &&
+    controls.size &&
+    !isRouteLevelProperty &&
+    !controls.has(validationProperty)
+  ) {
     errors.push(
       `Unsupported property ${route.propertyId} for ${route.elementId}`,
     );
@@ -266,6 +276,95 @@ export function validateAppearanceRoute(route) {
 
 function cloneState(state) {
   return structuredClone(state || {});
+}
+
+function isObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function cloneObject(value) {
+  return isObject(value) ? structuredClone(value) : {};
+}
+
+function isEmptyObject(value) {
+  return isObject(value) && Object.keys(value).length === 0;
+}
+
+function setNestedValue(source, path, value) {
+  const [head, ...tail] = path;
+  if (!head) return source;
+  const next = cloneObject(source);
+  if (!tail.length) {
+    if (value === undefined) delete next[head];
+    else next[head] = value;
+    return next;
+  }
+  next[head] = setNestedValue(next[head], tail, value);
+  if (isEmptyObject(next[head])) delete next[head];
+  return next;
+}
+
+function readScopedStateFromConfig(config = {}) {
+  if (isObject(config[SCOPED_APPEARANCE_CONFIG_KEY])) {
+    return config[SCOPED_APPEARANCE_CONFIG_KEY];
+  }
+  return {};
+}
+
+function writeExplicitSubElementValue(source, route, value, stateId = "default") {
+  const path =
+    stateId && stateId !== "default"
+      ? [route.registryElementId, "states", stateId, route.propertyId]
+      : [route.registryElementId, route.propertyId];
+  return setNestedValue(source, path, value);
+}
+
+function removeExplicitSubElementValue(source, route, stateId = "default") {
+  return writeExplicitSubElementValue(source, route, undefined, stateId);
+}
+
+function writeScopedStateValue(state, rawRoute, value, stateId = "default") {
+  const route = createAppearanceRoute(rawRoute);
+  const next = cloneState(state);
+  next.schemaVersion = SCOPED_APPEARANCE_SCHEMA_VERSION;
+  next.widgets ??= {};
+  next.widgets[route.widgetType] ??= { variants: {} };
+  next.widgets[route.widgetType].variants[route.widgetVariant] ??= {
+    elements: {},
+  };
+  next.widgets[route.widgetType].variants[route.widgetVariant].elements[
+    route.elementId
+  ] ??= {};
+  const elementBucket =
+    next.widgets[route.widgetType].variants[route.widgetVariant].elements[
+      route.elementId
+    ];
+  let propertyBucket = elementBucket;
+  if (stateId && stateId !== "default") {
+    elementBucket.states ??= {};
+    elementBucket.states[stateId] ??= {};
+    propertyBucket = elementBucket.states[stateId];
+  }
+  propertyBucket[route.propertyId] = value;
+  return next;
+}
+
+function removeScopedStateValue(state, rawRoute, stateId = "default") {
+  const route = createAppearanceRoute(rawRoute);
+  const path = [
+    "widgets",
+    route.widgetType,
+    "variants",
+    route.widgetVariant,
+    "elements",
+    route.elementId,
+    ...(stateId && stateId !== "default"
+      ? ["states", stateId, route.propertyId]
+      : [route.propertyId]),
+  ];
+  const next = setNestedValue(cloneState(state), path, undefined);
+  next.schemaVersion = SCOPED_APPEARANCE_SCHEMA_VERSION;
+  return next;
 }
 
 export function setScopedAppearanceValue(state, rawRoute, value) {
@@ -292,10 +391,186 @@ export function setScopedAppearanceValue(state, rawRoute, value) {
   return next;
 }
 
+export function setScopedAppearanceConfigValue(config, rawRoute, value) {
+  const validation = validateAppearanceRoute(rawRoute);
+  if (!validation.valid) {
+    throw new Error(
+      `Invalid appearance route: ${validation.errors.join(", ")}`,
+    );
+  }
+  const route = createAppearanceRoute(rawRoute);
+  const stateId = rawRoute.stateId || "default";
+  const next = cloneObject(config);
+  next[SCOPED_APPEARANCE_CONFIG_KEY] = writeScopedStateValue(
+    readScopedStateFromConfig(next),
+    rawRoute,
+    value,
+    stateId,
+  );
+  next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] = writeExplicitSubElementValue(
+    next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] || {},
+    route,
+    value,
+    stateId,
+  );
+  return next;
+}
+
+export function removeScopedAppearanceConfigValue(config, rawRoute) {
+  const validation = validateAppearanceRoute(rawRoute);
+  if (!validation.valid) {
+    throw new Error(
+      `Invalid appearance route: ${validation.errors.join(", ")}`,
+    );
+  }
+  const route = createAppearanceRoute(rawRoute);
+  const stateId = rawRoute.stateId || "default";
+  const next = cloneObject(config);
+  next[SCOPED_APPEARANCE_CONFIG_KEY] = removeScopedStateValue(
+    readScopedStateFromConfig(next),
+    rawRoute,
+    stateId,
+  );
+  next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] = removeExplicitSubElementValue(
+    next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] || {},
+    route,
+    stateId,
+  );
+  return next;
+}
+
+export function removeScopedAppearanceConfigElement(config, rawRoute) {
+  const route = createAppearanceRoute({ ...rawRoute, propertyId: "background" });
+  const stateId = rawRoute.stateId || "default";
+  const next = cloneObject(config);
+  const scopedPath = [
+    "widgets",
+    route.widgetType,
+    "variants",
+    route.widgetVariant,
+    "elements",
+    route.elementId,
+    ...(stateId && stateId !== "default" ? ["states", stateId] : []),
+  ];
+  next[SCOPED_APPEARANCE_CONFIG_KEY] = setNestedValue(
+    readScopedStateFromConfig(next),
+    scopedPath,
+    undefined,
+  );
+  const explicitPath =
+    stateId && stateId !== "default"
+      ? [route.registryElementId, "states", stateId]
+      : [route.registryElementId];
+  next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] = setNestedValue(
+    next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] || {},
+    explicitPath,
+    undefined,
+  );
+  return next;
+}
+
+function applyMigratedRoute(config, route, value) {
+  if (value === undefined || !validateAppearanceRoute(route).valid) {
+    return config;
+  }
+  return setScopedAppearanceConfigValue(config, route, value);
+}
+
+function migrateElementBaseOverrides(config, context, elementId, element) {
+  let next = config;
+  for (const [propertyId, value] of Object.entries(element)) {
+    if (propertyId === "states") continue;
+    next = applyMigratedRoute(
+      next,
+      { ...context, elementId, propertyId },
+      value,
+    );
+  }
+  return next;
+}
+
+function migrateElementStateOverrides(config, context, elementId, states) {
+  let next = config;
+  if (!isObject(states)) return next;
+  for (const [stateId, stateValues] of Object.entries(states)) {
+    if (!isObject(stateValues)) continue;
+    for (const [propertyId, value] of Object.entries(stateValues)) {
+      next = applyMigratedRoute(
+        next,
+        { ...context, elementId, propertyId, stateId },
+        value,
+      );
+    }
+  }
+  return next;
+}
+
+function migrateElementOverrideSet(config, context, elements) {
+  let next = config;
+  if (!isObject(elements)) return next;
+  for (const [elementId, element] of Object.entries(elements)) {
+    if (!isObject(element)) continue;
+    next = migrateElementBaseOverrides(next, context, elementId, element);
+    next = migrateElementStateOverrides(
+      next,
+      context,
+      elementId,
+      element.states,
+    );
+  }
+  return next;
+}
+
+function migrateElementOverridesIntoConfig(config, widgetType, widgetVariant) {
+  const source = cloneObject(config);
+  const existingExplicit = source[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY];
+  source[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] = {};
+  const context = { widgetType, widgetVariant };
+  return [
+    source.subElements,
+    source.elements,
+    source.appearanceV2?.elementOverrides,
+    existingExplicit,
+  ].reduce(
+    (next, elements) => migrateElementOverrideSet(next, context, elements),
+    source,
+  );
+}
+
+export function normalizeScopedAppearanceConfig(
+  config,
+  { widgetType, widgetVariant } = {},
+) {
+  const next = migrateElementOverridesIntoConfig(
+    config,
+    widgetType,
+    widgetVariant,
+  );
+  next[SCOPED_APPEARANCE_CONFIG_KEY] ??= {
+    schemaVersion: SCOPED_APPEARANCE_SCHEMA_VERSION,
+    widgets: {},
+  };
+  next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY] ??= {};
+  return next;
+}
+
 export function getScopedAppearanceValue(state, rawRoute) {
   const route = createAppearanceRoute(rawRoute);
-  return state?.widgets?.[route.widgetType]?.variants?.[route.widgetVariant]
-    ?.elements?.[route.elementId]?.[route.propertyId];
+  const element =
+    state?.widgets?.[route.widgetType]?.variants?.[route.widgetVariant]
+      ?.elements?.[route.elementId];
+  if (rawRoute.stateId && rawRoute.stateId !== "default") {
+    const stateValue = element?.states?.[rawRoute.stateId]?.[route.propertyId];
+    if (stateValue !== undefined) return stateValue;
+  }
+  return element?.[route.propertyId];
+}
+
+export function getScopedAppearanceConfigValue(config, rawRoute) {
+  return getScopedAppearanceValue(
+    readScopedStateFromConfig(config),
+    rawRoute,
+  );
 }
 
 export function getAppearanceDomAttributes({

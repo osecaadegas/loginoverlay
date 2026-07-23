@@ -91,6 +91,11 @@ import {
 } from "./v2/appearanceResolver";
 import {
   createAppearanceRoute,
+  getScopedAppearanceConfigValue,
+  normalizeScopedAppearanceConfig,
+  removeScopedAppearanceConfigElement,
+  removeScopedAppearanceConfigValue,
+  setScopedAppearanceConfigValue,
   validateAppearanceRoute,
 } from "./v2/appearanceRouting";
 import {
@@ -1471,6 +1476,12 @@ function countAdvancedOverrides(draft, selectedTargetRoot) {
     countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.elements`)) +
     countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.subElements`)) +
     countObjectLeaves(
+      getByPath(draft, `${selectedTargetRoot}.__appearanceScopedState`),
+    ) +
+    countObjectLeaves(
+      getByPath(draft, `${selectedTargetRoot}.__appearanceExplicitSubElements`),
+    ) +
+    countObjectLeaves(
       getByPath(draft, `${selectedTargetRoot}.appearanceV2.elementOverrides`),
     )
   );
@@ -1986,7 +1997,9 @@ function toggleAppearanceElementVisibility({
   draft,
   elementId,
   isElementLocked,
+  selectedTarget,
   selectedTargetRoot,
+  selectedWidgetType,
   selectedWidgetUsesV2,
 }) {
   if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
@@ -1995,6 +2008,33 @@ function toggleAppearanceElementVisibility({
     selectedTargetRoot,
     elementId,
   );
+  if (selectedWidgetUsesV2) {
+    const scopedRoute = buildScopedAppearanceRoute({
+      controlId: "visible",
+      elementId,
+      selectedTarget,
+      selectedWidgetType,
+    });
+    const routeValidation = validateAppearanceRoute(scopedRoute);
+    if (!routeValidation.valid) {
+      console.warn(
+        "[AppearanceCenter] blocked invalid appearance visibility route",
+        routeValidation.errors,
+      );
+      return;
+    }
+    commitDraft(
+      (prev) =>
+        setScopedConfigAtRoot(
+          prev,
+          selectedTargetRoot,
+          scopedRoute,
+          nextVisible,
+        ),
+      `${elementId}.${nextVisible ? "show" : "hide"}`,
+    );
+    return;
+  }
   const path = selectedWidgetUsesV2
     ? resolveV2ElementOverridePath(selectedTargetRoot, elementId, "visible")
     : resolveElementPath(selectedTargetRoot, elementId, "visible");
@@ -2017,13 +2057,15 @@ function updateAppearanceElementControl({
   value,
 }) {
   if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+  const scopedRoute = buildScopedAppearanceRoute({
+    controlId: control.id,
+    elementId,
+    selectedStateId,
+    selectedTarget,
+    selectedWidgetType,
+  });
   if (selectedWidgetUsesV2) {
-    const routeValidation = validateAppearanceRoute({
-      widgetType: selectedWidgetType,
-      widgetVariant: selectedTarget?.styleId,
-      elementId,
-      propertyId: control.id,
-    });
+    const routeValidation = validateAppearanceRoute(scopedRoute);
     if (!routeValidation.valid) {
       console.warn(
         "[AppearanceCenter] blocked invalid appearance route",
@@ -2039,13 +2081,35 @@ function updateAppearanceElementControl({
     (!selectedStateId || selectedStateId === "default");
   if (isDefaultContainerSize) {
     commitDraft(
-      (prev) =>
-        setWidgetSizeOverridePaths(
+      (prev) => {
+        const next = setWidgetSizeOverridePaths(
           prev,
           selectedTargetRoot,
           control.id,
           normalized,
           selectedWidgetUsesV2,
+        );
+        return selectedWidgetUsesV2
+          ? setScopedConfigAtRoot(
+              next,
+              selectedTargetRoot,
+              scopedRoute,
+              normalized,
+            )
+          : next;
+      },
+      `${elementId}.${control.id}`,
+    );
+    return;
+  }
+  if (selectedWidgetUsesV2) {
+    commitDraft(
+      (prev) =>
+        setScopedConfigAtRoot(
+          prev,
+          selectedTargetRoot,
+          scopedRoute,
+          normalized,
         ),
       `${elementId}.${control.id}`,
     );
@@ -2082,13 +2146,15 @@ function resetAppearanceElementControl({
   selectedWidgetUsesV2,
 }) {
   if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+  const scopedRoute = buildScopedAppearanceRoute({
+    controlId: control.id,
+    elementId,
+    selectedStateId,
+    selectedTarget,
+    selectedWidgetType,
+  });
   if (selectedWidgetUsesV2) {
-    const routeValidation = validateAppearanceRoute({
-      widgetType: selectedWidgetType,
-      widgetVariant: selectedTarget?.styleId,
-      elementId,
-      propertyId: control.id,
-    });
+    const routeValidation = validateAppearanceRoute(scopedRoute);
     if (!routeValidation.valid) {
       console.warn(
         "[AppearanceCenter] blocked invalid appearance reset route",
@@ -2103,13 +2169,24 @@ function resetAppearanceElementControl({
     (!selectedStateId || selectedStateId === "default");
   if (isDefaultContainerSize) {
     commitDraft(
-      (prev) =>
-        omitWidgetSizeOverridePaths(
+      (prev) => {
+        const next = omitWidgetSizeOverridePaths(
           prev,
           selectedTargetRoot,
           control.id,
           selectedWidgetUsesV2,
-        ),
+        );
+        return selectedWidgetUsesV2
+          ? removeScopedConfigValueAtRoot(next, selectedTargetRoot, scopedRoute)
+          : next;
+      },
+      `Reset ${elementId}.${control.id}`,
+    );
+    return;
+  }
+  if (selectedWidgetUsesV2) {
+    commitDraft(
+      (prev) => removeScopedConfigValueAtRoot(prev, selectedTargetRoot, scopedRoute),
       `Reset ${elementId}.${control.id}`,
     );
     return;
@@ -2427,7 +2504,10 @@ function resetSelectedElementAppearance({
   selectedElement,
   selectedLayerLocked,
   selectedStateId,
+  selectedTarget,
   selectedTargetRoot,
+  selectedWidgetType,
+  selectedWidgetUsesV2,
 }) {
   if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked)
     return;
@@ -2442,8 +2522,23 @@ function resetSelectedElementAppearance({
     ? `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}.states.${selectedStateId}`
     : `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
   commitDraft(
-    (prev) =>
-      omitPath(omitPath(omitPath(prev, modernPath), legacyPath), v2Path),
+    (prev) => {
+      const withoutLegacy = omitPath(
+        omitPath(omitPath(prev, modernPath), legacyPath),
+        v2Path,
+      );
+      if (!selectedWidgetUsesV2) return withoutLegacy;
+      return removeScopedConfigElementAtRoot(
+        withoutLegacy,
+        selectedTargetRoot,
+        {
+          widgetType: selectedWidgetType,
+          widgetVariant: selectedTarget?.styleId,
+          elementId: selectedElement.id,
+          stateId: selectedStateId || "default",
+        },
+      );
+    },
     `Reset ${selectedElement.id}`,
   );
 }
@@ -2602,9 +2697,29 @@ function readElementControlValue({
   draft,
   elementId,
   selectedStateId,
+  selectedTarget,
   selectedTargetRoot,
+  selectedWidgetType,
+  selectedWidgetUsesV2,
 }) {
   if (!selectedTargetRoot || !elementId || !controlId) return undefined;
+  if (selectedWidgetUsesV2) {
+    const currentConfig = normalizeScopedAppearanceConfig(
+      getByPath(draft, selectedTargetRoot) || {},
+      {
+        widgetType: selectedWidgetType,
+        widgetVariant: selectedTarget?.styleId,
+      },
+    );
+    const scopedValue = getScopedAppearanceConfigValue(currentConfig, {
+      widgetType: selectedWidgetType,
+      widgetVariant: selectedTarget?.styleId,
+      elementId,
+      propertyId: controlId,
+      stateId: selectedStateId || "default",
+    });
+    if (scopedValue !== undefined) return scopedValue;
+  }
   const v2Path = resolveV2ElementOverridePath(
     selectedTargetRoot,
     elementId,
@@ -2873,6 +2988,60 @@ function resolveV2ElementOverridePath(
     return `${root}.appearanceV2.elementOverrides.${elementId}.states.${stateId}.${property}`;
   }
   return `${root}.appearanceV2.elementOverrides.${elementId}.${property}`;
+}
+
+function buildScopedAppearanceRoute({
+  controlId,
+  elementId,
+  selectedStateId,
+  selectedTarget,
+  selectedWidgetType,
+}) {
+  return {
+    widgetType: selectedWidgetType,
+    widgetVariant: selectedTarget?.styleId,
+    elementId,
+    propertyId: controlId,
+    stateId: selectedStateId || "default",
+  };
+}
+
+function normalizeScopedConfigAtRoot(source, root, route) {
+  const current = getByPath(source, root) || {};
+  return normalizeScopedAppearanceConfig(current, {
+    widgetType: route.widgetType,
+    widgetVariant: route.widgetVariant,
+  });
+}
+
+function setScopedConfigAtRoot(source, root, route, value) {
+  if (!root) return source;
+  const normalized = normalizeScopedConfigAtRoot(source, root, route);
+  return setByPath(
+    source,
+    root,
+    setScopedAppearanceConfigValue(normalized, route, value),
+  );
+}
+
+function removeScopedConfigValueAtRoot(source, root, route) {
+  if (!root) return source;
+  const normalized = normalizeScopedConfigAtRoot(source, root, route);
+  return setByPath(
+    source,
+    root,
+    removeScopedAppearanceConfigValue(normalized, route),
+  );
+}
+
+function removeScopedConfigElementAtRoot(source, root, route) {
+  if (!root) return source;
+  const normalized = normalizeScopedConfigAtRoot(source, root, route);
+  return setByPath(
+    source,
+    root,
+    removeScopedAppearanceConfigElement(normalized, route),
+  );
 }
 
 function setWidgetSizeOverridePaths(
@@ -5391,7 +5560,9 @@ export default function AppearanceCenter({
         draft,
         elementId,
         isElementLocked,
+        selectedTarget,
         selectedTargetRoot,
+        selectedWidgetType,
         selectedWidgetUsesV2,
       });
     },
@@ -5399,7 +5570,9 @@ export default function AppearanceCenter({
       commitDraft,
       draft,
       isElementLocked,
+      selectedTarget,
       selectedTargetRoot,
+      selectedWidgetType,
       selectedWidgetUsesV2,
     ],
   );
@@ -5584,14 +5757,20 @@ export default function AppearanceCenter({
       selectedElement,
       selectedLayerLocked,
       selectedStateId,
+      selectedTarget,
       selectedTargetRoot,
+      selectedWidgetType,
+      selectedWidgetUsesV2,
     });
   }, [
     commitDraft,
     selectedElement?.id,
     selectedLayerLocked,
     selectedStateId,
+    selectedTarget,
     selectedTargetRoot,
+    selectedWidgetType,
+    selectedWidgetUsesV2,
   ]);
 
   const resetWidget = useCallback(() => {
@@ -5700,9 +5879,19 @@ export default function AppearanceCenter({
         draft,
         elementId,
         selectedStateId,
+        selectedTarget,
         selectedTargetRoot,
+        selectedWidgetType,
+        selectedWidgetUsesV2,
       }),
-    [draft, selectedStateId, selectedTargetRoot],
+    [
+      draft,
+      selectedStateId,
+      selectedTarget,
+      selectedTargetRoot,
+      selectedWidgetType,
+      selectedWidgetUsesV2,
+    ],
   );
 
   const backgroundSourceMode = useMemo(() => {
