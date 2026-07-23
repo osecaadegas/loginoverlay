@@ -14,6 +14,7 @@ import {
   Radar,
   Route,
   ShieldCheck,
+  SlidersHorizontal,
   Tags,
   TerminalSquare,
   Trophy,
@@ -35,6 +36,7 @@ export default function AppsPage() {
   const tiles = [
     ...(hasOverlayAccess ? [
       { to: '/overlay-center', label: 'Overlay Center', desc: 'OBS widgets and tools', icon: MonitorUp, tone: 'teal', art: 'overlay-center' },
+      { to: '/overlay-center/presets', label: 'Widget Library', desc: 'Save and load presets', icon: SlidersHorizontal, tone: 'violet', art: 'guided-setup' },
       { to: '/slot-detector', label: 'Slot Detector', desc: 'Auto-detect active slot', icon: Radar, tone: 'cyan', art: 'slot-detector' },
     ] : []),
     ...(user ? [{ to: '/player/bonus-hunt', label: 'Bonus Hunt', desc: 'Player hunt tracker', icon: Trophy, tone: 'blue', art: 'bonus-hunt' }] : []),
