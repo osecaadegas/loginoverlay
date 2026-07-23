@@ -1654,11 +1654,11 @@ export default function AppearanceCenter({
 
   const persistDraft = useCallback(
     async (nextDraft = draft, reason = "manual") => {
-      if (!updateState) return;
+      if (!updateState) return false;
       const normalized = normalizeAppearance(nextDraft, { theme });
       const serialized = safeJson(normalized);
       if (serialized === lastPersistedDraftRef.current && reason !== "manual")
-        return;
+        return true;
       setSaveStatus("saving");
       setStatusMessage("Saving draft...");
       try {
@@ -1681,6 +1681,7 @@ export default function AppearanceCenter({
           ANALYTICS_EVENTS.APPEARANCE_DRAFT_SAVED || "appearance_draft_saved",
           { reason },
         );
+        return true;
       } catch (err) {
         console.error("[AppearanceCenter] save draft failed", err);
         setSaveStatus("failed");
@@ -1690,6 +1691,7 @@ export default function AppearanceCenter({
           ANALYTICS_EVENTS.APPEARANCE_SAVE_FAILED || "appearance_save_failed",
           { reason },
         );
+        return false;
       }
     },
     [draft, serverState, theme, updateState],
@@ -2833,10 +2835,21 @@ export default function AppearanceCenter({
           setToast("No matching widgets found for this style pack");
           return;
         }
+        const importedAppearance = normalizeAppearance(result.appearance, {
+          theme,
+        });
         commitDraft(
-          result.appearance,
+          importedAppearance,
           `Import widget style pack (${result.applied} widgets)`,
         );
+        clearTimeout(saveTimerRef.current);
+        setSaveStatus("saving");
+        setStatusMessage("Saving imported styles...");
+        const saved = await persistDraft(
+          importedAppearance,
+          "import-widget-styles",
+        );
+        if (!saved) return;
         const skippedCount = result.skipped.reduce(
           (sum, item) => sum + Number(item.count || 0),
           0,
@@ -2851,7 +2864,7 @@ export default function AppearanceCenter({
         setToast("Could not import style pack");
       }
     },
-    [addWidget, commitDraft, draft, widgets],
+    [addWidget, commitDraft, draft, persistDraft, theme, widgets],
   );
 
   const resetElement = useCallback(() => {
