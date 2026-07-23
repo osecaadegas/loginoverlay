@@ -2069,20 +2069,18 @@ export default function AppearanceCenter({
         selectedWidget.widget_type,
         styleId,
       );
-      if (saveWidget) {
+      if (defaultSize && saveWidget) {
         const def = getWidgetDef(selectedWidget.widget_type);
         const styleKey = def?.styleConfigKey || "displayStyle";
         const nextConfig = selectedWidget.config
           ? { ...selectedWidget.config, [styleKey]: styleId }
           : { [styleKey]: styleId };
-        const styleWidgetPatch = defaultSize
-          ? {
-              width: defaultSize.width,
-              height: defaultSize.height,
-              config: nextConfig,
-            }
-          : { config: nextConfig };
-        saveWidget({ ...selectedWidget, ...styleWidgetPatch }).catch((err) => {
+        saveWidget({
+          ...selectedWidget,
+          width: defaultSize.width,
+          height: defaultSize.height,
+          config: nextConfig,
+        }).catch((err) => {
           console.error("[AppearanceCenter] style size update failed", err);
         });
       }
