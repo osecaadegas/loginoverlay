@@ -100,7 +100,19 @@ const PreviewSlot = memo(function PreviewSlot({
   const si = cfg.shadowIntensity ?? 0;
   const hasShadow = ss > 0 && si > 0;
   const slotSize = getWidgetSlotSize(widget);
-  const { needsVisibleOverflow } = getWidgetSlotBehavior(widget);
+  const slotBehavior = getWidgetSlotBehavior(widget);
+  const { needsVisibleOverflow, needsClip, widgetRadius, isNavbar } = slotBehavior;
+  const clipContent = !isBg && !isNavbar && needsClip;
+  const viewportOverflow = isBg || isNavbar || needsVisibleOverflow || needsClip ? 'visible' : 'hidden';
+  const viewportStyle = {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    overflow: viewportOverflow,
+    ...(clipContent
+      ? { clipPath: `inset(0 round ${widgetRadius}px)`, overflow: 'hidden' }
+      : {}),
+  };
   const highlighted = isWidgetHighlighted(widget, selectedTarget, selectedWidgetId);
   const draggingRef = useRef(false);
   const selectionCss = selectMode && highlighted
@@ -244,7 +256,7 @@ const PreviewSlot = memo(function PreviewSlot({
       width: isBg ? canvasWidth : slotSize.width,
       height: isBg ? canvasHeight : slotSize.height,
       zIndex: widget.z_index || 1,
-      overflow: isBg || needsVisibleOverflow ? 'visible' : 'hidden',
+      overflow: 'visible',
       cursor: isBg ? undefined : onMoveWidget ? 'grab' : selectMode ? 'crosshair' : undefined,
       opacity: dimmed ? 0.24 : 1,
       transition: 'opacity 140ms ease',
@@ -252,7 +264,9 @@ const PreviewSlot = memo(function PreviewSlot({
       ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
     }}>
       {selectionCss && <style>{selectionCss}</style>}
-      <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
+      <div className="oc-preview-widget-viewport" style={viewportStyle}>
+        <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
+      </div>
       {selectMode && highlighted && !isBg && onResizeWidget && (
         <button
           type="button"

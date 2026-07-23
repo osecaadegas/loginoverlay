@@ -16,6 +16,7 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
   /* ─── Preset system ─── */
   const [presetName, setPresetName] = useState('');
   const PRESET_KEYS = [
+    'rtpMetal',
     'barBgFrom', 'barBgVia', 'barBgTo', 'borderColor', 'borderWidth', 'borderRadius',
     'textColor', 'providerColor', 'slotNameColor', 'labelColor',
     'rtpIconColor', 'potentialIconColor', 'volatilityIconColor', 'bestWinIconColor', 'dividerColor', 'spinnerColor',

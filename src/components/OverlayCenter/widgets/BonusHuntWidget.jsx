@@ -1,16 +1,22 @@
-import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
-import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
-import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
-import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
-import BonusHuntWidgetV11 from './BonusHuntWidgetV11';
-import BonusHuntWidgetV12 from './BonusHuntWidgetV12';
-import SlotImage from './SlotImage';
-import { subValue } from './shared/appearanceStyles';
-import { useBonusHuntRequestsData } from './bonus-hunt/shared/useBonusHuntRequestsData';
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import BonusHuntWidgetV3 from "./BonusHuntWidgetV3";
+import BonusHuntWidgetV8 from "./BonusHuntWidgetV8";
+import BonusHuntWidgetV9 from "./BonusHuntWidgetV9";
+import BonusHuntWidgetV11 from "./BonusHuntWidgetV11";
+import BonusHuntWidgetV12 from "./BonusHuntWidgetV12";
+import SlotImage from "./SlotImage";
+import { subValue } from "./shared/appearanceStyles";
+import { useBonusHuntRequestsData } from "./bonus-hunt/shared/useBonusHuntRequestsData";
 
 function cssPx(value) {
-  if (value === undefined || value === null || value === '') return undefined;
-  return typeof value === 'number' ? `${value}px` : value;
+  if (value === undefined || value === null || value === "") return undefined;
+  return typeof value === "number" ? `${value}px` : value;
 }
 
 function BonusHuntWidget({ config, theme, userId }) {
@@ -20,19 +26,19 @@ function BonusHuntWidget({ config, theme, userId }) {
   const sortedConfig = useMemo(() => {
     const raw = c.bonuses || [];
     const sb = c.sortBy;
-    const sd = c.sortDir || 'asc';
-    if (!sb || sb === 'default') return c;
-    const dir = sd === 'desc' ? -1 : 1;
+    const sd = c.sortDir || "asc";
+    if (!sb || sb === "default") return c;
+    const dir = sd === "desc" ? -1 : 1;
     const sorted = [...raw].sort((a, b) => {
-      if (sb === 'bet') return ((a.betSize || 0) - (b.betSize || 0)) * dir;
-      if (sb === 'provider') {
-        const pa = (a.slot?.provider || '').toLowerCase();
-        const pb = (b.slot?.provider || '').toLowerCase();
+      if (sb === "bet") return ((a.betSize || 0) - (b.betSize || 0)) * dir;
+      if (sb === "provider") {
+        const pa = (a.slot?.provider || "").toLowerCase();
+        const pb = (b.slot?.provider || "").toLowerCase();
         if (pa !== pb) return pa.localeCompare(pb) * dir;
-        return (a.slotName || '').localeCompare(b.slotName || '') * dir;
+        return (a.slotName || "").localeCompare(b.slotName || "") * dir;
       }
-      if (sb === 'type') {
-        const rank = (x) => x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
+      if (sb === "type") {
+        const rank = (x) => (x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0);
         return (rank(b) - rank(a)) * dir;
       }
       return 0;
@@ -41,23 +47,33 @@ function BonusHuntWidget({ config, theme, userId }) {
   }, [c]);
 
   /* ─── Derived variables (must be before hooks that depend on them) ─── */
-  const ds = c.displayStyle || 'v1';
-  const isHorizontalBH = ds === 'v5_horizontal';
-  const isCompactBH = ds === 'v6_compact';
-  const isClassicRequestsBH = ds === 'v12_classic_sr' || ds === 'v12_classic_sr_editable';
+  const ds = c.displayStyle || "v1";
+  const isHorizontalBH = ds === "v5_horizontal";
+  const isCompactBH = ds === "v6_compact";
+  const isClassicRequestsBH =
+    ds === "v12_classic_sr" || ds === "v12_classic_sr_editable";
   const bonuses = sortedConfig.bonuses || [];
-  const currency = c.currency || '€';
+  const currency = c.currency || "€";
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
 
   /* ─── Derived stats ─── */
   const stats = useMemo(() => {
-    const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const openedBonuses = bonuses.filter(b => b.opened);
-    const totalBetOpened = openedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const totalWin = openedBonuses.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const totalBetAll = bonuses.reduce(
+      (s, b) => s + (Number(b.betSize) || 0),
+      0,
+    );
+    const openedBonuses = bonuses.filter((b) => b.opened);
+    const totalBetOpened = openedBonuses.reduce(
+      (s, b) => s + (Number(b.betSize) || 0),
+      0,
+    );
+    const totalWin = openedBonuses.reduce(
+      (s, b) => s + (Number(b.payout) || 0),
+      0,
+    );
     const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
-    const superCount = bonuses.filter(b => b.isSuperBonus).length;
+    const superCount = bonuses.filter((b) => b.isSuperBonus).length;
 
     const target = Math.max(startMoney - stopLoss, 0);
     const breakEven = totalBetAll > 0 ? target / totalBetAll : 0;
@@ -66,23 +82,39 @@ function BonusHuntWidget({ config, theme, userId }) {
     const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
 
     /* Best & worst opened slot by multiplier */
-    let bestSlot = null, worstSlot = null;
-    openedBonuses.forEach(b => {
+    let bestSlot = null,
+      worstSlot = null;
+    openedBonuses.forEach((b) => {
       const bet = Number(b.betSize) || 0;
       const pay = Number(b.payout) || 0;
       const multi = bet > 0 ? pay / bet : 0;
-      if (!bestSlot || multi > (bestSlot._multi || 0)) bestSlot = { ...b, _multi: multi, _payout: pay };
-      if (!worstSlot || multi < (worstSlot._multi || Infinity)) worstSlot = { ...b, _multi: multi, _payout: pay };
+      if (!bestSlot || multi > (bestSlot._multi || 0))
+        bestSlot = { ...b, _multi: multi, _payout: pay };
+      if (!worstSlot || multi < (worstSlot._multi || Infinity))
+        worstSlot = { ...b, _multi: multi, _payout: pay };
     });
 
-    return { totalBetAll, totalWin, superCount, breakEven, liveBE, avgMulti, openedCount: openedBonuses.length, bestSlot, worstSlot };
+    return {
+      totalBetAll,
+      totalWin,
+      superCount,
+      breakEven,
+      liveBE,
+      avgMulti,
+      openedCount: openedBonuses.length,
+      bestSlot,
+      worstSlot,
+    };
   }, [bonuses, startMoney, stopLoss]);
 
   /* ─── Stats flip toggle (10s interval, only during bonus opening) ─── */
   const [statsFlipped, setStatsFlipped] = useState(false);
   useEffect(() => {
-    if (!c.bonusOpening) { setStatsFlipped(false); return; }
-    const id = setInterval(() => setStatsFlipped(f => !f), 30000);
+    if (!c.bonusOpening) {
+      setStatsFlipped(false);
+      return;
+    }
+    const id = setInterval(() => setStatsFlipped((f) => !f), 30000);
     return () => clearInterval(id);
   }, [c.bonusOpening]);
 
@@ -107,7 +139,10 @@ function BonusHuntWidget({ config, theme, userId }) {
   const carouselAutoplay = c.carouselAutoplay !== false;
   useEffect(() => {
     if (!carouselAutoplay || isCompactBH || bonuses.length < 2) return;
-    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), carouselSpeedMs);
+    const id = setInterval(
+      () => setCarouselIdx((i) => (i + 1) % bonuses.length),
+      carouselSpeedMs,
+    );
     return () => clearInterval(id);
   }, [carouselAutoplay, isCompactBH, bonuses.length, carouselSpeedMs]);
 
@@ -118,81 +153,233 @@ function BonusHuntWidget({ config, theme, userId }) {
   });
 
   /* ─── Style switcher (early returns AFTER all hooks) ─── */
-  if (c.displayStyle === 'v3') {
+  if (c.displayStyle === "v3") {
     return <BonusHuntWidgetV3 config={sortedConfig} theme={theme} />;
   }
-  if (c.displayStyle === 'v8_card_stack') {
+  if (c.displayStyle === "v8_card_stack") {
     return <BonusHuntWidgetV8 config={sortedConfig} theme={theme} />;
   }
-  if (c.displayStyle === 'v9_hunt_board') {
+  if (c.displayStyle === "v9_hunt_board") {
     return <BonusHuntWidgetV9 config={sortedConfig} theme={theme} />;
   }
-  if (c.displayStyle === 'v11_fever') {
+  if (c.displayStyle === "v11_fever") {
     return <BonusHuntWidgetV11 config={sortedConfig} theme={theme} />;
   }
   if (isClassicRequestsBH) {
-    return <BonusHuntWidgetV12 config={sortedConfig} theme={theme} userId={userId} slotRequests={classicRequestRows} />;
+    return (
+      <BonusHuntWidgetV12
+        config={sortedConfig}
+        theme={theme}
+        userId={userId}
+        slotRequests={classicRequestRows}
+      />
+    );
   }
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
-  const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
+  const huntTitle = c.bonusOpening ? "BONUS OPENING" : "BONUS HUNT";
 
   /* ─── Custom style vars ─── */
-  const headerColor = subValue(c, 'header', 'background', c.headerColor || '#1e3a8a');
-  const headerAccent = subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa');
-  const countCardColor = subValue(c, 'card', 'background', c.countCardColor || '#1e3a8a');
-  const currentBonusColor = subValue(c, 'highlight', 'background', c.currentBonusColor || '#166534');
-  const currentBonusAccent = subValue(c, 'highlight', 'accentColor', c.currentBonusAccent || '#86efac');
-  const listCardColor = subValue(c, 'bonusCard', 'background', c.listCardColor || '#581c87');
-  const listCardAccent = subValue(c, 'bonusCard', 'accentColor', c.listCardAccent || '#cbd5e1');
-  const summaryColor = subValue(c, 'value', 'background', c.summaryColor || '#1e3a8a');
-  const totalPayColor = subValue(c, 'profit', 'background', c.totalPayColor || '#eab308');
-  const totalPayText = subValue(c, 'profit', 'textColor', c.totalPayText || '#ffffff');
-  const superBadgeColor = subValue(c, 'openedState', 'accentColor', c.superBadgeColor || '#eab308');
-  const extremeBadgeColor = subValue(c, 'loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
-  const textColor = subValue(c, 'bonusCard', 'textColor', c.textColor || '#ffffff');
-  const mutedTextColor = subValue(c, 'label', 'textColor', c.mutedTextColor || '#93c5fd');
-  const statValueColor = subValue(c, 'value', 'textColor', c.statValueColor || '#ffffff');
-  const cardOutlineColor = subValue(c, 'bonusCard', 'borderColor', c.cardOutlineColor || 'transparent');
-  const cardOutlineWidth = subValue(c, 'bonusCard', 'borderWidth', c.cardOutlineWidth ?? 2);
-  const fontFamily = subValue(c, 'bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
-  const fontSize = subValue(c, 'bonusCard', 'fontSize', c.fontSize ?? (isCompactBH ? 13 : 15));
-  const cardRadius = subValue(c, 'bonusCard', 'radius', c.cardRadius ?? (isCompactBH ? 8 : 16));
-  const cardGap = subValue(c, 'bonusCard', 'gap', c.cardGap ?? (isCompactBH ? 3 : 12));
+  const headerColor = subValue(
+    c,
+    "header",
+    "background",
+    c.headerColor || "#1e3a8a",
+  );
+  const headerAccent = subValue(
+    c,
+    "header",
+    "accentColor",
+    c.headerAccent || "#60a5fa",
+  );
+  const countCardColor = subValue(
+    c,
+    "card",
+    "background",
+    c.countCardColor || "#1e3a8a",
+  );
+  const currentBonusColor = subValue(
+    c,
+    "highlight",
+    "background",
+    c.currentBonusColor || "#166534",
+  );
+  const currentBonusAccent = subValue(
+    c,
+    "highlight",
+    "accentColor",
+    c.currentBonusAccent || "#86efac",
+  );
+  const listCardColor = subValue(
+    c,
+    "bonusCard",
+    "background",
+    c.listCardColor || "#581c87",
+  );
+  const listCardAccent = subValue(
+    c,
+    "bonusCard",
+    "accentColor",
+    c.listCardAccent || "#cbd5e1",
+  );
+  const summaryColor = subValue(
+    c,
+    "value",
+    "background",
+    c.summaryColor || "#1e3a8a",
+  );
+  const totalPayColor = subValue(
+    c,
+    "profit",
+    "background",
+    c.totalPayColor || "#eab308",
+  );
+  const totalPayText = subValue(
+    c,
+    "profit",
+    "textColor",
+    c.totalPayText || "#ffffff",
+  );
+  const superBadgeColor = subValue(
+    c,
+    "openedState",
+    "accentColor",
+    c.superBadgeColor || "#eab308",
+  );
+  const extremeBadgeColor = subValue(
+    c,
+    "loss",
+    "accentColor",
+    c.extremeBadgeColor || "#ef4444",
+  );
+  const textColor = subValue(
+    c,
+    "bonusCard",
+    "textColor",
+    c.textColor || "#ffffff",
+  );
+  const mutedTextColor = subValue(
+    c,
+    "label",
+    "textColor",
+    c.mutedTextColor || "#93c5fd",
+  );
+  const statValueColor = subValue(
+    c,
+    "value",
+    "textColor",
+    c.statValueColor || "#ffffff",
+  );
+  const cardOutlineColor = subValue(
+    c,
+    "bonusCard",
+    "borderColor",
+    c.cardOutlineColor || "transparent",
+  );
+  const cardOutlineWidth = subValue(
+    c,
+    "bonusCard",
+    "borderWidth",
+    c.cardOutlineWidth ?? 2,
+  );
+  const fontFamily = subValue(
+    c,
+    "bonusCard",
+    "fontFamily",
+    c.fontFamily || "'Inter', sans-serif",
+  );
+  const fontSize = subValue(
+    c,
+    "bonusCard",
+    "fontSize",
+    c.fontSize ?? (isCompactBH ? 13 : 15),
+  );
+  const cardRadius = subValue(
+    c,
+    "bonusCard",
+    "radius",
+    c.cardRadius ?? (isCompactBH ? 8 : 16),
+  );
+  const cardGap = subValue(
+    c,
+    "bonusCard",
+    "gap",
+    c.cardGap ?? (isCompactBH ? 3 : 12),
+  );
   const widgetWidth = c.widgetWidth ?? 400;
-  const cardPadding = subValue(c, 'bonusCard', 'padding', c.cardPadding ?? (isCompactBH ? 4 : 14));
-  const slotImageHeight = subValue(c, 'slotImage', 'height', c.slotImageHeight ?? (isCompactBH ? 120 : 180));
+  const cardPadding = subValue(
+    c,
+    "bonusCard",
+    "padding",
+    c.cardPadding ?? (isCompactBH ? 4 : 14),
+  );
+  const slotImageHeight = subValue(
+    c,
+    "slotImage",
+    "height",
+    c.slotImageHeight ?? (isCompactBH ? 120 : 180),
+  );
   const listMaxHeight = c.listMaxHeight ?? (isCompactBH ? 250 : 400);
-  const progressBg = subValue(c, 'progressBar', 'background', 'rgba(255,255,255,0.08)');
-  const progressFill = subValue(c, 'progressBar', 'fillColor', currentBonusAccent);
-  const profitText = subValue(c, 'profit', 'textColor', '#4ade80');
-  const lossText = subValue(c, 'loss', 'textColor', '#f87171');
-  const titleTextColor = subValue(c, 'huntTitle', 'textColor', textColor);
-  const titleFontSize = subValue(c, 'huntTitle', 'fontSize', undefined);
-  const titleFontWeight = subValue(c, 'huntTitle', 'fontWeight', undefined);
-  const statLabelText = subValue(c, 'statLabel', 'textColor', mutedTextColor);
-  const statLabelSize = subValue(c, 'statLabel', 'fontSize', undefined);
-  const statLabelWeight = subValue(c, 'statLabel', 'fontWeight', undefined);
-  const statValueText = subValue(c, 'statValue', 'textColor', statValueColor);
-  const statValueSize = subValue(c, 'statValue', 'fontSize', undefined);
-  const statValueWeight = subValue(c, 'statValue', 'fontWeight', undefined);
-  const betValueText = subValue(c, 'betValue', 'textColor', mutedTextColor);
-  const betValueSize = subValue(c, 'betValue', 'fontSize', undefined);
-  const betValueWeight = subValue(c, 'betValue', 'fontWeight', undefined);
-  const payoutValueText = subValue(c, 'payoutValue', 'textColor', statValueColor);
-  const payoutValueSize = subValue(c, 'payoutValue', 'fontSize', undefined);
-  const payoutValueWeight = subValue(c, 'payoutValue', 'fontWeight', undefined);
-  const multiplierValueText = subValue(c, 'multiplierValue', 'textColor', statValueColor);
-  const multiplierValueSize = subValue(c, 'multiplierValue', 'fontSize', undefined);
-  const multiplierValueWeight = subValue(c, 'multiplierValue', 'fontWeight', undefined);
-  const footerBg = subValue(c, 'footer', 'background', summaryColor);
-  const footerText = subValue(c, 'footer', 'textColor', totalPayColor);
-  const footerFontSize = subValue(c, 'footer', 'fontSize', undefined);
-  const footerFontWeight = subValue(c, 'footer', 'fontWeight', undefined);
-  const footerPadding = subValue(c, 'footer', 'padding', undefined);
-  const footerRadius = subValue(c, 'footer', 'radius', undefined);
-  const carouselGap = subValue(c, 'carousel', 'gap', undefined);
-  const carouselPadding = subValue(c, 'carousel', 'padding', undefined);
+  const progressBg = subValue(
+    c,
+    "progressBar",
+    "background",
+    "rgba(255,255,255,0.08)",
+  );
+  const progressFill = subValue(
+    c,
+    "progressBar",
+    "fillColor",
+    currentBonusAccent,
+  );
+  const profitText = subValue(c, "profit", "textColor", "#4ade80");
+  const lossText = subValue(c, "loss", "textColor", "#f87171");
+  const titleTextColor = subValue(c, "huntTitle", "textColor", textColor);
+  const titleFontSize = subValue(c, "huntTitle", "fontSize", undefined);
+  const titleFontWeight = subValue(c, "huntTitle", "fontWeight", undefined);
+  const statLabelText = subValue(c, "statLabel", "textColor", mutedTextColor);
+  const statLabelSize = subValue(c, "statLabel", "fontSize", undefined);
+  const statLabelWeight = subValue(c, "statLabel", "fontWeight", undefined);
+  const statValueText = subValue(c, "statValue", "textColor", statValueColor);
+  const statValueSize = subValue(c, "statValue", "fontSize", undefined);
+  const statValueWeight = subValue(c, "statValue", "fontWeight", undefined);
+  const betValueText = subValue(c, "betValue", "textColor", mutedTextColor);
+  const betValueSize = subValue(c, "betValue", "fontSize", undefined);
+  const betValueWeight = subValue(c, "betValue", "fontWeight", undefined);
+  const payoutValueText = subValue(
+    c,
+    "payoutValue",
+    "textColor",
+    statValueColor,
+  );
+  const payoutValueSize = subValue(c, "payoutValue", "fontSize", undefined);
+  const payoutValueWeight = subValue(c, "payoutValue", "fontWeight", undefined);
+  const multiplierValueText = subValue(
+    c,
+    "multiplierValue",
+    "textColor",
+    statValueColor,
+  );
+  const multiplierValueSize = subValue(
+    c,
+    "multiplierValue",
+    "fontSize",
+    undefined,
+  );
+  const multiplierValueWeight = subValue(
+    c,
+    "multiplierValue",
+    "fontWeight",
+    undefined,
+  );
+  const footerBg = subValue(c, "footer", "background", summaryColor);
+  const footerText = subValue(c, "footer", "textColor", totalPayColor);
+  const footerFontSize = subValue(c, "footer", "fontSize", undefined);
+  const footerFontWeight = subValue(c, "footer", "fontWeight", undefined);
+  const footerPadding = subValue(c, "footer", "padding", undefined);
+  const footerRadius = subValue(c, "footer", "radius", undefined);
+  const carouselGap = subValue(c, "carousel", "gap", undefined);
+  const carouselPadding = subValue(c, "carousel", "padding", undefined);
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -201,119 +388,161 @@ function BonusHuntWidget({ config, theme, userId }) {
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
     gap: `${cardGap}px`,
-    filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
-      ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
-      : undefined,
-    '--bht-header-bg': headerColor,
-    '--bht-header-accent': headerAccent,
-    '--bht-count-bg': countCardColor,
-    '--bht-current-bg': currentBonusColor,
-    '--bht-current-accent': currentBonusAccent,
-    '--bht-list-bg': listCardColor,
-    '--bht-list-accent': listCardAccent,
-    '--bht-summary-bg': summaryColor,
-    '--bht-total-pay-bg': totalPayColor,
-    '--bht-total-pay-text': totalPayText,
-    '--bht-super-badge': superBadgeColor,
-    '--bht-extreme-badge': extremeBadgeColor,
-    '--bht-text': textColor,
-    '--bht-muted': mutedTextColor,
-    '--bht-stat-value': statValueColor,
-    '--bht-card-outline': cardOutlineColor,
-    '--bht-card-outline-width': `${cardOutlineWidth}px`,
-    '--bht-card-radius': `${cardRadius}px`,
-    '--bht-card-padding': `${cardPadding}px`,
-    '--bht-slot-img-height': `${slotImageHeight}px`,
-    '--bht-list-max-height': `${listMaxHeight}px`,
-    '--bht-progress-bg': progressBg,
-    '--bht-progress-fill': progressFill,
-    '--bht-profit-text': profitText,
-    '--bht-loss-text': lossText,
-    '--bht-title-text': titleTextColor,
-    '--bht-title-font-size': cssPx(titleFontSize),
-    '--bht-title-font-weight': titleFontWeight,
-    '--bht-stat-label-text': statLabelText,
-    '--bht-stat-label-font-size': cssPx(statLabelSize),
-    '--bht-stat-label-font-weight': statLabelWeight,
-    '--bht-stat-value-text': statValueText,
-    '--bht-stat-value-font-size': cssPx(statValueSize),
-    '--bht-stat-value-font-weight': statValueWeight,
-    '--bht-bet-text': betValueText,
-    '--bht-bet-font-size': cssPx(betValueSize),
-    '--bht-bet-font-weight': betValueWeight,
-    '--bht-payout-text': payoutValueText,
-    '--bht-payout-font-size': cssPx(payoutValueSize),
-    '--bht-payout-font-weight': payoutValueWeight,
-    '--bht-multiplier-text': multiplierValueText,
-    '--bht-multiplier-font-size': cssPx(multiplierValueSize),
-    '--bht-multiplier-font-weight': multiplierValueWeight,
-    '--bht-footer-bg': footerBg,
-    '--bht-footer-text': footerText,
-    '--bht-footer-font-size': cssPx(footerFontSize),
-    '--bht-footer-font-weight': footerFontWeight,
-    '--bht-footer-padding': cssPx(footerPadding),
-    '--bht-footer-radius': cssPx(footerRadius),
-    '--bht-carousel-gap': cssPx(carouselGap),
-    '--bht-carousel-padding': cssPx(carouselPadding),
+    filter:
+      brightness !== 100 || contrast !== 100 || saturation !== 100
+        ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+        : undefined,
+    "--bht-header-bg": headerColor,
+    "--bht-header-accent": headerAccent,
+    "--bht-count-bg": countCardColor,
+    "--bht-current-bg": currentBonusColor,
+    "--bht-current-accent": currentBonusAccent,
+    "--bht-list-bg": listCardColor,
+    "--bht-list-accent": listCardAccent,
+    "--bht-summary-bg": summaryColor,
+    "--bht-total-pay-bg": totalPayColor,
+    "--bht-total-pay-text": totalPayText,
+    "--bht-super-badge": superBadgeColor,
+    "--bht-extreme-badge": extremeBadgeColor,
+    "--bht-text": textColor,
+    "--bht-muted": mutedTextColor,
+    "--bht-stat-value": statValueColor,
+    "--bht-card-outline": cardOutlineColor,
+    "--bht-card-outline-width": `${cardOutlineWidth}px`,
+    "--bht-card-radius": `${cardRadius}px`,
+    "--bht-card-padding": `${cardPadding}px`,
+    "--bht-slot-img-height": `${slotImageHeight}px`,
+    "--bht-list-max-height": `${listMaxHeight}px`,
+    "--bht-progress-bg": progressBg,
+    "--bht-progress-fill": progressFill,
+    "--bht-profit-text": profitText,
+    "--bht-loss-text": lossText,
+    "--bht-title-text": titleTextColor,
+    "--bht-title-font-size": cssPx(titleFontSize),
+    "--bht-title-font-weight": titleFontWeight,
+    "--bht-stat-label-text": statLabelText,
+    "--bht-stat-label-font-size": cssPx(statLabelSize),
+    "--bht-stat-label-font-weight": statLabelWeight,
+    "--bht-stat-value-text": statValueText,
+    "--bht-stat-value-font-size": cssPx(statValueSize),
+    "--bht-stat-value-font-weight": statValueWeight,
+    "--bht-bet-text": betValueText,
+    "--bht-bet-font-size": cssPx(betValueSize),
+    "--bht-bet-font-weight": betValueWeight,
+    "--bht-payout-text": payoutValueText,
+    "--bht-payout-font-size": cssPx(payoutValueSize),
+    "--bht-payout-font-weight": payoutValueWeight,
+    "--bht-multiplier-text": multiplierValueText,
+    "--bht-multiplier-font-size": cssPx(multiplierValueSize),
+    "--bht-multiplier-font-weight": multiplierValueWeight,
+    "--bht-footer-bg": footerBg,
+    "--bht-footer-text": footerText,
+    "--bht-footer-font-size": cssPx(footerFontSize),
+    "--bht-footer-font-weight": footerFontWeight,
+    "--bht-footer-padding": cssPx(footerPadding),
+    "--bht-footer-radius": cssPx(footerRadius),
+    "--bht-carousel-gap": cssPx(carouselGap),
+    "--bht-carousel-padding": cssPx(carouselPadding),
   };
 
   /* ─── Find current bonus (first not-opened) ─── */
-  const currentBonus = bonuses.find(b => !b.opened);
+  const currentBonus = bonuses.find((b) => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   /* Stop carousel only when actively in opening phase AND there's a bonus to open */
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
 
-  const bhModeClass = isHorizontalBH ? ' oc-bonushunt--horizontal'
-    : isCompactBH ? ' oc-bonushunt--compact'
-    : '';
+  const bhModeClass = isHorizontalBH
+    ? " oc-bonushunt--horizontal"
+    : isCompactBH
+      ? " oc-bonushunt--compact"
+      : "";
 
   /* ─── Horizontal layout (v5_horizontal) ─── */
   if (isHorizontalBH) {
     const profit = stats.totalWin - startMoney;
-    const horizCardW = 170, horizGap = 10;
+    const horizCardW = 170,
+      horizGap = 10;
     const horizStep = horizCardW + horizGap;
     return (
-      <div className="oc-widget-inner oc-bonushunt oc-bonushunt--horizontal" style={rootStyle}>
+      <div
+        className="oc-widget-inner oc-bonushunt oc-bonushunt--horizontal"
+        style={rootStyle}
+      >
         {/* ── Left stats panel ── */}
         <div className="bhh-stats-panel">
           <div className="bhh-stats-header">
             {c.avatarUrl ? (
-              <img src={c.avatarUrl} alt="" className="bhtc-avatar"
-                onError={e => { e.target.style.display = 'none'; }} />
+              <img
+                src={c.avatarUrl}
+                alt=""
+                className="bhtc-avatar"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
             ) : (
               <div className="bhtc-icon-circle">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v8M8 12h8" />
                 </svg>
               </div>
             )}
             <div>
               <div className="bhtc-title">{huntTitle}</div>
-              <div className="bhtc-hunt-id">Hunt {c.huntName || `#${bonuses.length}`}</div>
+              <div className="bhtc-hunt-id">
+                Hunt {c.huntName || `#${bonuses.length}`}
+              </div>
             </div>
           </div>
 
           <div className="bhh-stat-grid">
             <div className="bhh-stat">
               <span className="bhh-stat-label">START</span>
-              <span className="bhh-stat-val">{currency}{startMoney.toFixed(2)}</span>
+              <span className="bhh-stat-val">
+                {currency}
+                {startMoney.toFixed(2)}
+              </span>
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">BEx</span>
-              <span className="bhh-stat-val" style={{ color: stats.breakEven >= 100 ? profitText : lossText }}>{stats.breakEven.toFixed(2)}x</span>
+              <span
+                className="bhh-stat-val"
+                style={{
+                  color: stats.breakEven >= 100 ? profitText : lossText,
+                }}
+              >
+                {stats.breakEven.toFixed(2)}x
+              </span>
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">AVG</span>
-              <span className="bhh-stat-val" style={{ color: stats.avgMulti >= 100 ? profitText : lossText }}>{stats.avgMulti.toFixed(2)}x</span>
+              <span
+                className="bhh-stat-val"
+                style={{ color: stats.avgMulti >= 100 ? profitText : lossText }}
+              >
+                {stats.avgMulti.toFixed(2)}x
+              </span>
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">PROFIT</span>
-              <span className={`bhh-stat-val ${profit >= 0 ? 'bhtc-val--green' : 'bhtc-val--red'}`}>
-                {profit >= 0 ? '+' : ''}{currency}{profit.toFixed(2)}
+              <span
+                className={`bhh-stat-val ${profit >= 0 ? "bhtc-val--green" : "bhtc-val--red"}`}
+              >
+                {profit >= 0 ? "+" : ""}
+                {currency}
+                {profit.toFixed(2)}
               </span>
             </div>
           </div>
@@ -321,61 +550,110 @@ function BonusHuntWidget({ config, theme, userId }) {
           {/* Bonuses / Super / Extreme counts */}
           <div className="bhtc-badge-row">
             <span className="bhtc-badge-pill">#{bonuses.length}</span>
-            <span className="bhtc-badge-pill bhtc-badge-pill--super">S {stats.superCount}</span>
-            <span className="bhtc-badge-pill bhtc-badge-pill--extreme">E {bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length}</span>
+            <span className="bhtc-badge-pill bhtc-badge-pill--super">
+              S {stats.superCount}
+            </span>
+            <span className="bhtc-badge-pill bhtc-badge-pill--extreme">
+              E {bonuses.filter((b) => b.isExtremeBonus || b.isExtreme).length}
+            </span>
           </div>
 
-          <div className="bhtc-total-pay" style={{ marginTop: 'auto' }}>
+          <div className="bhtc-total-pay" style={{ marginTop: "auto" }}>
             <div className="bhtc-total-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               TOTAL PAYOUT
             </div>
-            <div className="bhtc-total-value">{currency}{stats.totalWin.toFixed(2)}</div>
+            <div className="bhtc-total-value">
+              {currency}
+              {stats.totalWin.toFixed(2)}
+            </div>
           </div>
         </div>
 
         {/* ── Right auto-scrolling carousel ── */}
         <div className="bhh-carousel-wrap">
-          <div className={`bhh-carousel-track${isOpening ? ' bhh-carousel-track--opening' : ''}`}
-            style={isOpening
-              ? { transform: `translateX(${-(currentIndex * horizStep)}px)` }
-              : { '--bhtc-count': bonuses.length }}>
-            {(isOpening ? bonuses : [...bonuses, ...bonuses]).map((bonus, i) => {
-              const idx = isOpening ? i : i % bonuses.length;
-              const payout = Number(bonus.payout) || 0;
-              const bet = Number(bonus.betSize) || 0;
-              const multi = bet > 0 ? payout / bet : 0;
-              const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
-              const isSuper = bonus.isSuperBonus;
-              return (
-                <div key={`hh-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                  className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}${isOpening && idx !== currentIndex ? ' bhtc-card--dimmed' : ''}`}
-                  style={isOpening && idx === currentIndex ? { '--bhtc-current-bg': currentBonusColor, '--bhtc-current-accent': currentBonusAccent } : undefined}>
-                  <div className="bhtc-card-top-bar">
-                    <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
-                    <span className="bhtc-card-bet">{bet.toFixed(2)} {currency}</span>
-                    <span className="bhtc-card-idx">#{idx + 1}</span>
-                  </div>
-                  <div className="bhtc-card-img-wrap">
-                    {bonus.slot?.image ? (
-                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bhtc-card-img" />
-                    ) : (
-                      <div className="bhtc-card-img-placeholder" />
-                    )}
-                    {isExtreme && <span className="bhtc-card-type-badge bhtc-card-type-badge--extreme">EXTREME</span>}
-                    {!isExtreme && isSuper && <span className="bhtc-card-type-badge bhtc-card-type-badge--super">SUPER</span>}
-                  </div>
-                  {bonus.opened && (
-                    <div className="bhtc-card-bottom-bar">
-                      <span className="bhtc-card-payout">{payout.toFixed(2)}</span>
-                      <span className="bhtc-card-multi">{multi.toFixed(1)}x</span>
+          <div
+            className={`bhh-carousel-track${isOpening ? " bhh-carousel-track--opening" : ""}`}
+            style={
+              isOpening
+                ? { transform: `translateX(${-(currentIndex * horizStep)}px)` }
+                : { "--bhtc-count": bonuses.length }
+            }
+          >
+            {(isOpening ? bonuses : [...bonuses, ...bonuses]).map(
+              (bonus, i) => {
+                const idx = isOpening ? i : i % bonuses.length;
+                const payout = Number(bonus.payout) || 0;
+                const bet = Number(bonus.betSize) || 0;
+                const multi = bet > 0 ? payout / bet : 0;
+                const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
+                const isSuper = bonus.isSuperBonus;
+                return (
+                  <div
+                    key={`hh-${bonus.id || idx}-${i >= bonuses.length ? "c" : "o"}`}
+                    className={`bhtc-card${idx === currentIndex ? " bhtc-card--active" : ""}${bonus.opened ? " bhtc-card--opened" : ""}${isExtreme ? " bhtc-card--extreme" : ""}${isSuper ? " bhtc-card--super" : ""}${isOpening && idx !== currentIndex ? " bhtc-card--dimmed" : ""}`}
+                    style={
+                      isOpening && idx === currentIndex
+                        ? {
+                            "--bhtc-current-bg": currentBonusColor,
+                            "--bhtc-current-accent": currentBonusAccent,
+                          }
+                        : undefined
+                    }
+                  >
+                    <div className="bhtc-card-top-bar">
+                      <span className="bhtc-card-slot-name">
+                        {bonus.slotName || bonus.slot?.name}
+                      </span>
+                      <span className="bhtc-card-bet">
+                        {bet.toFixed(2)} {currency}
+                      </span>
+                      <span className="bhtc-card-idx">#{idx + 1}</span>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                    <div className="bhtc-card-img-wrap">
+                      {bonus.slot?.image ? (
+                        <SlotImage
+                          src={bonus.slot.image}
+                          alt={bonus.slotName || bonus.slot?.name}
+                          className="bhtc-card-img"
+                        />
+                      ) : (
+                        <div className="bhtc-card-img-placeholder" />
+                      )}
+                      {isExtreme && (
+                        <span className="bhtc-card-type-badge bhtc-card-type-badge--extreme">
+                          EXTREME
+                        </span>
+                      )}
+                      {!isExtreme && isSuper && (
+                        <span className="bhtc-card-type-badge bhtc-card-type-badge--super">
+                          SUPER
+                        </span>
+                      )}
+                    </div>
+                    {bonus.opened && (
+                      <div className="bhtc-card-bottom-bar">
+                        <span className="bhtc-card-payout">
+                          {payout.toFixed(2)}
+                        </span>
+                        <span className="bhtc-card-multi">
+                          {multi.toFixed(1)}x
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              },
+            )}
           </div>
         </div>
       </div>
@@ -383,36 +661,61 @@ function BonusHuntWidget({ config, theme, userId }) {
   }
 
   return (
-    <div className={`oc-widget-inner oc-bonushunt${bhModeClass}`} style={rootStyle}>
-
+    <div
+      className={`oc-widget-inner oc-bonushunt${bhModeClass}`}
+      style={rootStyle}
+    >
       {/* ═══ COMPACT: Merged Header + Count Card ═══ */}
       {isCompactBH ? (
         <div className="bht-card bht-header bht-compact-merged">
           <div className="bht-compact-top-row">
             {/* Streamer avatar */}
             {c.avatarUrl ? (
-              <img src={c.avatarUrl} alt="" className="bht-compact-avatar"
-                onError={e => { e.target.style.display = 'none'; }} />
+              <img
+                src={c.avatarUrl}
+                alt=""
+                className="bht-compact-avatar"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
             ) : (
               <div className="bht-icon-circle">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v8M8 12h8" />
                 </svg>
               </div>
             )}
             <div className="bht-compact-title-block">
               <div className="bht-title">{huntTitle}</div>
-              {c.huntNumber && <span className="bht-compact-hunt-num">#{c.huntNumber}</span>}
+              {c.huntNumber && (
+                <span className="bht-compact-hunt-num">#{c.huntNumber}</span>
+              )}
             </div>
           </div>
           {/* Opened count + progress bar */}
           <div className="bht-compact-progress-section">
             <div className="bht-compact-progress-label">
               <span>Opened</span>
-              <span>{stats.openedCount}/{bonuses.length}</span>
+              <span>
+                {stats.openedCount}/{bonuses.length}
+              </span>
             </div>
             <div className="bht-compact-progress-track">
-              <div className="bht-compact-progress-fill" style={{ width: `${bonuses.length > 0 ? (stats.openedCount / bonuses.length) * 100 : 0}%` }} />
+              <div
+                className="bht-compact-progress-fill"
+                style={{
+                  width: `${bonuses.length > 0 ? (stats.openedCount / bonuses.length) * 100 : 0}%`,
+                }}
+              />
             </div>
           </div>
 
@@ -427,129 +730,212 @@ function BonusHuntWidget({ config, theme, userId }) {
             </div>
             <div className="bht-compact-info-pill bht-compact-info-pill--extreme">
               <span className="bht-compact-info-label">EXTREME</span>
-              <strong>{bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length}</strong>
+              <strong>
+                {bonuses.filter((b) => b.isExtremeBonus || b.isExtreme).length}
+              </strong>
             </div>
           </div>
         </div>
       ) : (
         <>
-      {/* ═══ Header Card — Classic (full-card flip) ═══ */}
-      <div className="bht-card bht-header bht-header--fullflip">
-        <div className={`bht-fullflip-container${statsFlipped ? ' bht-fullflip-container--flipped' : ''}`}>
-          {/* ── FRONT: Title + Stats ── */}
-          <div className="bht-fullflip-face bht-fullflip-front">
-            <div className="bht-header-center">
-              {c.avatarUrl ? (
-                <img src={c.avatarUrl} alt="" className="bht-header-avatar"
-                  onError={e => { e.target.style.display = 'none'; }} />
-              ) : (
-                <div className="bht-icon-circle">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
-                  </svg>
+          {/* ═══ Header Card — Classic (full-card flip) ═══ */}
+          <div className="bht-card bht-header bht-header--fullflip">
+            <div
+              className={`bht-fullflip-container${statsFlipped ? " bht-fullflip-container--flipped" : ""}`}
+            >
+              {/* ── FRONT: Title + Stats ── */}
+              <div className="bht-fullflip-face bht-fullflip-front">
+                <div className="bht-header-center">
+                  {c.avatarUrl ? (
+                    <img
+                      src={c.avatarUrl}
+                      alt=""
+                      className="bht-header-avatar"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="bht-icon-circle">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v8M8 12h8" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="bht-title">{huntTitle}</div>
                 </div>
-              )}
-              <div className="bht-title">{huntTitle}</div>
-            </div>
-            <div className="bht-header-stats bht-header-stats--4col">
-              <div className="bht-flip-face bht-flip-front">
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">START</div>
-                  <div className="bht-stat-value">{currency}{startMoney.toFixed(0)}</div>
+                <div className="bht-header-stats bht-header-stats--4col">
+                  <div className="bht-flip-face bht-flip-front">
+                    <div className="bht-stat-box">
+                      <div className="bht-stat-label">START</div>
+                      <div className="bht-stat-value">
+                        {currency}
+                        {startMoney.toFixed(0)}
+                      </div>
+                    </div>
+                    <div className="bht-stat-box">
+                      <div className="bht-stat-label">STOP</div>
+                      <div className="bht-stat-value">
+                        {currency}
+                        {stopLoss.toFixed(0)}
+                      </div>
+                    </div>
+                    <div className="bht-stat-box">
+                      <div className="bht-stat-label">B.E.</div>
+                      <div
+                        className="bht-stat-value"
+                        style={{
+                          color: stats.liveBE >= 100 ? "#f87171" : "#4ade80",
+                        }}
+                      >
+                        {stats.liveBE.toFixed(0)}x
+                      </div>
+                    </div>
+                    <div className="bht-stat-box">
+                      <div className="bht-stat-label">AVG</div>
+                      <div
+                        className="bht-stat-value"
+                        style={{
+                          color: stats.avgMulti >= 100 ? "#4ade80" : "#f87171",
+                        }}
+                      >
+                        {stats.avgMulti.toFixed(0)}x
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">STOP</div>
-                  <div className="bht-stat-value">{currency}{stopLoss.toFixed(0)}</div>
-                </div>
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">B.E.</div>
-                  <div className="bht-stat-value" style={{ color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }}>{stats.liveBE.toFixed(0)}x</div>
-                </div>
-                <div className="bht-stat-box">
-                  <div className="bht-stat-label">AVG</div>
-                  <div className="bht-stat-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(0)}x</div>
+              </div>
+              {/* ── BACK: Full-card Best / Worst slot ── */}
+              <div className="bht-fullflip-face bht-fullflip-back">
+                <div className="bht-fullflip-slots">
+                  {/* BEST */}
+                  {stats.bestSlot ? (
+                    <div className="bht-fullflip-slot bht-fullflip-slot--best">
+                      <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--best">
+                        ↑ BEST
+                      </div>
+                      {stats.bestSlot.slot?.image ? (
+                        <SlotImage
+                          src={stats.bestSlot.slot.image}
+                          alt={
+                            stats.bestSlot.slotName || stats.bestSlot.slot?.name
+                          }
+                          className="bht-fullflip-slot-img"
+                        />
+                      ) : (
+                        <div className="bht-fullflip-slot-img-placeholder">
+                          🎰
+                        </div>
+                      )}
+                      <div className="bht-fullflip-slot-overlay">
+                        <div className="bht-fullflip-slot-stat">
+                          <span className="bht-fullflip-slot-label">WIN</span>
+                          <span className="bht-fullflip-slot-payout">
+                            {currency}
+                            {stats.bestSlot._payout.toFixed(0)}
+                          </span>
+                        </div>
+                        <div className="bht-fullflip-slot-stat">
+                          <span className="bht-fullflip-slot-label">MULTI</span>
+                          <span className="bht-fullflip-slot-multi">
+                            {stats.bestSlot._multi.toFixed(1)}x
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bht-fullflip-slot bht-fullflip-slot--empty">
+                      <span className="bht-fullflip-slot-payout">—</span>
+                    </div>
+                  )}
+                  {/* WORST */}
+                  {stats.worstSlot ? (
+                    <div className="bht-fullflip-slot bht-fullflip-slot--worst">
+                      <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--worst">
+                        ↓ WORST
+                      </div>
+                      {stats.worstSlot.slot?.image ? (
+                        <SlotImage
+                          src={stats.worstSlot.slot.image}
+                          alt={
+                            stats.worstSlot.slotName ||
+                            stats.worstSlot.slot?.name
+                          }
+                          className="bht-fullflip-slot-img"
+                        />
+                      ) : (
+                        <div className="bht-fullflip-slot-img-placeholder">
+                          🎰
+                        </div>
+                      )}
+                      <div className="bht-fullflip-slot-overlay">
+                        <div className="bht-fullflip-slot-stat">
+                          <span className="bht-fullflip-slot-label">WIN</span>
+                          <span className="bht-fullflip-slot-payout">
+                            {currency}
+                            {stats.worstSlot._payout.toFixed(0)}
+                          </span>
+                        </div>
+                        <div className="bht-fullflip-slot-stat">
+                          <span className="bht-fullflip-slot-label">MULTI</span>
+                          <span className="bht-fullflip-slot-multi">
+                            {stats.worstSlot._multi.toFixed(1)}x
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bht-fullflip-slot bht-fullflip-slot--empty">
+                      <span className="bht-fullflip-slot-payout">—</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-          {/* ── BACK: Full-card Best / Worst slot ── */}
-          <div className="bht-fullflip-face bht-fullflip-back">
-            <div className="bht-fullflip-slots">
-              {/* BEST */}
-              {stats.bestSlot ? (
-                <div className="bht-fullflip-slot bht-fullflip-slot--best">
-                  <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--best">↑ BEST</div>
-                  {stats.bestSlot.slot?.image ? (
-                    <SlotImage src={stats.bestSlot.slot.image} alt={stats.bestSlot.slotName || stats.bestSlot.slot?.name} className="bht-fullflip-slot-img" />
-                  ) : (
-                    <div className="bht-fullflip-slot-img-placeholder">🎰</div>
-                  )}
-                  <div className="bht-fullflip-slot-overlay">
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">WIN</span>
-                      <span className="bht-fullflip-slot-payout">{currency}{stats.bestSlot._payout.toFixed(0)}</span>
-                    </div>
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">MULTI</span>
-                      <span className="bht-fullflip-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bht-fullflip-slot bht-fullflip-slot--empty">
-                  <span className="bht-fullflip-slot-payout">—</span>
-                </div>
-              )}
-              {/* WORST */}
-              {stats.worstSlot ? (
-                <div className="bht-fullflip-slot bht-fullflip-slot--worst">
-                  <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--worst">↓ WORST</div>
-                  {stats.worstSlot.slot?.image ? (
-                    <SlotImage src={stats.worstSlot.slot.image} alt={stats.worstSlot.slotName || stats.worstSlot.slot?.name} className="bht-fullflip-slot-img" />
-                  ) : (
-                    <div className="bht-fullflip-slot-img-placeholder">🎰</div>
-                  )}
-                  <div className="bht-fullflip-slot-overlay">
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">WIN</span>
-                      <span className="bht-fullflip-slot-payout">{currency}{stats.worstSlot._payout.toFixed(0)}</span>
-                    </div>
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">MULTI</span>
-                      <span className="bht-fullflip-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bht-fullflip-slot bht-fullflip-slot--empty">
-                  <span className="bht-fullflip-slot-payout">—</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
         </>
       )}
 
       {/* ═══ Current Bonus Card (compact only) ═══ */}
       {currentBonus && isCompactBH && (
         <div className="bht-card bht-current">
-          <div className={`bht-cpt-current${(currentBonus.isExtremeBonus || currentBonus.isExtreme) ? ' bht-cpt-current--extreme' : ''}${currentBonus.isSuperBonus ? ' bht-cpt-current--super' : ''}`}>
+          <div
+            className={`bht-cpt-current${currentBonus.isExtremeBonus || currentBonus.isExtreme ? " bht-cpt-current--extreme" : ""}${currentBonus.isSuperBonus ? " bht-cpt-current--super" : ""}`}
+          >
             <div className="bht-cpt-current-img-wrap">
               {currentBonus.slot?.image && (
-                <SlotImage src={currentBonus.slot.image} alt={currentBonus.slotName || currentBonus.slot?.name}
-                  className="bht-cpt-current-img" />
+                <SlotImage
+                  src={currentBonus.slot.image}
+                  alt={currentBonus.slotName || currentBonus.slot?.name}
+                  className="bht-cpt-current-img"
+                />
               )}
-              {(currentBonus.isExtremeBonus || currentBonus.isExtreme) && <div className="bht-cpt-blood-drip" />}
+              {(currentBonus.isExtremeBonus || currentBonus.isExtreme) && (
+                <div className="bht-cpt-blood-drip" />
+              )}
             </div>
             <div className="bht-cpt-current-info">
-              <div className="bht-cpt-current-name">{currentBonus.slotName}</div>
-              <div className="bht-cpt-current-counter">#{currentIndex + 1} / {bonuses.length}</div>
+              <div className="bht-cpt-current-name">
+                {currentBonus.slotName}
+              </div>
+              <div className="bht-cpt-current-counter">
+                #{currentIndex + 1} / {bonuses.length}
+              </div>
               <div className="bht-cpt-current-stats">
                 <div className="bht-cpt-current-stat">
                   <span className="bht-cpt-current-stat-label">BET</span>
-                  <span>{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
+                  <span>
+                    {currency}
+                    {(Number(currentBonus.betSize) || 0).toFixed(2)}
+                  </span>
                 </div>
                 <div className="bht-cpt-current-stat">
                   <span className="bht-cpt-current-stat-label">WIN</span>
@@ -578,32 +964,57 @@ function BonusHuntWidget({ config, theme, userId }) {
                   const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
                   const isSuper = bonus.isSuperBonus;
                   return (
-                    <div key={key}
-                      className={`bht-cpt-card${idx === currentIndex ? ' bht-cpt-card--active' : ''}${bonus.opened ? ' bht-cpt-card--opened' : ''}${isSuper ? ' bht-cpt-card--super' : ''}${isExtreme ? ' bht-cpt-card--extreme' : ''}`}>
+                    <div
+                      key={key}
+                      className={`bht-cpt-card${idx === currentIndex ? " bht-cpt-card--active" : ""}${bonus.opened ? " bht-cpt-card--opened" : ""}${isSuper ? " bht-cpt-card--super" : ""}${isExtreme ? " bht-cpt-card--extreme" : ""}`}
+                    >
                       <div className="bht-cpt-card-img-wrap">
                         {bonus.slot?.image ? (
-                          <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name}
-                            className="bht-cpt-card-img" />
+                          <SlotImage
+                            src={bonus.slot.image}
+                            alt={bonus.slotName || bonus.slot?.name}
+                            className="bht-cpt-card-img"
+                          />
                         ) : (
                           <div className="bht-cpt-card-img-ph" />
                         )}
                         {/* Extreme blood drip overlay */}
                         {isExtreme && <div className="bht-cpt-blood-drip" />}
                         {/* Badge */}
-                        {isExtreme && <span className="bht-cpt-badge bht-cpt-badge--extreme">EXTREME</span>}
-                        {!isExtreme && isSuper && <span className="bht-cpt-badge bht-cpt-badge--super">SUPER</span>}
+                        {isExtreme && (
+                          <span className="bht-cpt-badge bht-cpt-badge--extreme">
+                            EXTREME
+                          </span>
+                        )}
+                        {!isExtreme && isSuper && (
+                          <span className="bht-cpt-badge bht-cpt-badge--super">
+                            SUPER
+                          </span>
+                        )}
                       </div>
                       <div className="bht-cpt-card-info">
                         <div className="bht-cpt-card-row1">
                           <span className="bht-cpt-card-idx">#{idx + 1}</span>
-                          <span className="bht-cpt-card-name">{bonus.slotName || bonus.slot?.name}</span>
+                          <span className="bht-cpt-card-name">
+                            {bonus.slotName || bonus.slot?.name}
+                          </span>
                         </div>
                         <div className="bht-cpt-card-row2">
-                          <span className="bht-cpt-card-bet">BET {currency}{bet.toFixed(2)}</span>
+                          <span className="bht-cpt-card-bet">
+                            BET {currency}
+                            {bet.toFixed(2)}
+                          </span>
                           {bonus.opened && (
                             <>
-                              <span className="bht-cpt-card-payout">{currency}{payout.toFixed(2)}</span>
-                              <span className={`bht-cpt-card-multi${multi >= 100 ? ' bht-cpt-card-multi--huge' : multi >= 50 ? ' bht-cpt-card-multi--big' : ''}`}>{multi.toFixed(1)}x</span>
+                              <span className="bht-cpt-card-payout">
+                                {currency}
+                                {payout.toFixed(2)}
+                              </span>
+                              <span
+                                className={`bht-cpt-card-multi${multi >= 100 ? " bht-cpt-card-multi--huge" : multi >= 50 ? " bht-cpt-card-multi--big" : ""}`}
+                              >
+                                {multi.toFixed(1)}x
+                              </span>
                             </>
                           )}
                         </div>
@@ -612,21 +1023,35 @@ function BonusHuntWidget({ config, theme, userId }) {
                   );
                 };
                 if (isOpening) {
-                  const cardH = 140, gap = 6, step = cardH + gap;
+                  const cardH = 140,
+                    gap = 6,
+                    step = cardH + gap;
                   const offset = -(currentIndex * step);
                   return (
-                    <div key="compact-static" className="bht-compact-track bht-compact-track--static"
-                      style={{ transform: `translateY(${offset}px)` }}>
-                      {bonuses.map((b, i) => renderCompactCard(b, i, b.id || i))}
+                    <div
+                      key="compact-static"
+                      className="bht-compact-track bht-compact-track--static"
+                      style={{ transform: `translateY(${offset}px)` }}
+                    >
+                      {bonuses.map((b, i) =>
+                        renderCompactCard(b, i, b.id || i),
+                      )}
                     </div>
                   );
                 }
                 return (
-                  <div key="compact-scroll" className="bht-compact-track bht-compact-track--scroll"
-                    style={{ '--bht-compact-count': bonuses.length }}>
+                  <div
+                    key="compact-scroll"
+                    className="bht-compact-track bht-compact-track--scroll"
+                    style={{ "--bht-compact-count": bonuses.length }}
+                  >
                     {[...bonuses, ...bonuses].map((b, i) => {
                       const idx = i % bonuses.length;
-                      return renderCompactCard(b, idx, `${b.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`);
+                      return renderCompactCard(
+                        b,
+                        idx,
+                        `${b.id || idx}-${i >= bonuses.length ? "c" : "o"}`,
+                      );
                     })}
                   </div>
                 );
@@ -635,24 +1060,47 @@ function BonusHuntWidget({ config, theme, userId }) {
           ) : (
             <>
               {/* ── 3D Animated Card Carousel ── */}
-              <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
+              <div
+                className={`bht-stack${!isOpening ? " bht-stack--spinning" : ""}`}
+              >
                 {(() => {
                   const total = bonuses.length;
                   if (total === 0) return null;
-                  const ci = isOpening && currentIndex >= 0 ? currentIndex : carouselIdx % total;
-                  const posMap = { '-2': 'bht-stack-card--far-left', '-1': 'bht-stack-card--left', '0': 'bht-stack-card--center', '1': 'bht-stack-card--right', '2': 'bht-stack-card--far-right' };
+                  const ci =
+                    isOpening && currentIndex >= 0
+                      ? currentIndex
+                      : carouselIdx % total;
+                  const posMap = {
+                    "-2": "bht-stack-card--far-left",
+                    "-1": "bht-stack-card--left",
+                    0: "bht-stack-card--center",
+                    1: "bht-stack-card--right",
+                    2: "bht-stack-card--far-right",
+                  };
                   return bonuses.map((bonus, bIdx) => {
-                    const rawDist = ((bIdx - ci) % total + total) % total;
-                    const dist = rawDist <= Math.floor(total / 2) ? rawDist : rawDist - total;
-                    const posCls = posMap[String(dist)] || 'bht-stack-card--hidden';
+                    const rawDist = (((bIdx - ci) % total) + total) % total;
+                    const dist =
+                      rawDist <= Math.floor(total / 2)
+                        ? rawDist
+                        : rawDist - total;
+                    const posCls =
+                      posMap[String(dist)] || "bht-stack-card--hidden";
                     return (
-                      <div key={`stk-${bIdx}`}
-                        className={`bht-stack-card ${posCls}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
+                      <div
+                        key={`stk-${bIdx}`}
+                        className={`bht-stack-card ${posCls}${bonus.opened ? " bht-stack-card--opened" : ""}${bonus.isSuperBonus ? " bht-stack-card--super" : ""}${bonus.isExtremeBonus || bonus.isExtreme ? " bht-stack-card--extreme" : ""}`}
+                      >
                         <div className="bht-stack-card-inner">
                           <div className="bht-stack-card-img-wrap">
                             {bonus.slot?.image ? (
-                              <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-stack-card-img" />
-                            ) : <div className="bht-stack-card-img-ph" />}
+                              <SlotImage
+                                src={bonus.slot.image}
+                                alt={bonus.slotName || bonus.slot?.name}
+                                className="bht-stack-card-img"
+                              />
+                            ) : (
+                              <div className="bht-stack-card-img-ph" />
+                            )}
                           </div>
                         </div>
                       </div>
@@ -663,21 +1111,28 @@ function BonusHuntWidget({ config, theme, userId }) {
               {/* ── Progress bar ── */}
               {(() => {
                 const total = bonuses.length;
-                const opened = bonuses.filter(b => b.opened).length;
+                const opened = bonuses.filter((b) => b.opened).length;
                 const pct = total > 0 ? (opened / total) * 100 : 0;
                 return (
                   <div className="bht-progress">
                     <div className="bht-progress-bar">
-                      <div className="bht-progress-fill" style={{ width: `${pct}%` }} />
+                      <div
+                        className="bht-progress-fill"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
-                    <span className="bht-progress-text">{opened}/{total}</span>
+                    <span className="bht-progress-text">
+                      {opened}/{total}
+                    </span>
                   </div>
                 );
               })()}
               {/* ── Vertical list rows ── */}
               <div className="bht-list-rows">
                 {(() => {
-                  const itemH = 48, count = bonuses.length, step = itemH;
+                  const itemH = 48,
+                    count = bonuses.length,
+                    step = itemH;
                   const shouldScroll = count >= 7;
                   if (!shouldScroll) {
                     return (
@@ -687,31 +1142,66 @@ function BonusHuntWidget({ config, theme, userId }) {
                           const bet = Number(bonus.betSize) || 0;
                           const multi = bet > 0 ? payout / bet : 0;
                           return (
-                            <div key={`lr-${bonus.id || i}-o`}
-                              className={`bht-list-row${i === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}>
+                            <div
+                              key={`lr-${bonus.id || i}-o`}
+                              className={`bht-list-row${i === currentIndex ? " bht-list-row--active" : ""}${bonus.opened ? " bht-list-row--opened" : ""}${bonus.isSuperBonus ? " bht-list-row--super" : ""}${bonus.isExtremeBonus || bonus.isExtreme ? " bht-list-row--extreme" : ""}`}
+                            >
                               <span className="bht-list-row-idx">{i + 1}</span>
                               <div className="bht-list-row-thumb">
                                 {bonus.slot?.image ? (
-                                  <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
-                                ) : <div className="bht-list-row-img-ph" />}
+                                  <SlotImage
+                                    src={bonus.slot.image}
+                                    alt={bonus.slotName || bonus.slot?.name}
+                                    className="bht-list-row-img"
+                                  />
+                                ) : (
+                                  <div className="bht-list-row-img-ph" />
+                                )}
                               </div>
                               <div className="bht-list-row-info">
-                                <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
-                                {(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--extreme">EXTREME</span>}
-                                {bonus.isSuperBonus && !(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--super">SUPER</span>}
+                                <span className="bht-list-row-name">
+                                  {bonus.slotName || bonus.slot?.name}
+                                </span>
+                                {(bonus.isExtremeBonus || bonus.isExtreme) && (
+                                  <span className="bht-list-row-badge bht-list-row-badge--extreme">
+                                    EXTREME
+                                  </span>
+                                )}
+                                {bonus.isSuperBonus &&
+                                  !(
+                                    bonus.isExtremeBonus || bonus.isExtreme
+                                  ) && (
+                                    <span className="bht-list-row-badge bht-list-row-badge--super">
+                                      SUPER
+                                    </span>
+                                  )}
                               </div>
                               <div className="bht-list-row-stats">
                                 <div className="bht-list-row-col">
-                                  <span className="bht-list-row-col-label">WIN</span>
-                                  <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                                  <span className="bht-list-row-col-label">
+                                    WIN
+                                  </span>
+                                  <span className="bht-list-row-col-val">
+                                    {currency}
+                                    {payout.toFixed(0)}
+                                  </span>
                                 </div>
                                 <div className="bht-list-row-col">
-                                  <span className="bht-list-row-col-label">MULTI</span>
-                                  <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                                  <span className="bht-list-row-col-label">
+                                    MULTI
+                                  </span>
+                                  <span className="bht-list-row-col-val">
+                                    {multi.toFixed(1)}x
+                                  </span>
                                 </div>
                                 <div className="bht-list-row-col">
-                                  <span className="bht-list-row-col-label">BET</span>
-                                  <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                                  <span className="bht-list-row-col-label">
+                                    BET
+                                  </span>
+                                  <span className="bht-list-row-col-val">
+                                    {currency}
+                                    {bet.toFixed(2)}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -726,42 +1216,78 @@ function BonusHuntWidget({ config, theme, userId }) {
                     const bet = Number(bonus.betSize) || 0;
                     const multi = bet > 0 ? payout / bet : 0;
                     return (
-                      <div key={key}
-                        className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}>
+                      <div
+                        key={key}
+                        className={`bht-list-row${idx === currentIndex ? " bht-list-row--active" : ""}${bonus.opened ? " bht-list-row--opened" : ""}${bonus.isSuperBonus ? " bht-list-row--super" : ""}${bonus.isExtremeBonus || bonus.isExtreme ? " bht-list-row--extreme" : ""}`}
+                      >
                         <span className="bht-list-row-idx">{idx + 1}</span>
                         <div className="bht-list-row-thumb">
                           {bonus.slot?.image ? (
-                            <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
-                          ) : <div className="bht-list-row-img-ph" />}
+                            <SlotImage
+                              src={bonus.slot.image}
+                              alt={bonus.slotName || bonus.slot?.name}
+                              className="bht-list-row-img"
+                            />
+                          ) : (
+                            <div className="bht-list-row-img-ph" />
+                          )}
                         </div>
                         <div className="bht-list-row-info">
-                          <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
-                          {(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--extreme">EXTREME</span>}
-                          {bonus.isSuperBonus && !(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--super">SUPER</span>}
+                          <span className="bht-list-row-name">
+                            {bonus.slotName || bonus.slot?.name}
+                          </span>
+                          {(bonus.isExtremeBonus || bonus.isExtreme) && (
+                            <span className="bht-list-row-badge bht-list-row-badge--extreme">
+                              EXTREME
+                            </span>
+                          )}
+                          {bonus.isSuperBonus &&
+                            !(bonus.isExtremeBonus || bonus.isExtreme) && (
+                              <span className="bht-list-row-badge bht-list-row-badge--super">
+                                SUPER
+                              </span>
+                            )}
                         </div>
                         <div className="bht-list-row-stats">
                           <div className="bht-list-row-col">
                             <span className="bht-list-row-col-label">WIN</span>
-                            <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                            <span className="bht-list-row-col-val">
+                              {currency}
+                              {payout.toFixed(0)}
+                            </span>
                           </div>
                           <div className="bht-list-row-col">
-                            <span className="bht-list-row-col-label">MULTI</span>
-                            <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                            <span className="bht-list-row-col-label">
+                              MULTI
+                            </span>
+                            <span className="bht-list-row-col-val">
+                              {multi.toFixed(1)}x
+                            </span>
                           </div>
                           <div className="bht-list-row-col">
                             <span className="bht-list-row-col-label">BET</span>
-                            <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                            <span className="bht-list-row-col-val">
+                              {currency}
+                              {bet.toFixed(2)}
+                            </span>
                           </div>
                         </div>
                       </div>
                     );
                   };
                   return (
-                    <div key="lr-scroll" className="bht-list-rows-track bht-list-rows-track--scroll"
-                      style={{ '--bht-item-count': count + 1 }}>
-                      {bonuses.map((b, i) => renderRow(b, i, `lr-${b.id || i}-o`))}
+                    <div
+                      key="lr-scroll"
+                      className="bht-list-rows-track bht-list-rows-track--scroll"
+                      style={{ "--bht-item-count": count + 1 }}
+                    >
+                      {bonuses.map((b, i) =>
+                        renderRow(b, i, `lr-${b.id || i}-o`),
+                      )}
                       <div key="lr-spacer-a" className="bht-list-row-spacer" />
-                      {bonuses.map((b, i) => renderRow(b, i, `lr-${b.id || i}-c`))}
+                      {bonuses.map((b, i) =>
+                        renderRow(b, i, `lr-${b.id || i}-c`),
+                      )}
                       <div key="lr-spacer-b" className="bht-list-row-spacer" />
                     </div>
                   );
@@ -775,10 +1301,15 @@ function BonusHuntWidget({ config, theme, userId }) {
       {/* ═══ Total Pay Footer (flips with stats) ═══ */}
       <div className="bht-card bht-footer">
         <div className="bht-footer-flip-wrap">
-          <div className={`bht-footer-flip${statsFlipped ? ' bht-footer-flip--flipped' : ''}`}>
+          <div
+            className={`bht-footer-flip${statsFlipped ? " bht-footer-flip--flipped" : ""}`}
+          >
             <div className="bht-footer-flip-face bht-footer-flip-front">
               <span className="bht-footer-label">TOTAL PAY</span>
-              <span className="bht-footer-value">{currency}{stats.totalWin.toFixed(2)}</span>
+              <span className="bht-footer-value">
+                {currency}
+                {stats.totalWin.toFixed(2)}
+              </span>
             </div>
             <div className="bht-footer-flip-face bht-footer-flip-back">
               {(() => {
@@ -787,9 +1318,16 @@ function BonusHuntWidget({ config, theme, userId }) {
                 const isProfit = profit >= 0;
                 return (
                   <>
-                    <span className="bht-footer-label">{isProfit ? 'PROFIT' : 'LOSS'}</span>
-                    <span className="bht-footer-value" style={{ color: isProfit ? '#4ade80' : '#f87171' }}>
-                      {isProfit ? '+' : ''}{currency}{profit.toFixed(2)}
+                    <span className="bht-footer-label">
+                      {isProfit ? "PROFIT" : "LOSS"}
+                    </span>
+                    <span
+                      className="bht-footer-value"
+                      style={{ color: isProfit ? "#4ade80" : "#f87171" }}
+                    >
+                      {isProfit ? "+" : ""}
+                      {currency}
+                      {profit.toFixed(2)}
                     </span>
                   </>
                 );

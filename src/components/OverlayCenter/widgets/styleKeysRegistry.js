@@ -81,6 +81,7 @@ export const IMAGE_SLIDESHOW_STYLE_KEYS = [
 
 /* ── RTP Stats ── */
 export const RTP_STATS_STYLE_KEYS = [
+  'rtpMetal',
   'barBgFrom', 'barBgVia', 'barBgTo', 'borderColor', 'borderWidth', 'borderRadius',
   'textColor', 'providerColor', 'slotNameColor', 'labelColor',
   'rtpIconColor', 'potentialIconColor', 'volatilityIconColor', 'bestWinIconColor',

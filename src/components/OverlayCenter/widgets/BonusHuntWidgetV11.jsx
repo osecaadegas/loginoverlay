@@ -1,6 +1,6 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import SlotImage from './SlotImage';
-import { subValue } from './shared/appearanceStyles';
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import SlotImage from "./SlotImage";
+import { subValue } from "./shared/appearanceStyles";
 
 /**
  * BonusHuntWidgetV11 — Advanced List
@@ -16,19 +16,30 @@ import { subValue } from './shared/appearanceStyles';
 function BonusHuntWidgetV11({ config, theme }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
-  const currency = c.currency || '€';
+  const currency = c.currency || "€";
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
 
   /* ─── Derived stats ─── */
   const stats = useMemo(() => {
-    const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const openedBonuses = bonuses.filter(b => b.opened);
-    const totalBetOpened = openedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const totalWin = openedBonuses.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const totalBetAll = bonuses.reduce(
+      (s, b) => s + (Number(b.betSize) || 0),
+      0,
+    );
+    const openedBonuses = bonuses.filter((b) => b.opened);
+    const totalBetOpened = openedBonuses.reduce(
+      (s, b) => s + (Number(b.betSize) || 0),
+      0,
+    );
+    const totalWin = openedBonuses.reduce(
+      (s, b) => s + (Number(b.payout) || 0),
+      0,
+    );
     const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
-    const superCount = bonuses.filter(b => b.isSuperBonus).length;
-    const extremeCount = bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length;
+    const superCount = bonuses.filter((b) => b.isSuperBonus).length;
+    const extremeCount = bonuses.filter(
+      (b) => b.isExtremeBonus || b.isExtreme,
+    ).length;
 
     const target = Math.max(startMoney - stopLoss, 0);
     const breakEven = totalBetAll > 0 ? target / totalBetAll : 0;
@@ -36,51 +47,163 @@ function BonusHuntWidgetV11({ config, theme }) {
     const liveBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
     const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
 
-    return { totalBetAll, totalWin, superCount, extremeCount, breakEven, liveBE, avgMulti, openedCount: openedBonuses.length };
+    return {
+      totalBetAll,
+      totalWin,
+      superCount,
+      extremeCount,
+      breakEven,
+      liveBE,
+      avgMulti,
+      openedCount: openedBonuses.length,
+    };
   }, [bonuses, startMoney, stopLoss]);
 
   /* ─── Auto-rotating carousel ─── */
   const [carouselIdx, setCarouselIdx] = useState(0);
   useEffect(() => {
     if (bonuses.length < 2) return;
-    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 2500);
+    const id = setInterval(
+      () => setCarouselIdx((i) => (i + 1) % bonuses.length),
+      2500,
+    );
     return () => clearInterval(id);
   }, [bonuses.length]);
 
   /* ─── Current bonus (first not-opened) ─── */
-  const currentBonus = bonuses.find(b => !b.opened);
+  const currentBonus = bonuses.find((b) => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
   const huntComplete = bonuses.length > 0 && currentIndex < 0;
 
   /* ─── Dynamic title ─── */
-  const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
+  const huntTitle = c.bonusOpening ? "BONUS OPENING" : "BONUS HUNT";
 
   /* ─── Style vars ─── */
-  const headerColor = subValue(c, 'header', 'background', c.headerColor || '#0a0e27');
-  const headerAccent = subValue(c, 'header', 'accentColor', c.headerAccent || '#60a5fa');
-  const countCardColor = subValue(c, 'card', 'background', c.countCardColor || '#0f1535');
-  const currentBonusColor = subValue(c, 'highlight', 'background', c.currentBonusColor || '#0d2818');
-  const currentBonusAccent = subValue(c, 'highlight', 'accentColor', c.currentBonusAccent || '#4ade80');
-  const listCardColor = subValue(c, 'bonusCard', 'background', c.listCardColor || '#0f1535');
-  const listCardAccent = subValue(c, 'bonusCard', 'accentColor', c.listCardAccent || '#eab308');
-  const summaryColor = subValue(c, 'value', 'background', c.summaryColor || '#0a0e27');
-  const totalPayColor = subValue(c, 'profit', 'background', c.totalPayColor || '#eab308');
-  const totalPayText = subValue(c, 'profit', 'textColor', c.totalPayText || '#ffffff');
-  const superBadgeColor = subValue(c, 'openedState', 'accentColor', c.superBadgeColor || '#eab308');
-  const extremeBadgeColor = subValue(c, 'loss', 'accentColor', c.extremeBadgeColor || '#ef4444');
-  const textColor = subValue(c, 'bonusCard', 'textColor', c.textColor || '#ffffff');
-  const mutedTextColor = subValue(c, 'label', 'textColor', c.mutedTextColor || '#93c5fd');
-  const statValueColor = subValue(c, 'value', 'textColor', c.statValueColor || '#ffffff');
-  const cardOutlineColor = subValue(c, 'bonusCard', 'borderColor', c.cardOutlineColor || 'rgba(96,165,250,0.2)');
-  const cardOutlineWidth = subValue(c, 'bonusCard', 'borderWidth', c.cardOutlineWidth ?? 1);
-  const fontFamily = subValue(c, 'bonusCard', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
-  const fontSize = subValue(c, 'bonusCard', 'fontSize', c.fontSize ?? 15);
-  const cardRadius = subValue(c, 'bonusCard', 'radius', c.cardRadius ?? 16);
-  const cardGap = subValue(c, 'bonusCard', 'gap', c.cardGap ?? 8);
-  const cardPadding = subValue(c, 'bonusCard', 'padding', c.cardPadding ?? 10);
-  const progressBg = subValue(c, 'progressBar', 'background', 'rgba(255,255,255,0.08)');
-  const progressFill = subValue(c, 'progressBar', 'fillColor', currentBonusAccent);
+  const headerColor = subValue(
+    c,
+    "header",
+    "background",
+    c.headerColor || "#0a0e27",
+  );
+  const headerAccent = subValue(
+    c,
+    "header",
+    "accentColor",
+    c.headerAccent || "#60a5fa",
+  );
+  const countCardColor = subValue(
+    c,
+    "card",
+    "background",
+    c.countCardColor || "#0f1535",
+  );
+  const currentBonusColor = subValue(
+    c,
+    "highlight",
+    "background",
+    c.currentBonusColor || "#0d2818",
+  );
+  const currentBonusAccent = subValue(
+    c,
+    "highlight",
+    "accentColor",
+    c.currentBonusAccent || "#4ade80",
+  );
+  const listCardColor = subValue(
+    c,
+    "bonusCard",
+    "background",
+    c.listCardColor || "#0f1535",
+  );
+  const listCardAccent = subValue(
+    c,
+    "bonusCard",
+    "accentColor",
+    c.listCardAccent || "#eab308",
+  );
+  const summaryColor = subValue(
+    c,
+    "value",
+    "background",
+    c.summaryColor || "#0a0e27",
+  );
+  const totalPayColor = subValue(
+    c,
+    "profit",
+    "background",
+    c.totalPayColor || "#eab308",
+  );
+  const totalPayText = subValue(
+    c,
+    "profit",
+    "textColor",
+    c.totalPayText || "#ffffff",
+  );
+  const superBadgeColor = subValue(
+    c,
+    "openedState",
+    "accentColor",
+    c.superBadgeColor || "#eab308",
+  );
+  const extremeBadgeColor = subValue(
+    c,
+    "loss",
+    "accentColor",
+    c.extremeBadgeColor || "#ef4444",
+  );
+  const textColor = subValue(
+    c,
+    "bonusCard",
+    "textColor",
+    c.textColor || "#ffffff",
+  );
+  const mutedTextColor = subValue(
+    c,
+    "label",
+    "textColor",
+    c.mutedTextColor || "#93c5fd",
+  );
+  const statValueColor = subValue(
+    c,
+    "value",
+    "textColor",
+    c.statValueColor || "#ffffff",
+  );
+  const cardOutlineColor = subValue(
+    c,
+    "bonusCard",
+    "borderColor",
+    c.cardOutlineColor || "rgba(96,165,250,0.2)",
+  );
+  const cardOutlineWidth = subValue(
+    c,
+    "bonusCard",
+    "borderWidth",
+    c.cardOutlineWidth ?? 1,
+  );
+  const fontFamily = subValue(
+    c,
+    "bonusCard",
+    "fontFamily",
+    c.fontFamily || "'Inter', sans-serif",
+  );
+  const fontSize = subValue(c, "bonusCard", "fontSize", c.fontSize ?? 15);
+  const cardRadius = subValue(c, "bonusCard", "radius", c.cardRadius ?? 16);
+  const cardGap = subValue(c, "bonusCard", "gap", c.cardGap ?? 8);
+  const cardPadding = subValue(c, "bonusCard", "padding", c.cardPadding ?? 10);
+  const progressBg = subValue(
+    c,
+    "progressBar",
+    "background",
+    "rgba(255,255,255,0.08)",
+  );
+  const progressFill = subValue(
+    c,
+    "progressBar",
+    "fillColor",
+    currentBonusAccent,
+  );
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -88,38 +211,38 @@ function BonusHuntWidgetV11({ config, theme }) {
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
-      ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
-      : undefined,
-    '--bht11-header-bg': headerColor,
-    '--bht11-header-accent': headerAccent,
-    '--bht11-count-bg': countCardColor,
-    '--bht11-current-bg': currentBonusColor,
-    '--bht11-current-accent': currentBonusAccent,
-    '--bht11-list-bg': listCardColor,
-    '--bht11-list-accent': listCardAccent,
-    '--bht11-summary-bg': summaryColor,
-    '--bht11-total-pay-bg': totalPayColor,
-    '--bht11-total-pay-text': totalPayText,
-    '--bht11-super-badge': superBadgeColor,
-    '--bht11-extreme-badge': extremeBadgeColor,
-    '--bht11-text': textColor,
-    '--bht11-muted': mutedTextColor,
-    '--bht11-stat-value': statValueColor,
-    '--bht11-card-outline': cardOutlineColor,
-    '--bht11-card-outline-width': `${cardOutlineWidth}px`,
-    '--bht11-card-radius': `${cardRadius}px`,
-    '--bht11-card-padding': `${cardPadding}px`,
-    '--bht-progress-bg': progressBg,
-    '--bht-progress-fill': progressFill,
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    filter:
+      brightness !== 100 || contrast !== 100 || saturation !== 100
+        ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+        : undefined,
+    "--bht11-header-bg": headerColor,
+    "--bht11-header-accent": headerAccent,
+    "--bht11-count-bg": countCardColor,
+    "--bht11-current-bg": currentBonusColor,
+    "--bht11-current-accent": currentBonusAccent,
+    "--bht11-list-bg": listCardColor,
+    "--bht11-list-accent": listCardAccent,
+    "--bht11-summary-bg": summaryColor,
+    "--bht11-total-pay-bg": totalPayColor,
+    "--bht11-total-pay-text": totalPayText,
+    "--bht11-super-badge": superBadgeColor,
+    "--bht11-extreme-badge": extremeBadgeColor,
+    "--bht11-text": textColor,
+    "--bht11-muted": mutedTextColor,
+    "--bht11-stat-value": statValueColor,
+    "--bht11-card-outline": cardOutlineColor,
+    "--bht11-card-outline-width": `${cardOutlineWidth}px`,
+    "--bht11-card-radius": `${cardRadius}px`,
+    "--bht11-card-padding": `${cardPadding}px`,
+    "--bht-progress-bg": progressBg,
+    "--bht-progress-fill": progressFill,
   };
 
   return (
     <div className="oc-widget-inner bht11" style={rootStyle}>
-
       {/* ═══ 1. Header ═══ */}
       <div className="bht11-header">
         <div className="bht11-header-left">
@@ -134,13 +257,18 @@ function BonusHuntWidgetV11({ config, theme }) {
         <div className="bht11-stat-card">
           <div className="bht11-stat-card-text">
             <span className="bht11-stat-card-label">START</span>
-            <span className="bht11-stat-card-value">{currency}{startMoney.toFixed(2)}</span>
+            <span className="bht11-stat-card-value">
+              {currency}
+              {startMoney.toFixed(2)}
+            </span>
           </div>
         </div>
         <div className="bht11-stat-card">
           <div className="bht11-stat-card-text">
             <span className="bht11-stat-card-label">BREAKEVEN</span>
-            <span className="bht11-stat-card-value">{(c.bonusOpening ? stats.liveBE : stats.breakEven).toFixed(0)}x</span>
+            <span className="bht11-stat-card-value">
+              {(c.bonusOpening ? stats.liveBE : stats.breakEven).toFixed(0)}x
+            </span>
           </div>
         </div>
       </div>
@@ -153,14 +281,18 @@ function BonusHuntWidgetV11({ config, theme }) {
               <div className="bht11-count-bar bht11-count-bar--super">
                 <span className="bht11-count-bar-icon">⚡</span>
                 <span className="bht11-count-bar-label">SUPER</span>
-                <span className="bht11-count-bar-value">{stats.superCount}</span>
+                <span className="bht11-count-bar-value">
+                  {stats.superCount}
+                </span>
               </div>
             )}
             {stats.extremeCount > 0 && (
               <div className="bht11-count-bar bht11-count-bar--extreme">
                 <span className="bht11-count-bar-icon">🔥</span>
                 <span className="bht11-count-bar-label">EXTREME</span>
-                <span className="bht11-count-bar-value">{stats.extremeCount}</span>
+                <span className="bht11-count-bar-value">
+                  {stats.extremeCount}
+                </span>
               </div>
             )}
           </div>
@@ -174,29 +306,49 @@ function BonusHuntWidgetV11({ config, theme }) {
 
       {/* ═══ 4. 3D Rotating Card Stack ═══ */}
       {bonuses.length > 0 && (
-        <div className={`bht11-stack-section${huntComplete ? ' bht11-stack-section--complete' : ''}`}>
-          <div className={`bht-stack${!isOpening && !huntComplete ? ' bht-stack--spinning' : ''}${huntComplete ? ' bht-stack--complete' : ''}`}>
+        <div
+          className={`bht11-stack-section${huntComplete ? " bht11-stack-section--complete" : ""}`}
+        >
+          <div
+            className={`bht-stack${!isOpening && !huntComplete ? " bht-stack--spinning" : ""}${huntComplete ? " bht-stack--complete" : ""}`}
+          >
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
-              const ci = isOpening && currentIndex >= 0
-                ? currentIndex
-                : huntComplete
-                ? Math.max(0, total - 1)
-                : carouselIdx % total;
-              const posMap = { '-2': 'bht-stack-card--far-left', '-1': 'bht-stack-card--left', '0': 'bht-stack-card--center', '1': 'bht-stack-card--right', '2': 'bht-stack-card--far-right' };
+              const ci =
+                isOpening && currentIndex >= 0
+                  ? currentIndex
+                  : huntComplete
+                    ? Math.max(0, total - 1)
+                    : carouselIdx % total;
+              const posMap = {
+                "-2": "bht-stack-card--far-left",
+                "-1": "bht-stack-card--left",
+                0: "bht-stack-card--center",
+                1: "bht-stack-card--right",
+                2: "bht-stack-card--far-right",
+              };
               return bonuses.map((bonus, bIdx) => {
-                const rawDist = ((bIdx - ci) % total + total) % total;
-                const dist = rawDist <= Math.floor(total / 2) ? rawDist : rawDist - total;
-                const posCls = posMap[String(dist)] || 'bht-stack-card--hidden';
+                const rawDist = (((bIdx - ci) % total) + total) % total;
+                const dist =
+                  rawDist <= Math.floor(total / 2) ? rawDist : rawDist - total;
+                const posCls = posMap[String(dist)] || "bht-stack-card--hidden";
                 return (
-                  <div key={`stk-${bIdx}`}
-                    className={`bht-stack-card ${posCls}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
+                  <div
+                    key={`stk-${bIdx}`}
+                    className={`bht-stack-card ${posCls}${bonus.opened ? " bht-stack-card--opened" : ""}${bonus.isSuperBonus ? " bht-stack-card--super" : ""}${bonus.isExtremeBonus || bonus.isExtreme ? " bht-stack-card--extreme" : ""}`}
+                  >
                     <div className="bht-stack-card-inner">
                       <div className="bht-stack-card-img-wrap">
                         {bonus.slot?.image ? (
-                          <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-stack-card-img" />
-                        ) : <div className="bht-stack-card-img-ph" />}
+                          <SlotImage
+                            src={bonus.slot.image}
+                            alt={bonus.slotName || bonus.slot?.name}
+                            className="bht-stack-card-img"
+                          />
+                        ) : (
+                          <div className="bht-stack-card-img-ph" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -207,14 +359,19 @@ function BonusHuntWidgetV11({ config, theme }) {
           {/* ── Progress bar ── */}
           {(() => {
             const total = bonuses.length;
-            const opened = bonuses.filter(b => b.opened).length;
+            const opened = bonuses.filter((b) => b.opened).length;
             const pct = total > 0 ? (opened / total) * 100 : 0;
             return (
               <div className="bht-progress">
                 <div className="bht-progress-bar">
-                  <div className="bht-progress-fill" style={{ width: `${pct}%` }} />
+                  <div
+                    className="bht-progress-fill"
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
-                <span className="bht-progress-text">{opened}/{total}</span>
+                <span className="bht-progress-text">
+                  {opened}/{total}
+                </span>
               </div>
             );
           })()}
@@ -236,30 +393,55 @@ function BonusHuntWidgetV11({ config, theme }) {
               const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
               const isSuper = bonus.isSuperBonus;
               return (
-                <div key={key}
-                  className={`bht-cpt-card${!huntComplete && idx === currentIndex ? ' bht-cpt-card--active' : ''}${bonus.opened ? ' bht-cpt-card--opened' : ''}${isSuper ? ' bht-cpt-card--super' : ''}${isExtreme ? ' bht-cpt-card--extreme' : ''}`}>
+                <div
+                  key={key}
+                  className={`bht-cpt-card${!huntComplete && idx === currentIndex ? " bht-cpt-card--active" : ""}${bonus.opened ? " bht-cpt-card--opened" : ""}${isSuper ? " bht-cpt-card--super" : ""}${isExtreme ? " bht-cpt-card--extreme" : ""}`}
+                >
                   <div className="bht-cpt-card-img-wrap">
                     {bonus.slot?.image ? (
-                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name}
-                        className="bht-cpt-card-img" />
+                      <SlotImage
+                        src={bonus.slot.image}
+                        alt={bonus.slotName || bonus.slot?.name}
+                        className="bht-cpt-card-img"
+                      />
                     ) : (
                       <div className="bht-cpt-card-img-ph" />
                     )}
                     {isExtreme && <div className="bht-cpt-blood-drip" />}
-                    {isExtreme && <span className="bht-cpt-badge bht-cpt-badge--extreme">EXTREME</span>}
-                    {!isExtreme && isSuper && <span className="bht-cpt-badge bht-cpt-badge--super">SUPER</span>}
+                    {isExtreme && (
+                      <span className="bht-cpt-badge bht-cpt-badge--extreme">
+                        EXTREME
+                      </span>
+                    )}
+                    {!isExtreme && isSuper && (
+                      <span className="bht-cpt-badge bht-cpt-badge--super">
+                        SUPER
+                      </span>
+                    )}
                   </div>
                   <div className="bht-cpt-card-info">
                     <div className="bht-cpt-card-row1">
                       <span className="bht-cpt-card-idx">#{idx + 1}</span>
-                      <span className="bht-cpt-card-name">{bonus.slotName || bonus.slot?.name}</span>
+                      <span className="bht-cpt-card-name">
+                        {bonus.slotName || bonus.slot?.name}
+                      </span>
                     </div>
                     <div className="bht-cpt-card-row2">
-                      <span className="bht-cpt-card-bet">BET {currency}{bet.toFixed(2)}</span>
+                      <span className="bht-cpt-card-bet">
+                        BET {currency}
+                        {bet.toFixed(2)}
+                      </span>
                       {bonus.opened && (
                         <>
-                          <span className="bht-cpt-card-payout">{currency}{payout.toFixed(2)}</span>
-                          <span className={`bht-cpt-card-multi${multi >= 100 ? ' bht-cpt-card-multi--huge' : multi >= 50 ? ' bht-cpt-card-multi--big' : ''}`}>{multi.toFixed(1)}x</span>
+                          <span className="bht-cpt-card-payout">
+                            {currency}
+                            {payout.toFixed(2)}
+                          </span>
+                          <span
+                            className={`bht-cpt-card-multi${multi >= 100 ? " bht-cpt-card-multi--huge" : multi >= 50 ? " bht-cpt-card-multi--big" : ""}`}
+                          >
+                            {multi.toFixed(1)}x
+                          </span>
                         </>
                       )}
                     </div>
@@ -268,21 +450,33 @@ function BonusHuntWidgetV11({ config, theme }) {
               );
             };
             if (isOpening) {
-              const cardH = 140, gap = 6, step = cardH + gap;
+              const cardH = 140,
+                gap = 6,
+                step = cardH + gap;
               const offset = -(currentIndex * step);
               return (
-                <div key="compact-static" className="bht-compact-track bht-compact-track--static"
-                  style={{ transform: `translateY(${offset}px)` }}>
+                <div
+                  key="compact-static"
+                  className="bht-compact-track bht-compact-track--static"
+                  style={{ transform: `translateY(${offset}px)` }}
+                >
                   {bonuses.map((b, i) => renderCompactCard(b, i, b.id || i))}
                 </div>
               );
             }
             return (
-              <div key="compact-scroll" className="bht-compact-track bht-compact-track--scroll"
-                style={{ '--bht-compact-count': bonuses.length }}>
+              <div
+                key="compact-scroll"
+                className="bht-compact-track bht-compact-track--scroll"
+                style={{ "--bht-compact-count": bonuses.length }}
+              >
                 {[...bonuses, ...bonuses].map((b, i) => {
                   const idx = i % bonuses.length;
-                  return renderCompactCard(b, idx, `${b.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`);
+                  return renderCompactCard(
+                    b,
+                    idx,
+                    `${b.id || idx}-${i >= bonuses.length ? "c" : "o"}`,
+                  );
                 })}
               </div>
             );

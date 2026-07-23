@@ -3,16 +3,20 @@ import {
   DEFAULT_SIMPLE_APPEARANCE_V2,
   generateAppearanceTokens,
   normalizeSimpleAppearanceV2,
-} from './materialGenerators';
+} from "./materialGenerators";
 import {
   getWidgetAppearanceCapability,
   isWidgetAppearanceV2Enabled,
-} from './widgetAppearanceRegistry';
-import { mixHex, toRgba } from './colorUtils';
-import { STYLE_SECA, styleSecaHeaderGradient, styleSecaSurfaceGradient } from '../../widgets/shared/styleSecaTheme';
+} from "./widgetAppearanceRegistry";
+import { mixHex, toRgba } from "./colorUtils";
+import {
+  STYLE_SECA,
+  styleSecaHeaderGradient,
+  styleSecaSurfaceGradient,
+} from "../../widgets/shared/styleSecaTheme";
 
 function isObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value);
+  return value && typeof value === "object" && !Array.isArray(value);
 }
 
 export function deepMergeV2(...sources) {
@@ -43,13 +47,15 @@ function clamp(number, min, max) {
 function readEntryAppearanceV2(entry) {
   if (!isObject(entry)) return {};
   if (isObject(entry.appearanceV2)) return entry.appearanceV2;
-  if (isObject(entry.appearance?.appearanceV2)) return entry.appearance.appearanceV2;
+  if (isObject(entry.appearance?.appearanceV2))
+    return entry.appearance.appearanceV2;
   return {};
 }
 
 function readLegacySimpleSettings(entry) {
   if (!isObject(entry)) return {};
-  if (isObject(entry.appearance?.simpleSettings)) return entry.appearance.simpleSettings;
+  if (isObject(entry.appearance?.simpleSettings))
+    return entry.appearance.simpleSettings;
   if (isObject(entry.simpleSettings)) return entry.simpleSettings;
   return {};
 }
@@ -57,12 +63,13 @@ function readLegacySimpleSettings(entry) {
 function readCandidateEntries(appearance = {}, widget, styleId, options = {}) {
   const widgetType = widget?.widget_type;
   const widgetId = widget?.id;
-  const typeEntries = options.allowWidgetTypeAppearance === true
-    ? [
-      appearance.widgetTypes?.[widgetType],
-      appearance.widgetTypes?.[widgetType]?.styles?.[styleId],
-    ]
-    : [];
+  const typeEntries =
+    options.allowWidgetTypeAppearance === true
+      ? [
+          appearance.widgetTypes?.[widgetType],
+          appearance.widgetTypes?.[widgetType]?.styles?.[styleId],
+        ]
+      : [];
   return [
     ...typeEntries,
     appearance.widgets?.[widgetId],
@@ -78,8 +85,12 @@ function migrateLegacySimpleToV2(widgetType, entry = {}) {
 
 export function createDefaultWidgetAppearanceV2(widgetType, simple = {}) {
   const capability = getWidgetAppearanceCapability(widgetType);
-  const defaults = capability?.defaultAppearance || DEFAULT_SIMPLE_APPEARANCE_V2;
-  const normalizedSimple = normalizeSimpleAppearanceV2({ ...defaults, ...simple });
+  const defaults =
+    capability?.defaultAppearance || DEFAULT_SIMPLE_APPEARANCE_V2;
+  const normalizedSimple = normalizeSimpleAppearanceV2({
+    ...defaults,
+    ...simple,
+  });
   return {
     schemaVersion: APPEARANCE_V2_SCHEMA_VERSION,
     widgetId: widgetType,
@@ -89,7 +100,10 @@ export function createDefaultWidgetAppearanceV2(widgetType, simple = {}) {
     elementOverrides: {},
     stateOverrides: {},
     responsiveOverrides: {},
-    generatedTokens: generateAppearanceTokens(normalizedSimple, capability || {}),
+    generatedTokens: generateAppearanceTokens(
+      normalizedSimple,
+      capability || {},
+    ),
   };
 }
 
@@ -104,7 +118,9 @@ export function normalizeWidgetAppearanceV2(widgetType, source = {}) {
   const resolvedTokens = deepMergeV2(
     generatedTokens,
     isObject(source.savedPreset?.tokens) ? source.savedPreset.tokens : {},
-    isObject(source.widgetOverrides?.tokens) ? source.widgetOverrides.tokens : {}
+    isObject(source.widgetOverrides?.tokens)
+      ? source.widgetOverrides.tokens
+      : {},
   );
   return {
     ...defaults,
@@ -113,25 +129,45 @@ export function normalizeWidgetAppearanceV2(widgetType, source = {}) {
     widgetId: source.widgetId || widgetType,
     simple,
     savedPreset: isObject(source.savedPreset) ? source.savedPreset : {},
-    widgetOverrides: isObject(source.widgetOverrides) ? source.widgetOverrides : {},
-    elementOverrides: isObject(source.elementOverrides) ? source.elementOverrides : {},
-    stateOverrides: isObject(source.stateOverrides) ? source.stateOverrides : {},
-    responsiveOverrides: isObject(source.responsiveOverrides) ? source.responsiveOverrides : {},
+    widgetOverrides: isObject(source.widgetOverrides)
+      ? source.widgetOverrides
+      : {},
+    elementOverrides: isObject(source.elementOverrides)
+      ? source.elementOverrides
+      : {},
+    stateOverrides: isObject(source.stateOverrides)
+      ? source.stateOverrides
+      : {},
+    responsiveOverrides: isObject(source.responsiveOverrides)
+      ? source.responsiveOverrides
+      : {},
     generatedTokens: resolvedTokens,
   };
 }
 
-export function resolveWidgetAppearanceV2(widget, appearance = {}, options = {}) {
+export function resolveWidgetAppearanceV2(
+  widget,
+  appearance = {},
+  options = {},
+) {
   if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type)) return null;
   const capability = getWidgetAppearanceCapability(widget.widget_type);
-  const styleId = options.styleId || widget.config?.__appearanceStyleId || widget.config?.displayStyle || capability?.defaultStyleId || 'default';
+  const styleId =
+    options.styleId ||
+    widget.config?.__appearanceStyleId ||
+    widget.config?.displayStyle ||
+    capability?.defaultStyleId ||
+    "default";
   const entries = readCandidateEntries(appearance, widget, styleId, options);
-  const hasStoredV2OrLegacySimple = entries.some(entry => (
-    Object.keys(readEntryAppearanceV2(entry)).length > 0
-    || Object.keys(readLegacySimpleSettings(entry)).length > 0
-  ));
+  const hasStoredV2OrLegacySimple = entries.some(
+    (entry) =>
+      Object.keys(readEntryAppearanceV2(entry)).length > 0 ||
+      Object.keys(readLegacySimpleSettings(entry)).length > 0,
+  );
   if (!hasStoredV2OrLegacySimple) return null;
-  const migrated = entries.map(entry => migrateLegacySimpleToV2(widget.widget_type, entry));
+  const migrated = entries.map((entry) =>
+    migrateLegacySimpleToV2(widget.widget_type, entry),
+  );
   const explicit = entries.map(readEntryAppearanceV2);
   const source = deepMergeV2(...migrated, ...explicit);
   const normalized = normalizeWidgetAppearanceV2(widget.widget_type, source);
@@ -148,11 +184,15 @@ function px(number) {
 }
 
 function shadowSize(tokens) {
-  return Math.round(clamp(tokens.materialTokens?.shadowIntensity || 0, 0, 0.65) * 52);
+  return Math.round(
+    clamp(tokens.materialTokens?.shadowIntensity || 0, 0, 0.65) * 52,
+  );
 }
 
 function shadowIntensity(tokens) {
-  return Math.round(clamp(tokens.materialTokens?.shadowIntensity || 0, 0, 0.8) * 100);
+  return Math.round(
+    clamp(tokens.materialTokens?.shadowIntensity || 0, 0, 0.8) * 100,
+  );
 }
 
 function commonVisualPatch(tokens) {
@@ -182,13 +222,16 @@ function commonVisualPatch(tokens) {
 }
 
 function commonSubElements(tokens) {
-  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
-    ? `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 44)} ${tokens.colors.shadow}`
-    : undefined;
-  const glowShadow = tokens.materialTokens?.glowIntensity > 0.01
-    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 46)} ${tokens.colors.glow}`
-    : undefined;
-  const shadow = [cardShadow, glowShadow].filter(Boolean).join(', ') || undefined;
+  const cardShadow =
+    tokens.materialTokens?.shadowIntensity > 0.02
+      ? `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 44)} ${tokens.colors.shadow}`
+      : undefined;
+  const glowShadow =
+    tokens.materialTokens?.glowIntensity > 0.01
+      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 46)} ${tokens.colors.glow}`
+      : undefined;
+  const shadow =
+    [cardShadow, glowShadow].filter(Boolean).join(", ") || undefined;
   return {
     container: {
       background: tokens.colors.surface,
@@ -202,7 +245,9 @@ function commonSubElements(tokens) {
       borderColor: tokens.colors.border,
       borderWidth: tokens.shape.borderWidth,
       shadow,
-      ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+      ...(tokens.materialTokens?.blurStrength
+        ? { backdropBlur: tokens.materialTokens.blurStrength }
+        : {}),
     },
     statsCard: {
       background: tokens.colors.secondarySurface,
@@ -253,24 +298,41 @@ function commonSubElements(tokens) {
 }
 
 function buildBetsPatch(tokens, styleId) {
-  const isStyleSeca = styleId === 'StyleSecaBets';
-  const surface = isStyleSeca ? styleSecaSurfaceGradient() : tokens.colors.surface;
-  const secondary = isStyleSeca ? STYLE_SECA.secondarySurface : tokens.colors.secondarySurface;
-  const elevated = isStyleSeca ? STYLE_SECA.elevated : tokens.colors.elevatedSurface;
+  const isStyleSeca = styleId === "StyleSecaBets";
+  const surface = isStyleSeca
+    ? styleSecaSurfaceGradient()
+    : tokens.colors.surface;
+  const secondary = isStyleSeca
+    ? STYLE_SECA.secondarySurface
+    : tokens.colors.secondarySurface;
+  const elevated = isStyleSeca
+    ? STYLE_SECA.elevated
+    : tokens.colors.elevatedSurface;
   const primary = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
-  const secondaryAccent = isStyleSeca ? STYLE_SECA.secondary : tokens.colors.accent;
-  const text = isStyleSeca ? '#f8fbff' : tokens.colors.text;
-  const muted = isStyleSeca ? 'rgba(248,251,255,0.82)' : tokens.colors.mutedText;
+  const secondaryAccent = isStyleSeca
+    ? STYLE_SECA.secondary
+    : tokens.colors.accent;
+  const text = isStyleSeca ? "#f8fbff" : tokens.colors.text;
+  const muted = isStyleSeca
+    ? "rgba(248,251,255,0.82)"
+    : tokens.colors.mutedText;
   const border = isStyleSeca ? STYLE_SECA.border : tokens.colors.border;
-  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
-    ? `0 ${px(tokens.materialTokens.shadowIntensity * 14)} ${px(tokens.materialTokens.shadowIntensity * 34)} ${tokens.colors.shadow}`
-    : undefined;
-  const glowShadow = tokens.materialTokens?.glowIntensity > 0.01
-    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 38)} ${tokens.colors.glow}`
-    : undefined;
+  const cardShadow =
+    tokens.materialTokens?.shadowIntensity > 0.02
+      ? `0 ${px(tokens.materialTokens.shadowIntensity * 14)} ${px(tokens.materialTokens.shadowIntensity * 34)} ${tokens.colors.shadow}`
+      : undefined;
+  const glowShadow =
+    tokens.materialTokens?.glowIntensity > 0.01
+      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 38)} ${tokens.colors.glow}`
+      : undefined;
   const shadow = isStyleSeca
-    ? [cardShadow || '0 16px 38px rgba(0,0,0,0.32)', glowShadow || `0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}`].filter(Boolean).join(', ')
-    : [cardShadow, glowShadow].filter(Boolean).join(', ') || undefined;
+    ? [
+        cardShadow || "0 16px 38px rgba(0,0,0,0.32)",
+        glowShadow || `0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}`,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : [cardShadow, glowShadow].filter(Boolean).join(", ") || undefined;
   const statSurface = {
     background: secondary,
     textColor: text,
@@ -291,7 +353,7 @@ function buildBetsPatch(tokens, styleId) {
   };
   return {
     ...commonVisualPatch(tokens),
-    displayStyle: styleId || 'v3_grid_2x3',
+    displayStyle: styleId || "v3_grid_2x3",
     bgColor: surface,
     headerBg: secondary,
     headerText: isStyleSeca ? primary : text,
@@ -304,7 +366,14 @@ function buildBetsPatch(tokens, styleId) {
     progressColor: primary,
     progressBgColor: elevated,
     fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
-    ...(isStyleSeca ? { barColorMode: 'solid', barHeight: 18, widgetWidth: 460, widgetHeight: 520 } : {}),
+    ...(isStyleSeca
+      ? {
+          barColorMode: "solid",
+          barHeight: 18,
+          widgetWidth: 460,
+          widgetHeight: 520,
+        }
+      : {}),
     subElements: {
       widgetBackground: {
         background: surface,
@@ -318,12 +387,18 @@ function buildBetsPatch(tokens, styleId) {
         borderColor: border,
         borderWidth: tokens.shape.borderWidth,
         shadow,
-        ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+        ...(tokens.materialTokens?.blurStrength
+          ? { backdropBlur: tokens.materialTokens.blurStrength }
+          : {}),
       },
       header: {
-        background: isStyleSeca ? styleSecaHeaderGradient() : tokens.colors.secondarySurface,
+        background: isStyleSeca
+          ? styleSecaHeaderGradient()
+          : tokens.colors.secondarySurface,
         textColor: isStyleSeca ? primary : text,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.headerFont,
+        fontFamily: isStyleSeca
+          ? STYLE_SECA.font
+          : tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
         radius: tokens.shape.cardRadius,
@@ -345,9 +420,20 @@ function buildBetsPatch(tokens, styleId) {
         borderColor: border,
         borderWidth: tokens.shape.borderWidth,
         states: {
-          open: { background: isStyleSeca ? primary : tokens.colors.elevatedSurface, textColor: isStyleSeca ? STYLE_SECA.darkText : tokens.colors.primary },
-          locked: { background: tokens.colors.elevatedSurface, textColor: tokens.colors.negative },
-          result: { background: tokens.colors.elevatedSurface, textColor: tokens.colors.positive },
+          open: {
+            background: isStyleSeca ? primary : tokens.colors.elevatedSurface,
+            textColor: isStyleSeca
+              ? STYLE_SECA.darkText
+              : tokens.colors.primary,
+          },
+          locked: {
+            background: tokens.colors.elevatedSurface,
+            textColor: tokens.colors.negative,
+          },
+          result: {
+            background: tokens.colors.elevatedSurface,
+            textColor: tokens.colors.positive,
+          },
         },
       },
       betCards: {
@@ -360,7 +446,12 @@ function buildBetsPatch(tokens, styleId) {
         borderWidth: tokens.shape.borderWidth,
         shadow,
         states: {
-          leading: { borderColor: primary, shadow: glowShadow || (isStyleSeca ? `0 0 22px ${STYLE_SECA.glow}` : undefined) },
+          leading: {
+            borderColor: primary,
+            shadow:
+              glowShadow ||
+              (isStyleSeca ? `0 0 22px ${STYLE_SECA.glow}` : undefined),
+          },
           winner: { borderColor: tokens.colors.positive, shadow: glowShadow },
           loser: { opacity: 0.72 },
           closed: { opacity: 0.88 },
@@ -402,7 +493,10 @@ function buildBetsPatch(tokens, styleId) {
         borderColor: border,
         borderWidth: tokens.shape.borderWidth,
         states: {
-          winner: { fillColor: tokens.colors.positive, borderColor: tokens.colors.positive },
+          winner: {
+            fillColor: tokens.colors.positive,
+            borderColor: tokens.colors.positive,
+          },
           loser: { fillColor: secondaryAccent, opacity: 0.7 },
         },
       },
@@ -424,22 +518,26 @@ function buildBetsPatch(tokens, styleId) {
 function buildBHStatsPatch(tokens) {
   return {
     ...commonVisualPatch(tokens),
-    displayStyle: tokens.material === 'metallic'
-      ? 'metal'
-      : tokens.material === 'glass' ? 'glass' : 'default',
+    displayStyle:
+      tokens.material === "metallic"
+        ? "metal"
+        : tokens.material === "glass"
+          ? "glass"
+          : "default",
     subElements: commonSubElements(tokens),
   };
 }
 
 const STYLE_CONFIG_KEYS = Object.freeze({
-  chat: 'chatStyle',
-  tournament: 'layout',
+  chat: "chatStyle",
+  tournament: "layout",
   container: null,
 });
 
 function styleKeyForWidget(widgetType) {
-  if (Object.prototype.hasOwnProperty.call(STYLE_CONFIG_KEYS, widgetType)) return STYLE_CONFIG_KEYS[widgetType];
-  return 'displayStyle';
+  if (Object.prototype.hasOwnProperty.call(STYLE_CONFIG_KEYS, widgetType))
+    return STYLE_CONFIG_KEYS[widgetType];
+  return "displayStyle";
 }
 
 function imageSubElement(tokens, extra = {}) {
@@ -447,17 +545,17 @@ function imageSubElement(tokens, extra = {}) {
     borderColor: tokens.colors.border,
     borderWidth: tokens.shape.borderWidth,
     radius: tokens.shape.cardRadius,
-    imageFit: tokens.image?.fit || 'cover',
+    imageFit: tokens.image?.fit || "cover",
     imageSize: Math.round(44 * (tokens.image?.sizeMultiplier || 1)),
     ...extra,
   };
 }
 
-function textSubElement(tokens, tone = 'text', extra = {}) {
-  const isMuted = tone === 'muted';
-  const isAccent = tone === 'accent';
-  const isPositive = tone === 'positive';
-  const isNegative = tone === 'negative';
+function textSubElement(tokens, tone = "text", extra = {}) {
+  const isMuted = tone === "muted";
+  const isAccent = tone === "accent";
+  const isPositive = tone === "positive";
+  const isNegative = tone === "negative";
   return {
     textColor: isPositive
       ? tokens.colors.positive
@@ -470,33 +568,37 @@ function textSubElement(tokens, tone = 'text', extra = {}) {
             : tokens.colors.text,
     fontFamily: tokens.typography.bodyFont,
     fontSize: tokens.typography.bodySize,
-    fontWeight: isAccent ? tokens.typography.valueWeight : tokens.typography.bodyWeight,
+    fontWeight: isAccent
+      ? tokens.typography.valueWeight
+      : tokens.typography.bodyWeight,
     lineHeight: tokens.typography.lineHeight,
     ...extra,
   };
 }
 
-function surfaceSubElement(tokens, variant = 'card', extra = {}) {
+function surfaceSubElement(tokens, variant = "card", extra = {}) {
   const common = commonSubElements(tokens);
-  if (variant === 'container') return { ...common.container, ...extra };
-  if (variant === 'header') return {
-    ...common.card,
-    background: tokens.colors.secondarySurface,
-    fontFamily: tokens.typography.headerFont,
-    fontSize: tokens.typography.headerSize,
-    fontWeight: tokens.typography.headerWeight,
-    ...extra,
-  };
-  if (variant === 'badge') return {
-    background: tokens.colors.primary,
-    textColor: tokens.colors.text,
-    accentColor: tokens.colors.accent,
-    radius: tokens.shape.badgeRadius,
-    padding: tokens.spacing.itemGap,
-    borderColor: tokens.colors.border,
-    borderWidth: tokens.shape.borderWidth,
-    ...extra,
-  };
+  if (variant === "container") return { ...common.container, ...extra };
+  if (variant === "header")
+    return {
+      ...common.card,
+      background: tokens.colors.secondarySurface,
+      fontFamily: tokens.typography.headerFont,
+      fontSize: tokens.typography.headerSize,
+      fontWeight: tokens.typography.headerWeight,
+      ...extra,
+    };
+  if (variant === "badge")
+    return {
+      background: tokens.colors.primary,
+      textColor: tokens.colors.text,
+      accentColor: tokens.colors.accent,
+      radius: tokens.shape.badgeRadius,
+      padding: tokens.spacing.itemGap,
+      borderColor: tokens.colors.border,
+      borderWidth: tokens.shape.borderWidth,
+      ...extra,
+    };
   return { ...common.card, ...extra };
 }
 
@@ -517,48 +619,58 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
     fontSize: tokens.typography.bodySize,
     subElements: {
       ...sub,
-      header: surfaceSubElement(tokens, 'header'),
-      title: textSubElement(tokens, 'text', {
+      header: surfaceSubElement(tokens, "header"),
+      title: textSubElement(tokens, "text", {
         fontFamily: tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
       }),
-      bodyText: textSubElement(tokens, 'text'),
-      badge: surfaceSubElement(tokens, 'badge'),
+      bodyText: textSubElement(tokens, "text"),
+      badge: surfaceSubElement(tokens, "badge"),
       image: imageSubElement(tokens),
     },
   };
   if (styleKey) patch[styleKey] = styleId;
 
-  if (widgetType === 'current_slot') {
+  if (widgetType === "current_slot") {
     patch.subElements = {
       ...patch.subElements,
-      slotImage: imageSubElement(tokens, { borderColor: tokens.colors.primary }),
-      slotTitle: textSubElement(tokens, 'text', {
+      slotImage: imageSubElement(tokens, {
+        borderColor: tokens.colors.primary,
+      }),
+      slotTitle: textSubElement(tokens, "text", {
         fontFamily: tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
       }),
-      provider: textSubElement(tokens, 'muted'),
-      stake: surfaceSubElement(tokens, 'badge', {
+      provider: textSubElement(tokens, "muted"),
+      stake: surfaceSubElement(tokens, "badge", {
         textColor: tokens.colors.primary,
         accentColor: tokens.colors.primary,
         borderColor: tokens.colors.primary,
       }),
-      stat: textSubElement(tokens, 'accent'),
+      stat: textSubElement(tokens, "accent"),
     };
   }
 
-  if (widgetType === 'chat') {
-    const isGlowPanel = styleId === 'glow_panel';
-    const isStyleSeca = styleId === 'StyleSecaChat';
+  if (widgetType === "chat") {
+    const isGlowPanel = styleId === "glow_panel";
+    const isStyleSeca = styleId === "StyleSecaChat";
     patch.bgColor = isStyleSeca ? styleSecaSurfaceGradient() : patch.bgColor;
     patch.textColor = isStyleSeca ? STYLE_SECA.text : patch.textColor;
     patch.borderColor = isStyleSeca ? STYLE_SECA.border : patch.borderColor;
     patch.fontFamily = isStyleSeca ? STYLE_SECA.font : patch.fontFamily;
     patch.borderRadius = isStyleSeca ? 12 : patch.borderRadius;
-    patch.headerBg = isStyleSeca ? styleSecaHeaderGradient() : isGlowPanel ? 'rgba(2,12,25,0.82)' : tokens.colors.secondarySurface;
-    patch.headerText = isStyleSeca ? STYLE_SECA.primary : isGlowPanel ? tokens.colors.primary : tokens.colors.mutedText;
+    patch.headerBg = isStyleSeca
+      ? styleSecaHeaderGradient()
+      : isGlowPanel
+        ? "rgba(2,12,25,0.82)"
+        : tokens.colors.secondarySurface;
+    patch.headerText = isStyleSeca
+      ? STYLE_SECA.primary
+      : isGlowPanel
+        ? tokens.colors.primary
+        : tokens.colors.mutedText;
     patch.msgSpacing = tokens.spacing.itemGap;
     patch.msgPadH = tokens.spacing.cardPadding;
     patch.msgLineHeight = tokens.typography.lineHeight;
@@ -566,75 +678,108 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
       ...patch.subElements,
       container: {
         ...patch.subElements.container,
-        ...(isStyleSeca ? {
-          background: styleSecaSurfaceGradient(),
-          textColor: STYLE_SECA.text,
-          borderColor: STYLE_SECA.border,
-          borderWidth: tokens.shape.borderWidth,
-          radius: 12,
-          fontFamily: STYLE_SECA.font,
-          shadow: `0 18px 42px rgba(0,0,0,0.32), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.14)}`,
-          glow: `0 0 24px ${STYLE_SECA.glow}`,
-        } : {}),
+        ...(isStyleSeca
+          ? {
+              background: styleSecaSurfaceGradient(),
+              textColor: STYLE_SECA.text,
+              borderColor: STYLE_SECA.border,
+              borderWidth: tokens.shape.borderWidth,
+              radius: 12,
+              fontFamily: STYLE_SECA.font,
+              shadow: `0 18px 42px rgba(0,0,0,0.32), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.14)}`,
+              glow: `0 0 24px ${STYLE_SECA.glow}`,
+            }
+          : {}),
       },
-      header: surfaceSubElement(tokens, 'header', isStyleSeca ? {
-        background: styleSecaHeaderGradient(),
-        textColor: STYLE_SECA.primary,
-        fontFamily: STYLE_SECA.font,
-        fontWeight: tokens.typography.headerWeight,
-        borderColor: STYLE_SECA.border,
-        borderWidth: tokens.shape.borderWidth,
-      } : {}),
-      message: surfaceSubElement(tokens, 'card', {
-        background: isStyleSeca ? STYLE_SECA.cardSurface : isGlowPanel ? 'transparent' : tokens.colors.secondarySurface,
+      header: surfaceSubElement(
+        tokens,
+        "header",
+        isStyleSeca
+          ? {
+              background: styleSecaHeaderGradient(),
+              textColor: STYLE_SECA.primary,
+              fontFamily: STYLE_SECA.font,
+              fontWeight: tokens.typography.headerWeight,
+              borderColor: STYLE_SECA.border,
+              borderWidth: tokens.shape.borderWidth,
+            }
+          : {},
+      ),
+      message: surfaceSubElement(tokens, "card", {
+        background: isStyleSeca
+          ? STYLE_SECA.cardSurface
+          : isGlowPanel
+            ? "transparent"
+            : tokens.colors.secondarySurface,
         fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
         fontSize: tokens.typography.bodySize,
         textColor: isStyleSeca ? STYLE_SECA.text : tokens.colors.text,
-        borderColor: isStyleSeca ? STYLE_SECA.border : isGlowPanel ? 'rgba(34,211,238,0.045)' : tokens.colors.border,
+        borderColor: isStyleSeca
+          ? STYLE_SECA.border
+          : isGlowPanel
+            ? "rgba(34,211,238,0.045)"
+            : tokens.colors.border,
         gap: tokens.spacing.itemGap,
       }),
       messageList: {
-        background: 'transparent',
+        background: "transparent",
         gap: tokens.spacing.itemGap,
       },
-      messageText: textSubElement(tokens, 'text', {
+      messageText: textSubElement(tokens, "text", {
         fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
         fontSize: tokens.typography.bodySize,
         textColor: isStyleSeca ? STYLE_SECA.text : tokens.colors.text,
         lineHeight: tokens.typography.lineHeight,
       }),
-      username: textSubElement(tokens, 'accent', { textColor: isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary, fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont, fontWeight: tokens.typography.valueWeight }),
-      avatar: surfaceSubElement(tokens, 'badge'),
-      badge: surfaceSubElement(tokens, 'badge', { background: isStyleSeca ? STYLE_SECA.primary : isGlowPanel ? tokens.colors.primary : tokens.colors.secondarySurface, textColor: isStyleSeca ? STYLE_SECA.darkText : tokens.colors.text }),
-      highlightedMessage: surfaceSubElement(tokens, 'card', {
-        background: isStyleSeca ? styleSecaHeaderGradient() : tokens.colors.accent,
-        textColor: isStyleSeca ? '#fff4da' : tokens.colors.text,
+      username: textSubElement(tokens, "accent", {
+        textColor: isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary,
+        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
+        fontWeight: tokens.typography.valueWeight,
+      }),
+      avatar: surfaceSubElement(tokens, "badge"),
+      badge: surfaceSubElement(tokens, "badge", {
+        background: isStyleSeca
+          ? STYLE_SECA.primary
+          : isGlowPanel
+            ? tokens.colors.primary
+            : tokens.colors.secondarySurface,
+        textColor: isStyleSeca ? STYLE_SECA.darkText : tokens.colors.text,
+      }),
+      highlightedMessage: surfaceSubElement(tokens, "card", {
+        background: isStyleSeca
+          ? styleSecaHeaderGradient()
+          : tokens.colors.accent,
+        textColor: isStyleSeca ? "#fff4da" : tokens.colors.text,
         borderColor: isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary,
         shadow: isStyleSeca ? `0 0 26px ${STYLE_SECA.glow}` : undefined,
       }),
-      platformLegend: surfaceSubElement(tokens, 'header', {
+      platformLegend: surfaceSubElement(tokens, "header", {
         textColor: isStyleSeca ? STYLE_SECA.muted : tokens.colors.mutedText,
       }),
     };
   }
 
-  if (widgetType === 'tournament') {
+  if (widgetType === "tournament") {
     patch.subElements = {
       ...patch.subElements,
-      matchCard: surfaceSubElement(tokens, 'card'),
-      playerName: textSubElement(tokens, 'text', { fontWeight: tokens.typography.valueWeight }),
+      matchCard: surfaceSubElement(tokens, "card"),
+      playerName: textSubElement(tokens, "text", {
+        fontWeight: tokens.typography.valueWeight,
+      }),
       slotImage: imageSubElement(tokens),
-      scoreValue: textSubElement(tokens, 'accent', { fontWeight: tokens.typography.valueWeight }),
+      scoreValue: textSubElement(tokens, "accent", {
+        fontWeight: tokens.typography.valueWeight,
+      }),
       bracketLine: {
         background: tokens.colors.secondarySurface,
         fillColor: tokens.colors.primary,
         radius: tokens.shape.badgeRadius,
       },
-      statusBadge: surfaceSubElement(tokens, 'badge'),
+      statusBadge: surfaceSubElement(tokens, "badge"),
     };
   }
 
-  if (widgetType === 'image_slideshow') {
+  if (widgetType === "image_slideshow") {
     patch.gradientColor = tokens.colors.surface;
     patch.captionColor = tokens.colors.text;
     patch.captionSize = tokens.typography.bodySize;
@@ -648,46 +793,59 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
         borderColor: tokens.colors.border,
         radius: tokens.shape.rootRadius,
       }),
-      caption: surfaceSubElement(tokens, 'card', {
+      caption: surfaceSubElement(tokens, "card", {
         textColor: tokens.colors.text,
         fontFamily: tokens.typography.bodyFont,
         fontSize: tokens.typography.bodySize,
       }),
-      dots: surfaceSubElement(tokens, 'badge', { background: tokens.colors.primary }),
+      dots: surfaceSubElement(tokens, "badge", {
+        background: tokens.colors.primary,
+      }),
     };
   }
 
-  if (widgetType === 'raid_shoutout') {
+  if (widgetType === "raid_shoutout") {
     patch.accentColor = tokens.colors.primary;
     patch.bgColor = tokens.colors.surface;
     patch.subtextColor = tokens.colors.mutedText;
     patch.alertDuration = undefined;
     patch.subElements = {
       ...patch.subElements,
-      avatar: imageSubElement(tokens, { borderColor: tokens.colors.primary, radius: tokens.shape.badgeRadius }),
-      subtitle: textSubElement(tokens, 'muted'),
-      viewerCount: surfaceSubElement(tokens, 'badge', { background: tokens.colors.primary }),
-      clipFrame: surfaceSubElement(tokens, 'card'),
+      avatar: imageSubElement(tokens, {
+        borderColor: tokens.colors.primary,
+        radius: tokens.shape.badgeRadius,
+      }),
+      subtitle: textSubElement(tokens, "muted"),
+      viewerCount: surfaceSubElement(tokens, "badge", {
+        background: tokens.colors.primary,
+      }),
+      clipFrame: surfaceSubElement(tokens, "card"),
     };
   }
 
-  if (widgetType === 'bonus_buys') {
+  if (widgetType === "bonus_buys") {
     patch.subElements = {
       ...patch.subElements,
-      sessionCard: surfaceSubElement(tokens, 'container', {
+      sessionCard: surfaceSubElement(tokens, "container", {
         accentColor: tokens.colors.primary,
         fontFamily: tokens.typography.bodyFont,
       }),
-      header: surfaceSubElement(tokens, 'header', {
+      header: surfaceSubElement(tokens, "header", {
         textColor: tokens.colors.primary,
         accentColor: tokens.colors.primary,
       }),
       slotArtwork: imageSubElement(tokens, { radius: tokens.shape.cardRadius }),
-      label: textSubElement(tokens, 'muted'),
-      status: surfaceSubElement(tokens, 'card'),
-      profit: textSubElement(tokens, 'positive', { fontWeight: tokens.typography.valueWeight }),
-      loss: textSubElement(tokens, 'negative', { fontWeight: tokens.typography.valueWeight }),
-      payout: textSubElement(tokens, 'positive', { fontWeight: tokens.typography.valueWeight }),
+      label: textSubElement(tokens, "muted"),
+      status: surfaceSubElement(tokens, "card"),
+      profit: textSubElement(tokens, "positive", {
+        fontWeight: tokens.typography.valueWeight,
+      }),
+      loss: textSubElement(tokens, "negative", {
+        fontWeight: tokens.typography.valueWeight,
+      }),
+      payout: textSubElement(tokens, "positive", {
+        fontWeight: tokens.typography.valueWeight,
+      }),
       progressBar: {
         background: tokens.colors.secondarySurface,
         fillColor: tokens.colors.primary,
@@ -696,50 +854,62 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
     };
   }
 
-  if (widgetType === 'container') {
+  if (widgetType === "container") {
     patch.bgColor = tokens.colors.surface;
     patch.bgOpacity = Math.round((tokens.surfaces?.opacity || 0.94) * 100);
     patch.gap = tokens.spacing.itemGap;
     patch.padding = tokens.spacing.rootPadding;
     patch.cardRadius = tokens.shape.rootRadius;
     patch.subElements = {
-      container: surfaceSubElement(tokens, 'container'),
-      childArea: surfaceSubElement(tokens, 'card'),
+      container: surfaceSubElement(tokens, "container"),
+      childArea: surfaceSubElement(tokens, "card"),
     };
   }
 
-  return Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined));
+  return Object.fromEntries(
+    Object.entries(patch).filter(([, value]) => value !== undefined),
+  );
 }
 
 function buildBackgroundPatch(tokens, styleId) {
-  const specialStyles = new Set(['aurora', 'matrix', 'starfield', 'waves', 'geometric']);
+  const specialStyles = new Set([
+    "aurora",
+    "matrix",
+    "starfield",
+    "waves",
+    "geometric",
+  ]);
   const isSpecial = specialStyles.has(styleId);
-  const primary = tokens.colors?.primary || '#0f172a';
-  const accent = tokens.colors?.accent || '#14d8d8';
-  const fill = tokens.colors?.secondarySurface || tokens.colors?.elevatedSurface || '#1e293b';
-  const bgMode = isSpecial ? 'special' : 'texture';
-  const displayStyle = isSpecial ? styleId : 'v1';
+  const primary = tokens.colors?.primary || "#0f172a";
+  const accent = tokens.colors?.accent || "#14d8d8";
+  const fill =
+    tokens.colors?.secondarySurface ||
+    tokens.colors?.elevatedSurface ||
+    "#1e293b";
+  const bgMode = isSpecial ? "special" : "texture";
+  const displayStyle = isSpecial ? styleId : "v1";
   return {
     displayStyle,
     bgMode,
-    textureType: tokens.material === 'metallic'
-      ? 'metallic'
-      : tokens.material === 'glass'
-        ? 'gloss'
-        : 'gradient',
+    textureType:
+      tokens.material === "metallic"
+        ? "metallic"
+        : tokens.material === "glass"
+          ? "gloss"
+          : "gradient",
     color1: primary,
     color2: accent,
     color3: fill,
-    gradientAngle: tokens.material === 'gradient' ? 135 : 145,
+    gradientAngle: tokens.material === "gradient" ? 135 : 145,
     animSpeed: tokens.motion?.durationMultiplier
       ? Math.round(clamp(8 * tokens.motion.durationMultiplier, 2, 30))
       : 8,
     opacity: 100,
     borderRadius: tokens.shape?.rootRadius || 0,
-    overlayColor: tokens.material === 'glass' ? '#020617' : '#000000',
-    overlayOpacity: tokens.material === 'glass' ? 10 : 0,
-    imageFit: tokens.image?.fit || 'cover',
-    imagePosition: 'center',
+    overlayColor: tokens.material === "glass" ? "#020617" : "#000000",
+    overlayOpacity: tokens.material === "glass" ? 10 : 0,
+    imageFit: tokens.image?.fit || "cover",
+    imagePosition: "center",
     brightness: 100,
     contrast: 100,
     saturation: 100,
@@ -747,9 +917,9 @@ function buildBackgroundPatch(tokens, styleId) {
     hueRotate: 0,
     grayscale: 0,
     sepia: 0,
-    fxParticles: 'none',
-    fxFog: 'none',
-    fxGlimpse: 'none',
+    fxParticles: "none",
+    fxFog: "none",
+    fxGlimpse: "none",
     fxGlimpseColor: accent,
     fxGlimpseSpeed: 50,
     subElements: {
@@ -762,23 +932,24 @@ function buildBackgroundPatch(tokens, styleId) {
         bgMode,
       },
       texture: {
-        textureType: tokens.material === 'metallic'
-          ? 'metallic'
-          : tokens.material === 'glass'
-            ? 'gloss'
-            : 'gradient',
+        textureType:
+          tokens.material === "metallic"
+            ? "metallic"
+            : tokens.material === "glass"
+              ? "gloss"
+              : "gradient",
         background: primary,
         accentColor: accent,
         fillColor: fill,
-        gradientAngle: tokens.material === 'gradient' ? 135 : 145,
+        gradientAngle: tokens.material === "gradient" ? 135 : 145,
         patternSize: 24,
         animSpeed: tokens.motion?.durationMultiplier
           ? Math.round(clamp(8 * tokens.motion.durationMultiplier, 2, 30))
           : 8,
       },
       media: {
-        imageFit: tokens.image?.fit || 'cover',
-        backgroundPosition: 'center',
+        imageFit: tokens.image?.fit || "cover",
+        backgroundPosition: "center",
         brightness: 100,
         contrast: 100,
         saturation: 100,
@@ -789,18 +960,18 @@ function buildBackgroundPatch(tokens, styleId) {
         opacity: 1,
       },
       tint: {
-        background: tokens.material === 'glass' ? '#020617' : '#000000',
-        opacity: tokens.material === 'glass' ? 0.1 : 0,
+        background: tokens.material === "glass" ? "#020617" : "#000000",
+        opacity: tokens.material === "glass" ? 0.1 : 0,
       },
       effects: {
-        fxParticles: 'none',
+        fxParticles: "none",
         fxParticleColor: accent,
         fxParticleCount: 25,
         fxParticleSpeed: 50,
         fxParticleSize: 50,
-        fxFog: 'none',
-        fxFogColor: '#000000',
-        fxGlimpse: 'none',
+        fxFog: "none",
+        fxFogColor: "#000000",
+        fxGlimpse: "none",
         fxGlimpseColor: accent,
         fxGlimpseSpeed: 50,
       },
@@ -809,12 +980,27 @@ function buildBackgroundPatch(tokens, styleId) {
 }
 
 function buildSpotifyPatch(tokens, styleId) {
-  if (!['album_card', 'mini_player', 'vinyl', 'glass', 'wave', 'neon', 'metal', 'compact_bar'].includes(styleId)) return {};
-  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
-    ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 28)} ${tokens.colors.shadow}`
-    : undefined;
+  if (
+    ![
+      "album_card",
+      "mini_player",
+      "vinyl",
+      "glass",
+      "wave",
+      "neon",
+      "metal",
+      "compact_bar",
+    ].includes(styleId)
+  )
+    return {};
+  const cardShadow =
+    tokens.materialTokens?.shadowIntensity > 0.02
+      ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 28)} ${tokens.colors.shadow}`
+      : undefined;
   const imageSize = Math.round(44 * (tokens.image?.sizeMultiplier || 1));
-  const animationDuration = Number((0.4 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  const animationDuration = Number(
+    (0.4 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2),
+  );
   const baseSpotifyPatch = {
     ...commonVisualPatch(tokens),
     accentColor: tokens.colors.primary,
@@ -827,12 +1013,18 @@ function buildSpotifyPatch(tokens, styleId) {
     borderRadius: tokens.shape.rootRadius,
     borderWidth: tokens.shape.borderWidth,
   };
-  if (styleId === 'album_card') {
-    const albumSizePercent = Math.round(42 * (tokens.image?.sizeMultiplier || 1));
-    const pulseDuration = Number((1.5 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  if (styleId === "album_card") {
+    const albumSizePercent = Math.round(
+      42 * (tokens.image?.sizeMultiplier || 1),
+    );
+    const pulseDuration = Number(
+      (1.5 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(
+        2,
+      ),
+    );
     return {
       ...commonVisualPatch(tokens),
-      displayStyle: 'album_card',
+      displayStyle: "album_card",
       accentColor: tokens.colors.primary,
       bgColor: tokens.colors.surface,
       textColor: tokens.colors.text,
@@ -853,13 +1045,15 @@ function buildSpotifyPatch(tokens, styleId) {
           borderColor: tokens.colors.border,
           borderWidth: tokens.shape.borderWidth,
           shadow: cardShadow,
-          ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+          ...(tokens.materialTokens?.blurStrength
+            ? { backdropBlur: tokens.materialTokens.blurStrength }
+            : {}),
         },
         albumArt: {
           visible: tokens.image?.visible !== false,
           imageSize: albumSizePercent,
           sizePercent: albumSizePercent,
-          imageFit: tokens.image?.fit || 'cover',
+          imageFit: tokens.image?.fit || "cover",
           radius: tokens.image?.radius ?? tokens.shape.cardRadius,
           borderColor: tokens.colors.border,
           borderWidth: tokens.shape.borderWidth,
@@ -895,11 +1089,15 @@ function buildSpotifyPatch(tokens, styleId) {
       },
     };
   }
-  if (styleId === 'glass') {
-    const glassAnimationDuration = Number((1.2 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  if (styleId === "glass") {
+    const glassAnimationDuration = Number(
+      (1.2 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(
+        2,
+      ),
+    );
     return {
       ...commonVisualPatch(tokens),
-      displayStyle: 'glass',
+      displayStyle: "glass",
       accentColor: tokens.colors.primary,
       bgColor: tokens.colors.surface,
       textColor: tokens.colors.text,
@@ -927,7 +1125,7 @@ function buildSpotifyPatch(tokens, styleId) {
         albumArt: {
           visible: tokens.image?.visible !== false,
           imageSize: Math.round(72 * (tokens.image?.sizeMultiplier || 1)),
-          imageFit: tokens.image?.fit || 'cover',
+          imageFit: tokens.image?.fit || "cover",
           radius: tokens.image?.radius ?? tokens.shape.cardRadius,
           borderColor: tokens.colors.border,
           borderWidth: tokens.shape.borderWidth,
@@ -959,11 +1157,15 @@ function buildSpotifyPatch(tokens, styleId) {
       },
     };
   }
-  if (styleId === 'wave') {
-    const waveAnimationDuration = Number((0.32 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  if (styleId === "wave") {
+    const waveAnimationDuration = Number(
+      (0.32 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(
+        2,
+      ),
+    );
     return {
       ...baseSpotifyPatch,
-      displayStyle: 'wave',
+      displayStyle: "wave",
       subElements: {
         container: {
           background: tokens.colors.surface,
@@ -981,7 +1183,7 @@ function buildSpotifyPatch(tokens, styleId) {
         albumArt: {
           visible: tokens.image?.visible !== false,
           imageSize: Math.round(50 * (tokens.image?.sizeMultiplier || 1)),
-          imageFit: tokens.image?.fit || 'cover',
+          imageFit: tokens.image?.fit || "cover",
           radius: tokens.image?.radius ?? tokens.shape.cardRadius,
           borderColor: tokens.colors.border,
           borderWidth: tokens.shape.borderWidth,
@@ -1014,11 +1216,15 @@ function buildSpotifyPatch(tokens, styleId) {
       },
     };
   }
-  if (styleId === 'neon') {
-    const pulseDuration = Number((1.1 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  if (styleId === "neon") {
+    const pulseDuration = Number(
+      (1.1 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(
+        2,
+      ),
+    );
     return {
       ...baseSpotifyPatch,
-      displayStyle: 'neon',
+      displayStyle: "neon",
       subElements: {
         container: {
           background: tokens.colors.surface,
@@ -1036,7 +1242,7 @@ function buildSpotifyPatch(tokens, styleId) {
         albumArt: {
           visible: tokens.image?.visible !== false,
           imageSize: Math.round(56 * (tokens.image?.sizeMultiplier || 1)),
-          imageFit: tokens.image?.fit || 'cover',
+          imageFit: tokens.image?.fit || "cover",
           radius: tokens.image?.radius ?? tokens.shape.cardRadius,
           borderColor: tokens.colors.primary,
           borderWidth: 2,
@@ -1068,11 +1274,15 @@ function buildSpotifyPatch(tokens, styleId) {
       },
     };
   }
-  if (styleId === 'metal') {
-    const metalAnimationDuration = Number((0.4 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  if (styleId === "metal") {
+    const metalAnimationDuration = Number(
+      (0.4 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(
+        2,
+      ),
+    );
     return {
       ...baseSpotifyPatch,
-      displayStyle: 'metal',
+      displayStyle: "metal",
       subElements: {
         container: {
           background: tokens.colors.surface,
@@ -1090,7 +1300,7 @@ function buildSpotifyPatch(tokens, styleId) {
         albumArt: {
           visible: tokens.image?.visible !== false,
           imageSize: Math.round(52 * (tokens.image?.sizeMultiplier || 1)),
-          imageFit: tokens.image?.fit || 'cover',
+          imageFit: tokens.image?.fit || "cover",
           radius: tokens.image?.radius ?? tokens.shape.cardRadius,
           borderColor: tokens.colors.border,
           borderWidth: tokens.shape.borderWidth,
@@ -1125,13 +1335,19 @@ function buildSpotifyPatch(tokens, styleId) {
       },
     };
   }
-  if (styleId === 'vinyl') {
-    const recordSizePercent = Math.round(55 * clamp(tokens.spacing?.scale || 1, 0.75, 1.3));
-    const labelSizePercent = Math.round(38 * (tokens.image?.sizeMultiplier || 1));
-    const spinDuration = Number((3 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  if (styleId === "vinyl") {
+    const recordSizePercent = Math.round(
+      55 * clamp(tokens.spacing?.scale || 1, 0.75, 1.3),
+    );
+    const labelSizePercent = Math.round(
+      38 * (tokens.image?.sizeMultiplier || 1),
+    );
+    const spinDuration = Number(
+      (3 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2),
+    );
     return {
       ...baseSpotifyPatch,
-      displayStyle: 'vinyl',
+      displayStyle: "vinyl",
       subElements: {
         container: {
           background: tokens.colors.surface,
@@ -1160,7 +1376,7 @@ function buildSpotifyPatch(tokens, styleId) {
           visible: tokens.image?.visible !== false,
           imageSize: labelSizePercent,
           sizePercent: labelSizePercent,
-          imageFit: tokens.image?.fit || 'cover',
+          imageFit: tokens.image?.fit || "cover",
           radius: tokens.image?.radius ?? 999,
           borderColor: tokens.colors.primary,
           borderWidth: 2,
@@ -1183,10 +1399,10 @@ function buildSpotifyPatch(tokens, styleId) {
       },
     };
   }
-  if (styleId === 'mini_player') {
+  if (styleId === "mini_player") {
     return {
       ...commonVisualPatch(tokens),
-      displayStyle: 'mini_player',
+      displayStyle: "mini_player",
       accentColor: tokens.colors.primary,
       bgColor: tokens.colors.surface,
       textColor: tokens.colors.text,
@@ -1209,12 +1425,14 @@ function buildSpotifyPatch(tokens, styleId) {
           borderColor: tokens.colors.border,
           borderWidth: tokens.shape.borderWidth,
           shadow: cardShadow,
-          ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+          ...(tokens.materialTokens?.blurStrength
+            ? { backdropBlur: tokens.materialTokens.blurStrength }
+            : {}),
         },
         albumArt: {
           visible: tokens.image?.visible !== false,
           imageSize,
-          imageFit: tokens.image?.fit || 'cover',
+          imageFit: tokens.image?.fit || "cover",
           radius: tokens.image?.radius ?? tokens.shape.cardRadius,
           borderColor: tokens.colors.border,
           borderWidth: tokens.shape.borderWidth,
@@ -1250,10 +1468,12 @@ function buildSpotifyPatch(tokens, styleId) {
     };
   }
 
-  const compactAnimationDuration = Number((0.35 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2));
+  const compactAnimationDuration = Number(
+    (0.35 * clamp(tokens.motion?.durationMultiplier || 1, 0.6, 1.5)).toFixed(2),
+  );
   return {
     ...commonVisualPatch(tokens),
-    displayStyle: 'compact_bar',
+    displayStyle: "compact_bar",
     accentColor: tokens.colors.primary,
     bgColor: tokens.colors.surface,
     textColor: tokens.colors.text,
@@ -1278,12 +1498,14 @@ function buildSpotifyPatch(tokens, styleId) {
         borderColor: tokens.colors.border,
         borderWidth: tokens.shape.borderWidth,
         shadow: cardShadow,
-        ...(tokens.materialTokens?.blurStrength ? { backdropBlur: tokens.materialTokens.blurStrength } : {}),
+        ...(tokens.materialTokens?.blurStrength
+          ? { backdropBlur: tokens.materialTokens.blurStrength }
+          : {}),
       },
       albumArt: {
         visible: tokens.image?.visible !== false,
         imageSize,
-        imageFit: tokens.image?.fit || 'cover',
+        imageFit: tokens.image?.fit || "cover",
         radius: tokens.image?.radius ?? tokens.shape.cardRadius,
         borderColor: tokens.colors.border,
         borderWidth: tokens.shape.borderWidth,
@@ -1332,13 +1554,14 @@ function buildSpotifyPatch(tokens, styleId) {
 }
 
 function buildBonusHuntPatch(tokens) {
-  if (tokens?.isOriginalBaseline || tokens?.material === 'original') {
+  if (tokens?.isOriginalBaseline || tokens?.material === "original") {
     return {};
   }
   const common = commonSubElements(tokens);
-  const headerBg = tokens.material === 'transparent_obs'
-    ? tokens.colors.secondarySurface
-    : tokens.colors.surface;
+  const headerBg =
+    tokens.material === "transparent_obs"
+      ? tokens.colors.secondarySurface
+      : tokens.colors.surface;
   const cardSurface = {
     ...common.card,
     background: tokens.colors.secondarySurface,
@@ -1351,9 +1574,10 @@ function buildBonusHuntPatch(tokens) {
     states: {
       active: {
         borderColor: tokens.colors.primary,
-        shadow: tokens.materialTokens?.glowIntensity > 0.01
-          ? `0 0 ${px(tokens.materialTokens.glowIntensity * 32)} ${tokens.colors.glow}`
-          : undefined,
+        shadow:
+          tokens.materialTokens?.glowIntensity > 0.01
+            ? `0 0 ${px(tokens.materialTokens.glowIntensity * 32)} ${tokens.colors.glow}`
+            : undefined,
       },
       opened: {
         opacity: 0.76,
@@ -1375,10 +1599,13 @@ function buildBonusHuntPatch(tokens) {
     summaryColor: tokens.colors.elevatedSurface,
     totalPayColor: tokens.colors.accent,
     totalPayText: tokens.colors.text,
-    superBadgeColor: '#f5b301',
+    superBadgeColor: "#f5b301",
     extremeBadgeColor: tokens.colors.negative,
     cardOutlineColor: tokens.colors.border,
-    cardOutlineWidth: tokens.material === 'minimal' || tokens.material === 'transparent_obs' ? 0 : 1,
+    cardOutlineWidth:
+      tokens.material === "minimal" || tokens.material === "transparent_obs"
+        ? 0
+        : 1,
     fontFamily: tokens.typography.bodyFont,
     fontSize: tokens.typography.bodySize,
     fontWeight: tokens.typography.bodyWeight,
@@ -1396,8 +1623,8 @@ function buildBonusHuntPatch(tokens) {
         accentColor: tokens.colors.accent,
       },
       mainStatsContainer: {
-        background: 'transparent',
-        borderColor: 'transparent',
+        background: "transparent",
+        borderColor: "transparent",
         borderWidth: 0,
       },
       statCell: common.statsCard,
@@ -1413,8 +1640,8 @@ function buildBonusHuntPatch(tokens) {
       bonusCard: cardSurface,
       slotRow: listRowSurface,
       rowStatsContainer: {
-        background: 'transparent',
-        borderColor: 'transparent',
+        background: "transparent",
+        borderColor: "transparent",
         borderWidth: 0,
         radius: 0,
         padding: 0,
@@ -1487,7 +1714,7 @@ function buildBonusHuntPatch(tokens) {
         accentColor: tokens.colors.negative,
       },
       openedState: {
-        accentColor: '#f5b301',
+        accentColor: "#f5b301",
       },
       footer: {
         textColor: tokens.colors.accent,
@@ -1523,16 +1750,19 @@ function buildBonusHuntPatch(tokens) {
 
 function buildSlotRequestsPatch(tokens, styleId) {
   const common = commonSubElements(tokens);
-  const editableCompact = styleId === 'v3_compact_editable';
-  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
-    ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 30)} ${tokens.colors.shadow}`
-    : undefined;
-  const activeShadow = tokens.materialTokens?.glowIntensity > 0.01
-    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 34)} ${tokens.colors.glow}`
-    : cardShadow;
-  const rowBackground = tokens.material === 'transparent_obs'
-    ? tokens.colors.elevatedSurface
-    : tokens.colors.secondarySurface;
+  const editableCompact = styleId === "v3_compact_editable";
+  const cardShadow =
+    tokens.materialTokens?.shadowIntensity > 0.02
+      ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 30)} ${tokens.colors.shadow}`
+      : undefined;
+  const activeShadow =
+    tokens.materialTokens?.glowIntensity > 0.01
+      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 34)} ${tokens.colors.glow}`
+      : cardShadow;
+  const rowBackground =
+    tokens.material === "transparent_obs"
+      ? tokens.colors.elevatedSurface
+      : tokens.colors.secondarySurface;
   return {
     ...commonVisualPatch(tokens),
     accentColor: tokens.colors.primary,
@@ -1582,15 +1812,29 @@ function buildSlotRequestsPatch(tokens, styleId) {
         gap: tokens.spacing.itemGap,
         shadow: cardShadow,
         states: {
-          selected: { borderColor: tokens.colors.primary, shadow: activeShadow },
-          playing: { borderColor: tokens.colors.warning, accentColor: tokens.colors.warning, shadow: activeShadow },
-          completed: { borderColor: tokens.colors.positive, accentColor: tokens.colors.positive },
-          rejected: { borderColor: tokens.colors.negative, accentColor: tokens.colors.negative },
+          selected: {
+            borderColor: tokens.colors.primary,
+            shadow: activeShadow,
+          },
+          playing: {
+            borderColor: tokens.colors.warning,
+            accentColor: tokens.colors.warning,
+            shadow: activeShadow,
+          },
+          completed: {
+            borderColor: tokens.colors.positive,
+            accentColor: tokens.colors.positive,
+          },
+          rejected: {
+            borderColor: tokens.colors.negative,
+            accentColor: tokens.colors.negative,
+          },
         },
       },
       position: {
         background: tokens.colors.primary,
-        textColor: tokens.colors.surfaceReference === '#f8fafc' ? '#07111f' : '#020617',
+        textColor:
+          tokens.colors.surfaceReference === "#f8fafc" ? "#07111f" : "#020617",
         accentColor: tokens.colors.primary,
         borderColor: tokens.colors.highlight,
         borderWidth: tokens.shape.borderWidth,
@@ -1603,12 +1847,16 @@ function buildSlotRequestsPatch(tokens, styleId) {
         radius: Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
         borderColor: tokens.colors.border,
         borderWidth: tokens.shape.borderWidth,
-        ...(editableCompact ? {
-          visible: tokens.image?.visible !== false,
-          imageSize: Math.round(38 * (tokens.image?.sizeMultiplier || 1)),
-          imageFit: tokens.image?.fit || 'cover',
-          radius: tokens.image?.radius ?? Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
-        } : {}),
+        ...(editableCompact
+          ? {
+              visible: tokens.image?.visible !== false,
+              imageSize: Math.round(38 * (tokens.image?.sizeMultiplier || 1)),
+              imageFit: tokens.image?.fit || "cover",
+              radius:
+                tokens.image?.radius ??
+                Math.max(4, Math.round(tokens.shape.cardRadius * 0.72)),
+            }
+          : {}),
       },
       slotTitle: {
         textColor: tokens.colors.text,
@@ -1653,36 +1901,52 @@ function buildSlotRequestsPatch(tokens, styleId) {
 
 function buildRtpStatsPatch(tokens, styleId) {
   const common = commonSubElements(tokens);
-  const isNeon = styleId === 'neon';
-  const isMinimal = styleId === 'minimal';
-  const isGlass = styleId === 'glass';
-  const isStyleSeca = styleId === 'StyleSecaRTP';
+  const isNeon = styleId === "neon";
+  const isMinimal = styleId === "minimal";
+  const isGlass = styleId === "glass";
+  const isStyleSeca = styleId === "StyleSecaRTP";
   const hasSecondColor = tokens.useAccentColor || tokens.useSecondColor;
   const surface = isStyleSeca ? STYLE_SECA.surface : tokens.colors.surface;
-  const secondary = isStyleSeca ? STYLE_SECA.secondarySurface : tokens.colors.secondarySurface;
-  const elevated = isStyleSeca ? STYLE_SECA.elevated : tokens.colors.elevatedSurface;
+  const secondary = isStyleSeca
+    ? STYLE_SECA.secondarySurface
+    : tokens.colors.secondarySurface;
+  const elevated = isStyleSeca
+    ? STYLE_SECA.elevated
+    : tokens.colors.elevatedSurface;
   const accent = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
-  const secondAccent = isStyleSeca ? STYLE_SECA.secondary : tokens.colors.accent || accent;
+  const secondAccent = isStyleSeca
+    ? STYLE_SECA.secondary
+    : tokens.colors.accent || accent;
   const text = isStyleSeca ? STYLE_SECA.text : tokens.colors.text;
   const muted = isStyleSeca ? STYLE_SECA.muted : tokens.colors.mutedText;
   const border = isStyleSeca ? STYLE_SECA.border : tokens.colors.border;
   const accentSurface = isGlass
     ? toRgba(secondAccent, hasSecondColor ? 0.28 : 0.16)
-    : isStyleSeca ? STYLE_SECA.elevated : hasSecondColor ? mixHex(secondary, secondAccent, 0.28) : secondary;
-  const shadow = tokens.materialTokens?.shadowIntensity > 0.02
-    ? `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 48)} ${tokens.colors.shadow}`
-    : undefined;
-  const glow = tokens.materialTokens?.glowIntensity > 0.01
-    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 46)} ${tokens.colors.glow}`
-    : undefined;
-  const combinedShadow = [shadow, glow].filter(Boolean).join(', ') || undefined;
-  const barBgFrom = isNeon ? '#050510' : surface;
+    : isStyleSeca
+      ? STYLE_SECA.elevated
+      : hasSecondColor
+        ? mixHex(secondary, secondAccent, 0.28)
+        : secondary;
+  const shadow =
+    tokens.materialTokens?.shadowIntensity > 0.02
+      ? `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 48)} ${tokens.colors.shadow}`
+      : undefined;
+  const glow =
+    tokens.materialTokens?.glowIntensity > 0.01
+      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 46)} ${tokens.colors.glow}`
+      : undefined;
+  const combinedShadow = [shadow, glow].filter(Boolean).join(", ") || undefined;
+  const barBgFrom = isNeon ? "#050510" : surface;
   const barBgVia = isMinimal ? surface : accentSurface;
-  const barBgTo = isNeon ? '#050510' : surface;
-  const warning = isStyleSeca ? '#f2c96d' : tokens.colors.warning;
-  const barHeight = tokens.layout?.barHeight || Math.max(42, Math.min(92, Math.round(48 * tokens.spacing.scale)));
+  const barBgTo = isNeon ? "#050510" : surface;
+  const warning = isStyleSeca ? "#f2c96d" : tokens.colors.warning;
+  const barHeight =
+    tokens.layout?.barHeight ||
+    Math.max(42, Math.min(92, Math.round(48 * tokens.spacing.scale)));
   const maxWidth = tokens.layout?.maxWidth || 960;
-  const providerLogoHeight = Math.round(29 * (tokens.image?.sizeMultiplier || 1));
+  const providerLogoHeight = Math.round(
+    29 * (tokens.image?.sizeMultiplier || 1),
+  );
   const providerLogoWidth = Math.round(providerLogoHeight * 3.25);
   const providerLogoRadius = tokens.image?.radius ?? 0;
 
@@ -1692,7 +1956,7 @@ function buildRtpStatsPatch(tokens, styleId) {
     barBgFrom,
     barBgVia,
     barBgTo,
-    borderColor: isMinimal ? 'rgba(255,255,255,0.08)' : border,
+    borderColor: isMinimal ? "rgba(255,255,255,0.08)" : border,
     borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
     borderRadius: tokens.shape.rootRadius,
     textColor: text,
@@ -1703,7 +1967,11 @@ function buildRtpStatsPatch(tokens, styleId) {
     potentialIconColor: warning,
     volatilityIconColor: secondAccent,
     bestWinIconColor: isStyleSeca ? accent : tokens.colors.positive,
-    dividerColor: isStyleSeca ? secondAccent : hasSecondColor ? secondAccent : tokens.colors.border,
+    dividerColor: isStyleSeca
+      ? secondAccent
+      : hasSecondColor
+        ? secondAccent
+        : tokens.colors.border,
     spinnerColor: accent,
     fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
     fontSize: tokens.typography.bodySize,
@@ -1721,25 +1989,30 @@ function buildRtpStatsPatch(tokens, styleId) {
         ...common.container,
         background: surface,
         textColor: text,
-        borderColor: isMinimal ? 'transparent' : border,
+        borderColor: isMinimal ? "transparent" : border,
         borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
         radius: tokens.shape.rootRadius,
         height: barHeight,
         maxWidth,
-        shadow: isStyleSeca ? combinedShadow || `0 16px 38px rgba(0,0,0,0.28), 0 0 24px ${toRgba(STYLE_SECA.primary, 0.16)}` : combinedShadow,
+        shadow: isStyleSeca
+          ? combinedShadow ||
+            `0 16px 38px rgba(0,0,0,0.28), 0 0 24px ${toRgba(STYLE_SECA.primary, 0.16)}`
+          : combinedShadow,
         glow: isStyleSeca ? glow || `0 0 22px ${STYLE_SECA.glow}` : glow,
       },
       provider: {
         textColor: text,
         accentColor: secondAccent,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.headerFont,
+        fontFamily: isStyleSeca
+          ? STYLE_SECA.font
+          : tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
         imageSize: providerLogoHeight,
         width: providerLogoWidth,
         height: providerLogoHeight,
         radius: providerLogoRadius,
-        imageFit: tokens.image?.fit || 'contain',
+        imageFit: tokens.image?.fit || "contain",
       },
       slotTitle: {
         textColor: text,
@@ -1785,9 +2058,18 @@ function buildRtpStatsPatch(tokens, styleId) {
         padding: tokens.spacing.cardPadding,
         gap: tokens.spacing.itemGap,
         states: {
-          positive: { textColor: tokens.colors.positive, accentColor: tokens.colors.positive },
-          negative: { textColor: tokens.colors.negative, accentColor: tokens.colors.negative },
-          highlight: { textColor: tokens.colors.warning, accentColor: tokens.colors.warning },
+          positive: {
+            textColor: tokens.colors.positive,
+            accentColor: tokens.colors.positive,
+          },
+          negative: {
+            textColor: tokens.colors.negative,
+            accentColor: tokens.colors.negative,
+          },
+          highlight: {
+            textColor: tokens.colors.warning,
+            accentColor: tokens.colors.warning,
+          },
         },
       },
       label: {
@@ -1797,9 +2079,21 @@ function buildRtpStatsPatch(tokens, styleId) {
         fontWeight: tokens.typography.labelWeight,
       },
       divider: {
-        background: isStyleSeca ? secondAccent : hasSecondColor ? secondAccent : tokens.colors.border,
-        borderColor: isStyleSeca ? secondAccent : hasSecondColor ? secondAccent : tokens.colors.border,
-        accentColor: isStyleSeca ? secondAccent : hasSecondColor ? secondAccent : tokens.colors.border,
+        background: isStyleSeca
+          ? secondAccent
+          : hasSecondColor
+            ? secondAccent
+            : tokens.colors.border,
+        borderColor: isStyleSeca
+          ? secondAccent
+          : hasSecondColor
+            ? secondAccent
+            : tokens.colors.border,
+        accentColor: isStyleSeca
+          ? secondAccent
+          : hasSecondColor
+            ? secondAccent
+            : tokens.colors.border,
       },
       spinner: {
         textColor: accent,
@@ -1811,30 +2105,44 @@ function buildRtpStatsPatch(tokens, styleId) {
 
 function buildNavbarPatch(tokens, styleId) {
   const common = commonSubElements(tokens);
-  const isRetro = styleId === 'retro';
-  const isGlass = styleId === 'glass';
-  const isStyleSeca = styleId === 'StyleSecaNav';
-  const isMetallic = styleId === 'metallic' || isStyleSeca;
+  const isRetro = styleId === "retro";
+  const isGlass = styleId === "glass";
+  const isStyleSeca = styleId === "StyleSecaNav";
+  const isMetallic = styleId === "metallic" || isStyleSeca;
   const primary = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
   const secondary = isStyleSeca ? STYLE_SECA.secondary : tokens.colors.accent;
   const surface = isStyleSeca ? STYLE_SECA.surface : tokens.colors.surface;
-  const elevated = isStyleSeca ? STYLE_SECA.elevated : tokens.colors.elevatedSurface;
+  const elevated = isStyleSeca
+    ? STYLE_SECA.elevated
+    : tokens.colors.elevatedSurface;
   const text = isStyleSeca ? STYLE_SECA.text : tokens.colors.text;
   const muted = isStyleSeca ? STYLE_SECA.muted : tokens.colors.mutedText;
   const border = isStyleSeca ? STYLE_SECA.border : tokens.colors.border;
-  const cta = isStyleSeca ? STYLE_SECA.primary : isRetro ? tokens.colors.warning : tokens.colors.accent;
-  const ctaText = isStyleSeca ? STYLE_SECA.darkText : '#ffffff';
-  const family = isStyleSeca ? STYLE_SECA.font : isRetro ? "'Press Start 2P', 'Courier New', monospace" : tokens.typography.bodyFont;
-  const shadow = tokens.materialTokens?.shadowIntensity > 0.02
-    ? `0 ${px(tokens.materialTokens.shadowIntensity * 16)} ${px(tokens.materialTokens.shadowIntensity * 42)} ${tokens.colors.shadow}`
-    : undefined;
-  const glow = tokens.materialTokens?.glowIntensity > 0.01
-    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 42)} ${tokens.colors.glow}`
-    : undefined;
-  const combinedShadow = [shadow, glow].filter(Boolean).join(', ') || undefined;
+  const cta = isStyleSeca
+    ? STYLE_SECA.primary
+    : isRetro
+      ? tokens.colors.warning
+      : tokens.colors.accent;
+  const ctaText = isStyleSeca ? STYLE_SECA.darkText : "#ffffff";
+  const family = isStyleSeca
+    ? STYLE_SECA.font
+    : isRetro
+      ? "'Press Start 2P', 'Courier New', monospace"
+      : tokens.typography.bodyFont;
+  const shadow =
+    tokens.materialTokens?.shadowIntensity > 0.02
+      ? `0 ${px(tokens.materialTokens.shadowIntensity * 16)} ${px(tokens.materialTokens.shadowIntensity * 42)} ${tokens.colors.shadow}`
+      : undefined;
+  const glow =
+    tokens.materialTokens?.glowIntensity > 0.01
+      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 42)} ${tokens.colors.glow}`
+      : undefined;
+  const combinedShadow = [shadow, glow].filter(Boolean).join(", ") || undefined;
   const imageSize = Math.round(42 * (tokens.image?.sizeMultiplier || 1));
   const logoImageSize = Math.round(54 * (tokens.image?.sizeMultiplier || 1));
-  const barHeight = tokens.layout?.barHeight || Math.max(48, Math.min(92, Math.round(56 * tokens.spacing.scale)));
+  const barHeight =
+    tokens.layout?.barHeight ||
+    Math.max(48, Math.min(92, Math.round(56 * tokens.spacing.scale)));
   const maxWidth = tokens.layout?.maxWidth || 1200;
 
   return {
@@ -1849,13 +2157,17 @@ function buildNavbarPatch(tokens, styleId) {
     cryptoDownColor: tokens.colors.negative,
     fontFamily: family,
     fontSize: tokens.typography.bodySize,
-    borderWidth: isRetro ? Math.max(2, tokens.shape.borderWidth) : tokens.shape.borderWidth,
+    borderWidth: isRetro
+      ? Math.max(2, tokens.shape.borderWidth)
+      : tokens.shape.borderWidth,
     borderRadius: tokens.shape.rootRadius,
     barHeight,
     maxWidth,
-    musicDisplayStyle: tokens.layout?.musicDisplayStyle || 'text',
+    musicDisplayStyle: tokens.layout?.musicDisplayStyle || "text",
     shadowSize: Math.round((tokens.materialTokens?.shadowIntensity || 0) * 32),
-    shadowIntensity: Math.round((tokens.materialTokens?.shadowIntensity || 0) * 100),
+    shadowIntensity: Math.round(
+      (tokens.materialTokens?.shadowIntensity || 0) * 100,
+    ),
     subElements: {
       ...common,
       container: {
@@ -1863,15 +2175,22 @@ function buildNavbarPatch(tokens, styleId) {
         background: surface,
         textColor: text,
         borderColor: border,
-        borderWidth: isRetro ? Math.max(2, tokens.shape.borderWidth) : tokens.shape.borderWidth,
+        borderWidth: isRetro
+          ? Math.max(2, tokens.shape.borderWidth)
+          : tokens.shape.borderWidth,
         radius: tokens.shape.rootRadius,
         padding: tokens.spacing.rootPadding,
         height: barHeight,
         maxWidth,
         gap: tokens.spacing.itemGap,
-        shadow: isStyleSeca ? combinedShadow || `0 16px 38px rgba(0,0,0,0.30), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}` : combinedShadow,
+        shadow: isStyleSeca
+          ? combinedShadow ||
+            `0 16px 38px rgba(0,0,0,0.30), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}`
+          : combinedShadow,
         glow: isStyleSeca ? glow || `0 0 24px ${STYLE_SECA.glow}` : glow,
-        ...(isGlass ? { backdropBlur: tokens.materialTokens?.blurStrength || 12 } : {}),
+        ...(isGlass
+          ? { backdropBlur: tokens.materialTokens?.blurStrength || 12 }
+          : {}),
       },
       logo: {
         accentColor: primary,
@@ -1879,20 +2198,24 @@ function buildNavbarPatch(tokens, styleId) {
       },
       avatar: {
         imageSize,
-        imageFit: tokens.image?.fit || 'cover',
+        imageFit: tokens.image?.fit || "cover",
         radius: tokens.image?.radius ?? tokens.shape.badgeRadius,
         borderColor: border,
         borderWidth: tokens.shape.borderWidth,
       },
       badgeImage: {
         imageSize: logoImageSize,
-        imageFit: tokens.image?.fit || 'contain',
+        imageFit: tokens.image?.fit || "contain",
         radius: tokens.image?.radius ?? tokens.shape.cardRadius,
       },
       displayName: {
         textColor: text,
         accentColor: primary,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : isRetro ? "'Press Start 2P', 'Courier New', monospace" : tokens.typography.headerFont,
+        fontFamily: isStyleSeca
+          ? STYLE_SECA.font
+          : isRetro
+            ? "'Press Start 2P', 'Courier New', monospace"
+            : tokens.typography.headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
       },
@@ -1941,8 +2264,14 @@ function buildNavbarPatch(tokens, styleId) {
         fontSize: tokens.typography.bodySize,
         fontWeight: tokens.typography.valueWeight,
         states: {
-          positive: { textColor: tokens.colors.positive, fillColor: tokens.colors.positive },
-          negative: { textColor: tokens.colors.negative, accentColor: tokens.colors.negative },
+          positive: {
+            textColor: tokens.colors.positive,
+            fillColor: tokens.colors.positive,
+          },
+          negative: {
+            textColor: tokens.colors.negative,
+            accentColor: tokens.colors.negative,
+          },
         },
       },
       balance: {
@@ -1960,7 +2289,7 @@ function buildNavbarPatch(tokens, styleId) {
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.valueWeight,
         imageSize: logoImageSize,
-        imageFit: tokens.image?.fit || 'contain',
+        imageFit: tokens.image?.fit || "contain",
         radius: tokens.image?.radius ?? tokens.shape.cardRadius,
       },
       separator: {
@@ -1978,12 +2307,14 @@ function buildGiveawayPatch(tokens) {
   const liveColor = tokens.colors.positive;
   const closedColor = tokens.colors.mutedText;
   const winnerColor = tokens.colors.warning;
-  const statusShadow = tokens.materialTokens?.glowIntensity > 0.01
-    ? `0 0 ${px(tokens.materialTokens.glowIntensity * 36)} ${tokens.colors.glow}`
-    : undefined;
-  const cardShadow = tokens.materialTokens?.shadowIntensity > 0.02
-    ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 30)} ${tokens.colors.shadow}`
-    : undefined;
+  const statusShadow =
+    tokens.materialTokens?.glowIntensity > 0.01
+      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 36)} ${tokens.colors.glow}`
+      : undefined;
+  const cardShadow =
+    tokens.materialTokens?.shadowIntensity > 0.02
+      ? `0 ${px(tokens.materialTokens.shadowIntensity * 12)} ${px(tokens.materialTokens.shadowIntensity * 30)} ${tokens.colors.shadow}`
+      : undefined;
   return {
     ...commonVisualPatch(tokens),
     accentColor: tokens.colors.primary,
@@ -2068,9 +2399,9 @@ function buildGiveawayPatch(tokens) {
         fontWeight: tokens.typography.labelWeight,
         states: {
           live: {
-            background: 'rgba(34,197,94,0.16)',
+            background: "rgba(34,197,94,0.16)",
             textColor: liveColor,
-            borderColor: 'rgba(34,197,94,0.36)',
+            borderColor: "rgba(34,197,94,0.36)",
             shadow: statusShadow,
           },
           closed: {
@@ -2079,9 +2410,9 @@ function buildGiveawayPatch(tokens) {
             borderColor: tokens.colors.border,
           },
           winner: {
-            background: 'rgba(245,179,1,0.16)',
+            background: "rgba(245,179,1,0.16)",
             textColor: winnerColor,
-            borderColor: 'rgba(245,179,1,0.42)',
+            borderColor: "rgba(245,179,1,0.42)",
             shadow: statusShadow,
           },
         },
@@ -2102,7 +2433,10 @@ function buildGiveawayPatch(tokens) {
         shadow: cardShadow || statusShadow,
         states: {
           winner: { accentColor: winnerColor, textColor: tokens.colors.text },
-          drawing: { accentColor: tokens.colors.primary, textColor: tokens.colors.text },
+          drawing: {
+            accentColor: tokens.colors.primary,
+            textColor: tokens.colors.text,
+          },
         },
       },
       winnerArea: {
@@ -2158,39 +2492,60 @@ function buildGiveawayPatch(tokens) {
 }
 
 function buildPatchForWidget(widgetType, tokens, styleId) {
-  if (tokens?.isOriginalBaseline || tokens?.material === 'original') return {};
-  if (widgetType === 'bh_stats') return buildBHStatsPatch(tokens);
-  if (widgetType === 'rtp_stats') return buildRtpStatsPatch(tokens, styleId);
-  if (widgetType === 'navbar') return buildNavbarPatch(tokens, styleId);
-  if (widgetType === 'spotify_now_playing') return buildSpotifyPatch(tokens, styleId);
-  if (widgetType === 'bonus_hunt') return buildBonusHuntPatch(tokens);
-  if (widgetType === 'slot_requests') return buildSlotRequestsPatch(tokens, styleId);
-  if (widgetType === 'giveaway') return buildGiveawayPatch(tokens);
-  if (widgetType === 'bets') return buildBetsPatch(tokens, styleId);
-  if (widgetType === 'background') return buildBackgroundPatch(tokens, styleId);
-  if ([
-    'current_slot',
-    'tournament',
-    'chat',
-    'image_slideshow',
-    'raid_shoutout',
-    'bonus_buys',
-    'container',
-  ].includes(widgetType)) return buildGenericWidgetPatch(widgetType, tokens, styleId);
+  if (tokens?.isOriginalBaseline || tokens?.material === "original") return {};
+  if (widgetType === "bh_stats") return buildBHStatsPatch(tokens);
+  if (widgetType === "rtp_stats") return buildRtpStatsPatch(tokens, styleId);
+  if (widgetType === "navbar") return buildNavbarPatch(tokens, styleId);
+  if (widgetType === "spotify_now_playing")
+    return buildSpotifyPatch(tokens, styleId);
+  if (widgetType === "bonus_hunt") return buildBonusHuntPatch(tokens);
+  if (widgetType === "slot_requests")
+    return buildSlotRequestsPatch(tokens, styleId);
+  if (widgetType === "giveaway") return buildGiveawayPatch(tokens);
+  if (widgetType === "bets") return buildBetsPatch(tokens, styleId);
+  if (widgetType === "background") return buildBackgroundPatch(tokens, styleId);
+  if (
+    [
+      "current_slot",
+      "tournament",
+      "chat",
+      "image_slideshow",
+      "raid_shoutout",
+      "bonus_buys",
+      "container",
+    ].includes(widgetType)
+  )
+    return buildGenericWidgetPatch(widgetType, tokens, styleId);
   return {};
 }
 
-function filterGeneratedSubElements(widgetType, subElements = {}, styleId = '') {
+function filterGeneratedSubElements(
+  widgetType,
+  subElements = {},
+  styleId = "",
+) {
   const next = deepMergeV2(subElements);
-  if (widgetType === 'slot_requests' && styleId !== 'v3_compact_editable' && next.slotImage) {
+  if (
+    widgetType === "slot_requests" &&
+    styleId !== "v3_compact_editable" &&
+    next.slotImage
+  ) {
     delete next.slotImage.imageSize;
     delete next.slotImage.width;
     delete next.slotImage.height;
     delete next.slotImage.imageFit;
     delete next.slotImage.visible;
   }
-  if (widgetType === 'bonus_hunt') {
-    for (const elementId of ['slotImage', 'slotThumbnail', 'slotListContainer', 'slotRow', 'container', 'headerContainer', 'footerContainer']) {
+  if (widgetType === "bonus_hunt") {
+    for (const elementId of [
+      "slotImage",
+      "slotThumbnail",
+      "slotListContainer",
+      "slotRow",
+      "container",
+      "headerContainer",
+      "footerContainer",
+    ]) {
       if (!next[elementId]) continue;
       delete next[elementId].imageSize;
       delete next[elementId].width;
@@ -2198,29 +2553,44 @@ function filterGeneratedSubElements(widgetType, subElements = {}, styleId = '') 
       delete next[elementId].minHeight;
       delete next[elementId].maxHeight;
     }
-    for (const elementId of ['slotListContainer', 'slotRow', 'container', 'headerContainer', 'statCell', 'footerContainer']) {
+    for (const elementId of [
+      "slotListContainer",
+      "slotRow",
+      "container",
+      "headerContainer",
+      "statCell",
+      "footerContainer",
+    ]) {
       if (!next[elementId]) continue;
       delete next[elementId].padding;
       delete next[elementId].gap;
     }
   }
-  if (widgetType === 'rtp_stats' && next.container) {
+  if (widgetType === "rtp_stats" && next.container) {
     delete next.container.padding;
     delete next.container.gap;
   }
   return next;
 }
 
-function filterUnsupportedSubElements(widgetType, subElements = {}, styleId = '') {
+function filterUnsupportedSubElements(
+  widgetType,
+  subElements = {},
+  styleId = "",
+) {
   const next = deepMergeV2(subElements);
-  if (widgetType === 'slot_requests' && styleId !== 'v3_compact_editable' && next.slotImage) {
+  if (
+    widgetType === "slot_requests" &&
+    styleId !== "v3_compact_editable" &&
+    next.slotImage
+  ) {
     delete next.slotImage.imageSize;
     delete next.slotImage.width;
     delete next.slotImage.height;
     delete next.slotImage.imageFit;
     delete next.slotImage.visible;
   }
-  if (widgetType === 'rtp_stats' && next.container) {
+  if (widgetType === "rtp_stats" && next.container) {
     delete next.container.padding;
     delete next.container.gap;
   }
@@ -2231,70 +2601,72 @@ function migrateBetsLegacySubElements(subElements = {}) {
   if (!isObject(subElements)) return {};
   const mapped = {};
   const copyLegacy = (from, to) => {
-    if (isObject(subElements[from])) mapped[to] = deepMergeV2(mapped[to] || {}, subElements[from]);
+    if (isObject(subElements[from]))
+      mapped[to] = deepMergeV2(mapped[to] || {}, subElements[from]);
   };
-  copyLegacy('container', 'widgetBackground');
-  copyLegacy('title', 'header');
-  copyLegacy('header', 'header');
-  copyLegacy('statistics', 'poolStat');
-  copyLegacy('statistics', 'timerStat');
-  copyLegacy('statistics', 'betsStat');
-  copyLegacy('optionCard', 'betCards');
-  copyLegacy('optionRow', 'betCards');
-  copyLegacy('optionNumber', 'cardNumberBadge');
-  copyLegacy('optionLabel', 'cardRangeText');
-  copyLegacy('percentage', 'cardPercentageText');
-  copyLegacy('footer', 'footerInstruction');
+  copyLegacy("container", "widgetBackground");
+  copyLegacy("title", "header");
+  copyLegacy("header", "header");
+  copyLegacy("statistics", "poolStat");
+  copyLegacy("statistics", "timerStat");
+  copyLegacy("statistics", "betsStat");
+  copyLegacy("optionCard", "betCards");
+  copyLegacy("optionRow", "betCards");
+  copyLegacy("optionNumber", "cardNumberBadge");
+  copyLegacy("optionLabel", "cardRangeText");
+  copyLegacy("percentage", "cardPercentageText");
+  copyLegacy("footer", "footerInstruction");
   return deepMergeV2(mapped, subElements);
 }
 
 function inheritedSubElementsForWidget(widgetType, config = {}) {
-  if (widgetType === 'bonus_hunt') return {};
-  if (widgetType === 'bets') return migrateBetsLegacySubElements(config.subElements || {});
+  if (widgetType === "bonus_hunt") return {};
+  if (widgetType === "bets")
+    return migrateBetsLegacySubElements(config.subElements || {});
   return config.subElements || {};
 }
 
 const BONUS_HUNT_GENERIC_VISUAL_KEYS = Object.freeze([
-  'accentColor',
-  'bgColor',
-  'cardBg',
-  'textColor',
-  'mutedColor',
-  'borderColor',
-  'borderRadius',
-  'borderWidth',
-  'cardRadius',
-  'cardBorder',
-  'cardBorderWidth',
-  'fontFamily',
-  'fontSize',
-  'fontWeight',
-  'progressColor',
-  'progressBgColor',
-  'bestColor',
-  'worstColor',
-  'shadowSize',
-  'shadowIntensity',
-  'widgetScale',
-  'headerColor',
-  'headerAccent',
-  'countCardColor',
-  'currentBonusColor',
-  'currentBonusAccent',
-  'listCardColor',
-  'listCardAccent',
-  'summaryColor',
-  'totalPayColor',
-  'totalPayText',
-  'superBadgeColor',
-  'extremeBadgeColor',
-  'statValueColor',
-  'mutedTextColor',
-  'cardOutlineColor',
-  'cardOutlineWidth',
-  'cardPadding',
-  'cardGap',
-  'slotImageHeight',
+  "accentColor",
+  "bgColor",
+  "cardBg",
+  "textColor",
+  "mutedColor",
+  "borderColor",
+  "borderRadius",
+  "borderWidth",
+  "cardRadius",
+  "cardBorder",
+  "cardBorderWidth",
+  "fontFamily",
+  "fontSize",
+  "fontWeight",
+  "progressColor",
+  "progressBgColor",
+  "bestColor",
+  "worstColor",
+  "shadowSize",
+  "shadowIntensity",
+  "widgetScale",
+  "headerColor",
+  "headerAccent",
+  "countCardColor",
+  "currentBonusColor",
+  "currentBonusAccent",
+  "listCardColor",
+  "listCardAccent",
+  "summaryColor",
+  "totalPayColor",
+  "totalPayText",
+  "superBadgeColor",
+  "extremeBadgeColor",
+  "statValueColor",
+  "mutedTextColor",
+  "cardOutlineColor",
+  "cardOutlineWidth",
+  "cardPadding",
+  "cardGap",
+  "slotImageHeight",
 ]);
 
 function stripInheritedBonusHuntVisualDefaults(config = {}) {
@@ -2307,56 +2679,99 @@ function stripInheritedBonusHuntVisualDefaults(config = {}) {
 }
 
 export function buildWidgetV2CssVars(tokens = {}) {
-  if (!tokens.colors || tokens.isOriginalBaseline || tokens.material === 'original') return {};
+  if (
+    !tokens.colors ||
+    tokens.isOriginalBaseline ||
+    tokens.material === "original"
+  )
+    return {};
   return {
-    '--sc-v2-primary': tokens.colors.primary,
-    '--sc-v2-accent': tokens.colors.accent,
-    '--sc-v2-surface': tokens.colors.surface,
-    '--sc-v2-surface-secondary': tokens.colors.secondarySurface,
-    '--sc-v2-surface-elevated': tokens.colors.elevatedSurface,
-    '--sc-v2-border': tokens.colors.border,
-    '--sc-v2-highlight': tokens.colors.highlight,
-    '--sc-v2-text': tokens.colors.text,
-    '--sc-v2-muted': tokens.colors.mutedText,
-    '--sc-v2-positive': tokens.colors.positive,
-    '--sc-v2-negative': tokens.colors.negative,
-    '--sc-v2-warning': tokens.colors.warning,
-    '--sc-v2-shadow': tokens.colors.shadow,
-    '--sc-v2-glow': tokens.colors.glow,
-    '--sc-v2-root-radius': px(tokens.shape.rootRadius),
-    '--sc-v2-card-radius': px(tokens.shape.cardRadius),
-    '--sc-v2-border-width': px(tokens.shape.borderWidth),
-    '--sc-v2-root-padding': px(tokens.spacing.rootPadding),
-    '--sc-v2-card-padding': px(tokens.spacing.cardPadding),
-    '--sc-v2-section-gap': px(tokens.spacing.sectionGap),
-    '--sc-v2-item-gap': px(tokens.spacing.itemGap),
-    '--sc-v2-body-font': tokens.typography.bodyFont,
-    '--sc-v2-header-font': tokens.typography.headerFont,
-    '--sc-v2-body-size': px(tokens.typography.bodySize),
-    '--sc-v2-header-size': px(tokens.typography.headerSize),
-    '--sc-v2-value-size': px(tokens.typography.valueSize),
-    '--sc-v2-label-size': px(tokens.typography.labelSize),
-    '--sc-v2-transition': `${tokens.motion.transitionDuration}ms`,
-    '--sc-v2-blur': px(tokens.materialTokens.blurStrength || 0),
+    "--sc-v2-primary": tokens.colors.primary,
+    "--sc-v2-accent": tokens.colors.accent,
+    "--sc-v2-surface": tokens.colors.surface,
+    "--sc-v2-surface-secondary": tokens.colors.secondarySurface,
+    "--sc-v2-surface-elevated": tokens.colors.elevatedSurface,
+    "--sc-v2-border": tokens.colors.border,
+    "--sc-v2-highlight": tokens.colors.highlight,
+    "--sc-v2-text": tokens.colors.text,
+    "--sc-v2-muted": tokens.colors.mutedText,
+    "--sc-v2-positive": tokens.colors.positive,
+    "--sc-v2-negative": tokens.colors.negative,
+    "--sc-v2-warning": tokens.colors.warning,
+    "--sc-v2-shadow": tokens.colors.shadow,
+    "--sc-v2-glow": tokens.colors.glow,
+    "--sc-v2-root-radius": px(tokens.shape.rootRadius),
+    "--sc-v2-card-radius": px(tokens.shape.cardRadius),
+    "--sc-v2-border-width": px(tokens.shape.borderWidth),
+    "--sc-v2-root-padding": px(tokens.spacing.rootPadding),
+    "--sc-v2-card-padding": px(tokens.spacing.cardPadding),
+    "--sc-v2-section-gap": px(tokens.spacing.sectionGap),
+    "--sc-v2-item-gap": px(tokens.spacing.itemGap),
+    "--sc-v2-body-font": tokens.typography.bodyFont,
+    "--sc-v2-header-font": tokens.typography.headerFont,
+    "--sc-v2-body-size": px(tokens.typography.bodySize),
+    "--sc-v2-header-size": px(tokens.typography.headerSize),
+    "--sc-v2-value-size": px(tokens.typography.valueSize),
+    "--sc-v2-label-size": px(tokens.typography.labelSize),
+    "--sc-v2-transition": `${tokens.motion.transitionDuration}ms`,
+    "--sc-v2-blur": px(tokens.materialTokens.blurStrength || 0),
   };
 }
 
-export function applyWidgetAppearanceV2ToConfig(widget, config, appearance = {}, options = {}) {
-  if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type)) return config;
-  const resolved = resolveWidgetAppearanceV2({ ...widget, config }, appearance, options);
+export function applyWidgetAppearanceV2ToConfig(
+  widget,
+  config,
+  appearance = {},
+  options = {},
+) {
+  if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type))
+    return config;
+  const resolved = resolveWidgetAppearanceV2(
+    { ...widget, config },
+    appearance,
+    options,
+  );
   if (!resolved) return config;
-  const isOriginalBaseline = resolved.tokens?.isOriginalBaseline || resolved.tokens?.material === 'original';
-  const patch = buildPatchForWidget(widget.widget_type, resolved.tokens, resolved.styleId);
+  const isOriginalBaseline =
+    resolved.tokens?.isOriginalBaseline ||
+    resolved.tokens?.material === "original";
+  const patch = buildPatchForWidget(
+    widget.widget_type,
+    resolved.tokens,
+    resolved.styleId,
+  );
   const explicitSubElements = config.__appearanceExplicitSubElements || {};
-  const generatedSubElements = filterGeneratedSubElements(widget.widget_type, patch.subElements || {}, resolved.styleId);
+  const generatedSubElements = filterGeneratedSubElements(
+    widget.widget_type,
+    patch.subElements || {},
+    resolved.styleId,
+  );
   const v2ElementOverrides = resolved.appearance.elementOverrides || {};
-  const inheritedSubElements = inheritedSubElementsForWidget(widget.widget_type, config);
-  const mergedSubElements = widget.widget_type === 'bets'
-    ? deepMergeV2(generatedSubElements, inheritedSubElements, explicitSubElements, v2ElementOverrides)
-    : deepMergeV2(inheritedSubElements, generatedSubElements, explicitSubElements, v2ElementOverrides);
-  const finalSubElements = filterUnsupportedSubElements(widget.widget_type, mergedSubElements, resolved.styleId);
+  const inheritedSubElements = inheritedSubElementsForWidget(
+    widget.widget_type,
+    config,
+  );
+  const mergedSubElements =
+    widget.widget_type === "bets"
+      ? deepMergeV2(
+          generatedSubElements,
+          inheritedSubElements,
+          explicitSubElements,
+          v2ElementOverrides,
+        )
+      : deepMergeV2(
+          inheritedSubElements,
+          generatedSubElements,
+          explicitSubElements,
+          v2ElementOverrides,
+        );
+  const finalSubElements = filterUnsupportedSubElements(
+    widget.widget_type,
+    mergedSubElements,
+    resolved.styleId,
+  );
   const next = {
-    ...(isOriginalBaseline && widget.widget_type === 'bonus_hunt'
+    ...(isOriginalBaseline && widget.widget_type === "bonus_hunt"
       ? stripInheritedBonusHuntVisualDefaults(config)
       : config),
     ...patch,
@@ -2390,14 +2805,16 @@ export function buildAppearanceV2ForStorage(widgetType, simple, previous = {}) {
 
 export function getSimpleAppearanceV2Settings(appearance, root, widgetType) {
   if (!root) return normalizeSimpleAppearanceV2(DEFAULT_SIMPLE_APPEARANCE_V2);
-  const segments = root.split('.');
+  const segments = root.split(".");
   let cursor = appearance;
   for (const segment of segments) cursor = cursor?.[segment];
-  const stored = cursor?.appearanceV2?.simple || cursor?.appearance?.appearanceV2?.simple;
+  const stored =
+    cursor?.appearanceV2?.simple || cursor?.appearance?.appearanceV2?.simple;
   if (stored) return normalizeSimpleAppearanceV2(stored);
   const legacy = cursor?.appearance?.simpleSettings || cursor?.simpleSettings;
   return normalizeSimpleAppearanceV2({
-    ...(getWidgetAppearanceCapability(widgetType)?.defaultAppearance || DEFAULT_SIMPLE_APPEARANCE_V2),
+    ...(getWidgetAppearanceCapability(widgetType)?.defaultAppearance ||
+      DEFAULT_SIMPLE_APPEARANCE_V2),
     ...(legacy || {}),
   });
 }
