@@ -703,8 +703,43 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const rtpValueStyle = flexSizedStyle(subElementStyle(c, 'rtpValue'), 'flex');
   const maxWinStyle = flexSizedStyle(subElementStyle(c, 'maxWin'), 'flex');
   const volatilityStyle = flexSizedStyle(subElementStyle(c, 'volatility'), 'flex');
-  const personalBestStyle = flexSizedStyle(subElementStyle(c, 'personalBest'), 'flex');
+  const rawPersonalBestStyle = flexSizedStyle(subElementStyle(c, 'personalBest'), 'flex');
+  const personalBestStyle = isStyleSeca ? {
+    ...rawPersonalBestStyle,
+    display: 'inline-flex',
+    flex: '0 0 auto',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+    width: 'auto',
+    maxWidth: 'none',
+    minWidth: 'max-content',
+    whiteSpace: 'nowrap',
+  } : rawPersonalBestStyle;
   const labelStyle = subElementStyle(c, 'label');
+  const bestWinLabelStyle = isStyleSeca ? {
+    ...labelStyle,
+    display: 'inline',
+    width: 'auto',
+    maxWidth: 'none',
+    whiteSpace: 'nowrap',
+  } : labelStyle;
+  const bestWinValueStyle = isStyleSeca ? {
+    display: 'inline-flex',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+    width: 'auto',
+    maxWidth: 'none',
+    minWidth: 'max-content',
+    whiteSpace: 'nowrap',
+  } : undefined;
+  const bestWinGroupStyle = isStyleSeca ? {
+    display: 'inline-flex',
+    flex: '0 0 auto',
+    flexWrap: 'nowrap',
+    minWidth: 'max-content',
+  } : undefined;
   const dividerStyle = subElementStyle(c, 'divider');
   const spinnerStyle = subElementStyle(c, 'spinner');
 
@@ -772,11 +807,11 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
 
         {/* ═══ Right Section — Best Win ═══ */}
         {showBestWin && (
-          <div className="rtp-stats-right">
+          <div className="rtp-stats-right" style={bestWinGroupStyle}>
             <div className="rtp-stats-item rtp-stats-item--bestwin" {...partAttrs('personalBest')} style={personalBestStyle}>
               <span className="rtp-stats-icon">🏆</span>
-              <span className="rtp-stats-value">
-                <span className="rtp-stats-label" {...partAttrs('label')} style={labelStyle}>BEST WIN </span>
+              <span className="rtp-stats-value" style={bestWinValueStyle}>
+                <span className="rtp-stats-label" {...partAttrs('label')} style={bestWinLabelStyle}>BEST WIN </span>
                 {displayBestWin?.best_win
                   ? `€${Number(displayBestWin.best_win).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : '—'}
@@ -784,8 +819,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
                   ? ` (${Number(displayBestWin.best_multiplier).toLocaleString()}x)`
                   : ''}
               </span>
-              <span className="rtp-stats-value rtp-stats-value--bestwin-current">
-                <span className="rtp-stats-label" {...partAttrs('label')} style={labelStyle}>BEST WIN </span>
+              <span className="rtp-stats-value rtp-stats-value--bestwin-current" style={bestWinValueStyle}>
+                <span className="rtp-stats-label" {...partAttrs('label')} style={bestWinLabelStyle}>BEST WIN </span>
                 {displayBestWin?.best_win
                   ? `${currency}${Number(displayBestWin.best_win).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : bestWinEmptyText}

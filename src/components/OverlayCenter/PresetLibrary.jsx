@@ -315,7 +315,7 @@ export default function PresetLibrary({
           {presetMsg && <span className="pl-save-bar__msg">{presetMsg}</span>}
         </div>
         <p className="pl-save-card__note">
-          Save the current widget setup, positions, sizes, visibility, and non-secret configuration so you can restore a working build after major edits.
+          Save the current widget setup, positions, sizes, visibility, V2 appearance edits, and non-secret configuration so you can restore a working build after major edits.
         </p>
       </div>
 

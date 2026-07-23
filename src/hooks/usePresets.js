@@ -68,6 +68,20 @@ function sanitizeConfigForBackup(config = {}) {
   return clean;
 }
 
+function clonePlain(value, fallback = null) {
+  if (value == null) return fallback;
+  if (typeof structuredClone !== 'function') return fallback;
+  try {
+    return structuredClone(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function snapshotOverlayAppearance(overlayState) {
+  return clonePlain(overlayState?.overlayAppearance, null);
+}
+
 /** Strip user-data keys from a widget config, keeping only styling/layout */
 function stripUserData(widgetType, config) {
   const skip = new Set(USER_DATA_KEYS[widgetType] || []);
@@ -111,6 +125,18 @@ function buildPresetWidgetPayload(widget, snap, isFullBackup) {
     height: snap.height,
     z_index: snap.z_index,
     animation: snap.animation,
+  };
+}
+
+function buildRestoredOverlayAppearance(preset, currentAppearance = {}) {
+  const backup = clonePlain(preset?.overlayAppearance, null);
+  if (!backup) return null;
+  const currentRevision = Number(currentAppearance?.revision || 0);
+  return {
+    ...backup,
+    revision: Math.max(Number(backup.revision || 0), currentRevision) + 1,
+    updatedAt: new Date().toISOString(),
+    restoredFromBackup: preset?.name || 'Widget backup',
   };
 }
 
@@ -191,7 +217,14 @@ export default function usePresets({ user, isAdmin, overlayState, updateState, w
       z_index: w.z_index,
       animation: w.animation,
     }));
-    const entry = { name, snapshot, savedAt: Date.now(), fullBackup: true, version: 2 };
+    const entry = {
+      name,
+      snapshot,
+      overlayAppearance: snapshotOverlayAppearance(overlayState),
+      savedAt: Date.now(),
+      fullBackup: true,
+      version: 3,
+    };
     const existing = [...globalPresets];
     const idx = existing.findIndex(p => p.name === name);
     const updated = idx >= 0
@@ -201,7 +234,7 @@ export default function usePresets({ user, isAdmin, overlayState, updateState, w
     setPresetName('');
     setPresetMsg('Saved!');
     setTimeout(() => setPresetMsg(''), 2000);
-  }, [presetName, widgets, globalPresets, updateState]);
+  }, [presetName, widgets, globalPresets, overlayState, updateState]);
 
   const loadGlobalPreset = useCallback(async (preset) => {
     if (!preset?.snapshot) return;
@@ -224,9 +257,19 @@ export default function usePresets({ user, isAdmin, overlayState, updateState, w
         }
       }
     }
+    if (isFullBackup) {
+      const widgetIdsInBackup = new Set(preset.snapshot.map(snap => snap.id).filter(Boolean));
+      const widgetsToHide = widgets.filter(widget => !claimed.has(widget.id) && !widgetIdsInBackup.has(widget.id) && widget.is_visible !== false);
+      await Promise.all(widgetsToHide.map(widget => saveWidget({ ...widget, is_visible: false })));
+
+      const restoredAppearance = buildRestoredOverlayAppearance(preset, overlayState?.overlayAppearance);
+      if (restoredAppearance) {
+        await updateState({ overlayAppearance: restoredAppearance });
+      }
+    }
     setPresetMsg('Loaded!');
     setTimeout(() => setPresetMsg(''), 2000);
-  }, [widgets, saveWidget, addWidget]);
+  }, [widgets, saveWidget, addWidget, overlayState, updateState]);
 
   const deleteGlobalPreset = useCallback(async (name) => {
     const updated = globalPresets.filter(p => p.name !== name);
