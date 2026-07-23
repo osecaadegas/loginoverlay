@@ -8550,12 +8550,13 @@ body.wm-resizing {
 }
 
 .rtp-stats-bar--styleseca .rtp-stats-left {
-  flex: 1 1 auto;
+  flex: 1 1 0;
 }
 
 .rtp-stats-bar--styleseca .rtp-stats-right {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   justify-content: flex-end;
+  min-width: max-content;
 }
 
 .rtp-stats-bar--styleseca .rtp-stats-provider--logo {
@@ -8564,12 +8565,29 @@ body.wm-resizing {
 
 .rtp-stats-bar--styleseca .rtp-stats-slot {
   flex: 1 1 128px;
+  min-width: 48px;
   max-width: none;
 }
 
 .rtp-stats-bar--styleseca .rtp-stats-item {
-  flex: 0 1 auto;
-  min-width: max-content;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  min-width: max-content !important;
+  white-space: nowrap !important;
+}
+
+.rtp-stats-bar--styleseca .rtp-stats-item--bestwin,
+.rtp-stats-bar--styleseca .rtp-stats-item--bestwin .rtp-stats-value,
+.rtp-stats-bar--styleseca .rtp-stats-item--bestwin .rtp-stats-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  width: auto !important;
+  max-width: none !important;
+  white-space: nowrap !important;
 }
 
 .rtp-stats-bar--styleseca .rtp-stats-value,
