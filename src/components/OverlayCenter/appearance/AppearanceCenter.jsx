@@ -1779,6 +1779,11 @@ function syncModeSideEffects({
   setShowBefore(false);
 }
 
+function persistAppearanceMode(mode) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(MODE_STORAGE_KEY, mode);
+}
+
 function syncServerDraftState({
   dirty,
   lastPersistedDraftRef,
@@ -2094,6 +2099,67 @@ function resetAppearanceElementControl({
       omitPath(omitPath(omitPath(prev, v2Path), modernPath), legacyPath),
     `Reset ${elementId}.${control.id}`,
   );
+}
+
+function updateAppearanceWidgetControl({
+  commitDraft,
+  item,
+  selectedTargetRoot,
+  selectedWidgetUsesV2,
+  value,
+}) {
+  const normalized = validateEditorValue(item.control, value);
+  if (
+    selectedTargetRoot &&
+    (item.id === "widgetWidth" || item.id === "widgetHeight")
+  ) {
+    const dimension = item.id === "widgetWidth" ? "width" : "height";
+    commitDraft(
+      (prev) =>
+        setWidgetSizeOverridePaths(
+          prev,
+          selectedTargetRoot,
+          dimension,
+          normalized,
+          selectedWidgetUsesV2,
+        ),
+      item.label,
+    );
+    return;
+  }
+  const path = selectedTargetRoot
+    ? `${selectedTargetRoot}.appearance.${item.path}`
+    : item.path;
+  commitDraft((prev) => setByPath(prev, path, normalized), item.label);
+}
+
+function resetAppearanceWidgetControl({
+  commitDraft,
+  item,
+  selectedTargetRoot,
+  selectedWidgetUsesV2,
+}) {
+  if (
+    selectedTargetRoot &&
+    (item.id === "widgetWidth" || item.id === "widgetHeight")
+  ) {
+    const dimension = item.id === "widgetWidth" ? "width" : "height";
+    commitDraft(
+      (prev) =>
+        omitWidgetSizeOverridePaths(
+          prev,
+          selectedTargetRoot,
+          dimension,
+          selectedWidgetUsesV2,
+        ),
+      `Reset ${item.label}`,
+    );
+    return;
+  }
+  const path = selectedTargetRoot
+    ? `${selectedTargetRoot}.appearance.${item.path}`
+    : item.path;
+  commitDraft((prev) => omitPath(prev, path), `Reset ${item.label}`);
 }
 
 function applyAppearancePreset({
@@ -4097,6 +4163,381 @@ function showDevV2Diagnostics(selectedWidgetUsesV2) {
   return Boolean(import.meta.env.DEV && selectedWidgetUsesV2);
 }
 
+function getAdvancedPanelTitle(selectedElement, selectedWidgetName) {
+  return selectedElement?.label || selectedWidgetName;
+}
+
+function getLayerEditabilityLabel(selectedLayerLocked) {
+  return selectedLayerLocked ? "Locked" : "Editable";
+}
+
+function getWarningMeta(warnings = []) {
+  return `${warnings.length} warning${warnings.length === 1 ? "" : "s"}`;
+}
+
+function showLegacySurfaceControls(editingWholeWidget, selectedWidgetUsesV2) {
+  return editingWholeWidget && !selectedWidgetUsesV2;
+}
+
+function shouldShowRtpMetalControls({ selectedTarget, selectedWidget, selectedWidgetType }) {
+  return Boolean(
+    selectedWidgetType === "rtp_stats" &&
+      selectedTarget.styleId === "metal" &&
+      selectedWidget,
+  );
+}
+
+function shouldShowBonusHuntColorSyncControls(selectedWidgetType, selectedWidget) {
+  return Boolean(
+    BONUS_HUNT_COLOR_SYNC_WIDGET_TYPES.has(selectedWidgetType) && selectedWidget,
+  );
+}
+
+function countSelectedWidgetOverrides(draft, selectedTargetRoot) {
+  if (!selectedTargetRoot) return 0;
+  return countObjectLeaves(getByPath(draft, selectedTargetRoot));
+}
+
+function isEditingWholeWidget(selectedElement) {
+  return !selectedElement || ["container", "root"].includes(selectedElement.id);
+}
+
+function getVisibleElementControlGroups(selectedElement, mode) {
+  if (!selectedElement) return [];
+  return getElementControlGroups(selectedElement, mode).filter((group) =>
+    group.controls.some((control) =>
+      elementSupportsControl(selectedElement, control.id),
+    ),
+  );
+}
+
+function syncAdvancedControlSection({
+  controlGroups,
+  mode,
+  selectedElement,
+  setOpenAdvancedSections,
+}) {
+  if (mode !== "advanced") return;
+  const preferredSection = selectedElement
+    ? `control-${controlGroups[0]?.id || ""}`
+    : "advanced";
+  if (!preferredSection || preferredSection === "control-") return;
+  setOpenAdvancedSections((prev) => {
+    if (prev.includes(preferredSection))
+      return prev.length <= 2 ? prev : prev.slice(0, 2);
+    return [preferredSection, ...prev].slice(0, 2);
+  });
+}
+
+function AdvancedTour({ onHideTour, onSetTourHidden, tourVisible }) {
+  return (
+    <Show when={tourVisible}>
+      <section className="ve-tour">
+        <div>
+          <Wand2 size={18} />
+          <strong>Quick tour</strong>
+        </div>
+        <ol>
+          <li>Choose a widget.</li>
+          <li>Click an element in the preview.</li>
+          <li>Change its style here.</li>
+          <li>Test the preview.</li>
+          <li>Publish it to OBS.</li>
+        </ol>
+        <div>
+          <button type="button" onClick={onHideTour}>
+            Skip
+          </button>
+          <button type="button" onClick={onSetTourHidden}>
+            Do not show again
+          </button>
+        </div>
+      </section>
+    </Show>
+  );
+}
+
+function AdvancedSurfaceSection({
+  editingWholeWidget,
+  onToggle,
+  openSections,
+  renderQuickControl,
+  selectedWidgetOverrides,
+  selectedWidgetUsesV2,
+}) {
+  return (
+    <Show
+      when={showLegacySurfaceControls(editingWholeWidget, selectedWidgetUsesV2)}
+    >
+      <CollapsibleSection
+        id="surfaceBackground"
+        title="Surface and background"
+        meta={`${selectedWidgetOverrides} custom values`}
+        openSections={openSections}
+        onToggle={onToggle}
+      >
+        <div className="ve-control-grid">
+          {QUICK_WIDGET_CONTROLS.map((control) => {
+            const renderedControl = renderQuickControl(control);
+            return renderedControl;
+          })}
+        </div>
+      </CollapsibleSection>
+    </Show>
+  );
+}
+
+function AdvancedSelectedElementSections({
+  controlGroups,
+  onToggle,
+  openSections,
+  renderElementControl,
+  selectedElement,
+  selectedLayerLocked,
+  selectedStateId,
+}) {
+  return (
+    <>
+      <Show when={selectedElement?.kind === "mixed"}>
+        <div className="ve-context-note">
+          Changes apply to the selected layer only. If this is a repeated item,
+          the widget may share the style across matching items.
+        </div>
+      </Show>
+      <Show when={selectedLayerLocked}>
+        <div className="ve-warning">
+          <AlertTriangle size={15} />
+          This layer is locked. Unlock it in the Layers panel to edit it.
+        </div>
+      </Show>
+      <Show when={selectedStateId !== "default"}>
+        <div className="ve-context-note">
+          Editing the "{selectedStateId}" state for this element.
+        </div>
+      </Show>
+      <Show when={hasItems(controlGroups)}>
+        {controlGroups.map((group) => (
+          <CollapsibleSection
+            key={group.id}
+            id={`control-${group.id}`}
+            title={mapControlGroupTitle(group.label)}
+            meta={group.label}
+            openSections={openSections}
+            onToggle={onToggle}
+          >
+            <div className="ve-control-grid">
+              {group.controls.map(renderElementControl)}
+            </div>
+          </CollapsibleSection>
+        ))}
+      </Show>
+      <Show when={!hasItems(controlGroups)}>
+        <EmptyState title="No controls for this element">
+          This widget style does not expose editable appearance options for the
+          selected part.
+        </EmptyState>
+      </Show>
+    </>
+  );
+}
+
+function AdvancedSpacingSection({
+  editingWholeWidget,
+  onToggle,
+  openSections,
+}) {
+  return (
+    <Show when={editingWholeWidget}>
+      <CollapsibleSection
+        id="spacingSizing"
+        title="Spacing and sizing"
+        meta="Advanced"
+        openSections={openSections}
+        onToggle={onToggle}
+      >
+        <div className="ve-context-note">
+          OBS is the primary target. Device-specific overrides inherit the
+          default value until you set one here.
+        </div>
+      </CollapsibleSection>
+    </Show>
+  );
+}
+
+function AdvancedResetButtons({
+  editingWholeWidget,
+  onResetAll,
+  onResetElement,
+  onResetWidget,
+  selectedElement,
+  selectedLayerLocked,
+}) {
+  return (
+    <div className="ve-reset-row">
+      <button
+        type="button"
+        onClick={onResetElement}
+        disabled={!selectedElement || selectedLayerLocked}
+      >
+        Reset element
+      </button>
+      <Show when={editingWholeWidget}>
+        <button type="button" onClick={onResetWidget}>
+          Reset widget
+        </button>
+        <button type="button" className="danger" onClick={onResetAll}>
+          Reset all
+        </button>
+      </Show>
+    </div>
+  );
+}
+
+function AdvancedWarningsSection({
+  editingWholeWidget,
+  onResetAll,
+  onResetElement,
+  onResetWidget,
+  onToggle,
+  openSections,
+  selectedElement,
+  selectedLayerLocked,
+  warnings,
+}) {
+  return (
+    <CollapsibleSection
+      id="advanced"
+      title="Advanced"
+      meta={getWarningMeta(warnings)}
+      openSections={openSections}
+      onToggle={onToggle}
+    >
+      <div className="ve-warning-list">
+        <Show when={!warnings.length}>
+          <p>No obvious design problems found.</p>
+        </Show>
+        {warnings.map((warning) => (
+          <div key={warning.id} className="ve-warning">
+            <AlertTriangle size={15} />
+            <span>{warning.label}</span>
+          </div>
+        ))}
+      </div>
+      <AdvancedResetButtons
+        editingWholeWidget={editingWholeWidget}
+        onResetAll={onResetAll}
+        onResetElement={onResetElement}
+        onResetWidget={onResetWidget}
+        selectedElement={selectedElement}
+        selectedLayerLocked={selectedLayerLocked}
+      />
+    </CollapsibleSection>
+  );
+}
+
+function AdvancedPropertiesPanel({
+  advancedSectionTabs,
+  controlGroups,
+  editingWholeWidget,
+  onDeselectElement,
+  onHideTour,
+  onResetAll,
+  onResetElement,
+  onResetWidget,
+  onSetTourHidden,
+  onToggleSection,
+  openSections,
+  renderElementControl,
+  renderQuickControl,
+  selectedElement,
+  selectedLayerLocked,
+  selectedStateId,
+  selectedWidgetName,
+  selectedWidgetOverrides,
+  selectedWidgetUsesV2,
+  tourVisible,
+  warnings,
+}) {
+  return (
+    <aside className="ve-right-panel">
+      <div className="ve-properties-header">
+        <div>
+          <strong>{getAdvancedPanelTitle(selectedElement, selectedWidgetName)}</strong>
+          <span>
+            {getModeLabel("advanced")} · {getLayerEditabilityLabel(selectedLayerLocked)}
+          </span>
+        </div>
+        <button
+          type="button"
+          className="ve-icon-button"
+          onClick={onDeselectElement}
+          aria-label="Deselect element"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
+      <AdvancedTour
+        onHideTour={onHideTour}
+        onSetTourHidden={onSetTourHidden}
+        tourVisible={tourVisible}
+      />
+
+      <div className="ve-properties-scroll">
+        <SectionTabs
+          sections={advancedSectionTabs}
+          openSections={openSections}
+          onToggle={onToggleSection}
+        />
+
+        <AdvancedSurfaceSection
+          editingWholeWidget={editingWholeWidget}
+          onToggle={onToggleSection}
+          openSections={openSections}
+          renderQuickControl={renderQuickControl}
+          selectedWidgetOverrides={selectedWidgetOverrides}
+          selectedWidgetUsesV2={selectedWidgetUsesV2}
+        />
+
+        <Show when={!!selectedElement}>
+          <AdvancedSelectedElementSections
+            controlGroups={controlGroups}
+            onToggle={onToggleSection}
+            openSections={openSections}
+            renderElementControl={renderElementControl}
+            selectedElement={selectedElement}
+            selectedLayerLocked={selectedLayerLocked}
+            selectedStateId={selectedStateId}
+          />
+        </Show>
+        <Show when={!selectedElement}>
+          <EmptyState title="No element selected">
+            Click a title, card, image or row in the preview to edit it directly.
+          </EmptyState>
+        </Show>
+
+        <AdvancedSpacingSection
+          editingWholeWidget={editingWholeWidget}
+          onToggle={onToggleSection}
+          openSections={openSections}
+        />
+
+        <AdvancedWarningsSection
+          editingWholeWidget={editingWholeWidget}
+          onResetAll={onResetAll}
+          onResetElement={onResetElement}
+          onResetWidget={onResetWidget}
+          onToggle={onToggleSection}
+          openSections={openSections}
+          selectedElement={selectedElement}
+          selectedLayerLocked={selectedLayerLocked}
+          warnings={warnings}
+        />
+      </div>
+    </aside>
+  );
+}
+
 function CollapsibleSection({
   id,
   title,
@@ -4129,21 +4570,28 @@ function SectionTabs({ sections = [], openSections = [], onToggle }) {
   if (!sections.length) return null;
   return (
     <nav className="ve-section-tabs" aria-label="Settings sections">
-      {sections.map((section) => {
-        const active = openSections.includes(section.id);
-        return (
-          <button
-            key={section.id}
-            type="button"
-            className={active ? "is-active" : ""}
-            onClick={() => onToggle(section.id)}
-            aria-pressed={active}
-          >
-            {section.label}
-          </button>
-        );
-      })}
+      {sections.map((section) => (
+        <SectionTabButton
+          key={section.id}
+          active={openSections.includes(section.id)}
+          onToggle={onToggle}
+          section={section}
+        />
+      ))}
     </nav>
+  );
+}
+
+function SectionTabButton({ active, onToggle, section }) {
+  return (
+    <button
+      type="button"
+      className={active ? "is-active" : ""}
+      onClick={() => onToggle(section.id)}
+      aria-pressed={active}
+    >
+      {section.label}
+    </button>
   );
 }
 
@@ -4270,13 +4718,13 @@ export default function AppearanceCenter({
     () => getBonusHuntMetalColors(widgets),
     [widgets],
   );
-  const showRtpMetalControls =
-    selectedWidgetType === "rtp_stats" &&
-    selectedTarget.styleId === "metal" &&
-    !!selectedWidget;
+  const showRtpMetalControls = shouldShowRtpMetalControls({
+    selectedTarget,
+    selectedWidget,
+    selectedWidgetType,
+  });
   const showBonusHuntColorSyncControls =
-    BONUS_HUNT_COLOR_SYNC_WIDGET_TYPES.has(selectedWidgetType) &&
-    !!selectedWidget;
+    shouldShowBonusHuntColorSyncControls(selectedWidgetType, selectedWidget);
   const selectedWidgetUsesV2 = isWidgetAppearanceV2Enabled(selectedWidgetType);
   const selectedWidgetIsBackground = selectedWidgetType === "background";
   const selectedTargetRoot = useMemo(
@@ -4460,8 +4908,7 @@ export default function AppearanceCenter({
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined")
-      window.localStorage.setItem(MODE_STORAGE_KEY, mode);
+    persistAppearanceMode(mode);
   }, [mode]);
 
   useEffect(() => {
@@ -4927,48 +5374,25 @@ export default function AppearanceCenter({
 
   const updateWidgetControl = useCallback(
     (item, value) => {
-      const root = selectedTargetRoot;
-      const normalized = validateEditorValue(item.control, value);
-      if (root && (item.id === "widgetWidth" || item.id === "widgetHeight")) {
-        const dimension = item.id === "widgetWidth" ? "width" : "height";
-        commitDraft(
-          (prev) =>
-            setWidgetSizeOverridePaths(
-              prev,
-              root,
-              dimension,
-              normalized,
-              selectedWidgetUsesV2,
-            ),
-          item.label,
-        );
-        return;
-      }
-      const path = root ? `${root}.appearance.${item.path}` : item.path;
-      commitDraft((prev) => setByPath(prev, path, normalized), item.label);
+      updateAppearanceWidgetControl({
+        commitDraft,
+        item,
+        selectedTargetRoot,
+        selectedWidgetUsesV2,
+        value,
+      });
     },
     [commitDraft, selectedTargetRoot, selectedWidgetUsesV2],
   );
 
   const resetWidgetControl = useCallback(
     (item) => {
-      const root = selectedTargetRoot;
-      if (root && (item.id === "widgetWidth" || item.id === "widgetHeight")) {
-        const dimension = item.id === "widgetWidth" ? "width" : "height";
-        commitDraft(
-          (prev) =>
-            omitWidgetSizeOverridePaths(
-              prev,
-              root,
-              dimension,
-              selectedWidgetUsesV2,
-            ),
-          `Reset ${item.label}`,
-        );
-        return;
-      }
-      const path = root ? `${root}.appearance.${item.path}` : item.path;
-      commitDraft((prev) => omitPath(prev, path), `Reset ${item.label}`);
+      resetAppearanceWidgetControl({
+        commitDraft,
+        item,
+        selectedTargetRoot,
+        selectedWidgetUsesV2,
+      });
     },
     [commitDraft, selectedTargetRoot, selectedWidgetUsesV2],
   );
@@ -5113,6 +5537,18 @@ export default function AppearanceCenter({
 
   const setTourHidden = useCallback((hidden) => {
     setAppearanceTourHidden(hidden, setTourVisible);
+  }, []);
+
+  const hideTour = useCallback(() => {
+    setTourVisible(false);
+  }, []);
+
+  const hideTourPermanently = useCallback(() => {
+    setTourHidden(true);
+  }, [setTourHidden]);
+
+  const deselectElement = useCallback(() => {
+    setSelectedElementId("");
   }, []);
 
   const updateZoom = useCallback(
@@ -5276,33 +5712,24 @@ export default function AppearanceCenter({
   }, []);
 
   const controlGroups = useMemo(() => {
-    if (!selectedElement) return [];
-    return getElementControlGroups(selectedElement, mode).filter((group) =>
-      group.controls.some((control) =>
-        elementSupportsControl(selectedElement, control.id),
-      ),
-    );
+    return getVisibleElementControlGroups(selectedElement, mode);
   }, [mode, selectedElement]);
 
   useEffect(() => {
-    if (mode !== "advanced") return;
-    const preferredSection = selectedElement
-      ? `control-${controlGroups[0]?.id || ""}`
-      : "advanced";
-    if (!preferredSection || preferredSection === "control-") return;
-    setOpenAdvancedSections((prev) => {
-      if (prev.includes(preferredSection))
-        return prev.length <= 2 ? prev : prev.slice(0, 2);
-      return [preferredSection, ...prev].slice(0, 2);
+    syncAdvancedControlSection({
+      controlGroups,
+      mode,
+      selectedElement,
+      setOpenAdvancedSections,
     });
   }, [controlGroups, mode, selectedElement?.id]);
 
   const visibleLayerRows = Object.values(groupedLayers);
-  const selectedWidgetOverrides = selectedTargetRoot
-    ? countObjectLeaves(getByPath(draft, selectedTargetRoot))
-    : 0;
-  const editingWholeWidget =
-    !selectedElement || ["container", "root"].includes(selectedElement.id);
+  const selectedWidgetOverrides = countSelectedWidgetOverrides(
+    draft,
+    selectedTargetRoot,
+  );
+  const editingWholeWidget = isEditingWholeWidget(selectedElement);
   const advancedSectionTabs = buildAdvancedSectionTabs({
     controlGroups,
     editingWholeWidget,
@@ -6593,183 +7020,29 @@ export default function AppearanceCenter({
             </section>
           </aside>
         ) : (
-          <aside className="ve-right-panel">
-            <div className="ve-properties-header">
-              <div>
-                <strong>
-                  {selectedElement ? selectedElement.label : selectedWidgetName}
-                </strong>
-                <span>
-                  {getModeLabel(mode)} ·{" "}
-                  {selectedLayerLocked ? "Locked" : "Editable"}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="ve-icon-button"
-                onClick={() => setSelectedElementId("")}
-                aria-label="Deselect element"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {tourVisible && (
-              <section className="ve-tour">
-                <div>
-                  <Wand2 size={18} />
-                  <strong>Quick tour</strong>
-                </div>
-                <ol>
-                  <li>Choose a widget.</li>
-                  <li>Click an element in the preview.</li>
-                  <li>Change its style here.</li>
-                  <li>Test the preview.</li>
-                  <li>Publish it to OBS.</li>
-                </ol>
-                <div>
-                  <button type="button" onClick={() => setTourVisible(false)}>
-                    Skip
-                  </button>
-                  <button type="button" onClick={() => setTourHidden(true)}>
-                    Do not show again
-                  </button>
-                </div>
-              </section>
-            )}
-
-            <div className="ve-properties-scroll">
-              <SectionTabs
-                sections={advancedSectionTabs}
-                openSections={openAdvancedSections}
-                onToggle={toggleAdvancedSection}
-              />
-
-              {editingWholeWidget && (
-                <>
-                  {!selectedWidgetUsesV2 && (
-                    <CollapsibleSection
-                      id="surfaceBackground"
-                      title="Surface and background"
-                      meta={`${selectedWidgetOverrides} custom values`}
-                      openSections={openAdvancedSections}
-                      onToggle={toggleAdvancedSection}
-                    >
-                      <div className="ve-control-grid">
-                        {QUICK_WIDGET_CONTROLS.map(renderQuickControl)}
-                      </div>
-                    </CollapsibleSection>
-                  )}
-                </>
-              )}
-
-              {selectedElement ? (
-                <>
-                  {selectedElement.kind === "mixed" && (
-                    <div className="ve-context-note">
-                      Changes apply to the selected layer only. If this is a
-                      repeated item, the widget may share the style across
-                      matching items.
-                    </div>
-                  )}
-                  {selectedLayerLocked && (
-                    <div className="ve-warning">
-                      <AlertTriangle size={15} />
-                      This layer is locked. Unlock it in the Layers panel to
-                      edit it.
-                    </div>
-                  )}
-                  {selectedStateId !== "default" && (
-                    <div className="ve-context-note">
-                      Editing the "{selectedStateId}" state for this element.
-                    </div>
-                  )}
-                  {controlGroups.length ? (
-                    controlGroups.map((group) => (
-                      <CollapsibleSection
-                        key={group.id}
-                        id={`control-${group.id}`}
-                        title={mapControlGroupTitle(group.label)}
-                        meta={group.label}
-                        openSections={openAdvancedSections}
-                        onToggle={toggleAdvancedSection}
-                      >
-                        <div className="ve-control-grid">
-                          {group.controls.map(renderElementControl)}
-                        </div>
-                      </CollapsibleSection>
-                    ))
-                  ) : (
-                    <EmptyState title="No controls for this element">
-                      This widget style does not expose editable appearance
-                      options for the selected part.
-                    </EmptyState>
-                  )}
-                </>
-              ) : (
-                <EmptyState title="No element selected">
-                  Click a title, card, image or row in the preview to edit it
-                  directly.
-                </EmptyState>
-              )}
-
-              {mode === "advanced" && editingWholeWidget && (
-                <CollapsibleSection
-                  id="spacingSizing"
-                  title="Spacing and sizing"
-                  meta="Advanced"
-                  openSections={openAdvancedSections}
-                  onToggle={toggleAdvancedSection}
-                >
-                  <div className="ve-context-note">
-                    OBS is the primary target. Device-specific overrides inherit
-                    the default value until you set one here.
-                  </div>
-                </CollapsibleSection>
-              )}
-
-              <CollapsibleSection
-                id="advanced"
-                title="Advanced"
-                meta={`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`}
-                openSections={openAdvancedSections}
-                onToggle={toggleAdvancedSection}
-              >
-                <div className="ve-warning-list">
-                  {!warnings.length && <p>No obvious design problems found.</p>}
-                  {warnings.map((warning) => (
-                    <div key={warning.id} className="ve-warning">
-                      <AlertTriangle size={15} />
-                      <span>{warning.label}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="ve-reset-row">
-                  <button
-                    type="button"
-                    onClick={resetElement}
-                    disabled={!selectedElement || selectedLayerLocked}
-                  >
-                    Reset element
-                  </button>
-                  {editingWholeWidget && (
-                    <>
-                      <button type="button" onClick={resetWidget}>
-                        Reset widget
-                      </button>
-                      <button
-                        type="button"
-                        className="danger"
-                        onClick={resetAll}
-                      >
-                        Reset all
-                      </button>
-                    </>
-                  )}
-                </div>
-              </CollapsibleSection>
-            </div>
-          </aside>
+          <AdvancedPropertiesPanel
+            advancedSectionTabs={advancedSectionTabs}
+            controlGroups={controlGroups}
+            editingWholeWidget={editingWholeWidget}
+            onDeselectElement={deselectElement}
+            onHideTour={hideTour}
+            onResetAll={resetAll}
+            onResetElement={resetElement}
+            onResetWidget={resetWidget}
+            onSetTourHidden={hideTourPermanently}
+            onToggleSection={toggleAdvancedSection}
+            openSections={openAdvancedSections}
+            renderElementControl={renderElementControl}
+            renderQuickControl={renderQuickControl}
+            selectedElement={selectedElement}
+            selectedLayerLocked={selectedLayerLocked}
+            selectedStateId={selectedStateId}
+            selectedWidgetName={selectedWidgetName}
+            selectedWidgetOverrides={selectedWidgetOverrides}
+            selectedWidgetUsesV2={selectedWidgetUsesV2}
+            tourVisible={tourVisible}
+            warnings={warnings}
+          />
         )}
       </div>
 
