@@ -619,7 +619,6 @@ function BetsWidget({ config }) {
       )}
     </div>
   );
-}
 
   if (!isStyleSeca) return widgetRoot;
 
@@ -628,5 +627,6 @@ function BetsWidget({ config }) {
       <div className="seca-bets-design">{widgetRoot}</div>
     </div>
   );
+}
 
 export default BetsWidget;
