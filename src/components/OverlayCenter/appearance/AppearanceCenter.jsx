@@ -91,13 +91,15 @@ import {
 } from "./v2/appearanceResolver";
 import {
   createAppearanceRoute,
-  getScopedAppearanceConfigValue,
-  normalizeScopedAppearanceConfig,
-  removeScopedAppearanceConfigElement,
-  removeScopedAppearanceConfigValue,
-  setScopedAppearanceConfigValue,
   validateAppearanceRoute,
 } from "./v2/appearanceRouting";
+import {
+  buildScopedAppearanceRoute,
+  getScopedConfigValueAtRoot,
+  removeScopedConfigElementAtRoot,
+  removeScopedConfigValueAtRoot,
+  setScopedConfigAtRoot,
+} from "./appearanceScopedMutations";
 import {
   getWidgetStyleCapability,
   getWidgetStyleElements,
@@ -2704,20 +2706,17 @@ function readElementControlValue({
 }) {
   if (!selectedTargetRoot || !elementId || !controlId) return undefined;
   if (selectedWidgetUsesV2) {
-    const currentConfig = normalizeScopedAppearanceConfig(
-      getByPath(draft, selectedTargetRoot) || {},
-      {
-        widgetType: selectedWidgetType,
-        widgetVariant: selectedTarget?.styleId,
-      },
+    const scopedValue = getScopedConfigValueAtRoot(
+      draft,
+      selectedTargetRoot,
+      buildScopedAppearanceRoute({
+        controlId,
+        elementId,
+        selectedStateId,
+        selectedTarget,
+        selectedWidgetType,
+      }),
     );
-    const scopedValue = getScopedAppearanceConfigValue(currentConfig, {
-      widgetType: selectedWidgetType,
-      widgetVariant: selectedTarget?.styleId,
-      elementId,
-      propertyId: controlId,
-      stateId: selectedStateId || "default",
-    });
     if (scopedValue !== undefined) return scopedValue;
   }
   const v2Path = resolveV2ElementOverridePath(
@@ -2988,60 +2987,6 @@ function resolveV2ElementOverridePath(
     return `${root}.appearanceV2.elementOverrides.${elementId}.states.${stateId}.${property}`;
   }
   return `${root}.appearanceV2.elementOverrides.${elementId}.${property}`;
-}
-
-function buildScopedAppearanceRoute({
-  controlId,
-  elementId,
-  selectedStateId,
-  selectedTarget,
-  selectedWidgetType,
-}) {
-  return {
-    widgetType: selectedWidgetType,
-    widgetVariant: selectedTarget?.styleId,
-    elementId,
-    propertyId: controlId,
-    stateId: selectedStateId || "default",
-  };
-}
-
-function normalizeScopedConfigAtRoot(source, root, route) {
-  const current = getByPath(source, root) || {};
-  return normalizeScopedAppearanceConfig(current, {
-    widgetType: route.widgetType,
-    widgetVariant: route.widgetVariant,
-  });
-}
-
-function setScopedConfigAtRoot(source, root, route, value) {
-  if (!root) return source;
-  const normalized = normalizeScopedConfigAtRoot(source, root, route);
-  return setByPath(
-    source,
-    root,
-    setScopedAppearanceConfigValue(normalized, route, value),
-  );
-}
-
-function removeScopedConfigValueAtRoot(source, root, route) {
-  if (!root) return source;
-  const normalized = normalizeScopedConfigAtRoot(source, root, route);
-  return setByPath(
-    source,
-    root,
-    removeScopedAppearanceConfigValue(normalized, route),
-  );
-}
-
-function removeScopedConfigElementAtRoot(source, root, route) {
-  if (!root) return source;
-  const normalized = normalizeScopedConfigAtRoot(source, root, route);
-  return setByPath(
-    source,
-    root,
-    removeScopedAppearanceConfigElement(normalized, route),
-  );
 }
 
 function setWidgetSizeOverridePaths(

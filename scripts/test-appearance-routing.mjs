@@ -11,6 +11,9 @@ try {
   const routing = await server.ssrLoadModule(
     "/src/components/OverlayCenter/appearance/v2/appearanceRouting.js",
   );
+  const scopedMutations = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/appearance/appearanceScopedMutations.js",
+  );
 
   const bonusBackgroundRoute = {
     widgetType: "bonus_hunt",
@@ -212,6 +215,60 @@ try {
       .imageSize,
     undefined,
     "Unsupported legacy state properties do not enter renderer-compatible explicit state",
+  );
+
+  const scopedRoot = "widgets.widget-1.styles.v12_classic_sr";
+  const selectedTarget = { styleId: "v12_classic_sr" };
+  const scopedRootRoute = scopedMutations.buildScopedAppearanceRoute({
+    controlId: "backgroundColor",
+    elementId: "slotRow",
+    selectedTarget,
+    selectedWidgetType: "bonus_hunt",
+  });
+  let rootedAppearance = scopedMutations.setScopedConfigAtRoot(
+    {},
+    scopedRoot,
+    scopedRootRoute,
+    "#abcdef",
+  );
+  assert.equal(
+    scopedMutations.getScopedConfigValueAtRoot(
+      rootedAppearance,
+      scopedRoot,
+      scopedRootRoute,
+    ),
+    "#abcdef",
+    "Appearance page scoped helper writes canonical values at the selected root",
+  );
+  assert.equal(
+    rootedAppearance.widgets["widget-1"].styles.v12_classic_sr
+      .__appearanceExplicitSubElements.slotRow.backgroundColor,
+    "#abcdef",
+    "Appearance page scoped helper keeps renderer-compatible values at the selected root",
+  );
+  rootedAppearance = scopedMutations.removeScopedConfigValueAtRoot(
+    rootedAppearance,
+    scopedRoot,
+    scopedRootRoute,
+  );
+  assert.equal(
+    scopedMutations.getScopedConfigValueAtRoot(
+      rootedAppearance,
+      scopedRoot,
+      scopedRootRoute,
+    ),
+    undefined,
+    "Appearance page scoped helper resets selected-root values",
+  );
+  assert.equal(
+    scopedMutations.setScopedConfigAtRoot(
+      rootedAppearance,
+      "",
+      scopedRootRoute,
+      "#ffffff",
+    ),
+    rootedAppearance,
+    "Appearance page scoped helper ignores missing roots",
   );
 
   assert.notEqual(
