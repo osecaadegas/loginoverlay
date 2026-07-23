@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../config/supabaseClient';
 
@@ -15,6 +15,76 @@ function shouldPollRedemptionNotifications() {
   return typeof window !== 'undefined' && window.location.pathname === '/admin-overlay';
 }
 
+function isTwitchAuthUser(authUser) {
+  return authUser?.app_metadata?.provider === 'twitch';
+}
+
+function getTwitchUsername(authUser) {
+  return authUser.user_metadata?.preferred_username
+    || authUser.user_metadata?.name
+    || authUser.user_metadata?.user_name
+    || null;
+}
+
+async function getExistingConnection(userId) {
+  const { data: existing, error } = await supabase
+    .from('streamelements_connections')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('Error checking existing connection:', error);
+  }
+
+  return existing || null;
+}
+
+async function getStreamElementsCredentials(userId) {
+  const { data: seRow } = await supabase
+    .from('streamelements_connections')
+    .select('se_channel_id, se_jwt_token')
+    .eq('user_id', userId)
+    .single();
+
+  if (seRow?.se_channel_id && seRow?.se_jwt_token) {
+    return {
+      seChannelId: seRow.se_channel_id,
+      seJwtToken: seRow.se_jwt_token,
+    };
+  }
+
+  const { data: streamerCreds } = await supabase.rpc('get_streamer_se_credentials');
+  const credentials = streamerCreds?.[0];
+  return {
+    seChannelId: credentials?.channel_id || null,
+    seJwtToken: credentials?.jwt_token || null,
+  };
+}
+
+async function fetchOrCreatePoints(seChannelId, seJwtToken, twitchUsername) {
+  const requestOptions = {
+    headers: {
+      'Authorization': `Bearer ${seJwtToken}`,
+      'Accept': 'application/json'
+    }
+  };
+  const response = await fetch(
+    `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${twitchUsername}`,
+    requestOptions
+  );
+
+  if (response.ok) return response.json();
+  if (response.status !== 404) return null;
+
+  const createResponse = await fetch(
+    `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${twitchUsername}/500`,
+    { ...requestOptions, method: 'PUT' }
+  );
+
+  return createResponse.ok ? createResponse.json() : { points: 500 };
+}
+
 export function useStreamElements() {
   const context = useContext(StreamElementsContext);
   if (!context) {
@@ -29,7 +99,6 @@ export function StreamElementsProvider({ children }) {
   const [points, setPoints] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [redemptions, setRedemptions] = useState([]);
   const [latestRedemption, setLatestRedemption] = useState(null);
   const [autoConnecting, setAutoConnecting] = useState(false);
   const didAutoConnect = useRef(false);
@@ -57,108 +126,29 @@ export function StreamElementsProvider({ children }) {
   const autoConnectTwitchUser = async () => {
     setAutoConnecting(true);
     try {
-      // Check if user logged in via Twitch
       const { data: { user: authUser } } = await supabase.auth.getUser();
-      
-      if (!authUser?.app_metadata?.provider || authUser.app_metadata.provider !== 'twitch') {
-        setAutoConnecting(false);
-        return;
-      }
+      if (!isTwitchAuthUser(authUser)) return;
 
-      // Check if already connected
-      const { data: existing, error: checkError } = await supabase
-        .from('streamelements_connections')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Error checking existing connection:', checkError);
-      }
+      const existing = await getExistingConnection(user.id);
 
       if (existing) {
         setSeAccount(existing);
         await fetchPoints(existing.se_channel_id, existing.se_jwt_token, existing.se_username);
-        setAutoConnecting(false);
         return;
       }
 
-      // Get Twitch username from user metadata
-      const twitchUsername = authUser.user_metadata?.preferred_username || 
-                            authUser.user_metadata?.name ||
-                            authUser.user_metadata?.user_name;
+      const twitchUsername = getTwitchUsername(authUser);
+      if (!twitchUsername) return;
 
-      if (!twitchUsername) {
-        setAutoConnecting(false);
-        return;
-      }
-
-      // Look up SE credentials: first try this user's own row, then get admin's via RPC
-      let seChannelId = null;
-      let seJwtToken = null;
-      
-      const { data: seRow } = await supabase
-        .from('streamelements_connections')
-        .select('se_channel_id, se_jwt_token')
-        .eq('user_id', user.id)
-        .single();
-
-      if (seRow?.se_channel_id && seRow?.se_jwt_token) {
-        seChannelId = seRow.se_channel_id;
-        seJwtToken = seRow.se_jwt_token;
-      } else {
-        // Fallback: get admin's SE credentials via RPC (bypasses RLS)
-        const { data: streamerCreds } = await supabase.rpc('get_streamer_se_credentials');
-        
-        if (streamerCreds && streamerCreds.length > 0) {
-          seChannelId = streamerCreds[0].channel_id;
-          seJwtToken = streamerCreds[0].jwt_token;
-        }
-      }
+      const { seChannelId, seJwtToken } = await getStreamElementsCredentials(user.id);
 
       if (!seChannelId || !seJwtToken) {
         console.log('⚠️ No SE credentials found. Streamer needs to configure SE.');
-        setAutoConnecting(false);
         return;
       }
 
-      // Try to fetch points using Twitch username
-      const response = await fetch(
-        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${twitchUsername}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${seJwtToken}`,
-            'Accept': 'application/json'
-          }
-        }
-      );
-
-      let pointsData = null;
-
-      if (response.ok) {
-        pointsData = await response.json();
-      } else if (response.status === 404) {
-        // User doesn't exist in SE yet - create them with 500 starting points
-        const createResponse = await fetch(
-          `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${twitchUsername}/500`,
-          {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${seJwtToken}`,
-              'Accept': 'application/json'
-            }
-          }
-        );
-
-        if (createResponse.ok) {
-          pointsData = await createResponse.json();
-        } else {
-          pointsData = { points: 500 };
-        }
-      } else {
-        setAutoConnecting(false);
-        return;
-      }
+      const pointsData = await fetchOrCreatePoints(seChannelId, seJwtToken, twitchUsername);
+      if (!pointsData) return;
 
       // Save connection to database with THIS user's own SE creds
       const { error: insertError } = await supabase
@@ -512,7 +502,7 @@ export function StreamElementsProvider({ children }) {
     return () => clearInterval(interval);
   }, [user?.id, seAccount?.id]);
 
-  const value = {
+  const value = useMemo(() => ({
     seAccount,
     points,
     loading,
@@ -526,7 +516,19 @@ export function StreamElementsProvider({ children }) {
     updateUserPoints,
     isConnected: !!seAccount,
     autoConnecting
-  };
+  }), [
+    autoConnecting,
+    error,
+    latestRedemption,
+    linkAccount,
+    loading,
+    points,
+    redeemPoints,
+    refreshPoints,
+    seAccount,
+    unlinkAccount,
+    updateUserPoints,
+  ]);
 
   return (
     <StreamElementsContext.Provider value={value}>

@@ -9,6 +9,21 @@ let cacheTimestamp = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const SLOT_CATALOG_SELECT = 'id, name, provider, image, rtp, volatility, max_win_multiplier, status, is_featured, sort_order';
 
+function getRandomIndex(maxExclusive) {
+  const values = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(values);
+  return values[0] % maxExclusive;
+}
+
+function shuffleSlots(slots) {
+  const shuffled = [...slots];
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const swapIndex = getRandomIndex(index + 1);
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
 /**
  * Fetch all slots from Supabase with caching
  * @returns {Promise<Array>} Array of slot objects
@@ -75,7 +90,7 @@ export async function findSlotByName(slotName) {
 export async function getAllProviders() {
   const slots = await getAllSlots();
   const providers = [...new Set(slots.map(slot => slot.provider))];
-  return providers.sort();
+  return providers.sort((left, right) => left.localeCompare(right));
 }
 
 /**
@@ -105,7 +120,7 @@ export async function getRandomSlots(count = 10, providers = null) {
   }
   
   // Shuffle and take the requested count
-  const shuffled = [...slots].sort(() => 0.5 - Math.random());
+  const shuffled = shuffleSlots(slots);
   return shuffled.slice(0, count);
 }
 

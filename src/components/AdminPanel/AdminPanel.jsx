@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
-import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PERMISSIONS, getUserRoles, addUserRole, removeUserRole } from '../../utils/adminUtils';
+import { getAllUsers, revokeUserAccess, deleteUser, MODERATOR_PERMISSIONS, addUserRole, removeUserRole } from '../../utils/adminUtils';
 import { supabase } from '../../config/supabaseClient';
-import { DEPOSIT_METHODS } from '../../utils/depositMethods';
 import './AdminPanel.css';
 import './AdminPanel.new.css';
 import ApiKeysAdmin from './ApiKeysAdmin';
@@ -13,34 +12,12 @@ import {
   StatsCard,
   StatsGrid,
   ConfirmButton,
-  StickyToolbar,
-  ToolbarGroup,
-  ToolbarButton,
-  ToolbarSearch,
-  MasterDetail,
-  DetailSection,
-  DetailField,
-  FormPanel,
-  FormSection,
-  StatGrid,
-  StatField,
-  FormRow,
-  FormField,
-  ImagePreview,
-  InfoCard,
-  ToggleField,
-  QuickStats,
-  Divider,
-  ControlBlock,
-  ControlInput,
-  LiveOutput,
-  InputGrid,
 } from './components';
 
 // Valid tab IDs for URL deep linking
 const DEFAULT_ADMIN_TAB = 'users';
-const VALID_TABS = ['users', 'offers', 'apikeys'];
-const getValidAdminTab = (tab) => (VALID_TABS.includes(tab) ? tab : DEFAULT_ADMIN_TAB);
+const VALID_TABS = new Set(['users', 'offers', 'apikeys']);
+const getValidAdminTab = (tab) => (VALID_TABS.has(tab) ? tab : DEFAULT_ADMIN_TAB);
 const SLOT_CATALOG_SELECT = 'id, name, provider, image, rtp, volatility, max_win_multiplier, status, is_featured, sort_order';
 
 export default function AdminPanel() {
@@ -48,8 +25,6 @@ export default function AdminPanel() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Pending confirmation state (replaces confirm() dialogs)
-  const [pendingAction, setPendingAction] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -233,21 +208,6 @@ export default function AdminPanel() {
     setLoading(false);
   };
 
-  const handleRoleChange = async (userId, role, expiresAt, moderatorPermissions = null) => {
-    setError('');
-    setSuccess('');
-
-    const { error } = await updateUserRole(userId, role, expiresAt, moderatorPermissions);
-
-    if (error) {
-      setError('Failed to update role: ' + error.message);
-    } else {
-      setSuccess('User role updated successfully!');
-      setEditingUser(null);
-      loadUsers();
-    }
-  };
-
   const handleRevokeAccess = async (userId) => {
     setError('');
     setSuccess('');
@@ -286,7 +246,7 @@ export default function AdminPanel() {
   };
 
   const handleAddRole = async () => {
-    if (!editingUser || !editingUser.newRole) return;
+    if (!editingUser?.newRole) return;
 
     setError('');
     setSuccess('');
@@ -294,7 +254,7 @@ export default function AdminPanel() {
     let expiresAt = null;
     if (editingUser.newRoleExpiryDays && editingUser.newRoleExpiryDays > 0) {
       const date = new Date();
-      date.setDate(date.getDate() + parseInt(editingUser.newRoleExpiryDays));
+      date.setDate(date.getDate() + Number.parseInt(editingUser.newRoleExpiryDays, 10));
       expiresAt = date.toISOString();
     }
 
@@ -436,33 +396,6 @@ export default function AdminPanel() {
     });
   };
 
-  const handleOfferFormChange = (field, value) => {
-    setOfferFormData({ ...offerFormData, [field]: value });
-  };
-
-  const saveOffer = async () => {
-    setError('');
-    setSuccess('');
-
-    if (!offerFormData.casino_name || !offerFormData.title || !offerFormData.image_url) {
-      setError('Please fill in required fields: Casino Name, Title, and Image URL');
-      return;
-    }
-
-    try {
-      if (editingOffer) {
-        // Update existing offer
-        const { error } = await supabase
-          .from('casino_offers')
-          .update(offerFormData)
-          .eq('id', editingOffer.id);
-
-        if (error) throw error;
-        setSuccess('Offer updated successfully!');
-      } else {
-        // Create new offer
-        const { error } = await supabase
-          .from('casino_offers')
           .insert([{ ...offerFormData, created_by: (await supabase.auth.getUser()).data.user?.id }]);
 
         if (error) throw error;
@@ -572,9 +505,9 @@ export default function AdminPanel() {
     try {
       const prizeData = {
         ...prizeFormData,
-        se_points: parseInt(prizeFormData.se_points) || 0,
-        probability: parseInt(prizeFormData.probability) || 1,
-        display_order: parseInt(prizeFormData.display_order) || 0
+        se_points: Number.parseInt(prizeFormData.se_points, 10) || 0,
+        probability: Number.parseInt(prizeFormData.probability, 10) || 1,
+        display_order: Number.parseInt(prizeFormData.display_order, 10) || 0
       };
 
       let result;
@@ -886,9 +819,9 @@ export default function AdminPanel() {
 
     try {
       // Calculate auto values
-      const startVal = parseFloat(guessSessionFormData.start_value) || 0;
-      const finalBal = guessSessionFormData.final_balance ? parseFloat(guessSessionFormData.final_balance) : null;
-      const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+      const startVal = Number.parseFloat(guessSessionFormData.start_value) || 0;
+      const finalBal = guessSessionFormData.final_balance ? Number.parseFloat(guessSessionFormData.final_balance) : null;
+      const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (Number.parseFloat(s.bet_value) || 0), 0);
 
       // BE Multiplier = (Final Balance / Start Value) / Total Bets
       let beMultiplier = 1.0;
@@ -943,10 +876,10 @@ export default function AdminPanel() {
           slot_name: slot.slot_name,
           slot_image_url: slot.slot_image_url,
           provider: slot.provider,
-          bet_value: parseFloat(slot.bet_value) || 0,
+          bet_value: Number.parseFloat(slot.bet_value) || 0,
           is_super: slot.is_super || false,
-          bonus_win: slot.bonus_win ? parseFloat(slot.bonus_win) : null,
-          multiplier: slot.multiplier ? parseFloat(slot.multiplier) : null,
+          bonus_win: slot.bonus_win ? Number.parseFloat(slot.bonus_win) : null,
+          multiplier: slot.multiplier ? Number.parseFloat(slot.multiplier) : null,
           display_order: index
         }));
 
@@ -1047,11 +980,11 @@ export default function AdminPanel() {
         slot_name: slotFormData.slot_name,
         slot_image_url: slotFormData.slot_image_url,
         provider: slotFormData.provider,
-        bet_value: parseFloat(slotFormData.bet_value) || 0,
+        bet_value: Number.parseFloat(slotFormData.bet_value) || 0,
         is_super: slotFormData.is_super,
-        bonus_win: slotFormData.bonus_win ? parseFloat(slotFormData.bonus_win) : null,
-        multiplier: slotFormData.multiplier ? parseFloat(slotFormData.multiplier) : null,
-        display_order: parseInt(slotFormData.display_order) || 0
+        bonus_win: slotFormData.bonus_win ? Number.parseFloat(slotFormData.bonus_win) : null,
+        multiplier: slotFormData.multiplier ? Number.parseFloat(slotFormData.multiplier) : null,
+        display_order: Number.parseInt(slotFormData.display_order, 10) || 0
       };
 
       let result;
@@ -1074,7 +1007,7 @@ export default function AdminPanel() {
 
       // Update amount expended on session
       const totalBets = [...guessBalanceSlots, ...(editingSlot ? [] : [slotData])]
-        .reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+        .reduce((sum, s) => sum + (Number.parseFloat(s.bet_value) || 0), 0);
       await supabase
         .from('guess_balance_sessions')
         .update({ amount_expended: totalBets })
@@ -1143,8 +1076,8 @@ export default function AdminPanel() {
       const { error } = await supabase
         .from('guess_balance_slots')
         .update({
-          bonus_win: slot.bonus_win ? parseFloat(slot.bonus_win) : null,
-          multiplier: slot.multiplier ? parseFloat(slot.multiplier) : null
+          bonus_win: slot.bonus_win ? Number.parseFloat(slot.bonus_win) : null,
+          multiplier: slot.multiplier ? Number.parseFloat(slot.multiplier) : null
         })
         .eq('id', slot.id);
 
@@ -2656,11 +2589,11 @@ export default function AdminPanel() {
                       <div className="session-stats">
                         <div className="stat">
                           <span className="label">Start:</span>
-                          <span className="value">€{parseFloat(session.start_value || 0).toFixed(2)}</span>
+                          <span className="value">€{Number.parseFloat(session.start_value || 0).toFixed(2)}</span>
                         </div>
                         <div className="stat">
                           <span className="label">Expended:</span>
-                          <span className="value">€{parseFloat(session.amount_expended || 0).toFixed(2)}</span>
+                          <span className="value">€{Number.parseFloat(session.amount_expended || 0).toFixed(2)}</span>
                         </div>
                         <div className="stat">
                           <span className="label">BE x:</span>
@@ -2669,7 +2602,7 @@ export default function AdminPanel() {
                         {session.final_balance !== null && (
                           <div className="stat highlight">
                             <span className="label">Final:</span>
-                            <span className="value">€{parseFloat(session.final_balance || 0).toFixed(2)}</span>
+                            <span className="value">€{Number.parseFloat(session.final_balance || 0).toFixed(2)}</span>
                           </div>
                         )}
                       </div>
@@ -2762,12 +2695,12 @@ export default function AdminPanel() {
                           <h4>{slot.slot_name}</h4>
                           {slot.provider && <span className="provider">{slot.provider}</span>}
                           <div className="slot-stats">
-                            <span>Bet: €{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
+                            <span>Bet: €{Number.parseFloat(slot.bet_value || 0).toFixed(2)}</span>
                             {slot.is_super && <span className="super-tag">⭐ SUPER</span>}
                           </div>
                           {slot.bonus_win !== null && (
                             <div className="slot-results">
-                              <span>Win: €{parseFloat(slot.bonus_win || 0).toFixed(2)}</span>
+                              <span>Win: €{Number.parseFloat(slot.bonus_win || 0).toFixed(2)}</span>
                               {slot.multiplier && <span>{slot.multiplier}x</span>}
                             </div>
                           )}
@@ -2930,7 +2863,7 @@ export default function AdminPanel() {
                       <input
                         type="number"
                         step="0.01"
-                        value={sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0).toFixed(2)}
+                        value={sessionSlotsInModal.reduce((sum, s) => sum + (Number.parseFloat(s.bet_value) || 0), 0).toFixed(2)}
                         readOnly
                         className="readonly-input"
                       />
@@ -2942,9 +2875,9 @@ export default function AdminPanel() {
                         type="number"
                         step="0.01"
                         value={(() => {
-                          const startVal = parseFloat(guessSessionFormData.start_value) || 0;
-                          const finalBal = parseFloat(guessSessionFormData.final_balance) || 0;
-                          const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+                          const startVal = Number.parseFloat(guessSessionFormData.start_value) || 0;
+                          const finalBal = Number.parseFloat(guessSessionFormData.final_balance) || 0;
+                          const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (Number.parseFloat(s.bet_value) || 0), 0);
                           if (startVal > 0 && totalBets > 0 && finalBal > 0) {
                             return ((finalBal / startVal) / totalBets).toFixed(2);
                           }
@@ -3023,7 +2956,7 @@ export default function AdminPanel() {
                             type="number"
                             step="0.01"
                             value={newSlotBetValue}
-                            onChange={(e) => setNewSlotBetValue(parseFloat(e.target.value) || 0)}
+                            onChange={(e) => setNewSlotBetValue(Number.parseFloat(e.target.value) || 0)}
                             placeholder="1.00"
                             className="bet-input"
                           />
@@ -3075,7 +3008,7 @@ export default function AdminPanel() {
                   <div className="session-slots-list">
                     <div className="slots-list-header">
                       <span>Added Slots ({sessionSlotsInModal.length})</span>
-                      <span className="total-bets">Total Bets: €{sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0).toFixed(2)}</span>
+                      <span className="total-bets">Total Bets: €{sessionSlotsInModal.reduce((sum, s) => sum + (Number.parseFloat(s.bet_value) || 0), 0).toFixed(2)}</span>
                     </div>
 
                     {sessionSlotsInModal.length === 0 ? (
@@ -3096,7 +3029,7 @@ export default function AdminPanel() {
                               <span className="added-slot-name">{slot.slot_name}</span>
                               <span className="added-slot-provider">{slot.provider}</span>
                             </div>
-                            <span className="added-slot-bet">€{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
+                            <span className="added-slot-bet">€{Number.parseFloat(slot.bet_value || 0).toFixed(2)}</span>
                             {slot.is_super && <span className="super-badge">⭐</span>}
                             <button
                               type="button"
@@ -3326,7 +3259,7 @@ export default function AdminPanel() {
                           </div>
                           {currentSlot.bet_value && currentSlot.bonus_win && (
                             <div className="auto-multiplier">
-                              📊 Multiplier: {(parseFloat(currentSlot.bonus_win) / parseFloat(currentSlot.bet_value)).toFixed(2)}x
+                              📊 Multiplier: {(Number.parseFloat(currentSlot.bonus_win) / Number.parseFloat(currentSlot.bet_value)).toFixed(2)}x
                             </div>
                           )}
                         </div>
@@ -3399,7 +3332,7 @@ export default function AdminPanel() {
                           <tr key={guess.id} className={guess.is_winner ? 'winner-row' : ''}>
                             <td>{index + 1}</td>
                             <td>{guess.display_name || 'Anonymous'}</td>
-                            <td className="guess-amount">€{parseFloat(guess.guessed_balance).toFixed(2)}</td>
+                            <td className="guess-amount">€{Number.parseFloat(guess.guessed_balance).toFixed(2)}</td>
                             <td className="guess-time">{new Date(guess.guessed_at).toLocaleString()}</td>
                             <td>{guess.is_winner ? '🏆 Winner!' : '-'}</td>
                           </tr>

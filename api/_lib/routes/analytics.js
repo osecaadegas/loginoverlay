@@ -108,8 +108,8 @@ async function requireAdmin(req, res, supabase, handler) {
     .eq('user_id', user.id)
     .eq('is_active', true);
 
-  const roleNames = (roles || []).map(r => r.role);
-  if (!roleNames.includes('admin') && !roleNames.includes('superadmin')) {
+  const roleNames = new Set((roles || []).map(r => r.role));
+  if (!roleNames.has('admin') && !roleNames.has('superadmin')) {
     return res.status(403).json({ error: 'Admin access required' });
   }
 
@@ -120,11 +120,8 @@ async function requireAdmin(req, res, supabase, handler) {
    GEO LOOKUP (cached)
    ═══════════════════════════════════════════════════════════ */
 
-async function getGeoForIp(ip, supabase) {
-  if (!ip) return {};
-
-  // Check cache
-  let { data: cached, error: cacheError } = await supabase
+async function getCachedGeo(ip, supabase) {
+  const { data: cached, error: cacheError } = await supabase
     .from('analytics_geo_cache')
     .select('*')
     .eq('ip_address', ip)
@@ -136,61 +133,78 @@ async function getGeoForIp(ip, supabase) {
       .select('*')
       .eq('ip_address', ip)
       .maybeSingle();
-    cached = legacy.data;
+    return legacy.data || null;
   }
 
-  if (cached) return cached;
+  return cached || null;
+}
 
-  // Fetch from API
-  let geo = {};
+function mapIpWhoGeo(ip, data) {
+  if (data.success === false) return {};
+  return {
+    ip_address: ip,
+    country: data.country || null,
+    country_code: data.country_code || null,
+    city: data.city || null,
+    region: data.region || null,
+    isp: data.connection?.isp || null,
+    latitude: data.latitude || null,
+    longitude: data.longitude || null,
+  };
+}
+
+function mapIpApiGeo(ip, data) {
+  if (data.error) return {};
+  return {
+    ip_address: ip,
+    country: data.country_name || null,
+    country_code: data.country_code || null,
+    city: data.city || null,
+    region: data.region || null,
+    isp: data.org || null,
+    latitude: data.latitude || null,
+    longitude: data.longitude || null,
+  };
+}
+
+async function fetchIpWhoGeo(ip) {
   try {
     const resp = await fetch(`https://ipwho.is/${ip}`);
-    if (resp.ok) {
-      const d = await resp.json();
-      if (d.success !== false) {
-        geo = {
-          ip_address: ip,
-          country: d.country || null,
-          country_code: d.country_code || null,
-          city: d.city || null,
-          region: d.region || null,
-          isp: d.connection?.isp || null,
-          latitude: d.latitude || null,
-          longitude: d.longitude || null,
-        };
-      }
-    }
-  } catch { /* fallback below */ }
-
-  if (!geo.country) {
-    try {
-      const resp = await fetch(`https://ipapi.co/${ip}/json/`);
-      if (resp.ok) {
-        const d = await resp.json();
-        if (!d.error) {
-          geo = {
-            ip_address: ip,
-            country: d.country_name || null,
-            country_code: d.country_code || null,
-            city: d.city || null,
-            region: d.region || null,
-            isp: d.org || null,
-            latitude: d.latitude || null,
-            longitude: d.longitude || null,
-          };
-        }
-      }
-    } catch { /* ignore */ }
+    if (!resp.ok) return {};
+    return mapIpWhoGeo(ip, await resp.json());
+  } catch {
+    return {};
   }
+}
 
-  // Cache result
-  if (geo.ip_address) {
-    const cacheResult = await supabase.from('analytics_geo_cache').upsert(geo, { onConflict: 'ip_address' }).select();
-    if (cacheResult.error && isMissingRelationError(cacheResult.error)) {
-      const { fetched_at, ...legacyGeo } = { ...geo, fetched_at: new Date().toISOString() };
-      await supabase.from('geo_cache').upsert({ ...legacyGeo, cached_at: fetched_at }, { onConflict: 'ip_address' }).select();
-    }
+async function fetchIpApiGeo(ip) {
+  try {
+    const resp = await fetch(`https://ipapi.co/${ip}/json/`);
+    if (!resp.ok) return {};
+    return mapIpApiGeo(ip, await resp.json());
+  } catch {
+    return {};
   }
+}
+
+async function cacheGeoResult(geo, supabase) {
+  if (!geo.ip_address) return;
+  const cacheResult = await supabase.from('analytics_geo_cache').upsert(geo, { onConflict: 'ip_address' }).select();
+  if (cacheResult.error && isMissingRelationError(cacheResult.error)) {
+    const { fetched_at, ...legacyGeo } = { ...geo, fetched_at: new Date().toISOString() };
+    await supabase.from('geo_cache').upsert({ ...legacyGeo, cached_at: fetched_at }, { onConflict: 'ip_address' }).select();
+  }
+}
+
+async function getGeoForIp(ip, supabase) {
+  if (!ip) return {};
+
+  const cached = await getCachedGeo(ip, supabase);
+  if (cached) return cached;
+
+  const primaryGeo = await fetchIpWhoGeo(ip);
+  const geo = primaryGeo.country ? primaryGeo : await fetchIpApiGeo(ip);
+  await cacheGeoResult(geo, supabase);
 
   return geo;
 }
@@ -260,7 +274,8 @@ function compactIp(ip) {
   return value;
 }
 
-function normalizeEventPayload(input = {}, req) {
+function normalizeEventPayload(input, req) {
+  input ||= {};
   const eventName = normalizeAnalyticsEventName(input.event_name || input.event_type);
   const pageUrl = input.page_url || input.route || null;
   const properties = sanitizeAnalyticsProperties(input.properties || input.metadata || {});
@@ -364,7 +379,7 @@ function minimalLegacyEventRow(row) {
 
 function legacySessionPayload({ body, fingerprint, ip, ua, parsed, geo, referrer, referrer_source }) {
   return {
-    session_token: body.session_token || `legacy_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    session_token: body.session_token || `legacy_${randomUUID()}`,
     user_id: body.user_id || null,
     ip_address: compactIp(ip),
     user_agent: ua,
@@ -384,12 +399,12 @@ function legacySessionPayload({ body, fingerprint, ip, ua, parsed, geo, referrer
   };
 }
 
-function sumRows(rows = [], key) {
-  return rows.reduce((sum, row) => sum + (Number(row?.[key]) || 0), 0);
+function sumRows(rows, key) {
+  return (rows || []).reduce((sum, row) => sum + (Number(row?.[key]) || 0), 0);
 }
 
-function countBy(rows = [], key) {
-  return rows.reduce((acc, row) => {
+function countBy(rows, key) {
+  return (rows || []).reduce((acc, row) => {
     const value = row?.[key] || 'unknown';
     acc[value] = (acc[value] || 0) + 1;
     return acc;
@@ -456,13 +471,12 @@ function topCountRows(map, labelKey, valueKey, limit = 10) {
 
 function buildDayBuckets(startIso, endIso) {
   const buckets = [];
-  const cursor = new Date(startIso);
+  const start = new Date(startIso);
   const end = new Date(endIso);
-  cursor.setUTCHours(0, 0, 0, 0);
+  start.setUTCHours(0, 0, 0, 0);
   end.setUTCHours(0, 0, 0, 0);
-  while (cursor <= end) {
-    buckets.push(cursor.toISOString().slice(0, 10));
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  for (let timestamp = start.getTime(); timestamp <= end.getTime(); timestamp += 86400000) {
+    buckets.push(new Date(timestamp).toISOString().slice(0, 10));
   }
   return buckets;
 }
@@ -585,65 +599,85 @@ function normalizeEventRow(row = {}) {
   };
 }
 
-function synthesizeVisitors(sessions = [], events = []) {
-  const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
+function updateVisitorSeenRange(visitor, time) {
+  if (!time) return;
+  if (!visitor.first_seen_at || time < visitor.first_seen_at) visitor.first_seen_at = time;
+  if (!visitor.last_seen_at || time > visitor.last_seen_at) visitor.last_seen_at = time;
+}
+
+function getSessionVisitor(visitors, key, session, time) {
+  if (visitors.has(key)) return visitors.get(key);
+  const visitor = {
+    id: key,
+    fingerprint: session.device_fingerprint || session.gpu_fingerprint || session.session_token || key,
+    twitch_username: null,
+    twitch_avatar: null,
+    total_sessions: 0,
+    total_events: 0,
+    first_seen_at: time,
+    last_seen_at: time,
+    is_bot: false,
+    user_id: session.user_id || null,
+    user_email: session.user_email || null,
+    country: session.country || null,
+    city: session.city || null,
+    ip_address: session.ip_address || null,
+  };
+  visitors.set(key, visitor);
+  return visitor;
+}
+
+function getEventVisitor(visitors, key, event, time) {
+  if (visitors.has(key)) return visitors.get(key);
+  const metadata = safeMetadata(event);
+  const visitor = {
+    id: key,
+    fingerprint: metadata.anonymous_id || key,
+    twitch_username: null,
+    twitch_avatar: null,
+    total_sessions: 0,
+    total_events: 0,
+    first_seen_at: time,
+    last_seen_at: time,
+    is_bot: false,
+    user_id: event.user_id || null,
+    country: event.country || null,
+    city: event.city || null,
+    ip_address: event.ip_address || null,
+  };
+  visitors.set(key, visitor);
+  return visitor;
+}
+
+function addSessionVisitor(visitors, session) {
+  const key = sessionVisitorKey(session);
+  if (!key) return;
+  const time = analyticsSessionTime(session);
+  const visitor = getSessionVisitor(visitors, key, session, time);
+  visitor.total_sessions += 1;
+  visitor.total_events += Number(session.event_count || 0);
+  visitor.user_id ||= session.user_id || null;
+  visitor.user_email ||= session.user_email || null;
+  updateVisitorSeenRange(visitor, time);
+}
+
+function addEventVisitor(visitors, event, sessionKeys) {
+  const key = eventVisitorKey(event, sessionKeys);
+  if (!key) return;
+  const time = analyticsEventTime(event);
+  const visitor = getEventVisitor(visitors, key, event, time);
+  visitor.total_events += 1;
+  visitor.user_id ||= event.user_id || null;
+  updateVisitorSeenRange(visitor, time);
+}
+
+function synthesizeVisitors(sessions, events) {
+  const safeSessions = sessions || [];
+  const sessionKeys = new Map(safeSessions.map(session => [session.id, sessionVisitorKey(session)]));
   const visitors = new Map();
 
-  for (const session of sessions) {
-    const key = sessionVisitorKey(session);
-    if (!key) continue;
-    const time = analyticsSessionTime(session);
-    const existing = visitors.get(key) || {
-      id: key,
-      fingerprint: session.device_fingerprint || session.gpu_fingerprint || session.session_token || key,
-      twitch_username: null,
-      twitch_avatar: null,
-      total_sessions: 0,
-      total_events: 0,
-      first_seen_at: time,
-      last_seen_at: time,
-      is_bot: false,
-      user_id: session.user_id || null,
-      user_email: session.user_email || null,
-      country: session.country || null,
-      city: session.city || null,
-      ip_address: session.ip_address || null,
-    };
-    existing.total_sessions += 1;
-    existing.total_events += Number(session.event_count || 0);
-    if (time && (!existing.first_seen_at || time < existing.first_seen_at)) existing.first_seen_at = time;
-    if (time && (!existing.last_seen_at || time > existing.last_seen_at)) existing.last_seen_at = time;
-    existing.user_id ||= session.user_id || null;
-    existing.user_email ||= session.user_email || null;
-    visitors.set(key, existing);
-  }
-
-  for (const event of events) {
-    const key = eventVisitorKey(event, sessionKeys);
-    if (!key) continue;
-    const time = analyticsEventTime(event);
-    const metadata = safeMetadata(event);
-    const existing = visitors.get(key) || {
-      id: key,
-      fingerprint: metadata.anonymous_id || key,
-      twitch_username: null,
-      twitch_avatar: null,
-      total_sessions: 0,
-      total_events: 0,
-      first_seen_at: time,
-      last_seen_at: time,
-      is_bot: false,
-      user_id: event.user_id || null,
-      country: event.country || null,
-      city: event.city || null,
-      ip_address: event.ip_address || null,
-    };
-    existing.total_events += 1;
-    if (time && (!existing.first_seen_at || time < existing.first_seen_at)) existing.first_seen_at = time;
-    if (time && (!existing.last_seen_at || time > existing.last_seen_at)) existing.last_seen_at = time;
-    existing.user_id ||= event.user_id || null;
-    visitors.set(key, existing);
-  }
+  safeSessions.forEach(session => addSessionVisitor(visitors, session));
+  (events || []).forEach(event => addEventVisitor(visitors, event, sessionKeys));
 
   return Array.from(visitors.values()).sort((a, b) => String(b.last_seen_at || '').localeCompare(String(a.last_seen_at || '')));
 }
@@ -652,11 +686,9 @@ function synthesizeVisitors(sessions = [], events = []) {
    FRAUD DETECTION
    ═══════════════════════════════════════════════════════════ */
 
-async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, event_type }) {
-  let totalScore = 0;
-  const flags = [];
+const BOT_PATTERN_EVENT_TYPES = new Set(['click', 'offer_click']);
 
-  // Load config (use defaults if none)
+async function loadFraudConfig(supabase) {
   let { data: cfg, error: cfgError } = await supabase
     .from('analytics_config')
     .select('*')
@@ -672,12 +704,14 @@ async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, ev
     cfg = legacyConfig.data?.value || legacyConfig.data || null;
   }
 
-  const maxClicks10s = cfg?.max_clicks_10s || 15;
-  const maxSameOffer1m = cfg?.max_same_offer_1m || 5;
-  const maxSessionsIp1h = cfg?.max_sessions_ip_1h || 10;
-  const threshold = cfg?.risk_score_threshold || 60;
+  return cfg || {};
+}
 
-  // Rule 1: Too many events in 10 seconds
+function createFraudFlag(rule_name, reason, risk_score, event_count, time_window) {
+  return { rule_name, reason, risk_score, event_count, time_window };
+}
+
+async function checkRapidClicks(supabase, session_id, maxClicks10s) {
   const tenSecsAgo = new Date(Date.now() - 10000).toISOString();
   const { count: recentEvents } = await supabase
     .from('analytics_events')
@@ -685,104 +719,124 @@ async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, ev
     .eq('session_id', session_id)
     .gte('created_at', tenSecsAgo);
 
-  if (recentEvents >= maxClicks10s) {
-    totalScore += 40;
-    flags.push({
-      rule_name: 'rapid_clicks',
-      reason: `${recentEvents} events in 10 seconds (threshold: ${maxClicks10s})`,
-      risk_score: 40,
-      event_count: recentEvents,
-      time_window: '10s',
-    });
-  }
+  if (recentEvents < maxClicks10s) return null;
+  return createFraudFlag(
+    'rapid_clicks',
+    `${recentEvents} events in 10 seconds (threshold: ${maxClicks10s})`,
+    40,
+    recentEvents,
+    '10s'
+  );
+}
 
-  // Rule 2: Multiple sessions from same IP in 1 hour
-  if (ip_address) {
-    const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
-    let { count: ipSessions, error: ipSessionsError } = await supabase
+async function countIpSessions(supabase, ip_address, oneHourAgo) {
+  let { count: ipSessions, error: ipSessionsError } = await supabase
+    .from('analytics_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('ip_address', ip_address)
+    .gte('started_at', oneHourAgo);
+
+  if (ipSessionsError && isMissingColumnError(ipSessionsError)) {
+    const fallback = await supabase
       .from('analytics_sessions')
       .select('id', { count: 'exact', head: true })
       .eq('ip_address', ip_address)
-      .gte('started_at', oneHourAgo);
-
-    if (ipSessionsError && isMissingColumnError(ipSessionsError)) {
-      const fallback = await supabase
-        .from('analytics_sessions')
-        .select('id', { count: 'exact', head: true })
-        .eq('ip_address', ip_address)
-        .gte('created_at', oneHourAgo);
-      ipSessions = fallback.count;
-    }
-
-    if (ipSessions >= maxSessionsIp1h) {
-      totalScore += 30;
-      flags.push({
-        rule_name: 'multi_session_ip',
-        reason: `${ipSessions} sessions from same IP in 1 hour (threshold: ${maxSessionsIp1h})`,
-        risk_score: 30,
-        event_count: ipSessions,
-        time_window: '1h',
-      });
-    }
+      .gte('created_at', oneHourAgo);
+    ipSessions = fallback.count;
   }
 
-  // Rule 3: Only clicks, no pageviews (bot pattern)
-  if (event_type === 'click' || event_type === 'offer_click') {
-    const { count: totalEvents } = await supabase
-      .from('analytics_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('session_id', session_id);
+  return ipSessions || 0;
+}
 
-    const { count: pageviews } = await supabase
-      .from('analytics_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('session_id', session_id)
-      .eq('event_type', 'pageview');
+async function checkMultiSessionIp(supabase, ip_address, maxSessionsIp1h) {
+  if (!ip_address) return null;
+  const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+  const ipSessions = await countIpSessions(supabase, ip_address, oneHourAgo);
 
-    if (totalEvents > 5 && pageviews === 0) {
-      totalScore += 30;
-      flags.push({
-        rule_name: 'no_pageviews',
-        reason: `${totalEvents} events but 0 pageviews — possible bot`,
-        risk_score: 30,
-        event_count: totalEvents,
-        time_window: 'session',
-      });
-    }
-  }
+  if (ipSessions < maxSessionsIp1h) return null;
+  return createFraudFlag(
+    'multi_session_ip',
+    `${ipSessions} sessions from same IP in 1 hour (threshold: ${maxSessionsIp1h})`,
+    30,
+    ipSessions,
+    '1h'
+  );
+}
 
-  // Store fraud logs
+async function checkNoPageviews(supabase, session_id, event_type) {
+  if (!BOT_PATTERN_EVENT_TYPES.has(event_type)) return null;
+
+  const { count: totalEvents } = await supabase
+    .from('analytics_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('session_id', session_id);
+
+  const { count: pageviews } = await supabase
+    .from('analytics_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('session_id', session_id)
+    .eq('event_type', 'pageview');
+
+  if (totalEvents <= 5 || pageviews !== 0) return null;
+  return createFraudFlag(
+    'no_pageviews',
+    `${totalEvents} events but 0 pageviews — possible bot`,
+    30,
+    totalEvents,
+    'session'
+  );
+}
+
+async function storeFraudFlag(supabase, context, flag) {
+  const fraudResult = await supabase.from('analytics_fraud_logs').insert({
+    ...context,
+    ...flag,
+  });
+
+  if (!(fraudResult.error && (isMissingRelationError(fraudResult.error) || isMissingColumnError(fraudResult.error)))) return;
+  await supabase.from('fraud_logs').insert({
+    session_id: context.session_id,
+    ip_address: context.ip_address,
+    reason: flag.reason,
+    risk_score: flag.risk_score,
+    metadata: {
+      visitor_id: context.visitor_id,
+      rule_name: flag.rule_name,
+      event_count: flag.event_count,
+      time_window: flag.time_window,
+    },
+  });
+}
+
+async function storeFraudFlags(supabase, context, flags) {
   for (const flag of flags) {
-    const fraudResult = await supabase.from('analytics_fraud_logs').insert({
-      session_id,
-      visitor_id,
-      ip_address,
-      ...flag,
-    });
-    if (fraudResult.error && (isMissingRelationError(fraudResult.error) || isMissingColumnError(fraudResult.error))) {
-      await supabase.from('fraud_logs').insert({
-        session_id,
-        ip_address,
-        reason: flag.reason,
-        risk_score: flag.risk_score,
-        metadata: {
-          visitor_id,
-          rule_name: flag.rule_name,
-          event_count: flag.event_count,
-          time_window: flag.time_window,
-        },
-      });
-    }
+    await storeFraudFlag(supabase, context, flag);
   }
+}
 
-  // Update session risk score
+async function updateSessionRisk(supabase, session_id, totalScore, isSuspicious) {
+  if (totalScore <= 0) return;
+  await supabase
+    .from('analytics_sessions')
+    .update({ risk_score: Math.min(100, totalScore), is_suspicious: isSuspicious })
+    .eq('id', session_id);
+}
+
+async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, event_type }) {
+  const cfg = await loadFraudConfig(supabase);
+  const maxClicks10s = cfg?.max_clicks_10s || 15;
+  const maxSessionsIp1h = cfg?.max_sessions_ip_1h || 10;
+  const threshold = cfg?.risk_score_threshold || 60;
+  const flags = [
+    await checkRapidClicks(supabase, session_id, maxClicks10s),
+    await checkMultiSessionIp(supabase, ip_address, maxSessionsIp1h),
+    await checkNoPageviews(supabase, session_id, event_type),
+  ].filter(Boolean);
+  const totalScore = sumRows(flags, 'risk_score');
   const isSuspicious = totalScore >= threshold;
-  if (totalScore > 0) {
-    await supabase
-      .from('analytics_sessions')
-      .update({ risk_score: Math.min(100, totalScore), is_suspicious: isSuspicious })
-      .eq('id', session_id);
-  }
+
+  await storeFraudFlags(supabase, { session_id, visitor_id, ip_address }, flags);
+  await updateSessionRisk(supabase, session_id, totalScore, isSuspicious);
 
   return { risk_score: totalScore, is_suspicious: isSuspicious, flags };
 }
@@ -911,11 +965,111 @@ async function handleSession(req, res, supabase) {
   });
 }
 
+function getTrackPayloads(body) {
+  if (Array.isArray(body)) return body;
+  if (Array.isArray(body?.events)) return body.events;
+  return [body];
+}
+
+function buildAnalyticsEventRow(normalized, ip, geo) {
+  return {
+    session_id: normalized.session_id,
+    visitor_id: normalized.visitor_id,
+    user_id: normalized.user_id,
+    event_type: normalized.event_type,
+    page_url: normalized.page_url || null,
+    page_title: normalized.page_title || null,
+    offer_id: normalized.offer_id || null,
+    element_id: normalized.element_id || null,
+    element_text: normalized.element_text || null,
+    target_url: normalized.target_url || null,
+    metadata: normalized.metadata || {},
+    ip_address: ip,
+    country: geo.country || null,
+    city: geo.city || null,
+    event_id: normalized.event_id,
+    event_name: normalized.event_name || normalized.event_type,
+    event_version: normalized.event_version,
+    occurred_at: normalized.occurred_at,
+    received_at: new Date().toISOString(),
+    anonymous_id: normalized.anonymous_id,
+    experience: normalized.experience,
+    source: normalized.source,
+    environment: normalized.environment,
+    route: normalized.route,
+    properties: normalized.properties,
+    schema_version: normalized.schema_version,
+  };
+}
+
+async function insertAnalyticsEvent(supabase, row) {
+  let result = await supabase
+    .from('analytics_events')
+    .insert(row)
+    .select('id')
+    .single();
+
+  if (result.error && isMissingColumnError(result.error)) {
+    result = await supabase
+      .from('analytics_events')
+      .insert(removeV2EventColumns(row))
+      .select('id')
+      .single();
+  }
+
+  if (result.error && isMissingColumnError(result.error)) {
+    result = await supabase
+      .from('analytics_events')
+      .insert(minimalLegacyEventRow(row))
+      .select('id')
+      .single();
+  }
+
+  return result;
+}
+
+async function updateTrackingCounters(supabase, normalized) {
+  await supabase.rpc('analytics_increment_session', {
+    p_session_id: normalized.session_id,
+    p_is_pageview: normalized.event_type === 'pageview',
+  }).catch(() => {});
+
+  await supabase.rpc('analytics_increment_visitor_events', {
+    p_visitor_id: normalized.visitor_id,
+    p_amount: 1,
+  }).catch(() => {});
+}
+
+async function trackPayload(supabase, payload, req, ip, geo) {
+  const normalized = normalizeEventPayload(payload, req);
+  if (!normalized.session_id || !normalized.visitor_id || !normalized.event_type) {
+    return { rejected: { reason: 'session_id, visitor_id, event_type required' } };
+  }
+
+  const result = await insertAnalyticsEvent(supabase, buildAnalyticsEventRow(normalized, ip, geo));
+  if (result.error?.code === '23505') {
+    return { inserted: { duplicate: true, event_id: normalized.event_id } };
+  }
+  if (result.error) {
+    return { rejected: { reason: result.error.message || 'insert failed', event_name: normalized.event_name } };
+  }
+
+  await updateTrackingCounters(supabase, normalized);
+  runFraudChecks(supabase, {
+    session_id: normalized.session_id,
+    visitor_id: normalized.visitor_id,
+    ip_address: ip,
+    event_type: normalized.event_type,
+  }).catch(err => console.error('[Fraud check]', err));
+
+  return { inserted: { id: result.data?.id, event_name: normalized.event_name } };
+}
+
 async function handleTrack(req, res, supabase) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const body = parseJsonBody(req);
-  const payloads = Array.isArray(body) ? body : Array.isArray(body?.events) ? body.events : [body];
+  const payloads = getTrackPayloads(body);
   if (payloads.length > 50) return res.status(413).json({ error: 'Too many events in one batch' });
 
   const inserted = [];
@@ -924,91 +1078,9 @@ async function handleTrack(req, res, supabase) {
   const geo = await getGeoForIp(ip, supabase);
 
   for (const payload of payloads) {
-    const normalized = normalizeEventPayload(payload, req);
-    if (!normalized.session_id || !normalized.visitor_id || !normalized.event_type) {
-      rejected.push({ reason: 'session_id, visitor_id, event_type required' });
-      continue;
-    }
-
-    const row = {
-      session_id: normalized.session_id,
-      visitor_id: normalized.visitor_id,
-      user_id: normalized.user_id,
-      event_type: normalized.event_type,
-      page_url: normalized.page_url || null,
-      page_title: normalized.page_title || null,
-      offer_id: normalized.offer_id || null,
-      element_id: normalized.element_id || null,
-      element_text: normalized.element_text || null,
-      target_url: normalized.target_url || null,
-      metadata: normalized.metadata || {},
-      ip_address: ip,
-      country: geo.country || null,
-      city: geo.city || null,
-      event_id: normalized.event_id,
-      event_name: normalized.event_name || normalized.event_type,
-      event_version: normalized.event_version,
-      occurred_at: normalized.occurred_at,
-      received_at: new Date().toISOString(),
-      anonymous_id: normalized.anonymous_id,
-      experience: normalized.experience,
-      source: normalized.source,
-      environment: normalized.environment,
-      route: normalized.route,
-      properties: normalized.properties,
-      schema_version: normalized.schema_version,
-    };
-
-    let result = await supabase
-      .from('analytics_events')
-      .insert(row)
-      .select('id')
-      .single();
-
-    if (result.error?.code === '23505') {
-      inserted.push({ duplicate: true, event_id: normalized.event_id });
-      continue;
-    }
-
-    if (result.error && isMissingColumnError(result.error)) {
-      result = await supabase
-        .from('analytics_events')
-        .insert(removeV2EventColumns(row))
-        .select('id')
-        .single();
-    }
-
-    if (result.error && isMissingColumnError(result.error)) {
-      result = await supabase
-        .from('analytics_events')
-        .insert(minimalLegacyEventRow(row))
-        .select('id')
-        .single();
-    }
-
-    if (result.error) {
-      rejected.push({ reason: result.error.message || 'insert failed', event_name: normalized.event_name });
-      continue;
-    }
-
-    inserted.push({ id: result.data?.id, event_name: normalized.event_name });
-
-    await supabase.rpc('analytics_increment_session', {
-      p_session_id: normalized.session_id,
-      p_is_pageview: normalized.event_type === 'pageview',
-    }).catch(() => {});
-
-    await supabase.rpc('analytics_increment_visitor_events', {
-      p_visitor_id: normalized.visitor_id,
-      p_amount: 1,
-    }).catch(() => {});
-
-    runFraudChecks(supabase, {
-      session_id: normalized.session_id,
-      visitor_id: normalized.visitor_id,
-      ip_address: ip,
-      event_type: normalized.event_type,
-    }).catch(err => console.error('[Fraud check]', err));
+    const result = await trackPayload(supabase, payload, req, ip, geo);
+    if (result.inserted) inserted.push(result.inserted);
+    if (result.rejected) rejected.push(result.rejected);
   }
 
   if (!inserted.length && rejected.length) return res.status(400).json({ ok: false, rejected });
@@ -1057,92 +1129,26 @@ async function handleOverview(req, res, supabase) {
     fetchAnalyticsSessionsForRange(supabase, range.previousStart, range.start, 8000),
     fetchAnalyticsEventsForRange(supabase, range.previousStart, range.start, 12000),
   ]);
-
-  const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
-  const visitorKeys = new Set([
-    ...sessions.map(sessionVisitorKey).filter(Boolean),
-    ...events.map(event => eventVisitorKey(event, sessionKeys)).filter(Boolean),
-  ]);
-  const suspiciousSessions = sessions.filter(session => session.is_suspicious).length;
-  const suspiciousEvents = events.filter(event => event.is_suspicious).length;
-  const pageViewEvents = events.filter(event => analyticsEventName(event) === ANALYTICS_EVENTS.PAGE_VIEW);
-  const clickEvents = events.filter(event => [
-    ANALYTICS_EVENTS.OFFER_CLICKED,
-    ANALYTICS_EVENTS.UI_BUTTON_CLICKED,
-    ANALYTICS_EVENTS.EXTERNAL_LINK_CLICKED,
-  ].includes(analyticsEventName(event)));
-
-  const chartBuckets = new Map(buildDayBuckets(range.start, range.end).map(date => [date, {
-    date,
-    sessions: 0,
-    events: 0,
-    pageViews: 0,
-    clicks: 0,
-    visitors: new Set(),
-  }]));
-  const eventNameCounts = {};
-  const experienceCounts = {};
-  const referrerCounts = {};
-  const deviceCounts = {};
-  const countryCounts = {};
-  const pageCounts = {};
-
-  for (const session of sessions) {
-    const time = analyticsSessionTime(session);
-    const day = time ? time.slice(0, 10) : null;
-    const bucket = day ? chartBuckets.get(day) : null;
-    if (bucket) {
-      bucket.sessions += 1;
-      const key = sessionVisitorKey(session);
-      if (key) bucket.visitors.add(key);
-    }
-    addMapCount(referrerCounts, session.referrer_source || classifyReferrer(session.referrer));
-    addMapCount(deviceCounts, session.device_type || 'unknown');
-    addMapCount(countryCounts, session.country || session.country_code || 'Unknown');
-  }
-
-  for (const event of events) {
-    const name = analyticsEventName(event);
-    const route = analyticsRoute(event);
-    const time = analyticsEventTime(event);
-    const day = time ? time.slice(0, 10) : null;
-    const bucket = day ? chartBuckets.get(day) : null;
-    if (bucket) {
-      bucket.events += 1;
-      if (name === ANALYTICS_EVENTS.PAGE_VIEW) bucket.pageViews += 1;
-      if ([ANALYTICS_EVENTS.OFFER_CLICKED, ANALYTICS_EVENTS.UI_BUTTON_CLICKED, ANALYTICS_EVENTS.EXTERNAL_LINK_CLICKED].includes(name)) bucket.clicks += 1;
-      const key = eventVisitorKey(event, sessionKeys);
-      if (key) bucket.visitors.add(key);
-    }
-    addMapCount(eventNameCounts, name);
-    addMapCount(experienceCounts, analyticsExperience(event));
-    if (name === ANALYTICS_EVENTS.PAGE_VIEW) addMapCount(pageCounts, route || '/');
-  }
-
-  const chart = Array.from(chartBuckets.values()).map(bucket => ({
-    ...bucket,
-    visitors: bucket.visitors.size,
-  }));
-  const topPagesList = topCountRows(pageCounts, 'page', 'views', 10);
+  const overview = buildOverviewAnalytics(range, sessions, events);
 
   return res.status(200).json({
     totalSessions: sessions.length,
     totalEvents: events.length,
-    uniqueVisitors: visitorKeys.size,
-    totalClicks: clickEvents.length,
-    totalPageViews: pageViewEvents.length,
-    suspiciousSessions,
-    suspiciousEvents,
+    uniqueVisitors: overview.visitorKeys.size,
+    totalClicks: overview.totalClicks,
+    totalPageViews: overview.totalPageViews,
+    suspiciousSessions: overview.suspiciousSessions,
+    suspiciousEvents: overview.suspiciousEvents,
     sessionsTrend: calcTrend(sessions.length, previousSessions.length),
     eventsTrend: calcTrend(events.length, previousEvents.length),
-    chart,
-    topPages: topPagesList,
-    topEvents: topCountRows(eventNameCounts, 'event', 'count', 12),
-    byEventName: eventNameCounts,
-    byExperience: experienceCounts,
-    byReferrer: referrerCounts,
-    deviceTypes: deviceCounts,
-    topCountries: topCountRows(countryCounts, 'country', 'sessions', 10),
+    chart: overview.chart,
+    topPages: topCountRows(overview.pageCounts, 'page', 'views', 10),
+    topEvents: topCountRows(overview.eventNameCounts, 'event', 'count', 12),
+    byEventName: overview.eventNameCounts,
+    byExperience: overview.experienceCounts,
+    byReferrer: overview.referrerCounts,
+    deviceTypes: overview.deviceCounts,
+    topCountries: topCountRows(overview.countryCounts, 'country', 'sessions', 10),
     dataHealth: {
       knownEvents: events.filter(event => isKnownAnalyticsEvent(analyticsEventName(event))).length,
       unknownEvents: events.filter(event => !isKnownAnalyticsEvent(analyticsEventName(event))).length,
@@ -1159,15 +1165,110 @@ function calcTrend(current, previous) {
   return `${pct >= 0 ? '+' : ''}${pct}%`;
 }
 
+function mergeAnalyticsConfig(defaults, config) {
+  return config ? { ...defaults, ...config } : { ...defaults };
+}
+
+function createOverviewBuckets(range) {
+  return new Map(buildDayBuckets(range.start, range.end).map(date => [date, {
+    date,
+    sessions: 0,
+    events: 0,
+    pageViews: 0,
+    clicks: 0,
+    visitors: new Set(),
+  }]));
+}
+
+function addSessionToOverview(session, chartBuckets, referrerCounts, deviceCounts, countryCounts) {
+  const time = analyticsSessionTime(session);
+  const day = time ? time.slice(0, 10) : null;
+  const bucket = day ? chartBuckets.get(day) : null;
+  if (bucket) {
+    bucket.sessions += 1;
+    const key = sessionVisitorKey(session);
+    if (key) bucket.visitors.add(key);
+  }
+  addMapCount(referrerCounts, session.referrer_source || classifyReferrer(session.referrer));
+  addMapCount(deviceCounts, session.device_type || 'unknown');
+  addMapCount(countryCounts, session.country || session.country_code || 'Unknown');
+}
+
+function isClickEventName(name) {
+  return [
+    ANALYTICS_EVENTS.OFFER_CLICKED,
+    ANALYTICS_EVENTS.UI_BUTTON_CLICKED,
+    ANALYTICS_EVENTS.EXTERNAL_LINK_CLICKED,
+  ].includes(name);
+}
+
+function addEventToOverview(event, sessionKeys, chartBuckets, eventNameCounts, experienceCounts, pageCounts) {
+  const name = analyticsEventName(event);
+  const route = analyticsRoute(event);
+  const time = analyticsEventTime(event);
+  const day = time ? time.slice(0, 10) : null;
+  const bucket = day ? chartBuckets.get(day) : null;
+  if (bucket) {
+    bucket.events += 1;
+    if (name === ANALYTICS_EVENTS.PAGE_VIEW) bucket.pageViews += 1;
+    if (isClickEventName(name)) bucket.clicks += 1;
+    const key = eventVisitorKey(event, sessionKeys);
+    if (key) bucket.visitors.add(key);
+  }
+  addMapCount(eventNameCounts, name);
+  addMapCount(experienceCounts, analyticsExperience(event));
+  if (name === ANALYTICS_EVENTS.PAGE_VIEW) addMapCount(pageCounts, route || '/');
+}
+
+function getOverviewCounts(sessions, events) {
+  return {
+    suspiciousSessions: sessions.filter(session => session.is_suspicious).length,
+    suspiciousEvents: events.filter(event => event.is_suspicious).length,
+    totalPageViews: events.filter(event => analyticsEventName(event) === ANALYTICS_EVENTS.PAGE_VIEW).length,
+    totalClicks: events.filter(event => isClickEventName(analyticsEventName(event))).length,
+  };
+}
+
+function buildOverviewAnalytics(range, sessions, events) {
+  const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
+  const visitorKeys = new Set([
+    ...sessions.map(sessionVisitorKey).filter(Boolean),
+    ...events.map(event => eventVisitorKey(event, sessionKeys)).filter(Boolean),
+  ]);
+  const chartBuckets = createOverviewBuckets(range);
+  const eventNameCounts = {};
+  const experienceCounts = {};
+  const referrerCounts = {};
+  const deviceCounts = {};
+  const countryCounts = {};
+  const pageCounts = {};
+
+  sessions.forEach(session => addSessionToOverview(session, chartBuckets, referrerCounts, deviceCounts, countryCounts));
+  events.forEach(event => addEventToOverview(event, sessionKeys, chartBuckets, eventNameCounts, experienceCounts, pageCounts));
+
+  return {
+    ...getOverviewCounts(sessions, events),
+    visitorKeys,
+    chart: Array.from(chartBuckets.values()).map(bucket => ({ ...bucket, visitors: bucket.visitors.size })),
+    eventNameCounts,
+    experienceCounts,
+    referrerCounts,
+    deviceCounts,
+    countryCounts,
+    pageCounts,
+  };
+}
+
 async function handleVisitors(req, res, supabase) {
   const { page = 1, limit = 20, search = '', sort = 'last_seen_at', order = 'desc' } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const limitNumber = Number.parseInt(limit, 10);
+  const offset = (Number.parseInt(page, 10) - 1) * limitNumber;
 
   let query = supabase
     .from('analytics_visitors')
     .select('*', { count: 'exact' })
     .order(sort, { ascending: order === 'asc' })
-    .range(offset, offset + parseInt(limit) - 1);
+    .range(offset, offset + limitNumber - 1);
 
   if (search) {
     query = query.or(`twitch_username.ilike.%${search}%,fingerprint.ilike.%${search}%`);
@@ -1198,7 +1299,7 @@ async function handleVisitors(req, res, supabase) {
     });
   }
   return res.status(200).json({
-    visitors: visitors.slice(offset, offset + parseInt(limit)),
+    visitors: visitors.slice(offset, offset + limitNumber),
     total: visitors.length,
     synthetic: true,
   });
@@ -1249,7 +1350,8 @@ async function handleVisitorDetail(req, res, supabase) {
 
 async function handleSessions(req, res, supabase) {
   const { page = 1, limit = 20, suspicious, country, since } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const limitNumber = Number.parseInt(limit, 10);
+  const offset = (Number.parseInt(page, 10) - 1) * limitNumber;
   const start = since || new Date(Date.now() - 90 * 86400000).toISOString();
   const sessions = (await fetchAnalyticsSessionsForRange(supabase, start, new Date().toISOString()))
     .map(normalizeSessionRow)
@@ -1257,12 +1359,13 @@ async function handleSessions(req, res, supabase) {
     .filter(session => country ? session.country_code === country || session.country === country : true)
     .sort((a, b) => String(b.started_at || '').localeCompare(String(a.started_at || '')));
 
-  return res.status(200).json({ sessions: sessions.slice(offset, offset + parseInt(limit)), total: sessions.length });
+  return res.status(200).json({ sessions: sessions.slice(offset, offset + limitNumber), total: sessions.length });
 }
 
 async function handleEvents(req, res, supabase) {
   const { page = 1, limit = 50, type, session_id, since } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const limitNumber = Number.parseInt(limit, 10);
+  const offset = (Number.parseInt(page, 10) - 1) * limitNumber;
   const start = since || new Date(Date.now() - 30 * 86400000).toISOString();
   const wantedType = type ? normalizeAnalyticsEventName(type) : null;
   const events = (await fetchAnalyticsEventsForRange(supabase, start, new Date().toISOString()))
@@ -1271,7 +1374,7 @@ async function handleEvents(req, res, supabase) {
     .filter(event => session_id ? event.session_id === session_id : true)
     .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
 
-  return res.status(200).json({ events: events.slice(offset, offset + parseInt(limit)), total: events.length });
+  return res.status(200).json({ events: events.slice(offset, offset + limitNumber), total: events.length });
 }
 
 async function handleOffers(req, res, supabase) {
@@ -1327,8 +1430,8 @@ async function handleOfferDetail(req, res, supabase) {
   if (!offer_id) return res.status(400).json({ error: 'offer_id required' });
 
   const sinceDate = since || new Date(Date.now() - 30 * 86400000).toISOString();
-  const lim = Math.min(parseInt(limit) || 100, 500);
-  const off = parseInt(offset) || 0;
+  const lim = Math.min(Number.parseInt(limit, 10) || 100, 500);
+  const off = Number.parseInt(offset, 10) || 0;
 
   const [offerRows, events, sessions] = await Promise.all([
     fetchOfferRows(supabase, [offer_id]),
@@ -1350,7 +1453,6 @@ async function handleOfferDetail(req, res, supabase) {
   const sessionKeys = new Map(sessions.map(session => [session.id, sessionVisitorKey(session)]));
   const uniqueVisitors = new Set(allRows.map(r => eventVisitorKey(r, sessionKeys)).filter(Boolean)).size;
   const uniqueIPs = new Set(allRows.map(r => sessionMap.get(r.session_id)?.ip_address || r.ip_address).filter(Boolean)).size;
-  const suspiciousCount = rows.filter(r => r.is_suspicious).length;
   const countries = {};
   allRows.forEach(r => {
     const session = sessionMap.get(r.session_id);
@@ -1796,13 +1898,14 @@ async function handleGeo(req, res, supabase) {
 
 async function handleFraud(req, res, supabase) {
   const { page = 1, limit = 20, resolved = 'false', rule } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const limitNumber = Number.parseInt(limit, 10);
+  const offset = (Number.parseInt(page, 10) - 1) * limitNumber;
 
   let query = supabase
     .from('analytics_fraud_logs')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
-    .range(offset, offset + parseInt(limit) - 1);
+    .range(offset, offset + limitNumber - 1);
 
   if (resolved !== 'all') query = query.eq('resolved', resolved === 'true');
   if (rule) query = query.eq('rule_name', rule);
@@ -1814,7 +1917,7 @@ async function handleFraud(req, res, supabase) {
       .from('fraud_logs')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
-      .range(offset, offset + parseInt(limit) - 1);
+      .range(offset, offset + limitNumber - 1);
     if (resolved !== 'all') legacyQuery = legacyQuery.eq('resolved', resolved === 'true');
     const legacyResult = await legacyQuery;
     data = (legacyResult.data || []).map(row => ({
@@ -1907,10 +2010,10 @@ async function handleConfig(req, res, supabase, user) {
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-    return res.status(200).json({ config: { ...defaults, ...(legacy.data?.value || {}) } });
+    return res.status(200).json({ config: mergeAnalyticsConfig(defaults, legacy.data?.value) });
   }
 
-  return res.status(200).json({ config: { ...defaults, ...(data || {}) } });
+  return res.status(200).json({ config: mergeAnalyticsConfig(defaults, data) });
 }
 
 async function handleResolveFraud(req, res, supabase, user) {
@@ -2015,26 +2118,27 @@ async function handleDeleteData(req, res, supabase, user) {
 async function handleExport(req, res, supabase) {
   const { type = 'events', since, limit = 1000 } = req.query;
   const sinceDate = since || new Date(Date.now() - 30 * 86400000).toISOString();
+  const limitNumber = Number.parseInt(limit, 10);
 
   let data = [];
   if (type === 'events') {
-    data = (await fetchAnalyticsEventsForRange(supabase, sinceDate, new Date().toISOString(), parseInt(limit))).map(normalizeEventRow);
+    data = (await fetchAnalyticsEventsForRange(supabase, sinceDate, new Date().toISOString(), limitNumber)).map(normalizeEventRow);
   } else if (type === 'sessions') {
-    data = (await fetchAnalyticsSessionsForRange(supabase, sinceDate, new Date().toISOString(), parseInt(limit))).map(normalizeSessionRow);
+    data = (await fetchAnalyticsSessionsForRange(supabase, sinceDate, new Date().toISOString(), limitNumber)).map(normalizeSessionRow);
   } else if (type === 'fraud') {
     let rows = await optionalRows(supabase
       .from('analytics_fraud_logs')
       .select('id, session_id, visitor_id, ip_address, rule_name, reason, risk_score, event_count, resolved, created_at')
       .gte('created_at', sinceDate)
       .order('created_at', { ascending: false })
-      .limit(parseInt(limit)));
+      .limit(limitNumber));
     if (!rows.length) {
       rows = await optionalRows(supabase
         .from('fraud_logs')
         .select('id, session_id, ip_address, reason, risk_score, metadata, resolved, created_at')
         .gte('created_at', sinceDate)
         .order('created_at', { ascending: false })
-        .limit(parseInt(limit)));
+        .limit(limitNumber));
       rows = rows.map(row => ({ ...row, rule_name: row.metadata?.rule_name || 'legacy_flag', event_count: row.metadata?.event_count || null }));
     }
     data = rows;
@@ -2051,7 +2155,7 @@ async function handleExport(req, res, supabase) {
       if (val === null || val === undefined) return '';
       const str = typeof val === 'object' ? JSON.stringify(val) : String(val);
       return str.includes(',') || str.includes('"') || str.includes('\n')
-        ? `"${str.replace(/"/g, '""')}"` : str;
+        ? `"${str.replaceAll('"', '""')}"` : str;
     }).join(','));
   });
 
@@ -2093,9 +2197,13 @@ async function handleFunnel(req, res, supabase) {
 
   // Calculate drop-off
   results.forEach((step, i) => {
-    step.conversion_rate = i === 0 ? 100 : (results[0].unique_visitors > 0
-      ? ((step.unique_visitors / results[0].unique_visitors) * 100).toFixed(1)
-      : 0);
+    let conversionRate = 100;
+    if (i > 0) {
+      conversionRate = results[0].unique_visitors > 0
+        ? ((step.unique_visitors / results[0].unique_visitors) * 100).toFixed(1)
+        : 0;
+    }
+    step.conversion_rate = conversionRate;
     step.drop_off = i === 0 ? 0 : results[i - 1].unique_visitors - step.unique_visitors;
   });
 
