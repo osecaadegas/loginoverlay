@@ -48,11 +48,11 @@ export default function AppsPage() {
           },
           {
             to: "/overlay-center/presets",
-            label: "Widget Library",
-            desc: "Save and load presets",
+            label: "Presets",
+            desc: "Save, load and share overlay builds",
             icon: SlidersHorizontal,
             tone: "violet",
-            art: "guided-setup",
+            art: "presets",
           },
           {
             to: "/slot-detector",

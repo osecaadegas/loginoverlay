@@ -958,8 +958,8 @@ function QuickSettings({ isAdmin }) {
       icon: Link2,
     },
     {
-      title: "Widget Library",
-      description: "Save and restore full widget builds.",
+      title: "Presets",
+      description: "Save and restore widget builds.",
       to: "/overlay-center/presets",
       icon: SlidersHorizontal,
     },

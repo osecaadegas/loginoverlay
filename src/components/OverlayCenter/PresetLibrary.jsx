@@ -10,6 +10,7 @@ import React, {
   memo,
   useCallback,
 } from "react";
+import { Link } from "react-router-dom";
 import { getWidgetDef } from "./widgets/widgetRegistry";
 
 // Register built-in widgets (idempotent)
@@ -342,13 +343,21 @@ export default function PresetLibrary({
       <div className="pl-page-shell">
         <div className="pl-hero">
           <div className="pl-hero__copy">
-            <span className="pl-hero__eyebrow">Widget Backup Vault</span>
-            <h2 className="pl-hero__title">Widget library</h2>
+            <span className="pl-hero__eyebrow">Presets</span>
+            <h2 className="pl-hero__title">Overlay presets</h2>
             <p className="pl-hero__subtitle">
               Save full widget builds, compare live previews, and reload stable
               overlay versions from one polished gallery.
             </p>
             <p className="pl-hero__note">{pageNote}</p>
+            <div className="pl-hero__actions">
+              <Link className="pl-hero__link pl-hero__link--primary" to="/apps">
+                Apps
+              </Link>
+              <Link className="pl-hero__link" to="/overlay-center">
+                Overlay Center
+              </Link>
+            </div>
           </div>
 
           <div className="pl-hero__metrics">
