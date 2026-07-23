@@ -955,7 +955,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       freezeStyle({
         id: 'StyleSecaBets',
         label: 'StyleSeca Bets',
-        description: 'Hunt-matched betting grid with stronger progress fill tracks.',
+        description: 'Fixed 2-column by 3-row hunt betting board that scales cleanly with drag resizing.',
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
           progressBar: true,

@@ -63,6 +63,13 @@ const THEME_PRESETS = {
 };
 
 const TEXT_STYLE_KEYS = ['color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'textTransform', 'textAlign', 'opacity'];
+const STYLE_SECA_LOCKED_LAYOUT_KEYS = new Set([
+  'position', 'display', 'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
+  'gridArea', 'gridColumn', 'gridColumnEnd', 'gridColumnStart', 'gridRow', 'gridRowEnd', 'gridRowStart',
+  'gridTemplateColumns', 'gridTemplateRows', 'height', 'inset', 'left', 'margin', 'marginBottom',
+  'marginLeft', 'marginRight', 'marginTop', 'maxHeight', 'maxWidth', 'minHeight', 'minWidth', 'right',
+  'top', 'transform', 'width',
+]);
 
 function toCssLength(value, fallback) {
   if (value === undefined || value === null || value === '') return fallback;
@@ -71,6 +78,12 @@ function toCssLength(value, fallback) {
 
 function pickTextStyle(style = {}) {
   return Object.fromEntries(TEXT_STYLE_KEYS.map(key => [key, style[key]]).filter(([, value]) => value !== undefined));
+}
+
+function stripStyleSecaLayout(style = {}) {
+  return Object.fromEntries(
+    Object.entries(style || {}).filter(([key]) => !STYLE_SECA_LOCKED_LAYOUT_KEYS.has(key))
+  );
 }
 
 function getExplicitAppearanceConfig(config = {}) {
@@ -137,6 +150,7 @@ function BetsWidget({ config }) {
   const effectiveBarColorMode = isStyleSeca ? 'solid' : barColorMode;
   const styleSecaValue = (value, fallback) => isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
   const styleSecaText = '#f8fbff';
+  const visibleOptions = isStyleSeca ? options.slice(0, 6) : options;
 
   const preset      = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
   const bgColor     = styleSecaValue(elementValue(c, 'widgetBackground', 'background', c.bgColor || (isStyleSeca ? styleSecaSurfaceGradient() : preset.bgColor), 'container'), styleSecaSurfaceGradient());
@@ -247,19 +261,19 @@ function BetsWidget({ config }) {
   };
 
   const totalPool = useMemo(
-    () => options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0),
-    [options, bets]
+    () => visibleOptions.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0),
+    [visibleOptions, bets]
   );
   const maxBet = useMemo(
-    () => Math.max(1, ...options.map((_, i) => bets[`opt_${i}`] || 0)),
-    [options, bets]
+    () => Math.max(1, ...visibleOptions.map((_, i) => bets[`opt_${i}`] || 0)),
+    [visibleOptions, bets]
   );
   const totalBetters = Object.keys(betters).length;
 
   /* Leading card detection — pulses when clearly ahead */
   const pcts = useMemo(
-    () => options.map((_, i) => totalPool > 0 ? Math.round((bets[`opt_${i}`] || 0) / totalPool * 100) : 0),
-    [options, bets, totalPool]
+    () => visibleOptions.map((_, i) => totalPool > 0 ? Math.round((bets[`opt_${i}`] || 0) / totalPool * 100) : 0),
+    [visibleOptions, bets, totalPool]
   );
   const leadingIdx = useMemo(() => {
     if (status !== 'open' || totalPool === 0) return -1;
@@ -279,7 +293,7 @@ function BetsWidget({ config }) {
 
   const isGrid2x3 = layout === 'v3_grid_2x3';
   const isGrid    = layout === 'v2_grid' || isGrid2x3 || isStyleSeca;
-  const gridCols  = getGridCols(options.length, layout);
+  const gridCols  = getGridCols(visibleOptions.length, layout);
 
   const getOptColor = (i) =>
     effectiveBarColorMode === 'rainbow' ? PALETTE[i % PALETTE.length] : barFill;
@@ -371,7 +385,7 @@ function BetsWidget({ config }) {
       {/* ── Options ── */}
       {isGrid ? (
         <div className="bets-ov__grid" {...partAttrs('betCards')}>
-          {options.map((opt, i) => {
+          {visibleOptions.map((opt, i) => {
             const amount   = bets[`opt_${i}`] || 0;
             const pct      = pcts[i];
             const fillH    = maxBet > 0 ? (amount / maxBet) * 100 : 0;
@@ -393,7 +407,8 @@ function BetsWidget({ config }) {
               background: styleSecaValue(rawSharedCardStyle.background, optionBg),
               color: styleSecaValue(rawSharedCardStyle.color, optionText),
             } : rawSharedCardStyle;
-            const optionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, undefined, `card_${i + 1}`);
+            const rawOptionRowStyle = elementStyle(c, 'individualBetCard', sharedCardStyle, undefined, `card_${i + 1}`);
+            const optionRowStyle = isStyleSeca ? stripStyleSecaLayout(rawOptionRowStyle) : rawOptionRowStyle;
             const optionNumberStyle = elementStyle(c, 'cardNumberBadge', {
               background: optColor || accentColor,
               color: elementValue(c, 'cardNumberBadge', 'textColor', '#ffffff', 'optionNumber', stateId),
@@ -438,7 +453,15 @@ function BetsWidget({ config }) {
             } : rawProgressStyle;
             const rawProgressFill = elementValue(c, 'progressBar', 'fillColor', optColor || barFill, undefined, progressStateId);
             const progressFill = isStyleSeca ? styleSecaValue(rawProgressFill, barFill) : rawProgressFill;
-            const cardTextInheritanceStyle = pickTextStyle(optionRowStyle);
+            const cardTextInheritanceStyle = isStyleSeca ? {
+              ...pickTextStyle(optionRowStyle),
+              display: 'grid',
+              gridTemplateRows: 'auto minmax(0, 1fr) auto',
+              width: '100%',
+              height: '100%',
+              minWidth: 0,
+              minHeight: 0,
+            } : pickTextStyle(optionRowStyle);
             const classes  = [
               'bets-ov__card',
               isWin  && 'bets-ov__card--win',
