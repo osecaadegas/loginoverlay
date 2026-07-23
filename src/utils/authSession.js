@@ -1,23 +1,26 @@
-import { supabase } from '../config/supabaseClient';
-import { withTimeout } from './asyncTimeout';
+import { supabase } from "../config/supabaseClient";
+import { withTimeout } from "./asyncTimeout";
 
 const getProjectRef = () => {
   try {
-    return new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0];
+    return new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split(".")[0];
   } catch {
     return null;
   }
 };
 
 const decodeBase64Url = (value) => {
-  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+  const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
+  const padded = normalized.padEnd(
+    normalized.length + ((4 - (normalized.length % 4)) % 4),
+    "=",
+  );
   return atob(padded);
 };
 
 const decodeJwtPayload = (token) => {
   try {
-    const [, payload] = String(token || '').split('.');
+    const [, payload] = String(token || "").split(".");
     return payload ? JSON.parse(decodeBase64Url(payload)) : null;
   } catch {
     return null;
@@ -26,7 +29,8 @@ const decodeJwtPayload = (token) => {
 
 const isExpiredSession = (session) => {
   const nowMs = Date.now();
-  if (session?.expires_at && Number(session.expires_at) * 1000 <= nowMs) return true;
+  if (session?.expires_at && Number(session.expires_at) * 1000 <= nowMs)
+    return true;
   const payload = decodeJwtPayload(session?.access_token);
   return Boolean(payload?.exp && Number(payload.exp) * 1000 <= nowMs);
 };
@@ -53,21 +57,28 @@ export function getStoredSupabaseSession() {
       user: {
         id: payload.sub,
         email: payload.email || null,
-        aud: payload.aud || 'authenticated',
-        role: payload.role || 'authenticated',
+        aud: payload.aud || "authenticated",
+        role: payload.role || "authenticated",
         app_metadata: payload.app_metadata || {},
         user_metadata: payload.user_metadata || {},
       },
     };
   } catch (error) {
-    console.warn('[Auth] Failed to read cached Supabase session:', error);
+    console.warn("[Auth] Failed to read cached Supabase session:", error);
     return null;
   }
 }
 
-export async function getSessionWithFallback({ timeoutMs = 10000, label = 'Auth session check' } = {}) {
+export async function getSessionWithFallback({
+  timeoutMs = 10000,
+  label = "Auth session check",
+} = {}) {
   try {
-    const { data } = await withTimeout(supabase.auth.getSession(), timeoutMs, label);
+    const { data } = await withTimeout(
+      supabase.auth.getSession(),
+      timeoutMs,
+      label,
+    );
     return data?.session || null;
   } catch (error) {
     const cachedSession = getStoredSupabaseSession();
@@ -81,5 +92,5 @@ export async function getSessionWithFallback({ timeoutMs = 10000, label = 'Auth 
 
 export async function getAccessTokenWithFallback(options) {
   const session = await getSessionWithFallback(options);
-  return session?.access_token || '';
+  return session?.access_token || "";
 }

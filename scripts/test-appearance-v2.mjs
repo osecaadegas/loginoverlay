@@ -3,12 +3,13 @@ import { readFileSync } from "node:fs";
 import { createServer } from "vite";
 
 function rendererHasPartTarget(source, partId) {
-  const partAttrsCall = new RegExp(`partAttrs\\(["']${partId}["']`).test(
-    source,
-  );
+  const partAttrsCall =
+    source.includes(`partAttrs("${partId}"`) ||
+    source.includes(`partAttrs('${partId}'`);
   const forwardedPartId =
     source.includes("partAttrs(partId)") &&
-    new RegExp(`partId=["']${partId}["']`).test(source);
+    (source.includes(`partId="${partId}"`) ||
+      source.includes(`partId='${partId}'`));
   return (
     partAttrsCall ||
     forwardedPartId ||
@@ -4103,9 +4104,7 @@ try {
     "OBS renderer renders widgets in normalized z-index order",
   );
   assert.ok(
-    /selectedMovableElementId\s*&&\s*onMoveElement/.test(
-      overlayPreviewSource,
-    ),
+    /selectedMovableElementId\s*&&\s*onMoveElement/.test(overlayPreviewSource),
     "Live preview only blocks widget dragging when element dragging is supported",
   );
 
@@ -4319,15 +4318,11 @@ try {
     "highlightedMessage",
   ]);
   assert.ok(
-    /subElementStyle\(\s*c,\s*["']messageText["']/.test(
-      chatRendererSource,
-    ),
+    /subElementStyle\(\s*c,\s*["']messageText["']/.test(chatRendererSource),
     "Chat renderer consumes message text V2 styles",
   );
   assert.ok(
-    /subElementStyle\(\s*c,\s*["']messageList["']/.test(
-      chatRendererSource,
-    ),
+    /subElementStyle\(\s*c,\s*["']messageList["']/.test(chatRendererSource),
     "Chat renderer consumes message list V2 styles",
   );
   assert.ok(

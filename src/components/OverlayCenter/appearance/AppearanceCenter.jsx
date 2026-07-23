@@ -4179,17 +4179,25 @@ function showLegacySurfaceControls(editingWholeWidget, selectedWidgetUsesV2) {
   return editingWholeWidget && !selectedWidgetUsesV2;
 }
 
-function shouldShowRtpMetalControls({ selectedTarget, selectedWidget, selectedWidgetType }) {
+function shouldShowRtpMetalControls({
+  selectedTarget,
+  selectedWidget,
+  selectedWidgetType,
+}) {
   return Boolean(
     selectedWidgetType === "rtp_stats" &&
-      selectedTarget.styleId === "metal" &&
-      selectedWidget,
+    selectedTarget.styleId === "metal" &&
+    selectedWidget,
   );
 }
 
-function shouldShowBonusHuntColorSyncControls(selectedWidgetType, selectedWidget) {
+function shouldShowBonusHuntColorSyncControls(
+  selectedWidgetType,
+  selectedWidget,
+) {
   return Boolean(
-    BONUS_HUNT_COLOR_SYNC_WIDGET_TYPES.has(selectedWidgetType) && selectedWidget,
+    BONUS_HUNT_COLOR_SYNC_WIDGET_TYPES.has(selectedWidgetType) &&
+    selectedWidget,
   );
 }
 
@@ -4462,9 +4470,12 @@ function AdvancedPropertiesPanel({
     <aside className="ve-right-panel">
       <div className="ve-properties-header">
         <div>
-          <strong>{getAdvancedPanelTitle(selectedElement, selectedWidgetName)}</strong>
+          <strong>
+            {getAdvancedPanelTitle(selectedElement, selectedWidgetName)}
+          </strong>
           <span>
-            {getModeLabel("advanced")} · {getLayerEditabilityLabel(selectedLayerLocked)}
+            {getModeLabel("advanced")} ·{" "}
+            {getLayerEditabilityLabel(selectedLayerLocked)}
           </span>
         </div>
         <button
@@ -4512,7 +4523,8 @@ function AdvancedPropertiesPanel({
         </Show>
         <Show when={!selectedElement}>
           <EmptyState title="No element selected">
-            Click a title, card, image or row in the preview to edit it directly.
+            Click a title, card, image or row in the preview to edit it
+            directly.
           </EmptyState>
         </Show>
 
@@ -4723,8 +4735,10 @@ export default function AppearanceCenter({
     selectedWidget,
     selectedWidgetType,
   });
-  const showBonusHuntColorSyncControls =
-    shouldShowBonusHuntColorSyncControls(selectedWidgetType, selectedWidget);
+  const showBonusHuntColorSyncControls = shouldShowBonusHuntColorSyncControls(
+    selectedWidgetType,
+    selectedWidget,
+  );
   const selectedWidgetUsesV2 = isWidgetAppearanceV2Enabled(selectedWidgetType);
   const selectedWidgetIsBackground = selectedWidgetType === "background";
   const selectedTargetRoot = useMemo(
@@ -5997,56 +6011,55 @@ export default function AppearanceCenter({
                   selectedWidgetIsBackground,
                 )}
               >
-                  <CollapsibleSection
-                    id="backgroundControls"
-                    title="Background controls"
-                    openSections={openSimpleSections}
-                    onToggle={toggleSimpleSection}
-                    className="ve-simple-section"
-                  >
-                    <p className="ve-simple-help">
-                      Only live Background controls are shown. Choose Texture,
-                      Image URL, Video URL, or Animated in Source.
-                    </p>
-                    <div className="ve-background-control-stack">
-                      {simpleBackgroundElements.map((element) => {
-                        const groups =
-                          getBackgroundElementControlGroups(element);
-                        if (!groups.length) return null;
-                        return (
-                          <div
-                            key={element.id}
-                            className={`ve-background-part${selectedElement?.id === element.id ? " is-active" : ""}`}
+                <CollapsibleSection
+                  id="backgroundControls"
+                  title="Background controls"
+                  openSections={openSimpleSections}
+                  onToggle={toggleSimpleSection}
+                  className="ve-simple-section"
+                >
+                  <p className="ve-simple-help">
+                    Only live Background controls are shown. Choose Texture,
+                    Image URL, Video URL, or Animated in Source.
+                  </p>
+                  <div className="ve-background-control-stack">
+                    {simpleBackgroundElements.map((element) => {
+                      const groups = getBackgroundElementControlGroups(element);
+                      if (!groups.length) return null;
+                      return (
+                        <div
+                          key={element.id}
+                          className={`ve-background-part${selectedElement?.id === element.id ? " is-active" : ""}`}
+                        >
+                          <button
+                            type="button"
+                            className="ve-background-part__header"
+                            onClick={() => {
+                              setSelectedElementId(element.id);
+                              setSelectedStateId("default");
+                            }}
                           >
-                            <button
-                              type="button"
-                              className="ve-background-part__header"
-                              onClick={() => {
-                                setSelectedElementId(element.id);
-                                setSelectedStateId("default");
-                              }}
-                            >
-                              <span>{element.label}</span>
-                              <small>{inferElementKind(element)}</small>
-                            </button>
-                            <div className="ve-control-groups ve-control-groups--background">
-                              {groups.map((group) => (
-                                <div
-                                  key={`${element.id}-${group.id}`}
-                                  className="ve-control-group"
-                                >
-                                  <h4>{mapControlGroupTitle(group.label)}</h4>
-                                  {group.controls.map((control) =>
-                                    renderElementControlFor(element, control),
-                                  )}
-                                </div>
-                              ))}
-                            </div>
+                            <span>{element.label}</span>
+                            <small>{inferElementKind(element)}</small>
+                          </button>
+                          <div className="ve-control-groups ve-control-groups--background">
+                            {groups.map((group) => (
+                              <div
+                                key={`${element.id}-${group.id}`}
+                                className="ve-control-group"
+                              >
+                                <h4>{mapControlGroupTitle(group.label)}</h4>
+                                {group.controls.map((control) =>
+                                  renderElementControlFor(element, control),
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </CollapsibleSection>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CollapsibleSection>
               </Show>
 
               <Show when={sectionVisible(simpleSections, "material")}>

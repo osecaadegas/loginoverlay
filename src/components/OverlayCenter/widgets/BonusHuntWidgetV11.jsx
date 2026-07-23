@@ -1,6 +1,33 @@
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import SlotImage from "./SlotImage";
 import { subValue } from "./shared/appearanceStyles";
+
+function getStackCenterIndex({
+  carouselIdx,
+  currentIndex,
+  huntComplete,
+  isOpening,
+  total,
+}) {
+  if (isOpening && currentIndex >= 0) return currentIndex;
+  if (huntComplete) return Math.max(0, total - 1);
+  return carouselIdx % total;
+}
+
+function getBonusKey(bonus, index, prefix = "bonus") {
+  return (
+    bonus.id ||
+    bonus.slotId ||
+    bonus.slot?.id ||
+    `${prefix}-${bonus.slotName || bonus.slot?.name || "slot"}-${bonus.betSize || 0}-${index}`
+  );
+}
+
+function getMultiSizeClass(multi) {
+  if (multi >= 100) return " bht-cpt-card-multi--huge";
+  if (multi >= 50) return " bht-cpt-card-multi--big";
+  return "";
+}
 
 /**
  * BonusHuntWidgetV11 — Advanced List
@@ -190,7 +217,6 @@ function BonusHuntWidgetV11({ config, theme }) {
   );
   const fontSize = subValue(c, "bonusCard", "fontSize", c.fontSize ?? 15);
   const cardRadius = subValue(c, "bonusCard", "radius", c.cardRadius ?? 16);
-  const cardGap = subValue(c, "bonusCard", "gap", c.cardGap ?? 8);
   const cardPadding = subValue(c, "bonusCard", "padding", c.cardPadding ?? 10);
   const progressBg = subValue(
     c,
@@ -315,12 +341,13 @@ function BonusHuntWidgetV11({ config, theme }) {
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
-              const ci =
-                isOpening && currentIndex >= 0
-                  ? currentIndex
-                  : huntComplete
-                    ? Math.max(0, total - 1)
-                    : carouselIdx % total;
+              const ci = getStackCenterIndex({
+                carouselIdx,
+                currentIndex,
+                huntComplete,
+                isOpening,
+                total,
+              });
               const posMap = {
                 "-2": "bht-stack-card--far-left",
                 "-1": "bht-stack-card--left",
@@ -335,7 +362,7 @@ function BonusHuntWidgetV11({ config, theme }) {
                 const posCls = posMap[String(dist)] || "bht-stack-card--hidden";
                 return (
                   <div
-                    key={`stk-${bIdx}`}
+                    key={getBonusKey(bonus, bIdx, "stk")}
                     className={`bht-stack-card ${posCls}${bonus.opened ? " bht-stack-card--opened" : ""}${bonus.isSuperBonus ? " bht-stack-card--super" : ""}${bonus.isExtremeBonus || bonus.isExtreme ? " bht-stack-card--extreme" : ""}`}
                   >
                     <div className="bht-stack-card-inner">
@@ -438,7 +465,7 @@ function BonusHuntWidgetV11({ config, theme }) {
                             {payout.toFixed(2)}
                           </span>
                           <span
-                            className={`bht-cpt-card-multi${multi >= 100 ? " bht-cpt-card-multi--huge" : multi >= 50 ? " bht-cpt-card-multi--big" : ""}`}
+                            className={`bht-cpt-card-multi${getMultiSizeClass(multi)}`}
                           >
                             {multi.toFixed(1)}x
                           </span>
