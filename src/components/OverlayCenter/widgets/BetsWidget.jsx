@@ -5,9 +5,13 @@
  * Layouts: v1_list (horizontal bars) · v2_grid (vertical fill cards) · v3_grid_2x3 (wide 2x3 cards)
  * Animations: entry stagger · bar shimmer · leading pulse · winner pop
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
 import { STYLE_SECA, resolveStyleSecaValue, styleSecaHeaderGradient, styleSecaSurfaceGradient } from './shared/styleSecaTheme';
+
+const STYLE_SECA_BETS_DESIGN_WIDTH = 460;
+const STYLE_SECA_BETS_DESIGN_HEIGHT = 520;
+const STYLE_SECA_BETS_MIN_SCALE = 0.1;
 
 function getGridCols(count, layout) {
   if (layout === 'StyleSecaBets') return 2;
@@ -125,6 +129,7 @@ function optionStateId({ isWin, isLose, isLead, status }) {
 }
 
 function BetsWidget({ config }) {
+  const styleSecaContainerRef = useRef(null);
   const c            = config || {};
   const title        = c.question      || 'Place Your Bets';
   const status       = c.gameStatus    || 'idle';
@@ -176,7 +181,7 @@ function BetsWidget({ config }) {
   const progressRadius = elementValue(c, 'progressBar', 'radius', isStyleSeca ? 8 : 4);
   const rawContainerStyle = elementStyle(c, 'widgetBackground', {
     fontFamily: font,
-    fontSize: isStyleSeca ? `clamp(11px, min(3.1cqw, 4.1cqh), ${baseFontSize}px)` : `${baseFontSize}px`,
+    fontSize: `${baseFontSize}px`,
     lineHeight: defaultLineHeight,
     letterSpacing: defaultLetterSpacing,
     textTransform: defaultTextTransform,
@@ -284,6 +289,29 @@ function BetsWidget({ config }) {
     return pcts.indexOf(maxPct);
   }, [status, pcts, totalPool]);
 
+  useEffect(() => {
+    if (!isStyleSeca) return undefined;
+    const container = styleSecaContainerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return undefined;
+
+    const updateScale = ({ width, height }) => {
+      const scaleX = width / STYLE_SECA_BETS_DESIGN_WIDTH;
+      const scaleY = height / STYLE_SECA_BETS_DESIGN_HEIGHT;
+      const scale = Math.min(scaleX, scaleY);
+      container.style.setProperty(
+        '--seca-widget-scale',
+        String(Math.max(scale, STYLE_SECA_BETS_MIN_SCALE)),
+      );
+    };
+
+    updateScale(container.getBoundingClientRect());
+    const observer = new ResizeObserver(([entry]) => {
+      updateScale(entry.contentRect);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [isStyleSeca]);
+
   if (status === 'idle') return null;
 
   const statusLabel =
@@ -334,7 +362,7 @@ function BetsWidget({ config }) {
     '--bets-cols':     gridCols,
   };
 
-  return (
+  const widgetRoot = (
     <div
       className={[
         'bets-ov',
@@ -413,13 +441,13 @@ function BetsWidget({ config }) {
               background: optColor || accentColor,
               color: elementValue(c, 'cardNumberBadge', 'textColor', '#ffffff', 'optionNumber', stateId),
               fontFamily: numberFont,
-              fontSize: isStyleSeca ? `clamp(10px, min(2.7cqw, 2.7cqh), ${Math.max(11, Math.round(baseFontSize * 0.92))}px)` : `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
+              fontSize: `${Math.max(11, Math.round(baseFontSize * 0.92))}px`,
               fontWeight: 800,
             }, 'optionNumber', stateId);
             const optionLabelStyle = elementStyle(c, 'cardRangeText', {
               color: optionText,
               fontFamily: font,
-              fontSize: isStyleSeca ? `clamp(10px, min(2.65cqw, 2.85cqh), ${baseFontSize}px)` : `${baseFontSize}px`,
+              fontSize: `${baseFontSize}px`,
               fontWeight: 700,
               lineHeight: defaultLineHeight,
               letterSpacing: defaultLetterSpacing,
@@ -429,7 +457,7 @@ function BetsWidget({ config }) {
             const percentageStyle = elementStyle(c, 'cardPercentageText', {
               color: isStyleSeca ? styleSecaText : (optColor || accentColor),
               fontFamily: numberFont,
-              fontSize: isStyleSeca ? `clamp(12px, min(3.1cqw, 3.4cqh), ${Math.round(baseFontSize * 1.2)}px)` : `${Math.round(baseFontSize * 1.2)}px`,
+              fontSize: `${Math.round(baseFontSize * 1.2)}px`,
               fontWeight: 900,
               lineHeight: 1,
               letterSpacing: defaultLetterSpacing,
@@ -437,7 +465,7 @@ function BetsWidget({ config }) {
             const cardLabelStyle = elementStyle(c, 'cardLabel', {
               color: isStyleSeca ? 'rgba(248,251,255,0.9)' : 'rgba(255,255,255,0.62)',
               fontFamily: font,
-              fontSize: isStyleSeca ? `clamp(8px, min(1.75cqw, 2cqh), ${Math.max(9, Math.round(baseFontSize * 0.7))}px)` : `${Math.max(9, Math.round(baseFontSize * 0.7))}px`,
+              fontSize: `${Math.max(9, Math.round(baseFontSize * 0.7))}px`,
               fontWeight: 700,
               lineHeight: 1,
               letterSpacing: defaultLetterSpacing,
@@ -592,5 +620,13 @@ function BetsWidget({ config }) {
     </div>
   );
 }
+
+  if (!isStyleSeca) return widgetRoot;
+
+  return (
+    <div ref={styleSecaContainerRef} className="seca-bets-resize-container">
+      <div className="seca-bets-design">{widgetRoot}</div>
+    </div>
+  );
 
 export default BetsWidget;
