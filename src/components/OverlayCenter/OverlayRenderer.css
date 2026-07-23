@@ -6579,10 +6579,20 @@
 /* ── 3D Stack Section inside Fever ── */
 .bht11-stack-section {
   padding: 8px 0 4px;
+  overflow: hidden;
+  position: relative;
 }
 .bht11-stack-section .bht-stack {
   height: 180px;
+  overflow: hidden;
+  margin: 0;
 }
 .bht11-stack-section .bht-progress {
   margin-top: 6px;
+}
+.bht11-stack-section--complete .bht-stack-card,
+.bht11-stack-section--complete .bht-stack-card--center,
+.bht11-stack-section--complete .bht-stack-card--left,
+.bht11-stack-section--complete .bht-stack-card--right {
+  animation: none !important;
 }

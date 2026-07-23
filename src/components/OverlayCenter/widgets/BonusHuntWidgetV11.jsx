@@ -51,6 +51,7 @@ function BonusHuntWidgetV11({ config, theme }) {
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
+  const huntComplete = bonuses.length > 0 && currentIndex < 0;
 
   /* ─── Dynamic title ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
@@ -173,12 +174,16 @@ function BonusHuntWidgetV11({ config, theme }) {
 
       {/* ═══ 4. 3D Rotating Card Stack ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht11-stack-section">
-          <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
+        <div className={`bht11-stack-section${huntComplete ? ' bht11-stack-section--complete' : ''}`}>
+          <div className={`bht-stack${!isOpening && !huntComplete ? ' bht-stack--spinning' : ''}${huntComplete ? ' bht-stack--complete' : ''}`}>
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
-              const ci = isOpening && currentIndex >= 0 ? currentIndex : carouselIdx % total;
+              const ci = isOpening && currentIndex >= 0
+                ? currentIndex
+                : huntComplete
+                ? Math.max(0, total - 1)
+                : carouselIdx % total;
               const posMap = { '-2': 'bht-stack-card--far-left', '-1': 'bht-stack-card--left', '0': 'bht-stack-card--center', '1': 'bht-stack-card--right', '2': 'bht-stack-card--far-right' };
               return bonuses.map((bonus, bIdx) => {
                 const rawDist = ((bIdx - ci) % total + total) % total;
@@ -232,7 +237,7 @@ function BonusHuntWidgetV11({ config, theme }) {
               const isSuper = bonus.isSuperBonus;
               return (
                 <div key={key}
-                  className={`bht-cpt-card${idx === currentIndex ? ' bht-cpt-card--active' : ''}${bonus.opened ? ' bht-cpt-card--opened' : ''}${isSuper ? ' bht-cpt-card--super' : ''}${isExtreme ? ' bht-cpt-card--extreme' : ''}`}>
+                  className={`bht-cpt-card${!huntComplete && idx === currentIndex ? ' bht-cpt-card--active' : ''}${bonus.opened ? ' bht-cpt-card--opened' : ''}${isSuper ? ' bht-cpt-card--super' : ''}${isExtreme ? ' bht-cpt-card--extreme' : ''}`}>
                   <div className="bht-cpt-card-img-wrap">
                     {bonus.slot?.image ? (
                       <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name}
