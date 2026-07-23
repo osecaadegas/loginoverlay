@@ -26,6 +26,39 @@ const SECTION_LABELS = {
   casino: '🎰 Casino',
 };
 
+const ZONE_META = {
+  left: { color: '#60a5fa', label: '← Left Zone' },
+  center: { color: '#94a3b8', label: '◆ Center Zone' },
+  right: { color: '#34d399', label: '→ Right Zone' },
+};
+
+const ZONE_CHOICES = [
+  { z: 'left', label: 'L', color: '#60a5fa' },
+  { z: 'center', label: 'C', color: '#94a3b8' },
+  { z: 'right', label: 'R', color: '#34d399' },
+];
+
+function ZoneButton({ section, zone, label, color, onMove }) {
+  const active = section.zone === zone;
+  const handleClick = () => onMove(section.id, zone);
+  return (
+    <button key={zone} type="button"
+      onClick={handleClick}
+      title={`Move to ${zone}`}
+      style={{
+        width: 26, height: 24, fontSize: 10, fontWeight: 800,
+        borderRadius: 5,
+        border: active ? `2px solid ${color}` : '1px solid rgba(255,255,255,0.12)',
+        cursor: 'pointer',
+        background: active ? `${color}22` : 'rgba(255,255,255,0.04)',
+        color: active ? color : '#94a3b8',
+        transition: 'all 0.15s ease',
+      }}>
+      {label}
+    </button>
+  );
+}
+
 export default function NavbarConfig({ config, onChange }) {
   const c = config || {};
   const { user } = useAuth();
@@ -394,6 +427,7 @@ export default function NavbarConfig({ config, onChange }) {
           </p>
           {['left', 'center', 'right'].map(zone => {
             const zoneSections = sectionLayout.filter(s => s.zone === zone);
+            const zoneMeta = ZONE_META[zone];
             return (
               <div key={zone} style={{
                 marginBottom: 12, padding: '8px 10px', borderRadius: 8,
@@ -401,10 +435,10 @@ export default function NavbarConfig({ config, onChange }) {
               }}>
                 <div style={{
                   fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
-                  color: zone === 'left' ? '#60a5fa' : zone === 'center' ? '#94a3b8' : '#34d399',
+                  color: zoneMeta.color,
                   marginBottom: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.06)',
                 }}>
-                  {zone === 'left' ? '← Left Zone' : zone === 'center' ? '◆ Center Zone' : '→ Right Zone'}
+                  {zoneMeta.label}
                 </div>
                 {zoneSections.length === 0 && (
                   <div style={{ fontSize: 11, color: '#475569', fontStyle: 'italic', padding: '6px 0' }}>No sections — drop one here</div>
@@ -418,25 +452,15 @@ export default function NavbarConfig({ config, onChange }) {
                       {SECTION_LABELS[s.id] || s.id}
                     </span>
                     <div style={{ display: 'flex', gap: 3 }}>
-                      {[
-                        { z: 'left', label: 'L', color: '#60a5fa' },
-                        { z: 'center', label: 'C', color: '#94a3b8' },
-                        { z: 'right', label: 'R', color: '#34d399' },
-                      ].map(({ z, label, color }) => (
-                        <button key={z} type="button"
-                          onClick={() => setSectionZone(s.id, z)}
-                          title={`Move to ${z}`}
-                          style={{
-                            width: 26, height: 24, fontSize: 10, fontWeight: 800,
-                            borderRadius: 5,
-                            border: s.zone === z ? `2px solid ${color}` : '1px solid rgba(255,255,255,0.12)',
-                            cursor: 'pointer',
-                            background: s.zone === z ? `${color}22` : 'rgba(255,255,255,0.04)',
-                            color: s.zone === z ? color : '#94a3b8',
-                            transition: 'all 0.15s ease',
-                          }}>
-                          {label}
-                        </button>
+                      {ZONE_CHOICES.map(({ z, label, color }) => (
+                        <ZoneButton
+                          key={z}
+                          section={s}
+                          zone={z}
+                          label={label}
+                          color={color}
+                          onMove={setSectionZone}
+                        />
                       ))}
                     </div>
                     <div style={{ display: 'flex', gap: 3, marginLeft: 2 }}>

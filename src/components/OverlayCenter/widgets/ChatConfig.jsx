@@ -150,12 +150,10 @@ export default function ChatConfig({ config, onChange }) {
             </>
           )}
           {(c.chatStyle) === 'cards' && (
-            <>
-              <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
-                <input type="checkbox" checked={c.showHeader !== false} onChange={e => set('showHeader', e.target.checked)} />
-                <span>Show Header Bar</span>
-              </label>
-            </>
+            <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+              <input type="checkbox" checked={c.showHeader !== false} onChange={e => set('showHeader', e.target.checked)} />
+              <span>Show Header Bar</span>
+            </label>
           )}
           <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
             <input type="checkbox" checked={!!c.useNativeColors} onChange={e => set('useNativeColors', e.target.checked)} />
