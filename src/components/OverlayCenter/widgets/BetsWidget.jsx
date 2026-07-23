@@ -150,10 +150,7 @@ function scaledFontSize(baseFontSize, scale, minimum = 0) {
 }
 
 function getExplicitAppearanceConfig(config = {}) {
-  return Object.prototype.hasOwnProperty.call(
-    config,
-    "__appearanceExplicitSubElements",
-  )
+  return Object.hasOwn(config, "__appearanceExplicitSubElements")
     ? { subElements: config.__appearanceExplicitSubElements || {} }
     : config;
 }
@@ -192,14 +189,15 @@ function elementValue(
 function elementStyle(
   config,
   elementId,
-  fallback = {},
+  fallback,
   legacyElementId,
   stateId = "default",
 ) {
   const explicitConfig = getExplicitAppearanceConfig(config);
+  const baseFallback = fallback ?? {};
   const legacyFallback = legacyElementId
-    ? subElementStyle(explicitConfig, legacyElementId, fallback, stateId)
-    : fallback;
+    ? subElementStyle(explicitConfig, legacyElementId, baseFallback, stateId)
+    : baseFallback;
   return subElementStyle(explicitConfig, elementId, legacyFallback, stateId);
 }
 
@@ -219,6 +217,428 @@ function optionStateId({ isWin, isLose, isLead, status }) {
   return "default";
 }
 
+function optionProgressStateId({ isWin, isLose }) {
+  if (isWin) return "winner";
+  if (isLose) return "loser";
+  return "default";
+}
+
+function stripBetCommandSuffix(label) {
+  const value = String(label || "");
+  const commandIndex = value.toLowerCase().lastIndexOf("!bet");
+  if (commandIndex < 0) return value;
+  const commandNumber = value.slice(commandIndex + 4).trim();
+  if (!/^\d+$/.test(commandNumber)) return value;
+  const beforeCommand = value.slice(0, commandIndex).trimEnd();
+  if (!beforeCommand.endsWith("-")) return value;
+  return beforeCommand.slice(0, -1).trimEnd();
+}
+
+function betOptionLabel(option, index) {
+  return stripBetCommandSuffix(option.label || `Option ${index + 1}`);
+}
+
+function formatBetDuration(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${(seconds % 60).toString().padStart(2, "0")}`;
+}
+
+function resolveBetsStatusLabel(status, countdown) {
+  if (status === "open")
+    return countdown > 0 ? formatBetDuration(countdown) : "OPEN";
+  if (status === "locked") return "LOCKED";
+  if (status === "result") return "RESULT";
+  return "";
+}
+
+function resolveBetsTimerIcon(status, countdown) {
+  if (status === "open" && countdown > 0) return formatBetDuration(countdown);
+  if (status === "open") return "∞";
+  if (status === "locked") return "🔒";
+  return "🏆";
+}
+
+function resolveBetsFont(config, isStyleSeca) {
+  return (
+    config.bodyFont ||
+    config.fontFamily ||
+    styleSecaOr(
+      isStyleSeca,
+      "'Rajdhani', 'Barlow Condensed', sans-serif",
+      "'Inter', sans-serif",
+    )
+  );
+}
+
+function resolveDefaultLetterSpacing(letterSpacing) {
+  if (typeof letterSpacing === "number") return `${letterSpacing}em`;
+  return letterSpacing;
+}
+
+function resolveBetsBarColorMode(config, isStyleSeca) {
+  return config.barColorMode || styleSecaOr(isStyleSeca, "solid", "rainbow");
+}
+
+function resolveEffectiveBarColorMode({
+  isStyleSeca,
+  syncedBonusHuntColors,
+  barColorMode,
+}) {
+  if (isStyleSeca || syncedBonusHuntColors) return "solid";
+  return barColorMode;
+}
+
+function resolveBetsStyleSecaValue(isStyleSeca, value, fallback) {
+  if (isStyleSeca) return resolveStyleSecaValue(value, fallback);
+  return value;
+}
+
+function resolveVisibleBetOptions(options, isStyleSeca) {
+  if (isStyleSeca) return options.slice(0, 6);
+  return options;
+}
+
+function resolveStyleSecaContainerShadow(isStyleSeca) {
+  if (!isStyleSeca) return undefined;
+  return `0 18px 44px rgba(0,0,0,0.34), 0 0 30px ${STYLE_SECA.glow}`;
+}
+
+function resolveBetsContainerStyle({
+  isStyleSeca,
+  rawContainerStyle,
+  bgColor,
+  textColor,
+  styleSecaValue,
+}) {
+  if (!isStyleSeca) return rawContainerStyle;
+  return {
+    ...rawContainerStyle,
+    background: styleSecaValue(rawContainerStyle.background, bgColor),
+    color: styleSecaValue(rawContainerStyle.color, textColor),
+  };
+}
+
+function resolveBetsHeaderStyle({
+  isStyleSeca,
+  titleStyle,
+  headerBg,
+  headerText,
+  styleSecaValue,
+}) {
+  const headerStyle = {
+    background: isStyleSeca
+      ? styleSecaValue(titleStyle.background, headerBg)
+      : titleStyle.background || headerBg,
+    color: titleStyle.color || headerText,
+  };
+  if (titleStyle.padding) headerStyle.padding = titleStyle.padding;
+  if (titleStyle.borderRadius)
+    headerStyle.borderRadius = titleStyle.borderRadius;
+  if (titleStyle.border) headerStyle.border = titleStyle.border;
+  return headerStyle;
+}
+
+function resolveBetsSharedCardStyle({
+  isStyleSeca,
+  rawSharedCardStyle,
+  optionBg,
+  optionText,
+  styleSecaValue,
+}) {
+  if (!isStyleSeca) return rawSharedCardStyle;
+  return {
+    ...rawSharedCardStyle,
+    background: styleSecaValue(rawSharedCardStyle.background, optionBg),
+    color: styleSecaValue(rawSharedCardStyle.color, optionText),
+  };
+}
+
+function resolveBetsOptionRowStyle({ isStyleSeca, rawOptionRowStyle }) {
+  if (!isStyleSeca) return rawOptionRowStyle;
+  return stripStyleSecaLayout(rawOptionRowStyle);
+}
+
+function resolveBetsProgressStyle({
+  isStyleSeca,
+  rawProgressStyle,
+  barBg,
+  styleSecaValue,
+}) {
+  if (!isStyleSeca) return rawProgressStyle;
+  return {
+    ...rawProgressStyle,
+    background: styleSecaValue(rawProgressStyle.background, barBg),
+  };
+}
+
+function resolveBetsProgressFill({
+  isStyleSeca,
+  rawProgressFill,
+  barFill,
+  styleSecaValue,
+}) {
+  if (!isStyleSeca) return rawProgressFill;
+  return styleSecaValue(rawProgressFill, barFill);
+}
+
+function resolveBetsCardTextStyle({ isStyleSeca, optionRowStyle }) {
+  if (!isStyleSeca) return pickTextStyle(optionRowStyle);
+  return {
+    ...pickTextStyle(optionRowStyle),
+    display: "grid",
+    gridTemplateRows: "auto minmax(0, 1fr) auto",
+    width: "100%",
+    height: "100%",
+    minWidth: 0,
+    minHeight: 0,
+  };
+}
+
+function resolveBetsCardFillStyle({
+  displayFillH,
+  isStyleSeca,
+  progressFill,
+  progressStyle,
+}) {
+  const styleSecaBackground = `linear-gradient(180deg, rgba(242,184,75,0.10) 0%, ${progressFill} 76%, ${progressFill} 100%)`;
+  const regularBackground = `linear-gradient(180deg, transparent 0%, ${progressFill} 100%)`;
+  return {
+    height: `${displayFillH}%`,
+    background: isStyleSeca ? styleSecaBackground : regularBackground,
+    borderRadius: progressStyle.borderRadius,
+    opacity: isStyleSeca ? 0.86 : undefined,
+    boxShadow: isStyleSeca ? `0 -10px 22px ${progressFill}44` : undefined,
+  };
+}
+
+function betsCardClasses({ isWin, isLose, isLead }) {
+  return [
+    "bets-ov__card",
+    isWin && "bets-ov__card--win",
+    isLose && "bets-ov__card--lose",
+    isLead && "bets-ov__card--leading",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function BetsGridOptionCard({ option, index, context }) {
+  const amount = context.bets[`opt_${index}`] || 0;
+  const pct = context.pcts[index];
+  const fillHeight = context.maxBet > 0 ? (amount / context.maxBet) * 100 : 0;
+  const displayFillHeight =
+    context.isStyleSeca && amount > 0 ? Math.max(12, fillHeight) : fillHeight;
+  const isWin = context.winnerIdx === index;
+  const isLose = context.winnerIdx !== null && context.winnerIdx !== index;
+  const isLead = context.leadingIdx === index;
+  const stateId = optionStateId({
+    isWin,
+    isLose,
+    isLead,
+    status: context.status,
+  });
+  const progressStateId = optionProgressStateId({ isWin, isLose });
+  const optColor = context.getOptColor(index);
+  const label = betOptionLabel(option, index);
+  const rawSharedCardStyle = elementStyle(
+    context.config,
+    "betCards",
+    {
+      background: context.optionBg,
+      color: context.optionText,
+      borderRadius: toCssLength(context.radius, "12px"),
+    },
+    "optionCard",
+    stateId,
+  );
+  const sharedCardStyle = resolveBetsSharedCardStyle({
+    isStyleSeca: context.isStyleSeca,
+    rawSharedCardStyle,
+    optionBg: context.optionBg,
+    optionText: context.optionText,
+    styleSecaValue: context.styleSecaValue,
+  });
+  const rawOptionRowStyle = elementStyle(
+    context.config,
+    "individualBetCard",
+    sharedCardStyle,
+    undefined,
+    `card_${index + 1}`,
+  );
+  const optionRowStyle = resolveBetsOptionRowStyle({
+    isStyleSeca: context.isStyleSeca,
+    rawOptionRowStyle,
+  });
+  const optionNumberStyle = elementStyle(
+    context.config,
+    "cardNumberBadge",
+    {
+      background: optColor || context.accentColor,
+      color: elementValue(
+        context.config,
+        "cardNumberBadge",
+        "textColor",
+        "#ffffff",
+        "optionNumber",
+        stateId,
+      ),
+      fontFamily: context.numberFont,
+      fontSize: `${context.cardNumberFontSize}px`,
+      fontWeight: 800,
+    },
+    "optionNumber",
+    stateId,
+  );
+  const optionLabelStyle = elementStyle(
+    context.config,
+    "cardRangeText",
+    {
+      color: context.optionText,
+      fontFamily: context.font,
+      fontSize: context.cardRangeFontCss,
+      fontWeight: 700,
+      lineHeight: context.defaultLineHeight,
+      letterSpacing: context.defaultLetterSpacing,
+      textTransform: context.defaultTextTransform,
+      textAlign: context.defaultTextAlign,
+    },
+    "optionLabel",
+    stateId,
+  );
+  const percentageStyle = elementStyle(
+    context.config,
+    "cardPercentageText",
+    {
+      color: context.isStyleSeca
+        ? context.styleSecaText
+        : optColor || context.accentColor,
+      fontFamily: context.numberFont,
+      fontSize: `${context.cardPercentageFontSize}px`,
+      fontWeight: 900,
+      lineHeight: 1,
+      letterSpacing: context.defaultLetterSpacing,
+    },
+    "percentage",
+    stateId,
+  );
+  const cardLabelStyle = elementStyle(
+    context.config,
+    "cardLabel",
+    {
+      color: context.isStyleSeca
+        ? "rgba(248,251,255,0.9)"
+        : "rgba(255,255,255,0.62)",
+      fontFamily: context.font,
+      fontSize: `${context.cardCommandFontSize}px`,
+      fontWeight: 700,
+      lineHeight: 1,
+      letterSpacing: context.defaultLetterSpacing,
+    },
+    undefined,
+    stateId,
+  );
+  const rawProgressStyle = elementStyle(
+    context.config,
+    "progressBar",
+    {
+      background: context.barBg,
+      height: toCssLength(context.progressHeight, "8px"),
+      borderRadius: toCssLength(context.progressRadius, "4px"),
+    },
+    undefined,
+    progressStateId,
+  );
+  const progressStyle = resolveBetsProgressStyle({
+    isStyleSeca: context.isStyleSeca,
+    rawProgressStyle,
+    barBg: context.barBg,
+    styleSecaValue: context.styleSecaValue,
+  });
+  const rawProgressFill = elementValue(
+    context.config,
+    "progressBar",
+    "fillColor",
+    optColor || context.barFill,
+    undefined,
+    progressStateId,
+  );
+  const progressFill = resolveBetsProgressFill({
+    isStyleSeca: context.isStyleSeca,
+    rawProgressFill,
+    barFill: context.barFill,
+    styleSecaValue: context.styleSecaValue,
+  });
+  return (
+    <div
+      key={`${index}-${context.status}`}
+      className={betsCardClasses({ isWin, isLose, isLead })}
+      {...partAttrs("individualBetCard", stateId)}
+      data-appearance-index={index}
+      style={{
+        animationDelay: `${index * 0.07}s`,
+        "--opt-color": optColor,
+        ...optionRowStyle,
+      }}
+    >
+      <div
+        className="bets-ov__card-fill"
+        {...partAttrs("progressBar", progressStateId)}
+        style={resolveBetsCardFillStyle({
+          displayFillH: displayFillHeight,
+          isStyleSeca: context.isStyleSeca,
+          progressFill,
+          progressStyle,
+        })}
+      />
+      <div
+        className="bets-ov__card-body"
+        style={resolveBetsCardTextStyle({
+          isStyleSeca: context.isStyleSeca,
+          optionRowStyle,
+        })}
+      >
+        <div className="bets-ov__card-head">
+          <span
+            className="bets-ov__card-num"
+            {...partAttrs("cardNumberBadge", stateId)}
+            style={optionNumberStyle}
+          >
+            {index + 1}
+          </span>
+          <span
+            className={`bets-ov__card-crown${isWin ? "" : " bets-ov__card-crown--hidden"}`}
+          >
+            👑
+          </span>
+        </div>
+        <span
+          className="bets-ov__card-label"
+          {...partAttrs("cardRangeText", stateId)}
+          style={optionLabelStyle}
+        >
+          {label}
+        </span>
+        <div className="bets-ov__card-footer">
+          <span
+            className="bets-ov__card-pct"
+            {...partAttrs("cardPercentageText", stateId)}
+            style={percentageStyle}
+          >
+            {pct}%
+          </span>
+          <span
+            className="bets-ov__card-cmd"
+            {...partAttrs("cardLabel", stateId)}
+            style={cardLabelStyle}
+          >
+            {context.cmd} {index + 1}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BetsWidget({ config, allWidgets }) {
   const styleSecaContainerRef = useRef(null);
   const c = config || {};
@@ -232,12 +652,7 @@ function BetsWidget({ config, allWidgets }) {
   const cmd = c.chatCommand || "!bet";
   const layout = c.displayStyle || "v1_list";
   const isStyleSeca = layout === "StyleSecaBets";
-  const font =
-    c.bodyFont ||
-    c.fontFamily ||
-    (isStyleSeca
-      ? "'Rajdhani', 'Barlow Condensed', sans-serif"
-      : "'Inter', sans-serif");
+  const font = resolveBetsFont(c, isStyleSeca);
   const headingFont = c.headingFont || font;
   const numberFont = c.numberFont || font;
   const baseFontSize = Number(c.fontSize) || 14;
@@ -283,55 +698,61 @@ function BetsWidget({ config, allWidgets }) {
     8,
   );
   const defaultLineHeight = Number(c.lineHeight) || 1.2;
-  const defaultLetterSpacing =
-    typeof c.letterSpacing === "number"
-      ? `${c.letterSpacing}em`
-      : c.letterSpacing;
+  const defaultLetterSpacing = resolveDefaultLetterSpacing(c.letterSpacing);
   const defaultTextTransform = c.textTransform || "none";
   const defaultTextAlign = c.textAlign || undefined;
   const colorTheme = c.colorTheme || "dark";
-  const barColorMode = c.barColorMode || (isStyleSeca ? "solid" : "rainbow");
+  const barColorMode = resolveBetsBarColorMode(c, isStyleSeca);
   const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
   const syncedPrimaryColor = syncedBonusHuntColors?.primaryColor;
   const syncedSecondaryColor = syncedBonusHuntColors?.secondaryColor;
-  const effectiveBarColorMode = isStyleSeca || syncedBonusHuntColors ? "solid" : barColorMode;
+  const effectiveBarColorMode = resolveEffectiveBarColorMode({
+    isStyleSeca,
+    syncedBonusHuntColors,
+    barColorMode,
+  });
   const styleSecaValue = (value, fallback) =>
-    isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
+    resolveBetsStyleSecaValue(isStyleSeca, value, fallback);
   const styleSecaText = "#f8fbff";
-  const visibleOptions = isStyleSeca ? options.slice(0, 6) : options;
+  const visibleOptions = resolveVisibleBetOptions(options, isStyleSeca);
 
   const preset = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
-  const bgColor = syncedSecondaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "widgetBackground",
-      "background",
-      c.bgColor || (isStyleSeca ? styleSecaSurfaceGradient() : preset.bgColor),
-      "container",
-    ),
-    styleSecaSurfaceGradient(),
-  );
+  const bgColor =
+    syncedSecondaryColor ||
+    styleSecaValue(
+      elementValue(
+        c,
+        "widgetBackground",
+        "background",
+        c.bgColor ||
+          styleSecaOr(isStyleSeca, styleSecaSurfaceGradient(), preset.bgColor),
+        "container",
+      ),
+      styleSecaSurfaceGradient(),
+    );
   const textColor = styleSecaValue(
     elementValue(
       c,
       "widgetBackground",
       "textColor",
-      c.textColor || (isStyleSeca ? styleSecaText : preset.textColor),
+      c.textColor || styleSecaOr(isStyleSeca, styleSecaText, preset.textColor),
       "container",
     ),
     styleSecaText,
   );
-  const borderColor = syncedPrimaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "widgetBackground",
-      "borderColor",
-      c.borderColor ||
-        (isStyleSeca ? STYLE_SECA.border : "rgba(148,163,184,0.12)"),
-      "container",
-    ),
-    STYLE_SECA.border,
-  );
+  const borderColor =
+    syncedPrimaryColor ||
+    styleSecaValue(
+      elementValue(
+        c,
+        "widgetBackground",
+        "borderColor",
+        c.borderColor ||
+          styleSecaOr(isStyleSeca, STYLE_SECA.border, "rgba(148,163,184,0.12)"),
+        "container",
+      ),
+      STYLE_SECA.border,
+    );
   const borderWidth = elementValue(
     c,
     "widgetBackground",
@@ -343,82 +764,96 @@ function BetsWidget({ config, allWidgets }) {
     c,
     "widgetBackground",
     "radius",
-    c.borderRadius ?? (isStyleSeca ? 12 : 0),
+    c.borderRadius ?? styleSecaOr(isStyleSeca, 12, 0),
     "container",
   );
-  const headerBg = syncedSecondaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "header",
-      "background",
-      c.headerBg || (isStyleSeca ? styleSecaHeaderGradient() : preset.headerBg),
-      "title",
-    ),
-    styleSecaHeaderGradient(),
-  );
-  const headerText = syncedPrimaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "header",
-      "textColor",
-      c.headerText || (isStyleSeca ? styleSecaText : preset.headerText),
-      "title",
-    ),
-    styleSecaText,
-  );
-  const barBg = syncedSecondaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "progressBar",
-      "background",
-      c.barBg ||
-        c.progressBgColor ||
-        (isStyleSeca ? STYLE_SECA.secondarySurface : preset.barBg),
-    ),
-    STYLE_SECA.secondarySurface,
-  );
-  const barFill = syncedPrimaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "progressBar",
-      "fillColor",
-      c.barFill ||
-        c.progressColor ||
-        (isStyleSeca ? STYLE_SECA.primary : preset.barFill),
-    ),
-    STYLE_SECA.primary,
-  );
-  const accentColor = syncedPrimaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "cardNumberBadge",
-      "background",
-      scopedSubValue(
+  const headerBg =
+    syncedSecondaryColor ||
+    styleSecaValue(
+      elementValue(
         c,
-        "optionCard",
-        "accentColor",
-        c.accentColor ||
-          (isStyleSeca ? STYLE_SECA.primary : preset.accentColor),
-      ),
-      "optionNumber",
-    ),
-    STYLE_SECA.primary,
-  );
-  const optionBg = syncedSecondaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "betCards",
-      "background",
-      scopedSubValue(
-        c,
-        "optionCard",
+        "header",
         "background",
-        c.cardBg || (isStyleSeca ? STYLE_SECA.cardSurface : barBg),
+        c.headerBg ||
+          styleSecaOr(isStyleSeca, styleSecaHeaderGradient(), preset.headerBg),
+        "title",
       ),
-      "optionRow",
-    ),
-    STYLE_SECA.cardSurface,
-  );
+      styleSecaHeaderGradient(),
+    );
+  const headerText =
+    syncedPrimaryColor ||
+    styleSecaValue(
+      elementValue(
+        c,
+        "header",
+        "textColor",
+        c.headerText ||
+          styleSecaOr(isStyleSeca, styleSecaText, preset.headerText),
+        "title",
+      ),
+      styleSecaText,
+    );
+  const barBg =
+    syncedSecondaryColor ||
+    styleSecaValue(
+      elementValue(
+        c,
+        "progressBar",
+        "background",
+        c.barBg ||
+          c.progressBgColor ||
+          styleSecaOr(isStyleSeca, STYLE_SECA.secondarySurface, preset.barBg),
+      ),
+      STYLE_SECA.secondarySurface,
+    );
+  const barFill =
+    syncedPrimaryColor ||
+    styleSecaValue(
+      elementValue(
+        c,
+        "progressBar",
+        "fillColor",
+        c.barFill ||
+          c.progressColor ||
+          styleSecaOr(isStyleSeca, STYLE_SECA.primary, preset.barFill),
+      ),
+      STYLE_SECA.primary,
+    );
+  const accentColor =
+    syncedPrimaryColor ||
+    styleSecaValue(
+      elementValue(
+        c,
+        "cardNumberBadge",
+        "background",
+        scopedSubValue(
+          c,
+          "optionCard",
+          "accentColor",
+          c.accentColor ||
+            styleSecaOr(isStyleSeca, STYLE_SECA.primary, preset.accentColor),
+        ),
+        "optionNumber",
+      ),
+      STYLE_SECA.primary,
+    );
+  const optionBg =
+    syncedSecondaryColor ||
+    styleSecaValue(
+      elementValue(
+        c,
+        "betCards",
+        "background",
+        scopedSubValue(
+          c,
+          "optionCard",
+          "background",
+          c.cardBg || styleSecaOr(isStyleSeca, STYLE_SECA.cardSurface, barBg),
+        ),
+        "optionRow",
+      ),
+      STYLE_SECA.cardSurface,
+    );
   const optionText = styleSecaValue(
     elementValue(
       c,
@@ -428,7 +863,7 @@ function BetsWidget({ config, allWidgets }) {
         c,
         "optionCard",
         "textColor",
-        isStyleSeca ? styleSecaText : textColor,
+        styleSecaOr(isStyleSeca, styleSecaText, textColor),
       ),
       "optionLabel",
     ),
@@ -443,29 +878,31 @@ function BetsWidget({ config, allWidgets }) {
         c,
         "timer",
         "textColor",
-        isStyleSeca ? STYLE_SECA.darkText : headerText,
+        styleSecaOr(isStyleSeca, STYLE_SECA.darkText, headerText),
       ),
       "timer",
       status || "default",
     ),
     STYLE_SECA.darkText,
   );
-  const timerBg = syncedPrimaryColor || styleSecaValue(
-    elementValue(
-      c,
-      "status",
-      "background",
-      scopedSubValue(
+  const timerBg =
+    syncedPrimaryColor ||
+    styleSecaValue(
+      elementValue(
         c,
-        "timer",
+        "status",
         "background",
-        isStyleSeca ? STYLE_SECA.primary : "rgba(99,102,241,0.18)",
+        scopedSubValue(
+          c,
+          "timer",
+          "background",
+          styleSecaOr(isStyleSeca, STYLE_SECA.primary, "rgba(99,102,241,0.18)"),
+        ),
+        "timer",
+        status || "default",
       ),
-      "timer",
-      status || "default",
-    ),
-    STYLE_SECA.primary,
-  );
+      STYLE_SECA.primary,
+    );
   const winText = elementValue(
     c,
     "betCards",
@@ -509,13 +946,13 @@ function BetsWidget({ config, allWidgets }) {
     c,
     "progressBar",
     "height",
-    c.barHeight || (isStyleSeca ? 18 : 8),
+    c.barHeight || styleSecaOr(isStyleSeca, 18, 8),
   );
   const progressRadius = elementValue(
     c,
     "progressBar",
     "radius",
-    isStyleSeca ? 8 : 4,
+    styleSecaOr(isStyleSeca, 8, 4),
   );
   const rawContainerStyle = elementStyle(
     c,
@@ -531,19 +968,17 @@ function BetsWidget({ config, allWidgets }) {
       color: textColor,
       border: `${Number(borderWidth) || 0}px solid ${borderColor}`,
       borderRadius: toCssLength(widgetRadius, "0px"),
-      boxShadow: isStyleSeca
-        ? `0 18px 44px rgba(0,0,0,0.34), 0 0 30px ${STYLE_SECA.glow}`
-        : undefined,
+      boxShadow: resolveStyleSecaContainerShadow(isStyleSeca),
     },
     "container",
   );
-  const containerStyle = isStyleSeca
-    ? {
-        ...rawContainerStyle,
-        background: styleSecaValue(rawContainerStyle.background, bgColor),
-        color: styleSecaValue(rawContainerStyle.color, textColor),
-      }
-    : rawContainerStyle;
+  const containerStyle = resolveBetsContainerStyle({
+    isStyleSeca,
+    rawContainerStyle,
+    bgColor,
+    textColor,
+    styleSecaValue,
+  });
   const titleStyle = elementStyle(
     c,
     "header",
@@ -559,17 +994,13 @@ function BetsWidget({ config, allWidgets }) {
     },
     "title",
   );
-  const headerStyle = {
-    background: isStyleSeca
-      ? styleSecaValue(titleStyle.background, headerBg)
-      : titleStyle.background || headerBg,
-    color: titleStyle.color || headerText,
-    ...(titleStyle.padding ? { padding: titleStyle.padding } : {}),
-    ...(titleStyle.borderRadius
-      ? { borderRadius: titleStyle.borderRadius }
-      : {}),
-    ...(titleStyle.border ? { border: titleStyle.border } : {}),
-  };
+  const headerStyle = resolveBetsHeaderStyle({
+    isStyleSeca,
+    titleStyle,
+    headerBg,
+    headerText,
+    styleSecaValue,
+  });
   const statusStyle = elementStyle(
     c,
     "status",
@@ -650,11 +1081,6 @@ function BetsWidget({ config, allWidgets }) {
     return () => clearInterval(iv);
   }, [status, c._openedAt, timer]);
 
-  const fmt = (s) => {
-    const m = Math.floor(s / 60);
-    return `${m}:${(s % 60).toString().padStart(2, "0")}`;
-  };
-
   const totalPool = useMemo(
     () =>
       visibleOptions.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0),
@@ -710,16 +1136,7 @@ function BetsWidget({ config, allWidgets }) {
 
   if (status === "idle") return null;
 
-  const statusLabel =
-    status === "open"
-      ? countdown > 0
-        ? fmt(countdown)
-        : "OPEN"
-      : status === "locked"
-        ? "LOCKED"
-        : status === "result"
-          ? "RESULT"
-          : "";
+  const statusLabel = resolveBetsStatusLabel(status, countdown);
 
   const isGrid2x3 = layout === "v3_grid_2x3";
   const isGrid = layout === "v2_grid" || isGrid2x3 || isStyleSeca;
@@ -727,6 +1144,39 @@ function BetsWidget({ config, allWidgets }) {
 
   const getOptColor = (i) =>
     effectiveBarColorMode === "rainbow" ? PALETTE[i % PALETTE.length] : barFill;
+
+  const gridOptionContext = {
+    config: c,
+    bets,
+    pcts,
+    maxBet,
+    isStyleSeca,
+    winnerIdx,
+    leadingIdx,
+    status,
+    getOptColor,
+    optionBg,
+    optionText,
+    radius,
+    styleSecaValue,
+    accentColor,
+    numberFont,
+    cardNumberFontSize,
+    font,
+    cardRangeFontCss,
+    defaultLineHeight,
+    defaultLetterSpacing,
+    defaultTextTransform,
+    defaultTextAlign,
+    styleSecaText,
+    cardPercentageFontSize,
+    cardCommandFontSize,
+    barBg,
+    progressHeight,
+    progressRadius,
+    barFill,
+    cmd,
+  };
 
   const cssVars = {
     fontFamily: font,
@@ -851,13 +1301,7 @@ function BetsWidget({ config, allWidgets }) {
             className="bets-ov__stat-val"
             style={pickTextStyle(timerStatStyle)}
           >
-            {status === "open" && countdown > 0
-              ? fmt(countdown)
-              : status === "open"
-                ? "∞"
-                : status === "locked"
-                  ? "🔒"
-                  : "🏆"}
+            {resolveBetsTimerIcon(status, countdown)}
           </span>
           <span
             className="bets-ov__stat-lbl"
@@ -889,246 +1333,14 @@ function BetsWidget({ config, allWidgets }) {
       {/* ── Options ── */}
       {isGrid ? (
         <div className="bets-ov__grid" {...partAttrs("betCards")}>
-          {visibleOptions.map((opt, i) => {
-            const amount = bets[`opt_${i}`] || 0;
-            const pct = pcts[i];
-            const fillH = maxBet > 0 ? (amount / maxBet) * 100 : 0;
-            const displayFillH =
-              isStyleSeca && amount > 0 ? Math.max(12, fillH) : fillH;
-            const isWin = winnerIdx === i;
-            const isLose = winnerIdx !== null && winnerIdx !== i;
-            const isLead = leadingIdx === i;
-            const label = (opt.label || `Option ${i + 1}`).replace(
-              /\s*-\s*!bet\s*\d+$/i,
-              "",
-            );
-            const optColor = getOptColor(i);
-            const stateId = optionStateId({ isWin, isLose, isLead, status });
-            const progressStateId = isWin
-              ? "winner"
-              : isLose
-                ? "loser"
-                : "default";
-            const rawSharedCardStyle = elementStyle(
-              c,
-              "betCards",
-              {
-                background: optionBg,
-                color: optionText,
-                borderRadius: toCssLength(radius, "12px"),
-              },
-              "optionCard",
-              stateId,
-            );
-            const sharedCardStyle = isStyleSeca
-              ? {
-                  ...rawSharedCardStyle,
-                  background: styleSecaValue(
-                    rawSharedCardStyle.background,
-                    optionBg,
-                  ),
-                  color: styleSecaValue(rawSharedCardStyle.color, optionText),
-                }
-              : rawSharedCardStyle;
-            const rawOptionRowStyle = elementStyle(
-              c,
-              "individualBetCard",
-              sharedCardStyle,
-              undefined,
-              `card_${i + 1}`,
-            );
-            const optionRowStyle = isStyleSeca
-              ? stripStyleSecaLayout(rawOptionRowStyle)
-              : rawOptionRowStyle;
-            const optionNumberStyle = elementStyle(
-              c,
-              "cardNumberBadge",
-              {
-                background: optColor || accentColor,
-                color: elementValue(
-                  c,
-                  "cardNumberBadge",
-                  "textColor",
-                  "#ffffff",
-                  "optionNumber",
-                  stateId,
-                ),
-                fontFamily: numberFont,
-                fontSize: `${cardNumberFontSize}px`,
-                fontWeight: 800,
-              },
-              "optionNumber",
-              stateId,
-            );
-            const optionLabelStyle = elementStyle(
-              c,
-              "cardRangeText",
-              {
-                color: optionText,
-                fontFamily: font,
-                fontSize: cardRangeFontCss,
-                fontWeight: 700,
-                lineHeight: defaultLineHeight,
-                letterSpacing: defaultLetterSpacing,
-                textTransform: defaultTextTransform,
-                textAlign: defaultTextAlign,
-              },
-              "optionLabel",
-              stateId,
-            );
-            const percentageStyle = elementStyle(
-              c,
-              "cardPercentageText",
-              {
-                color: isStyleSeca ? styleSecaText : optColor || accentColor,
-                fontFamily: numberFont,
-                fontSize: `${cardPercentageFontSize}px`,
-                fontWeight: 900,
-                lineHeight: 1,
-                letterSpacing: defaultLetterSpacing,
-              },
-              "percentage",
-              stateId,
-            );
-            const cardLabelStyle = elementStyle(
-              c,
-              "cardLabel",
-              {
-                color: isStyleSeca
-                  ? "rgba(248,251,255,0.9)"
-                  : "rgba(255,255,255,0.62)",
-                fontFamily: font,
-                fontSize: `${cardCommandFontSize}px`,
-                fontWeight: 700,
-                lineHeight: 1,
-                letterSpacing: defaultLetterSpacing,
-              },
-              undefined,
-              stateId,
-            );
-            const rawProgressStyle = elementStyle(
-              c,
-              "progressBar",
-              {
-                background: barBg,
-                height: toCssLength(progressHeight, "8px"),
-                borderRadius: toCssLength(progressRadius, "4px"),
-              },
-              undefined,
-              progressStateId,
-            );
-            const progressStyle = isStyleSeca
-              ? {
-                  ...rawProgressStyle,
-                  background: styleSecaValue(
-                    rawProgressStyle.background,
-                    barBg,
-                  ),
-                }
-              : rawProgressStyle;
-            const rawProgressFill = elementValue(
-              c,
-              "progressBar",
-              "fillColor",
-              optColor || barFill,
-              undefined,
-              progressStateId,
-            );
-            const progressFill = isStyleSeca
-              ? styleSecaValue(rawProgressFill, barFill)
-              : rawProgressFill;
-            const cardTextInheritanceStyle = isStyleSeca
-              ? {
-                  ...pickTextStyle(optionRowStyle),
-                  display: "grid",
-                  gridTemplateRows: "auto minmax(0, 1fr) auto",
-                  width: "100%",
-                  height: "100%",
-                  minWidth: 0,
-                  minHeight: 0,
-                }
-              : pickTextStyle(optionRowStyle);
-            const classes = [
-              "bets-ov__card",
-              isWin && "bets-ov__card--win",
-              isLose && "bets-ov__card--lose",
-              isLead && "bets-ov__card--leading",
-            ]
-              .filter(Boolean)
-              .join(" ");
-
-            return (
-              <div
-                key={`${i}-${status}`}
-                className={classes}
-                {...partAttrs("individualBetCard", stateId)}
-                data-appearance-index={i}
-                style={{
-                  animationDelay: `${i * 0.07}s`,
-                  "--opt-color": optColor,
-                  ...optionRowStyle,
-                }}
-              >
-                <div
-                  className="bets-ov__card-fill"
-                  {...partAttrs("progressBar", progressStateId)}
-                  style={{
-                    height: `${displayFillH}%`,
-                    background: isStyleSeca
-                      ? `linear-gradient(180deg, rgba(242,184,75,0.10) 0%, ${progressFill} 76%, ${progressFill} 100%)`
-                      : `linear-gradient(180deg, transparent 0%, ${progressFill} 100%)`,
-                    borderRadius: progressStyle.borderRadius,
-                    opacity: isStyleSeca ? 0.86 : undefined,
-                    boxShadow: isStyleSeca
-                      ? `0 -10px 22px ${progressFill}44`
-                      : undefined,
-                  }}
-                />
-                <div
-                  className="bets-ov__card-body"
-                  style={cardTextInheritanceStyle}
-                >
-                  <div className="bets-ov__card-head">
-                    <span
-                      className="bets-ov__card-num"
-                      {...partAttrs("cardNumberBadge", stateId)}
-                      style={optionNumberStyle}
-                    >
-                      {i + 1}
-                    </span>
-                    <span
-                      className={`bets-ov__card-crown${isWin ? "" : " bets-ov__card-crown--hidden"}`}
-                    >
-                      👑
-                    </span>
-                  </div>
-                  <span
-                    className="bets-ov__card-label"
-                    {...partAttrs("cardRangeText", stateId)}
-                    style={optionLabelStyle}
-                  >
-                    {label}
-                  </span>
-                  <div className="bets-ov__card-footer">
-                    <span
-                      className="bets-ov__card-pct"
-                      {...partAttrs("cardPercentageText", stateId)}
-                      style={percentageStyle}
-                    >
-                      {pct}%
-                    </span>
-                    <span
-                      className="bets-ov__card-cmd"
-                      {...partAttrs("cardLabel", stateId)}
-                      style={cardLabelStyle}
-                    >
-                      {cmd} {i + 1}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {visibleOptions.map((opt, i) => (
+            <BetsGridOptionCard
+              key={`${i}-${status}`}
+              option={opt}
+              index={i}
+              context={gridOptionContext}
+            />
+          ))}
         </div>
       ) : (
         <div className="bets-ov__list" {...partAttrs("betCards")}>
@@ -1137,17 +1349,10 @@ function BetsWidget({ config, allWidgets }) {
             const isWin = winnerIdx === i;
             const isLose = winnerIdx !== null && winnerIdx !== i;
             const isLead = leadingIdx === i;
-            const label = (opt.label || `Option ${i + 1}`).replace(
-              /\s*-\s*!bet\s*\d+$/i,
-              "",
-            );
+            const label = betOptionLabel(opt, i);
             const optColor = getOptColor(i);
             const stateId = optionStateId({ isWin, isLose, isLead, status });
-            const progressStateId = isWin
-              ? "winner"
-              : isLose
-                ? "loser"
-                : "default";
+            const progressStateId = optionProgressStateId({ isWin, isLose });
             const sharedCardStyle = elementStyle(
               c,
               "betCards",

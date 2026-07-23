@@ -241,7 +241,8 @@ function snapshotWidget(widget) {
     config: sanitizeConfigForBackup(widget.config),
   };
   for (const key of WIDGET_FULL_BACKUP_ROW_KEYS) {
-    if (Object.hasOwn(widget, key)) snapshot[key] = clonePlain(widget[key], widget[key]);
+    if (Object.hasOwn(widget, key))
+      snapshot[key] = clonePlain(widget[key], widget[key]);
   }
   return snapshot;
 }
@@ -255,7 +256,8 @@ function buildPresetWidgetPayload(widget, snap, isFullBackup) {
     ? WIDGET_FULL_BACKUP_ROW_KEYS
     : WIDGET_LAYOUT_SNAPSHOT_KEYS;
   for (const key of rowKeys) {
-    if (Object.hasOwn(snap, key)) restored[key] = clonePlain(snap[key], snap[key]);
+    if (Object.hasOwn(snap, key))
+      restored[key] = clonePlain(snap[key], snap[key]);
   }
   return restored;
 }

@@ -434,7 +434,7 @@ const RTP_CONTAINER_CONTROL_OVERRIDES = Object.freeze({
   maxHeight: Object.freeze({ min: 0, max: 220 }),
 });
 
-const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = Object.freeze([
+const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = [
   "container",
   "headerContainer",
   "headerIcon",
@@ -470,12 +470,12 @@ const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = Object.freeze([
   "footerContainer",
   "footerLabel",
   "footerTotalValue",
-]);
+];
 
 function freezeStyle(style) {
   return Object.freeze({
     ...style,
-    capabilities: Object.freeze({ ...(style.capabilities || {}) }),
+    capabilities: Object.freeze({ ...style.capabilities }),
     elementIds: Object.freeze([...(style.elementIds || ["container"])]),
     previewStateIds: Object.freeze([...(style.previewStateIds || [])]),
     recommended: !!style.recommended,
@@ -489,7 +489,7 @@ function makeRuntimeStyle(id, label, description, overrides = {}) {
     description,
     capabilities: {
       ...BASE_QUICK_CAPABILITIES,
-      ...(overrides.capabilities || {}),
+      ...overrides.capabilities,
     },
     elementIds: overrides.elementIds || ["container"],
     previewStateIds: overrides.previewStateIds || ["default"],
@@ -508,6 +508,94 @@ const STANDARD_SAFE_RANGES = Object.freeze({
   shadowIntensity: [0, 0.65],
   glowIntensity: [0, 0.55],
   blurStrength: [0, 24],
+});
+
+const SPOTIFY_NOW_PLAYING_CORE_CAPABILITIES = Object.freeze({
+  colours: true,
+  multipleColours: true,
+  fonts: true,
+  fontSizes: true,
+  fontWeights: true,
+  containers: true,
+  containerShapes: true,
+  borderRadius: true,
+  borders: true,
+  shadows: true,
+  images: true,
+  imageSize: true,
+  imageShape: true,
+  imageFit: true,
+  imageVisibility: true,
+  animations: true,
+  animationSpeed: true,
+  transparentBackground: true,
+});
+
+const SPOTIFY_NOW_PLAYING_GLOW_CAPABILITIES = Object.freeze({
+  ...SPOTIFY_NOW_PLAYING_CORE_CAPABILITIES,
+  glow: true,
+});
+
+const SPOTIFY_NOW_PLAYING_NEON_CAPABILITIES = Object.freeze({
+  ...SPOTIFY_NOW_PLAYING_GLOW_CAPABILITIES,
+  glowIntensity: true,
+});
+
+const SPOTIFY_NOW_PLAYING_PROGRESS_CAPABILITIES = Object.freeze({
+  ...SPOTIFY_NOW_PLAYING_GLOW_CAPABILITIES,
+  progressBar: true,
+});
+
+const SPOTIFY_NOW_PLAYING_ELEMENT_IDS = Object.freeze({
+  albumCard: Object.freeze([
+    "container",
+    "albumArt",
+    "trackTitle",
+    "artistName",
+    "playbackState",
+    "spotifyBadge",
+  ]),
+  miniPlayer: Object.freeze([
+    "container",
+    "albumArt",
+    "trackTitle",
+    "artistName",
+    "playbackState",
+    "equalizer",
+  ]),
+  vinyl: Object.freeze([
+    "container",
+    "vinylRecord",
+    "albumArt",
+    "trackTitle",
+    "artistName",
+  ]),
+  glass: Object.freeze([
+    "container",
+    "albumArt",
+    "trackTitle",
+    "artistName",
+    "playbackState",
+  ]),
+  wave: Object.freeze([
+    "container",
+    "albumArt",
+    "trackTitle",
+    "artistName",
+    "waveform",
+    "equalizer",
+  ]),
+  compactBar: Object.freeze([
+    "container",
+    "albumArt",
+    "spotifyBadge",
+    "listenerBadge",
+    "trackTitle",
+    "artistName",
+    "progressBar",
+    "timeLabel",
+    "equalizer",
+  ]),
 });
 
 const BASIC_WIDGET_ELEMENTS = Object.freeze({
@@ -2844,276 +2932,63 @@ export const widgetAppearanceRegistry = Object.freeze({
         description:
           "Large album artwork card with overlay text and playback state.",
         recommended: true,
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          glow: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "albumArt",
-          "trackTitle",
-          "artistName",
-          "playbackState",
-          "spotifyBadge",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_GLOW_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.albumCard,
       }),
       freezeStyle({
         id: "mini_player",
         label: "Mini Player",
         description:
           "Compact horizontal player with album art, title, artist and equalizer.",
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "albumArt",
-          "trackTitle",
-          "artistName",
-          "playbackState",
-          "equalizer",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_CORE_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.miniPlayer,
       }),
       freezeStyle({
         id: "vinyl",
         label: "Vinyl",
         description:
           "Spinning record layout with center album art and track text.",
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "vinylRecord",
-          "albumArt",
-          "trackTitle",
-          "artistName",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_CORE_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.vinyl,
       }),
       freezeStyle({
         id: "glass",
         label: "Glass",
         description:
           "Frosted card with album art, blurred backdrop, text and playback state.",
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "albumArt",
-          "trackTitle",
-          "artistName",
-          "playbackState",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_CORE_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.glass,
       }),
       freezeStyle({
         id: "wave",
         label: "Wave",
         description: "Waveform layout with album art, text and animated bars.",
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "albumArt",
-          "trackTitle",
-          "artistName",
-          "waveform",
-          "equalizer",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_CORE_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.wave,
       }),
       freezeStyle({
         id: "neon",
         label: "Neon",
         description:
           "Neon glow layout with album art, text and playback state.",
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          glow: true,
-          glowIntensity: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "albumArt",
-          "trackTitle",
-          "artistName",
-          "playbackState",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_NEON_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.glass,
       }),
       freezeStyle({
         id: "metal",
         label: "Metal",
         description:
           "Metal player layout with album art, text, playback state and equalizer.",
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "albumArt",
-          "trackTitle",
-          "artistName",
-          "playbackState",
-          "equalizer",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_CORE_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.miniPlayer,
       }),
       freezeStyle({
         id: "compact_bar",
         label: "Compact Bar",
         description:
           "Compact progress-bar layout with album art, time, and equalizer controls.",
-        capabilities: {
-          colours: true,
-          multipleColours: true,
-          fonts: true,
-          fontSizes: true,
-          fontWeights: true,
-          containers: true,
-          containerShapes: true,
-          borderRadius: true,
-          borders: true,
-          shadows: true,
-          glow: true,
-          images: true,
-          imageSize: true,
-          imageShape: true,
-          imageFit: true,
-          imageVisibility: true,
-          animations: true,
-          animationSpeed: true,
-          progressBar: true,
-          transparentBackground: true,
-        },
-        elementIds: [
-          "container",
-          "albumArt",
-          "spotifyBadge",
-          "listenerBadge",
-          "trackTitle",
-          "artistName",
-          "progressBar",
-          "timeLabel",
-          "equalizer",
-        ],
+        capabilities: SPOTIFY_NOW_PLAYING_PROGRESS_CAPABILITIES,
+        elementIds: SPOTIFY_NOW_PLAYING_ELEMENT_IDS.compactBar,
       }),
     ]),
     safeRanges: Object.freeze({
@@ -3266,10 +3141,10 @@ export const widgetAppearanceRegistry = Object.freeze({
         featureFlag: null,
         hiddenInProduction: false,
         hiddenInQuickEditor: true,
-        capabilities: {
-          ...(getEditorReadyWidgetStyle("bonus_hunt", "v12_classic_sr_editable")
-            ?.capabilities || {}),
-        },
+        capabilities: getEditorReadyWidgetStyle(
+          "bonus_hunt",
+          "v12_classic_sr_editable",
+        )?.capabilities,
         elementIds: getEditorReadyWidgetStyle(
           "bonus_hunt",
           "v12_classic_sr_editable",
@@ -3758,10 +3633,10 @@ export const widgetAppearanceRegistry = Object.freeze({
         legacy: false,
         featureFlag: "appearanceEditablePilot",
         hiddenInProduction: true,
-        capabilities: {
-          ...(getEditorReadyWidgetStyle("slot_requests", "v3_compact_editable")
-            ?.capabilities || {}),
-        },
+        capabilities: getEditorReadyWidgetStyle(
+          "slot_requests",
+          "v3_compact_editable",
+        )?.capabilities,
         elementIds: getEditorReadyWidgetStyle(
           "slot_requests",
           "v3_compact_editable",
@@ -4476,7 +4351,7 @@ export function getWidgetAppearanceV2Elements(widgetType, styleId = null) {
   return Object.entries(capability.elements || {}).map(([id, element]) => ({
     id,
     ...element,
-    ...(editorReadyElements[id] || {}),
+    ...editorReadyElements[id],
     controls:
       editorReadyControls.get(id) ||
       element.controls ||
@@ -4611,119 +4486,162 @@ export function getWidgetStyleQuickControls(widgetType, styleId, elementId) {
   );
 }
 
+function pushRegistryError(errors, condition, message) {
+  if (condition) errors.push(message);
+}
+
+function validateRegistryStyle(errors, registryId, entry, style) {
+  const styleId = style.id || "style";
+  pushRegistryError(errors, !style.id, `${registryId}: style missing id`);
+  pushRegistryError(
+    errors,
+    !style.label,
+    `${registryId}.${styleId}: missing style label`,
+  );
+  for (const key of Object.keys(style.capabilities || {})) {
+    pushRegistryError(
+      errors,
+      !QUICK_CAPABILITY_SET.has(key),
+      `${registryId}.${style.id}: unknown quick capability ${key}`,
+    );
+  }
+  for (const elementId of style.elementIds || []) {
+    pushRegistryError(
+      errors,
+      !entry.elements?.[elementId],
+      `${registryId}.${style.id}: unknown style element ${elementId}`,
+    );
+  }
+}
+
+function validateRegistryElement(errors, registryId, elementId, element) {
+  pushRegistryError(
+    errors,
+    !element.label,
+    `${registryId}.${elementId}: missing label`,
+  );
+  pushRegistryError(
+    errors,
+    !Array.isArray(element.capabilities) || element.capabilities.length === 0,
+    `${registryId}.${elementId}: missing capabilities`,
+  );
+  for (const capability of element.capabilities || []) {
+    pushRegistryError(
+      errors,
+      !COMMON_CAPABILITIES[capability],
+      `${registryId}.${elementId}: unknown capability ${capability}`,
+    );
+  }
+}
+
+function validateRegistryEntry(errors, id, entry) {
+  pushRegistryError(errors, id !== entry.id, `${id}: id mismatch`);
+  pushRegistryError(errors, !entry.widgetType, `${id}: missing widgetType`);
+  pushRegistryError(
+    errors,
+    !entry.renderer || !entry.previewRenderer,
+    `${id}: missing renderer references`,
+  );
+  pushRegistryError(
+    errors,
+    !entry.schemaVersion,
+    `${id}: missing schema version`,
+  );
+  pushRegistryError(
+    errors,
+    !entry.elements || !Object.keys(entry.elements).length,
+    `${id}: missing elements`,
+  );
+  pushRegistryError(
+    errors,
+    !Array.isArray(entry.styles) || entry.styles.length === 0,
+    `${id}: missing styles`,
+  );
+  for (const style of entry.styles || []) {
+    validateRegistryStyle(errors, id, entry, style);
+  }
+  for (const [elementId, element] of Object.entries(entry.elements || {})) {
+    validateRegistryElement(errors, id, elementId, element);
+  }
+}
+
 export function validateWidgetAppearanceRegistry(
   registry = widgetAppearanceRegistry,
 ) {
   const errors = [];
   for (const [id, entry] of Object.entries(registry || {})) {
-    if (id !== entry.id) errors.push(`${id}: id mismatch`);
-    if (!entry.widgetType) errors.push(`${id}: missing widgetType`);
-    if (!entry.renderer || !entry.previewRenderer)
-      errors.push(`${id}: missing renderer references`);
-    if (!entry.schemaVersion) errors.push(`${id}: missing schema version`);
-    if (!entry.elements || !Object.keys(entry.elements).length)
-      errors.push(`${id}: missing elements`);
-    if (!Array.isArray(entry.styles) || entry.styles.length === 0)
-      errors.push(`${id}: missing styles`);
-    for (const style of entry.styles || []) {
-      if (!style.id) errors.push(`${id}: style missing id`);
-      if (!style.label)
-        errors.push(`${id}.${style.id || "style"}: missing style label`);
-      for (const key of Object.keys(style.capabilities || {})) {
-        if (!QUICK_CAPABILITY_SET.has(key))
-          errors.push(`${id}.${style.id}: unknown quick capability ${key}`);
-      }
-      for (const elementId of style.elementIds || []) {
-        if (!entry.elements?.[elementId])
-          errors.push(`${id}.${style.id}: unknown style element ${elementId}`);
-      }
-    }
-    for (const [elementId, element] of Object.entries(entry.elements || {})) {
-      if (!element.label) errors.push(`${id}.${elementId}: missing label`);
-      if (
-        !Array.isArray(element.capabilities) ||
-        element.capabilities.length === 0
-      )
-        errors.push(`${id}.${elementId}: missing capabilities`);
-      for (const capability of element.capabilities || []) {
-        if (!COMMON_CAPABILITIES[capability])
-          errors.push(`${id}.${elementId}: unknown capability ${capability}`);
-      }
-    }
+    validateRegistryEntry(errors, id, entry);
   }
   return { valid: errors.length === 0, errors };
+}
+
+const CONTROL_IDS_BY_CAPABILITY = Object.freeze({
+  surface: Object.freeze([
+    "background",
+    "opacity",
+    "width",
+    "height",
+    "minWidth",
+    "minHeight",
+    "maxWidth",
+    "maxHeight",
+  ]),
+  border: Object.freeze(["borderColor", "borderWidth", "radius"]),
+  shadow: Object.freeze(["shadowBlur", "shadowOpacity"]),
+  shape: Object.freeze(["radius"]),
+  typography: Object.freeze([
+    "fontFamily",
+    "fontSize",
+    "fontWeight",
+    "textColor",
+    "textAlign",
+    "lineHeight",
+    "letterSpacing",
+    "textTransform",
+  ]),
+  spacing: Object.freeze([
+    "padding",
+    "gap",
+    "width",
+    "height",
+    "minWidth",
+    "minHeight",
+    "maxWidth",
+    "maxHeight",
+  ]),
+  progress: Object.freeze([
+    "background",
+    "fillColor",
+    "radius",
+    "width",
+    "height",
+    "maxWidth",
+    "maxHeight",
+  ]),
+  image: Object.freeze([
+    "imageUrl",
+    "imageSize",
+    "imageFit",
+    "radius",
+    "width",
+    "height",
+    "maxWidth",
+    "maxHeight",
+  ]),
+  stateColor: Object.freeze(["textColor", "accentColor"]),
+  position: Object.freeze(["offsetX", "offsetY"]),
+});
+
+function addControlsForCapability(controls, capability) {
+  for (const control of CONTROL_IDS_BY_CAPABILITY[capability] || []) {
+    controls.add(control);
+  }
 }
 
 function controlsForCapabilities(capabilities = []) {
   const controls = new Set();
   for (const capability of capabilities) {
-    if (capability === "surface")
-      [
-        "background",
-        "opacity",
-        "width",
-        "height",
-        "minWidth",
-        "minHeight",
-        "maxWidth",
-        "maxHeight",
-      ].forEach((control) => controls.add(control));
-    if (capability === "border")
-      ["borderColor", "borderWidth", "radius"].forEach((control) =>
-        controls.add(control),
-      );
-    if (capability === "shadow")
-      ["shadowBlur", "shadowOpacity"].forEach((control) =>
-        controls.add(control),
-      );
-    if (capability === "shape") controls.add("radius");
-    if (capability === "typography")
-      [
-        "fontFamily",
-        "fontSize",
-        "fontWeight",
-        "textColor",
-        "textAlign",
-        "lineHeight",
-        "letterSpacing",
-        "textTransform",
-      ].forEach((control) => controls.add(control));
-    if (capability === "spacing")
-      [
-        "padding",
-        "gap",
-        "width",
-        "height",
-        "minWidth",
-        "minHeight",
-        "maxWidth",
-        "maxHeight",
-      ].forEach((control) => controls.add(control));
-    if (capability === "progress")
-      [
-        "background",
-        "fillColor",
-        "radius",
-        "width",
-        "height",
-        "maxWidth",
-        "maxHeight",
-      ].forEach((control) => controls.add(control));
-    if (capability === "image")
-      [
-        "imageUrl",
-        "imageSize",
-        "imageFit",
-        "radius",
-        "width",
-        "height",
-        "maxWidth",
-        "maxHeight",
-      ].forEach((control) => controls.add(control));
-    if (capability === "stateColor")
-      ["textColor", "accentColor"].forEach((control) => controls.add(control));
-    if (capability === "position")
-      ["offsetX", "offsetY"].forEach((control) => controls.add(control));
+    addControlsForCapability(controls, capability);
   }
   return [...controls];
 }

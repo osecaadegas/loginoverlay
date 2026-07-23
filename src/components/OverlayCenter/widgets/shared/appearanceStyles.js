@@ -1,72 +1,101 @@
-export function getSubElement(config = {}, elementId) {
-  const subElements = Object.prototype.hasOwnProperty.call(config || {}, '__appearanceExplicitSubElements')
-    ? config.__appearanceExplicitSubElements
-    : config?.subElements;
+export function getSubElement(config, elementId) {
+  const sourceConfig = config || {};
+  const subElements = Object.hasOwn(
+    sourceConfig,
+    "__appearanceExplicitSubElements",
+  )
+    ? sourceConfig.__appearanceExplicitSubElements
+    : sourceConfig.subElements;
   return subElements?.[elementId] || {};
 }
 
 const STATE_ELEMENT_ALIASES = {
-  openedState: ['bonusCard', 'opened'],
-  unopenedState: ['bonusCard', 'unopened'],
-  currentState: ['bonusCard', 'current'],
-  selectedState: ['optionCard', 'selected'],
-  winningState: ['optionCard', 'winner'],
-  losingState: ['optionCard', 'loser'],
-  pendingState: ['requestCard', 'pending'],
-  playingState: ['requestCard', 'playing'],
-  completedState: ['requestCard', 'completed'],
-  rejectedState: ['requestCard', 'rejected'],
-  winnerHighlight: ['participantCard', 'winner'],
-  eliminatedState: ['participantCard', 'eliminated'],
-  highlightedMessage: ['message', 'highlighted'],
-  botMessage: ['message', 'bot'],
-  subscriberMessage: ['message', 'subscriber'],
-  moderatorMessage: ['message', 'moderator'],
+  openedState: ["bonusCard", "opened"],
+  unopenedState: ["bonusCard", "unopened"],
+  currentState: ["bonusCard", "current"],
+  selectedState: ["optionCard", "selected"],
+  winningState: ["optionCard", "winner"],
+  losingState: ["optionCard", "loser"],
+  pendingState: ["requestCard", "pending"],
+  playingState: ["requestCard", "playing"],
+  completedState: ["requestCard", "completed"],
+  rejectedState: ["requestCard", "rejected"],
+  winnerHighlight: ["participantCard", "winner"],
+  eliminatedState: ["participantCard", "eliminated"],
+  highlightedMessage: ["message", "highlighted"],
+  botMessage: ["message", "bot"],
+  subscriberMessage: ["message", "subscriber"],
+  moderatorMessage: ["message", "moderator"],
 };
 
-export function getSubElementState(config = {}, elementId, stateId = 'default') {
+const ELEMENT_PROPERTY_ALIASES = Object.freeze({
+  background: "backgroundColor",
+  backgroundColor: "background",
+  radius: "borderRadius",
+  borderRadius: "radius",
+  shadowBlur: "shadowSize",
+  shadowOpacity: "shadowIntensity",
+  glowBlur: "glowSize",
+  glowOpacity: "glowIntensity",
+  backgroundPosition: "imagePosition",
+  imagePosition: "backgroundPosition",
+});
+
+export function getSubElementState(config, elementId, stateId = "default") {
   const element = getSubElement(config, elementId);
-  if (!stateId || stateId === 'default') return element;
-  return { ...element, ...(element?.states?.[stateId] || {}) };
+  if (!stateId || stateId === "default") return element;
+  const stateOverride = element?.states?.[stateId];
+  if (!stateOverride) return element;
+  return { ...element, ...stateOverride };
 }
 
-function getElementProperty(element = {}, property) {
-  if (element?.[property] !== undefined) return element[property];
-  if (property === 'background' && element.backgroundColor !== undefined) return element.backgroundColor;
-  if (property === 'backgroundColor' && element.background !== undefined) return element.background;
-  if (property === 'radius' && element.borderRadius !== undefined) return element.borderRadius;
-  if (property === 'borderRadius' && element.radius !== undefined) return element.radius;
-  if (property === 'shadowBlur' && element.shadowSize !== undefined) return element.shadowSize;
-  if (property === 'shadowOpacity' && element.shadowIntensity !== undefined) return element.shadowIntensity;
-  if (property === 'glowBlur' && element.glowSize !== undefined) return element.glowSize;
-  if (property === 'glowOpacity' && element.glowIntensity !== undefined) return element.glowIntensity;
-  if (property === 'backgroundPosition' && element.imagePosition !== undefined) return element.imagePosition;
-  if (property === 'imagePosition' && element.backgroundPosition !== undefined) return element.backgroundPosition;
+function getElementProperty(element, property) {
+  const sourceElement = element || {};
+  if (sourceElement[property] !== undefined) return sourceElement[property];
+  const alias = ELEMENT_PROPERTY_ALIASES[property];
+  if (alias && sourceElement[alias] !== undefined) return sourceElement[alias];
   return undefined;
 }
 
-export function subValue(config = {}, elementId, property, fallback, stateId = 'default') {
+export function subValue(
+  config,
+  elementId,
+  property,
+  fallback,
+  stateId = "default",
+) {
   const aliased = STATE_ELEMENT_ALIASES[elementId];
   const sourceElementId = aliased?.[0] || elementId;
-  const sourceStateId = stateId !== 'default' ? stateId : (aliased?.[1] || stateId);
-  const value = getElementProperty(getSubElementState(config, sourceElementId, sourceStateId), property);
-  return value === undefined || value === null || value === '' ? fallback : value;
+  const sourceStateId =
+    stateId !== "default" ? stateId : aliased?.[1] || stateId;
+  const value = getElementProperty(
+    getSubElementState(config, sourceElementId, sourceStateId),
+    property,
+  );
+  return value === undefined || value === null || value === ""
+    ? fallback
+    : value;
 }
 
 function px(value) {
-  if (value === undefined || value === null || value === '') return undefined;
-  return typeof value === 'number' ? `${value}px` : value;
+  if (value === undefined || value === null || value === "") return undefined;
+  return typeof value === "number" ? `${value}px` : value;
 }
 
 function hasLayoutSizing(element = {}) {
   return [
-    'width',
-    'height',
-    'minWidth',
-    'maxWidth',
-    'minHeight',
-    'maxHeight',
-  ].some(key => element[key] !== undefined && element[key] !== null && element[key] !== '');
+    "width",
+    "height",
+    "minWidth",
+    "maxWidth",
+    "minHeight",
+    "maxHeight",
+  ].some(
+    (key) =>
+      element[key] !== undefined &&
+      element[key] !== null &&
+      element[key] !== "",
+  );
 }
 
 function clamp01(value, fallback = 0) {
@@ -76,12 +105,16 @@ function clamp01(value, fallback = 0) {
 }
 
 function hexToRgb(value) {
-  const raw = String(value || '').trim();
-  const match = raw.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  const raw = String(value || "").trim();
+  const match = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(raw);
   if (!match) return null;
-  const hex = match[1].length === 3
-    ? match[1].split('').map(char => `${char}${char}`).join('')
-    : match[1];
+  const hex =
+    match[1].length === 3
+      ? match[1]
+          .split("")
+          .map((char) => `${char}${char}`)
+          .join("")
+      : match[1];
   const int = Number.parseInt(hex, 16);
   return {
     r: (int >> 16) & 255,
@@ -93,148 +126,278 @@ function hexToRgb(value) {
 function alphaColor(value, opacity) {
   const rgb = hexToRgb(value);
   if (rgb) return `rgba(${rgb.r},${rgb.g},${rgb.b},${opacity})`;
-  if (/^rgba?\(/i.test(String(value || ''))) return value;
+  if (/^rgba?\(/i.test(String(value || ""))) return value;
   return `rgba(45,212,191,${opacity})`;
 }
 
 function elementAnimation(element = {}) {
-  const animation = String(element.animation || 'none');
-  if (!animation || animation === 'none') return undefined;
+  const animation = String(element.animation || "none");
+  if (!animation || animation === "none") return undefined;
   const duration = Math.max(0, Number(element.duration ?? 450));
   const delay = Math.max(0, Number(element.delay ?? 0));
-  const timing = 'ease-out';
+  const timing = "ease-out";
   const common = `${Math.round(duration)}ms ${timing} ${Math.round(delay)}ms both`;
-  if (animation === 'fade') return `ov-fade-in ${common}`;
-  if (animation === 'slide') return `ov-slide-left ${common}`;
-  if (animation === 'scale') return `ov-pop ${common}`;
-  if (animation === 'pulse') return `wm-pulse ${Math.max(900, Math.round(duration || 1200))}ms ease-in-out ${Math.round(delay)}ms infinite`;
-  if (animation === 'glow') return `ov-raid-glow ${Math.max(1000, Math.round(duration || 1600))}ms ease-in-out ${Math.round(delay)}ms infinite`;
+  if (animation === "fade") return `ov-fade-in ${common}`;
+  if (animation === "slide") return `ov-slide-left ${common}`;
+  if (animation === "scale") return `ov-pop ${common}`;
+  if (animation === "pulse")
+    return `wm-pulse ${Math.max(900, Math.round(duration || 1200))}ms ease-in-out ${Math.round(delay)}ms infinite`;
+  if (animation === "glow")
+    return `ov-raid-glow ${Math.max(1000, Math.round(duration || 1600))}ms ease-in-out ${Math.round(delay)}ms infinite`;
   return undefined;
 }
 
-export function subElementStyle(config = {}, elementId, fallback = {}, stateId = 'default') {
-  const aliased = STATE_ELEMENT_ALIASES[elementId];
-  const sourceElementId = aliased?.[0] || elementId;
-  const sourceStateId = stateId !== 'default' ? stateId : (aliased?.[1] || stateId);
-  const element = getSubElementState(config, sourceElementId, sourceStateId);
-  const style = { ...fallback };
-  if (element.visible === false) return { ...style, display: 'none' };
-  const background = getElementProperty(element, 'background');
-  const radius = getElementProperty(element, 'radius');
-  const shadowBlur = getElementProperty(element, 'shadowBlur');
-  const shadowOpacity = getElementProperty(element, 'shadowOpacity');
-  const glowBlur = getElementProperty(element, 'glowBlur');
-  const glowOpacity = getElementProperty(element, 'glowOpacity');
-  const backgroundPosition = getElementProperty(element, 'backgroundPosition');
-  if (background != null) style.background = background;
-  if (element.textColor != null) style.color = element.textColor;
-  if (element.fontFamily != null) style.fontFamily = element.fontFamily;
-  if (element.fontSize != null) style.fontSize = px(element.fontSize);
-  if (element.fontWeight != null) style.fontWeight = element.fontWeight;
-  if (element.fontStyle != null) style.fontStyle = element.fontStyle;
-  if (element.lineHeight != null) style.lineHeight = element.lineHeight;
-  if (element.letterSpacing != null) style.letterSpacing = typeof element.letterSpacing === 'number' ? `${element.letterSpacing}em` : element.letterSpacing;
-  if (element.textTransform != null) style.textTransform = element.textTransform;
-  if (element.textAlign != null) style.textAlign = element.textAlign;
+const DIRECT_STYLE_PROPERTIES = Object.freeze([
+  ["textColor", "color"],
+  ["fontFamily", "fontFamily"],
+  ["fontSize", "fontSize", px],
+  ["fontWeight", "fontWeight"],
+  ["fontStyle", "fontStyle"],
+  ["lineHeight", "lineHeight"],
+  ["textTransform", "textTransform"],
+  ["textAlign", "textAlign"],
+  ["opacity", "opacity"],
+]);
+
+const BOX_STYLE_PROPERTIES = Object.freeze([
+  ["padding", "padding"],
+  ["paddingTop", "paddingTop"],
+  ["paddingRight", "paddingRight"],
+  ["paddingBottom", "paddingBottom"],
+  ["paddingLeft", "paddingLeft"],
+  ["marginTop", "marginTop"],
+  ["marginRight", "marginRight"],
+  ["marginBottom", "marginBottom"],
+  ["marginLeft", "marginLeft"],
+  ["gap", "gap"],
+]);
+
+const SIZE_STYLE_PROPERTIES = Object.freeze([
+  ["width", "width"],
+  ["height", "height"],
+  ["minWidth", "minWidth"],
+  ["maxWidth", "maxWidth"],
+  ["minHeight", "minHeight"],
+  ["maxHeight", "maxHeight"],
+]);
+
+const FILTER_STYLE_PROPERTIES = Object.freeze([
+  ["blur", (value) => `blur(${px(value)})`],
+  ["brightness", (value) => `brightness(${value}%)`],
+  ["contrast", (value) => `contrast(${value}%)`],
+  ["saturation", (value) => `saturate(${value}%)`],
+  ["hueRotate", (value) => `hue-rotate(${value}deg)`],
+  ["grayscale", (value) => `grayscale(${value}%)`],
+  ["sepia", (value) => `sepia(${value}%)`],
+]);
+
+function assignMappedStyleProperties(element, style, properties) {
+  for (const [source, target, formatter] of properties) {
+    if (element[source] == null) continue;
+    style[target] = formatter ? formatter(element[source]) : element[source];
+  }
+}
+
+function applyTypographyStyles(element, style) {
+  assignMappedStyleProperties(element, style, DIRECT_STYLE_PROPERTIES);
+  if (element.letterSpacing == null) return;
+  style.letterSpacing =
+    typeof element.letterSpacing === "number"
+      ? `${element.letterSpacing}em`
+      : element.letterSpacing;
+}
+
+function applyBoxStyles(element, style, radius) {
   if (radius != null) style.borderRadius = px(radius);
-  if (element.padding != null) style.padding = px(element.padding);
-  if (element.paddingTop != null) style.paddingTop = px(element.paddingTop);
-  if (element.paddingRight != null) style.paddingRight = px(element.paddingRight);
-  if (element.paddingBottom != null) style.paddingBottom = px(element.paddingBottom);
-  if (element.paddingLeft != null) style.paddingLeft = px(element.paddingLeft);
-  if (element.marginTop != null) style.marginTop = px(element.marginTop);
-  if (element.marginRight != null) style.marginRight = px(element.marginRight);
-  if (element.marginBottom != null) style.marginBottom = px(element.marginBottom);
-  if (element.marginLeft != null) style.marginLeft = px(element.marginLeft);
-  if (element.gap != null) style.gap = px(element.gap);
-  if (element.opacity != null) style.opacity = element.opacity;
+  assignMappedStyleProperties(
+    element,
+    style,
+    BOX_STYLE_PROPERTIES.map(([source, target]) => [source, target, px]),
+  );
+}
+
+function resolveLegacyShadow(shadow) {
+  if (shadow == null) return null;
+  if (typeof shadow !== "number") return shadow;
+  return `0 ${Math.round(shadow * 0.35)}px ${Math.round(shadow * 0.7)}px rgba(0,0,0,0.35)`;
+}
+
+function resolveOptionalOpacity(opacity, blur, blurredFallback) {
+  if (opacity != null) return clamp01(opacity, 0);
+  if (blur > 0) return blurredFallback;
+  return 0;
+}
+
+function applyShadowStyles(element, style) {
   const shadows = [];
-  if (element.shadow != null) {
-    shadows.push(typeof element.shadow === 'number'
-      ? `0 ${Math.round(element.shadow * 0.35)}px ${Math.round(element.shadow * 0.7)}px rgba(0,0,0,0.35)`
-      : element.shadow);
-  }
-  const resolvedShadowBlur = Number(shadowBlur ?? (shadowOpacity != null ? 24 : 0));
-  const resolvedShadowOpacity = shadowOpacity != null ? clamp01(shadowOpacity, 0) : (resolvedShadowBlur > 0 ? 0.28 : 0);
+  const legacyShadow = resolveLegacyShadow(element.shadow);
+  if (legacyShadow) shadows.push(legacyShadow);
+  const shadowBlur = getElementProperty(element, "shadowBlur");
+  const shadowOpacity = getElementProperty(element, "shadowOpacity");
+  const resolvedShadowBlur = Number(
+    shadowBlur ?? (shadowOpacity != null ? 24 : 0),
+  );
+  const resolvedShadowOpacity = resolveOptionalOpacity(
+    shadowOpacity,
+    resolvedShadowBlur,
+    0.28,
+  );
   if (resolvedShadowBlur > 0 && resolvedShadowOpacity > 0) {
-    const blur = resolvedShadowBlur;
-    const opacity = resolvedShadowOpacity;
-    shadows.push(`0 ${Math.round(blur * 0.35)}px ${Math.round(blur)}px rgba(0,0,0,${opacity.toFixed(2)})`);
+    shadows.push(
+      `0 ${Math.round(resolvedShadowBlur * 0.35)}px ${Math.round(resolvedShadowBlur)}px rgba(0,0,0,${resolvedShadowOpacity.toFixed(2)})`,
+    );
   }
+  const glowBlur = getElementProperty(element, "glowBlur");
+  const glowOpacity = getElementProperty(element, "glowOpacity");
   const resolvedGlowBlur = Number(glowBlur ?? (glowOpacity != null ? 24 : 0));
-  const resolvedGlowOpacity = glowOpacity != null ? clamp01(glowOpacity, 0) : (resolvedGlowBlur > 0 ? 0.24 : 0);
+  const resolvedGlowOpacity = resolveOptionalOpacity(
+    glowOpacity,
+    resolvedGlowBlur,
+    0.24,
+  );
   if (resolvedGlowBlur > 0 && resolvedGlowOpacity > 0) {
-    const blur = resolvedGlowBlur;
-    const opacity = resolvedGlowOpacity;
-    const color = element.glowColor || element.accentColor || element.fillColor || element.backgroundColor || element.background || '#2dd4bf';
-    shadows.push(`0 0 ${Math.round(blur)}px ${alphaColor(color, opacity)}`);
+    const color =
+      element.glowColor ||
+      element.accentColor ||
+      element.fillColor ||
+      element.backgroundColor ||
+      element.background ||
+      "#2dd4bf";
+    shadows.push(
+      `0 0 ${Math.round(resolvedGlowBlur)}px ${alphaColor(color, resolvedGlowOpacity)}`,
+    );
   }
-  if (shadows.length > 0) style.boxShadow = shadows.join(', ');
-  if (element.borderColor != null || element.borderWidth != null) {
-    const width = element.borderWidth ?? fallback.borderWidth ?? 1;
-    const color = element.borderColor ?? fallback.borderColor ?? 'currentColor';
-    const borderStyle = element.borderStyle ?? fallback.borderStyle ?? 'solid';
-    style.border = `${px(width)} ${borderStyle} ${color}`;
-  }
+  if (shadows.length > 0) style.boxShadow = shadows.join(", ");
+}
+
+function applyBorderStyles(element, style, fallback) {
+  if (element.borderColor == null && element.borderWidth == null) return;
+  const width = element.borderWidth ?? fallback.borderWidth ?? 1;
+  const color = element.borderColor ?? fallback.borderColor ?? "currentColor";
+  const borderStyle = element.borderStyle ?? fallback.borderStyle ?? "solid";
+  style.border = `${px(width)} ${borderStyle} ${color}`;
+}
+
+function applySizingStyles(element, style) {
   if (element.imageSize != null) {
     style.width = px(element.imageSize);
     style.height = px(element.imageSize);
   }
-  if (element.width != null) style.width = px(element.width);
-  if (element.height != null) style.height = px(element.height);
-  if (element.minWidth != null) style.minWidth = px(element.minWidth);
-  if (element.maxWidth != null) style.maxWidth = px(element.maxWidth);
-  if (element.minHeight != null) style.minHeight = px(element.minHeight);
-  if (element.maxHeight != null) style.maxHeight = px(element.maxHeight);
+  assignMappedStyleProperties(
+    element,
+    style,
+    SIZE_STYLE_PROPERTIES.map(([source, target]) => [source, target, px]),
+  );
+}
+
+function applyOffsetStyles(element, style) {
   const offsetX = Number(element.offsetX || 0);
   const offsetY = Number(element.offsetY || 0);
-  if ((Number.isFinite(offsetX) && offsetX !== 0) || (Number.isFinite(offsetY) && offsetY !== 0)) {
-    style.position = style.position || 'relative';
-    style.zIndex = style.zIndex ?? 3;
-    style.transform = [
-      style.transform,
-      `translate3d(${Number.isFinite(offsetX) ? Math.round(offsetX) : 0}px, ${Number.isFinite(offsetY) ? Math.round(offsetY) : 0}px, 0)`,
-    ].filter(Boolean).join(' ');
-  }
-  if (hasLayoutSizing(element) && style.display == null) {
-    style.display = 'inline-block';
-  }
+  const hasOffset =
+    (Number.isFinite(offsetX) && offsetX !== 0) ||
+    (Number.isFinite(offsetY) && offsetY !== 0);
+  if (!hasOffset) return;
+  style.position = style.position || "relative";
+  style.zIndex = style.zIndex ?? 3;
+  style.transform = [
+    style.transform,
+    `translate3d(${Number.isFinite(offsetX) ? Math.round(offsetX) : 0}px, ${Number.isFinite(offsetY) ? Math.round(offsetY) : 0}px, 0)`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function applyImageStyles(element, style, backgroundPosition) {
   if (element.imageUrl != null && String(element.imageUrl).trim()) {
-    style.backgroundImage = `url("${String(element.imageUrl).replace(/"/g, '')}")`;
-    style.backgroundRepeat = 'no-repeat';
+    style.backgroundImage = `url("${String(element.imageUrl).replaceAll('"', "")}")`;
+    style.backgroundRepeat = "no-repeat";
   }
   if (element.imageFit != null) {
     style.objectFit = element.imageFit;
     style.backgroundSize = element.imageFit;
   }
-  if (element.backgroundSize != null) style.backgroundSize = element.backgroundSize;
-  if (backgroundPosition != null) {
-    style.objectPosition = backgroundPosition;
-    style.backgroundPosition = backgroundPosition;
-  }
+  if (element.backgroundSize != null)
+    style.backgroundSize = element.backgroundSize;
+  if (backgroundPosition == null) return;
+  style.objectPosition = backgroundPosition;
+  style.backgroundPosition = backgroundPosition;
+}
+
+function applyAnimationStyle(element, style) {
   const animation = elementAnimation(element);
   if (animation) style.animation = animation;
+}
+
+function applyFilterStyles(element, style, fallback) {
   const filters = [];
-  if (element.blur != null) filters.push(`blur(${px(element.blur)})`);
-  if (element.brightness != null) filters.push(`brightness(${element.brightness}%)`);
-  if (element.contrast != null) filters.push(`contrast(${element.contrast}%)`);
-  if (element.saturation != null) filters.push(`saturate(${element.saturation}%)`);
-  if (element.hueRotate != null) filters.push(`hue-rotate(${element.hueRotate}deg)`);
-  if (element.grayscale != null) filters.push(`grayscale(${element.grayscale}%)`);
-  if (element.sepia != null) filters.push(`sepia(${element.sepia}%)`);
-  if (filters.length > 0) style.filter = [fallback.filter, ...filters].filter(Boolean).join(' ');
-  if (element.backdropBlur != null) style.backdropFilter = `blur(${px(element.backdropBlur)})`;
-  if (element.fillColor != null) {
-    style.fill = element.fillColor;
-    if (style.background == null) style.background = element.fillColor;
+  for (const [source, formatter] of FILTER_STYLE_PROPERTIES) {
+    if (element[source] != null) filters.push(formatter(element[source]));
   }
+  if (filters.length > 0)
+    style.filter = [fallback.filter, ...filters].filter(Boolean).join(" ");
+  if (element.backdropBlur != null)
+    style.backdropFilter = `blur(${px(element.backdropBlur)})`;
+}
+
+function applyFillStyle(element, style) {
+  if (element.fillColor == null) return;
+  style.fill = element.fillColor;
+  if (style.background == null) style.background = element.fillColor;
+}
+
+export function subElementStyle(
+  config,
+  elementId,
+  fallback,
+  stateId = "default",
+) {
+  const aliased = STATE_ELEMENT_ALIASES[elementId];
+  const sourceElementId = aliased?.[0] || elementId;
+  const sourceStateId =
+    stateId !== "default" ? stateId : aliased?.[1] || stateId;
+  const element = getSubElementState(config, sourceElementId, sourceStateId);
+  const fallbackStyle = fallback || {};
+  const style = { ...fallbackStyle };
+  if (element.visible === false) return { ...style, display: "none" };
+  const background = getElementProperty(element, "background");
+  const radius = getElementProperty(element, "radius");
+  const backgroundPosition = getElementProperty(element, "backgroundPosition");
+  if (background != null) style.background = background;
+  applyTypographyStyles(element, style);
+  applyBoxStyles(element, style, radius);
+  applyShadowStyles(element, style);
+  applyBorderStyles(element, style, fallbackStyle);
+  applySizingStyles(element, style);
+  applyOffsetStyles(element, style);
+  if (hasLayoutSizing(element) && style.display == null) {
+    style.display = "inline-block";
+  }
+  applyImageStyles(element, style, backgroundPosition);
+  applyAnimationStyle(element, style);
+  applyFilterStyles(element, style, fallbackStyle);
+  applyFillStyle(element, style);
   return style;
 }
 
-export function subElementVars(config = {}, elementId, prefix, stateId = 'default') {
+export function subElementVars(config, elementId, prefix, stateId = "default") {
   const aliased = STATE_ELEMENT_ALIASES[elementId];
   const sourceElementId = aliased?.[0] || elementId;
-  const sourceStateId = stateId !== 'default' ? stateId : (aliased?.[1] || stateId);
+  const sourceStateId =
+    stateId !== "default" ? stateId : aliased?.[1] || stateId;
   const element = getSubElementState(config, sourceElementId, sourceStateId);
-  return Object.fromEntries(Object.entries(element).map(([key, value]) => ([`--${prefix}-${key}`, typeof value === 'number' && !['opacity', 'fontWeight', 'brightness', 'contrast', 'saturation'].includes(key) ? `${value}px` : value])));
+  return Object.fromEntries(
+    Object.entries(element).map(([key, value]) => [
+      `--${prefix}-${key}`,
+      typeof value === "number" &&
+      ![
+        "opacity",
+        "fontWeight",
+        "brightness",
+        "contrast",
+        "saturation",
+      ].includes(key)
+        ? `${value}px`
+        : value,
+    ]),
+  );
 }

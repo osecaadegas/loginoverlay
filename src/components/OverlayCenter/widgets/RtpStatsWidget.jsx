@@ -25,6 +25,9 @@ const DEFAULT_RTP_METAL = Object.freeze({
   syncWithBonusHuntColors: false,
 });
 
+const SLOT_SELECT_COLUMNS =
+  "id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features";
+
 function firstColor(...values) {
   for (const value of values) {
     const color = String(value || "").trim();
@@ -52,66 +55,513 @@ function bonusHuntMetalColors(config = {}) {
   };
 }
 
+function slotsTableQuery() {
+  return supabase.from("slots").select(SLOT_SELECT_COLUMNS);
+}
+
+async function fetchSlotQuery(query, confidence) {
+  const { data, error } = await query.limit(1).single();
+  if (error || !data) return null;
+  return { ...data, source: "database", confidence };
+}
+
+function bonusTypeRank(bonus) {
+  if (bonus.isExtremeBonus) return 2;
+  if (bonus.isSuperBonus) return 1;
+  return 0;
+}
+
+function resolveRtpSurfaceFallback({
+  isStyleSeca,
+  isNeon,
+  isMinimal,
+  isGlassStyle,
+}) {
+  if (isStyleSeca) return STYLE_SECA.surface;
+  if (isNeon) return "#050510";
+  if (isMinimal) return "#0a0a14";
+  if (isGlassStyle) return "#0f172a";
+  return "#111827";
+}
+
+function resolveRtpElevatedFallback({
+  isStyleSeca,
+  isNeon,
+  isMinimal,
+  isGlassStyle,
+}) {
+  if (isStyleSeca) return STYLE_SECA.elevated;
+  if (isNeon) return "#0a0a2e";
+  if (isMinimal) return "#0a0a14";
+  if (isGlassStyle) return "#1e293b";
+  return "#1e3a5f";
+}
+
+function resolveRtpBorderFallback({
+  isStyleSeca,
+  isMetal,
+  isNeon,
+  isMinimal,
+  isGlassStyle,
+  metalPrimaryColor,
+}) {
+  if (isStyleSeca) return STYLE_SECA.border;
+  if (isMetal) return metalBorderColor(metalPrimaryColor, 0.34);
+  if (isNeon) return "#00ffcc";
+  if (isMinimal) return "rgba(255,255,255,0.08)";
+  if (isGlassStyle) return "rgba(255,255,255,0.2)";
+  return "#1d4ed8";
+}
+
+function resolveRtpRadiusFallback({
+  isStyleSeca,
+  isMetal,
+  isMinimal,
+  isGlassStyle,
+}) {
+  if (isStyleSeca || isMetal) return 10;
+  if (isMinimal) return 4;
+  if (isGlassStyle) return 16;
+  return 8;
+}
+
+function resolveRtpTextFallback(
+  { isStyleSeca, isMetal },
+  styleSecaColor,
+  metalColor,
+  fallbackColor,
+) {
+  if (isStyleSeca) return styleSecaColor;
+  if (isMetal) return metalColor;
+  return fallbackColor;
+}
+
+function resolveRtpIconFallback(
+  { isStyleSeca, isMetal, metalPrimaryColor },
+  styleSecaColor,
+  fallbackColor,
+) {
+  if (isStyleSeca) return styleSecaColor;
+  if (isMetal) return metalPrimaryColor;
+  return fallbackColor;
+}
+
+function resolveLivePreviewValue({
+  isLive,
+  showDemoData,
+  liveValue,
+  demoValue,
+  emptyValue,
+}) {
+  if (isLive) return liveValue;
+  if (showDemoData) return demoValue;
+  return emptyValue;
+}
+
+function resolveRtpStyleClass({
+  isVertical,
+  isStyleSeca,
+  isMetal,
+  isNeon,
+  isMinimal,
+  isGlassStyle,
+}) {
+  if (isVertical) return " rtp-stats-bar--vertical";
+  if (isStyleSeca) return " rtp-stats-bar--styleseca rtp-stats-bar--metal";
+  if (isMetal) return " rtp-stats-bar--metal";
+  if (isNeon) return " rtp-stats-bar--neon";
+  if (isMinimal) return " rtp-stats-bar--minimal";
+  if (isGlassStyle) return " rtp-stats-bar--glass";
+  return "";
+}
+
+function resolveRtpStatCardStyle({
+  isStyleSeca,
+  isMetal,
+  cardSurfaceStyle,
+  borderWidth,
+  metalPrimaryColor,
+  metalSecondaryColor,
+  styleSecaValue,
+}) {
+  if (isStyleSeca) {
+    return {
+      ...cardSurfaceStyle,
+      background: styleSecaValue(
+        cardSurfaceStyle.background,
+        styleSecaSurfaceGradient("90deg"),
+      ),
+      border:
+        cardSurfaceStyle.border ||
+        `${borderWidth}px solid ${cardSurfaceStyle.borderColor || STYLE_SECA.border}`,
+      borderColor: cardSurfaceStyle.borderColor || STYLE_SECA.border,
+      boxShadow:
+        cardSurfaceStyle.boxShadow ||
+        `0 16px 34px rgba(0,0,0,0.34), 0 0 24px ${STYLE_SECA.glow}`,
+    };
+  }
+  if (isMetal) {
+    return {
+      ...cardSurfaceStyle,
+      background: brushedMetalBackground(
+        `linear-gradient(to right, var(--rtp-metal-secondary, ${metalSecondaryColor}) 0%, var(--rtp-metal-primary, ${metalPrimaryColor}) 50%, var(--rtp-metal-secondary, ${metalSecondaryColor}) 100%)`,
+        metalPrimaryColor,
+        { highlightOpacity: 0.06, grainOpacity: 0.028 },
+      ),
+      border:
+        cardSurfaceStyle.border ||
+        `${borderWidth}px solid ${metalBorderColor(metalPrimaryColor, 0.3)}`,
+      borderColor: metalBorderColor(metalPrimaryColor, 0.3),
+      boxShadow:
+        cardSurfaceStyle.boxShadow ||
+        metalSurfaceShadow(metalPrimaryColor, 0.72),
+    };
+  }
+  return cardSurfaceStyle;
+}
+
+function resolveRtpMetalConfig(config, bonusHuntConfig) {
+  const overrides =
+    config.rtpMetal &&
+    typeof config.rtpMetal === "object" &&
+    !Array.isArray(config.rtpMetal)
+      ? config.rtpMetal
+      : null;
+  const rtpMetal = overrides
+    ? { ...DEFAULT_RTP_METAL, ...overrides }
+    : DEFAULT_RTP_METAL;
+  const syncedMetalColors = bonusHuntMetalColors(bonusHuntConfig);
+  if (rtpMetal.syncWithBonusHuntColors) {
+    return {
+      rtpMetal,
+      metalPrimaryColor: syncedMetalColors.primaryColor,
+      metalSecondaryColor: syncedMetalColors.secondaryColor,
+    };
+  }
+  return {
+    rtpMetal,
+    metalPrimaryColor: firstColor(
+      rtpMetal.primaryColor,
+      DEFAULT_RTP_METAL.primaryColor,
+    ),
+    metalSecondaryColor: firstColor(
+      rtpMetal.secondaryColor,
+      DEFAULT_RTP_METAL.secondaryColor,
+    ),
+  };
+}
+
+function resolveRtpStyleFlags(displayStyle) {
+  return {
+    isVertical: displayStyle === "vertical",
+    isMetal: displayStyle === "metal",
+    isStyleSeca: displayStyle === "StyleSecaRTP",
+    isNeon: displayStyle === "neon",
+    isMinimal: displayStyle === "minimal",
+    isGlassStyle: displayStyle === "glass",
+  };
+}
+
+function resolveRtpStyleSecaValue(isStyleSeca, value, fallback) {
+  if (isStyleSeca) return resolveStyleSecaValue(value, fallback);
+  return value;
+}
+
+function resolveRtpBarBgFrom({
+  config,
+  styleFlags,
+  metalSecondaryColor,
+  styleSecaValue,
+}) {
+  if (styleFlags.isMetal)
+    return styleSecaValue(metalSecondaryColor, STYLE_SECA.surface);
+  return styleSecaValue(
+    subValue(
+      config,
+      "container",
+      "background",
+      config.barBgFrom || resolveRtpSurfaceFallback(styleFlags),
+    ),
+    STYLE_SECA.surface,
+  );
+}
+
+function resolveRtpBarBgVia({
+  config,
+  styleFlags,
+  metalPrimaryColor,
+  styleSecaValue,
+}) {
+  if (styleFlags.isMetal)
+    return styleSecaValue(metalPrimaryColor, STYLE_SECA.elevated);
+  return styleSecaValue(
+    config.barBgVia || resolveRtpElevatedFallback(styleFlags),
+    STYLE_SECA.elevated,
+  );
+}
+
+function resolveRtpBarBgTo({
+  config,
+  styleFlags,
+  metalSecondaryColor,
+  styleSecaValue,
+}) {
+  if (styleFlags.isMetal)
+    return styleSecaValue(metalSecondaryColor, STYLE_SECA.surface);
+  return styleSecaValue(
+    config.barBgTo || resolveRtpSurfaceFallback(styleFlags),
+    STYLE_SECA.surface,
+  );
+}
+
+function resolveRtpFontFamily(config, isStyleSeca) {
+  return subValue(
+    config,
+    "container",
+    "fontFamily",
+    config.fontFamily ||
+      (isStyleSeca
+        ? "'Rajdhani', 'Barlow Condensed', sans-serif"
+        : "'Inter', sans-serif"),
+  );
+}
+
+function resolveRtpBorderWidth(config, isMinimal) {
+  return subValue(
+    config,
+    "container",
+    "borderWidth",
+    config.borderWidth ?? (isMinimal ? 0 : 1),
+  );
+}
+
+function resolveRtpPotentialIconFallback(isStyleSeca) {
+  if (isStyleSeca) return STYLE_SECA.primary;
+  return "#facc15";
+}
+
+function resolveRtpVolatilityIconFallback(isStyleSeca) {
+  if (isStyleSeca) return STYLE_SECA.secondary;
+  return "#3b82f6";
+}
+
+function resolveRtpSpinnerColor({ config, isMetal, metalPrimaryColor }) {
+  if (config.spinnerColor) return config.spinnerColor;
+  if (isMetal) return metalPrimaryColor;
+  return "#60a5fa";
+}
+
+function resolveRtpTransform(widgetScale) {
+  if (!widgetScale || Number(widgetScale) === 1) return undefined;
+  return `scale(${Number(widgetScale)})`;
+}
+
+function resolveRtpFilter({ brightness, contrast, saturation }) {
+  if (brightness === 100 && contrast === 100 && saturation === 100)
+    return undefined;
+  return `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+}
+
+function formatProviderLogoRadius(providerLogoRadius) {
+  if (typeof providerLogoRadius === "number") return `${providerLogoRadius}px`;
+  return providerLogoRadius;
+}
+
+function buildRtpRootStyle(values) {
+  const rootStyle = {
+    fontFamily: values.fontFamily,
+    fontSize: `${values.fontSize}px`,
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transform: resolveRtpTransform(values.widgetScale),
+    transformOrigin: "center",
+    filter: resolveRtpFilter(values),
+    "--rtp-bg-from": values.barBgFrom,
+    "--rtp-bg-via": values.barBgVia,
+    "--rtp-bg-to": values.barBgTo,
+    "--rtp-metal-primary": values.metalPrimaryColor,
+    "--rtp-metal-secondary": values.metalSecondaryColor,
+    "--rtp-border-color": values.borderColor,
+    "--rtp-border-width": `${values.borderWidth}px`,
+    "--rtp-border-radius": `${values.borderRadius}px`,
+    "--rtp-text": values.textColor,
+    "--rtp-provider": values.providerColor,
+    "--rtp-slot-name": values.slotNameColor,
+    "--rtp-label": values.labelColor,
+    "--rtp-value-rtp": values.rtpValueColor,
+    "--rtp-value-potential": values.potentialValueColor,
+    "--rtp-value-volatility": values.volatilityValueColor,
+    "--rtp-value-bestwin": values.bestWinValueColor,
+    "--rtp-icon-rtp": values.rtpIconColor,
+    "--rtp-icon-potential": values.potentialIconColor,
+    "--rtp-icon-volatility": values.volatilityIconColor,
+    "--rtp-divider": values.dividerColor,
+    "--rtp-spinner": values.spinnerColor,
+    "--rtp-px": `${values.compactPaddingX}px`,
+    "--rtp-py": `${values.compactPaddingY}px`,
+    "--rtp-provider-family": values.providerFontFamily,
+    "--rtp-provider-size": `${values.providerFontSize}px`,
+    "--rtp-provider-weight": values.providerFontWeight,
+    "--rtp-provider-logo-width": `${values.providerLogoWidth}px`,
+    "--rtp-provider-logo-height": `${values.providerLogoHeight}px`,
+    "--rtp-provider-logo-radius": formatProviderLogoRadius(
+      values.providerLogoRadius,
+    ),
+    "--rtp-provider-logo-fit": values.providerLogoFit,
+    "--rtp-slot-family": values.slotTitleFontFamily,
+    "--rtp-slot-size": `${values.slotTitleFontSize}px`,
+    "--rtp-slot-weight": values.slotTitleFontWeight,
+    "--rtp-value-rtp-family": values.rtpValueFontFamily,
+    "--rtp-value-rtp-size": `${values.rtpValueFontSize}px`,
+    "--rtp-value-rtp-weight": values.rtpValueFontWeight,
+    "--rtp-value-potential-family": values.potentialValueFontFamily,
+    "--rtp-value-potential-size": `${values.potentialValueFontSize}px`,
+    "--rtp-value-potential-weight": values.potentialValueFontWeight,
+    "--rtp-value-volatility-family": values.volatilityValueFontFamily,
+    "--rtp-value-volatility-size": `${values.volatilityValueFontSize}px`,
+    "--rtp-value-volatility-weight": values.volatilityValueFontWeight,
+    "--rtp-value-bestwin-family": values.bestWinValueFontFamily,
+    "--rtp-value-bestwin-size": `${values.bestWinValueFontSize}px`,
+    "--rtp-value-bestwin-weight": values.bestWinValueFontWeight,
+    "--rtp-label-family": values.labelFontFamily,
+    "--rtp-label-size": `${values.labelFontSize}px`,
+    "--rtp-label-weight": values.labelFontWeight,
+    "--rtp-label-rtp-family": values.rtpValueFontFamily,
+    "--rtp-label-rtp-size": `${Math.max(10, Math.round(Number(values.rtpValueFontSize) * 0.88))}px`,
+    "--rtp-label-rtp-weight": values.rtpValueFontWeight,
+    "--rtp-label-potential-family": values.potentialValueFontFamily,
+    "--rtp-label-potential-size": `${Math.max(10, Math.round(Number(values.potentialValueFontSize) * 0.88))}px`,
+    "--rtp-label-potential-weight": values.potentialValueFontWeight,
+    "--rtp-label-volatility-family": values.volatilityValueFontFamily,
+    "--rtp-label-volatility-size": `${Math.max(10, Math.round(Number(values.volatilityValueFontSize) * 0.88))}px`,
+    "--rtp-label-volatility-weight": values.volatilityValueFontWeight,
+    "--rtp-label-bestwin-family": values.bestWinValueFontFamily,
+    "--rtp-label-bestwin-size": `${Math.max(10, Math.round(Number(values.bestWinValueFontSize) * 0.88))}px`,
+    "--rtp-label-bestwin-weight": values.bestWinValueFontWeight,
+    "--rtp-gap": `${values.itemGap}px`,
+    "--rtp-bar-height":
+      values.barHeight != null ? `${values.barHeight}px` : "100%",
+    "--rtp-max-width":
+      values.maxWidth != null ? `${values.maxWidth}px` : "100%",
+    "--rtp-icon-bestwin": values.bestWinIconColor,
+    "--rtp-shadow": values.shadow,
+    "--rtp-glow": values.glow,
+    "--rtp-blur": `${Number(values.backdropBlur) || 0}px`,
+  };
+  if (values.isNeon) rootStyle["--rtp-accent"] = values.borderColor;
+  return rootStyle;
+}
+
+function resolveRtpProviderStyle({
+  displayProviderLogo,
+  rawProviderStyle,
+  providerExplicitWidth,
+  providerExplicitHeight,
+  providerLogoWidth,
+  providerLogoHeight,
+}) {
+  if (!displayProviderLogo)
+    return flexSizedStyle(rawProviderStyle, "inline-flex");
+  const providerStyle = { ...rawProviderStyle };
+  providerStyle.width =
+    providerExplicitWidth != null
+      ? rawProviderStyle.width
+      : `${providerLogoWidth}px`;
+  providerStyle.height =
+    providerExplicitHeight != null
+      ? rawProviderStyle.height
+      : `${providerLogoHeight}px`;
+  providerStyle.maxWidth = rawProviderStyle.maxWidth ?? providerStyle.width;
+  return flexSizedStyle(providerStyle, "inline-flex");
+}
+
+function resolveBestWinDisplayStyles({
+  isVertical,
+  rawPersonalBestStyle,
+  labelStyle,
+}) {
+  if (isVertical) {
+    return {
+      personalBestStyle: rawPersonalBestStyle,
+      bestWinLabelStyle: labelStyle,
+      bestWinValueStyle: undefined,
+      bestWinGroupStyle: undefined,
+    };
+  }
+  return {
+    personalBestStyle: {
+      ...rawPersonalBestStyle,
+      display: "inline-flex",
+      flex: "0 0 auto",
+      flexDirection: "row",
+      flexWrap: "nowrap",
+      alignItems: "center",
+      width: "auto",
+      maxWidth: "none",
+      minWidth: "max-content",
+      whiteSpace: "nowrap",
+    },
+    bestWinLabelStyle: {
+      ...labelStyle,
+      display: "inline",
+      width: "auto",
+      maxWidth: "none",
+      whiteSpace: "nowrap",
+    },
+    bestWinValueStyle: {
+      display: "inline-flex",
+      flexDirection: "row",
+      flexWrap: "nowrap",
+      alignItems: "center",
+      width: "auto",
+      maxWidth: "none",
+      minWidth: "max-content",
+      whiteSpace: "nowrap",
+    },
+    bestWinGroupStyle: {
+      display: "inline-flex",
+      flex: "0 0 auto",
+      flexWrap: "nowrap",
+      minWidth: "max-content",
+      maxWidth: "none",
+      overflow: "visible",
+    },
+  };
+}
+
+function resolveRtpInnerClassName({ isLive, previewMode, showEmptyState }) {
+  return `rtp-stats-inner ${!isLive && previewMode ? "rtp-stats-inner--preview" : ""} ${showEmptyState ? "rtp-stats-inner--empty" : ""}`;
+}
+
 /* ─── Fetch slot info from the database (slots table) ─── */
 async function fetchSlotFromDB(slotRef) {
   const slot = getSlotIdentity(slotRef);
   if (!slot.name && !slot.id) return null;
 
   try {
-    if (slot.id) {
-      const { data, error } = await supabase
-        .from("slots")
-        .select(
-          "id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features",
-        )
-        .eq("id", slot.id)
-        .limit(1)
-        .single();
-
-      if (!error && data)
-        return { ...data, source: "database", confidence: "exact" };
+    const lookups = [
+      slot.id ? [slotsTableQuery().eq("id", slot.id), "exact"] : null,
+      slot.name && slot.provider
+        ? [
+            slotsTableQuery()
+              .ilike("name", slot.name)
+              .ilike("provider", slot.provider),
+            "high",
+          ]
+        : null,
+      slot.name ? [slotsTableQuery().ilike("name", slot.name), "high"] : null,
+      slot.name
+        ? [slotsTableQuery().ilike("name", `%${slot.name}%`), "medium"]
+        : null,
+    ].filter(Boolean);
+    for (const [query, confidence] of lookups) {
+      const result = await fetchSlotQuery(query, confidence);
+      if (result) return result;
     }
-
-    if (slot.name && slot.provider) {
-      const { data, error } = await supabase
-        .from("slots")
-        .select(
-          "id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features",
-        )
-        .ilike("name", slot.name)
-        .ilike("provider", slot.provider)
-        .limit(1)
-        .single();
-
-      if (!error && data)
-        return { ...data, source: "database", confidence: "high" };
-    }
-
-    // Exact match (case-insensitive via ilike)
-    let { data, error } = await supabase
-      .from("slots")
-      .select(
-        "id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features",
-      )
-      .ilike("name", slot.name)
-      .limit(1)
-      .single();
-
-    if (!error && data)
-      return { ...data, source: "database", confidence: "high" };
-
-    // Fuzzy match (contains) is metadata-only fallback, never used for PB lookup.
-    ({ data, error } = await supabase
-      .from("slots")
-      .select(
-        "id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features",
-      )
-      .ilike("name", `%${slot.name}%`)
-      .limit(1)
-      .single());
-
-    if (!error && data)
-      return { ...data, source: "database", confidence: "medium" };
   } catch {
     // DB not reachable — fall through to API
   }
@@ -140,7 +590,7 @@ async function fetchSlotInfoAPI(name) {
 /* ─── Volatility formatting ─── */
 function fmtVolatility(v) {
   if (!v) return "—";
-  return v.replace(/_/g, " ").toUpperCase();
+  return v.replaceAll("_", " ").toUpperCase();
 }
 
 /* ─── Format max win multiplier ─── */
@@ -188,9 +638,10 @@ function partAttrs(partId, stateId) {
   };
 }
 
-function flexSizedStyle(style = {}, fallbackDisplay) {
-  if (!style || typeof style !== "object") return style;
-  const next = { ...style };
+function flexSizedStyle(style, fallbackDisplay) {
+  const sourceStyle = style ?? {};
+  if (typeof sourceStyle !== "object") return sourceStyle;
+  const next = { ...sourceStyle };
   if (fallbackDisplay && (!next.display || next.display === "inline-block"))
     next.display = fallbackDisplay;
   if (next.width != null) {
@@ -203,200 +654,134 @@ function flexSizedStyle(style = {}, fallbackDisplay) {
   return next;
 }
 
-function RtpStatsProviderMark({ provider, logo, style }) {
-  const [failedLogo, setFailedLogo] = useState("");
-
-  useEffect(() => {
-    setFailedLogo("");
-  }, [provider, logo]);
-
-  const canShowLogo = Boolean(logo) && failedLogo !== logo;
-  const label = String(provider || "").trim();
-
-  return (
-    <span
-      className={`rtp-stats-provider ${canShowLogo ? "rtp-stats-provider--logo" : "rtp-stats-provider--text"}`}
-      title={label}
-      style={style}
-      {...partAttrs('provider')}
-    >
-      {canShowLogo ? (
-        <img
-          src={logo}
-          alt={`${label} logo`}
-          className="rtp-stats-provider-logo"
-          draggable="false"
-          decoding="async"
-          onError={() => setFailedLogo(logo)}
-        />
-      ) : (
-        label.toUpperCase()
-      )}
-    </span>
+function findBonusHuntConfig(allWidgets) {
+  const widget = (allWidgets || []).find(
+    (item) => item.widget_type === "bonus_hunt" && item.config,
   );
+  return widget?.config || {};
 }
 
-function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
-  const c = config || {};
+function getTournamentCurrentMatchIndex(matches, allMatches, currentMatchIdx) {
+  const inProgressIndex = matches.findIndex(
+    (match) => match.status === "in_progress",
+  );
+  if (inProgressIndex >= 0) return inProgressIndex;
+  const target = allMatches[currentMatchIdx ?? 0];
+  if (!target) return 0;
+  return Math.max(matches.indexOf(target), 0);
+}
 
-  /* ── Find bonus hunt widget ── */
-  const bhWidget = useMemo(() => {
-    return (allWidgets || []).find(
-      (w) => w.widget_type === "bonus_hunt" && w.config,
-    );
-  }, [allWidgets]);
-
-  const bhConfig = bhWidget?.config || {};
-  const bonusOpening = bhConfig.bonusOpening === true;
-  const rtpMetalOverrides =
-    c.rtpMetal && typeof c.rtpMetal === "object" && !Array.isArray(c.rtpMetal)
-      ? c.rtpMetal
-      : null;
-  const rtpMetal = rtpMetalOverrides
-    ? { ...DEFAULT_RTP_METAL, ...rtpMetalOverrides }
-    : DEFAULT_RTP_METAL;
-  const syncedMetalColors = bonusHuntMetalColors(bhConfig);
-  const metalPrimaryColor = rtpMetal.syncWithBonusHuntColors
-    ? syncedMetalColors.primaryColor
-    : firstColor(rtpMetal.primaryColor, DEFAULT_RTP_METAL.primaryColor);
-  const metalSecondaryColor = rtpMetal.syncWithBonusHuntColors
-    ? syncedMetalColors.secondaryColor
-    : firstColor(rtpMetal.secondaryColor, DEFAULT_RTP_METAL.secondaryColor);
-
-  /* ── Find tournament widget & current match slot ── */
-  const tournamentSlotName = useMemo(() => {
-    const tw = (allWidgets || []).find(
-      (w) => w.widget_type === "tournament" && w.config?.data,
-    );
-    if (!tw) return "";
-    const tData = tw.config.data;
-    const allMatches = tData.matches || [];
-    const matches = allMatches.filter(
-      (m) =>
-        (m.player1 && m.player1 !== "TBD") ||
-        (m.player2 && m.player2 !== "TBD"),
-    );
-    // Find current match: first in_progress, or use stored index
-    const ipIdx = matches.findIndex((m) => m.status === "in_progress");
-    const currentIdx =
-      ipIdx >= 0
-        ? ipIdx
-        : (() => {
-            const orig = tData.currentMatchIdx ?? 0;
-            const target = allMatches[orig];
-            if (!target) return 0;
-            const idx = matches.indexOf(target);
-            return idx >= 0 ? idx : 0;
-          })();
-    const current = matches[currentIdx];
-    if (!current) return "";
-    // If match has no winner yet, use slot1 name (the "active" slot)
-    // If match has a winner, show the winning slot
-    if (current.winner) {
-      const winSlot =
-        current.winner === "player1" ? current.slot1 : current.slot2;
-      return winSlot?.name || "";
-    }
-    // No winner yet — prefer slot1 (left player)
-    return current.slot1?.name || current.slot2?.name || "";
-  }, [allWidgets]);
-
-  /* ── Apply same sort as BonusHuntWidget so current bonus matches ── */
-  const bonuses = useMemo(() => {
-    const raw = bhConfig.bonuses || [];
-    const sb = bhConfig.sortBy;
-    const sd = bhConfig.sortDir || "asc";
-    if (!sb || sb === "default") return raw;
-    const dir = sd === "desc" ? -1 : 1;
-    return [...raw].sort((a, b) => {
-      if (sb === "bet") return ((a.betSize || 0) - (b.betSize || 0)) * dir;
-      if (sb === "provider") {
-        const pa = (a.slot?.provider || "").toLowerCase();
-        const pb = (b.slot?.provider || "").toLowerCase();
-        if (pa !== pb) return pa.localeCompare(pb) * dir;
-        return (a.slotName || "").localeCompare(b.slotName || "") * dir;
-      }
-      if (sb === "type") {
-        const rank = (x) => (x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0);
-        return (rank(b) - rank(a)) * dir;
-      }
-      return 0;
-    });
-  }, [bhConfig.bonuses, bhConfig.sortBy, bhConfig.sortDir]);
-
-  /* ── Current bonus (first unopened) ── */
-  const currentBonus = useMemo(() => bonuses.find((b) => !b.opened), [bonuses]);
-  /* Priority: search preview → bonus opening slot → tournament slot → bonus hunt slot */
-  const currentBonusSlot = useMemo(() => {
-    if (!currentBonus) return null;
-    return getSlotIdentity({
-      slotId:
-        currentBonus.slot?.id || currentBonus.slot_id || currentBonus.slotId,
-      slotName: currentBonus.slotName || currentBonus.slot?.name,
-      provider: currentBonus.slot?.provider || currentBonus.provider,
-      imageUrl: currentBonus.slot?.image || currentBonus.imageUrl,
-      slot: currentBonus.slot,
-    });
-  }, [currentBonus]);
-
-  const activeSlot = useMemo(() => {
-    const previewName = bhConfig.previewSlotName || "";
-    if (previewName) return getSlotIdentity({ slotName: previewName });
-    if (bonusOpening && currentBonusSlot?.name) return currentBonusSlot;
-    if (tournamentSlotName)
-      return getSlotIdentity({ slotName: tournamentSlotName });
-    if (currentBonusSlot?.name) return currentBonusSlot;
-    return getSlotIdentity({});
-  }, [
-    bhConfig.previewSlotName,
-    bonusOpening,
-    currentBonusSlot,
-    tournamentSlotName,
-  ]);
-
-  const slotName = activeSlot.name || "";
-  const slotKey = `${activeSlot.id || ""}|${activeSlot.provider || ""}|${slotName}`;
-  const localSlotInfo = useMemo(() => {
-    if (!slotName) return null;
-    if (
-      currentBonus?.slot &&
-      recordMatchesSlot(
-        {
-          slot_id: currentBonus.slot.id,
-          slot_name: currentBonus.slot.name || currentBonus.slotName,
-          slot_provider: currentBonus.slot.provider,
-        },
-        activeSlot,
+function resolveTournamentSlotName(allWidgets) {
+  const tournamentWidget = (allWidgets || []).find(
+    (item) => item.widget_type === "tournament" && item.config?.data,
+  );
+  if (!tournamentWidget) return "";
+  const tournamentData = tournamentWidget.config.data;
+  const allMatches = tournamentData.matches || [];
+  const matches = allMatches.filter(
+    (match) =>
+      (match.player1 && match.player1 !== "TBD") ||
+      (match.player2 && match.player2 !== "TBD"),
+  );
+  const current =
+    matches[
+      getTournamentCurrentMatchIndex(
+        matches,
+        allMatches,
+        tournamentData.currentMatchIdx,
       )
-    ) {
-      return {
-        ...currentBonus.slot,
-        id: currentBonus.slot.id || activeSlot.id || null,
-        name: currentBonus.slot.name || slotName,
-        provider: currentBonus.slot.provider || activeSlot.provider || "",
-        image: currentBonus.slot.image || activeSlot.image || "",
-        source: "selected_bonus",
-      };
-    }
-    return {
-      id: activeSlot.id || null,
-      name: slotName,
-      provider: activeSlot.provider || "",
-      image: activeSlot.image || "",
-      source: "selected_slot",
-    };
-  }, [activeSlot, currentBonus, slotName]);
+    ];
+  if (!current) return "";
+  if (!current.winner) return current.slot1?.name || current.slot2?.name || "";
+  const winningSlot =
+    current.winner === "player1" ? current.slot1 : current.slot2;
+  return winningSlot?.name || "";
+}
 
-  /* ── Slot info from DB (primary) or API (fallback) ── */
+function compareBonusProvider(a, b, direction) {
+  const providerA = (a.slot?.provider || "").toLowerCase();
+  const providerB = (b.slot?.provider || "").toLowerCase();
+  if (providerA !== providerB)
+    return providerA.localeCompare(providerB) * direction;
+  return (a.slotName || "").localeCompare(b.slotName || "") * direction;
+}
+
+function sortRtpBonuses(bonuses, sortBy, sortDir = "asc") {
+  const sourceBonuses = bonuses || [];
+  if (!sortBy || sortBy === "default") return sourceBonuses;
+  const direction = sortDir === "desc" ? -1 : 1;
+  return [...sourceBonuses].sort((a, b) => {
+    if (sortBy === "bet")
+      return ((a.betSize || 0) - (b.betSize || 0)) * direction;
+    if (sortBy === "provider") return compareBonusProvider(a, b, direction);
+    if (sortBy === "type")
+      return (bonusTypeRank(b) - bonusTypeRank(a)) * direction;
+    return 0;
+  });
+}
+
+function resolveCurrentBonusSlot(currentBonus) {
+  if (!currentBonus) return null;
+  return getSlotIdentity({
+    slotId:
+      currentBonus.slot?.id || currentBonus.slot_id || currentBonus.slotId,
+    slotName: currentBonus.slotName || currentBonus.slot?.name,
+    provider: currentBonus.slot?.provider || currentBonus.provider,
+    imageUrl: currentBonus.slot?.image || currentBonus.imageUrl,
+    slot: currentBonus.slot,
+  });
+}
+
+function resolveActiveRtpSlot({
+  previewSlotName,
+  bonusOpening,
+  currentBonusSlot,
+  tournamentSlotName,
+}) {
+  if (previewSlotName) return getSlotIdentity({ slotName: previewSlotName });
+  if (bonusOpening && currentBonusSlot?.name) return currentBonusSlot;
+  if (tournamentSlotName)
+    return getSlotIdentity({ slotName: tournamentSlotName });
+  if (currentBonusSlot?.name) return currentBonusSlot;
+  return getSlotIdentity({});
+}
+
+function resolveLocalSlotInfo({ slotName, currentBonus, activeSlot }) {
+  if (!slotName) return null;
+  const currentBonusRecord = currentBonus?.slot
+    ? {
+        slot_id: currentBonus.slot.id,
+        slot_name: currentBonus.slot.name || currentBonus.slotName,
+        slot_provider: currentBonus.slot.provider,
+      }
+    : null;
+  if (currentBonusRecord && recordMatchesSlot(currentBonusRecord, activeSlot)) {
+    return {
+      ...currentBonus.slot,
+      id: currentBonus.slot.id || activeSlot.id || null,
+      name: currentBonus.slot.name || slotName,
+      provider: currentBonus.slot.provider || activeSlot.provider || "",
+      image: currentBonus.slot.image || activeSlot.image || "",
+      source: "selected_bonus",
+    };
+  }
+  return {
+    id: activeSlot.id || null,
+    name: slotName,
+    provider: activeSlot.provider || "",
+    image: activeSlot.image || "",
+    source: "selected_slot",
+  };
+}
+
+function useRtpSlotInfo({ activeSlot, localSlotInfo, slotKey, slotName }) {
   const [slotInfo, setSlotInfo] = useState(null);
-  const [loading, setLoading] = useState(false);
   const lastSlotRef = useRef("");
 
   useEffect(() => {
     if (!slotName) {
       lastSlotRef.current = "";
       setSlotInfo(null);
-      setLoading(false);
       return;
     }
     if (slotKey === lastSlotRef.current) return;
@@ -405,20 +790,13 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     setSlotInfo(localSlotInfo);
 
     async function lookup() {
-      setLoading(true);
-      // 1. Try database first
       const dbResult = await fetchSlotFromDB(activeSlot);
       if (!cancelled && dbResult) {
         setSlotInfo(dbResult);
-        setLoading(false);
         return;
       }
-      // 2. Fallback to API (KNOWN_SLOTS + web scrape)
       const apiResult = await fetchSlotInfoAPI(slotName);
-      if (!cancelled) {
-        setSlotInfo(apiResult);
-        setLoading(false);
-      }
+      if (!cancelled) setSlotInfo(apiResult);
     }
 
     lookup();
@@ -427,81 +805,100 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     };
   }, [activeSlot, localSlotInfo, slotKey, slotName]);
 
-  /* ── Best win for this slot (from user_slot_records) ── */
-  const [bestWinData, setBestWinData] = useState(null);
+  return slotInfo;
+}
 
-  // Fallback: read bestWin cached in widget config (works in OBS where DB is blocked by RLS)
-  const configBestWin = useMemo(() => {
-    if (!slotName) return null;
-    // Check own widget config first (persisted by dashboard fetch)
-    const cached = c._cachedBestWin;
-    const cachedRecord = cached
-      ? {
-          slot_id: cached.slotId || cached.slot_id || null,
-          slot_name: cached.slotName,
-          slot_provider: cached.provider || cached.slot_provider || null,
-        }
-      : null;
-    const cachedIsExactEnough =
-      cachedRecord &&
-      cachedBestWinMatchesUser(cached, userId) &&
-      recordMatchesSlot(cachedRecord, activeSlot) &&
-      !(
-        activeSlot.id &&
-        !cachedRecord.slot_id &&
-        activeSlot.provider &&
-        !cachedRecord.slot_provider
-      );
-    if (cached?.best_win && cachedIsExactEnough) {
-      return {
-        ...cachedRecord,
-        best_win: cached.best_win,
-        best_multiplier: cached.best_multiplier || 0,
-      };
-    }
-    // Fallback: check single_slot widgets
-    if (!allWidgets) return null;
-    const ssWidget = allWidgets.find((w) => {
-      if (
-        (w.widget_type !== "single_slot" && w.widget_type !== "current_slot") ||
-        !w.config?.bestWin
-      )
-        return false;
-      const widgetRecord = {
-        slot_id: w.config.slotId || null,
-        slot_name: w.config.slotName,
-        slot_provider: w.config.provider || null,
-      };
-      return (
-        recordMatchesSlot(widgetRecord, activeSlot) &&
-        !(
-          activeSlot.id &&
-          !widgetRecord.slot_id &&
-          activeSlot.provider &&
-          !widgetRecord.slot_provider
-        )
-      );
-    });
-    if (ssWidget?.config?.bestWin) {
-      return {
-        slot_id: ssWidget.config.slotId || null,
-        slot_name: ssWidget.config.slotName,
-        slot_provider: ssWidget.config.provider || null,
-        best_win: ssWidget.config.bestWin,
-        best_multiplier: ssWidget.config.bestMulti || 0,
-      };
-    }
-    return null;
-  }, [activeSlot, allWidgets, c._cachedBestWin, slotName, userId]);
+function missingPreciseSlotFields(activeSlot, record) {
+  return Boolean(
+    activeSlot.id &&
+    !record.slot_id &&
+    activeSlot.provider &&
+    !record.slot_provider,
+  );
+}
 
-  // Persist bestWin to widget config so OBS can read it (OBS has no auth → can't query DB)
+function cachedBestWinRecord(cached, userId, activeSlot) {
+  const cachedRecord = cached
+    ? {
+        slot_id: cached.slotId || cached.slot_id || null,
+        slot_name: cached.slotName,
+        slot_provider: cached.provider || cached.slot_provider || null,
+      }
+    : null;
+  const isExactEnough =
+    cachedRecord &&
+    cachedBestWinMatchesUser(cached, userId) &&
+    recordMatchesSlot(cachedRecord, activeSlot) &&
+    !missingPreciseSlotFields(activeSlot, cachedRecord);
+  if (!cached?.best_win || !isExactEnough) return null;
+  return {
+    ...cachedRecord,
+    best_win: cached.best_win,
+    best_multiplier: cached.best_multiplier || 0,
+  };
+}
+
+function widgetBestWinRecord(widget, activeSlot) {
+  const widgetRecord = {
+    slot_id: widget.config.slotId || null,
+    slot_name: widget.config.slotName,
+    slot_provider: widget.config.provider || null,
+  };
+  const matches =
+    recordMatchesSlot(widgetRecord, activeSlot) &&
+    !missingPreciseSlotFields(activeSlot, widgetRecord);
+  if (!matches) return null;
+  return {
+    slot_id: widget.config.slotId || null,
+    slot_name: widget.config.slotName,
+    slot_provider: widget.config.provider || null,
+    best_win: widget.config.bestWin,
+    best_multiplier: widget.config.bestMulti || 0,
+  };
+}
+
+function resolveConfigBestWin({
+  slotName,
+  cached,
+  userId,
+  allWidgets,
+  activeSlot,
+}) {
+  if (!slotName) return null;
+  const cachedRecord = cachedBestWinRecord(cached, userId, activeSlot);
+  if (cachedRecord) return cachedRecord;
+  const matchingWidget = (allWidgets || []).find((widget) => {
+    const isSlotWidget =
+      widget.widget_type === "single_slot" ||
+      widget.widget_type === "current_slot";
+    return (
+      isSlotWidget &&
+      widget.config?.bestWin &&
+      widgetBestWinRecord(widget, activeSlot)
+    );
+  });
+  return matchingWidget
+    ? widgetBestWinRecord(matchingWidget, activeSlot)
+    : null;
+}
+
+function usePersistRtpBestWin({
+  activeSlot,
+  bestWinData,
+  config,
+  slotKey,
+  slotName,
+  userId,
+  widgetId,
+}) {
   const persistRef = useRef("");
-  const configRef = useRef(c);
-  configRef.current = c;
+  const configRef = useRef(config);
+  configRef.current = config;
+
   useEffect(() => {
     if (!bestWinData || !widgetId || !slotName || !userId) return;
     const key = `${userId}:${slotKey}:${bestWinData.best_win}:${bestWinData.best_multiplier}`;
-    if (persistRef.current === key) return; // already persisted
+    if (persistRef.current === key) return;
     persistRef.current = key;
     const latest = configRef.current;
     const bestSlot = getSlotIdentity(bestWinData);
@@ -522,29 +919,34 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       })
       .eq("id", widgetId)
       .eq("user_id", userId)
-      .then(); // fire-and-forget
+      .then();
   }, [activeSlot, bestWinData, slotKey, userId, widgetId, slotName]);
+}
 
-  // Fetch best win on slot change + subscribe to realtime updates
+async function fetchRtpBestWin(userId, activeSlot) {
+  const data = await findUserSlotRecord(
+    userId,
+    activeSlot,
+    "slot_id, slot_name, slot_provider, best_win, best_multiplier",
+  );
+  if (data && recordMatchesSlot(data, activeSlot)) return data;
+  return hydrateSlotPersonalBestFromHistory(userId, activeSlot);
+}
+
+function useRtpBestWinData({ activeSlot, slotKey, slotName, userId }) {
+  const [bestWinData, setBestWinData] = useState(null);
+
   useEffect(() => {
     if (!slotName || !userId) {
       setBestWinData(null);
-      return;
+      return undefined;
     }
     let cancelled = false;
     setBestWinData(null);
 
     async function fetchBestWin() {
       try {
-        const data = await findUserSlotRecord(
-          userId,
-          activeSlot,
-          "slot_id, slot_name, slot_provider, best_win, best_multiplier",
-        );
-        let record = data && recordMatchesSlot(data, activeSlot) ? data : null;
-        if (!record) {
-          record = await hydrateSlotPersonalBestFromHistory(userId, activeSlot);
-        }
+        const record = await fetchRtpBestWin(userId, activeSlot);
         if (!cancelled) {
           setBestWinData(
             record && recordMatchesSlot(record, activeSlot)
@@ -554,13 +956,11 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         }
       } catch {
         if (!cancelled) setBestWinData(null);
-        // DB fetch failed (e.g. RLS in OBS) — configBestWin fallback will be used
       }
     }
 
     fetchBestWin();
 
-    // Subscribe to changes so bestWin updates live when a new result is recorded
     const channel = supabase
       .channel(`bestwin_${userId}_${slotKey}`)
       .on(
@@ -573,13 +973,12 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         },
         (payload) => {
           const rec = payload.new || payload.old;
-          if (recordMatchesSlot(rec, activeSlot)) {
-            if (payload.eventType === "DELETE" || !payload.new?.best_win) {
-              setBestWinData(null);
-              return;
-            }
-            setBestWinData(normalizeBestWinRecord(payload.new));
+          if (!recordMatchesSlot(rec, activeSlot)) return;
+          if (payload.eventType === "DELETE" || !payload.new?.best_win) {
+            setBestWinData(null);
+            return;
           }
+          setBestWinData(normalizeBestWinRecord(payload.new));
         },
       )
       .subscribe();
@@ -590,99 +989,424 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     };
   }, [activeSlot, slotKey, slotName, userId]);
 
+  return bestWinData;
+}
+
+function resolveCurrentHuntBestWin({ activeSlot, bonuses, isLive }) {
+  if (!isLive) return null;
+  let best = null;
+  for (const bonus of bonuses || []) {
+    const payout = Number(bonus.payout) || Number(bonus.result) || 0;
+    if (payout <= 0) continue;
+    const record = {
+      slot_id: bonus.slot?.id || bonus.slot_id || bonus.slotId || null,
+      slot_name: bonus.slotName || bonus.slot?.name || "",
+      slot_provider: bonus.slot?.provider || bonus.provider || null,
+    };
+    if (!recordMatchesSlot(record, activeSlot)) continue;
+    const bet = Number(bonus.betSize) || 0;
+    const candidate = {
+      ...record,
+      best_win: payout,
+      best_multiplier: bet > 0 ? Math.round((payout / bet) * 100) / 100 : 0,
+    };
+    best = pickBestWinRecord([best, candidate]);
+  }
+  return best;
+}
+
+function RtpStatsProviderMark({ provider, logo, style }) {
+  const [failedLogo, setFailedLogo] = useState("");
+
+  useEffect(() => {
+    setFailedLogo("");
+  }, [provider, logo]);
+
+  const canShowLogo = Boolean(logo) && failedLogo !== logo;
+  const label = String(provider || "").trim();
+
+  return (
+    <span
+      className={`rtp-stats-provider ${canShowLogo ? "rtp-stats-provider--logo" : "rtp-stats-provider--text"}`}
+      title={label}
+      style={style}
+      {...partAttrs("provider")}
+    >
+      {canShowLogo ? (
+        <img
+          src={logo}
+          alt={`${label} logo`}
+          className="rtp-stats-provider-logo"
+          draggable="false"
+          decoding="async"
+          onError={() => setFailedLogo(logo)}
+        />
+      ) : (
+        label.toUpperCase()
+      )}
+    </span>
+  );
+}
+
+function RtpStatsPreviewBadge({ isLive, previewMode }) {
+  if (isLive || !previewMode) return null;
+  return <span className="rtp-stats-preview-badge">PREVIEW</span>;
+}
+
+function RtpStatsDivider({ style }) {
+  return (
+    <div
+      className="rtp-stats-divider"
+      {...partAttrs("divider")}
+      style={style}
+    />
+  );
+}
+
+function RtpStatsProviderSection({
+  showProvider,
+  displayProvider,
+  displayProviderLogo,
+  providerStyle,
+  dividerStyle,
+}) {
+  if (!showProvider || !displayProvider) return null;
+  return (
+    <>
+      <RtpStatsProviderMark
+        provider={displayProvider}
+        logo={displayProviderLogo}
+        style={providerStyle}
+      />
+      <RtpStatsDivider style={dividerStyle} />
+    </>
+  );
+}
+
+function RtpStatsSpinner({ showSpinner, spinnerStyle }) {
+  if (!showSpinner) return null;
+  return (
+    <svg
+      className="rtp-stats-spinner"
+      {...partAttrs("spinner")}
+      style={spinnerStyle}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d="M12 2a10 10 0 1 0 10 10H12V2z" opacity="0.25" />
+      <path d="M22 12A10 10 0 0 1 12 22v-2a8 8 0 0 0 8-8z" />
+    </svg>
+  );
+}
+
+function RtpStatsMetric({
+  show,
+  className,
+  partId,
+  style,
+  label,
+  labelStyle,
+  children,
+}) {
+  if (!show) return null;
+  return (
+    <div className={className} {...partAttrs(partId)} style={style}>
+      <span className="rtp-stats-icon">⚡</span>
+      <span className="rtp-stats-value">
+        <span
+          className="rtp-stats-label"
+          {...partAttrs("label")}
+          style={labelStyle}
+        >
+          {label}{" "}
+        </span>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function RtpStatsLeftSection({
+  showProvider,
+  displayProvider,
+  displayProviderLogo,
+  providerStyle,
+  dividerStyle,
+  showSpinner,
+  spinnerStyle,
+  displaySlotName,
+  slotTitleStyle,
+  showRtp,
+  showPotential,
+  showVolatility,
+  displayInfo,
+  rtpValueStyle,
+  maxWinStyle,
+  volatilityStyle,
+  labelStyle,
+}) {
+  return (
+    <div className="rtp-stats-left">
+      <RtpStatsProviderSection
+        showProvider={showProvider}
+        displayProvider={displayProvider}
+        displayProviderLogo={displayProviderLogo}
+        providerStyle={providerStyle}
+        dividerStyle={dividerStyle}
+      />
+      <div className="rtp-stats-slot">
+        <RtpStatsSpinner
+          showSpinner={showSpinner}
+          spinnerStyle={spinnerStyle}
+        />
+        <span
+          className="rtp-stats-slot-name"
+          {...partAttrs("slotTitle")}
+          style={slotTitleStyle}
+        >
+          {(displaySlotName || "").toUpperCase()}
+        </span>
+      </div>
+      {showRtp && <RtpStatsDivider style={dividerStyle} />}
+      <RtpStatsMetric
+        show={showRtp}
+        className="rtp-stats-item rtp-stats-item--rtp"
+        partId="rtpValue"
+        style={rtpValueStyle}
+        label="RTP"
+        labelStyle={labelStyle}
+      >
+        {displayInfo?.rtp ? `${displayInfo.rtp}%` : "—"}
+      </RtpStatsMetric>
+      <RtpStatsMetric
+        show={showPotential}
+        className="rtp-stats-item rtp-stats-item--potential"
+        partId="maxWin"
+        style={maxWinStyle}
+        label="POTENTIAL"
+        labelStyle={labelStyle}
+      >
+        {fmtMultiplier(displayInfo?.max_win_multiplier)}
+      </RtpStatsMetric>
+      <RtpStatsMetric
+        show={showVolatility}
+        className="rtp-stats-item rtp-stats-item--volatility"
+        partId="volatility"
+        style={volatilityStyle}
+        label="VOLATILITY"
+        labelStyle={labelStyle}
+      >
+        {fmtVolatility(displayInfo?.volatility)}
+      </RtpStatsMetric>
+    </div>
+  );
+}
+
+function formatBestWinAmount(displayBestWin, currency, emptyText) {
+  if (!displayBestWin?.best_win) return emptyText;
+  return `${currency}${Number(displayBestWin.best_win).toLocaleString("en", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function formatBestWinMultiplier(displayBestWin) {
+  if (!displayBestWin?.best_multiplier) return "";
+  return ` (${Number(displayBestWin.best_multiplier).toLocaleString()}x)`;
+}
+
+function RtpStatsBestWinSection({
+  showBestWin,
+  bestWinGroupStyle,
+  personalBestStyle,
+  bestWinValueStyle,
+  bestWinLabelStyle,
+  displayBestWin,
+  currency,
+  bestWinEmptyText,
+}) {
+  if (!showBestWin) return null;
+  const hardcodedEuroAmount = formatBestWinAmount(displayBestWin, "€", "—");
+  const currentCurrencyAmount = formatBestWinAmount(
+    displayBestWin,
+    currency,
+    bestWinEmptyText,
+  );
+  const multiplier = formatBestWinMultiplier(displayBestWin);
+  return (
+    <div className="rtp-stats-right" style={bestWinGroupStyle}>
+      <div
+        className="rtp-stats-item rtp-stats-item--bestwin"
+        {...partAttrs("personalBest")}
+        style={personalBestStyle}
+      >
+        <span className="rtp-stats-icon">🏆</span>
+        <span className="rtp-stats-value" style={bestWinValueStyle}>
+          <span
+            className="rtp-stats-label"
+            {...partAttrs("label")}
+            style={bestWinLabelStyle}
+          >
+            BEST WIN{" "}
+          </span>
+          {hardcodedEuroAmount}
+          {multiplier}
+        </span>
+        <span
+          className="rtp-stats-value rtp-stats-value--bestwin-current"
+          style={bestWinValueStyle}
+        >
+          <span
+            className="rtp-stats-label"
+            {...partAttrs("label")}
+            style={bestWinLabelStyle}
+          >
+            BEST WIN{" "}
+          </span>
+          {currentCurrencyAmount}
+          {multiplier}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
+  const c = config || {};
+
+  /* ── Find bonus hunt widget ── */
+  const bhConfig = useMemo(() => findBonusHuntConfig(allWidgets), [allWidgets]);
+  const bonusOpening = bhConfig.bonusOpening === true;
+  const { metalPrimaryColor, metalSecondaryColor } = resolveRtpMetalConfig(
+    c,
+    bhConfig,
+  );
+
+  /* ── Find tournament widget & current match slot ── */
+  const tournamentSlotName = useMemo(
+    () => resolveTournamentSlotName(allWidgets),
+    [allWidgets],
+  );
+
+  /* ── Apply same sort as BonusHuntWidget so current bonus matches ── */
+  const bonuses = useMemo(
+    () => sortRtpBonuses(bhConfig.bonuses, bhConfig.sortBy, bhConfig.sortDir),
+    [bhConfig.bonuses, bhConfig.sortBy, bhConfig.sortDir],
+  );
+
+  /* ── Current bonus (first unopened) ── */
+  const currentBonus = useMemo(() => bonuses.find((b) => !b.opened), [bonuses]);
+  /* Priority: search preview → bonus opening slot → tournament slot → bonus hunt slot */
+  const currentBonusSlot = useMemo(
+    () => resolveCurrentBonusSlot(currentBonus),
+    [currentBonus],
+  );
+
+  const activeSlot = useMemo(
+    () =>
+      resolveActiveRtpSlot({
+        previewSlotName: bhConfig.previewSlotName || "",
+        bonusOpening,
+        currentBonusSlot,
+        tournamentSlotName,
+      }),
+    [
+      bhConfig.previewSlotName,
+      bonusOpening,
+      currentBonusSlot,
+      tournamentSlotName,
+    ],
+  );
+
+  const slotName = activeSlot.name || "";
+  const slotKey = `${activeSlot.id || ""}|${activeSlot.provider || ""}|${slotName}`;
+  const localSlotInfo = useMemo(
+    () => resolveLocalSlotInfo({ slotName, currentBonus, activeSlot }),
+    [activeSlot, currentBonus, slotName],
+  );
+
+  /* ── Slot info from DB (primary) or API (fallback) ── */
+  const slotInfo = useRtpSlotInfo({
+    activeSlot,
+    localSlotInfo,
+    slotKey,
+    slotName,
+  });
+
+  /* ── Best win for this slot (from user_slot_records) ── */
+  const bestWinData = useRtpBestWinData({
+    activeSlot,
+    slotKey,
+    slotName,
+    userId,
+  });
+
+  // Fallback: read bestWin cached in widget config (works in OBS where DB is blocked by RLS)
+  const configBestWin = useMemo(
+    () =>
+      resolveConfigBestWin({
+        slotName,
+        cached: c._cachedBestWin,
+        userId,
+        allWidgets,
+        activeSlot,
+      }),
+    [activeSlot, allWidgets, c._cachedBestWin, slotName, userId],
+  );
+
+  // Persist bestWin to widget config so OBS can read it (OBS has no auth -> can't query DB)
+  usePersistRtpBestWin({
+    activeSlot,
+    bestWinData,
+    config: c,
+    slotKey,
+    slotName,
+    userId,
+    widgetId,
+  });
+
   /* ── Style config ── */
   const displayStyle = c.displayStyle || "v1";
-  const isVertical = displayStyle === "vertical";
-  const isMetal = displayStyle === "metal";
-  const isStyleSeca = displayStyle === "StyleSecaRTP";
-  const isMetalSurface = isMetal || isStyleSeca;
+  const styleFlags = resolveRtpStyleFlags(displayStyle);
+  const { isVertical, isMetal, isStyleSeca, isNeon, isMinimal } = styleFlags;
   const styleSecaValue = (value, fallback) =>
-    isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
-  const isNeon = displayStyle === "neon";
-  const isMinimal = displayStyle === "minimal";
-  const isGlassStyle = displayStyle === "glass";
-  const barBgFrom = styleSecaValue(
-    isMetal
-      ? metalSecondaryColor
-      : subValue(
-          c,
-          "container",
-          "background",
-          c.barBgFrom ||
-            (isStyleSeca
-              ? STYLE_SECA.surface
-              : isNeon
-                ? "#050510"
-                : isMinimal
-                  ? "#0a0a14"
-                  : isGlassStyle
-                    ? "#0f172a"
-                    : "#111827"),
-        ),
-    STYLE_SECA.surface,
-  );
-  const barBgVia = styleSecaValue(
-    isMetal
-      ? metalPrimaryColor
-      : c.barBgVia ||
-      (isStyleSeca
-        ? STYLE_SECA.elevated
-        : isNeon
-            ? "#0a0a2e"
-            : isMinimal
-              ? "#0a0a14"
-              : isGlassStyle
-                ? "#1e293b"
-                : "#1e3a5f"),
-    STYLE_SECA.elevated,
-  );
-  const barBgTo = styleSecaValue(
-    isMetal
-      ? metalSecondaryColor
-      : c.barBgTo ||
-      (isStyleSeca
-        ? STYLE_SECA.surface
-        : isNeon
-            ? "#050510"
-            : isMinimal
-              ? "#0a0a14"
-              : isGlassStyle
-                ? "#0f172a"
-                : "#111827"),
-    STYLE_SECA.surface,
-  );
+    resolveRtpStyleSecaValue(isStyleSeca, value, fallback);
+  const barBgFrom = resolveRtpBarBgFrom({
+    config: c,
+    styleFlags,
+    metalSecondaryColor,
+    styleSecaValue,
+  });
+  const barBgVia = resolveRtpBarBgVia({
+    config: c,
+    styleFlags,
+    metalPrimaryColor,
+    styleSecaValue,
+  });
+  const barBgTo = resolveRtpBarBgTo({
+    config: c,
+    styleFlags,
+    metalSecondaryColor,
+    styleSecaValue,
+  });
   const borderColor = styleSecaValue(
     subValue(
       c,
       "container",
       "borderColor",
       c.borderColor ||
-        (isStyleSeca
-          ? STYLE_SECA.border
-          : isMetal
-            ? metalBorderColor(metalPrimaryColor, 0.34)
-            : isNeon
-              ? "#00ffcc"
-              : isMinimal
-                ? "rgba(255,255,255,0.08)"
-                : isGlassStyle
-                  ? "rgba(255,255,255,0.2)"
-                  : "#1d4ed8"),
+        resolveRtpBorderFallback({ ...styleFlags, metalPrimaryColor }),
     ),
     STYLE_SECA.border,
   );
-  const borderWidth = subValue(
-    c,
-    "container",
-    "borderWidth",
-    c.borderWidth ?? (isMinimal ? 0 : 1),
-  );
+  const borderWidth = resolveRtpBorderWidth(c, isMinimal);
   const borderRadius = subValue(
     c,
     "container",
     "radius",
-    c.borderRadius ??
-      (isStyleSeca ? 10 : isMetal ? 10 : isMinimal ? 4 : isGlassStyle ? 16 : 8),
+    c.borderRadius ?? resolveRtpRadiusFallback(styleFlags),
   );
   const textColor = styleSecaValue(
     subValue(
@@ -690,7 +1414,12 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       "statCard",
       "textColor",
       c.textColor ||
-        (isStyleSeca ? STYLE_SECA.text : isMetal ? "#d4d4d8" : "#ffffff"),
+        resolveRtpTextFallback(
+          styleFlags,
+          STYLE_SECA.text,
+          "#d4d4d8",
+          "#ffffff",
+        ),
     ),
     STYLE_SECA.text,
   );
@@ -700,7 +1429,12 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       "provider",
       "textColor",
       c.providerColor ||
-        (isStyleSeca ? STYLE_SECA.text : isMetal ? "#d4d4d8" : "#ffffff"),
+        resolveRtpTextFallback(
+          styleFlags,
+          STYLE_SECA.text,
+          "#d4d4d8",
+          "#ffffff",
+        ),
     ),
     STYLE_SECA.text,
   );
@@ -710,7 +1444,12 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       "slotTitle",
       "textColor",
       c.slotNameColor ||
-        (isStyleSeca ? STYLE_SECA.text : isMetal ? "#f1f5f9" : "#ffffff"),
+        resolveRtpTextFallback(
+          styleFlags,
+          STYLE_SECA.text,
+          "#f1f5f9",
+          "#ffffff",
+        ),
     ),
     STYLE_SECA.text,
   );
@@ -720,7 +1459,12 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       "label",
       "textColor",
       c.labelColor ||
-        (isStyleSeca ? STYLE_SECA.muted : isMetal ? "#8a8f98" : "#94a3b8"),
+        resolveRtpTextFallback(
+          styleFlags,
+          STYLE_SECA.muted,
+          "#8a8f98",
+          "#94a3b8",
+        ),
     ),
     STYLE_SECA.muted,
   );
@@ -730,11 +1474,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       "rtpValue",
       "accentColor",
       c.rtpIconColor ||
-        (isStyleSeca
-          ? STYLE_SECA.primary
-          : isMetal
-            ? metalPrimaryColor
-            : "#60a5fa"),
+        resolveRtpIconFallback(styleFlags, STYLE_SECA.primary, "#60a5fa"),
     ),
     STYLE_SECA.primary,
   );
@@ -743,7 +1483,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       c,
       "maxWin",
       "accentColor",
-      c.potentialIconColor || (isStyleSeca ? STYLE_SECA.primary : "#facc15"),
+      c.potentialIconColor || resolveRtpPotentialIconFallback(isStyleSeca),
     ),
     STYLE_SECA.primary,
   );
@@ -752,7 +1492,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
       c,
       "volatility",
       "accentColor",
-      c.volatilityIconColor || (isStyleSeca ? STYLE_SECA.secondary : "#3b82f6"),
+      c.volatilityIconColor || resolveRtpVolatilityIconFallback(isStyleSeca),
     ),
     STYLE_SECA.secondary,
   );
@@ -762,15 +1502,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     "background",
     subValue(c, "statCard", "borderColor", c.dividerColor || "#3b82f6"),
   );
-  const fontFamily = subValue(
-    c,
-    "container",
-    "fontFamily",
-    c.fontFamily ||
-      (isStyleSeca
-        ? "'Rajdhani', 'Barlow Condensed', sans-serif"
-        : "'Inter', sans-serif"),
-  );
+  const fontFamily = resolveRtpFontFamily(c, isStyleSeca);
   const fontSize = c.fontSize ?? 14;
   const barHeight = subValue(c, "container", "height", c.barHeight ?? null);
   const maxWidth = subValue(c, "container", "maxWidth", c.maxWidth ?? null);
@@ -934,7 +1666,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     c,
     "spinner",
     "accentColor",
-    c.spinnerColor || (isMetal ? metalPrimaryColor : "#60a5fa"),
+    resolveRtpSpinnerColor({ config: c, isMetal, metalPrimaryColor }),
   );
   const previewMode = c.previewMode === true;
   const currency = bhConfig.currency || c.currency || "€";
@@ -956,15 +1688,25 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const showDemoData = previewMode && !isLive;
   const showEmptyState = !isLive && !previewMode;
 
-  const displaySlotName = isLive ? slotName : showDemoData ? demoSlotName : "—";
-  const displayProvider = isLive
-    ? slotInfo?.provider ||
-      activeSlot.provider ||
-      currentBonus?.slot?.provider ||
-      ""
-    : showDemoData
-      ? demoProvider
-      : "";
+  const liveProvider =
+    slotInfo?.provider ||
+    activeSlot.provider ||
+    currentBonus?.slot?.provider ||
+    "";
+  const displaySlotName = resolveLivePreviewValue({
+    isLive,
+    showDemoData,
+    liveValue: slotName,
+    demoValue: demoSlotName,
+    emptyValue: "—",
+  });
+  const displayProvider = resolveLivePreviewValue({
+    isLive,
+    showDemoData,
+    liveValue: liveProvider,
+    demoValue: demoProvider,
+    emptyValue: "",
+  });
   const configuredProviderLogo = subValue(
     c,
     "provider",
@@ -976,208 +1718,129 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     (displayProvider ? getProviderImage(displayProvider) : null);
   const providerExplicitWidth = subValue(c, "provider", "width", null);
   const providerExplicitHeight = subValue(c, "provider", "height", null);
-  const displayInfo = isLive
-    ? slotInfo || localSlotInfo
-    : showDemoData
-      ? demoInfo
-      : null;
-  const currentHuntBestWin = useMemo(() => {
-    if (!isLive) return null;
-    let best = null;
-    for (const bonus of bhConfig.bonuses || []) {
-      const payout = Number(bonus.payout) || Number(bonus.result) || 0;
-      if (payout <= 0) continue;
-      const record = {
-        slot_id: bonus.slot?.id || bonus.slot_id || bonus.slotId || null,
-        slot_name: bonus.slotName || bonus.slot?.name || "",
-        slot_provider: bonus.slot?.provider || bonus.provider || null,
-      };
-      if (!recordMatchesSlot(record, activeSlot)) continue;
-      const bet = Number(bonus.betSize) || 0;
-      const candidate = {
-        ...record,
-        best_win: payout,
-        best_multiplier: bet > 0 ? Math.round((payout / bet) * 100) / 100 : 0,
-      };
-      best = pickBestWinRecord([best, candidate]);
-    }
-    return best;
-  }, [activeSlot, bhConfig.bonuses, isLive]);
+  const displayInfo = resolveLivePreviewValue({
+    isLive,
+    showDemoData,
+    liveValue: slotInfo || localSlotInfo,
+    demoValue: demoInfo,
+    emptyValue: null,
+  });
+  const currentHuntBestWin = useMemo(
+    () =>
+      resolveCurrentHuntBestWin({
+        activeSlot,
+        bonuses: bhConfig.bonuses,
+        isLive,
+      }),
+    [activeSlot, bhConfig.bonuses, isLive],
+  );
   const scopedBestWinData =
     bestWinData && recordMatchesSlot(bestWinData, activeSlot)
       ? bestWinData
       : null;
-  const displayBestWin = isLive
-    ? pickBestWinRecord([scopedBestWinData, configBestWin, currentHuntBestWin])
-    : showDemoData
-      ? demoBestWin
-      : null;
+  const displayBestWin = resolveLivePreviewValue({
+    isLive,
+    showDemoData,
+    liveValue: pickBestWinRecord([
+      scopedBestWinData,
+      configBestWin,
+      currentHuntBestWin,
+    ]),
+    demoValue: demoBestWin,
+    emptyValue: null,
+  });
   const bestWinEmptyText = isLive ? "No personal best yet" : "-";
 
-  const styleClass = isVertical
-    ? " rtp-stats-bar--vertical"
-    : isStyleSeca
-      ? " rtp-stats-bar--styleseca rtp-stats-bar--metal"
-      : isMetal
-        ? " rtp-stats-bar--metal"
-        : isNeon
-          ? " rtp-stats-bar--neon"
-          : isMinimal
-            ? " rtp-stats-bar--minimal"
-            : isGlassStyle
-              ? " rtp-stats-bar--glass"
-              : "";
+  const styleClass = resolveRtpStyleClass({ isVertical, ...styleFlags });
 
-  const rootStyle = {
+  const rootStyle = buildRtpRootStyle({
     fontFamily,
-    fontSize: `${fontSize}px`,
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transform:
-      c.widgetScale && Number(c.widgetScale) !== 1
-        ? `scale(${Number(c.widgetScale)})`
-        : undefined,
-    transformOrigin: "center",
-    filter:
-      brightness !== 100 || contrast !== 100 || saturation !== 100
-        ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
-        : undefined,
-    "--rtp-bg-from": barBgFrom,
-    "--rtp-bg-via": barBgVia,
-    "--rtp-bg-to": barBgTo,
-    "--rtp-metal-primary": metalPrimaryColor,
-    "--rtp-metal-secondary": metalSecondaryColor,
-    "--rtp-border-color": borderColor,
-    "--rtp-border-width": `${borderWidth}px`,
-    "--rtp-border-radius": `${borderRadius}px`,
-    "--rtp-text": textColor,
-    "--rtp-provider": providerColor,
-    "--rtp-slot-name": slotNameColor,
-    "--rtp-label": labelColor,
-    "--rtp-value-rtp": rtpValueColor,
-    "--rtp-value-potential": potentialValueColor,
-    "--rtp-value-volatility": volatilityValueColor,
-    "--rtp-value-bestwin": bestWinValueColor,
-    "--rtp-icon-rtp": rtpIconColor,
-    "--rtp-icon-potential": potentialIconColor,
-    "--rtp-icon-volatility": volatilityIconColor,
-    "--rtp-divider": dividerColor,
-    "--rtp-spinner": spinnerColor,
-    "--rtp-px": `${compactPaddingX}px`,
-    "--rtp-py": `${compactPaddingY}px`,
-    "--rtp-provider-family": providerFontFamily,
-    "--rtp-provider-size": `${providerFontSize}px`,
-    "--rtp-provider-weight": providerFontWeight,
-    "--rtp-provider-logo-width": `${providerLogoWidth}px`,
-    "--rtp-provider-logo-height": `${providerLogoHeight}px`,
-    "--rtp-provider-logo-radius":
-      typeof providerLogoRadius === "number"
-        ? `${providerLogoRadius}px`
-        : providerLogoRadius,
-    "--rtp-provider-logo-fit": providerLogoFit,
-    "--rtp-slot-family": slotTitleFontFamily,
-    "--rtp-slot-size": `${slotTitleFontSize}px`,
-    "--rtp-slot-weight": slotTitleFontWeight,
-    "--rtp-value-rtp-family": rtpValueFontFamily,
-    "--rtp-value-rtp-size": `${rtpValueFontSize}px`,
-    "--rtp-value-rtp-weight": rtpValueFontWeight,
-    "--rtp-value-potential-family": potentialValueFontFamily,
-    "--rtp-value-potential-size": `${potentialValueFontSize}px`,
-    "--rtp-value-potential-weight": potentialValueFontWeight,
-    "--rtp-value-volatility-family": volatilityValueFontFamily,
-    "--rtp-value-volatility-size": `${volatilityValueFontSize}px`,
-    "--rtp-value-volatility-weight": volatilityValueFontWeight,
-    "--rtp-value-bestwin-family": bestWinValueFontFamily,
-    "--rtp-value-bestwin-size": `${bestWinValueFontSize}px`,
-    "--rtp-value-bestwin-weight": bestWinValueFontWeight,
-    "--rtp-label-family": labelFontFamily,
-    "--rtp-label-size": `${labelFontSize}px`,
-    "--rtp-label-weight": labelFontWeight,
-    "--rtp-label-rtp-family": rtpValueFontFamily,
-    "--rtp-label-rtp-size": `${Math.max(10, Math.round(Number(rtpValueFontSize) * 0.88))}px`,
-    "--rtp-label-rtp-weight": rtpValueFontWeight,
-    "--rtp-label-potential-family": potentialValueFontFamily,
-    "--rtp-label-potential-size": `${Math.max(10, Math.round(Number(potentialValueFontSize) * 0.88))}px`,
-    "--rtp-label-potential-weight": potentialValueFontWeight,
-    "--rtp-label-volatility-family": volatilityValueFontFamily,
-    "--rtp-label-volatility-size": `${Math.max(10, Math.round(Number(volatilityValueFontSize) * 0.88))}px`,
-    "--rtp-label-volatility-weight": volatilityValueFontWeight,
-    "--rtp-label-bestwin-family": bestWinValueFontFamily,
-    "--rtp-label-bestwin-size": `${Math.max(10, Math.round(Number(bestWinValueFontSize) * 0.88))}px`,
-    "--rtp-label-bestwin-weight": bestWinValueFontWeight,
-    "--rtp-gap": `${itemGap}px`,
-    "--rtp-bar-height": barHeight != null ? `${barHeight}px` : "100%",
-    "--rtp-max-width": maxWidth != null ? `${maxWidth}px` : "100%",
-    "--rtp-icon-bestwin": bestWinIconColor,
-    "--rtp-shadow": shadow,
-    "--rtp-glow": glow,
-    "--rtp-blur": `${Number(backdropBlur) || 0}px`,
-    ...(isNeon ? { "--rtp-accent": borderColor } : {}),
-  };
+    fontSize,
+    widgetScale: c.widgetScale,
+    brightness,
+    contrast,
+    saturation,
+    barBgFrom,
+    barBgVia,
+    barBgTo,
+    metalPrimaryColor,
+    metalSecondaryColor,
+    borderColor,
+    borderWidth,
+    borderRadius,
+    textColor,
+    providerColor,
+    slotNameColor,
+    labelColor,
+    rtpValueColor,
+    potentialValueColor,
+    volatilityValueColor,
+    bestWinValueColor,
+    rtpIconColor,
+    potentialIconColor,
+    volatilityIconColor,
+    dividerColor,
+    spinnerColor,
+    compactPaddingX,
+    compactPaddingY,
+    providerFontFamily,
+    providerFontSize,
+    providerFontWeight,
+    providerLogoWidth,
+    providerLogoHeight,
+    providerLogoRadius,
+    providerLogoFit,
+    slotTitleFontFamily,
+    slotTitleFontSize,
+    slotTitleFontWeight,
+    rtpValueFontFamily,
+    rtpValueFontSize,
+    rtpValueFontWeight,
+    potentialValueFontFamily,
+    potentialValueFontSize,
+    potentialValueFontWeight,
+    volatilityValueFontFamily,
+    volatilityValueFontSize,
+    volatilityValueFontWeight,
+    bestWinValueFontFamily,
+    bestWinValueFontSize,
+    bestWinValueFontWeight,
+    labelFontFamily,
+    labelFontSize,
+    labelFontWeight,
+    itemGap,
+    barHeight,
+    maxWidth,
+    bestWinIconColor,
+    shadow,
+    glow,
+    backdropBlur,
+    isNeon,
+  });
   const containerStyle = subElementStyle(c, "container");
   const statCardStyle = subElementStyle(c, "statCard");
   const cardSurfaceStyle = {
     ...statCardStyle,
     ...containerStyle,
   };
-  const resolvedStatCardStyle = isStyleSeca
-    ? {
-        ...cardSurfaceStyle,
-        background: styleSecaValue(
-          cardSurfaceStyle.background,
-          styleSecaSurfaceGradient("90deg"),
-        ),
-        border:
-          cardSurfaceStyle.border ||
-          `${borderWidth}px solid ${cardSurfaceStyle.borderColor || STYLE_SECA.border}`,
-        borderColor: cardSurfaceStyle.borderColor || STYLE_SECA.border,
-        boxShadow:
-          cardSurfaceStyle.boxShadow ||
-          `0 16px 34px rgba(0,0,0,0.34), 0 0 24px ${STYLE_SECA.glow}`,
-      }
-    : isMetal
-      ? {
-          ...cardSurfaceStyle,
-          background: brushedMetalBackground(
-            `linear-gradient(to right, var(--rtp-metal-secondary, ${metalSecondaryColor}) 0%, var(--rtp-metal-primary, ${metalPrimaryColor}) 50%, var(--rtp-metal-secondary, ${metalSecondaryColor}) 100%)`,
-            metalPrimaryColor,
-            { highlightOpacity: 0.06, grainOpacity: 0.028 },
-          ),
-          border:
-            cardSurfaceStyle.border ||
-            `${borderWidth}px solid ${metalBorderColor(metalPrimaryColor, 0.3)}`,
-          borderColor: metalBorderColor(metalPrimaryColor, 0.3),
-          boxShadow:
-            cardSurfaceStyle.boxShadow ||
-            metalSurfaceShadow(metalPrimaryColor, 0.72),
-        }
-      : cardSurfaceStyle;
+  const resolvedStatCardStyle = resolveRtpStatCardStyle({
+    isStyleSeca,
+    isMetal,
+    cardSurfaceStyle,
+    borderWidth,
+    metalPrimaryColor,
+    metalSecondaryColor,
+    styleSecaValue,
+  });
   const rawProviderStyle = subElementStyle(c, "provider");
-  const providerStyle = flexSizedStyle(
-    displayProviderLogo
-      ? {
-          ...rawProviderStyle,
-          width:
-            providerExplicitWidth != null
-              ? rawProviderStyle.width
-              : `${providerLogoWidth}px`,
-          height:
-            providerExplicitHeight != null
-              ? rawProviderStyle.height
-              : `${providerLogoHeight}px`,
-          maxWidth:
-            rawProviderStyle.maxWidth ??
-            (providerExplicitWidth != null
-              ? rawProviderStyle.width
-              : `${providerLogoWidth}px`),
-        }
-      : rawProviderStyle,
-    "inline-flex",
-  );
+  const providerStyle = resolveRtpProviderStyle({
+    displayProviderLogo,
+    rawProviderStyle,
+    providerExplicitWidth,
+    providerExplicitHeight,
+    providerLogoWidth,
+    providerLogoHeight,
+  });
   const slotTitleStyle = flexSizedStyle(subElementStyle(c, "slotTitle"));
   const rtpValueStyle = flexSizedStyle(subElementStyle(c, "rtpValue"), "flex");
   const maxWinStyle = flexSizedStyle(subElementStyle(c, "maxWin"), "flex");
@@ -1189,226 +1852,65 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     subElementStyle(c, "personalBest"),
     "flex",
   );
-  const nonVerticalNoWrap = !isVertical;
-  const personalBestStyle = nonVerticalNoWrap
-    ? {
-        ...rawPersonalBestStyle,
-        display: "inline-flex",
-        flex: "0 0 auto",
-        flexDirection: "row",
-        flexWrap: "nowrap",
-        alignItems: "center",
-        width: "auto",
-        maxWidth: "none",
-        minWidth: "max-content",
-        whiteSpace: "nowrap",
-      }
-    : rawPersonalBestStyle;
   const labelStyle = subElementStyle(c, "label");
-  const bestWinLabelStyle = nonVerticalNoWrap
-    ? {
-        ...labelStyle,
-        display: "inline",
-        width: "auto",
-        maxWidth: "none",
-        whiteSpace: "nowrap",
-      }
-    : labelStyle;
-  const bestWinValueStyle = nonVerticalNoWrap
-    ? {
-        display: "inline-flex",
-        flexDirection: "row",
-        flexWrap: "nowrap",
-        alignItems: "center",
-        width: "auto",
-        maxWidth: "none",
-        minWidth: "max-content",
-        whiteSpace: "nowrap",
-      }
-    : undefined;
-  const bestWinGroupStyle = nonVerticalNoWrap
-    ? {
-        display: "inline-flex",
-        flex: "0 0 auto",
-        flexWrap: "nowrap",
-        minWidth: "max-content",
-        maxWidth: "none",
-        overflow: "visible",
-      }
-    : undefined;
+  const {
+    personalBestStyle,
+    bestWinLabelStyle,
+    bestWinValueStyle,
+    bestWinGroupStyle,
+  } = resolveBestWinDisplayStyles({
+    isVertical,
+    rawPersonalBestStyle,
+    labelStyle,
+  });
   const dividerStyle = subElementStyle(c, "divider");
   const spinnerStyle = subElementStyle(c, "spinner");
 
   return (
     <div
       className={`oc-widget-inner rtp-stats-bar${styleClass}`}
-      {...partAttrs('container')}
+      {...partAttrs("container")}
       style={rootStyle}
     >
       <div
-        className={`rtp-stats-inner ${!isLive && previewMode ? "rtp-stats-inner--preview" : ""} ${showEmptyState ? "rtp-stats-inner--empty" : ""}`}
-        {...partAttrs('statCard')}
+        className={resolveRtpInnerClassName({
+          isLive,
+          previewMode,
+          showEmptyState,
+        })}
+        {...partAttrs("statCard")}
         style={resolvedStatCardStyle}
       >
-        {/* Preview badge */}
-        {!isLive && previewMode && (
-          <span className="rtp-stats-preview-badge">PREVIEW</span>
-        )}
-
-        {/* ═══ Left Section — Provider + Slot Name + Stats ═══ */}
-        <div className="rtp-stats-left">
-          {showProvider && displayProvider && (
-            <>
-              <RtpStatsProviderMark
-                provider={displayProvider}
-                logo={displayProviderLogo}
-                style={providerStyle}
-              />
-              <div
-                className="rtp-stats-divider"
-                {...partAttrs('divider')}
-                style={dividerStyle}
-              />
-            </>
-          )}
-          <div className="rtp-stats-slot">
-            {showSpinner && (
-              <svg
-                className="rtp-stats-spinner"
-                {...partAttrs('spinner')}
-                style={spinnerStyle}
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M12 2a10 10 0 1 0 10 10H12V2z" opacity="0.25" />
-                <path d="M22 12A10 10 0 0 1 12 22v-2a8 8 0 0 0 8-8z" />
-              </svg>
-            )}
-            <span
-              className="rtp-stats-slot-name"
-              {...partAttrs('slotTitle')}
-              style={slotTitleStyle}
-            >
-              {(displaySlotName || "").toUpperCase()}
-            </span>
-          </div>
-
-          {/* Stats inline with left section */}
-          {showRtp && (
-            <>
-              <div
-                className="rtp-stats-divider"
-                {...partAttrs('divider')}
-                style={dividerStyle}
-              />
-              <div
-                className="rtp-stats-item rtp-stats-item--rtp"
-                {...partAttrs('rtpValue')}
-                style={rtpValueStyle}
-              >
-                <span className="rtp-stats-icon">⚡</span>
-                <span className="rtp-stats-value">
-                  <span
-                    className="rtp-stats-label"
-                    {...partAttrs('label')}
-                    style={labelStyle}
-                  >
-                    RTP{" "}
-                  </span>
-                  {displayInfo?.rtp ? `${displayInfo.rtp}%` : "—"}
-                </span>
-              </div>
-            </>
-          )}
-
-          {showPotential && (
-            <div
-              className="rtp-stats-item rtp-stats-item--potential"
-              {...partAttrs('maxWin')}
-              style={maxWinStyle}
-            >
-              <span className="rtp-stats-icon">⚡</span>
-              <span className="rtp-stats-value">
-                <span
-                  className="rtp-stats-label"
-                  {...partAttrs('label')}
-                  style={labelStyle}
-                >
-                  POTENTIAL{" "}
-                </span>
-                {fmtMultiplier(displayInfo?.max_win_multiplier)}
-              </span>
-            </div>
-          )}
-
-          {showVolatility && (
-            <div
-              className="rtp-stats-item rtp-stats-item--volatility"
-              {...partAttrs('volatility')}
-              style={volatilityStyle}
-            >
-              <span className="rtp-stats-icon">⚡</span>
-              <span className="rtp-stats-value">
-                <span
-                  className="rtp-stats-label"
-                  {...partAttrs('label')}
-                  style={labelStyle}
-                >
-                  VOLATILITY{" "}
-                </span>
-                {fmtVolatility(displayInfo?.volatility)}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* ═══ Right Section — Best Win ═══ */}
-        {showBestWin && (
-          <div className="rtp-stats-right" style={bestWinGroupStyle}>
-            <div
-              className="rtp-stats-item rtp-stats-item--bestwin"
-              {...partAttrs('personalBest')}
-              style={personalBestStyle}
-            >
-              <span className="rtp-stats-icon">🏆</span>
-              <span className="rtp-stats-value" style={bestWinValueStyle}>
-                <span
-                  className="rtp-stats-label"
-                  {...partAttrs('label')}
-                  style={bestWinLabelStyle}
-                >
-                  BEST WIN{" "}
-                </span>
-                {displayBestWin?.best_win
-                  ? `€${Number(displayBestWin.best_win).toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                  : "—"}
-                {displayBestWin?.best_multiplier
-                  ? ` (${Number(displayBestWin.best_multiplier).toLocaleString()}x)`
-                  : ""}
-              </span>
-              <span
-                className="rtp-stats-value rtp-stats-value--bestwin-current"
-                style={bestWinValueStyle}
-              >
-                <span
-                  className="rtp-stats-label"
-                  {...partAttrs('label')}
-                  style={bestWinLabelStyle}
-                >
-                  BEST WIN{" "}
-                </span>
-                {displayBestWin?.best_win
-                  ? `${currency}${Number(displayBestWin.best_win).toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                  : bestWinEmptyText}
-                {displayBestWin?.best_multiplier
-                  ? ` (${Number(displayBestWin.best_multiplier).toLocaleString()}x)`
-                  : ""}
-              </span>
-            </div>
-          </div>
-        )}
+        <RtpStatsPreviewBadge isLive={isLive} previewMode={previewMode} />
+        <RtpStatsLeftSection
+          showProvider={showProvider}
+          displayProvider={displayProvider}
+          displayProviderLogo={displayProviderLogo}
+          providerStyle={providerStyle}
+          dividerStyle={dividerStyle}
+          showSpinner={showSpinner}
+          spinnerStyle={spinnerStyle}
+          displaySlotName={displaySlotName}
+          slotTitleStyle={slotTitleStyle}
+          showRtp={showRtp}
+          showPotential={showPotential}
+          showVolatility={showVolatility}
+          displayInfo={displayInfo}
+          rtpValueStyle={rtpValueStyle}
+          maxWinStyle={maxWinStyle}
+          volatilityStyle={volatilityStyle}
+          labelStyle={labelStyle}
+        />
+        <RtpStatsBestWinSection
+          showBestWin={showBestWin}
+          bestWinGroupStyle={bestWinGroupStyle}
+          personalBestStyle={personalBestStyle}
+          bestWinValueStyle={bestWinValueStyle}
+          bestWinLabelStyle={bestWinLabelStyle}
+          displayBestWin={displayBestWin}
+          currency={currency}
+          bestWinEmptyText={bestWinEmptyText}
+        />
       </div>
     </div>
   );

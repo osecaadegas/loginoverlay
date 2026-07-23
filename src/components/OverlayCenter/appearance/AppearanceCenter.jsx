@@ -96,7 +96,10 @@ import {
   getWidgetStyleOptionsForQuickEditor,
   isWidgetAppearanceV2Enabled,
 } from "./v2/widgetAppearanceRegistry";
-import { getWidgetDef, getWidgetStyleDefaultSize } from "../widgets/widgetRegistry";
+import {
+  getWidgetDef,
+  getWidgetStyleDefaultSize,
+} from "../widgets/widgetRegistry";
 import {
   FontSelectInput,
   LayerToggleButton,
@@ -298,6 +301,7 @@ function getBonusHuntMetalColors(widgets = []) {
 }
 
 const NAVBAR_APPEARANCE_SECTION_ID = "navbarSections";
+let generatedIdCounter = 0;
 
 function compareWidgetLayer(a, b) {
   const az = Number(a?.z_index) || 0;
@@ -323,9 +327,21 @@ function safeJson(value) {
 }
 
 function createClientId() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID)
-    return `${CLIENT_ID_PREFIX}_${crypto.randomUUID()}`;
-  return `${CLIENT_ID_PREFIX}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  return createGeneratedId(CLIENT_ID_PREFIX);
+}
+
+function createRandomIdSegment() {
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const values = new Uint32Array(2);
+    crypto.getRandomValues(values);
+    return Array.from(values, (value) => value.toString(36)).join("");
+  }
+  generatedIdCounter += 1;
+  return `${Date.now().toString(36)}${generatedIdCounter.toString(36)}`;
+}
+
+function createGeneratedId(prefix) {
+  return `${prefix}_${Date.now()}_${createRandomIdSegment()}`;
 }
 
 function downloadJsonFile(filename, data) {
@@ -352,6 +368,49 @@ function downloadJsonFile(filename, data) {
 function stylePackFilename() {
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   return `streamers-center-widget-styles-${stamp}.json`;
+}
+
+function countStylePackWidgetTypes(pack) {
+  const counts = new Map();
+  for (const item of pack.widgets || []) {
+    if (!item?.widgetType) continue;
+    counts.set(item.widgetType, (counts.get(item.widgetType) || 0) + 1);
+  }
+  return counts;
+}
+
+function countLocalWidgetTypes(widgets) {
+  const counts = new Map();
+  for (const widget of widgets || []) {
+    counts.set(widget.widget_type, (counts.get(widget.widget_type) || 0) + 1);
+  }
+  return counts;
+}
+
+async function createMissingStylePackWidgets({ addWidget, pack, widgets }) {
+  if (!addWidget) return { createdCount: 0, targetWidgets: widgets };
+  const importCounts = countStylePackWidgetTypes(pack);
+  const localCounts = countLocalWidgetTypes(widgets);
+  const createdWidgets = [];
+  for (const [widgetType, count] of importCounts.entries()) {
+    const missing = Math.max(0, count - (localCounts.get(widgetType) || 0));
+    const def = getWidgetDef(widgetType);
+    if (!def || !missing) continue;
+    for (let index = 0; index < missing; index += 1) {
+      const created = await addWidget(widgetType, def.defaults || {});
+      if (created?.id) createdWidgets.push(created);
+    }
+  }
+  if (!createdWidgets.length)
+    return { createdCount: 0, targetWidgets: widgets };
+  return {
+    createdCount: createdWidgets.length,
+    targetWidgets: [...widgets, ...createdWidgets],
+  };
+}
+
+function countSkippedStylePackItems(result) {
+  return result.skipped.reduce((sum, item) => sum + Number(item.count || 0), 0);
 }
 
 function getInitialMode() {
@@ -460,6 +519,2013 @@ function supportsAny(capabilities = {}, keys = []) {
   return keys.some((key) => !!capabilities[key]);
 }
 
+function listWhen(condition, items) {
+  if (condition) return items;
+  return [];
+}
+
+function getLegacyQuickControlIds(capabilities) {
+  return [
+    ...listWhen(
+      supportsAny(capabilities, [
+        "colours",
+        "containers",
+        "transparentBackground",
+      ]),
+      ["material"],
+    ),
+    ...listWhen(
+      supportsAny(capabilities, [
+        "colours",
+        "multipleColours",
+        "positiveNegativeColours",
+        "progressBar",
+      ]),
+      ["primaryColor", "accentColor"],
+    ),
+    ...listWhen(capabilities.fonts, ["fontFamily"]),
+    ...listWhen(capabilities.fontSizes, ["textSize"]),
+    ...listWhen(capabilities.fontWeights, ["boldText"]),
+    ...listWhen(capabilities.images, ["imageVisibility"]),
+    ...listWhen(capabilities.imageSize, ["imageSize"]),
+    ...listWhen(capabilities.imageShape, ["imageShape"]),
+    ...listWhen(capabilities.imageFit, ["imageFit"]),
+    ...listWhen(
+      supportsAny(capabilities, ["containerShapes", "borderRadius"]),
+      ["shape"],
+    ),
+    ...listWhen(capabilities.layoutDensity, ["density", "scale"]),
+    ...listWhen(capabilities.shadows, ["shadowStrength"]),
+    ...listWhen(supportsAny(capabilities, ["glow", "glowIntensity"]), [
+      "glowStrength",
+    ]),
+    ...listWhen(capabilities.carouselAutoplay, ["carouselAutoplay"]),
+    ...listWhen(capabilities.carouselSpeed, ["carouselSpeed"]),
+    ...listWhen(capabilities.carouselDirection, ["carouselDirection"]),
+    ...listWhen(capabilities.animations, ["animationEnabled"]),
+    ...listWhen(capabilities.animationSpeed, ["animationSpeed"]),
+    ...listWhen(capabilities.animationIntensity, ["animationIntensity"]),
+  ];
+}
+
+function buildSimpleSections({
+  hasAnyQuickControl,
+  selectedElementsLength,
+  selectedQuickControls,
+  selectedWidgetIsBackground,
+  selectedWidgetType,
+  showBonusHuntColorSyncControls,
+  showRtpMetalControls,
+}) {
+  const baseSections = [
+    "widgetStyle",
+    ...listWhen(selectedElementsLength > 1, ["editing"]),
+  ];
+  if (selectedWidgetIsBackground) {
+    return [...baseSections, "backgroundControls", "actions"];
+  }
+  return [
+    ...baseSections,
+    ...listWhen(selectedQuickControls.has("material"), ["material"]),
+    ...listWhen(
+      hasAnyQuickControl(["primaryColor", "accentColor"]) ||
+        showRtpMetalControls ||
+        showBonusHuntColorSyncControls,
+      ["colours"],
+    ),
+    ...listWhen(
+      hasAnyQuickControl([
+        "fontFamily",
+        "textSize",
+        "boldText",
+        "imageVisibility",
+        "imageSize",
+        "imageShape",
+        "imageFit",
+        "musicDisplayStyle",
+      ]),
+      ["textImages"],
+    ),
+    ...listWhen(selectedWidgetType === "navbar", [
+      NAVBAR_APPEARANCE_SECTION_ID,
+    ]),
+    ...listWhen(
+      hasAnyQuickControl([
+        "shape",
+        "density",
+        "scale",
+        "shadowStrength",
+        "glowStrength",
+        "barHeight",
+        "maxWidth",
+      ]),
+      ["shapeEffects"],
+    ),
+    ...listWhen(
+      hasAnyQuickControl([
+        "carouselAutoplay",
+        "carouselSpeed",
+        "carouselDirection",
+        "animationEnabled",
+        "animationSpeed",
+        "animationIntensity",
+      ]),
+      ["motion"],
+    ),
+    "actions",
+  ];
+}
+
+function buildAdvancedSectionTabs({
+  controlGroups,
+  editingWholeWidget,
+  mode,
+  selectedWidgetUsesV2,
+}) {
+  return [
+    ...listWhen(editingWholeWidget && !selectedWidgetUsesV2, [
+      { id: "surfaceBackground", label: "Surface" },
+    ]),
+    ...controlGroups.map((group) => ({
+      id: `control-${group.id}`,
+      label: mapControlGroupTitle(group.label),
+    })),
+    ...listWhen(mode === "advanced" && editingWholeWidget, [
+      { id: "spacingSizing", label: "Size" },
+    ]),
+    { id: "advanced", label: "Checks" },
+  ];
+}
+
+function getSelectedStyleLabel({
+  quickStyleOptions,
+  registeredStyleOptions,
+  selectedStyleId,
+}) {
+  const quickStyle = quickStyleOptions.find(
+    (option) => option.id === selectedStyleId,
+  );
+  if (quickStyle?.label) return quickStyle.label;
+  const registeredStyle = registeredStyleOptions.find(
+    (option) => option.id === selectedStyleId,
+  );
+  if (registeredStyle?.label) return registeredStyle.label;
+  return selectedStyleId || "Default";
+}
+
+function getCurrentWidgetScopeLabel(mode, selectedElement) {
+  if (mode === "simple") return "Entire widget";
+  if (!selectedElement) return "Choose an element";
+  return getFriendlyElementLabel(selectedElement.id, selectedElement.label);
+}
+
+function getSelectedWidget(widgets, selectedTarget, firstWidget) {
+  return (
+    widgets.find((widget) => widget.id === selectedTarget.widgetId) ||
+    firstWidget
+  );
+}
+
+function getSelectedWidgetConfig(selectedWidget, previewConfigPatches) {
+  const baseConfig = selectedWidget?.config || {};
+  const patch = selectedWidget?.id
+    ? previewConfigPatches[selectedWidget.id]
+    : null;
+  return patch ? deepMerge(baseConfig, patch) : baseConfig;
+}
+
+function buildPreviewWidgets(widgets, previewPositions, previewConfigPatches) {
+  return widgets.map((widget) => {
+    const position = previewPositions[widget.id];
+    const configPatch = previewConfigPatches[widget.id];
+    const positioned = position
+      ? { ...widget, position_x: position.x, position_y: position.y }
+      : widget;
+    return configPatch
+      ? {
+          ...positioned,
+          config: deepMerge(positioned.config || {}, configPatch),
+        }
+      : positioned;
+  });
+}
+
+function buildPreviewAppearance({
+  draft,
+  previewElementOffsets,
+  serverState,
+  showBefore,
+  widgets,
+}) {
+  if (showBefore) return serverState.published;
+  if (!Object.keys(previewElementOffsets).length) return draft;
+  let next = draft;
+  for (const [widgetId, offsetsByElement] of Object.entries(
+    previewElementOffsets,
+  )) {
+    const widget = widgets.find((item) => item.id === widgetId);
+    if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type)) continue;
+    const root = getTargetOverrideRoot(createTarget(widget, next));
+    if (!root) continue;
+    for (const [elementId, offsets] of Object.entries(offsetsByElement || {})) {
+      next = setByPath(
+        next,
+        resolveV2ElementOverridePath(
+          root,
+          elementId,
+          "offsetX",
+          offsets.stateId,
+        ),
+        offsets.offsetX,
+      );
+      next = setByPath(
+        next,
+        resolveV2ElementOverridePath(
+          root,
+          elementId,
+          "offsetY",
+          offsets.stateId,
+        ),
+        offsets.offsetY,
+      );
+    }
+  }
+  return next;
+}
+
+function getVisibleMaterialPresets(selectedWidgetType, selectedWidgetUsesV2) {
+  if (selectedWidgetType === "bonus_hunt") {
+    return SIMPLE_MATERIAL_PRESETS.filter(
+      (preset) => preset.id !== "soft_shadow",
+    );
+  }
+  return SIMPLE_MATERIAL_PRESETS.filter(
+    (preset) =>
+      preset.id !== "original" &&
+      (!selectedWidgetUsesV2 || preset.id !== "soft_shadow"),
+  );
+}
+
+function getQuickStyleOptions({
+  draft,
+  registeredStyleOptions,
+  selectedWidget,
+  selectedWidgetType,
+  selectedWidgetUsesV2,
+}) {
+  const v2Options = selectedWidgetUsesV2
+    ? getWidgetStyleOptionsForQuickEditor(selectedWidgetType)
+    : [];
+  const customOptions = registeredStyleOptions.filter(
+    (option) => option.custom,
+  );
+  const sourceOptions = selectedWidgetUsesV2
+    ? customOptions
+    : registeredStyleOptions;
+  const byId = new Map();
+  for (const option of v2Options) byId.set(option.id, option);
+  for (const option of sourceOptions) {
+    const existing = byId.get(option.id);
+    const merged = existing ? { ...existing, ...option } : { ...option };
+    byId.set(option.id, {
+      ...merged,
+      label: existing?.label || option.label,
+      recommended: existing?.recommended || false,
+    });
+  }
+  return [...byId.values()].map((option) => ({
+    ...option,
+    edited: styleEdited(draft, selectedWidget?.id, option.id),
+  }));
+}
+
+function getSelectedStyleCapability({
+  selectedTarget,
+  selectedWidgetType,
+  selectedWidgetUsesV2,
+}) {
+  if (!selectedWidgetUsesV2) return null;
+  return getWidgetStyleCapability(selectedWidgetType, selectedTarget.styleId);
+}
+
+function getSelectedElements({
+  selectedTarget,
+  selectedWidgetType,
+  selectedWidgetUsesV2,
+}) {
+  if (selectedWidgetUsesV2) {
+    return getWidgetStyleElements(selectedWidgetType, selectedTarget.styleId);
+  }
+  return getWidgetElementSchema(selectedWidgetType);
+}
+
+function getSelectedElement(selectedElements, selectedElementId) {
+  return (
+    selectedElements.find((element) => element.id === selectedElementId) ||
+    selectedElements[0] ||
+    null
+  );
+}
+
+function getSelectedQuickControls({
+  selectedElement,
+  selectedStyleCapabilities,
+  selectedTarget,
+  selectedWidgetType,
+  selectedWidgetUsesV2,
+}) {
+  if (selectedWidgetUsesV2) {
+    return new Set(
+      getWidgetStyleQuickControls(
+        selectedWidgetType,
+        selectedTarget.styleId,
+        selectedElement?.id || null,
+      ),
+    );
+  }
+  return new Set(getLegacyQuickControlIds(selectedStyleCapabilities));
+}
+
+function getSelectedHiddenElementIds({
+  draft,
+  selectedElements,
+  selectedTargetRoot,
+}) {
+  if (!selectedTargetRoot) return [];
+  return selectedElements
+    .filter(
+      (element) =>
+        !getElementVisibleFromAppearance(draft, selectedTargetRoot, element.id),
+    )
+    .map((element) => element.id);
+}
+
+function getFilteredWidgets(widgets, widgetSearch) {
+  const term = widgetSearch.trim().toLowerCase();
+  return getOrderedLayerWidgets(widgets)
+    .reverse()
+    .filter((widget) => {
+      const name = getWidgetDisplayName(widget).toLowerCase();
+      const type = String(widget.widget_type || "").toLowerCase();
+      return !term || name.includes(term) || type.includes(term);
+    });
+}
+
+function prunePreviewPositionsForWidgets(prev, widgets) {
+  const widgetIds = new Set(widgets.map((widget) => widget.id));
+  const next = Object.fromEntries(
+    Object.entries(prev).filter(([id]) => widgetIds.has(id)),
+  );
+  return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+}
+
+async function persistAppearanceDraft({
+  clientId,
+  lastPersistedDraftRef,
+  nextDraft,
+  reason,
+  serverState,
+  setSaveStatus,
+  setStatusMessage,
+  setToast,
+  theme,
+  updateState,
+}) {
+  if (!updateState) return false;
+  const normalized = normalizeAppearance(nextDraft, { theme });
+  const serialized = safeJson(normalized);
+  if (serialized === lastPersistedDraftRef.current && reason !== "manual") {
+    return true;
+  }
+  setSaveStatus("saving");
+  setStatusMessage("Saving draft...");
+  try {
+    const nextRoot = {
+      ...serverState,
+      draft: normalized,
+      schemaVersion: APPEARANCE_SCHEMA_VERSION,
+      revision: serverState.revision + 1,
+      updatedAt: new Date().toISOString(),
+      sourceClientId: clientId,
+    };
+    await updateState({ overlayAppearance: nextRoot });
+    lastPersistedDraftRef.current = serialized;
+    setSaveStatus("saved");
+    setStatusMessage(
+      reason === "manual" ? "Draft saved." : "Draft auto-saved.",
+    );
+    setToast(reason === "manual" ? "Draft saved" : "");
+    trackEvent(
+      ANALYTICS_EVENTS.APPEARANCE_DRAFT_SAVED || "appearance_draft_saved",
+      { reason },
+    );
+    return true;
+  } catch (err) {
+    console.error("[AppearanceCenter] save draft failed", err);
+    setSaveStatus("failed");
+    setStatusMessage("Draft could not be saved.");
+    setToast("Draft save failed");
+    trackEvent(
+      ANALYTICS_EVENTS.APPEARANCE_SAVE_FAILED || "appearance_save_failed",
+      { reason },
+    );
+    return false;
+  }
+}
+
+async function publishAppearanceDraft({
+  clientId,
+  draft,
+  lastPersistedDraftRef,
+  lastPublishedRef,
+  saveTheme,
+  selectedWidgetName,
+  selectedWidgetType,
+  serverState,
+  setPublishStatus,
+  setSaveStatus,
+  setStatusMessage,
+  setToast,
+  theme,
+  updateState,
+  userId,
+}) {
+  setSaveStatus("saving");
+  setPublishStatus("publishing");
+  setStatusMessage("Publishing to OBS...");
+  try {
+    const normalized = normalizeAppearance(draft, { theme });
+    const version = createAppearanceVersion({
+      appearance: normalized,
+      userId,
+      summary: `Published ${selectedWidgetName} design`,
+    });
+    const nextRoot = {
+      ...serverState,
+      draft: normalized,
+      published: normalized,
+      schemaVersion: APPEARANCE_SCHEMA_VERSION,
+      revision: serverState.revision + 1,
+      updatedAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
+      sourceClientId: clientId,
+      versions: [version, ...(serverState.versions || [])].slice(0, 30),
+    };
+    await updateState({ overlayAppearance: nextRoot });
+    if (saveTheme) await saveTheme(projectAppearanceToThemePatch(normalized));
+    const normalizedJson = safeJson(normalized);
+    lastPersistedDraftRef.current = normalizedJson;
+    lastPublishedRef.current = normalizedJson;
+    setSaveStatus("saved");
+    setPublishStatus("published");
+    setStatusMessage("Published. OBS browser sources will use this design.");
+    setToast("Published to OBS");
+    trackEvent(
+      ANALYTICS_EVENTS.APPEARANCE_PUBLISHED || "appearance_published",
+      { widget_type: selectedWidgetType || null },
+    );
+  } catch (err) {
+    console.error("[AppearanceCenter] publish failed", err);
+    setSaveStatus("failed");
+    setPublishStatus("failed");
+    setStatusMessage("Publish failed.");
+    setToast("Publish failed");
+  }
+}
+
+function mergePreviewConfigPatch(
+  setPreviewConfigPatches,
+  widgetId,
+  configPatch,
+) {
+  setPreviewConfigPatches((prev) => {
+    const currentPatch = prev[widgetId];
+    return {
+      ...prev,
+      [widgetId]: currentPatch
+        ? deepMerge(currentPatch, configPatch)
+        : configPatch,
+    };
+  });
+}
+
+function clearPreviewConfigPatch(setPreviewConfigPatches, widgetId) {
+  setPreviewConfigPatches((prev) => {
+    const next = { ...prev };
+    delete next[widgetId];
+    return next;
+  });
+}
+
+function buildRtpMetalPatch(patch, rtpMetalSettings) {
+  const patchSource = patch && typeof patch === "object" ? patch : null;
+  if (!patchSource) return normalizeRtpMetalSettings(rtpMetalSettings);
+  return normalizeRtpMetalSettings({
+    primaryColor: Object.hasOwn(patchSource, "primaryColor")
+      ? patchSource.primaryColor
+      : rtpMetalSettings.primaryColor,
+    secondaryColor: Object.hasOwn(patchSource, "secondaryColor")
+      ? patchSource.secondaryColor
+      : rtpMetalSettings.secondaryColor,
+    syncWithBonusHuntColors: Object.hasOwn(
+      patchSource,
+      "syncWithBonusHuntColors",
+    )
+      ? patchSource.syncWithBonusHuntColors
+      : rtpMetalSettings.syncWithBonusHuntColors,
+  });
+}
+
+function updateRtpMetalWidgetSettings({
+  patch,
+  rtpMetalSettings,
+  saveWidget,
+  selectedWidget,
+  selectedWidgetConfig,
+  setPreviewConfigPatches,
+  setToast,
+  summary,
+}) {
+  if (!selectedWidget?.id || !saveWidget) return;
+  const nextRtpMetal = buildRtpMetalPatch(patch, rtpMetalSettings);
+  const configPatch = { rtpMetal: nextRtpMetal };
+  const nextConfig = deepMerge(selectedWidgetConfig, configPatch);
+  mergePreviewConfigPatch(
+    setPreviewConfigPatches,
+    selectedWidget.id,
+    configPatch,
+  );
+  saveWidget({ ...selectedWidget, config: nextConfig })
+    .then(() => setToast(summary))
+    .catch((err) => {
+      console.error("[AppearanceCenter] RTP Metal update failed", err);
+      clearPreviewConfigPatch(setPreviewConfigPatches, selectedWidget.id);
+      setToast("RTP Metal colours could not be updated");
+    });
+}
+
+function updateBonusHuntColorSyncWidgetSettings({
+  enabled,
+  saveWidget,
+  selectedWidget,
+  selectedWidgetConfig,
+  setPreviewConfigPatches,
+  setToast,
+}) {
+  if (!selectedWidget?.id || !saveWidget) return;
+  const configPatch = { bonusHuntColorSync: { enabled: !!enabled } };
+  const nextConfig = deepMerge(selectedWidgetConfig, configPatch);
+  mergePreviewConfigPatch(
+    setPreviewConfigPatches,
+    selectedWidget.id,
+    configPatch,
+  );
+  saveWidget({ ...selectedWidget, config: nextConfig })
+    .then(() =>
+      setToast(
+        enabled
+          ? "Widget synced to Bonus Hunt colours"
+          : "Widget manual colours restored",
+      ),
+    )
+    .catch((err) => {
+      console.error("[AppearanceCenter] Bonus Hunt colour sync failed", err);
+      clearPreviewConfigPatch(setPreviewConfigPatches, selectedWidget.id);
+      setToast("Bonus Hunt colour sync could not be updated");
+    });
+}
+
+function savePreviewWidgetPosition({
+  meta,
+  position,
+  saveWidget,
+  setPreviewPositions,
+  setPublishStatus,
+  setToast,
+  widget,
+  widgets,
+}) {
+  if (!widget?.id || widget.widget_type === "background") return;
+  const nextPosition = {
+    x: Math.round(Number(position?.x) || 0),
+    y: Math.round(Number(position?.y) || 0),
+  };
+  setPreviewPositions((prev) => ({ ...prev, [widget.id]: nextPosition }));
+  if (!meta.commit || !saveWidget) return;
+  const currentWidget = widgets.find((item) => item.id === widget.id) || widget;
+  saveWidget({
+    ...currentWidget,
+    position_x: nextPosition.x,
+    position_y: nextPosition.y,
+  })
+    .then(() => {
+      setToast(`${getWidgetDisplayName(currentWidget)} position saved`);
+      setPublishStatus("unpublished");
+      setPreviewPositions((prev) => {
+        const next = { ...prev };
+        delete next[widget.id];
+        return next;
+      });
+    })
+    .catch((err) => {
+      console.error("[AppearanceCenter] widget position save failed", err);
+      setToast("Widget position could not be saved");
+    });
+}
+
+function clearPreviewElementOffset(
+  setPreviewElementOffsets,
+  widgetId,
+  elementId,
+) {
+  setPreviewElementOffsets((prev) => {
+    const widgetOffsets = { ...prev[widgetId] };
+    delete widgetOffsets[elementId];
+    const next = { ...prev };
+    if (Object.keys(widgetOffsets).length) next[widgetId] = widgetOffsets;
+    else delete next[widgetId];
+    return next;
+  });
+}
+
+function movePreviewElement({
+  commitDraft,
+  draft,
+  meta,
+  movement,
+  setPreviewElementOffsets,
+  setSelectedElementId,
+  setSelectedStateId,
+  setSelectedTarget,
+  widget,
+}) {
+  if (
+    !widget?.id ||
+    !movement?.elementId ||
+    !isWidgetAppearanceV2Enabled(widget.widget_type)
+  ) {
+    return;
+  }
+  const moveTarget = createTarget(widget, draft);
+  const root = getTargetOverrideRoot(moveTarget);
+  const stateId = movement.stateId || "default";
+  const element = getWidgetStyleElements(
+    widget.widget_type,
+    moveTarget.styleId,
+  ).find((item) => item.id === movement.elementId);
+  if (
+    !root ||
+    !elementSupportsControl(element, "offsetX") ||
+    !elementSupportsControl(element, "offsetY")
+  ) {
+    return;
+  }
+  const nextOffsets = {
+    offsetX: Math.round(Number(movement.offsetX) || 0),
+    offsetY: Math.round(Number(movement.offsetY) || 0),
+    stateId,
+  };
+  setSelectedTarget(moveTarget);
+  setSelectedElementId(movement.elementId);
+  setSelectedStateId(stateId);
+  if (!meta.commit) {
+    setPreviewElementOffsets((prev) => ({
+      ...prev,
+      [widget.id]: {
+        ...prev[widget.id],
+        [movement.elementId]: nextOffsets,
+      },
+    }));
+    return;
+  }
+  clearPreviewElementOffset(
+    setPreviewElementOffsets,
+    widget.id,
+    movement.elementId,
+  );
+  commitDraft(
+    (prev) => {
+      let next = setByPath(
+        prev,
+        resolveV2ElementOverridePath(
+          root,
+          movement.elementId,
+          "offsetX",
+          stateId,
+        ),
+        nextOffsets.offsetX,
+      );
+      next = setByPath(
+        next,
+        resolveV2ElementOverridePath(
+          root,
+          movement.elementId,
+          "offsetY",
+          stateId,
+        ),
+        nextOffsets.offsetY,
+      );
+      return next;
+    },
+    `Move ${element.label || movement.elementId}`,
+  );
+}
+
+function moveAppearanceWidgetLayer({
+  direction,
+  event,
+  saveWidget,
+  setPublishStatus,
+  setToast,
+  widget,
+  widgets,
+}) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  if (!widget?.id || !saveWidget) return;
+  const ordered = getOrderedLayerWidgets(widgets);
+  const currentIndex = ordered.findIndex((item) => item.id === widget.id);
+  if (currentIndex < 0) return;
+  const targetIndex = direction === "up" ? currentIndex + 1 : currentIndex - 1;
+  if (targetIndex < 0 || targetIndex >= ordered.length) return;
+  const normalized = ordered.map((item, index) => ({
+    ...item,
+    z_index: index + 1,
+  }));
+  const current = normalized[currentIndex];
+  const target = normalized[targetIndex];
+  normalized[currentIndex] = { ...target, z_index: currentIndex + 1 };
+  normalized[targetIndex] = { ...current, z_index: targetIndex + 1 };
+  const changed = normalized.filter((next) => {
+    const original = widgets.find((item) => item.id === next.id);
+    return (
+      original && Number(original.z_index || 0) !== Number(next.z_index || 0)
+    );
+  });
+  Promise.all(changed.map((next) => saveWidget(next)))
+    .then(() => {
+      setPublishStatus("unpublished");
+      setToast(
+        `${getWidgetDisplayName(widget)} moved ${direction === "up" ? "above" : "below"}`,
+      );
+    })
+    .catch((err) => {
+      console.error("[AppearanceCenter] widget layer update failed", err);
+      setToast("Widget layer order could not be changed");
+    });
+}
+
+function applySimpleSettingsChange({
+  commitDraft,
+  currentSimpleSettings,
+  patch,
+  rememberColor,
+  selectedTargetRoot,
+  selectedWidgetType,
+  summary,
+}) {
+  const nextSettings = normalizeSimpleSettings({
+    ...currentSimpleSettings,
+    ...patch,
+  });
+  const restoreBonusHuntOriginal =
+    selectedTargetRoot &&
+    selectedWidgetType === "bonus_hunt" &&
+    nextSettings.material === "original";
+  if (restoreBonusHuntOriginal) {
+    commitDraft(
+      (prev) => omitPath(prev, selectedTargetRoot),
+      summary || "Restore original Bonus Hunt design",
+    );
+    return;
+  }
+  const generated = generateSimpleAppearance(nextSettings);
+  if (patch?.primaryColor) rememberColor(nextSettings.primaryColor);
+  if (patch?.accentColor) rememberColor(nextSettings.accentColor);
+  commitDraft((prev) => {
+    if (!selectedTargetRoot) return deepMerge(prev, generated);
+    const appearancePath = `${selectedTargetRoot}.appearance`;
+    const currentAppearance = getByPath(prev, appearancePath) || {};
+    let next = setByPath(
+      prev,
+      appearancePath,
+      deepMerge(currentAppearance, generated),
+    );
+    if (isWidgetAppearanceV2Enabled(selectedWidgetType)) {
+      const currentV2 =
+        getByPath(prev, `${selectedTargetRoot}.appearanceV2`) || {};
+      next = setByPath(
+        next,
+        `${selectedTargetRoot}.appearanceV2`,
+        buildAppearanceV2ForStorage(
+          selectedWidgetType,
+          nextSettings,
+          currentV2,
+        ),
+      );
+    }
+    return next;
+  }, summary);
+}
+
+function applyQuickSettingsChange({
+  applySimpleSettings,
+  commitDraft,
+  currentSimpleSettings,
+  patch,
+  rememberColor,
+  selectedElement,
+  selectedTargetRoot,
+  selectedWidgetType,
+  selectedWidgetUsesV2,
+  summary,
+}) {
+  const canPatchElement =
+    selectedWidgetUsesV2 &&
+    selectedTargetRoot &&
+    selectedElement?.id &&
+    canScopeQuickPatchToElement(selectedElement, patch);
+  if (!canPatchElement) {
+    applySimpleSettings(patch, summary);
+    return;
+  }
+  const nextSettings = normalizeSimpleSettings({
+    ...currentSimpleSettings,
+    ...patch,
+  });
+  if (patch?.primaryColor) rememberColor(nextSettings.primaryColor);
+  if (patch?.accentColor) rememberColor(nextSettings.accentColor);
+  commitDraft((prev) => {
+    const currentV2 =
+      getByPath(prev, `${selectedTargetRoot}.appearanceV2`) || {};
+    const tokenSettings =
+      nextSettings.material === "original"
+        ? { ...nextSettings, material: "matte" }
+        : nextSettings;
+    const resolvedV2 = buildAppearanceV2ForStorage(
+      selectedWidgetType,
+      tokenSettings,
+      currentV2,
+    );
+    const override = buildElementQuickOverrideFromPatch(
+      selectedElement,
+      patch,
+      resolvedV2.generatedTokens || {},
+    );
+    if (!Object.keys(override).length) return prev;
+    const overridePath = `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
+    const currentOverride = getByPath(prev, overridePath) || {};
+    return setByPath(prev, overridePath, deepMerge(currentOverride, override));
+  }, summary);
+}
+
+function restoreRecommendedWidgetStyle({
+  commitDraft,
+  selectedTargetRoot,
+  selectedWidgetType,
+  setToast,
+}) {
+  if (selectedTargetRoot && selectedWidgetType === "bonus_hunt") {
+    commitDraft(
+      (prev) => omitPath(prev, selectedTargetRoot),
+      "Restore original Bonus Hunt design",
+    );
+    setToast("Original Bonus Hunt design restored");
+    return;
+  }
+  const generated = generateSimpleAppearance(DEFAULT_SIMPLE_SETTINGS);
+  commitDraft((prev) => {
+    if (!selectedTargetRoot) return deepMerge(prev, generated);
+    let next = setByPath(prev, `${selectedTargetRoot}.appearance`, generated);
+    if (isWidgetAppearanceV2Enabled(selectedWidgetType)) {
+      next = setByPath(
+        next,
+        `${selectedTargetRoot}.appearanceV2`,
+        buildAppearanceV2ForStorage(
+          selectedWidgetType,
+          DEFAULT_SIMPLE_SETTINGS,
+          {},
+        ),
+      );
+    }
+    next = omitPath(next, `${selectedTargetRoot}.elements`);
+    next = omitPath(next, `${selectedTargetRoot}.subElements`);
+    return next;
+  }, "Restore recommended style");
+  setToast("Recommended style restored");
+}
+
+function changeAppearanceMode({
+  advancedOverrideCount,
+  mode,
+  nextMode,
+  setMode,
+  setPreviewMode,
+  setShowBefore,
+  setSidebarTab,
+  setToast,
+}) {
+  if (nextMode === mode) return;
+  if (nextMode === "simple" && advancedOverrideCount > 0) {
+    const keep = window.confirm(
+      "Advanced adjustments are active for this widget. Keep them while using Simple Mode? Choose Cancel to stay in Advanced Mode.",
+    );
+    if (!keep) return;
+    setToast("Advanced adjustments kept");
+  }
+  setMode(nextMode);
+  setSidebarTab(nextMode === "advanced" ? "layers" : "widgets");
+  setPreviewMode(
+    EDITOR_MODE_CAPABILITIES[nextMode]?.previewMode || "fit-widget",
+  );
+  setShowBefore(false);
+}
+
+function getSelectedWidgetName(widget) {
+  return widget ? getWidgetDisplayName(widget) : "Overlay";
+}
+
+function getSelectedWidgetType(widget, selectedTarget) {
+  return widget?.widget_type || selectedTarget.widgetType || "";
+}
+
+function getPreviewStateOptions(widgetType) {
+  return WIDGET_PREVIEW_STATES[widgetType] || [];
+}
+
+function getSelectedPreviewState({
+  previewStateByWidget,
+  previewStateOptions,
+  widgetId,
+}) {
+  return previewStateByWidget[widgetId] || previewStateOptions[0]?.id || "";
+}
+
+function countAdvancedOverrides(draft, selectedTargetRoot) {
+  if (!selectedTargetRoot) return 0;
+  return (
+    countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.elements`)) +
+    countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.subElements`)) +
+    countObjectLeaves(
+      getByPath(draft, `${selectedTargetRoot}.appearanceV2.elementOverrides`),
+    )
+  );
+}
+
+function buildStyleSelections(selectedWidget, selectedTarget) {
+  if (!selectedWidget?.id || !selectedTarget.styleId) return {};
+  return { [selectedWidget.id]: selectedTarget.styleId };
+}
+
+function getBackgroundSourceMode(controlValue, selectedStyleId) {
+  if (controlValue) return controlValue;
+  return BACKGROUND_SPECIAL_STYLE_IDS.has(selectedStyleId)
+    ? "special"
+    : "texture";
+}
+
+function shouldShowBackgroundControlFor({
+  backgroundFogMode,
+  backgroundLightMode,
+  backgroundParticleMode,
+  backgroundSourceMode,
+  backgroundTextureType,
+  controlId,
+  elementId,
+  selectedStyleId,
+  selectedWidgetIsBackground,
+}) {
+  if (!selectedWidgetIsBackground) return true;
+  if (elementId === "texture") {
+    return getBackgroundTextureControlIds(
+      backgroundSourceMode,
+      selectedStyleId,
+      backgroundTextureType,
+    ).has(controlId);
+  }
+  if (elementId === "media") {
+    if (BACKGROUND_MEDIA_ALWAYS_CONTROLS.has(controlId)) return true;
+    return (
+      ["image", "video"].includes(backgroundSourceMode) &&
+      BACKGROUND_MEDIA_ACTIVE_CONTROLS.has(controlId)
+    );
+  }
+  if (elementId !== "effects") return true;
+  if (BACKGROUND_PARTICLE_DETAIL_CONTROLS.has(controlId)) {
+    return backgroundParticleMode !== "none";
+  }
+  if (BACKGROUND_FOG_DETAIL_CONTROLS.has(controlId)) {
+    return backgroundFogMode !== "none";
+  }
+  if (BACKGROUND_LIGHT_DETAIL_CONTROLS.has(controlId)) {
+    return backgroundLightMode !== "none";
+  }
+  return true;
+}
+
+function getBackgroundElementControlGroupsFor(element, shouldShowControl) {
+  if (!element) return [];
+  return getElementControlGroups(element, "advanced")
+    .map((group) => ({
+      ...group,
+      controls: group.controls
+        .filter((control) => shouldShowControl(element.id, control.id))
+        .map((control) => normalizeBackgroundControl(control, element.id)),
+    }))
+    .filter((group) => group.controls.length);
+}
+
+function QuickPropertyControl({
+  draft,
+  item,
+  onReset,
+  onUpdate,
+  selectedTargetRoot,
+}) {
+  const path = selectedTargetRoot
+    ? `${selectedTargetRoot}.appearance.${item.path}`
+    : item.path;
+  const value = getByPath(draft, path);
+  return (
+    <PropertyControl
+      control={normalizeControl(item.control, item.label)}
+      value={value}
+      onChange={(next) => onUpdate(item, next)}
+      onReset={() => onReset(item)}
+      inheritedLabel={value === undefined ? "Inherited" : "Custom"}
+    />
+  );
+}
+
+function ElementPropertyControl({
+  control,
+  disabled,
+  element,
+  onReset,
+  onUpdate,
+  value,
+}) {
+  return (
+    <PropertyControl
+      control={control}
+      value={value}
+      onChange={(next) => onUpdate(element.id, control, next)}
+      onReset={() => onReset(element.id, control)}
+      inheritedLabel={value === undefined ? "Inherited" : "Custom"}
+      disabled={disabled}
+    />
+  );
+}
+
+function ElementPropertyControlFor({
+  control,
+  element,
+  getValue,
+  isLocked,
+  onReset,
+  onUpdate,
+  selectedTargetRoot,
+}) {
+  if (!selectedTargetRoot || !element?.id) return null;
+  const value = getValue(element.id, control.id);
+  return (
+    <ElementPropertyControl
+      control={control}
+      disabled={isLocked(element.id)}
+      element={element}
+      onReset={onReset}
+      onUpdate={onUpdate}
+      value={value}
+    />
+  );
+}
+
+function commitAppearanceDraftChange({
+  commitRecipe,
+  selectedElementId,
+  selectedTarget,
+  selectedWidgetType,
+  setDraft,
+  setPublishStatus,
+  setRedoStack,
+  setSaveStatus,
+  setShowBefore,
+  setStatusMessage,
+  setUndoStack,
+  summary,
+  theme,
+}) {
+  setShowBefore(false);
+  setDraft((prev) => {
+    const next = normalizeAppearance(
+      typeof commitRecipe === "function" ? commitRecipe(prev) : commitRecipe,
+      { theme },
+    );
+    if (safeJson(prev) === safeJson(next)) return prev;
+    setUndoStack((stack) => [
+      ...stack.slice(-49),
+      { targetKey: targetKey(selectedTarget), draft: prev, summary },
+    ]);
+    setRedoStack([]);
+    setSaveStatus("dirty");
+    setPublishStatus("unpublished");
+    setStatusMessage("Preview updated instantly. Draft will be saved shortly.");
+    trackEvent(
+      ANALYTICS_EVENTS.APPEARANCE_SETTING_CHANGED ||
+        "appearance_setting_changed",
+      {
+        summary,
+        widget_type: selectedWidgetType || null,
+        element_id: selectedElementId || null,
+      },
+    );
+    return next;
+  });
+}
+
+function rememberRecentColor(color, setRecentColors) {
+  const normalized = normalizeHexColor(color, "");
+  if (!normalized) return;
+  setRecentColors((prev) => {
+    const next = [
+      normalized,
+      ...prev.filter((item) => item !== normalized),
+    ].slice(0, 8);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        RECENT_COLORS_STORAGE_KEY,
+        JSON.stringify(next),
+      );
+    }
+    return next;
+  });
+}
+
+function updateSelectedWidgetConfigValue({
+  patch,
+  saveWidget,
+  selectedWidget,
+  setToast,
+  summary,
+}) {
+  if (!selectedWidget?.id || !saveWidget) return;
+  const nextConfig = { ...selectedWidget.config, ...patch };
+  saveWidget({ ...selectedWidget, config: nextConfig })
+    .then(() => setToast(summary))
+    .catch((err) => {
+      console.error("[AppearanceCenter] widget config update failed", err);
+      setToast("Widget settings could not be updated");
+    });
+}
+
+function selectAppearanceWidget({
+  dirty,
+  draft,
+  mode,
+  nextElementId,
+  persistDraft,
+  saveTimerRef,
+  setSelectedElementId,
+  setSelectedStateId,
+  setSelectedTarget,
+  setSidebarTab,
+  widget,
+}) {
+  if (!widget) return;
+  if (dirty) {
+    clearTimeout(saveTimerRef.current);
+    persistDraft(draft, "widget-switch");
+  }
+  const target = createTarget(widget, draft);
+  const firstElement = getFirstElementForStyle(
+    widget.widget_type,
+    target.styleId,
+  );
+  setSelectedTarget(target);
+  setSelectedElementId(nextElementId || firstElement?.id || "");
+  setSelectedStateId("default");
+  setSidebarTab(mode === "advanced" ? "layers" : "widgets");
+  trackEvent(
+    ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED ||
+      "widget_appearance_target_selected",
+    {
+      scope: target.scope,
+      widget_type: target.widgetType,
+    },
+  );
+}
+
+function selectAppearanceStyle({
+  commitDraft,
+  quickStyleOptions,
+  saveWidget,
+  selectedWidget,
+  setSelectedElementId,
+  setSelectedStateId,
+  setSelectedTarget,
+  styleId,
+}) {
+  if (!selectedWidget?.id || !styleId) return;
+  const nextTarget = {
+    scope: "widget_instance",
+    widgetId: selectedWidget.id,
+    widgetType: selectedWidget.widget_type,
+    styleId,
+  };
+  setSelectedTarget(nextTarget);
+  const firstElement = getFirstElementForStyle(
+    selectedWidget.widget_type,
+    styleId,
+  );
+  setSelectedElementId(firstElement?.id || "");
+  setSelectedStateId("default");
+  const optionLabel =
+    quickStyleOptions.find((option) => option.id === styleId)?.label || styleId;
+  const defaultSize = getWidgetStyleDefaultSize(
+    selectedWidget.widget_type,
+    styleId,
+  );
+  if (defaultSize && saveWidget) {
+    const def = getWidgetDef(selectedWidget.widget_type);
+    const styleKey = def?.styleConfigKey || "displayStyle";
+    const nextConfig = selectedWidget.config
+      ? { ...selectedWidget.config, [styleKey]: styleId }
+      : { [styleKey]: styleId };
+    saveWidget({
+      ...selectedWidget,
+      width: defaultSize.width,
+      height: defaultSize.height,
+      config: nextConfig,
+    }).catch((err) => {
+      console.error("[AppearanceCenter] style size update failed", err);
+    });
+  }
+  commitDraft(
+    (prev) =>
+      setByPath(prev, `widgets.${selectedWidget.id}.activeStyleId`, styleId),
+    `Select ${optionLabel} style`,
+  );
+}
+
+function syncModeSideEffects({
+  mode,
+  setPreviewMode,
+  setShowBefore,
+  setSidebarTab,
+}) {
+  if (mode !== "simple") return;
+  setSidebarTab("widgets");
+  setPreviewMode((prev) => (prev === "full-overlay" ? prev : "fit-widget"));
+  setShowBefore(false);
+}
+
+function syncServerDraftState({
+  dirty,
+  lastPersistedDraftRef,
+  lastPublishedRef,
+  lastRevisionRef,
+  saveStatus,
+  serverState,
+  setDraft,
+}) {
+  if (lastRevisionRef.current === serverState.revision) return;
+  lastRevisionRef.current = serverState.revision;
+  lastPublishedRef.current = safeJson(serverState.published || {});
+  if (dirty || saveStatus === "saving") return;
+  setDraft(serverState.draft);
+  lastPersistedDraftRef.current = safeJson(serverState.draft);
+}
+
+function ensureSelectedWidgetTarget({
+  draft,
+  firstWidget,
+  selectedWidget,
+  setSelectedElementId,
+  setSelectedTarget,
+}) {
+  if (selectedWidget || !firstWidget) return;
+  setSelectedTarget(createTarget(firstWidget, draft));
+  setSelectedElementId(getFirstElement(firstWidget.widget_type)?.id || "");
+}
+
+function ensureSelectedElement({
+  selectedElement,
+  selectedElements,
+  setSelectedElementId,
+}) {
+  if (selectedElement || !selectedElements[0]) return;
+  setSelectedElementId(selectedElements[0].id);
+}
+
+function startToastTimer(toast, setToast) {
+  if (!toast) return undefined;
+  const timer = setTimeout(() => setToast(""), 3200);
+  return () => clearTimeout(timer);
+}
+
+function broadcastAppearancePreviewDraft({
+  draft,
+  instance,
+  styleSelections,
+  clientId,
+}) {
+  if (typeof BroadcastChannel === "undefined") return undefined;
+  const channel = new BroadcastChannel("streamers-center-preview");
+  channel.postMessage({
+    type: "appearance-preview-draft",
+    token: instance?.overlay_token,
+    appearance: draft,
+    styleSelections,
+    sourceClientId: clientId,
+  });
+  return () => channel.close();
+}
+
+function scheduleDraftAutosave({
+  draft,
+  lastPersistedDraftRef,
+  persistDraft,
+  saveTimerRef,
+}) {
+  const serialized = safeJson(draft);
+  if (serialized === lastPersistedDraftRef.current) return undefined;
+  clearTimeout(saveTimerRef.current);
+  saveTimerRef.current = setTimeout(
+    () => persistDraft(draft, "debounced-draft"),
+    1100,
+  );
+  return () => clearTimeout(saveTimerRef.current);
+}
+
+function resizePreviewWidget({
+  commitDraft,
+  draft,
+  setSelectedTarget,
+  size,
+  widget,
+}) {
+  if (!widget?.id) return;
+  const resizeTarget = createTarget(widget, draft);
+  const root = getTargetOverrideRoot(resizeTarget);
+  if (!root) return;
+  setSelectedTarget(resizeTarget);
+  commitDraft(
+    (prev) => {
+      let next = setWidgetSizeOverridePaths(
+        prev,
+        root,
+        "width",
+        size.width,
+        isWidgetAppearanceV2Enabled(widget.widget_type),
+      );
+      next = setWidgetSizeOverridePaths(
+        next,
+        root,
+        "height",
+        size.height,
+        isWidgetAppearanceV2Enabled(widget.widget_type),
+      );
+      return next;
+    },
+    `Resize ${getWidgetDisplayName(widget)}`,
+  );
+}
+
+function saveWidgetVisibility({ event, saveWidget, setToast, widget }) {
+  event?.stopPropagation();
+  if (!widget?.id || !saveWidget) return;
+  const nextVisible = !widget.is_visible;
+  saveWidget({ ...widget, is_visible: nextVisible })
+    .then(() =>
+      setToast(
+        `${getWidgetDisplayName(widget)} ${nextVisible ? "enabled" : "disabled"}`,
+      ),
+    )
+    .catch((err) => {
+      console.error("[AppearanceCenter] widget visibility update failed", err);
+      setToast("Widget visibility could not be changed");
+    });
+}
+
+function applyUndoChange({
+  draft,
+  selectedTarget,
+  setDraft,
+  setPublishStatus,
+  setRedoStack,
+  setSaveStatus,
+  setStatusMessage,
+  setUndoStack,
+}) {
+  setUndoStack((stack) => {
+    if (!stack.length) return stack;
+    const entry = stack.at(-1);
+    setRedoStack((next) =>
+      [
+        {
+          targetKey: targetKey(selectedTarget),
+          draft,
+          summary: "Redo style change",
+        },
+        ...next,
+      ].slice(0, 50),
+    );
+    setDraft(entry.draft);
+    setSaveStatus("dirty");
+    setPublishStatus("unpublished");
+    setStatusMessage("Undo applied.");
+    return stack.slice(0, -1);
+  });
+}
+
+function applyRedoChange({
+  draft,
+  selectedTarget,
+  setDraft,
+  setPublishStatus,
+  setRedoStack,
+  setSaveStatus,
+  setStatusMessage,
+  setUndoStack,
+}) {
+  setRedoStack((stack) => {
+    if (!stack.length) return stack;
+    const entry = stack[0];
+    setUndoStack((next) => [
+      ...next.slice(-49),
+      { targetKey: targetKey(selectedTarget), draft, summary: "Undo redo" },
+    ]);
+    setDraft(entry.draft);
+    setSaveStatus("dirty");
+    setPublishStatus("unpublished");
+    setStatusMessage("Redo applied.");
+    return stack.slice(1);
+  });
+}
+
+function isSelectedElementLocked({
+  elementId,
+  lockedLayers,
+  selectedWidgetId,
+}) {
+  if (!selectedWidgetId || !elementId) return false;
+  return !!lockedLayers[layerKey(selectedWidgetId, elementId)];
+}
+
+function toggleAppearanceElementVisibility({
+  commitDraft,
+  draft,
+  elementId,
+  isElementLocked,
+  selectedTargetRoot,
+  selectedWidgetUsesV2,
+}) {
+  if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+  const nextVisible = !getElementVisibleFromAppearance(
+    draft,
+    selectedTargetRoot,
+    elementId,
+  );
+  const path = selectedWidgetUsesV2
+    ? resolveV2ElementOverridePath(selectedTargetRoot, elementId, "visible")
+    : resolveElementPath(selectedTargetRoot, elementId, "visible");
+  commitDraft(
+    (prev) => setByPath(prev, path, nextVisible),
+    `${elementId}.${nextVisible ? "show" : "hide"}`,
+  );
+}
+
+function updateAppearanceElementControl({
+  commitDraft,
+  control,
+  elementId,
+  isElementLocked,
+  selectedStateId,
+  selectedTargetRoot,
+  selectedWidgetUsesV2,
+  value,
+}) {
+  if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+  const normalized = validateEditorValue(control, value);
+  const isDefaultContainerSize =
+    elementId === "container" &&
+    ["width", "height"].includes(control.id) &&
+    (!selectedStateId || selectedStateId === "default");
+  if (isDefaultContainerSize) {
+    commitDraft(
+      (prev) =>
+        setWidgetSizeOverridePaths(
+          prev,
+          selectedTargetRoot,
+          control.id,
+          normalized,
+          selectedWidgetUsesV2,
+        ),
+      `${elementId}.${control.id}`,
+    );
+    return;
+  }
+  const path = selectedWidgetUsesV2
+    ? resolveV2ElementOverridePath(
+        selectedTargetRoot,
+        elementId,
+        control.id,
+        selectedStateId,
+      )
+    : resolveElementPath(
+        selectedTargetRoot,
+        elementId,
+        control.id,
+        selectedStateId,
+      );
+  commitDraft(
+    (prev) => setByPath(prev, path, normalized),
+    `${elementId}.${control.id}`,
+  );
+}
+
+function resetAppearanceElementControl({
+  commitDraft,
+  control,
+  elementId,
+  isElementLocked,
+  selectedStateId,
+  selectedTargetRoot,
+  selectedWidgetUsesV2,
+}) {
+  if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+  const isDefaultContainerSize =
+    elementId === "container" &&
+    ["width", "height"].includes(control.id) &&
+    (!selectedStateId || selectedStateId === "default");
+  if (isDefaultContainerSize) {
+    commitDraft(
+      (prev) =>
+        omitWidgetSizeOverridePaths(
+          prev,
+          selectedTargetRoot,
+          control.id,
+          selectedWidgetUsesV2,
+        ),
+      `Reset ${elementId}.${control.id}`,
+    );
+    return;
+  }
+  const v2Path = resolveV2ElementOverridePath(
+    selectedTargetRoot,
+    elementId,
+    control.id,
+    selectedStateId,
+  );
+  const modernPath = resolveElementPath(
+    selectedTargetRoot,
+    elementId,
+    control.id,
+    selectedStateId,
+  );
+  const legacyPath = resolveLegacyElementPath(
+    selectedTargetRoot,
+    elementId,
+    control.id,
+    selectedStateId,
+  );
+  commitDraft(
+    (prev) =>
+      omitPath(omitPath(omitPath(prev, v2Path), modernPath), legacyPath),
+    `Reset ${elementId}.${control.id}`,
+  );
+}
+
+function applyAppearancePreset({
+  commitDraft,
+  preset,
+  selectedTargetRoot,
+  setToast,
+  theme,
+}) {
+  const appearance = getPresetAppearance(preset);
+  if (!appearance) return;
+  if (preset.isSimpleQuickStyle && selectedTargetRoot) {
+    commitDraft((prev) => {
+      const appearancePath = `${selectedTargetRoot}.appearance`;
+      const currentAppearance = getByPath(prev, appearancePath) || {};
+      return setByPath(
+        prev,
+        appearancePath,
+        deepMerge(currentAppearance, appearance),
+      );
+    }, `Apply preset ${preset.name}`);
+  } else {
+    commitDraft(
+      (prev) => normalizeAppearance(deepMerge(prev, appearance), { theme }),
+      `Apply preset ${preset.name}`,
+    );
+  }
+  setToast(`${preset.name} applied`);
+  trackEvent(
+    ANALYTICS_EVENTS.APPEARANCE_PRESET_APPLIED || "appearance_preset_applied",
+    { preset_id: preset.id },
+  );
+}
+
+async function saveAppearancePresetFromDraft({
+  clientId,
+  currentSimpleSettings,
+  draft,
+  mode,
+  selectedTarget,
+  selectedTargetRoot,
+  selectedWidgetName,
+  selectedWidgetType,
+  serverState,
+  setToast,
+  updateState,
+}) {
+  const name = window.prompt("Preset name", `${selectedWidgetName} style`);
+  if (!name?.trim() || !updateState) return;
+  const presetAppearance =
+    mode === "simple" && selectedTargetRoot
+      ? getByPath(draft, `${selectedTargetRoot}.appearance`) ||
+        generateSimpleAppearance(currentSimpleSettings)
+      : draft;
+  const preset = createAppearancePreset({
+    name,
+    appearance: presetAppearance,
+    scope: selectedTarget.scope,
+    widgetTypes: selectedWidgetType ? [selectedWidgetType] : [],
+  });
+  if (mode === "simple") {
+    preset.isSimpleQuickStyle = true;
+    preset.simpleSettings = currentSimpleSettings;
+  }
+  const nextRoot = {
+    ...serverState,
+    draft,
+    presets: [preset, ...(serverState.presets || [])].slice(0, 30),
+    schemaVersion: APPEARANCE_SCHEMA_VERSION,
+    revision: serverState.revision + 1,
+    updatedAt: new Date().toISOString(),
+    sourceClientId: clientId,
+  };
+  await updateState({ overlayAppearance: nextRoot });
+  setToast("Preset saved");
+}
+
+async function renameAppearancePreset({
+  preset,
+  serverState,
+  setToast,
+  updateState,
+}) {
+  const name = window.prompt("Rename preset", preset.name);
+  if (!name?.trim() || !updateState) return;
+  const nextRoot = {
+    ...serverState,
+    presets: (serverState.presets || []).map((item) =>
+      item.id === preset.id
+        ? { ...item, name: name.trim(), updatedAt: new Date().toISOString() }
+        : item,
+    ),
+    revision: serverState.revision + 1,
+    updatedAt: new Date().toISOString(),
+  };
+  await updateState({ overlayAppearance: nextRoot });
+  setToast("Preset renamed");
+}
+
+async function deleteAppearancePreset({
+  preset,
+  serverState,
+  setToast,
+  updateState,
+}) {
+  if (!window.confirm(`Delete "${preset.name}" preset?`) || !updateState)
+    return;
+  const nextRoot = {
+    ...serverState,
+    presets: (serverState.presets || []).filter(
+      (item) => item.id !== preset.id,
+    ),
+    revision: serverState.revision + 1,
+    updatedAt: new Date().toISOString(),
+  };
+  await updateState({ overlayAppearance: nextRoot });
+  setToast("Preset deleted");
+}
+
+async function duplicateAppearancePreset({
+  preset,
+  serverState,
+  setToast,
+  updateState,
+}) {
+  if (!updateState) return;
+  const duplicate = {
+    ...preset,
+    id: createGeneratedId("preset"),
+    name: `${preset.name} copy`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  const nextRoot = {
+    ...serverState,
+    presets: [duplicate, ...(serverState.presets || [])].slice(0, 30),
+    revision: serverState.revision + 1,
+    updatedAt: new Date().toISOString(),
+  };
+  await updateState({ overlayAppearance: nextRoot });
+  setToast("Preset duplicated");
+}
+
+function exportCurrentWidgetStyles({ draft, setToast, widgets }) {
+  const pack = createWidgetStylePack({ appearance: draft, widgets });
+  if (!pack.widgets.length) {
+    setToast("No widget styles to export");
+    return;
+  }
+  const downloaded = downloadJsonFile(stylePackFilename(), pack);
+  setToast(
+    downloaded
+      ? `Exported styles for ${pack.widgets.length} widgets`
+      : "Export is not available in this browser",
+  );
+}
+
+async function importWidgetStyleFile({
+  addWidget,
+  commitDraft,
+  draft,
+  event,
+  persistDraft,
+  saveTimerRef,
+  setSaveStatus,
+  setStatusMessage,
+  setToast,
+  theme,
+  widgets,
+}) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const pack = JSON.parse(text);
+    const validation = validateWidgetStylePack(pack);
+    if (!validation.valid) {
+      setToast(validation.error);
+      return;
+    }
+    const { createdCount, targetWidgets } = await createMissingStylePackWidgets(
+      { addWidget, pack, widgets },
+    );
+    const result = applyWidgetStylePack({
+      appearance: draft,
+      widgets: targetWidgets,
+      pack,
+    });
+    if (result.error) {
+      setToast(result.error);
+      return;
+    }
+    if (!result.applied) {
+      setToast("No matching widgets found for this style pack");
+      return;
+    }
+    const importedAppearance = normalizeAppearance(result.appearance, {
+      theme,
+    });
+    commitDraft(
+      importedAppearance,
+      `Import widget style pack (${result.applied} widgets)`,
+    );
+    clearTimeout(saveTimerRef.current);
+    setSaveStatus("saving");
+    setStatusMessage("Saving imported styles...");
+    const saved = await persistDraft(
+      importedAppearance,
+      "import-widget-styles",
+    );
+    if (!saved) return;
+    const skippedCount = countSkippedStylePackItems(result);
+    const createdText = createdCount ? `, created ${createdCount}` : "";
+    const skippedText = skippedCount ? `, skipped ${skippedCount}` : "";
+    setToast(
+      `Imported styles for ${result.applied} widgets${createdText}${skippedText}`,
+    );
+  } catch (err) {
+    console.error("[AppearanceCenter] style pack import failed", err);
+    setToast("Could not import style pack");
+  }
+}
+
+function resetSelectedElementAppearance({
+  commitDraft,
+  selectedElement,
+  selectedLayerLocked,
+  selectedStateId,
+  selectedTargetRoot,
+}) {
+  if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked)
+    return;
+  const statePath = selectedStateId && selectedStateId !== "default";
+  const modernPath = statePath
+    ? `${selectedTargetRoot}.elements.${selectedElement.id}.states.${selectedStateId}`
+    : `${selectedTargetRoot}.elements.${selectedElement.id}`;
+  const legacyPath = statePath
+    ? `${selectedTargetRoot}.subElements.${selectedElement.id}.states.${selectedStateId}`
+    : `${selectedTargetRoot}.subElements.${selectedElement.id}`;
+  const v2Path = statePath
+    ? `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}.states.${selectedStateId}`
+    : `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
+  commitDraft(
+    (prev) =>
+      omitPath(omitPath(omitPath(prev, modernPath), legacyPath), v2Path),
+    `Reset ${selectedElement.id}`,
+  );
+}
+
+function resetSelectedWidgetAppearance({
+  commitDraft,
+  selectedTargetRoot,
+  selectedWidgetName,
+}) {
+  if (!selectedTargetRoot) return;
+  if (!window.confirm(`Reset only "${selectedWidgetName}" custom style?`))
+    return;
+  commitDraft(
+    (prev) => omitPath(prev, selectedTargetRoot),
+    `Reset ${selectedWidgetName}`,
+  );
+}
+
+function resetAllAppearance({ commitDraft, theme }) {
+  if (
+    !window.confirm(
+      "Reset the entire appearance draft for all widgets? This does not publish until you press Publish to OBS.",
+    )
+  ) {
+    return;
+  }
+  commitDraft(normalizeAppearance({}, { theme }), "Reset all appearance");
+}
+
+function discardUnsavedAppearanceDraft({
+  lastPersistedDraftRef,
+  saveTimerRef,
+  serverState,
+  setDraft,
+  setPublishStatus,
+  setSaveStatus,
+  setStatusMessage,
+}) {
+  clearTimeout(saveTimerRef.current);
+  setDraft(serverState.draft);
+  lastPersistedDraftRef.current = safeJson(serverState.draft);
+  setSaveStatus("saved");
+  setPublishStatus(
+    safeJson(serverState.draft) === safeJson(serverState.published || {})
+      ? "published"
+      : "unpublished",
+  );
+  setStatusMessage("Unsaved changes discarded.");
+}
+
+function setAppearanceTourHidden(hidden, setTourVisible) {
+  setTourVisible(!hidden);
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(TOUR_STORAGE_KEY, hidden ? "1" : "0");
+  }
+}
+
+function getNextZoomValue(direction, zoom) {
+  if (direction === "fit") return { value: "fit" };
+  const current = zoom === "fit" ? 100 : Number(zoom) || 100;
+  const index = ZOOM_STEPS.reduce(
+    (best, step, i) =>
+      Math.abs(step - current) < Math.abs(ZOOM_STEPS[best] - current)
+        ? i
+        : best,
+    0,
+  );
+  const nextIndex =
+    direction === "in"
+      ? Math.min(ZOOM_STEPS.length - 1, index + 1)
+      : Math.max(0, index - 1);
+  return { value: `${ZOOM_STEPS[nextIndex]}` };
+}
+
+function toggleOpenSection(prev, id) {
+  if (prev.includes(id)) return prev.filter((item) => item !== id);
+  return [id, ...prev].slice(0, 2);
+}
+
+async function enterFullscreenForElement(target, setToast) {
+  if (!target?.requestFullscreen) {
+    setToast("Fullscreen is not available in this browser");
+    return;
+  }
+  try {
+    await target.requestFullscreen();
+  } catch (err) {
+    console.error("[AppearanceCenter] fullscreen failed", err);
+    setToast("Fullscreen could not be opened");
+  }
+}
+
+function registerAppearanceKeyboardShortcuts({
+  draft,
+  handlePreviewElementMove,
+  mode,
+  persistDraft,
+  redo,
+  resetElement,
+  selectedElement,
+  selectedLayerLocked,
+  selectedStateId,
+  selectedTargetRoot,
+  selectedWidget,
+  selectedWidgetType,
+  setSelectedElementId,
+  undo,
+}) {
+  function onKeyDown(event) {
+    if (isTypingTarget(event.target)) return;
+    if (handleCommandShortcut(event, { draft, persistDraft, redo, undo }))
+      return;
+    if (event.key === "Escape") {
+      setSelectedElementId("");
+      return;
+    }
+    const handledNudge = handleNudgeShortcut(event, {
+      draft,
+      handlePreviewElementMove,
+      mode,
+      selectedElement,
+      selectedLayerLocked,
+      selectedStateId,
+      selectedTargetRoot,
+      selectedWidget,
+      selectedWidgetType,
+    });
+    if (handledNudge) return;
+    handleDeleteShortcut(event, {
+      mode,
+      resetElement,
+      selectedElement,
+      selectedLayerLocked,
+    });
+  }
+  window.addEventListener("keydown", onKeyDown);
+  return () => window.removeEventListener("keydown", onKeyDown);
+}
+
+function openBackgroundSimpleSection(
+  selectedWidgetIsBackground,
+  setOpenSimpleSections,
+) {
+  if (!selectedWidgetIsBackground) return;
+  setOpenSimpleSections((prev) => {
+    if (prev.includes("backgroundControls")) return prev;
+    return [
+      "backgroundControls",
+      ...prev.filter((id) => id !== "actions"),
+    ].slice(0, 2);
+  });
+}
+
+function readElementControlValue({
+  controlId,
+  draft,
+  elementId,
+  selectedStateId,
+  selectedTargetRoot,
+}) {
+  if (!selectedTargetRoot || !elementId || !controlId) return undefined;
+  const v2Path = resolveV2ElementOverridePath(
+    selectedTargetRoot,
+    elementId,
+    controlId,
+    selectedStateId,
+  );
+  const path = resolveElementPath(
+    selectedTargetRoot,
+    elementId,
+    controlId,
+    selectedStateId,
+  );
+  const legacyPath = resolveLegacyElementPath(
+    selectedTargetRoot,
+    elementId,
+    controlId,
+    selectedStateId,
+  );
+  const v2Value = getByPath(draft, v2Path);
+  if (v2Value !== undefined) return v2Value;
+  const value = getByPath(draft, path);
+  if (value !== undefined) return value;
+  return getByPath(draft, legacyPath);
+}
+
 function isWholeWidgetQuickElement(element) {
   return !element?.id || WHOLE_WIDGET_ELEMENT_IDS.has(element.id);
 }
@@ -521,81 +2587,131 @@ function pickQuickElementRadius(tokens = {}, element = {}) {
   return tokens.shape?.cardRadius ?? tokens.shape?.rootRadius;
 }
 
+function getQuickElementContext(element) {
+  const capabilities = new Set(element?.capabilities || []);
+  return {
+    capabilities,
+    isImage: element?.kind === "image" || capabilities.has("image"),
+    isProgress: element?.kind === "progress" || capabilities.has("progress"),
+    isSurface:
+      element?.kind === "surface" ||
+      element?.kind === "carousel" ||
+      capabilities.has("surface"),
+    isText: element?.kind === "text" || capabilities.has("typography"),
+  };
+}
+
+function applyQuickColorOverride(override, color, context, surfaceBackground) {
+  if (context.isText && !context.isSurface) {
+    override.textColor = color;
+    return;
+  }
+  if (context.isProgress) {
+    override.fillColor = color;
+    return;
+  }
+  if (context.isImage) {
+    override.borderColor = color;
+    return;
+  }
+  if (!context.isSurface) return;
+  if (surfaceBackground !== undefined) override.background = surfaceBackground;
+  override.borderColor = color;
+  override.accentColor = color;
+}
+
+function applyQuickPaletteOverrides(override, patch, tokens, context) {
+  if (patch.primaryColor !== undefined) {
+    applyQuickColorOverride(
+      override,
+      tokens.colors?.primary,
+      context,
+      tokens.colors?.secondarySurface,
+    );
+  }
+  if (patch.accentColor === undefined && patch.useSecondColor === undefined)
+    return;
+  applyQuickColorOverride(override, tokens.colors?.accent, context);
+}
+
+function pickQuickFontWeight(isBold, tokens) {
+  if (isBold) return tokens.typography?.valueWeight;
+  return tokens.typography?.bodyWeight;
+}
+
+function applyQuickTypographyOverrides(
+  override,
+  patch,
+  tokens,
+  element,
+  context,
+) {
+  if (!context.isText) return;
+  if (patch.fontFamily !== undefined)
+    override.fontFamily = tokens.typography?.bodyFont;
+  if (patch.textSize !== undefined)
+    override.fontSize = pickQuickElementFontSize(tokens, element);
+  if (patch.boldText !== undefined)
+    override.fontWeight = pickQuickFontWeight(patch.boldText, tokens);
+}
+
+function applyQuickImageOverrides(override, patch, tokens, element, context) {
+  if (!context.isImage) return;
+  if (patch.imageVisibility !== undefined)
+    override.visible = patch.imageVisibility !== "hidden";
+  if (patch.imageSize !== undefined)
+    override.imageSize = Math.round(38 * (tokens.image?.sizeMultiplier || 1));
+  if (patch.imageFit !== undefined)
+    override.imageFit = tokens.image?.fit || "cover";
+  if (patch.imageShape !== undefined)
+    override.radius = pickQuickElementRadius(tokens, element);
+}
+
+function applyQuickShapeAndSpacingOverrides(
+  override,
+  patch,
+  tokens,
+  element,
+  context,
+) {
+  const { capabilities } = context;
+  const supportsShape =
+    capabilities.has("shape") ||
+    capabilities.has("border") ||
+    context.isSurface ||
+    context.isProgress;
+  if (patch.imageShape !== undefined && capabilities.has("shape")) {
+    override.radius = pickQuickElementRadius(tokens, element);
+  }
+  if (patch.shape !== undefined && supportsShape) {
+    override.radius = pickQuickElementRadius(tokens, element);
+  }
+  if (patch.density === undefined || !capabilities.has("spacing")) return;
+  override.padding = tokens.spacing?.cardPadding;
+  override.gap = tokens.spacing?.itemGap;
+}
+
+function applyQuickEffectOverrides(override, patch, tokens, element, context) {
+  const supportsShadow =
+    context.capabilities.has("shadow") || element?.kind === "carousel";
+  if (!supportsShadow) return;
+  if (patch.shadowStrength !== undefined)
+    override.shadow = quickElementShadow(tokens);
+  if (patch.glowStrength === undefined) return;
+  const shadow = [override.shadow, quickElementGlow(tokens)]
+    .filter(Boolean)
+    .join(", ");
+  override.shadow = shadow || override.shadow;
+}
+
 function buildElementQuickOverrideFromPatch(element, patch = {}, tokens = {}) {
   const override = {};
-  const capabilities = new Set(element?.capabilities || []);
-  const isText = element?.kind === "text" || capabilities.has("typography");
-  const isSurface =
-    element?.kind === "surface" ||
-    element?.kind === "carousel" ||
-    capabilities.has("surface");
-  const isImage = element?.kind === "image" || capabilities.has("image");
-  const isProgress =
-    element?.kind === "progress" || capabilities.has("progress");
-
-  if (patch.primaryColor !== undefined) {
-    if (isText && !isSurface) override.textColor = tokens.colors?.primary;
-    else if (isProgress) override.fillColor = tokens.colors?.primary;
-    else if (isImage) override.borderColor = tokens.colors?.primary;
-    else if (isSurface) {
-      override.background = tokens.colors?.secondarySurface;
-      override.borderColor = tokens.colors?.primary;
-      override.accentColor = tokens.colors?.primary;
-    }
-  }
-  if (patch.accentColor !== undefined || patch.useSecondColor !== undefined) {
-    if (isText && !isSurface) override.textColor = tokens.colors?.accent;
-    else if (isProgress) override.fillColor = tokens.colors?.accent;
-    else if (isImage) override.borderColor = tokens.colors?.accent;
-    else if (isSurface) {
-      override.borderColor = tokens.colors?.accent;
-      override.accentColor = tokens.colors?.accent;
-    }
-  }
-  if (patch.fontFamily !== undefined && isText)
-    override.fontFamily = tokens.typography?.bodyFont;
-  if (patch.textSize !== undefined && isText)
-    override.fontSize = pickQuickElementFontSize(tokens, element);
-  if (patch.boldText !== undefined && isText)
-    override.fontWeight = patch.boldText
-      ? tokens.typography?.valueWeight
-      : tokens.typography?.bodyWeight;
-  if (patch.imageVisibility !== undefined && isImage)
-    override.visible = patch.imageVisibility !== "hidden";
-  if (patch.imageSize !== undefined && isImage)
-    override.imageSize = Math.round(38 * (tokens.image?.sizeMultiplier || 1));
-  if (patch.imageShape !== undefined && (isImage || capabilities.has("shape")))
-    override.radius = pickQuickElementRadius(tokens, element);
-  if (patch.imageFit !== undefined && isImage)
-    override.imageFit = tokens.image?.fit || "cover";
-  if (
-    patch.shape !== undefined &&
-    (capabilities.has("shape") ||
-      capabilities.has("border") ||
-      isSurface ||
-      isProgress)
-  ) {
-    override.radius = pickQuickElementRadius(tokens, element);
-  }
-  if (patch.density !== undefined && capabilities.has("spacing")) {
-    override.padding = tokens.spacing?.cardPadding;
-    override.gap = tokens.spacing?.itemGap;
-  }
-  if (
-    patch.shadowStrength !== undefined &&
-    (capabilities.has("shadow") || element?.kind === "carousel")
-  ) {
-    override.shadow = quickElementShadow(tokens);
-  }
-  if (
-    patch.glowStrength !== undefined &&
-    (capabilities.has("shadow") || element?.kind === "carousel")
-  ) {
-    const shadow = [override.shadow, quickElementGlow(tokens)]
-      .filter(Boolean)
-      .join(", ");
-    override.shadow = shadow || override.shadow;
-  }
+  const context = getQuickElementContext(element);
+  applyQuickPaletteOverrides(override, patch, tokens, context);
+  applyQuickTypographyOverrides(override, patch, tokens, element, context);
+  applyQuickImageOverrides(override, patch, tokens, element, context);
+  applyQuickShapeAndSpacingOverrides(override, patch, tokens, element, context);
+  applyQuickEffectOverrides(override, patch, tokens, element, context);
 
   return Object.fromEntries(
     Object.entries(override).filter(([, value]) => value !== undefined),
@@ -829,6 +2945,123 @@ function isTypingTarget(target) {
   );
 }
 
+const NUDGE_KEY_DELTAS = Object.freeze({
+  ArrowDown: [0, 1],
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0],
+  ArrowUp: [0, -1],
+});
+
+function handleCommandShortcut(event, { draft, persistDraft, redo, undo }) {
+  const cmd = event.ctrlKey || event.metaKey;
+  if (!cmd) return false;
+  const key = event.key.toLowerCase();
+  if (key === "z" && event.shiftKey) {
+    event.preventDefault();
+    redo();
+    return true;
+  }
+  if (key === "z") {
+    event.preventDefault();
+    undo();
+    return true;
+  }
+  if (key !== "s") return false;
+  event.preventDefault();
+  persistDraft(draft, "keyboard");
+  return true;
+}
+
+function canNudgeSelectedElement({
+  mode,
+  selectedElement,
+  selectedLayerLocked,
+  selectedTargetRoot,
+  selectedWidgetType,
+}) {
+  return (
+    mode === "advanced" &&
+    selectedElement?.id &&
+    !selectedLayerLocked &&
+    ["navbar", "rtp_stats"].includes(selectedWidgetType) &&
+    selectedTargetRoot &&
+    selectedElement.id !== "container" &&
+    elementSupportsControl(selectedElement, "offsetX") &&
+    elementSupportsControl(selectedElement, "offsetY")
+  );
+}
+
+function readElementOffset(
+  draft,
+  selectedTargetRoot,
+  elementId,
+  property,
+  stateId,
+) {
+  return Number(
+    getByPath(
+      draft,
+      resolveV2ElementOverridePath(
+        selectedTargetRoot,
+        elementId,
+        property,
+        stateId,
+      ),
+    ) || 0,
+  );
+}
+
+function handleNudgeShortcut(event, context) {
+  const delta = NUDGE_KEY_DELTAS[event.key];
+  if (!delta || !canNudgeSelectedElement(context) || !context.selectedWidget) {
+    return false;
+  }
+  event.preventDefault();
+  const step = event.shiftKey ? 10 : 1;
+  const currentX = readElementOffset(
+    context.draft,
+    context.selectedTargetRoot,
+    context.selectedElement.id,
+    "offsetX",
+    context.selectedStateId,
+  );
+  const currentY = readElementOffset(
+    context.draft,
+    context.selectedTargetRoot,
+    context.selectedElement.id,
+    "offsetY",
+    context.selectedStateId,
+  );
+  context.handlePreviewElementMove(
+    context.selectedWidget,
+    {
+      elementId: context.selectedElement.id,
+      offsetX: currentX + delta[0] * step,
+      offsetY: currentY + delta[1] * step,
+      stateId: context.selectedStateId,
+    },
+    { commit: true },
+  );
+  return true;
+}
+
+function handleDeleteShortcut(
+  event,
+  { mode, resetElement, selectedElement, selectedLayerLocked },
+) {
+  if (
+    mode !== "advanced" ||
+    event.key !== "Delete" ||
+    !selectedElement?.id ||
+    selectedLayerLocked
+  ) {
+    return false;
+  }
+  event.preventDefault();
+  if (window.confirm(`Reset ${selectedElement.label}?`)) resetElement();
+  return true;
+}
+
 function getPresetAppearance(preset) {
   return preset?.appearance || {};
 }
@@ -928,6 +3161,28 @@ const BACKGROUND_PATTERN_TEXTURES = new Set([
   "carbon",
 ]);
 const BACKGROUND_ANIMATED_TEXTURES = new Set(["chameleon"]);
+const BACKGROUND_SPECIAL_FILL_STYLES = new Set([
+  "aurora",
+  "waves",
+  "geometric",
+]);
+const BACKGROUND_THREE_COLOR_TEXTURES = new Set([
+  "gradient",
+  "pearl",
+  "chameleon",
+  "conic",
+]);
+const BACKGROUND_TWO_COLOR_TEXTURES = new Set([
+  "metallic",
+  "gloss",
+  "radial",
+  "vignette",
+  "dots",
+  "grid",
+  "diagonal",
+  "carbon",
+  "scanlines",
+]);
 const BACKGROUND_MEDIA_ALWAYS_CONTROLS = new Set(["imageUrl"]);
 const BACKGROUND_MEDIA_ACTIVE_CONTROLS = new Set([
   "imageFit",
@@ -953,48 +3208,43 @@ const BACKGROUND_LIGHT_DETAIL_CONTROLS = new Set([
   "fxGlimpseSpeed",
 ]);
 
-function getBackgroundTextureControlIds(sourceMode, styleId, textureType) {
-  if (sourceMode === "special") {
-    const controls = new Set(["background", "accentColor", "animSpeed"]);
-    if (["aurora", "waves", "geometric"].includes(styleId))
-      controls.add("fillColor");
-    if (styleId === "aurora") controls.add("gradientAngle");
-    return controls;
-  }
-  if (sourceMode !== "texture") return new Set();
+function getSpecialBackgroundControlIds(styleId) {
+  const controls = new Set(["background", "accentColor", "animSpeed"]);
+  if (BACKGROUND_SPECIAL_FILL_STYLES.has(styleId)) controls.add("fillColor");
+  if (styleId === "aurora") controls.add("gradientAngle");
+  return controls;
+}
 
-  const currentTexture = textureType || "gradient";
-  if (currentTexture === "none") return BACKGROUND_SOLID_TEXTURE_CONTROLS;
-  if (["gradient", "pearl", "chameleon", "conic"].includes(currentTexture)) {
-    const controls = new Set(BACKGROUND_THREE_COLOR_TEXTURE_CONTROLS);
-    if (BACKGROUND_ANGLED_TEXTURES.has(currentTexture))
-      controls.add("gradientAngle");
-    if (BACKGROUND_ANIMATED_TEXTURES.has(currentTexture))
-      controls.add("animSpeed");
-    return controls;
+function addTextureDetailControls(controls, textureType) {
+  if (BACKGROUND_ANGLED_TEXTURES.has(textureType))
+    controls.add("gradientAngle");
+  if (BACKGROUND_ANIMATED_TEXTURES.has(textureType)) controls.add("animSpeed");
+  if (BACKGROUND_PATTERN_TEXTURES.has(textureType)) controls.add("patternSize");
+  return controls;
+}
+
+function getTextureBackgroundControlIds(textureType) {
+  if (textureType === "none" || textureType === "noise")
+    return BACKGROUND_SOLID_TEXTURE_CONTROLS;
+  if (BACKGROUND_THREE_COLOR_TEXTURES.has(textureType)) {
+    return addTextureDetailControls(
+      new Set(BACKGROUND_THREE_COLOR_TEXTURE_CONTROLS),
+      textureType,
+    );
   }
-  if (
-    [
-      "metallic",
-      "gloss",
-      "radial",
-      "vignette",
-      "dots",
-      "grid",
-      "diagonal",
-      "carbon",
-      "scanlines",
-    ].includes(currentTexture)
-  ) {
-    const controls = new Set(BACKGROUND_TWO_COLOR_TEXTURE_CONTROLS);
-    if (BACKGROUND_ANGLED_TEXTURES.has(currentTexture))
-      controls.add("gradientAngle");
-    if (BACKGROUND_PATTERN_TEXTURES.has(currentTexture))
-      controls.add("patternSize");
-    return controls;
+  if (BACKGROUND_TWO_COLOR_TEXTURES.has(textureType)) {
+    return addTextureDetailControls(
+      new Set(BACKGROUND_TWO_COLOR_TEXTURE_CONTROLS),
+      textureType,
+    );
   }
-  if (currentTexture === "noise") return BACKGROUND_SOLID_TEXTURE_CONTROLS;
   return BACKGROUND_TEXTURE_SOURCE_CONTROLS;
+}
+
+function getBackgroundTextureControlIds(sourceMode, styleId, textureType) {
+  if (sourceMode === "special") return getSpecialBackgroundControlIds(styleId);
+  if (sourceMode !== "texture") return new Set();
+  return getTextureBackgroundControlIds(textureType || "gradient");
 }
 
 function getSimpleBackgroundElements(elements = [], sourceMode = "texture") {
@@ -1040,11 +3290,811 @@ function ToolbarButton({
 
 function ToolbarGroup({ label, children }) {
   return (
-    <span className="ve-toolbar-group" role="group" aria-label={label}>
-      <span className="ve-toolbar-group__label">{label}</span>
+    <fieldset className="ve-toolbar-group" aria-label={label}>
+      <legend className="ve-toolbar-group__label">{label}</legend>
       <span className="ve-toolbar-group__items">{children}</span>
+    </fieldset>
+  );
+}
+
+function LayerRow({
+  active,
+  element,
+  hidden,
+  locked,
+  onSelect,
+  onToggleLocked,
+  onToggleVisibility,
+}) {
+  return (
+    <div className={`ve-layer-row${active ? " is-active" : ""}`}>
+      <button type="button" onClick={() => onSelect(element.id)}>
+        <span>{element.label}</span>
+        <small>{inferElementKind(element)}</small>
+      </button>
+      <LayerToggleButton
+        active={!hidden}
+        type="visible"
+        label={hidden ? "Show layer" : "Hide layer"}
+        onClick={() => onToggleVisibility(element.id)}
+      />
+      <LayerToggleButton
+        active={locked}
+        type="locked"
+        label={locked ? "Unlock layer editing" : "Lock layer editing"}
+        onClick={onToggleLocked}
+      />
+    </div>
+  );
+}
+
+function LayerGroupSection({
+  draft,
+  group,
+  lockedLayers,
+  onSelect,
+  onToggleLocked,
+  onToggleVisibility,
+  selectedElementId,
+  selectedTargetRoot,
+  selectedWidgetId,
+}) {
+  return (
+    <section key={group.id} className="ve-layer-group">
+      <h3>{group.label}</h3>
+      {group.items.map((element) => {
+        const key = layerKey(selectedWidgetId, element.id);
+        return (
+          <LayerRow
+            key={element.id}
+            active={element.id === selectedElementId}
+            element={element}
+            hidden={
+              !getElementVisibleFromAppearance(
+                draft,
+                selectedTargetRoot,
+                element.id,
+              )
+            }
+            locked={!!lockedLayers[key]}
+            onSelect={onSelect}
+            onToggleLocked={() => onToggleLocked(key)}
+            onToggleVisibility={onToggleVisibility}
+          />
+        );
+      })}
+    </section>
+  );
+}
+
+function LayersPanel({
+  draft,
+  lockedLayers,
+  onSelect,
+  onToggleLocked,
+  onToggleVisibility,
+  selectedElementId,
+  selectedTargetRoot,
+  selectedWidgetId,
+  visibleLayerRows,
+}) {
+  return (
+    <div className="ve-sidebar-scroll ve-layers">
+      <div className="ve-layer-intro">
+        <MousePointer2 size={17} />
+        <span>
+          Click the preview or choose a layer. The right panel will only show
+          controls for that part.
+        </span>
+      </div>
+      {visibleLayerRows.map((group) => (
+        <LayerGroupSection
+          key={group.id}
+          draft={draft}
+          group={group}
+          lockedLayers={lockedLayers}
+          onSelect={onSelect}
+          onToggleLocked={onToggleLocked}
+          onToggleVisibility={onToggleVisibility}
+          selectedElementId={selectedElementId}
+          selectedTargetRoot={selectedTargetRoot}
+          selectedWidgetId={selectedWidgetId}
+        />
+      ))}
+    </div>
+  );
+}
+
+function WidgetSelectorCard({
+  active,
+  edited,
+  onMoveLayer,
+  onSelect,
+  onToggleVisibility,
+  orderedLayers,
+  simple,
+  widget,
+}) {
+  const categoryLabel =
+    WIDGET_CATEGORY_FILTERS.find(
+      (item) => item.id === getWidgetCategory(widget),
+    )?.label || "Other";
+  const layerIndex = orderedLayers.findIndex((item) => item.id === widget.id);
+  const layerNumber =
+    layerIndex >= 0 ? layerIndex + 1 : Number(widget.z_index) || 1;
+  const canMoveDown = layerIndex > 0;
+  const canMoveUp = layerIndex >= 0 && layerIndex < orderedLayers.length - 1;
+  const visibilityTitle = widget.is_visible
+    ? "Disable widget on overlay"
+    : "Enable widget on overlay";
+  const visibilityLabel = widget.is_visible ? "Enabled" : "Disabled";
+  return (
+    <div
+      className={`ve-widget-card${active ? " is-active" : ""}${simple ? " ve-widget-card--simple" : ""}`}
+    >
+      <button
+        type="button"
+        className="ve-widget-card__select"
+        onClick={onSelect}
+      >
+        <span className="ve-widget-card__thumb">
+          <WidgetIcon icon={getWidgetIcon(widget)} />
+        </span>
+        <span className="ve-widget-card__body">
+          <strong>{getWidgetDisplayName(widget)}</strong>
+          <small>Category: {categoryLabel}</small>
+        </span>
+      </button>
+      <div className="ve-widget-card__actions">
+        <button
+          type="button"
+          className={`ve-widget-toggle${widget.is_visible ? " is-on" : ""}`}
+          onClick={onToggleVisibility}
+          title={visibilityTitle}
+          aria-pressed={widget.is_visible}
+        >
+          <span />
+          <strong>{visibilityLabel}</strong>
+        </button>
+        <div
+          className="ve-widget-layer-controls"
+          aria-label={`${getWidgetDisplayName(widget)} layer order`}
+        >
+          <button
+            type="button"
+            onClick={(event) => onMoveLayer(widget, "up", event)}
+            disabled={!canMoveUp}
+            title="Move above"
+            aria-label={`Move ${getWidgetDisplayName(widget)} above`}
+          >
+            <ArrowUp size={13} />
+          </button>
+          <span title="Layer position">L{layerNumber}</span>
+          <button
+            type="button"
+            onClick={(event) => onMoveLayer(widget, "down", event)}
+            disabled={!canMoveDown}
+            title="Move below"
+            aria-label={`Move ${getWidgetDisplayName(widget)} below`}
+          >
+            <ArrowDown size={13} />
+          </button>
+        </div>
+      </div>
+      {edited && <span className="ve-edited-dot" title="Style edited" />}
+    </div>
+  );
+}
+
+function WidgetSelectorPanel({
+  draft,
+  filteredWidgets,
+  onMoveLayer,
+  onSearchChange,
+  onSelectWidget,
+  onToggleVisibility,
+  search,
+  selectedWidgetId,
+  simple,
+  widgets,
+}) {
+  const orderedLayers = getOrderedLayerWidgets(widgets);
+  return (
+    <div
+      className={`ve-sidebar-scroll${simple ? " ve-sidebar-scroll--simple" : ""}`}
+    >
+      {simple && (
+        <div className="ve-simple-sidebar-head">
+          <strong>Widgets</strong>
+          <span>Choose which overlay tool you want to style.</span>
+        </div>
+      )}
+      <div className="ve-search">
+        <Search size={15} />
+        <input
+          value={search}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="Search widgets"
+          aria-label="Search widgets"
+        />
+      </div>
+      <div className="ve-widget-list">
+        {filteredWidgets.map((widget) => (
+          <WidgetSelectorCard
+            key={widget.id}
+            active={selectedWidgetId === widget.id}
+            edited={!!getByPath(draft, `widgets.${widget.id}`)}
+            onMoveLayer={onMoveLayer}
+            onSelect={() => onSelectWidget(widget)}
+            onToggleVisibility={(event) => onToggleVisibility(widget, event)}
+            orderedLayers={orderedLayers}
+            simple={simple}
+            widget={widget}
+          />
+        ))}
+        {!filteredWidgets.length && (
+          <EmptyState title="No widgets found">Try another search.</EmptyState>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LeftSidebar({
+  draft,
+  filteredWidgets,
+  lockedLayers,
+  mode,
+  onLayerSelect,
+  onMoveLayer,
+  onSearchChange,
+  onSelectWidget,
+  onSidebarTabChange,
+  onToggleElementVisibility,
+  onToggleLayerLocked,
+  onToggleWidgetVisibility,
+  search,
+  selectedElementId,
+  selectedTargetRoot,
+  selectedWidgetId,
+  sidebarTab,
+  visibleLayerRows,
+  widgets,
+}) {
+  const showWidgetSelector = mode === "simple" || sidebarTab === "widgets";
+  return (
+    <aside
+      className={`ve-left-panel${mode === "simple" ? " ve-left-panel--simple" : ""}`}
+    >
+      {mode === "advanced" && (
+        <div
+          className="ve-panel-tabs"
+          role="tablist"
+          aria-label="Editor sidebar"
+        >
+          <button
+            type="button"
+            className={sidebarTab === "widgets" ? "is-active" : ""}
+            onClick={() => onSidebarTabChange("widgets")}
+          >
+            <Palette size={16} />
+            Widgets
+          </button>
+          <button
+            type="button"
+            className={sidebarTab === "layers" ? "is-active" : ""}
+            onClick={() => onSidebarTabChange("layers")}
+          >
+            <Layers size={16} />
+            Layers
+          </button>
+        </div>
+      )}
+
+      {showWidgetSelector ? (
+        <WidgetSelectorPanel
+          draft={draft}
+          filteredWidgets={filteredWidgets}
+          onMoveLayer={onMoveLayer}
+          onSearchChange={onSearchChange}
+          onSelectWidget={onSelectWidget}
+          onToggleVisibility={onToggleWidgetVisibility}
+          search={search}
+          selectedWidgetId={selectedWidgetId}
+          simple
+          widgets={widgets}
+        />
+      ) : (
+        <LayersPanel
+          draft={draft}
+          lockedLayers={lockedLayers}
+          onSelect={onLayerSelect}
+          onToggleLocked={onToggleLayerLocked}
+          onToggleVisibility={onToggleElementVisibility}
+          selectedElementId={selectedElementId}
+          selectedTargetRoot={selectedTargetRoot}
+          selectedWidgetId={selectedWidgetId}
+          visibleLayerRows={visibleLayerRows}
+        />
+      )}
+    </aside>
+  );
+}
+
+function DraftLiveStatus({
+  dirty,
+  hasUnpublishedChanges,
+  publishStatus,
+  saveStatus,
+}) {
+  const saveStatusIcon =
+    saveStatus === "saved" && !dirty ? (
+      <CheckCircle2 size={14} />
+    ) : (
+      <span className="ve-status-dot" />
+    );
+  return (
+    <span className="ve-status-stack" aria-label="Draft and OBS publish status">
+      <span
+        className={`ve-save-status ve-save-status--${saveStatus}${dirty ? " ve-save-status--dirty" : ""}`}
+      >
+        {saveStatusIcon}
+        {formatDraftStatus(saveStatus, dirty)}
+      </span>
+      <span
+        className={`ve-live-status ve-live-status--${publishStatusClass(publishStatus, hasUnpublishedChanges || dirty)}`}
+      >
+        {formatPublishStatus(publishStatus, hasUnpublishedChanges || dirty)}
+      </span>
     </span>
   );
+}
+
+function EditingToolbar({
+  onRedo,
+  onSetPreviewMode,
+  onUndo,
+  previewMode,
+  redoDisabled,
+  undoDisabled,
+}) {
+  return (
+    <ToolbarGroup label="Editing">
+      <ToolbarButton
+        icon={Undo2}
+        disabled={undoDisabled}
+        onClick={onUndo}
+        title="Undo (Ctrl+Z)"
+      />
+      <ToolbarButton
+        icon={Redo2}
+        disabled={redoDisabled}
+        onClick={onRedo}
+        title="Redo (Ctrl+Shift+Z)"
+      />
+      <ToolbarButton
+        icon={MonitorPlay}
+        active={previewMode === "fit-widget"}
+        onClick={() => onSetPreviewMode("fit-widget")}
+      >
+        Focused
+      </ToolbarButton>
+      <ToolbarButton
+        icon={Monitor}
+        active={previewMode === "full-overlay"}
+        onClick={() => onSetPreviewMode("full-overlay")}
+      >
+        Full Overlay
+      </ToolbarButton>
+    </ToolbarGroup>
+  );
+}
+
+function PreviewToolbar({
+  obsSafe,
+  onSetObsSafe,
+  onSetPreviewBackground,
+  onSetPreviewStateByWidget,
+  onToggleBefore,
+  previewBackground,
+  previewStateOptions,
+  selectedPreviewState,
+  selectedWidgetId,
+  showBefore,
+}) {
+  const showPreviewStates = !!previewStateOptions.length && !!selectedWidgetId;
+  return (
+    <ToolbarGroup label="Preview">
+      <fieldset
+        className="ve-toolbar-backgrounds"
+        aria-label="Canvas background"
+      >
+        {PREVIEW_BACKGROUNDS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={previewBackground === item.id ? "is-active" : ""}
+            onClick={() => onSetPreviewBackground(item.id)}
+          >
+            {item.id === "green" ? "Green Screen" : item.label}
+          </button>
+        ))}
+      </fieldset>
+      <ToolbarButton active={showBefore} onClick={onToggleBefore}>
+        Before
+      </ToolbarButton>
+      <label className="ve-toolbar-check">
+        <input
+          type="checkbox"
+          checked={obsSafe}
+          onChange={(event) => onSetObsSafe(event.target.checked)}
+        />
+        <span>Safe frame</span>
+      </label>
+      {showPreviewStates && (
+        <fieldset
+          className="ve-preview-state-picker"
+          aria-label="Preview state"
+        >
+          {previewStateOptions.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              className={selectedPreviewState === option.id ? "is-active" : ""}
+              onClick={() =>
+                onSetPreviewStateByWidget((prev) => ({
+                  ...prev,
+                  [selectedWidgetId]: option.id,
+                }))
+              }
+            >
+              {option.label}
+            </button>
+          ))}
+        </fieldset>
+      )}
+    </ToolbarGroup>
+  );
+}
+
+function ViewToolbar({
+  onEnterFullscreen,
+  onFocusPreview,
+  onOpenPreview,
+  onUpdateZoom,
+  previewOpen,
+  zoom,
+}) {
+  const zoomLabel = zoom === "fit" ? "Fit" : `${zoom}%`;
+  return (
+    <ToolbarGroup label="View">
+      <ToolbarButton icon={ExternalLink} onClick={onOpenPreview}>
+        Pop-out
+      </ToolbarButton>
+      {previewOpen && (
+        <ToolbarButton icon={Eye} onClick={onFocusPreview}>
+          Focus
+        </ToolbarButton>
+      )}
+      <ToolbarButton icon={Maximize2} onClick={onEnterFullscreen}>
+        Fullscreen
+      </ToolbarButton>
+      <ToolbarButton
+        active={zoom === "fit"}
+        onClick={() => onUpdateZoom("fit")}
+      >
+        Fit
+      </ToolbarButton>
+      <ToolbarButton
+        icon={ZoomOut}
+        onClick={() => onUpdateZoom("out")}
+        title="Zoom out"
+      />
+      <span className="ve-zoom-label">{zoomLabel}</span>
+      <ToolbarButton
+        icon={ZoomIn}
+        onClick={() => onUpdateZoom("in")}
+        title="Zoom in"
+      />
+    </ToolbarGroup>
+  );
+}
+
+function ModeToolbar({ mode, onModeChange }) {
+  return (
+    <ToolbarGroup label="Mode">
+      <fieldset className="ve-mode-switch" aria-label="Editor mode">
+        <button
+          type="button"
+          className={mode === "simple" ? "is-active" : ""}
+          onClick={() => onModeChange("simple")}
+        >
+          Simple
+        </button>
+        <button
+          type="button"
+          className={mode === "advanced" ? "is-active" : ""}
+          onClick={() => onModeChange("advanced")}
+        >
+          Advanced
+        </button>
+      </fieldset>
+    </ToolbarGroup>
+  );
+}
+
+function ActionsToolbar({
+  draft,
+  importStylesInputRef,
+  onExportStyles,
+  onImportStyles,
+  onPersistDraft,
+  onPublish,
+  onResetWidget,
+  publishStatus,
+}) {
+  return (
+    <ToolbarGroup label="Actions">
+      <input
+        ref={importStylesInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="ve-file-input"
+        onChange={onImportStyles}
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+      <ToolbarButton icon={Download} onClick={onExportStyles}>
+        Export Styles
+      </ToolbarButton>
+      <ToolbarButton
+        icon={Upload}
+        onClick={() => importStylesInputRef.current?.click()}
+      >
+        Import Styles
+      </ToolbarButton>
+      <ToolbarButton icon={RotateCcw} onClick={onResetWidget}>
+        Reset
+      </ToolbarButton>
+      <ToolbarButton
+        icon={Save}
+        onClick={() => onPersistDraft(draft, "manual")}
+      >
+        Save Draft
+      </ToolbarButton>
+      <ToolbarButton
+        icon={ExternalLink}
+        primary
+        onClick={onPublish}
+        disabled={publishStatus === "publishing"}
+      >
+        Publish to OBS
+      </ToolbarButton>
+    </ToolbarGroup>
+  );
+}
+
+function AppearanceTopbar({
+  currentWidgetScopeLabel,
+  dirty,
+  draft,
+  enterCanvasFullscreen,
+  exportWidgetStyles,
+  hasUnpublishedChanges,
+  handleModeChange,
+  importStylesInputRef,
+  importWidgetStyles,
+  mode,
+  onFocusPreview,
+  onOpenPreview,
+  obsSafe,
+  persistDraft,
+  previewBackground,
+  previewMode,
+  previewOpen,
+  previewStateOptions,
+  publish,
+  publishStatus,
+  redo,
+  redoDisabled,
+  resetWidget,
+  saveStatus,
+  selectedPreviewState,
+  selectedWidgetId,
+  selectedWidgetName,
+  setObsSafe,
+  setPreviewBackground,
+  setPreviewMode,
+  setPreviewStateByWidget,
+  setShowBefore,
+  showBefore,
+  undo,
+  undoDisabled,
+  updateZoom,
+  zoom,
+}) {
+  return (
+    <div className="ve-topbar">
+      <div className="ve-topbar__left">
+        <a className="ve-back-link" href="/overlay-center">
+          <ArrowLeft size={16} />
+          Overlay Center
+        </a>
+        <div className="ve-current-widget">
+          <span>{selectedWidgetName}</span>
+          <small>{currentWidgetScopeLabel}</small>
+        </div>
+        <DraftLiveStatus
+          dirty={dirty}
+          hasUnpublishedChanges={hasUnpublishedChanges}
+          publishStatus={publishStatus}
+          saveStatus={saveStatus}
+        />
+      </div>
+      <div
+        className="ve-topbar__tools"
+        role="toolbar"
+        aria-label="Appearance editor tools"
+      >
+        <EditingToolbar
+          onRedo={redo}
+          onSetPreviewMode={setPreviewMode}
+          onUndo={undo}
+          previewMode={previewMode}
+          redoDisabled={redoDisabled}
+          undoDisabled={undoDisabled}
+        />
+        <PreviewToolbar
+          obsSafe={obsSafe}
+          onSetObsSafe={setObsSafe}
+          onSetPreviewBackground={setPreviewBackground}
+          onSetPreviewStateByWidget={setPreviewStateByWidget}
+          onToggleBefore={() => setShowBefore((value) => !value)}
+          previewBackground={previewBackground}
+          previewStateOptions={previewStateOptions}
+          selectedPreviewState={selectedPreviewState}
+          selectedWidgetId={selectedWidgetId}
+          showBefore={showBefore}
+        />
+        <ViewToolbar
+          onEnterFullscreen={enterCanvasFullscreen}
+          onFocusPreview={onFocusPreview}
+          onOpenPreview={onOpenPreview}
+          onUpdateZoom={updateZoom}
+          previewOpen={previewOpen}
+          zoom={zoom}
+        />
+        <ModeToolbar mode={mode} onModeChange={handleModeChange} />
+        <ActionsToolbar
+          draft={draft}
+          importStylesInputRef={importStylesInputRef}
+          onExportStyles={exportWidgetStyles}
+          onImportStyles={importWidgetStyles}
+          onPersistDraft={persistDraft}
+          onPublish={publish}
+          onResetWidget={resetWidget}
+          publishStatus={publishStatus}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AppearanceStatusLine({ dirty, onDiscardUnsaved, statusMessage }) {
+  if (!statusMessage) return null;
+  return (
+    <output className="ve-status-line">
+      {statusMessage}
+      {dirty && (
+        <button type="button" onClick={onDiscardUnsaved}>
+          Discard unsaved changes
+        </button>
+      )}
+    </output>
+  );
+}
+
+function CanvasPreviewPanel({
+  canvasPanelRef,
+  handlePreviewElementMove,
+  handlePreviewElementSelect,
+  handlePreviewMove,
+  handlePreviewResize,
+  handlePreviewWidgetSelect,
+  mode,
+  obsSafe,
+  performance,
+  previewAppearance,
+  previewBackground,
+  previewMode,
+  previewStateByWidget,
+  previewWidgets,
+  selectedElement,
+  selectedElements,
+  selectedHiddenElementIds,
+  selectedTarget,
+  selectedWidget,
+  selectedWidgetType,
+  styleSelections,
+  theme,
+  userId,
+  zoom,
+}) {
+  const footerText =
+    mode === "simple"
+      ? "Simple Mode styles the whole selected widget. Fine-tune parts in Advanced Mode."
+      : "Click text, cards, images or bars to edit that exact part.";
+  const hiddenElementIds = mode === "advanced" ? selectedHiddenElementIds : [];
+  const resizeHandler = mode === "advanced" ? handlePreviewResize : undefined;
+  const moveElementHandler = ["navbar", "rtp_stats"].includes(
+    selectedWidgetType,
+  )
+    ? handlePreviewElementMove
+    : undefined;
+  return (
+    <main className="ve-canvas-panel" ref={canvasPanelRef}>
+      <div
+        className={`ve-preview-shell${obsSafe ? " ve-preview-shell--safe" : ""}`}
+      >
+        <OverlayPreview
+          widgets={previewWidgets}
+          theme={theme}
+          appearance={previewAppearance}
+          userId={userId}
+          previewSampleStates={previewStateByWidget}
+          selectedWidgetId={selectedWidget?.id}
+          selectedTarget={selectedTarget}
+          selectedElementId={selectedElement?.id || ""}
+          hiddenElementIds={hiddenElementIds}
+          styleSelections={styleSelections}
+          zoom={zoom === "fit" ? "fit" : `${zoom}%`}
+          previewMode={previewMode}
+          previewBackground={previewBackground}
+          selectMode={selectedElements.length > 1}
+          onSelectWidget={handlePreviewWidgetSelect}
+          onSelectElement={handlePreviewElementSelect}
+          onResizeWidget={resizeHandler}
+          onMoveWidget={handlePreviewMove}
+          onMoveElement={moveElementHandler}
+        />
+      </div>
+
+      <div className="ve-canvas-footer">
+        <span>
+          <MousePointer2 size={15} /> {footerText}
+        </span>
+        <span className={`ve-performance ve-performance--${performance.tone}`}>
+          {performance.label}
+        </span>
+      </div>
+    </main>
+  );
+}
+
+function AppearanceToast({ toast }) {
+  if (!toast) return null;
+  return <output className="ve-toast">{toast}</output>;
+}
+
+function Show({ children, when }) {
+  if (!when) return null;
+  return children;
+}
+
+function sectionVisible(sections, sectionId, enabled = true) {
+  return enabled && sections.includes(sectionId);
+}
+
+function hasSimpleQuickPresets(presets = []) {
+  return presets.some((preset) => preset.isSimpleQuickStyle);
+}
+
+function hasItems(items = []) {
+  return items.length > 0;
+}
+
+function showDevV2Diagnostics(selectedWidgetUsesV2) {
+  return Boolean(import.meta.env.DEV && selectedWidgetUsesV2);
 }
 
 function CollapsibleSection({
@@ -1178,90 +4228,42 @@ export default function AppearanceCenter({
   const lastRevisionRef = useRef(serverState.revision);
 
   const selectedWidget = useMemo(
-    () =>
-      widgets.find((widget) => widget.id === selectedTarget.widgetId) ||
-      firstWidget,
+    () => getSelectedWidget(widgets, selectedTarget, firstWidget),
     [widgets, selectedTarget.widgetId, firstWidget],
   );
-  const selectedWidgetConfig = useMemo(() => {
-    const baseConfig = selectedWidget?.config || {};
-    const patch = selectedWidget?.id
-      ? previewConfigPatches[selectedWidget.id]
-      : null;
-    return patch ? deepMerge(baseConfig, patch) : baseConfig;
-  }, [previewConfigPatches, selectedWidget]);
+  const selectedWidgetConfig = useMemo(
+    () => getSelectedWidgetConfig(selectedWidget, previewConfigPatches),
+    [previewConfigPatches, selectedWidget],
+  );
   const previewWidgets = useMemo(
-    () =>
-      widgets.map((widget) => {
-        const position = previewPositions[widget.id];
-        const configPatch = previewConfigPatches[widget.id];
-        const positioned = position
-          ? { ...widget, position_x: position.x, position_y: position.y }
-          : widget;
-        return configPatch
-          ? {
-              ...positioned,
-              config: deepMerge(positioned.config || {}, configPatch),
-            }
-          : positioned;
-      }),
+    () => buildPreviewWidgets(widgets, previewPositions, previewConfigPatches),
     [previewConfigPatches, previewPositions, widgets],
   );
-  const previewAppearance = useMemo(() => {
-    if (showBefore) return serverState.published;
-    if (!Object.keys(previewElementOffsets).length) return draft;
-    let next = draft;
-    for (const [widgetId, offsetsByElement] of Object.entries(
-      previewElementOffsets,
-    )) {
-      const widget = widgets.find((item) => item.id === widgetId);
-      if (!widget || !isWidgetAppearanceV2Enabled(widget.widget_type)) continue;
-      const root = getTargetOverrideRoot(createTarget(widget, next));
-      if (!root) continue;
-      for (const [elementId, offsets] of Object.entries(
-        offsetsByElement || {},
-      )) {
-        next = setByPath(
-          next,
-          resolveV2ElementOverridePath(
-            root,
-            elementId,
-            "offsetX",
-            offsets.stateId,
-          ),
-          offsets.offsetX,
-        );
-        next = setByPath(
-          next,
-          resolveV2ElementOverridePath(
-            root,
-            elementId,
-            "offsetY",
-            offsets.stateId,
-          ),
-          offsets.offsetY,
-        );
-      }
-    }
-    return next;
-  }, [
-    draft,
-    previewElementOffsets,
-    serverState.published,
-    showBefore,
-    widgets,
-  ]);
-  const selectedWidgetName = selectedWidget
-    ? getWidgetDisplayName(selectedWidget)
-    : "Overlay";
-  const selectedWidgetType =
-    selectedWidget?.widget_type || selectedTarget.widgetType || "";
+  const previewAppearance = useMemo(
+    () =>
+      buildPreviewAppearance({
+        draft,
+        previewElementOffsets,
+        serverState,
+        showBefore,
+        widgets,
+      }),
+    [draft, previewElementOffsets, serverState, showBefore, widgets],
+  );
+  const selectedWidgetName = getSelectedWidgetName(selectedWidget);
+  const selectedWidgetType = getSelectedWidgetType(
+    selectedWidget,
+    selectedTarget,
+  );
   const rtpMetalSettings = useMemo(
     () => normalizeRtpMetalSettings(selectedWidgetConfig.rtpMetal || {}),
     [selectedWidgetConfig],
   );
   const bonusHuntColorSyncSettings = useMemo(
-    () => normalizeBonusHuntColorSync(selectedWidgetConfig.bonusHuntColorSync || {}),
+    () =>
+      normalizeBonusHuntColorSync(
+        selectedWidgetConfig.bonusHuntColorSync || {},
+      ),
     [selectedWidgetConfig],
   );
   const bonusHuntMetalColors = useMemo(
@@ -1290,72 +4292,51 @@ export default function AppearanceCenter({
     () => generateSimpleAppearance(currentSimpleSettings),
     [currentSimpleSettings],
   );
-  const visibleMaterialPresets = useMemo(() => {
-    if (selectedWidgetType === "bonus_hunt") {
-      return SIMPLE_MATERIAL_PRESETS.filter(
-        (preset) => preset.id !== "soft_shadow",
-      );
-    }
-    return SIMPLE_MATERIAL_PRESETS.filter(
-      (preset) =>
-        preset.id !== "original" &&
-        (!selectedWidgetUsesV2 || preset.id !== "soft_shadow"),
-    );
-  }, [selectedWidgetType, selectedWidgetUsesV2]);
+  const visibleMaterialPresets = useMemo(
+    () => getVisibleMaterialPresets(selectedWidgetType, selectedWidgetUsesV2),
+    [selectedWidgetType, selectedWidgetUsesV2],
+  );
   const registeredStyleOptions = useMemo(
     () => getWidgetStyleOptions(selectedWidgetType, draft, selectedWidget?.id),
     [draft, selectedWidget?.id, selectedWidgetType],
   );
-  const quickStyleOptions = useMemo(() => {
-    const v2Options = selectedWidgetUsesV2
-      ? getWidgetStyleOptionsForQuickEditor(selectedWidgetType)
-      : [];
-    const customOptions = registeredStyleOptions.filter(
-      (option) => option.custom,
-    );
-    const sourceOptions = selectedWidgetUsesV2
-      ? customOptions
-      : registeredStyleOptions;
-    const byId = new Map();
-    for (const option of v2Options) byId.set(option.id, option);
-    for (const option of sourceOptions) {
-      byId.set(option.id, {
-        ...(byId.get(option.id) || {}),
-        ...option,
-        label: byId.get(option.id)?.label || option.label,
-        recommended: byId.get(option.id)?.recommended || false,
-      });
-    }
-    return [...byId.values()].map((option) => ({
-      ...option,
-      edited: styleEdited(draft, selectedWidget?.id, option.id),
-    }));
-  }, [
-    draft,
-    registeredStyleOptions,
-    selectedWidget?.id,
-    selectedWidgetType,
-    selectedWidgetUsesV2,
-  ]);
+  const quickStyleOptions = useMemo(
+    () =>
+      getQuickStyleOptions({
+        draft,
+        registeredStyleOptions,
+        selectedWidget,
+        selectedWidgetType,
+        selectedWidgetUsesV2,
+      }),
+    [
+      draft,
+      registeredStyleOptions,
+      selectedWidget,
+      selectedWidgetType,
+      selectedWidgetUsesV2,
+    ],
+  );
   const selectedStyleCapability = useMemo(
     () =>
-      selectedWidgetUsesV2
-        ? getWidgetStyleCapability(selectedWidgetType, selectedTarget.styleId)
-        : null,
+      getSelectedStyleCapability({
+        selectedTarget,
+        selectedWidgetType,
+        selectedWidgetUsesV2,
+      }),
     [selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2],
   );
   const selectedElements = useMemo(
     () =>
-      selectedWidgetUsesV2
-        ? getWidgetStyleElements(selectedWidgetType, selectedTarget.styleId)
-        : getWidgetElementSchema(selectedWidgetType),
+      getSelectedElements({
+        selectedTarget,
+        selectedWidgetType,
+        selectedWidgetUsesV2,
+      }),
     [selectedTarget.styleId, selectedWidgetType, selectedWidgetUsesV2],
   );
   const selectedElement = useMemo(
-    () =>
-      selectedElements.find((element) => element.id === selectedElementId) ||
-      selectedElements[0] ||
-      null,
+    () => getSelectedElement(selectedElements, selectedElementId),
     [selectedElements, selectedElementId],
   );
   const backgroundElements = useMemo(
@@ -1365,65 +4346,15 @@ export default function AppearanceCenter({
   const selectedStyleCapabilities =
     selectedStyleCapability?.capabilities || FALLBACK_QUICK_STYLE_CAPABILITIES;
   const selectedQuickControls = useMemo(() => {
-    if (selectedWidgetUsesV2) {
-      return new Set(
-        getWidgetStyleQuickControls(
-          selectedWidgetType,
-          selectedTarget.styleId,
-          selectedElement?.id || null,
-        ),
-      );
-    }
-    const controls = [];
-    if (
-      supportsAny(selectedStyleCapabilities, [
-        "colours",
-        "containers",
-        "transparentBackground",
-      ])
-    )
-      controls.push("material");
-    if (
-      supportsAny(selectedStyleCapabilities, [
-        "colours",
-        "multipleColours",
-        "positiveNegativeColours",
-        "progressBar",
-      ])
-    )
-      controls.push("primaryColor", "accentColor");
-    if (selectedStyleCapabilities.fonts) controls.push("fontFamily");
-    if (selectedStyleCapabilities.fontSizes) controls.push("textSize");
-    if (selectedStyleCapabilities.fontWeights) controls.push("boldText");
-    if (selectedStyleCapabilities.images) controls.push("imageVisibility");
-    if (selectedStyleCapabilities.imageSize) controls.push("imageSize");
-    if (selectedStyleCapabilities.imageShape) controls.push("imageShape");
-    if (selectedStyleCapabilities.imageFit) controls.push("imageFit");
-    if (
-      supportsAny(selectedStyleCapabilities, [
-        "containerShapes",
-        "borderRadius",
-      ])
-    )
-      controls.push("shape");
-    if (selectedStyleCapabilities.layoutDensity)
-      controls.push("density", "scale");
-    if (selectedStyleCapabilities.shadows) controls.push("shadowStrength");
-    if (supportsAny(selectedStyleCapabilities, ["glow", "glowIntensity"]))
-      controls.push("glowStrength");
-    if (selectedStyleCapabilities.carouselAutoplay)
-      controls.push("carouselAutoplay");
-    if (selectedStyleCapabilities.carouselSpeed) controls.push("carouselSpeed");
-    if (selectedStyleCapabilities.carouselDirection)
-      controls.push("carouselDirection");
-    if (selectedStyleCapabilities.animations) controls.push("animationEnabled");
-    if (selectedStyleCapabilities.animationSpeed)
-      controls.push("animationSpeed");
-    if (selectedStyleCapabilities.animationIntensity)
-      controls.push("animationIntensity");
-    return new Set(controls);
+    return getSelectedQuickControls({
+      selectedElement,
+      selectedStyleCapabilities,
+      selectedTarget,
+      selectedWidgetType,
+      selectedWidgetUsesV2,
+    });
   }, [
-    selectedElement?.id,
+    selectedElement,
     selectedStyleCapabilities,
     selectedTarget.styleId,
     selectedWidgetType,
@@ -1439,61 +4370,15 @@ export default function AppearanceCenter({
     [selectedQuickControls],
   );
   const simpleSections = useMemo(() => {
-    const sections = [];
-    sections.push("widgetStyle");
-    if (selectedElements.length > 1) sections.push("editing");
-    if (selectedWidgetIsBackground) {
-      sections.push("backgroundControls");
-      sections.push("actions");
-      return sections;
-    }
-    if (selectedQuickControls.has("material")) sections.push("material");
-    if (
-      hasAnyQuickControl(["primaryColor", "accentColor"]) ||
-      showRtpMetalControls ||
-      showBonusHuntColorSyncControls
-    )
-      sections.push("colours");
-    if (
-      hasAnyQuickControl([
-        "fontFamily",
-        "textSize",
-        "boldText",
-        "imageVisibility",
-        "imageSize",
-        "imageShape",
-        "imageFit",
-        "musicDisplayStyle",
-      ])
-    )
-      sections.push("textImages");
-    if (selectedWidgetType === "navbar")
-      sections.push(NAVBAR_APPEARANCE_SECTION_ID);
-    if (
-      hasAnyQuickControl([
-        "shape",
-        "density",
-        "scale",
-        "shadowStrength",
-        "glowStrength",
-        "barHeight",
-        "maxWidth",
-      ])
-    )
-      sections.push("shapeEffects");
-    if (
-      hasAnyQuickControl([
-        "carouselAutoplay",
-        "carouselSpeed",
-        "carouselDirection",
-        "animationEnabled",
-        "animationSpeed",
-        "animationIntensity",
-      ])
-    )
-      sections.push("motion");
-    sections.push("actions");
-    return sections;
+    return buildSimpleSections({
+      hasAnyQuickControl,
+      selectedElementsLength: selectedElements.length,
+      selectedQuickControls,
+      selectedWidgetIsBackground,
+      selectedWidgetType,
+      showBonusHuntColorSyncControls,
+      showRtpMetalControls,
+    });
   }, [
     hasAnyQuickControl,
     selectedElements.length,
@@ -1518,11 +4403,12 @@ export default function AppearanceCenter({
       .filter((id) => id !== "actions")
       .map((id) => ({ id, label: labels[id] || id }));
   }, [simpleSections]);
-  const previewStateOptions = WIDGET_PREVIEW_STATES[selectedWidgetType] || [];
-  const selectedPreviewState =
-    previewStateByWidget[selectedWidget?.id] ||
-    previewStateOptions[0]?.id ||
-    "";
+  const previewStateOptions = getPreviewStateOptions(selectedWidgetType);
+  const selectedPreviewState = getSelectedPreviewState({
+    previewStateByWidget,
+    previewStateOptions,
+    widgetId: selectedWidget?.id,
+  });
   const selectedLayerKey = layerKey(selectedWidget?.id, selectedElement?.id);
   const selectedLayerLocked = !!lockedLayers[selectedLayerKey];
   const dirty = safeJson(draft) !== lastPersistedDraftRef.current;
@@ -1533,59 +4419,33 @@ export default function AppearanceCenter({
     () => groupLayers(selectedElements),
     [selectedElements],
   );
-  const advancedOverrideCount = useMemo(() => {
-    if (!selectedTargetRoot) return 0;
-    return (
-      countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.elements`)) +
-      countObjectLeaves(getByPath(draft, `${selectedTargetRoot}.subElements`)) +
-      countObjectLeaves(
-        getByPath(draft, `${selectedTargetRoot}.appearanceV2.elementOverrides`),
-      )
-    );
-  }, [draft, selectedTargetRoot]);
+  const advancedOverrideCount = useMemo(
+    () => countAdvancedOverrides(draft, selectedTargetRoot),
+    [draft, selectedTargetRoot],
+  );
 
   const filteredWidgets = useMemo(() => {
-    const term = widgetSearch.trim().toLowerCase();
-    return getOrderedLayerWidgets(widgets)
-      .reverse()
-      .filter((widget) => {
-        const name = getWidgetDisplayName(widget).toLowerCase();
-        const type = String(widget.widget_type || "").toLowerCase();
-        return !term || name.includes(term) || type.includes(term);
-      });
+    return getFilteredWidgets(widgets, widgetSearch);
   }, [widgets, widgetSearch]);
 
   useEffect(() => {
-    const widgetIds = new Set(widgets.map((widget) => widget.id));
-    setPreviewPositions((prev) => {
-      const next = Object.fromEntries(
-        Object.entries(prev).filter(([id]) => widgetIds.has(id)),
-      );
-      return Object.keys(next).length === Object.keys(prev).length
-        ? prev
-        : next;
-    });
+    setPreviewPositions((prev) =>
+      prunePreviewPositionsForWidgets(prev, widgets),
+    );
   }, [widgets]);
 
-  const styleSelections = useMemo(() => {
-    if (!selectedWidget?.id || !selectedTarget.styleId) return {};
-    return { [selectedWidget.id]: selectedTarget.styleId };
-  }, [selectedWidget?.id, selectedTarget.styleId]);
+  const styleSelections = useMemo(
+    () => buildStyleSelections(selectedWidget, selectedTarget),
+    [selectedWidget, selectedTarget],
+  );
 
   const selectedHiddenElementIds = useMemo(
     () =>
-      selectedTargetRoot
-        ? selectedElements
-            .filter(
-              (element) =>
-                !getElementVisibleFromAppearance(
-                  draft,
-                  selectedTargetRoot,
-                  element.id,
-                ),
-            )
-            .map((element) => element.id)
-        : [],
+      getSelectedHiddenElementIds({
+        draft,
+        selectedElements,
+        selectedTargetRoot,
+      }),
     [draft, selectedElements, selectedTargetRoot],
   );
 
@@ -1605,207 +4465,114 @@ export default function AppearanceCenter({
   }, [mode]);
 
   useEffect(() => {
-    if (mode === "simple") {
-      setSidebarTab("widgets");
-      setPreviewMode((prev) => (prev === "full-overlay" ? prev : "fit-widget"));
-      setShowBefore(false);
-    }
+    syncModeSideEffects({ mode, setPreviewMode, setShowBefore, setSidebarTab });
   }, [mode]);
 
   useEffect(() => {
-    if (lastRevisionRef.current === serverState.revision) return;
-    lastRevisionRef.current = serverState.revision;
-    lastPublishedRef.current = safeJson(serverState.published || {});
-    if (dirty || saveStatus === "saving") return;
-    setDraft(serverState.draft);
-    lastPersistedDraftRef.current = safeJson(serverState.draft);
+    syncServerDraftState({
+      dirty,
+      lastPersistedDraftRef,
+      lastPublishedRef,
+      lastRevisionRef,
+      saveStatus,
+      serverState,
+      setDraft,
+    });
   }, [serverState, dirty, saveStatus]);
 
   useEffect(() => {
-    if (!selectedWidget && firstWidget) {
-      setSelectedTarget(createTarget(firstWidget, draft));
-      setSelectedElementId(getFirstElement(firstWidget.widget_type)?.id || "");
-    }
+    ensureSelectedWidgetTarget({
+      draft,
+      firstWidget,
+      selectedWidget,
+      setSelectedElementId,
+      setSelectedTarget,
+    });
   }, [selectedWidget, firstWidget, draft]);
 
   useEffect(() => {
-    if (!selectedElement && selectedElements[0])
-      setSelectedElementId(selectedElements[0].id);
+    ensureSelectedElement({
+      selectedElement,
+      selectedElements,
+      setSelectedElementId,
+    });
   }, [selectedElement, selectedElements]);
 
   useEffect(() => {
-    if (!toast) return undefined;
-    const timer = setTimeout(() => setToast(""), 3200);
-    return () => clearTimeout(timer);
+    return startToastTimer(toast, setToast);
   }, [toast]);
 
   useEffect(() => {
-    if (typeof BroadcastChannel === "undefined") return undefined;
-    const channel = new BroadcastChannel("streamers-center-preview");
-    channel.postMessage({
-      type: "appearance-preview-draft",
-      token: instance?.overlay_token,
-      appearance: draft,
+    return broadcastAppearancePreviewDraft({
+      clientId: clientIdRef.current,
+      draft,
+      instance,
       styleSelections,
-      sourceClientId: clientIdRef.current,
     });
-    return () => channel.close();
   }, [draft, instance?.overlay_token, styleSelections]);
 
   const persistDraft = useCallback(
-    async (nextDraft = draft, reason = "manual") => {
-      if (!updateState) return false;
-      const normalized = normalizeAppearance(nextDraft, { theme });
-      const serialized = safeJson(normalized);
-      if (serialized === lastPersistedDraftRef.current && reason !== "manual")
-        return true;
-      setSaveStatus("saving");
-      setStatusMessage("Saving draft...");
-      try {
-        const nextRoot = {
-          ...serverState,
-          draft: normalized,
-          schemaVersion: APPEARANCE_SCHEMA_VERSION,
-          revision: serverState.revision + 1,
-          updatedAt: new Date().toISOString(),
-          sourceClientId: clientIdRef.current,
-        };
-        await updateState({ overlayAppearance: nextRoot });
-        lastPersistedDraftRef.current = serialized;
-        setSaveStatus("saved");
-        setStatusMessage(
-          reason === "manual" ? "Draft saved." : "Draft auto-saved.",
-        );
-        setToast(reason === "manual" ? "Draft saved" : "");
-        trackEvent(
-          ANALYTICS_EVENTS.APPEARANCE_DRAFT_SAVED || "appearance_draft_saved",
-          { reason },
-        );
-        return true;
-      } catch (err) {
-        console.error("[AppearanceCenter] save draft failed", err);
-        setSaveStatus("failed");
-        setStatusMessage("Draft could not be saved.");
-        setToast("Draft save failed");
-        trackEvent(
-          ANALYTICS_EVENTS.APPEARANCE_SAVE_FAILED || "appearance_save_failed",
-          { reason },
-        );
-        return false;
-      }
-    },
+    (nextDraft = draft, reason = "manual") =>
+      persistAppearanceDraft({
+        clientId: clientIdRef.current,
+        lastPersistedDraftRef,
+        nextDraft,
+        reason,
+        serverState,
+        setSaveStatus,
+        setStatusMessage,
+        setToast,
+        theme,
+        updateState,
+      }),
     [draft, serverState, theme, updateState],
   );
 
   useEffect(() => {
-    const serialized = safeJson(draft);
-    if (serialized === lastPersistedDraftRef.current) return undefined;
-    clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(
-      () => persistDraft(draft, "debounced-draft"),
-      1100,
-    );
-    return () => clearTimeout(saveTimerRef.current);
+    return scheduleDraftAutosave({
+      draft,
+      lastPersistedDraftRef,
+      persistDraft,
+      saveTimerRef,
+    });
   }, [draft, persistDraft]);
 
   const commitDraft = useCallback(
     (recipe, summary = "Style changed") => {
-      setShowBefore(false);
-      setDraft((prev) => {
-        const next = normalizeAppearance(
-          typeof recipe === "function" ? recipe(prev) : recipe,
-          { theme },
-        );
-        if (safeJson(prev) === safeJson(next)) return prev;
-        setUndoStack((stack) => [
-          ...stack.slice(-49),
-          { targetKey: targetKey(selectedTarget), draft: prev, summary },
-        ]);
-        setRedoStack([]);
-        setSaveStatus("dirty");
-        setPublishStatus("unpublished");
-        setStatusMessage(
-          "Preview updated instantly. Draft will be saved shortly.",
-        );
-        trackEvent(
-          ANALYTICS_EVENTS.APPEARANCE_SETTING_CHANGED ||
-            "appearance_setting_changed",
-          {
-            summary,
-            widget_type: selectedWidgetType || null,
-            element_id: selectedElementId || null,
-          },
-        );
-        return next;
+      commitAppearanceDraftChange({
+        commitRecipe: recipe,
+        selectedElementId,
+        selectedTarget,
+        selectedWidgetType,
+        setDraft,
+        setPublishStatus,
+        setRedoStack,
+        setSaveStatus,
+        setShowBefore,
+        setStatusMessage,
+        setUndoStack,
+        summary,
+        theme,
       });
     },
     [selectedElementId, selectedTarget, selectedWidgetType, theme],
   );
 
   const rememberColor = useCallback((color) => {
-    const normalized = normalizeHexColor(color, "");
-    if (!normalized) return;
-    setRecentColors((prev) => {
-      const next = [
-        normalized,
-        ...prev.filter((item) => item !== normalized),
-      ].slice(0, 8);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(
-          RECENT_COLORS_STORAGE_KEY,
-          JSON.stringify(next),
-        );
-      }
-      return next;
-    });
+    rememberRecentColor(color, setRecentColors);
   }, []);
 
   const applySimpleSettings = useCallback(
     (patch, summary = "Quick style changed") => {
-      const nextSettings = normalizeSimpleSettings({
-        ...currentSimpleSettings,
-        ...(patch || {}),
+      applySimpleSettingsChange({
+        commitDraft,
+        currentSimpleSettings,
+        patch,
+        rememberColor,
+        selectedTargetRoot,
+        selectedWidgetType,
+        summary,
       });
-      const restoreBonusHuntOriginal =
-        selectedTargetRoot &&
-        selectedWidgetType === "bonus_hunt" &&
-        nextSettings.material === "original";
-      if (restoreBonusHuntOriginal) {
-        commitDraft(
-          (prev) => omitPath(prev, selectedTargetRoot),
-          summary || "Restore original Bonus Hunt design",
-        );
-        return;
-      }
-      const generated = generateSimpleAppearance(nextSettings);
-      if (patch?.primaryColor) rememberColor(nextSettings.primaryColor);
-      if (patch?.accentColor) rememberColor(nextSettings.accentColor);
-      commitDraft((prev) => {
-        if (!selectedTargetRoot) {
-          return deepMerge(prev, generated);
-        }
-        const appearancePath = `${selectedTargetRoot}.appearance`;
-        const currentAppearance = getByPath(prev, appearancePath) || {};
-        let next = setByPath(
-          prev,
-          appearancePath,
-          deepMerge(currentAppearance, generated),
-        );
-        if (isWidgetAppearanceV2Enabled(selectedWidgetType)) {
-          const currentV2 =
-            getByPath(prev, `${selectedTargetRoot}.appearanceV2`) || {};
-          next = setByPath(
-            next,
-            `${selectedTargetRoot}.appearanceV2`,
-            buildAppearanceV2ForStorage(
-              selectedWidgetType,
-              nextSettings,
-              currentV2,
-            ),
-          );
-        }
-        return next;
-      }, summary);
     },
     [
       commitDraft,
@@ -1818,47 +4585,18 @@ export default function AppearanceCenter({
 
   const applyQuickSettings = useCallback(
     (patch, summary = "Quick style changed") => {
-      if (
-        selectedWidgetUsesV2 &&
-        selectedTargetRoot &&
-        selectedElement?.id &&
-        canScopeQuickPatchToElement(selectedElement, patch)
-      ) {
-        const nextSettings = normalizeSimpleSettings({
-          ...currentSimpleSettings,
-          ...(patch || {}),
-        });
-        if (patch?.primaryColor) rememberColor(nextSettings.primaryColor);
-        if (patch?.accentColor) rememberColor(nextSettings.accentColor);
-        commitDraft((prev) => {
-          const currentV2 =
-            getByPath(prev, `${selectedTargetRoot}.appearanceV2`) || {};
-          const tokenSettings =
-            nextSettings.material === "original"
-              ? { ...nextSettings, material: "matte" }
-              : nextSettings;
-          const resolvedV2 = buildAppearanceV2ForStorage(
-            selectedWidgetType,
-            tokenSettings,
-            currentV2,
-          );
-          const override = buildElementQuickOverrideFromPatch(
-            selectedElement,
-            patch,
-            resolvedV2.generatedTokens || {},
-          );
-          if (!Object.keys(override).length) return prev;
-          const overridePath = `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
-          const currentOverride = getByPath(prev, overridePath) || {};
-          return setByPath(
-            prev,
-            overridePath,
-            deepMerge(currentOverride, override),
-          );
-        }, summary);
-        return;
-      }
-      applySimpleSettings(patch, summary);
+      applyQuickSettingsChange({
+        applySimpleSettings,
+        commitDraft,
+        currentSimpleSettings,
+        patch,
+        rememberColor,
+        selectedElement,
+        selectedTargetRoot,
+        selectedWidgetType,
+        selectedWidgetUsesV2,
+        summary,
+      });
     },
     [
       applySimpleSettings,
@@ -1874,227 +4612,103 @@ export default function AppearanceCenter({
 
   const updateSelectedWidgetConfig = useCallback(
     (patch, summary = "Widget settings updated") => {
-      if (!selectedWidget?.id || !saveWidget) return;
-      const nextConfig = { ...(selectedWidget.config || {}), ...(patch || {}) };
-      saveWidget({ ...selectedWidget, config: nextConfig })
-        .then(() => setToast(summary))
-        .catch((err) => {
-          console.error("[AppearanceCenter] widget config update failed", err);
-          setToast("Widget settings could not be updated");
-        });
+      updateSelectedWidgetConfigValue({
+        patch,
+        saveWidget,
+        selectedWidget,
+        setToast,
+        summary,
+      });
     },
     [saveWidget, selectedWidget],
   );
 
   const updateRtpMetalSettings = useCallback(
     (patch, summary = "RTP Metal colours updated") => {
-      if (!selectedWidget?.id || !saveWidget) return;
-      const patchSource = patch && typeof patch === "object" ? patch : null;
-      const nextRtpMetal = normalizeRtpMetalSettings(
-        patchSource
-          ? {
-              primaryColor: Object.hasOwn(patchSource, "primaryColor")
-                ? patchSource.primaryColor
-                : rtpMetalSettings.primaryColor,
-              secondaryColor: Object.hasOwn(patchSource, "secondaryColor")
-                ? patchSource.secondaryColor
-                : rtpMetalSettings.secondaryColor,
-              syncWithBonusHuntColors: Object.hasOwn(
-                patchSource,
-                "syncWithBonusHuntColors",
-              )
-                ? patchSource.syncWithBonusHuntColors
-                : rtpMetalSettings.syncWithBonusHuntColors,
-            }
-          : rtpMetalSettings,
-      );
-      const configPatch = { rtpMetal: nextRtpMetal };
-      const nextConfig = deepMerge(selectedWidgetConfig, configPatch);
-      setPreviewConfigPatches((prev) => {
-        const currentPatch = prev[selectedWidget.id];
-        return {
-          ...prev,
-          [selectedWidget.id]: currentPatch
-            ? deepMerge(currentPatch, configPatch)
-            : configPatch,
-        };
+      updateRtpMetalWidgetSettings({
+        patch,
+        rtpMetalSettings,
+        saveWidget,
+        selectedWidget,
+        selectedWidgetConfig,
+        setPreviewConfigPatches,
+        setToast,
+        summary,
       });
-      saveWidget({ ...selectedWidget, config: nextConfig })
-        .then(() => setToast(summary))
-        .catch((err) => {
-          console.error("[AppearanceCenter] RTP Metal update failed", err);
-          setPreviewConfigPatches((prev) => {
-            const next = { ...prev };
-            delete next[selectedWidget.id];
-            return next;
-          });
-          setToast("RTP Metal colours could not be updated");
-        });
     },
     [rtpMetalSettings, saveWidget, selectedWidget, selectedWidgetConfig],
   );
 
   const updateBonusHuntColorSyncSettings = useCallback(
     (enabled) => {
-      if (!selectedWidget?.id || !saveWidget) return;
-      const configPatch = { bonusHuntColorSync: { enabled: !!enabled } };
-      const nextConfig = deepMerge(selectedWidgetConfig, configPatch);
-      setPreviewConfigPatches((prev) => {
-        const currentPatch = prev[selectedWidget.id];
-        return {
-          ...prev,
-          [selectedWidget.id]: currentPatch
-            ? deepMerge(currentPatch, configPatch)
-            : configPatch,
-        };
+      updateBonusHuntColorSyncWidgetSettings({
+        enabled,
+        saveWidget,
+        selectedWidget,
+        selectedWidgetConfig,
+        setPreviewConfigPatches,
+        setToast,
       });
-      saveWidget({ ...selectedWidget, config: nextConfig })
-        .then(() =>
-          setToast(
-            enabled
-              ? "Widget synced to Bonus Hunt colours"
-              : "Widget manual colours restored",
-          ),
-        )
-        .catch((err) => {
-          console.error("[AppearanceCenter] Bonus Hunt colour sync failed", err);
-          setPreviewConfigPatches((prev) => {
-            const next = { ...prev };
-            delete next[selectedWidget.id];
-            return next;
-          });
-          setToast("Bonus Hunt colour sync could not be updated");
-        });
     },
     [saveWidget, selectedWidget, selectedWidgetConfig],
   );
 
   const restoreRecommendedStyle = useCallback(() => {
-    if (selectedTargetRoot && selectedWidgetType === "bonus_hunt") {
-      commitDraft(
-        (prev) => omitPath(prev, selectedTargetRoot),
-        "Restore original Bonus Hunt design",
-      );
-      setToast("Original Bonus Hunt design restored");
-      return;
-    }
-    const generated = generateSimpleAppearance(DEFAULT_SIMPLE_SETTINGS);
-    commitDraft((prev) => {
-      if (!selectedTargetRoot) return deepMerge(prev, generated);
-      let next = setByPath(prev, `${selectedTargetRoot}.appearance`, generated);
-      if (isWidgetAppearanceV2Enabled(selectedWidgetType)) {
-        next = setByPath(
-          next,
-          `${selectedTargetRoot}.appearanceV2`,
-          buildAppearanceV2ForStorage(
-            selectedWidgetType,
-            DEFAULT_SIMPLE_SETTINGS,
-            {},
-          ),
-        );
-      }
-      next = omitPath(next, `${selectedTargetRoot}.elements`);
-      next = omitPath(next, `${selectedTargetRoot}.subElements`);
-      return next;
-    }, "Restore recommended style");
-    setToast("Recommended style restored");
+    restoreRecommendedWidgetStyle({
+      commitDraft,
+      selectedTargetRoot,
+      selectedWidgetType,
+      setToast,
+    });
   }, [commitDraft, selectedTargetRoot, selectedWidgetType]);
 
   const handleModeChange = useCallback(
     (nextMode) => {
-      if (nextMode === mode) return;
-      if (nextMode === "simple" && advancedOverrideCount > 0) {
-        const keep = window.confirm(
-          "Advanced adjustments are active for this widget. Keep them while using Simple Mode? Choose Cancel to stay in Advanced Mode.",
-        );
-        if (!keep) return;
-        setToast("Advanced adjustments kept");
-      }
-      setMode(nextMode);
-      setSidebarTab(nextMode === "advanced" ? "layers" : "widgets");
-      setPreviewMode(
-        EDITOR_MODE_CAPABILITIES[nextMode]?.previewMode || "fit-widget",
-      );
-      setShowBefore(false);
+      changeAppearanceMode({
+        advancedOverrideCount,
+        mode,
+        nextMode,
+        setMode,
+        setPreviewMode,
+        setShowBefore,
+        setSidebarTab,
+        setToast,
+      });
     },
     [advancedOverrideCount, mode],
   );
 
   const selectWidget = useCallback(
     (widget, nextElementId = "") => {
-      if (!widget) return;
-      if (dirty) {
-        clearTimeout(saveTimerRef.current);
-        persistDraft(draft, "widget-switch");
-      }
-      const target = createTarget(widget, draft);
-      const firstElement = getFirstElementForStyle(
-        widget.widget_type,
-        target.styleId,
-      );
-      setSelectedTarget(target);
-      setSelectedElementId(nextElementId || firstElement?.id || "");
-      setSelectedStateId("default");
-      setSidebarTab(mode === "advanced" ? "layers" : "widgets");
-      trackEvent(
-        ANALYTICS_EVENTS.WIDGET_APPEARANCE_TARGET_SELECTED ||
-          "widget_appearance_target_selected",
-        {
-          scope: target.scope,
-          widget_type: target.widgetType,
-        },
-      );
+      selectAppearanceWidget({
+        dirty,
+        draft,
+        mode,
+        nextElementId,
+        persistDraft,
+        saveTimerRef,
+        setSelectedElementId,
+        setSelectedStateId,
+        setSelectedTarget,
+        setSidebarTab,
+        widget,
+      });
     },
     [dirty, draft, mode, persistDraft],
   );
 
   const selectStyle = useCallback(
     (styleId) => {
-      if (!selectedWidget?.id || !styleId) return;
-      const nextTarget = {
-        scope: "widget_instance",
-        widgetId: selectedWidget.id,
-        widgetType: selectedWidget.widget_type,
+      selectAppearanceStyle({
+        commitDraft,
+        quickStyleOptions,
+        saveWidget,
+        selectedWidget,
+        setSelectedElementId,
+        setSelectedStateId,
+        setSelectedTarget,
         styleId,
-      };
-      setSelectedTarget(nextTarget);
-      const firstElement = getFirstElementForStyle(
-        selectedWidget.widget_type,
-        styleId,
-      );
-      setSelectedElementId(firstElement?.id || "");
-      setSelectedStateId("default");
-      const optionLabel =
-        quickStyleOptions.find((option) => option.id === styleId)?.label ||
-        styleId;
-      const defaultSize = getWidgetStyleDefaultSize(
-        selectedWidget.widget_type,
-        styleId,
-      );
-      if (defaultSize && saveWidget) {
-        const def = getWidgetDef(selectedWidget.widget_type);
-        const styleKey = def?.styleConfigKey || "displayStyle";
-        const nextConfig = selectedWidget.config
-          ? { ...selectedWidget.config, [styleKey]: styleId }
-          : { [styleKey]: styleId };
-        saveWidget({
-          ...selectedWidget,
-          width: defaultSize.width,
-          height: defaultSize.height,
-          config: nextConfig,
-        }).catch((err) => {
-          console.error("[AppearanceCenter] style size update failed", err);
-        });
-      }
-      commitDraft(
-        (prev) =>
-          setByPath(
-            prev,
-            `widgets.${selectedWidget.id}.activeStyleId`,
-            styleId,
-          ),
-        `Select ${optionLabel} style`,
-      );
+      });
     },
     [commitDraft, quickStyleOptions, saveWidget, selectedWidget],
   );
@@ -2116,301 +4730,117 @@ export default function AppearanceCenter({
 
   const handlePreviewResize = useCallback(
     (widget, size) => {
-      if (!widget?.id) return;
-      const resizeTarget = createTarget(widget, draft);
-      const root = getTargetOverrideRoot(resizeTarget);
-      if (!root) return;
-      setSelectedTarget(resizeTarget);
-      commitDraft(
-        (prev) => {
-          let next = setWidgetSizeOverridePaths(
-            prev,
-            root,
-            "width",
-            size.width,
-            isWidgetAppearanceV2Enabled(widget.widget_type),
-          );
-          next = setWidgetSizeOverridePaths(
-            next,
-            root,
-            "height",
-            size.height,
-            isWidgetAppearanceV2Enabled(widget.widget_type),
-          );
-          return next;
-        },
-        `Resize ${getWidgetDisplayName(widget)}`,
-      );
+      resizePreviewWidget({
+        commitDraft,
+        draft,
+        setSelectedTarget,
+        size,
+        widget,
+      });
     },
     [commitDraft, draft],
   );
 
   const handlePreviewMove = useCallback(
     (widget, position, meta = {}) => {
-      if (!widget?.id || widget.widget_type === "background") return;
-      const nextPosition = {
-        x: Math.round(Number(position?.x) || 0),
-        y: Math.round(Number(position?.y) || 0),
-      };
-      setPreviewPositions((prev) => ({ ...prev, [widget.id]: nextPosition }));
-
-      if (!meta.commit || !saveWidget) return;
-      const currentWidget =
-        widgets.find((item) => item.id === widget.id) || widget;
-      saveWidget({
-        ...currentWidget,
-        position_x: nextPosition.x,
-        position_y: nextPosition.y,
-      })
-        .then(() => {
-          setToast(`${getWidgetDisplayName(currentWidget)} position saved`);
-          setPublishStatus("unpublished");
-          setPreviewPositions((prev) => {
-            const next = { ...prev };
-            delete next[widget.id];
-            return next;
-          });
-        })
-        .catch((err) => {
-          console.error("[AppearanceCenter] widget position save failed", err);
-          setToast("Widget position could not be saved");
-        });
+      savePreviewWidgetPosition({
+        meta,
+        position,
+        saveWidget,
+        setPreviewPositions,
+        setPublishStatus,
+        setToast,
+        widget,
+        widgets,
+      });
     },
     [saveWidget, widgets],
   );
 
   const handlePreviewElementMove = useCallback(
     (widget, movement, meta = {}) => {
-      if (
-        !widget?.id ||
-        !movement?.elementId ||
-        !isWidgetAppearanceV2Enabled(widget.widget_type)
-      )
-        return;
-      const moveTarget = createTarget(widget, draft);
-      const root = getTargetOverrideRoot(moveTarget);
-      const stateId = movement.stateId || "default";
-      const element = getWidgetStyleElements(
-        widget.widget_type,
-        moveTarget.styleId,
-      ).find((item) => item.id === movement.elementId);
-      if (
-        !root ||
-        !elementSupportsControl(element, "offsetX") ||
-        !elementSupportsControl(element, "offsetY")
-      )
-        return;
-
-      const nextOffsets = {
-        offsetX: Math.round(Number(movement.offsetX) || 0),
-        offsetY: Math.round(Number(movement.offsetY) || 0),
-        stateId,
-      };
-
-      setSelectedTarget(moveTarget);
-      setSelectedElementId(movement.elementId);
-      setSelectedStateId(stateId);
-
-      if (!meta.commit) {
-        setPreviewElementOffsets((prev) => ({
-          ...prev,
-          [widget.id]: {
-            ...(prev[widget.id] || {}),
-            [movement.elementId]: nextOffsets,
-          },
-        }));
-        return;
-      }
-
-      setPreviewElementOffsets((prev) => {
-        const widgetOffsets = { ...(prev[widget.id] || {}) };
-        delete widgetOffsets[movement.elementId];
-        const next = { ...prev };
-        if (Object.keys(widgetOffsets).length) next[widget.id] = widgetOffsets;
-        else delete next[widget.id];
-        return next;
+      movePreviewElement({
+        commitDraft,
+        draft,
+        meta,
+        movement,
+        setPreviewElementOffsets,
+        setSelectedElementId,
+        setSelectedStateId,
+        setSelectedTarget,
+        widget,
       });
-      commitDraft(
-        (prev) => {
-          let next = setByPath(
-            prev,
-            resolveV2ElementOverridePath(
-              root,
-              movement.elementId,
-              "offsetX",
-              stateId,
-            ),
-            nextOffsets.offsetX,
-          );
-          next = setByPath(
-            next,
-            resolveV2ElementOverridePath(
-              root,
-              movement.elementId,
-              "offsetY",
-              stateId,
-            ),
-            nextOffsets.offsetY,
-          );
-          return next;
-        },
-        `Move ${element.label || movement.elementId}`,
-      );
     },
     [commitDraft, draft],
   );
 
   const toggleWidgetVisibility = useCallback(
     (widget, event) => {
-      event?.stopPropagation();
-      if (!widget?.id || !saveWidget) return;
-      const nextVisible = !widget.is_visible;
-      saveWidget({ ...widget, is_visible: nextVisible })
-        .then(() =>
-          setToast(
-            `${getWidgetDisplayName(widget)} ${nextVisible ? "enabled" : "disabled"}`,
-          ),
-        )
-        .catch((err) => {
-          console.error(
-            "[AppearanceCenter] widget visibility update failed",
-            err,
-          );
-          setToast("Widget visibility could not be changed");
-        });
+      saveWidgetVisibility({ event, saveWidget, setToast, widget });
     },
     [saveWidget],
   );
 
   const moveWidgetLayer = useCallback(
     (widget, direction, event) => {
-      event?.preventDefault();
-      event?.stopPropagation();
-      if (!widget?.id || !saveWidget) return;
-
-      const ordered = getOrderedLayerWidgets(widgets);
-      const currentIndex = ordered.findIndex((item) => item.id === widget.id);
-      if (currentIndex < 0) return;
-
-      const targetIndex =
-        direction === "up" ? currentIndex + 1 : currentIndex - 1;
-      if (targetIndex < 0 || targetIndex >= ordered.length) return;
-
-      const normalized = ordered.map((item, index) => ({
-        ...item,
-        z_index: index + 1,
-      }));
-      const current = normalized[currentIndex];
-      const target = normalized[targetIndex];
-      normalized[currentIndex] = { ...target, z_index: currentIndex + 1 };
-      normalized[targetIndex] = { ...current, z_index: targetIndex + 1 };
-
-      const changed = normalized.filter((next) => {
-        const original = widgets.find((item) => item.id === next.id);
-        return (
-          original &&
-          Number(original.z_index || 0) !== Number(next.z_index || 0)
-        );
+      moveAppearanceWidgetLayer({
+        direction,
+        event,
+        saveWidget,
+        setPublishStatus,
+        setToast,
+        widget,
+        widgets,
       });
-
-      Promise.all(changed.map((next) => saveWidget(next)))
-        .then(() => {
-          setPublishStatus("unpublished");
-          setToast(
-            `${getWidgetDisplayName(widget)} moved ${direction === "up" ? "above" : "below"}`,
-          );
-        })
-        .catch((err) => {
-          console.error("[AppearanceCenter] widget layer update failed", err);
-          setToast("Widget layer order could not be changed");
-        });
     },
     [saveWidget, widgets],
   );
 
   const undo = useCallback(() => {
-    setUndoStack((stack) => {
-      if (!stack.length) return stack;
-      const entry = stack[stack.length - 1];
-      setRedoStack((next) =>
-        [
-          {
-            targetKey: targetKey(selectedTarget),
-            draft,
-            summary: "Redo style change",
-          },
-          ...next,
-        ].slice(0, 50),
-      );
-      setDraft(entry.draft);
-      setSaveStatus("dirty");
-      setPublishStatus("unpublished");
-      setStatusMessage("Undo applied.");
-      return stack.slice(0, -1);
+    applyUndoChange({
+      draft,
+      selectedTarget,
+      setDraft,
+      setPublishStatus,
+      setRedoStack,
+      setSaveStatus,
+      setStatusMessage,
+      setUndoStack,
     });
   }, [draft, selectedTarget]);
 
   const redo = useCallback(() => {
-    setRedoStack((stack) => {
-      if (!stack.length) return stack;
-      const entry = stack[0];
-      setUndoStack((next) => [
-        ...next.slice(-49),
-        { targetKey: targetKey(selectedTarget), draft, summary: "Undo redo" },
-      ]);
-      setDraft(entry.draft);
-      setSaveStatus("dirty");
-      setPublishStatus("unpublished");
-      setStatusMessage("Redo applied.");
-      return stack.slice(1);
+    applyRedoChange({
+      draft,
+      selectedTarget,
+      setDraft,
+      setPublishStatus,
+      setRedoStack,
+      setSaveStatus,
+      setStatusMessage,
+      setUndoStack,
     });
   }, [draft, selectedTarget]);
 
   const publish = useCallback(async () => {
     clearTimeout(saveTimerRef.current);
-    setSaveStatus("saving");
-    setPublishStatus("publishing");
-    setStatusMessage("Publishing to OBS...");
-    try {
-      const normalized = normalizeAppearance(draft, { theme });
-      const version = createAppearanceVersion({
-        appearance: normalized,
-        userId: user?.id,
-        summary: `Published ${selectedWidgetName} design`,
-      });
-      const nextRoot = {
-        ...serverState,
-        draft: normalized,
-        published: normalized,
-        schemaVersion: APPEARANCE_SCHEMA_VERSION,
-        revision: serverState.revision + 1,
-        updatedAt: new Date().toISOString(),
-        publishedAt: new Date().toISOString(),
-        sourceClientId: clientIdRef.current,
-        versions: [version, ...(serverState.versions || [])].slice(0, 30),
-      };
-      await updateState({ overlayAppearance: nextRoot });
-      if (saveTheme) await saveTheme(projectAppearanceToThemePatch(normalized));
-      const normalizedJson = safeJson(normalized);
-      lastPersistedDraftRef.current = normalizedJson;
-      lastPublishedRef.current = normalizedJson;
-      setSaveStatus("saved");
-      setPublishStatus("published");
-      setStatusMessage("Published. OBS browser sources will use this design.");
-      setToast("Published to OBS");
-      trackEvent(
-        ANALYTICS_EVENTS.APPEARANCE_PUBLISHED || "appearance_published",
-        {
-          widget_type: selectedWidgetType || null,
-        },
-      );
-    } catch (err) {
-      console.error("[AppearanceCenter] publish failed", err);
-      setSaveStatus("failed");
-      setPublishStatus("failed");
-      setStatusMessage("Publish failed.");
-      setToast("Publish failed");
-    }
+    await publishAppearanceDraft({
+      clientId: clientIdRef.current,
+      draft,
+      lastPersistedDraftRef,
+      lastPublishedRef,
+      saveTheme,
+      selectedWidgetName,
+      selectedWidgetType,
+      serverState,
+      setPublishStatus,
+      setSaveStatus,
+      setStatusMessage,
+      setToast,
+      theme,
+      updateState,
+      userId: user?.id,
+    });
   }, [
     draft,
     saveTheme,
@@ -2423,29 +4853,25 @@ export default function AppearanceCenter({
   ]);
 
   const isElementLocked = useCallback(
-    (elementId) => {
-      if (!selectedWidget?.id || !elementId) return false;
-      return !!lockedLayers[layerKey(selectedWidget.id, elementId)];
-    },
+    (elementId) =>
+      isSelectedElementLocked({
+        elementId,
+        lockedLayers,
+        selectedWidgetId: selectedWidget?.id,
+      }),
     [lockedLayers, selectedWidget?.id],
   );
 
   const toggleElementVisibility = useCallback(
     (elementId) => {
-      if (!selectedTargetRoot || !elementId || isElementLocked(elementId))
-        return;
-      const nextVisible = !getElementVisibleFromAppearance(
+      toggleAppearanceElementVisibility({
+        commitDraft,
         draft,
-        selectedTargetRoot,
         elementId,
-      );
-      const path = selectedWidgetUsesV2
-        ? resolveV2ElementOverridePath(selectedTargetRoot, elementId, "visible")
-        : resolveElementPath(selectedTargetRoot, elementId, "visible");
-      commitDraft(
-        (prev) => setByPath(prev, path, nextVisible),
-        `${elementId}.${nextVisible ? "show" : "hide"}`,
-      );
+        isElementLocked,
+        selectedTargetRoot,
+        selectedWidgetUsesV2,
+      });
     },
     [
       commitDraft,
@@ -2458,44 +4884,16 @@ export default function AppearanceCenter({
 
   const updateElementControlFor = useCallback(
     (elementId, control, value) => {
-      if (!selectedTargetRoot || !elementId || isElementLocked(elementId))
-        return;
-      const normalized = validateEditorValue(control, value);
-      if (
-        elementId === "container" &&
-        ["width", "height"].includes(control.id) &&
-        (!selectedStateId || selectedStateId === "default")
-      ) {
-        commitDraft(
-          (prev) =>
-            setWidgetSizeOverridePaths(
-              prev,
-              selectedTargetRoot,
-              control.id,
-              normalized,
-              selectedWidgetUsesV2,
-            ),
-          `${elementId}.${control.id}`,
-        );
-        return;
-      }
-      const path = selectedWidgetUsesV2
-        ? resolveV2ElementOverridePath(
-            selectedTargetRoot,
-            elementId,
-            control.id,
-            selectedStateId,
-          )
-        : resolveElementPath(
-            selectedTargetRoot,
-            elementId,
-            control.id,
-            selectedStateId,
-          );
-      commitDraft(
-        (prev) => setByPath(prev, path, normalized),
-        `${elementId}.${control.id}`,
-      );
+      updateAppearanceElementControl({
+        commitDraft,
+        control,
+        elementId,
+        isElementLocked,
+        selectedStateId,
+        selectedTargetRoot,
+        selectedWidgetUsesV2,
+        value,
+      });
     },
     [
       commitDraft,
@@ -2504,60 +4902,19 @@ export default function AppearanceCenter({
       selectedTargetRoot,
       selectedWidgetUsesV2,
     ],
-  );
-
-  const updateElementControl = useCallback(
-    (control, value) => {
-      if (!selectedElement?.id) return;
-      updateElementControlFor(selectedElement.id, control, value);
-    },
-    [selectedElement?.id, updateElementControlFor],
   );
 
   const resetElementControlFor = useCallback(
     (elementId, control) => {
-      if (!selectedTargetRoot || !elementId || isElementLocked(elementId))
-        return;
-      if (
-        elementId === "container" &&
-        ["width", "height"].includes(control.id) &&
-        (!selectedStateId || selectedStateId === "default")
-      ) {
-        commitDraft(
-          (prev) =>
-            omitWidgetSizeOverridePaths(
-              prev,
-              selectedTargetRoot,
-              control.id,
-              selectedWidgetUsesV2,
-            ),
-          `Reset ${elementId}.${control.id}`,
-        );
-        return;
-      }
-      const v2Path = resolveV2ElementOverridePath(
-        selectedTargetRoot,
+      resetAppearanceElementControl({
+        commitDraft,
+        control,
         elementId,
-        control.id,
+        isElementLocked,
         selectedStateId,
-      );
-      const modernPath = resolveElementPath(
         selectedTargetRoot,
-        elementId,
-        control.id,
-        selectedStateId,
-      );
-      const legacyPath = resolveLegacyElementPath(
-        selectedTargetRoot,
-        elementId,
-        control.id,
-        selectedStateId,
-      );
-      commitDraft(
-        (prev) =>
-          omitPath(omitPath(omitPath(prev, v2Path), modernPath), legacyPath),
-        `Reset ${elementId}.${control.id}`,
-      );
+        selectedWidgetUsesV2,
+      });
     },
     [
       commitDraft,
@@ -2566,14 +4923,6 @@ export default function AppearanceCenter({
       selectedTargetRoot,
       selectedWidgetUsesV2,
     ],
-  );
-
-  const resetElementControl = useCallback(
-    (control) => {
-      if (!selectedElement?.id) return;
-      resetElementControlFor(selectedElement.id, control);
-    },
-    [resetElementControlFor, selectedElement?.id],
   );
 
   const updateWidgetControl = useCallback(
@@ -2626,63 +4975,31 @@ export default function AppearanceCenter({
 
   const applyPreset = useCallback(
     (preset) => {
-      const appearance = getPresetAppearance(preset);
-      if (!appearance) return;
-      if (preset.isSimpleQuickStyle && selectedTargetRoot) {
-        commitDraft((prev) => {
-          const appearancePath = `${selectedTargetRoot}.appearance`;
-          const currentAppearance = getByPath(prev, appearancePath) || {};
-          return setByPath(
-            prev,
-            appearancePath,
-            deepMerge(currentAppearance, appearance),
-          );
-        }, `Apply preset ${preset.name}`);
-      } else {
-        commitDraft(
-          (prev) => normalizeAppearance(deepMerge(prev, appearance), { theme }),
-          `Apply preset ${preset.name}`,
-        );
-      }
-      setToast(`${preset.name} applied`);
-      trackEvent(
-        ANALYTICS_EVENTS.APPEARANCE_PRESET_APPLIED ||
-          "appearance_preset_applied",
-        { preset_id: preset.id },
-      );
+      applyAppearancePreset({
+        commitDraft,
+        preset,
+        selectedTargetRoot,
+        setToast,
+        theme,
+      });
     },
     [commitDraft, selectedTargetRoot, theme],
   );
 
   const saveCurrentPreset = useCallback(async () => {
-    const name = window.prompt("Preset name", `${selectedWidgetName} style`);
-    if (!name?.trim() || !updateState) return;
-    const presetAppearance =
-      mode === "simple" && selectedTargetRoot
-        ? getByPath(draft, `${selectedTargetRoot}.appearance`) ||
-          generateSimpleAppearance(currentSimpleSettings)
-        : draft;
-    const preset = createAppearancePreset({
-      name,
-      appearance: presetAppearance,
-      scope: selectedTarget.scope,
-      widgetTypes: selectedWidgetType ? [selectedWidgetType] : [],
-    });
-    if (mode === "simple") {
-      preset.isSimpleQuickStyle = true;
-      preset.simpleSettings = currentSimpleSettings;
-    }
-    const nextRoot = {
-      ...serverState,
+    await saveAppearancePresetFromDraft({
+      clientId: clientIdRef.current,
+      currentSimpleSettings,
       draft,
-      presets: [preset, ...(serverState.presets || [])].slice(0, 30),
-      schemaVersion: APPEARANCE_SCHEMA_VERSION,
-      revision: serverState.revision + 1,
-      updatedAt: new Date().toISOString(),
-      sourceClientId: clientIdRef.current,
-    };
-    await updateState({ overlayAppearance: nextRoot });
-    setToast("Preset saved");
+      mode,
+      selectedTarget,
+      selectedTargetRoot,
+      selectedWidgetName,
+      selectedWidgetType,
+      serverState,
+      setToast,
+      updateState,
+    });
   }, [
     currentSimpleSettings,
     draft,
@@ -2697,196 +5014,71 @@ export default function AppearanceCenter({
 
   const renamePreset = useCallback(
     async (preset) => {
-      const name = window.prompt("Rename preset", preset.name);
-      if (!name?.trim() || !updateState) return;
-      const nextRoot = {
-        ...serverState,
-        presets: (serverState.presets || []).map((item) =>
-          item.id === preset.id
-            ? {
-                ...item,
-                name: name.trim(),
-                updatedAt: new Date().toISOString(),
-              }
-            : item,
-        ),
-        revision: serverState.revision + 1,
-        updatedAt: new Date().toISOString(),
-      };
-      await updateState({ overlayAppearance: nextRoot });
-      setToast("Preset renamed");
+      await renameAppearancePreset({
+        preset,
+        serverState,
+        setToast,
+        updateState,
+      });
     },
     [serverState, updateState],
   );
 
   const deletePreset = useCallback(
     async (preset) => {
-      if (!window.confirm(`Delete "${preset.name}" preset?`) || !updateState)
-        return;
-      const nextRoot = {
-        ...serverState,
-        presets: (serverState.presets || []).filter(
-          (item) => item.id !== preset.id,
-        ),
-        revision: serverState.revision + 1,
-        updatedAt: new Date().toISOString(),
-      };
-      await updateState({ overlayAppearance: nextRoot });
-      setToast("Preset deleted");
+      await deleteAppearancePreset({
+        preset,
+        serverState,
+        setToast,
+        updateState,
+      });
     },
     [serverState, updateState],
   );
 
   const duplicatePreset = useCallback(
     async (preset) => {
-      if (!updateState) return;
-      const duplicate = {
-        ...preset,
-        id: `preset_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        name: `${preset.name} copy`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      const nextRoot = {
-        ...serverState,
-        presets: [duplicate, ...(serverState.presets || [])].slice(0, 30),
-        revision: serverState.revision + 1,
-        updatedAt: new Date().toISOString(),
-      };
-      await updateState({ overlayAppearance: nextRoot });
-      setToast("Preset duplicated");
+      await duplicateAppearancePreset({
+        preset,
+        serverState,
+        setToast,
+        updateState,
+      });
     },
     [serverState, updateState],
   );
 
   const exportWidgetStyles = useCallback(() => {
-    const pack = createWidgetStylePack({ appearance: draft, widgets });
-    if (!pack.widgets.length) {
-      setToast("No widget styles to export");
-      return;
-    }
-    const downloaded = downloadJsonFile(stylePackFilename(), pack);
-    setToast(
-      downloaded
-        ? `Exported styles for ${pack.widgets.length} widgets`
-        : "Export is not available in this browser",
-    );
+    exportCurrentWidgetStyles({ draft, setToast, widgets });
   }, [draft, widgets]);
 
   const importWidgetStyles = useCallback(
     async (event) => {
-      const file = event.target.files?.[0];
-      event.target.value = "";
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const pack = JSON.parse(text);
-        const validation = validateWidgetStylePack(pack);
-        if (!validation.valid) {
-          setToast(validation.error);
-          return;
-        }
-        let targetWidgets = widgets;
-        let createdCount = 0;
-        if (addWidget) {
-          const importCounts = new Map();
-          for (const item of pack.widgets || []) {
-            if (!item?.widgetType) continue;
-            importCounts.set(
-              item.widgetType,
-              (importCounts.get(item.widgetType) || 0) + 1,
-            );
-          }
-          const localCounts = new Map();
-          for (const widget of widgets || []) {
-            localCounts.set(
-              widget.widget_type,
-              (localCounts.get(widget.widget_type) || 0) + 1,
-            );
-          }
-          const createdWidgets = [];
-          for (const [widgetType, count] of importCounts.entries()) {
-            const missing = Math.max(
-              0,
-              count - (localCounts.get(widgetType) || 0),
-            );
-            const def = getWidgetDef(widgetType);
-            if (!def || !missing) continue;
-            for (let index = 0; index < missing; index += 1) {
-              const created = await addWidget(widgetType, def.defaults || {});
-              if (created?.id) createdWidgets.push(created);
-            }
-          }
-          if (createdWidgets.length) {
-            createdCount = createdWidgets.length;
-            targetWidgets = [...widgets, ...createdWidgets];
-          }
-        }
-        const result = applyWidgetStylePack({
-          appearance: draft,
-          widgets: targetWidgets,
-          pack,
-        });
-        if (result.error) {
-          setToast(result.error);
-          return;
-        }
-        if (!result.applied) {
-          setToast("No matching widgets found for this style pack");
-          return;
-        }
-        const importedAppearance = normalizeAppearance(result.appearance, {
-          theme,
-        });
-        commitDraft(
-          importedAppearance,
-          `Import widget style pack (${result.applied} widgets)`,
-        );
-        clearTimeout(saveTimerRef.current);
-        setSaveStatus("saving");
-        setStatusMessage("Saving imported styles...");
-        const saved = await persistDraft(
-          importedAppearance,
-          "import-widget-styles",
-        );
-        if (!saved) return;
-        const skippedCount = result.skipped.reduce(
-          (sum, item) => sum + Number(item.count || 0),
-          0,
-        );
-        const createdText = createdCount ? `, created ${createdCount}` : "";
-        const skippedText = skippedCount ? `, skipped ${skippedCount}` : "";
-        setToast(
-          `Imported styles for ${result.applied} widgets${createdText}${skippedText}`,
-        );
-      } catch (err) {
-        console.error("[AppearanceCenter] style pack import failed", err);
-        setToast("Could not import style pack");
-      }
+      await importWidgetStyleFile({
+        addWidget,
+        commitDraft,
+        draft,
+        event,
+        persistDraft,
+        saveTimerRef,
+        setSaveStatus,
+        setStatusMessage,
+        setToast,
+        theme,
+        widgets,
+      });
     },
     [addWidget, commitDraft, draft, persistDraft, theme, widgets],
   );
 
   const resetElement = useCallback(() => {
-    if (!selectedTargetRoot || !selectedElement?.id || selectedLayerLocked)
-      return;
-    const modernPath =
-      selectedStateId && selectedStateId !== "default"
-        ? `${selectedTargetRoot}.elements.${selectedElement.id}.states.${selectedStateId}`
-        : `${selectedTargetRoot}.elements.${selectedElement.id}`;
-    const legacyPath =
-      selectedStateId && selectedStateId !== "default"
-        ? `${selectedTargetRoot}.subElements.${selectedElement.id}.states.${selectedStateId}`
-        : `${selectedTargetRoot}.subElements.${selectedElement.id}`;
-    const v2Path =
-      selectedStateId && selectedStateId !== "default"
-        ? `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}.states.${selectedStateId}`
-        : `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
-    commitDraft(
-      (prev) =>
-        omitPath(omitPath(omitPath(prev, modernPath), legacyPath), v2Path),
-      `Reset ${selectedElement.id}`,
-    );
+    resetSelectedElementAppearance({
+      commitDraft,
+      selectedElement,
+      selectedLayerLocked,
+      selectedStateId,
+      selectedTargetRoot,
+    });
   }, [
     commitDraft,
     selectedElement?.id,
@@ -2896,184 +5088,69 @@ export default function AppearanceCenter({
   ]);
 
   const resetWidget = useCallback(() => {
-    if (!selectedTargetRoot) return;
-    if (!window.confirm(`Reset only "${selectedWidgetName}" custom style?`))
-      return;
-    commitDraft(
-      (prev) => omitPath(prev, selectedTargetRoot),
-      `Reset ${selectedWidgetName}`,
-    );
+    resetSelectedWidgetAppearance({
+      commitDraft,
+      selectedTargetRoot,
+      selectedWidgetName,
+    });
   }, [commitDraft, selectedTargetRoot, selectedWidgetName]);
 
   const resetAll = useCallback(() => {
-    if (
-      !window.confirm(
-        "Reset the entire appearance draft for all widgets? This does not publish until you press Publish to OBS.",
-      )
-    )
-      return;
-    commitDraft(normalizeAppearance({}, { theme }), "Reset all appearance");
+    resetAllAppearance({ commitDraft, theme });
   }, [commitDraft, theme]);
 
   const discardUnsaved = useCallback(() => {
-    clearTimeout(saveTimerRef.current);
-    setDraft(serverState.draft);
-    lastPersistedDraftRef.current = safeJson(serverState.draft);
-    setSaveStatus("saved");
-    setPublishStatus(
-      safeJson(serverState.draft) === safeJson(serverState.published || {})
-        ? "published"
-        : "unpublished",
-    );
-    setStatusMessage("Unsaved changes discarded.");
+    discardUnsavedAppearanceDraft({
+      lastPersistedDraftRef,
+      saveTimerRef,
+      serverState,
+      setDraft,
+      setPublishStatus,
+      setSaveStatus,
+      setStatusMessage,
+    });
   }, [serverState.draft, serverState.published]);
 
   const setTourHidden = useCallback((hidden) => {
-    setTourVisible(!hidden);
-    if (typeof window !== "undefined")
-      window.localStorage.setItem(TOUR_STORAGE_KEY, hidden ? "1" : "0");
+    setAppearanceTourHidden(hidden, setTourVisible);
   }, []);
 
   const updateZoom = useCallback(
     (direction) => {
-      if (direction === "fit") {
-        setZoom("fit");
-        return;
-      }
-      const current = zoom === "fit" ? 100 : Number(zoom) || 100;
-      const index = ZOOM_STEPS.reduce(
-        (best, step, i) =>
-          Math.abs(step - current) < Math.abs(ZOOM_STEPS[best] - current)
-            ? i
-            : best,
-        0,
-      );
-      const nextIndex =
-        direction === "in"
-          ? Math.min(ZOOM_STEPS.length - 1, index + 1)
-          : Math.max(0, index - 1);
-      setZoom(ZOOM_STEPS[nextIndex]);
+      setZoom(getNextZoomValue(direction, zoom).value);
     },
     [zoom],
   );
 
   const toggleSimpleSection = useCallback((id) => {
-    setOpenSimpleSections((prev) => {
-      if (prev.includes(id)) return prev.filter((item) => item !== id);
-      return [id, ...prev].slice(0, 2);
-    });
+    setOpenSimpleSections((prev) => toggleOpenSection(prev, id));
   }, []);
 
   const toggleAdvancedSection = useCallback((id) => {
-    setOpenAdvancedSections((prev) => {
-      if (prev.includes(id)) return prev.filter((item) => item !== id);
-      return [id, ...prev].slice(0, 2);
-    });
+    setOpenAdvancedSections((prev) => toggleOpenSection(prev, id));
   }, []);
 
   const enterCanvasFullscreen = useCallback(async () => {
-    const target = canvasPanelRef.current;
-    if (!target?.requestFullscreen) {
-      setToast("Fullscreen is not available in this browser");
-      return;
-    }
-    try {
-      await target.requestFullscreen();
-    } catch (err) {
-      console.error("[AppearanceCenter] fullscreen failed", err);
-      setToast("Fullscreen could not be opened");
-    }
+    await enterFullscreenForElement(canvasPanelRef.current, setToast);
   }, []);
 
   useEffect(() => {
-    function onKeyDown(event) {
-      if (isTypingTarget(event.target)) return;
-      const cmd = event.ctrlKey || event.metaKey;
-      if (cmd && event.key.toLowerCase() === "z" && event.shiftKey) {
-        event.preventDefault();
-        redo();
-      } else if (cmd && event.key.toLowerCase() === "z") {
-        event.preventDefault();
-        undo();
-      } else if (cmd && event.key.toLowerCase() === "s") {
-        event.preventDefault();
-        persistDraft(draft, "keyboard");
-      } else if (event.key === "Escape") {
-        setSelectedElementId("");
-      } else if (
-        mode === "advanced" &&
-        ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(
-          event.key,
-        ) &&
-        selectedElement?.id &&
-        !selectedLayerLocked
-      ) {
-        const canNudgeElement =
-          ["navbar", "rtp_stats"].includes(selectedWidgetType) &&
-          selectedTargetRoot &&
-          selectedElement.id !== "container" &&
-          elementSupportsControl(selectedElement, "offsetX") &&
-          elementSupportsControl(selectedElement, "offsetY");
-        if (canNudgeElement && selectedWidget) {
-          event.preventDefault();
-          const step = event.shiftKey ? 10 : 1;
-          const currentX = Number(
-            getByPath(
-              draft,
-              resolveV2ElementOverridePath(
-                selectedTargetRoot,
-                selectedElement.id,
-                "offsetX",
-                selectedStateId,
-              ),
-            ) || 0,
-          );
-          const currentY = Number(
-            getByPath(
-              draft,
-              resolveV2ElementOverridePath(
-                selectedTargetRoot,
-                selectedElement.id,
-                "offsetY",
-                selectedStateId,
-              ),
-            ) || 0,
-          );
-          const deltaX =
-            event.key === "ArrowLeft"
-              ? -step
-              : event.key === "ArrowRight"
-                ? step
-                : 0;
-          const deltaY =
-            event.key === "ArrowUp"
-              ? -step
-              : event.key === "ArrowDown"
-                ? step
-                : 0;
-          handlePreviewElementMove(
-            selectedWidget,
-            {
-              elementId: selectedElement.id,
-              offsetX: currentX + deltaX,
-              offsetY: currentY + deltaY,
-              stateId: selectedStateId,
-            },
-            { commit: true },
-          );
-        }
-      } else if (
-        mode === "advanced" &&
-        event.key === "Delete" &&
-        selectedElement?.id &&
-        !selectedLayerLocked
-      ) {
-        event.preventDefault();
-        if (window.confirm(`Reset ${selectedElement.label}?`)) resetElement();
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return registerAppearanceKeyboardShortcuts({
+      draft,
+      handlePreviewElementMove,
+      mode,
+      persistDraft,
+      redo,
+      resetElement,
+      selectedElement,
+      selectedLayerLocked,
+      selectedStateId,
+      selectedTargetRoot,
+      selectedWidget,
+      selectedWidgetType,
+      setSelectedElementId,
+      undo,
+    });
   }, [
     draft,
     handlePreviewElementMove,
@@ -3091,53 +5168,27 @@ export default function AppearanceCenter({
   ]);
 
   useEffect(() => {
-    if (!selectedWidgetIsBackground) return;
-    setOpenSimpleSections((prev) =>
-      prev.includes("backgroundControls")
-        ? prev
-        : [
-            "backgroundControls",
-            ...prev.filter((id) => id !== "actions"),
-          ].slice(0, 2),
+    openBackgroundSimpleSection(
+      selectedWidgetIsBackground,
+      setOpenSimpleSections,
     );
   }, [selectedWidgetIsBackground]);
 
   const getElementControlValueFor = useCallback(
-    (elementId, controlId) => {
-      if (!selectedTargetRoot || !elementId || !controlId) return undefined;
-      const v2Path = resolveV2ElementOverridePath(
-        selectedTargetRoot,
-        elementId,
+    (elementId, controlId) =>
+      readElementControlValue({
         controlId,
-        selectedStateId,
-      );
-      const path = resolveElementPath(
-        selectedTargetRoot,
+        draft,
         elementId,
-        controlId,
         selectedStateId,
-      );
-      const legacyPath = resolveLegacyElementPath(
         selectedTargetRoot,
-        elementId,
-        controlId,
-        selectedStateId,
-      );
-      const v2Value = getByPath(draft, v2Path);
-      if (v2Value !== undefined) return v2Value;
-      const value = getByPath(draft, path);
-      if (value !== undefined) return value;
-      return getByPath(draft, legacyPath);
-    },
+      }),
     [draft, selectedStateId, selectedTargetRoot],
   );
 
   const backgroundSourceMode = useMemo(() => {
     const sourceMode = getElementControlValueFor("source", "bgMode");
-    if (sourceMode) return sourceMode;
-    return BACKGROUND_SPECIAL_STYLE_IDS.has(selectedTarget.styleId)
-      ? "special"
-      : "texture";
+    return getBackgroundSourceMode(sourceMode, selectedTarget.styleId);
   }, [getElementControlValueFor, selectedTarget.styleId]);
 
   const backgroundTextureType =
@@ -3154,33 +5205,18 @@ export default function AppearanceCenter({
   );
 
   const shouldShowBackgroundControl = useCallback(
-    (elementId, controlId) => {
-      if (!selectedWidgetIsBackground) return true;
-      if (elementId === "texture") {
-        return getBackgroundTextureControlIds(
-          backgroundSourceMode,
-          selectedTarget.styleId,
-          backgroundTextureType,
-        ).has(controlId);
-      }
-      if (elementId === "media") {
-        if (BACKGROUND_MEDIA_ALWAYS_CONTROLS.has(controlId)) return true;
-        return (
-          ["image", "video"].includes(backgroundSourceMode) &&
-          BACKGROUND_MEDIA_ACTIVE_CONTROLS.has(controlId)
-        );
-      }
-      if (elementId === "effects") {
-        if (BACKGROUND_PARTICLE_DETAIL_CONTROLS.has(controlId))
-          return backgroundParticleMode !== "none";
-        if (BACKGROUND_FOG_DETAIL_CONTROLS.has(controlId))
-          return backgroundFogMode !== "none";
-        if (BACKGROUND_LIGHT_DETAIL_CONTROLS.has(controlId))
-          return backgroundLightMode !== "none";
-        return true;
-      }
-      return true;
-    },
+    (elementId, controlId) =>
+      shouldShowBackgroundControlFor({
+        backgroundFogMode,
+        backgroundLightMode,
+        backgroundParticleMode,
+        backgroundSourceMode,
+        backgroundTextureType,
+        controlId,
+        elementId,
+        selectedStyleId: selectedTarget.styleId,
+        selectedWidgetIsBackground,
+      }),
     [
       backgroundFogMode,
       backgroundLightMode,
@@ -3193,220 +5229,51 @@ export default function AppearanceCenter({
   );
 
   const getBackgroundElementControlGroups = useCallback(
-    (element) => {
-      if (!element) return [];
-      return getElementControlGroups(element, "advanced")
-        .map((group) => ({
-          ...group,
-          controls: group.controls
-            .filter((control) =>
-              shouldShowBackgroundControl(element.id, control.id),
-            )
-            .map((control) => normalizeBackgroundControl(control, element.id)),
-        }))
-        .filter((group) => group.controls.length);
-    },
+    (element) =>
+      getBackgroundElementControlGroupsFor(
+        element,
+        shouldShowBackgroundControl,
+      ),
     [shouldShowBackgroundControl],
   );
 
   const renderQuickControl = (item) => {
-    const root = selectedTargetRoot;
-    const path = root ? `${root}.appearance.${item.path}` : item.path;
-    const value = getByPath(draft, path);
-    const control = normalizeControl(item.control, item.label);
     return (
-      <PropertyControl
+      <QuickPropertyControl
         key={item.id}
-        control={control}
-        value={value}
-        onChange={(next) => updateWidgetControl(item, next)}
-        onReset={() => resetWidgetControl(item)}
-        inheritedLabel={value === undefined ? "Inherited" : "Custom"}
+        draft={draft}
+        item={item}
+        onReset={resetWidgetControl}
+        onUpdate={updateWidgetControl}
+        selectedTargetRoot={selectedTargetRoot}
       />
     );
   };
 
-  const renderElementControlFor = (element, control) => {
-    if (!selectedTargetRoot || !element?.id) return null;
-    const resolvedValue = getElementControlValueFor(element.id, control.id);
-    const locked = isElementLocked(element.id);
-    return (
-      <PropertyControl
-        key={`${element.id}-${control.id}`}
-        control={control}
-        value={resolvedValue}
-        onChange={(next) => updateElementControlFor(element.id, control, next)}
-        onReset={() => resetElementControlFor(element.id, control)}
-        inheritedLabel={resolvedValue === undefined ? "Inherited" : "Custom"}
-        disabled={locked}
-      />
-    );
-  };
+  const renderElementControlFor = (element, control) => (
+    <ElementPropertyControlFor
+      key={`${element?.id || "missing"}-${control.id}`}
+      control={control}
+      element={element}
+      getValue={getElementControlValueFor}
+      isLocked={isElementLocked}
+      onReset={resetElementControlFor}
+      onUpdate={updateElementControlFor}
+      selectedTargetRoot={selectedTargetRoot}
+    />
+  );
 
   const renderElementControl = (control) =>
-    selectedElement ? renderElementControlFor(selectedElement, control) : null;
+    renderElementControlFor(selectedElement, control);
 
-  const renderWidgetCard = (widget, simple = false) => {
-    const active = selectedWidget?.id === widget.id;
-    const edited = !!getByPath(draft, `widgets.${widget.id}`);
-    const categoryLabel =
-      WIDGET_CATEGORY_FILTERS.find(
-        (item) => item.id === getWidgetCategory(widget),
-      )?.label || "Other";
-    const orderedLayers = getOrderedLayerWidgets(widgets);
-    const layerIndex = orderedLayers.findIndex((item) => item.id === widget.id);
-    const layerNumber =
-      layerIndex >= 0 ? layerIndex + 1 : Number(widget.z_index) || 1;
-    const canMoveDown = layerIndex > 0;
-    const canMoveUp = layerIndex >= 0 && layerIndex < orderedLayers.length - 1;
-    return (
-      <div
-        key={widget.id}
-        className={`ve-widget-card${active ? " is-active" : ""}${simple ? " ve-widget-card--simple" : ""}`}
-      >
-        <button
-          type="button"
-          className="ve-widget-card__select"
-          onClick={() => selectWidget(widget)}
-        >
-          <span className="ve-widget-card__thumb">
-            <WidgetIcon icon={getWidgetIcon(widget)} />
-          </span>
-          <span className="ve-widget-card__body">
-            <strong>{getWidgetDisplayName(widget)}</strong>
-            <small>Category: {categoryLabel}</small>
-          </span>
-        </button>
-        <div className="ve-widget-card__actions">
-          <button
-            type="button"
-            className={`ve-widget-toggle${widget.is_visible ? " is-on" : ""}`}
-            onClick={(event) => toggleWidgetVisibility(widget, event)}
-            title={
-              widget.is_visible
-                ? "Disable widget on overlay"
-                : "Enable widget on overlay"
-            }
-            aria-pressed={widget.is_visible}
-          >
-            <span />
-            <strong>{widget.is_visible ? "Enabled" : "Disabled"}</strong>
-          </button>
-          <div
-            className="ve-widget-layer-controls"
-            aria-label={`${getWidgetDisplayName(widget)} layer order`}
-          >
-            <button
-              type="button"
-              onClick={(event) => moveWidgetLayer(widget, "up", event)}
-              disabled={!canMoveUp}
-              title="Move above"
-              aria-label={`Move ${getWidgetDisplayName(widget)} above`}
-            >
-              <ArrowUp size={13} />
-            </button>
-            <span title="Layer position">L{layerNumber}</span>
-            <button
-              type="button"
-              onClick={(event) => moveWidgetLayer(widget, "down", event)}
-              disabled={!canMoveDown}
-              title="Move below"
-              aria-label={`Move ${getWidgetDisplayName(widget)} below`}
-            >
-              <ArrowDown size={13} />
-            </button>
-          </div>
-        </div>
-        {edited && <span className="ve-edited-dot" title="Style edited" />}
-      </div>
-    );
-  };
+  const handleLayerSelect = useCallback((elementId) => {
+    setSelectedElementId(elementId);
+    setSelectedStateId("default");
+  }, []);
 
-  const renderWidgetSelector = (simple = false) => (
-    <div
-      className={`ve-sidebar-scroll${simple ? " ve-sidebar-scroll--simple" : ""}`}
-    >
-      {simple && (
-        <div className="ve-simple-sidebar-head">
-          <strong>Widgets</strong>
-          <span>Choose which overlay tool you want to style.</span>
-        </div>
-      )}
-      <div className="ve-search">
-        <Search size={15} />
-        <input
-          value={widgetSearch}
-          onChange={(event) => setWidgetSearch(event.target.value)}
-          placeholder="Search widgets"
-          aria-label="Search widgets"
-        />
-      </div>
-      <div className="ve-widget-list">
-        {filteredWidgets.map((widget) => renderWidgetCard(widget, simple))}
-        {!filteredWidgets.length && (
-          <EmptyState title="No widgets found">Try another search.</EmptyState>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderLayersPanel = () => (
-    <div className="ve-sidebar-scroll ve-layers">
-      <div className="ve-layer-intro">
-        <MousePointer2 size={17} />
-        <span>
-          Click the preview or choose a layer. The right panel will only show
-          controls for that part.
-        </span>
-      </div>
-      {visibleLayerRows.map((group) => (
-        <section key={group.id} className="ve-layer-group">
-          <h3>{group.label}</h3>
-          {group.items.map((element) => {
-            const key = layerKey(selectedWidget?.id, element.id);
-            const active = element.id === selectedElement?.id;
-            const hidden = !getElementVisibleFromAppearance(
-              draft,
-              selectedTargetRoot,
-              element.id,
-            );
-            const locked = !!lockedLayers[key];
-            return (
-              <div
-                key={element.id}
-                className={`ve-layer-row${active ? " is-active" : ""}`}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedElementId(element.id);
-                    setSelectedStateId("default");
-                  }}
-                >
-                  <span>{element.label}</span>
-                  <small>{inferElementKind(element)}</small>
-                </button>
-                <LayerToggleButton
-                  active={!hidden}
-                  type="visible"
-                  label={hidden ? "Show layer" : "Hide layer"}
-                  onClick={() => toggleElementVisibility(element.id)}
-                />
-                <LayerToggleButton
-                  active={locked}
-                  type="locked"
-                  label={locked ? "Unlock layer editing" : "Lock layer editing"}
-                  onClick={() =>
-                    setLockedLayers((prev) => ({ ...prev, [key]: !locked }))
-                  }
-                />
-              </div>
-            );
-          })}
-        </section>
-      ))}
-    </div>
-  );
+  const toggleLayerLocked = useCallback((key) => {
+    setLockedLayers((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   const controlGroups = useMemo(() => {
     if (!selectedElement) return [];
@@ -3436,358 +5303,118 @@ export default function AppearanceCenter({
     : 0;
   const editingWholeWidget =
     !selectedElement || ["container", "root"].includes(selectedElement.id);
-  const advancedSectionTabs = [
-    ...(editingWholeWidget
-      ? [
-          ...(!selectedWidgetUsesV2
-            ? [{ id: "surfaceBackground", label: "Surface" }]
-            : []),
-        ]
-      : []),
-    ...controlGroups.map((group) => ({
-      id: `control-${group.id}`,
-      label: mapControlGroupTitle(group.label),
-    })),
-    ...(mode === "advanced" && editingWholeWidget
-      ? [{ id: "spacingSizing", label: "Size" }]
-      : []),
-    { id: "advanced", label: "Checks" },
-  ];
-  const selectedStyleLabel =
-    quickStyleOptions.find((option) => option.id === selectedTarget.styleId)
-      ?.label ||
-    registeredStyleOptions.find(
-      (option) => option.id === selectedTarget.styleId,
-    )?.label ||
-    selectedTarget.styleId ||
-    "Default";
+  const advancedSectionTabs = buildAdvancedSectionTabs({
+    controlGroups,
+    editingWholeWidget,
+    mode,
+    selectedWidgetUsesV2,
+  });
+  const selectedStyleLabel = getSelectedStyleLabel({
+    quickStyleOptions,
+    registeredStyleOptions,
+    selectedStyleId: selectedTarget.styleId,
+  });
+  const currentWidgetScopeLabel = getCurrentWidgetScopeLabel(
+    mode,
+    selectedElement,
+  );
   return (
     <div className="appearance-center visual-editor" data-mode={mode}>
-      <div className="ve-topbar">
-        <div className="ve-topbar__left">
-          <a className="ve-back-link" href="/overlay-center">
-            <ArrowLeft size={16} />
-            Overlay Center
-          </a>
-          <div className="ve-current-widget">
-            <span>{selectedWidgetName}</span>
-            <small>
-              {mode === "simple"
-                ? "Entire widget"
-                : selectedElement
-                  ? getFriendlyElementLabel(
-                      selectedElement.id,
-                      selectedElement.label,
-                    )
-                  : "Choose an element"}
-            </small>
-          </div>
-          <span
-            className="ve-status-stack"
-            aria-label="Draft and OBS publish status"
-          >
-            <span
-              className={`ve-save-status ve-save-status--${saveStatus}${dirty ? " ve-save-status--dirty" : ""}`}
-            >
-              {saveStatus === "saved" && !dirty ? (
-                <CheckCircle2 size={14} />
-              ) : (
-                <span className="ve-status-dot" />
-              )}
-              {formatDraftStatus(saveStatus, dirty)}
-            </span>
-            <span
-              className={`ve-live-status ve-live-status--${publishStatusClass(publishStatus, hasUnpublishedChanges || dirty)}`}
-            >
-              {formatPublishStatus(
-                publishStatus,
-                hasUnpublishedChanges || dirty,
-              )}
-            </span>
-          </span>
-        </div>
-        <div
-          className="ve-topbar__tools"
-          role="toolbar"
-          aria-label="Appearance editor tools"
-        >
-          <ToolbarGroup label="Editing">
-            <ToolbarButton
-              icon={Undo2}
-              disabled={!undoStack.length}
-              onClick={undo}
-              title="Undo (Ctrl+Z)"
-            />
-            <ToolbarButton
-              icon={Redo2}
-              disabled={!redoStack.length}
-              onClick={redo}
-              title="Redo (Ctrl+Shift+Z)"
-            />
-            <ToolbarButton
-              icon={MonitorPlay}
-              active={previewMode === "fit-widget"}
-              onClick={() => setPreviewMode("fit-widget")}
-            >
-              Focused
-            </ToolbarButton>
-            <ToolbarButton
-              icon={Monitor}
-              active={previewMode === "full-overlay"}
-              onClick={() => setPreviewMode("full-overlay")}
-            >
-              Full Overlay
-            </ToolbarButton>
-          </ToolbarGroup>
+      <AppearanceTopbar
+        currentWidgetScopeLabel={currentWidgetScopeLabel}
+        dirty={dirty}
+        draft={draft}
+        enterCanvasFullscreen={enterCanvasFullscreen}
+        exportWidgetStyles={exportWidgetStyles}
+        hasUnpublishedChanges={hasUnpublishedChanges}
+        handleModeChange={handleModeChange}
+        importStylesInputRef={importStylesInputRef}
+        importWidgetStyles={importWidgetStyles}
+        mode={mode}
+        onFocusPreview={onFocusPreview}
+        onOpenPreview={onOpenPreview}
+        obsSafe={obsSafe}
+        persistDraft={persistDraft}
+        previewBackground={previewBackground}
+        previewMode={previewMode}
+        previewOpen={previewStatus?.open}
+        previewStateOptions={previewStateOptions}
+        publish={publish}
+        publishStatus={publishStatus}
+        redo={redo}
+        redoDisabled={!redoStack.length}
+        resetWidget={resetWidget}
+        saveStatus={saveStatus}
+        selectedPreviewState={selectedPreviewState}
+        selectedWidgetId={selectedWidget?.id}
+        selectedWidgetName={selectedWidgetName}
+        setObsSafe={setObsSafe}
+        setPreviewBackground={setPreviewBackground}
+        setPreviewMode={setPreviewMode}
+        setPreviewStateByWidget={setPreviewStateByWidget}
+        setShowBefore={setShowBefore}
+        showBefore={showBefore}
+        undo={undo}
+        undoDisabled={!undoStack.length}
+        updateZoom={updateZoom}
+        zoom={zoom}
+      />
 
-          <ToolbarGroup label="Preview">
-            <span
-              className="ve-toolbar-backgrounds"
-              role="group"
-              aria-label="Canvas background"
-            >
-              {PREVIEW_BACKGROUNDS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={previewBackground === item.id ? "is-active" : ""}
-                  onClick={() => setPreviewBackground(item.id)}
-                >
-                  {item.id === "green" ? "Green Screen" : item.label}
-                </button>
-              ))}
-            </span>
-            <ToolbarButton
-              active={showBefore}
-              onClick={() => setShowBefore((value) => !value)}
-            >
-              Before
-            </ToolbarButton>
-            <label className="ve-toolbar-check">
-              <input
-                type="checkbox"
-                checked={obsSafe}
-                onChange={(event) => setObsSafe(event.target.checked)}
-              />
-              Safe frame
-            </label>
-            {!!previewStateOptions.length && selectedWidget?.id && (
-              <span
-                className="ve-preview-state-picker"
-                role="group"
-                aria-label="Preview state"
-              >
-                {previewStateOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={
-                      selectedPreviewState === option.id ? "is-active" : ""
-                    }
-                    onClick={() =>
-                      setPreviewStateByWidget((prev) => ({
-                        ...prev,
-                        [selectedWidget.id]: option.id,
-                      }))
-                    }
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </span>
-            )}
-          </ToolbarGroup>
-
-          <ToolbarGroup label="View">
-            <ToolbarButton icon={ExternalLink} onClick={onOpenPreview}>
-              Pop-out
-            </ToolbarButton>
-            {previewStatus?.open && (
-              <ToolbarButton icon={Eye} onClick={onFocusPreview}>
-                Focus
-              </ToolbarButton>
-            )}
-            <ToolbarButton icon={Maximize2} onClick={enterCanvasFullscreen}>
-              Fullscreen
-            </ToolbarButton>
-            <ToolbarButton
-              active={zoom === "fit"}
-              onClick={() => updateZoom("fit")}
-            >
-              Fit
-            </ToolbarButton>
-            <ToolbarButton
-              icon={ZoomOut}
-              onClick={() => updateZoom("out")}
-              title="Zoom out"
-            />
-            <span className="ve-zoom-label">
-              {zoom === "fit" ? "Fit" : `${zoom}%`}
-            </span>
-            <ToolbarButton
-              icon={ZoomIn}
-              onClick={() => updateZoom("in")}
-              title="Zoom in"
-            />
-          </ToolbarGroup>
-
-          <ToolbarGroup label="Mode">
-            <div
-              className="ve-mode-switch"
-              role="group"
-              aria-label="Editor mode"
-            >
-              <button
-                type="button"
-                className={mode === "simple" ? "is-active" : ""}
-                onClick={() => handleModeChange("simple")}
-              >
-                Simple
-              </button>
-              <button
-                type="button"
-                className={mode === "advanced" ? "is-active" : ""}
-                onClick={() => handleModeChange("advanced")}
-              >
-                Advanced
-              </button>
-            </div>
-          </ToolbarGroup>
-
-          <ToolbarGroup label="Actions">
-            <input
-              ref={importStylesInputRef}
-              type="file"
-              accept="application/json,.json"
-              className="ve-file-input"
-              onChange={importWidgetStyles}
-              aria-hidden="true"
-              tabIndex={-1}
-            />
-            <ToolbarButton icon={Download} onClick={exportWidgetStyles}>
-              Export Styles
-            </ToolbarButton>
-            <ToolbarButton
-              icon={Upload}
-              onClick={() => importStylesInputRef.current?.click()}
-            >
-              Import Styles
-            </ToolbarButton>
-            <ToolbarButton icon={RotateCcw} onClick={resetWidget}>
-              Reset
-            </ToolbarButton>
-            <ToolbarButton
-              icon={Save}
-              onClick={() => persistDraft(draft, "manual")}
-            >
-              Save Draft
-            </ToolbarButton>
-            <ToolbarButton
-              icon={ExternalLink}
-              primary
-              onClick={publish}
-              disabled={publishStatus === "publishing"}
-            >
-              Publish to OBS
-            </ToolbarButton>
-          </ToolbarGroup>
-        </div>
-      </div>
-
-      {statusMessage && (
-        <div className="ve-status-line" role="status">
-          {statusMessage}
-          {dirty && (
-            <button type="button" onClick={discardUnsaved}>
-              Discard unsaved changes
-            </button>
-          )}
-        </div>
-      )}
+      <AppearanceStatusLine
+        dirty={dirty}
+        onDiscardUnsaved={discardUnsaved}
+        statusMessage={statusMessage}
+      />
 
       <div className="ve-workspace">
-        <aside
-          className={`ve-left-panel${mode === "simple" ? " ve-left-panel--simple" : ""}`}
-        >
-          {mode === "advanced" && (
-            <div
-              className="ve-panel-tabs"
-              role="tablist"
-              aria-label="Editor sidebar"
-            >
-              <button
-                type="button"
-                className={sidebarTab === "widgets" ? "is-active" : ""}
-                onClick={() => setSidebarTab("widgets")}
-              >
-                <Palette size={16} />
-                Widgets
-              </button>
-              <button
-                type="button"
-                className={sidebarTab === "layers" ? "is-active" : ""}
-                onClick={() => setSidebarTab("layers")}
-              >
-                <Layers size={16} />
-                Layers
-              </button>
-            </div>
-          )}
+        <LeftSidebar
+          draft={draft}
+          filteredWidgets={filteredWidgets}
+          lockedLayers={lockedLayers}
+          mode={mode}
+          onLayerSelect={handleLayerSelect}
+          onMoveLayer={moveWidgetLayer}
+          onSearchChange={setWidgetSearch}
+          onSelectWidget={selectWidget}
+          onSidebarTabChange={setSidebarTab}
+          onToggleElementVisibility={toggleElementVisibility}
+          onToggleLayerLocked={toggleLayerLocked}
+          onToggleWidgetVisibility={toggleWidgetVisibility}
+          search={widgetSearch}
+          selectedElementId={selectedElement?.id}
+          selectedTargetRoot={selectedTargetRoot}
+          selectedWidgetId={selectedWidget?.id}
+          sidebarTab={sidebarTab}
+          visibleLayerRows={visibleLayerRows}
+          widgets={widgets}
+        />
 
-          {mode === "simple" || sidebarTab === "widgets"
-            ? renderWidgetSelector(true)
-            : renderLayersPanel()}
-        </aside>
-
-        <main className="ve-canvas-panel" ref={canvasPanelRef}>
-          <div
-            className={`ve-preview-shell${obsSafe ? " ve-preview-shell--safe" : ""}`}
-          >
-            <OverlayPreview
-              widgets={previewWidgets}
-              theme={theme}
-              appearance={previewAppearance}
-              userId={user?.id}
-              previewSampleStates={previewStateByWidget}
-              selectedWidgetId={selectedWidget?.id}
-              selectedTarget={selectedTarget}
-              selectedElementId={selectedElement?.id || ""}
-              hiddenElementIds={
-                mode === "advanced" ? selectedHiddenElementIds : []
-              }
-              styleSelections={styleSelections}
-              zoom={zoom === "fit" ? "fit" : `${zoom}%`}
-              previewMode={previewMode}
-              previewBackground={previewBackground}
-              selectMode={selectedElements.length > 1}
-              onSelectWidget={handlePreviewWidgetSelect}
-              onSelectElement={handlePreviewElementSelect}
-              onResizeWidget={
-                mode === "advanced" ? handlePreviewResize : undefined
-              }
-              onMoveWidget={handlePreviewMove}
-              onMoveElement={
-                ["navbar", "rtp_stats"].includes(selectedWidgetType)
-                  ? handlePreviewElementMove
-                  : undefined
-              }
-            />
-          </div>
-
-          <div className="ve-canvas-footer">
-            <span>
-              <MousePointer2 size={15} />{" "}
-              {mode === "simple"
-                ? "Simple Mode styles the whole selected widget. Fine-tune parts in Advanced Mode."
-                : "Click text, cards, images or bars to edit that exact part."}
-            </span>
-            <span
-              className={`ve-performance ve-performance--${performance.tone}`}
-            >
-              {performance.label}
-            </span>
-          </div>
-        </main>
+        <CanvasPreviewPanel
+          canvasPanelRef={canvasPanelRef}
+          handlePreviewElementMove={handlePreviewElementMove}
+          handlePreviewElementSelect={handlePreviewElementSelect}
+          handlePreviewMove={handlePreviewMove}
+          handlePreviewResize={handlePreviewResize}
+          handlePreviewWidgetSelect={handlePreviewWidgetSelect}
+          mode={mode}
+          obsSafe={obsSafe}
+          performance={performance}
+          previewAppearance={previewAppearance}
+          previewBackground={previewBackground}
+          previewMode={previewMode}
+          previewStateByWidget={previewStateByWidget}
+          previewWidgets={previewWidgets}
+          selectedElement={selectedElement}
+          selectedElements={selectedElements}
+          selectedHiddenElementIds={selectedHiddenElementIds}
+          selectedTarget={selectedTarget}
+          selectedWidget={selectedWidget}
+          selectedWidgetType={selectedWidgetType}
+          styleSelections={styleSelections}
+          theme={theme}
+          userId={user?.id}
+          zoom={zoom}
+        />
 
         {mode === "simple" ? (
           <aside className="ve-right-panel ve-right-panel--simple">
@@ -3799,13 +5426,13 @@ export default function AppearanceCenter({
                   {selectedElement?.label || "Entire widget"}
                 </span>
               </div>
-              {selectedWidgetUsesV2 && (
+              <Show when={selectedWidgetUsesV2}>
                 <span className="ve-engine-badge">V2 pilot</span>
-              )}
+              </Show>
             </div>
 
             <div className="ve-properties-scroll ve-quick-style">
-              {tourVisible && (
+              <Show when={tourVisible}>
                 <section className="ve-simple-onboarding">
                   <div>
                     <Wand2 size={18} />
@@ -3829,16 +5456,16 @@ export default function AppearanceCenter({
                     </button>
                   </div>
                 </section>
-              )}
+              </Show>
 
-              {advancedOverrideCount > 0 && (
+              <Show when={advancedOverrideCount > 0}>
                 <div className="ve-simple-note">
                   Advanced adjustments are still active for this widget. Restore
                   recommended style if you want a clean simple preset.
                 </div>
-              )}
+              </Show>
 
-              {import.meta.env.DEV && selectedWidgetUsesV2 && (
+              <Show when={showDevV2Diagnostics(selectedWidgetUsesV2)}>
                 <details className="ve-v2-diagnostics">
                   <summary>Appearance V2 diagnostics</summary>
                   <dl>
@@ -3868,7 +5495,7 @@ export default function AppearanceCenter({
                     </div>
                   </dl>
                 </details>
-              )}
+              </Show>
 
               <SectionTabs
                 sections={simpleSectionTabs}
@@ -3876,7 +5503,7 @@ export default function AppearanceCenter({
                 onToggle={toggleSimpleSection}
               />
 
-              {simpleSections.includes("widgetStyle") && (
+              <Show when={sectionVisible(simpleSections, "widgetStyle")}>
                 <CollapsibleSection
                   id="widgetStyle"
                   title="Widget layout"
@@ -3907,9 +5534,9 @@ export default function AppearanceCenter({
                     )}
                   </div>
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {simpleSections.includes("editing") && (
+              <Show when={sectionVisible(simpleSections, "editing")}>
                 <CollapsibleSection
                   id="editing"
                   title="Part selection"
@@ -3934,10 +5561,15 @@ export default function AppearanceCenter({
                     </select>
                   </label>
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {simpleSections.includes("backgroundControls") &&
-                selectedWidgetIsBackground && (
+              <Show
+                when={sectionVisible(
+                  simpleSections,
+                  "backgroundControls",
+                  selectedWidgetIsBackground,
+                )}
+              >
                   <CollapsibleSection
                     id="backgroundControls"
                     title="Background controls"
@@ -3988,9 +5620,9 @@ export default function AppearanceCenter({
                       })}
                     </div>
                   </CollapsibleSection>
-                )}
+              </Show>
 
-              {simpleSections.includes("material") && (
+              <Show when={sectionVisible(simpleSections, "material")}>
                 <CollapsibleSection
                   id="material"
                   title="Surface style preset"
@@ -4041,9 +5673,9 @@ export default function AppearanceCenter({
                     })}
                   </div>
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {simpleSections.includes("colours") && (
+              <Show when={sectionVisible(simpleSections, "colours")}>
                 <CollapsibleSection
                   id="colours"
                   title="Colour"
@@ -4190,8 +5822,7 @@ export default function AppearanceCenter({
                             onChange={(event) =>
                               updateRtpMetalSettings(
                                 {
-                                  syncWithBonusHuntColors:
-                                    event.target.checked,
+                                  syncWithBonusHuntColors: event.target.checked,
                                 },
                                 event.target.checked
                                   ? "RTP Metal synced to Bonus Hunt colours"
@@ -4256,9 +5887,7 @@ export default function AppearanceCenter({
                         type="checkbox"
                         checked={bonusHuntColorSyncSettings.enabled}
                         onChange={(event) =>
-                          updateBonusHuntColorSyncSettings(
-                            event.target.checked,
-                          )
+                          updateBonusHuntColorSyncSettings(event.target.checked)
                         }
                       />
                       <span>Sync both colours from Bonus Hunt</span>
@@ -4283,9 +5912,9 @@ export default function AppearanceCenter({
                     </div>
                   )}
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {simpleSections.includes("textImages") && (
+              <Show when={sectionVisible(simpleSections, "textImages")}>
                 <CollapsibleSection
                   id="textImages"
                   title="Typography"
@@ -4458,9 +6087,14 @@ export default function AppearanceCenter({
                     </>
                   )}
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {simpleSections.includes(NAVBAR_APPEARANCE_SECTION_ID) && (
+              <Show
+                when={sectionVisible(
+                  simpleSections,
+                  NAVBAR_APPEARANCE_SECTION_ID,
+                )}
+              >
                 <CollapsibleSection
                   id={NAVBAR_APPEARANCE_SECTION_ID}
                   title="Navbar Sections"
@@ -4533,9 +6167,9 @@ export default function AppearanceCenter({
                     </label>
                   )}
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {simpleSections.includes("shapeEffects") && (
+              <Show when={sectionVisible(simpleSections, "shapeEffects")}>
                 <CollapsibleSection
                   id="shapeEffects"
                   title="Border and shape"
@@ -4739,9 +6373,9 @@ export default function AppearanceCenter({
                     </div>
                   )}
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {simpleSections.includes("motion") && (
+              <Show when={sectionVisible(simpleSections, "motion")}>
                 <CollapsibleSection
                   id="motion"
                   title="Effects and animation"
@@ -4874,11 +6508,9 @@ export default function AppearanceCenter({
                     </div>
                   )}
                 </CollapsibleSection>
-              )}
+              </Show>
 
-              {!!serverState.presets?.filter(
-                (preset) => preset.isSimpleQuickStyle,
-              ).length && (
+              <Show when={hasSimpleQuickPresets(serverState.presets)}>
                 <CollapsibleSection
                   id="advanced"
                   title="Advanced"
@@ -4922,7 +6554,7 @@ export default function AppearanceCenter({
                       ))}
                   </div>
                 </CollapsibleSection>
-              )}
+              </Show>
             </div>
             <section className="ve-simple-final">
               <header>
@@ -5141,11 +6773,7 @@ export default function AppearanceCenter({
         )}
       </div>
 
-      {toast && (
-        <div className="ve-toast" role="status">
-          {toast}
-        </div>
-      )}
+      <AppearanceToast toast={toast} />
     </div>
   );
 }

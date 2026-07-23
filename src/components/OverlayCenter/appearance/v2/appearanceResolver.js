@@ -60,20 +60,21 @@ function readLegacySimpleSettings(entry) {
   return {};
 }
 
-function readCandidateEntries(appearance = {}, widget, styleId, options = {}) {
+function readCandidateEntries(appearance, widget, styleId, options = {}) {
+  const sourceAppearance = appearance || {};
   const widgetType = widget?.widget_type;
   const widgetId = widget?.id;
   const typeEntries =
     options.allowWidgetTypeAppearance === true
       ? [
-          appearance.widgetTypes?.[widgetType],
-          appearance.widgetTypes?.[widgetType]?.styles?.[styleId],
+          sourceAppearance.widgetTypes?.[widgetType],
+          sourceAppearance.widgetTypes?.[widgetType]?.styles?.[styleId],
         ]
       : [];
   return [
     ...typeEntries,
-    appearance.widgets?.[widgetId],
-    appearance.widgets?.[widgetId]?.styles?.[styleId],
+    sourceAppearance.widgets?.[widgetId],
+    sourceAppearance.widgets?.[widgetId]?.styles?.[styleId],
   ].filter(Boolean);
 }
 
@@ -109,9 +110,10 @@ export function createDefaultWidgetAppearanceV2(widgetType, simple = {}) {
 
 export function normalizeWidgetAppearanceV2(widgetType, source = {}) {
   const defaults = createDefaultWidgetAppearanceV2(widgetType);
+  const sourceSimple = source.simple || source.simpleSettings;
   const simple = normalizeSimpleAppearanceV2({
     ...defaults.simple,
-    ...(source.simple || source.simpleSettings || {}),
+    ...sourceSimple,
   });
   const capability = getWidgetAppearanceCapability(widgetType);
   const generatedTokens = generateAppearanceTokens(simple, capability || {});
@@ -297,46 +299,156 @@ function commonSubElements(tokens) {
   };
 }
 
+function selectStyleSecaValue(isStyleSeca, styleSecaValue, defaultValue) {
+  if (isStyleSeca) return styleSecaValue;
+  return defaultValue;
+}
+
+function selectValue(condition, trueValue, falseValue) {
+  if (condition) return trueValue;
+  return falseValue;
+}
+
+function selectStyleSecaFallback(isStyleSeca, value, fallback) {
+  if (!isStyleSeca) return value;
+  return value || fallback;
+}
+
+function optionalMaterialShadow(enabled, shadow) {
+  if (!enabled) return undefined;
+  return shadow;
+}
+
+function optionalBackdropBlur(tokens) {
+  if (!tokens.materialTokens?.blurStrength) return undefined;
+  return { backdropBlur: tokens.materialTokens.blurStrength };
+}
+
+function buildBetsShadow(isStyleSeca, cardShadow, glowShadow) {
+  if (!isStyleSeca)
+    return [cardShadow, glowShadow].filter(Boolean).join(", ") || undefined;
+  return [
+    cardShadow || "0 16px 38px rgba(0,0,0,0.32)",
+    glowShadow || `0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+function buildBetsLeadingShadow(isStyleSeca, glowShadow) {
+  if (glowShadow) return glowShadow;
+  if (isStyleSeca) return `0 0 22px ${STYLE_SECA.glow}`;
+  return undefined;
+}
+
+function styleSecaBetsRootPatch(isStyleSeca) {
+  if (!isStyleSeca) return undefined;
+  return {
+    barColorMode: "solid",
+    barHeight: 18,
+    widgetWidth: 460,
+    widgetHeight: 520,
+  };
+}
+
 function buildBetsPatch(tokens, styleId) {
   const isStyleSeca = styleId === "StyleSecaBets";
-  const surface = isStyleSeca
-    ? styleSecaSurfaceGradient()
-    : tokens.colors.surface;
-  const secondary = isStyleSeca
-    ? STYLE_SECA.secondarySurface
-    : tokens.colors.secondarySurface;
-  const elevated = isStyleSeca
-    ? STYLE_SECA.elevated
-    : tokens.colors.elevatedSurface;
-  const primary = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
-  const secondaryAccent = isStyleSeca
-    ? STYLE_SECA.secondary
-    : tokens.colors.accent;
-  const text = isStyleSeca ? "#f8fbff" : tokens.colors.text;
-  const muted = isStyleSeca
-    ? "rgba(248,251,255,0.82)"
-    : tokens.colors.mutedText;
-  const border = isStyleSeca ? STYLE_SECA.border : tokens.colors.border;
-  const cardShadow =
-    tokens.materialTokens?.shadowIntensity > 0.02
-      ? `0 ${px(tokens.materialTokens.shadowIntensity * 14)} ${px(tokens.materialTokens.shadowIntensity * 34)} ${tokens.colors.shadow}`
-      : undefined;
-  const glowShadow =
-    tokens.materialTokens?.glowIntensity > 0.01
-      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 38)} ${tokens.colors.glow}`
-      : undefined;
-  const shadow = isStyleSeca
-    ? [
-        cardShadow || "0 16px 38px rgba(0,0,0,0.32)",
-        glowShadow || `0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}`,
-      ]
-        .filter(Boolean)
-        .join(", ")
-    : [cardShadow, glowShadow].filter(Boolean).join(", ") || undefined;
+  const surface = selectStyleSecaValue(
+    isStyleSeca,
+    styleSecaSurfaceGradient(),
+    tokens.colors.surface,
+  );
+  const secondary = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.secondarySurface,
+    tokens.colors.secondarySurface,
+  );
+  const elevated = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.elevated,
+    tokens.colors.elevatedSurface,
+  );
+  const primary = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.primary,
+    tokens.colors.primary,
+  );
+  const secondaryAccent = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.secondary,
+    tokens.colors.accent,
+  );
+  const text = selectStyleSecaValue(isStyleSeca, "#f8fbff", tokens.colors.text);
+  const muted = selectStyleSecaValue(
+    isStyleSeca,
+    "rgba(248,251,255,0.82)",
+    tokens.colors.mutedText,
+  );
+  const border = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.border,
+    tokens.colors.border,
+  );
+  const bodyFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.bodyFont,
+  );
+  const valueFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.valueFont,
+  );
+  const labelFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.labelFont,
+  );
+  const headerFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.headerFont,
+  );
+  const statusText = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.darkText,
+    tokens.colors.primary,
+  );
+  const statusBg = selectStyleSecaValue(
+    isStyleSeca,
+    primary,
+    tokens.colors.elevatedSurface,
+  );
+  const headerBg = selectStyleSecaValue(
+    isStyleSeca,
+    styleSecaHeaderGradient(),
+    tokens.colors.secondarySurface,
+  );
+  const cardNumberText = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.darkText,
+    text,
+  );
+  const cardPercentageText = selectStyleSecaValue(isStyleSeca, text, primary);
+  const progressHeight = selectStyleSecaValue(isStyleSeca, 18, 8);
+  const progressRadius = selectStyleSecaValue(
+    isStyleSeca,
+    8,
+    tokens.shape.badgeRadius,
+  );
+  const cardShadow = optionalMaterialShadow(
+    tokens.materialTokens?.shadowIntensity > 0.02,
+    `0 ${px(tokens.materialTokens.shadowIntensity * 14)} ${px(tokens.materialTokens.shadowIntensity * 34)} ${tokens.colors.shadow}`,
+  );
+  const glowShadow = optionalMaterialShadow(
+    tokens.materialTokens?.glowIntensity > 0.01,
+    `0 0 ${px(tokens.materialTokens.glowIntensity * 38)} ${tokens.colors.glow}`,
+  );
+  const shadow = buildBetsShadow(isStyleSeca, cardShadow, glowShadow);
   const statSurface = {
     background: secondary,
     textColor: text,
-    fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+    fontFamily: valueFont,
     fontSize: tokens.typography.labelSize,
     fontWeight: tokens.typography.valueWeight,
     radius: tokens.shape.cardRadius,
@@ -346,7 +458,7 @@ function buildBetsPatch(tokens, styleId) {
   };
   const textBase = {
     textColor: text,
-    fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
+    fontFamily: bodyFont,
     fontSize: tokens.typography.bodySize,
     fontWeight: tokens.typography.bodyWeight,
     lineHeight: tokens.typography.lineHeight,
@@ -356,7 +468,7 @@ function buildBetsPatch(tokens, styleId) {
     displayStyle: styleId || "v3_grid_2x3",
     bgColor: surface,
     headerBg: secondary,
-    headerText: isStyleSeca ? primary : text,
+    headerText: selectStyleSecaValue(isStyleSeca, primary, text),
     textColor: text,
     mutedColor: muted,
     borderColor: border,
@@ -365,20 +477,13 @@ function buildBetsPatch(tokens, styleId) {
     cardBg: secondary,
     progressColor: primary,
     progressBgColor: elevated,
-    fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
-    ...(isStyleSeca
-      ? {
-          barColorMode: "solid",
-          barHeight: 18,
-          widgetWidth: 460,
-          widgetHeight: 520,
-        }
-      : {}),
+    fontFamily: bodyFont,
+    ...styleSecaBetsRootPatch(isStyleSeca),
     subElements: {
       widgetBackground: {
         background: surface,
         textColor: text,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
+        fontFamily: bodyFont,
         fontSize: tokens.typography.bodySize,
         fontWeight: tokens.typography.bodyWeight,
         radius: tokens.shape.rootRadius,
@@ -387,18 +492,12 @@ function buildBetsPatch(tokens, styleId) {
         borderColor: border,
         borderWidth: tokens.shape.borderWidth,
         shadow,
-        ...(tokens.materialTokens?.blurStrength
-          ? { backdropBlur: tokens.materialTokens.blurStrength }
-          : {}),
+        ...optionalBackdropBlur(tokens),
       },
       header: {
-        background: isStyleSeca
-          ? styleSecaHeaderGradient()
-          : tokens.colors.secondarySurface,
-        textColor: isStyleSeca ? primary : text,
-        fontFamily: isStyleSeca
-          ? STYLE_SECA.font
-          : tokens.typography.headerFont,
+        background: headerBg,
+        textColor: selectStyleSecaValue(isStyleSeca, primary, text),
+        fontFamily: headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
         radius: tokens.shape.cardRadius,
@@ -410,9 +509,9 @@ function buildBetsPatch(tokens, styleId) {
       timerStat: statSurface,
       betsStat: statSurface,
       status: {
-        background: isStyleSeca ? primary : tokens.colors.elevatedSurface,
-        textColor: isStyleSeca ? STYLE_SECA.darkText : tokens.colors.primary,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.labelFont,
+        background: statusBg,
+        textColor: statusText,
+        fontFamily: labelFont,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.labelWeight,
         radius: tokens.shape.badgeRadius,
@@ -421,10 +520,8 @@ function buildBetsPatch(tokens, styleId) {
         borderWidth: tokens.shape.borderWidth,
         states: {
           open: {
-            background: isStyleSeca ? primary : tokens.colors.elevatedSurface,
-            textColor: isStyleSeca
-              ? STYLE_SECA.darkText
-              : tokens.colors.primary,
+            background: statusBg,
+            textColor: statusText,
           },
           locked: {
             background: tokens.colors.elevatedSurface,
@@ -448,9 +545,7 @@ function buildBetsPatch(tokens, styleId) {
         states: {
           leading: {
             borderColor: primary,
-            shadow:
-              glowShadow ||
-              (isStyleSeca ? `0 0 22px ${STYLE_SECA.glow}` : undefined),
+            shadow: buildBetsLeadingShadow(isStyleSeca, glowShadow),
           },
           winner: { borderColor: tokens.colors.positive, shadow: glowShadow },
           loser: { opacity: 0.72 },
@@ -459,8 +554,8 @@ function buildBetsPatch(tokens, styleId) {
       },
       cardNumberBadge: {
         background: primary,
-        textColor: isStyleSeca ? STYLE_SECA.darkText : text,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+        textColor: cardNumberText,
+        fontFamily: valueFont,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.valueWeight,
         radius: tokens.shape.badgeRadius,
@@ -472,8 +567,8 @@ function buildBetsPatch(tokens, styleId) {
         fontWeight: tokens.typography.valueWeight,
       },
       cardPercentageText: {
-        textColor: isStyleSeca ? text : primary,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+        textColor: cardPercentageText,
+        fontFamily: valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,
         lineHeight: tokens.typography.lineHeight,
@@ -481,15 +576,15 @@ function buildBetsPatch(tokens, styleId) {
       cardLabel: {
         ...textBase,
         textColor: muted,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.labelFont,
+        fontFamily: labelFont,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.labelWeight,
       },
       progressBar: {
         background: elevated,
         fillColor: primary,
-        height: isStyleSeca ? 18 : 8,
-        radius: isStyleSeca ? 8 : tokens.shape.badgeRadius,
+        height: progressHeight,
+        radius: progressRadius,
         borderColor: border,
         borderWidth: tokens.shape.borderWidth,
         states: {
@@ -503,7 +598,7 @@ function buildBetsPatch(tokens, styleId) {
       footerInstruction: {
         background: elevated,
         textColor: muted,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.labelFont,
+        fontFamily: labelFont,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.labelWeight,
         radius: tokens.shape.cardRadius,
@@ -516,14 +611,13 @@ function buildBetsPatch(tokens, styleId) {
 }
 
 function buildBHStatsPatch(tokens) {
+  const displayStyleByMaterial = {
+    metallic: "metal",
+    glass: "glass",
+  };
   return {
     ...commonVisualPatch(tokens),
-    displayStyle:
-      tokens.material === "metallic"
-        ? "metal"
-        : tokens.material === "glass"
-          ? "glass"
-          : "default",
+    displayStyle: displayStyleByMaterial[tokens.material] || "default",
     subElements: commonSubElements(tokens),
   };
 }
@@ -535,7 +629,7 @@ const STYLE_CONFIG_KEYS = Object.freeze({
 });
 
 function styleKeyForWidget(widgetType) {
-  if (Object.prototype.hasOwnProperty.call(STYLE_CONFIG_KEYS, widgetType))
+  if (Object.hasOwn(STYLE_CONFIG_KEYS, widgetType))
     return STYLE_CONFIG_KEYS[widgetType];
   return "displayStyle";
 }
@@ -552,25 +646,21 @@ function imageSubElement(tokens, extra = {}) {
 }
 
 function textSubElement(tokens, tone = "text", extra = {}) {
-  const isMuted = tone === "muted";
-  const isAccent = tone === "accent";
-  const isPositive = tone === "positive";
-  const isNegative = tone === "negative";
+  const colorByTone = {
+    accent: tokens.colors.primary,
+    muted: tokens.colors.mutedText,
+    negative: tokens.colors.negative,
+    positive: tokens.colors.positive,
+    text: tokens.colors.text,
+  };
   return {
-    textColor: isPositive
-      ? tokens.colors.positive
-      : isNegative
-        ? tokens.colors.negative
-        : isAccent
-          ? tokens.colors.primary
-          : isMuted
-            ? tokens.colors.mutedText
-            : tokens.colors.text,
+    textColor: colorByTone[tone] || tokens.colors.text,
     fontFamily: tokens.typography.bodyFont,
     fontSize: tokens.typography.bodySize,
-    fontWeight: isAccent
-      ? tokens.typography.valueWeight
-      : tokens.typography.bodyWeight,
+    fontWeight:
+      tone === "accent"
+        ? tokens.typography.valueWeight
+        : tokens.typography.bodyWeight,
     lineHeight: tokens.typography.lineHeight,
     ...extra,
   };
@@ -602,6 +692,340 @@ function surfaceSubElement(tokens, variant = "card", extra = {}) {
   return { ...common.card, ...extra };
 }
 
+function selectStyleVariant(
+  isStyleSeca,
+  isAlternate,
+  styleSecaValue,
+  alternateValue,
+  defaultValue,
+) {
+  if (isStyleSeca) return styleSecaValue;
+  if (isAlternate) return alternateValue;
+  return defaultValue;
+}
+
+function styleSecaChatContainerPatch(isStyleSeca, tokens) {
+  if (!isStyleSeca) return undefined;
+  return {
+    background: styleSecaSurfaceGradient(),
+    textColor: STYLE_SECA.text,
+    borderColor: STYLE_SECA.border,
+    borderWidth: tokens.shape.borderWidth,
+    radius: 12,
+    fontFamily: STYLE_SECA.font,
+    shadow: `0 18px 42px rgba(0,0,0,0.32), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.14)}`,
+    glow: `0 0 24px ${STYLE_SECA.glow}`,
+  };
+}
+
+function styleSecaChatHeaderPatch(isStyleSeca, tokens) {
+  if (!isStyleSeca) return undefined;
+  return {
+    background: styleSecaHeaderGradient(),
+    textColor: STYLE_SECA.primary,
+    fontFamily: STYLE_SECA.font,
+    fontWeight: tokens.typography.headerWeight,
+    borderColor: STYLE_SECA.border,
+    borderWidth: tokens.shape.borderWidth,
+  };
+}
+
+function applyCurrentSlotGenericPatch(patch, tokens) {
+  patch.subElements = {
+    ...patch.subElements,
+    slotImage: imageSubElement(tokens, {
+      borderColor: tokens.colors.primary,
+    }),
+    slotTitle: textSubElement(tokens, "text", {
+      fontFamily: tokens.typography.headerFont,
+      fontSize: tokens.typography.headerSize,
+      fontWeight: tokens.typography.headerWeight,
+    }),
+    provider: textSubElement(tokens, "muted"),
+    stake: surfaceSubElement(tokens, "badge", {
+      textColor: tokens.colors.primary,
+      accentColor: tokens.colors.primary,
+      borderColor: tokens.colors.primary,
+    }),
+    stat: textSubElement(tokens, "accent"),
+  };
+}
+
+function applyChatGenericPatch(patch, tokens, styleId) {
+  const isGlowPanel = styleId === "glow_panel";
+  const isStyleSeca = styleId === "StyleSecaChat";
+  const bodyFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.bodyFont,
+  );
+  const messageBg = selectStyleVariant(
+    isStyleSeca,
+    isGlowPanel,
+    STYLE_SECA.cardSurface,
+    "transparent",
+    tokens.colors.secondarySurface,
+  );
+  const messageBorder = selectStyleVariant(
+    isStyleSeca,
+    isGlowPanel,
+    STYLE_SECA.border,
+    "rgba(34,211,238,0.045)",
+    tokens.colors.border,
+  );
+  const badgeBg = selectStyleVariant(
+    isStyleSeca,
+    isGlowPanel,
+    STYLE_SECA.primary,
+    tokens.colors.primary,
+    tokens.colors.secondarySurface,
+  );
+  patch.bgColor = selectStyleSecaValue(
+    isStyleSeca,
+    styleSecaSurfaceGradient(),
+    patch.bgColor,
+  );
+  patch.textColor = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.text,
+    patch.textColor,
+  );
+  patch.borderColor = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.border,
+    patch.borderColor,
+  );
+  patch.fontFamily = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    patch.fontFamily,
+  );
+  patch.borderRadius = selectStyleSecaValue(
+    isStyleSeca,
+    12,
+    patch.borderRadius,
+  );
+  patch.headerBg = selectStyleVariant(
+    isStyleSeca,
+    isGlowPanel,
+    styleSecaHeaderGradient(),
+    "rgba(2,12,25,0.82)",
+    tokens.colors.secondarySurface,
+  );
+  patch.headerText = selectStyleVariant(
+    isStyleSeca,
+    isGlowPanel,
+    STYLE_SECA.primary,
+    tokens.colors.primary,
+    tokens.colors.mutedText,
+  );
+  patch.msgSpacing = tokens.spacing.itemGap;
+  patch.msgPadH = tokens.spacing.cardPadding;
+  patch.msgLineHeight = tokens.typography.lineHeight;
+  patch.subElements = {
+    ...patch.subElements,
+    container: {
+      ...patch.subElements.container,
+      ...styleSecaChatContainerPatch(isStyleSeca, tokens),
+    },
+    header: surfaceSubElement(
+      tokens,
+      "header",
+      styleSecaChatHeaderPatch(isStyleSeca, tokens),
+    ),
+    message: surfaceSubElement(tokens, "card", {
+      background: messageBg,
+      fontFamily: bodyFont,
+      fontSize: tokens.typography.bodySize,
+      textColor: selectStyleSecaValue(
+        isStyleSeca,
+        STYLE_SECA.text,
+        tokens.colors.text,
+      ),
+      borderColor: messageBorder,
+      gap: tokens.spacing.itemGap,
+    }),
+    messageList: {
+      background: "transparent",
+      gap: tokens.spacing.itemGap,
+    },
+    messageText: textSubElement(tokens, "text", {
+      fontFamily: bodyFont,
+      fontSize: tokens.typography.bodySize,
+      textColor: selectStyleSecaValue(
+        isStyleSeca,
+        STYLE_SECA.text,
+        tokens.colors.text,
+      ),
+      lineHeight: tokens.typography.lineHeight,
+    }),
+    username: textSubElement(tokens, "accent", {
+      textColor: selectStyleSecaValue(
+        isStyleSeca,
+        STYLE_SECA.primary,
+        tokens.colors.primary,
+      ),
+      fontFamily: bodyFont,
+      fontWeight: tokens.typography.valueWeight,
+    }),
+    avatar: surfaceSubElement(tokens, "badge"),
+    badge: surfaceSubElement(tokens, "badge", {
+      background: badgeBg,
+      textColor: selectStyleSecaValue(
+        isStyleSeca,
+        STYLE_SECA.darkText,
+        tokens.colors.text,
+      ),
+    }),
+    highlightedMessage: surfaceSubElement(tokens, "card", {
+      background: selectStyleSecaValue(
+        isStyleSeca,
+        styleSecaHeaderGradient(),
+        tokens.colors.accent,
+      ),
+      textColor: selectStyleSecaValue(
+        isStyleSeca,
+        "#fff4da",
+        tokens.colors.text,
+      ),
+      borderColor: selectStyleSecaValue(
+        isStyleSeca,
+        STYLE_SECA.primary,
+        tokens.colors.primary,
+      ),
+      shadow: selectStyleSecaValue(
+        isStyleSeca,
+        `0 0 26px ${STYLE_SECA.glow}`,
+        undefined,
+      ),
+    }),
+    platformLegend: surfaceSubElement(tokens, "header", {
+      textColor: selectStyleSecaValue(
+        isStyleSeca,
+        STYLE_SECA.muted,
+        tokens.colors.mutedText,
+      ),
+    }),
+  };
+}
+
+function applyTournamentGenericPatch(patch, tokens) {
+  patch.subElements = {
+    ...patch.subElements,
+    matchCard: surfaceSubElement(tokens, "card"),
+    playerName: textSubElement(tokens, "text", {
+      fontWeight: tokens.typography.valueWeight,
+    }),
+    slotImage: imageSubElement(tokens),
+    scoreValue: textSubElement(tokens, "accent", {
+      fontWeight: tokens.typography.valueWeight,
+    }),
+    bracketLine: {
+      background: tokens.colors.secondarySurface,
+      fillColor: tokens.colors.primary,
+      radius: tokens.shape.badgeRadius,
+    },
+    statusBadge: surfaceSubElement(tokens, "badge"),
+  };
+}
+
+function applyImageSlideshowGenericPatch(patch, tokens) {
+  patch.gradientColor = tokens.colors.surface;
+  patch.captionColor = tokens.colors.text;
+  patch.captionSize = tokens.typography.bodySize;
+  patch.captionFont = tokens.typography.bodyFont;
+  patch.borderRadius = tokens.shape.rootRadius;
+  patch.borderColor = tokens.colors.border;
+  patch.borderWidth = tokens.shape.borderWidth;
+  patch.subElements = {
+    ...patch.subElements,
+    image: imageSubElement(tokens, {
+      borderColor: tokens.colors.border,
+      radius: tokens.shape.rootRadius,
+    }),
+    caption: surfaceSubElement(tokens, "card", {
+      textColor: tokens.colors.text,
+      fontFamily: tokens.typography.bodyFont,
+      fontSize: tokens.typography.bodySize,
+    }),
+    dots: surfaceSubElement(tokens, "badge", {
+      background: tokens.colors.primary,
+    }),
+  };
+}
+
+function applyRaidShoutoutGenericPatch(patch, tokens) {
+  patch.accentColor = tokens.colors.primary;
+  patch.bgColor = tokens.colors.surface;
+  patch.subtextColor = tokens.colors.mutedText;
+  patch.alertDuration = undefined;
+  patch.subElements = {
+    ...patch.subElements,
+    avatar: imageSubElement(tokens, {
+      borderColor: tokens.colors.primary,
+      radius: tokens.shape.badgeRadius,
+    }),
+    subtitle: textSubElement(tokens, "muted"),
+    viewerCount: surfaceSubElement(tokens, "badge", {
+      background: tokens.colors.primary,
+    }),
+    clipFrame: surfaceSubElement(tokens, "card"),
+  };
+}
+
+function applyBonusBuysGenericPatch(patch, tokens) {
+  patch.subElements = {
+    ...patch.subElements,
+    sessionCard: surfaceSubElement(tokens, "container", {
+      accentColor: tokens.colors.primary,
+      fontFamily: tokens.typography.bodyFont,
+    }),
+    header: surfaceSubElement(tokens, "header", {
+      textColor: tokens.colors.primary,
+      accentColor: tokens.colors.primary,
+    }),
+    slotArtwork: imageSubElement(tokens, { radius: tokens.shape.cardRadius }),
+    label: textSubElement(tokens, "muted"),
+    status: surfaceSubElement(tokens, "card"),
+    profit: textSubElement(tokens, "positive", {
+      fontWeight: tokens.typography.valueWeight,
+    }),
+    loss: textSubElement(tokens, "negative", {
+      fontWeight: tokens.typography.valueWeight,
+    }),
+    payout: textSubElement(tokens, "positive", {
+      fontWeight: tokens.typography.valueWeight,
+    }),
+    progressBar: {
+      background: tokens.colors.secondarySurface,
+      fillColor: tokens.colors.primary,
+      radius: tokens.shape.badgeRadius,
+    },
+  };
+}
+
+function applyContainerGenericPatch(patch, tokens) {
+  patch.bgColor = tokens.colors.surface;
+  patch.bgOpacity = Math.round((tokens.surfaces?.opacity || 0.94) * 100);
+  patch.gap = tokens.spacing.itemGap;
+  patch.padding = tokens.spacing.rootPadding;
+  patch.cardRadius = tokens.shape.rootRadius;
+  patch.subElements = {
+    container: surfaceSubElement(tokens, "container"),
+    childArea: surfaceSubElement(tokens, "card"),
+  };
+}
+
+const GENERIC_WIDGET_PATCH_APPLIERS = Object.freeze({
+  bonus_buys: applyBonusBuysGenericPatch,
+  chat: applyChatGenericPatch,
+  container: applyContainerGenericPatch,
+  current_slot: applyCurrentSlotGenericPatch,
+  image_slideshow: applyImageSlideshowGenericPatch,
+  raid_shoutout: applyRaidShoutoutGenericPatch,
+  tournament: applyTournamentGenericPatch,
+});
+
 function buildGenericWidgetPatch(widgetType, tokens, styleId) {
   const styleKey = styleKeyForWidget(widgetType);
   const common = commonVisualPatch(tokens);
@@ -632,239 +1056,8 @@ function buildGenericWidgetPatch(widgetType, tokens, styleId) {
   };
   if (styleKey) patch[styleKey] = styleId;
 
-  if (widgetType === "current_slot") {
-    patch.subElements = {
-      ...patch.subElements,
-      slotImage: imageSubElement(tokens, {
-        borderColor: tokens.colors.primary,
-      }),
-      slotTitle: textSubElement(tokens, "text", {
-        fontFamily: tokens.typography.headerFont,
-        fontSize: tokens.typography.headerSize,
-        fontWeight: tokens.typography.headerWeight,
-      }),
-      provider: textSubElement(tokens, "muted"),
-      stake: surfaceSubElement(tokens, "badge", {
-        textColor: tokens.colors.primary,
-        accentColor: tokens.colors.primary,
-        borderColor: tokens.colors.primary,
-      }),
-      stat: textSubElement(tokens, "accent"),
-    };
-  }
-
-  if (widgetType === "chat") {
-    const isGlowPanel = styleId === "glow_panel";
-    const isStyleSeca = styleId === "StyleSecaChat";
-    patch.bgColor = isStyleSeca ? styleSecaSurfaceGradient() : patch.bgColor;
-    patch.textColor = isStyleSeca ? STYLE_SECA.text : patch.textColor;
-    patch.borderColor = isStyleSeca ? STYLE_SECA.border : patch.borderColor;
-    patch.fontFamily = isStyleSeca ? STYLE_SECA.font : patch.fontFamily;
-    patch.borderRadius = isStyleSeca ? 12 : patch.borderRadius;
-    patch.headerBg = isStyleSeca
-      ? styleSecaHeaderGradient()
-      : isGlowPanel
-        ? "rgba(2,12,25,0.82)"
-        : tokens.colors.secondarySurface;
-    patch.headerText = isStyleSeca
-      ? STYLE_SECA.primary
-      : isGlowPanel
-        ? tokens.colors.primary
-        : tokens.colors.mutedText;
-    patch.msgSpacing = tokens.spacing.itemGap;
-    patch.msgPadH = tokens.spacing.cardPadding;
-    patch.msgLineHeight = tokens.typography.lineHeight;
-    patch.subElements = {
-      ...patch.subElements,
-      container: {
-        ...patch.subElements.container,
-        ...(isStyleSeca
-          ? {
-              background: styleSecaSurfaceGradient(),
-              textColor: STYLE_SECA.text,
-              borderColor: STYLE_SECA.border,
-              borderWidth: tokens.shape.borderWidth,
-              radius: 12,
-              fontFamily: STYLE_SECA.font,
-              shadow: `0 18px 42px rgba(0,0,0,0.32), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.14)}`,
-              glow: `0 0 24px ${STYLE_SECA.glow}`,
-            }
-          : {}),
-      },
-      header: surfaceSubElement(
-        tokens,
-        "header",
-        isStyleSeca
-          ? {
-              background: styleSecaHeaderGradient(),
-              textColor: STYLE_SECA.primary,
-              fontFamily: STYLE_SECA.font,
-              fontWeight: tokens.typography.headerWeight,
-              borderColor: STYLE_SECA.border,
-              borderWidth: tokens.shape.borderWidth,
-            }
-          : {},
-      ),
-      message: surfaceSubElement(tokens, "card", {
-        background: isStyleSeca
-          ? STYLE_SECA.cardSurface
-          : isGlowPanel
-            ? "transparent"
-            : tokens.colors.secondarySurface,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
-        fontSize: tokens.typography.bodySize,
-        textColor: isStyleSeca ? STYLE_SECA.text : tokens.colors.text,
-        borderColor: isStyleSeca
-          ? STYLE_SECA.border
-          : isGlowPanel
-            ? "rgba(34,211,238,0.045)"
-            : tokens.colors.border,
-        gap: tokens.spacing.itemGap,
-      }),
-      messageList: {
-        background: "transparent",
-        gap: tokens.spacing.itemGap,
-      },
-      messageText: textSubElement(tokens, "text", {
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
-        fontSize: tokens.typography.bodySize,
-        textColor: isStyleSeca ? STYLE_SECA.text : tokens.colors.text,
-        lineHeight: tokens.typography.lineHeight,
-      }),
-      username: textSubElement(tokens, "accent", {
-        textColor: isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
-        fontWeight: tokens.typography.valueWeight,
-      }),
-      avatar: surfaceSubElement(tokens, "badge"),
-      badge: surfaceSubElement(tokens, "badge", {
-        background: isStyleSeca
-          ? STYLE_SECA.primary
-          : isGlowPanel
-            ? tokens.colors.primary
-            : tokens.colors.secondarySurface,
-        textColor: isStyleSeca ? STYLE_SECA.darkText : tokens.colors.text,
-      }),
-      highlightedMessage: surfaceSubElement(tokens, "card", {
-        background: isStyleSeca
-          ? styleSecaHeaderGradient()
-          : tokens.colors.accent,
-        textColor: isStyleSeca ? "#fff4da" : tokens.colors.text,
-        borderColor: isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary,
-        shadow: isStyleSeca ? `0 0 26px ${STYLE_SECA.glow}` : undefined,
-      }),
-      platformLegend: surfaceSubElement(tokens, "header", {
-        textColor: isStyleSeca ? STYLE_SECA.muted : tokens.colors.mutedText,
-      }),
-    };
-  }
-
-  if (widgetType === "tournament") {
-    patch.subElements = {
-      ...patch.subElements,
-      matchCard: surfaceSubElement(tokens, "card"),
-      playerName: textSubElement(tokens, "text", {
-        fontWeight: tokens.typography.valueWeight,
-      }),
-      slotImage: imageSubElement(tokens),
-      scoreValue: textSubElement(tokens, "accent", {
-        fontWeight: tokens.typography.valueWeight,
-      }),
-      bracketLine: {
-        background: tokens.colors.secondarySurface,
-        fillColor: tokens.colors.primary,
-        radius: tokens.shape.badgeRadius,
-      },
-      statusBadge: surfaceSubElement(tokens, "badge"),
-    };
-  }
-
-  if (widgetType === "image_slideshow") {
-    patch.gradientColor = tokens.colors.surface;
-    patch.captionColor = tokens.colors.text;
-    patch.captionSize = tokens.typography.bodySize;
-    patch.captionFont = tokens.typography.bodyFont;
-    patch.borderRadius = tokens.shape.rootRadius;
-    patch.borderColor = tokens.colors.border;
-    patch.borderWidth = tokens.shape.borderWidth;
-    patch.subElements = {
-      ...patch.subElements,
-      image: imageSubElement(tokens, {
-        borderColor: tokens.colors.border,
-        radius: tokens.shape.rootRadius,
-      }),
-      caption: surfaceSubElement(tokens, "card", {
-        textColor: tokens.colors.text,
-        fontFamily: tokens.typography.bodyFont,
-        fontSize: tokens.typography.bodySize,
-      }),
-      dots: surfaceSubElement(tokens, "badge", {
-        background: tokens.colors.primary,
-      }),
-    };
-  }
-
-  if (widgetType === "raid_shoutout") {
-    patch.accentColor = tokens.colors.primary;
-    patch.bgColor = tokens.colors.surface;
-    patch.subtextColor = tokens.colors.mutedText;
-    patch.alertDuration = undefined;
-    patch.subElements = {
-      ...patch.subElements,
-      avatar: imageSubElement(tokens, {
-        borderColor: tokens.colors.primary,
-        radius: tokens.shape.badgeRadius,
-      }),
-      subtitle: textSubElement(tokens, "muted"),
-      viewerCount: surfaceSubElement(tokens, "badge", {
-        background: tokens.colors.primary,
-      }),
-      clipFrame: surfaceSubElement(tokens, "card"),
-    };
-  }
-
-  if (widgetType === "bonus_buys") {
-    patch.subElements = {
-      ...patch.subElements,
-      sessionCard: surfaceSubElement(tokens, "container", {
-        accentColor: tokens.colors.primary,
-        fontFamily: tokens.typography.bodyFont,
-      }),
-      header: surfaceSubElement(tokens, "header", {
-        textColor: tokens.colors.primary,
-        accentColor: tokens.colors.primary,
-      }),
-      slotArtwork: imageSubElement(tokens, { radius: tokens.shape.cardRadius }),
-      label: textSubElement(tokens, "muted"),
-      status: surfaceSubElement(tokens, "card"),
-      profit: textSubElement(tokens, "positive", {
-        fontWeight: tokens.typography.valueWeight,
-      }),
-      loss: textSubElement(tokens, "negative", {
-        fontWeight: tokens.typography.valueWeight,
-      }),
-      payout: textSubElement(tokens, "positive", {
-        fontWeight: tokens.typography.valueWeight,
-      }),
-      progressBar: {
-        background: tokens.colors.secondarySurface,
-        fillColor: tokens.colors.primary,
-        radius: tokens.shape.badgeRadius,
-      },
-    };
-  }
-
-  if (widgetType === "container") {
-    patch.bgColor = tokens.colors.surface;
-    patch.bgOpacity = Math.round((tokens.surfaces?.opacity || 0.94) * 100);
-    patch.gap = tokens.spacing.itemGap;
-    patch.padding = tokens.spacing.rootPadding;
-    patch.cardRadius = tokens.shape.rootRadius;
-    patch.subElements = {
-      container: surfaceSubElement(tokens, "container"),
-      childArea: surfaceSubElement(tokens, "card"),
-    };
-  }
+  const patchApplier = GENERIC_WIDGET_PATCH_APPLIERS[widgetType];
+  if (patchApplier) patchApplier(patch, tokens, styleId);
 
   return Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
@@ -888,15 +1081,15 @@ function buildBackgroundPatch(tokens, styleId) {
     "#1e293b";
   const bgMode = isSpecial ? "special" : "texture";
   const displayStyle = isSpecial ? styleId : "v1";
+  const textureTypeByMaterial = {
+    glass: "gloss",
+    metallic: "metallic",
+  };
+  const textureType = textureTypeByMaterial[tokens.material] || "gradient";
   return {
     displayStyle,
     bgMode,
-    textureType:
-      tokens.material === "metallic"
-        ? "metallic"
-        : tokens.material === "glass"
-          ? "gloss"
-          : "gradient",
+    textureType,
     color1: primary,
     color2: accent,
     color3: fill,
@@ -932,12 +1125,7 @@ function buildBackgroundPatch(tokens, styleId) {
         bgMode,
       },
       texture: {
-        textureType:
-          tokens.material === "metallic"
-            ? "metallic"
-            : tokens.material === "glass"
-              ? "gloss"
-              : "gradient",
+        textureType,
         background: primary,
         accentColor: accent,
         fillColor: fill,
@@ -1899,6 +2087,30 @@ function buildSlotRequestsPatch(tokens, styleId) {
   };
 }
 
+function resolveRtpAccentSurface({
+  isGlass,
+  isStyleSeca,
+  hasSecondColor,
+  secondary,
+  secondAccent,
+}) {
+  if (isGlass)
+    return toRgba(secondAccent, selectValue(hasSecondColor, 0.28, 0.16));
+  if (isStyleSeca) return STYLE_SECA.elevated;
+  if (hasSecondColor) return mixHex(secondary, secondAccent, 0.28);
+  return secondary;
+}
+
+function resolveRtpDividerColor(
+  isStyleSeca,
+  hasSecondColor,
+  secondAccent,
+  border,
+) {
+  if (isStyleSeca || hasSecondColor) return secondAccent;
+  return border;
+}
+
 function buildRtpStatsPatch(tokens, styleId) {
   const common = commonSubElements(tokens);
   const isNeon = styleId === "neon";
@@ -1906,40 +2118,109 @@ function buildRtpStatsPatch(tokens, styleId) {
   const isGlass = styleId === "glass";
   const isStyleSeca = styleId === "StyleSecaRTP";
   const hasSecondColor = tokens.useAccentColor || tokens.useSecondColor;
-  const surface = isStyleSeca ? STYLE_SECA.surface : tokens.colors.surface;
-  const secondary = isStyleSeca
-    ? STYLE_SECA.secondarySurface
-    : tokens.colors.secondarySurface;
-  const elevated = isStyleSeca
-    ? STYLE_SECA.elevated
-    : tokens.colors.elevatedSurface;
-  const accent = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
-  const secondAccent = isStyleSeca
-    ? STYLE_SECA.secondary
-    : tokens.colors.accent || accent;
-  const text = isStyleSeca ? STYLE_SECA.text : tokens.colors.text;
-  const muted = isStyleSeca ? STYLE_SECA.muted : tokens.colors.mutedText;
-  const border = isStyleSeca ? STYLE_SECA.border : tokens.colors.border;
-  const accentSurface = isGlass
-    ? toRgba(secondAccent, hasSecondColor ? 0.28 : 0.16)
-    : isStyleSeca
-      ? STYLE_SECA.elevated
-      : hasSecondColor
-        ? mixHex(secondary, secondAccent, 0.28)
-        : secondary;
-  const shadow =
-    tokens.materialTokens?.shadowIntensity > 0.02
-      ? `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 48)} ${tokens.colors.shadow}`
-      : undefined;
-  const glow =
-    tokens.materialTokens?.glowIntensity > 0.01
-      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 46)} ${tokens.colors.glow}`
-      : undefined;
+  const surface = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.surface,
+    tokens.colors.surface,
+  );
+  const secondary = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.secondarySurface,
+    tokens.colors.secondarySurface,
+  );
+  const accent = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.primary,
+    tokens.colors.primary,
+  );
+  const secondAccent = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.secondary,
+    tokens.colors.accent || accent,
+  );
+  const text = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.text,
+    tokens.colors.text,
+  );
+  const muted = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.muted,
+    tokens.colors.mutedText,
+  );
+  const border = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.border,
+    tokens.colors.border,
+  );
+  const valueFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.valueFont,
+  );
+  const labelFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.labelFont,
+  );
+  const headerFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.headerFont,
+  );
+  const bodyFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.bodyFont,
+  );
+  const accentSurface = resolveRtpAccentSurface({
+    isGlass,
+    isStyleSeca,
+    hasSecondColor,
+    secondary,
+    secondAccent,
+  });
+  const shadow = optionalMaterialShadow(
+    tokens.materialTokens?.shadowIntensity > 0.02,
+    `0 ${px(tokens.materialTokens.shadowIntensity * 18)} ${px(tokens.materialTokens.shadowIntensity * 48)} ${tokens.colors.shadow}`,
+  );
+  const glow = optionalMaterialShadow(
+    tokens.materialTokens?.glowIntensity > 0.01,
+    `0 0 ${px(tokens.materialTokens.glowIntensity * 46)} ${tokens.colors.glow}`,
+  );
   const combinedShadow = [shadow, glow].filter(Boolean).join(", ") || undefined;
-  const barBgFrom = isNeon ? "#050510" : surface;
-  const barBgVia = isMinimal ? surface : accentSurface;
-  const barBgTo = isNeon ? "#050510" : surface;
-  const warning = isStyleSeca ? "#f2c96d" : tokens.colors.warning;
+  const barBgFrom = selectValue(isNeon, "#050510", surface);
+  const barBgVia = selectValue(isMinimal, surface, accentSurface);
+  const barBgTo = selectValue(isNeon, "#050510", surface);
+  const warning = selectStyleSecaValue(
+    isStyleSeca,
+    "#f2c96d",
+    tokens.colors.warning,
+  );
+  const borderColor = selectValue(isMinimal, "rgba(255,255,255,0.08)", border);
+  const borderWidth = selectValue(isMinimal, 0, tokens.shape.borderWidth);
+  const containerBorderColor = selectValue(isMinimal, "transparent", border);
+  const bestWinIconColor = selectStyleSecaValue(
+    isStyleSeca,
+    accent,
+    tokens.colors.positive,
+  );
+  const dividerColor = resolveRtpDividerColor(
+    isStyleSeca,
+    hasSecondColor,
+    secondAccent,
+    tokens.colors.border,
+  );
+  const containerShadow = selectStyleSecaFallback(
+    isStyleSeca,
+    combinedShadow,
+    `0 16px 38px rgba(0,0,0,0.28), 0 0 24px ${toRgba(STYLE_SECA.primary, 0.16)}`,
+  );
+  const containerGlow = selectStyleSecaFallback(
+    isStyleSeca,
+    glow,
+    `0 0 22px ${STYLE_SECA.glow}`,
+  );
   const barHeight =
     tokens.layout?.barHeight ||
     Math.max(42, Math.min(92, Math.round(48 * tokens.spacing.scale)));
@@ -1956,8 +2237,8 @@ function buildRtpStatsPatch(tokens, styleId) {
     barBgFrom,
     barBgVia,
     barBgTo,
-    borderColor: isMinimal ? "rgba(255,255,255,0.08)" : border,
-    borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
+    borderColor,
+    borderWidth,
     borderRadius: tokens.shape.rootRadius,
     textColor: text,
     providerColor: text,
@@ -1966,14 +2247,10 @@ function buildRtpStatsPatch(tokens, styleId) {
     rtpIconColor: accent,
     potentialIconColor: warning,
     volatilityIconColor: secondAccent,
-    bestWinIconColor: isStyleSeca ? accent : tokens.colors.positive,
-    dividerColor: isStyleSeca
-      ? secondAccent
-      : hasSecondColor
-        ? secondAccent
-        : tokens.colors.border,
+    bestWinIconColor,
+    dividerColor,
     spinnerColor: accent,
-    fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.bodyFont,
+    fontFamily: bodyFont,
     fontSize: tokens.typography.bodySize,
     providerFontSize: tokens.typography.headerSize,
     fontWeight: tokens.typography.valueWeight,
@@ -1989,23 +2266,18 @@ function buildRtpStatsPatch(tokens, styleId) {
         ...common.container,
         background: surface,
         textColor: text,
-        borderColor: isMinimal ? "transparent" : border,
-        borderWidth: isMinimal ? 0 : tokens.shape.borderWidth,
+        borderColor: containerBorderColor,
+        borderWidth,
         radius: tokens.shape.rootRadius,
         height: barHeight,
         maxWidth,
-        shadow: isStyleSeca
-          ? combinedShadow ||
-            `0 16px 38px rgba(0,0,0,0.28), 0 0 24px ${toRgba(STYLE_SECA.primary, 0.16)}`
-          : combinedShadow,
-        glow: isStyleSeca ? glow || `0 0 22px ${STYLE_SECA.glow}` : glow,
+        shadow: containerShadow,
+        glow: containerGlow,
       },
       provider: {
         textColor: text,
         accentColor: secondAccent,
-        fontFamily: isStyleSeca
-          ? STYLE_SECA.font
-          : tokens.typography.headerFont,
+        fontFamily: headerFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
         imageSize: providerLogoHeight,
@@ -2016,21 +2288,21 @@ function buildRtpStatsPatch(tokens, styleId) {
       },
       slotTitle: {
         textColor: text,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+        fontFamily: valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,
       },
       rtpValue: {
         textColor: text,
         accentColor: accent,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+        fontFamily: valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,
       },
       maxWin: {
         textColor: text,
         accentColor: warning,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+        fontFamily: valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,
       },
@@ -2043,8 +2315,8 @@ function buildRtpStatsPatch(tokens, styleId) {
       },
       personalBest: {
         textColor: text,
-        accentColor: isStyleSeca ? accent : tokens.colors.positive,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+        accentColor: bestWinIconColor,
+        fontFamily: valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,
       },
@@ -2074,26 +2346,14 @@ function buildRtpStatsPatch(tokens, styleId) {
       },
       label: {
         textColor: muted,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.labelFont,
+        fontFamily: labelFont,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.labelWeight,
       },
       divider: {
-        background: isStyleSeca
-          ? secondAccent
-          : hasSecondColor
-            ? secondAccent
-            : tokens.colors.border,
-        borderColor: isStyleSeca
-          ? secondAccent
-          : hasSecondColor
-            ? secondAccent
-            : tokens.colors.border,
-        accentColor: isStyleSeca
-          ? secondAccent
-          : hasSecondColor
-            ? secondAccent
-            : tokens.colors.border,
+        background: dividerColor,
+        borderColor: dividerColor,
+        accentColor: dividerColor,
       },
       spinner: {
         textColor: accent,
@@ -2108,36 +2368,114 @@ function buildNavbarPatch(tokens, styleId) {
   const isRetro = styleId === "retro";
   const isGlass = styleId === "glass";
   const isStyleSeca = styleId === "StyleSecaNav";
-  const isMetallic = styleId === "metallic" || isStyleSeca;
-  const primary = isStyleSeca ? STYLE_SECA.primary : tokens.colors.primary;
-  const secondary = isStyleSeca ? STYLE_SECA.secondary : tokens.colors.accent;
-  const surface = isStyleSeca ? STYLE_SECA.surface : tokens.colors.surface;
-  const elevated = isStyleSeca
-    ? STYLE_SECA.elevated
-    : tokens.colors.elevatedSurface;
-  const text = isStyleSeca ? STYLE_SECA.text : tokens.colors.text;
-  const muted = isStyleSeca ? STYLE_SECA.muted : tokens.colors.mutedText;
-  const border = isStyleSeca ? STYLE_SECA.border : tokens.colors.border;
-  const cta = isStyleSeca
-    ? STYLE_SECA.primary
-    : isRetro
-      ? tokens.colors.warning
-      : tokens.colors.accent;
-  const ctaText = isStyleSeca ? STYLE_SECA.darkText : "#ffffff";
-  const family = isStyleSeca
-    ? STYLE_SECA.font
-    : isRetro
-      ? "'Press Start 2P', 'Courier New', monospace"
-      : tokens.typography.bodyFont;
-  const shadow =
-    tokens.materialTokens?.shadowIntensity > 0.02
-      ? `0 ${px(tokens.materialTokens.shadowIntensity * 16)} ${px(tokens.materialTokens.shadowIntensity * 42)} ${tokens.colors.shadow}`
-      : undefined;
-  const glow =
-    tokens.materialTokens?.glowIntensity > 0.01
-      ? `0 0 ${px(tokens.materialTokens.glowIntensity * 42)} ${tokens.colors.glow}`
-      : undefined;
+  const isMetallic = ["metallic", "StyleSecaNav"].includes(styleId);
+  const retroFont = "'Press Start 2P', 'Courier New', monospace";
+  const primary = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.primary,
+    tokens.colors.primary,
+  );
+  const secondary = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.secondary,
+    tokens.colors.accent,
+  );
+  const surface = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.surface,
+    tokens.colors.surface,
+  );
+  const elevated = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.elevated,
+    tokens.colors.elevatedSurface,
+  );
+  const text = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.text,
+    tokens.colors.text,
+  );
+  const muted = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.muted,
+    tokens.colors.mutedText,
+  );
+  const border = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.border,
+    tokens.colors.border,
+  );
+  const cta = selectStyleVariant(
+    isStyleSeca,
+    isRetro,
+    STYLE_SECA.primary,
+    tokens.colors.warning,
+    tokens.colors.accent,
+  );
+  const ctaText = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.darkText,
+    "#ffffff",
+  );
+  const family = selectStyleVariant(
+    isStyleSeca,
+    isRetro,
+    STYLE_SECA.font,
+    retroFont,
+    tokens.typography.bodyFont,
+  );
+  const displayNameFont = selectStyleVariant(
+    isStyleSeca,
+    isRetro,
+    STYLE_SECA.font,
+    retroFont,
+    tokens.typography.headerFont,
+  );
+  const valueFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.valueFont,
+  );
+  const labelFont = selectStyleSecaValue(
+    isStyleSeca,
+    STYLE_SECA.font,
+    tokens.typography.labelFont,
+  );
+  const borderWidth = selectValue(
+    isRetro,
+    Math.max(2, tokens.shape.borderWidth),
+    tokens.shape.borderWidth,
+  );
+  const sponsorBorderColor = selectStyleSecaValue(
+    isStyleSeca,
+    border,
+    tokens.colors.highlight,
+  );
+  const separatorColor = selectStyleSecaValue(
+    isStyleSeca,
+    secondary,
+    tokens.colors.border,
+  );
+  const clockBackground = selectValue(isMetallic, elevated, primary);
+  const shadow = optionalMaterialShadow(
+    tokens.materialTokens?.shadowIntensity > 0.02,
+    `0 ${px(tokens.materialTokens.shadowIntensity * 16)} ${px(tokens.materialTokens.shadowIntensity * 42)} ${tokens.colors.shadow}`,
+  );
+  const glow = optionalMaterialShadow(
+    tokens.materialTokens?.glowIntensity > 0.01,
+    `0 0 ${px(tokens.materialTokens.glowIntensity * 42)} ${tokens.colors.glow}`,
+  );
   const combinedShadow = [shadow, glow].filter(Boolean).join(", ") || undefined;
+  const containerShadow = selectStyleSecaFallback(
+    isStyleSeca,
+    combinedShadow,
+    `0 16px 38px rgba(0,0,0,0.30), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}`,
+  );
+  const containerGlow = selectStyleSecaFallback(
+    isStyleSeca,
+    glow,
+    `0 0 24px ${STYLE_SECA.glow}`,
+  );
   const imageSize = Math.round(42 * (tokens.image?.sizeMultiplier || 1));
   const logoImageSize = Math.round(54 * (tokens.image?.sizeMultiplier || 1));
   const barHeight =
@@ -2157,9 +2495,7 @@ function buildNavbarPatch(tokens, styleId) {
     cryptoDownColor: tokens.colors.negative,
     fontFamily: family,
     fontSize: tokens.typography.bodySize,
-    borderWidth: isRetro
-      ? Math.max(2, tokens.shape.borderWidth)
-      : tokens.shape.borderWidth,
+    borderWidth,
     borderRadius: tokens.shape.rootRadius,
     barHeight,
     maxWidth,
@@ -2175,22 +2511,19 @@ function buildNavbarPatch(tokens, styleId) {
         background: surface,
         textColor: text,
         borderColor: border,
-        borderWidth: isRetro
-          ? Math.max(2, tokens.shape.borderWidth)
-          : tokens.shape.borderWidth,
+        borderWidth,
         radius: tokens.shape.rootRadius,
         padding: tokens.spacing.rootPadding,
         height: barHeight,
         maxWidth,
         gap: tokens.spacing.itemGap,
-        shadow: isStyleSeca
-          ? combinedShadow ||
-            `0 16px 38px rgba(0,0,0,0.30), 0 0 28px ${toRgba(STYLE_SECA.primary, 0.16)}`
-          : combinedShadow,
-        glow: isStyleSeca ? glow || `0 0 24px ${STYLE_SECA.glow}` : glow,
-        ...(isGlass
-          ? { backdropBlur: tokens.materialTokens?.blurStrength || 12 }
-          : {}),
+        shadow: containerShadow,
+        glow: containerGlow,
+        ...selectValue(
+          isGlass,
+          { backdropBlur: tokens.materialTokens?.blurStrength || 12 },
+          undefined,
+        ),
       },
       logo: {
         accentColor: primary,
@@ -2211,16 +2544,12 @@ function buildNavbarPatch(tokens, styleId) {
       displayName: {
         textColor: text,
         accentColor: primary,
-        fontFamily: isStyleSeca
-          ? STYLE_SECA.font
-          : isRetro
-            ? "'Press Start 2P', 'Courier New', monospace"
-            : tokens.typography.headerFont,
+        fontFamily: displayNameFont,
         fontSize: tokens.typography.headerSize,
         fontWeight: tokens.typography.headerWeight,
       },
       clock: {
-        background: isMetallic ? elevated : primary,
+        background: clockBackground,
         textColor: text,
         accentColor: primary,
         borderColor: border,
@@ -2247,11 +2576,11 @@ function buildNavbarPatch(tokens, styleId) {
         background: cta,
         textColor: ctaText,
         accentColor: cta,
-        borderColor: isStyleSeca ? border : tokens.colors.highlight,
+        borderColor: sponsorBorderColor,
         borderWidth: tokens.shape.borderWidth,
         radius: tokens.shape.badgeRadius,
         padding: tokens.spacing.cardPadding,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.labelFont,
+        fontFamily: labelFont,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.valueWeight,
         shadow: combinedShadow,
@@ -2278,14 +2607,14 @@ function buildNavbarPatch(tokens, styleId) {
         textColor: text,
         accentColor: primary,
         borderColor: muted,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.valueFont,
+        fontFamily: valueFont,
         fontSize: tokens.typography.valueSize,
         fontWeight: tokens.typography.valueWeight,
       },
       casino: {
         textColor: primary,
         accentColor: primary,
-        fontFamily: isStyleSeca ? STYLE_SECA.font : tokens.typography.labelFont,
+        fontFamily: labelFont,
         fontSize: tokens.typography.labelSize,
         fontWeight: tokens.typography.valueWeight,
         imageSize: logoImageSize,
@@ -2293,8 +2622,8 @@ function buildNavbarPatch(tokens, styleId) {
         radius: tokens.image?.radius ?? tokens.shape.cardRadius,
       },
       separator: {
-        background: isStyleSeca ? secondary : tokens.colors.border,
-        borderColor: isStyleSeca ? secondary : tokens.colors.border,
+        background: separatorColor,
+        borderColor: separatorColor,
         borderWidth: tokens.shape.borderWidth,
         opacity: 0.7,
       },
@@ -2815,6 +3144,6 @@ export function getSimpleAppearanceV2Settings(appearance, root, widgetType) {
   return normalizeSimpleAppearanceV2({
     ...(getWidgetAppearanceCapability(widgetType)?.defaultAppearance ||
       DEFAULT_SIMPLE_APPEARANCE_V2),
-    ...(legacy || {}),
+    ...legacy,
   });
 }

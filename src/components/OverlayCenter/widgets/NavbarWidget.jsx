@@ -86,6 +86,677 @@ const DEFAULT_SECTION_LAYOUT = [
   { id: "casino", zone: "right" },
 ];
 
+const NAVBAR_STYLE_DEFAULTS = {
+  accentColor: {
+    StyleSecaNav: STYLE_SECA.primary,
+    metallic: "#e8a020",
+    glass: "#60a5fa",
+    retro: "#ff6b2b",
+    carbon: "#ef4444",
+    futuristic: "#00ffcc",
+    default: "#f59e0b",
+  },
+  bgColor: {
+    StyleSecaNav: STYLE_SECA.surface,
+    metallic: "#1a1a1e",
+    glass: "#0f172a",
+    retro: "#1a0a00",
+    carbon: "#0a0a0a",
+    futuristic: "#050d1a",
+    default: "#111318",
+  },
+  textColor: {
+    StyleSecaNav: STYLE_SECA.text,
+    metallic: "#d4d4d8",
+    glass: "#e0eaff",
+    retro: "#ffd9b3",
+    carbon: "#d4d4d8",
+    futuristic: "#e0fff5",
+    default: "#f1f5f9",
+  },
+  mutedColor: {
+    StyleSecaNav: STYLE_SECA.muted,
+    metallic: "#666666",
+    glass: "#6b8ccc",
+    retro: "#885530",
+    carbon: "#52525b",
+    futuristic: "#4fd1c5",
+    default: "#94a3b8",
+  },
+  containerFontFamily: {
+    StyleSecaNav: "'Rajdhani', 'Barlow Condensed', sans-serif",
+    retro: "'Press Start 2P', 'Courier New', monospace",
+    futuristic: "'Orbitron', sans-serif",
+    default: "'Inter', sans-serif",
+  },
+  borderWidth: {
+    StyleSecaNav: 1,
+    metallic: 1,
+    glass: 1,
+    retro: 3,
+    carbon: 1,
+    futuristic: 1,
+    default: 3,
+  },
+  borderRadius: {
+    StyleSecaNav: 12,
+    metallic: 16,
+    glass: 20,
+    retro: 4,
+    carbon: 8,
+    futuristic: 20,
+    default: 999,
+  },
+  casinoRadius: {
+    StyleSecaNav: 6,
+    metallic: 6,
+    retro: 2,
+    default: 8,
+  },
+  clockRadius: {
+    StyleSecaNav: 10,
+    metallic: 10,
+    glass: 14,
+    retro: 2,
+    default: 999,
+  },
+  containerFontSize: {
+    retro: 13,
+    default: 15,
+  },
+  clockBorderWidth: {
+    retro: 2,
+    default: 1,
+  },
+  ctaColor: {
+    StyleSecaNav: STYLE_SECA.primary,
+    retro: "#ff4500",
+    futuristic: "#00ffcc",
+    default: "#f43f5e",
+  },
+};
+
+function resolveNavbarStyleDefault(displayStyle, key) {
+  const defaults = NAVBAR_STYLE_DEFAULTS[key] || {};
+  const value = Object.hasOwn(defaults, displayStyle)
+    ? defaults[displayStyle]
+    : defaults.default;
+  return typeof value === "function" ? value() : value;
+}
+
+function resolveNavbarStyleSecaValue(isStyleSeca, value, fallback) {
+  if (isStyleSeca) return resolveStyleSecaValue(value, fallback);
+  return value;
+}
+
+function resolveDisplayNowPlaying(config, nowPlaying) {
+  if (config.musicSource === "spotify" && nowPlaying) return nowPlaying;
+  if (config.musicSource !== "manual") return null;
+  if (!config.manualArtist && !config.manualTrack) return null;
+  return {
+    artist: config.manualArtist || "",
+    track: config.manualTrack || "",
+    isPlaying: true,
+  };
+}
+
+function resolveNavbarClockBorderColor(displayStyle, accentColor) {
+  if (displayStyle === "retro") return `${accentColor}88`;
+  return "rgba(255,255,255,0.12)";
+}
+
+function resolveSponsorFontWeight({ isGlass, isMetalSurface, isRetro }) {
+  if (isGlass) return 600;
+  if (!isMetalSurface && !isRetro) return 600;
+  return 700;
+}
+
+function buildNavbarBarOuterStyle({
+  isStyleSeca,
+  isMetal,
+  isCarbon,
+  isFuturistic,
+  isGlass,
+  isRetro,
+  borderWidth,
+  containerFontFamily,
+  accentColor,
+  bgColor,
+  borderColor,
+}) {
+  const base = {
+    width: "100%",
+    height: "100%",
+    boxSizing: "border-box",
+    padding: `${borderWidth}px`,
+    fontFamily: containerFontFamily,
+  };
+  if (isStyleSeca) return { ...base, background: styleSecaHeaderGradient() };
+  if (isMetal) {
+    return {
+      ...base,
+      background: brushedMetalBackground(
+        "linear-gradient(135deg, rgba(42,43,48,0.96), rgba(17,18,22,0.98))",
+        accentColor,
+        { highlightOpacity: 0.05, grainOpacity: 0.025 },
+      ),
+    };
+  }
+  if (isCarbon) {
+    return {
+      ...base,
+      background: `repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), ${bgColor}`,
+    };
+  }
+  if (isFuturistic) {
+    return {
+      ...base,
+      background:
+        "linear-gradient(135deg, rgba(0,255,204,0.06), transparent 40%, rgba(0,255,204,0.04))",
+    };
+  }
+  if (isGlass) {
+    return {
+      ...base,
+      background:
+        "linear-gradient(135deg, rgba(30,30,60,0.82), rgba(20,20,50,0.88))",
+    };
+  }
+  if (isRetro) {
+    return {
+      ...base,
+      background: `${borderColor}`,
+      imageRendering: "pixelated",
+    };
+  }
+  return {
+    ...base,
+    background: `linear-gradient(to bottom, ${borderColor}e6, ${borderColor}cc)`,
+  };
+}
+
+function buildNavbarBarInnerStyle({
+  isStyleSeca,
+  isMetal,
+  isCarbon,
+  isFuturistic,
+  isGlass,
+  isRetro,
+  bgColor,
+  bgColorRGB,
+  bgColorSoft,
+  accentColor,
+  accentColorRGB,
+  textColor,
+  fontSize,
+  containerPadding,
+  containerShadow,
+  containerGlow,
+  containerBlur,
+  widgetScale,
+  needsFilter,
+  filterStr,
+}) {
+  const configuredShadow =
+    containerShadow || containerGlow
+      ? [containerShadow, containerGlow].filter(Boolean).join(", ")
+      : undefined;
+  const base = {
+    display: "flex",
+    alignItems: "center",
+    height: "100%",
+    boxSizing: "border-box",
+    color: textColor,
+    fontSize,
+    gap: 0,
+    transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
+    transformOrigin: "center",
+    overflow: "visible",
+    ...(needsFilter && { filter: filterStr }),
+  };
+  const blurStyle = containerBlur
+    ? {
+        backdropFilter: `blur(${containerBlur}px)`,
+        WebkitBackdropFilter: `blur(${containerBlur}px)`,
+      }
+    : {};
+  if (isStyleSeca) {
+    return {
+      ...base,
+      ...blurStyle,
+      background: styleSecaSurfaceGradient("170deg"),
+      padding: `0 ${containerPadding}px`,
+      boxShadow:
+        configuredShadow ||
+        `0 16px 34px rgba(0,0,0,0.36), 0 0 24px ${STYLE_SECA.glow}`,
+      position: "relative",
+    };
+  }
+  if (isMetal) {
+    return {
+      ...base,
+      ...blurStyle,
+      background: brushedMetalBackground(
+        `linear-gradient(170deg, rgba(${accentColorRGB},0.05) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.035) 60%, ${bgColor} 100%)`,
+        accentColor,
+      ),
+      padding: `0 ${containerPadding}px`,
+      boxShadow: configuredShadow || metalSurfaceShadow(accentColor, 0.85),
+      position: "relative",
+    };
+  }
+  if (isCarbon) {
+    return {
+      ...base,
+      ...blurStyle,
+      background: `linear-gradient(180deg, ${bgColor}, #060606)`,
+      padding: `0 ${containerPadding}px`,
+      boxShadow: configuredShadow,
+      position: "relative",
+    };
+  }
+  if (isFuturistic) {
+    return {
+      ...base,
+      ...blurStyle,
+      background: `linear-gradient(135deg, rgba(${bgColorRGB},0.95), rgba(${bgColorRGB},0.88))`,
+      padding: `0 ${containerPadding}px`,
+      boxShadow: configuredShadow,
+      position: "relative",
+    };
+  }
+  if (isGlass) {
+    return {
+      ...base,
+      ...blurStyle,
+      background: `linear-gradient(135deg, rgba(${bgColorRGB},0.92), rgba(${bgColorRGB},0.85))`,
+      padding: `0 ${containerPadding}px`,
+      boxShadow: configuredShadow,
+      position: "relative",
+    };
+  }
+  if (isRetro) {
+    return {
+      ...base,
+      background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
+      padding: `0 ${Math.max(6, Number(containerPadding) || 8)}px`,
+      boxShadow: configuredShadow,
+      position: "relative",
+      borderTop: "2px solid rgba(255,255,255,0.15)",
+    };
+  }
+  return {
+    ...base,
+    background: `linear-gradient(to right, ${bgColor}, ${bgColorSoft}, ${bgColor})`,
+    padding: `0 ${containerPadding}px`,
+    boxShadow: configuredShadow,
+  };
+}
+
+function buildNavbarSeparatorStyle({
+  isMetalSurface,
+  isGlass,
+  isRetro,
+  separatorWidth,
+  separatorColor,
+  separatorOpacity,
+  barHeight,
+  accentColor,
+  accentColorRGB,
+  mutedColor,
+}) {
+  const base = {
+    width: separatorWidth,
+    opacity: separatorOpacity,
+    flexShrink: 0,
+  };
+  if (isMetalSurface) {
+    return {
+      ...base,
+      height: barHeight * 0.5,
+      background:
+        separatorColor ||
+        `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
+      margin: "0 3px",
+    };
+  }
+  if (isGlass) {
+    return {
+      ...base,
+      height: barHeight * 0.5,
+      background:
+        separatorColor ||
+        "linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)",
+      margin: "0 3px",
+    };
+  }
+  if (isRetro) {
+    return {
+      ...base,
+      width: Math.max(1, Number(separatorWidth) || 2),
+      height: barHeight * 0.6,
+      background: separatorColor || `${accentColor}88`,
+      margin: "0 2px",
+    };
+  }
+  return {
+    ...base,
+    height: barHeight * 0.55,
+    background:
+      separatorColor ||
+      `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
+    margin: "0 3px",
+  };
+}
+
+function resolveDisplayNameBackground({
+  isMetalSurface,
+  isGlass,
+  isRetro,
+  textColor,
+  displayNameAccentColor,
+  ctaColor,
+  nameGradient,
+}) {
+  if (isMetalSurface) {
+    return brushedMetalTextBackground(textColor, displayNameAccentColor);
+  }
+  if (isGlass) {
+    return `linear-gradient(to right, ${textColor}, ${displayNameAccentColor}, ${textColor})`;
+  }
+  if (isRetro) {
+    return `linear-gradient(to right, ${displayNameAccentColor}, ${ctaColor}, ${displayNameAccentColor})`;
+  }
+  return (
+    nameGradient ||
+    `linear-gradient(to right, ${displayNameAccentColor}, ${textColor}, ${displayNameAccentColor})`
+  );
+}
+
+function resolveDisplayNameLetterSpacing({ isMetalSurface, isRetro }) {
+  if (isMetalSurface) return "0.22em";
+  if (isRetro) return "0.12em";
+  return "0.18em";
+}
+
+function resolveMottoLetterSpacing({ isMetalSurface, isRetro }) {
+  if (isMetalSurface) return "0.4em";
+  if (isRetro) return "0.2em";
+  return "0.35em";
+}
+
+function clockPaddingValue(clockPadding, multiplier, fallback) {
+  if (clockPadding != null)
+    return `${clockPadding}px ${Math.round(clockPadding * multiplier)}px`;
+  return fallback;
+}
+
+function buildNavbarClockStyle({
+  isMetalSurface,
+  isGlass,
+  isRetro,
+  clockRadius,
+  clockPadding,
+  clockBg,
+  clockBorderWidth,
+  clockBorderColor,
+  clockTextColor,
+  clockFontFamily,
+  clockFontSize,
+  clockFontWeight,
+  clockShadow,
+  accentColor,
+  accentColorRGB,
+}) {
+  const base = {
+    borderRadius: clockRadius,
+    border: `${clockBorderWidth}px solid ${clockBorderColor}`,
+    color: clockTextColor,
+    fontFamily: clockFontFamily,
+    fontSize: clockFontSize,
+    fontWeight: clockFontWeight,
+    flexShrink: 0,
+  };
+  if (isMetalSurface) {
+    return {
+      ...base,
+      padding: clockPaddingValue(clockPadding, 2.6, "6px 22px"),
+      background:
+        clockBg ||
+        "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+      letterSpacing: "0.28em",
+      boxShadow:
+        clockShadow ||
+        `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
+    };
+  }
+  if (isGlass) {
+    return {
+      ...base,
+      padding: clockPaddingValue(clockPadding, 2.5, "6px 20px"),
+      background: clockBg || "rgba(255,255,255,0.08)",
+      backdropFilter: "blur(8px)",
+      letterSpacing: "0.25em",
+      boxShadow: clockShadow,
+    };
+  }
+  if (isRetro) {
+    return {
+      ...base,
+      padding: clockPaddingValue(clockPadding, 2.2, "6px 14px"),
+      background: clockBg || "#000",
+      color: clockTextColor || accentColor,
+      letterSpacing: "0.15em",
+      boxShadow: clockShadow,
+    };
+  }
+  return {
+    ...base,
+    padding: clockPaddingValue(clockPadding, 2.5, "6px 20px"),
+    background:
+      clockBg ||
+      `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
+    letterSpacing: "0.25em",
+    boxShadow: clockShadow || `0 0 18px ${accentColor}e6`,
+  };
+}
+
+function sponsorPaddingValue(sponsorPadding, multiplier, fallback) {
+  if (sponsorPadding != null)
+    return `${sponsorPadding}px ${Math.round(sponsorPadding * multiplier)}px`;
+  return fallback;
+}
+
+function buildNavbarSponsorStyle({
+  isStyleSeca,
+  isMetal,
+  isGlass,
+  isRetro,
+  sponsorRadius,
+  sponsorPadding,
+  sponsorBorderWidth,
+  sponsorBorderColor,
+  sponsorTextColor,
+  sponsorFontFamily,
+  sponsorFontSize,
+  sponsorFontWeight,
+  sponsorShadow,
+  sponsorAccentColor,
+  ctaColor,
+  ctaColorRGB,
+}) {
+  const base = {
+    display: "flex",
+    alignItems: "center",
+    fontFamily: sponsorFontFamily,
+    fontSize: sponsorFontSize,
+    fontWeight: sponsorFontWeight,
+    textTransform: "uppercase",
+    flexShrink: 0,
+  };
+  if (isStyleSeca) {
+    return {
+      ...base,
+      gap: 8,
+      borderRadius: sponsorRadius ?? 10,
+      padding: sponsorPaddingValue(sponsorPadding, 2.6, "7px 20px"),
+      background: styleSecaHeaderGradient(),
+      border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || STYLE_SECA.border}`,
+      color: sponsorTextColor || STYLE_SECA.darkText,
+      letterSpacing: "0.24em",
+      boxShadow:
+        sponsorShadow ||
+        `0 8px 18px rgba(0,0,0,0.24), 0 0 16px ${STYLE_SECA.glow}`,
+      maxWidth: "min(28vw, 360px)",
+      overflow: "hidden",
+    };
+  }
+  if (isMetal) {
+    return {
+      ...base,
+      gap: 8,
+      borderRadius: sponsorRadius ?? 10,
+      padding: sponsorPaddingValue(sponsorPadding, 2.6, "7px 20px"),
+      background: brushedMetalBackground(
+        `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
+        sponsorAccentColor,
+      ),
+      border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || metalBorderColor(sponsorAccentColor, 0.32)}`,
+      color: sponsorTextColor || ctaColor,
+      letterSpacing: "0.24em",
+      boxShadow: sponsorShadow || metalSurfaceShadow(sponsorAccentColor, 0.64),
+      maxWidth: "min(28vw, 360px)",
+      overflow: "hidden",
+    };
+  }
+  if (isGlass) {
+    const glassBorderColor = sponsorBorderColor || `${ctaColor}33`;
+    return {
+      ...base,
+      gap: 8,
+      borderRadius: sponsorRadius ?? 14,
+      padding: sponsorPaddingValue(sponsorPadding, 2.5, "7px 18px"),
+      background: `${ctaColor}22`,
+      border: `${sponsorBorderWidth}px solid ${glassBorderColor}`,
+      backdropFilter: "blur(6px)",
+      color: sponsorTextColor,
+      letterSpacing: "0.24em",
+    };
+  }
+  if (isRetro) {
+    return {
+      ...base,
+      gap: 6,
+      borderRadius: sponsorRadius ?? 2,
+      padding: sponsorPaddingValue(sponsorPadding, 2.3, "6px 14px"),
+      background: ctaColor,
+      border: `${sponsorBorderWidth || 2}px solid ${sponsorBorderColor || "#000"}`,
+      boxShadow: sponsorShadow || "2px 2px 0 #000",
+      color: sponsorTextColor,
+      letterSpacing: "0.12em",
+    };
+  }
+  return {
+    ...base,
+    gap: 8,
+    borderRadius: sponsorRadius ?? 999,
+    padding: sponsorPaddingValue(sponsorPadding, 2.8, "6px 18px"),
+    background: `linear-gradient(to bottom, ${ctaColor}, ${ctaColor}cc)`,
+    color: sponsorTextColor,
+    border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || "transparent"}`,
+    letterSpacing: "0.24em",
+    boxShadow: sponsorShadow || `0 0 24px ${ctaColor}d9`,
+    maxWidth: "min(28vw, 360px)",
+    overflow: "hidden",
+  };
+}
+
+function resolveCasinoTextShadow({
+  isMetalSurface,
+  isRetro,
+  accentColorRGB,
+  accentColor,
+}) {
+  if (isMetalSurface) return `0 0 10px rgba(${accentColorRGB},0.3)`;
+  if (isRetro) return `0 0 8px ${accentColor}`;
+  return "none";
+}
+
+function buildCryptoTickerAnimationStyle(mode, fading) {
+  if (mode === "horizontal") {
+    return {
+      transform: fading ? "translate3d(-8px,0,0)" : "translate3d(0,0,0)",
+      opacity: fading ? 0 : 1,
+      transition: "transform 0.35s ease, opacity 0.35s ease",
+      willChange: "transform, opacity",
+      backfaceVisibility: "hidden",
+    };
+  }
+  if (mode === "carousel") {
+    return {
+      transform: fading ? "translate3d(0,-12px,0)" : "translate3d(0,0,0)",
+      opacity: fading ? 0 : 1,
+      transition: "transform 0.35s ease, opacity 0.35s ease",
+      willChange: "transform, opacity",
+      backfaceVisibility: "hidden",
+    };
+  }
+  if (mode === "fade") {
+    return {
+      opacity: fading ? 0 : 1,
+      transition: "opacity 0.4s ease",
+      willChange: "opacity",
+      backfaceVisibility: "hidden",
+    };
+  }
+  return {};
+}
+
+function nextCryptoIndex(currentIndex, coinCount) {
+  return (currentIndex + 1) % coinCount;
+}
+
+function createCryptoIndexAdvance(coinCount) {
+  return (currentIndex) => nextCryptoIndex(currentIndex, coinCount);
+}
+
+function isSpotifyTokenExpiring(expiresAt) {
+  return Boolean(expiresAt && Date.now() > expiresAt - 60000);
+}
+
+async function refreshSpotifyToken(userId, tokenRef, expiresRef) {
+  if (!userId) return false;
+  try {
+    const fresh = await serverRefreshToken(userId);
+    tokenRef.current = fresh.access_token;
+    expiresRef.current = fresh.expires_at;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveSpotifyNowPlaying(userId, tokenRef, expiresRef) {
+  let token = tokenRef.current;
+  if (!token) return null;
+  if (isSpotifyTokenExpiring(expiresRef.current)) {
+    const refreshed = await refreshSpotifyToken(userId, tokenRef, expiresRef);
+    if (refreshed) token = tokenRef.current;
+  }
+  try {
+    return await fetchNowPlaying(token);
+  } catch (err) {
+    if (err.status !== 401) return null;
+    const refreshed = await refreshSpotifyToken(userId, tokenRef, expiresRef);
+    if (!refreshed) return null;
+    try {
+      return await fetchNowPlaying(tokenRef.current);
+    } catch {
+      return null;
+    }
+  }
+}
+
 function partAttrs(partId, stateId) {
   return {
     "data-widget-element": partId,
@@ -192,13 +863,16 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   useEffect(() => {
     if (activeCoins.length <= 1) return;
     const interval = cryptoMode === "fade" ? 4000 : 3500;
-    const id = setInterval(() => {
+    const advanceIndex = createCryptoIndexAdvance(activeCoins.length);
+    const finishCryptoFade = () => {
+      setCryptoIndex(advanceIndex);
+      setCryptoFading(false);
+    };
+    const startCryptoFade = () => {
       setCryptoFading(true);
-      setTimeout(() => {
-        setCryptoIndex((prev) => (prev + 1) % activeCoins.length);
-        setCryptoFading(false);
-      }, 350);
-    }, interval);
+      setTimeout(finishCryptoFade, 350);
+    };
+    const id = setInterval(startCryptoFade, interval);
     return () => clearInterval(id);
   }, [cryptoMode, activeCoins.length]);
 
@@ -209,50 +883,14 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     if (!spotifyTokenRef.current) return;
 
     let stopped = false;
-
-    const doRefresh = async () => {
-      if (!userId) return false;
-      try {
-        const fresh = await serverRefreshToken(userId);
-        spotifyTokenRef.current = fresh.access_token;
-        spotifyExpiresRef.current = fresh.expires_at;
-        return true;
-      } catch {
-        return false;
-      }
-    };
-
     const poll = async () => {
       if (stopped) return;
-      let token = spotifyTokenRef.current;
-      if (!token) return;
-
-      // Proactive refresh if token is about to expire (within 60s)
-      if (
-        spotifyExpiresRef.current &&
-        Date.now() > spotifyExpiresRef.current - 60000
-      ) {
-        const ok = await doRefresh();
-        if (ok) token = spotifyTokenRef.current;
-      }
-
-      try {
-        const np = await fetchNowPlaying(token);
-        if (!stopped) setNowPlaying(np);
-      } catch (err) {
-        // 401 = token actually expired → force refresh and retry once
-        if (err.status === 401) {
-          const ok = await doRefresh();
-          if (ok && !stopped) {
-            try {
-              const np = await fetchNowPlaying(spotifyTokenRef.current);
-              if (!stopped) setNowPlaying(np);
-            } catch {
-              /* still failed after refresh, give up this cycle */
-            }
-          }
-        }
-      }
+      const nextNowPlaying = await resolveSpotifyNowPlaying(
+        userId,
+        spotifyTokenRef,
+        spotifyExpiresRef,
+      );
+      if (!stopped && nextNowPlaying) setNowPlaying(nextNowPlaying);
     };
 
     poll();
@@ -264,23 +902,14 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   }, [c.musicSource, c.spotify_access_token, widgetId, userId]);
 
   // Manual "Now Playing"
-  const displayNowPlaying =
-    c.musicSource === "spotify" && nowPlaying
-      ? nowPlaying
-      : c.musicSource === "manual" && (c.manualArtist || c.manualTrack)
-        ? {
-            artist: c.manualArtist || "",
-            track: c.manualTrack || "",
-            isPlaying: true,
-          }
-        : null;
+  const displayNowPlaying = resolveDisplayNowPlaying(c, nowPlaying);
 
   /* ─── Style vars from config ─── */
   const isMetal = c.displayStyle === "metallic";
   const isStyleSeca = c.displayStyle === "StyleSecaNav";
   const isMetalSurface = isMetal || isStyleSeca;
   const styleSecaValue = (value, fallback) =>
-    isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
+    resolveNavbarStyleSecaValue(isStyleSeca, value, fallback);
   const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
   const syncedPrimaryColor = syncedBonusHuntColors?.primaryColor;
   const syncedSecondaryColor = syncedBonusHuntColors?.secondaryColor;
@@ -293,20 +922,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       c,
       "logo",
       "accentColor",
-      c.accentColor ||
-        (isStyleSeca
-          ? STYLE_SECA.primary
-          : isMetal
-            ? "#e8a020"
-            : isGlass
-              ? "#60a5fa"
-              : isRetro
-                ? "#ff6b2b"
-                : isCarbon
-                  ? "#ef4444"
-                  : isFuturistic
-                    ? "#00ffcc"
-                    : "#f59e0b"),
+      c.accentColor || resolveNavbarStyleDefault(c.displayStyle, "accentColor"),
     ),
     STYLE_SECA.primary,
   );
@@ -317,20 +933,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       c,
       "container",
       "background",
-      c.bgColor ||
-        (isStyleSeca
-          ? STYLE_SECA.surface
-          : isMetal
-            ? "#1a1a1e"
-            : isGlass
-              ? "#0f172a"
-              : isRetro
-                ? "#1a0a00"
-                : isCarbon
-                  ? "#0a0a0a"
-                  : isFuturistic
-                    ? "#050d1a"
-                    : "#111318"),
+      c.bgColor || resolveNavbarStyleDefault(c.displayStyle, "bgColor"),
     ),
     STYLE_SECA.surface,
   );
@@ -340,72 +943,39 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       c,
       "displayName",
       "textColor",
-      c.textColor ||
-        (isStyleSeca
-          ? STYLE_SECA.text
-          : isMetal
-            ? "#d4d4d8"
-            : isGlass
-              ? "#e0eaff"
-              : isRetro
-                ? "#ffd9b3"
-                : isCarbon
-                  ? "#d4d4d8"
-                  : isFuturistic
-                    ? "#e0fff5"
-                    : "#f1f5f9"),
+      c.textColor || resolveNavbarStyleDefault(c.displayStyle, "textColor"),
     ),
     STYLE_SECA.text,
   );
-  const displayNameAccentColor = syncedPrimaryColor || subValue(
-    c,
-    "displayName",
-    "accentColor",
-    accentColor,
-  );
+  const displayNameAccentColor =
+    syncedPrimaryColor ||
+    subValue(c, "displayName", "accentColor", accentColor);
   const mutedColor = styleSecaValue(
     subValue(
       c,
       "music",
       "textColor",
-      c.mutedColor ||
-        (isStyleSeca
-          ? STYLE_SECA.muted
-          : isMetal
-            ? "#666666"
-            : isGlass
-              ? "#6b8ccc"
-              : isRetro
-                ? "#885530"
-                : isCarbon
-                  ? "#52525b"
-                  : isFuturistic
-                    ? "#4fd1c5"
-                    : "#94a3b8"),
+      c.mutedColor || resolveNavbarStyleDefault(c.displayStyle, "mutedColor"),
     ),
     STYLE_SECA.muted,
   );
-  const borderColor = syncedPrimaryColor || styleSecaValue(
-    subValue(
-      c,
-      "container",
-      "borderColor",
-      c.borderColor || (isStyleSeca ? STYLE_SECA.border : accentColor),
-    ),
-    STYLE_SECA.border,
-  );
+  const borderColor =
+    syncedPrimaryColor ||
+    styleSecaValue(
+      subValue(
+        c,
+        "container",
+        "borderColor",
+        c.borderColor || (isStyleSeca ? STYLE_SECA.border : accentColor),
+      ),
+      STYLE_SECA.border,
+    );
   const containerFontFamily = subValue(
     c,
     "container",
     "fontFamily",
     c.fontFamily ||
-      (isStyleSeca
-        ? "'Rajdhani', 'Barlow Condensed', sans-serif"
-        : isRetro
-          ? "'Press Start 2P', 'Courier New', monospace"
-          : isFuturistic
-            ? "'Orbitron', sans-serif"
-            : "'Inter', sans-serif"),
+      resolveNavbarStyleDefault(c.displayStyle, "containerFontFamily"),
   );
   const fontFamily = subValue(
     c,
@@ -430,18 +1000,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     c,
     "container",
     "borderWidth",
-    c.borderWidth ??
-      (isMetalSurface
-        ? 1
-        : isGlass
-          ? 1
-          : isRetro
-            ? 3
-            : isCarbon
-              ? 1
-              : isFuturistic
-                ? 1
-                : 3),
+    c.borderWidth ?? resolveNavbarStyleDefault(c.displayStyle, "borderWidth"),
   );
   const barHeight = subValue(c, "container", "height", c.barHeight ?? 64);
   const barMaxWidth = subValue(c, "container", "maxWidth", c.maxWidth ?? null);
@@ -449,26 +1008,14 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     c,
     "container",
     "radius",
-    c.borderRadius ??
-      (isStyleSeca
-        ? 12
-        : isMetal
-          ? 16
-          : isGlass
-            ? 20
-            : isRetro
-              ? 4
-              : isCarbon
-                ? 8
-                : isFuturistic
-                  ? 20
-                  : 999),
+    c.borderRadius ?? resolveNavbarStyleDefault(c.displayStyle, "borderRadius"),
   );
   const containerFontSize = subValue(
     c,
     "container",
     "fontSize",
-    c.fontSize ?? (isRetro ? 13 : 15),
+    c.fontSize ??
+      resolveNavbarStyleDefault(c.displayStyle, "containerFontSize"),
   );
   const fontSize = subValue(c, "displayName", "fontSize", containerFontSize);
   const fontWeight = subValue(c, "displayName", "fontWeight", 700);
@@ -499,7 +1046,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     c,
     "casino",
     "radius",
-    isMetalSurface ? 6 : isRetro ? 2 : 8,
+    resolveNavbarStyleDefault(c.displayStyle, "casinoRadius"),
   );
   const casinoImageFit = subValue(c, "casino", "imageFit", "contain");
   const casinoLogoUrl = subValue(
@@ -523,15 +1070,20 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     c,
     "clock",
     "radius",
-    isRetro ? 2 : isGlass ? 14 : isMetalSurface ? 10 : 999,
+    resolveNavbarStyleDefault(c.displayStyle, "clockRadius"),
   );
   const clockBorderColor = subValue(
     c,
     "clock",
     "borderColor",
-    isRetro ? `${accentColor}88` : "rgba(255,255,255,0.12)",
+    resolveNavbarClockBorderColor(c.displayStyle, accentColor),
   );
-  const clockBorderWidth = subValue(c, "clock", "borderWidth", isRetro ? 2 : 1);
+  const clockBorderWidth = subValue(
+    c,
+    "clock",
+    "borderWidth",
+    resolveNavbarStyleDefault(c.displayStyle, "clockBorderWidth"),
+  );
   const clockShadow = subValue(c, "clock", "shadow", undefined);
   const clockFontFamily = subValue(
     c,
@@ -551,22 +1103,17 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   const musicFontSize = subValue(c, "music", "fontSize", containerFontSize);
   const musicFontWeight = subValue(c, "music", "fontWeight", 700);
   const textShadow = "0 1px 4px rgba(0,0,0,0.6)";
-  const ctaColor = syncedPrimaryColor || styleSecaValue(
-    subValue(
-      c,
-      "sponsor",
-      "background",
-      c.ctaColor ||
-        (isStyleSeca
-          ? STYLE_SECA.primary
-          : isRetro
-            ? "#ff4500"
-            : isFuturistic
-              ? "#00ffcc"
-              : "#f43f5e"),
-    ),
-    STYLE_SECA.primary,
-  );
+  const ctaColor =
+    syncedPrimaryColor ||
+    styleSecaValue(
+      subValue(
+        c,
+        "sponsor",
+        "background",
+        c.ctaColor || resolveNavbarStyleDefault(c.displayStyle, "ctaColor"),
+      ),
+      STYLE_SECA.primary,
+    );
   const sponsorTextColor = styleSecaValue(
     subValue(
       c,
@@ -587,14 +1134,15 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     c,
     "sponsor",
     "fontWeight",
-    isGlass || (!isMetalSurface && !isRetro) ? 600 : 700,
+    resolveSponsorFontWeight({ isGlass, isMetalSurface, isRetro }),
   );
   const sponsorRadius = subValue(c, "sponsor", "radius", null);
   const sponsorPadding = subValue(c, "sponsor", "padding", null);
   const sponsorBorderColor = subValue(c, "sponsor", "borderColor", null);
   const sponsorBorderWidth = subValue(c, "sponsor", "borderWidth", 1);
   const sponsorShadow = subValue(c, "sponsor", "shadow", undefined);
-  const sponsorAccentColor = syncedPrimaryColor || subValue(c, "sponsor", "accentColor", ctaColor);
+  const sponsorAccentColor =
+    syncedPrimaryColor || subValue(c, "sponsor", "accentColor", ctaColor);
   const cryptoUpColor = subValue(
     c,
     "crypto",
@@ -655,303 +1203,55 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
      black-corner artefact on GPU-promoted layers (OBS browser source). */
   const clipOuter = `inset(0 round ${borderRadius}px)`;
 
-  const barOuter = isStyleSeca
-    ? {
-        width: "100%",
-        height: "100%",
-        boxSizing: "border-box",
-        background: styleSecaHeaderGradient(),
-        padding: `${borderWidth}px`,
-        fontFamily: containerFontFamily,
-      }
-    : isMetal
-      ? {
-          width: "100%",
-          height: "100%",
-          boxSizing: "border-box",
-          background: brushedMetalBackground(
-            "linear-gradient(135deg, rgba(42,43,48,0.96), rgba(17,18,22,0.98))",
-            accentColor,
-            { highlightOpacity: 0.05, grainOpacity: 0.025 },
-          ),
-          padding: `${borderWidth}px`,
-          fontFamily: containerFontFamily,
-        }
-      : isCarbon
-        ? {
-            width: "100%",
-            height: "100%",
-            boxSizing: "border-box",
-            background: `repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), ${bgColor}`,
-            padding: `${borderWidth}px`,
-            fontFamily: containerFontFamily,
-          }
-        : isFuturistic
-          ? {
-              width: "100%",
-              height: "100%",
-              boxSizing: "border-box",
-              background: `linear-gradient(135deg, rgba(0,255,204,0.06), transparent 40%, rgba(0,255,204,0.04))`,
-              padding: `${borderWidth}px`,
-              fontFamily: containerFontFamily,
-            }
-          : isGlass
-            ? {
-                width: "100%",
-                height: "100%",
-                boxSizing: "border-box",
-                background: `linear-gradient(135deg, rgba(30,30,60,0.82), rgba(20,20,50,0.88))`,
-                padding: `${borderWidth}px`,
-                fontFamily: containerFontFamily,
-              }
-            : isRetro
-              ? {
-                  width: "100%",
-                  height: "100%",
-                  boxSizing: "border-box",
-                  background: `${borderColor}`,
-                  padding: `${borderWidth}px`,
-                  fontFamily: containerFontFamily,
-                  imageRendering: "pixelated",
-                }
-              : {
-                  width: "100%",
-                  height: "100%",
-                  boxSizing: "border-box",
-                  background: `linear-gradient(to bottom, ${borderColor}e6, ${borderColor}cc)`,
-                  padding: `${borderWidth}px`,
-                  fontFamily: containerFontFamily,
-                };
+  const barOuter = buildNavbarBarOuterStyle({
+    isStyleSeca,
+    isMetal,
+    isCarbon,
+    isFuturistic,
+    isGlass,
+    isRetro,
+    borderWidth,
+    containerFontFamily,
+    accentColor,
+    bgColor,
+    borderColor,
+  });
 
-  const barInner = isStyleSeca
-    ? {
-        display: "flex",
-        alignItems: "center",
-        height: "100%",
-        boxSizing: "border-box",
-        background: styleSecaSurfaceGradient("170deg"),
-        padding: `0 ${containerPadding}px`,
-        color: textColor,
-        fontSize,
-        gap: 0,
-        boxShadow:
-          containerShadow || containerGlow
-            ? [containerShadow, containerGlow].filter(Boolean).join(", ")
-            : `0 16px 34px rgba(0,0,0,0.36), 0 0 24px ${STYLE_SECA.glow}`,
-        backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
-        WebkitBackdropFilter: containerBlur
-          ? `blur(${containerBlur}px)`
-          : undefined,
-        transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
-        transformOrigin: "center",
-        overflow: "visible",
-        position: "relative",
-        ...(needsFilter && { filter: filterStr }),
-      }
-    : isMetal
-      ? {
-          display: "flex",
-          alignItems: "center",
-          height: "100%",
-          boxSizing: "border-box",
-          background: brushedMetalBackground(
-            `linear-gradient(170deg, rgba(${accentColorRGB},0.05) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.035) 60%, ${bgColor} 100%)`,
-            accentColor,
-          ),
-          padding: `0 ${containerPadding}px`,
-          color: textColor,
-          fontSize,
-          gap: 0,
-          boxShadow:
-            containerShadow || containerGlow
-              ? [containerShadow, containerGlow].filter(Boolean).join(", ")
-              : metalSurfaceShadow(accentColor, 0.85),
-          backdropFilter: containerBlur
-            ? `blur(${containerBlur}px)`
-            : undefined,
-          WebkitBackdropFilter: containerBlur
-            ? `blur(${containerBlur}px)`
-            : undefined,
-          transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
-          transformOrigin: "center",
-          overflow: "visible",
-          position: "relative",
-          ...(needsFilter && { filter: filterStr }),
-        }
-      : isCarbon
-        ? {
-            display: "flex",
-            alignItems: "center",
-            height: "100%",
-            boxSizing: "border-box",
-            background: `linear-gradient(180deg, ${bgColor}, #060606)`,
-            padding: `0 ${containerPadding}px`,
-            color: textColor,
-            fontSize,
-            gap: 0,
-            boxShadow:
-              containerShadow || containerGlow
-                ? [containerShadow, containerGlow].filter(Boolean).join(", ")
-                : undefined,
-            backdropFilter: containerBlur
-              ? `blur(${containerBlur}px)`
-              : undefined,
-            WebkitBackdropFilter: containerBlur
-              ? `blur(${containerBlur}px)`
-              : undefined,
-            transform: widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
-            transformOrigin: "center",
-            overflow: "visible",
-            position: "relative",
-            ...(needsFilter && { filter: filterStr }),
-          }
-        : isFuturistic
-          ? {
-              display: "flex",
-              alignItems: "center",
-              height: "100%",
-              boxSizing: "border-box",
-              background: `linear-gradient(135deg, rgba(${bgColorRGB},0.95), rgba(${bgColorRGB},0.88))`,
-              padding: `0 ${containerPadding}px`,
-              color: textColor,
-              fontSize,
-              gap: 0,
-              boxShadow:
-                containerShadow || containerGlow
-                  ? [containerShadow, containerGlow].filter(Boolean).join(", ")
-                  : undefined,
-              backdropFilter: containerBlur
-                ? `blur(${containerBlur}px)`
-                : undefined,
-              WebkitBackdropFilter: containerBlur
-                ? `blur(${containerBlur}px)`
-                : undefined,
-              transform:
-                widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
-              transformOrigin: "center",
-              overflow: "visible",
-              position: "relative",
-              ...(needsFilter && { filter: filterStr }),
-            }
-          : isGlass
-            ? {
-                display: "flex",
-                alignItems: "center",
-                height: "100%",
-                boxSizing: "border-box",
-                background: `linear-gradient(135deg, rgba(${bgColorRGB},0.92), rgba(${bgColorRGB},0.85))`,
-                padding: `0 ${containerPadding}px`,
-                color: textColor,
-                fontSize,
-                gap: 0,
-                boxShadow:
-                  containerShadow || containerGlow
-                    ? [containerShadow, containerGlow]
-                        .filter(Boolean)
-                        .join(", ")
-                    : undefined,
-                backdropFilter: containerBlur
-                  ? `blur(${containerBlur}px)`
-                  : undefined,
-                WebkitBackdropFilter: containerBlur
-                  ? `blur(${containerBlur}px)`
-                  : undefined,
-                transform:
-                  widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
-                transformOrigin: "center",
-                overflow: "visible",
-                position: "relative",
-                ...(needsFilter && { filter: filterStr }),
-              }
-            : isRetro
-              ? {
-                  display: "flex",
-                  alignItems: "center",
-                  height: "100%",
-                  boxSizing: "border-box",
-                  background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
-                  padding: `0 ${Math.max(6, Number(containerPadding) || 8)}px`,
-                  color: textColor,
-                  fontSize,
-                  gap: 0,
-                  boxShadow:
-                    containerShadow || containerGlow
-                      ? [containerShadow, containerGlow]
-                          .filter(Boolean)
-                          .join(", ")
-                      : undefined,
-                  transform:
-                    widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
-                  transformOrigin: "center",
-                  overflow: "visible",
-                  position: "relative",
-                  ...(needsFilter && { filter: filterStr }),
-                  borderTop: "2px solid rgba(255,255,255,0.15)",
-                }
-              : {
-                  display: "flex",
-                  alignItems: "center",
-                  height: "100%",
-                  boxSizing: "border-box",
-                  background: `linear-gradient(to right, ${bgColor}, ${bgColorSoft}, ${bgColor})`,
-                  padding: `0 ${containerPadding}px`,
-                  color: textColor,
-                  fontSize,
-                  gap: 0,
-                  boxShadow:
-                    containerShadow || containerGlow
-                      ? [containerShadow, containerGlow]
-                          .filter(Boolean)
-                          .join(", ")
-                      : undefined,
-                  transform:
-                    widgetScale !== 1 ? `scale(${widgetScale})` : undefined,
-                  transformOrigin: "center",
-                  overflow: "visible",
-                  ...(needsFilter && { filter: filterStr }),
-                };
+  const barInner = buildNavbarBarInnerStyle({
+    isStyleSeca,
+    isMetal,
+    isCarbon,
+    isFuturistic,
+    isGlass,
+    isRetro,
+    bgColor,
+    bgColorRGB,
+    bgColorSoft,
+    accentColor,
+    accentColorRGB,
+    textColor,
+    fontSize,
+    containerPadding,
+    containerShadow,
+    containerGlow,
+    containerBlur,
+    widgetScale,
+    needsFilter,
+    filterStr,
+  });
 
-  const sep = isMetalSurface
-    ? {
-        width: separatorWidth,
-        height: barHeight * 0.5,
-        background:
-          separatorColor ||
-          `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
-        opacity: separatorOpacity,
-        flexShrink: 0,
-        margin: "0 3px",
-      }
-    : isGlass
-      ? {
-          width: separatorWidth,
-          height: barHeight * 0.5,
-          background:
-            separatorColor ||
-            "linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)",
-          opacity: separatorOpacity,
-          flexShrink: 0,
-          margin: "0 3px",
-        }
-      : isRetro
-        ? {
-            width: Math.max(1, Number(separatorWidth) || 2),
-            height: barHeight * 0.6,
-            background: separatorColor || `${accentColor}88`,
-            opacity: separatorOpacity,
-            flexShrink: 0,
-            margin: "0 2px",
-          }
-        : {
-            width: separatorWidth,
-            height: barHeight * 0.55,
-            background:
-              separatorColor ||
-              `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
-            opacity: separatorOpacity,
-            flexShrink: 0,
-            margin: "0 3px",
-          };
+  const sep = buildNavbarSeparatorStyle({
+    isMetalSurface,
+    isGlass,
+    isRetro,
+    separatorWidth,
+    separatorColor,
+    separatorOpacity,
+    barHeight,
+    accentColor,
+    accentColorRGB,
+    mutedColor,
+  });
 
   const barOuterSized = {
     ...barOuter,
@@ -967,585 +1267,427 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   );
   const getZoneSections = (zone) => layout.filter((s) => s.zone === zone);
 
-  const renderSection = (sectionId) => {
-    switch (sectionId) {
-      case "identity":
-        return (
+  const renderAvatar = () => {
+    if (c.showAvatar === false) return null;
+    const size =
+      avatarImageSize || barHeight * 0.72 * ((c.avatarSize ?? 100) / 100);
+    return (
+      <div
+        {...partAttrs("avatar")}
+        style={withElementOffset(c, "avatar", {
+          position: "relative",
+          width: size,
+          height: size,
+          borderRadius: avatarRadius,
+          border: avatarBorderWidth
+            ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
+            : undefined,
+          background: "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        })}
+      >
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            {...partAttrs("avatar")}
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: avatarRadius,
+              objectFit: avatarFit,
+              background: "transparent",
+              imageRendering: "auto",
+              backfaceVisibility: "hidden",
+            }}
+          />
+        ) : (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              flexShrink: 0,
-            }}
-          >
-            {c.showAvatar !== false &&
-              (() => {
-                const size =
-                  avatarImageSize ||
-                  barHeight * 0.72 * ((c.avatarSize ?? 100) / 100);
-                return (
-                  <div
-                    {...partAttrs("avatar")}
-                    style={withElementOffset(c, "avatar", {
-                      position: "relative",
-                      width: size,
-                      height: size,
-                      borderRadius: avatarRadius,
-                      border: avatarBorderWidth
-                        ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
-                        : undefined,
-                      background: "transparent",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    })}
-                  >
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt=""
-                        {...partAttrs("avatar")}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          borderRadius: avatarRadius,
-                          objectFit: avatarFit,
-                          background: "transparent",
-                          imageRendering: "auto",
-                          backfaceVisibility: "hidden",
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          borderRadius: avatarRadius,
-                          background: "transparent",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: fontSize * 0.7,
-                          fontWeight: 700,
-                          letterSpacing: "0.12em",
-                          textTransform: "uppercase",
-                          color: textColor,
-                          textShadow,
-                        }}
-                      >
-                        {(c.streamerName || "S").slice(0, 5)}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            <div
-              {...partAttrs("displayName")}
-              style={withElementOffset(c, "displayName", {
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                lineHeight: 1.1,
-              })}
-            >
-              <span
-                style={{
-                  backgroundImage: isMetalSurface
-                    ? brushedMetalTextBackground(
-                        textColor,
-                        displayNameAccentColor,
-                      )
-                    : isGlass
-                      ? `linear-gradient(to right, ${textColor}, ${displayNameAccentColor}, ${textColor})`
-                      : isRetro
-                        ? `linear-gradient(to right, ${displayNameAccentColor}, ${ctaColor}, ${displayNameAccentColor})`
-                        : c.nameGradient ||
-                          `linear-gradient(to right, ${displayNameAccentColor}, ${textColor}, ${displayNameAccentColor})`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  fontFamily,
-                  fontSize: fontSize * 1.2,
-                  fontWeight,
-                  letterSpacing: isMetalSurface
-                    ? "0.22em"
-                    : isRetro
-                      ? "0.12em"
-                      : "0.18em",
-                  textTransform: "uppercase",
-                  display: "block",
-                  maxWidth: "min(30vw, 420px)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {c.streamerName || "STREAMER"}
-              </span>
-              {c.motto && (
-                <span
-                  style={{
-                    marginTop: 2,
-                    fontFamily,
-                    fontSize: mottoFontSize,
-                    fontWeight: mottoFontWeight,
-                    letterSpacing: isMetalSurface
-                      ? "0.4em"
-                      : isRetro
-                        ? "0.2em"
-                        : "0.35em",
-                    textTransform: "uppercase",
-                    color: mutedColor,
-                    textShadow,
-                  }}
-                >
-                  {c.motto}
-                </span>
-              )}
-            </div>
-          </div>
-        );
-
-      case "badge": {
-        if (!badgeImageUrl) return null;
-        return (
-          <div
-            {...partAttrs("badgeImage")}
-            style={withElementOffset(c, "badgeImage", {
+              width: "100%",
+              height: "100%",
+              borderRadius: avatarRadius,
+              background: "transparent",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              height: barHeight,
-              flexShrink: 0,
-              padding: "2px 0",
-            })}
-          >
-            <img
-              src={badgeImageUrl}
-              alt=""
-              {...partAttrs("badgeImage")}
-              style={{
-                height:
-                  badgeImageSize ||
-                  barHeight * 0.85 * ((c.badgeSize ?? 100) / 100),
-                minWidth:
-                  badgeImageSize ||
-                  barHeight * 1.2 * ((c.badgeSize ?? 100) / 100),
-                objectFit: badgeImageFit,
-                borderRadius: badgeImageRadius,
-                filter: isMetalSurface
-                  ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)`
-                  : "drop-shadow(0 0 8px rgba(255,255,255,0.3))",
-              }}
-            />
-          </div>
-        );
-      }
-
-      case "clock": {
-        if (c.showClock === false) return null;
-        return (
-          <div
-            {...partAttrs("clock")}
-            style={withElementOffset(
-              c,
-              "clock",
-              isMetalSurface
-                ? {
-                    borderRadius: clockRadius,
-                    padding:
-                      clockPadding != null
-                        ? `${clockPadding}px ${Math.round(clockPadding * 2.6)}px`
-                        : "6px 22px",
-                    background:
-                      clockBg ||
-                      "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                    border: `${clockBorderWidth}px solid ${clockBorderColor}`,
-                    color: clockTextColor,
-                    fontFamily: clockFontFamily,
-                    fontSize: clockFontSize,
-                    fontWeight: clockFontWeight,
-                    letterSpacing: "0.28em",
-                    boxShadow:
-                      clockShadow ||
-                      `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
-                    flexShrink: 0,
-                  }
-                : isGlass
-                  ? {
-                      borderRadius: clockRadius,
-                      padding:
-                        clockPadding != null
-                          ? `${clockPadding}px ${Math.round(clockPadding * 2.5)}px`
-                          : "6px 20px",
-                      background: clockBg || "rgba(255,255,255,0.08)",
-                      border: `${clockBorderWidth}px solid ${clockBorderColor}`,
-                      backdropFilter: "blur(8px)",
-                      color: clockTextColor,
-                      fontFamily: clockFontFamily,
-                      fontSize: clockFontSize,
-                      fontWeight: clockFontWeight,
-                      letterSpacing: "0.25em",
-                      boxShadow: clockShadow,
-                      flexShrink: 0,
-                    }
-                  : isRetro
-                    ? {
-                        borderRadius: clockRadius,
-                        padding:
-                          clockPadding != null
-                            ? `${clockPadding}px ${Math.round(clockPadding * 2.2)}px`
-                            : "6px 14px",
-                        background: clockBg || "#000",
-                        border: `${clockBorderWidth}px solid ${clockBorderColor}`,
-                        color: clockTextColor || accentColor,
-                        fontFamily: clockFontFamily,
-                        fontSize: clockFontSize,
-                        fontWeight: clockFontWeight,
-                        letterSpacing: "0.15em",
-                        boxShadow: clockShadow,
-                        flexShrink: 0,
-                      }
-                    : {
-                        borderRadius: clockRadius,
-                        padding:
-                          clockPadding != null
-                            ? `${clockPadding}px ${Math.round(clockPadding * 2.5)}px`
-                            : "6px 20px",
-                        background:
-                          clockBg ||
-                          `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
-                        color: clockTextColor,
-                        fontFamily: clockFontFamily,
-                        fontSize: clockFontSize,
-                        fontWeight: clockFontWeight,
-                        letterSpacing: "0.25em",
-                        border: `${clockBorderWidth}px solid ${clockBorderColor}`,
-                        boxShadow: clockShadow || `0 0 18px ${accentColor}e6`,
-                        flexShrink: 0,
-                      },
-            )}
-          >
-            {time || "--:--:--"}
-          </div>
-        );
-      }
-
-      case "nowPlaying": {
-        if (c.showNowPlaying === false || !displayNowPlaying) return null;
-        return (
-          <div
-            {...partAttrs("music")}
-            style={withElementOffset(c, "music", {
-              display: "flex",
-              alignItems: "center",
-              minWidth: 0,
-              width: "100%",
-              maxWidth: "min(34vw, 380px)",
-              flex: "1 1 220px",
-              overflow: "hidden",
-            })}
-          >
-            <NowPlayingDisplay
-              data={displayNowPlaying}
-              musicDisplayStyle={subValue(
-                c,
-                "music",
-                "musicDisplayStyle",
-                c.musicDisplayStyle || "text",
-              )}
-              textColor={textColor}
-              mutedColor={mutedColor}
-              accentColor={accentColor}
-              fontSize={musicFontSize}
-              fontFamily={musicFontFamily}
-              fontWeight={musicFontWeight}
-              isMetal={isMetalSurface}
-              barHeight={barHeight}
-            />
-          </div>
-        );
-      }
-
-      case "crypto": {
-        if (!c.showCrypto || activeCoins.length === 0) return null;
-        return (
-          <div
-            {...partAttrs("crypto")}
-            style={withElementOffset(c, "crypto", {
-              display: "flex",
-              alignItems: "center",
-              minWidth: 0,
-              flexShrink: 0,
-            })}
-          >
-            <CryptoTicker
-              coins={activeCoins}
-              prices={cryptoPrices}
-              mode={cryptoMode}
-              index={cryptoIndex}
-              fading={cryptoFading}
-              fontSize={cryptoFontSize}
-              bgColor={bgColor}
-              textColor={cryptoTextColor}
-              fontFamily={cryptoFontFamily}
-              fontWeight={cryptoFontWeight}
-              cryptoUpColor={cryptoUpColor}
-              cryptoDownColor={cryptoDownColor}
-              metallic={isMetalSurface || isGlass || isRetro}
-            />
-          </div>
-        );
-      }
-
-      case "cta": {
-        if (!c.showCTA || !c.ctaText) return null;
-        return (
-          <div
-            {...partAttrs("sponsor")}
-            style={withElementOffset(
-              c,
-              "sponsor",
-              isStyleSeca
-                ? {
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    borderRadius: sponsorRadius ?? 10,
-                    padding:
-                      sponsorPadding != null
-                        ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px`
-                        : "7px 20px",
-                    background: styleSecaHeaderGradient(),
-                    border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || STYLE_SECA.border}`,
-                    color: sponsorTextColor || STYLE_SECA.darkText,
-                    fontFamily: sponsorFontFamily,
-                    fontSize: sponsorFontSize,
-                    fontWeight: sponsorFontWeight,
-                    letterSpacing: "0.24em",
-                    textTransform: "uppercase",
-                    boxShadow:
-                      sponsorShadow ||
-                      `0 8px 18px rgba(0,0,0,0.24), 0 0 16px ${STYLE_SECA.glow}`,
-                    flexShrink: 0,
-                    maxWidth: "min(28vw, 360px)",
-                    overflow: "hidden",
-                  }
-                : isMetal
-                  ? {
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      borderRadius: sponsorRadius ?? 10,
-                      padding:
-                        sponsorPadding != null
-                          ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.6)}px`
-                          : "7px 20px",
-                      background: brushedMetalBackground(
-                        `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
-                        sponsorAccentColor,
-                      ),
-                      border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || metalBorderColor(sponsorAccentColor, 0.32)}`,
-                      color: sponsorTextColor || ctaColor,
-                      fontFamily: sponsorFontFamily,
-                      fontSize: sponsorFontSize,
-                      fontWeight: sponsorFontWeight,
-                      letterSpacing: "0.24em",
-                      textTransform: "uppercase",
-                      boxShadow:
-                        sponsorShadow ||
-                        metalSurfaceShadow(sponsorAccentColor, 0.64),
-                      flexShrink: 0,
-                      maxWidth: "min(28vw, 360px)",
-                      overflow: "hidden",
-                    }
-                  : isGlass
-                    ? {
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        borderRadius: sponsorRadius ?? 14,
-                        padding:
-                          sponsorPadding != null
-                            ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.5)}px`
-                            : "7px 18px",
-                        background: `${ctaColor}22`,
-                        border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || `${ctaColor}33`}`,
-                        backdropFilter: "blur(6px)",
-                        color: sponsorTextColor,
-                        fontFamily: sponsorFontFamily,
-                        fontSize: sponsorFontSize,
-                        fontWeight: sponsorFontWeight,
-                        letterSpacing: "0.24em",
-                        textTransform: "uppercase",
-                        flexShrink: 0,
-                      }
-                    : isRetro
-                      ? {
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          borderRadius: sponsorRadius ?? 2,
-                          padding:
-                            sponsorPadding != null
-                              ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.3)}px`
-                              : "6px 14px",
-                          background: ctaColor,
-                          border: `${sponsorBorderWidth || 2}px solid ${sponsorBorderColor || "#000"}`,
-                          boxShadow: sponsorShadow || "2px 2px 0 #000",
-                          color: sponsorTextColor,
-                          fontFamily: sponsorFontFamily,
-                          fontSize: sponsorFontSize,
-                          fontWeight: sponsorFontWeight,
-                          letterSpacing: "0.12em",
-                          textTransform: "uppercase",
-                          flexShrink: 0,
-                        }
-                      : {
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          borderRadius: sponsorRadius ?? 999,
-                          padding:
-                            sponsorPadding != null
-                              ? `${sponsorPadding}px ${Math.round(sponsorPadding * 2.8)}px`
-                              : "6px 18px",
-                          background: `linear-gradient(to bottom, ${ctaColor}, ${ctaColor}cc)`,
-                          color: sponsorTextColor,
-                          fontFamily: sponsorFontFamily,
-                          fontSize: sponsorFontSize,
-                          fontWeight: sponsorFontWeight,
-                          border: `${sponsorBorderWidth}px solid ${sponsorBorderColor || "transparent"}`,
-                          letterSpacing: "0.24em",
-                          textTransform: "uppercase",
-                          boxShadow: sponsorShadow || `0 0 24px ${ctaColor}d9`,
-                          flexShrink: 0,
-                          maxWidth: "min(28vw, 360px)",
-                          overflow: "hidden",
-                        },
-            )}
-          >
-            <span
-              style={{
-                minWidth: 0,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {c.ctaText}
-            </span>
-          </div>
-        );
-      }
-
-      case "socials": {
-        return null;
-      }
-
-      case "balance": {
-        if (!c.showStartBalance || !c.startBalance) return null;
-        return (
-          <div
-            {...partAttrs("balance")}
-            style={withElementOffset(c, "balance", {
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontFamily: balanceFontFamily,
-              fontSize: balanceFontSize,
-              fontWeight: balanceFontWeight,
-              color: balanceTextColor,
-              letterSpacing: "0.1em",
-              flexShrink: 0,
+              fontSize: fontSize * 0.7,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: textColor,
               textShadow,
-            })}
+            }}
           >
-            <span
-              style={{
-                fontSize: balanceFontSize * 0.78,
-                color: balanceMutedColor,
-                textTransform: "uppercase",
-                letterSpacing: "0.15em",
-                fontWeight: balanceFontWeight,
-              }}
-            >
-              START
-            </span>
-            <span
-              style={{
-                fontWeight: Math.max(700, Number(balanceFontWeight) || 700),
-                color: balanceAccentColor,
-              }}
-            >
-              {c.balanceCurrency || "€"}
-              {Number(c.startBalance).toLocaleString()}
-            </span>
+            {(c.streamerName || "S").slice(0, 5)}
           </div>
-        );
-      }
-
-      case "casino": {
-        if (!c.showCasino || (!c.casinoName && !casinoLogoUrl)) return null;
-        return (
-          <div
-            {...partAttrs("casino")}
-            style={withElementOffset(c, "casino", {
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexShrink: 0,
-            })}
-          >
-            {casinoLogoUrl && (
-              <img
-                src={casinoLogoUrl}
-                alt=""
-                {...partAttrs("casino")}
-                style={{
-                  height:
-                    casinoImageSize ||
-                    barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100),
-                  maxWidth: casinoImageSize
-                    ? casinoImageSize * 1.8
-                    : barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100),
-                  objectFit: casinoImageFit,
-                  borderRadius: casinoImageRadius,
-                  filter: isMetalSurface
-                    ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))`
-                    : "none",
-                }}
-              />
-            )}
-            {c.casinoName && (
-              <span
-                {...partAttrs("casino")}
-                style={{
-                  fontFamily: casinoFontFamily,
-                  fontSize: casinoFontSize,
-                  fontWeight: casinoFontWeight,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  color: casinoTextColor,
-                  textShadow: isMetalSurface
-                    ? `0 0 10px rgba(${accentColorRGB},0.3)`
-                    : isRetro
-                      ? `0 0 8px ${accentColor}`
-                      : "none",
-                }}
-              >
-                {c.casinoName}
-              </span>
-            )}
-          </div>
-        );
-      }
-
-      default:
-        return null;
-    }
+        )}
+      </div>
+    );
   };
+
+  const renderIdentitySection = () => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        flexShrink: 0,
+      }}
+    >
+      {renderAvatar()}
+      <div
+        {...partAttrs("displayName")}
+        style={withElementOffset(c, "displayName", {
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          lineHeight: 1.1,
+        })}
+      >
+        <span
+          style={{
+            backgroundImage: resolveDisplayNameBackground({
+              isMetalSurface,
+              isGlass,
+              isRetro,
+              textColor,
+              displayNameAccentColor,
+              ctaColor,
+              nameGradient: c.nameGradient,
+            }),
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            fontFamily,
+            fontSize: fontSize * 1.2,
+            fontWeight,
+            letterSpacing: resolveDisplayNameLetterSpacing({
+              isMetalSurface,
+              isRetro,
+            }),
+            textTransform: "uppercase",
+            display: "block",
+            maxWidth: "min(30vw, 420px)",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {c.streamerName || "STREAMER"}
+        </span>
+        {c.motto && (
+          <span
+            style={{
+              marginTop: 2,
+              fontFamily,
+              fontSize: mottoFontSize,
+              fontWeight: mottoFontWeight,
+              letterSpacing: resolveMottoLetterSpacing({
+                isMetalSurface,
+                isRetro,
+              }),
+              textTransform: "uppercase",
+              color: mutedColor,
+              textShadow,
+            }}
+          >
+            {c.motto}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderBadgeSection = () => {
+    if (!badgeImageUrl) return null;
+    return (
+      <div
+        {...partAttrs("badgeImage")}
+        style={withElementOffset(c, "badgeImage", {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: barHeight,
+          flexShrink: 0,
+          padding: "2px 0",
+        })}
+      >
+        <img
+          src={badgeImageUrl}
+          alt=""
+          {...partAttrs("badgeImage")}
+          style={{
+            height:
+              badgeImageSize || barHeight * 0.85 * ((c.badgeSize ?? 100) / 100),
+            minWidth:
+              badgeImageSize || barHeight * 1.2 * ((c.badgeSize ?? 100) / 100),
+            objectFit: badgeImageFit,
+            borderRadius: badgeImageRadius,
+            filter: isMetalSurface
+              ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)`
+              : "drop-shadow(0 0 8px rgba(255,255,255,0.3))",
+          }}
+        />
+      </div>
+    );
+  };
+
+  const renderClockSection = () => {
+    if (c.showClock === false) return null;
+    return (
+      <div
+        {...partAttrs("clock")}
+        style={withElementOffset(
+          c,
+          "clock",
+          buildNavbarClockStyle({
+            isMetalSurface,
+            isGlass,
+            isRetro,
+            clockRadius,
+            clockPadding,
+            clockBg,
+            clockBorderWidth,
+            clockBorderColor,
+            clockTextColor,
+            clockFontFamily,
+            clockFontSize,
+            clockFontWeight,
+            clockShadow,
+            accentColor,
+            accentColorRGB,
+          }),
+        )}
+      >
+        {time || "--:--:--"}
+      </div>
+    );
+  };
+
+  const renderNowPlayingSection = () => {
+    if (c.showNowPlaying === false || !displayNowPlaying) return null;
+    return (
+      <div
+        {...partAttrs("music")}
+        style={withElementOffset(c, "music", {
+          display: "flex",
+          alignItems: "center",
+          minWidth: 0,
+          width: "100%",
+          maxWidth: "min(34vw, 380px)",
+          flex: "1 1 220px",
+          overflow: "hidden",
+        })}
+      >
+        <NowPlayingDisplay
+          data={displayNowPlaying}
+          musicDisplayStyle={subValue(
+            c,
+            "music",
+            "musicDisplayStyle",
+            c.musicDisplayStyle || "text",
+          )}
+          textColor={textColor}
+          mutedColor={mutedColor}
+          accentColor={accentColor}
+          fontSize={musicFontSize}
+          fontFamily={musicFontFamily}
+          fontWeight={musicFontWeight}
+          isMetal={isMetalSurface}
+          barHeight={barHeight}
+        />
+      </div>
+    );
+  };
+
+  const renderCryptoSection = () => {
+    if (!c.showCrypto || activeCoins.length === 0) return null;
+    return (
+      <div
+        {...partAttrs("crypto")}
+        style={withElementOffset(c, "crypto", {
+          display: "flex",
+          alignItems: "center",
+          minWidth: 0,
+          flexShrink: 0,
+        })}
+      >
+        <CryptoTicker
+          coins={activeCoins}
+          prices={cryptoPrices}
+          mode={cryptoMode}
+          index={cryptoIndex}
+          fading={cryptoFading}
+          fontSize={cryptoFontSize}
+          bgColor={bgColor}
+          textColor={cryptoTextColor}
+          fontFamily={cryptoFontFamily}
+          fontWeight={cryptoFontWeight}
+          cryptoUpColor={cryptoUpColor}
+          cryptoDownColor={cryptoDownColor}
+          metallic={isMetalSurface || isGlass || isRetro}
+        />
+      </div>
+    );
+  };
+
+  const renderCtaSection = () => {
+    if (!c.showCTA || !c.ctaText) return null;
+    return (
+      <div
+        {...partAttrs("sponsor")}
+        style={withElementOffset(
+          c,
+          "sponsor",
+          buildNavbarSponsorStyle({
+            isStyleSeca,
+            isMetal,
+            isGlass,
+            isRetro,
+            sponsorRadius,
+            sponsorPadding,
+            sponsorBorderWidth,
+            sponsorBorderColor,
+            sponsorTextColor,
+            sponsorFontFamily,
+            sponsorFontSize,
+            sponsorFontWeight,
+            sponsorShadow,
+            sponsorAccentColor,
+            ctaColor,
+            ctaColorRGB,
+          }),
+        )}
+      >
+        <span
+          style={{
+            minWidth: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {c.ctaText}
+        </span>
+      </div>
+    );
+  };
+
+  const renderBalanceSection = () => {
+    if (!c.showStartBalance || !c.startBalance) return null;
+    return (
+      <div
+        {...partAttrs("balance")}
+        style={withElementOffset(c, "balance", {
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontFamily: balanceFontFamily,
+          fontSize: balanceFontSize,
+          fontWeight: balanceFontWeight,
+          color: balanceTextColor,
+          letterSpacing: "0.1em",
+          flexShrink: 0,
+          textShadow,
+        })}
+      >
+        <span
+          style={{
+            fontSize: balanceFontSize * 0.78,
+            color: balanceMutedColor,
+            textTransform: "uppercase",
+            letterSpacing: "0.15em",
+            fontWeight: balanceFontWeight,
+          }}
+        >
+          START
+        </span>
+        <span
+          style={{
+            fontWeight: Math.max(700, Number(balanceFontWeight) || 700),
+            color: balanceAccentColor,
+          }}
+        >
+          {c.balanceCurrency || "€"}
+          {Number(c.startBalance).toLocaleString()}
+        </span>
+      </div>
+    );
+  };
+
+  const renderCasinoSection = () => {
+    if (!c.showCasino || (!c.casinoName && !casinoLogoUrl)) return null;
+    return (
+      <div
+        {...partAttrs("casino")}
+        style={withElementOffset(c, "casino", {
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexShrink: 0,
+        })}
+      >
+        {casinoLogoUrl && (
+          <img
+            src={casinoLogoUrl}
+            alt=""
+            {...partAttrs("casino")}
+            style={{
+              height:
+                casinoImageSize ||
+                barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100),
+              maxWidth: casinoImageSize
+                ? casinoImageSize * 1.8
+                : barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100),
+              objectFit: casinoImageFit,
+              borderRadius: casinoImageRadius,
+              filter: isMetalSurface
+                ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))`
+                : "none",
+            }}
+          />
+        )}
+        {c.casinoName && (
+          <span
+            {...partAttrs("casino")}
+            style={{
+              fontFamily: casinoFontFamily,
+              fontSize: casinoFontSize,
+              fontWeight: casinoFontWeight,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: casinoTextColor,
+              textShadow: resolveCasinoTextShadow({
+                isMetalSurface,
+                isRetro,
+                accentColorRGB,
+                accentColor,
+              }),
+            }}
+          >
+            {c.casinoName}
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const sectionRenderers = {
+    identity: renderIdentitySection,
+    badge: renderBadgeSection,
+    clock: renderClockSection,
+    nowPlaying: renderNowPlayingSection,
+    crypto: renderCryptoSection,
+    cta: renderCtaSection,
+    socials: () => null,
+    balance: renderBalanceSection,
+    casino: renderCasinoSection,
+  };
+
+  const renderSection = (sectionId) => sectionRenderers[sectionId]?.() ?? null;
 
   const renderZone = (zone) => {
     const sections = getZoneSections(zone)
@@ -1816,31 +1958,7 @@ function CryptoTicker({
   };
 
   /* Use translate3d for GPU-accelerated compositing — prevents blur during transitions */
-  const animStyle =
-    mode === "horizontal"
-      ? {
-          transform: fading ? "translate3d(-8px,0,0)" : "translate3d(0,0,0)",
-          opacity: fading ? 0 : 1,
-          transition: "transform 0.35s ease, opacity 0.35s ease",
-          willChange: "transform, opacity",
-          backfaceVisibility: "hidden",
-        }
-      : mode === "carousel"
-        ? {
-            transform: fading ? "translate3d(0,-12px,0)" : "translate3d(0,0,0)",
-            opacity: fading ? 0 : 1,
-            transition: "transform 0.35s ease, opacity 0.35s ease",
-            willChange: "transform, opacity",
-            backfaceVisibility: "hidden",
-          }
-        : mode === "fade"
-          ? {
-              opacity: fading ? 0 : 1,
-              transition: "opacity 0.4s ease",
-              willChange: "opacity",
-              backfaceVisibility: "hidden",
-            }
-          : {};
+  const animStyle = buildCryptoTickerAnimationStyle(mode, fading);
 
   return (
     <div style={tickerStyle}>
@@ -1935,7 +2053,7 @@ function NowPlayingDisplay({
     switch (musicDisplayStyle) {
       case "pill":
         return (
-          <NP_Pill
+          <NowPlayingPill
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -1948,7 +2066,7 @@ function NowPlayingDisplay({
         );
       case "marquee":
         return (
-          <NP_Marquee
+          <NowPlayingMarquee
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -1959,7 +2077,7 @@ function NowPlayingDisplay({
         );
       case "albumart":
         return (
-          <NP_AlbumArt
+          <NowPlayingAlbumArt
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -1972,7 +2090,7 @@ function NowPlayingDisplay({
         );
       case "equalizer":
         return (
-          <NP_Equalizer
+          <NowPlayingEqualizer
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -1983,7 +2101,7 @@ function NowPlayingDisplay({
         );
       case "vinyl":
         return (
-          <NP_Vinyl
+          <NowPlayingVinyl
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -1995,7 +2113,7 @@ function NowPlayingDisplay({
         );
       case "minimal":
         return (
-          <NP_Minimal
+          <NowPlayingMinimal
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -2006,7 +2124,7 @@ function NowPlayingDisplay({
         );
       case "wave":
         return (
-          <NP_Wave
+          <NowPlayingWave
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -2019,7 +2137,7 @@ function NowPlayingDisplay({
       case "text":
       default:
         return (
-          <NP_Text
+          <NowPlayingText
             data={data}
             fontSize={fontSize}
             textColor={textColor}
@@ -2046,7 +2164,7 @@ function NowPlayingDisplay({
 }
 
 /* Style 1: Text (original) */
-function NP_Text({
+function NowPlayingText({
   data,
   fontSize,
   textColor,
@@ -2102,7 +2220,7 @@ function NP_Text({
 }
 
 /* Style 2: Pill — compact with album art, transparent */
-function NP_Pill({
+function NowPlayingPill({
   data,
   fontSize,
   textColor,
@@ -2179,7 +2297,7 @@ function NP_Pill({
 }
 
 /* Style 3: Marquee — scrolling ticker */
-function NP_Marquee({
+function NowPlayingMarquee({
   data,
   fontSize,
   textColor,
@@ -2257,7 +2375,7 @@ function NP_Marquee({
 }
 
 /* Style 4: Album Art — prominent art with info */
-function NP_AlbumArt({
+function NowPlayingAlbumArt({
   data,
   fontSize,
   textColor,
@@ -2386,7 +2504,7 @@ function NP_AlbumArt({
 }
 
 /* Style 5: Equalizer — animated bars + info */
-function NP_Equalizer({
+function NowPlayingEqualizer({
   data,
   fontSize,
   textColor,
@@ -2459,7 +2577,7 @@ function NP_Equalizer({
 }
 
 /* Style 6: Vinyl — spinning record disc, no background */
-function NP_Vinyl({
+function NowPlayingVinyl({
   data,
   fontSize,
   textColor,
@@ -2540,7 +2658,7 @@ function NP_Vinyl({
 }
 
 /* Style 7: Minimal — just an icon + single line, no background */
-function NP_Minimal({
+function NowPlayingMinimal({
   data,
   fontSize,
   textColor,
@@ -2609,7 +2727,7 @@ function NP_Minimal({
 }
 
 /* Style 8: Wave — sound wave animation + info, no background */
-function NP_Wave({
+function NowPlayingWave({
   data,
   fontSize,
   textColor,
@@ -2682,9 +2800,9 @@ function NP_Wave({
 
 /* ─── Hex to RGB helper ─── */
 function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  const r = Number.parseInt(hex.slice(1, 3), 16);
+  const g = Number.parseInt(hex.slice(3, 5), 16);
+  const b = Number.parseInt(hex.slice(5, 7), 16);
   return `${r},${g},${b}`;
 }
 
