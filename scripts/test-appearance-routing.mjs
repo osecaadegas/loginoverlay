@@ -327,6 +327,68 @@ try {
     640,
     "Runtime slot sizing reads canonical document layout width",
   );
+
+  const betsRoot = "widgets.bets-widget.styles.StyleSecaBets";
+  const betsSelectedTarget = { styleId: "StyleSecaBets" };
+  const betsBackgroundRoute = scopedMutations.buildScopedAppearanceRoute({
+    controlId: "backgroundColor",
+    elementId: "widgetBackground",
+    selectedTarget: betsSelectedTarget,
+    selectedWidgetType: "bets",
+  });
+  let betsAppearance = scopedMutations.setScopedConfigAtRoot(
+    {
+      widgets: {
+        "bets-widget": {
+          styles: {
+            StyleSecaBets: {
+              subElements: { widgetBackground: { backgroundColor: "#111111" } },
+              elements: { widgetBackground: { backgroundColor: "#222222" } },
+              appearanceV2: {
+                elementOverrides: {
+                  widgetBackground: { backgroundColor: "#333333" },
+                },
+              },
+              __appearanceExplicitSubElements: {
+                widgetBackground: { backgroundColor: "#444444" },
+              },
+              __appearanceScopedState: { widgets: { stale: true } },
+            },
+          },
+        },
+      },
+    },
+    betsRoot,
+    betsBackgroundRoute,
+    "#123abc",
+  );
+  const betsStyle = betsAppearance.widgets["bets-widget"].styles.StyleSecaBets;
+  assert.equal(
+    betsStyle.__appearanceDocument.elements.widgetBackground.base
+      .backgroundColor,
+    "#123abc",
+    "StyleSecaBets background writes to canonical document",
+  );
+  assert.equal(betsStyle.subElements, undefined);
+  assert.equal(betsStyle.elements, undefined);
+  assert.equal(betsStyle.appearanceV2, undefined);
+  assert.equal(betsStyle.__appearanceExplicitSubElements, undefined);
+  assert.equal(betsStyle.__appearanceScopedState, undefined);
+  assert.equal(
+    appearanceStyles.subValue(
+      {
+        ...betsStyle,
+        displayStyle: "StyleSecaBets",
+        __appearanceWidgetType: "bets",
+      },
+      "widgetBackground",
+      "backgroundColor",
+      undefined,
+    ),
+    "#123abc",
+    "Bets runtime style reads project canonical StyleSecaBets documents",
+  );
+
   rootedAppearance = scopedMutations.removeScopedConfigValueAtRoot(
     rootedAppearance,
     scopedRoot,

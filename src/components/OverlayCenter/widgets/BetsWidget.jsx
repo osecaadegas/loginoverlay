@@ -154,9 +154,17 @@ function scaledFontSize(baseFontSize, scale, minimum = 0) {
 }
 
 function getExplicitAppearanceConfig(config = {}) {
+  const withContext = {
+    ...config,
+    __appearanceStyleId: config.displayStyle || "v1_list",
+    __appearanceWidgetType: "bets",
+  };
   return Object.hasOwn(config, "__appearanceExplicitSubElements")
-    ? { subElements: config.__appearanceExplicitSubElements || {} }
-    : config;
+    ? {
+        ...withContext,
+        subElements: config.__appearanceExplicitSubElements || {},
+      }
+    : withContext;
 }
 
 function scopedSubValue(

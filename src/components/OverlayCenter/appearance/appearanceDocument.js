@@ -108,12 +108,15 @@ function validateRoute(rawRoute) {
 
 export function isAppearanceDocumentRoute(rawRoute = {}) {
   const route = createAppearanceRoute(rawRoute);
-  return (
+  const isBonusHuntV12 =
     route.registryWidgetType === "bonus_hunt" &&
     ["v12_classic_sr", "v12_classic_sr_editable"].includes(
       route.registryWidgetVariant,
-    )
-  );
+    );
+  const isStyleSecaBets =
+    route.registryWidgetType === "bets" &&
+    route.registryWidgetVariant === "StyleSecaBets";
+  return isBonusHuntV12 || isStyleSecaBets;
 }
 
 export function normalizeAppearanceDocumentConfig(
