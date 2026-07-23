@@ -32,6 +32,19 @@ const RUNTIME_CONFIG_KEYS = new Set([
   "_openedAt",
 ]);
 
+const WIDGET_LAYOUT_SNAPSHOT_KEYS = [
+  "is_visible",
+  "position_x",
+  "position_y",
+  "width",
+  "height",
+  "z_index",
+  "animation",
+  "exit_animation",
+];
+
+const WIDGET_FULL_BACKUP_ROW_KEYS = ["label", ...WIDGET_LAYOUT_SNAPSHOT_KEYS];
+
 /* ── Legacy style-preset config keys to SKIP (old presets were style/layout only). ── */
 const USER_DATA_KEYS = {
   stats: [
@@ -145,23 +158,46 @@ function isSensitiveKey(key) {
   );
 }
 
-function sanitizeConfigForBackup(config = {}) {
-  const clean = {};
-  for (const [key, value] of Object.entries(config || {})) {
-    if (isSensitiveKey(key)) continue;
-    clean[key] = value;
-  }
-  return clean;
-}
-
 function clonePlain(value, fallback = null) {
   if (value == null) return fallback;
-  if (typeof structuredClone !== "function") return fallback;
-  try {
-    return structuredClone(value);
-  } catch {
-    return fallback;
+  if (typeof structuredClone === "function") {
+    try {
+      return structuredClone(value);
+    } catch {
+      // Fall through to recursive cloning for plain config/appearance data.
+    }
   }
+  if (Array.isArray(value)) {
+    return value.map((item) => clonePlain(item, item));
+  }
+  if (value && typeof value === "object") {
+    const clone = {};
+    for (const [key, childValue] of Object.entries(value)) {
+      clone[key] = clonePlain(childValue, childValue);
+    }
+    return clone;
+  }
+  return value;
+}
+
+function sanitizeConfigValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeConfigValue(item));
+  }
+  if (value && typeof value === "object") {
+    const clean = {};
+    for (const [key, childValue] of Object.entries(value)) {
+      if (isSensitiveKey(key)) continue;
+      const sanitized = sanitizeConfigValue(childValue);
+      if (sanitized !== undefined) clean[key] = sanitized;
+    }
+    return clean;
+  }
+  return clonePlain(value, value);
+}
+
+function sanitizeConfigForBackup(config = {}) {
+  return sanitizeConfigValue(config) || {};
 }
 
 function snapshotOverlayAppearance(overlayState) {
@@ -173,15 +209,17 @@ function stripUserData(widgetType, config) {
   const skip = new Set(USER_DATA_KEYS[widgetType] || []);
   const clean = {};
   for (const [key, value] of Object.entries(config || {})) {
-    if (!skip.has(key) && !isSensitiveKey(key)) clean[key] = value;
+    if (skip.has(key) || isSensitiveKey(key)) continue;
+    const sanitized = sanitizeConfigValue(value);
+    if (sanitized !== undefined) clean[key] = sanitized;
   }
   return clean;
 }
 
 function mergeFullBackupConfig(existingConfig = {}, backupConfig = {}) {
-  const merged = { ...backupConfig };
+  const merged = sanitizeConfigForBackup(backupConfig);
   for (const [key, value] of Object.entries(existingConfig)) {
-    if (isSensitiveKey(key)) merged[key] = value;
+    if (isSensitiveKey(key)) merged[key] = clonePlain(value, value);
   }
   return merged;
 }
@@ -189,29 +227,37 @@ function mergeFullBackupConfig(existingConfig = {}, backupConfig = {}) {
 /** Merge preset config into existing config — keep user data, apply styling only */
 function mergePresetConfig(widgetType, existingConfig = {}, presetConfig = {}) {
   const skip = new Set(USER_DATA_KEYS[widgetType] || []);
-  const merged = { ...existingConfig };
+  const merged = clonePlain(existingConfig, { ...existingConfig });
   for (const [key, value] of Object.entries(presetConfig)) {
-    if (!skip.has(key)) merged[key] = value;
+    if (!skip.has(key)) merged[key] = sanitizeConfigValue(value);
   }
   return merged;
+}
+
+function snapshotWidget(widget) {
+  const snapshot = {
+    id: widget.id,
+    widget_type: widget.widget_type,
+    config: sanitizeConfigForBackup(widget.config),
+  };
+  for (const key of WIDGET_FULL_BACKUP_ROW_KEYS) {
+    if (Object.hasOwn(widget, key)) snapshot[key] = clonePlain(widget[key], widget[key]);
+  }
+  return snapshot;
 }
 
 function buildPresetWidgetPayload(widget, snap, isFullBackup) {
   const config = isFullBackup
     ? mergeFullBackupConfig(widget.config, snap.config)
     : mergePresetConfig(widget.widget_type, widget.config, snap.config);
-
-  return {
-    ...widget,
-    config,
-    is_visible: snap.is_visible,
-    position_x: snap.position_x,
-    position_y: snap.position_y,
-    width: snap.width,
-    height: snap.height,
-    z_index: snap.z_index,
-    animation: snap.animation,
-  };
+  const restored = { ...widget, config };
+  const rowKeys = isFullBackup
+    ? WIDGET_FULL_BACKUP_ROW_KEYS
+    : WIDGET_LAYOUT_SNAPSHOT_KEYS;
+  for (const key of rowKeys) {
+    if (Object.hasOwn(snap, key)) restored[key] = clonePlain(snap[key], snap[key]);
+  }
+  return restored;
 }
 
 function buildRestoredOverlayAppearance(preset, currentAppearance = {}) {
@@ -310,19 +356,7 @@ export default function usePresets({
   const saveGlobalPreset = useCallback(async () => {
     const name = presetName.trim();
     if (!name || widgets.length === 0) return;
-    const snapshot = widgets.map((w) => ({
-      id: w.id,
-      widget_type: w.widget_type,
-      label: w.label,
-      config: sanitizeConfigForBackup(w.config),
-      is_visible: w.is_visible,
-      position_x: w.position_x,
-      position_y: w.position_y,
-      width: w.width,
-      height: w.height,
-      z_index: w.z_index,
-      animation: w.animation,
-    }));
+    const snapshot = widgets.map(snapshotWidget);
     const entry = {
       name,
       snapshot,
