@@ -2086,6 +2086,10 @@
 
 /* -- Inactive tile (greyed out, clickable to add) -- */
 .wm-tile--inactive {
+  appearance: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   opacity: 0.4;
   cursor: pointer;
 }
@@ -2144,11 +2148,14 @@
 
 /* -- iOS-style toggle switch -- */
 .wm-toggle {
+  appearance: none;
   position: absolute;
   top: 10px;
   right: 10px;
   width: 36px;
   height: 20px;
+  padding: 0;
+  border: 0;
   border-radius: 10px;
   background: rgba(100, 116, 139, 0.24);
   cursor: pointer;
@@ -2323,8 +2330,11 @@
    SIDE PANEL ï¿½ slide-in widget editor
    ------------------------------------------- */
 .wm-sidepanel-backdrop {
+  appearance: none;
   position: fixed;
   inset: 0;
+  padding: 0;
+  border: 0;
   background: rgba(0, 0, 0, 0.45);
   z-index: 900;
   animation: wm-fadeBackdrop 0.2s ease;
@@ -3586,10 +3596,18 @@ body.wm-resizing {
   overflow: visible;
 }
 
+.wm-drag-overlay {
+  appearance: none;
+  padding: 0;
+  border: 0;
+}
+
 .wm-resize-handle {
+  appearance: none;
   position: absolute;
   width: 10px;
   height: 10px;
+  padding: 0;
   background: #fff;
   border: 2px solid rgba(148, 163, 184, 0.9);
   border-radius: 2px;
@@ -3623,8 +3641,11 @@ body.wm-resizing {
 
 /* Edge resize handles ï¿½ thin bars along each side */
 .wm-resize-edge {
+  appearance: none;
   position: absolute;
+  padding: 0;
   background: transparent;
+  border: 0;
   pointer-events: auto;
   z-index: 11;
   border-radius: 1px;
@@ -3720,6 +3741,7 @@ body.wm-resizing {
 .wm-ctx-menu {
   position: absolute;
   z-index: 10000;
+  margin: 0;
   min-width: 180px;
   background: rgba(9, 13, 18, 0.96);
   border: 1px solid rgba(148, 163, 184, 0.14);
@@ -3819,6 +3841,25 @@ body.wm-resizing {
   user-select: none;
 }
 .wm-ctx-menu--rich .wm-ctx-header:active {
+  cursor: grabbing;
+}
+.wm-ctx-header-drag {
+  appearance: none;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  text-transform: inherit;
+  white-space: nowrap;
+  cursor: grab;
+}
+.wm-ctx-header-drag:active {
   cursor: grabbing;
 }
 .wm-ctx-close {
@@ -4407,10 +4448,16 @@ body.wm-resizing {
   padding: 6px 10px 2px;
 }
 .wm-ctx-els-dropdown-item {
+  display: block;
+  appearance: none;
+  width: calc(100% - 8px);
   padding: 4px 10px;
+  border: 0;
+  background: transparent;
   font-size: 11px;
   color: var(--oc-text-slate-200);
   cursor: pointer;
+  text-align: left;
   transition:
     background 0.1s,
     color 0.1s;

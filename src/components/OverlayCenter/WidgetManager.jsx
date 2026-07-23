@@ -51,6 +51,26 @@ function buildWidgetStyleUpdate(widget, nextStyleId, currentStyleId) {
     : { ...widget, config };
 }
 
+function getDragOverlayCursor(isLocked, isSelected) {
+  if (isLocked) return "not-allowed";
+  return isSelected ? "grab" : "pointer";
+}
+
+function ResizeHandle({ direction, onResizeStart }) {
+  const isCorner = direction.length === 2;
+  const className = isCorner
+    ? `wm-resize-handle wm-resize-${direction}`
+    : `wm-resize-edge wm-resize-${direction}`;
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-label={`Resize ${direction}`}
+      onMouseDown={(event) => onResizeStart(event, direction)}
+    />
+  );
+}
+
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
   widget,
@@ -336,13 +356,15 @@ const DraggableSlot = memo(function DraggableSlot({
 
       {/* Transparent drag surface on top — catches ALL mouse events (skip for background) */}
       {!isBg && (
-        <div
+        <button
+          type="button"
           className="wm-drag-overlay"
+          aria-label={`Select and move ${def?.label || widget.widget_type}`}
           style={{
             position: "absolute",
             inset: 0,
             zIndex: 2,
-            cursor: isLocked ? "not-allowed" : isSelected ? "grab" : "pointer",
+            cursor: getDragOverlayCursor(isLocked, isSelected),
             background: "transparent",
           }}
           onMouseDown={handleMouseDown}
@@ -359,39 +381,15 @@ const DraggableSlot = memo(function DraggableSlot({
       {/* Selection overlay + resize handles (highest z) — skip for background */}
       {isSelected && !isBg && (
         <div className="wm-slot-selection" style={{ zIndex: 3 }}>
-          <div
-            className="wm-resize-handle wm-resize-nw"
-            onMouseDown={(e) => handleResizeDown(e, "nw")}
-          />
-          <div
-            className="wm-resize-handle wm-resize-ne"
-            onMouseDown={(e) => handleResizeDown(e, "ne")}
-          />
-          <div
-            className="wm-resize-handle wm-resize-sw"
-            onMouseDown={(e) => handleResizeDown(e, "sw")}
-          />
-          <div
-            className="wm-resize-handle wm-resize-se"
-            onMouseDown={(e) => handleResizeDown(e, "se")}
-          />
+          <ResizeHandle direction="nw" onResizeStart={handleResizeDown} />
+          <ResizeHandle direction="ne" onResizeStart={handleResizeDown} />
+          <ResizeHandle direction="sw" onResizeStart={handleResizeDown} />
+          <ResizeHandle direction="se" onResizeStart={handleResizeDown} />
           {/* Edge handles — resize one axis only */}
-          <div
-            className="wm-resize-edge wm-resize-n"
-            onMouseDown={(e) => handleResizeDown(e, "n")}
-          />
-          <div
-            className="wm-resize-edge wm-resize-s"
-            onMouseDown={(e) => handleResizeDown(e, "s")}
-          />
-          <div
-            className="wm-resize-edge wm-resize-e"
-            onMouseDown={(e) => handleResizeDown(e, "e")}
-          />
-          <div
-            className="wm-resize-edge wm-resize-w"
-            onMouseDown={(e) => handleResizeDown(e, "w")}
-          />
+          <ResizeHandle direction="n" onResizeStart={handleResizeDown} />
+          <ResizeHandle direction="s" onResizeStart={handleResizeDown} />
+          <ResizeHandle direction="e" onResizeStart={handleResizeDown} />
+          <ResizeHandle direction="w" onResizeStart={handleResizeDown} />
           {def?.styles?.length > 1 && (
             <button
               className="wm-style-cycle-btn"
@@ -415,253 +413,904 @@ const DraggableSlot = memo(function DraggableSlot({
   );
 });
 
-/* ── Per-widget sync mapping from navbar config ── */
-export function buildSyncedConfig(widgetType, currentConfig, nb) {
-  if (!nb) return null;
-  const c = currentConfig || {};
-
-  /* Shared filter/font block — always included */
-  const sharedFont = {
+function buildSharedSyncedConfig(nb) {
+  return {
     ...(nb.fontFamily != null && { fontFamily: nb.fontFamily }),
     ...(nb.fontSize != null && { fontSize: nb.fontSize }),
-  };
-  const sharedFilters = {
     ...(nb.brightness != null && { brightness: nb.brightness }),
     ...(nb.contrast != null && { contrast: nb.contrast }),
     ...(nb.saturation != null && { saturation: nb.saturation }),
   };
+}
 
-  switch (widgetType) {
-    case "image_slideshow":
-      return {
-        ...c,
-        borderColor: nb.accentColor || "rgba(51,65,85,0.5)",
-        gradientColor: nb.bgColor || "rgba(15,23,42,0.8)",
-        captionColor: nb.textColor || "#e2e8f0",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "rtp_stats":
-      return {
-        ...c,
-        barBgFrom: nb.bgColor || "#111827",
-        barBgVia: nb.bgColor || "#1e3a5f",
-        barBgTo: nb.bgColor || "#111827",
-        borderColor: nb.accentColor || "#1d4ed8",
-        textColor: nb.textColor || "#ffffff",
-        providerColor: nb.textColor || "#ffffff",
-        slotNameColor: nb.textColor || "#ffffff",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "background":
-      return {
-        ...c,
-        color1: nb.bgColor || "#0f172a",
-        color2: nb.accentColor || "#1e3a5f",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "chat":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "#111318",
-        textColor: nb.textColor || "#f1f5f9",
-        headerBg: nb.bgColor || "#111318",
-        headerText: nb.mutedColor || "#94a3b8",
-        borderColor: nb.accentColor || "#f59e0b",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "bonus_hunt":
-      return {
-        ...c,
-        headerColor: nb.bgColor || "#111318",
-        headerAccent: nb.accentColor || "#f59e0b",
-        countCardColor: nb.bgColor || "#111318",
-        currentBonusColor: nb.bgColor || "#111318",
-        currentBonusAccent: nb.accentColor || "#f59e0b",
-        listCardColor: nb.bgColor || "#111318",
-        listCardAccent: nb.accentColor || "#f59e0b",
-        summaryColor: nb.bgColor || "#111318",
-        totalPayColor: nb.accentColor || "#f59e0b",
-        totalPayText: nb.textColor || "#f1f5f9",
-        superBadgeColor: nb.ctaColor || "#f43f5e",
-        extremeBadgeColor: nb.ctaColor || "#f43f5e",
-        textColor: nb.textColor || "#f1f5f9",
-        mutedTextColor: nb.mutedColor || "#94a3b8",
-        statValueColor: nb.textColor || "#f1f5f9",
-        cardOutlineColor: nb.borderColor || nb.accentColor || "#f59e0b",
-        cardOutlineWidth: nb.borderWidth ?? 2,
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "tournament":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "#13151e",
-        cardBg: nb.bgColor ? `${nb.bgColor}cc` : "#1a1d2e",
-        cardBorder: nb.accentColor
-          ? `${nb.accentColor}30`
-          : "rgba(255,255,255,0.08)",
-        nameColor: nb.textColor || "#ffffff",
-        multiColor: nb.accentColor || "#facc15",
-        swordColor: nb.accentColor || "#eab308",
-        slotNameColor: nb.textColor || "#ffffff",
-        tabBg: "rgba(255,255,255,0.06)",
-        tabActiveBg: nb.accentColor
-          ? `${nb.accentColor}25`
-          : "rgba(255,255,255,0.15)",
-        tabColor: nb.mutedColor || "#94a3b8",
-        tabActiveColor: nb.accentColor || "#ffffff",
-        tabBorder: nb.accentColor
-          ? `${nb.accentColor}20`
-          : "rgba(255,255,255,0.12)",
-        bkAccent: nb.accentColor || "#6366f1",
-        bkHeaderColor: nb.mutedColor || "#94a3b8",
-        xIconColor: nb.accentColor || "#eab308",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "random_slot_picker":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "#13151e",
-        cardBg: nb.bgColor ? `${nb.bgColor}cc` : "rgba(255,255,255,0.04)",
-        borderColor: nb.accentColor
-          ? `${nb.accentColor}30`
-          : "rgba(255,255,255,0.08)",
-        accentColor: nb.accentColor || "#f59e0b",
-        textColor: nb.textColor || "#ffffff",
-        mutedColor: nb.mutedColor || "#94a3b8",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "giveaway":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "#13151e",
-        accentColor: nb.accentColor || "#9346ff",
-        textColor: nb.textColor || "#ffffff",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "bonus_buys":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "#0a0e1a",
-        accentColor: nb.accentColor || "#3b82f6",
-        textColor: nb.textColor || "#ffffff",
-        mutedColor: nb.mutedColor || "#64748b",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "slot_requests":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "transparent",
-        accentColor: nb.accentColor || "#94a3b8",
-        textColor: nb.textColor || "#ffffff",
-        mutedColor: nb.mutedColor || "#94a3b8",
-        cardBg: nb.bgColor ? `${nb.bgColor}0a` : "rgba(255,255,255,0.04)",
-        borderColor: nb.borderColor || "rgba(255,255,255,0.08)",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    /* ── Widgets that were previously missing ── */
-    case "current_slot":
-      return {
-        ...c,
-        accentColor: nb.accentColor || "#f59e0b",
-        textColor: nb.textColor || "#ffffff",
-        mutedColor: nb.mutedColor || "#94a3b8",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "bh_stats":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "rgba(15,23,42,0.9)",
-        cardBg: nb.bgColor ? `${nb.bgColor}0a` : "rgba(255,255,255,0.04)",
-        accentColor: nb.accentColor || "#818cf8",
-        textColor: nb.textColor || "#f1f5f9",
-        mutedColor: nb.mutedColor || "#64748b",
-        borderColor: nb.borderColor || "rgba(255,255,255,0.06)",
-        progressColor: nb.accentColor || "#22c55e",
-        bestColor: "#22c55e",
-        worstColor: "#f87171",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "navbar":
-      return {
-        ...c,
-        bgColor: nb.bgColor || "#111318",
-        accentColor: nb.accentColor || "#f59e0b",
-        textColor: nb.textColor || "#f1f5f9",
-        mutedColor: nb.mutedColor || "#94a3b8",
-        borderColor: nb.borderColor || nb.accentColor || "#f59e0b",
-        ctaColor: nb.ctaColor || "#f43f5e",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "coin_flip":
-      return {
-        ...c,
-        headsColor: nb.accentColor || "#f59e0b",
-        tailsColor: nb.bgColor || "#3b82f6",
-        accentColor: nb.accentColor || "#f59e0b",
-        textColor: nb.textColor || "#ffffff",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "spotify_now_playing":
-      return {
-        ...c,
-        accentColor: nb.accentColor || "#1DB954",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "raid_shoutout":
-      return {
-        ...c,
-        accentColor: nb.accentColor || "#9146FF",
-        bgColor: nb.bgColor || "#111318",
-        textColor: nb.textColor || "#ffffff",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "salty_words":
-      return {
-        ...c,
-        accentColor: nb.accentColor || "#f59e0b",
-        textColor: nb.textColor || "#ffffff",
-        cardBg: nb.bgColor || "#1e293b",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    case "predictions":
-      return {
-        ...c,
-        accentColor: nb.accentColor || "#7c3aed",
-        textColor: nb.textColor || "#ffffff",
-        ...sharedFont,
-        ...sharedFilters,
-      };
-    default:
-      // Catch-all for any future widgets
-      return {
-        ...c,
-        ...(nb.bgColor != null && { bgColor: nb.bgColor }),
-        ...(nb.accentColor != null && { accentColor: nb.accentColor }),
-        ...(nb.textColor != null && { textColor: nb.textColor }),
-        ...(nb.mutedColor != null && { mutedColor: nb.mutedColor }),
-        ...(nb.borderColor != null && { borderColor: nb.borderColor }),
-        ...(nb.cardBg != null && { cardBg: nb.cardBg }),
-        ...sharedFont,
-        ...sharedFilters,
-      };
+function mergeSyncedConfig(currentConfig, nb, patch) {
+  return { ...currentConfig, ...patch, ...buildSharedSyncedConfig(nb) };
+}
+
+function buildDefaultSyncedConfig(currentConfig, nb) {
+  return mergeSyncedConfig(currentConfig, nb, {
+    ...(nb.bgColor != null && { bgColor: nb.bgColor }),
+    ...(nb.accentColor != null && { accentColor: nb.accentColor }),
+    ...(nb.textColor != null && { textColor: nb.textColor }),
+    ...(nb.mutedColor != null && { mutedColor: nb.mutedColor }),
+    ...(nb.borderColor != null && { borderColor: nb.borderColor }),
+    ...(nb.cardBg != null && { cardBg: nb.cardBg }),
+  });
+}
+
+const SYNC_CONFIG_BUILDERS = {
+  image_slideshow: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      borderColor: nb.accentColor || "rgba(51,65,85,0.5)",
+      gradientColor: nb.bgColor || "rgba(15,23,42,0.8)",
+      captionColor: nb.textColor || "#e2e8f0",
+    }),
+  rtp_stats: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      barBgFrom: nb.bgColor || "#111827",
+      barBgVia: nb.bgColor || "#1e3a5f",
+      barBgTo: nb.bgColor || "#111827",
+      borderColor: nb.accentColor || "#1d4ed8",
+      textColor: nb.textColor || "#ffffff",
+      providerColor: nb.textColor || "#ffffff",
+      slotNameColor: nb.textColor || "#ffffff",
+    }),
+  background: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      color1: nb.bgColor || "#0f172a",
+      color2: nb.accentColor || "#1e3a5f",
+    }),
+  chat: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "#111318",
+      textColor: nb.textColor || "#f1f5f9",
+      headerBg: nb.bgColor || "#111318",
+      headerText: nb.mutedColor || "#94a3b8",
+      borderColor: nb.accentColor || "#f59e0b",
+    }),
+  bonus_hunt: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      headerColor: nb.bgColor || "#111318",
+      headerAccent: nb.accentColor || "#f59e0b",
+      countCardColor: nb.bgColor || "#111318",
+      currentBonusColor: nb.bgColor || "#111318",
+      currentBonusAccent: nb.accentColor || "#f59e0b",
+      listCardColor: nb.bgColor || "#111318",
+      listCardAccent: nb.accentColor || "#f59e0b",
+      summaryColor: nb.bgColor || "#111318",
+      totalPayColor: nb.accentColor || "#f59e0b",
+      totalPayText: nb.textColor || "#f1f5f9",
+      superBadgeColor: nb.ctaColor || "#f43f5e",
+      extremeBadgeColor: nb.ctaColor || "#f43f5e",
+      textColor: nb.textColor || "#f1f5f9",
+      mutedTextColor: nb.mutedColor || "#94a3b8",
+      statValueColor: nb.textColor || "#f1f5f9",
+      cardOutlineColor: nb.borderColor || nb.accentColor || "#f59e0b",
+      cardOutlineWidth: nb.borderWidth ?? 2,
+    }),
+  tournament: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "#13151e",
+      cardBg: nb.bgColor ? `${nb.bgColor}cc` : "#1a1d2e",
+      cardBorder: nb.accentColor
+        ? `${nb.accentColor}30`
+        : "rgba(255,255,255,0.08)",
+      nameColor: nb.textColor || "#ffffff",
+      multiColor: nb.accentColor || "#facc15",
+      swordColor: nb.accentColor || "#eab308",
+      slotNameColor: nb.textColor || "#ffffff",
+      tabBg: "rgba(255,255,255,0.06)",
+      tabActiveBg: nb.accentColor
+        ? `${nb.accentColor}25`
+        : "rgba(255,255,255,0.15)",
+      tabColor: nb.mutedColor || "#94a3b8",
+      tabActiveColor: nb.accentColor || "#ffffff",
+      tabBorder: nb.accentColor
+        ? `${nb.accentColor}20`
+        : "rgba(255,255,255,0.12)",
+      bkAccent: nb.accentColor || "#6366f1",
+      bkHeaderColor: nb.mutedColor || "#94a3b8",
+      xIconColor: nb.accentColor || "#eab308",
+    }),
+  random_slot_picker: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "#13151e",
+      cardBg: nb.bgColor ? `${nb.bgColor}cc` : "rgba(255,255,255,0.04)",
+      borderColor: nb.accentColor
+        ? `${nb.accentColor}30`
+        : "rgba(255,255,255,0.08)",
+      accentColor: nb.accentColor || "#f59e0b",
+      textColor: nb.textColor || "#ffffff",
+      mutedColor: nb.mutedColor || "#94a3b8",
+    }),
+  giveaway: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "#13151e",
+      accentColor: nb.accentColor || "#9346ff",
+      textColor: nb.textColor || "#ffffff",
+    }),
+  bonus_buys: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "#0a0e1a",
+      accentColor: nb.accentColor || "#3b82f6",
+      textColor: nb.textColor || "#ffffff",
+      mutedColor: nb.mutedColor || "#64748b",
+    }),
+  slot_requests: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "transparent",
+      accentColor: nb.accentColor || "#94a3b8",
+      textColor: nb.textColor || "#ffffff",
+      mutedColor: nb.mutedColor || "#94a3b8",
+      cardBg: nb.bgColor ? `${nb.bgColor}0a` : "rgba(255,255,255,0.04)",
+      borderColor: nb.borderColor || "rgba(255,255,255,0.08)",
+    }),
+  current_slot: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      accentColor: nb.accentColor || "#f59e0b",
+      textColor: nb.textColor || "#ffffff",
+      mutedColor: nb.mutedColor || "#94a3b8",
+    }),
+  bh_stats: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "rgba(15,23,42,0.9)",
+      cardBg: nb.bgColor ? `${nb.bgColor}0a` : "rgba(255,255,255,0.04)",
+      accentColor: nb.accentColor || "#818cf8",
+      textColor: nb.textColor || "#f1f5f9",
+      mutedColor: nb.mutedColor || "#64748b",
+      borderColor: nb.borderColor || "rgba(255,255,255,0.06)",
+      progressColor: nb.accentColor || "#22c55e",
+      bestColor: "#22c55e",
+      worstColor: "#f87171",
+    }),
+  navbar: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      bgColor: nb.bgColor || "#111318",
+      accentColor: nb.accentColor || "#f59e0b",
+      textColor: nb.textColor || "#f1f5f9",
+      mutedColor: nb.mutedColor || "#94a3b8",
+      borderColor: nb.borderColor || nb.accentColor || "#f59e0b",
+      ctaColor: nb.ctaColor || "#f43f5e",
+    }),
+  coin_flip: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      headsColor: nb.accentColor || "#f59e0b",
+      tailsColor: nb.bgColor || "#3b82f6",
+      accentColor: nb.accentColor || "#f59e0b",
+      textColor: nb.textColor || "#ffffff",
+    }),
+  spotify_now_playing: (config, nb) =>
+    mergeSyncedConfig(config, nb, { accentColor: nb.accentColor || "#1DB954" }),
+  raid_shoutout: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      accentColor: nb.accentColor || "#9146FF",
+      bgColor: nb.bgColor || "#111318",
+      textColor: nb.textColor || "#ffffff",
+    }),
+  salty_words: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      accentColor: nb.accentColor || "#f59e0b",
+      textColor: nb.textColor || "#ffffff",
+      cardBg: nb.bgColor || "#1e293b",
+    }),
+  predictions: (config, nb) =>
+    mergeSyncedConfig(config, nb, {
+      accentColor: nb.accentColor || "#7c3aed",
+      textColor: nb.textColor || "#ffffff",
+    }),
+};
+
+/* ── Per-widget sync mapping from navbar config ── */
+export function buildSyncedConfig(widgetType, currentConfig, nb) {
+  if (!nb) return null;
+  const builder = SYNC_CONFIG_BUILDERS[widgetType] || buildDefaultSyncedConfig;
+  return builder(currentConfig || {}, nb);
+}
+
+function normalizeAnimationName(value) {
+  return value === "slide" ? "slide-up" : value || "fade";
+}
+
+function getWidgetAnimationMs(widget) {
+  return ((widget.config?.animSpeed || 1) * 0.35 + 0.15) * 1000;
+}
+
+function addExitAnimation({ exitingMapRef, id, setExitTick, widget }) {
+  const exitAnim = widget.exit_animation || widget.animation || "fade";
+  if (exitAnim === "none") return;
+  if (exitingMapRef.current.has(id)) {
+    clearTimeout(exitingMapRef.current.get(id).timer);
   }
+  const timer = setTimeout(() => {
+    exitingMapRef.current.delete(id);
+    setExitTick((tick) => tick + 1);
+  }, getWidgetAnimationMs(widget));
+  exitingMapRef.current.set(id, { widget, timer });
+  setExitTick((tick) => tick + 1);
+}
+
+function syncExitAnimations({
+  currentIds,
+  exitingMapRef,
+  prevIds,
+  setExitTick,
+  widgets,
+}) {
+  for (const id of prevIds) {
+    if (currentIds.has(id)) continue;
+    const widget = widgets.find((item) => item.id === id);
+    if (!widget) continue;
+    addExitAnimation({ exitingMapRef, id, setExitTick, widget });
+  }
+}
+
+function buildEnterAnimations({ currentIds, exitingMapRef, prevIds, widgets }) {
+  const newEnter = new Map();
+  let maxEnterMs = 0;
+  for (const id of currentIds) {
+    if (exitingMapRef.current.has(id)) {
+      clearTimeout(exitingMapRef.current.get(id).timer);
+      exitingMapRef.current.delete(id);
+    }
+    if (prevIds.has(id)) continue;
+    const widget = widgets.find((item) => item.id === id);
+    if (!widget || widget.animation === "none") continue;
+    newEnter.set(id, `or-anim-in--${normalizeAnimationName(widget.animation)}`);
+    maxEnterMs = Math.max(maxEnterMs, getWidgetAnimationMs(widget));
+  }
+  return { maxEnterMs, newEnter };
+}
+
+function applyEnterAnimations({ maxEnterMs, newEnter, setEnterAnims }) {
+  if (newEnter.size <= 0) return;
+  setEnterAnims(newEnter);
+  setTimeout(() => setEnterAnims(new Map()), maxEnterMs || 400);
+}
+
+function buildExitingWidgets(exitingMap) {
+  return Array.from(exitingMap.entries()).map(([, entry]) => ({
+    ...entry.widget,
+    _exitAnimClass: `or-anim-out--${normalizeAnimationName(
+      entry.widget.exit_animation || entry.widget.animation,
+    )}`,
+  }));
+}
+
+function getLatestWidget(widgets, widget) {
+  return widgets.find((item) => item.id === widget.id) || widget;
+}
+
+function cloneStyleMap(value) {
+  return structuredClone(value || {});
+}
+
+function updateWidgetAdvancedCss({ handleConfigChange, prop, value, widget, widgets }) {
+  const latest = getLatestWidget(widgets, widget);
+  const advancedCSS = { ...latest.config?.advancedCSS };
+  if (value === "" || value === undefined) {
+    delete advancedCSS[prop];
+  } else {
+    advancedCSS[prop] = value;
+  }
+  handleConfigChange(latest, { ...latest.config, advancedCSS });
+}
+
+function updateWidgetElementCss({
+  handleConfigChange,
+  prop,
+  selector,
+  value,
+  widget,
+  widgets,
+}) {
+  const latest = getLatestWidget(widgets, widget);
+  const elementCSS = cloneStyleMap(latest.config?.elementCSS);
+  elementCSS[selector] = elementCSS[selector] || {};
+  if (value === "" || value === undefined) {
+    delete elementCSS[selector][prop];
+    if (Object.keys(elementCSS[selector]).length === 0) delete elementCSS[selector];
+  } else {
+    elementCSS[selector][prop] = value;
+  }
+  handleConfigChange(latest, { ...latest.config, elementCSS });
+}
+
+function removeWidgetElementTarget({ handleConfigChange, selector, widget, widgets }) {
+  const latest = getLatestWidget(widgets, widget);
+  const elementCSS = cloneStyleMap(latest.config?.elementCSS);
+  delete elementCSS[selector];
+  handleConfigChange(latest, { ...latest.config, elementCSS });
+}
+
+function clearInitialElementTarget({ handleConfigChange, selector, widget, widgets }) {
+  const latest = getLatestWidget(widgets, widget);
+  const elementCSS = cloneStyleMap(latest.config?.elementCSS);
+  if (!elementCSS[selector]?._init) return;
+  delete elementCSS[selector]._init;
+  if (Object.keys(elementCSS[selector]).length === 0) elementCSS[selector] = {};
+  handleConfigChange(latest, { ...latest.config, elementCSS });
+}
+
+function scheduleClearInitialElementTarget(args) {
+  setTimeout(() => clearInitialElementTarget(args), 50);
+}
+
+function getAvailableElementTargetGroups(targets, activeTargets) {
+  return targets.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !activeTargets.includes(item.sel)),
+  }));
+}
+
+function getElementTargetLabel(targets, selector) {
+  return (
+    targets.flatMap((group) => group.items).find((item) => item.sel === selector)
+      ?.label || selector
+  );
+}
+
+function AdvancedCssControl({ prop, value, onChange }) {
+  if (prop.type === "select" && prop.p === "font-family") {
+    return (
+      <FontSelectInput
+        value={value || ""}
+        options={FONT_OPTIONS}
+        onChange={(nextValue) => onChange(prop.p, nextValue)}
+        inheritedLabel="—"
+        className="oc-config-font-select"
+      />
+    );
+  }
+  if (prop.type === "select") {
+    return (
+      <select
+        className="wm-ctx-adv-input"
+        value={value || ""}
+        onChange={(event) => onChange(prop.p, event.target.value)}
+      >
+        <option value="">—</option>
+        {prop.opts.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
+  if (prop.type === "color") {
+    return (
+      <div className="wm-ctx-adv-color-wrap">
+        <input
+          type="color"
+          className="wm-ctx-color-input"
+          value={value || prop.ph}
+          onChange={(event) => onChange(prop.p, event.target.value)}
+        />
+        <input
+          type="text"
+          className="wm-ctx-adv-input wm-ctx-adv-input--short"
+          value={value || ""}
+          placeholder={prop.ph}
+          onChange={(event) => onChange(prop.p, event.target.value)}
+        />
+      </div>
+    );
+  }
+  if (prop.type === "presets") {
+    const selectedValue = value && prop.opts.includes(value) ? value : "__custom";
+    const customLabel = value && !prop.opts.includes(value) ? value : "— pick —";
+    return (
+      <div className="wm-ctx-adv-combo">
+        <select
+          className="wm-ctx-adv-combo-select"
+          value={selectedValue}
+          onChange={(event) => {
+            if (event.target.value !== "__custom") onChange(prop.p, event.target.value);
+          }}
+        >
+          <option value="__custom">{customLabel}</option>
+          {prop.opts.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          className="wm-ctx-adv-combo-input"
+          value={value || ""}
+          placeholder={prop.ph}
+          onChange={(event) => onChange(prop.p, event.target.value)}
+        />
+      </div>
+    );
+  }
+  return (
+    <input
+      type="text"
+      className="wm-ctx-adv-input"
+      value={value || ""}
+      placeholder={prop.ph}
+      onChange={(event) => onChange(prop.p, event.target.value)}
+    />
+  );
+}
+
+function AdvancedCssRow({ prop, value, onChange }) {
+  const isSet = value !== undefined && value !== "";
+  return (
+    <div className={`wm-ctx-adv-row ${isSet ? "wm-ctx-adv-row--active" : ""}`}>
+      <span className="wm-ctx-adv-label" title={prop.p}>
+        {prop.label}
+      </span>
+      <AdvancedCssControl prop={prop} value={value} onChange={onChange} />
+      {isSet && (
+        <button
+          type="button"
+          className="wm-ctx-adv-clear"
+          title="Reset"
+          onClick={() => onChange(prop.p, "")}
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
+
+function AdvancedCssGroup({ group, values, onChange }) {
+  return (
+    <details className="wm-ctx-adv-group">
+      <summary className="wm-ctx-adv-group-title">{group.group}</summary>
+      <div className="wm-ctx-adv-group-body">
+        {group.props.map((prop) => (
+          <AdvancedCssRow
+            key={prop.p}
+            prop={prop}
+            value={values[prop.p]}
+            onChange={onChange}
+          />
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function ElementStyleControl({ prop, selector, value, onChange }) {
+  if (prop.type === "select" && prop.p === "font-family") {
+    return (
+      <FontSelectInput
+        value={value || ""}
+        options={[{ value: "inherit", label: "inherit" }, ...FONT_OPTIONS]}
+        onChange={(nextValue) => onChange(selector, prop.p, nextValue)}
+        inheritedLabel="—"
+        className="oc-config-font-select"
+      />
+    );
+  }
+  if (prop.type === "select") {
+    return (
+      <select
+        className="wm-ctx-adv-input"
+        value={value || ""}
+        onChange={(event) => onChange(selector, prop.p, event.target.value)}
+      >
+        <option value="">—</option>
+        {prop.opts.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
+  if (prop.type === "color") {
+    return (
+      <div className="wm-ctx-adv-color-wrap">
+        <input
+          type="color"
+          className="wm-ctx-color-input"
+          value={value || "#ffffff"}
+          onChange={(event) => onChange(selector, prop.p, event.target.value)}
+        />
+        <input
+          type="text"
+          className="wm-ctx-adv-input wm-ctx-adv-input--short"
+          value={value || ""}
+          placeholder="#fff"
+          onChange={(event) => onChange(selector, prop.p, event.target.value)}
+        />
+      </div>
+    );
+  }
+  if (prop.type === "presets") {
+    const selectedValue = value && prop.opts.includes(value) ? value : "__custom";
+    const customLabel = value && !prop.opts.includes(value) ? value : "— pick —";
+    return (
+      <div className="wm-ctx-adv-combo">
+        <select
+          className="wm-ctx-adv-combo-select"
+          value={selectedValue}
+          onChange={(event) => {
+            if (event.target.value !== "__custom") {
+              onChange(selector, prop.p, event.target.value);
+            }
+          }}
+        >
+          <option value="__custom">{customLabel}</option>
+          {prop.opts.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          className="wm-ctx-adv-combo-input"
+          value={value || ""}
+          placeholder="custom"
+          onChange={(event) => onChange(selector, prop.p, event.target.value)}
+        />
+      </div>
+    );
+  }
+  return (
+    <input
+      type="text"
+      className="wm-ctx-adv-input"
+      value={value || ""}
+      onChange={(event) => onChange(selector, prop.p, event.target.value)}
+    />
+  );
+}
+
+function ElementStylePropertyRow({ prop, selector, value, onChange }) {
+  return (
+    <div className={`wm-ctx-adv-row ${value ? "wm-ctx-adv-row--active" : ""}`}>
+      <span className="wm-ctx-adv-label">{prop.label}</span>
+      <ElementStyleControl
+        prop={prop}
+        selector={selector}
+        value={value}
+        onChange={onChange}
+      />
+      {value && (
+        <button
+          type="button"
+          className="wm-ctx-adv-clear"
+          title="Reset"
+          onClick={() => onChange(selector, prop.p, "")}
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ElementTargetDropdownGroup({ group, onHover, onSelect }) {
+  return (
+    <div className="wm-ctx-els-dropdown-group">
+      <div className="wm-ctx-els-dropdown-group-label">{group.group}</div>
+      {group.items.map((item) => (
+        <button
+          type="button"
+          key={item.sel}
+          className="wm-ctx-els-dropdown-item"
+          onMouseEnter={() => onHover(item.sel)}
+          onMouseLeave={() => onHover(null)}
+          onClick={() => onSelect(item.sel)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ElementStyleTarget({
+  displayLabel,
+  onChange,
+  onHover,
+  onRemove,
+  properties,
+  propertyDefs,
+  selector,
+}) {
+  const handleRemove = (event) => {
+    event.preventDefault();
+    onRemove(selector);
+  };
+  return (
+    <details open className="wm-ctx-els-target">
+      <summary
+        className="wm-ctx-els-target-header"
+        onMouseEnter={() => onHover(selector)}
+        onMouseLeave={() => onHover(null)}
+      >
+        <span className="wm-ctx-els-target-name">{displayLabel}</span>
+        <code className="wm-ctx-els-target-sel">{selector}</code>
+        <button
+          type="button"
+          className="wm-ctx-adv-clear"
+          title="Remove"
+          onClick={handleRemove}
+        >
+          ✕
+        </button>
+      </summary>
+      <div className="wm-ctx-els-target-body">
+        {propertyDefs.map((prop) => (
+          <ElementStylePropertyRow
+            key={prop.p}
+            prop={prop}
+            selector={selector}
+            value={properties[prop.p]}
+            onChange={onChange}
+          />
+        ))}
+      </div>
+    </details>
+  );
+}
+
+const ELEMENT_TARGET_GROUPS = [
+  {
+    group: "Text & Headings",
+    items: [
+      { sel: "*", label: "All Elements" },
+      { sel: "h1,h2,h3,h4,h5,h6", label: "All Headings" },
+      { sel: "p", label: "Paragraphs" },
+      { sel: "span", label: "Spans" },
+      { sel: "a", label: "Links" },
+    ],
+  },
+  {
+    group: "Common Parts",
+    items: [
+      { sel: '[class*="title"]', label: "Titles" },
+      { sel: '[class*="label"]', label: "Labels" },
+      { sel: '[class*="value"],[class*="val"]', label: "Values" },
+      { sel: '[class*="name"]', label: "Names" },
+      { sel: '[class*="stat"]', label: "Stats" },
+      { sel: '[class*="header"]', label: "Headers" },
+      { sel: '[class*="subtitle"],[class*="sub"]', label: "Subtitles" },
+    ],
+  },
+  {
+    group: "Cards & Containers",
+    items: [
+      { sel: '[class*="card"]', label: "Cards" },
+      { sel: '[class*="badge"],[class*="pill"]', label: "Badges / Pills" },
+      { sel: '[class*="row"]', label: "Rows" },
+      { sel: '[class*="grid"]', label: "Grids" },
+      { sel: '[class*="wrap"],[class*="container"]', label: "Wrappers" },
+    ],
+  },
+  {
+    group: "Media",
+    items: [
+      { sel: "img", label: "Images" },
+      { sel: '[class*="avatar"],[class*="logo"]', label: "Avatars / Logos" },
+      { sel: '[class*="progress"],[class*="bar"]', label: "Progress Bars" },
+    ],
+  },
+];
+
+const ELEMENT_STYLE_PROPS = [
+  {
+    p: "font-family",
+    label: "Font",
+    type: "select",
+    opts: [
+      "inherit",
+      "'Inter', sans-serif",
+      "'Poppins', sans-serif",
+      "'Roboto', sans-serif",
+      "'Oswald', sans-serif",
+      "'Montserrat', sans-serif",
+      "'Fira Code', monospace",
+      "'Bebas Neue', cursive",
+      "'Press Start 2P', cursive",
+      "'Orbitron', sans-serif",
+      "'Arial', sans-serif",
+      "'Georgia', serif",
+      "'Courier New', monospace",
+    ],
+  },
+  {
+    p: "font-size",
+    label: "Size",
+    type: "presets",
+    opts: [
+      "8px",
+      "10px",
+      "11px",
+      "12px",
+      "13px",
+      "14px",
+      "16px",
+      "18px",
+      "20px",
+      "24px",
+      "28px",
+      "32px",
+      "36px",
+      "48px",
+      "64px",
+    ],
+  },
+  {
+    p: "font-weight",
+    label: "Weight",
+    type: "select",
+    opts: ["inherit", "100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  },
+  { p: "color", label: "Color", type: "color" },
+  { p: "background", label: "BG", type: "color" },
+  {
+    p: "text-transform",
+    label: "Case",
+    type: "select",
+    opts: ["none", "uppercase", "lowercase", "capitalize"],
+  },
+  {
+    p: "letter-spacing",
+    label: "Spacing",
+    type: "presets",
+    opts: ["-1px", "0px", "0.5px", "1px", "2px", "3px", "4px"],
+  },
+  {
+    p: "text-shadow",
+    label: "Shadow",
+    type: "presets",
+    opts: [
+      "none",
+      "1px 1px 2px rgba(0,0,0,0.5)",
+      "0 0 6px rgba(148,163,184,0.55)",
+      "0 0 10px #94a3b8",
+      "2px 2px 0 #000",
+    ],
+  },
+  {
+    p: "padding",
+    label: "Padding",
+    type: "presets",
+    opts: ["0px", "2px", "4px", "8px", "12px", "16px", "24px"],
+  },
+  {
+    p: "border-radius",
+    label: "Radius",
+    type: "presets",
+    opts: ["0px", "4px", "8px", "12px", "16px", "50%", "9999px"],
+  },
+  {
+    p: "border",
+    label: "Border",
+    type: "presets",
+    opts: ["none", "1px solid #fff", "1px solid rgba(255,255,255,0.15)", "2px solid #94a3b8"],
+  },
+  {
+    p: "opacity",
+    label: "Opacity",
+    type: "presets",
+    opts: ["0", "0.3", "0.5", "0.7", "0.8", "0.9", "1"],
+  },
+];
+
+function resetWidgetElementStyles({ handleConfigChange, widget, widgets }) {
+  const latest = getLatestWidget(widgets, widget);
+  handleConfigChange(latest, { ...latest.config, elementCSS: {} });
+}
+
+function ElementStylesEditor({ handleConfigChange, setCtxHoverSel, widget, widgets }) {
+  const elCSS = widget.config?.elementCSS || {};
+  const activeTargets = Object.keys(elCSS);
+  const availableTargetGroups = getAvailableElementTargetGroups(
+    ELEMENT_TARGET_GROUPS,
+    activeTargets,
+  );
+  const setElementValue = (selector, prop, value) => {
+    updateWidgetElementCss({
+      handleConfigChange,
+      prop,
+      selector,
+      value,
+      widget,
+      widgets,
+    });
+  };
+  const removeTarget = (selector) => {
+    removeWidgetElementTarget({ handleConfigChange, selector, widget, widgets });
+  };
+  const addTarget = (selector) => {
+    setElementValue(selector, "_init", "1");
+    setCtxHoverSel(null);
+    scheduleClearInitialElementTarget({ handleConfigChange, selector, widget, widgets });
+  };
+  const addCustomTarget = () => {
+    const selector = prompt(
+      "Enter a CSS selector (e.g. .my-class, span.title, [data-x])",
+    );
+    if (selector) addTarget(selector);
+  };
+  const resetAll = () => {
+    resetWidgetElementStyles({ handleConfigChange, widget, widgets });
+  };
+  return (
+    <>
+      <div className="wm-ctx-els-add">
+        <details className="wm-ctx-els-dropdown">
+          <summary className="wm-ctx-els-target-select">＋ Add element target…</summary>
+          <div
+            className="wm-ctx-els-dropdown-list"
+            onMouseLeave={() => setCtxHoverSel(null)}
+          >
+            {availableTargetGroups.map((group) => (
+              <ElementTargetDropdownGroup
+                key={group.group}
+                group={group}
+                onHover={setCtxHoverSel}
+                onSelect={addTarget}
+              />
+            ))}
+            <div className="wm-ctx-els-dropdown-group">
+              <div className="wm-ctx-els-dropdown-group-label">Custom</div>
+              <button
+                type="button"
+                className="wm-ctx-els-dropdown-item"
+                onClick={addCustomTarget}
+              >
+                ✏️ Custom CSS Selector…
+              </button>
+            </div>
+          </div>
+        </details>
+      </div>
+      {activeTargets.map((selector) => (
+        <ElementStyleTarget
+          key={selector}
+          displayLabel={getElementTargetLabel(ELEMENT_TARGET_GROUPS, selector)}
+          onChange={setElementValue}
+          onHover={setCtxHoverSel}
+          onRemove={removeTarget}
+          properties={elCSS[selector] || {}}
+          propertyDefs={ELEMENT_STYLE_PROPS}
+          selector={selector}
+        />
+      ))}
+      {activeTargets.length > 0 && (
+        <button
+          type="button"
+          className="wm-ctx-mini-btn"
+          style={{ marginTop: 4 }}
+          onClick={resetAll}
+        >
+          Reset All Element Styles
+        </button>
+      )}
+    </>
+  );
+}
+
+function getActiveTileClassName({ isContainerChild, isDragOver, isDragging, isVisible }) {
+  const classes = ["wm-tile", "wm-tile--active", isVisible ? "wm-tile--on" : "wm-tile--paused"];
+  if (isDragOver) classes.push("wm-tile--drag-over");
+  if (isDragging) classes.push("wm-tile--dragging");
+  if (isContainerChild) classes.push("wm-tile--in-container");
+  return classes.join(" ");
+}
+
+function getVisibilityToggleTitle(isVisible) {
+  return isVisible ? "Click to turn off" : "Click to turn on";
+}
+
+function getPreviewHiddenTitle(isPreviewHidden) {
+  return isPreviewHidden ? "Show in preview" : "Hide from preview";
+}
+
+function getLockToggleTitle(isLocked) {
+  return isLocked ? "Unlock position" : "Lock position";
 }
 
 export default function WidgetManager({
@@ -739,71 +1388,29 @@ export default function WidgetManager({
   useEffect(() => {
     const currentIds = new Set(visibleWidgets.map((w) => w.id));
 
-    // First render: seed with current IDs so already-visible widgets don't animate in
     if (prevVisibleIdsRef.current === null) {
       prevVisibleIdsRef.current = currentIds;
       return;
     }
     const prevIds = prevVisibleIdsRef.current;
 
-    // Detect newly-hidden → play exit animation
-    for (const id of prevIds) {
-      if (!currentIds.has(id)) {
-        const w = widgets.find((x) => x.id === id);
-        if (w) {
-          const exitAnim = w.exit_animation || w.animation || "fade";
-          if (exitAnim !== "none") {
-            const ms = ((w.config?.animSpeed || 1) * 0.35 + 0.15) * 1000;
-            if (exitingMapRef.current.has(id))
-              clearTimeout(exitingMapRef.current.get(id).timer);
-            const timer = setTimeout(() => {
-              exitingMapRef.current.delete(id);
-              setExitTick((t) => t + 1);
-            }, ms);
-            exitingMapRef.current.set(id, { widget: w, timer });
-            setExitTick((t) => t + 1);
-          }
-        }
-      }
-    }
-
-    // Detect newly-visible → play enter animation
-    const newEnter = new Map();
-    let maxEnterMs = 0;
-    for (const id of currentIds) {
-      // Cancel exit if widget re-shown
-      if (exitingMapRef.current.has(id)) {
-        clearTimeout(exitingMapRef.current.get(id).timer);
-        exitingMapRef.current.delete(id);
-      }
-      if (!prevIds.has(id)) {
-        const w = widgets.find((x) => x.id === id);
-        if (w) {
-          const enterAnim = w.animation || "fade";
-          if (enterAnim !== "none") {
-            const norm = enterAnim === "slide" ? "slide-up" : enterAnim;
-            newEnter.set(id, `or-anim-in--${norm}`);
-            const ms = ((w.config?.animSpeed || 1) * 0.35 + 0.15) * 1000;
-            if (ms > maxEnterMs) maxEnterMs = ms;
-          }
-        }
-      }
-    }
-    if (newEnter.size > 0) {
-      setEnterAnims(newEnter);
-      setTimeout(() => setEnterAnims(new Map()), maxEnterMs || 400);
-    }
+    syncExitAnimations({
+      currentIds,
+      exitingMapRef,
+      prevIds,
+      setExitTick,
+      widgets,
+    });
+    applyEnterAnimations({
+      ...buildEnterAnimations({ currentIds, exitingMapRef, prevIds, widgets }),
+      setEnterAnims,
+    });
 
     prevVisibleIdsRef.current = currentIds;
   }, [visibleWidgets, widgets]);
 
   const exitingWidgets = useMemo(() => {
-    void exitTick;
-    const norm = (v) => (v === "slide" ? "slide-up" : v || "fade");
-    return Array.from(exitingMapRef.current.entries()).map(([id, e]) => ({
-      ...e.widget,
-      _exitAnimClass: `or-anim-out--${norm(e.widget.exit_animation || e.widget.animation)}`,
-    }));
+    return buildExitingWidgets(exitingMapRef.current);
   }, [exitTick]);
 
   /* ── Drag handlers for live preview ── */
@@ -877,9 +1484,8 @@ export default function WidgetManager({
 
   /* Deselect when clicking on empty canvas area */
   const handleCanvasClick = useCallback((e) => {
-    if (e.target === e.currentTarget) {
-      setSelectedPreviewId(null);
-    }
+    if (e.target !== e.currentTarget) return;
+    setSelectedPreviewId(null);
     setCtxMenu(null);
   }, []);
 
@@ -1192,12 +1798,33 @@ export default function WidgetManager({
     [ctxMenu, widgets, onSave],
   );
 
+  const startContextMenuDrag = useCallback(
+    (event) => {
+      event.preventDefault();
+      if (!ctxMenu) return;
+      const { clientX: startX, clientY: startY } = event;
+      const { x: origX, y: origY } = ctxMenu;
+      const onMove = (moveEvent) => {
+        const nextX = origX + moveEvent.clientX - startX;
+        const nextY = origY + moveEvent.clientY - startY;
+        setCtxMenu((prev) => (prev ? { ...prev, x: nextX, y: nextY } : null));
+      };
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      };
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    },
+    [ctxMenu],
+  );
+
   /* Close context menu on click outside */
   useEffect(() => {
     if (!ctxMenu) return;
     const close = (e) => {
       const menu = document.querySelector(".wm-ctx-menu--rich");
-      if (menu && menu.contains(e.target)) return;
+      if (menu?.contains(e.target)) return;
       setCtxMenu(null);
     };
     /* Use pointerdown on next tick so the opening right-click doesn't immediately close */
@@ -1305,7 +1932,7 @@ export default function WidgetManager({
                   fxGlimpseSpeed: 50,
                 };
                 // Clear fx keys in ALL style variants
-                const sc = { ...(bg.config?.styleConfigs || {}) };
+                const sc = { ...bg.config?.styleConfigs };
                 for (const key of Object.keys(sc)) {
                   sc[key] = {
                     ...sc[key],
@@ -1334,8 +1961,8 @@ export default function WidgetManager({
           >
             <div className="wm-live-header">
               <span className="wm-live-title">
-                <span className="wm-live-dot" />
-                Live Preview
+                <span className="wm-live-dot" aria-hidden="true" />
+                {"Live Preview"}
               </span>
               <span className="wm-live-dims">
                 {CANVAS_W} × {CANVAS_H} &middot;{" "}
@@ -1372,7 +1999,7 @@ export default function WidgetManager({
                     transformOrigin: "top left",
                     ...buildThemeVars(theme),
                   }}
-                  onMouseDown={handleCanvasClick}
+                  onPointerDown={handleCanvasClick}
                   data-tour="preview-drag"
                 >
                   {/* Theme texture overlay */}
@@ -1491,44 +2118,24 @@ export default function WidgetManager({
                   ];
 
                   return (
-                    <div
+                    <dialog
+                      open
                       className="wm-ctx-menu wm-ctx-menu--rich"
                       style={{ left: ctxMenu.x, top: ctxMenu.y }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
+                      aria-label="Widget quick settings"
                     >
                       {/* Header — draggable */}
                       <div
                         className="wm-ctx-header"
-                        style={{ cursor: "grab" }}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          const startX = e.clientX,
-                            startY = e.clientY;
-                          const origX = ctxMenu.x,
-                            origY = ctxMenu.y;
-                          const onMove = (ev) => {
-                            setCtxMenu((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    x: origX + ev.clientX - startX,
-                                    y: origY + ev.clientY - startY,
-                                  }
-                                : null,
-                            );
-                          };
-                          const onUp = () => {
-                            document.removeEventListener("mousemove", onMove);
-                            document.removeEventListener("mouseup", onUp);
-                          };
-                          document.addEventListener("mousemove", onMove);
-                          document.addEventListener("mouseup", onUp);
-                        }}
                       >
-                        <span>
+                        <button
+                          type="button"
+                          className="wm-ctx-header-drag"
+                          onMouseDown={startContextMenuDrag}
+                          aria-label="Move widget quick settings"
+                        >
                           {def?.icon} {w.label || def?.label}
-                        </span>
+                        </button>
                         <div className="wm-ctx-header-right">
                           {w.widget_type === "bonus_hunt" && (
                             <button
@@ -1536,9 +2143,7 @@ export default function WidgetManager({
                               onClick={() =>
                                 ctxUpdateConfig(
                                   "showSlotRequests",
-                                  w.config?.showSlotRequests === false
-                                    ? true
-                                    : false,
+                                  w.config?.showSlotRequests === false,
                                 )
                               }
                               title={
@@ -1636,8 +2241,14 @@ export default function WidgetManager({
                           </summary>
                           <div className="wm-ctx-section-body">
                             <div className="wm-ctx-input-row">
-                              <label className="wm-ctx-input-label">W</label>
+                              <label
+                                className="wm-ctx-input-label"
+                                htmlFor={`wm-ctx-width-${w.id}`}
+                              >
+                                W
+                              </label>
                               <input
+                                id={`wm-ctx-width-${w.id}`}
                                 type="number"
                                 className="wm-ctx-num"
                                 value={Math.round(w.width)}
@@ -1649,8 +2260,14 @@ export default function WidgetManager({
                                   )
                                 }
                               />
-                              <label className="wm-ctx-input-label">H</label>
+                              <label
+                                className="wm-ctx-input-label"
+                                htmlFor={`wm-ctx-height-${w.id}`}
+                              >
+                                H
+                              </label>
                               <input
+                                id={`wm-ctx-height-${w.id}`}
                                 type="number"
                                 className="wm-ctx-num"
                                 value={Math.round(w.height)}
@@ -1681,8 +2298,14 @@ export default function WidgetManager({
                           </summary>
                           <div className="wm-ctx-section-body">
                             <div className="wm-ctx-input-row">
-                              <label className="wm-ctx-input-label">X</label>
+                              <label
+                                className="wm-ctx-input-label"
+                                htmlFor={`wm-ctx-x-${w.id}`}
+                              >
+                                X
+                              </label>
                               <input
+                                id={`wm-ctx-x-${w.id}`}
                                 type="number"
                                 className="wm-ctx-num"
                                 value={Math.round(w.position_x)}
@@ -1694,8 +2317,14 @@ export default function WidgetManager({
                                   )
                                 }
                               />
-                              <label className="wm-ctx-input-label">Y</label>
+                              <label
+                                className="wm-ctx-input-label"
+                                htmlFor={`wm-ctx-y-${w.id}`}
+                              >
+                                Y
+                              </label>
                               <input
+                                id={`wm-ctx-y-${w.id}`}
                                 type="number"
                                 className="wm-ctx-num"
                                 value={Math.round(w.position_y)}
@@ -1755,8 +2384,14 @@ export default function WidgetManager({
                         </summary>
                         <div className="wm-ctx-section-body">
                           <div className="wm-ctx-select-row">
-                            <label className="wm-ctx-input-label">In</label>
+                            <label
+                              className="wm-ctx-input-label"
+                              htmlFor={`wm-ctx-animation-in-${w.id}`}
+                            >
+                              In
+                            </label>
                             <select
+                              id={`wm-ctx-animation-in-${w.id}`}
                               className="wm-ctx-select"
                               value={w.animation || "fade"}
                               onChange={(e) =>
@@ -1771,8 +2406,14 @@ export default function WidgetManager({
                             </select>
                           </div>
                           <div className="wm-ctx-select-row">
-                            <label className="wm-ctx-input-label">Out</label>
+                            <label
+                              className="wm-ctx-input-label"
+                              htmlFor={`wm-ctx-animation-out-${w.id}`}
+                            >
+                              Out
+                            </label>
                             <select
+                              id={`wm-ctx-animation-out-${w.id}`}
                               className="wm-ctx-select"
                               value={w.exit_animation || "fade"}
                               onChange={(e) =>
@@ -1787,10 +2428,14 @@ export default function WidgetManager({
                             </select>
                           </div>
                           <div className="wm-ctx-slider-row">
-                            <label className="wm-ctx-slider-label">
+                            <label
+                              className="wm-ctx-slider-label"
+                              htmlFor={`wm-ctx-animation-duration-${w.id}`}
+                            >
                               Duration
                             </label>
                             <input
+                              id={`wm-ctx-animation-duration-${w.id}`}
                               type="range"
                               className="wm-ctx-range"
                               min={0.2}
@@ -1838,10 +2483,14 @@ export default function WidgetManager({
                             },
                           ].map((f) => (
                             <div key={f.key} className="wm-ctx-slider-row">
-                              <label className="wm-ctx-slider-label">
+                              <label
+                                className="wm-ctx-slider-label"
+                                htmlFor={`wm-ctx-filter-${w.id}-${f.key}`}
+                              >
                                 {f.label}
                               </label>
                               <input
+                                id={`wm-ctx-filter-${w.id}-${f.key}`}
                                 type="range"
                                 className="wm-ctx-range"
                                 min={f.min}
@@ -1881,7 +2530,7 @@ export default function WidgetManager({
                         </summary>
                         <div className="wm-ctx-section-body">
                           <div className="wm-ctx-select-row">
-                            <label className="wm-ctx-input-label">Font</label>
+                            <span className="wm-ctx-input-label">Font</span>
                             <FontSelectInput
                               value={
                                 w.config?.fontFamily || "'Inter', sans-serif"
@@ -1894,8 +2543,14 @@ export default function WidgetManager({
                             />
                           </div>
                           <div className="wm-ctx-slider-row">
-                            <label className="wm-ctx-slider-label">Size</label>
+                            <label
+                              className="wm-ctx-slider-label"
+                              htmlFor={`wm-ctx-font-size-${w.id}`}
+                            >
+                              Size
+                            </label>
                             <input
+                              id={`wm-ctx-font-size-${w.id}`}
                               type="range"
                               className="wm-ctx-range"
                               min={8}
@@ -1911,8 +2566,14 @@ export default function WidgetManager({
                             </span>
                           </div>
                           <div className="wm-ctx-select-row">
-                            <label className="wm-ctx-input-label">Weight</label>
+                            <label
+                              className="wm-ctx-input-label"
+                              htmlFor={`wm-ctx-font-weight-${w.id}`}
+                            >
+                              Weight
+                            </label>
                             <select
+                              id={`wm-ctx-font-weight-${w.id}`}
                               className="wm-ctx-select"
                               value={w.config?.fontWeight ?? 500}
                               onChange={(e) =>
@@ -1951,10 +2612,14 @@ export default function WidgetManager({
                             },
                           ].map((f) => (
                             <div key={f.key} className="wm-ctx-color-row">
-                              <label className="wm-ctx-color-label">
+                              <label
+                                className="wm-ctx-color-label"
+                                htmlFor={`wm-ctx-color-${w.id}-${f.key}`}
+                              >
                                 {f.label}
                               </label>
                               <input
+                                id={`wm-ctx-color-${w.id}-${f.key}`}
                                 type="color"
                                 className="wm-ctx-color-input"
                                 value={w.config?.[f.key] || f.def}
@@ -1979,19 +2644,12 @@ export default function WidgetManager({
                           {(() => {
                             const adv = w.config?.advancedCSS || {};
                             const setAdv = (prop, val) => {
-                              const latest =
-                                widgets.find((x) => x.id === w.id) || w;
-                              const cur = {
-                                ...(latest.config?.advancedCSS || {}),
-                              };
-                              if (val === "" || val === undefined) {
-                                delete cur[prop];
-                              } else {
-                                cur[prop] = val;
-                              }
-                              handleConfigChange(latest, {
-                                ...latest.config,
-                                advancedCSS: cur,
+                              updateWidgetAdvancedCss({
+                                handleConfigChange,
+                                prop,
+                                value: val,
+                                widget: w,
+                                widgets,
                               });
                             };
                             const CSS_PROPS = [
@@ -2609,138 +3267,13 @@ export default function WidgetManager({
                                 ],
                               },
                             ];
-                            return CSS_PROPS.map((g) => (
-                              <details
-                                key={g.group}
-                                className="wm-ctx-adv-group"
-                              >
-                                <summary className="wm-ctx-adv-group-title">
-                                  {g.group}
-                                </summary>
-                                <div className="wm-ctx-adv-group-body">
-                                  {g.props.map((pr) => {
-                                    const val = adv[pr.p];
-                                    const isSet =
-                                      val !== undefined && val !== "";
-                                    return (
-                                      <div
-                                        key={pr.p}
-                                        className={`wm-ctx-adv-row ${isSet ? "wm-ctx-adv-row--active" : ""}`}
-                                      >
-                                        <label
-                                          className="wm-ctx-adv-label"
-                                          title={pr.p}
-                                        >
-                                          {pr.label}
-                                        </label>
-                                        {pr.type === "select" &&
-                                        pr.p === "font-family" ? (
-                                          <FontSelectInput
-                                            value={val || ""}
-                                            options={FONT_OPTIONS}
-                                            onChange={(value) =>
-                                              setAdv(pr.p, value)
-                                            }
-                                            inheritedLabel="—"
-                                            className="oc-config-font-select"
-                                          />
-                                        ) : pr.type === "select" ? (
-                                          <select
-                                            className="wm-ctx-adv-input"
-                                            value={val || ""}
-                                            onChange={(e) =>
-                                              setAdv(pr.p, e.target.value)
-                                            }
-                                          >
-                                            <option value="">—</option>
-                                            {pr.opts.map((o) => (
-                                              <option key={o} value={o}>
-                                                {o}
-                                              </option>
-                                            ))}
-                                          </select>
-                                        ) : pr.type === "color" ? (
-                                          <div className="wm-ctx-adv-color-wrap">
-                                            <input
-                                              type="color"
-                                              className="wm-ctx-color-input"
-                                              value={val || pr.ph}
-                                              onChange={(e) =>
-                                                setAdv(pr.p, e.target.value)
-                                              }
-                                            />
-                                            <input
-                                              type="text"
-                                              className="wm-ctx-adv-input wm-ctx-adv-input--short"
-                                              value={val || ""}
-                                              placeholder={pr.ph}
-                                              onChange={(e) =>
-                                                setAdv(pr.p, e.target.value)
-                                              }
-                                            />
-                                          </div>
-                                        ) : pr.type === "presets" ? (
-                                          <div className="wm-ctx-adv-combo">
-                                            <select
-                                              className="wm-ctx-adv-combo-select"
-                                              value={
-                                                val && pr.opts.includes(val)
-                                                  ? val
-                                                  : "__custom"
-                                              }
-                                              onChange={(e) => {
-                                                if (
-                                                  e.target.value !== "__custom"
-                                                )
-                                                  setAdv(pr.p, e.target.value);
-                                              }}
-                                            >
-                                              <option value="__custom">
-                                                {val && !pr.opts.includes(val)
-                                                  ? val
-                                                  : `— pick —`}
-                                              </option>
-                                              {pr.opts.map((o) => (
-                                                <option key={o} value={o}>
-                                                  {o}
-                                                </option>
-                                              ))}
-                                            </select>
-                                            <input
-                                              type="text"
-                                              className="wm-ctx-adv-combo-input"
-                                              value={val || ""}
-                                              placeholder={pr.ph}
-                                              onChange={(e) =>
-                                                setAdv(pr.p, e.target.value)
-                                              }
-                                            />
-                                          </div>
-                                        ) : (
-                                          <input
-                                            type="text"
-                                            className="wm-ctx-adv-input"
-                                            value={val || ""}
-                                            placeholder={pr.ph}
-                                            onChange={(e) =>
-                                              setAdv(pr.p, e.target.value)
-                                            }
-                                          />
-                                        )}
-                                        {isSet && (
-                                          <button
-                                            className="wm-ctx-adv-clear"
-                                            title="Reset"
-                                            onClick={() => setAdv(pr.p, "")}
-                                          >
-                                            ✕
-                                          </button>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </details>
+                            return CSS_PROPS.map((group) => (
+                              <AdvancedCssGroup
+                                key={group.group}
+                                group={group}
+                                values={adv}
+                                onChange={setAdv}
+                              />
                             ));
                           })()}
                           {Object.keys(w.config?.advancedCSS || {}).length >
@@ -2769,595 +3302,15 @@ export default function WidgetManager({
                           🎯 Element Styles
                         </summary>
                         <div className="wm-ctx-section-body wm-ctx-els">
-                          {(() => {
-                            const elCSS = w.config?.elementCSS || {};
-                            const setEl = (selector, prop, val) => {
-                              const latest =
-                                widgets.find((x) => x.id === w.id) || w;
-                              const cur = JSON.parse(
-                                JSON.stringify(latest.config?.elementCSS || {}),
-                              );
-                              if (!cur[selector]) cur[selector] = {};
-                              if (val === "" || val === undefined) {
-                                delete cur[selector][prop];
-                                if (Object.keys(cur[selector]).length === 0)
-                                  delete cur[selector];
-                              } else cur[selector][prop] = val;
-                              handleConfigChange(latest, {
-                                ...latest.config,
-                                elementCSS: cur,
-                              });
-                            };
-                            const removeTarget = (selector) => {
-                              const latest =
-                                widgets.find((x) => x.id === w.id) || w;
-                              const cur = JSON.parse(
-                                JSON.stringify(latest.config?.elementCSS || {}),
-                              );
-                              delete cur[selector];
-                              handleConfigChange(latest, {
-                                ...latest.config,
-                                elementCSS: cur,
-                              });
-                            };
-                            const TARGETS = [
-                              {
-                                group: "Text & Headings",
-                                items: [
-                                  { sel: "*", label: "All Elements" },
-                                  {
-                                    sel: "h1,h2,h3,h4,h5,h6",
-                                    label: "All Headings",
-                                  },
-                                  { sel: "p", label: "Paragraphs" },
-                                  { sel: "span", label: "Spans" },
-                                  { sel: "a", label: "Links" },
-                                ],
-                              },
-                              {
-                                group: "Common Parts",
-                                items: [
-                                  { sel: '[class*="title"]', label: "Titles" },
-                                  { sel: '[class*="label"]', label: "Labels" },
-                                  {
-                                    sel: '[class*="value"],[class*="val"]',
-                                    label: "Values",
-                                  },
-                                  { sel: '[class*="name"]', label: "Names" },
-                                  { sel: '[class*="stat"]', label: "Stats" },
-                                  {
-                                    sel: '[class*="header"]',
-                                    label: "Headers",
-                                  },
-                                  {
-                                    sel: '[class*="subtitle"],[class*="sub"]',
-                                    label: "Subtitles",
-                                  },
-                                ],
-                              },
-                              {
-                                group: "Cards & Containers",
-                                items: [
-                                  { sel: '[class*="card"]', label: "Cards" },
-                                  {
-                                    sel: '[class*="badge"],[class*="pill"]',
-                                    label: "Badges / Pills",
-                                  },
-                                  { sel: '[class*="row"]', label: "Rows" },
-                                  { sel: '[class*="grid"]', label: "Grids" },
-                                  {
-                                    sel: '[class*="wrap"],[class*="container"]',
-                                    label: "Wrappers",
-                                  },
-                                ],
-                              },
-                              {
-                                group: "Media",
-                                items: [
-                                  { sel: "img", label: "Images" },
-                                  {
-                                    sel: '[class*="avatar"],[class*="logo"]',
-                                    label: "Avatars / Logos",
-                                  },
-                                  {
-                                    sel: '[class*="progress"],[class*="bar"]',
-                                    label: "Progress Bars",
-                                  },
-                                ],
-                              },
-                            ];
-                            const EL_PROPS = [
-                              {
-                                p: "font-family",
-                                label: "Font",
-                                type: "select",
-                                opts: [
-                                  "inherit",
-                                  "'Inter', sans-serif",
-                                  "'Poppins', sans-serif",
-                                  "'Roboto', sans-serif",
-                                  "'Oswald', sans-serif",
-                                  "'Montserrat', sans-serif",
-                                  "'Fira Code', monospace",
-                                  "'Bebas Neue', cursive",
-                                  "'Press Start 2P', cursive",
-                                  "'Orbitron', sans-serif",
-                                  "'Arial', sans-serif",
-                                  "'Georgia', serif",
-                                  "'Courier New', monospace",
-                                ],
-                              },
-                              {
-                                p: "font-size",
-                                label: "Size",
-                                type: "presets",
-                                opts: [
-                                  "8px",
-                                  "10px",
-                                  "11px",
-                                  "12px",
-                                  "13px",
-                                  "14px",
-                                  "16px",
-                                  "18px",
-                                  "20px",
-                                  "24px",
-                                  "28px",
-                                  "32px",
-                                  "36px",
-                                  "48px",
-                                  "64px",
-                                ],
-                              },
-                              {
-                                p: "font-weight",
-                                label: "Weight",
-                                type: "select",
-                                opts: [
-                                  "inherit",
-                                  "100",
-                                  "200",
-                                  "300",
-                                  "400",
-                                  "500",
-                                  "600",
-                                  "700",
-                                  "800",
-                                  "900",
-                                ],
-                              },
-                              { p: "color", label: "Color", type: "color" },
-                              { p: "background", label: "BG", type: "color" },
-                              {
-                                p: "text-transform",
-                                label: "Case",
-                                type: "select",
-                                opts: [
-                                  "none",
-                                  "uppercase",
-                                  "lowercase",
-                                  "capitalize",
-                                ],
-                              },
-                              {
-                                p: "letter-spacing",
-                                label: "Spacing",
-                                type: "presets",
-                                opts: [
-                                  "-1px",
-                                  "0px",
-                                  "0.5px",
-                                  "1px",
-                                  "2px",
-                                  "3px",
-                                  "4px",
-                                ],
-                              },
-                              {
-                                p: "text-shadow",
-                                label: "Shadow",
-                                type: "presets",
-                                opts: [
-                                  "none",
-                                  "1px 1px 2px rgba(0,0,0,0.5)",
-                                  "0 0 6px rgba(148,163,184,0.55)",
-                                  "0 0 10px #94a3b8",
-                                  "2px 2px 0 #000",
-                                ],
-                              },
-                              {
-                                p: "padding",
-                                label: "Padding",
-                                type: "presets",
-                                opts: [
-                                  "0px",
-                                  "2px",
-                                  "4px",
-                                  "8px",
-                                  "12px",
-                                  "16px",
-                                  "24px",
-                                ],
-                              },
-                              {
-                                p: "border-radius",
-                                label: "Radius",
-                                type: "presets",
-                                opts: [
-                                  "0px",
-                                  "4px",
-                                  "8px",
-                                  "12px",
-                                  "16px",
-                                  "50%",
-                                  "9999px",
-                                ],
-                              },
-                              {
-                                p: "border",
-                                label: "Border",
-                                type: "presets",
-                                opts: [
-                                  "none",
-                                  "1px solid #fff",
-                                  "1px solid rgba(255,255,255,0.15)",
-                                  "2px solid #94a3b8",
-                                ],
-                              },
-                              {
-                                p: "opacity",
-                                label: "Opacity",
-                                type: "presets",
-                                opts: [
-                                  "0",
-                                  "0.3",
-                                  "0.5",
-                                  "0.7",
-                                  "0.8",
-                                  "0.9",
-                                  "1",
-                                ],
-                              },
-                            ];
-                            const activeTargets = Object.keys(elCSS);
-                            return (
-                              <>
-                                <div className="wm-ctx-els-add">
-                                  <details className="wm-ctx-els-dropdown">
-                                    <summary className="wm-ctx-els-target-select">
-                                      ＋ Add element target…
-                                    </summary>
-                                    <div
-                                      className="wm-ctx-els-dropdown-list"
-                                      onMouseLeave={() => setCtxHoverSel(null)}
-                                    >
-                                      {TARGETS.map((g) => (
-                                        <div
-                                          key={g.group}
-                                          className="wm-ctx-els-dropdown-group"
-                                        >
-                                          <div className="wm-ctx-els-dropdown-group-label">
-                                            {g.group}
-                                          </div>
-                                          {g.items
-                                            .filter(
-                                              (it) =>
-                                                !activeTargets.includes(it.sel),
-                                            )
-                                            .map((it) => (
-                                              <div
-                                                key={it.sel}
-                                                className="wm-ctx-els-dropdown-item"
-                                                onMouseEnter={() =>
-                                                  setCtxHoverSel(it.sel)
-                                                }
-                                                onMouseLeave={() =>
-                                                  setCtxHoverSel(null)
-                                                }
-                                                onClick={() => {
-                                                  setEl(it.sel, "_init", "1");
-                                                  setCtxHoverSel(null);
-                                                  setTimeout(() => {
-                                                    const c = JSON.parse(
-                                                      JSON.stringify(
-                                                        (
-                                                          widgets.find(
-                                                            (x) =>
-                                                              x.id === w.id,
-                                                          ) || w
-                                                        ).config?.elementCSS ||
-                                                          {},
-                                                      ),
-                                                    );
-                                                    if (c[it.sel]?._init) {
-                                                      delete c[it.sel]._init;
-                                                      if (
-                                                        Object.keys(c[it.sel])
-                                                          .length === 0
-                                                      )
-                                                        c[it.sel] = {};
-                                                      const latest =
-                                                        widgets.find(
-                                                          (x) => x.id === w.id,
-                                                        ) || w;
-                                                      handleConfigChange(
-                                                        latest,
-                                                        {
-                                                          ...latest.config,
-                                                          elementCSS: c,
-                                                        },
-                                                      );
-                                                    }
-                                                  }, 50);
-                                                }}
-                                              >
-                                                {it.label}
-                                              </div>
-                                            ))}
-                                        </div>
-                                      ))}
-                                      <div className="wm-ctx-els-dropdown-group">
-                                        <div className="wm-ctx-els-dropdown-group-label">
-                                          Custom
-                                        </div>
-                                        <div
-                                          className="wm-ctx-els-dropdown-item"
-                                          onClick={() => {
-                                            const v = prompt(
-                                              "Enter a CSS selector (e.g. .my-class, span.title, [data-x])",
-                                            );
-                                            if (v) {
-                                              setEl(v, "_init", "1");
-                                              setCtxHoverSel(null);
-                                              setTimeout(() => {
-                                                const c = JSON.parse(
-                                                  JSON.stringify(
-                                                    (
-                                                      widgets.find(
-                                                        (x) => x.id === w.id,
-                                                      ) || w
-                                                    ).config?.elementCSS || {},
-                                                  ),
-                                                );
-                                                if (c[v]?._init) {
-                                                  delete c[v]._init;
-                                                  if (
-                                                    Object.keys(c[v]).length ===
-                                                    0
-                                                  )
-                                                    c[v] = {};
-                                                  const latest =
-                                                    widgets.find(
-                                                      (x) => x.id === w.id,
-                                                    ) || w;
-                                                  handleConfigChange(latest, {
-                                                    ...latest.config,
-                                                    elementCSS: c,
-                                                  });
-                                                }
-                                              }, 50);
-                                            }
-                                          }}
-                                        >
-                                          ✏️ Custom CSS Selector…
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </details>
-                                </div>
-                                {activeTargets.map((sel) => {
-                                  const targetDef = TARGETS.flatMap(
-                                    (g) => g.items,
-                                  ).find((it) => it.sel === sel);
-                                  const displayLabel = targetDef?.label || sel;
-                                  const props = elCSS[sel] || {};
-                                  return (
-                                    <details
-                                      key={sel}
-                                      open
-                                      className="wm-ctx-els-target"
-                                    >
-                                      <summary
-                                        className="wm-ctx-els-target-header"
-                                        onMouseEnter={() => setCtxHoverSel(sel)}
-                                        onMouseLeave={() =>
-                                          setCtxHoverSel(null)
-                                        }
-                                      >
-                                        <span className="wm-ctx-els-target-name">
-                                          {displayLabel}
-                                        </span>
-                                        <code className="wm-ctx-els-target-sel">
-                                          {sel}
-                                        </code>
-                                        <button
-                                          className="wm-ctx-adv-clear"
-                                          title="Remove"
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            removeTarget(sel);
-                                          }}
-                                        >
-                                          ✕
-                                        </button>
-                                      </summary>
-                                      <div className="wm-ctx-els-target-body">
-                                        {EL_PROPS.map((pr) => {
-                                          const val = props[pr.p];
-                                          return (
-                                            <div
-                                              key={pr.p}
-                                              className={`wm-ctx-adv-row ${val ? "wm-ctx-adv-row--active" : ""}`}
-                                            >
-                                              <label className="wm-ctx-adv-label">
-                                                {pr.label}
-                                              </label>
-                                              {pr.type === "select" &&
-                                              pr.p === "font-family" ? (
-                                                <FontSelectInput
-                                                  value={val || ""}
-                                                  options={[
-                                                    {
-                                                      value: "inherit",
-                                                      label: "inherit",
-                                                    },
-                                                    ...FONT_OPTIONS,
-                                                  ]}
-                                                  onChange={(value) =>
-                                                    setEl(sel, pr.p, value)
-                                                  }
-                                                  inheritedLabel="—"
-                                                  className="oc-config-font-select"
-                                                />
-                                              ) : pr.type === "select" ? (
-                                                <select
-                                                  className="wm-ctx-adv-input"
-                                                  value={val || ""}
-                                                  onChange={(e) =>
-                                                    setEl(
-                                                      sel,
-                                                      pr.p,
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                >
-                                                  <option value="">—</option>
-                                                  {pr.opts.map((o) => (
-                                                    <option key={o} value={o}>
-                                                      {o}
-                                                    </option>
-                                                  ))}
-                                                </select>
-                                              ) : pr.type === "color" ? (
-                                                <div className="wm-ctx-adv-color-wrap">
-                                                  <input
-                                                    type="color"
-                                                    className="wm-ctx-color-input"
-                                                    value={val || "#ffffff"}
-                                                    onChange={(e) =>
-                                                      setEl(
-                                                        sel,
-                                                        pr.p,
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                  />
-                                                  <input
-                                                    type="text"
-                                                    className="wm-ctx-adv-input wm-ctx-adv-input--short"
-                                                    value={val || ""}
-                                                    placeholder="#fff"
-                                                    onChange={(e) =>
-                                                      setEl(
-                                                        sel,
-                                                        pr.p,
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                  />
-                                                </div>
-                                              ) : pr.type === "presets" ? (
-                                                <div className="wm-ctx-adv-combo">
-                                                  <select
-                                                    className="wm-ctx-adv-combo-select"
-                                                    value={
-                                                      val &&
-                                                      pr.opts.includes(val)
-                                                        ? val
-                                                        : "__custom"
-                                                    }
-                                                    onChange={(e) => {
-                                                      if (
-                                                        e.target.value !==
-                                                        "__custom"
-                                                      )
-                                                        setEl(
-                                                          sel,
-                                                          pr.p,
-                                                          e.target.value,
-                                                        );
-                                                    }}
-                                                  >
-                                                    <option value="__custom">
-                                                      {val &&
-                                                      !pr.opts.includes(val)
-                                                        ? val
-                                                        : "— pick —"}
-                                                    </option>
-                                                    {pr.opts.map((o) => (
-                                                      <option key={o} value={o}>
-                                                        {o}
-                                                      </option>
-                                                    ))}
-                                                  </select>
-                                                  <input
-                                                    type="text"
-                                                    className="wm-ctx-adv-combo-input"
-                                                    value={val || ""}
-                                                    placeholder="custom"
-                                                    onChange={(e) =>
-                                                      setEl(
-                                                        sel,
-                                                        pr.p,
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                  />
-                                                </div>
-                                              ) : (
-                                                <input
-                                                  type="text"
-                                                  className="wm-ctx-adv-input"
-                                                  value={val || ""}
-                                                  onChange={(e) =>
-                                                    setEl(
-                                                      sel,
-                                                      pr.p,
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                />
-                                              )}
-                                              {val && (
-                                                <button
-                                                  className="wm-ctx-adv-clear"
-                                                  title="Reset"
-                                                  onClick={() =>
-                                                    setEl(sel, pr.p, "")
-                                                  }
-                                                >
-                                                  ✕
-                                                </button>
-                                              )}
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </details>
-                                  );
-                                })}
-                                {Object.keys(elCSS).length > 0 && (
-                                  <button
-                                    className="wm-ctx-mini-btn"
-                                    style={{ marginTop: 4 }}
-                                    onClick={() => {
-                                      const latest =
-                                        widgets.find((x) => x.id === w.id) || w;
-                                      handleConfigChange(latest, {
-                                        ...latest.config,
-                                        elementCSS: {},
-                                      });
-                                    }}
-                                  >
-                                    Reset All Element Styles
-                                  </button>
-                                )}
-                              </>
-                            );
-                          })()}
+                          <ElementStylesEditor
+                            handleConfigChange={handleConfigChange}
+                            setCtxHoverSel={setCtxHoverSel}
+                            widget={w}
+                            widgets={widgets}
+                          />
                         </div>
                       </details>
-                    </div>
+                    </dialog>
                   );
                 })()}
             </div>
@@ -3368,8 +3321,8 @@ export default function WidgetManager({
         {widgets.length > 0 && (
           <div className="wm-section" data-tour="active-widgets">
             <h3 className="wm-section-title wm-section-title--active">
-              <span className="wm-section-dot wm-section-dot--active" />
-              Active Widgets
+              <span className="wm-section-dot wm-section-dot--active" aria-hidden="true" />
+              {"Active Widgets"}
               <span className="wm-section-count">{widgets.length}</span>
               <span className="wm-layer-hint">← back · front →</span>
             </h3>
@@ -3377,12 +3330,19 @@ export default function WidgetManager({
               {sortedWidgets.map((w, idx) => {
                 const def = getWidgetDef(w.widget_type);
                 const isVisible = w.is_visible;
+                const isPreviewHidden = Boolean(w.config?._previewHidden);
+                const isLocked = Boolean(w.config?._locked);
                 const isDragOver = dragOverId === w.id && dragId !== w.id;
                 const isContainerChild = containerChildIds.has(w.id);
                 return (
                   <div
                     key={w.id}
-                    className={`wm-tile wm-tile--active ${isVisible ? "wm-tile--on" : "wm-tile--paused"}${isDragOver ? " wm-tile--drag-over" : ""}${dragId === w.id ? " wm-tile--dragging" : ""}${isContainerChild ? " wm-tile--in-container" : ""}`}
+                    className={getActiveTileClassName({
+                      isContainerChild,
+                      isDragOver,
+                      isDragging: dragId === w.id,
+                      isVisible,
+                    })}
                     draggable
                     onDragStart={(e) => handleDragStart(e, w.id)}
                     onDragEnd={handleDragEnd}
@@ -3395,18 +3355,17 @@ export default function WidgetManager({
                     >
                       {idx + 1}
                     </span>
-                    <label
+                    <button
+                      type="button"
                       className={`wm-toggle ${isVisible ? "wm-toggle--on" : ""}`}
                       onClick={() => handleToggle(w)}
-                      title={
-                        isVisible ? "Click to turn off" : "Click to turn on"
-                      }
+                      title={getVisibilityToggleTitle(isVisible)}
                     >
-                      <span className="wm-toggle-slider" />
+                      <span className="wm-toggle-slider" aria-hidden="true" />
                       <span className="wm-toggle-label">
                         {isVisible ? "ON" : "OFF"}
                       </span>
-                    </label>
+                    </button>
                     <div className="wm-tile-body">
                       <span className="wm-tile-icon">{def?.icon || "📦"}</span>
                       <div className="wm-tile-text">
@@ -3432,10 +3391,10 @@ export default function WidgetManager({
                           >
                             {isVisible ? "Live" : "Hidden"}
                           </span>
-                          {w.config?._locked && (
+                          {isLocked && (
                             <span className="wm-tile-badge">Locked</span>
                           )}
-                          {w.config?._previewHidden && (
+                          {isPreviewHidden && (
                             <span className="wm-tile-badge">
                               Preview hidden
                             </span>
@@ -3450,44 +3409,36 @@ export default function WidgetManager({
                     </div>
                     <div className="wm-tile-quick-icons">
                       <button
-                        className={`wm-tile-icon-btn${w.config?._previewHidden ? " wm-tile-icon-btn--off" : ""}`}
+                        className={`wm-tile-icon-btn${isPreviewHidden ? " wm-tile-icon-btn--off" : ""}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           onSave({
                             ...w,
                             config: {
                               ...w.config,
-                              _previewHidden: !w.config?._previewHidden,
+                              _previewHidden: !isPreviewHidden,
                             },
                           });
                         }}
-                        title={
-                          w.config?._previewHidden
-                            ? "Show in preview"
-                            : "Hide from preview"
-                        }
+                        title={getPreviewHiddenTitle(isPreviewHidden)}
                       >
-                        {w.config?._previewHidden ? "🚫" : "👁️"}
+                        {isPreviewHidden ? "🚫" : "👁️"}
                       </button>
                       <button
-                        className={`wm-tile-icon-btn${w.config?._locked ? " wm-tile-icon-btn--active" : ""}`}
+                        className={`wm-tile-icon-btn${isLocked ? " wm-tile-icon-btn--active" : ""}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           onSave({
                             ...w,
                             config: {
                               ...w.config,
-                              _locked: !w.config?._locked,
+                              _locked: !isLocked,
                             },
                           });
                         }}
-                        title={
-                          w.config?._locked
-                            ? "Unlock position"
-                            : "Lock position"
-                        }
+                        title={getLockToggleTitle(isLocked)}
                       >
-                        {w.config?._locked ? "🔒" : "🔓"}
+                        {isLocked ? "🔒" : "🔓"}
                       </button>
                     </div>
                     <div className="wm-tile-actions">
@@ -3542,8 +3493,8 @@ export default function WidgetManager({
         {inactiveDefs.length > 0 && (
           <div className="wm-section" data-tour="available-widgets">
             <h3 className="wm-section-title wm-section-title--inactive">
-              <span className="wm-section-dot wm-section-dot--inactive" />
-              Available Widgets
+              <span className="wm-section-dot wm-section-dot--inactive" aria-hidden="true" />
+              {"Available Widgets"}
               <span className="wm-section-count">
                 {filteredInactiveDefs.length}/{inactiveDefs.length}
               </span>
@@ -3624,7 +3575,8 @@ export default function WidgetManager({
                     </div>
                     <div className="wm-tile-grid">
                       {defs.map((def) => (
-                        <div
+                        <button
+                          type="button"
                           key={def.type}
                           className="wm-tile wm-tile--inactive"
                           onClick={() => handleAdd(def.type)}
@@ -3650,7 +3602,7 @@ export default function WidgetManager({
                             </span>
                           </div>
                           <span className="wm-tile-add">+ Add</span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -3665,9 +3617,11 @@ export default function WidgetManager({
 
       {/* Docked Side Panel Editor */}
       {isSidePanelOpen && (
-        <div
+        <button
+          type="button"
           className="wm-sidepanel-backdrop"
           onClick={() => setEditingId(null)}
+          aria-label="Close widget editor"
         />
       )}
       <aside
