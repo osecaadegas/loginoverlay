@@ -4,6 +4,89 @@ import { getUserRoles } from '../utils/adminUtils';
 import { getAccessTokenWithFallback } from '../utils/authSession';
 import { fetchWithTimeout, withTimeout } from '../utils/asyncTimeout';
 
+function resetAccessState({
+  setIsAdmin,
+  setIsAffiliate,
+  setIsModerator,
+  setIsPremium,
+  setIsSlotModder,
+  setUserRoles,
+}) {
+  setIsAdmin(false);
+  setIsModerator(false);
+  setIsSlotModder(false);
+  setIsPremium(false);
+  setIsAffiliate(false);
+  setUserRoles([]);
+}
+
+function applyAccessState({
+  hasStreamerEntitlement,
+  roles,
+  serverRoleNames,
+  setIsAdmin,
+  setIsAffiliate,
+  setIsModerator,
+  setIsPremium,
+  setIsSlotModder,
+  setUserRoles,
+}) {
+  const roleNames = new Set([
+    ...roles.map((role) => role.role),
+    ...serverRoleNames,
+  ]);
+  const hasAdminAccess = roleNames.has('admin') || roleNames.has('superadmin');
+
+  setUserRoles(roles);
+  setIsAdmin(hasAdminAccess);
+  setIsModerator(roleNames.has('moderator') || hasAdminAccess);
+  setIsSlotModder(roleNames.has('slot_modder') || hasAdminAccess);
+  setIsPremium(hasStreamerEntitlement || roleNames.has('premium') || hasAdminAccess);
+  setIsAffiliate(roleNames.has('affiliate') || hasAdminAccess);
+}
+
+async function loadRoleAccess(userId) {
+  try {
+    const result = await withTimeout(getUserRoles(userId), 8000, 'Role access check');
+    return {
+      roles: result.data || [],
+      rolesError: result.error || null,
+    };
+  } catch (error) {
+    return { roles: [], rolesError: error };
+  }
+}
+
+function shouldReplaceRolesWithServerRoles(roles, serverRoles) {
+  return (
+    Array.isArray(serverRoles) &&
+    (!roles.length || roles.every((role) => role.role === 'user'))
+  );
+}
+
+async function loadPremiumAccess(roles) {
+  try {
+    const token = await getAccessTokenWithFallback({ timeoutMs: 6000, label: 'Premium session token check' });
+    if (!token) return { hasStreamerEntitlement: false, roles, serverRoleNames: [] };
+
+    const response = await fetchWithTimeout('/api/premium?action=status', {
+      headers: { Authorization: `Bearer ${token}` },
+    }, { timeoutMs: 8000, label: 'Premium entitlement check' });
+    if (!response.ok) return { hasStreamerEntitlement: false, roles, serverRoleNames: [] };
+
+    const payload = await response.json();
+    const serverRoles = payload.access?.roles;
+    return {
+      hasStreamerEntitlement: !!payload.access?.hasStreamerAccess,
+      roles: shouldReplaceRolesWithServerRoles(roles, serverRoles) ? serverRoles : roles,
+      serverRoleNames: Array.isArray(payload.access?.roleNames) ? payload.access.roleNames : [],
+    };
+  } catch (error) {
+    console.warn('Premium entitlement check failed:', error);
+    return { hasStreamerEntitlement: false, roles, serverRoleNames: [] };
+  }
+}
+
 export const useAdmin = () => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -17,12 +100,14 @@ export const useAdmin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!user) {
-        setIsAdmin(false);
-        setIsModerator(false);
-        setIsSlotModder(false);
-        setIsPremium(false);
-        setIsAffiliate(false);
-        setUserRoles([]);
+        resetAccessState({
+          setIsAdmin,
+          setIsAffiliate,
+          setIsModerator,
+          setIsPremium,
+          setIsSlotModder,
+          setUserRoles,
+        });
         setLoading(false);
         return;
       }
@@ -30,66 +115,42 @@ export const useAdmin = () => {
       setLoading(true);
 
       try {
-        let roles = [];
-        let rolesError = null;
-        let serverRoleNames = [];
-
-        try {
-          const result = await withTimeout(getUserRoles(user.id), 8000, 'Role access check');
-          roles = result.data || [];
-          rolesError = result.error || null;
-        } catch (error) {
-          rolesError = error;
-        }
-
-        let hasStreamerEntitlement = false;
-
-        try {
-          const token = await getAccessTokenWithFallback({ timeoutMs: 6000, label: 'Premium session token check' });
-          if (token) {
-            const response = await fetchWithTimeout('/api/premium?action=status', {
-              headers: { Authorization: `Bearer ${token}` },
-            }, { timeoutMs: 8000, label: 'Premium entitlement check' });
-            if (response.ok) {
-              const payload = await response.json();
-              hasStreamerEntitlement = !!payload.access?.hasStreamerAccess;
-              serverRoleNames = Array.isArray(payload.access?.roleNames) ? payload.access.roleNames : [];
-              if ((!roles.length || roles.every((role) => role.role === 'user')) && Array.isArray(payload.access?.roles)) {
-                roles = payload.access.roles;
-                rolesError = null;
-              }
-            }
-          }
-        } catch (error) {
-          console.warn('Premium entitlement check failed:', error);
-        }
+        const { roles, rolesError } = await loadRoleAccess(user.id);
+        const premiumAccess = await loadPremiumAccess(roles);
         
-        if (rolesError && !hasStreamerEntitlement) {
+        if (rolesError && !premiumAccess.hasStreamerEntitlement) {
           console.error('Error checking admin status:', rolesError);
-          setIsAdmin(false);
-          setIsModerator(false);
-          setIsSlotModder(false);
-          setIsPremium(false);
-          setIsAffiliate(false);
-          setUserRoles([]);
+          resetAccessState({
+            setIsAdmin,
+            setIsAffiliate,
+            setIsModerator,
+            setIsPremium,
+            setIsSlotModder,
+            setUserRoles,
+          });
         } else {
-          const roleNames = [...new Set([...roles.map(r => r.role), ...serverRoleNames])];
-          
-          setUserRoles(roles);
-          setIsAdmin(roleNames.includes('admin') || roleNames.includes('superadmin'));
-          setIsModerator(roleNames.includes('moderator') || roleNames.includes('admin') || roleNames.includes('superadmin'));
-          setIsSlotModder(roleNames.includes('slot_modder') || roleNames.includes('admin') || roleNames.includes('superadmin'));
-          setIsPremium(hasStreamerEntitlement || roleNames.includes('premium') || roleNames.includes('admin') || roleNames.includes('superadmin'));
-          setIsAffiliate(roleNames.includes('affiliate') || roleNames.includes('admin') || roleNames.includes('superadmin'));
+          applyAccessState({
+            hasStreamerEntitlement: premiumAccess.hasStreamerEntitlement,
+            roles: premiumAccess.roles,
+            serverRoleNames: premiumAccess.serverRoleNames,
+            setIsAdmin,
+            setIsAffiliate,
+            setIsModerator,
+            setIsPremium,
+            setIsSlotModder,
+            setUserRoles,
+          });
         }
       } catch (error) {
         console.error('Error in useAdmin:', error);
-        setIsAdmin(false);
-        setIsModerator(false);
-        setIsSlotModder(false);
-        setIsPremium(false);
-        setIsAffiliate(false);
-        setUserRoles([]);
+        resetAccessState({
+          setIsAdmin,
+          setIsAffiliate,
+          setIsModerator,
+          setIsPremium,
+          setIsSlotModder,
+          setUserRoles,
+        });
       } finally {
         setLoading(false);
       }
