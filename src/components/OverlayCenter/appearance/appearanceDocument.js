@@ -1,4 +1,6 @@
 import {
+  EXPLICIT_SUB_ELEMENTS_CONFIG_KEY,
+  SCOPED_APPEARANCE_CONFIG_KEY,
   createAppearanceRoute,
   validateAppearanceRoute,
 } from "./v2/appearanceRouting";
@@ -30,6 +32,23 @@ function setNestedValue(source, path, value) {
   }
   next[head] = setNestedValue(next[head], tail, value);
   if (isEmptyObject(next[head])) delete next[head];
+  return next;
+}
+
+function getNestedValue(source, path) {
+  return path.reduce((current, key) => current?.[key], source);
+}
+
+function pruneLegacyAppearanceStorage(config) {
+  let next = cloneObject(config);
+  delete next.subElements;
+  delete next.elements;
+  delete next[EXPLICIT_SUB_ELEMENTS_CONFIG_KEY];
+  delete next[SCOPED_APPEARANCE_CONFIG_KEY];
+  next = setNestedValue(next, ["appearance", "container"], undefined);
+  next = setNestedValue(next, ["appearanceV2", "elementOverrides"], undefined);
+  next = setNestedValue(next, ["visual", "widgetWidth"], undefined);
+  next = setNestedValue(next, ["visual", "widgetHeight"], undefined);
   return next;
 }
 
@@ -66,6 +85,13 @@ function normalizeDocumentMetadata(document, route, widgetId) {
 }
 
 function getDocumentPath(route, stateId = "default") {
+  if (
+    route.registryElementId === "container" &&
+    ["width", "height"].includes(route.propertyId) &&
+    (!stateId || stateId === "default")
+  ) {
+    return ["layout", route.propertyId];
+  }
   return stateId && stateId !== "default"
     ? ["elements", route.elementId, "states", stateId, route.propertyId]
     : ["elements", route.elementId, "base", route.propertyId];
@@ -106,7 +132,7 @@ export function normalizeAppearanceDocumentConfig(
     route,
     widgetId,
   );
-  const next = cloneObject(config);
+  const next = pruneLegacyAppearanceStorage(config);
   next[APPEARANCE_DOCUMENT_CONFIG_KEY] = document;
   return next;
 }
@@ -114,6 +140,11 @@ export function normalizeAppearanceDocumentConfig(
 export function getAppearanceDocumentConfigValue(config, rawRoute) {
   const route = createAppearanceRoute(rawRoute);
   const document = getDocumentFromConfig(config);
+  const directValue = getNestedValue(
+    document,
+    getDocumentPath(route, rawRoute.stateId || "default"),
+  );
+  if (directValue !== undefined) return directValue;
   const element = document?.elements?.[route.elementId];
   const stateId = rawRoute.stateId || "default";
   if (stateId && stateId !== "default") {

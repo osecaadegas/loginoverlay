@@ -17,6 +17,9 @@ try {
   const appearanceStyles = await server.ssrLoadModule(
     "/src/components/OverlayCenter/widgets/shared/appearanceStyles.js",
   );
+  const widgetSlot = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/appearance/v2/widgetSlot.js",
+  );
 
   const bonusBackgroundRoute = {
     widgetType: "bonus_hunt",
@@ -268,6 +271,61 @@ try {
     ),
     "#abcdef",
     "Runtime style reads project canonical Bonus Hunt V12 documents without duplicate writes",
+  );
+  const scopedWidthRoute = scopedMutations.buildScopedAppearanceRoute({
+    controlId: "width",
+    elementId: "container",
+    selectedTarget,
+    selectedWidgetType: "bonus_hunt",
+  });
+  rootedAppearance = scopedMutations.setScopedConfigAtRoot(
+    {
+      widgets: {
+        "widget-1": {
+          styles: {
+            v12_classic_sr: {
+              subElements: { slotRow: { backgroundColor: "#444444" } },
+              elements: { slotRow: { backgroundColor: "#555555" } },
+              appearance: { container: { width: 111 } },
+              visual: { widgetWidth: 222, widgetHeight: 333 },
+              appearanceV2: {
+                elementOverrides: { slotRow: { backgroundColor: "#666666" } },
+              },
+              __appearanceExplicitSubElements: {
+                slotRow: { backgroundColor: "#777777" },
+              },
+              __appearanceScopedState: { widgets: { stale: true } },
+            },
+          },
+        },
+      },
+    },
+    scopedRoot,
+    scopedWidthRoute,
+    640,
+  );
+  const rootedStyle = rootedAppearance.widgets["widget-1"].styles.v12_classic_sr;
+  assert.equal(
+    rootedStyle.__appearanceDocument.layout.width,
+    640,
+    "Bonus Hunt V12 container width writes to canonical document layout",
+  );
+  assert.equal(rootedStyle.subElements, undefined);
+  assert.equal(rootedStyle.elements, undefined);
+  assert.equal(rootedStyle.appearance?.container, undefined);
+  assert.equal(rootedStyle.visual, undefined);
+  assert.equal(rootedStyle.appearanceV2, undefined);
+  assert.equal(rootedStyle.__appearanceExplicitSubElements, undefined);
+  assert.equal(rootedStyle.__appearanceScopedState, undefined);
+  assert.equal(
+    widgetSlot.getWidgetSlotSize({
+      widget_type: "bonus_hunt",
+      width: 100,
+      height: 100,
+      config: rootedStyle,
+    }).width,
+    640,
+    "Runtime slot sizing reads canonical document layout width",
   );
   rootedAppearance = scopedMutations.removeScopedConfigValueAtRoot(
     rootedAppearance,

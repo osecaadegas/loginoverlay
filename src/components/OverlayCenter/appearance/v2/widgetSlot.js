@@ -1,4 +1,5 @@
 import { getWidgetPreviewFrame } from '../previewWidgetSamples';
+import { APPEARANCE_DOCUMENT_CONFIG_KEY } from '../appearanceDocument';
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -6,11 +7,12 @@ function clamp(value, min, max) {
 
 export function getWidgetSlotSize(widget) {
   const frame = getWidgetPreviewFrame(widget);
+  const documentLayout = widget.config?.[APPEARANCE_DOCUMENT_CONFIG_KEY]?.layout || {};
   const containerAppearance = widget.config?.__appearanceExplicitSubElements?.container
     || widget.config?.subElements?.container
     || {};
-  const configuredWidth = Number(widget.config?.widgetWidth ?? containerAppearance.width);
-  const configuredHeight = Number(widget.config?.widgetHeight ?? containerAppearance.height);
+  const configuredWidth = Number(widget.config?.widgetWidth ?? documentLayout.width ?? containerAppearance.width);
+  const configuredHeight = Number(widget.config?.widgetHeight ?? documentLayout.height ?? containerAppearance.height);
   const scale = clamp(Number(widget.config?.widgetScale) || 1, 0.75, 1.5);
   const baseWidth = configuredWidth || frame?.width || widget.width;
   const baseHeight = configuredHeight || frame?.height || widget.height;
