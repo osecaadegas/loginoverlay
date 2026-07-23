@@ -105,6 +105,7 @@ export default function NavbarConfig({ config, onChange }) {
   // ─── Preset system ───
   const [presetName, setPresetName] = useState('');
   const PRESET_KEYS = [
+    'bonusHuntColorSync',
     'accentColor', 'bgColor', 'textColor', 'mutedColor', 'ctaColor',
     'cryptoUpColor', 'cryptoDownColor', 'fontFamily', 'fontSize',
     'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',

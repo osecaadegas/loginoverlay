@@ -14,7 +14,7 @@ export default function ChatConfig({ config, onChange }) {
   // ─── Preset system ───
   const [presetName, setPresetName] = useState('');
   const PRESET_KEYS = [
-    'chatStyle', 'bgColor', 'textColor', 'headerBg', 'headerText', 'borderColor',
+    'chatStyle', 'bonusHuntColorSync', 'bgColor', 'textColor', 'headerBg', 'headerText', 'borderColor',
     'fontFamily', 'fontSize', 'useNativeColors', 'nameBold', 'msgLineHeight', 'msgPadH',
     'width', 'height', 'borderRadius', 'borderWidth', 'msgSpacing', 'maxMessages',
     'showHeader', 'showLegend', 'showBadges',

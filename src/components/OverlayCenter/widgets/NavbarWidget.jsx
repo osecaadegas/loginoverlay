@@ -17,6 +17,7 @@ import {
   styleSecaHeaderGradient,
   styleSecaSurfaceGradient,
 } from "./shared/styleSecaTheme";
+import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {
@@ -159,7 +160,7 @@ function useClock() {
 }
 
 /* ─── Main Navbar Widget (OBS Render) ─── */
-function NavbarWidget({ config, widgetId, userId }) {
+function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   const c = config || {};
   const time = useClock();
   const [cryptoPrices, setCryptoPrices] = useState({});
@@ -280,11 +281,14 @@ function NavbarWidget({ config, widgetId, userId }) {
   const isMetalSurface = isMetal || isStyleSeca;
   const styleSecaValue = (value, fallback) =>
     isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
+  const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
+  const syncedPrimaryColor = syncedBonusHuntColors?.primaryColor;
+  const syncedSecondaryColor = syncedBonusHuntColors?.secondaryColor;
   const isGlass = c.displayStyle === "glass";
   const isRetro = c.displayStyle === "retro";
   const isCarbon = c.displayStyle === "carbon";
   const isFuturistic = c.displayStyle === "futuristic";
-  const accentColor = styleSecaValue(
+  const rawAccentColor = styleSecaValue(
     subValue(
       c,
       "logo",
@@ -306,8 +310,9 @@ function NavbarWidget({ config, widgetId, userId }) {
     ),
     STYLE_SECA.primary,
   );
+  const accentColor = syncedPrimaryColor || rawAccentColor;
   const accentColorRGB = colorToRgbString(accentColor);
-  const bgColor = styleSecaValue(
+  const rawBgColor = styleSecaValue(
     subValue(
       c,
       "container",
@@ -329,6 +334,7 @@ function NavbarWidget({ config, widgetId, userId }) {
     ),
     STYLE_SECA.surface,
   );
+  const bgColor = syncedSecondaryColor || rawBgColor;
   const textColor = styleSecaValue(
     subValue(
       c,
@@ -351,7 +357,7 @@ function NavbarWidget({ config, widgetId, userId }) {
     ),
     STYLE_SECA.text,
   );
-  const displayNameAccentColor = subValue(
+  const displayNameAccentColor = syncedPrimaryColor || subValue(
     c,
     "displayName",
     "accentColor",
@@ -379,7 +385,7 @@ function NavbarWidget({ config, widgetId, userId }) {
     ),
     STYLE_SECA.muted,
   );
-  const borderColor = styleSecaValue(
+  const borderColor = syncedPrimaryColor || styleSecaValue(
     subValue(
       c,
       "container",
@@ -545,7 +551,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   const musicFontSize = subValue(c, "music", "fontSize", containerFontSize);
   const musicFontWeight = subValue(c, "music", "fontWeight", 700);
   const textShadow = "0 1px 4px rgba(0,0,0,0.6)";
-  const ctaColor = styleSecaValue(
+  const ctaColor = syncedPrimaryColor || styleSecaValue(
     subValue(
       c,
       "sponsor",
@@ -588,7 +594,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   const sponsorBorderColor = subValue(c, "sponsor", "borderColor", null);
   const sponsorBorderWidth = subValue(c, "sponsor", "borderWidth", 1);
   const sponsorShadow = subValue(c, "sponsor", "shadow", undefined);
-  const sponsorAccentColor = subValue(c, "sponsor", "accentColor", ctaColor);
+  const sponsorAccentColor = syncedPrimaryColor || subValue(c, "sponsor", "accentColor", ctaColor);
   const cryptoUpColor = subValue(
     c,
     "crypto",
@@ -630,6 +636,11 @@ function NavbarWidget({ config, widgetId, userId }) {
   const separatorWidth = subValue(c, "separator", "borderWidth", 1);
   const separatorOpacity = subValue(c, "separator", "opacity", 0.7);
   const bgColorRGB = colorToRgbString(bgColor);
+  const bgColorSoft = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(
+    String(bgColor || "").trim(),
+  )
+    ? `${bgColor}f2`
+    : bgColor;
   const ctaColorRGB = colorToRgbString(sponsorAccentColor || ctaColor);
 
   // Only apply CSS filter when values differ from defaults — filter forces rasterisation
@@ -882,7 +893,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                   alignItems: "center",
                   height: "100%",
                   boxSizing: "border-box",
-                  background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
+                  background: `linear-gradient(to right, ${bgColor}, ${bgColorSoft}, ${bgColor})`,
                   padding: `0 ${containerPadding}px`,
                   color: textColor,
                   fontSize,

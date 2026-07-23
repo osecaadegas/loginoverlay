@@ -107,6 +107,7 @@ import {
   createWidgetStylePack,
   validateWidgetStylePack,
 } from "./widgetStyleTransfer";
+import { normalizeBonusHuntColorSync } from "../widgets/shared/bonusHuntColorSync";
 import "./AppearanceCenter.css";
 
 const TOUR_STORAGE_KEY = "streamers_center_appearance_tour_hidden";
@@ -147,6 +148,8 @@ const NAVBAR_MUSIC_DISPLAY_STYLES = [
   { id: "minimal", label: "Minimal" },
   { id: "wave", label: "Wave" },
 ];
+
+const BONUS_HUNT_COLOR_SYNC_WIDGET_TYPES = new Set(["chat", "bets", "navbar"]);
 
 const QUICK_WIDGET_CONTROLS = [
   {
@@ -1257,6 +1260,10 @@ export default function AppearanceCenter({
     () => normalizeRtpMetalSettings(selectedWidgetConfig.rtpMetal || {}),
     [selectedWidgetConfig],
   );
+  const bonusHuntColorSyncSettings = useMemo(
+    () => normalizeBonusHuntColorSync(selectedWidgetConfig.bonusHuntColorSync || {}),
+    [selectedWidgetConfig],
+  );
   const bonusHuntMetalColors = useMemo(
     () => getBonusHuntMetalColors(widgets),
     [widgets],
@@ -1264,6 +1271,9 @@ export default function AppearanceCenter({
   const showRtpMetalControls =
     selectedWidgetType === "rtp_stats" &&
     selectedTarget.styleId === "metal" &&
+    !!selectedWidget;
+  const showBonusHuntColorSyncControls =
+    BONUS_HUNT_COLOR_SYNC_WIDGET_TYPES.has(selectedWidgetType) &&
     !!selectedWidget;
   const selectedWidgetUsesV2 = isWidgetAppearanceV2Enabled(selectedWidgetType);
   const selectedWidgetIsBackground = selectedWidgetType === "background";
@@ -1438,7 +1448,11 @@ export default function AppearanceCenter({
       return sections;
     }
     if (selectedQuickControls.has("material")) sections.push("material");
-    if (hasAnyQuickControl(["primaryColor", "accentColor"]) || showRtpMetalControls)
+    if (
+      hasAnyQuickControl(["primaryColor", "accentColor"]) ||
+      showRtpMetalControls ||
+      showBonusHuntColorSyncControls
+    )
       sections.push("colours");
     if (
       hasAnyQuickControl([
@@ -1486,6 +1500,7 @@ export default function AppearanceCenter({
     selectedQuickControls,
     selectedWidgetIsBackground,
     selectedWidgetType,
+    showBonusHuntColorSyncControls,
     showRtpMetalControls,
   ]);
   const simpleSectionTabs = useMemo(() => {
@@ -1915,6 +1930,41 @@ export default function AppearanceCenter({
         });
     },
     [rtpMetalSettings, saveWidget, selectedWidget, selectedWidgetConfig],
+  );
+
+  const updateBonusHuntColorSyncSettings = useCallback(
+    (enabled) => {
+      if (!selectedWidget?.id || !saveWidget) return;
+      const configPatch = { bonusHuntColorSync: { enabled: !!enabled } };
+      const nextConfig = deepMerge(selectedWidgetConfig, configPatch);
+      setPreviewConfigPatches((prev) => {
+        const currentPatch = prev[selectedWidget.id];
+        return {
+          ...prev,
+          [selectedWidget.id]: currentPatch
+            ? deepMerge(currentPatch, configPatch)
+            : configPatch,
+        };
+      });
+      saveWidget({ ...selectedWidget, config: nextConfig })
+        .then(() =>
+          setToast(
+            enabled
+              ? "Widget synced to Bonus Hunt colours"
+              : "Widget manual colours restored",
+          ),
+        )
+        .catch((err) => {
+          console.error("[AppearanceCenter] Bonus Hunt colour sync failed", err);
+          setPreviewConfigPatches((prev) => {
+            const next = { ...prev };
+            delete next[selectedWidget.id];
+            return next;
+          });
+          setToast("Bonus Hunt colour sync could not be updated");
+        });
+    },
+    [saveWidget, selectedWidget, selectedWidgetConfig],
   );
 
   const restoreRecommendedStyle = useCallback(() => {
@@ -4167,6 +4217,20 @@ export default function AppearanceCenter({
                         />
                       </label>
                     </>
+                  )}
+                  {showBonusHuntColorSyncControls && bonusHuntMetalColors && (
+                    <label className="ve-simple-toggle">
+                      <input
+                        type="checkbox"
+                        checked={bonusHuntColorSyncSettings.enabled}
+                        onChange={(event) =>
+                          updateBonusHuntColorSyncSettings(
+                            event.target.checked,
+                          )
+                        }
+                      />
+                      <span>Sync both colours from Bonus Hunt</span>
+                    </label>
                   )}
                   {currentSimpleAppearance.generatedTokens?.contrastRatio <
                     4.5 && (

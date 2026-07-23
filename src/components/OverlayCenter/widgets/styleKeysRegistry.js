@@ -53,6 +53,7 @@ export const GIVEAWAY_STYLE_KEYS = [
 
 /* ── Navbar ── */
 export const NAVBAR_STYLE_KEYS = [
+  'bonusHuntColorSync',
   'accentColor', 'bgColor', 'textColor', 'mutedColor', 'ctaColor',
   'cryptoUpColor', 'cryptoDownColor',
   'fontFamily', 'fontSize',
@@ -63,6 +64,7 @@ export const NAVBAR_STYLE_KEYS = [
 
 /* ── Chat ── */
 export const CHAT_STYLE_KEYS = [
+  'bonusHuntColorSync',
   'bgColor', 'textColor', 'borderColor', 'headerBg', 'headerText',
   'fontFamily', 'fontSize', 'msgLineHeight', 'msgPadH', 'nameBold', 'useNativeColors',
   'width', 'height', 'borderRadius', 'borderWidth', 'msgSpacing', 'maxMessages',

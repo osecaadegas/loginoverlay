@@ -13,6 +13,7 @@ import {
   styleSecaHeaderGradient,
   styleSecaSurfaceGradient,
 } from "./shared/styleSecaTheme";
+import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
 
 const STYLE_SECA_BETS_DESIGN_WIDTH = 460;
 const STYLE_SECA_BETS_DESIGN_HEIGHT = 520;
@@ -210,7 +211,7 @@ function optionStateId({ isWin, isLose, isLead, status }) {
   return "default";
 }
 
-function BetsWidget({ config }) {
+function BetsWidget({ config, allWidgets }) {
   const styleSecaContainerRef = useRef(null);
   const c = config || {};
   const title = c.question || "Place Your Bets";
@@ -242,14 +243,17 @@ function BetsWidget({ config }) {
   const defaultTextAlign = c.textAlign || undefined;
   const colorTheme = c.colorTheme || "dark";
   const barColorMode = c.barColorMode || (isStyleSeca ? "solid" : "rainbow");
-  const effectiveBarColorMode = isStyleSeca ? "solid" : barColorMode;
+  const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
+  const syncedPrimaryColor = syncedBonusHuntColors?.primaryColor;
+  const syncedSecondaryColor = syncedBonusHuntColors?.secondaryColor;
+  const effectiveBarColorMode = isStyleSeca || syncedBonusHuntColors ? "solid" : barColorMode;
   const styleSecaValue = (value, fallback) =>
     isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
   const styleSecaText = "#f8fbff";
   const visibleOptions = isStyleSeca ? options.slice(0, 6) : options;
 
   const preset = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
-  const bgColor = styleSecaValue(
+  const bgColor = syncedSecondaryColor || styleSecaValue(
     elementValue(
       c,
       "widgetBackground",
@@ -269,7 +273,7 @@ function BetsWidget({ config }) {
     ),
     styleSecaText,
   );
-  const borderColor = styleSecaValue(
+  const borderColor = syncedPrimaryColor || styleSecaValue(
     elementValue(
       c,
       "widgetBackground",
@@ -294,7 +298,7 @@ function BetsWidget({ config }) {
     c.borderRadius ?? (isStyleSeca ? 12 : 0),
     "container",
   );
-  const headerBg = styleSecaValue(
+  const headerBg = syncedSecondaryColor || styleSecaValue(
     elementValue(
       c,
       "header",
@@ -304,7 +308,7 @@ function BetsWidget({ config }) {
     ),
     styleSecaHeaderGradient(),
   );
-  const headerText = styleSecaValue(
+  const headerText = syncedPrimaryColor || styleSecaValue(
     elementValue(
       c,
       "header",
@@ -314,7 +318,7 @@ function BetsWidget({ config }) {
     ),
     styleSecaText,
   );
-  const barBg = styleSecaValue(
+  const barBg = syncedSecondaryColor || styleSecaValue(
     elementValue(
       c,
       "progressBar",
@@ -325,7 +329,7 @@ function BetsWidget({ config }) {
     ),
     STYLE_SECA.secondarySurface,
   );
-  const barFill = styleSecaValue(
+  const barFill = syncedPrimaryColor || styleSecaValue(
     elementValue(
       c,
       "progressBar",
@@ -336,7 +340,7 @@ function BetsWidget({ config }) {
     ),
     STYLE_SECA.primary,
   );
-  const accentColor = styleSecaValue(
+  const accentColor = syncedPrimaryColor || styleSecaValue(
     elementValue(
       c,
       "cardNumberBadge",
@@ -352,7 +356,7 @@ function BetsWidget({ config }) {
     ),
     STYLE_SECA.primary,
   );
-  const optionBg = styleSecaValue(
+  const optionBg = syncedSecondaryColor || styleSecaValue(
     elementValue(
       c,
       "betCards",
@@ -398,7 +402,7 @@ function BetsWidget({ config }) {
     ),
     STYLE_SECA.darkText,
   );
-  const timerBg = styleSecaValue(
+  const timerBg = syncedPrimaryColor || styleSecaValue(
     elementValue(
       c,
       "status",

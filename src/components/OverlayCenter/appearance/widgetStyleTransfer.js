@@ -77,6 +77,7 @@ const BLOCKED_CONFIG_STYLE_KEYS = new Set([
 ]);
 
 const BASE_TRANSFER_STYLE_KEYS = [
+  'bonusHuntColorSync',
   'fontFamily',
   'fontSize',
   'fontWeight',

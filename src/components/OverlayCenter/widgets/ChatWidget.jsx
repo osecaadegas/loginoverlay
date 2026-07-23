@@ -5,6 +5,7 @@ import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
 import { brushedMetalBackground, metalBorderColor, metalSurfaceShadow } from './shared/metalTexture';
 import { STYLE_SECA, resolveStyleSecaValue, styleSecaHeaderGradient, styleSecaSurfaceGradient } from './shared/styleSecaTheme';
+import { resolveBonusHuntSyncedColors } from './shared/bonusHuntColorSync';
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -141,7 +142,7 @@ function useYoutubeChat(videoId, apiKey, onMessage) {
 
 
 /* ─── Main Widget ─── */
-function ChatWidget({ config, theme }) {
+function ChatWidget({ config, theme, allWidgets }) {
   const c = config || {};
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef(null);
@@ -152,29 +153,32 @@ function ChatWidget({ config, theme }) {
   const isBH = chatStyle === 'bh_stats';
   const isStyleSeca = chatStyle === 'StyleSecaChat';
   const styleSecaValue = (value, fallback) => isStyleSeca ? resolveStyleSecaValue(value, fallback) : value;
+  const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
+  const syncedPrimaryColor = syncedBonusHuntColors?.primaryColor;
+  const syncedSecondaryColor = syncedBonusHuntColors?.secondaryColor;
 
   /* Style config */
   const textColor = styleSecaValue(subValue(c, 'messageText', 'textColor', subValue(c, 'message', 'textColor', c.textColor || (isStyleSeca ? STYLE_SECA.text : isMetal ? '#d4d8e0' : isGlowPanel ? '#dbeafe' : isBH ? '#f1f5f9' : '#e2e8f0'))), STYLE_SECA.text);
-  const headerBg = styleSecaValue(subValue(c, 'header', 'background', c.headerBg || (isStyleSeca ? styleSecaHeaderGradient() : isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isGlowPanel ? 'rgba(2,12,25,0.82)' : isBH ? 'rgba(255,255,255,0.04)' : 'rgba(30,41,59,0.5)')), styleSecaHeaderGradient());
-  const headerText = styleSecaValue(subValue(c, 'header', 'textColor', c.headerText || (isStyleSeca ? STYLE_SECA.text : isMetal ? '#a8b0c0' : isGlowPanel ? '#22d3ee' : isBH ? '#64748b' : '#94a3b8')), STYLE_SECA.text);
+  const headerBg = syncedSecondaryColor || styleSecaValue(subValue(c, 'header', 'background', c.headerBg || (isStyleSeca ? styleSecaHeaderGradient() : isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isGlowPanel ? 'rgba(2,12,25,0.82)' : isBH ? 'rgba(255,255,255,0.04)' : 'rgba(30,41,59,0.5)')), styleSecaHeaderGradient());
+  const headerText = syncedPrimaryColor || styleSecaValue(subValue(c, 'header', 'textColor', c.headerText || (isStyleSeca ? STYLE_SECA.text : isMetal ? '#a8b0c0' : isGlowPanel ? '#22d3ee' : isBH ? '#64748b' : '#94a3b8')), STYLE_SECA.text);
   const fontFamily = subValue(c, 'container', 'fontFamily', subValue(c, 'messageText', 'fontFamily', subValue(c, 'message', 'fontFamily', isStyleSeca ? "'Rajdhani', 'Barlow Condensed', sans-serif" : isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif"))));
   const fontSize = subValue(c, 'container', 'fontSize', subValue(c, 'messageText', 'fontSize', subValue(c, 'message', 'fontSize', c.fontSize || 15)));
   const msgSpacing = subValue(c, 'messageList', 'gap', subValue(c, 'message', 'gap', c.msgSpacing ?? 2));
   const borderRadius = subValue(c, 'message', 'radius', c.borderRadius ?? (isStyleSeca ? 10 : isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
   const borderWidth = subValue(c, 'message', 'borderWidth', c.borderWidth ?? 1);
-  const borderColor = styleSecaValue(subValue(c, 'message', 'borderColor', c.borderColor || (isStyleSeca ? STYLE_SECA.border : isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.22)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)')), STYLE_SECA.border);
+  const borderColor = syncedPrimaryColor || styleSecaValue(subValue(c, 'message', 'borderColor', c.borderColor || (isStyleSeca ? STYLE_SECA.border : isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.22)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)')), STYLE_SECA.border);
   const containerRadius = subValue(c, 'container', 'radius', c.borderRadius ?? (isStyleSeca ? 12 : isMetal ? 10 : isGlowPanel ? 8 : isBH ? 14 : 12));
   const containerBorderWidth = subValue(c, 'container', 'borderWidth', c.borderWidth ?? 1);
-  const containerBorderColor = styleSecaValue(subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? STYLE_SECA.border : isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.26)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)')), STYLE_SECA.border);
+  const containerBorderColor = syncedPrimaryColor || styleSecaValue(subValue(c, 'container', 'borderColor', c.borderColor || (isStyleSeca ? STYLE_SECA.border : isMetal ? 'rgba(200,210,225,0.18)' : isGlowPanel ? 'rgba(34,211,238,0.26)' : isBH ? 'rgba(255,255,255,0.06)' : 'rgba(51,65,85,0.5)')), STYLE_SECA.border);
   const nameBold = c.nameBold ?? true;
   const msgLineHeight = subValue(c, 'messageText', 'lineHeight', subValue(c, 'message', 'lineHeight', c.msgLineHeight ?? 1.45));
   const msgPadH = subValue(c, 'message', 'padding', c.msgPadH ?? 10);
-  const messageBg = styleSecaValue(subValue(c, 'message', 'background', c.cardBg || (isStyleSeca ? STYLE_SECA.cardSurface : 'transparent')), STYLE_SECA.cardSurface);
-  const usernameColor = subValue(c, 'username', 'textColor', headerText);
-  const avatarBg = styleSecaValue(subValue(c, 'avatar', 'background', isStyleSeca ? STYLE_SECA.secondarySurface : 'rgba(255,255,255,0.04)'), STYLE_SECA.secondarySurface);
+  const messageBg = syncedSecondaryColor || styleSecaValue(subValue(c, 'message', 'background', c.cardBg || (isStyleSeca ? STYLE_SECA.cardSurface : 'transparent')), STYLE_SECA.cardSurface);
+  const usernameColor = syncedPrimaryColor || subValue(c, 'username', 'textColor', headerText);
+  const avatarBg = syncedSecondaryColor || styleSecaValue(subValue(c, 'avatar', 'background', isStyleSeca ? STYLE_SECA.secondarySurface : 'rgba(255,255,255,0.04)'), STYLE_SECA.secondarySurface);
   const avatarText = subValue(c, 'avatar', 'textColor', usernameColor);
   const avatarBorder = subValue(c, 'avatar', 'borderColor', borderColor);
-  const badgeBg = styleSecaValue(subValue(c, 'badge', 'background', isStyleSeca ? STYLE_SECA.primary : 'rgba(129,140,248,0.15)'), STYLE_SECA.primary);
+  const badgeBg = syncedPrimaryColor || styleSecaValue(subValue(c, 'badge', 'background', isStyleSeca ? STYLE_SECA.primary : 'rgba(129,140,248,0.15)'), STYLE_SECA.primary);
   const badgeText = subValue(c, 'badge', 'textColor', isStyleSeca ? STYLE_SECA.darkText : usernameColor);
 
   /* Style-specific bg defaults */
@@ -191,7 +195,7 @@ function ChatWidget({ config, theme }) {
     StyleSecaChat: styleSecaSurfaceGradient(),
     bh_stats: 'rgba(15, 23, 42, 0.9)',
   };
-  const bgColor = styleSecaValue(subValue(c, 'container', 'background', c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic), styleSecaSurfaceGradient());
+  const bgColor = syncedSecondaryColor || styleSecaValue(subValue(c, 'container', 'background', c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic), styleSecaSurfaceGradient());
 
   /* Which features each style shows */
   const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal' || chatStyle === 'glow_panel' || chatStyle === 'StyleSecaChat' || chatStyle === 'bh_stats') ? (c.showHeader !== false) : false;
