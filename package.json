@@ -12,6 +12,7 @@
     "test:appearance": "node scripts/test-appearance-model.mjs",
     "test:appearance-editor": "node scripts/test-appearance-editor.mjs",
     "test:appearance-v2": "node scripts/test-appearance-v2.mjs",
+    "test:appearance-routing": "node scripts/test-appearance-routing.mjs",
     "test:tools-preview-toggle": "node scripts/test-tools-preview-toggle.mjs",
     "test:widget-style-transfer": "node scripts/test-widget-style-transfer.mjs",
     "test:widget-pilot": "node scripts/test-widget-pilot.mjs",

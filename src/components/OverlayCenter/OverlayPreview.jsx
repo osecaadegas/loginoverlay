@@ -16,6 +16,7 @@ import {
   getWidgetSlotBehavior,
   getWidgetSlotSize,
 } from "./appearance/v2/widgetSlot";
+import { appearanceAttrs } from "./widgets/shared/appearanceStyles";
 
 // Register built-in widgets (idempotent)
 import "./widgets/builtinWidgets";
@@ -57,10 +58,14 @@ function buildElementSelectionCss(
         outline: 3px solid rgba(94, 234, 212, 0.98) !important;
         outline-offset: 4px;
         box-shadow: 0 0 0 5px rgba(20, 184, 166, 0.18) !important;
-      }
-    `);
-  }
-  for (const elementId of hiddenElementIds || []) {
+    const appearanceNode = event.target?.closest?.("[data-widget-element]");
+    const stateId = appearanceNode?.dataset?.widgetState || "default";
+    onSelectElement?.({
+      widget,
+      appearanceId: appearanceNode?.dataset?.appearanceId || "",
+      elementId,
+      stateId,
+    });
     rules.push(`
       ${widgetSelector} [data-widget-element="${escapeCssAttr(elementId)}"] {
         opacity: 0.18 !important;
@@ -185,9 +190,8 @@ const PreviewSlot = memo(function PreviewSlot({
     event.preventDefault();
     event.stopPropagation();
     const stateId =
-      event.target
-        ?.closest?.("[data-widget-element]")
-        ?.getAttribute("data-widget-state") || "default";
+      event.target?.closest?.("[data-widget-element]")?.dataset
+        ?.widgetState || "default";
     onSelectElement?.({ widget, elementId, stateId });
     const startX = event.clientX;
     const startY = event.clientY;
@@ -248,9 +252,9 @@ const PreviewSlot = memo(function PreviewSlot({
         : null;
     const elementInsideWidget =
       elementNode && event.currentTarget.contains(elementNode);
-    const clickedElementId = elementInsideWidget
-      ? elementNode.getAttribute("data-widget-element")
-      : "";
+      const clickedElementId = elementInsideWidget
+        ? elementNode.dataset?.widgetElement
+        : "";
     const selectedMovableElementId =
       selectedElementId && selectedElementId !== "container"
         ? selectedElementId
@@ -321,6 +325,12 @@ const PreviewSlot = memo(function PreviewSlot({
       }
       data-widget-id={widget.id}
       data-widget-type={widget.widget_type}
+      {...appearanceAttrs({
+        config: cfg,
+        widgetId: widget.id,
+        widgetType: widget.widget_type,
+        elementId: "container",
+      })}
       data-appearance-version={
         cfg.__appearanceV2?.schemaVersion
           ? `v2-${cfg.__appearanceV2.schemaVersion}`
@@ -345,9 +355,9 @@ const PreviewSlot = memo(function PreviewSlot({
               if (elementInsideWidget && onSelectElement) {
                 onSelectElement?.({
                   widget,
-                  elementId: elementNode.getAttribute("data-widget-element"),
-                  stateId:
-                    elementNode.getAttribute("data-widget-state") || "default",
+                  appearanceId: elementNode.dataset?.appearanceId || "",
+                  elementId: elementNode.dataset?.widgetElement,
+                  stateId: elementNode.dataset?.widgetState || "default",
                 });
                 return;
               }
@@ -406,9 +416,9 @@ const PreviewSlot = memo(function PreviewSlot({
 
 export default function OverlayPreview({
   widgets,
-  theme,
-  appearance,
-  userId,
+                  appearanceId: elementNode.dataset?.appearanceId || "",
+                  elementId: elementNode.dataset?.widgetElement,
+                  stateId: elementNode.dataset?.widgetState || "default",
   selectedWidgetId,
   selectedTarget,
   selectedElementId,

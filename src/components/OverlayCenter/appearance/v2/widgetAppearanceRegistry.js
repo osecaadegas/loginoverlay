@@ -2536,6 +2536,20 @@ export const widgetAppearanceRegistry = Object.freeze({
         capabilities: ["surface", "border", "stateColor", "position"],
         cssVariables: ["--rtp-divider"],
       }),
+      track: Object.freeze({
+        label: "RTP bar track",
+        kind: "progress",
+        capabilities: ["progress", "shape", "position"],
+        controls: ["background", "radius", "height", "offsetX", "offsetY"],
+        cssVariables: ["--rtp-track", "--rtp-progress-bg"],
+      }),
+      fill: Object.freeze({
+        label: "RTP bar fill",
+        kind: "progress",
+        capabilities: ["progress", "shape", "position"],
+        controls: ["fillColor", "radius", "height", "offsetX", "offsetY"],
+        cssVariables: ["--rtp-fill", "--rtp-progress-fill"],
+      }),
       spinner: Object.freeze({
         label: "Spinner",
         kind: "badge",

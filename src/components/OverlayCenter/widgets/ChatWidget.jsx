@@ -2,7 +2,11 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import useTwitchChat from "../../../hooks/useTwitchChat";
 import useKickChat from "../../../hooks/useKickChat";
 import useTwitchChannel from "../../../hooks/useTwitchChannel";
-import { subElementStyle, subValue } from "./shared/appearanceStyles";
+import {
+  appearanceAttrs,
+  subElementStyle,
+  subValue,
+} from "./shared/appearanceStyles";
 import {
   brushedMetalBackground,
   metalBorderColor,
@@ -260,10 +264,10 @@ function messageAvatarUrl(msg = {}) {
 }
 
 function partAttrs(partId) {
-  return {
-    "data-widget-element": partId,
-    "data-appearance-part": partId,
-  };
+  return appearanceAttrs({
+    widgetType: "chat",
+    elementId: partId,
+  });
 }
 
 function ChatAvatar({ msg, fallback, className, style }) {

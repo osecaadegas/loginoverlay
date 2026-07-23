@@ -8,8 +8,15 @@
  * - GPU-accelerated animations
  * - 60fps optimized, no polling
  */
-import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  memo,
+} from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import {
   getInstanceByToken,
   getWidgets,
@@ -17,35 +24,56 @@ import {
   getOverlayState,
   subscribeToOverlay,
   unsubscribeOverlay,
-} from '../../services/overlayService';
-import { getWidgetDef } from './widgets/widgetRegistry';
-import buildThemeVars from './themeVarsBuilder';
+} from "../../services/overlayService";
+import { getWidgetDef } from "./widgets/widgetRegistry";
+import buildThemeVars from "./themeVarsBuilder";
 import {
   buildCanvasBackground,
   buildWidgetAppearanceVars,
   buildOverlayAppearanceState,
   normalizeAppearance,
   resolveWidgetsForAppearance,
-} from './appearance/appearanceModel';
-import { applyPreviewWidgetSamples } from './appearance/previewWidgetSamples';
-import { getWidgetSlotBehavior, getWidgetSlotSize } from './appearance/v2/widgetSlot';
-import './OverlayRenderer.css';
-import './OverlayCenter.css';
+} from "./appearance/appearanceModel";
+import { applyPreviewWidgetSamples } from "./appearance/previewWidgetSamples";
+import {
+  getWidgetSlotBehavior,
+  getWidgetSlotSize,
+} from "./appearance/v2/widgetSlot";
+import { appearanceAttrs } from "./widgets/shared/appearanceStyles";
+import "./OverlayRenderer.css";
+import "./OverlayCenter.css";
 
 // Register built-in widgets
-import './widgets/builtinWidgets';
+import "./widgets/builtinWidgets";
 
 function compareWidgetLayer(a, b) {
   const az = Number(a?.z_index) || 0;
   const bz = Number(b?.z_index) || 0;
   if (az !== bz) return az - bz;
-  if (a?.widget_type === 'background' && b?.widget_type !== 'background') return -1;
-  if (a?.widget_type !== 'background' && b?.widget_type === 'background') return 1;
-  return String(a?.id || '').localeCompare(String(b?.id || ''));
+  if (a?.widget_type === "background" && b?.widget_type !== "background")
+    return -1;
+  if (a?.widget_type !== "background" && b?.widget_type === "background")
+    return 1;
+  return String(a?.id || "").localeCompare(String(b?.id || ""));
+}
+
+function getWidgetSlotOverflow({ isNavbar, needsClip, needsVisible }) {
+  if (isNavbar || needsVisible || needsClip) return "visible";
+  return "hidden";
 }
 
 // ─── Single widget wrapper with animation + scale-to-fit ───
-const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting, userId, suppressAnimations = false }) {
+const WidgetSlot = memo(function WidgetSlot({
+  widget,
+  theme,
+  animSpeed,
+  allWidgets,
+  canvasWidth,
+  canvasHeight,
+  exiting,
+  userId,
+  suppressAnimations = false,
+}) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
 
@@ -53,21 +81,25 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
 
   const slotId = `ow-${widget.id}`;
   /* Backwards-compat: old 'slide' → 'slide-up' */
-  const normalise = (v) => v === 'slide' ? 'slide-up' : (v || 'fade');
-  const enterAnim = suppressAnimations ? 'none' : normalise(widget.animation);
-  const exitAnim  = suppressAnimations ? 'none' : normalise(widget.exit_animation);
+  const normalise = (v) => (v === "slide" ? "slide-up" : v || "fade");
+  const enterAnim = suppressAnimations ? "none" : normalise(widget.animation);
+  const exitAnim = suppressAnimations
+    ? "none"
+    : normalise(widget.exit_animation);
   const animClass = exiting
     ? `or-anim-out--${exitAnim}`
     : `or-anim-in--${enterAnim}`;
-  const customCSS = widget.config?.custom_css || '';
+  const customCSS = widget.config?.custom_css || "";
 
   /* ─── Advanced CSS overrides (per-property editor) ─── */
   const advCSS = widget.config?.advancedCSS || {};
-  const advStr = Object.entries(advCSS).map(([k,v]) => `${k}:${v}`).join(';');
-  const mergedCSS = [customCSS, advStr].filter(Boolean).join(';');
+  const advStr = Object.entries(advCSS)
+    .map(([k, v]) => `${k}:${v}`)
+    .join(";");
+  const mergedCSS = [customCSS, advStr].filter(Boolean).join(";");
 
   /* ─── Background widgets always fill the entire canvas ─── */
-  const isBg = widget.widget_type === 'background';
+  const isBg = widget.widget_type === "background";
 
   /* ─── Configurable shadow via drop-shadow (follows visual outline) ─── */
   const cfg = widget.config || {};
@@ -92,7 +124,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
        rasterises rounded-clip edges through a drop-shadow filter
        (which causes dark-corner fringe on OBS browser sources). ── */
   const outerStyle = {
-    position: 'absolute',
+    position: "absolute",
     left: isBg ? 0 : widget.position_x,
     top: isBg ? 0 : widget.position_y,
     width: isBg ? canvasWidth : slotSize.width,
@@ -102,18 +134,20 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     /* Shadow lives on the outer wrapper — away from the clip layer */
     filter: isNavbar ? undefined : shadowFilter,
     /* Only use overflow:hidden when there's no radius (clipPath handles radius) */
-    overflow: isNavbar ? 'visible' : (needsVisible ? 'visible' : (needsClip ? 'visible' : 'hidden')),
+    overflow: getWidgetSlotOverflow({ isNavbar, needsClip, needsVisible }),
     ...buildWidgetAppearanceVars(cfg),
   };
 
   /* Inner clip wrapper — only rendered when we need clipPath rounding */
   const needsInnerClip = needsClip;
-  const innerClipStyle = needsInnerClip ? {
-    width: '100%',
-    height: '100%',
-    clipPath: `inset(0 round ${widgetRadius}px)`,
-    overflow: 'hidden',
-  } : null;
+  const innerClipStyle = needsInnerClip
+    ? {
+        width: "100%",
+        height: "100%",
+        clipPath: `inset(0 round ${widgetRadius}px)`,
+        overflow: "hidden",
+      }
+    : null;
 
   return (
     <div
@@ -121,7 +155,17 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
       className={`or-widget-slot ${animClass}`}
       data-widget-id={widget.id}
       data-widget-type={widget.widget_type}
-      data-appearance-version={cfg.__appearanceV2?.schemaVersion ? `v2-${cfg.__appearanceV2.schemaVersion}` : undefined}
+      {...appearanceAttrs({
+        config: cfg,
+        widgetId: widget.id,
+        widgetType: widget.widget_type,
+        elementId: "container",
+      })}
+      data-appearance-version={
+        cfg.__appearanceV2?.schemaVersion
+          ? `v2-${cfg.__appearanceV2.schemaVersion}`
+          : undefined
+      }
       data-material={cfg.__appearanceV2?.material || undefined}
       style={outerStyle}
     >
@@ -129,19 +173,40 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
       {(() => {
         const elCSS = widget.config?.elementCSS;
         if (!elCSS || Object.keys(elCSS).length === 0) return null;
-        const rules = Object.entries(elCSS).map(([sel, props]) => {
-          const decls = Object.entries(props).filter(([k]) => k !== '_init').map(([k, v]) => `${k}:${v}`).join(';');
-          const scoped = sel.split(',').map(s => `#${slotId} ${s.trim()}`).join(',');
-          return decls ? `${scoped}{${decls}}` : '';
-        }).filter(Boolean).join('\n');
+        const rules = Object.entries(elCSS)
+          .map(([sel, props]) => {
+            const decls = Object.entries(props)
+              .filter(([k]) => k !== "_init")
+              .map(([k, v]) => `${k}:${v}`)
+              .join(";");
+            const scoped = sel
+              .split(",")
+              .map((s) => `#${slotId} ${s.trim()}`)
+              .join(",");
+            return decls ? `${scoped}{${decls}}` : "";
+          })
+          .filter(Boolean)
+          .join("\n");
         return rules ? <style>{rules}</style> : null;
       })()}
       {innerClipStyle ? (
         <div style={innerClipStyle}>
-          <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
+          <Component
+            config={widget.config}
+            theme={theme}
+            allWidgets={allWidgets}
+            widgetId={widget.id}
+            userId={userId}
+          />
         </div>
       ) : (
-        <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
+        <Component
+          config={widget.config}
+          theme={theme}
+          allWidgets={allWidgets}
+          widgetId={widget.id}
+          userId={userId}
+        />
       )}
     </div>
   );
@@ -150,8 +215,8 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
 export default function OverlayRenderer() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
-  const singleWidgetId = searchParams.get('widget');
-  const isPreviewMode = searchParams.get('preview') === '1';
+  const singleWidgetId = searchParams.get("widget");
+  const isPreviewMode = searchParams.get("preview") === "1";
   const [userId, setUserId] = useState(null);
   const [widgets, setWidgets] = useState([]);
   const [theme, setTheme] = useState(null);
@@ -168,17 +233,20 @@ export default function OverlayRenderer() {
     const html = document.documentElement;
     const body = document.body;
     // Strip all App.css interference
-    html.style.cssText = 'margin:0;padding:0;overflow:hidden;background:transparent;width:100%;height:100%;';
-    body.style.cssText = 'margin:0;padding:0;overflow:hidden;background:transparent;width:100%;height:100%;min-height:0;';
+    html.style.cssText =
+      "margin:0;padding:0;overflow:hidden;background:transparent;width:100%;height:100%;";
+    body.style.cssText =
+      "margin:0;padding:0;overflow:hidden;background:transparent;width:100%;height:100%;min-height:0;";
     // Also hide app-layout flex styling
-    const appLayout = document.querySelector('.app-layout');
+    const appLayout = document.querySelector(".app-layout");
     if (appLayout) {
-      appLayout.style.cssText = 'display:block;min-height:0;background:transparent;width:100%;height:100%;';
+      appLayout.style.cssText =
+        "display:block;min-height:0;background:transparent;width:100%;height:100%;";
     }
     return () => {
-      html.style.cssText = '';
-      body.style.cssText = '';
-      if (appLayout) appLayout.style.cssText = '';
+      html.style.cssText = "";
+      body.style.cssText = "";
+      if (appLayout) appLayout.style.cssText = "";
     };
   }, []);
 
@@ -186,12 +254,24 @@ export default function OverlayRenderer() {
   useEffect(() => {
     let cancelled = false;
 
+    const setIfActive = (setter, value) => {
+      if (!cancelled) setter(value);
+    };
+
+    async function reloadWidgets(inst) {
+      const nextWidgets = await getWidgets(inst.user_id, inst.id);
+      setIfActive(setWidgets, nextWidgets);
+    }
+
     async function init() {
       try {
         setReady(false);
         setError(null);
         const inst = await getInstanceByToken(token);
-        if (!inst) { setError('Invalid overlay token'); return; }
+        if (!inst) {
+          setError("Invalid overlay token");
+          return;
+        }
         if (cancelled) return;
 
         const [wdgs, th, st] = await Promise.all([
@@ -208,19 +288,26 @@ export default function OverlayRenderer() {
         setReady(true);
 
         // Subscribe to realtime
-        channelRef.current = subscribeToOverlay(inst.user_id, {
-          onWidgets: () => getWidgets(inst.user_id, inst.id).then(w => !cancelled && setWidgets(w)),
-          onTheme: (t) => !cancelled && setTheme(t),
-          onState: (s) => !cancelled && setOverlayState(s),
-        }, inst.id);
+        channelRef.current = subscribeToOverlay(
+          inst.user_id,
+          {
+            onWidgets: () => reloadWidgets(inst),
+            onTheme: (nextTheme) => setIfActive(setTheme, nextTheme),
+            onState: (nextState) => setIfActive(setOverlayState, nextState),
+          },
+          inst.id,
+        );
       } catch (err) {
-        console.error('[OverlayRenderer]', err);
-        setError('Failed to load overlay');
+        console.error("[OverlayRenderer]", err);
+        setError("Failed to load overlay");
       }
     }
 
     init();
-    return () => { cancelled = true; unsubscribeOverlay(channelRef.current); };
+    return () => {
+      cancelled = true;
+      unsubscribeOverlay(channelRef.current);
+    };
   }, [token]);
 
   useEffect(() => {
@@ -228,56 +315,75 @@ export default function OverlayRenderer() {
 
     let channel = null;
     try {
-      channel = new BroadcastChannel('streamers-center-preview');
-      channel.postMessage({ type: 'overlay-preview-ready', token });
+      channel = new BroadcastChannel("streamers-center-preview");
+      channel.postMessage({ type: "overlay-preview-ready", token });
     } catch {
       return undefined;
     }
 
     const notifyClosed = () => {
       try {
-        channel?.postMessage({ type: 'overlay-preview-closed', token });
-      } catch { /* ignore */ }
+        channel?.postMessage({ type: "overlay-preview-closed", token });
+      } catch {
+        /* ignore */
+      }
     };
 
-    window.addEventListener('pagehide', notifyClosed);
-    window.addEventListener('beforeunload', notifyClosed);
+    window.addEventListener("pagehide", notifyClosed);
+    window.addEventListener("beforeunload", notifyClosed);
     channel.onmessage = (event) => {
       if (event.data?.token !== token) return;
-      if (event.data?.type === 'appearance-preview-draft') {
+      if (event.data?.type === "appearance-preview-draft") {
         setPreviewDraft(event.data.appearance || null);
         setPreviewStyleSelections(event.data.styleSelections || {});
       }
     };
 
     return () => {
-      window.removeEventListener('pagehide', notifyClosed);
-      window.removeEventListener('beforeunload', notifyClosed);
+      window.removeEventListener("pagehide", notifyClosed);
+      window.removeEventListener("beforeunload", notifyClosed);
       try {
-        channel?.postMessage({ type: 'overlay-preview-disconnected', token });
+        channel?.postMessage({ type: "overlay-preview-disconnected", token });
         channel?.close();
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     };
   }, [isPreviewMode, ready, token]);
 
   // ── Theme CSS variables ──
   const appearanceState = useMemo(
     () => buildOverlayAppearanceState(overlayState || {}, { theme, widgets }),
-    [overlayState, theme, widgets]
+    [overlayState, theme, widgets],
   );
   const activeAppearance = useMemo(() => {
-    if (isPreviewMode && previewDraft) return normalizeAppearance(previewDraft, { theme });
+    if (isPreviewMode && previewDraft)
+      return normalizeAppearance(previewDraft, { theme });
     return isPreviewMode ? appearanceState.draft : appearanceState.published;
   }, [appearanceState, isPreviewMode, previewDraft, theme]);
   const renderedWidgets = useMemo(() => {
-    const resolved = resolveWidgetsForAppearance(widgets, activeAppearance, theme, { styleSelections: isPreviewMode ? previewStyleSelections : {} });
-    return isPreviewMode ? applyPreviewWidgetSamples(resolved, { now: previewNowRef.current, expandFrames: true }) : resolved;
+    const resolved = resolveWidgetsForAppearance(
+      widgets,
+      activeAppearance,
+      theme,
+      { styleSelections: isPreviewMode ? previewStyleSelections : {} },
+    );
+    return isPreviewMode
+      ? applyPreviewWidgetSamples(resolved, {
+          now: previewNowRef.current,
+          expandFrames: true,
+        })
+      : resolved;
   }, [widgets, activeAppearance, theme, isPreviewMode, previewStyleSelections]);
 
-  const themeVars = useMemo(() => buildThemeVars(theme, activeAppearance), [theme, activeAppearance]);
+  const themeVars = useMemo(
+    () => buildThemeVars(theme, activeAppearance),
+    [theme, activeAppearance],
+  );
 
   // ── Custom CSS injection ──
-  const customCSS = activeAppearance?.advanced?.customCss || theme?.custom_css || '';
+  const customCSS =
+    activeAppearance?.advanced?.customCss || theme?.custom_css || "";
 
   // ── Only render visible widgets (optionally filtered to a single widget) ──
   // Keep recently-hidden widgets in DOM so their exit animation can play.
@@ -288,9 +394,9 @@ export default function OverlayRenderer() {
   // ── Collect IDs of widgets living inside a container ──
   const containerChildIds = useMemo(() => {
     const ids = new Set();
-    renderedWidgets.forEach(w => {
-      if (w.widget_type === 'container' && Array.isArray(w.config?.children)) {
-        w.config.children.forEach(id => ids.add(id));
+    renderedWidgets.forEach((w) => {
+      if (w.widget_type === "container" && Array.isArray(w.config?.children)) {
+        w.config.children.forEach((id) => ids.add(id));
       }
     });
     return ids;
@@ -298,26 +404,35 @@ export default function OverlayRenderer() {
 
   const visibleWidgets = useMemo(() => {
     // Standalone URL (?widget=id): always render the requested widget even if hidden
-    if (singleWidgetId) return renderedWidgets.filter(w => w.id === singleWidgetId).sort(compareWidgetLayer);
+    if (singleWidgetId)
+      return renderedWidgets
+        .filter((w) => w.id === singleWidgetId)
+        .sort(compareWidgetLayer);
     // Exclude widgets that are children of a container — they render inside their parent
-    return renderedWidgets.filter(w => w.is_visible && !containerChildIds.has(w.id)).sort(compareWidgetLayer);
+    return renderedWidgets
+      .filter((w) => w.is_visible && !containerChildIds.has(w.id))
+      .sort(compareWidgetLayer);
   }, [renderedWidgets, singleWidgetId, containerChildIds]);
 
   // Detect newly-hidden widgets and keep them for exit animation
   useEffect(() => {
-    const currentIds = new Set(visibleWidgets.map(w => w.id));
+    const currentIds = new Set(visibleWidgets.map((w) => w.id));
     for (const id of prevVisibleIds.current) {
       if (!currentIds.has(id)) {
-        const w = renderedWidgets.find(x => x.id === id);
-        if (w && (w.exit_animation || w.animation) !== 'none') {
-          const animDuration = ((w.config?.animSpeed || theme?.animation_speed || 1) * 0.35 + 0.15) * 1000;
-          if (exitingRef.current.has(id)) clearTimeout(exitingRef.current.get(id).timer);
+        const w = renderedWidgets.find((x) => x.id === id);
+        if (w && (w.exit_animation || w.animation) !== "none") {
+          const animDuration =
+            ((w.config?.animSpeed || theme?.animation_speed || 1) * 0.35 +
+              0.15) *
+            1000;
+          if (exitingRef.current.has(id))
+            clearTimeout(exitingRef.current.get(id).timer);
           const timer = setTimeout(() => {
             exitingRef.current.delete(id);
-            setExitTick(t => t + 1);
+            setExitTick((t) => t + 1);
           }, animDuration);
           exitingRef.current.set(id, { widget: w, timer });
-          setExitTick(t => t + 1);
+          setExitTick((t) => t + 1);
         }
       }
     }
@@ -333,18 +448,19 @@ export default function OverlayRenderer() {
   }, [visibleWidgets, renderedWidgets, theme?.animation_speed]);
 
   const exitingWidgets = useMemo(() => {
-    void exitTick;
-    return Array.from(exitingRef.current.values()).map(e => e.widget);
+    return Array.from(exitingRef.current.values()).map((e) => e.widget);
   }, [exitTick]);
 
   // ── Viewport-fit scaling ──
   // The canvas is always authored at a fixed resolution (e.g. 1920×1080).
   // We scale it to fill the OBS browser source viewport exactly.
-  const canvasWidth = activeAppearance?.canvas?.width || theme?.canvas_width || 1920;
-  const canvasHeight = activeAppearance?.canvas?.height || theme?.canvas_height || 1080;
+  const canvasWidth =
+    activeAppearance?.canvas?.width || theme?.canvas_width || 1920;
+  const canvasHeight =
+    activeAppearance?.canvas?.height || theme?.canvas_height || 1080;
 
   const viewportScale = useCallback((width, height) => {
-    if (typeof window === 'undefined') return 1;
+    if (typeof window === "undefined") return 1;
     const vw = window.innerWidth || width;
     const vh = window.innerHeight || height;
     return Math.min(vw / width, vh / height);
@@ -357,32 +473,39 @@ export default function OverlayRenderer() {
       setScale(viewportScale(canvasWidth, canvasHeight));
     }
     calcScale();
-    window.addEventListener('resize', calcScale);
-    return () => window.removeEventListener('resize', calcScale);
+    window.addEventListener("resize", calcScale);
+    return () => window.removeEventListener("resize", calcScale);
   }, [canvasWidth, canvasHeight, viewportScale]);
 
   if (error) return null; // blank for OBS
   if (!ready || !userId) return null; // still loading
 
   return (
-    <div className="or-canvas" data-theme={activeAppearance?.themeId || theme?.style_preset || 'classic'} data-preview={isPreviewMode ? 'true' : undefined} style={{
-      ...themeVars,
-      width: canvasWidth,
-      height: canvasHeight,
-      transform: `scale(${scale})`,
-      transformOrigin: 'top left',
-      background: buildCanvasBackground(activeAppearance?.canvas),
-      opacity: activeAppearance?.canvas?.opacity ?? 1,
-      filter: activeAppearance?.canvas ? `brightness(${activeAppearance.canvas.brightness}%) contrast(${activeAppearance.canvas.contrast}%) saturate(${activeAppearance.canvas.saturation}%) blur(${activeAppearance.canvas.blur}px)` : undefined,
-    }}>
+    <div
+      className="or-canvas"
+      data-theme={activeAppearance?.themeId || theme?.style_preset || "classic"}
+      data-preview={isPreviewMode ? "true" : undefined}
+      style={{
+        ...themeVars,
+        width: canvasWidth,
+        height: canvasHeight,
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
+        background: buildCanvasBackground(activeAppearance?.canvas),
+        opacity: activeAppearance?.canvas?.opacity ?? 1,
+        filter: activeAppearance?.canvas
+          ? `brightness(${activeAppearance.canvas.brightness}%) contrast(${activeAppearance.canvas.contrast}%) saturate(${activeAppearance.canvas.saturation}%) blur(${activeAppearance.canvas.blur}px)`
+          : undefined,
+      }}
+    >
       {customCSS && <style>{customCSS}</style>}
 
       {/* Texture overlay */}
-      {theme?.bg_texture && theme.bg_texture !== 'none' && (
+      {theme?.bg_texture && theme.bg_texture !== "none" && (
         <div className={`or-texture or-texture--${theme.bg_texture}`} />
       )}
 
-      {visibleWidgets.map(w => (
+      {visibleWidgets.map((w) => (
         <WidgetSlot
           key={w.id}
           widget={w}
@@ -398,7 +521,7 @@ export default function OverlayRenderer() {
       ))}
 
       {/* Widgets playing exit animation — removed from visibleWidgets but kept briefly */}
-      {exitingWidgets.map(w => (
+      {exitingWidgets.map((w) => (
         <WidgetSlot
           key={`exit-${w.id}`}
           widget={w}

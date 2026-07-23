@@ -1,3 +1,52 @@
+import { getAppearanceDomAttributes } from "../../appearance/v2/appearanceRouting";
+
+const STYLE_KEY_BY_WIDGET_TYPE = Object.freeze({
+  bonus_hunt: "displayStyle",
+  current_slot: "displayStyle",
+  tournament: "layout",
+  giveaway: "displayStyle",
+  navbar: "displayStyle",
+  chat: "chatStyle",
+  image_slideshow: "displayStyle",
+  rtp_stats: "displayStyle",
+  background: "displayStyle",
+  raid_shoutout: "displayStyle",
+  spotify_now_playing: "displayStyle",
+  slot_requests: "displayStyle",
+  bh_stats: "displayStyle",
+  bonus_buys: "displayStyle",
+  bets: "displayStyle",
+  container: "displayStyle",
+});
+
+export function getAppearanceVariant(config = {}, widgetType = "") {
+  const key = STYLE_KEY_BY_WIDGET_TYPE[widgetType] || "displayStyle";
+  return (
+    config.__appearanceStyleId ||
+    config[key] ||
+    config.displayStyle ||
+    config.chatStyle ||
+    config.layout ||
+    "default"
+  );
+}
+
+export function appearanceAttrs({
+  config = {},
+  widgetId,
+  widgetType,
+  elementId,
+  stateId,
+}) {
+  return getAppearanceDomAttributes({
+    widgetId,
+    widgetType,
+    widgetVariant: getAppearanceVariant(config, widgetType),
+    elementId,
+    stateId,
+  });
+}
+
 export function getSubElement(config, elementId) {
   const sourceConfig = config || {};
   const subElements = Object.hasOwn(

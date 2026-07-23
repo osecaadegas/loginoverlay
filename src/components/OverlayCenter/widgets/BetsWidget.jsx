@@ -6,7 +6,11 @@
  * Animations: entry stagger · bar shimmer · leading pulse · winner pop
  */
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { subElementStyle, subValue } from "./shared/appearanceStyles";
+import {
+  appearanceAttrs,
+  subElementStyle,
+  subValue,
+} from "./shared/appearanceStyles";
 import {
   STYLE_SECA,
   resolveStyleSecaValue,
@@ -201,12 +205,13 @@ function elementStyle(
   return subElementStyle(explicitConfig, elementId, legacyFallback, stateId);
 }
 
-function partAttrs(partId, stateId) {
-  return {
-    "data-widget-element": partId,
-    "data-appearance-part": partId,
-    ...(stateId ? { "data-widget-state": stateId } : {}),
-  };
+function partAttrs(partId, stateId, config) {
+  return appearanceAttrs({
+    config,
+    widgetType: "bets",
+    elementId: partId,
+    stateId,
+  });
 }
 
 function optionStateId({ isWin, isLose, isLead, status }) {
@@ -572,7 +577,7 @@ function BetsGridOptionCard({ option, index, context }) {
     <div
       key={`${index}-${context.status}`}
       className={betsCardClasses({ isWin, isLose, isLead })}
-      {...partAttrs("individualBetCard", stateId)}
+      {...context.partAttrs("individualBetCard", stateId)}
       data-appearance-index={index}
       style={{
         animationDelay: `${index * 0.07}s`,
@@ -582,7 +587,7 @@ function BetsGridOptionCard({ option, index, context }) {
     >
       <div
         className="bets-ov__card-fill"
-        {...partAttrs("progressBar", progressStateId)}
+        {...context.partAttrs("progressBar", progressStateId)}
         style={resolveBetsCardFillStyle({
           displayFillH: displayFillHeight,
           isStyleSeca: context.isStyleSeca,
@@ -600,7 +605,7 @@ function BetsGridOptionCard({ option, index, context }) {
         <div className="bets-ov__card-head">
           <span
             className="bets-ov__card-num"
-            {...partAttrs("cardNumberBadge", stateId)}
+            {...context.partAttrs("cardNumberBadge", stateId)}
             style={optionNumberStyle}
           >
             {index + 1}
@@ -613,7 +618,7 @@ function BetsGridOptionCard({ option, index, context }) {
         </div>
         <span
           className="bets-ov__card-label"
-          {...partAttrs("cardRangeText", stateId)}
+          {...context.partAttrs("cardRangeText", stateId)}
           style={optionLabelStyle}
         >
           {label}
@@ -621,14 +626,14 @@ function BetsGridOptionCard({ option, index, context }) {
         <div className="bets-ov__card-footer">
           <span
             className="bets-ov__card-pct"
-            {...partAttrs("cardPercentageText", stateId)}
+            {...context.partAttrs("cardPercentageText", stateId)}
             style={percentageStyle}
           >
             {pct}%
           </span>
           <span
             className="bets-ov__card-cmd"
-            {...partAttrs("cardLabel", stateId)}
+            {...context.partAttrs("cardLabel", stateId)}
             style={cardLabelStyle}
           >
             {context.cmd} {index + 1}
@@ -651,6 +656,7 @@ function BetsWidget({ config, allWidgets }) {
   const timer = c.timerSeconds || 0;
   const cmd = c.chatCommand || "!bet";
   const layout = c.displayStyle || "v1_list";
+  const scopedPartAttrs = (partId, stateId) => partAttrs(partId, stateId, c);
   const isStyleSeca = layout === "StyleSecaBets";
   const font = resolveBetsFont(c, isStyleSeca);
   const headingFont = c.headingFont || font;
@@ -1154,6 +1160,7 @@ function BetsWidget({ config, allWidgets }) {
     winnerIdx,
     leadingIdx,
     status,
+    partAttrs: scopedPartAttrs,
     getOptColor,
     optionBg,
     optionText,
@@ -1245,18 +1252,18 @@ function BetsWidget({ config, allWidgets }) {
         .filter(Boolean)
         .join(" ")}
       data-widget-type="bets"
-      {...partAttrs("widgetBackground")}
+      {...scopedPartAttrs("widgetBackground")}
       style={{ ...cssVars, ...containerStyle }}
     >
       {/* ── Header ── */}
       <div
         className="bets-ov__header"
-        {...partAttrs("header")}
+        {...scopedPartAttrs("header")}
         style={headerStyle}
       >
         <span
           className="bets-ov__title"
-          {...partAttrs("header")}
+          {...scopedPartAttrs("header")}
           style={pickTextStyle(titleStyle)}
         >
           {title}
@@ -1264,7 +1271,7 @@ function BetsWidget({ config, allWidgets }) {
         {status === "result" && <span className="bets-ov__trophy">🏆</span>}
         <span
           className={`bets-ov__status bets-ov__status--${status}`}
-          {...partAttrs("status", status || "default")}
+          {...scopedPartAttrs("status", status || "default")}
           style={statusStyle}
         >
           {status === "open" && <span className="bets-ov__live-dot" />}
@@ -1276,7 +1283,7 @@ function BetsWidget({ config, allWidgets }) {
       <div className="bets-ov__stats">
         <div
           className="bets-ov__stat"
-          {...partAttrs("poolStat")}
+          {...scopedPartAttrs("poolStat")}
           style={poolStatStyle}
         >
           <span
@@ -1294,7 +1301,7 @@ function BetsWidget({ config, allWidgets }) {
         </div>
         <div
           className="bets-ov__stat bets-ov__stat--center"
-          {...partAttrs("timerStat")}
+          {...scopedPartAttrs("timerStat")}
           style={timerStatStyle}
         >
           <span
@@ -1312,7 +1319,7 @@ function BetsWidget({ config, allWidgets }) {
         </div>
         <div
           className="bets-ov__stat"
-          {...partAttrs("betsStat")}
+          {...scopedPartAttrs("betsStat")}
           style={betsStatStyle}
         >
           <span
@@ -1332,7 +1339,7 @@ function BetsWidget({ config, allWidgets }) {
 
       {/* ── Options ── */}
       {isGrid ? (
-        <div className="bets-ov__grid" {...partAttrs("betCards")}>
+        <div className="bets-ov__grid" {...scopedPartAttrs("betCards")}>
           {visibleOptions.map((opt, i) => (
             <BetsGridOptionCard
               key={`${i}-${status}`}
@@ -1343,7 +1350,7 @@ function BetsWidget({ config, allWidgets }) {
           ))}
         </div>
       ) : (
-        <div className="bets-ov__list" {...partAttrs("betCards")}>
+        <div className="bets-ov__list" {...scopedPartAttrs("betCards")}>
           {options.map((opt, i) => {
             const pct = pcts[i];
             const isWin = winnerIdx === i;
@@ -1454,7 +1461,7 @@ function BetsWidget({ config, allWidgets }) {
               <div
                 key={`${i}-${status}`}
                 className={classes}
-                {...partAttrs("individualBetCard", stateId)}
+                {...scopedPartAttrs("individualBetCard", stateId)}
                 data-appearance-index={i}
                 style={{
                   animationDelay: `${i * 0.05}s`,
@@ -1465,14 +1472,14 @@ function BetsWidget({ config, allWidgets }) {
                 <div className="bets-ov__row-meta">
                   <span
                     className="bets-ov__row-num"
-                    {...partAttrs("cardNumberBadge", stateId)}
+                    {...scopedPartAttrs("cardNumberBadge", stateId)}
                     style={optionNumberStyle}
                   >
                     {i + 1}
                   </span>
                   <span
                     className="bets-ov__row-label"
-                    {...partAttrs("cardRangeText", stateId)}
+                    {...scopedPartAttrs("cardRangeText", stateId)}
                     style={optionLabelStyle}
                   >
                     {isWin ? "👑 " : ""}
@@ -1480,7 +1487,7 @@ function BetsWidget({ config, allWidgets }) {
                   </span>
                   <span
                     className="bets-ov__row-pct"
-                    {...partAttrs("cardPercentageText", stateId)}
+                    {...scopedPartAttrs("cardPercentageText", stateId)}
                     style={percentageStyle}
                   >
                     {pct}%
@@ -1488,7 +1495,7 @@ function BetsWidget({ config, allWidgets }) {
                 </div>
                 <div
                   className="bets-ov__row-bar"
-                  {...partAttrs("progressBar", progressStateId)}
+                  {...scopedPartAttrs("progressBar", progressStateId)}
                   style={progressStyle}
                 >
                   <div
@@ -1510,7 +1517,7 @@ function BetsWidget({ config, allWidgets }) {
       {status === "open" && (
         <div
           className="bets-ov__hint"
-          {...partAttrs("footerInstruction")}
+          {...scopedPartAttrs("footerInstruction")}
           style={footerStyle}
         >
           Type <strong>{cmd} &lt;number&gt;</strong> to bet

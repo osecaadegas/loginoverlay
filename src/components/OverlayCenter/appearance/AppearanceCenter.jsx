@@ -90,6 +90,10 @@ import {
   getSimpleAppearanceV2Settings,
 } from "./v2/appearanceResolver";
 import {
+  createAppearanceRoute,
+  validateAppearanceRoute,
+} from "./v2/appearanceRouting";
+import {
   getWidgetStyleCapability,
   getWidgetStyleElements,
   getWidgetStyleQuickControls,
@@ -2005,12 +2009,29 @@ function updateAppearanceElementControl({
   control,
   elementId,
   isElementLocked,
+  selectedTarget,
   selectedStateId,
   selectedTargetRoot,
+  selectedWidgetType,
   selectedWidgetUsesV2,
   value,
 }) {
   if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+  if (selectedWidgetUsesV2) {
+    const routeValidation = validateAppearanceRoute({
+      widgetType: selectedWidgetType,
+      widgetVariant: selectedTarget?.styleId,
+      elementId,
+      propertyId: control.id,
+    });
+    if (!routeValidation.valid) {
+      console.warn(
+        "[AppearanceCenter] blocked invalid appearance route",
+        routeValidation.errors,
+      );
+      return;
+    }
+  }
   const normalized = validateEditorValue(control, value);
   const isDefaultContainerSize =
     elementId === "container" &&
@@ -2054,11 +2075,28 @@ function resetAppearanceElementControl({
   control,
   elementId,
   isElementLocked,
+  selectedTarget,
   selectedStateId,
   selectedTargetRoot,
+  selectedWidgetType,
   selectedWidgetUsesV2,
 }) {
   if (!selectedTargetRoot || !elementId || isElementLocked(elementId)) return;
+  if (selectedWidgetUsesV2) {
+    const routeValidation = validateAppearanceRoute({
+      widgetType: selectedWidgetType,
+      widgetVariant: selectedTarget?.styleId,
+      elementId,
+      propertyId: control.id,
+    });
+    if (!routeValidation.valid) {
+      console.warn(
+        "[AppearanceCenter] blocked invalid appearance reset route",
+        routeValidation.errors,
+      );
+      return;
+    }
+  }
   const isDefaultContainerSize =
     elementId === "container" &&
     ["width", "height"].includes(control.id) &&
@@ -3965,6 +4003,7 @@ function AppearanceTopbar({
   redoDisabled,
   resetWidget,
   saveStatus,
+  selectedAppearanceId,
   selectedPreviewState,
   selectedWidgetId,
   selectedWidgetName,
@@ -3988,7 +4027,7 @@ function AppearanceTopbar({
         </a>
         <div className="ve-current-widget">
           <span>{selectedWidgetName}</span>
-          <small>{currentWidgetScopeLabel}</small>
+          <small>{selectedAppearanceId || currentWidgetScopeLabel}</small>
         </div>
         <DraftLiveStatus
           dirty={dirty}
@@ -4801,6 +4840,22 @@ export default function AppearanceCenter({
     () => getSelectedElement(selectedElements, selectedElementId),
     [selectedElements, selectedElementId],
   );
+  const selectedAppearanceId = useMemo(() => {
+    if (!selectedWidgetType || !selectedTarget.styleId || !selectedElement?.id)
+      return "";
+    return createAppearanceRoute({
+      widgetId: selectedWidget?.id || null,
+      widgetType: selectedWidgetType,
+      widgetVariant: selectedTarget.styleId,
+      elementId: selectedElement.id,
+      propertyId: "backgroundColor",
+    }).appearanceId;
+  }, [
+    selectedElement?.id,
+    selectedTarget.styleId,
+    selectedWidget?.id,
+    selectedWidgetType,
+  ]);
   const backgroundElements = useMemo(
     () => (selectedWidgetIsBackground ? selectedElements : []),
     [selectedElements, selectedWidgetIsBackground],
@@ -5182,9 +5237,15 @@ export default function AppearanceCenter({
   );
 
   const handlePreviewElementSelect = useCallback(
-    ({ widget, elementId, stateId }) => {
+    ({ widget, elementId, stateId, appearanceId }) => {
       selectWidget(widget, elementId);
       setSelectedStateId(stateId || "default");
+      if (appearanceId) {
+        trackEvent("appearance_element_route_selected", {
+          appearance_id: appearanceId,
+          widget_type: widget?.widget_type || null,
+        });
+      }
     },
     [selectWidget],
   );
@@ -5350,8 +5411,10 @@ export default function AppearanceCenter({
         control,
         elementId,
         isElementLocked,
+        selectedTarget,
         selectedStateId,
         selectedTargetRoot,
+        selectedWidgetType,
         selectedWidgetUsesV2,
         value,
       });
@@ -5359,8 +5422,10 @@ export default function AppearanceCenter({
     [
       commitDraft,
       isElementLocked,
+      selectedTarget,
       selectedStateId,
       selectedTargetRoot,
+      selectedWidgetType,
       selectedWidgetUsesV2,
     ],
   );
@@ -5372,16 +5437,20 @@ export default function AppearanceCenter({
         control,
         elementId,
         isElementLocked,
+        selectedTarget,
         selectedStateId,
         selectedTargetRoot,
+        selectedWidgetType,
         selectedWidgetUsesV2,
       });
     },
     [
       commitDraft,
       isElementLocked,
+      selectedTarget,
       selectedStateId,
       selectedTargetRoot,
+      selectedWidgetType,
       selectedWidgetUsesV2,
     ],
   );
@@ -5786,6 +5855,7 @@ export default function AppearanceCenter({
         redoDisabled={!redoStack.length}
         resetWidget={resetWidget}
         saveStatus={saveStatus}
+        selectedAppearanceId={selectedAppearanceId}
         selectedPreviewState={selectedPreviewState}
         selectedWidgetId={selectedWidget?.id}
         selectedWidgetName={selectedWidgetName}
