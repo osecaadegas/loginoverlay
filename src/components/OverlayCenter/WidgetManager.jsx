@@ -2,7 +2,7 @@
  * WidgetManager.jsx — Widget list + add/remove/configure widgets
  */
 import React, { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
-import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
+import { getWidgetDef, getWidgetStyleDefaultSize, getWidgetsByCategory } from './widgets/widgetRegistry';
 import { swapStyleConfig } from './widgets/shared/perStyleConfig';
 import { getStyleKeysForWidget } from './widgets/styleKeysRegistry';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,20 @@ import buildThemeVars from './themeVarsBuilder';
 import { FONT_OPTIONS } from './appearance/editorSchema';
 import { FontSelectInput } from './appearance/propertyControls';
 import './OverlayRenderer.css';
+
+function buildWidgetStyleUpdate(widget, nextStyleId, currentStyleId) {
+  const def = getWidgetDef(widget.widget_type);
+  const key = def?.styleConfigKey || 'displayStyle';
+  const currentStyle = currentStyleId || widget.config?.[key] || def?.styles?.[0]?.id;
+  const styleKeys = getStyleKeysForWidget(widget.widget_type);
+  const config = styleKeys
+    ? swapStyleConfig(widget.config || {}, currentStyle, nextStyleId, styleKeys, key)
+    : { ...widget.config, [key]: nextStyleId };
+  const defaultSize = getWidgetStyleDefaultSize(widget.widget_type, nextStyleId);
+  return defaultSize
+    ? { ...widget, width: defaultSize.width, height: defaultSize.height, config }
+    : { ...widget, config };
+}
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
@@ -732,13 +746,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     const current = widget.config?.[key] || styles[0].id;
     const idx = styles.findIndex(s => s.id === current);
     const next = styles[(idx + 1) % styles.length];
-    const styleKeys = getStyleKeysForWidget(widget.widget_type);
-    if (styleKeys) {
-      const swapped = swapStyleConfig(widget.config || {}, current, next.id, styleKeys, key);
-      onSave({ ...widget, config: swapped });
-    } else {
-      onSave({ ...widget, config: { ...widget.config, [key]: next.id } });
-    }
+    onSave(buildWidgetStyleUpdate(widget, next.id, current));
   }, [onSave]);
 
   const handlePositionChange = useCallback((widget, field, value) => {
@@ -848,8 +856,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
       }
       case 'resetSize': {
         const def = getWidgetDef(w.widget_type);
-        const dw = def?.defaults?.width || 400;
-        const dh = def?.defaults?.height || 300;
+        const styleKey = def?.styleConfigKey || 'displayStyle';
+        const defaultSize = getWidgetStyleDefaultSize(w.widget_type, w.config?.[styleKey]);
+        const dw = defaultSize?.width || def?.defaults?.width || 400;
+        const dh = defaultSize?.height || def?.defaults?.height || 300;
         onSave({ ...w, width: dw, height: dh });
         setCtxMenu(null);
         break;
@@ -1220,13 +1230,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                               key={s.id}
                               className={`wm-ctx-style-btn ${currentStyle === s.id ? 'wm-ctx-style-btn--active' : ''}`}
                               onClick={() => {
-                                const styleKeys = getStyleKeysForWidget(w.widget_type);
-                                if (styleKeys) {
-                                  const swapped = swapStyleConfig(w.config || {}, currentStyle, s.id, styleKeys, styleKey);
-                                  handleConfigChange(w, swapped);
-                                } else {
-                                  handleConfigChange(w, { ...w.config, [styleKey]: s.id });
-                                }
+                                onSave(buildWidgetStyleUpdate(w, s.id, currentStyle));
                               }}
                             >{s.label}</button>
                           ))}

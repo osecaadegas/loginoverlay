@@ -661,7 +661,7 @@ registerWidget({
     { id: 'v1_list', icon: '📋', label: 'List' },
     { id: 'v2_grid', icon: '⊞',  label: 'Grid' },
     { id: 'v3_grid_2x3', icon: '▦', label: 'Grid 2x3' },
-    { id: 'StyleSecaBets', icon: '✦', label: 'StyleSeca Bets' },
+    { id: 'StyleSecaBets', icon: '✦', label: 'StyleSeca Bets', defaultSize: { width: 400, height: 510 } },
   ],
   styleConfigKey: 'displayStyle',
   appearanceCapabilities: {

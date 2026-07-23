@@ -76,6 +76,19 @@ export function getWidgetDef(type) {
   return _registry.get(type) || null;
 }
 
+export function getWidgetStyleDefaultSize(type, styleId) {
+  const def = getWidgetDef(type);
+  const style = Array.isArray(def?.styles)
+    ? def.styles.find((item) => item.id === styleId)
+    : null;
+  const size = style?.defaultSize || style?.recommendedSize;
+  const width = Number(size?.width);
+  const height = Number(size?.height);
+  if (!Number.isFinite(width) || !Number.isFinite(height)) return null;
+  if (width <= 0 || height <= 0) return null;
+  return { width, height };
+}
+
 export function getAllWidgetDefs() {
   return Array.from(_registry.values());
 }

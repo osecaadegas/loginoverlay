@@ -96,7 +96,7 @@ import {
   getWidgetStyleOptionsForQuickEditor,
   isWidgetAppearanceV2Enabled,
 } from "./v2/widgetAppearanceRegistry";
-import { getWidgetDef } from "../widgets/widgetRegistry";
+import { getWidgetDef, getWidgetStyleDefaultSize } from "../widgets/widgetRegistry";
 import {
   FontSelectInput,
   LayerToggleButton,
@@ -2065,6 +2065,27 @@ export default function AppearanceCenter({
       const optionLabel =
         quickStyleOptions.find((option) => option.id === styleId)?.label ||
         styleId;
+      const defaultSize = getWidgetStyleDefaultSize(
+        selectedWidget.widget_type,
+        styleId,
+      );
+      if (saveWidget) {
+        const def = getWidgetDef(selectedWidget.widget_type);
+        const styleKey = def?.styleConfigKey || "displayStyle";
+        const nextConfig = selectedWidget.config
+          ? { ...selectedWidget.config, [styleKey]: styleId }
+          : { [styleKey]: styleId };
+        const styleWidgetPatch = defaultSize
+          ? {
+              width: defaultSize.width,
+              height: defaultSize.height,
+              config: nextConfig,
+            }
+          : { config: nextConfig };
+        saveWidget({ ...selectedWidget, ...styleWidgetPatch }).catch((err) => {
+          console.error("[AppearanceCenter] style size update failed", err);
+        });
+      }
       commitDraft(
         (prev) =>
           setByPath(
@@ -2075,7 +2096,7 @@ export default function AppearanceCenter({
         `Select ${optionLabel} style`,
       );
     },
-    [commitDraft, quickStyleOptions, selectedWidget],
+    [commitDraft, quickStyleOptions, saveWidget, selectedWidget],
   );
 
   const handlePreviewWidgetSelect = useCallback(

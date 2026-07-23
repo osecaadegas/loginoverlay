@@ -15,8 +15,8 @@ import {
 } from "./shared/styleSecaTheme";
 import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
 
-const STYLE_SECA_BETS_DESIGN_WIDTH = 460;
-const STYLE_SECA_BETS_DESIGN_HEIGHT = 520;
+const STYLE_SECA_BETS_DESIGN_WIDTH = 400;
+const STYLE_SECA_BETS_DESIGN_HEIGHT = 510;
 const STYLE_SECA_BETS_MIN_SCALE = 0.1;
 
 function getGridCols(count, layout) {
