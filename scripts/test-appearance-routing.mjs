@@ -14,6 +14,9 @@ try {
   const scopedMutations = await server.ssrLoadModule(
     "/src/components/OverlayCenter/appearance/appearanceScopedMutations.js",
   );
+  const appearanceStyles = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/widgets/shared/appearanceStyles.js",
+  );
 
   const bonusBackgroundRoute = {
     widgetType: "bonus_hunt",
@@ -242,9 +245,29 @@ try {
   );
   assert.equal(
     rootedAppearance.widgets["widget-1"].styles.v12_classic_sr
-      .__appearanceExplicitSubElements.slotRow.backgroundColor,
+      .__appearanceDocument.elements.slotCard.base.backgroundColor,
     "#abcdef",
-    "Appearance page scoped helper keeps renderer-compatible values at the selected root",
+    "Appearance page scoped helper writes Bonus Hunt V12 values into the canonical document",
+  );
+  assert.equal(
+    rootedAppearance.widgets["widget-1"].styles.v12_classic_sr
+      .__appearanceExplicitSubElements,
+    undefined,
+    "Appearance page scoped helper does not write duplicate explicit sub-elements for Bonus Hunt V12",
+  );
+  assert.equal(
+    appearanceStyles.subValue(
+      {
+        ...rootedAppearance.widgets["widget-1"].styles.v12_classic_sr,
+        __appearanceStyleId: "v12_classic_sr",
+        __appearanceWidgetType: "bonus_hunt",
+      },
+      "slotRow",
+      "backgroundColor",
+      undefined,
+    ),
+    "#abcdef",
+    "Runtime style reads project canonical Bonus Hunt V12 documents without duplicate writes",
   );
   rootedAppearance = scopedMutations.removeScopedConfigValueAtRoot(
     rootedAppearance,

@@ -259,8 +259,18 @@ export default function BonusHuntWidgetV12({ // NOSONAR - legacy V12 renderer sp
     c,
     "__appearanceExplicitSubElements",
   )
-    ? { subElements: c.__appearanceExplicitSubElements || {} }
-    : { subElements: c.subElements || {} };
+    ? {
+        __appearanceDocument: c.__appearanceDocument,
+        __appearanceStyleId: c.displayStyle || "v12_classic_sr",
+        __appearanceWidgetType: "bonus_hunt",
+        subElements: c.__appearanceExplicitSubElements || {},
+      }
+    : {
+        __appearanceDocument: c.__appearanceDocument,
+        __appearanceStyleId: c.displayStyle || "v12_classic_sr",
+        __appearanceWidgetType: "bonus_hunt",
+        subElements: c.subElements || {},
+      };
   const scopedValue = (elementId, property, fallback, stateId = "default") =>
     subValue(explicitAppearanceConfig, elementId, property, fallback, stateId);
   const scopedValueWithLegacy = (

@@ -1,4 +1,5 @@
 import { getAppearanceDomAttributes } from "../../appearance/v2/appearanceRouting";
+import { projectAppearanceDocumentToSubElements } from "../../appearance/appearanceDocument";
 
 const STYLE_KEY_BY_WIDGET_TYPE = Object.freeze({
   bonus_hunt: "displayStyle",
@@ -49,6 +50,16 @@ export function appearanceAttrs({
 
 export function getSubElement(config, elementId) {
   const sourceConfig = config || {};
+  if (sourceConfig.__appearanceDocument && sourceConfig.__appearanceWidgetType) {
+    const projected = projectAppearanceDocumentToSubElements(sourceConfig, {
+      widgetType: sourceConfig.__appearanceWidgetType,
+      widgetVariant: getAppearanceVariant(
+        sourceConfig,
+        sourceConfig.__appearanceWidgetType,
+      ),
+    });
+    if (projected?.[elementId]) return projected[elementId];
+  }
   const subElements = Object.hasOwn(
     sourceConfig,
     "__appearanceExplicitSubElements",
