@@ -1,6 +1,7 @@
-﻿import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { StreamElementsProvider, useStreamElements } from './context/StreamElementsContext';
@@ -395,6 +396,7 @@ function App() {
         </LanguageProvider>
       </StreamElementsProvider>
       <SpeedInsights />
+      <Analytics />
     </AuthProvider>
   );
 }
