@@ -20,6 +20,7 @@ import {
   RotateCcw,
   Settings,
   Sliders,
+  SlidersHorizontal,
   Sparkles,
   Timer,
   Trophy,
