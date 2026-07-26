@@ -429,7 +429,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
       const clearPayload = { spotify_access_token: null, spotify_refresh_token: null, spotify_expires_at: null };
       for (const w of widgets) {
         if (w.widget_type === 'navbar') {
-          await saveWidget({ ...w, config: { ...w.config, ...clearPayload, musicSource: 'manual' } });
+          await saveWidget({ ...w, config: { ...w.config, ...clearPayload, musicSource: 'spotify' } });
         } else if (w.widget_type === 'spotify_now_playing') {
           await saveWidget({ ...w, config: { ...w.config, ...clearPayload } });
         }

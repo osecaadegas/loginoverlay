@@ -222,16 +222,9 @@ function resolveNavbarStyleSecaValue(isStyleSeca, value, fallback) {
 }
 
 function resolveDisplayNowPlaying(config, nowPlaying) {
-  if (config.musicSource === "spotify" && nowPlaying) return nowPlaying;
-  const allowManualFallback =
-    config.musicSource === "manual" || config.musicSource === "spotify";
-  if (!allowManualFallback) return null;
-  if (!config.manualArtist && !config.manualTrack) return null;
-  return {
-    artist: config.manualArtist || "",
-    track: config.manualTrack || "",
-    isPlaying: true,
-  };
+  if (config.showNowPlaying === false || config.musicSource === "disabled") return null;
+  if (!nowPlaying?.track && !nowPlaying?.artist) return null;
+  return nowPlaying;
 }
 
 function resolveNavbarClockBorderColor(displayStyle, accentColor) {
@@ -772,6 +765,10 @@ async function refreshSpotifyToken(userId, tokenRef, expiresRef) {
 
 async function resolveSpotifyNowPlaying(userId, tokenRef, expiresRef) {
   let token = tokenRef.current;
+  if (!token) {
+    const refreshed = await refreshSpotifyToken(userId, tokenRef, expiresRef);
+    if (refreshed) token = tokenRef.current;
+  }
   if (!token) return null;
   if (isSpotifyTokenExpiring(expiresRef.current)) {
     const refreshed = await refreshSpotifyToken(userId, tokenRef, expiresRef);
@@ -911,10 +908,9 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   }, [cryptoMode, activeCoins.length]);
 
   // Spotify "Now Playing" polling
-  // Poll whenever musicSource is spotify and we have tokens — showNowPlaying only gates the UI display
+  // Poll whenever now-playing is visible; OBS-safe widget configs do not carry tokens.
   useEffect(() => {
-    if (c.musicSource !== "spotify") return;
-    if (!spotifyTokenRef.current) return;
+    if (c.showNowPlaying === false || c.musicSource === "disabled") return;
 
     let stopped = false;
     const poll = async () => {
@@ -924,7 +920,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         spotifyTokenRef,
         spotifyExpiresRef,
       );
-      if (!stopped && nextNowPlaying) setNowPlaying(nextNowPlaying);
+      if (!stopped) setNowPlaying(nextNowPlaying || null);
     };
 
     poll();
@@ -933,9 +929,9 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       stopped = true;
       clearInterval(id);
     };
-  }, [c.musicSource, c.spotify_access_token, widgetId, userId]);
+  }, [c.musicSource, c.showNowPlaying, c.spotify_access_token, widgetId, userId]);
 
-  // Manual "Now Playing"
+  // Live Spotify now-playing.
   const displayNowPlaying = resolveDisplayNowPlaying(c, nowPlaying);
 
   /* ─── Style vars from config ─── */
@@ -1752,8 +1748,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     const packageRadius = Number(c.radius ?? c.borderRadius ?? 12) || 12;
     const packageMaxWidth = Number(c.maxWidth) || 1152;
     const brandName = String(
-      c.brandName ||
-        c.streamerName ||
+      c.streamerName ||
+        c.brandName ||
         c.twitchUsername ||
         "STREAMER",
     ).toUpperCase();
@@ -1772,6 +1768,15 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       (brandWords.length > 1
         ? brandWords.slice(1).join(" ")
         : brandName.slice(Math.max(1, Math.ceil(brandName.length / 2))));
+    const brandInitials =
+      brandWords
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join("") || brandName.slice(0, 2);
+    const packageAvatarSize =
+      avatarImageSize ||
+      packageHeight * 0.66 * ((Number(c.avatarSize) || 100) / 100);
+    const showPackageAvatar = c.showAvatar !== false;
     const siteText =
       c.siteUrl ||
       c.motto ||
@@ -1788,21 +1793,31 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       c.casinoCommand ||
       (c.casinoName ? c.casinoName : "");
     const showCasino = Boolean(
-      c.casinoCommand || (c.showCasino && (casinoCommand || casinoLogoUrl)),
+      c.showCasino !== false && (casinoCommand || casinoLogoUrl),
     );
-    const staticNowPlaying = c.nowPlaying
-      ? { track: c.nowPlaying, artist: "", isPlaying: false }
+    const wantsBetterMusic = c.showNowPlaying !== false && c.musicSource !== "disabled";
+    const fallbackNowPlaying = wantsBetterMusic
+      ? {
+          track: c.spotify_access_token || userId
+            ? "No Spotify track playing"
+            : "Connect Spotify in Profile",
+          artist: "",
+          isPlaying: false,
+        }
       : null;
-    const betterNowPlaying = displayNowPlaying || staticNowPlaying;
-    const showBetterMusic = Boolean(
-      c.nowPlaying || (c.showNowPlaying !== false && betterNowPlaying),
+    const betterNowPlaying = displayNowPlaying || fallbackNowPlaying;
+    const showBetterMusic = Boolean(wantsBetterMusic);
+    const betterMusicDisplayStyle = subValue(
+      c,
+      "music",
+      "musicDisplayStyle",
+      c.musicDisplayStyle || "pill",
     );
-    const nowPlayingText = betterNowPlaying
-      ? [betterNowPlaying.track, betterNowPlaying.artist]
-          .filter(Boolean)
-          .join(" - ")
-      : "";
-    const musicLabel = c.nowPlayingLabel || "Now Playing";
+    const showPackageClock = c.showClock !== false;
+    const showPackageCrypto = Boolean(c.showCrypto && activeCoins.length);
+    const showPackageCta = Boolean(c.showCTA && c.ctaText);
+    const showPackageRightRail =
+      showBetterMusic || showPackageCrypto || showPackageCta;
     const renderPackageDivider = (push = false) => (
       <div
         {...partAttrs("separator")}
@@ -1821,38 +1836,6 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
       </svg>
     );
-    const renderMusicIcon = () => {
-      if (betterNowPlaying?.albumArt) {
-        return (
-          <img
-            src={betterNowPlaying.albumArt}
-            alt=""
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 5,
-              objectFit: "cover",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.45)",
-              flexShrink: 0,
-            }}
-          />
-        );
-      }
-      if (c.musicSource === "spotify") {
-        return (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="#1ed760" aria-hidden="true" style={{ flexShrink: 0 }}>
-            <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.59 14.42a.62.62 0 0 1-.86.2c-2.36-1.44-5.33-1.77-8.84-.97a.63.63 0 0 1-.28-1.22c3.84-.88 7.13-.5 9.78 1.12.3.18.39.57.2.87Zm1.23-2.75a.78.78 0 0 1-1.08.25c-2.7-1.66-6.82-2.14-10.02-1.17a.78.78 0 0 1-.45-1.5c3.66-1.11 8.2-.58 11.3 1.32.37.23.48.72.25 1.1Zm.11-2.86C14.7 8.89 9.37 8.71 6.28 9.65a.94.94 0 0 1-.55-1.79c3.55-1.08 9.43-.86 13.16 1.35a.94.94 0 1 1-.96 1.6Z" />
-          </svg>
-        );
-      }
-      return (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill={packageGold} aria-hidden="true" style={{ flexShrink: 0 }}>
-          <path d="M9 18V5l12-2v13" fill="none" stroke={packageGold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="6" cy="18" r="3" />
-          <circle cx="18" cy="16" r="3" />
-        </svg>
-      );
-    };
     const renderOrangeArc = () => (
       <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" style={{ transform: "rotate(-45deg)", flexShrink: 0 }}>
         <circle
@@ -1880,7 +1863,12 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       >
         <style>{`
           @keyframes better-nav-package-sheen{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
-          @keyframes better-nav-spotify-eq{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+          @keyframes spotifyPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
+          @keyframes spotifyEq{0%{height:4px}100%{height:16px}}
+          @keyframes nbVinylSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+          @keyframes nbWaveBar{0%{height:5px}100%{height:25px}}
+          @keyframes nbMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+          @keyframes nbTextScroll{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(calc(-50% - 24px))}}
         `}</style>
         <div
           aria-hidden="true"
@@ -1964,6 +1952,47 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               flexShrink: 1,
             })}
           >
+            {showPackageAvatar && (
+              <div
+                {...partAttrs("avatar")}
+                style={withElementOffset(c, "avatar", {
+                  width: packageAvatarSize,
+                  height: packageAvatarSize,
+                  flex: "0 0 auto",
+                  display: "grid",
+                  placeItems: "center",
+                  overflow: "hidden",
+                  borderRadius: avatarRadius,
+                  border: avatarBorderWidth
+                    ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
+                    : `1px solid ${alphaColor(packageBlue, 0.38)}`,
+                  background: `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
+                  color: textColor,
+                  fontSize: Math.max(10, fontSize * 0.68),
+                  fontWeight: 950,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  boxShadow: `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
+                })}
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    {...partAttrs("avatar")}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: avatarFit,
+                      borderRadius: avatarRadius,
+                      display: "block",
+                    }}
+                  />
+                ) : (
+                  brandInitials
+                )}
+              </div>
+            )}
             <div
               style={{
                 display: "flex",
@@ -2028,6 +2057,23 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               )}
             </div>
           </div>
+
+          {showPackageClock && renderPackageDivider()}
+          {showPackageClock && (
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                padding: "0 18px",
+                position: "relative",
+                zIndex: 1,
+                flexShrink: 0,
+              }}
+            >
+              {renderClockSection()}
+            </div>
+          )}
 
           {(showStart || showCasino) && renderPackageDivider()}
           {(showStart || showCasino) && (
@@ -2123,102 +2169,78 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
             </div>
           )}
 
-          {showBetterMusic && renderPackageDivider(true)}
-          {showBetterMusic && (
+          {showPackageRightRail && renderPackageDivider(true)}
+          {showPackageRightRail && (
             <div
-              {...partAttrs("music")}
-              style={withElementOffset(c, "music", {
+              style={{
                 display: "flex",
                 alignItems: "center",
-                paddingLeft: 20,
                 paddingRight: 12,
+                gap: 10,
                 height: "100%",
                 minWidth: 0,
                 position: "relative",
                 zIndex: 1,
                 flexShrink: 1,
-              })}
+              }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  minWidth: 0,
-                  maxWidth: "min(38vw, 420px)",
-                  border: `1px solid ${alphaColor(packageBlue, 0.32)}`,
-                  borderRadius: 8,
-                  background: "rgba(12,27,59,0.6)",
-                  boxShadow: `inset 0 0 10px ${alphaColor(packageBlue, 0.1)}`,
-                  padding: "6px 14px",
-                }}
-              >
-                {renderMusicIcon()}
-                {c.musicSource === "spotify" && betterNowPlaying?.isPlaying && (
-                  <span
-                    aria-hidden="true"
+              {showBetterMusic && (
+                <div
+                  {...partAttrs("music")}
+                  style={withElementOffset(c, "music", {
+                    display: "flex",
+                    alignItems: "center",
+                    minWidth: 0,
+                    flex: "1 1 360px",
+                    maxWidth: "min(46vw, 540px)",
+                    flexShrink: 1,
+                  })}
+                >
+                  <div
                     style={{
-                      display: "inline-flex",
-                      alignItems: "flex-end",
-                      gap: 2,
-                      width: 15,
-                      height: 12,
-                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      minWidth: 0,
+                      width: "100%",
+                      maxWidth: "100%",
+                      minHeight: Math.max(28, packageHeight * 0.56),
+                      boxSizing: "border-box",
+                      overflow: "hidden",
+                      border: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
+                        ? "0"
+                        : `1px solid ${alphaColor(packageBlue, 0.32)}`,
+                      borderRadius: 8,
+                      background: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
+                        ? "transparent"
+                        : "rgba(12,27,59,0.6)",
+                      boxShadow: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
+                        ? "none"
+                        : `inset 0 0 10px ${alphaColor(packageBlue, 0.1)}`,
+                      padding: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
+                        ? "0 4px"
+                        : "4px 10px",
                     }}
                   >
-                    {[0, 1, 2].map((item) => (
-                      <i
-                        key={item}
-                        style={{
-                          width: 3,
-                          height: "100%",
-                          borderRadius: 99,
-                          background: "#1ed760",
-                          transformOrigin: "bottom",
-                          animation: `better-nav-spotify-eq ${0.35 + item * 0.1}s ease-in-out infinite alternate`,
-                        }}
-                      />
-                    ))}
-                  </span>
-                )}
-                <span
-                  style={{
-                    color: alphaColor(mutedColor, 0.75),
-                    fontSize: 10,
-                    fontWeight: 850,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {musicLabel}
-                </span>
-                <span
-                  aria-hidden="true"
-                  style={{
-                    color: alphaColor(packageBlue, 0.55),
-                    fontSize: 12,
-                    fontWeight: 900,
-                    flexShrink: 0,
-                  }}
-                >
-                  -
-                </span>
-                <span
-                  style={{
-                    minWidth: 0,
-                    overflow: "hidden",
-                    color: textColor,
-                    fontSize: 11,
-                    fontWeight: 850,
-                    letterSpacing: "0.02em",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {nowPlayingText}
-                </span>
-              </div>
+                    <NowPlayingDisplay
+                      data={betterNowPlaying}
+                      musicDisplayStyle={betterMusicDisplayStyle}
+                      textColor={textColor}
+                      mutedColor={mutedColor}
+                      accentColor={packageGold}
+                      fontSize={Math.max(10, musicFontSize || 11)}
+                      fontFamily={musicFontFamily || containerFontFamily}
+                      fontWeight={musicFontWeight || 850}
+                      isMetal={false}
+                      barHeight={packageHeight}
+                      compact
+                    />
+                  </div>
+                </div>
+              )}
+
+              {showPackageCrypto && renderCryptoSection()}
+              {showPackageCta && renderCtaSection()}
             </div>
           )}
 
@@ -2237,6 +2259,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       </div>
     );
   }
+
 
   return (
     <div
@@ -2567,6 +2590,309 @@ function ScrollText({ text, style }) {
 /* ═══════════════════════════════════════════════════════
    Now Playing — multiple display styles for navbar
    ═══════════════════════════════════════════════════════════ */
+function NowPlayingSpotifyMark({ accentColor, size = 15 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={accentColor}
+      aria-hidden="true"
+      style={{ flexShrink: 0 }}
+    >
+      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.59 14.42a.62.62 0 0 1-.86.2c-2.36-1.44-5.33-1.77-8.84-.97a.63.63 0 0 1-.28-1.22c3.84-.88 7.13-.5 9.78 1.12.3.18.39.57.2.87Zm1.23-2.75a.78.78 0 0 1-1.08.25c-2.7-1.66-6.82-2.14-10.02-1.17a.78.78 0 0 1-.45-1.5c3.66-1.11 8.2-.58 11.3 1.32.37.23.48.72.25 1.1Zm.11-2.86C14.7 8.89 9.37 8.71 6.28 9.65a.94.94 0 0 1-.55-1.79c3.55-1.08 9.43-.86 13.16 1.35a.94.94 0 1 1-.96 1.6Z" />
+    </svg>
+  );
+}
+
+function NowPlayingCompact({
+  data,
+  musicDisplayStyle,
+  fontSize,
+  textColor,
+  mutedColor,
+  accentColor,
+  fontFamily,
+  fontWeight,
+  barHeight,
+}) {
+  const baseFont = Math.max(9, Math.min(13, Number(fontSize) || 11));
+  const height = Math.max(28, Number(barHeight) || 44);
+  const artSize = Math.max(22, Math.min(30, height * 0.56));
+  const track = data?.track || "No Spotify track playing";
+  const artist = data?.artist || "";
+  const combinedText = artist ? `${track} - ${artist}` : track;
+  const isPlaying = data?.isPlaying !== false;
+  const statusColor = isPlaying ? accentColor : mutedColor;
+  const shellStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    width: "100%",
+    maxWidth: "100%",
+    minWidth: 0,
+    overflow: "hidden",
+    fontFamily,
+    lineHeight: 1.05,
+  };
+  const renderLines = (artistColor = mutedColor) => (
+    <div
+      style={{
+        display: "flex",
+        flex: "1 1 auto",
+        flexDirection: "column",
+        justifyContent: "center",
+        minWidth: 0,
+        overflow: "hidden",
+      }}
+    >
+      <ScrollText
+        text={track}
+        style={{
+          color: textColor,
+          fontSize: baseFont,
+          fontWeight,
+          lineHeight: 1.05,
+          textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+        }}
+      />
+      {artist ? (
+        <ScrollText
+          text={artist}
+          style={{
+            color: artistColor,
+            fontSize: Math.max(8, baseFont * 0.82),
+            fontWeight: Math.max(600, Number(fontWeight) - 120 || 700),
+            lineHeight: 1.1,
+            marginTop: 1,
+            textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+          }}
+        />
+      ) : null}
+    </div>
+  );
+  const renderAlbumArt = (shape = "rounded") => {
+    const radius = shape === "circle" ? "50%" : 6;
+    if (data?.albumArt) {
+      return (
+        <img
+          src={data.albumArt}
+          alt=""
+          style={{
+            width: artSize,
+            height: artSize,
+            borderRadius: radius,
+            objectFit: "cover",
+            flexShrink: 0,
+            boxShadow: `0 0 10px ${accentColor}33`,
+          }}
+        />
+      );
+    }
+    return (
+      <div
+        style={{
+          width: artSize,
+          height: artSize,
+          borderRadius: radius,
+          display: "grid",
+          placeItems: "center",
+          flexShrink: 0,
+          background: `${accentColor}22`,
+          border: `1px solid ${accentColor}44`,
+        }}
+      >
+        <NowPlayingSpotifyMark accentColor={accentColor} size={Math.max(13, artSize * 0.54)} />
+      </div>
+    );
+  };
+  const renderBars = (count, wave = false) => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: wave ? "center" : "flex-end",
+        gap: 2,
+        height: wave ? 22 : 17,
+        flexShrink: 0,
+      }}
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <span
+          key={i}
+          style={{
+            width: wave ? 2 : 3,
+            height: isPlaying ? undefined : 4,
+            borderRadius: 2,
+            background: wave
+              ? accentColor
+              : `linear-gradient(to top, ${accentColor}, ${accentColor}66)`,
+            opacity: wave ? 0.5 + (i % 3) * 0.18 : 1,
+            animation: isPlaying
+              ? `${wave ? "nbWaveBar" : "spotifyEq"} ${0.34 + i * 0.08}s ease-in-out ${i * 0.04}s infinite alternate`
+              : "none",
+          }}
+        />
+      ))}
+    </div>
+  );
+
+  if (musicDisplayStyle === "marquee") {
+    const ticker = `${combinedText}     `;
+    return (
+      <div style={{ ...shellStyle, gap: 7 }}>
+        <span
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: "50%",
+            background: statusColor,
+            boxShadow: isPlaying ? `0 0 8px ${accentColor}` : "none",
+            animation: isPlaying ? "spotifyPulse 1.5s ease-in-out infinite" : "none",
+            flexShrink: 0,
+          }}
+        />
+        <div style={{ minWidth: 0, flex: 1, overflow: "hidden", whiteSpace: "nowrap" }}>
+          <span
+            style={{
+              display: "inline-block",
+              color: textColor,
+              fontSize: baseFont,
+              fontWeight,
+              textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+              animation: isPlaying ? "nbMarquee 13s linear infinite" : "none",
+              paddingRight: 48,
+            }}
+          >
+            {ticker}
+            {ticker}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (musicDisplayStyle === "minimal") {
+    return (
+      <div style={{ ...shellStyle, gap: 7 }}>
+        <NowPlayingSpotifyMark accentColor={accentColor} size={15} />
+        <ScrollText
+          text={combinedText}
+          style={{
+            color: textColor,
+            fontSize: baseFont,
+            fontWeight,
+            flex: 1,
+            minWidth: 0,
+            lineHeight: 1.05,
+            textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (musicDisplayStyle === "equalizer") {
+    return (
+      <div style={shellStyle}>
+        {renderBars(5)}
+        {renderLines(accentColor)}
+      </div>
+    );
+  }
+
+  if (musicDisplayStyle === "wave") {
+    return (
+      <div style={shellStyle}>
+        {renderBars(7, true)}
+        {renderLines(mutedColor)}
+      </div>
+    );
+  }
+
+  if (musicDisplayStyle === "vinyl") {
+    return (
+      <div style={shellStyle}>
+        <div
+          style={{
+            width: artSize,
+            height: artSize,
+            borderRadius: "50%",
+            flexShrink: 0,
+            background: data?.albumArt
+              ? `url(${data.albumArt}) center/cover`
+              : `radial-gradient(circle at 50% 50%, ${accentColor}44 0%, #111 40%, #222 65%, ${accentColor}22 100%)`,
+            border: `1px solid ${accentColor}66`,
+            boxShadow: `0 0 9px ${accentColor}33`,
+            animation: isPlaying ? "nbVinylSpin 3s linear infinite" : "none",
+            position: "relative",
+          }}
+        >
+          <span
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: Math.max(5, artSize * 0.2),
+              height: Math.max(5, artSize * 0.2),
+              transform: "translate(-50%, -50%)",
+              borderRadius: "50%",
+              background: "#111",
+              border: `1px solid ${accentColor}66`,
+            }}
+          />
+        </div>
+        {renderLines(mutedColor)}
+      </div>
+    );
+  }
+
+  if (musicDisplayStyle === "albumart") {
+    return (
+      <div style={shellStyle}>
+        {renderAlbumArt("rounded")}
+        {renderLines(mutedColor)}
+        <span
+          style={{
+            color: statusColor,
+            fontSize: Math.max(8, baseFont * 0.72),
+            fontWeight: 900,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            flexShrink: 0,
+          }}
+        >
+          {isPlaying ? "Live" : "Idle"}
+        </span>
+      </div>
+    );
+  }
+
+  if (musicDisplayStyle === "pill") {
+    return (
+      <div style={shellStyle}>
+        {renderAlbumArt("circle")}
+        {renderLines(mutedColor)}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ ...shellStyle, gap: 7 }}>
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: statusColor,
+          boxShadow: isPlaying ? `0 0 8px ${accentColor}` : "none",
+          flexShrink: 0,
+        }}
+      />
+      {renderLines(mutedColor)}
+    </div>
+  );
+}
+
 function NowPlayingDisplay({
   data,
   musicDisplayStyle,
@@ -2578,9 +2904,21 @@ function NowPlayingDisplay({
   fontWeight,
   isMetal,
   barHeight,
+  compact = false,
 }) {
   const typography = { fontFamily, fontWeight };
-  const content = (() => {
+  const content = compact ? (
+    <NowPlayingCompact
+      data={data}
+      musicDisplayStyle={musicDisplayStyle}
+      fontSize={fontSize}
+      textColor={textColor}
+      mutedColor={mutedColor}
+      accentColor={accentColor}
+      barHeight={barHeight}
+      {...typography}
+    />
+  ) : (() => {
     switch (musicDisplayStyle) {
       case "pill":
         return (

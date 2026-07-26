@@ -30,6 +30,7 @@ import {
   Waves,
   Zap,
 } from "lucide-react";
+import NavbarWidget from "../widgets/NavbarWidget";
 import { BetterBonusHuntStyle } from "../widgets/shared/betterWidgetStyles";
 import "./BetterWidgetPackages.css";
 
@@ -146,6 +147,10 @@ const CHAT_PRESETS = [
   { name: "Pulse", glow: "#b44bff", username: "#ffd166", text: "#f6efff", bubble: "#1d0a36", panel: "#0d0519" },
   { name: "Ice", glow: "#9fd8ff", username: "#ffffff", text: "#dceeff", bubble: "#0b1a2b", panel: "#050c15" },
 ];
+
+const BETTER_CHAT_DEFAULT_SIZE = { width: 260, height: 520 };
+const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
+const BETTER_NAVBAR_SPOTIFY_ONLY_MARKER = "betterNavbarSpotifyOnlyInitialized";
 
 const GIVEAWAY_PRESETS = [
   { id: "cyber-blue", name: "Cyber Blue", swatch: "linear-gradient(135deg,#087eff,#43d3ff)", patch: { hue: 210, hueShift: 24, saturation: 82, accentSat: 96, accentLight: 56 } },
@@ -308,23 +313,49 @@ const DEFAULT_BETTER_CONFIG = {
   },
   navbar: {
     displayStyle: "better_navbar",
-    brandName: "BRUTUSPOLUS",
-    brandTop: "Brutus",
-    brandBottom: "Polus",
-    siteUrl: "www.brutuspolus.com",
+    streamerName: "BRUTUSPOLUS",
+    twitchUsername: "",
+    avatarUrl: "",
+    motto: "www.brutuspolus.com",
+    brandName: "",
+    brandTop: "",
+    brandBottom: "",
+    siteUrl: "",
+    showAvatar: true,
+    showClock: true,
+    showNowPlaying: true,
+    showCTA: true,
+    showCasino: true,
+    showStartBalance: true,
+    showCrypto: false,
+    ctaText: "Be Gamble Aware!",
+    ctaColor: "#f97316",
     startLabel: "Start",
-    startValue: "EUR 2000",
+    startValue: "",
+    startBalance: 2000,
+    balanceCurrency: "EUR ",
+    casinoName: "Casino",
     casinoCommand: "!Casino",
+    casinoLogoUrl: "",
     nowPlayingLabel: "Now Playing",
-    nowPlaying: "Fa Fa Fa - (Album Version) - Datarock",
+    musicSource: "spotify",
+    musicDisplayStyle: "text",
+    accentColor: "#f97316",
     accentBlue: "#2563eb",
     accentGold: "#f97316",
+    bgColor: "#060d20",
+    textColor: "#f8fafc",
+    mutedColor: "#93c5fd",
     barHeight: 52,
+    borderWidth: 1,
+    borderRadius: 12,
     radius: 12,
     maxWidth: 1152,
   },
   chat: {
     chatStyle: "better_chat",
+    width: BETTER_CHAT_DEFAULT_SIZE.width,
+    height: BETTER_CHAT_DEFAULT_SIZE.height,
     font: "Arial, Helvetica, sans-serif",
     fontSize: 12,
     usernameSize: 12,
@@ -343,6 +374,7 @@ const DEFAULT_BETTER_CONFIG = {
     bg: "solid",
     texture: "none",
     textureStrength: 30,
+    emptyMessage: BETTER_CHAT_EMPTY_MESSAGE,
   },
   rtp_stats: {
     displayStyle: "better_rtp",
@@ -449,14 +481,63 @@ export function getBetterWidgetMeta(type) {
   return BETTER_WIDGETS.find((item) => item.type === type) || null;
 }
 
+function normalizeBetterNavbarConfig(config = {}, merged = {}) {
+  const defaults = DEFAULT_BETTER_CONFIG.navbar;
+  const next = {
+    ...merged,
+    betterNavbarFeaturesInitialized: true,
+    [BETTER_NAVBAR_SPOTIFY_ONLY_MARKER]: true,
+  };
+
+  if (
+    config.betterNavbarFeaturesInitialized !== true ||
+    config[BETTER_NAVBAR_SPOTIFY_ONLY_MARKER] !== true
+  ) {
+    Object.assign(next, {
+      showAvatar: true,
+      showClock: true,
+      showNowPlaying: true,
+      showCTA: true,
+      showCasino: true,
+      showStartBalance: true,
+    });
+  }
+
+  Object.assign(next, {
+    musicSource: "spotify",
+  });
+
+  delete next.nowPlaying;
+  delete next.manualArtist;
+  delete next.manualTrack;
+  delete next.manualAlbum;
+  delete next.manualCoverUrl;
+  delete next.manualAlbumArt;
+  delete next.manualMusicLink;
+  delete next.musicFallbackMessage;
+
+  if (!next.streamerName && !next.brandName) next.streamerName = defaults.streamerName;
+  if (!next.ctaText) next.ctaText = defaults.ctaText;
+  if (!next.casinoName && !next.casinoCommand && !next.casinoLogoUrl) {
+    next.casinoName = defaults.casinoName;
+    next.casinoCommand = defaults.casinoCommand;
+  }
+  if (next.startBalance === undefined || next.startBalance === null || next.startBalance === "") {
+    next.startBalance = defaults.startBalance;
+  }
+  if (!next.balanceCurrency) next.balanceCurrency = defaults.balanceCurrency;
+  return next;
+}
 export function ensureBetterWidgetConfig(type, config = {}) {
   const meta = getBetterWidgetMeta(type);
   const defaults = DEFAULT_BETTER_CONFIG[type] || {};
-  return {
+  const merged = {
     ...defaults,
     ...config,
     ...(meta ? { [meta.styleKey]: meta.styleId } : {}),
   };
+  if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
+  return merged;
 }
 
 export function buildBetterWidgetUpdate(widget) {
@@ -503,6 +584,12 @@ function betLabel(option, index) {
 
 function useTab(defaultTab) {
   return useState(defaultTab);
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(Math.max(number, min), max);
 }
 
 function Section({ title, icon, children, defaultOpen = true }) {
@@ -756,17 +843,19 @@ function BetterBetsPreview({ config }) {
   );
 }
 
-function BetterChatPreview({ config }) {
+function BetterChatPreview({ config, widget }) {
   const c = ensureBetterWidgetConfig("chat", config);
   const messages = Array.isArray(c.previewMessages) ? c.previewMessages : [];
   const visibleMessages = messages.slice(0, c.maxMessages || 4);
+  const width = clampNumber(c.width ?? widget?.width, 150, 900, BETTER_CHAT_DEFAULT_SIZE.width);
+  const height = clampNumber(c.height ?? widget?.height, 150, 900, BETTER_CHAT_DEFAULT_SIZE.height);
   return (
     <div className="bp-chat-stage">
       <section
         className={`chat-widget wb-${c.bg}`}
         style={{
-          width: Number(c.width) || 218,
-          height: Number(c.height) || 457,
+          width,
+          height,
           "--glow": c.glow,
           "--panel": c.panel,
           "--bubble": c.bubble,
@@ -790,10 +879,9 @@ function BetterChatPreview({ config }) {
               </article>
             ))
           ) : (
-            <div className="chat-empty-state">Waiting for live chat messages</div>
+            <div className="chat-empty-state">{c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}</div>
           )}
         </div>
-        <button className="replay-button" type="button" aria-label="Replay"><RotateCcw size={13} /></button>
       </section>
     </div>
   );
@@ -807,30 +895,11 @@ function OrangeArc() {
   );
 }
 
-function BetterNavbarPreview({ config }) {
+function BetterNavbarPreview({ config, allWidgets, userId }) {
   const c = ensureBetterWidgetConfig("navbar", config);
   return (
-    <div className="bp-navbar-stage">
-      <div className="bp-navbar" style={{ "--bp-blue": c.accentBlue, "--bp-gold": c.accentGold, height: Number(c.barHeight) || 52, borderRadius: Number(c.radius) || 12, maxWidth: Number(c.maxWidth) || 1152 }}>
-        <div className="bp-navbar-glow" />
-        <div className="bp-navbar-brand">
-          <div className="bp-brand-stack"><span>{c.brandTop}</span><span>{c.brandBottom}</span></div>
-          <OrangeArc />
-          <div className="bp-brand-title"><strong>{c.brandName}</strong><span>{c.siteUrl}</span></div>
-        </div>
-        <div className="bp-nav-divider" />
-        <div className="bp-nav-stats">
-          <span><Zap size={13} fill="currentColor" /> <em>{c.startLabel}</em> <strong>{c.startValue}</strong></span>
-          <span><Zap size={13} fill="currentColor" /> <strong>{c.casinoCommand}</strong></span>
-        </div>
-        <div className="bp-nav-divider bp-nav-divider--push" />
-        <div className="bp-now-playing">
-          <Music size={13} fill="currentColor" />
-          <em>{c.nowPlayingLabel}</em>
-          <span>-</span>
-          <strong>{c.nowPlaying}</strong>
-        </div>
-      </div>
+    <div className="bp-navbar-stage bp-navbar-stage--renderer">
+      <NavbarWidget config={c} userId={userId} allWidgets={allWidgets} />
     </div>
   );
 }
@@ -961,14 +1030,20 @@ function BetterBonusHuntPreview({ config }) {
   );
 }
 
-export function BetterWidgetPreview({ type, config }) {
+export function BetterWidgetPreview({ type, config, allWidgets, userId, widget }) {
   switch (type) {
     case "bets":
       return <BetterBetsPreview config={config} />;
     case "chat":
-      return <BetterChatPreview config={config} />;
+      return <BetterChatPreview config={config} widget={widget} />;
     case "navbar":
-      return <BetterNavbarPreview config={config} />;
+      return (
+        <BetterNavbarPreview
+          config={config}
+          allWidgets={allWidgets}
+          userId={userId}
+        />
+      );
     case "rtp_stats":
       return <BetterRtpPreview config={config} />;
     case "background":
@@ -980,6 +1055,327 @@ export function BetterWidgetPreview({ type, config }) {
     default:
       return null;
   }
+}
+
+const NAVBAR_MUSIC_DISPLAY_OPTIONS = [
+  { key: "text", name: "Text" },
+  { key: "pill", name: "Pill" },
+  { key: "marquee", name: "Marquee" },
+  { key: "albumart", name: "Album art" },
+  { key: "equalizer", name: "Equalizer" },
+  { key: "vinyl", name: "Vinyl" },
+  { key: "minimal", name: "Minimal" },
+  { key: "wave", name: "Wave" },
+];
+
+const NAVBAR_CURRENCY_OPTIONS = [
+  { value: "EUR ", label: "EUR" },
+  { value: "$", label: "USD" },
+  { value: "GBP ", label: "GBP" },
+  { value: "PLN ", label: "PLN" },
+];
+
+function getTwitchIdentity(user) {
+  const isTwitch = user?.app_metadata?.provider === "twitch";
+  const username =
+    user?.user_metadata?.preferred_username ||
+    user?.user_metadata?.user_name ||
+    "";
+  const displayName = user?.user_metadata?.full_name || username;
+  const avatarUrl = user?.user_metadata?.avatar_url || "";
+  return { isTwitch, username, displayName, avatarUrl };
+}
+
+function BetterNavbarControls({ config, onChange, user }) {
+  const c = ensureBetterWidgetConfig("navbar", config);
+  const set = (patch) => onChange({ ...c, ...patch });
+  const [tab, setTab] = useTab("identity");
+  const tabs = [
+    ["identity", <Users size={12} />, "Identity"],
+    ["sections", <Layers size={12} />, "Sections"],
+    ["music", <Music size={12} />, "Music"],
+    ["casino", <Coins size={12} />, "Casino"],
+    ["cta", <Zap size={12} />, "CTA"],
+    ["style", <Palette size={12} />, "Style"],
+  ];
+  const current = tabs.some(([key]) => key === tab) ? tab : "identity";
+  const twitch = getTwitchIdentity(user);
+
+  const syncFromTwitch = () => {
+    if (!twitch.displayName && !twitch.avatarUrl) return;
+    set({
+      streamerName: twitch.displayName || c.streamerName,
+      twitchUsername: twitch.username || c.twitchUsername,
+      avatarUrl: twitch.avatarUrl || c.avatarUrl,
+    });
+  };
+
+  return (
+    <div className="bp-controls bp-controls--navbar">
+      <PanelTabs active={current} onChange={setTab} tabs={tabs} />
+
+      {current === "identity" && (
+        <>
+          <Section title="Streamer" icon={<Users size={13} />}>
+            {twitch.displayName || twitch.avatarUrl ? (
+              <div className="bp-preset-row">
+                <button type="button" onClick={syncFromTwitch}>
+                  Sync Twitch profile
+                </button>
+              </div>
+            ) : null}
+            <TextRow
+              label="Streamer name"
+              value={c.streamerName || ""}
+              onChange={(streamerName) => set({ streamerName })}
+            />
+            <TextRow
+              label="Motto"
+              value={c.motto || ""}
+              onChange={(motto) => set({ motto })}
+            />
+            <ToggleRow
+              label="Show streamer avatar"
+              checked={c.showAvatar !== false}
+              onChange={(showAvatar) => set({ showAvatar })}
+            />
+            <TextRow
+              label="Avatar image URL"
+              value={c.avatarUrl || ""}
+              onChange={(avatarUrl) => set({ avatarUrl })}
+            />
+          </Section>
+
+          <Section title="Better brand block" icon={<Type size={13} />}>
+            <TextRow
+              label="Fallback brand title"
+              value={c.brandName || ""}
+              onChange={(brandName) => set({ brandName })}
+            />
+            <TextRow
+              label="Top stack text"
+              value={c.brandTop || ""}
+              onChange={(brandTop) => set({ brandTop })}
+            />
+            <TextRow
+              label="Bottom stack text"
+              value={c.brandBottom || ""}
+              onChange={(brandBottom) => set({ brandBottom })}
+            />
+            <TextRow
+              label="Site text"
+              value={c.siteUrl || ""}
+              onChange={(siteUrl) => set({ siteUrl })}
+            />
+          </Section>
+        </>
+      )}
+
+      {current === "sections" && (
+        <>
+          <Section title="Visible sections" icon={<Layers size={13} />}>
+            <ToggleRow
+              label="Clock"
+              checked={c.showClock !== false}
+              onChange={(showClock) => set({ showClock })}
+            />
+            <ToggleRow
+              label="Now playing"
+              checked={c.showNowPlaying !== false && c.musicSource !== "disabled"}
+              onChange={(showNowPlaying) => set({ showNowPlaying })}
+            />
+            <ToggleRow
+              label="Start balance"
+              checked={!!c.showStartBalance}
+              onChange={(showStartBalance) => set({ showStartBalance })}
+            />
+            <ToggleRow
+              label="Casino"
+              checked={!!c.showCasino}
+              onChange={(showCasino) => set({ showCasino })}
+            />
+            <ToggleRow
+              label="CTA"
+              checked={!!c.showCTA}
+              onChange={(showCTA) => set({ showCTA })}
+            />
+            <ToggleRow
+              label="Crypto ticker"
+              checked={!!c.showCrypto}
+              onChange={(showCrypto) => set({ showCrypto })}
+            />
+          </Section>
+
+          <Section title="Start balance" icon={<Coins size={13} />}>
+            <TextRow
+              label="Label"
+              value={c.startLabel || ""}
+              onChange={(startLabel) => set({ startLabel })}
+            />
+            <TextRow
+              label="Amount"
+              value={c.startBalance ?? ""}
+              onChange={(startBalance) => set({ startBalance })}
+            />
+            <SelectRow
+              label="Currency"
+              value={c.balanceCurrency || "EUR "}
+              options={NAVBAR_CURRENCY_OPTIONS}
+              onChange={(balanceCurrency) => set({ balanceCurrency })}
+            />
+          </Section>
+        </>
+      )}
+
+      {current === "music" && (
+        <>
+          <Section title="Spotify" icon={<Music size={13} />}>
+            <ToggleRow
+              label="Show now playing"
+              checked={c.showNowPlaying !== false}
+              onChange={(showNowPlaying) =>
+                set({ showNowPlaying, musicSource: "spotify" })
+              }
+            />
+            <p className="bp-hint">
+              {c.spotify_access_token ? "Spotify connected." : "Connect Spotify in Profile."}
+            </p>
+            <SelectRow
+              label="Display style"
+              value={c.musicDisplayStyle || "text"}
+              options={NAVBAR_MUSIC_DISPLAY_OPTIONS}
+              onChange={(musicDisplayStyle) => set({ musicDisplayStyle })}
+            />
+          </Section>
+        </>
+      )}
+
+      {current === "casino" && (
+        <>
+          <Section title="Casino" icon={<Coins size={13} />}>
+            <ToggleRow
+              label="Show casino"
+              checked={!!c.showCasino}
+              onChange={(showCasino) => set({ showCasino })}
+            />
+            <TextRow
+              label="Casino name"
+              value={c.casinoName || ""}
+              onChange={(casinoName) => set({ casinoName })}
+            />
+            <TextRow
+              label="Casino command"
+              value={c.casinoCommand || ""}
+              onChange={(casinoCommand) => set({ casinoCommand })}
+            />
+            <TextRow
+              label="Casino logo URL"
+              value={c.casinoLogoUrl || ""}
+              onChange={(casinoLogoUrl) => set({ casinoLogoUrl })}
+            />
+            <SliderRow
+              label="Logo size"
+              value={c.casinoImageSize ?? 100}
+              min={40}
+              max={180}
+              unit="%"
+              onChange={(casinoImageSize) => set({ casinoImageSize })}
+            />
+          </Section>
+        </>
+      )}
+
+      {current === "cta" && (
+        <Section title="CTA badge" icon={<Zap size={13} />}>
+          <ToggleRow
+            label="Show CTA badge"
+            checked={!!c.showCTA}
+            onChange={(showCTA) => set({ showCTA })}
+          />
+          <TextRow
+            label="CTA text"
+            value={c.ctaText || ""}
+            onChange={(ctaText) => set({ ctaText })}
+          />
+          <ColorRow
+            label="CTA colour"
+            value={c.ctaColor || "#f97316"}
+            onChange={(ctaColor) => set({ ctaColor })}
+          />
+        </Section>
+      )}
+
+      {current === "style" && (
+        <>
+          <Section title="Colours" icon={<Palette size={13} />}>
+            <div className="bp-color-grid">
+              <ColorRow
+                label="Blue glow"
+                value={c.accentBlue || "#2563eb"}
+                onChange={(accentBlue) => set({ accentBlue })}
+              />
+              <ColorRow
+                label="Orange arc"
+                value={c.accentGold || "#f97316"}
+                onChange={(accentGold) => set({ accentGold })}
+              />
+              <ColorRow
+                label="Background"
+                value={c.bgColor || "#060d20"}
+                onChange={(bgColor) => set({ bgColor })}
+              />
+              <ColorRow
+                label="Text"
+                value={c.textColor || "#f8fafc"}
+                onChange={(textColor) => set({ textColor })}
+              />
+              <ColorRow
+                label="Muted"
+                value={c.mutedColor || "#93c5fd"}
+                onChange={(mutedColor) => set({ mutedColor })}
+              />
+            </div>
+          </Section>
+
+          <Section title="Size" icon={<Maximize2 size={13} />}>
+            <SliderRow
+              label="Height"
+              value={c.barHeight || 52}
+              min={42}
+              max={92}
+              unit="px"
+              onChange={(barHeight) => set({ barHeight })}
+            />
+            <SliderRow
+              label="Radius"
+              value={c.radius ?? c.borderRadius ?? 12}
+              min={0}
+              max={24}
+              unit="px"
+              onChange={(radius) => set({ radius, borderRadius: radius })}
+            />
+            <SliderRow
+              label="Max width"
+              value={c.maxWidth || 1152}
+              min={720}
+              max={1600}
+              step={16}
+              unit="px"
+              onChange={(maxWidth) => set({ maxWidth })}
+            />
+          </Section>
+
+          <button
+            className="bp-reset"
+            type="button"
+            onClick={() => onChange(DEFAULT_BETTER_CONFIG.navbar)}
+          >
+            <RotateCcw size={13} /> Reset navbar controls
+          </button>
+        </>
+      )}
+    </div>
+  );
 }
 
 function BetterBetsControls({ config, onChange }) {
@@ -1041,17 +1437,53 @@ function PanelTabs({ tabs, active, onChange }) {
   );
 }
 
-function BetterChatControls({ config, onChange }) {
+function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   const c = ensureBetterWidgetConfig("chat", config);
   const set = (patch) => onChange({ ...c, ...patch });
+  const commitSize = (patch) => {
+    const next = ensureBetterWidgetConfig("chat", { ...c, ...patch });
+    const width = clampNumber(next.width, 150, 900, BETTER_CHAT_DEFAULT_SIZE.width);
+    const height = clampNumber(next.height, 150, 900, BETTER_CHAT_DEFAULT_SIZE.height);
+    const sizedConfig = { ...next, width, height };
+    if (typeof onWidgetChange === "function") {
+      onWidgetChange({ width, height, config: sizedConfig });
+      return;
+    }
+    onChange(sizedConfig);
+  };
+  const resetChat = () => {
+    const next = ensureBetterWidgetConfig("chat", DEFAULT_BETTER_CONFIG.chat);
+    if (typeof onWidgetChange === "function") {
+      onWidgetChange({
+        width: BETTER_CHAT_DEFAULT_SIZE.width,
+        height: BETTER_CHAT_DEFAULT_SIZE.height,
+        config: next,
+      });
+      return;
+    }
+    onChange(next);
+  };
   return (
     <div className="bp-controls bp-controls--chat">
       <header className="bp-chat-panel-head"><MessageSquare size={17} /><div><h3>Overlay Studio</h3><p>stream chat customizer</p></div><span className={c.live ? "is-live" : ""}><i />{c.live ? "Live" : "Idle"}</span></header>
+      <Section title="Chat Box Size" icon={<Maximize2 size={13} />}>
+        <SliderRow label="Width" value={clampNumber(c.width ?? widget?.width, 150, 900, BETTER_CHAT_DEFAULT_SIZE.width)} min={150} max={900} step={10} unit="px" onChange={(width) => commitSize({ width })} />
+        <SliderRow label="Height" value={clampNumber(c.height ?? widget?.height, 150, 900, BETTER_CHAT_DEFAULT_SIZE.height)} min={150} max={900} step={10} unit="px" onChange={(height) => commitSize({ height })} />
+        <div className="bp-preset-row">
+          <button type="button" onClick={() => commitSize(BETTER_CHAT_DEFAULT_SIZE)}>Default</button>
+          <button type="button" onClick={() => commitSize({ width: 360, height: 520 })}>Wide</button>
+          <button type="button" onClick={() => commitSize({ width: 260, height: 720 })}>Tall</button>
+          <button type="button" onClick={() => commitSize({ width: 420, height: 360 })}>Compact</button>
+        </div>
+      </Section>
       <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Message font" value={c.font} options={CHAT_FONTS} onChange={(font) => set({ font })} /><SliderRow label="Message size" value={c.fontSize} min={9} max={20} unit="px" onChange={(fontSize) => set({ fontSize })} /><SliderRow label="Username size" value={c.usernameSize} min={9} max={20} unit="px" onChange={(usernameSize) => set({ usernameSize })} /></Section>
       <Section title="Colours" icon={<Palette size={13} />}><div className="bp-color-grid">{["glow", "username", "text", "bubble", "panel"].map((key) => <ColorRow key={key} label={key[0].toUpperCase() + key.slice(1)} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</div><div className="bp-chat-presets">{CHAT_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set(preset)}><span><i style={{ background: preset.glow }} /><i style={{ background: preset.username }} /><i style={{ background: preset.bubble }} /></span>{preset.name}</button>)}</div></Section>
       <Section title="Backdrop" icon={<Layers size={13} />}><Segmented value={c.bg} columns={3} options={["solid", "horizon", "beam", "nebula", "vignette", "split"].map((key) => ({ key, name: key }))} onChange={(bg) => set({ bg })} /><Segmented value={c.texture} columns={3} options={["none", "scanlines", "grid", "dots", "diagonal", "noise"].map((key) => ({ key, name: key }))} onChange={(texture) => set({ texture })} /><SliderRow label="Texture strength" value={c.textureStrength} min={5} max={80} step={5} unit="%" disabled={c.texture === "none"} onChange={(textureStrength) => set({ textureStrength })} /></Section>
       <Section title="Message Motion" icon={<Waves size={13} />}><Segmented value={c.entry} options={[{ key: "bottom", name: "From bottom" }, { key: "top", name: "From top" }]} onChange={(entry) => set({ entry })} /><Segmented value={c.animation} columns={3} options={["slide-up", "slide-down", "slide-left", "slide-right", "fade", "none"].map((key) => ({ key, name: key.replace("slide-", "") }))} onChange={(animation) => set({ animation })} /><SliderRow label="Stagger between messages" value={c.stagger} min={0} max={400} step={20} unit="ms" onChange={(stagger) => set({ stagger })} /><Segmented value={c.lifespan} columns={3} options={[{ key: "persistent", name: "Keep all" }, { key: "timed", name: "Timed fade" }, { key: "capped", name: "Limit count" }]} onChange={(lifespan) => set({ lifespan })} /><SliderRow label="Fade after" value={c.fadeAfter} min={2} max={15} unit="s" disabled={c.lifespan !== "timed"} onChange={(fadeAfter) => set({ fadeAfter })} /><SliderRow label="Max messages" value={c.maxMessages} min={1} max={8} disabled={c.lifespan !== "capped"} onChange={(maxMessages) => set({ maxMessages })} /></Section>
-      <button className="bp-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.chat)}><RotateCcw size={13} /> Reset chat controls</button>
+      <Section title="Empty State" icon={<MessageSquare size={13} />}>
+        <TextRow label="No-message text" value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE} onChange={(emptyMessage) => set({ emptyMessage })} />
+      </Section>
+      <button className="bp-reset" type="button" onClick={resetChat}><RotateCcw size={13} /> Reset chat controls</button>
     </div>
   );
 }
@@ -1065,7 +1497,7 @@ function SimpleThemedControls({ type, config, onChange }) {
   if (type === "navbar") {
     return (
       <div className="bp-controls">
-        <Section title="Content" icon={<Type size={13} />}>{["brandName", "brandTop", "brandBottom", "siteUrl", "startValue", "casinoCommand", "nowPlaying"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>
+        <Section title="Content" icon={<Type size={13} />}>{["brandName", "brandTop", "brandBottom", "siteUrl", "startValue", "casinoCommand"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>
         <Section title="Colours" icon={<Palette size={13} />}><ColorRow label="Blue glow" value={c.accentBlue} onChange={(accentBlue) => set({ accentBlue })} /><ColorRow label="Orange arc" value={c.accentGold} onChange={(accentGold) => set({ accentGold })} /></Section>
         <Section title="Size" icon={<Maximize2 size={13} />}><SliderRow label="Height" value={c.barHeight} min={42} max={92} unit="px" onChange={(barHeight) => set({ barHeight })} /><SliderRow label="Radius" value={c.radius} min={0} max={24} unit="px" onChange={(radius) => set({ radius })} /><SliderRow label="Max width" value={c.maxWidth} min={720} max={1600} step={16} unit="px" onChange={(maxWidth) => set({ maxWidth })} /></Section>
       </div>
@@ -1272,8 +1704,26 @@ function SimpleThemedControls({ type, config, onChange }) {
   );
 }
 
-export function BetterWidgetControls({ type, config, onChange }) {
+export function BetterWidgetControls({ type, config, onChange, user, widget, onWidgetChange }) {
+  if (type === "navbar") {
+    return (
+      <BetterNavbarControls
+        config={config}
+        onChange={onChange}
+        user={user}
+      />
+    );
+  }
   if (type === "bets") return <BetterBetsControls config={config} onChange={onChange} />;
-  if (type === "chat") return <BetterChatControls config={config} onChange={onChange} />;
+  if (type === "chat") {
+    return (
+      <BetterChatControls
+        config={config}
+        onChange={onChange}
+        widget={widget}
+        onWidgetChange={onWidgetChange}
+      />
+    );
+  }
   return <SimpleThemedControls type={type} config={config} onChange={onChange} />;
 }

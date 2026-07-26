@@ -30,7 +30,15 @@ function getWidgetStyleId(widget, meta) {
 
 function isBetterConfigured(widget, meta) {
   if (!widget || !meta) return false;
-  return getWidgetStyleId(widget, meta) === meta.styleId;
+  if (getWidgetStyleId(widget, meta) !== meta.styleId) return false;
+  if (
+    meta.type === "navbar" &&
+    (widget.config?.betterNavbarFeaturesInitialized !== true ||
+      widget.config?.betterNavbarSpotifyOnlyInitialized !== true)
+  ) {
+    return false;
+  }
+  return true;
 }
 
 function WidgetListItem({ meta, widget, selected, onSelect, onAdd, onToggle }) {
@@ -118,9 +126,17 @@ export default function WidgetEditorPage() {
   const selectedMeta = getBetterWidgetMeta(selectedType);
   const selectedDef = betterDefs.find((meta) => meta.type === selectedType);
   const selectedWidget = selectedType ? widgetsByType.get(selectedType) : null;
+  const selectedRawConfig =
+    selectedWidget?.config || selectedDef?.registryDef?.defaults || {};
   const selectedConfig = ensureBetterWidgetConfig(
     selectedType,
-    selectedWidget?.config || selectedDef?.registryDef?.defaults || {},
+    selectedType === "chat" && selectedWidget
+      ? {
+          ...selectedRawConfig,
+          width: selectedRawConfig.width ?? selectedWidget.width,
+          height: selectedRawConfig.height ?? selectedWidget.height,
+        }
+      : selectedRawConfig,
   );
 
   useEffect(() => {
@@ -163,6 +179,22 @@ export default function WidgetEditorPage() {
       saveWidget({
         ...selectedWidget,
         config: ensureBetterWidgetConfig(selectedMeta.type, nextConfig),
+      });
+    },
+    [saveWidget, selectedMeta, selectedWidget],
+  );
+
+  const handleWidgetChange = useCallback(
+    (patch = {}) => {
+      if (!selectedWidget || !selectedMeta) return;
+      const { config: patchConfig, ...widgetPatch } = patch;
+      saveWidget({
+        ...selectedWidget,
+        ...widgetPatch,
+        config: ensureBetterWidgetConfig(
+          selectedMeta.type,
+          patchConfig || selectedWidget.config || {},
+        ),
       });
     },
     [saveWidget, selectedMeta, selectedWidget],
@@ -229,7 +261,13 @@ export default function WidgetEditorPage() {
 
         <div className="editor-package-preview-shell">
           {selectedMeta ? (
-            <BetterWidgetPreview type={selectedMeta.type} config={selectedConfig} />
+            <BetterWidgetPreview
+              type={selectedMeta.type}
+              config={selectedConfig}
+              allWidgets={widgets}
+              userId={user?.id}
+              widget={selectedWidget}
+            />
           ) : (
             <section className="editor-empty-state">
               <SlidersHorizontal size={22} />
@@ -273,8 +311,11 @@ export default function WidgetEditorPage() {
               type={selectedMeta.type}
               config={selectedConfig}
               onChange={handleConfigChange}
+              onWidgetChange={handleWidgetChange}
               allWidgets={widgets}
               userId={user?.id}
+              user={user}
+              widget={selectedWidget}
             />
           </div>
         )}

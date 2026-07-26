@@ -339,19 +339,6 @@ async function checkMusicReadiness({ supabase, user, details, selectedTools }) {
     }));
     return checks;
   }
-  if (normalized.musicMode === 'manual') {
-    const validManual = Boolean(normalized.manualTrack || normalized.manualArtist || normalized.musicFallbackMessage);
-    checks.push(check({
-      id: 'music-manual-fallback',
-      service: SERVICE_IDS.MUSIC,
-      status: validManual ? READINESS_STATUSES.FALLBACK : READINESS_STATUSES.WARNING,
-      title: 'Manual music fallback configured',
-      message: validManual ? 'Manual music information is configured and counts as a valid fallback.' : 'Add a track, artist or fallback message for manual music display.',
-      blocking: false,
-    }));
-    return checks;
-  }
-
   const { data: tokenRow } = await supabase
     .from('spotify_tokens')
     .select('access_token, refresh_token, expires_at, updated_at')
@@ -419,10 +406,10 @@ async function checkMusicReadiness({ supabase, user, details, selectedTools }) {
       message: response.ok
         ? 'Streamers Center can retrieve current playback information.'
         : response.status === 204
-          ? 'Spotify is connected. Nothing is playing right now, so your fallback behavior will be used.'
+          ? 'Spotify is connected. Nothing is playing right now.'
           : response.status === 401
             ? 'Spotify authorization expired. Reconnect Spotify.'
-            : 'Spotify could not be reached right now. Your saved fallback behavior will be used.',
+            : 'Spotify could not be reached right now.',
       blocking: response.status === 401,
       action: { label: 'Test now-playing data', type: 'retry' },
       meta: { lastSuccessfulPlaybackCheck: response.ok || response.status === 204 ? new Date().toISOString() : null },

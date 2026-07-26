@@ -42,6 +42,7 @@ const BADGE_DEFS = [
 
 const MESSAGE_TTL_MS = 120 * 1000;
 const HIDDEN_BOTS = new Set(["streamelements", "nightbot", "moobot"]);
+const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
 const HEADER_CHAT_STYLES = new Set([
   "classic",
   "cards",
@@ -1096,6 +1097,26 @@ function ChatWidget({ config, theme, allWidgets }) {
         ref={scrollRef}
         style={messageListStyle({ lineHeight: msgLineHeight })}
       >
+        {renderMessages.length === 0 && chatStyle === "better_chat" && (
+          <div
+            className="ov-chat-empty ov-chat-empty--better"
+            style={subElementStyle(c, "emptyState", {
+              minHeight: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "18px",
+              color: textColor,
+              fontWeight: 800,
+              lineHeight: 1.35,
+              textAlign: "center",
+              opacity: 0.78,
+            })}
+            {...partAttrs("emptyState")}
+          >
+            {c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}
+          </div>
+        )}
         {renderMessages.map((msg, msgIdx) => {
           const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
           const nameColor =

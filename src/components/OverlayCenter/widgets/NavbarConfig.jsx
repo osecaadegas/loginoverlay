@@ -268,7 +268,7 @@ export default function NavbarConfig({ config, onChange }) {
                   radius: 12,
                   maxWidth: c.maxWidth || 1152,
                   showNowPlaying: true,
-                  musicSource: c.spotify_access_token ? "spotify" : c.musicSource || "manual",
+                  musicSource: "spotify",
                 })
               }
             >
@@ -556,31 +556,6 @@ export default function NavbarConfig({ config, onChange }) {
                 ))}
               </div>
 
-              {/* Manual fallback */}
-              <h4 className="nb-subtitle" style={{ marginTop: 10 }}>
-                {c.spotify_access_token ? "Manual Fallback" : "Manual Track"}
-              </h4>
-              <p className="oc-config-hint" style={{ margin: "0 0 6px" }}>
-                {c.spotify_access_token
-                  ? "Shown when Spotify isn't playing."
-                  : "Type the artist & track to display."}
-              </p>
-              <label className="nb-field">
-                <span>Artist</span>
-                <input
-                  value={c.manualArtist || ""}
-                  onChange={(e) => set("manualArtist", e.target.value)}
-                  placeholder="Red Hot Chili Peppers"
-                />
-              </label>
-              <label className="nb-field">
-                <span>Track</span>
-                <input
-                  value={c.manualTrack || ""}
-                  onChange={(e) => set("manualTrack", e.target.value)}
-                  placeholder="Dark Necessities"
-                />
-              </label>
             </>
           )}
 
