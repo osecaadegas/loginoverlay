@@ -2378,7 +2378,7 @@ export function BetterRtpStatsStyle({
   const borderWidth = Math.max(0, numberValue(c.borderWidth, 1));
   const radius = cssPx(c.radius ?? c.borderRadius ?? 14, "14px");
   const providerMode = c.providerMode || "name";
-  const providerName = displayProvider || c.providerName || c.provider || "";
+  const providerName = displayProvider || "";
   const providerLogo = c.logoSrc || displayProviderLogo || "";
   const showProviderImage = providerMode !== "none" && providerMode !== "name" && Boolean(providerLogo);
   const showProviderName = providerMode !== "none" && providerMode !== "image" && Boolean(providerName);
@@ -2389,23 +2389,23 @@ export function BetterRtpStatsStyle({
   const logoPadY = clampNumber(c.logoPadY, 0, 32, 0);
   const logoOffsetX = clampNumber(c.logoOffsetX, -64, 64, 0);
   const logoOffsetY = clampNumber(c.logoOffsetY, -64, 64, 0);
-  const slotName = displaySlotName || c.slotName || c.detectedSlotName || c.currentSlotName || "-";
+  const slotName = displaySlotName || "-";
   const liveRtp = displayInfo?.rtp;
   const livePotential = displayInfo?.max_win_multiplier ?? displayInfo?.max_win;
   const rtpValue =
     liveRtp !== undefined && liveRtp !== null && liveRtp !== ""
       ? `${String(liveRtp).replace(/%$/, "")}%`
-      : c.rtp || c.rtpValue || "-";
+      : "-";
   const potentialValue =
     livePotential !== undefined && livePotential !== null && livePotential !== ""
       ? formatMultiplier(livePotential)
-      : c.potential || c.maxWin || "-";
+      : "-";
   const volatilityValue = displayInfo?.volatility
     ? String(displayInfo.volatility).replace(/_/g, " ").toUpperCase()
-    : c.volatility || "-";
+    : "-";
   const bestAmount = displayBestWin?.best_win
     ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
-    : c.bestWin || bestWinEmptyText || "-";
+    : bestWinEmptyText || "-";
   const bestMulti = displayBestWin?.best_multiplier ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : "";
   const showDividers = c.showDividers !== false;
   const statItems = [

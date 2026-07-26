@@ -31,7 +31,8 @@ import {
   Zap,
 } from "lucide-react";
 import NavbarWidget from "../widgets/NavbarWidget";
-import { BetterBonusHuntStyle, BetterRtpEmblem } from "../widgets/shared/betterWidgetStyles";
+import RtpStatsWidget from "../widgets/RtpStatsWidget";
+import { BetterBonusHuntStyle } from "../widgets/shared/betterWidgetStyles";
 import "./BetterWidgetPackages.css";
 
 const DEFAULT_CARD_COLORS = [
@@ -155,6 +156,19 @@ const BETTER_NAVBAR_OPTIONAL_CASINO_MARKER = "betterNavbarOptionalCasinoInitiali
 const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER = "betterNavbarOptionalCasinoCommandInitialized";
 const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER = "betterNavbarManualCasinoCommand";
 const LEGACY_CASINO_COMMAND = "!casino";
+const BETTER_RTP_LIVE_CONTENT_KEYS = [
+  "slotName",
+  "detectedSlotName",
+  "currentSlotName",
+  "provider",
+  "providerName",
+  "rtp",
+  "rtpValue",
+  "potential",
+  "maxWin",
+  "volatility",
+  "bestWin",
+];
 
 const GIVEAWAY_PRESETS = [
   { id: "cyber-blue", name: "Cyber Blue", swatch: "linear-gradient(135deg,#087eff,#43d3ff)", patch: { hue: 210, hueShift: 24, saturation: 82, accentSat: 96, accentLight: 56 } },
@@ -391,7 +405,6 @@ const DEFAULT_BETTER_CONFIG = {
   rtp_stats: {
     displayStyle: "better_rtp",
     providerMode: "name",
-    providerName: "Pragmatic Play",
     logoSrc: "",
     logoFit: "contain",
     logoHeight: 30,
@@ -402,6 +415,10 @@ const DEFAULT_BETTER_CONFIG = {
     logoOffsetY: 0,
     showEmblem: true,
     showDividers: true,
+    showRtp: true,
+    showPotential: true,
+    showVolatility: true,
+    showBestWin: true,
     cRim: "#2b7de9",
     cBarTop: "#0c2150",
     cBarMid: "#081735",
@@ -574,6 +591,15 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
   if (!next.balanceCurrency) next.balanceCurrency = defaults.balanceCurrency;
   return next;
 }
+
+function normalizeBetterRtpConfig(merged = {}) {
+  const next = { ...merged };
+  BETTER_RTP_LIVE_CONTENT_KEYS.forEach((key) => {
+    delete next[key];
+  });
+  return next;
+}
+
 export function ensureBetterWidgetConfig(type, config = {}) {
   const meta = getBetterWidgetMeta(type);
   const defaults = DEFAULT_BETTER_CONFIG[type] || {};
@@ -583,6 +609,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
     ...(meta ? { [meta.styleKey]: meta.styleId } : {}),
   };
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
+  if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
   return merged;
 }
 
@@ -942,59 +969,16 @@ function BetterNavbarPreview({ config, allWidgets, userId }) {
   );
 }
 
-function BetterRtpPreview({ config }) {
+function BetterRtpPreview({ config, allWidgets, userId, widget }) {
   const c = ensureBetterWidgetConfig("rtp_stats", config);
-  const slotName = c.slotName || c.detectedSlotName || c.currentSlotName || "5 Lions Megaways";
-  const providerName = c.providerName || c.provider || "Pragmatic Play";
   return (
-    <div className="bp-rtp-stage">
-      <div
-        className="bp-rtp-bar"
-        style={{
-          "--c-rim": c.cRim,
-          "--c-bar-top": c.cBarTop,
-          "--c-bar-mid": c.cBarMid,
-          "--c-bar-bot": c.cBarBot,
-          "--c-bolt": c.cBolt,
-          "--c-gold": c.cGold,
-          "--b-radius": `${c.radius}px`,
-          "--b-width": `${c.borderWidth}px`,
-          height: Number(c.barHeight) || 54,
-          padding: `${c.barPadY}px ${c.barPadX}px`,
-        }}
-      >
-        <div className="bp-rtp-provider">
-          {c.providerMode !== "none" && c.providerMode !== "name" && c.logoSrc ? (
-            <img src={c.logoSrc} alt="" style={{ height: c.logoHeight, maxWidth: c.logoMaxW, objectFit: c.logoFit }} />
-          ) : null}
-          {c.providerMode !== "none" && c.providerMode !== "image" && (
-            <span style={{ color: c.cBrand, fontFamily: c.fontBody }}>{providerName}</span>
-          )}
-          {c.showEmblem && (
-            <span className="bp-rtp-emblem">
-              <BetterRtpEmblem config={c} />
-            </span>
-          )}
-          <h1 style={{ fontFamily: c.fontTitle, fontSize: c.titleSize, letterSpacing: `${c.titleTracking}em`, color: c.cValue }}>{slotName}</h1>
-        </div>
-        {c.showDividers && <div className="bp-rtp-divider" />}
-        <div className="bp-rtp-stats">
-          {[
-            ["RTP", c.rtp || c.rtpValue || "95.5%"],
-            ["Potential", c.potential || c.maxWin || "x5000"],
-            ["Volatility", c.volatility || "HIGH"],
-          ].map(([label, value], index) => (
-            <span key={label}>
-              <Zap className="bp-rtp-bolt" size={Math.round((c.labelSize || 10) * 1.3)} fill={c.cBolt} stroke={c.cBolt} style={{ animationDelay: `${index * 0.5}s` }} />
-              <em style={{ fontFamily: c.fontBody, fontSize: c.labelSize, color: c.cLabel }}>{label}</em>
-              <strong style={{ fontFamily: c.fontTitle, fontSize: c.valueSize, color: c.cValue }}>{value}</strong>
-            </span>
-          ))}
-        </div>
-        {c.showDividers && <div className="bp-rtp-divider" />}
-        <div className="bp-rtp-best"><Trophy size={14} fill={c.cGold} stroke={c.cGold} /><em>Best Win</em><span>-</span><strong>{c.bestWin || "No personal best yet"}</strong></div>
-      </div>
-      <div className="bp-rtp-rim" style={{ background: `radial-gradient(50% 100% at 50% 0%, ${c.cRim}47, transparent 75%)` }} />
+    <div className="bp-rtp-stage bp-rtp-stage--renderer">
+      <RtpStatsWidget
+        config={{ ...c, previewMode: true }}
+        allWidgets={allWidgets}
+        userId={userId}
+        widgetId={widget?.id}
+      />
     </div>
   );
 }
@@ -1087,7 +1071,14 @@ export function BetterWidgetPreview({ type, config, allWidgets, userId, widget }
         />
       );
     case "rtp_stats":
-      return <BetterRtpPreview config={config} />;
+      return (
+        <BetterRtpPreview
+          config={config}
+          allWidgets={allWidgets}
+          userId={userId}
+          widget={widget}
+        />
+      );
     case "background":
       return <BetterBackgroundPreview config={config} />;
     case "giveaway":
@@ -1662,8 +1653,8 @@ function SimpleThemedControls({ type, config, onChange }) {
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
         {current === "presets" && <Section title="Presets" icon={<Palette size={13} />}><div className="bp-preset-row">{RTP_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set(preset.patch)}>{preset.name}</button>)}</div><button className="bp-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.rtp_stats)}><RotateCcw size={13} /> Reset to defaults</button></Section>}
-        {current === "provider" && <Section title="Provider" icon={<ImagePlus size={13} />}><Segmented value={c.providerMode} columns={4} options={["image", "name", "both", "none"].map((key) => ({ key, name: key }))} onChange={(providerMode) => set({ providerMode })} /><TextRow label="Provider name" value={c.providerName} onChange={(providerName) => set({ providerName })} /><TextRow label="Logo image URL" value={c.logoSrc} onChange={(logoSrc) => set({ logoSrc })} /><SliderRow label="Height" value={c.logoHeight} min={18} max={72} unit="px" onChange={(logoHeight) => set({ logoHeight })} /><SliderRow label="Max width" value={c.logoMaxW} min={60} max={320} step={4} unit="px" onChange={(logoMaxW) => set({ logoMaxW })} /><SliderRow label="Padding top / bottom" value={c.logoPadY} min={0} max={16} unit="px" onChange={(logoPadY) => set({ logoPadY })} /><SliderRow label="Padding left / right" value={c.logoPadX} min={0} max={24} unit="px" onChange={(logoPadX) => set({ logoPadX })} /><SliderRow label="Nudge up / down" value={c.logoOffsetY} min={-14} max={14} unit="px" onChange={(logoOffsetY) => set({ logoOffsetY })} /><SliderRow label="Nudge left / right" value={c.logoOffsetX} min={-14} max={14} unit="px" onChange={(logoOffsetX) => set({ logoOffsetX })} /><Segmented value={c.logoFit} options={[{ key: "contain", name: "Contain" }, { key: "cover", name: "Crop" }]} onChange={(logoFit) => set({ logoFit })} /></Section>}
-        {current === "content" && <Section title="Content" icon={<Type size={13} />}><TextRow label="Slot name" value={c.slotName || ""} onChange={(slotName) => set({ slotName })} /><TextRow label="RTP" value={c.rtp || ""} onChange={(rtp) => set({ rtp })} /><TextRow label="Potential" value={c.potential || ""} onChange={(potential) => set({ potential })} /><TextRow label="Volatility" value={c.volatility || ""} onChange={(volatility) => set({ volatility })} /><TextRow label="Best win text" value={c.bestWin || ""} onChange={(bestWin) => set({ bestWin })} /><ToggleRow label="Show dividers" checked={c.showDividers} onChange={(showDividers) => set({ showDividers })} /></Section>}
+        {current === "provider" && <Section title="Provider" icon={<ImagePlus size={13} />}><Segmented value={c.providerMode} columns={4} options={["image", "name", "both", "none"].map((key) => ({ key, name: key }))} onChange={(providerMode) => set({ providerMode })} /><TextRow label="Logo image URL" value={c.logoSrc} onChange={(logoSrc) => set({ logoSrc })} /><SliderRow label="Height" value={c.logoHeight} min={18} max={72} unit="px" onChange={(logoHeight) => set({ logoHeight })} /><SliderRow label="Max width" value={c.logoMaxW} min={60} max={320} step={4} unit="px" onChange={(logoMaxW) => set({ logoMaxW })} /><SliderRow label="Padding top / bottom" value={c.logoPadY} min={0} max={16} unit="px" onChange={(logoPadY) => set({ logoPadY })} /><SliderRow label="Padding left / right" value={c.logoPadX} min={0} max={24} unit="px" onChange={(logoPadX) => set({ logoPadX })} /><SliderRow label="Nudge up / down" value={c.logoOffsetY} min={-14} max={14} unit="px" onChange={(logoOffsetY) => set({ logoOffsetY })} /><SliderRow label="Nudge left / right" value={c.logoOffsetX} min={-14} max={14} unit="px" onChange={(logoOffsetX) => set({ logoOffsetX })} /><Segmented value={c.logoFit} options={[{ key: "contain", name: "Contain" }, { key: "cover", name: "Crop" }]} onChange={(logoFit) => set({ logoFit })} /></Section>}
+        {current === "content" && <Section title="Live Content" icon={<Type size={13} />}><ToggleRow label="Show RTP" checked={c.showRtp !== false} onChange={(showRtp) => set({ showRtp })} /><ToggleRow label="Show potential" checked={c.showPotential !== false} onChange={(showPotential) => set({ showPotential })} /><ToggleRow label="Show volatility" checked={c.showVolatility !== false} onChange={(showVolatility) => set({ showVolatility })} /><ToggleRow label="Show best win" checked={c.showBestWin !== false} onChange={(showBestWin) => set({ showBestWin })} /><ToggleRow label="Show dividers" checked={c.showDividers !== false} onChange={(showDividers) => set({ showDividers })} /></Section>}
         {current === "emblem" && <><Section title="Emblem" icon={<Sparkles size={13} />}><ToggleRow label="Show emblem" checked={c.showEmblem} onChange={(showEmblem) => set({ showEmblem })} /><ToggleRow label="Animate" checked={c.emblemAnimate} onChange={(emblemAnimate) => set({ emblemAnimate })} /><Segmented value={c.emblem} columns={4} options={RTP_EMBLEMS} onChange={(emblem) => set({ emblem })} /><SliderRow label="Speed" value={c.emblemSpeed} min={0.2} max={4} step={0.1} unit="x" onChange={(emblemSpeed) => set({ emblemSpeed })} /><SliderRow label="Size" value={c.emblemSize} min={16} max={64} unit="px" onChange={(emblemSize) => set({ emblemSize })} /><SliderRow label="Stroke / weight" value={c.emblemStroke} min={1} max={5} step={0.5} unit="px" onChange={(emblemStroke) => set({ emblemStroke })} /></Section><Section title="Emblem colours" icon={<Palette size={13} />}><ColorRow label="Primary" value={c.cEmA} onChange={(cEmA) => set({ cEmA })} /><ColorRow label="Secondary" value={c.cEmB} onChange={(cEmB) => set({ cEmB })} /><ColorRow label="Base / track" value={c.cEmBase} onChange={(cEmBase) => set({ cEmBase })} /></Section></>}
         {current === "colours" && <Section title="Colours" icon={<Palette size={13} />}>{[["cRim", "Border / glow"], ["cBarTop", "Bar top"], ["cBarMid", "Bar middle"], ["cBarBot", "Bar bottom"], ["cLabel", "Label text"], ["cValue", "Value text"], ["cBolt", "Bolt icon"], ["cGold", "Trophy"], ["cBrand", "Provider text"], ["cPage", "Page background"]].map(([key, label]) => <ColorRow key={key} label={label} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>}
         {current === "type" && <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Title font" value={c.fontTitle} options={RTP_FONT_OPTIONS} onChange={(fontTitle) => set({ fontTitle })} /><SelectRow label="Body font" value={c.fontBody} options={RTP_FONT_OPTIONS} onChange={(fontBody) => set({ fontBody })} /><SliderRow label="Title size" value={c.titleSize} min={12} max={40} unit="px" onChange={(titleSize) => set({ titleSize })} /><SliderRow label="Title tracking" value={c.titleTracking} min={0} max={0.3} step={0.01} unit="em" onChange={(titleTracking) => set({ titleTracking })} /><SliderRow label="Value size" value={c.valueSize} min={10} max={28} unit="px" onChange={(valueSize) => set({ valueSize })} /><SliderRow label="Label size" value={c.labelSize} min={7} max={16} unit="px" onChange={(labelSize) => set({ labelSize })} /></Section>}
