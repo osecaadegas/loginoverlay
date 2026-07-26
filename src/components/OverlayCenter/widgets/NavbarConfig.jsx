@@ -202,6 +202,7 @@ export default function NavbarConfig({ config, onChange }) {
     "balanceCurrency",
     "casinoName",
     "casinoLogoUrl",
+    "casinoImageSize",
     "sectionLayout",
   ];
 
@@ -494,6 +495,18 @@ export default function NavbarConfig({ config, onChange }) {
                   onChange={(e) => set("casinoLogoUrl", e.target.value)}
                   placeholder="https://..."
                 />
+              </label>
+              <label className="nb-slider-field">
+                <span className="nb-slider-label">Logo size</span>
+                <input
+                  type="range"
+                  min={40}
+                  max={180}
+                  step={5}
+                  value={c.casinoImageSize ?? 100}
+                  onChange={(e) => set("casinoImageSize", Number(e.target.value))}
+                />
+                <span className="nb-slider-value">{c.casinoImageSize ?? 100}%</span>
               </label>
             </>
           )}

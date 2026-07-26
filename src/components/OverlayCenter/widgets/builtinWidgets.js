@@ -277,6 +277,7 @@ registerWidget({
     musicSource: "manual",
     manualArtist: "",
     manualTrack: "",
+    casinoImageSize: 100,
     accentColor: "#f59e0b",
     bgColor: "#111318",
     textColor: "#f1f5f9",

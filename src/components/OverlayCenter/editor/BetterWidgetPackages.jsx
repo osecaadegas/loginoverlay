@@ -151,6 +151,7 @@ const CHAT_PRESETS = [
 const BETTER_CHAT_DEFAULT_SIZE = { width: 260, height: 520 };
 const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
 const BETTER_NAVBAR_SPOTIFY_ONLY_MARKER = "betterNavbarSpotifyOnlyInitialized";
+const BETTER_NAVBAR_OPTIONAL_CASINO_MARKER = "betterNavbarOptionalCasinoInitialized";
 
 const GIVEAWAY_PRESETS = [
   { id: "cyber-blue", name: "Cyber Blue", swatch: "linear-gradient(135deg,#087eff,#43d3ff)", patch: { hue: 210, hueShift: 24, saturation: 82, accentSat: 96, accentLight: 56 } },
@@ -334,9 +335,10 @@ const DEFAULT_BETTER_CONFIG = {
     startValue: "",
     startBalance: 2000,
     balanceCurrency: "EUR ",
-    casinoName: "Casino",
-    casinoCommand: "!Casino",
+    casinoName: "",
+    casinoCommand: "",
     casinoLogoUrl: "",
+    casinoImageSize: 100,
     nowPlayingLabel: "Now Playing",
     musicSource: "spotify",
     musicDisplayStyle: "text",
@@ -487,6 +489,7 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     ...merged,
     betterNavbarFeaturesInitialized: true,
     [BETTER_NAVBAR_SPOTIFY_ONLY_MARKER]: true,
+    [BETTER_NAVBAR_OPTIONAL_CASINO_MARKER]: true,
   };
 
   if (
@@ -516,11 +519,19 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
   delete next.manualMusicLink;
   delete next.musicFallbackMessage;
 
+  if (config[BETTER_NAVBAR_OPTIONAL_CASINO_MARKER] !== true) {
+    if (String(next.casinoName || "").trim().toLowerCase() === "casino") {
+      next.casinoName = "";
+    }
+    if (String(next.casinoCommand || "").trim().toLowerCase() === "!casino") {
+      next.casinoCommand = "";
+    }
+  }
+
   if (!next.streamerName && !next.brandName) next.streamerName = defaults.streamerName;
   if (!next.ctaText) next.ctaText = defaults.ctaText;
-  if (!next.casinoName && !next.casinoCommand && !next.casinoLogoUrl) {
-    next.casinoName = defaults.casinoName;
-    next.casinoCommand = defaults.casinoCommand;
+  if (next.casinoImageSize === undefined || next.casinoImageSize === null || next.casinoImageSize === "") {
+    next.casinoImageSize = defaults.casinoImageSize;
   }
   if (next.startBalance === undefined || next.startBalance === null || next.startBalance === "") {
     next.startBalance = defaults.startBalance;

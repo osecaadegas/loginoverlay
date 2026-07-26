@@ -166,6 +166,7 @@ export const NAVBAR_STYLE_KEYS = [
   "borderWidth",
   "borderRadius",
   "maxWidth",
+  "casinoImageSize",
   "brightness",
   "contrast",
   "saturation",

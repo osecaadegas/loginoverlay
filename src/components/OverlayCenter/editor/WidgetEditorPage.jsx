@@ -34,7 +34,8 @@ function isBetterConfigured(widget, meta) {
   if (
     meta.type === "navbar" &&
     (widget.config?.betterNavbarFeaturesInitialized !== true ||
-      widget.config?.betterNavbarSpotifyOnlyInitialized !== true)
+      widget.config?.betterNavbarSpotifyOnlyInitialized !== true ||
+      widget.config?.betterNavbarOptionalCasinoInitialized !== true)
   ) {
     return false;
   }

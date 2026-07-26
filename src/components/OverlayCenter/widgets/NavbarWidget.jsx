@@ -1795,6 +1795,13 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     const showCasino = Boolean(
       c.showCasino !== false && (casinoCommand || casinoLogoUrl),
     );
+    const casinoLogoScaleValue = Number(c.casinoImageSize ?? 100);
+    const casinoLogoScale = Number.isFinite(casinoLogoScaleValue)
+      ? Math.min(Math.max(casinoLogoScaleValue, 40), 180) / 100
+      : 1;
+    const betterCasinoLogoSize =
+      casinoImageSize ||
+      Math.max(12, Math.min(packageHeight * 0.86, packageHeight * 0.42 * casinoLogoScale));
     const wantsBetterMusic = c.showNowPlaying !== false && c.musicSource !== "disabled";
     const fallbackNowPlaying = wantsBetterMusic
       ? {
@@ -2139,31 +2146,33 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                       src={casinoLogoUrl}
                       alt=""
                       style={{
-                        width: 18,
-                        height: 18,
-                        objectFit: "contain",
-                        borderRadius: 4,
+                        width: "auto",
+                        height: betterCasinoLogoSize,
+                        maxWidth: betterCasinoLogoSize * 2.4,
+                        objectFit: casinoImageFit,
+                        borderRadius: casinoImageRadius ?? Math.max(3, betterCasinoLogoSize * 0.18),
                         filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.42))",
+                        flexShrink: 0,
                       }}
                     />
-                  ) : (
-                    renderBolt()
-                  )}
-                  <span
-                    style={{
-                      color: textColor,
-                      fontSize: 14,
-                      fontWeight: 950,
-                      letterSpacing: "0.04em",
-                      maxWidth: 170,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      textTransform: casinoCommand.startsWith("!") ? "none" : "uppercase",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {casinoCommand || "!Casino"}
-                  </span>
+                  ) : null}
+                  {casinoCommand ? (
+                    <span
+                      style={{
+                        color: textColor,
+                        fontSize: 14,
+                        fontWeight: 950,
+                        letterSpacing: "0.04em",
+                        maxWidth: 170,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        textTransform: casinoCommand.startsWith("!") ? "none" : "uppercase",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {casinoCommand}
+                    </span>
+                  ) : null}
                 </div>
               )}
             </div>
