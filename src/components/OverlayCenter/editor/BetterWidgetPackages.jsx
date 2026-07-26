@@ -30,6 +30,7 @@ import {
   Waves,
   Zap,
 } from "lucide-react";
+import { BetterBonusHuntStyle } from "../widgets/shared/betterWidgetStyles";
 import "./BetterWidgetPackages.css";
 
 const DEFAULT_CARD_COLORS = [
@@ -435,7 +436,7 @@ const DEFAULT_BETTER_CONFIG = {
 };
 
 export const BETTER_WIDGETS = [
-  { type: "bonus_hunt", label: "Better Hunt", styleKey: "displayStyle", styleId: "better_bonus_hunt", icon: "BH", defaultSize: { width: 760, height: 420 } },
+  { type: "bonus_hunt", label: "Better Hunt", styleKey: "displayStyle", styleId: "better_bonus_hunt", icon: "BH", defaultSize: { width: 430, height: 860 } },
   { type: "giveaway", label: "Better Giveaway", styleKey: "displayStyle", styleId: "better_giveaway", icon: "GW", defaultSize: { width: 700, height: 270 } },
   { type: "navbar", label: "Better Navbar", styleKey: "displayStyle", styleId: "better_navbar", icon: "NB", defaultSize: { width: 1200, height: 72 } },
   { type: "chat", label: "Better Chat", styleKey: "chatStyle", styleId: "better_chat", icon: "CH", defaultSize: { width: 260, height: 520 } },
@@ -517,13 +518,14 @@ function Section({ title, icon, children, defaultOpen = true }) {
   );
 }
 
-function SliderRow({ label, value, min, max, step = 1, unit = "", onChange, disabled = false }) {
+function SliderRow({ label, value, min, max, step = 1, unit = "", onChange, disabled = false, format }) {
   const pct = ((Number(value) - min) / (max - min)) * 100;
+  const displayValue = typeof format === "function" ? format(Number(value)) : `${value}${unit}`;
   return (
     <label className={`bp-slider${disabled ? " is-disabled" : ""}`}>
       <span>
         <em>{label}</em>
-        <strong>{value}{unit}</strong>
+        <strong>{displayValue}</strong>
       </span>
       <input
         type="range"
@@ -602,6 +604,41 @@ function Segmented({ value, options, onChange, columns = 2 }) {
         </button>
       ))}
     </div>
+  );
+}
+
+function HuntChoiceGrid({ value, options, onChange, columns = 2 }) {
+  return (
+    <div className="bp-hunt-choice-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+      {options.map((option) => {
+        const optionValue = option.value || option.key;
+        return (
+          <button
+            key={optionValue}
+            type="button"
+            className={optionValue === value ? "is-active" : ""}
+            onClick={() => onChange(optionValue)}
+          >
+            {option.swatch && <i style={{ background: option.swatch }} />}
+            <strong>{option.label || option.name}</strong>
+            {option.hint && <span>{option.hint}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function HuntHint({ children }) {
+  return <p className="bp-hunt-control-hint">{children}</p>;
+}
+
+function HuntSection({ title, icon, children }) {
+  return (
+    <section className="bp-hunt-section">
+      <h4>{icon}{title}</h4>
+      <div className="bp-hunt-section__body">{children}</div>
+    </section>
   );
 }
 
@@ -870,36 +907,14 @@ function BetterGiveawayPreview({ config }) {
 
 function BetterBonusHuntPreview({ config }) {
   const c = ensureBetterWidgetConfig("bonus_hunt", config);
-  const bonuses = Array.isArray(c.bonuses) ? c.bonuses : [];
-  const opened = bonuses.filter((bonus) => bonus?.opened);
-  const current = bonuses.find((bonus) => !bonus?.opened) || bonuses[0] || null;
-  const progress = bonuses.length ? Math.round((opened.length / bonuses.length) * 100) : 0;
-  const accent = c.headerAccent || c.accentColor || "#45c8ff";
-  const blue = c.headerColor || c.bgColor || "#081228";
   return (
-    <div className="bp-hunt-stage" style={{ "--hunt-accent": accent, "--hunt-blue": blue, "--hunt-radius": `${c.cardRadius}px`, "--hunt-glow": (Number(c.uiScale) || 1) }}>
-      <section className="bp-hunt-widget" data-surface={c.finish}>
-        <header className="bp-hunt-header">
-          <div><span>{c.bonusOpening ? "Bonus opening" : "Bonus hunt"}</span><strong>{c.title || c.huntTitle || "Hunt session"}</strong></div>
-          <em>{opened.length}/{bonuses.length}</em>
-        </header>
-        <div className="bp-hunt-main">
-          <div className="bp-hunt-feature">
-            {current?.image || current?.imageUrl || current?.slot?.image ? <img src={current.image || current.imageUrl || current.slot.image} alt="" /> : <span className="bp-hunt-no-image"><ImagePlus size={24} /></span>}
-            <div><span>Current slot</span><strong>{current?.slotName || current?.name || current?.slot?.name || "No bonuses yet"}</strong><em>{current?.provider || current?.slot?.provider || ""}</em></div>
-          </div>
-          <div className="bp-hunt-stats">
-            {[
-              ["Total bet", formatMoney(bonuses.reduce((sum, bonus) => sum + (Number(bonus?.betSize) || 0), 0), c.currency || "EUR ")],
-              ["Total pay", formatMoney(opened.reduce((sum, bonus) => sum + (Number(bonus?.payout) || 0), 0), c.currency || "EUR ")],
-              ["Progress", `${progress}%`],
-              ["Bonuses", formatNumber(bonuses.length)],
-            ].map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
-          </div>
-        </div>
-        <div className="bp-hunt-progress"><span style={{ width: `${progress}%` }} /></div>
-        {c.listMode !== "names" && <div className="bp-hunt-list">{bonuses.slice(0, c.visibleRows || 5).map((bonus, index) => <span key={index}><em>{bonus?.opened ? "opened" : "queued"}</em><strong>{bonus?.slotName || bonus?.name || bonus?.slot?.name || `Bonus ${index + 1}`}</strong></span>)}</div>}
-      </section>
+    <div className="bp-hunt-preview-stage">
+      <BetterBonusHuntStyle
+        config={c}
+        bonuses={Array.isArray(c.bonuses) ? c.bonuses : []}
+        stats={c.stats}
+        currency={c.currency || "€"}
+      />
     </div>
   );
 }
@@ -1092,21 +1107,125 @@ function SimpleThemedControls({ type, config, onChange }) {
       bgColor: colour.bg,
     });
   };
+  const orientationHint = c.orientation === "horizontal"
+    ? "Wide two-column layout - the log drifts sideways as cards."
+    : "The classic tall tracker - list scrolls upward.";
+  const drawerHint = c.drawerMode === "expand"
+    ? "The best / worst card expands the panel."
+    : "The best / worst card reduces the list area.";
+  const currentColour = BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
 
   return (
-    <div className="bp-controls">
-      <header className="bp-chat-panel-head"><SlidersHorizontal size={17} /><div><h3>Control Deck</h3><p>bonus hunt tracker settings</p></div><span><i />Live</span></header>
-      <Section title="Orientation" icon={<MonitorPlay size={13} />}><Segmented value={c.orientation} options={[{ key: "vertical", name: "Vertical" }, { key: "horizontal", name: "Horizontal" }]} onChange={(orientation) => set({ orientation })} /></Section>
-      <Section title="Texture" icon={<Layers size={13} />}><Segmented value={c.finish} columns={5} options={BONUS_FINISHES.map((key) => ({ key, name: key }))} onChange={(finish) => set({ finish })} /></Section>
-      <Section title="Colour" icon={<Palette size={13} />}><div className="bp-preset-row">{BONUS_COLOURS.map((colour) => <button key={colour.key} type="button" className={c.colour === colour.key ? "is-active" : ""} onClick={() => applyBonusColour(colour.key)}><i style={{ background: colour.accent }} />{colour.name}</button>)}</div><ColorRow label="Accent" value={c.headerAccent || c.accentColor} onChange={(value) => set({ headerAccent: value, accentColor: value })} /><ColorRow label="Panel background" value={c.headerColor || c.bgColor} onChange={(value) => set({ headerColor: value, bgColor: value })} /></Section>
-      <Section title="Animations" icon={<Wand2 size={13} />}><ToggleRow label="Enable motion" checked={c.animations} onChange={(animations) => set({ animations })} /><SliderRow label="Speed" value={c.animSpeed} min={0.5} max={2} step={0.1} unit="x" onChange={(animSpeed) => set({ animSpeed })} /></Section>
-      <Section title="Carousel Style" icon={<Layers size={13} />}><Segmented value={c.carouselMode} columns={3} options={[{ key: "3d", name: "3D Ring" }, { key: "imagestats", name: "Image Stats" }, { key: "stats", name: "Slot Stats" }]} onChange={(carouselMode) => set({ carouselMode })} /></Section>
-      <Section title="Carousel Timing" icon={<Timer size={13} />}><SliderRow label="Rotate every" value={c.carouselMs} min={1500} max={6000} step={100} unit="ms" onChange={(carouselMs) => set({ carouselMs })} /></Section>
-      <Section title="Typography" icon={<Type size={13} />}><Segmented value={c.font} columns={3} options={BONUS_FONTS} onChange={(font) => set({ font, fontFamily: BONUS_FONTS.find((item) => item.key === font)?.family || c.fontFamily })} /><SliderRow label="UI scale" value={c.uiScale} min={0.85} max={1.2} step={0.05} unit="x" onChange={(uiScale) => set({ uiScale })} /></Section>
-      <Section title="Sizes & Layout" icon={<SlidersHorizontal size={13} />}><SliderRow label="Progress bar" value={c.barHeight} min={3} max={10} unit="px" onChange={(barHeight) => set({ barHeight })} /><SliderRow label="Avatar" value={c.avatarSize} min={20} max={44} step={2} unit="px" onChange={(avatarSize) => set({ avatarSize })} /><SliderRow label="Visible rows" value={c.visibleRows} min={3} max={8} onChange={(visibleRows) => set({ visibleRows })} /><SliderRow label="Card radius" value={c.cardRadius} min={0} max={34} unit="px" onChange={(cardRadius) => set({ cardRadius })} /></Section>
-      <Section title="List Style" icon={<List size={13} />}><Segmented value={c.listMode} columns={3} options={[{ key: "compact", name: "Rows" }, { key: "image", name: "Cards" }, { key: "names", name: "Names" }]} onChange={(listMode) => set({ listMode })} /></Section>
-      <Section title="Best / Worst Card" icon={<Layers size={13} />}><Segmented value={c.drawerMode} options={[{ key: "shrink", name: "Shrink list" }, { key: "expand", name: "Expand panel" }]} onChange={(drawerMode) => set({ drawerMode })} /></Section>
-      <button className="bp-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.bonus_hunt)}><RotateCcw size={13} /> Reset defaults</button>
+    <div className="bp-controls bp-controls--hunt">
+      <header className="bp-hunt-deck-head">
+        <SlidersHorizontal size={17} />
+        <div>
+          <h3>Control Deck</h3>
+          <p>bonus hunt tracker settings</p>
+        </div>
+      </header>
+
+      <HuntSection title="Orientation" icon={<MonitorPlay size={13} />}>
+        <HuntChoiceGrid
+          value={c.orientation}
+          options={[
+            { key: "vertical", label: "Vertical", hint: "Classic tall tracker" },
+            { key: "horizontal", label: "Horizontal", hint: "Wide two-column layout" },
+          ]}
+          onChange={(orientation) => set({ orientation })}
+        />
+        <HuntHint>{orientationHint}</HuntHint>
+      </HuntSection>
+
+      <HuntSection title="Texture" icon={<Layers size={13} />}>
+        <HuntChoiceGrid
+          value={c.finish}
+          columns={5}
+          options={BONUS_FINISHES.map((key) => ({ key, label: key }))}
+          onChange={(finish) => set({ finish })}
+        />
+      </HuntSection>
+
+      <HuntSection title="Colour" icon={<Palette size={13} />}>
+        <div className="bp-hunt-swatch-row">
+          {BONUS_COLOURS.map((colour) => (
+            <button
+              key={colour.key}
+              type="button"
+              className={c.colour === colour.key ? "is-active" : ""}
+              style={{ background: colour.accent }}
+              title={colour.name}
+              onClick={() => applyBonusColour(colour.key)}
+            />
+          ))}
+        </div>
+        <HuntHint>{currentColour.name}</HuntHint>
+      </HuntSection>
+
+      <HuntSection title="Animations" icon={<Wand2 size={13} />}>
+        <ToggleRow label="Enable motion" checked={c.animations} onChange={(animations) => set({ animations })} />
+        <SliderRow label="Speed" value={c.animSpeed} min={0.5} max={2} step={0.1} format={(value) => `${value.toFixed(1)}x`} onChange={(animSpeed) => set({ animSpeed })} />
+      </HuntSection>
+
+      <HuntSection title="Carousel Style" icon={<Layers size={13} />}>
+        <HuntChoiceGrid
+          value={c.carouselMode}
+          columns={3}
+          options={[
+            { key: "3d", label: "3D Ring" },
+            { key: "imagestats", label: "Image Stats" },
+            { key: "stats", label: "Slot Stats" },
+          ]}
+          onChange={(carouselMode) => set({ carouselMode })}
+        />
+      </HuntSection>
+
+      <HuntSection title="Carousel Timing" icon={<Timer size={13} />}>
+        <SliderRow label="Rotate every" value={c.carouselMs} min={1500} max={6000} step={100} format={(value) => `${(value / 1000).toFixed(1)}s`} onChange={(carouselMs) => set({ carouselMs })} />
+      </HuntSection>
+
+      <HuntSection title="Typography" icon={<Type size={13} />}>
+        <HuntChoiceGrid
+          value={c.font}
+          columns={3}
+          options={BONUS_FONTS.map((font) => ({ key: font.key, label: font.name }))}
+          onChange={(font) => set({ font, fontFamily: BONUS_FONTS.find((item) => item.key === font)?.family || c.fontFamily })}
+        />
+        <SliderRow label="UI scale" value={c.uiScale} min={0.85} max={1.2} step={0.05} format={(value) => `${Math.round(value * 100)}%`} onChange={(uiScale) => set({ uiScale })} />
+      </HuntSection>
+
+      <HuntSection title="Sizes & Layout" icon={<SlidersHorizontal size={13} />}>
+        <SliderRow label="Progress bar" value={c.barHeight} min={3} max={10} unit="px" onChange={(barHeight) => set({ barHeight })} />
+        <SliderRow label="Avatar" value={c.avatarSize} min={20} max={44} step={2} unit="px" onChange={(avatarSize) => set({ avatarSize })} />
+        <SliderRow label="Visible rows" value={c.visibleRows} min={3} max={8} onChange={(visibleRows) => set({ visibleRows })} />
+      </HuntSection>
+
+      <HuntSection title="List Style" icon={<List size={13} />}>
+        <HuntChoiceGrid
+          value={c.listMode}
+          columns={3}
+          options={[
+            { key: "compact", label: "Rows" },
+            { key: "image", label: "Cards" },
+            { key: "names", label: "Names" },
+          ]}
+          onChange={(listMode) => set({ listMode })}
+        />
+      </HuntSection>
+
+      <HuntSection title="Best / Worst Card" icon={<Layers size={13} />}>
+        <HuntChoiceGrid
+          value={c.drawerMode}
+          options={[
+            { key: "shrink", label: "Shrink list", hint: "Keep panel height" },
+            { key: "expand", label: "Expand panel", hint: "Open result card" },
+          ]}
+          onChange={(drawerMode) => set({ drawerMode })}
+        />
+        <HuntHint>{drawerHint}</HuntHint>
+      </HuntSection>
+
+      <button className="bp-reset bp-hunt-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.bonus_hunt)}><RotateCcw size={13} /> Reset defaults</button>
     </div>
   );
 }
