@@ -31,7 +31,7 @@ import {
   Zap,
 } from "lucide-react";
 import NavbarWidget from "../widgets/NavbarWidget";
-import { BetterBonusHuntStyle } from "../widgets/shared/betterWidgetStyles";
+import { BetterBonusHuntStyle, BetterRtpEmblem } from "../widgets/shared/betterWidgetStyles";
 import "./BetterWidgetPackages.css";
 
 const DEFAULT_CARD_COLORS = [
@@ -898,14 +898,6 @@ function BetterChatPreview({ config, widget }) {
   );
 }
 
-function OrangeArc() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" className="bp-orange-arc">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="45 15" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function BetterNavbarPreview({ config, allWidgets, userId }) {
   const c = ensureBetterWidgetConfig("navbar", config);
   return (
@@ -943,7 +935,11 @@ function BetterRtpPreview({ config }) {
           {c.providerMode !== "none" && c.providerMode !== "image" && (
             <span style={{ color: c.cBrand, fontFamily: c.fontBody }}>{providerName}</span>
           )}
-          {c.showEmblem && <span className="bp-rtp-emblem"><OrangeArc /></span>}
+          {c.showEmblem && (
+            <span className="bp-rtp-emblem">
+              <BetterRtpEmblem config={c} />
+            </span>
+          )}
           <h1 style={{ fontFamily: c.fontTitle, fontSize: c.titleSize, letterSpacing: `${c.titleTracking}em`, color: c.cValue }}>{slotName}</h1>
         </div>
         {c.showDividers && <div className="bp-rtp-divider" />}

@@ -67,6 +67,11 @@ function formatMultiplier(value) {
   return `${number.toLocaleString(undefined, { maximumFractionDigits: 0 })}x`;
 }
 
+function clampNumber(value, min, max, fallback) {
+  const number = numberValue(value, fallback);
+  return Math.min(Math.max(number, min), max);
+}
+
 function initials(value) {
   const source = String(value || "SC").trim();
   return source
@@ -2140,6 +2145,203 @@ export function BetterChatMessage({
   );
 }
 
+const BETTER_RTP_EMBLEM_DURATIONS = {
+  reel: 2.4,
+  coin: 2.6,
+  dice: 3,
+  seven: 2.2,
+  gem: 3.4,
+  flame: 1.6,
+  bars: 1.2,
+  card: 3.6,
+  radar: 2.4,
+  lever: 3.2,
+  orbit: 9,
+};
+
+function resolveBetterRtpEmblem(value) {
+  const kind = String(value || "reel").toLowerCase();
+  return Object.prototype.hasOwnProperty.call(BETTER_RTP_EMBLEM_DURATIONS, kind) ? kind : "reel";
+}
+
+function BetterRtpEmblemCss() {
+  return (
+    <style>{`
+      @keyframes better-rtp-reel{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+      @keyframes better-rtp-coin{0%,100%{transform:rotateY(0deg)}50%{transform:rotateY(180deg)}}
+      @keyframes better-rtp-dice{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(8deg) translateY(-1px)}}
+      @keyframes better-rtp-seven{0%,100%{filter:drop-shadow(0 0 4px var(--em-a))}50%{filter:drop-shadow(0 0 12px var(--em-b))}}
+      @keyframes better-rtp-gem{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+      @keyframes better-rtp-flame{0%,100%{transform:skewX(-3deg) scaleY(1)}50%{transform:skewX(4deg) scaleY(1.09)}}
+      @keyframes better-rtp-bars{0%,100%{transform:scaleY(.45)}45%{transform:scaleY(1)}}
+      @keyframes better-rtp-card{0%,100%{transform:rotate(-6deg) translateY(0)}50%{transform:rotate(6deg) translateY(-2px)}}
+      @keyframes better-rtp-radar{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+      @keyframes better-rtp-lever{0%,100%{transform:rotate(-24deg)}50%{transform:rotate(18deg)}}
+      @keyframes better-rtp-orbit{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+      .better-rtp-em{--em-size:28px;--em-stroke:2;--em-a:#f7752a;--em-b:#f7a41d;--em-base:#12295c;--em-bolt:#f7a41d;--em-gold:#ffc01e;--em-dur:2.4s;position:relative;display:inline-grid;width:var(--em-size);height:var(--em-size);flex:0 0 auto;place-items:center;color:var(--em-a);line-height:1;filter:drop-shadow(0 0 7px color-mix(in srgb,var(--em-a) 52%,transparent))}
+      .better-rtp-em *{box-sizing:border-box}
+      .better-rtp-em svg{display:block;width:100%;height:100%;overflow:visible}
+      .better-rtp-em[data-animate="off"],.better-rtp-em[data-animate="off"] *,.better-rtp-em[data-animate="off"]::before,.better-rtp-em[data-animate="off"]::after{animation:none!important;transition:none!important}
+      .better-rtp-em__reel{position:relative;width:100%;height:100%;overflow:hidden;border:calc(var(--em-stroke) * 1px) solid color-mix(in srgb,var(--em-a) 72%,white 8%);border-radius:22%;background:linear-gradient(180deg,var(--em-base),#030816);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),inset 0 -8px 14px rgba(0,0,0,.45)}
+      .better-rtp-em__reel::before,.better-rtp-em__reel::after{content:"";position:absolute;z-index:2;left:0;right:0;height:28%;pointer-events:none}.better-rtp-em__reel::before{top:0;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}.better-rtp-em__reel::after{bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent)}
+      .better-rtp-em__reel-strip{position:absolute;inset:2px;display:grid;grid-auto-rows:calc(var(--em-size) / 3);align-items:center;animation:better-rtp-reel var(--em-dur) linear infinite}
+      .better-rtp-em__reel-strip i{display:grid;place-items:center;color:var(--em-gold);font-size:calc(var(--em-size) * .26);font-style:normal;font-weight:950;letter-spacing:.02em;text-shadow:0 0 7px var(--em-b)}
+      .better-rtp-em__coin{position:relative;width:86%;height:86%;transform-style:preserve-3d;animation:better-rtp-coin var(--em-dur) ease-in-out infinite}
+      .better-rtp-em__coin-face,.better-rtp-em__coin-back{position:absolute;inset:0;display:grid;place-items:center;border:calc(var(--em-stroke) * 1px) solid color-mix(in srgb,var(--em-gold) 82%,white 10%);border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff1a8,var(--em-b) 38%,#8b4a10 100%);color:#241100;font-size:calc(var(--em-size) * .26);font-weight:950;backface-visibility:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18),0 0 12px color-mix(in srgb,var(--em-gold) 55%,transparent)}
+      .better-rtp-em__coin-back{transform:rotateY(180deg);background:radial-gradient(circle at 35% 25%,#ffe8a0,var(--em-a) 45%,#5a260d 100%);font-size:calc(var(--em-size) * .2)}
+      .better-rtp-em__dice svg{animation:better-rtp-dice var(--em-dur) ease-in-out infinite}.better-rtp-em__dice rect{fill:var(--em-base);stroke:var(--em-a);stroke-width:var(--em-stroke)}.better-rtp-em__dice circle{fill:var(--em-b)}
+      .better-rtp-em__seven svg{animation:better-rtp-seven var(--em-dur) ease-in-out infinite}.better-rtp-em__seven path{fill:none;stroke:var(--em-a);stroke-width:calc(var(--em-stroke) * 1.6);stroke-linecap:round;stroke-linejoin:round}.better-rtp-em__seven circle{fill:var(--em-b)}
+      .better-rtp-em__gem polygon{stroke:var(--em-a);stroke-width:var(--em-stroke);animation:better-rtp-gem var(--em-dur) ease-in-out infinite;transform-origin:50% 50%}.better-rtp-em__gem .gem-face-a{fill:var(--em-b)}.better-rtp-em__gem .gem-face-b{fill:var(--em-base)}.better-rtp-em__gem .gem-face-c{fill:color-mix(in srgb,var(--em-a) 74%,white 12%)}
+      .better-rtp-em__flame path{stroke-width:calc(var(--em-stroke) * .7);animation:better-rtp-flame var(--em-dur) ease-in-out infinite;transform-origin:50% 75%}.better-rtp-em__flame .flame-a{fill:var(--em-a);stroke:var(--em-a)}.better-rtp-em__flame .flame-b{fill:var(--em-b);stroke:var(--em-b)}
+      .better-rtp-em__bars{display:flex;width:86%;height:74%;align-items:end;justify-content:center;gap:10%;padding:8% 10%;border-radius:18%;background:linear-gradient(180deg,color-mix(in srgb,var(--em-base) 82%,black),#030816);box-shadow:inset 0 0 0 calc(var(--em-stroke) * 1px) color-mix(in srgb,var(--em-a) 55%,transparent)}
+      .better-rtp-em__bars i{display:block;width:18%;height:var(--bar-h);border-radius:999px 999px 2px 2px;background:linear-gradient(180deg,var(--em-b),var(--em-a));box-shadow:0 0 8px color-mix(in srgb,var(--em-a) 70%,transparent);transform-origin:bottom;animation:better-rtp-bars var(--em-dur) ease-in-out infinite}.better-rtp-em__bars i:nth-child(2){animation-delay:calc(var(--em-dur) * -.33)}.better-rtp-em__bars i:nth-child(3){animation-delay:calc(var(--em-dur) * -.66)}
+      .better-rtp-em__card{position:relative;width:72%;height:88%;border:calc(var(--em-stroke) * 1px) solid color-mix(in srgb,var(--em-a) 72%,white 8%);border-radius:14%;background:linear-gradient(145deg,#f8fbff 0%,#c9d8ef 55%,#8297bc 100%);color:var(--em-a);box-shadow:0 0 12px color-mix(in srgb,var(--em-a) 45%,transparent);animation:better-rtp-card var(--em-dur) ease-in-out infinite}
+      .better-rtp-em__card b{position:absolute;top:9%;left:12%;font-size:calc(var(--em-size) * .27);line-height:1}.better-rtp-em__card i{position:absolute;right:14%;bottom:13%;width:34%;height:34%;border-radius:50%;background:radial-gradient(circle,var(--em-a),var(--em-b));box-shadow:0 0 8px var(--em-b)}
+      .better-rtp-em__radar{position:relative;width:88%;height:88%;overflow:hidden;border:calc(var(--em-stroke) * 1px) solid color-mix(in srgb,var(--em-a) 70%,transparent);border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--em-a) 18%,transparent),var(--em-base))}
+      .better-rtp-em__radar::before,.better-rtp-em__radar::after{content:"";position:absolute;inset:22%;border:1px solid color-mix(in srgb,var(--em-a) 48%,transparent);border-radius:50%}.better-rtp-em__radar::after{inset:40%;background:var(--em-b);box-shadow:0 0 8px var(--em-b)}
+      .better-rtp-em__radar i{position:absolute;left:50%;top:50%;width:50%;height:2px;transform-origin:left center;background:linear-gradient(90deg,var(--em-b),transparent);animation:better-rtp-radar var(--em-dur) linear infinite}
+      .better-rtp-em__lever{position:relative;width:86%;height:86%;border-radius:20%;background:linear-gradient(180deg,var(--em-base),#030816);box-shadow:inset 0 0 0 calc(var(--em-stroke) * 1px) color-mix(in srgb,var(--em-a) 55%,transparent)}
+      .better-rtp-em__lever::before{content:"";position:absolute;left:26%;bottom:18%;width:46%;height:16%;border-radius:999px;background:var(--em-a);box-shadow:0 0 8px var(--em-a)}
+      .better-rtp-em__lever i{position:absolute;left:47%;bottom:27%;width:10%;height:48%;transform-origin:50% 100%;border-radius:999px;background:linear-gradient(180deg,var(--em-b),var(--em-a));animation:better-rtp-lever var(--em-dur) ease-in-out infinite}.better-rtp-em__lever i::before{content:"";position:absolute;left:50%;top:-22%;width:calc(var(--em-size) * .24);height:calc(var(--em-size) * .24);transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,#fff,var(--em-b));box-shadow:0 0 10px var(--em-b)}
+      .better-rtp-em__orbit{position:relative;width:88%;height:88%;border:1px solid color-mix(in srgb,var(--em-a) 45%,transparent);border-radius:50%}.better-rtp-em__orbit b{position:absolute;left:50%;top:50%;width:28%;height:28%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff,var(--em-b));box-shadow:0 0 12px var(--em-b)}.better-rtp-em__orbit i{position:absolute;inset:0;border:calc(var(--em-stroke) * 1px) solid color-mix(in srgb,var(--em-a) 42%,transparent);border-radius:50%;animation:better-rtp-orbit var(--em-dur) linear infinite}.better-rtp-em__orbit i::before{content:"";position:absolute;right:8%;top:12%;width:22%;height:22%;border-radius:50%;background:var(--em-a);box-shadow:0 0 10px var(--em-a)}
+    `}</style>
+  );
+}
+
+function renderBetterRtpEmblem(kind) {
+  switch (kind) {
+    case "coin":
+      return (
+        <span className="better-rtp-em__coin">
+          <span className="better-rtp-em__coin-face">SC</span>
+          <span className="better-rtp-em__coin-back">RTP</span>
+        </span>
+      );
+    case "dice":
+      return (
+        <span className="better-rtp-em__dice">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="5" y="5" width="22" height="22" rx="5" />
+            <circle cx="12" cy="12" r="2.1" />
+            <circle cx="20" cy="12" r="2.1" />
+            <circle cx="16" cy="16" r="2.1" />
+            <circle cx="12" cy="20" r="2.1" />
+            <circle cx="20" cy="20" r="2.1" />
+          </svg>
+        </span>
+      );
+    case "seven":
+      return (
+        <span className="better-rtp-em__seven">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M8 7h16L14 25" />
+            <path d="M12 15h8" />
+            <circle cx="7" cy="21" r="1.7" />
+            <circle cx="25" cy="11" r="1.5" />
+          </svg>
+        </span>
+      );
+    case "gem":
+      return (
+        <span className="better-rtp-em__gem">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <polygon className="gem-face-a" points="16 4 27 12 23 27 9 27 5 12" />
+            <polygon className="gem-face-b" points="5 12 16 27 27 12 21 12 16 27 11 12" />
+            <polygon className="gem-face-c" points="11 12 16 4 21 12 16 27" />
+          </svg>
+        </span>
+      );
+    case "flame":
+      return (
+        <span className="better-rtp-em__flame">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path className="flame-a" d="M16 29c-5.1 0-8.8-3.7-8.8-8.5 0-4.1 2.7-6.9 5.7-9.9 1.6-1.6 2.8-3.4 2.9-6.1 5.1 3.5 8.9 8 8.9 14.7 0 5.7-3.8 9.8-8.7 9.8z" />
+            <path className="flame-b" d="M16.1 27c-2.7 0-4.6-1.9-4.6-4.5 0-2.4 1.7-4 3.1-5.8.8-1 1.2-2 1.2-3.5 2.9 2 5 4.5 5 8.1 0 3.2-2 5.7-4.7 5.7z" />
+          </svg>
+        </span>
+      );
+    case "bars":
+      return (
+        <span className="better-rtp-em__bars">
+          <i style={{ "--bar-h": "48%" }} />
+          <i style={{ "--bar-h": "88%" }} />
+          <i style={{ "--bar-h": "66%" }} />
+        </span>
+      );
+    case "card":
+      return (
+        <span className="better-rtp-em__card">
+          <b>A</b>
+          <i />
+        </span>
+      );
+    case "radar":
+      return (
+        <span className="better-rtp-em__radar">
+          <i />
+        </span>
+      );
+    case "lever":
+      return (
+        <span className="better-rtp-em__lever">
+          <i />
+        </span>
+      );
+    case "orbit":
+      return (
+        <span className="better-rtp-em__orbit">
+          <b />
+          <i />
+        </span>
+      );
+    case "reel":
+    default:
+      return (
+        <span className="better-rtp-em__reel">
+          <span className="better-rtp-em__reel-strip">
+            {["CH", "7", "BAR", "*", "GR", "DI", "CH", "7", "BAR", "*"].map((label, index) => (
+              <i key={`${label}-${index}`}>{label}</i>
+            ))}
+          </span>
+        </span>
+      );
+  }
+}
+
+export function BetterRtpEmblem({ config, emblem, size, animate }) {
+  const c = config || {};
+  const kind = resolveBetterRtpEmblem(emblem || c.emblem);
+  const emblemSize = clampNumber(size ?? c.emblemSize, 16, 72, 28);
+  const stroke = clampNumber(c.emblemStroke, 1, 6, 2);
+  const speed = clampNumber(c.emblemSpeed, 0.2, 4, 1);
+  const duration = `${(BETTER_RTP_EMBLEM_DURATIONS[kind] / speed).toFixed(2)}s`;
+  const isAnimated = animate ?? c.emblemAnimate !== false;
+
+  return (
+    <>
+      <BetterRtpEmblemCss />
+      <span
+        className={`better-rtp-em better-rtp-em--${kind}`}
+        data-emblem={kind}
+        data-animate={isAnimated ? "on" : "off"}
+        style={{
+          "--em-size": `${emblemSize}px`,
+          "--em-stroke": String(stroke),
+          "--em-a": c.cEmA || c.accentColor || "#f7752a",
+          "--em-b": c.cEmB || c.cBolt || "#f7a41d",
+          "--em-base": c.cEmBase || c.cBarMid || "#12295c",
+          "--em-bolt": c.cBolt || "#f7a41d",
+          "--em-gold": c.cGold || "#ffc01e",
+          "--em-dur": duration,
+        }}
+        aria-hidden="true"
+      >
+        {renderBetterRtpEmblem(kind)}
+      </span>
+    </>
+  );
+}
+
 export function BetterRtpStatsStyle({
   config,
   displaySlotName,
@@ -2157,17 +2359,61 @@ export function BetterRtpStatsStyle({
   showBestWin = true,
 }) {
   const c = config || {};
-  const accent = subValue(c, "rtpValue", "accentColor", c.rtpIconColor || c.accentColor || "#f59e0b");
-  const bgFrom = subValue(c, "container", "background", c.barBgFrom || "#071226");
-  const bgTo = c.barBgTo || "#030712";
-  const text = subValue(c, "slotTitle", "textColor", c.slotNameColor || c.textColor || "#f8fafc");
-  const muted = subValue(c, "label", "textColor", c.labelColor || "rgba(226,232,240,0.66)");
-  const font = subValue(c, "container", "fontFamily", c.fontFamily || "'Inter', sans-serif");
+  const accent = subValue(c, "rtpValue", "accentColor", c.rtpIconColor || c.accentColor || c.cBolt || "#f59e0b");
+  const bgFrom = subValue(c, "container", "background", c.cBarTop || c.barBgFrom || "#071226");
+  const bgMid = c.cBarMid || c.barBgMid || "#081735";
+  const bgTo = c.cBarBot || c.barBgTo || "#030712";
+  const borderColor = subValue(c, "container", "borderColor", c.cRim || c.borderColor || alphaColor(accent, 0.46));
+  const text = subValue(c, "slotTitle", "textColor", c.slotNameColor || c.textColor || c.cValue || "#f8fafc");
+  const muted = subValue(c, "label", "textColor", c.labelColor || c.cLabel || "rgba(226,232,240,0.66)");
+  const font = subValue(c, "container", "fontFamily", c.fontBody || c.fontFamily || "'Inter', sans-serif");
+  const titleFont = c.fontTitle || font;
   const fontSize = numberValue(subValue(c, "container", "fontSize", c.fontSize || 14), 14);
+  const titleSize = clampNumber(c.titleSize, 10, 46, fontSize * 1.3);
+  const valueSize = clampNumber(c.valueSize, 8, 34, fontSize * 0.95);
+  const labelSize = clampNumber(c.labelSize, 6, 18, fontSize * 0.62);
+  const barHeight = clampNumber(c.barHeight, 36, 140, 54);
+  const paddingX = clampNumber(c.barPadX, 0, 64, 14);
+  const paddingY = clampNumber(c.barPadY, 0, 36, 8);
+  const borderWidth = Math.max(0, numberValue(c.borderWidth, 1));
+  const radius = cssPx(c.radius ?? c.borderRadius ?? 14, "14px");
+  const providerMode = c.providerMode || "name";
+  const providerName = displayProvider || c.providerName || c.provider || "";
+  const providerLogo = c.logoSrc || displayProviderLogo || "";
+  const showProviderImage = providerMode !== "none" && providerMode !== "name" && Boolean(providerLogo);
+  const showProviderName = providerMode !== "none" && providerMode !== "image" && Boolean(providerName);
+  const hasProvider = showProviderImage || showProviderName;
+  const logoHeight = clampNumber(c.logoHeight, 12, 96, 30);
+  const logoMaxWidth = clampNumber(c.logoMaxW, 32, 420, 160);
+  const logoPadX = clampNumber(c.logoPadX, 0, 40, 0);
+  const logoPadY = clampNumber(c.logoPadY, 0, 32, 0);
+  const logoOffsetX = clampNumber(c.logoOffsetX, -64, 64, 0);
+  const logoOffsetY = clampNumber(c.logoOffsetY, -64, 64, 0);
+  const slotName = displaySlotName || c.slotName || c.detectedSlotName || c.currentSlotName || "-";
+  const liveRtp = displayInfo?.rtp;
+  const livePotential = displayInfo?.max_win_multiplier ?? displayInfo?.max_win;
+  const rtpValue =
+    liveRtp !== undefined && liveRtp !== null && liveRtp !== ""
+      ? `${String(liveRtp).replace(/%$/, "")}%`
+      : c.rtp || c.rtpValue || "-";
+  const potentialValue =
+    livePotential !== undefined && livePotential !== null && livePotential !== ""
+      ? formatMultiplier(livePotential)
+      : c.potential || c.maxWin || "-";
+  const volatilityValue = displayInfo?.volatility
+    ? String(displayInfo.volatility).replace(/_/g, " ").toUpperCase()
+    : c.volatility || "-";
   const bestAmount = displayBestWin?.best_win
-    ? `${currency}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
-    : bestWinEmptyText || "-";
+    ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+    : c.bestWin || bestWinEmptyText || "-";
   const bestMulti = displayBestWin?.best_multiplier ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : "";
+  const showDividers = c.showDividers !== false;
+  const statItems = [
+    ["rtpValue", "RTP", rtpValue, showRtp],
+    ["maxWin", "Potential", potentialValue, showPotential],
+    ["volatility", "Volatility", String(volatilityValue).replace(/_/g, " ").toUpperCase(), showVolatility],
+    ["personalBest", "Best win", `${bestAmount}${bestMulti}`, showBestWin],
+  ].filter(([, , , visible]) => visible);
 
   return (
     <div
@@ -2175,18 +2421,19 @@ export function BetterRtpStatsStyle({
       style={subElementStyle(c, "container", {
         width: "100%",
         height: "100%",
+        minHeight: barHeight,
         boxSizing: "border-box",
         display: "flex",
         alignItems: "center",
-        gap: 14,
-        padding: "8px 14px",
-        borderRadius: cssPx(c.borderRadius ?? 14, "14px"),
-        background: `linear-gradient(180deg, ${bgFrom}, ${bgTo})`,
-        border: `1px solid ${subValue(c, "container", "borderColor", c.borderColor || alphaColor(accent, 0.46))}`,
+        gap: 12,
+        padding: `${paddingY}px ${paddingX}px`,
+        borderRadius: radius,
+        background: `linear-gradient(180deg, ${bgFrom} 0%, ${bgMid} 52%, ${bgTo} 100%)`,
+        border: `${borderWidth}px solid ${borderColor}`,
         color: text,
         fontFamily: font,
         fontSize,
-        boxShadow: `0 14px 34px rgba(0,0,0,0.35), 0 0 20px ${alphaColor(accent, 0.22)}`,
+        boxShadow: `0 14px 34px rgba(0,0,0,0.35), 0 0 20px ${alphaColor(c.cRim || accent, 0.24)}`,
         overflow: "hidden",
         position: "relative",
       })}
@@ -2198,7 +2445,7 @@ export function BetterRtpStatsStyle({
           PREVIEW
         </span>
       ) : null}
-      {displayProvider ? (
+      {hasProvider ? (
         <div
           style={subElementStyle(c, "provider", {
             display: "flex",
@@ -2209,14 +2456,29 @@ export function BetterRtpStatsStyle({
           })}
           {...attrs("rtp_stats", c, "provider")}
         >
-          {displayProviderLogo ? (
-            <img src={displayProviderLogo} alt="" style={{ height: 30, maxWidth: 110, objectFit: "contain", borderRadius: 6 }} />
+          {showProviderImage ? (
+            <img
+              src={providerLogo}
+              alt=""
+              style={{
+                display: "block",
+                height: logoHeight,
+                maxWidth: logoMaxWidth,
+                objectFit: c.logoFit || "contain",
+                padding: `${logoPadY}px ${logoPadX}px`,
+                transform: `translate(${logoOffsetX}px, ${logoOffsetY}px)`,
+                borderRadius: 6,
+              }}
+            />
           ) : null}
-          <span style={{ color: accent, fontWeight: 950, letterSpacing: "0.16em", textTransform: "uppercase", fontSize: fontSize * 0.78 }}>
-            {displayProvider}
-          </span>
+          {showProviderName ? (
+            <span style={{ color: c.cBrand || accent, fontWeight: 950, letterSpacing: "0.16em", textTransform: "uppercase", fontSize: labelSize }}>
+              {providerName}
+            </span>
+          ) : null}
         </div>
       ) : null}
+      {c.showEmblem !== false ? <BetterRtpEmblem config={c} /> : null}
       <div
         style={subElementStyle(c, "slotTitle", {
           minWidth: 0,
@@ -2224,62 +2486,89 @@ export function BetterRtpStatsStyle({
         })}
         {...attrs("rtp_stats", c, "slotTitle")}
       >
-        <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: fontSize * 1.3, textTransform: "uppercase" }}>
-          {displaySlotName || "-"}
+        <strong
+          style={{
+            display: "block",
+            overflow: "hidden",
+            color: text,
+            fontFamily: titleFont,
+            fontSize: titleSize,
+            letterSpacing: `${numberValue(c.titleTracking, 0.08)}em`,
+            lineHeight: 1,
+            textOverflow: "ellipsis",
+            textTransform: "uppercase",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {slotName}
         </strong>
       </div>
-      {[
-        ["rtpValue", "RTP", displayInfo?.rtp ? `${displayInfo.rtp}%` : "-"],
-        ["maxWin", "Potential", formatMultiplier(displayInfo?.max_win_multiplier)],
-        ["volatility", "Volatility", String(displayInfo?.volatility || "-").replace(/_/g, " ").toUpperCase()],
-        ["personalBest", "Best win", `${bestAmount}${bestMulti}`],
-      ]
-        .filter(([part]) => {
-          if (part === "rtpValue") return showRtp;
-          if (part === "maxWin") return showPotential;
-          if (part === "volatility") return showVolatility;
-          if (part === "personalBest") return showBestWin;
-          return true;
-        })
-        .map(([part, label, value]) => (
-        <div
-          key={part}
-          style={subElementStyle(c, "statCard", {
+      {showDividers && statItems.length ? (
+        <span
+          style={{
+            alignSelf: "stretch",
+            width: 1,
             flexShrink: 0,
-            minWidth: part === "personalBest" ? 150 : 92,
-            padding: "6px 9px",
-            borderRadius: 10,
-            background: "rgba(255,255,255,0.055)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          })}
-          {...attrs("rtp_stats", c, "statCard")}
-        >
-          <span
-            style={subElementStyle(c, "label", {
-              display: "block",
-              color: muted,
-              fontSize: fontSize * 0.62,
-              fontWeight: 900,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
+            background: `linear-gradient(180deg, transparent, ${alphaColor(c.cRim || accent, 0.7)}, transparent)`,
+          }}
+          aria-hidden="true"
+        />
+      ) : null}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          minWidth: 0,
+          flex: "0 0 auto",
+        }}
+      >
+        {statItems.map(([part, label, value]) => (
+          <div
+            key={part}
+            style={subElementStyle(c, "statCard", {
+              flexShrink: 0,
+              minWidth: part === "personalBest" ? 150 : 92,
+              padding: "6px 9px",
+              borderRadius: Math.max(4, numberValue(c.radius, 10) - 2),
+              background: "rgba(255,255,255,0.055)",
+              border: "1px solid rgba(255,255,255,0.08)",
             })}
-            {...attrs("rtp_stats", c, "label")}
+            {...attrs("rtp_stats", c, "statCard")}
           >
-            {label}
-          </span>
-          <strong
-            style={subElementStyle(c, part, {
-              display: "block",
-              color: part === "rtpValue" ? accent : text,
-              fontSize: fontSize * 0.95,
-              whiteSpace: "nowrap",
-            })}
-            {...attrs("rtp_stats", c, part)}
-          >
-            {value}
-          </strong>
-        </div>
-      ))}
+            <span
+              style={subElementStyle(c, "label", {
+                display: "block",
+                color: muted,
+                fontFamily: font,
+                fontSize: labelSize,
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                whiteSpace: "nowrap",
+              })}
+              {...attrs("rtp_stats", c, "label")}
+            >
+              {label}
+            </span>
+            <strong
+              style={subElementStyle(c, part, {
+                display: "block",
+                overflow: "hidden",
+                color: part === "rtpValue" ? accent : text,
+                fontFamily: titleFont,
+                fontSize: valueSize,
+                lineHeight: 1.05,
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              })}
+              {...attrs("rtp_stats", c, part)}
+            >
+              {value}
+            </strong>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

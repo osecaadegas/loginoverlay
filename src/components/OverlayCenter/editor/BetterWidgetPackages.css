@@ -1471,11 +1471,6 @@
   text-transform: uppercase;
 }
 
-.bp-orange-arc {
-  color: var(--bp-gold, #f97316);
-  transform: rotate(-45deg);
-}
-
 .bp-brand-title {
   display: flex;
   flex-direction: column;
