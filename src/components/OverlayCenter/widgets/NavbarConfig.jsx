@@ -10,6 +10,7 @@ const DEFAULT_SECTION_LAYOUT = [
   { id: "clock", zone: "center" },
   { id: "nowPlaying", zone: "center" },
   { id: "crypto", zone: "right" },
+  { id: "socials", zone: "right" },
   { id: "cta", zone: "right" },
   { id: "balance", zone: "right" },
   { id: "casino", zone: "right" },
@@ -37,6 +38,29 @@ const ZONE_CHOICES = [
   { z: "center", label: "C", color: "#94a3b8" },
   { z: "right", label: "R", color: "#34d399" },
 ];
+
+const SECTION_IDS = new Set(DEFAULT_SECTION_LAYOUT.map((section) => section.id));
+
+function normalizeNavbarSectionLayout(layout) {
+  const source = Array.isArray(layout) ? layout : DEFAULT_SECTION_LAYOUT;
+  const normalized = [];
+  const seen = new Set();
+  source.forEach((section) => {
+    if (!section || !SECTION_IDS.has(section.id) || seen.has(section.id)) return;
+    const fallback = DEFAULT_SECTION_LAYOUT.find((item) => item.id === section.id);
+    normalized.push({
+      id: section.id,
+      zone: ["left", "center", "right"].includes(section.zone)
+        ? section.zone
+        : fallback?.zone || "right",
+    });
+    seen.add(section.id);
+  });
+  DEFAULT_SECTION_LAYOUT.forEach((section) => {
+    if (!seen.has(section.id)) normalized.push(section);
+  });
+  return normalized;
+}
 
 function ZoneButton({ section, zone, label, color, onMove }) {
   const active = section.zone === zone;
@@ -109,14 +133,9 @@ export default function NavbarConfig({ config, onChange }) {
   };
 
   // ─── Section layout helpers ───
-  const sectionLayout = (c.sectionLayout || DEFAULT_SECTION_LAYOUT).filter(
-    (s) => s.id !== "socials",
-  );
+  const sectionLayout = normalizeNavbarSectionLayout(c.sectionLayout);
   const setLayout = (newLayout) =>
-    set(
-      "sectionLayout",
-      newLayout.filter((s) => s.id !== "socials"),
-    );
+    set("sectionLayout", normalizeNavbarSectionLayout(newLayout));
 
   const setSectionZone = (sectionId, newZone) => {
     const updated = sectionLayout.map((s) =>
@@ -187,12 +206,21 @@ export default function NavbarConfig({ config, onChange }) {
     "showClock",
     "showNowPlaying",
     "showCrypto",
+    "showSocials",
     "showCTA",
     "showStartBalance",
     "showCasino",
     "cryptoDisplayMode",
+    "socialDisplayStyle",
     "ctaText",
     "motto",
+    "twitchUsername",
+    "kickChannelId",
+    "youtubeChannel",
+    "xUsername",
+    "instagramUsername",
+    "discordUrl",
+    "tiktokUsername",
     "badgeImage",
     "avatarSize",
     "badgeSize",
@@ -410,6 +438,14 @@ export default function NavbarConfig({ config, onChange }) {
           <label className="nb-toggle-row">
             <input
               type="checkbox"
+              checked={!!c.showSocials}
+              onChange={(e) => set("showSocials", e.target.checked)}
+            />
+            <span>Show Socials</span>
+          </label>
+          <label className="nb-toggle-row">
+            <input
+              type="checkbox"
               checked={!!c.showCTA}
               onChange={(e) => set("showCTA", e.target.checked)}
             />
@@ -507,6 +543,81 @@ export default function NavbarConfig({ config, onChange }) {
                   onChange={(e) => set("casinoImageSize", Number(e.target.value))}
                 />
                 <span className="nb-slider-value">{c.casinoImageSize ?? 100}%</span>
+              </label>
+            </>
+          )}
+
+          {c.showSocials && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
+                Socials
+              </h4>
+              <label className="nb-field">
+                <span>Display</span>
+                <select
+                  value={c.socialDisplayStyle || "icons"}
+                  onChange={(e) => set("socialDisplayStyle", e.target.value)}
+                >
+                  <option value="icons">Icons</option>
+                  <option value="labels">Labels</option>
+                  <option value="handles">Handles</option>
+                </select>
+              </label>
+              <label className="nb-field">
+                <span>Twitch</span>
+                <input
+                  value={c.twitchUsername || ""}
+                  onChange={(e) => set("twitchUsername", e.target.value)}
+                  placeholder="channel"
+                />
+              </label>
+              <label className="nb-field">
+                <span>Kick</span>
+                <input
+                  value={c.kickChannelId || c.kickChannel || ""}
+                  onChange={(e) => set("kickChannelId", e.target.value)}
+                  placeholder="channel"
+                />
+              </label>
+              <label className="nb-field">
+                <span>YouTube</span>
+                <input
+                  value={c.youtubeChannel || ""}
+                  onChange={(e) => set("youtubeChannel", e.target.value)}
+                  placeholder="@channel"
+                />
+              </label>
+              <label className="nb-field">
+                <span>X</span>
+                <input
+                  value={c.xUsername || ""}
+                  onChange={(e) => set("xUsername", e.target.value)}
+                  placeholder="handle"
+                />
+              </label>
+              <label className="nb-field">
+                <span>Instagram</span>
+                <input
+                  value={c.instagramUsername || ""}
+                  onChange={(e) => set("instagramUsername", e.target.value)}
+                  placeholder="handle"
+                />
+              </label>
+              <label className="nb-field">
+                <span>Discord invite</span>
+                <input
+                  value={c.discordUrl || ""}
+                  onChange={(e) => set("discordUrl", e.target.value)}
+                  placeholder="invite or URL"
+                />
+              </label>
+              <label className="nb-field">
+                <span>TikTok</span>
+                <input
+                  value={c.tiktokUsername || ""}
+                  onChange={(e) => set("tiktokUsername", e.target.value)}
+                  placeholder="handle"
+                />
               </label>
             </>
           )}

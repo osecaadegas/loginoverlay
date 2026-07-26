@@ -153,6 +153,8 @@ const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quie
 const BETTER_NAVBAR_SPOTIFY_ONLY_MARKER = "betterNavbarSpotifyOnlyInitialized";
 const BETTER_NAVBAR_OPTIONAL_CASINO_MARKER = "betterNavbarOptionalCasinoInitialized";
 const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER = "betterNavbarOptionalCasinoCommandInitialized";
+const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER = "betterNavbarManualCasinoCommand";
+const LEGACY_CASINO_COMMAND = "!casino";
 
 const GIVEAWAY_PRESETS = [
   { id: "cyber-blue", name: "Cyber Blue", swatch: "linear-gradient(135deg,#087eff,#43d3ff)", patch: { hue: 210, hueShift: 24, saturation: 82, accentSat: 96, accentLight: 56 } },
@@ -317,11 +319,11 @@ const DEFAULT_BETTER_CONFIG = {
     displayStyle: "better_navbar",
     streamerName: "BRUTUSPOLUS",
     twitchUsername: "",
+    kickChannelId: "",
+    youtubeChannel: "",
     avatarUrl: "",
     motto: "www.brutuspolus.com",
     brandName: "",
-    brandTop: "",
-    brandBottom: "",
     siteUrl: "",
     showAvatar: true,
     showClock: true,
@@ -330,6 +332,7 @@ const DEFAULT_BETTER_CONFIG = {
     showCasino: true,
     showStartBalance: true,
     showCrypto: false,
+    showSocials: false,
     ctaText: "Be Gamble Aware!",
     ctaColor: "#f97316",
     startLabel: "Start",
@@ -343,6 +346,12 @@ const DEFAULT_BETTER_CONFIG = {
     nowPlayingLabel: "Now Playing",
     musicSource: "spotify",
     musicDisplayStyle: "text",
+    cryptoDisplayMode: "horizontal",
+    socialDisplayStyle: "icons",
+    xUsername: "",
+    instagramUsername: "",
+    discordUrl: "",
+    tiktokUsername: "",
     accentColor: "#f97316",
     accentBlue: "#2563eb",
     accentGold: "#f97316",
@@ -486,12 +495,24 @@ export function getBetterWidgetMeta(type) {
 
 function normalizeBetterNavbarConfig(config = {}, merged = {}) {
   const defaults = DEFAULT_BETTER_CONFIG.navbar;
+  const originalCasinoCommand = String(config.casinoCommand || "").trim();
+  const normalizedCasinoCommand = String(merged.casinoCommand || "").trim();
+  const isLegacyCasinoCommand =
+    normalizedCasinoCommand.toLowerCase() === LEGACY_CASINO_COMMAND;
+  const hasManualCasinoCommand =
+    config[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] === true ||
+    (
+      normalizedCasinoCommand &&
+      normalizedCasinoCommand.toLowerCase() !== LEGACY_CASINO_COMMAND &&
+      originalCasinoCommand === normalizedCasinoCommand
+    );
   const next = {
     ...merged,
     betterNavbarFeaturesInitialized: true,
     [BETTER_NAVBAR_SPOTIFY_ONLY_MARKER]: true,
     [BETTER_NAVBAR_OPTIONAL_CASINO_MARKER]: true,
     [BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER]: true,
+    [BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER]: hasManualCasinoCommand,
   };
 
   if (
@@ -525,15 +546,21 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     if (String(next.casinoName || "").trim().toLowerCase() === "casino") {
       next.casinoName = "";
     }
-    if (String(next.casinoCommand || "").trim().toLowerCase() === "!casino") {
+    if (String(next.casinoCommand || "").trim().toLowerCase() === LEGACY_CASINO_COMMAND) {
       next.casinoCommand = "";
     }
   }
   if (
-    config[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true &&
-    String(next.casinoCommand || "").trim().toLowerCase() === "!casino"
+    (
+      config[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
+      !hasManualCasinoCommand
+    ) &&
+    String(next.casinoCommand || "").trim().toLowerCase() === LEGACY_CASINO_COMMAND
   ) {
     next.casinoCommand = "";
+  }
+  if (!next.casinoCommand) {
+    next[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = false;
   }
 
   if (!next.streamerName && !next.brandName) next.streamerName = defaults.streamerName;
@@ -1083,6 +1110,18 @@ const NAVBAR_MUSIC_DISPLAY_OPTIONS = [
   { key: "wave", name: "Wave" },
 ];
 
+const NAVBAR_CRYPTO_DISPLAY_OPTIONS = [
+  { key: "horizontal", name: "Slide left" },
+  { key: "carousel", name: "Slide up" },
+  { key: "fade", name: "Fade" },
+];
+
+const NAVBAR_SOCIAL_DISPLAY_OPTIONS = [
+  { key: "icons", name: "Icons" },
+  { key: "labels", name: "Labels" },
+  { key: "handles", name: "Handles" },
+];
+
 const NAVBAR_CURRENCY_OPTIONS = [
   { value: "EUR ", label: "EUR" },
   { value: "$", label: "USD" },
@@ -1103,12 +1142,20 @@ function getTwitchIdentity(user) {
 
 function BetterNavbarControls({ config, onChange, user }) {
   const c = ensureBetterWidgetConfig("navbar", config);
-  const set = (patch) => onChange({ ...c, ...patch });
+  const set = (patch) => {
+    const nextPatch = { ...patch };
+    if (Object.prototype.hasOwnProperty.call(nextPatch, "casinoCommand")) {
+      nextPatch[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = true;
+    }
+    onChange({ ...c, ...nextPatch });
+  };
   const [tab, setTab] = useTab("identity");
   const tabs = [
     ["identity", <Users size={12} />, "Identity"],
     ["sections", <Layers size={12} />, "Sections"],
     ["music", <Music size={12} />, "Music"],
+    ["crypto", <Coins size={12} />, "Crypto"],
+    ["socials", <Users size={12} />, "Socials"],
     ["casino", <Coins size={12} />, "Casino"],
     ["cta", <Zap size={12} />, "CTA"],
     ["style", <Palette size={12} />, "Style"],
@@ -1168,16 +1215,6 @@ function BetterNavbarControls({ config, onChange, user }) {
               onChange={(brandName) => set({ brandName })}
             />
             <TextRow
-              label="Top stack text"
-              value={c.brandTop || ""}
-              onChange={(brandTop) => set({ brandTop })}
-            />
-            <TextRow
-              label="Bottom stack text"
-              value={c.brandBottom || ""}
-              onChange={(brandBottom) => set({ brandBottom })}
-            />
-            <TextRow
               label="Site text"
               value={c.siteUrl || ""}
               onChange={(siteUrl) => set({ siteUrl })}
@@ -1218,6 +1255,11 @@ function BetterNavbarControls({ config, onChange, user }) {
               label="Crypto ticker"
               checked={!!c.showCrypto}
               onChange={(showCrypto) => set({ showCrypto })}
+            />
+            <ToggleRow
+              label="Socials"
+              checked={!!c.showSocials}
+              onChange={(showSocials) => set({ showSocials })}
             />
           </Section>
 
@@ -1263,6 +1305,84 @@ function BetterNavbarControls({ config, onChange, user }) {
             />
           </Section>
         </>
+      )}
+
+      {current === "crypto" && (
+        <Section title="Crypto ticker" icon={<Coins size={13} />}>
+          <ToggleRow
+            label="Show crypto ticker"
+            checked={!!c.showCrypto}
+            onChange={(showCrypto) => set({ showCrypto })}
+          />
+          <SelectRow
+            label="Transition"
+            value={c.cryptoDisplayMode || "horizontal"}
+            options={NAVBAR_CRYPTO_DISPLAY_OPTIONS}
+            onChange={(cryptoDisplayMode) => set({ cryptoDisplayMode })}
+          />
+          <ColorRow
+            label="Up colour"
+            value={c.cryptoUpColor || "#34d399"}
+            onChange={(cryptoUpColor) => set({ cryptoUpColor })}
+          />
+          <ColorRow
+            label="Down colour"
+            value={c.cryptoDownColor || "#f87171"}
+            onChange={(cryptoDownColor) => set({ cryptoDownColor })}
+          />
+          <p className="bp-hint">The ticker uses live CoinGecko prices and cycles the supported coins automatically.</p>
+        </Section>
+      )}
+
+      {current === "socials" && (
+        <Section title="Socials" icon={<Users size={13} />}>
+          <ToggleRow
+            label="Show socials"
+            checked={!!c.showSocials}
+            onChange={(showSocials) => set({ showSocials })}
+          />
+          <SelectRow
+            label="Display"
+            value={c.socialDisplayStyle || "icons"}
+            options={NAVBAR_SOCIAL_DISPLAY_OPTIONS}
+            onChange={(socialDisplayStyle) => set({ socialDisplayStyle })}
+          />
+          <TextRow
+            label="Twitch"
+            value={c.twitchUsername || ""}
+            onChange={(twitchUsername) => set({ twitchUsername })}
+          />
+          <TextRow
+            label="Kick"
+            value={c.kickChannelId || c.kickChannel || ""}
+            onChange={(kickChannelId) => set({ kickChannelId })}
+          />
+          <TextRow
+            label="YouTube"
+            value={c.youtubeChannel || ""}
+            onChange={(youtubeChannel) => set({ youtubeChannel })}
+          />
+          <TextRow
+            label="X"
+            value={c.xUsername || ""}
+            onChange={(xUsername) => set({ xUsername })}
+          />
+          <TextRow
+            label="Instagram"
+            value={c.instagramUsername || ""}
+            onChange={(instagramUsername) => set({ instagramUsername })}
+          />
+          <TextRow
+            label="Discord invite"
+            value={c.discordUrl || ""}
+            onChange={(discordUrl) => set({ discordUrl })}
+          />
+          <TextRow
+            label="TikTok"
+            value={c.tiktokUsername || ""}
+            onChange={(tiktokUsername) => set({ tiktokUsername })}
+          />
+        </Section>
       )}
 
       {current === "casino" && (
@@ -1330,7 +1450,7 @@ function BetterNavbarControls({ config, onChange, user }) {
                 onChange={(accentBlue) => set({ accentBlue })}
               />
               <ColorRow
-                label="Orange arc"
+                label="Accent"
                 value={c.accentGold || "#f97316"}
                 onChange={(accentGold) => set({ accentGold })}
               />
@@ -1505,15 +1625,23 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
 
 function SimpleThemedControls({ type, config, onChange }) {
   const c = ensureBetterWidgetConfig(type, config);
-  const set = (patch) => onChange({ ...c, ...patch });
+  const set = (patch) => {
+    const nextPatch = { ...patch };
+    if (type === "navbar" && Object.prototype.hasOwnProperty.call(nextPatch, "casinoCommand")) {
+      nextPatch[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = true;
+    }
+    onChange({ ...c, ...nextPatch });
+  };
   const [tab, setTab] = useTab("theme");
   const activeTab = (tabs) => (tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0]);
 
   if (type === "navbar") {
     return (
       <div className="bp-controls">
-        <Section title="Content" icon={<Type size={13} />}>{["brandName", "brandTop", "brandBottom", "siteUrl", "startValue", "casinoCommand"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>
-        <Section title="Colours" icon={<Palette size={13} />}><ColorRow label="Blue glow" value={c.accentBlue} onChange={(accentBlue) => set({ accentBlue })} /><ColorRow label="Orange arc" value={c.accentGold} onChange={(accentGold) => set({ accentGold })} /></Section>
+        <Section title="Content" icon={<Type size={13} />}>{["brandName", "siteUrl", "startValue"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>
+        <Section title="Options" icon={<Layers size={13} />}><ToggleRow label="Casino" checked={!!c.showCasino} onChange={(showCasino) => set({ showCasino })} /><ToggleRow label="Crypto ticker" checked={!!c.showCrypto} onChange={(showCrypto) => set({ showCrypto })} /><ToggleRow label="Socials" checked={!!c.showSocials} onChange={(showSocials) => set({ showSocials })} /></Section>
+        <Section title="Casino" icon={<Coins size={13} />}><TextRow label="Logo URL" value={c.casinoLogoUrl || ""} onChange={(casinoLogoUrl) => set({ casinoLogoUrl })} /><SliderRow label="Logo size" value={c.casinoImageSize ?? 100} min={20} max={300} step={5} unit="%" onChange={(casinoImageSize) => set({ casinoImageSize })} /><TextRow label="Manual text" value={c.casinoCommand || ""} onChange={(casinoCommand) => set({ casinoCommand })} /></Section>
+        <Section title="Colours" icon={<Palette size={13} />}><ColorRow label="Blue glow" value={c.accentBlue} onChange={(accentBlue) => set({ accentBlue })} /><ColorRow label="Accent" value={c.accentGold} onChange={(accentGold) => set({ accentGold })} /></Section>
         <Section title="Size" icon={<Maximize2 size={13} />}><SliderRow label="Height" value={c.barHeight} min={42} max={92} unit="px" onChange={(barHeight) => set({ barHeight })} /><SliderRow label="Radius" value={c.radius} min={0} max={24} unit="px" onChange={(radius) => set({ radius })} /><SliderRow label="Max width" value={c.maxWidth} min={720} max={1600} step={16} unit="px" onChange={(maxWidth) => set({ maxWidth })} /></Section>
       </div>
     );

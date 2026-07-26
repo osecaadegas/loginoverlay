@@ -41,6 +41,8 @@ const CRYPTO_IDS = {
 /* All coins that auto-cycle when crypto is enabled */
 const ALL_CRYPTO_COINS = Object.keys(CRYPTO_IDS);
 const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER = "betterNavbarOptionalCasinoCommandInitialized";
+const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER = "betterNavbarManualCasinoCommand";
+const LEGACY_CASINO_COMMAND = "!casino";
 
 const CRYPTO_SYMBOLS = {
   btc: "₿",
@@ -82,9 +84,71 @@ const DEFAULT_SECTION_LAYOUT = [
   { id: "clock", zone: "center" },
   { id: "nowPlaying", zone: "center" },
   { id: "crypto", zone: "right" },
+  { id: "socials", zone: "right" },
   { id: "cta", zone: "right" },
   { id: "balance", zone: "right" },
   { id: "casino", zone: "right" },
+];
+
+const SECTION_IDS = new Set(DEFAULT_SECTION_LAYOUT.map((section) => section.id));
+
+const SOCIAL_PLATFORM_META = [
+  {
+    id: "twitch",
+    label: "Twitch",
+    short: "TW",
+    color: "#9146ff",
+    keys: ["twitchUsername"],
+    toUrl: (value) => `https://twitch.tv/${value}`,
+  },
+  {
+    id: "kick",
+    label: "Kick",
+    short: "K",
+    color: "#53fc18",
+    keys: ["kickChannelId", "kickChannel"],
+    toUrl: (value) => `https://kick.com/${value}`,
+  },
+  {
+    id: "youtube",
+    label: "YouTube",
+    short: "YT",
+    color: "#ff0033",
+    keys: ["youtubeChannel", "youtubeVideoId"],
+    toUrl: (value) => `https://youtube.com/${value.startsWith("@") ? value : `@${value}`}`,
+  },
+  {
+    id: "x",
+    label: "X",
+    short: "X",
+    color: "#f8fafc",
+    keys: ["xUsername", "twitterUsername"],
+    toUrl: (value) => `https://x.com/${value}`,
+  },
+  {
+    id: "instagram",
+    label: "Instagram",
+    short: "IG",
+    color: "#f472b6",
+    keys: ["instagramUsername"],
+    toUrl: (value) => `https://instagram.com/${value}`,
+  },
+  {
+    id: "discord",
+    label: "Discord",
+    short: "DC",
+    color: "#5865f2",
+    keys: ["discordUrl", "discordInvite", "discordTag"],
+    toUrl: (value) => (value.includes("/") ? value : `https://discord.gg/${value}`),
+  },
+  {
+    id: "tiktok",
+    label: "TikTok",
+    short: "TT",
+    color: "#22d3ee",
+    keys: ["tiktokUsername"],
+    toUrl: (value) => `https://tiktok.com/@${value}`,
+  },
 ];
 
 const NAVBAR_STYLE_DEFAULTS = {
@@ -740,6 +804,49 @@ function buildCryptoTickerAnimationStyle(mode, fading) {
   return {};
 }
 
+function normalizeNavbarSectionLayout(layout) {
+  const source = Array.isArray(layout) ? layout : DEFAULT_SECTION_LAYOUT;
+  const normalized = [];
+  const seen = new Set();
+  source.forEach((section) => {
+    if (!section || !SECTION_IDS.has(section.id) || seen.has(section.id)) return;
+    const fallback = DEFAULT_SECTION_LAYOUT.find((item) => item.id === section.id);
+    normalized.push({
+      id: section.id,
+      zone: ["left", "center", "right"].includes(section.zone)
+        ? section.zone
+        : fallback?.zone || "right",
+    });
+    seen.add(section.id);
+  });
+  DEFAULT_SECTION_LAYOUT.forEach((section) => {
+    if (!seen.has(section.id)) normalized.push(section);
+  });
+  return normalized;
+}
+
+function cleanSocialValue(value) {
+  return String(value || "").trim().replace(/^@+/, "");
+}
+
+function resolveNavbarSocialItems(config = {}) {
+  const items = [];
+  SOCIAL_PLATFORM_META.forEach((platform) => {
+    const raw = platform.keys
+      .map((key) => config[key])
+      .find((value) => String(value || "").trim());
+    const cleaned = cleanSocialValue(raw);
+    if (!cleaned) return;
+    const isUrl = /^https?:\/\//i.test(cleaned);
+    items.push({
+      ...platform,
+      value: cleaned,
+      url: isUrl ? cleaned : platform.toUrl(cleaned),
+    });
+  });
+  return items;
+}
+
 function nextCryptoIndex(currentIndex, coinCount) {
   return (currentIndex + 1) % coinCount;
 }
@@ -1294,10 +1401,9 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   };
 
   /* ─── Dynamic section layout ─── */
-  const layout = (c.sectionLayout || DEFAULT_SECTION_LAYOUT).filter(
-    (s) => s.id !== "socials",
-  );
+  const layout = normalizeNavbarSectionLayout(c.sectionLayout);
   const getZoneSections = (zone) => layout.filter((s) => s.zone === zone);
+  const socialItems = resolveNavbarSocialItems(c);
 
   const renderAvatar = () => {
     if (c.showAvatar === false) return null;
@@ -1566,6 +1672,80 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     );
   };
 
+  const renderSocialsSection = ({ compact = false } = {}) => {
+    if (!c.showSocials || socialItems.length === 0) return null;
+    const displayStyle = c.socialDisplayStyle || "icons";
+    return (
+      <div
+        {...partAttrs("socials")}
+        style={withElementOffset(c, "socials", {
+          display: "flex",
+          alignItems: "center",
+          gap: compact ? 5 : 6,
+          minWidth: 0,
+          flexShrink: 0,
+        })}
+      >
+        {socialItems.map((item) => {
+          const showHandle = displayStyle === "handles" || displayStyle === "labels";
+          const label =
+            displayStyle === "labels"
+              ? item.label
+              : `@${item.value.replace(/^https?:\/\//i, "")}`;
+          return (
+            <a
+              key={item.id}
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              title={`${item.label}: ${item.value}`}
+              style={{
+                height: compact ? Math.max(20, barHeight * 0.42) : Math.max(22, barHeight * 0.46),
+                minWidth: compact ? Math.max(20, barHeight * 0.42) : Math.max(22, barHeight * 0.46),
+                maxWidth: showHandle ? 150 : undefined,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                boxSizing: "border-box",
+                border: `1px solid ${alphaColor(item.color, 0.42)}`,
+                borderRadius: 999,
+                padding: showHandle ? "0 8px" : 0,
+                color: textColor,
+                background: alphaColor(item.color, 0.12),
+                boxShadow: `0 0 10px ${alphaColor(item.color, 0.14)}`,
+                fontFamily,
+                fontSize: Math.max(8, fontSize * 0.72),
+                fontWeight: 950,
+                letterSpacing: "0.04em",
+                lineHeight: 1,
+                textDecoration: "none",
+                textTransform: "uppercase",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ color: item.color }}>{item.short}</span>
+              {showHandle ? (
+                <span
+                  style={{
+                    minWidth: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    color: textColor,
+                  }}
+                >
+                  {label}
+                </span>
+              ) : null}
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderCtaSection = () => {
     if (!c.showCTA || !c.ctaText) return null;
     return (
@@ -1714,7 +1894,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     nowPlaying: renderNowPlayingSection,
     crypto: renderCryptoSection,
     cta: renderCtaSection,
-    socials: () => null,
+    socials: renderSocialsSection,
     balance: renderBalanceSection,
     casino: renderCasinoSection,
   };
@@ -1759,16 +1939,6 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       .trim()
       .split(/\s+/)
       .filter(Boolean);
-    const brandTop =
-      c.brandTop ||
-      (brandWords.length > 1
-        ? brandWords[0]
-        : brandName.slice(0, Math.max(1, Math.ceil(brandName.length / 2))));
-    const brandBottom =
-      c.brandBottom ||
-      (brandWords.length > 1
-        ? brandWords.slice(1).join(" ")
-        : brandName.slice(Math.max(1, Math.ceil(brandName.length / 2))));
     const brandInitials =
       brandWords
         .slice(0, 2)
@@ -1790,12 +1960,13 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         : "";
     const startValue = c.startValue || formattedStartBalance;
     const showStart = Boolean(c.startValue || (c.showStartBalance && startValue));
-    const rawCasinoCommand =
-      c.casinoCommand ||
-      (c.casinoName ? c.casinoName : "");
+    const rawCasinoCommand = c.casinoCommand || "";
     const casinoCommand =
-      c[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true &&
-      String(rawCasinoCommand || "").trim().toLowerCase() === "!casino"
+      (
+        c[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
+        c[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] !== true
+      ) &&
+      String(rawCasinoCommand || "").trim().toLowerCase() === LEGACY_CASINO_COMMAND
         ? ""
         : rawCasinoCommand;
     const showCasino = Boolean(
@@ -1828,9 +1999,10 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     );
     const showPackageClock = c.showClock !== false;
     const showPackageCrypto = Boolean(c.showCrypto && activeCoins.length);
+    const showPackageSocials = Boolean(c.showSocials && socialItems.length);
     const showPackageCta = Boolean(c.showCTA && c.ctaText);
     const showPackageRightRail =
-      showBetterMusic || showPackageCrypto || showPackageCta;
+      showBetterMusic || showPackageCrypto || showPackageSocials || showPackageCta;
     const renderPackageDivider = (push = false) => (
       <div
         {...partAttrs("separator")}
@@ -1849,21 +2021,6 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
       </svg>
     );
-    const renderOrangeArc = () => (
-      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" style={{ transform: "rotate(-45deg)", flexShrink: 0 }}>
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-          fill="none"
-          stroke={packageGold}
-          strokeWidth="2.5"
-          strokeDasharray="45 15"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-
     return (
       <div
         style={{
@@ -1955,7 +2112,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
             style={withElementOffset(c, "displayName", {
               display: "flex",
               alignItems: "center",
-              gap: 16,
+              gap: 12,
               height: "100%",
               minWidth: 0,
               paddingLeft: Math.max(14, Number(containerPadding) || 20),
@@ -2006,24 +2163,6 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                 )}
               </div>
             )}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                color: alphaColor(mutedColor, 0.7),
-                fontSize: 7,
-                fontWeight: 950,
-                letterSpacing: "0.22em",
-                lineHeight: 1.1,
-                minWidth: 42,
-                textTransform: "uppercase",
-              }}
-            >
-              <span>{brandTop}</span>
-              <span>{brandBottom || brandTop}</span>
-            </div>
-            {renderOrangeArc()}
             <div
               style={{
                 minWidth: 0,
@@ -2255,6 +2394,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               )}
 
               {showPackageCrypto && renderCryptoSection()}
+              {showPackageSocials && renderSocialsSection({ compact: true })}
               {showPackageCta && renderCtaSection()}
             </div>
           )}
