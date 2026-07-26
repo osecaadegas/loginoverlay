@@ -195,6 +195,27 @@ function resolveNavbarStyleDefault(displayStyle, key) {
   return typeof value === "function" ? value() : value;
 }
 
+function alphaColor(value, opacity) {
+  const raw = String(value || "").trim();
+  const hex = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(raw);
+  if (!hex) {
+    if (/^rgba?\(/i.test(raw)) return raw;
+    return `rgba(37,99,235,${opacity})`;
+  }
+  const full =
+    hex[1].length === 3
+      ? hex[1]
+          .split("")
+          .map((char) => `${char}${char}`)
+          .join("")
+      : hex[1];
+  const int = Number.parseInt(full, 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return `rgba(${r},${g},${b},${opacity})`;
+}
+
 function resolveNavbarStyleSecaValue(isStyleSeca, value, fallback) {
   if (isStyleSeca) return resolveStyleSecaValue(value, fallback);
   return value;
@@ -202,7 +223,9 @@ function resolveNavbarStyleSecaValue(isStyleSeca, value, fallback) {
 
 function resolveDisplayNowPlaying(config, nowPlaying) {
   if (config.musicSource === "spotify" && nowPlaying) return nowPlaying;
-  if (config.musicSource !== "manual") return null;
+  const allowManualFallback =
+    config.musicSource === "manual" || config.musicSource === "spotify";
+  if (!allowManualFallback) return null;
   if (!config.manualArtist && !config.manualTrack) return null;
   return {
     artist: config.manualArtist || "",
@@ -1720,30 +1743,130 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   };
 
   if (isBetterNavbar) {
-    const betterSeparator = (
+    const packageBlue = c.accentBlue || "#2563eb";
+    const packageGold = c.accentGold || accentColor || "#f97316";
+    const packageBgTop = c.navbarTopColor || "#0a152e";
+    const packageBgBottom = c.navbarBottomColor || bgColor || "#060d20";
+    const packageBorder = c.navbarBorderColor || packageBlue;
+    const packageHeight = Number(c.barHeight) || 52;
+    const packageRadius = Number(c.radius ?? c.borderRadius ?? 12) || 12;
+    const packageMaxWidth = Number(c.maxWidth) || 1152;
+    const brandName = String(
+      c.brandName ||
+        c.streamerName ||
+        c.twitchUsername ||
+        "STREAMER",
+    ).toUpperCase();
+    const brandWords = brandName
+      .replace(/[^a-z0-9]+/gi, " ")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    const brandTop =
+      c.brandTop ||
+      (brandWords.length > 1
+        ? brandWords[0]
+        : brandName.slice(0, Math.max(1, Math.ceil(brandName.length / 2))));
+    const brandBottom =
+      c.brandBottom ||
+      (brandWords.length > 1
+        ? brandWords.slice(1).join(" ")
+        : brandName.slice(Math.max(1, Math.ceil(brandName.length / 2))));
+    const siteText =
+      c.siteUrl ||
+      c.motto ||
+      (c.twitchUsername ? `twitch.tv/${c.twitchUsername}` : "");
+    const formattedStartBalance =
+      c.startBalance !== undefined && c.startBalance !== null && c.startBalance !== ""
+        ? `${c.balanceCurrency || "€"}${Number(c.startBalance).toLocaleString(undefined, {
+            maximumFractionDigits: 2,
+          })}`
+        : "";
+    const startValue = c.startValue || formattedStartBalance;
+    const showStart = Boolean(c.startValue || (c.showStartBalance && startValue));
+    const casinoCommand =
+      c.casinoCommand ||
+      (c.casinoName ? c.casinoName : "");
+    const showCasino = Boolean(
+      c.casinoCommand || (c.showCasino && (casinoCommand || casinoLogoUrl)),
+    );
+    const staticNowPlaying = c.nowPlaying
+      ? { track: c.nowPlaying, artist: "", isPlaying: false }
+      : null;
+    const betterNowPlaying = displayNowPlaying || staticNowPlaying;
+    const showBetterMusic = Boolean(
+      c.nowPlaying || (c.showNowPlaying !== false && betterNowPlaying),
+    );
+    const nowPlayingText = betterNowPlaying
+      ? [betterNowPlaying.track, betterNowPlaying.artist]
+          .filter(Boolean)
+          .join(" - ")
+      : "";
+    const musicLabel = c.nowPlayingLabel || "Now Playing";
+    const renderPackageDivider = (push = false) => (
       <div
         {...partAttrs("separator")}
         style={withElementOffset(c, "separator", {
-          width: separatorWidth,
-          height: Math.max(20, barHeight * 0.48),
-          background: `linear-gradient(180deg, transparent, ${borderColor}, transparent)`,
+          width: Math.max(1, Number(separatorWidth) || 1),
+          height: Math.max(22, packageHeight * 0.46),
+          marginLeft: push ? "auto" : 0,
+          background: `linear-gradient(180deg, transparent, ${alphaColor(packageBlue, 0.42)}, transparent)`,
           opacity: separatorOpacity,
           flexShrink: 0,
         })}
       />
     );
-    const renderBetterItems = (items) =>
-      items.filter(Boolean).flatMap((item, index) =>
-        index === 0
-          ? [<React.Fragment key={index}>{item}</React.Fragment>]
-          : [
-              <React.Fragment key={`sep-${index}`}>{betterSeparator}</React.Fragment>,
-              <React.Fragment key={index}>{item}</React.Fragment>,
-            ],
+    const renderBolt = () => (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill={packageGold} aria-hidden="true">
+        <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
+      </svg>
+    );
+    const renderMusicIcon = () => {
+      if (betterNowPlaying?.albumArt) {
+        return (
+          <img
+            src={betterNowPlaying.albumArt}
+            alt=""
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 5,
+              objectFit: "cover",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.45)",
+              flexShrink: 0,
+            }}
+          />
+        );
+      }
+      if (c.musicSource === "spotify") {
+        return (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#1ed760" aria-hidden="true" style={{ flexShrink: 0 }}>
+            <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.59 14.42a.62.62 0 0 1-.86.2c-2.36-1.44-5.33-1.77-8.84-.97a.63.63 0 0 1-.28-1.22c3.84-.88 7.13-.5 9.78 1.12.3.18.39.57.2.87Zm1.23-2.75a.78.78 0 0 1-1.08.25c-2.7-1.66-6.82-2.14-10.02-1.17a.78.78 0 0 1-.45-1.5c3.66-1.11 8.2-.58 11.3 1.32.37.23.48.72.25 1.1Zm.11-2.86C14.7 8.89 9.37 8.71 6.28 9.65a.94.94 0 0 1-.55-1.79c3.55-1.08 9.43-.86 13.16 1.35a.94.94 0 1 1-.96 1.6Z" />
+          </svg>
+        );
+      }
+      return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill={packageGold} aria-hidden="true" style={{ flexShrink: 0 }}>
+          <path d="M9 18V5l12-2v13" fill="none" stroke={packageGold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
       );
-    const leftItems = [renderIdentitySection(), renderBalanceSection(), renderCasinoSection()];
-    const centerItems = [renderClockSection()];
-    const rightItems = [renderNowPlayingSection(), renderCryptoSection(), renderCtaSection()];
+    };
+    const renderOrangeArc = () => (
+      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" style={{ transform: "rotate(-45deg)", flexShrink: 0 }}>
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+          fill="none"
+          stroke={packageGold}
+          strokeWidth="2.5"
+          strokeDasharray="45 15"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
 
     return (
       <div
@@ -1756,99 +1879,349 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         }}
       >
         <style>{`
-          @keyframes better-nav-sheen{0%{transform:translateX(-140%)}100%{transform:translateX(140%)}}
+          @keyframes better-nav-package-sheen{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+          @keyframes better-nav-spotify-eq{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
         `}</style>
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: "75%",
+            height: packageHeight * 2.5,
+            transform: "translate(-50%, -50%)",
+            background: `radial-gradient(ellipse, ${alphaColor(packageBlue, 0.14)}, transparent 64%)`,
+            filter: "blur(60px)",
+            borderRadius: 999,
+            pointerEvents: "none",
+          }}
+        />
         <div
           {...partAttrs("container")}
           style={{
             width: "100%",
-            height: `${barHeight}px`,
+            height: `${packageHeight}px`,
             maxHeight: "100%",
-            maxWidth: barMaxWidth != null ? `${barMaxWidth}px` : undefined,
+            maxWidth: `${packageMaxWidth}px`,
             boxSizing: "border-box",
-            padding: `${borderWidth}px`,
-            borderRadius: `${borderRadius}px`,
-            background: `linear-gradient(135deg, ${borderColor}, rgba(${accentColorRGB},0.28))`,
+            display: "flex",
+            alignItems: "center",
+            border: `${Math.max(1, Number(borderWidth) || 1)}px solid ${alphaColor(packageBorder, 0.5)}`,
+            borderRadius: `${packageRadius}px`,
+            background: `linear-gradient(180deg, ${packageBgTop}, ${packageBgBottom})`,
+            color: textColor,
             fontFamily: containerFontFamily,
             overflow: "hidden",
             position: "relative",
-            clipPath: clipOuter,
+            zIndex: 1,
+            boxShadow:
+              containerShadow ||
+              `0 0 25px ${alphaColor(packageBlue, 0.25)}, inset 0 1px 0 rgba(255,255,255,0.06)`,
+            filter: needsFilter ? filterStr : "none",
+            transform: `scale(${widgetScale})`,
+            transformOrigin: "center",
+            backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
           }}
         >
           <div
+            aria-hidden="true"
             style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 1,
+              background: `linear-gradient(90deg, transparent, ${alphaColor(packageBlue, 0.86)}, transparent)`,
+              opacity: 0.5,
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.055) 46%, transparent 58%)",
+              animation: "better-nav-package-sheen 6s linear infinite",
+              pointerEvents: "none",
+            }}
+          />
+
+          <div
+            {...partAttrs("displayName")}
+            style={withElementOffset(c, "displayName", {
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              height: "100%",
+              minWidth: 0,
+              paddingLeft: Math.max(14, Number(containerPadding) || 20),
+              paddingRight: 24,
               position: "relative",
               zIndex: 1,
-              width: "100%",
-              height: "100%",
-              boxSizing: "border-box",
-              display: "grid",
-              gridTemplateColumns: "minmax(0,1.1fr) auto minmax(0,1fr)",
-              alignItems: "center",
-              gap: 12,
-              padding: `${Math.max(6, Number(containerPadding) || 10)}px ${Math.max(14, Number(containerPadding) * 1.6 || 16)}px`,
-              borderRadius: `${Math.max(0, Number(borderRadius) - Number(borderWidth))}px`,
-              background: `linear-gradient(180deg, ${bgColor}, rgba(3,7,18,0.94))`,
-              color: textColor,
-              fontSize,
-              boxShadow:
-                containerShadow ||
-                `0 16px 34px rgba(0,0,0,0.36), 0 0 22px rgba(${accentColorRGB},0.22)`,
-              filter: needsFilter ? filterStr : "none",
-              transform: `scale(${widgetScale})`,
-              transformOrigin: "center",
-              backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
-            }}
+              flexShrink: 1,
+            })}
           >
             <div
-              aria-hidden="true"
               style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.07) 46%, transparent 58%)",
-                animation: "better-nav-sheen 5.5s linear infinite",
-                pointerEvents: "none",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                color: alphaColor(mutedColor, 0.7),
+                fontSize: 7,
+                fontWeight: 950,
+                letterSpacing: "0.22em",
+                lineHeight: 1.1,
+                minWidth: 42,
+                textTransform: "uppercase",
               }}
-            />
+            >
+              <span>{brandTop}</span>
+              <span>{brandBottom || brandTop}</span>
+            </div>
+            {renderOrangeArc()}
             <div
               style={{
                 minWidth: 0,
                 display: "flex",
-                alignItems: "center",
-                gap: 10,
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              {renderBetterItems(leftItems)}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
                 justifyContent: "center",
-                gap: 10,
-                position: "relative",
-                zIndex: 1,
               }}
             >
-              {renderBetterItems(centerItems)}
-            </div>
-            <div
-              style={{
-                minWidth: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                gap: 10,
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              {renderBetterItems(rightItems)}
+              <span
+                style={{
+                  overflow: "hidden",
+                  color: textColor,
+                  fontFamily,
+                  fontSize: Math.max(15, fontSize * 1.2),
+                  fontWeight: 950,
+                  letterSpacing: "0.04em",
+                  lineHeight: 1,
+                  marginTop: 1,
+                  textOverflow: "ellipsis",
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {brandName}
+              </span>
+              {siteText && (
+                <span
+                  style={{
+                    overflow: "hidden",
+                    color: alphaColor(mutedColor, 0.58),
+                    fontSize: 9,
+                    fontWeight: 800,
+                    letterSpacing: "0.2em",
+                    lineHeight: 1.15,
+                    marginTop: 3,
+                    maxWidth: 250,
+                    textOverflow: "ellipsis",
+                    textTransform: "uppercase",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {siteText}
+                </span>
+              )}
             </div>
           </div>
+
+          {(showStart || showCasino) && renderPackageDivider()}
+          {(showStart || showCasino) && (
+            <div
+              {...partAttrs("balance")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 22,
+                height: "100%",
+                padding: "0 24px",
+                position: "relative",
+                zIndex: 1,
+                flexShrink: 0,
+              }}
+            >
+              {showStart && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    minWidth: 0,
+                  }}
+                >
+                  {renderBolt()}
+                  <span
+                    style={{
+                      color: alphaColor(mutedColor, 0.75),
+                      fontSize: 11,
+                      fontWeight: 800,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {c.startLabel || "Start"}
+                  </span>
+                  <span
+                    style={{
+                      color: textColor,
+                      fontSize: 14,
+                      fontWeight: 950,
+                      letterSpacing: "0.04em",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {startValue}
+                  </span>
+                </div>
+              )}
+              {showCasino && (
+                <div
+                  {...partAttrs("casino")}
+                  style={withElementOffset(c, "casino", {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    minWidth: 0,
+                  })}
+                >
+                  {casinoLogoUrl ? (
+                    <img
+                      src={casinoLogoUrl}
+                      alt=""
+                      style={{
+                        width: 18,
+                        height: 18,
+                        objectFit: "contain",
+                        borderRadius: 4,
+                        filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.42))",
+                      }}
+                    />
+                  ) : (
+                    renderBolt()
+                  )}
+                  <span
+                    style={{
+                      color: textColor,
+                      fontSize: 14,
+                      fontWeight: 950,
+                      letterSpacing: "0.04em",
+                      maxWidth: 170,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      textTransform: casinoCommand.startsWith("!") ? "none" : "uppercase",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {casinoCommand || "!Casino"}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {showBetterMusic && renderPackageDivider(true)}
+          {showBetterMusic && (
+            <div
+              {...partAttrs("music")}
+              style={withElementOffset(c, "music", {
+                display: "flex",
+                alignItems: "center",
+                paddingLeft: 20,
+                paddingRight: 12,
+                height: "100%",
+                minWidth: 0,
+                position: "relative",
+                zIndex: 1,
+                flexShrink: 1,
+              })}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  minWidth: 0,
+                  maxWidth: "min(38vw, 420px)",
+                  border: `1px solid ${alphaColor(packageBlue, 0.32)}`,
+                  borderRadius: 8,
+                  background: "rgba(12,27,59,0.6)",
+                  boxShadow: `inset 0 0 10px ${alphaColor(packageBlue, 0.1)}`,
+                  padding: "6px 14px",
+                }}
+              >
+                {renderMusicIcon()}
+                {c.musicSource === "spotify" && betterNowPlaying?.isPlaying && (
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "flex-end",
+                      gap: 2,
+                      width: 15,
+                      height: 12,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {[0, 1, 2].map((item) => (
+                      <i
+                        key={item}
+                        style={{
+                          width: 3,
+                          height: "100%",
+                          borderRadius: 99,
+                          background: "#1ed760",
+                          transformOrigin: "bottom",
+                          animation: `better-nav-spotify-eq ${0.35 + item * 0.1}s ease-in-out infinite alternate`,
+                        }}
+                      />
+                    ))}
+                  </span>
+                )}
+                <span
+                  style={{
+                    color: alphaColor(mutedColor, 0.75),
+                    fontSize: 10,
+                    fontWeight: 850,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {musicLabel}
+                </span>
+                <span
+                  aria-hidden="true"
+                  style={{
+                    color: alphaColor(packageBlue, 0.55),
+                    fontSize: 12,
+                    fontWeight: 900,
+                    flexShrink: 0,
+                  }}
+                >
+                  -
+                </span>
+                <span
+                  style={{
+                    minWidth: 0,
+                    overflow: "hidden",
+                    color: textColor,
+                    fontSize: 11,
+                    fontWeight: 850,
+                    letterSpacing: "0.02em",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {nowPlayingText}
+                </span>
+              </div>
+            </div>
+          )}
+
           {containerGlow ? (
             <div
               aria-hidden="true"

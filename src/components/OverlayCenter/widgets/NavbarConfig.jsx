@@ -253,7 +253,24 @@ export default function NavbarConfig({ config, onChange }) {
             <button
               type="button"
               className={`nb-style-btn${c.displayStyle === "better_navbar" ? " nb-style-btn--active" : ""}`}
-              onClick={() => set("displayStyle", "better_navbar")}
+              onClick={() =>
+                setMulti({
+                  displayStyle: "better_navbar",
+                  accentColor: c.accentColor || "#f97316",
+                  accentBlue: c.accentBlue || "#2563eb",
+                  accentGold: c.accentGold || "#f97316",
+                  bgColor: c.bgColor || "#060d20",
+                  textColor: c.textColor || "#f8fafc",
+                  mutedColor: c.mutedColor || "#93c5fd",
+                  barHeight: 52,
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  radius: 12,
+                  maxWidth: c.maxWidth || 1152,
+                  showNowPlaying: true,
+                  musicSource: c.spotify_access_token ? "spotify" : c.musicSource || "manual",
+                })
+              }
             >
               B Better
             </button>
