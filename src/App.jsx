@@ -38,6 +38,7 @@ const AdminAffiliatesPage = lazy(() => import('./components/AdminAffiliates/Admi
 const AdminSubscriptionsPage = lazy(() => import('./components/AdminSubscriptions/AdminSubscriptionsPage'));
 const AffiliateDashboard = lazy(() => import('./components/AffiliateDashboard/AffiliateDashboard'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
+const WidgetEditorPage = lazy(() => import('./components/OverlayCenter/editor/WidgetEditorPage'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
 const PlayerBonusHuntDashboard = lazy(() => import('./features/playerBonusHunt/PlayerBonusHuntDashboard'));
@@ -273,9 +274,10 @@ function LayoutWrapper({ children }) {
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const isOverlayCenter = location.pathname.startsWith('/overlay-center');
+  const isEditorRoute = location.pathname === '/editor';
   const isLandingRoute = location.pathname === '/' || location.pathname === '/player' || location.pathname === '/streamer';
   const isUtilityRoute = location.pathname === '/login' || location.pathname === '/spotify-callback';
-  const showTopNavigation = !isLandingRoute && !isWidgetRoute && !isOBSOverlay && !isOverlayCenter && !isUtilityRoute;
+  const showTopNavigation = !isLandingRoute && !isWidgetRoute && !isOBSOverlay && !isOverlayCenter && !isEditorRoute && !isUtilityRoute;
 
   useEffect(() => {
     applyRouteSeo(location.pathname);
@@ -364,6 +366,11 @@ function App() {
                 <Route path="/overlay-center/*" element={
                   <ProtectedAdminRoute allowPremium allowModerator redirectTo="/premium">
                     <OverlayControlCenter />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/editor" element={
+                  <ProtectedAdminRoute allowPremium allowModerator redirectTo="/premium">
+                    <WidgetEditorPage />
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/slot-detector" element={
