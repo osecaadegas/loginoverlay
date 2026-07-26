@@ -140,6 +140,371 @@ function safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+const BETTER_BETS_CARD_COLORS = [
+  { accent: "#2fa1ff", accent2: "#19e3ff" },
+  { accent: "#a06bff", accent2: "#ff4fd8" },
+  { accent: "#22e0a6", accent2: "#8bf06b" },
+  { accent: "#ff9d42", accent2: "#ff4d5e" },
+  { accent: "#ff5c8a", accent2: "#ffb84d" },
+  { accent: "#ffd542", accent2: "#6ee86e" },
+];
+
+const BETTER_BETS_THEME_VARS = {
+  neon: {
+    "--ui-accent": "#1e9bff",
+    "--text-bright": "#f2f9ff",
+    "--text-dim": "#9fc9f5",
+    "--stage-bg":
+      "radial-gradient(circle at 50% 47%,rgba(0,86,207,0.19),transparent 37%),linear-gradient(135deg,#00040e,#020818 47%,#000308)",
+    "--frame-border": "#1385e9",
+    "--frame-bg":
+      "linear-gradient(90deg,rgba(0,116,230,0.11),transparent 17%,transparent 83%,rgba(0,116,230,0.11)),linear-gradient(155deg,#031a49,#020e2f 26%,#010818)",
+    "--frame-shadow":
+      "0 0 0 1px rgba(4,35,93,0.9) inset,0 0 0 3px rgba(0,42,109,0.44),0 0 calc(11px * var(--glow-mult)) rgba(0,127,255,0.94),0 0 calc(27px * var(--glow-mult)) rgba(0,51,168,0.76),inset 0 0 23px rgba(0,100,255,0.17)",
+    "--bracket-color": "#6fb8ff",
+    "--bracket-filter": "drop-shadow(0 0 3px #0a89ff)",
+    "--sheen-color": "rgba(166,226,255,0.075)",
+    "--title-glow": "0 0 7px rgba(102,193,255,0.95),0 1px 2px rgba(0,0,0,0.9)",
+    "--meta-border": "#073b91",
+    "--meta-bg":
+      "linear-gradient(180deg,rgba(3,27,77,0.94),rgba(1,13,43,0.91))",
+    "--meta-shadow":
+      "inset 0 1px 7px rgba(15,123,255,0.19),0 1px 7px rgba(0,55,158,0.35)",
+    "--meta-divider": "rgba(16,83,176,0.55)",
+    "--card-frame-mix": "#0a3a75",
+    "--card-bg":
+      "radial-gradient(ellipse at 35% 110%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 40%),linear-gradient(130deg,#031c52,#010a24 62%,#021338)",
+    "--card-shadow":
+      "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 26%,transparent),inset 0 1px 0 rgba(152,217,255,0.12),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 55%,transparent)",
+    "--card-hover-shadow":
+      "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 32%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 80%,transparent)",
+    "--card-full-shadow":
+      "inset 0 0 20px color-mix(in srgb,var(--accent) 22%,transparent),0 0 6px color-mix(in srgb,var(--accent) 45%,transparent)",
+    "--card-topline": "rgba(169,225,255,0.75)",
+    "--badge-bg":
+      "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#05245c 60%) 70%)",
+    "--badge-shadow":
+      "0 0 0 2px rgba(2,15,40,0.6),0 0 calc(8px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,0.55)",
+    "--hard-shadow": "0 1px 3px rgba(0,0,0,0.95)",
+    "--soft-glow": "0 0 5px rgba(113,196,255,0.75),0 1px 2px rgba(0,0,0,0.85)",
+    "--detail-glow":
+      "0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 80%,transparent)",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(1,6,18,0.08),rgba(1,6,18,0.3) 55%,rgba(1,6,18,0.55))",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 60%,white 40%) 47%,transparent)",
+    "--glint-glow": "0 0 calc(7px * var(--glow-mult)) 2px var(--accent)",
+    "--footer-rule": "rgba(8,73,164,0.56)",
+  },
+  metallic: {
+    "--ui-accent": "#a9bdd8",
+    "--text-bright": "#eef4fb",
+    "--text-dim": "#a7b6c9",
+    "--stage-bg":
+      "radial-gradient(circle at 50% 42%,rgba(140,160,190,0.12),transparent 45%),linear-gradient(160deg,#14191f,#0b0f14 52%,#06080b)",
+    "--frame-border": "#8fa1b8",
+    "--frame-bg": "linear-gradient(155deg,#39434f,#232b35 32%,#141a21 70%,#0e1318)",
+    "--frame-shadow":
+      "inset 0 1px 0 rgba(255,255,255,0.25),inset 0 -1px 0 rgba(0,0,0,0.7),0 0 0 1px #05070a,0 8px 22px rgba(0,0,0,0.6)",
+    "--bracket-color": "#d7e2f0",
+    "--bracket-filter": "none",
+    "--sheen-color": "rgba(235,244,255,0.14)",
+    "--title-glow": "0 1px 0 rgba(0,0,0,0.8),0 -1px 0 rgba(255,255,255,0.14)",
+    "--meta-border": "#4d5b6d",
+    "--meta-bg": "linear-gradient(180deg,#3a4450,#262e38 55%,#1a2129)",
+    "--meta-shadow":
+      "inset 0 1px 0 rgba(255,255,255,0.14),inset 0 -3px 8px rgba(0,0,0,0.45)",
+    "--meta-divider": "rgba(120,138,160,0.35)",
+    "--card-frame-mix": "#6d7f96",
+    "--card-bg":
+      "linear-gradient(115deg,rgba(255,255,255,0.07),transparent 30%),radial-gradient(ellipse at 35% 110%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 42%),linear-gradient(145deg,color-mix(in srgb,var(--accent) 9%,#39434f),#1d242d 55%,#131820)",
+    "--card-shadow":
+      "inset 0 1px 0 rgba(255,255,255,0.16),inset 0 -6px 12px rgba(0,0,0,0.5),0 1px 0 rgba(0,0,0,0.6)",
+    "--card-hover-shadow":
+      "inset 0 1px 0 rgba(255,255,255,0.24),inset 0 -6px 12px rgba(0,0,0,0.5),0 0 10px color-mix(in srgb,var(--accent) 35%,transparent)",
+    "--card-full-shadow":
+      "inset 0 1px 0 rgba(255,255,255,0.1),inset 0 -6px 12px rgba(0,0,0,0.5)",
+    "--card-topline": "rgba(235,244,255,0.55)",
+    "--badge-bg": "linear-gradient(160deg,#e8eef6,#9fb0c6 30%,#4d5b6d 70%,#2a333f)",
+    "--badge-shadow": "0 1px 2px rgba(0,0,0,0.7),inset 0 1px 1px rgba(255,255,255,0.8)",
+    "--hard-shadow": "0 1px 2px rgba(0,0,0,0.9)",
+    "--soft-glow": "0 1px 1px rgba(0,0,0,0.75)",
+    "--detail-glow": "none",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(8,11,15,0.05),rgba(8,11,15,0.28) 55%,rgba(8,11,15,0.5))",
+    "--glint-bg": "linear-gradient(90deg,transparent,rgba(255,255,255,0.85) 47%,transparent)",
+    "--glint-glow": "0 1px 2px rgba(0,0,0,0.5)",
+    "--glint-opacity": "0.5",
+    "--footer-rule": "rgba(120,138,160,0.3)",
+  },
+  gradient: {
+    "--ui-accent": "#5b7cfa",
+    "--text-bright": "#f4f7ff",
+    "--text-dim": "#aebdf2",
+    "--stage-bg":
+      "radial-gradient(circle at 18% 20%,rgba(91,124,250,0.16),transparent 40%),radial-gradient(circle at 82% 80%,rgba(34,211,238,0.12),transparent 42%),linear-gradient(140deg,#0a0f2e,#101c44 48%,#071426)",
+    "--frame-border": "#4f6cf0",
+    "--frame-bg": "linear-gradient(150deg,#1b2566,#131a4a 35%,#0a1130 70%,#081226)",
+    "--frame-shadow":
+      "0 0 0 1px rgba(30,42,110,0.9) inset,0 0 calc(18px * var(--glow-mult)) rgba(79,108,240,0.5),0 0 calc(34px * var(--glow-mult)) rgba(34,211,238,0.22),inset 0 0 26px rgba(79,108,240,0.16)",
+    "--bracket-color": "#9db4ff",
+    "--bracket-filter": "drop-shadow(0 0 3px #5b7cfa)",
+    "--sheen-color": "rgba(200,214,255,0.09)",
+    "--title-glow": "0 0 8px rgba(130,156,255,0.9),0 1px 2px rgba(0,0,0,0.85)",
+    "--meta-border": "#34408f",
+    "--meta-bg": "linear-gradient(120deg,rgba(35,45,120,0.92),rgba(16,24,68,0.92))",
+    "--meta-shadow": "inset 0 1px 8px rgba(91,124,250,0.22)",
+    "--meta-divider": "rgba(80,96,190,0.45)",
+    "--card-frame-mix": "#2c3a8c",
+    "--card-bg":
+      "linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,#10174a),#0a1030 55%,color-mix(in srgb,var(--accent-2) 14%,#081226))",
+    "--card-shadow":
+      "inset 0 0 calc(18px * var(--glow-mult)) color-mix(in srgb,var(--accent) 20%,transparent),0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 40%,transparent)",
+    "--card-hover-shadow":
+      "inset 0 0 calc(22px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 70%,transparent)",
+    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 24%,transparent)",
+    "--card-topline": "color-mix(in srgb,var(--accent) 50%,white 50%)",
+    "--badge-bg": "linear-gradient(140deg,var(--accent),var(--accent-2))",
+    "--badge-shadow":
+      "0 0 0 2px rgba(8,14,40,0.65),0 0 calc(9px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,0.45)",
+    "--hard-shadow": "0 1px 3px rgba(0,0,0,0.9)",
+    "--soft-glow": "0 0 6px rgba(130,156,255,0.7),0 1px 2px rgba(0,0,0,0.85)",
+    "--detail-glow":
+      "0 0 calc(9px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(6,10,28,0.1),rgba(6,10,28,0.32) 55%,rgba(6,10,28,0.58))",
+    "--glint-bg": "linear-gradient(90deg,transparent,var(--accent-2) 47%,transparent)",
+    "--glint-glow": "0 0 calc(8px * var(--glow-mult)) 2px var(--accent)",
+    "--footer-rule": "rgba(80,96,190,0.45)",
+  },
+  matte: {
+    "--ui-accent": "#8b98a9",
+    "--text-bright": "#e8ecf1",
+    "--text-dim": "#98a3b1",
+    "--stage-bg": "linear-gradient(180deg,#14171c,#101318)",
+    "--frame-border": "#333b47",
+    "--frame-bg": "linear-gradient(180deg,#1d222b,#181d24)",
+    "--frame-shadow": "0 0 0 1px #0b0d11,0 10px 24px rgba(0,0,0,0.45)",
+    "--bracket-color": "#4a5462",
+    "--bracket-filter": "none",
+    "--sheen-color": "transparent",
+    "--title-glow": "none",
+    "--meta-border": "#2c333d",
+    "--meta-bg": "#20262f",
+    "--meta-shadow": "none",
+    "--meta-divider": "#2c333d",
+    "--card-frame-mix": "#39424f",
+    "--card-bg": "linear-gradient(180deg,#232932,#1e242c)",
+    "--card-shadow": "inset 0 0 0 1px rgba(255,255,255,0.03)",
+    "--card-hover-shadow": "inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 10px rgba(0,0,0,0.3)",
+    "--card-full-shadow": "inset 0 0 0 1px rgba(255,255,255,0.03)",
+    "--card-topline": "rgba(255,255,255,0.1)",
+    "--badge-bg": "color-mix(in srgb,var(--accent) 30%,#2a313b)",
+    "--badge-shadow": "inset 0 0 0 1px rgba(255,255,255,0.12)",
+    "--hard-shadow": "none",
+    "--soft-glow": "none",
+    "--detail-glow": "none",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(16,19,24,0),rgba(16,19,24,0.42) 60%,rgba(16,19,24,0.6))",
+    "--glint-bg": "linear-gradient(90deg,transparent,rgba(255,255,255,0.22) 47%,transparent)",
+    "--glint-glow": "none",
+    "--glint-opacity": "0.6",
+    "--footer-rule": "#2c333d",
+  },
+  crimson: {
+    "--ui-accent": "#e03050",
+    "--text-bright": "#fff0f3",
+    "--text-dim": "#f0a0b0",
+    "--stage-bg":
+      "radial-gradient(circle at 50% 45%,rgba(192,25,46,0.18),transparent 40%),linear-gradient(145deg,#0e0305,#1a0610 50%,#0a0208)",
+    "--frame-border": "#a01830",
+    "--frame-bg": "linear-gradient(155deg,#3a0c18,#200810 30%,#100408)",
+    "--frame-shadow":
+      "0 0 0 1px rgba(60,8,18,0.9) inset,0 0 calc(14px * var(--glow-mult)) rgba(200,30,60,0.7),0 0 calc(30px * var(--glow-mult)) rgba(140,15,30,0.5),inset 0 0 20px rgba(200,30,60,0.15)",
+    "--bracket-color": "#ff6b81",
+    "--bracket-filter": "drop-shadow(0 0 3px #c0192e)",
+    "--sheen-color": "rgba(255,150,170,0.06)",
+    "--title-glow": "0 0 7px rgba(255,80,100,0.9),0 1px 2px rgba(0,0,0,0.9)",
+    "--meta-border": "#5a1020",
+    "--meta-bg": "linear-gradient(180deg,rgba(50,10,20,0.94),rgba(20,5,10,0.91))",
+    "--meta-shadow": "inset 0 1px 7px rgba(200,30,60,0.2)",
+    "--meta-divider": "rgba(120,30,50,0.5)",
+    "--card-frame-mix": "#6a1828",
+    "--card-bg":
+      "radial-gradient(ellipse at 35% 110%,color-mix(in srgb,var(--accent) 25%,transparent),transparent 40%),linear-gradient(130deg,#2a0810,#140408 62%,#1a0610)",
+    "--card-shadow":
+      "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
+    "--card-hover-shadow":
+      "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-topline": "rgba(255,150,170,0.6)",
+    "--badge-bg":
+      "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#2a0810 60%) 70%)",
+    "--badge-shadow":
+      "0 0 0 2px rgba(10,2,5,0.6),0 0 calc(8px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,0.5)",
+    "--hard-shadow": "0 1px 3px rgba(0,0,0,0.95)",
+    "--soft-glow": "0 0 5px rgba(255,80,100,0.7),0 1px 2px rgba(0,0,0,0.85)",
+    "--detail-glow":
+      "0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(10,2,5,0.08),rgba(10,2,5,0.3) 55%,rgba(10,2,5,0.55))",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 60%,white 40%) 47%,transparent)",
+    "--glint-glow": "0 0 calc(7px * var(--glow-mult)) 2px var(--accent)",
+    "--footer-rule": "rgba(120,30,50,0.5)",
+  },
+  emerald: {
+    "--ui-accent": "#10b981",
+    "--text-bright": "#ecfdf5",
+    "--text-dim": "#86efac",
+    "--stage-bg":
+      "radial-gradient(circle at 50% 45%,rgba(5,150,105,0.16),transparent 40%),linear-gradient(145deg,#010e08,#041a12 50%,#010a06)",
+    "--frame-border": "#059669",
+    "--frame-bg": "linear-gradient(155deg,#0a3020,#061a10 30%,#030e08)",
+    "--frame-shadow":
+      "0 0 0 1px rgba(4,40,25,0.9) inset,0 0 calc(14px * var(--glow-mult)) rgba(16,185,129,0.6),0 0 calc(30px * var(--glow-mult)) rgba(5,100,65,0.45),inset 0 0 20px rgba(16,185,129,0.14)",
+    "--bracket-color": "#34d399",
+    "--bracket-filter": "drop-shadow(0 0 3px #059669)",
+    "--sheen-color": "rgba(134,239,172,0.06)",
+    "--title-glow": "0 0 7px rgba(52,211,153,0.9),0 1px 2px rgba(0,0,0,0.9)",
+    "--meta-border": "#0a5040",
+    "--meta-bg": "linear-gradient(180deg,rgba(6,40,28,0.94),rgba(3,18,12,0.91))",
+    "--meta-shadow": "inset 0 1px 7px rgba(16,185,129,0.18)",
+    "--meta-divider": "rgba(16,100,70,0.5)",
+    "--card-frame-mix": "#0a5040",
+    "--card-bg":
+      "radial-gradient(ellipse at 35% 110%,color-mix(in srgb,var(--accent) 25%,transparent),transparent 40%),linear-gradient(130deg,#0a2818,#05140c 62%,#081e12)",
+    "--card-shadow":
+      "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
+    "--card-hover-shadow":
+      "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-topline": "rgba(134,239,172,0.6)",
+    "--badge-bg":
+      "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#051a0c 60%) 70%)",
+    "--badge-shadow":
+      "0 0 0 2px rgba(2,10,6,0.6),0 0 calc(8px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,0.5)",
+    "--hard-shadow": "0 1px 3px rgba(0,0,0,0.95)",
+    "--soft-glow": "0 0 5px rgba(52,211,153,0.7),0 1px 2px rgba(0,0,0,0.85)",
+    "--detail-glow":
+      "0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(2,6,4,0.08),rgba(2,6,4,0.3) 55%,rgba(2,6,4,0.55))",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 60%,white 40%) 47%,transparent)",
+    "--glint-glow": "0 0 calc(7px * var(--glow-mult)) 2px var(--accent)",
+    "--footer-rule": "rgba(16,100,70,0.5)",
+  },
+  sunset: {
+    "--ui-accent": "#e06920",
+    "--text-bright": "#fff8f0",
+    "--text-dim": "#f0c8a0",
+    "--stage-bg":
+      "radial-gradient(circle at 50% 50%,rgba(224,105,32,0.14),transparent 40%),linear-gradient(150deg,#0a0604,#1a0f05 50%,#080402)",
+    "--frame-border": "#c05818",
+    "--frame-bg": "linear-gradient(155deg,#3a2210,#201208 30%,#100806)",
+    "--frame-shadow":
+      "0 0 0 1px rgba(60,28,8,0.9) inset,0 0 calc(14px * var(--glow-mult)) rgba(224,105,32,0.6),0 0 calc(30px * var(--glow-mult)) rgba(160,70,15,0.4),inset 0 0 20px rgba(224,105,32,0.14)",
+    "--bracket-color": "#fbbf24",
+    "--bracket-filter": "drop-shadow(0 0 3px #e06920)",
+    "--sheen-color": "rgba(251,191,36,0.06)",
+    "--title-glow": "0 0 7px rgba(251,191,36,0.9),0 1px 2px rgba(0,0,0,0.9)",
+    "--meta-border": "#5a3010",
+    "--meta-bg": "linear-gradient(180deg,rgba(50,24,8,0.94),rgba(20,10,4,0.91))",
+    "--meta-shadow": "inset 0 1px 7px rgba(224,105,32,0.18)",
+    "--meta-divider": "rgba(120,60,20,0.5)",
+    "--card-frame-mix": "#6a3818",
+    "--card-bg":
+      "radial-gradient(ellipse at 35% 110%,color-mix(in srgb,var(--accent) 25%,transparent),transparent 40%),linear-gradient(130deg,#2a1408,#140a04 62%,#1a0e06)",
+    "--card-shadow":
+      "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
+    "--card-hover-shadow":
+      "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-topline": "rgba(251,191,36,0.6)",
+    "--badge-bg":
+      "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#1a0a04 60%) 70%)",
+    "--badge-shadow":
+      "0 0 0 2px rgba(10,4,2,0.6),0 0 calc(8px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,0.5)",
+    "--hard-shadow": "0 1px 3px rgba(0,0,0,0.95)",
+    "--soft-glow": "0 0 5px rgba(251,191,36,0.7),0 1px 2px rgba(0,0,0,0.85)",
+    "--detail-glow":
+      "0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(6,3,1,0.08),rgba(6,3,1,0.3) 55%,rgba(6,3,1,0.55))",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 60%,white 40%) 47%,transparent)",
+    "--glint-glow": "0 0 calc(7px * var(--glow-mult)) 2px var(--accent)",
+    "--footer-rule": "rgba(120,60,20,0.5)",
+  },
+  void: {
+    "--ui-accent": "#7c3aed",
+    "--text-bright": "#f5f3ff",
+    "--text-dim": "#c4b5fd",
+    "--stage-bg":
+      "radial-gradient(circle at 50% 45%,rgba(124,58,237,0.14),transparent 40%),linear-gradient(145deg,#040210,#0a0414 50%,#030108)",
+    "--frame-border": "#6d28d9",
+    "--frame-bg": "linear-gradient(155deg,#1e0a44,#10062a 30%,#08031a)",
+    "--frame-shadow":
+      "0 0 0 1px rgba(30,10,68,0.9) inset,0 0 calc(14px * var(--glow-mult)) rgba(124,58,237,0.6),0 0 calc(30px * var(--glow-mult)) rgba(80,30,160,0.45),inset 0 0 20px rgba(124,58,237,0.14)",
+    "--bracket-color": "#c084fc",
+    "--bracket-filter": "drop-shadow(0 0 3px #7c3aed)",
+    "--sheen-color": "rgba(196,181,253,0.06)",
+    "--title-glow": "0 0 7px rgba(192,132,252,0.9),0 1px 2px rgba(0,0,0,0.9)",
+    "--meta-border": "#3b1880",
+    "--meta-bg": "linear-gradient(180deg,rgba(25,10,60,0.94),rgba(10,4,28,0.91))",
+    "--meta-shadow": "inset 0 1px 7px rgba(124,58,237,0.18)",
+    "--meta-divider": "rgba(80,40,150,0.5)",
+    "--card-frame-mix": "#3b1880",
+    "--card-bg":
+      "radial-gradient(ellipse at 35% 110%,color-mix(in srgb,var(--accent) 25%,transparent),transparent 40%),linear-gradient(130deg,#180a38,#0c0520 62%,#120830)",
+    "--card-shadow":
+      "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
+    "--card-hover-shadow":
+      "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-topline": "rgba(196,181,253,0.6)",
+    "--badge-bg":
+      "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#08031a 60%) 70%)",
+    "--badge-shadow":
+      "0 0 0 2px rgba(4,2,10,0.6),0 0 calc(8px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,0.5)",
+    "--hard-shadow": "0 1px 3px rgba(0,0,0,0.95)",
+    "--soft-glow": "0 0 5px rgba(192,132,252,0.7),0 1px 2px rgba(0,0,0,0.85)",
+    "--detail-glow":
+      "0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
+    "--scrim-bg":
+      "linear-gradient(180deg,rgba(3,1,8,0.08),rgba(3,1,8,0.3) 55%,rgba(3,1,8,0.55))",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 60%,white 40%) 47%,transparent)",
+    "--glint-glow": "0 0 calc(7px * var(--glow-mult)) 2px var(--accent)",
+    "--footer-rule": "rgba(80,40,150,0.5)",
+  },
+};
+
+function normalizeBetterBetsTheme(theme) {
+  return Object.hasOwn(BETTER_BETS_THEME_VARS, theme) ? theme : "neon";
+}
+
+function normalizeBetterBetsFillStyle(fillStyle) {
+  return ["liquid", "solid", "pulse", "scanline", "plasma"].includes(fillStyle)
+    ? fillStyle
+    : "liquid";
+}
+
+function normalizeBetterBetsLayoutMode(layoutMode) {
+  return layoutMode === "bars" ? "bars" : "cards";
+}
+
+function normalizeBetterBetsOrientation(orientation) {
+  return orientation === "horizontal" ? "horizontal" : "vertical";
+}
+
+function formatBetterBetsDuration(seconds) {
+  const safe = Math.max(0, Number(seconds) || 0);
+  const minutes = Math.floor(safe / 60);
+  return `${minutes}:${String(safe % 60).padStart(2, "0")}`;
+}
+
 function metricNumber(value, fallback = 0) {
   if (typeof value === "number") return Number.isFinite(value) ? value : fallback;
   if (typeof value === "string") {
@@ -409,6 +774,97 @@ function BetterStyleSheet() {
       @keyframes better-sheen{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
       @keyframes better-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
       @keyframes better-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(var(--float-x,12px),var(--float-y,-10px),0)}}
+      @keyframes better-bets-widget-enter{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+      @keyframes better-bets-option-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+      @keyframes better-bets-sheen{0%,65%,100%{transform:translateX(0) rotate(22deg);opacity:0}72%{opacity:1}87%{transform:translateX(430px) rotate(22deg);opacity:0}}
+      @keyframes better-bets-open-pulse{0%,100%{opacity:1;box-shadow:0 0 3px #ffd448}50%{opacity:.45;box-shadow:0 0 8px #ffd448}}
+      @keyframes better-bets-liquid-wave{0%{transform:translateX(0) scaleY(1)}25%{transform:translateX(-8px) scaleY(1.18)}50%{transform:translateX(0) scaleY(.85)}75%{transform:translateX(8px) scaleY(1.14)}100%{transform:translateX(0) scaleY(1)}}
+      @keyframes better-bets-pulse-glow{0%,100%{filter:brightness(1);opacity:.86}50%{filter:brightness(1.3);opacity:1}}
+      @keyframes better-bets-pulse-ring{0%,100%{transform:scaleX(.7);opacity:.35}50%{transform:scaleX(1.08);opacity:.9}}
+      @keyframes better-bets-scan-sweep{0%{transform:translateY(120%)}100%{transform:translateY(-120%)}}
+      @keyframes better-bets-plasma-1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(36px,-18px) scale(1.2)}}
+      @keyframes better-bets-plasma-2{0%,100%{transform:translate(0,0) scale(.9)}50%{transform:translate(-42px,12px) scale(1.15)}}
+      @keyframes better-bets-plasma-3{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(16px,22px) scale(.82)}}
+      @keyframes better-bets-bar-sheen{0%{left:-20%;opacity:0}15%{opacity:1}60%{left:105%;opacity:0}100%{left:105%;opacity:0}}
+      .better-bets-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:16px;box-sizing:border-box;background:var(--stage-bg);font-family:var(--font-body,"Rajdhani",Arial,sans-serif)}
+      .better-bets-stage *{box-sizing:border-box}
+      .better-bets-stage[data-font="cyber"]{--font-display:"Orbitron",sans-serif;--font-body:"Rajdhani",sans-serif;--title-tracking:.1em}
+      .better-bets-stage[data-font="sport"]{--font-display:"Oswald",sans-serif;--font-body:"Barlow",sans-serif;--title-tracking:.05em}
+      .better-bets-stage[data-font="tech"]{--font-display:"Chakra Petch",sans-serif;--font-body:"Chakra Petch",sans-serif;--title-tracking:.08em}
+      .better-bets-stage[data-font="classic"]{--font-display:"Russo One",sans-serif;--font-body:"Titillium Web",sans-serif;--title-tracking:.03em}
+      .better-bets-stage .bet-widget{position:relative;width:var(--base-w,360px);min-height:var(--base-h,412px);overflow:hidden;border:1px solid var(--frame-border);border-radius:var(--card-radius);padding:8px 10px 7px;background:var(--frame-bg);box-shadow:var(--frame-shadow);opacity:var(--widget-opacity);isolation:isolate;animation:better-bets-widget-enter 650ms cubic-bezier(.2,.8,.2,1) both;color:var(--text-bright)}
+      .better-bets-stage .bet-widget.is-horizontal{width:var(--base-w,640px);min-height:var(--base-h,240px)}
+      .better-bets-stage .bet-widget::before,.better-bets-stage .bet-widget::after{position:absolute;z-index:-1;width:16px;height:16px;content:"";border-color:var(--bracket-color,#6fb8ff);filter:var(--bracket-filter,drop-shadow(0 0 3px #0a89ff));transition:opacity 250ms}
+      .better-bets-stage .bet-widget::before{top:3px;left:3px;border-top:1px solid;border-left:1px solid}
+      .better-bets-stage .bet-widget::after{right:3px;bottom:3px;border-right:1px solid;border-bottom:1px solid}
+      .better-bets-stage .bet-widget.hide-brackets::before,.better-bets-stage .bet-widget.hide-brackets::after{opacity:0}
+      .better-bets-stage .widget-sheen{position:absolute;z-index:-1;top:-80%;left:-55%;width:30%;height:230%;transform:rotate(22deg);background:linear-gradient(90deg,transparent,var(--sheen-color,rgba(166,226,255,.075)),transparent);animation:better-bets-sheen 7s ease-in-out infinite 1.3s;transition:opacity 250ms}
+      .better-bets-stage .bet-widget.hide-sheen .widget-sheen{opacity:0;animation:none}
+      .better-bets-stage .widget-header{display:flex;height:24px;align-items:center;justify-content:space-between;gap:8px;padding:0 7px 0 4px}
+      .better-bets-stage .title-lockup{display:flex;min-width:0;align-items:center;gap:6px;color:var(--text-bright);font-family:var(--font-display);font-size:calc(12.5px * var(--fs));font-weight:700;letter-spacing:var(--title-tracking,.1em);text-transform:uppercase;text-shadow:var(--title-glow)}
+      .better-bets-stage .title-lockup h1{min-width:0;overflow:hidden;margin:0;font:inherit;text-overflow:ellipsis;white-space:nowrap}
+      .better-bets-stage .title-mark{display:block;width:5px;height:13px;flex:0 0 auto;transform:skewX(-23deg);border-top:1px solid var(--ui-accent);border-bottom:1px solid var(--ui-accent);border-left:2px solid var(--ui-accent);box-shadow:2px 0 0 -1px var(--ui-accent),0 0 7px var(--ui-accent)}
+      .better-bets-stage .open-status{display:inline-flex;height:18px;flex:0 0 auto;align-items:center;gap:4px;border:1px solid var(--status-border,#d7a519);border-radius:4px;padding:0 6px;color:var(--status-text,#ffe887);background:var(--status-bg,linear-gradient(#3c3514,#1d190a));box-shadow:var(--status-shadow,0 0 5px rgba(255,194,21,.42),inset 0 0 4px rgba(255,232,106,.15));font-size:calc(9.5px * var(--fs));font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+      .better-bets-stage .open-status i{width:5px;height:5px;border-radius:50%;background:currentColor;box-shadow:0 0 4px currentColor;animation:better-bets-open-pulse 1.7s ease-in-out infinite}
+      .better-bets-stage .event-meta{display:grid;height:40px;grid-template-columns:repeat(3,1fr);margin-top:2px;overflow:hidden;border:1px solid var(--meta-border);border-radius:calc(var(--card-radius) - 2px);background:var(--meta-bg);box-shadow:var(--meta-shadow)}
+      .better-bets-stage .meta-item{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center}
+      .better-bets-stage .meta-item+.meta-item{border-left:1px solid var(--meta-divider)}
+      .better-bets-stage .meta-item strong{max-width:100%;overflow:hidden;color:var(--text-bright);font-family:var(--font-display);font-size:calc(12px * var(--fs));font-weight:700;line-height:14px;text-overflow:ellipsis;text-shadow:var(--soft-glow);white-space:nowrap}
+      .better-bets-stage .meta-item span{display:flex;align-items:center;gap:3px;color:var(--text-dim);font-size:calc(9.5px * var(--fs));font-weight:600;line-height:12px}
+      .better-bets-stage .meta-item svg{width:10px;height:10px;color:var(--ui-accent);stroke:currentColor}
+      .better-bets-stage .bets-grid,.better-bets-stage .bars-grid{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:6px;margin-top:6px}
+      .better-bets-stage .bet-option{position:relative;display:flex;height:98px;overflow:hidden;flex-direction:column;border:1px solid color-mix(in srgb,var(--accent) 65%,var(--card-frame-mix) 35%);border-radius:var(--card-radius);padding:10px 9px 7px;color:var(--text-bright);text-align:left;background:var(--card-bg);box-shadow:var(--card-shadow);transition:transform 180ms,border-color 180ms,box-shadow 180ms,background 300ms,border-radius 200ms;animation:better-bets-option-enter 480ms cubic-bezier(.2,.8,.2,1) both}
+      .better-bets-stage .bet-option::before{position:absolute;top:0;right:0;left:0;height:1px;content:"";background:linear-gradient(90deg,transparent,var(--card-topline),transparent)}
+      .better-bets-stage .bet-option.is-selected{border-color:color-mix(in srgb,var(--accent) 90%,white 10%);box-shadow:var(--card-hover-shadow)}
+      .better-bets-stage .bet-option.is-loser{opacity:.58;filter:saturate(.65)}
+      .better-bets-stage .bet-option.is-winner{border-color:color-mix(in srgb,var(--accent) 88%,white 12%);box-shadow:var(--card-hover-shadow)}
+      .better-bets-stage .bet-option.is-full{box-shadow:var(--card-full-shadow)}
+      .better-bets-stage .fill-wrap{position:absolute;z-index:0;inset:0;overflow:hidden;pointer-events:none}
+      .better-bets-stage .fill-bloom{position:absolute;bottom:-15px;left:15%;right:15%;height:28px;border-radius:50%;filter:blur(12px);opacity:.6;background:var(--accent)}
+      .better-bets-stage .fill-core{position:absolute;right:0;bottom:0;left:0;height:var(--pct);transition:height 600ms cubic-bezier(.22,1,.36,1);background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 28%,transparent),color-mix(in srgb,var(--accent-2) 85%,transparent))}
+      .better-bets-stage .fill-liquid .fill-core::before,.better-bets-stage .fill-liquid .fill-core::after{content:"";position:absolute;left:-20%;right:-20%;top:-12px;height:24px;border-radius:50%;background:color-mix(in srgb,var(--accent) 42%,transparent);animation:better-bets-liquid-wave var(--fill-dur,3.2s) ease-in-out infinite}
+      .better-bets-stage .fill-liquid .fill-core::after{top:-8px;background:color-mix(in srgb,var(--accent-2) 28%,transparent);animation-delay:calc(var(--fill-dur,3.2s) * -.35)}
+      .better-bets-stage .fill-pulse .fill-core{animation:better-bets-pulse-glow var(--fill-dur,3.2s) ease-in-out infinite}
+      .better-bets-stage .fill-pulse .pulse-ring{position:absolute;right:10%;bottom:0;left:10%;height:3px;border-radius:50%;box-shadow:0 0 18px 6px color-mix(in srgb,var(--accent) 55%,transparent);animation:better-bets-pulse-ring var(--fill-dur,3.2s) ease-in-out infinite}
+      .better-bets-stage .fill-scanline .fill-core{background:repeating-linear-gradient(0deg,color-mix(in srgb,var(--accent) 18%,transparent) 0 2px,color-mix(in srgb,var(--accent) 52%,transparent) 2px 4px),linear-gradient(180deg,color-mix(in srgb,var(--accent) 32%,transparent),color-mix(in srgb,var(--accent-2) 80%,transparent))}
+      .better-bets-stage .fill-scanline .scan-sweep{position:absolute;right:0;bottom:0;left:0;height:20px;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--accent) 62%,transparent),transparent);animation:better-bets-scan-sweep calc(var(--fill-dur,3.2s) * .8) linear infinite;opacity:.7}
+      .better-bets-stage .fill-plasma .plasma-blob{position:absolute;width:40px;height:40px;border-radius:50%;filter:blur(14px);opacity:.6;mix-blend-mode:screen}
+      .better-bets-stage .fill-plasma .plasma-blob-1{bottom:5%;left:10%;background:var(--accent-2);animation:better-bets-plasma-1 var(--fill-dur,3.2s) ease-in-out infinite}
+      .better-bets-stage .fill-plasma .plasma-blob-2{right:15%;bottom:20%;background:var(--accent);animation:better-bets-plasma-2 calc(var(--fill-dur,3.2s) * 1.3) ease-in-out infinite}
+      .better-bets-stage .fill-plasma .plasma-blob-3{bottom:40%;left:40%;background:var(--accent-2);animation:better-bets-plasma-3 calc(var(--fill-dur,3.2s) * .9) ease-in-out infinite}
+      .better-bets-stage .option-scrim{position:absolute;z-index:1;inset:0;background:var(--scrim-bg);pointer-events:none}
+      .better-bets-stage .option-number,.better-bets-stage .option-range,.better-bets-stage .option-details,.better-bets-stage .option-glint{position:relative;z-index:2}
+      .better-bets-stage .option-number{display:grid;width:22px;height:22px;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 80%,white 20%);border-radius:50%;color:#fff;background:var(--badge-bg);box-shadow:var(--badge-shadow);font-family:var(--font-display);font-size:calc(11.5px * var(--fs));font-weight:700;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+      .better-bets-stage .option-range{min-width:0;overflow:hidden;margin-top:7px;color:#fff;font-size:calc(11.5px * var(--fs));font-weight:700;letter-spacing:.02em;text-overflow:ellipsis;text-shadow:var(--hard-shadow);white-space:nowrap}
+      .better-bets-stage .option-details{display:flex;margin-top:auto;flex-direction:column;align-items:center;text-align:center;text-shadow:var(--detail-glow),var(--hard-shadow)}
+      .better-bets-stage .option-details strong{color:#fff;font-family:var(--font-display);font-size:calc(21px * var(--fs));font-weight:700;letter-spacing:.01em;line-height:calc(20px * var(--fs))}
+      .better-bets-stage .option-details small{max-width:100%;overflow:hidden;color:#eaf4ff;font-size:calc(10px * var(--fs));font-weight:700;letter-spacing:.1em;line-height:calc(14px * var(--fs));text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
+      .better-bets-stage .option-glint{position:absolute;bottom:3px;left:50%;width:70%;height:2px;transform:translateX(-50%);background:var(--glint-bg);box-shadow:var(--glint-glow);opacity:var(--glint-opacity,.85)}
+      .better-bets-stage .bet-entry{display:flex;height:24px;align-items:center;justify-content:center;gap:5px;margin-top:6px;border-top:1px solid var(--footer-rule);color:var(--text-dim);font-size:calc(10px * var(--fs))}
+      .better-bets-stage .bet-entry>span{color:var(--ui-accent,#3d8cd4);letter-spacing:1px}
+      .better-bets-stage .bet-entry input{width:min(170px,52%);border:0;outline:0;color:var(--text-bright);background:transparent;font-size:calc(10px * var(--fs));font-weight:600;text-align:center}
+      .better-bets-stage .bet-entry input::placeholder{color:var(--text-dim);opacity:1}
+      .better-bets-stage .bet-entry kbd{padding:1px 4px;border:1px solid var(--meta-divider);border-radius:2px;color:var(--text-dim);background:rgba(6,34,80,.35);font-size:calc(8px * var(--fs))}
+      .better-bets-stage .bet-bar{position:relative;display:grid;height:40px;overflow:hidden;grid-template-columns:22px minmax(52px,auto) 1fr auto;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--accent) 55%,var(--card-frame-mix) 45%);border-radius:calc(var(--card-radius) * .8);padding:0 10px 0 6px;color:var(--text-bright);text-align:left;background:var(--card-bg);box-shadow:var(--card-shadow);animation:better-bets-option-enter 480ms cubic-bezier(.2,.8,.2,1) both}
+      .better-bets-stage .bet-bar.is-selected,.better-bets-stage .bet-bar.is-winner{border-color:color-mix(in srgb,var(--accent) 90%,white 10%);box-shadow:var(--card-hover-shadow)}
+      .better-bets-stage .bet-bar.is-loser{opacity:.58;filter:saturate(.65)}
+      .better-bets-stage .bar-num{display:grid;width:20px;height:20px;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 80%,white 20%);border-radius:50%;color:#fff;background:var(--badge-bg);box-shadow:var(--badge-shadow);font-family:var(--font-display);font-size:calc(10px * var(--fs));font-weight:700;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+      .better-bets-stage .bar-range{min-width:0;overflow:hidden;color:#fff;font-size:calc(10.5px * var(--fs));font-weight:700;letter-spacing:.02em;text-overflow:ellipsis;text-shadow:var(--hard-shadow);white-space:nowrap}
+      .better-bets-stage .bar-track{position:relative;height:12px;overflow:hidden;border-radius:6px;background:color-mix(in srgb,var(--accent) 12%,rgba(0,0,0,.45));box-shadow:inset 0 1px 3px rgba(0,0,0,.6),inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
+      .better-bets-stage .bar-pct{min-width:38px;color:#fff;font-family:var(--font-display);font-size:calc(11px * var(--fs));font-weight:700;text-align:right;text-shadow:var(--detail-glow),var(--hard-shadow)}
+      .better-bets-stage .bf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+      .better-bets-stage .bf-core{position:absolute;top:0;bottom:0;left:0;width:var(--pct);border-radius:6px 2px 2px 6px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 52%,transparent),var(--accent),var(--accent-2));transition:width 700ms cubic-bezier(.22,1,.36,1)}
+      .better-bets-stage .bf-core::after{content:"";position:absolute;top:0;right:0;left:0;height:45%;border-radius:6px 0 0 0;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent)}
+      .better-bets-stage .bf-liquid .bf-sheen{position:absolute;top:0;bottom:0;width:34px;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:better-bets-bar-sheen calc(var(--fill-dur,3.2s) * 1.4) ease-in-out infinite}
+      .better-bets-stage .bf-scanline .bf-core{background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--accent) 22%,transparent) 0 2px,color-mix(in srgb,var(--accent) 58%,transparent) 2px 4px),linear-gradient(90deg,var(--accent),var(--accent-2))}
+      .better-bets-stage .bf-pulse .bf-tip{position:absolute;top:50%;left:var(--pct);width:6px;height:6px;transform:translate(-50%,-50%);border-radius:50%;background:var(--accent-2);box-shadow:0 0 10px 3px var(--accent-2);animation:better-bets-pulse-glow var(--fill-dur,3.2s) ease-in-out infinite;transition:left 700ms cubic-bezier(.22,1,.36,1)}
+      .better-bets-stage .bf-plasma .bf-blob{position:absolute;top:50%;width:26px;height:26px;border-radius:50%;filter:blur(8px);opacity:.65;mix-blend-mode:screen}
+      .better-bets-stage .bf-plasma .bf-blob-1{left:4%;background:var(--accent-2);animation:better-bets-plasma-1 calc(var(--fill-dur,3.2s) * 1.2) ease-in-out infinite}
+      .better-bets-stage .bf-plasma .bf-blob-2{left:60%;background:var(--accent);animation:better-bets-plasma-2 var(--fill-dur,3.2s) ease-in-out infinite}
+      .better-bets-stage[data-theme="metallic"] .option-number,.better-bets-stage[data-theme="metallic"] .bar-num{color:#1a2129;border-color:#e8eef6;text-shadow:0 1px 0 rgba(255,255,255,.5)}
+      .better-bets-stage[data-theme="matte"] .open-status{border-color:#6b5d24;color:#e8cf6a;background:#26221a;box-shadow:none}
+      .better-bets-stage[data-anim="off"] .widget-sheen,.better-bets-stage[data-anim="off"] .bet-widget,.better-bets-stage[data-anim="off"] .bet-option,.better-bets-stage[data-anim="off"] .bet-bar,.better-bets-stage[data-anim="off"] .fill-core,.better-bets-stage[data-anim="off"] .pulse-ring,.better-bets-stage[data-anim="off"] .scan-sweep,.better-bets-stage[data-anim="off"] .plasma-blob,.better-bets-stage[data-anim="off"] .bf-sheen,.better-bets-stage[data-anim="off"] .bf-tip,.better-bets-stage[data-anim="off"] .bf-blob{animation:none!important;transition:none!important}
+      @media (max-width:520px){.better-bets-stage{padding:8px}.better-bets-stage .bet-widget,.better-bets-stage .bet-widget.is-horizontal{width:100%;min-height:0}.better-bets-stage .bar-range{display:none}}
       @keyframes better-hunt-marquee-up{from{transform:translateY(0)}to{transform:translateY(-50%)}}
       @keyframes better-hunt-marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       @keyframes better-hunt-marquee-right{from{transform:translateX(-50%)}to{transform:translateX(0)}}
@@ -511,273 +967,412 @@ function BetterStyleSheet() {
   );
 }
 
+function BetterBetsMetaIcon({ type }) {
+  if (type === "timer") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="13" r="8" strokeWidth="2" />
+        <path d="M12 9v5l3 2M9 2h6" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (type === "users") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0Z" strokeWidth="2" />
+        <path d="M4 21a8 8 0 0 1 16 0" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" strokeWidth="2" />
+      <path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10.5" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function BetterBetsCardFill({ config, fillStyle, pct, stateId }) {
+  return (
+    <span
+      className={`fill-wrap fill-${fillStyle}`}
+      style={subElementStyle(config, "progressBar", {
+        "--pct": `${pct}%`,
+      }, stateId)}
+      {...attrs("bets", config, "progressBar", stateId)}
+      aria-hidden="true"
+    >
+      <span className="fill-core" />
+      {fillStyle === "pulse" && <span className="pulse-ring" />}
+      {fillStyle === "scanline" && <span className="scan-sweep" />}
+      {fillStyle === "plasma" && (
+        <>
+          <span className="plasma-blob plasma-blob-1" />
+          <span className="plasma-blob plasma-blob-2" />
+          <span className="plasma-blob plasma-blob-3" />
+        </>
+      )}
+      <span className="fill-bloom" />
+    </span>
+  );
+}
+
+function BetterBetsBarFill({ config, fillStyle, pct, stateId }) {
+  return (
+    <span
+      className={`bf bf-${fillStyle}`}
+      style={subElementStyle(config, "progressBar", {
+        "--pct": `${pct}%`,
+      }, stateId)}
+      {...attrs("bets", config, "progressBar", stateId)}
+      aria-hidden="true"
+    >
+      <span className="bf-core" />
+      {fillStyle === "liquid" && <span className="bf-sheen" />}
+      {fillStyle === "pulse" && <span className="bf-tip" />}
+      {fillStyle === "scanline" && <span className="bf-sweep" />}
+      {fillStyle === "plasma" && (
+        <>
+          <span className="bf-blob bf-blob-1" />
+          <span className="bf-blob bf-blob-2" />
+        </>
+      )}
+    </span>
+  );
+}
+
 export function BetterBetsStyle({ config, countdown, statusLabel }) {
   const c = config || {};
-  const options = safeArray(c.options);
+  const fallbackOptions = [
+    { label: "0 - 99" },
+    { label: "100 - 199" },
+    { label: "200 - 299" },
+    { label: "300 - 399" },
+    { label: "400 - 499" },
+    { label: "500 - 599" },
+  ];
+  const options = safeArray(c.options).length ? safeArray(c.options) : fallbackOptions;
   const bets = c.bets || {};
   const betters = c.betters || {};
-  const visibleOptions = options.slice(0, Math.max(2, Math.min(8, numberValue(c.betterVisibleOptions, 6))));
+  const visibleLimit = Math.max(
+    2,
+    Math.min(6, numberValue(c.betterVisibleOptions, 6)),
+  );
+  const visibleOptions = options.slice(0, visibleLimit);
   const totalPool = visibleOptions.reduce(
     (sum, _, index) => sum + (Number(bets[`opt_${index}`]) || 0),
     0,
   );
-  const maxBet = Math.max(
-    1,
-    ...visibleOptions.map((_, index) => Number(bets[`opt_${index}`]) || 0),
-  );
   const totalBetters = Object.keys(betters).length;
   const winnerIdx = c.winnerOption ?? null;
   const status = c.gameStatus || "idle";
-  const accent = subValue(c, "cardNumberBadge", "background", c.accentColor || c.barFill || "#f59e0b");
-  const bg = subValue(c, "widgetBackground", "background", c.bgColor || "#061126");
-  const text = subValue(c, "widgetBackground", "textColor", c.textColor || "#eef6ff");
-  const muted = c.mutedColor || "rgba(226,232,240,0.68)";
-  const border = subValue(c, "widgetBackground", "borderColor", c.borderColor || alphaColor(accent, 0.45));
-  const font = subValue(c, "widgetBackground", "fontFamily", c.fontFamily || "'Inter', sans-serif");
-  const baseFontSize = numberValue(subValue(c, "widgetBackground", "fontSize", c.fontSize || 14), 14);
-  const radius = cssPx(subValue(c, "widgetBackground", "radius", c.borderRadius ?? 16), "16px");
-  const columns = Math.max(2, Math.min(4, numberValue(c.betterColumns, visibleOptions.length > 4 ? 3 : 2)));
-
-  const rootStyle = subElementStyle(c, "widgetBackground", {
-    width: "100%",
-    height: "100%",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-    padding: 14,
-    background: `linear-gradient(145deg, ${bg}, ${alphaColor(accent, 0.18)})`,
-    color: text,
-    border: `1px solid ${border}`,
-    borderRadius: radius,
-    overflow: "hidden",
-    fontFamily: font,
-    fontSize: baseFontSize,
-    boxShadow: `0 18px 42px rgba(0,0,0,0.36), 0 0 28px ${alphaColor(accent, 0.22)}`,
-    position: "relative",
-  });
-  const headerStyle = subElementStyle(c, "header", {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-    minHeight: 38,
-    padding: "8px 10px",
-    borderRadius: 12,
-    background: `linear-gradient(90deg, ${alphaColor(accent, 0.24)}, rgba(15,23,42,0.34))`,
-    border: `1px solid ${alphaColor(accent, 0.22)}`,
-  });
-  const cardBase = {
-    background: c.cardBg || "rgba(255,255,255,0.07)",
-    border: `1px solid ${alphaColor(accent, 0.22)}`,
-    borderRadius: cssPx(subValue(c, "individualBetCard", "radius", c.cardRadius ?? 12), "12px"),
+  const pcts = visibleOptions.map((_, index) =>
+    totalPool > 0
+      ? Math.round(((Number(bets[`opt_${index}`]) || 0) / totalPool) * 100)
+      : 0,
+  );
+  const leadingIdx = (() => {
+    if (status !== "open" || totalPool <= 0) return -1;
+    const highest = Math.max(...pcts);
+    if (highest < 25) return -1;
+    const sorted = [...pcts].sort((a, b) => b - a);
+    if (highest < (sorted[1] ?? 0) + 15) return -1;
+    return pcts.indexOf(highest);
+  })();
+  const theme = normalizeBetterBetsTheme(c.theme || c.betTheme);
+  const fillStyle = normalizeBetterBetsFillStyle(c.fillStyle || c.betFillStyle);
+  const layoutMode = normalizeBetterBetsLayoutMode(c.layoutMode || c.betLayoutMode);
+  const orientation = normalizeBetterBetsOrientation(c.orientation);
+  const columns = Math.max(
+    1,
+    Math.min(3, numberValue(c.columns ?? c.betterColumns, layoutMode === "bars" ? 1 : 2)),
+  );
+  const rows = Math.max(1, Math.ceil(visibleOptions.length / columns));
+  const itemHeight = layoutMode === "cards" ? 98 : 40;
+  const baseWidth = orientation === "horizontal" ? 640 : 360;
+  const baseHeight = Math.max(
+    orientation === "horizontal" ? 220 : 240,
+    26 + 42 + 30 + 16 + rows * itemHeight + Math.max(0, rows - 1) * 6,
+  );
+  const fontScale = Math.max(0.75, Math.min(1.4, numberValue(c.fontScale, 100) / 100));
+  const glowIntensity = Math.max(0, Math.min(2, numberValue(c.glowIntensity, 100) / 100));
+  const opacity = Math.max(0.4, Math.min(1, numberValue(c.opacity, 100) / 100));
+  const fillSpeed = Math.max(10, numberValue(c.fillSpeed, 100));
+  const cardRadius = cssPx(
+    subValue(c, "widgetBackground", "radius", c.borderRadius ?? 8),
+    "8px",
+  );
+  const fontFamily = subValue(c, "widgetBackground", "fontFamily", undefined);
+  const colors =
+    safeArray(c.cardColors).length >= 2
+      ? safeArray(c.cardColors)
+      : BETTER_BETS_CARD_COLORS;
+  const command = c.chatCommand || "!bet";
+  const timeText =
+    status === "open"
+      ? statusLabel || formatBetterBetsDuration(countdown)
+      : status === "locked"
+        ? "LOCKED"
+        : status === "result"
+          ? "RESULT"
+          : "IDLE";
+  const statusText =
+    status === "open"
+      ? "OPEN"
+      : status === "locked"
+        ? "LOCKED"
+        : status === "result"
+          ? "RESULT"
+          : "IDLE";
+  const stageStyle = {
+    ...BETTER_BETS_THEME_VARS[theme],
+    "--fs": fontScale,
+    "--card-radius": cardRadius,
+    "--glow-mult": glowIntensity,
+    "--widget-opacity": opacity,
+    "--fill-dur": `${3.2 * (100 / fillSpeed)}s`,
+    "--cols": columns,
+    "--base-w": `${baseWidth}px`,
+    "--base-h": `${baseHeight}px`,
+    ...(fontFamily ? { "--font-body": fontFamily, "--font-display": fontFamily } : {}),
   };
+  const widgetStyle = subElementStyle(c, "widgetBackground", {});
+  const statusTone =
+    status === "open"
+      ? {}
+      : {
+          "--status-border": "rgba(148,163,184,0.38)",
+          "--status-text": "var(--text-dim)",
+          "--status-bg": "rgba(15,23,42,0.68)",
+          "--status-shadow": "none",
+        };
 
   return (
-    <div className="better-bets-widget" style={rootStyle} {...attrs("bets", c, "widgetBackground")}>
+    <div
+      className="better-bets-stage"
+      data-theme={theme}
+      data-font={c.font || "cyber"}
+      data-fill={fillStyle}
+      data-anim={c.animations === false ? "off" : "on"}
+      style={stageStyle}
+    >
       <BetterStyleSheet />
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: "-40% -30% auto auto",
-          width: "70%",
-          height: "70%",
-          background: `radial-gradient(circle, ${alphaColor(accent, 0.22)}, transparent 68%)`,
-          pointerEvents: "none",
-        }}
-      />
-      <div style={headerStyle} {...attrs("bets", c, "header")}>
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: baseFontSize * 0.72,
-              color: muted,
-              fontWeight: 800,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-            }}
-          >
-            Live bracket
-          </div>
-          <div
-            style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              fontWeight: 900,
-              fontSize: baseFontSize * 1.12,
-              lineHeight: 1.1,
-            }}
-          >
-            {c.question || "Place Your Bets"}
-          </div>
-        </div>
-        <span
-          style={subElementStyle(c, "status", {
-            flexShrink: 0,
-            borderRadius: 999,
-            padding: "7px 10px",
-            background: status === "open" ? accent : "rgba(148,163,184,0.18)",
-            color: status === "open" ? "#061126" : text,
-            fontSize: baseFontSize * 0.72,
-            fontWeight: 900,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-          }, status)}
-          {...attrs("bets", c, "status", status)}
-        >
-          {status === "open" ? statusLabel || `${countdown}s` : statusLabel || status}
-        </span>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8 }}>
-        {[
-          ["poolStat", "Pool", formatCompactNumber(totalPool)],
-          ["timerStat", status === "open" ? "Timer" : "State", status === "open" ? `${countdown}s` : status.toUpperCase()],
-          ["betsStat", "Bets", formatCompactNumber(totalBetters)],
-        ].map(([part, label, value]) => (
-          <div
-            key={part}
-            style={subElementStyle(c, part, {
-              minWidth: 0,
-              borderRadius: 10,
-              background: "rgba(255,255,255,0.055)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              padding: "8px 6px",
-              textAlign: "center",
-            })}
-            {...attrs("bets", c, part)}
-          >
-            <div style={{ fontWeight: 950, fontSize: baseFontSize * 1.1, lineHeight: 1 }}>{value}</div>
-            <div style={{ marginTop: 3, color: muted, fontSize: baseFontSize * 0.66, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-              {label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div
-        style={subElementStyle(c, "betCards", {
-          display: "grid",
-          gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`,
-          gap: 9,
-          minHeight: 0,
-          flex: 1,
-        })}
-        {...attrs("bets", c, "betCards")}
+      <section
+        className={[
+          "bet-widget",
+          c.showBrackets === false && "hide-brackets",
+          c.showSheen === false && "hide-sheen",
+          orientation === "horizontal" && "is-horizontal",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        data-cols={columns}
+        style={widgetStyle}
+        {...attrs("bets", c, "widgetBackground")}
       >
-        {visibleOptions.map((option, index) => {
-          const amount = Number(bets[`opt_${index}`]) || 0;
-          const pct = totalPool > 0 ? Math.round((amount / totalPool) * 100) : 0;
-          const fill = Math.max(4, Math.round((amount / maxBet) * 100));
-          const isWinner = winnerIdx === index;
-          const isLoser = winnerIdx !== null && winnerIdx !== index;
-          const optionAccent = c.barColorMode === "rainbow"
-            ? ["#f59e0b", "#22c55e", "#38bdf8", "#a78bfa", "#fb7185", "#eab308"][index % 6]
-            : accent;
-          return (
+        <div className="widget-sheen" aria-hidden="true" />
+        <header
+          className="widget-header"
+          style={subElementStyle(c, "header", {})}
+          {...attrs("bets", c, "header")}
+        >
+          <div className="title-lockup">
+            <span className="title-mark" aria-hidden="true" />
+            <h1>{c.question || "Place Your Bets"}</h1>
+          </div>
+          <span
+            className="open-status"
+            style={subElementStyle(c, "status", statusTone, status)}
+            {...attrs("bets", c, "status", status)}
+          >
+            <i aria-hidden="true" />
+            {statusText}
+          </span>
+        </header>
+
+        <div className="event-meta">
+          {[
+            ["poolStat", "pool", formatCompactNumber(totalPool), "Pool"],
+            ["timerStat", "timer", timeText, status === "open" ? "Timer" : "State"],
+            ["betsStat", "users", formatCompactNumber(totalBetters), "Bets"],
+          ].map(([part, icon, value, label]) => (
             <div
-              key={`${index}-${betOptionLabel(option, index)}`}
-              style={subElementStyle(c, "individualBetCard", {
-                ...cardBase,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                minHeight: 86,
-                padding: 10,
-                position: "relative",
-                overflow: "hidden",
-                opacity: isLoser ? 0.62 : 1,
-                boxShadow: isWinner ? `0 0 22px ${alphaColor(optionAccent, 0.5)}` : undefined,
-                animation: "better-rise 220ms ease-out both",
-                animationDelay: `${index * 35}ms`,
-              }, isWinner ? "winner" : isLoser ? "loser" : "default")}
-              {...attrs("bets", c, "individualBetCard", isWinner ? "winner" : isLoser ? "loser" : "default")}
+              key={part}
+              className="meta-item"
+              style={subElementStyle(c, part, {})}
+              {...attrs("bets", c, part)}
             >
-                <span
-                  aria-hidden="true"
-                  style={subElementStyle(c, "progressBar", {
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    height: `${fill}%`,
-                    background: `linear-gradient(180deg, ${alphaColor(optionAccent, 0.06)}, ${alphaColor(optionAccent, 0.34)})`,
-                    transition: "height 300ms ease",
-                  }, isWinner ? "winner" : isLoser ? "loser" : "default")}
-                  {...attrs("bets", c, "progressBar", isWinner ? "winner" : isLoser ? "loser" : "default")}
+              <strong>{value}</strong>
+              <span>
+                <BetterBetsMetaIcon type={icon} />
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className={layoutMode === "bars" ? "bars-grid" : "bets-grid"}
+          style={subElementStyle(c, "betCards", {})}
+          {...attrs("bets", c, "betCards")}
+        >
+          {visibleOptions.map((option, index) => {
+            const amount = Number(bets[`opt_${index}`]) || 0;
+            const pct = pcts[index] || 0;
+            const fillPct = totalPool > 0 ? pct : 0;
+            const isWinner = winnerIdx === index;
+            const isLoser = winnerIdx !== null && winnerIdx !== index;
+            const isLeading = leadingIdx === index;
+            const stateId = isWinner
+              ? "winner"
+              : isLoser
+                ? "loser"
+                : isLeading
+                  ? "leading"
+                  : status === "locked"
+                    ? "closed"
+                    : "default";
+            const baseColor = colors[index % colors.length] || BETTER_BETS_CARD_COLORS[index % BETTER_BETS_CARD_COLORS.length];
+            const accent = subValue(c, "progressBar", "fillColor", baseColor.accent, stateId);
+            const accent2 = baseColor.accent2 || accent;
+            const optionLabel = betOptionLabel(option, index);
+            const detailLabel = isWinner
+              ? "Winner"
+              : isLoser
+                ? "Closed"
+                : amount > 0
+                  ? `${formatCompactNumber(amount)} pts`
+                  : `${command} ${index + 1}`;
+            const optionVars = {
+              "--fill": `${fillPct}%`,
+              "--pct": `${fillPct}%`,
+              "--accent": accent,
+              "--accent-2": accent2,
+              animationDelay: `${index * 50}ms`,
+            };
+
+            if (layoutMode === "bars") {
+              return (
+                <div
+                  key={`${index}-${optionLabel}`}
+                  className={[
+                    "bet-bar",
+                    isWinner && "is-winner",
+                    isLoser && "is-loser",
+                    isLeading && "is-selected",
+                    fillPct >= 100 && totalPool > 0 && "is-full",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={subElementStyle(c, "individualBetCard", optionVars, stateId)}
+                  {...attrs("bets", c, "individualBetCard", stateId)}
+                  data-appearance-index={index}
+                >
+                  <span
+                    className="bar-num"
+                    style={subElementStyle(c, "cardNumberBadge", {}, stateId)}
+                    {...attrs("bets", c, "cardNumberBadge", stateId)}
+                  >
+                    {index + 1}
+                  </span>
+                  <span
+                    className="bar-range"
+                    style={subElementStyle(c, "cardRangeText", {}, stateId)}
+                    {...attrs("bets", c, "cardRangeText", stateId)}
+                  >
+                    {optionLabel}
+                  </span>
+                  <span className="bar-track">
+                    <BetterBetsBarFill
+                      config={c}
+                      fillStyle={fillStyle}
+                      pct={fillPct}
+                      stateId={stateId}
+                    />
+                  </span>
+                  <span
+                    className="bar-pct"
+                    style={subElementStyle(c, "cardPercentageText", {}, stateId)}
+                    {...attrs("bets", c, "cardPercentageText", stateId)}
+                  >
+                    {pct}%
+                  </span>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={`${index}-${optionLabel}`}
+                className={[
+                  "bet-option",
+                  isWinner && "is-winner",
+                  isLoser && "is-loser",
+                  isLeading && "is-selected",
+                  fillPct >= 100 && totalPool > 0 && "is-full",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={subElementStyle(c, "individualBetCard", optionVars, stateId)}
+                {...attrs("bets", c, "individualBetCard", stateId)}
+                data-appearance-index={index}
+              >
+                <BetterBetsCardFill
+                  config={c}
+                  fillStyle={fillStyle}
+                  pct={fillPct}
+                  stateId={stateId}
                 />
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
+                <span className="option-scrim" aria-hidden="true" />
                 <span
-                  style={subElementStyle(c, "cardNumberBadge", {
-                    width: 28,
-                    height: 28,
-                    borderRadius: 9,
-                    display: "grid",
-                    placeItems: "center",
-                    background: optionAccent,
-                    color: "#061126",
-                    fontWeight: 950,
-                  })}
-                  {...attrs("bets", c, "cardNumberBadge")}
+                  className="option-number"
+                  style={subElementStyle(c, "cardNumberBadge", {}, stateId)}
+                  {...attrs("bets", c, "cardNumberBadge", stateId)}
                 >
                   {index + 1}
                 </span>
-                <strong
-                  style={subElementStyle(c, "cardRangeText", {
-                    minWidth: 0,
-                    color: text,
-                    fontSize: baseFontSize * 0.86,
-                    lineHeight: 1.15,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  })}
-                  {...attrs("bets", c, "cardRangeText")}
-                >
-                  {betOptionLabel(option, index)}
-                </strong>
-              </div>
-              <div style={{ position: "relative", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8 }}>
                 <span
-                  style={subElementStyle(c, "cardLabel", {
-                    color: muted,
-                    fontSize: baseFontSize * 0.72,
-                  })}
-                  {...attrs("bets", c, "cardLabel")}
+                  className="option-range"
+                  style={subElementStyle(c, "cardRangeText", {}, stateId)}
+                  {...attrs("bets", c, "cardRangeText", stateId)}
                 >
-                  {formatCompactNumber(amount)} pts
+                  {optionLabel}
                 </span>
-                <span
-                  style={subElementStyle(c, "cardPercentageText", {
-                    color: optionAccent,
-                    fontSize: baseFontSize * 1.35,
-                    fontWeight: 950,
-                    lineHeight: 0.95,
-                  })}
-                  {...attrs("bets", c, "cardPercentageText")}
-                >
-                  {pct}%
+                <span className="option-details">
+                  <strong
+                    style={subElementStyle(c, "cardPercentageText", {}, stateId)}
+                    {...attrs("bets", c, "cardPercentageText", stateId)}
+                  >
+                    {pct}%
+                  </strong>
+                  <small
+                    style={subElementStyle(c, "cardLabel", {}, stateId)}
+                    {...attrs("bets", c, "cardLabel", stateId)}
+                  >
+                    {detailLabel}
+                  </small>
                 </span>
+                <span className="option-glint" aria-hidden="true" />
               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {status === "open" && (
-        <div
-          style={subElementStyle(c, "footerInstruction", {
-            color: muted,
-            fontSize: baseFontSize * 0.76,
-            fontWeight: 700,
-            textAlign: "center",
+            );
           })}
+        </div>
+
+        <div
+          className="bet-entry"
+          style={subElementStyle(c, "footerInstruction", {})}
           {...attrs("bets", c, "footerInstruction")}
         >
-          Type {c.chatCommand || "!bet"} &lt;number&gt; to join
+          <span>&gt;&gt;&gt;</span>
+          <input
+            readOnly
+            value=""
+            placeholder={`Type ${command} <number> <amount>`}
+            aria-label="Bet command hint"
+          />
+          <kbd>Enter</kbd>
         </div>
-      )}
+      </section>
     </div>
   );
 }
