@@ -18,6 +18,7 @@ import {
   resolveStyleSecaValue,
   styleSecaSurfaceGradient,
 } from "./shared/styleSecaTheme";
+import { BetterRtpStatsStyle } from "./shared/betterWidgetStyles";
 
 const DEFAULT_RTP_METAL = Object.freeze({
   primaryColor: "#6f7d91",
@@ -256,6 +257,7 @@ function resolveRtpStyleFlags(displayStyle) {
     isVertical: displayStyle === "vertical",
     isMetal: displayStyle === "metal",
     isStyleSeca: displayStyle === "StyleSecaRTP",
+    isBetterRtp: displayStyle === "better_rtp",
     isNeon: displayStyle === "neon",
     isMinimal: displayStyle === "minimal",
     isGlassStyle: displayStyle === "glass",
@@ -1865,6 +1867,27 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   });
   const dividerStyle = subElementStyle(c, "divider");
   const spinnerStyle = subElementStyle(c, "spinner");
+
+  if (displayStyle === "better_rtp") {
+    return (
+      <BetterRtpStatsStyle
+        config={c}
+        displaySlotName={displaySlotName}
+        displayProvider={displayProvider}
+        displayProviderLogo={displayProviderLogo}
+        displayInfo={displayInfo}
+        displayBestWin={displayBestWin}
+        currency={currency}
+        bestWinEmptyText={bestWinEmptyText}
+        isLive={isLive}
+        previewMode={previewMode}
+        showRtp={showRtp}
+        showPotential={showPotential}
+        showVolatility={showVolatility}
+        showBestWin={showBestWin}
+      />
+    );
+  }
 
   return (
     <div

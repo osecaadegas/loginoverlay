@@ -13,6 +13,7 @@ import BonusHuntWidgetV12 from "./BonusHuntWidgetV12";
 import SlotImage from "./SlotImage";
 import { subValue } from "./shared/appearanceStyles";
 import { useBonusHuntRequestsData } from "./bonus-hunt/shared/useBonusHuntRequestsData";
+import { BetterBonusHuntStyle } from "./shared/betterWidgetStyles";
 
 function cssPx(value) {
   if (value === undefined || value === null || value === "") return undefined;
@@ -177,6 +178,17 @@ function BonusHuntWidget({ config, theme, userId }) {
   }
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
+  if (c.displayStyle === "better_bonus_hunt") {
+    return (
+      <BetterBonusHuntStyle
+        config={sortedConfig}
+        bonuses={bonuses}
+        stats={stats}
+        currency={currency}
+      />
+    );
+  }
+
   const huntTitle = c.bonusOpening ? "BONUS OPENING" : "BONUS HUNT";
 
   /* ─── Custom style vars ─── */

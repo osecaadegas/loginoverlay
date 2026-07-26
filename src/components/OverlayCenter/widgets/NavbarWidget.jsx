@@ -89,6 +89,7 @@ const DEFAULT_SECTION_LAYOUT = [
 const NAVBAR_STYLE_DEFAULTS = {
   accentColor: {
     StyleSecaNav: STYLE_SECA.primary,
+    better_navbar: "#f59e0b",
     metallic: "#e8a020",
     glass: "#60a5fa",
     retro: "#ff6b2b",
@@ -98,6 +99,7 @@ const NAVBAR_STYLE_DEFAULTS = {
   },
   bgColor: {
     StyleSecaNav: STYLE_SECA.surface,
+    better_navbar: "#061126",
     metallic: "#1a1a1e",
     glass: "#0f172a",
     retro: "#1a0a00",
@@ -107,6 +109,7 @@ const NAVBAR_STYLE_DEFAULTS = {
   },
   textColor: {
     StyleSecaNav: STYLE_SECA.text,
+    better_navbar: "#f8fafc",
     metallic: "#d4d4d8",
     glass: "#e0eaff",
     retro: "#ffd9b3",
@@ -116,6 +119,7 @@ const NAVBAR_STYLE_DEFAULTS = {
   },
   mutedColor: {
     StyleSecaNav: STYLE_SECA.muted,
+    better_navbar: "#93c5fd",
     metallic: "#666666",
     glass: "#6b8ccc",
     retro: "#885530",
@@ -125,12 +129,14 @@ const NAVBAR_STYLE_DEFAULTS = {
   },
   containerFontFamily: {
     StyleSecaNav: "'Rajdhani', 'Barlow Condensed', sans-serif",
+    better_navbar: "'Inter', sans-serif",
     retro: "'Press Start 2P', 'Courier New', monospace",
     futuristic: "'Orbitron', sans-serif",
     default: "'Inter', sans-serif",
   },
   borderWidth: {
     StyleSecaNav: 1,
+    better_navbar: 1,
     metallic: 1,
     glass: 1,
     retro: 3,
@@ -140,6 +146,7 @@ const NAVBAR_STYLE_DEFAULTS = {
   },
   borderRadius: {
     StyleSecaNav: 12,
+    better_navbar: 14,
     metallic: 16,
     glass: 20,
     retro: 4,
@@ -149,18 +156,21 @@ const NAVBAR_STYLE_DEFAULTS = {
   },
   casinoRadius: {
     StyleSecaNav: 6,
+    better_navbar: 8,
     metallic: 6,
     retro: 2,
     default: 8,
   },
   clockRadius: {
     StyleSecaNav: 10,
+    better_navbar: 10,
     metallic: 10,
     glass: 14,
     retro: 2,
     default: 999,
   },
   containerFontSize: {
+    better_navbar: 14,
     retro: 13,
     default: 15,
   },
@@ -170,6 +180,7 @@ const NAVBAR_STYLE_DEFAULTS = {
   },
   ctaColor: {
     StyleSecaNav: STYLE_SECA.primary,
+    better_navbar: "#f59e0b",
     retro: "#ff4500",
     futuristic: "#00ffcc",
     default: "#f43f5e",
@@ -907,7 +918,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
   /* ─── Style vars from config ─── */
   const isMetal = c.displayStyle === "metallic";
   const isStyleSeca = c.displayStyle === "StyleSecaNav";
-  const isMetalSurface = isMetal || isStyleSeca;
+  const isBetterNavbar = c.displayStyle === "better_navbar";
+  const isMetalSurface = isMetal || isStyleSeca || isBetterNavbar;
   const styleSecaValue = (value, fallback) =>
     resolveNavbarStyleSecaValue(isStyleSeca, value, fallback);
   const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
@@ -1706,6 +1718,152 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
           ],
     );
   };
+
+  if (isBetterNavbar) {
+    const betterSeparator = (
+      <div
+        {...partAttrs("separator")}
+        style={withElementOffset(c, "separator", {
+          width: separatorWidth,
+          height: Math.max(20, barHeight * 0.48),
+          background: `linear-gradient(180deg, transparent, ${borderColor}, transparent)`,
+          opacity: separatorOpacity,
+          flexShrink: 0,
+        })}
+      />
+    );
+    const renderBetterItems = (items) =>
+      items.filter(Boolean).flatMap((item, index) =>
+        index === 0
+          ? [<React.Fragment key={index}>{item}</React.Fragment>]
+          : [
+              <React.Fragment key={`sep-${index}`}>{betterSeparator}</React.Fragment>,
+              <React.Fragment key={index}>{item}</React.Fragment>,
+            ],
+      );
+    const leftItems = [renderIdentitySection(), renderBalanceSection(), renderCasinoSection()];
+    const centerItems = [renderClockSection()];
+    const rightItems = [renderNowPlayingSection(), renderCryptoSection(), renderCtaSection()];
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <style>{`
+          @keyframes better-nav-sheen{0%{transform:translateX(-140%)}100%{transform:translateX(140%)}}
+        `}</style>
+        <div
+          {...partAttrs("container")}
+          style={{
+            width: "100%",
+            height: `${barHeight}px`,
+            maxHeight: "100%",
+            maxWidth: barMaxWidth != null ? `${barMaxWidth}px` : undefined,
+            boxSizing: "border-box",
+            padding: `${borderWidth}px`,
+            borderRadius: `${borderRadius}px`,
+            background: `linear-gradient(135deg, ${borderColor}, rgba(${accentColorRGB},0.28))`,
+            fontFamily: containerFontFamily,
+            overflow: "hidden",
+            position: "relative",
+            clipPath: clipOuter,
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              zIndex: 1,
+              width: "100%",
+              height: "100%",
+              boxSizing: "border-box",
+              display: "grid",
+              gridTemplateColumns: "minmax(0,1.1fr) auto minmax(0,1fr)",
+              alignItems: "center",
+              gap: 12,
+              padding: `${Math.max(6, Number(containerPadding) || 10)}px ${Math.max(14, Number(containerPadding) * 1.6 || 16)}px`,
+              borderRadius: `${Math.max(0, Number(borderRadius) - Number(borderWidth))}px`,
+              background: `linear-gradient(180deg, ${bgColor}, rgba(3,7,18,0.94))`,
+              color: textColor,
+              fontSize,
+              boxShadow:
+                containerShadow ||
+                `0 16px 34px rgba(0,0,0,0.36), 0 0 22px rgba(${accentColorRGB},0.22)`,
+              filter: needsFilter ? filterStr : "none",
+              transform: `scale(${widgetScale})`,
+              transformOrigin: "center",
+              backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+            }}
+          >
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.07) 46%, transparent 58%)",
+                animation: "better-nav-sheen 5.5s linear infinite",
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                minWidth: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              {renderBetterItems(leftItems)}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              {renderBetterItems(centerItems)}
+            </div>
+            <div
+              style={{
+                minWidth: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                gap: 10,
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              {renderBetterItems(rightItems)}
+            </div>
+          </div>
+          {containerGlow ? (
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                boxShadow: containerGlow,
+                pointerEvents: "none",
+              }}
+            />
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

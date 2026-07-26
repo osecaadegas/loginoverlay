@@ -497,7 +497,7 @@ const PreviewSlot = memo(function PreviewSlot({
     const clickedElementId = elementInsideWidget
       ? elementNode.dataset?.widgetElement
       : "";
-    const elementId = getMovableElementId({
+    const selectedMovableElementId = getMovableElementId({
       clickedElementId,
       selectedElementId,
     });
@@ -506,7 +506,7 @@ const PreviewSlot = memo(function PreviewSlot({
       canvasWidth,
       cfg,
       draggingRef,
-      elementId,
+      elementId: selectedMovableElementId,
       event,
       highlighted,
       onMoveElement,
@@ -516,7 +516,7 @@ const PreviewSlot = memo(function PreviewSlot({
       widget,
     });
     if (movedElement) return;
-    if (selectMode && highlighted && elementId && onMoveElement) {
+    if (selectMode && highlighted && selectedMovableElementId && onMoveElement) {
       event.preventDefault();
       event.stopPropagation();
       return;

@@ -57,12 +57,15 @@ function composeV12RootBackground(headerColor, rootBackground) {
 }
 
 function partAttrs(partId, stateId) {
-  return appearanceAttrs({
-    widgetType: "bonus_hunt",
-    widgetVariant: "v12_classic_sr",
-    elementId: partId,
-    stateId,
-  });
+  return {
+    "data-appearance-part": partId,
+    ...appearanceAttrs({
+      widgetType: "bonus_hunt",
+      widgetVariant: "v12_classic_sr",
+      elementId: partId,
+      stateId,
+    }),
+  };
 }
 
 function bonusRowState(index, currentIndex, bonus = {}) {

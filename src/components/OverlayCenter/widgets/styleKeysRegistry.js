@@ -338,6 +338,35 @@ export const BH_STATS_STYLE_KEYS = [
   "custom_css",
 ];
 
+/* ── Bets ── */
+export const BETS_STYLE_KEYS = [
+  "bonusHuntColorSync",
+  "accentColor",
+  "bgColor",
+  "cardBg",
+  "textColor",
+  "mutedColor",
+  "borderColor",
+  "headerBg",
+  "headerText",
+  "barBg",
+  "barFill",
+  "progressColor",
+  "progressBgColor",
+  "buttonBg",
+  "buttonText",
+  "fontFamily",
+  "fontSize",
+  "fontWeight",
+  "borderRadius",
+  "borderWidth",
+  "shadowSize",
+  "shadowIntensity",
+  "betterColumns",
+  "betterVisibleOptions",
+  "custom_css",
+];
+
 /* ── Bonus Buys ── */
 export const BONUS_BUYS_STYLE_KEYS = [
   "bgColor",
@@ -363,6 +392,7 @@ const STYLE_KEYS_MAP = {
   slot_requests: SLOT_REQUESTS_STYLE_KEYS,
   single_slot: SINGLE_SLOT_STYLE_KEYS,
   bh_stats: BH_STATS_STYLE_KEYS,
+  bets: BETS_STYLE_KEYS,
   bonus_buys: BONUS_BUYS_STYLE_KEYS,
 };
 

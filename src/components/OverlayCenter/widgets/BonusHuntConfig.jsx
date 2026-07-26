@@ -318,7 +318,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
           )}
 
           {/* ── Shared Colors (V1/V3/V5/V6) ── */}
-          {['v3','v5_horizontal','v11_fever','v12_classic_sr'].includes(currentStyle) && (<>
+          {['v3','v5_horizontal','v11_fever','v12_classic_sr','better_bonus_hunt'].includes(currentStyle) && (<>
             <h4 className="nb-subtitle">Card Colors</h4>
             <div className="nb-color-grid">
               <ColorPicker label="Header BG" value={c.headerColor || colorDefault('headerColor', '#1e3a8a')} onChange={v => set('headerColor', v)} />
@@ -365,7 +365,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               onChange={v => set('fontSize', v)} />
 
             {/* Dimensions — only for styles that use them */}
-            {['v5_horizontal','v11_fever','v12_classic_sr'].includes(currentStyle) && (<>
+            {['v5_horizontal','v11_fever','v12_classic_sr','better_bonus_hunt'].includes(currentStyle) && (<>
               <h4 className="nb-subtitle">Dimensions</h4>
               <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
                 onChange={v => set('widgetWidth', v)} />

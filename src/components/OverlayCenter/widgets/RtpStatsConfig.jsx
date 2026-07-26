@@ -88,6 +88,7 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
     { id: "presets", label: "💾 Presets" },
   ];
   const styleOptions = [
+    { id: "better_rtp", icon: "B", label: "Better" },
     { id: "v1", icon: "📊", label: "Classic" },
     { id: "metal", icon: "⚙️", label: "Metal" },
     { id: "StyleSecaRTP", icon: "✦", label: "StyleSeca" },

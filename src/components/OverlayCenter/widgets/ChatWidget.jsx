@@ -19,6 +19,10 @@ import {
   styleSecaSurfaceGradient,
 } from "./shared/styleSecaTheme";
 import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
+import {
+  BetterChatHeader,
+  BetterChatMessage,
+} from "./shared/betterWidgetStyles";
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -45,6 +49,7 @@ const HEADER_CHAT_STYLES = new Set([
   "glow_panel",
   "StyleSecaChat",
   "bh_stats",
+  "better_chat",
 ]);
 const BADGE_CHAT_STYLES = new Set([
   "classic",
@@ -52,6 +57,7 @@ const BADGE_CHAT_STYLES = new Set([
   "glow_panel",
   "StyleSecaChat",
   "bh_stats",
+  "better_chat",
 ]);
 const CHAT_PLATFORMS = ["twitch", "youtube", "kick"];
 
@@ -61,6 +67,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "#d4d8e0",
     glow_panel: "#dbeafe",
     bh_stats: "#f1f5f9",
+    better_chat: "#eaf6ff",
     default: "#e2e8f0",
   },
   headerBg: {
@@ -69,6 +76,7 @@ const CHAT_STYLE_DEFAULTS = {
       "linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)",
     glow_panel: "rgba(2,12,25,0.82)",
     bh_stats: "rgba(255,255,255,0.04)",
+    better_chat: "rgba(8,18,38,0.72)",
     default: "rgba(30,41,59,0.5)",
   },
   headerText: {
@@ -76,6 +84,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "#a8b0c0",
     glow_panel: "#22d3ee",
     bh_stats: "#64748b",
+    better_chat: "#f59e0b",
     default: "#94a3b8",
   },
   messageRadius: {
@@ -83,6 +92,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: 10,
     glow_panel: 8,
     bh_stats: 14,
+    better_chat: 14,
     default: 12,
   },
   containerRadius: {
@@ -90,6 +100,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: 10,
     glow_panel: 8,
     bh_stats: 14,
+    better_chat: 16,
     default: 12,
   },
   messageBorderColor: {
@@ -97,6 +108,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "rgba(200,210,225,0.18)",
     glow_panel: "rgba(34,211,238,0.22)",
     bh_stats: "rgba(255,255,255,0.06)",
+    better_chat: "rgba(59,130,246,0.24)",
     default: "rgba(51,65,85,0.5)",
   },
   containerBorderColor: {
@@ -104,6 +116,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "rgba(200,210,225,0.18)",
     glow_panel: "rgba(34,211,238,0.26)",
     bh_stats: "rgba(255,255,255,0.06)",
+    better_chat: "rgba(59,130,246,0.38)",
     default: "rgba(51,65,85,0.5)",
   },
 };
@@ -121,6 +134,7 @@ function resolveChatFontFamily(chatStyle, configuredFontFamily) {
     return "'Rajdhani', 'Barlow Condensed', sans-serif";
   }
   if (chatStyle === "bh_stats") return "'Poppins', sans-serif";
+  if (chatStyle === "better_chat") return "'Inter', sans-serif";
   return configuredFontFamily || "'Inter', sans-serif";
 }
 
@@ -380,6 +394,7 @@ function ChatWidget({ config, theme, allWidgets }) {
   const isGlowPanel = chatStyle === "glow_panel";
   const isBH = chatStyle === "bh_stats";
   const isStyleSeca = chatStyle === "StyleSecaChat";
+  const isBetterChat = chatStyle === "better_chat";
   const styleSecaValue = (value, fallback) =>
     resolveOptionalStyleSecaValue(isStyleSeca, value, fallback);
   const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
@@ -566,6 +581,8 @@ function ChatWidget({ config, theme, allWidgets }) {
     glow_panel: "rgba(2,8,18,0.94)",
     StyleSecaChat: styleSecaSurfaceGradient(),
     bh_stats: "rgba(15, 23, 42, 0.9)",
+    better_chat:
+      "linear-gradient(145deg, rgba(4,12,30,0.94), rgba(9,28,62,0.9))",
   };
   const bgColor =
     syncedSecondaryColor ||
@@ -667,6 +684,8 @@ function ChatWidget({ config, theme, allWidgets }) {
     subElementStyle(c, "messageList", fallback);
   const messagePartStyle = (fallback = {}) =>
     subElementStyle(c, "message", fallback);
+  const highlightedMessageStyle = (fallback = {}) =>
+    subElementStyle(c, "highlightedMessage", fallback);
   const messageTextStyle = (fallback = {}) =>
     subElementStyle(c, "messageText", fallback);
   const usernameStyle = (fallback = {}) =>
@@ -716,6 +735,10 @@ function ChatWidget({ config, theme, allWidgets }) {
     ...(isMetal && {
       boxShadow:
         "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+    }),
+    ...(isBetterChat && {
+      boxShadow:
+        "0 18px 44px rgba(0,0,0,0.34), 0 0 26px rgba(59,130,246,0.22)",
     }),
     /* Cards CSS vars — synced from config */
     "--chat-card-bg": messageBg || c.cardBg || "rgba(20,15,40,0.85)",
@@ -770,6 +793,7 @@ function ChatWidget({ config, theme, allWidgets }) {
     badgeBg,
     showBadges,
     messagePartStyle,
+    highlightedMessageStyle,
     messageTextStyle,
     usernameStyle,
     totalMessages: renderMessages.length,
@@ -790,6 +814,8 @@ function ChatWidget({ config, theme, allWidgets }) {
         @keyframes ov-cursor-blink{0%,50%{opacity:1}51%,100%{opacity:0}}
         @keyframes ov-live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.2)}}
         @keyframes ov-seca-highlight-glow{0%,100%{box-shadow:0 0 14px rgba(69,124,255,.28), inset 0 1px 0 rgba(255,255,255,.08)}50%{box-shadow:0 0 26px rgba(242,184,75,.46), inset 0 1px 0 rgba(255,255,255,.12)}}
+        @keyframes better-soft-pulse{0%,100%{opacity:.72;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+        @keyframes better-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
       `}</style>
 
       {showHeader && chatStyle === "cards" && (
@@ -1019,12 +1045,22 @@ function ChatWidget({ config, theme, allWidgets }) {
         </div>
       )}
 
+      {showHeader && chatStyle === "better_chat" && (
+        <BetterChatHeader
+          config={c}
+          chatHeaderName={chatHeaderName}
+          headerText={headerText}
+          accentColor={badgeBg || usernameColor || headerText}
+        />
+      )}
+
       {showHeader &&
         chatStyle !== "cards" &&
         chatStyle !== "metal" &&
         chatStyle !== "glow_panel" &&
         chatStyle !== "StyleSecaChat" &&
-        chatStyle !== "bh_stats" && (
+        chatStyle !== "bh_stats" &&
+        chatStyle !== "better_chat" && (
           <div
             className="ov-chat-header"
             {...partAttrs("header")}
@@ -1081,6 +1117,20 @@ function ChatWidget({ config, theme, allWidgets }) {
           }
 
           /* ── Style: StyleSeca Chat — two-colour metallic hunt chat ── */
+          if (chatStyle === "better_chat") {
+            return (
+              <BetterChatMessage
+                key={msg.id}
+                msg={msg}
+                platform={plt}
+                nameColor={nameColor}
+                followerMessage={followerMessage}
+                context={messageRenderContext}
+                msgIdx={msgIdx}
+              />
+            );
+          }
+
           if (chatStyle === "StyleSecaChat") {
             return (
               <StyleSecaChatMessage

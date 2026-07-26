@@ -18,6 +18,7 @@ import {
   styleSecaSurfaceGradient,
 } from "./shared/styleSecaTheme";
 import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
+import { BetterBetsStyle } from "./shared/betterWidgetStyles";
 
 const STYLE_SECA_BETS_DESIGN_WIDTH = 400;
 const STYLE_SECA_BETS_DESIGN_HEIGHT = 510;
@@ -214,12 +215,15 @@ function elementStyle(
 }
 
 function partAttrs(partId, stateId, config) {
-  return appearanceAttrs({
-    config,
-    widgetType: "bets",
-    elementId: partId,
-    stateId,
-  });
+  return {
+    "data-appearance-part": partId,
+    ...appearanceAttrs({
+      config,
+      widgetType: "bets",
+      elementId: partId,
+      stateId,
+    }),
+  };
 }
 
 function optionStateId({ isWin, isLose, isLead, status }) {
@@ -1152,6 +1156,16 @@ function BetsWidget({ config, allWidgets }) {
 
   const statusLabel = resolveBetsStatusLabel(status, countdown);
 
+  if (layout === "better_bets") {
+    return (
+      <BetterBetsStyle
+        config={c}
+        countdown={countdown}
+        statusLabel={statusLabel}
+      />
+    );
+  }
+
   const isGrid2x3 = layout === "v3_grid_2x3";
   const isGrid = layout === "v2_grid" || isGrid2x3 || isStyleSeca;
   const gridCols = getGridCols(visibleOptions.length, layout);
@@ -1260,7 +1274,7 @@ function BetsWidget({ config, allWidgets }) {
         .filter(Boolean)
         .join(" ")}
       data-widget-type="bets"
-      {...scopedPartAttrs("widgetBackground")}
+      {...partAttrs("widgetBackground", undefined, c)}
       style={{ ...cssVars, ...containerStyle }}
     >
       {/* ── Header ── */}
@@ -1347,7 +1361,7 @@ function BetsWidget({ config, allWidgets }) {
 
       {/* ── Options ── */}
       {isGrid ? (
-        <div className="bets-ov__grid" {...scopedPartAttrs("betCards")}>
+        <div className="bets-ov__grid" {...partAttrs("betCards", undefined, c)}>
           {visibleOptions.map((opt, i) => (
             <BetsGridOptionCard
               key={`${i}-${status}`}
@@ -1358,7 +1372,7 @@ function BetsWidget({ config, allWidgets }) {
           ))}
         </div>
       ) : (
-        <div className="bets-ov__list" {...scopedPartAttrs("betCards")}>
+        <div className="bets-ov__list" {...partAttrs("betCards", undefined, c)}>
           {options.map((opt, i) => {
             const pct = pcts[i];
             const isWin = winnerIdx === i;

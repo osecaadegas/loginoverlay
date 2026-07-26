@@ -88,6 +88,7 @@ export default function ChatConfig({ config, onChange }) {
     { id: "presets", label: "💾 Presets" },
   ];
   const styleOptions = [
+    { id: "better_chat", icon: "B", label: "Better" },
     { id: "classic", icon: "📺", label: "Classic" },
     { id: "glow_panel", icon: "💠", label: "Glow Panel" },
     { id: "metal", icon: "⚙️", label: "Metal" },

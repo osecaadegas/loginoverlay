@@ -4,6 +4,7 @@ import useKickChat from '../../../hooks/useKickChat';
 import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { supabase } from '../../../config/supabaseClient';
 import { subElementStyle, subValue } from './shared/appearanceStyles';
+import { BetterGiveawayStyle } from './shared/betterWidgetStyles';
 
 /* ─── Confetti burst generator ─── */
 function ConfettiBurst({ count = 60, accentColor }) {
@@ -326,6 +327,10 @@ function GiveawayWidget({ config, widgetId }) {
       50%{transform:translateX(0)}
     }
   `;
+
+  if (st === 'better_giveaway') {
+    return <BetterGiveawayStyle config={c} />;
+  }
 
   const isMetal = st === 'metal';
   const mBg = subValue(c, 'container', 'background', 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)');

@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import "./BackgroundWidget.css";
 import { appearanceAttrs, subValue } from "./shared/appearanceStyles";
+import { BetterBackgroundStyle } from "./shared/betterWidgetStyles";
 
 const toPercentOpacity = (value, fallback = 0) => {
   const number = Number(value);
@@ -237,6 +238,10 @@ function BackgroundWidget({ config, theme }) {
     return gen(textureConfig);
   }, [textureType, textureConfig]);
   const specialSpeedFactor = secondsSpeedFactor(textureConfig.animSpeed, 8);
+
+  if (displayStyle === "better_background") {
+    return <BetterBackgroundStyle config={c} />;
+  }
 
   const rootStyle = {
     width: "100%",

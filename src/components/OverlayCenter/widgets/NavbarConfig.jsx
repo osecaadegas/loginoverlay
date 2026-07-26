@@ -252,6 +252,13 @@ export default function NavbarConfig({ config, onChange }) {
           <div className="nb-style-toggle">
             <button
               type="button"
+              className={`nb-style-btn${c.displayStyle === "better_navbar" ? " nb-style-btn--active" : ""}`}
+              onClick={() => set("displayStyle", "better_navbar")}
+            >
+              B Better
+            </button>
+            <button
+              type="button"
               className={`nb-style-btn${!c.displayStyle || c.displayStyle === "v1" ? " nb-style-btn--active" : ""}`}
               onClick={() => set("displayStyle", "v1")}
             >
