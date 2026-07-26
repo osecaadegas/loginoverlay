@@ -642,8 +642,50 @@ function HuntSection({ title, icon, children }) {
   );
 }
 
+function normalizeBetFillStyle(fillStyle) {
+  return ["liquid", "solid", "pulse", "scanline", "plasma"].includes(fillStyle)
+    ? fillStyle
+    : "liquid";
+}
+
+function BetterBetsPreviewFill({ fillStyle }) {
+  return (
+    <span className={`fill-wrap fill-${fillStyle}`}>
+      <span className="solid-bar" />
+      {fillStyle === "pulse" && <span className="pulse-ring" />}
+      {fillStyle === "scanline" && <span className="scan-sweep" />}
+      {fillStyle === "plasma" && (
+        <>
+          <span className="plasma-blob plasma-blob-1" />
+          <span className="plasma-blob plasma-blob-2" />
+          <span className="plasma-blob plasma-blob-3" />
+        </>
+      )}
+      <span className="fill-bloom" />
+    </span>
+  );
+}
+
+function BetterBetsPreviewBarFill({ fillStyle }) {
+  return (
+    <span className={`bf bf-${fillStyle}`}>
+      <span className="bf-core" />
+      {fillStyle === "liquid" && <span className="bf-sheen" />}
+      {fillStyle === "pulse" && <span className="bf-tip" />}
+      {fillStyle === "scanline" && <span className="bf-sweep" />}
+      {fillStyle === "plasma" && (
+        <>
+          <span className="bf-blob bf-blob-1" />
+          <span className="bf-blob bf-blob-2" />
+        </>
+      )}
+    </span>
+  );
+}
+
 function BetterBetsPreview({ config }) {
   const c = ensureBetterWidgetConfig("bets", config);
+  const fillStyle = normalizeBetFillStyle(c.fillStyle);
   const options = Array.isArray(c.options) && c.options.length
     ? c.options.slice(0, 6)
     : ["0 - 99", "100 - 199", "200 - 299", "300 - 399", "400 - 499", "500 - 599"];
@@ -666,7 +708,7 @@ function BetterBetsPreview({ config }) {
   };
 
   return (
-    <div className="bp-bets-stage" data-theme={c.theme} data-font={c.font} data-fill={c.fillStyle} style={cssVars}>
+    <div className="bp-bets-stage" data-theme={c.theme} data-font={c.font} data-fill={fillStyle} style={cssVars}>
       <section className={`bet-widget${!c.showBrackets ? " hide-brackets" : ""}${!c.showSheen ? " hide-sheen" : ""}${c.orientation === "horizontal" ? " is-horizontal" : ""}`} data-cols={Number(c.columns) || 2}>
         <div className="widget-sheen" />
         <header className="widget-header">
@@ -689,12 +731,12 @@ function BetterBetsPreview({ config }) {
               <button key={index} className="bet-bar" type="button" style={{ "--fill": `${pct}%`, "--accent": cc.accent, "--accent-2": cc.accent2 }}>
                 <span className="bar-num">{index + 1}</span>
                 <span className="bar-range">{betLabel(option, index)}</span>
-                <span className="bar-track"><span className="bf bf-solid"><span className="bf-core" /></span></span>
+                <span className="bar-track"><BetterBetsPreviewBarFill fillStyle={fillStyle} /></span>
                 <span className="bar-pct">{pct}%</span>
               </button>
             ) : (
               <button key={index} className="bet-option" type="button" style={{ "--fill": `${pct}%`, "--accent": cc.accent, "--accent-2": cc.accent2 }}>
-                <span className="fill-wrap fill-solid"><span className="solid-bar" /><span className="fill-bloom" /></span>
+                <BetterBetsPreviewFill fillStyle={fillStyle} />
                 <span className="option-scrim" />
                 <span className="option-number">{index + 1}</span>
                 <span className="option-range">{betLabel(option, index)}</span>
