@@ -40,6 +40,7 @@ const CRYPTO_IDS = {
 
 /* All coins that auto-cycle when crypto is enabled */
 const ALL_CRYPTO_COINS = Object.keys(CRYPTO_IDS);
+const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER = "betterNavbarOptionalCasinoCommandInitialized";
 
 const CRYPTO_SYMBOLS = {
   btc: "₿",
@@ -1789,19 +1790,24 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         : "";
     const startValue = c.startValue || formattedStartBalance;
     const showStart = Boolean(c.startValue || (c.showStartBalance && startValue));
-    const casinoCommand =
+    const rawCasinoCommand =
       c.casinoCommand ||
       (c.casinoName ? c.casinoName : "");
+    const casinoCommand =
+      c[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true &&
+      String(rawCasinoCommand || "").trim().toLowerCase() === "!casino"
+        ? ""
+        : rawCasinoCommand;
     const showCasino = Boolean(
       c.showCasino !== false && (casinoCommand || casinoLogoUrl),
     );
     const casinoLogoScaleValue = Number(c.casinoImageSize ?? 100);
     const casinoLogoScale = Number.isFinite(casinoLogoScaleValue)
-      ? Math.min(Math.max(casinoLogoScaleValue, 40), 180) / 100
+      ? Math.min(Math.max(casinoLogoScaleValue, 20), 300) / 100
       : 1;
     const betterCasinoLogoSize =
       casinoImageSize ||
-      Math.max(12, Math.min(packageHeight * 0.86, packageHeight * 0.42 * casinoLogoScale));
+      Math.max(8, Math.min(packageHeight * 1.65, packageHeight * 0.55 * casinoLogoScale));
     const wantsBetterMusic = c.showNowPlaying !== false && c.musicSource !== "disabled";
     const fallbackNowPlaying = wantsBetterMusic
       ? {

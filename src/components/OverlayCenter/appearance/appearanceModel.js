@@ -55,7 +55,7 @@ export const COMMON_APPEARANCE_PROPERTY_DEFINITIONS = Object.freeze([
   { path: 'maxWidth', label: 'Max width', category: 'size', control: 'slider', min: 320, max: 1920, step: 10, unit: 'px', scope: ['widget-type', 'style', 'instance'] },
   { path: 'avatarSize', label: 'Avatar size', category: 'size', control: 'slider', min: 40, max: 180, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance'] },
   { path: 'badgeSize', label: 'Badge size', category: 'size', control: 'slider', min: 40, max: 180, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance'] },
-  { path: 'casinoImageSize', label: 'Casino image size', category: 'size', control: 'slider', min: 40, max: 180, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance'] },
+  { path: 'casinoImageSize', label: 'Casino image size', category: 'size', control: 'slider', min: 20, max: 300, step: 1, unit: '%', scope: ['widget-type', 'style', 'instance'] },
   { path: 'showBg', label: 'Show background', category: 'advanced', control: 'boolean', scope: ['widget-type', 'style', 'instance'] },
   { path: 'showSlotName', label: 'Show slot names', category: 'advanced', control: 'boolean', scope: ['widget-type', 'style', 'instance'] },
   { path: 'esCyan', label: 'Esports cyan', category: 'colour', control: 'color', scope: ['widget-type', 'style', 'instance'] },

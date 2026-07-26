@@ -152,6 +152,7 @@ const BETTER_CHAT_DEFAULT_SIZE = { width: 260, height: 520 };
 const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
 const BETTER_NAVBAR_SPOTIFY_ONLY_MARKER = "betterNavbarSpotifyOnlyInitialized";
 const BETTER_NAVBAR_OPTIONAL_CASINO_MARKER = "betterNavbarOptionalCasinoInitialized";
+const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER = "betterNavbarOptionalCasinoCommandInitialized";
 
 const GIVEAWAY_PRESETS = [
   { id: "cyber-blue", name: "Cyber Blue", swatch: "linear-gradient(135deg,#087eff,#43d3ff)", patch: { hue: 210, hueShift: 24, saturation: 82, accentSat: 96, accentLight: 56 } },
@@ -490,6 +491,7 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     betterNavbarFeaturesInitialized: true,
     [BETTER_NAVBAR_SPOTIFY_ONLY_MARKER]: true,
     [BETTER_NAVBAR_OPTIONAL_CASINO_MARKER]: true,
+    [BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER]: true,
   };
 
   if (
@@ -526,6 +528,12 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     if (String(next.casinoCommand || "").trim().toLowerCase() === "!casino") {
       next.casinoCommand = "";
     }
+  }
+  if (
+    config[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true &&
+    String(next.casinoCommand || "").trim().toLowerCase() === "!casino"
+  ) {
+    next.casinoCommand = "";
   }
 
   if (!next.streamerName && !next.brandName) next.streamerName = defaults.streamerName;
@@ -1283,8 +1291,8 @@ function BetterNavbarControls({ config, onChange, user }) {
             <SliderRow
               label="Logo size"
               value={c.casinoImageSize ?? 100}
-              min={40}
-              max={180}
+              min={20}
+              max={300}
               unit="%"
               onChange={(casinoImageSize) => set({ casinoImageSize })}
             />

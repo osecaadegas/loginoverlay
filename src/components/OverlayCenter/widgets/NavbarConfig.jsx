@@ -500,8 +500,8 @@ export default function NavbarConfig({ config, onChange }) {
                 <span className="nb-slider-label">Logo size</span>
                 <input
                   type="range"
-                  min={40}
-                  max={180}
+                  min={20}
+                  max={300}
                   step={5}
                   value={c.casinoImageSize ?? 100}
                   onChange={(e) => set("casinoImageSize", Number(e.target.value))}
