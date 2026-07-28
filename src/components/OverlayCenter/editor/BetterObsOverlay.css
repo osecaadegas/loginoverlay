@@ -1,0 +1,42 @@
+.better-obs-document,
+.better-obs-document body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+.better-obs-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: transparent;
+}
+
+.better-obs-overlay--empty {
+  pointer-events: none;
+}
+
+.better-obs-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  transform-origin: top left;
+  background: transparent;
+}
+
+.better-obs-instance {
+  position: absolute;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+}
+
+.better-obs-instance > * {
+  width: 100%;
+  height: 100%;
+}

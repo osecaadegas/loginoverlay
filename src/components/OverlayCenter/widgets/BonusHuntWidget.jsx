@@ -14,14 +14,249 @@ import SlotImage from "./SlotImage";
 import { subValue } from "./shared/appearanceStyles";
 import { useBonusHuntRequestsData } from "./bonus-hunt/shared/useBonusHuntRequestsData";
 import { BetterBonusHuntStyle } from "./shared/betterWidgetStyles";
+import { getAllSlots } from "../../../utils/slotUtils";
 
 function cssPx(value) {
   if (value === undefined || value === null || value === "") return undefined;
   return typeof value === "number" ? `${value}px` : value;
 }
 
+function normalizeSlotLookup(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function bonusSlotId(bonus) {
+  return bonus?.slotId || bonus?.slot_id || bonus?.slot?.id || bonus?.slot?.slot_id || "";
+}
+
+function bonusSlotNameForLookup(bonus) {
+  return (
+    bonus?.slotName ||
+    bonus?.slot_name ||
+    bonus?.slot?.name ||
+    bonus?.slot?.slotName ||
+    bonus?.name ||
+    bonus?.title ||
+    ""
+  );
+}
+
+function bonusProviderName(bonus) {
+  return (
+    bonus?.provider ||
+    bonus?.providerName ||
+    bonus?.provider_name ||
+    bonus?.slot?.provider ||
+    bonus?.slot?.providerName ||
+    bonus?.slot?.provider_name ||
+    ""
+  );
+}
+
+function bonusImageCandidate(bonus) {
+  return (
+    bonus?.image ||
+    bonus?.imageUrl ||
+    bonus?.image_url ||
+    bonus?.slotImage ||
+    bonus?.slotImageUrl ||
+    bonus?.slot_image_url ||
+    bonus?.cover ||
+    bonus?.coverUrl ||
+    bonus?.thumbnail ||
+    bonus?.slot?.image ||
+    bonus?.slot?.imageUrl ||
+    bonus?.slot?.image_url ||
+    bonus?.slot?.cover ||
+    bonus?.slot?.thumbnail ||
+    ""
+  );
+}
+
+function slotImageCandidate(slot) {
+  return (
+    slot?.image ||
+    slot?.imageUrl ||
+    slot?.image_url ||
+    slot?.slotImageUrl ||
+    slot?.slot_image_url ||
+    slot?.cover ||
+    slot?.coverUrl ||
+    slot?.thumbnail ||
+    ""
+  );
+}
+
+function findCatalogSlotForBonus(bonus, slots) {
+  const id = String(bonusSlotId(bonus) || "");
+  if (id) {
+    const byId = slots.find((slot) => String(slot?.id || "") === id);
+    if (byId) return byId;
+  }
+
+  const name = normalizeSlotLookup(bonusSlotNameForLookup(bonus));
+  if (!name) return null;
+
+  const provider = normalizeSlotLookup(bonusProviderName(bonus));
+  const exactName = slots.filter((slot) => normalizeSlotLookup(slot?.name) === name);
+  if (provider && exactName.length > 1) {
+    const exactProvider = exactName.find(
+      (slot) => normalizeSlotLookup(slot?.provider) === provider,
+    );
+    if (exactProvider) return exactProvider;
+  }
+  if (exactName.length) return exactName[0];
+
+  return slots.find((slot) => normalizeSlotLookup(slot?.name).includes(name)) || null;
+}
+
+function hydrateBonusWithCatalogSlot(bonus, slot) {
+  const image = slotImageCandidate(slot);
+  if (!image) return bonus;
+
+  return {
+    ...bonus,
+    imageUrl: bonus.imageUrl || image,
+    image_url: bonus.image_url || image,
+    slotImageUrl: bonus.slotImageUrl || image,
+    slot_image_url: bonus.slot_image_url || image,
+    slot: {
+      ...(bonus.slot || {}),
+      id: bonus?.slot?.id || slot.id,
+      name: bonus?.slot?.name || slot.name,
+      provider: bonus?.slot?.provider || slot.provider,
+      image: bonus?.slot?.image || image,
+      imageUrl: bonus?.slot?.imageUrl || image,
+      image_url: bonus?.slot?.image_url || image,
+    },
+  };
+}
+
+function hydrateBonusImagesFromSlots(bonuses, slots) {
+  if (!Array.isArray(bonuses) || !Array.isArray(slots) || slots.length === 0) {
+    return bonuses;
+  }
+
+  return bonuses.map((bonus) => {
+    if (bonusImageCandidate(bonus)) return bonus;
+    const slot = findCatalogSlotForBonus(bonus, slots);
+    return slot ? hydrateBonusWithCatalogSlot(bonus, slot) : bonus;
+  });
+}
+
+function buildBonusImageHydrationKey(bonuses) {
+  if (!Array.isArray(bonuses)) return "";
+  return bonuses
+    .map((bonus) =>
+      [
+        bonusSlotId(bonus),
+        bonusSlotNameForLookup(bonus),
+        bonusProviderName(bonus),
+        bonusImageCandidate(bonus),
+      ].join(":"),
+    )
+    .join("|");
+}
+
+function bonusImageMergeKey(bonus) {
+  const id = String(bonusSlotId(bonus) || "");
+  const name = normalizeSlotLookup(bonusSlotNameForLookup(bonus));
+  if (!id && !name) return "";
+  return [
+    id,
+    name,
+    normalizeSlotLookup(bonusProviderName(bonus)),
+  ].join("|");
+}
+
+function mergeHydratedBonusImages(bonuses, hydratedBonuses) {
+  if (!Array.isArray(bonuses) || !Array.isArray(hydratedBonuses)) {
+    return bonuses;
+  }
+
+  const hydratedByKey = new Map();
+  hydratedBonuses.forEach((bonus) => {
+    const image = bonusImageCandidate(bonus);
+    const key = bonusImageMergeKey(bonus);
+    if (image && key) {
+      hydratedByKey.set(key, { image, slot: bonus.slot || {} });
+    }
+  });
+
+  let changed = false;
+  const nextBonuses = bonuses.map((bonus) => {
+    if (bonusImageCandidate(bonus)) return bonus;
+    const hydrated = hydratedByKey.get(bonusImageMergeKey(bonus));
+    if (!hydrated) return bonus;
+    changed = true;
+    return hydrateBonusWithCatalogSlot(bonus, {
+      ...(hydrated.slot || {}),
+      image: hydrated.image,
+      imageUrl: hydrated.image,
+      image_url: hydrated.image,
+    });
+  });
+
+  return changed ? nextBonuses : bonuses;
+}
+
 function BonusHuntWidget({ config, theme, userId }) {
-  const c = config || {};
+  const baseConfig = config || {};
+  const rawBonuses = useMemo(
+    () => (Array.isArray(baseConfig.bonuses) ? baseConfig.bonuses : []),
+    [baseConfig.bonuses],
+  );
+  const bonusImageHydrationKey = useMemo(
+    () => buildBonusImageHydrationKey(rawBonuses),
+    [rawBonuses],
+  );
+  const [hydratedBonuses, setHydratedBonuses] = useState(null);
+
+  useEffect(() => {
+    const needsHydration =
+      baseConfig.displayStyle === "better_bonus_hunt" &&
+      rawBonuses.some((bonus) => bonusSlotNameForLookup(bonus) && !bonusImageCandidate(bonus));
+
+    if (!needsHydration) {
+      setHydratedBonuses(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+    getAllSlots()
+      .then((slots) => {
+        if (cancelled) return;
+        const nextBonuses = hydrateBonusImagesFromSlots(rawBonuses, slots);
+        const changed = nextBonuses.some((bonus, index) => bonus !== rawBonuses[index]);
+        setHydratedBonuses(changed ? nextBonuses : null);
+      })
+      .catch((error) => {
+        console.error("Failed to hydrate bonus hunt slot images:", error);
+        if (!cancelled) setHydratedBonuses(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [baseConfig.displayStyle, bonusImageHydrationKey]);
+
+  const bonusesWithHydratedImages = useMemo(
+    () => mergeHydratedBonusImages(rawBonuses, hydratedBonuses),
+    [rawBonuses, hydratedBonuses],
+  );
+
+  const c = useMemo(
+    () =>
+      bonusesWithHydratedImages !== rawBonuses
+        ? { ...baseConfig, bonuses: bonusesWithHydratedImages }
+        : baseConfig,
+    [baseConfig, bonusesWithHydratedImages, rawBonuses],
+  );
 
   /* ─── Sort bonuses (shared across ALL display styles) ─── */
   const sortedConfig = useMemo(() => {

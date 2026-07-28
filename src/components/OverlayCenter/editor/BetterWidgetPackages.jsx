@@ -15,7 +15,6 @@ import {
   MonitorPlay,
   Music,
   Palette,
-  PartyPopper,
   Pipette,
   RotateCcw,
   Settings,
@@ -23,7 +22,6 @@ import {
   SlidersHorizontal,
   Sparkles,
   Timer,
-  Trophy,
   Type,
   Wand2,
   Users,
@@ -32,8 +30,8 @@ import {
 } from "lucide-react";
 import NavbarWidget from "../widgets/NavbarWidget";
 import RtpStatsWidget from "../widgets/RtpStatsWidget";
-import { BetterBonusHuntStyle } from "../widgets/shared/betterWidgetStyles";
-import "./BetterWidgetPackages.css";
+import BonusHuntWidget from "../widgets/BonusHuntWidget";
+import { BetterGiveawayStyle } from "../widgets/shared/betterWidgetStyles";
 
 const DEFAULT_CARD_COLORS = [
   { accent: "#2fa1ff", accent2: "#19e3ff" },
@@ -252,7 +250,7 @@ const BACKGROUND_PRESETS = [
   { id: "gold", name: "Gold Room", patch: { color1: "#0d0a03", color2: "#b7791f", color3: "#fbbf24", texture: "grid", animSpeed: 14 } },
 ];
 
-const DEFAULT_BETTER_CONFIG = {
+export const DEFAULT_BETTER_CONFIG = {
   bonus_hunt: {
     displayStyle: "better_bonus_hunt",
     colour: "ocean",
@@ -652,19 +650,6 @@ function formatMoney(value, currency = "EUR ") {
   })}`;
 }
 
-function stripBang(value) {
-  return String(value || "").replace(/^!+/, "");
-}
-
-function initials(value) {
-  return String(value || "SC")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
-
 function betLabel(option, index) {
   return typeof option === "string" ? option : option?.label || `Set ${index + 1}`;
 }
@@ -1023,49 +1008,14 @@ function BetterBackgroundPreview({ config }) {
 
 function BetterGiveawayPreview({ config }) {
   const c = ensureBetterWidgetConfig("giveaway", config);
-  const keyword = stripBang(c.keyword);
-  const participants = Array.isArray(c.participants) ? c.participants : [];
-  const winner = c.winner || "";
-  const accent = `hsl(${c.hue + c.hueShift} ${c.accentSat}% ${c.accentLight}%)`;
-  return (
-    <div className="bp-giveaway-stage" style={{ "--gw-accent": accent, "--gw-hue": c.hue, "--gw-sat": `${c.saturation}%`, "--gw-light": `${c.lightness}%`, "--gw-radius": `${c.radius}px`, "--gw-pad-x": `${c.padX}px`, "--gw-pad-y": `${c.padY}px`, "--gw-gap": `${c.tileGap}px`, "--gw-glow": Number(c.glow) || 0 }}>
-      <section className="bp-giveaway-widget" data-surface={c.surface} style={{ width: c.width, minHeight: c.height }}>
-        {c.brackets && <><span className="edge edge-top-left" /><span className="edge edge-top-right" /><span className="edge edge-bottom-left" /><span className="edge edge-bottom-right" /></>}
-        {c.edgeLights && <><span className="edge-light edge-light-top" /><span className="edge-light edge-light-bottom" /></>}
-        <header className="bp-gw-header">
-          <div className="bp-gw-name"><PartyPopper size={16} /><span>{c.title}</span></div>
-          <span className="bp-gw-live"><i /> {c.isActive === false ? "PAUSED" : "LIVE"}</span>
-        </header>
-        <div className="bp-gw-prize"><strong>{c.prize}</strong><span>{c.subtitle}</span></div>
-        <div className="bp-gw-metrics">
-          <div><span>Keyword</span><strong>!{keyword}</strong></div>
-          <div><span>Entries</span><strong>{participants.length}</strong></div>
-        </div>
-        <div className="bp-gw-reel">
-          {winner ? (
-            <div className="bp-gw-winner"><Trophy size={18} /><span>Winner</span><strong>{winner}</strong></div>
-          ) : participants.length ? (
-            participants.slice(-8).map((name, index) => <span key={`${name}-${index}`} className="bp-gw-chip">{initials(name.name || name)}</span>)
-          ) : (
-            <span className="bp-gw-empty">Waiting for entries</span>
-          )}
-        </div>
-        {c.sheen && <span className="bp-gw-sheen" />}
-      </section>
-    </div>
-  );
+  return <BetterGiveawayStyle config={c} />;
 }
 
 function BetterBonusHuntPreview({ config }) {
   const c = ensureBetterWidgetConfig("bonus_hunt", config);
   return (
     <div className="bp-hunt-preview-stage">
-      <BetterBonusHuntStyle
-        config={c}
-        bonuses={Array.isArray(c.bonuses) ? c.bonuses : []}
-        stats={c.stats}
-        currency={c.currency || "€"}
-      />
+      <BonusHuntWidget config={c} />
     </div>
   );
 }
@@ -1629,7 +1579,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   );
 }
 
-function SimpleThemedControls({ type, config, onChange }) {
+function SimpleThemedControls({ type, config, onChange, onWidgetChange }) {
   const c = ensureBetterWidgetConfig(type, config);
   const set = (patch) => {
     const nextPatch = { ...patch };
@@ -1637,6 +1587,20 @@ function SimpleThemedControls({ type, config, onChange }) {
       nextPatch[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = true;
     }
     onChange({ ...c, ...nextPatch });
+  };
+  const setGiveawaySize = (patch) => {
+    const next = { ...c, ...patch };
+    const width = Number(next.width) || DEFAULT_BETTER_CONFIG.giveaway.width;
+    const height = Number(next.height) || DEFAULT_BETTER_CONFIG.giveaway.height;
+    if (typeof onWidgetChange === "function") {
+      onWidgetChange({
+        width,
+        height,
+        config: next,
+      });
+      return;
+    }
+    onChange(next);
   };
   const [tab, setTab] = useTab("theme");
   const activeTab = (tabs) => (tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0]);
@@ -1712,10 +1676,24 @@ function SimpleThemedControls({ type, config, onChange }) {
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
         {current === "theme" && <><Section title="Presets" icon={<Palette size={13} />}><div className="bp-preset-row">{GIVEAWAY_PRESETS.map((preset) => <button key={preset.id} type="button" onClick={() => set(preset.patch)}><i style={{ background: preset.swatch }} />{preset.name}</button>)}</div></Section><Section title="Finish" icon={<Layers size={13} />}><Segmented value={c.surface} columns={2} options={GIVEAWAY_SURFACES} onChange={(surface) => set({ surface })} /></Section><Section title="Colour" icon={<Palette size={13} />}><SliderRow label="Base hue" value={c.hue} min={0} max={360} unit="deg" onChange={(hue) => set({ hue })} /><SliderRow label="Hue spread" value={c.hueShift} min={-90} max={90} unit="deg" onChange={(hueShift) => set({ hueShift })} /><SliderRow label="Saturation" value={c.saturation} min={0} max={100} unit="%" onChange={(saturation) => set({ saturation })} /><SliderRow label="Backdrop light" value={c.lightness} min={2} max={40} unit="%" onChange={(lightness) => set({ lightness })} /><SliderRow label="Accent vividness" value={c.accentSat} min={0} max={100} unit="%" onChange={(accentSat) => set({ accentSat })} /><SliderRow label="Accent brightness" value={c.accentLight} min={30} max={90} unit="%" onChange={(accentLight) => set({ accentLight })} /><ColorRow label="Renderer accent" value={c.accentColor} onChange={(accentColor) => set({ accentColor })} /><ColorRow label="Renderer background" value={c.bgColor} onChange={(bgColor) => set({ bgColor })} /></Section></>}
-        {current === "size" && <Section title="Card dimensions" icon={<Maximize2 size={13} />}><SliderRow label="Width" value={c.width} min={420} max={900} unit="px" onChange={(width) => set({ width })} /><SliderRow label="Height" value={c.height} min={180} max={420} unit="px" onChange={(height) => set({ height })} /><div className="bp-preset-row"><button type="button" onClick={() => set({ width: 700, height: 270 })}>Default</button><button type="button" onClick={() => set({ width: 640, height: 360 })}>16:9</button><button type="button" onClick={() => set({ width: 800, height: 200 })}>Banner</button><button type="button" onClick={() => set({ width: 460, height: 380 })}>Tall</button></div><SliderRow label="Padding X" value={c.padX} min={8} max={70} unit="px" onChange={(padX) => set({ padX })} /><SliderRow label="Padding Y" value={c.padY} min={6} max={60} unit="px" onChange={(padY) => set({ padY })} /><SliderRow label="Tile gap" value={c.tileGap} min={0} max={40} unit="px" onChange={(tileGap) => set({ tileGap })} /></Section>}
+        {current === "size" && (
+          <Section title="Card dimensions" icon={<Maximize2 size={13} />}>
+            <SliderRow label="Width" value={c.width} min={420} max={900} unit="px" onChange={(width) => setGiveawaySize({ width })} />
+            <SliderRow label="Height" value={c.height} min={180} max={420} unit="px" onChange={(height) => setGiveawaySize({ height })} />
+            <div className="bp-preset-row">
+              <button type="button" onClick={() => setGiveawaySize({ width: 700, height: 270 })}>Default</button>
+              <button type="button" onClick={() => setGiveawaySize({ width: 640, height: 360 })}>16:9</button>
+              <button type="button" onClick={() => setGiveawaySize({ width: 800, height: 200 })}>Banner</button>
+              <button type="button" onClick={() => setGiveawaySize({ width: 460, height: 380 })}>Tall</button>
+            </div>
+            <SliderRow label="Padding X" value={c.padX} min={8} max={70} unit="px" onChange={(padX) => set({ padX })} />
+            <SliderRow label="Padding Y" value={c.padY} min={6} max={60} unit="px" onChange={(padY) => set({ padY })} />
+            <SliderRow label="Tile gap" value={c.tileGap} min={0} max={40} unit="px" onChange={(tileGap) => set({ tileGap })} />
+          </Section>
+        )}
         {current === "edges" && <><Section title="Border" icon={<Layers size={13} />}><SliderRow label="Corner radius" value={c.radius} min={0} max={60} unit="px" onChange={(radius) => set({ radius, borderRadius: radius })} /><SliderRow label="Border width" value={c.borderWidth} min={0} max={6} step={0.5} unit="px" onChange={(borderWidth) => set({ borderWidth })} /><SliderRow label="Border opacity" value={c.borderAlpha} min={0} max={1} step={0.05} onChange={(borderAlpha) => set({ borderAlpha })} /><SliderRow label="Tile radius" value={c.tileRadius} min={0} max={40} unit="px" onChange={(tileRadius) => set({ tileRadius })} /></Section><Section title="Frame details" icon={<Frame size={13} />}><ToggleRow label="Inner frame" checked={c.innerFrame} onChange={(innerFrame) => set({ innerFrame })} /><SliderRow label="Frame inset" value={c.innerInset} min={2} max={18} unit="px" disabled={!c.innerFrame} onChange={(innerInset) => set({ innerInset })} /><ToggleRow label="Corner brackets" checked={c.brackets} onChange={(brackets) => set({ brackets })} /><SliderRow label="Bracket length" value={c.bracketSize} min={10} max={80} unit="px" disabled={!c.brackets} onChange={(bracketSize) => set({ bracketSize })} /><SliderRow label="Bracket weight" value={c.bracketWidth} min={1} max={6} step={0.5} unit="px" disabled={!c.brackets} onChange={(bracketWidth) => set({ bracketWidth })} /><ToggleRow label="Edge light bars" checked={c.edgeLights} onChange={(edgeLights) => set({ edgeLights })} /><ToggleRow label="Side dashes" checked={c.sideDashes} onChange={(sideDashes) => set({ sideDashes })} /><ToggleRow label="Sheen sweep" checked={c.sheen} onChange={(sheen) => set({ sheen })} /><SliderRow label="Outer glow" value={c.glow} min={0} max={160} unit="%" onChange={(glow) => set({ glow })} /><SliderRow label="Inner glow" value={c.innerGlow} min={0} max={160} unit="%" onChange={(innerGlow) => set({ innerGlow })} /></Section></>}
         {current === "type" && <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Display font" value={c.titleFont} options={GIVEAWAY_FONTS} onChange={(titleFont) => set({ titleFont })} /><SelectRow label="Body font" value={c.bodyFont} options={GIVEAWAY_FONTS} onChange={(bodyFont) => set({ bodyFont, fontFamily: GIVEAWAY_FONTS.find((font) => font.key === bodyFont)?.stack || c.fontFamily })} /><SliderRow label="Title" value={c.titleSize} min={10} max={44} unit="px" onChange={(titleSize) => set({ titleSize })} /><SliderRow label="Prize" value={c.prizeSize} min={14} max={64} unit="px" onChange={(prizeSize) => set({ prizeSize })} /><SliderRow label="Subtitle" value={c.subSize} min={8} max={30} unit="px" onChange={(subSize) => set({ subSize })} /><SliderRow label="Tile label" value={c.labelSize} min={6} max={20} unit="px" onChange={(labelSize) => set({ labelSize })} /><SliderRow label="Tile value" value={c.valueSize} min={12} max={54} unit="px" onChange={(valueSize) => set({ valueSize })} /><SliderRow label="Letter spacing" value={c.letterSpacing} min={0} max={20} step={0.5} unit="%" onChange={(letterSpacing) => set({ letterSpacing })} /><SliderRow label="Text glow" value={c.textGlow} min={0} max={200} unit="%" onChange={(textGlow) => set({ textGlow })} /><ToggleRow label="Italic prize" checked={c.italicPrize} onChange={(italicPrize) => set({ italicPrize })} /><ToggleRow label="Uppercase labels" checked={c.uppercaseLabels} onChange={(uppercaseLabels) => set({ uppercaseLabels })} /></Section>}
-        {current === "content" && <Section title="Card copy" icon={<Type size={13} />}>{["title", "prize", "subtitle", "keyword"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}<p className="bp-hint">The keyword tile shows an exclamation mark automatically, so type just the word.</p><button className="bp-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.giveaway)}><RotateCcw size={13} /> Reset everything</button></Section>}
+        {current === "content" && <Section title="Card copy" icon={<Type size={13} />}>{["title", "prize", "subtitle", "keyword"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}<p className="bp-hint">The keyword tile shows an exclamation mark automatically, so type just the word.</p><button className="bp-reset" type="button" onClick={() => setGiveawaySize(DEFAULT_BETTER_CONFIG.giveaway)}><RotateCcw size={13} /> Reset everything</button></Section>}
       </div>
     );
   }
@@ -1874,5 +1852,5 @@ export function BetterWidgetControls({ type, config, onChange, user, widget, onW
       />
     );
   }
-  return <SimpleThemedControls type={type} config={config} onChange={onChange} />;
+  return <SimpleThemedControls type={type} config={config} onChange={onChange} onWidgetChange={onWidgetChange} />;
 }

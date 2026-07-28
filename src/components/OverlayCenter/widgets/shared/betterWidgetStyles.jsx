@@ -83,6 +83,129 @@ function initials(value) {
     .join("");
 }
 
+const GIVEAWAY_FONT_STACKS = {
+  orbitron: "'Orbitron', sans-serif",
+  rajdhani: "'Rajdhani', sans-serif",
+  chakra: "'Chakra Petch', sans-serif",
+  audiowide: "'Audiowide', cursive",
+  bebas: "'Bebas Neue', sans-serif",
+  inter: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+  mono: "ui-monospace, 'Courier New', monospace",
+  serif: "Georgia, 'Times New Roman', serif",
+};
+
+function giveawayFontStack(key, fallback = "rajdhani") {
+  return GIVEAWAY_FONT_STACKS[key] || GIVEAWAY_FONT_STACKS[fallback] || GIVEAWAY_FONT_STACKS.rajdhani;
+}
+
+function stripBang(value) {
+  return String(value || "").trim().replace(/^!+/, "");
+}
+
+function normalizeHue(value, fallback = 208) {
+  const hue = numberValue(value, fallback);
+  return ((hue % 360) + 360) % 360;
+}
+
+function giveawayParticipant(value, index) {
+  const name =
+    typeof value === "string"
+      ? value
+      : value?.name || value?.username || value?.displayName || value?.user || `Entry ${index + 1}`;
+  return {
+    id: typeof value === "object" && value?.id ? String(value.id) : `${name}-${index}`,
+    name: String(name || `Entry ${index + 1}`),
+    hue: normalizeHue(typeof value === "object" ? value?.hue : undefined, 198 + index * 41),
+  };
+}
+
+function BetterGiveawayGiftIcon() {
+  return (
+    <svg className="better-gw-gift-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect className="better-gw-gift-box" x="4" y="10" width="16" height="10" rx="2" />
+      <path className="better-gw-gift-lid" d="M3 7.5h18v4H3z" />
+      <path className="better-gw-gift-ribbon" d="M12 7.5V20M4.5 12h15" />
+      <path className="better-gw-gift-bow" d="M12 7.5c-3.6-.2-5.1-1.1-5.1-2.5 0-1 .8-1.8 1.9-1.8 1.5 0 2.5 1.5 3.2 4.3Zm0 0c3.6-.2 5.1-1.1 5.1-2.5 0-1-.8-1.8-1.9-1.8-1.5 0-2.5 1.5-3.2 4.3Z" />
+    </svg>
+  );
+}
+
+function BetterGiveawayBroadcastIcon() {
+  return (
+    <svg className="better-gw-broadcast-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="1.5" />
+      <path d="M5.7 5.7a3.25 3.25 0 0 0 0 4.6M10.3 5.7a3.25 3.25 0 0 1 0 4.6M3.4 3.4a6.5 6.5 0 0 0 0 9.2M12.6 3.4a6.5 6.5 0 0 1 0 9.2" />
+    </svg>
+  );
+}
+
+function BetterGiveawayRoulette({ participants, phase, winnerName, durationSec }) {
+  const crowd = participants.length
+    ? participants
+    : [{ id: "waiting", name: "Waiting", hue: 208 }];
+  const repeats = Math.max(3, Math.ceil(14 / crowd.length));
+  const chips = Array.from({ length: repeats }, () => crowd).flat();
+  const winnerKey = String(winnerName || "").toLowerCase();
+
+  return (
+    <div className={`better-gw-roulette-stage better-gw-roulette-stage--${phase}`}>
+      <div className={`better-gw-winner-banner${phase === "winner" && winnerName ? " is-shown" : ""}`} role="status" aria-live="polite">
+        {winnerName ? (
+          <>
+            <Trophy className="better-gw-winner-crown" size={14} aria-hidden="true" />
+            <span className="better-gw-winner-kicker">Winner</span>
+            <strong className="better-gw-winner-name">{winnerName}</strong>
+          </>
+        ) : null}
+      </div>
+
+      <div className="better-gw-roulette-viewport">
+        <div
+          className="better-gw-roulette-track"
+          style={{ "--gw-spin-duration": `${clampNumber(durationSec, 1.2, 12, 5.2)}s` }}
+        >
+          {chips.map((participant, index) => {
+            const isWinner =
+              winnerKey &&
+              String(participant.name || "").toLowerCase() === winnerKey;
+            return (
+              <div
+                key={`${participant.id}-${index}`}
+                className={`better-gw-avatar-chip${phase === "winner" && isWinner ? " is-winner" : ""}`}
+              >
+                <span
+                  className="better-gw-avatar-bubble"
+                  style={{
+                    background: `linear-gradient(140deg, hsl(${participant.hue} 88% 58%), hsl(${normalizeHue(participant.hue + 42)} 92% 42%))`,
+                  }}
+                >
+                  {initials(participant.name)}
+                </span>
+                <span className="better-gw-avatar-name">{participant.name}</span>
+                {phase === "winner" && isWinner ? <span className="better-gw-chip-crown">WIN</span> : null}
+              </div>
+            );
+          })}
+        </div>
+        <div className="better-gw-roulette-pointer" aria-hidden="true">
+          <i className="better-gw-pointer-notch better-gw-pointer-top" />
+          <i className="better-gw-pointer-line" />
+          <i className="better-gw-pointer-notch better-gw-pointer-bottom" />
+        </div>
+      </div>
+
+      <div className="better-gw-roulette-status">
+        {phase === "spinning" ? <span className="better-gw-status-spin">Drawing winner...</span> : null}
+        {phase === "winner" && winnerName ? (
+          <span className="better-gw-status-win">
+            <Trophy size={12} aria-hidden="true" /> {winnerName} takes the prize
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function betOptionLabel(option, index) {
   if (typeof option === "string") return option;
   return option?.label || option?.name || `Option ${index + 1}`;
@@ -794,7 +917,75 @@ function BetterStyleSheet() {
       @keyframes better-bets-plasma-2{0%,100%{transform:translate(0,0) scale(.9)}50%{transform:translate(-42px,12px) scale(1.15)}}
       @keyframes better-bets-plasma-3{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(16px,22px) scale(.82)}}
       @keyframes better-bets-bar-sheen{0%{left:-20%;opacity:0}15%{opacity:1}60%{left:105%;opacity:0}100%{left:105%;opacity:0}}
-      .better-bets-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:16px;box-sizing:border-box;background:var(--stage-bg);font-family:var(--font-body,"Rajdhani",Arial,sans-serif)}
+      @keyframes better-gw-live-blink{0%,100%{opacity:1}50%{opacity:.42}}
+      @keyframes better-gw-edge-pulse{0%,100%{opacity:.55;transform:scaleX(.7)}50%{opacity:1;transform:scaleX(1.15)}}
+      @keyframes better-gw-sheen-sweep{0%,68%{transform:translateX(-120%)}86%,100%{transform:translateX(120%)}}
+      @keyframes better-gw-winner-pop{0%{transform:scale(.6)}60%{transform:scale(1.22)}100%{transform:scale(1.14)}}
+      @keyframes better-gw-crown-drop{0%{opacity:0;transform:translateY(-14px) rotate(-24deg)}100%{opacity:1;transform:translateY(0) rotate(0deg)}}
+      @keyframes better-gw-crown-sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+      @keyframes better-gw-status-blink{0%,100%{opacity:1}50%{opacity:.45}}
+      @keyframes better-gw-flash-fade{0%{opacity:0}16%{opacity:1}100%{opacity:0}}
+      @keyframes better-gw-reel-spin{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-50%,0,0)}}
+      .better-giveaway-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:clamp(8px,2vmin,28px);box-sizing:border-box;container-type:size;background:transparent;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif)}
+      .better-giveaway-stage *{box-sizing:border-box}
+      .better-giveaway-widget{--cyan:var(--w-accent,#43d3ff);--blue:var(--w-accent-2,#087eff);--H:var(--w-hue,208);--H2:var(--w-hue2,208);--H3:var(--w-hue3,208);--S:var(--w-sat,88%);--L:var(--w-lum,10%);--G:var(--w-glow,1);--IG:var(--w-inner-glow,1);position:relative;display:flex;width:min(100%,var(--w-width,700px));height:min(100%,var(--w-height,270px));min-width:0;min-height:0;flex-direction:column;justify-content:center;overflow:hidden;padding:var(--w-pad-y,22px) var(--w-pad-x,31px);border:var(--w-border-w,1px) solid hsl(var(--H) calc(var(--S) * .9) 62% / var(--w-border-a,.9));border-radius:var(--w-radius,12px);background:linear-gradient(115deg,hsl(var(--H) var(--S) calc(var(--L) + 4%) / .97),hsl(var(--H2) var(--S) var(--L) / .98) 53%,hsl(var(--H3) var(--S) calc(var(--L) + 4%) / .97)),hsl(var(--H) var(--S) calc(var(--L) - 2%));box-shadow:0 0 0 1px hsl(var(--H) var(--S) 18% / .96),0 0 0 3px hsl(var(--H) var(--S) 28% / calc(.12 * var(--G))),0 0 calc(9px * var(--G)) hsl(var(--H) 100% 52% / calc(.7 * var(--G))),0 0 calc(28px * var(--G)) hsl(var(--H2) 100% 42% / calc(.36 * var(--G))),inset 0 0 0 1px hsl(var(--H) var(--S) 30% / .95),inset 0 0 calc(26px * var(--IG)) hsl(var(--H) 100% 38% / calc(.2 * var(--IG)));color:#eff6ff;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif);isolation:isolate;transition:border-color 480ms ease,box-shadow 480ms ease,background 480ms ease,border-radius 320ms ease,width 260ms ease,height 260ms ease,padding 260ms ease,filter 320ms ease}
+      .better-giveaway-widget[data-surface="metallic"]{background:repeating-linear-gradient(92deg,hsl(var(--H) var(--S) calc(var(--L) + 15%) / .22) 0 1px,transparent 1px 3px),linear-gradient(166deg,hsl(var(--H) var(--S) calc(var(--L) + 16%)) 0%,hsl(var(--H2) var(--S) calc(var(--L) - 2%)) 22%,hsl(var(--H) calc(var(--S) + 6%) calc(var(--L) + 30%)) 46%,hsl(var(--H3) var(--S) calc(var(--L) - 1%)) 68%,hsl(var(--H) var(--S) calc(var(--L) + 18%)) 100%)}
+      .better-giveaway-widget[data-surface="gradient"]{background:linear-gradient(125deg,hsl(var(--H) var(--S) calc(var(--L) + 12%)),hsl(var(--H2) var(--S) calc(var(--L) + 2%)) 46%,hsl(var(--H3) var(--S) calc(var(--L) + 14%)))}
+      .better-giveaway-widget[data-surface="matte"]{background:hsl(var(--H) var(--S) var(--L));box-shadow:0 0 0 1px hsl(var(--H) var(--S) 16% / .9),0 0 calc(14px * var(--G)) hsl(var(--H) 60% 40% / calc(.4 * var(--G))),inset 0 0 calc(24px * var(--IG)) hsl(var(--H) 40% 4% / calc(.55 * var(--IG)))}
+      .better-giveaway-widget::before{position:absolute;inset:var(--w-inner-inset,5px);z-index:-1;border:1px solid hsl(var(--H) var(--S) 45% / .78);border-radius:max(0px,calc(var(--w-radius,12px) - var(--w-inner-inset,5px)));opacity:var(--w-inner-op,1);pointer-events:none;content:"";box-shadow:inset 0 0 calc(13px * var(--IG)) hsl(var(--H) 100% 34% / calc(.21 * var(--IG)));transition:inset 200ms ease,opacity 240ms ease,border-radius 320ms ease}
+      .better-giveaway-widget::after{position:absolute;inset:0;z-index:-1;pointer-events:none;content:"";background:linear-gradient(112deg,transparent 0 17%,hsl(var(--H) 100% 60% / .08) 17.2%,transparent 17.5% 69%,hsl(var(--H2) 100% 65% / .04) 69.2%,transparent 70%),radial-gradient(ellipse at 50% 0%,hsl(var(--H) 100% 50% / .12),transparent 56%)}
+      .better-giveaway-widget[data-surface="gloss"]::after{background:linear-gradient(180deg,hsl(0 0% 100% / .16) 0%,hsl(0 0% 100% / .04) 34%,transparent 52%),radial-gradient(ellipse at 50% -20%,hsl(var(--H) 100% 70% / .22),transparent 62%)}
+      .better-giveaway-widget[data-surface="matte"]::after{background:none}
+      .better-giveaway-widget.is-paused{filter:saturate(.65)}
+      .better-giveaway-widget.has-winner{border-color:rgba(255,199,60,.95);box-shadow:0 0 0 1px rgba(92,62,0,.9),0 0 0 3px rgba(140,96,0,.16),0 0 12px rgba(255,176,0,.75),0 0 36px rgba(255,150,0,.42),inset 0 0 0 1px rgba(150,108,0,.9),inset 0 0 30px rgba(255,160,0,.17)}
+      .better-gw-header,.better-gw-prize,.better-gw-metrics{position:relative;z-index:1}
+      .better-gw-header{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:30px}
+      .better-gw-name{display:inline-flex;min-width:0;align-items:center;gap:12px;color:#e4f1ff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-title-size,20px);font-weight:var(--w-title-weight,700);letter-spacing:var(--w-letter,.01em);text-shadow:0 0 calc(9px * var(--w-text-glow,1)) hsl(var(--H) 100% 85% / calc(.28 * var(--w-text-glow,1)))}
+      .better-gw-name span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .better-gw-gift-icon{width:20px;height:20px;flex:0 0 auto;overflow:visible;filter:drop-shadow(0 0 4px rgba(255,189,0,.48))}
+      .better-gw-gift-box,.better-gw-gift-lid{fill:#ffbd09;stroke:#ff8b00;stroke-width:.7}.better-gw-gift-lid{fill:#ffc51b}.better-gw-gift-ribbon{fill:none;stroke:#ed3541;stroke-width:1.5}.better-gw-gift-bow{fill:#ef3c38;stroke:#ff8b00;stroke-width:.7}
+      .better-gw-live-toggle{display:inline-flex;align-items:center;gap:5px;min-height:22px;flex:0 0 auto;padding:3px 8px 3px 7px;color:#dbf4ff;border:1px solid hsl(var(--H) 90% 52% / .85);border-radius:999px;background:linear-gradient(180deg,hsl(var(--H) 88% 42% / .9),hsl(var(--H2) 95% 28% / .92));box-shadow:0 0 calc(8px * var(--G)) hsl(var(--H) 100% 50% / calc(.7 * var(--G))),inset 0 1px 2px hsl(var(--H) 90% 80% / .3);font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:9px;font-weight:700;letter-spacing:.11em;line-height:1;text-transform:uppercase}
+      .better-giveaway-widget.is-paused .better-gw-live-toggle{background:linear-gradient(180deg,rgba(47,82,129,.82),rgba(13,32,66,.92));box-shadow:0 0 7px rgba(32,89,141,.55),inset 0 1px 2px rgba(155,199,230,.2)}
+      .better-gw-live-dot{width:5px;height:5px;border-radius:50%;background:var(--w-accent-soft,#8ee9ff);box-shadow:0 0 6px var(--w-accent,#25c9ff);animation:better-gw-live-blink 1.7s ease-in-out infinite}
+      .better-giveaway-widget.is-paused .better-gw-live-dot{background:#9aacba;box-shadow:none;animation:none}
+      .better-gw-broadcast-icon{width:11px;height:11px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-width:1.35}.better-gw-broadcast-icon circle{fill:currentColor;stroke:none}
+      .better-gw-rule{position:relative;height:1px;margin:6px 0 14px;background:linear-gradient(90deg,transparent,hsl(var(--H) var(--S) 45% / .6) 16%,hsl(var(--H2) var(--S) 40% / .3) 84%,transparent)}
+      .better-gw-rule::before,.better-gw-rule::after{position:absolute;top:-1px;width:3px;height:3px;border-radius:50%;background:var(--w-accent,#57d7ff);box-shadow:0 0 calc(6px * var(--G)) hsl(var(--H) 100% 50% / var(--G));content:""}.better-gw-rule::before{left:8%}.better-gw-rule::after{right:8%}
+      .better-gw-prize{display:flex;align-items:baseline;justify-content:center;gap:6px;min-height:42px;color:#f4f8ff;text-align:center;text-shadow:0 0 10px rgba(205,230,255,.25);transition:opacity 380ms ease,transform 520ms cubic-bezier(.22,.9,.24,1),filter 380ms ease}
+      .better-gw-prize strong{min-width:0;overflow:hidden;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-prize-size,31px);font-style:var(--w-prize-style,italic);font-weight:var(--w-title-weight,700);letter-spacing:var(--w-letter,.015em);line-height:1;text-overflow:ellipsis;white-space:nowrap}
+      .better-gw-prize span{min-width:0;color:#e5edf8;font-size:var(--w-sub-size,15px);font-style:var(--w-prize-style,italic);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .better-gw-metrics{display:grid;grid-template-columns:1fr 1fr;gap:var(--w-tile-gap,12px);margin-top:9px;transition:opacity 380ms ease,transform 520ms cubic-bezier(.22,.9,.24,1),filter 380ms ease}
+      .better-gw-metric-panel{position:relative;display:flex;min-width:0;min-height:62px;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:10px 15px;border:1px solid hsl(var(--H) var(--S) 38% / .85);border-radius:var(--w-tile-radius,10px);background:linear-gradient(180deg,hsl(var(--H) var(--S) calc(var(--L) + 5%) / .98),hsl(var(--H2) var(--S) var(--L) / .9));box-shadow:inset 0 0 calc(12px * var(--IG)) hsl(var(--H) 100% 32% / calc(.27 * var(--IG))),0 0 calc(8px * var(--G)) hsl(var(--H) 100% 30% / calc(.14 * var(--G)));transition:border-radius 320ms ease,background 480ms ease}
+      .better-giveaway-widget[data-surface="metallic"] .better-gw-metric-panel{background:linear-gradient(170deg,hsl(var(--H) var(--S) calc(var(--L) + 20%)),hsl(var(--H2) var(--S) calc(var(--L) + 2%)) 55%,hsl(var(--H) var(--S) calc(var(--L) + 12%)))}
+      .better-giveaway-widget[data-surface="matte"] .better-gw-metric-panel{background:hsl(var(--H) var(--S) calc(var(--L) + 5%));box-shadow:inset 0 0 calc(18px * var(--IG)) hsl(var(--H) 40% 3% / calc(.5 * var(--IG)))}
+      .better-giveaway-widget[data-surface="gloss"] .better-gw-metric-panel::after{position:absolute;top:0;right:0;left:0;height:46%;content:"";pointer-events:none;background:linear-gradient(180deg,hsl(0 0% 100% / .14),transparent)}
+      .better-gw-metric-panel::before{position:absolute;inset:0;pointer-events:none;content:"";background:linear-gradient(110deg,transparent 8%,rgba(53,167,255,.06) 38%,transparent 59%)}
+      .better-gw-metric-label{position:relative;z-index:1;color:var(--w-accent,#52c9f4);font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-label-size,10px);font-weight:700;letter-spacing:calc(var(--w-letter,.17em) + .14em);line-height:1.1;text-transform:var(--w-label-transform,uppercase);text-shadow:0 0 calc(7px * var(--w-text-glow,1)) hsl(var(--H) 100% 55% / calc(.42 * var(--w-text-glow,1)))}
+      .better-gw-metric-value{position:relative;z-index:1;max-width:100%;overflow:hidden;margin-top:3px;color:#e8f5ff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-value-size,28px);font-weight:800;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 0 calc(10px * var(--w-text-glow,1)) hsl(var(--H) 100% 78% / calc(.34 * var(--w-text-glow,1)))}
+      .better-gw-keyword-value{color:var(--w-accent,#087bff);letter-spacing:var(--w-letter,.02em);text-shadow:0 0 calc(11px * var(--w-text-glow,1)) hsl(var(--H) 100% 50% / calc(.8 * var(--w-text-glow,1)))}
+      .better-gw-reel-zone{position:absolute;top:calc(var(--w-pad-y,22px) * 1.4 + 40px);right:var(--w-pad-x,31px);bottom:calc(var(--w-pad-y,22px) * .8);left:var(--w-pad-x,31px);z-index:2;opacity:0;transform:translateY(12px) scale(.97);pointer-events:none;transition:opacity 420ms ease,transform 560ms cubic-bezier(.22,.9,.24,1),visibility 0s linear 560ms;visibility:hidden}
+      .better-giveaway-widget.is-tall .better-gw-reel-zone{opacity:1;transform:translateY(0) scale(1);visibility:visible;transition:opacity 420ms ease 60ms,transform 560ms cubic-bezier(.22,.9,.24,1),visibility 0s linear 0s}
+      .better-giveaway-widget.is-tall .better-gw-prize{opacity:0;transform:translateY(-8px) scale(.97);filter:blur(2px);pointer-events:none}.better-giveaway-widget.is-tall .better-gw-metrics{opacity:0;transform:translateY(10px) scale(.97);filter:blur(2px);pointer-events:none}
+      .better-gw-winner-flash{position:absolute;inset:0;z-index:3;border-radius:inherit;pointer-events:none;background:radial-gradient(circle at 50% 56%,rgba(255,196,27,.34),rgba(255,170,0,.09) 46%,transparent 72%);animation:better-gw-flash-fade 1200ms ease-out both}
+      .better-gw-edge,.better-gw-edge-light,.better-gw-side-dash,.better-gw-sheen{position:absolute;pointer-events:none}
+      .better-gw-edge{z-index:2;width:var(--w-bracket-size,27px);height:calc(var(--w-bracket-size,27px) * .85);border-color:var(--w-accent,rgba(47,178,250,.98));border-style:solid;opacity:var(--w-bracket-op,1);filter:drop-shadow(0 0 calc(4px * var(--G)) hsl(var(--H) 100% 50% / calc(.78 * var(--G))));transition:width 200ms ease,height 200ms ease,opacity 240ms ease,border-radius 320ms ease}
+      .better-gw-edge-top-left{top:-1px;left:-1px;border-width:var(--w-bracket-w,2px) 0 0 var(--w-bracket-w,2px);border-radius:var(--w-radius,11px) 0 0}.better-gw-edge-top-right{top:-1px;right:-1px;border-width:var(--w-bracket-w,2px) var(--w-bracket-w,2px) 0 0;border-radius:0 var(--w-radius,11px) 0 0}.better-gw-edge-bottom-left{bottom:-1px;left:-1px;border-width:0 0 var(--w-bracket-w,2px) var(--w-bracket-w,2px);border-radius:0 0 0 var(--w-radius,11px)}.better-gw-edge-bottom-right{right:-1px;bottom:-1px;border-width:0 var(--w-bracket-w,2px) var(--w-bracket-w,2px) 0;border-radius:0 0 var(--w-radius,11px)}
+      .better-gw-edge-light{z-index:2;width:47px;height:2px;opacity:var(--w-edgelight-op,1);background:linear-gradient(90deg,transparent,var(--w-accent,#43d9ff) 25%,var(--w-accent-2,#167bff) 85%,transparent);box-shadow:0 0 calc(7px * var(--G)) hsl(var(--H) 100% 50% / var(--G))}.better-gw-edge-light-top{top:-1px;left:46%;animation:better-gw-edge-pulse 2.8s ease-in-out infinite}.better-gw-edge-light-bottom{right:45%;bottom:-1px;transform:rotate(180deg);animation:better-gw-edge-pulse 2.8s ease-in-out 1.2s infinite}
+      .better-gw-side-dash{z-index:2;width:1px;height:28px;background:repeating-linear-gradient(to bottom,var(--w-accent,#21a9ed) 0 1px,transparent 1px 4px);opacity:var(--w-dash-op,.76);box-shadow:0 0 calc(6px * var(--G)) hsl(var(--H) 100% 50% / calc(.8 * var(--G)));transition:opacity 240ms ease}.better-gw-side-dash-left{top:65px;left:5px}.better-gw-side-dash-right{right:5px;bottom:65px}
+      .better-gw-sheen{right:-10%;bottom:-110%;left:-10%;height:170%;z-index:0;opacity:var(--w-sheen-op,1);background:linear-gradient(103deg,transparent 35%,hsl(var(--H) 100% 72% / .09) 47%,transparent 60%);transform:translateX(-120%);animation:better-gw-sheen-sweep 7s ease-in-out 1.4s infinite}.better-giveaway-widget[style*="--w-sheen-op: 0"] .better-gw-sheen{animation:none}
+      .better-gw-roulette-stage{position:relative;height:100%;padding-top:24px}
+      .better-gw-winner-banner{position:absolute;top:0;left:50%;z-index:4;display:flex;align-items:center;gap:8px;padding:5px 16px;border:1px solid rgba(255,197,27,.8);border-radius:999px;background:linear-gradient(180deg,rgba(64,42,0,.95),rgba(26,16,0,.96));box-shadow:0 0 18px rgba(255,176,0,.5),inset 0 1px 0 rgba(255,224,130,.35);opacity:0;transform:translate(-50%,-10px) scale(.8);filter:blur(4px);pointer-events:none;transition:opacity 320ms ease,transform 460ms cubic-bezier(.2,1.4,.35,1),filter 320ms ease}.better-gw-winner-banner.is-shown{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0)}
+      .better-gw-winner-crown{color:#ffc51b;filter:drop-shadow(0 0 5px rgba(255,187,0,.8));animation:better-gw-crown-sway 2.4s ease-in-out infinite}.better-gw-winner-kicker{color:#ffd877;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase}.better-gw-winner-name{color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:13px;font-weight:800;letter-spacing:.05em;text-shadow:0 0 10px rgba(255,205,60,.75)}
+      .better-gw-roulette-viewport{position:relative;height:122px;overflow:hidden;border:1px solid rgba(16,86,145,.55);border-radius:7px;background:rgba(1,8,20,.6);box-shadow:inset 0 0 16px rgba(0,68,138,.22);mask-image:linear-gradient(90deg,transparent,black 8%,black 92%,transparent)}
+      .better-gw-roulette-track{display:flex;align-items:center;gap:14px;height:100%;width:max-content;padding:0 6px;will-change:transform}.better-gw-roulette-stage--spinning .better-gw-roulette-track{animation:better-gw-reel-spin var(--gw-spin-duration,5.2s) linear infinite}
+      .better-gw-avatar-chip{position:relative;display:flex;width:66px;flex:none;flex-direction:column;align-items:center;gap:7px;transition:opacity 420ms ease,filter 420ms ease}.better-gw-avatar-bubble{display:grid;width:66px;height:66px;place-items:center;border:2px solid rgba(150,226,255,.6);border-radius:50%;color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:19px;font-weight:800;letter-spacing:.03em;text-shadow:0 1px 4px rgba(0,0,0,.6);box-shadow:inset 0 -7px 14px rgba(0,0,0,.35),0 0 10px rgba(0,110,200,.4);transition:transform 300ms cubic-bezier(.2,1.3,.4,1),box-shadow 300ms ease,border-color 300ms ease}.better-gw-avatar-name{max-width:100%;overflow:hidden;color:#9fd8f2;font-size:12px;font-weight:600;letter-spacing:.02em;text-overflow:ellipsis;white-space:nowrap}
+      .better-gw-roulette-stage--winner .better-gw-avatar-chip:not(.is-winner){opacity:.28;filter:saturate(.35) brightness(.7)}.better-gw-avatar-chip.is-winner .better-gw-avatar-bubble{border-color:#ffc51b;box-shadow:inset 0 -7px 14px rgba(0,0,0,.35),0 0 0 3px rgba(255,197,27,.4),0 0 26px rgba(255,178,0,.8);transform:scale(1.2);animation:better-gw-winner-pop 900ms cubic-bezier(.2,1.5,.4,1) both}.better-gw-avatar-chip.is-winner .better-gw-avatar-name{color:#ffe08a;font-weight:700;text-shadow:0 0 8px rgba(255,190,0,.55)}
+      .better-gw-chip-crown{position:absolute;top:-13px;z-index:2;padding:1px 4px;border:1px solid rgba(255,197,27,.72);border-radius:999px;background:rgba(32,20,0,.94);color:#ffd877;font-size:8px;font-weight:900;letter-spacing:.08em;line-height:1;filter:drop-shadow(0 2px 6px rgba(255,150,0,.85));animation:better-gw-crown-drop 560ms cubic-bezier(.2,1.6,.4,1) both}
+      .better-gw-roulette-pointer{position:absolute;top:6px;bottom:6px;left:50%;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:14px;transform:translateX(-50%);pointer-events:none}.better-gw-pointer-line{flex:1;width:2px;margin:3px 0;background:linear-gradient(180deg,rgba(97,220,255,.9),rgba(8,126,255,.35) 50%,rgba(97,220,255,.9));box-shadow:0 0 8px rgba(0,162,255,.8)}.better-gw-pointer-notch{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;filter:drop-shadow(0 0 5px rgba(0,174,255,.9))}.better-gw-pointer-top{border-top:7px solid #5cd8ff}.better-gw-pointer-bottom{border-bottom:7px solid #5cd8ff}
+      .better-gw-roulette-status{display:flex;justify-content:center;min-height:16px;margin-top:7px;color:#7fb2cf;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}.better-gw-status-spin{color:#6fdcff;text-shadow:0 0 8px rgba(0,180,255,.6);animation:better-gw-status-blink 900ms ease-in-out infinite}.better-gw-status-win{display:inline-flex;align-items:center;gap:6px;color:#ffd877;text-shadow:0 0 8px rgba(255,187,0,.5)}
+      @container (max-width:520px){.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
+      @media (max-width:520px){.better-giveaway-stage{padding:8px}.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
+      .better-bets-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:16px;box-sizing:border-box;background:transparent;font-family:var(--font-body,"Rajdhani",Arial,sans-serif)}
       .better-bets-stage *{box-sizing:border-box}
       .better-bets-stage[data-font="cyber"]{--font-display:"Orbitron",sans-serif;--font-body:"Rajdhani",sans-serif;--title-tracking:.1em}
       .better-bets-stage[data-font="sport"]{--font-display:"Oswald",sans-serif;--font-body:"Barlow",sans-serif;--title-tracking:.05em}
@@ -880,14 +1071,12 @@ function BetterStyleSheet() {
       @keyframes better-hunt-kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(1.5%,-1.5%)}}
       @keyframes better-hunt-cloak{0%,100%{filter:blur(1px) brightness(.65) contrast(1.2) saturate(.3);opacity:.44}50%{filter:blur(2.5px) brightness(.9) contrast(.95) saturate(.1);opacity:.28}}
       @keyframes better-hunt-gold{0%,100%{box-shadow:0 0 16px rgba(255,190,40,.45),0 0 32px rgba(255,160,20,.25),inset 0 0 10px rgba(255,210,40,.3);border-color:#ffd23d}50%{box-shadow:0 0 26px rgba(255,210,50,.65),0 0 46px rgba(255,180,30,.45),inset 0 0 16px rgba(255,230,50,.5);border-color:#ffea7a}}
-      .better-hunt-root{position:relative;width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;background:#04091a;color:#eef6ff;font-family:var(--bh-font);font-size:calc(13px * var(--bh-ui,1));box-sizing:border-box}
+      .better-hunt-root{position:relative;width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;background:transparent;color:#eef6ff;font-family:var(--bh-font);font-size:calc(13px * var(--bh-ui,1));box-sizing:border-box}
       .better-hunt-root *{box-sizing:border-box}
-      .better-hunt-root::before,.better-hunt-root::after{content:"";position:absolute;pointer-events:none;border-radius:999px;filter:blur(42px);opacity:.56}
-      .better-hunt-root::before{width:44%;height:38%;left:-12%;top:-10%;background:color-mix(in srgb,var(--bh-glow-a) 72%,transparent);animation:better-float calc(14s / var(--anim-speed,1)) ease-in-out infinite}
-      .better-hunt-root::after{width:48%;height:42%;right:-14%;bottom:-12%;background:color-mix(in srgb,var(--bh-glow-b) 68%,transparent);--float-x:-16px;--float-y:12px;animation:better-float calc(18s / var(--anim-speed,1)) ease-in-out infinite}
+      .better-hunt-root::before,.better-hunt-root::after{content:none}
       .better-hunt-shell{position:relative;z-index:1;width:100%;height:100%;display:grid;place-items:center;padding:18px}
       .better-hunt-root[data-orientation="vertical"] .better-hunt-shell{align-items:center}
-      .better-hunt-panel{position:relative;width:100%;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:14px;background:linear-gradient(180deg,var(--bh-panel-hi) 0%,var(--bh-panel-mid) 55%,var(--bh-panel-lo) 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),0 0 22px color-mix(in srgb,var(--bh-glow-a) 42%,transparent),0 0 70px color-mix(in srgb,var(--bh-glow-b) 26%,transparent),inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 12%,transparent)}
+      .better-hunt-panel{position:relative;width:100%;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:14px;background:linear-gradient(180deg,var(--bh-panel-hi) 0%,var(--bh-panel-mid) 55%,var(--bh-panel-lo) 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 12%,transparent)}
       .better-hunt-panel::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit}
       .better-hunt-root[data-finish="flat"] .better-hunt-panel::after{content:none}
       .better-hunt-root[data-finish="metallic"] .better-hunt-panel::after{background:repeating-linear-gradient(100deg,rgba(255,255,255,.028) 0 1px,transparent 1px 3px),linear-gradient(155deg,rgba(255,255,255,.09) 0%,rgba(255,255,255,.02) 22%,transparent 40%,rgba(255,255,255,.04) 78%,transparent 100%)}
@@ -1829,184 +2018,188 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
 export function BetterGiveawayStyle({ config }) {
   const c = config || {};
-  const participants = safeArray(c.participants);
-  const winner = c.winner || "";
-  const spinningWinner = c.spinningWinner || "";
-  const isActive = !!c.isActive;
-  const keyword = String(c.keyword || "").replace(/^!+/, "");
-  const accent = subValue(c, "celebration", "accentColor", c.accentColor || "#f59e0b");
-  const bg = subValue(c, "container", "background", c.bgColor || "#081226");
-  const text = subValue(c, "container", "textColor", c.textColor || "#f8fafc");
-  const muted = subValue(c, "label", "textColor", c.mutedColor || "rgba(226,232,240,0.68)");
-  const font = subValue(c, "container", "fontFamily", c.fontFamily || "'Inter', sans-serif");
-  const chips = participants.length ? participants.slice(-10) : [keyword ? `!${keyword}` : "waiting"];
-  const hasWinner = Boolean(winner);
+  const participants = safeArray(c.participants).map(giveawayParticipant);
+  const winnerName =
+    typeof c.winner === "object"
+      ? c.winner?.name || c.winner?.username || c.winner?.displayName || ""
+      : String(c.winner || "");
+  const spinningWinner =
+    typeof c.spinningWinner === "object"
+      ? c.spinningWinner?.name || c.spinningWinner?.username || c.spinningWinner?.displayName || ""
+      : String(c.spinningWinner || "");
+  const keyword = stripBang(c.keyword);
+  const hasWinner = Boolean(winnerName);
+  const isLive = c.isActive !== false && !hasWinner;
+  const phase = hasWinner ? "winner" : spinningWinner ? "spinning" : "idle";
+  const reelOpen = phase !== "idle";
+  const entries = Number.isFinite(Number(c.entries))
+    ? Number(c.entries)
+    : Number.isFinite(Number(c.participantCount))
+      ? Number(c.participantCount)
+      : participants.length;
+  const hue = normalizeHue(c.hue, 208);
+  const hueShift = numberValue(c.hueShift, 0);
+  const hue2 = normalizeHue(hue + hueShift, hue);
+  const hue3 = normalizeHue(hue - hueShift * 0.5, hue);
+  const saturation = clampNumber(c.saturation, 0, 100, 88);
+  const lightness = clampNumber(c.lightness, 2, 40, 10);
+  const accentHue = normalizeHue(hue + hueShift, hue);
+  const accentSat = clampNumber(c.accentSat, 0, 100, 96);
+  const accentLight = clampNumber(c.accentLight, 30, 90, 58);
+  const titleFont = giveawayFontStack(c.titleFont, "orbitron");
+  const bodyFont = c.bodyFont ? giveawayFontStack(c.bodyFont, "rajdhani") : c.fontFamily || giveawayFontStack("rajdhani");
+  const width = clampNumber(c.width, 240, 1600, 700);
+  const height = clampNumber(c.height, 140, 900, 270);
+  const letterSpacing = `${Math.max(0, numberValue(c.letterSpacing, 1)) / 100}em`;
+  const vars = {
+    "--w-width": `${width}px`,
+    "--w-height": `${height}px`,
+    "--w-pad-x": cssPx(clampNumber(c.padX, 0, 140, 31)),
+    "--w-pad-y": cssPx(clampNumber(c.padY, 0, 120, 22)),
+    "--w-radius": cssPx(clampNumber(c.radius ?? c.borderRadius, 0, 120, 12)),
+    "--w-border-w": cssPx(clampNumber(c.borderWidth, 0, 12, 1)),
+    "--w-border-a": clampNumber(c.borderAlpha, 0, 1, 0.9),
+    "--w-inner-inset": cssPx(clampNumber(c.innerInset, 0, 40, 5)),
+    "--w-inner-op": c.innerFrame === false ? 0 : 1,
+    "--w-bracket-op": c.brackets === false ? 0 : 1,
+    "--w-bracket-size": cssPx(clampNumber(c.bracketSize, 0, 120, 27)),
+    "--w-bracket-w": cssPx(clampNumber(c.bracketWidth, 0, 12, 2)),
+    "--w-edgelight-op": c.edgeLights === false ? 0 : 1,
+    "--w-dash-op": c.sideDashes === false ? 0 : 0.76,
+    "--w-sheen-op": c.sheen === false ? 0 : 1,
+    "--w-glow": clampNumber(c.glow, 0, 200, 100) / 100,
+    "--w-inner-glow": clampNumber(c.innerGlow, 0, 200, 100) / 100,
+    "--w-tile-radius": cssPx(clampNumber(c.tileRadius, 0, 80, 10)),
+    "--w-tile-gap": cssPx(clampNumber(c.tileGap, 0, 80, 12)),
+    "--w-title-size": cssPx(clampNumber(c.titleSize, 8, 72, 20)),
+    "--w-prize-size": cssPx(clampNumber(c.prizeSize, 10, 96, 31)),
+    "--w-sub-size": cssPx(clampNumber(c.subSize, 8, 48, 15)),
+    "--w-label-size": cssPx(clampNumber(c.labelSize, 6, 32, 10)),
+    "--w-value-size": cssPx(clampNumber(c.valueSize, 10, 84, 28)),
+    "--w-title-weight": clampNumber(c.titleWeight, 300, 950, 700),
+    "--w-letter": letterSpacing,
+    "--w-prize-style": c.italicPrize === false ? "normal" : "italic",
+    "--w-label-transform": c.uppercaseLabels === false ? "none" : "uppercase",
+    "--w-text-glow": clampNumber(c.textGlow, 0, 240, 100) / 100,
+    "--w-font-title": titleFont,
+    "--w-font-body": bodyFont,
+    "--w-hue": hue,
+    "--w-hue2": hue2,
+    "--w-hue3": hue3,
+    "--w-sat": `${saturation}%`,
+    "--w-lum": `${lightness}%`,
+    "--w-accent": `hsl(${accentHue} ${accentSat}% ${accentLight}%)`,
+    "--w-accent-2": `hsl(${hue2} ${accentSat}% ${Math.max(34, accentLight - 14)}%)`,
+    "--w-accent-soft": `hsl(${accentHue} ${accentSat}% ${Math.min(86, accentLight + 20)}%)`,
+  };
+  const className = [
+    "better-giveaway-widget",
+    isLive ? "is-live" : "is-paused",
+    reelOpen ? "is-tall" : "",
+    hasWinner ? "has-winner" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div
-      style={subElementStyle(c, "container", {
-        width: "100%",
-        height: "100%",
-        boxSizing: "border-box",
-        display: "grid",
-        gridTemplateRows: "auto minmax(0,1fr) auto",
-        gap: 12,
-        padding: 16,
-        overflow: "hidden",
-        borderRadius: cssPx(c.borderRadius ?? 18, "18px"),
-        border: `1px solid ${alphaColor(accent, 0.4)}`,
-        background: `linear-gradient(145deg, ${bg}, ${alphaColor(accent, 0.16)})`,
-        color: text,
-        fontFamily: font,
-        boxShadow: `0 18px 44px rgba(0,0,0,0.38), 0 0 26px ${alphaColor(accent, 0.2)}`,
-        position: "relative",
-      })}
-      {...attrs("giveaway", c, "container")}
-    >
+    <div className="better-giveaway-stage" style={vars}>
       <BetterStyleSheet />
-      <div
-        style={subElementStyle(c, "header", {
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
-        })}
-        {...attrs("giveaway", c, "header")}
+      <section
+        className={className}
+        data-surface={c.surface || "gloss"}
+        aria-label="Live giveaway widget"
+        data-widget-element="container"
+        {...attrs("giveaway", c, "container")}
       >
-        <div>
-          <div style={{ color: muted, fontSize: 11, fontWeight: 850, letterSpacing: "0.18em", textTransform: "uppercase" }}>
-            {hasWinner ? "Winner selected" : isActive ? "Live giveaway" : "Giveaway"}
-          </div>
-          <strong style={{ display: "block", fontSize: "clamp(18px,5cqw,28px)", lineHeight: 1.05 }}>
-            {c.title || "Giveaway"}
-          </strong>
-        </div>
-        <span
-          style={subElementStyle(c, "statusBadge", {
-            borderRadius: 999,
-            padding: "7px 11px",
-            background: isActive && !hasWinner ? accent : "rgba(148,163,184,0.16)",
-            color: isActive && !hasWinner ? "#081226" : text,
-            fontWeight: 900,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-          }, hasWinner ? "winner" : isActive ? "live" : "closed")}
-          {...attrs("giveaway", c, "statusBadge", hasWinner ? "winner" : isActive ? "live" : "closed")}
-        >
-          {hasWinner ? "Done" : isActive ? "Live" : "Off"}
-        </span>
-      </div>
+        {c.brackets !== false ? (
+          <>
+            <span className="better-gw-edge better-gw-edge-top-left" aria-hidden="true" />
+            <span className="better-gw-edge better-gw-edge-top-right" aria-hidden="true" />
+            <span className="better-gw-edge better-gw-edge-bottom-left" aria-hidden="true" />
+            <span className="better-gw-edge better-gw-edge-bottom-right" aria-hidden="true" />
+          </>
+        ) : null}
+        {c.edgeLights !== false ? (
+          <>
+            <span className="better-gw-edge-light better-gw-edge-light-top" aria-hidden="true" />
+            <span className="better-gw-edge-light better-gw-edge-light-bottom" aria-hidden="true" />
+          </>
+        ) : null}
+        {c.sideDashes !== false ? (
+          <>
+            <span className="better-gw-side-dash better-gw-side-dash-left" aria-hidden="true" />
+            <span className="better-gw-side-dash better-gw-side-dash-right" aria-hidden="true" />
+          </>
+        ) : null}
 
-      <div
-        style={subElementStyle(c, "progressSection", {
-          minHeight: 0,
-          borderRadius: 18,
-          border: `1px solid ${alphaColor(accent, 0.28)}`,
-          background: "rgba(255,255,255,0.055)",
-          display: "grid",
-          gridTemplateRows: "auto minmax(0,1fr)",
-          overflow: "hidden",
-        })}
-        {...attrs("giveaway", c, "progressSection")}
-      >
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "rgba(255,255,255,0.08)" }}>
+        <header
+          className="better-gw-header"
+          data-widget-element="header"
+          {...attrs("giveaway", c, "header")}
+        >
+          <div className="better-gw-name">
+            <BetterGiveawayGiftIcon />
+            <span>{c.title || "Giveaway"}</span>
+          </div>
+          <span
+            className="better-gw-live-toggle"
+            aria-label={isLive ? "Giveaway live" : hasWinner ? "Giveaway finished" : "Giveaway paused"}
+            data-widget-element="statusBadge"
+            {...attrs("giveaway", c, "statusBadge", hasWinner ? "winner" : isLive ? "live" : "closed")}
+          >
+            <span className="better-gw-live-dot" />
+            <span>{hasWinner ? "Winner" : isLive ? "Live" : "Paused"}</span>
+            <BetterGiveawayBroadcastIcon />
+          </span>
+        </header>
+
+        <div className="better-gw-rule" aria-hidden="true" />
+
+        <div
+          className="better-gw-prize"
+          data-widget-element="prize"
+          {...attrs("giveaway", c, "prize")}
+        >
+          <strong>{c.prize || "Giveaway prize"}</strong>
+          {c.subtitle ? <span>{c.subtitle}</span> : null}
+        </div>
+
+        <div
+          className="better-gw-reel-zone"
+          aria-hidden={!reelOpen}
+          data-widget-element="winnerArea"
+          {...attrs("giveaway", c, "winnerArea", hasWinner ? "winner" : spinningWinner ? "drawing" : "live")}
+        >
+          <BetterGiveawayRoulette
+            participants={participants}
+            phase={phase}
+            winnerName={winnerName || spinningWinner}
+            durationSec={c.durationSec || c.duration || 5.2}
+          />
+        </div>
+
+        <div className="better-gw-metrics">
           <div
-            style={subElementStyle(c, "keyword", {
-              background: "rgba(8,18,38,0.82)",
-              padding: 12,
-            })}
+            className="better-gw-metric-panel better-gw-keyword-panel"
+            data-widget-element="keyword"
             {...attrs("giveaway", c, "keyword")}
           >
-            <span style={{ color: muted, fontSize: 11, fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.14em" }}>Command</span>
-            <strong style={{ display: "block", color: accent, fontSize: 22 }}>{keyword ? `!${keyword}` : "-"}</strong>
+            <span className="better-gw-metric-label">Keyword</span>
+            <span className="better-gw-metric-value better-gw-keyword-value">{keyword ? `!${keyword}` : "-"}</span>
           </div>
           <div
-            style={subElementStyle(c, "participantCount", {
-              background: "rgba(8,18,38,0.82)",
-              padding: 12,
-            })}
+            className="better-gw-metric-panel better-gw-entries-panel"
+            data-widget-element="participantCount"
             {...attrs("giveaway", c, "participantCount")}
           >
-            <span style={{ color: muted, fontSize: 11, fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.14em" }}>Entries</span>
-            <strong style={{ display: "block", fontSize: 22 }}>{participants.length}</strong>
+            <span className="better-gw-metric-label">Entries</span>
+            <span className="better-gw-metric-value">{formatCompactNumber(entries)}</span>
           </div>
         </div>
-        <div style={{ position: "relative", display: "grid", placeItems: "center", padding: 14, minHeight: 0 }}>
-          {hasWinner ? (
-            <div
-              style={subElementStyle(c, "winnerArea", {
-                textAlign: "center",
-                animation: "better-rise 260ms ease-out both",
-              }, "winner")}
-              {...attrs("giveaway", c, "winnerArea", "winner")}
-            >
-              <div style={{ color: muted, fontSize: 12, fontWeight: 900, letterSpacing: "0.16em", textTransform: "uppercase" }}>Winner</div>
-              <strong style={{ display: "block", color: accent, fontSize: "clamp(28px,11cqw,52px)", lineHeight: 1 }}>
-                {winner}
-              </strong>
-              {c.prize ? <div style={{ marginTop: 8, color: text, fontWeight: 800 }}>{c.prize}</div> : null}
-            </div>
-          ) : spinningWinner ? (
-            <strong
-              style={subElementStyle(c, "winnerArea", {
-                color: accent,
-                fontSize: "clamp(26px,10cqw,46px)",
-              }, "drawing")}
-              {...attrs("giveaway", c, "winnerArea", "drawing")}
-            >
-              {spinningWinner}
-            </strong>
-          ) : (
-            <div
-              style={subElementStyle(c, participants.length ? "winnerArea" : "emptyState", {
-                width: "100%",
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: 8,
-              }, participants.length ? "live" : "empty")}
-              {...attrs("giveaway", c, participants.length ? "winnerArea" : "emptyState", participants.length ? "live" : "empty")}
-            >
-              {chips.map((name, index) => (
-                <span
-                  key={`${name}-${index}`}
-                  style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: "50%",
-                    display: "grid",
-                    placeItems: "center",
-                    background: alphaColor(accent, index % 3 === 0 ? 0.32 : 0.18),
-                    border: `1px solid ${alphaColor(accent, 0.4)}`,
-                    color: text,
-                    fontWeight: 950,
-                    animation: `better-float ${4 + index * 0.25}s ease-in-out infinite`,
-                    "--float-x": `${index % 2 ? -8 : 8}px`,
-                    "--float-y": `${index % 3 ? -6 : 6}px`,
-                  }}
-                  title={name}
-                >
-                  {initials(name)}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
 
-      <div
-        style={subElementStyle(c, "prize", {
-          color: c.prize ? text : muted,
-          fontWeight: 800,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          textAlign: "center",
-        })}
-        {...attrs("giveaway", c, "prize")}
-      >
-        {c.prize || (isActive ? "Waiting for chat entries" : "Set a prize and start the giveaway")}
-      </div>
+        {hasWinner ? <span className="better-gw-winner-flash" aria-hidden="true" /> : null}
+        {c.sheen !== false ? <span className="better-gw-sheen" aria-hidden="true" /> : null}
+      </section>
     </div>
   );
 }
@@ -2362,16 +2555,17 @@ export function BetterRtpStatsStyle({
   showBestWin = true,
 }) {
   const c = config || {};
-  const accent = subValue(c, "rtpValue", "accentColor", c.rtpIconColor || c.accentColor || c.cBolt || "#f59e0b");
-  const bgFrom = subValue(c, "container", "background", c.cBarTop || c.barBgFrom || "#071226");
+  const accent = c.cBolt || c.rtpIconColor || c.accentColor || "#f7a41d";
+  const bgFrom = c.cBarTop || c.barBgFrom || "#0c2150";
   const bgMid = c.cBarMid || c.barBgMid || "#081735";
-  const bgTo = c.cBarBot || c.barBgTo || "#030712";
-  const borderColor = subValue(c, "container", "borderColor", c.cRim || c.borderColor || alphaColor(accent, 0.46));
-  const text = subValue(c, "slotTitle", "textColor", c.slotNameColor || c.textColor || c.cValue || "#f8fafc");
-  const muted = subValue(c, "label", "textColor", c.labelColor || c.cLabel || "rgba(226,232,240,0.66)");
-  const font = subValue(c, "container", "fontFamily", c.fontBody || c.fontFamily || "'Inter', sans-serif");
+  const bgTo = c.cBarBot || c.barBgTo || "#050f26";
+  const rim = c.cRim || c.borderColor || "#2b7de9";
+  const borderColor = rim;
+  const text = c.cValue || c.slotNameColor || c.textColor || "#ffffff";
+  const muted = c.cLabel || c.labelColor || "#9db9ea";
+  const font = c.fontBody || c.fontFamily || "'Barlow', sans-serif";
   const titleFont = c.fontTitle || font;
-  const fontSize = numberValue(subValue(c, "container", "fontSize", c.fontSize || 14), 14);
+  const fontSize = numberValue(c.fontSize || 14, 14);
   const titleSize = clampNumber(c.titleSize, 10, 46, fontSize * 1.3);
   const valueSize = clampNumber(c.valueSize, 8, 34, fontSize * 0.95);
   const labelSize = clampNumber(c.labelSize, 6, 18, fontSize * 0.62);
@@ -2381,7 +2575,7 @@ export function BetterRtpStatsStyle({
   const borderWidth = Math.max(0, numberValue(c.borderWidth, 1));
   const radius = cssPx(c.radius ?? c.borderRadius ?? 14, "14px");
   const providerMode = c.providerMode || "name";
-  const providerName = displayProvider || (previewMode ? c.providerName : "") || "";
+  const providerName = displayProvider || c.providerName || "";
   const providerLogo = c.logoSrc || displayProviderLogo || "";
   const showProviderImage = providerMode !== "none" && providerMode !== "name" && Boolean(providerLogo);
   const showProviderName = providerMode !== "none" && providerMode !== "image" && Boolean(providerName);
@@ -2392,29 +2586,29 @@ export function BetterRtpStatsStyle({
   const logoPadY = clampNumber(c.logoPadY, 0, 32, 0);
   const logoOffsetX = clampNumber(c.logoOffsetX, -64, 64, 0);
   const logoOffsetY = clampNumber(c.logoOffsetY, -64, 64, 0);
-  const slotName = displaySlotName || (previewMode ? c.slotName : "") || "-";
+  const slotName = displaySlotName || c.slotName || "-";
   const liveRtp = displayInfo?.rtp;
   const livePotential = displayInfo?.max_win_multiplier ?? displayInfo?.max_win;
   const rtpValue =
     liveRtp !== undefined && liveRtp !== null && liveRtp !== ""
       ? `${String(liveRtp).replace(/%$/, "")}%`
-      : previewMode && c.rtp
+      : c.rtp
         ? c.rtp
         : "-";
   const potentialValue =
     livePotential !== undefined && livePotential !== null && livePotential !== ""
       ? formatMultiplier(livePotential)
-      : previewMode && c.potential
+      : c.potential
         ? c.potential
         : "-";
   const volatilityValue = displayInfo?.volatility
     ? String(displayInfo.volatility).replace(/_/g, " ").toUpperCase()
-    : previewMode && c.volatility
+    : c.volatility
       ? c.volatility
       : "-";
   const bestAmount = displayBestWin?.best_win
     ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
-    : previewMode && c.bestWin
+    : c.bestWin
       ? c.bestWin
     : bestWinEmptyText || "-";
   const bestMulti = displayBestWin?.best_multiplier ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : "";
@@ -2428,9 +2622,9 @@ export function BetterRtpStatsStyle({
   const bar = (
     <div
       className="oc-widget-inner rtp-stats-bar rtp-stats-bar--better"
-      style={subElementStyle(c, "container", {
+      style={{
         width: "100%",
-        maxWidth: previewMode ? 1120 : "100%",
+        maxWidth: previewMode ? 1152 : "100%",
         height: previewMode ? barHeight : "100%",
         minHeight: barHeight,
         boxSizing: "border-box",
@@ -2448,19 +2642,19 @@ export function BetterRtpStatsStyle({
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
-      })}
+      }}
       {...attrs("rtp_stats", c, "container")}
     >
       <BetterStyleSheet />
       {hasProvider ? (
         <div
-          style={subElementStyle(c, "provider", {
+          style={{
             display: "flex",
             alignItems: "center",
             gap: 12,
             minWidth: 0,
             flexShrink: 0,
-          })}
+          }}
           {...attrs("rtp_stats", c, "provider")}
         >
           {showProviderImage ? (
@@ -2505,11 +2699,11 @@ export function BetterRtpStatsStyle({
       ) : null}
       {c.showEmblem !== false ? <BetterRtpEmblem config={c} /> : null}
       <h1
-        style={subElementStyle(c, "slotTitle", {
+        style={{
           minWidth: 0,
           overflow: "hidden",
-          flex: "0 0 auto",
-          maxWidth: "min(320px, 34vw)",
+          flex: "1 1 220px",
+          maxWidth: "min(260px, 26vw)",
           margin: 0,
           color: text,
           fontFamily: titleFont,
@@ -2521,7 +2715,7 @@ export function BetterRtpStatsStyle({
           textShadow: `0 1px 10px ${bgTo}`,
           textTransform: "uppercase",
           whiteSpace: "nowrap",
-        })}
+        }}
         {...attrs("rtp_stats", c, "slotTitle")}
       >
         {slotName}
@@ -2542,7 +2736,7 @@ export function BetterRtpStatsStyle({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 16,
+            gap: 14,
             minWidth: 0,
             flex: "0 0 auto",
           }}
@@ -2550,14 +2744,14 @@ export function BetterRtpStatsStyle({
           {statItems.map(([part, label, value, , delay]) => (
             <div
               key={part}
-              style={subElementStyle(c, "statCard", {
+              style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 7,
                 flexShrink: 0,
                 minWidth: 0,
                 whiteSpace: "nowrap",
-              })}
+              }}
               {...attrs("rtp_stats", c, "statCard")}
             >
               <Zap
@@ -2573,7 +2767,7 @@ export function BetterRtpStatsStyle({
                 }}
               />
               <span
-                style={subElementStyle(c, "label", {
+                style={{
                   color: muted,
                   fontFamily: font,
                   fontSize: labelSize,
@@ -2581,21 +2775,21 @@ export function BetterRtpStatsStyle({
                   letterSpacing: "0.16em",
                   textTransform: "uppercase",
                   whiteSpace: "nowrap",
-                })}
+                }}
                 {...attrs("rtp_stats", c, "label")}
               >
                 {label}
               </span>
               <strong
-                style={subElementStyle(c, part, {
-                  color: part === "rtpValue" ? accent : text,
+                style={{
+                  color: text,
                   fontFamily: titleFont,
                   fontSize: valueSize,
                   fontWeight: 850,
                   letterSpacing: "0.04em",
                   lineHeight: 1,
                   whiteSpace: "nowrap",
-                })}
+                }}
                 {...attrs("rtp_stats", c, part)}
               >
                 {value}
@@ -2617,19 +2811,20 @@ export function BetterRtpStatsStyle({
       ) : null}
       {showBestWin ? (
         <div
-          style={subElementStyle(c, "personalBest", {
+          style={{
             display: "flex",
             alignItems: "center",
             gap: 8,
             flexShrink: 0,
             marginLeft: "auto",
+            maxWidth: "min(300px, 30vw)",
             padding: "7px 14px",
             border: `1px solid ${alphaColor(c.cRim || accent, 0.55)}`,
             borderRadius: Math.max(4, numberValue(c.radius, 10) - 4),
             background: `linear-gradient(180deg, ${alphaColor(bgFrom, 0.85)}, ${alphaColor(bgTo, 0.9)})`,
             boxShadow: `inset 0 0 12px ${alphaColor(c.cRim || accent, 0.26)}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.14)}`,
             minWidth: 0,
-          })}
+          }}
           {...attrs("rtp_stats", c, "personalBest")}
         >
           <Trophy
@@ -2644,7 +2839,7 @@ export function BetterRtpStatsStyle({
             }}
           />
           <span
-            style={subElementStyle(c, "label", {
+            style={{
               color: muted,
               fontFamily: font,
               fontSize: labelSize,
@@ -2652,23 +2847,25 @@ export function BetterRtpStatsStyle({
               letterSpacing: "0.14em",
               textTransform: "uppercase",
               whiteSpace: "nowrap",
-            })}
+            }}
             {...attrs("rtp_stats", c, "label")}
           >
             Best Win
           </span>
-          <span style={{ color: muted, fontSize: labelSize, opacity: 0.5 }}>-</span>
+          <span style={{ color: muted, fontSize: labelSize, opacity: 0.5 }}>{"\u2014"}</span>
           <strong
-            style={subElementStyle(c, "personalBest", {
+            style={{
               overflow: "hidden",
               color: text,
               fontFamily: font,
               fontSize: labelSize + 1,
               fontWeight: 700,
               lineHeight: 1,
+              minWidth: 0,
+              maxWidth: 170,
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-            })}
+            }}
             {...attrs("rtp_stats", c, "personalBest")}
           >
             {bestWinValue}

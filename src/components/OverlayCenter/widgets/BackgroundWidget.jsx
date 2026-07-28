@@ -548,8 +548,10 @@ function ParticleLayer({ type, color, count, speed, size }) {
         const w = baseSize * p.s;
         const h = type === "rain" ? w * 6 : w;
         const particleBackground = (() => {
-          if (type === "fireflies") return `radial-gradient(circle, ${color}, transparent 70%)`;
-          if (type === "bokeh") return `radial-gradient(circle, ${color}33, ${color}11 60%, transparent 70%)`;
+          if (type === "fireflies")
+            return `radial-gradient(circle, ${color}, transparent 70%)`;
+          if (type === "bokeh")
+            return `radial-gradient(circle, ${color}33, ${color}11 60%, transparent 70%)`;
           return color;
         })();
         const particleFilter = (() => {
