@@ -339,10 +339,10 @@ const DEFAULT_BETTER_CONFIG = {
     motto: "www.brutuspolus.com",
     brandName: "",
     siteUrl: "",
-    showAvatar: true,
-    showClock: true,
+    showAvatar: false,
+    showClock: false,
     showNowPlaying: true,
-    showCTA: true,
+    showCTA: false,
     showCasino: true,
     showStartBalance: true,
     showCrypto: false,
@@ -350,11 +350,11 @@ const DEFAULT_BETTER_CONFIG = {
     ctaText: "Be Gamble Aware!",
     ctaColor: "#f97316",
     startLabel: "Start",
-    startValue: "",
+    startValue: "€2000",
     startBalance: 2000,
-    balanceCurrency: "EUR ",
+    balanceCurrency: "€",
     casinoName: "",
-    casinoCommand: "",
+    casinoCommand: "!Casino",
     casinoLogoUrl: "",
     casinoImageSize: 100,
     nowPlayingLabel: "Now Playing",
@@ -377,6 +377,8 @@ const DEFAULT_BETTER_CONFIG = {
     borderRadius: 12,
     radius: 12,
     maxWidth: 1152,
+    [BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER]: true,
+    [BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER]: true,
   },
   chat: {
     chatStyle: "better_chat",
@@ -537,10 +539,10 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     config[BETTER_NAVBAR_SPOTIFY_ONLY_MARKER] !== true
   ) {
     Object.assign(next, {
-      showAvatar: true,
-      showClock: true,
+      showAvatar: false,
+      showClock: false,
       showNowPlaying: true,
-      showCTA: true,
+      showCTA: false,
       showCasino: true,
       showStartBalance: true,
     });
@@ -576,7 +578,13 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
   ) {
     next.casinoCommand = "";
   }
-  if (!next.casinoCommand) {
+  if (!next.startValue && (config.startValue === undefined || config.startValue === null)) {
+    next.startValue = defaults.startValue;
+  }
+  if (!next.casinoCommand && next.showCasino !== false) {
+    next.casinoCommand = defaults.casinoCommand;
+    next[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = true;
+  } else if (!next.casinoCommand) {
     next[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = false;
   }
 
@@ -1114,6 +1122,7 @@ const NAVBAR_SOCIAL_DISPLAY_OPTIONS = [
 ];
 
 const NAVBAR_CURRENCY_OPTIONS = [
+  { value: "€", label: "EUR €" },
   { value: "EUR ", label: "EUR" },
   { value: "$", label: "USD" },
   { value: "GBP ", label: "GBP" },

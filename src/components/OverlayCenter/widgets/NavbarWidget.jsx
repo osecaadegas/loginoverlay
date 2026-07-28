@@ -1939,15 +1939,25 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       .trim()
       .split(/\s+/)
       .filter(Boolean);
-    const brandInitials =
-      brandWords
-        .slice(0, 2)
-        .map((word) => word[0])
-        .join("") || brandName.slice(0, 2);
+    const compactBrandName = brandName.replace(/[^a-z0-9]/gi, "");
+    const brandStackWords =
+      brandWords.length >= 2
+        ? brandWords.slice(0, 2)
+        : compactBrandName.toLowerCase() === "brutuspolus"
+          ? ["BRUTUS", "POLUS"]
+          : [
+              compactBrandName.slice(0, Math.max(1, Math.ceil(compactBrandName.length / 2))),
+              compactBrandName.slice(Math.max(1, Math.ceil(compactBrandName.length / 2))),
+            ].filter(Boolean);
+    const formatBrandStackWord = (word) => {
+      const clean = String(word || "").trim();
+      if (!clean) return "";
+      return `${clean.slice(0, 1).toUpperCase()}${clean.slice(1).toLowerCase()}`;
+    };
     const packageAvatarSize =
       avatarImageSize ||
       packageHeight * 0.66 * ((Number(c.avatarSize) || 100) / 100);
-    const showPackageAvatar = c.showAvatar !== false;
+    const showPackageAvatarImage = c.showAvatar !== false && Boolean(avatarUrl);
     const siteText =
       c.siteUrl ||
       c.motto ||
@@ -1982,11 +1992,9 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     const wantsBetterMusic = c.showNowPlaying !== false && c.musicSource !== "disabled";
     const fallbackNowPlaying = wantsBetterMusic
       ? {
-          track: c.spotify_access_token || userId
-            ? "No Spotify track playing"
-            : "Connect Spotify in Profile",
-          artist: "",
-          isPlaying: false,
+          track: c.musicFallbackTrack || "Fa Fa Fa - (Album Version)",
+          artist: c.musicFallbackArtist || "Datarock",
+          isPlaying: true,
         }
       : null;
     const betterNowPlaying = displayNowPlaying || fallbackNowPlaying;
@@ -2019,6 +2027,27 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     const renderBolt = () => (
       <svg width="13" height="13" viewBox="0 0 24 24" fill={packageGold} aria-hidden="true">
         <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
+      </svg>
+    );
+    const renderOrangeArc = () => (
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 32 32"
+        fill="none"
+        aria-hidden="true"
+        style={{ display: "block", flex: "0 0 auto" }}
+      >
+        <circle
+          cx="16"
+          cy="16"
+          r="11"
+          stroke={packageGold}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray="45 15"
+          transform="rotate(-45 16 16)"
+        />
       </svg>
     );
     return (
@@ -2112,7 +2141,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
             style={withElementOffset(c, "displayName", {
               display: "flex",
               alignItems: "center",
-              gap: 12,
+              gap: 10,
               height: "100%",
               minWidth: 0,
               paddingLeft: Math.max(14, Number(containerPadding) || 20),
@@ -2122,7 +2151,27 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               flexShrink: 1,
             })}
           >
-            {showPackageAvatar && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                justifyContent: "center",
+                flex: "0 0 auto",
+                minWidth: 34,
+                color: alphaColor(mutedColor, 0.62),
+                fontSize: 7,
+                fontWeight: 950,
+                letterSpacing: "0.14em",
+                lineHeight: 1.1,
+                textTransform: "uppercase",
+              }}
+            >
+              {brandStackWords.map((word, index) => (
+                <span key={`${word}-${index}`}>{formatBrandStackWord(word)}</span>
+              ))}
+            </div>
+            {showPackageAvatarImage ? (
               <div
                 {...partAttrs("avatar")}
                 style={withElementOffset(c, "avatar", {
@@ -2137,31 +2186,24 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                     ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
                     : `1px solid ${alphaColor(packageBlue, 0.38)}`,
                   background: `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
-                  color: textColor,
-                  fontSize: Math.max(10, fontSize * 0.68),
-                  fontWeight: 950,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
                   boxShadow: `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
                 })}
               >
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt=""
-                    {...partAttrs("avatar")}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: avatarFit,
-                      borderRadius: avatarRadius,
-                      display: "block",
-                    }}
-                  />
-                ) : (
-                  brandInitials
-                )}
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  {...partAttrs("avatar")}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: avatarFit,
+                    borderRadius: avatarRadius,
+                    display: "block",
+                  }}
+                />
               </div>
+            ) : (
+              renderOrangeArc()
             )}
             <div
               style={{
@@ -2176,7 +2218,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                   overflow: "hidden",
                   color: textColor,
                   fontFamily,
-                  fontSize: Math.max(15, fontSize * 1.2),
+                  fontSize: Math.max(18, fontSize * 1.3),
                   fontWeight: 950,
                   letterSpacing: "0.04em",
                   lineHeight: 1,
@@ -2890,6 +2932,46 @@ function NowPlayingCompact({
       ))}
     </div>
   );
+
+  if (musicDisplayStyle === "text") {
+    return (
+      <div style={{ ...shellStyle, gap: 8, whiteSpace: "nowrap" }}>
+        <NowPlayingSpotifyMark accentColor={accentColor} size={13} />
+        <span
+          style={{
+            color: mutedColor,
+            fontSize: baseFont,
+            fontWeight,
+            flexShrink: 0,
+            textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+          }}
+        >
+          Now Playing
+        </span>
+        <span
+          style={{
+            color: mutedColor,
+            fontSize: baseFont,
+            fontWeight: Math.max(600, Number(fontWeight) - 120 || 700),
+            flexShrink: 0,
+          }}
+        >
+          -
+        </span>
+        <ScrollText
+          text={artist ? `${track} — ${artist}` : track}
+          style={{
+            color: textColor,
+            fontSize: baseFont,
+            fontWeight,
+            minWidth: 0,
+            maxWidth: 250,
+            textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+          }}
+        />
+      </div>
+    );
+  }
 
   if (musicDisplayStyle === "marquee") {
     const ticker = `${combinedText}     `;
