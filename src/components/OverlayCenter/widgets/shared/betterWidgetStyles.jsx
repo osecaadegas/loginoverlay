@@ -2995,7 +2995,7 @@ export function BetterRtpStatsStyle({
         color: text,
         fontFamily: font,
         fontSize,
-        boxShadow: `0 0 0 1px rgba(3,12,32,0.9), 0 0 18px ${alphaColor(c.cRim || accent, 0.42)}, 0 0 44px ${alphaColor(c.cRim || accent, 0.2)}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.3)}, inset 0 -1px 0 rgba(0,0,0,0.45)`,
+        boxShadow: `inset 0 0 0 1px rgba(3,12,32,0.9), inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.3)}, inset 0 -1px 0 rgba(0,0,0,0.45)`,
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
@@ -3249,18 +3249,6 @@ export function BetterRtpStatsStyle({
         }}
       >
         {bar}
-        <span
-          aria-hidden="true"
-          style={{
-            width: "min(94%, 1040px)",
-            height: 24,
-            marginTop: -8,
-            borderRadius: "0 0 999px 999px",
-            background: `radial-gradient(50% 100% at 50% 0%, ${alphaColor(c.cRim || accent, 0.28)}, transparent 75%)`,
-            filter: "blur(6px)",
-            animation: "better-soft-pulse 4s ease-in-out infinite",
-          }}
-        />
       </div>
     );
   }

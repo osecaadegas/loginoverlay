@@ -77,6 +77,11 @@ function roundNumber(value) {
   return Math.round(Number(value) || 0);
 }
 
+function getEditorInstanceBorderRadius(instance) {
+  if (instance?.widgetType !== "rtp_stats") return undefined;
+  return clampNumber(instance.config?.radius ?? instance.config?.borderRadius, 0, 120, 14);
+}
+
 function getMaxZ(layout) {
   return Math.max(
     1,
@@ -938,6 +943,7 @@ export default function WidgetEditorPage() {
                         opacity: instance.opacity,
                         zIndex: instance.zIndex,
                         pointerEvents: isBackground ? "none" : "auto",
+                        borderRadius: getEditorInstanceBorderRadius(instance),
                       }}
                       onPointerDown={(event) => beginInteraction(event, instance, "drag")}
                     >

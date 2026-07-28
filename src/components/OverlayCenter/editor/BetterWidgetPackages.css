@@ -1239,16 +1239,25 @@
 }
 
 .bp-controls--hunt {
-  height: 100%;
   min-height: 0;
   color: #dcecff;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
+  overflow: visible;
+}
+
+.bp-controls--hunt .bp-panel-tabs {
+  margin: 0;
+  top: 0;
+  z-index: 7;
+  border-bottom-color: rgba(69, 200, 255, 0.16);
+  background: rgba(3, 12, 31, 0.98);
+}
+
+.bp-controls--hunt .bp-panel-tabs button {
+  min-height: 38px;
 }
 
 .bp-hunt-deck-head {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 6;
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
