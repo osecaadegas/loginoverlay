@@ -1186,7 +1186,39 @@
   text-align: center;
 }
 
+.bp-controls--chat {
+  min-height: 0;
+  max-height: calc(100vh - 112px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(103, 232, 249, 0.55) rgba(2, 11, 30, 0.72);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.bp-controls--chat::-webkit-scrollbar {
+  width: 10px;
+}
+
+.bp-controls--chat::-webkit-scrollbar-track {
+  background: rgba(2, 11, 30, 0.72);
+}
+
+.bp-controls--chat::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(2, 11, 30, 0.72);
+  border-radius: 999px;
+  background: rgba(103, 232, 249, 0.55);
+}
+
+.bp-controls--chat::-webkit-scrollbar-thumb:hover {
+  background: rgba(103, 232, 249, 0.78);
+}
+
 .bp-chat-panel-head {
+  position: sticky;
+  top: 0;
+  z-index: 6;
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr) auto;
   gap: 12px;
@@ -2293,12 +2325,20 @@
 }
 
 @media (max-width: 1280px) {
+  .bp-controls--chat {
+    max-height: calc(48vh - 92px);
+  }
+
   .bp-controls--hunt {
     max-height: calc(48vh - 92px);
   }
 }
 
 @media (max-width: 780px) {
+  .bp-controls--chat {
+    max-height: 70vh;
+  }
+
   .bp-controls--hunt {
     max-height: 70vh;
   }
