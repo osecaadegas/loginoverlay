@@ -76,6 +76,8 @@ export default function useKickChat(chatroomId, onMessage) {
             platform: 'kick',
             username: sender.username || 'Unknown',
             message: msg.content || '',
+            avatarUrl: sender.profile_pic || sender.profilePic || sender.profile_picture || '',
+            profileImageUrl: sender.profile_pic || sender.profilePic || sender.profile_picture || '',
             color,
             timestamp: Date.now(),
           });

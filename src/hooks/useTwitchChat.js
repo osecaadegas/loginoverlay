@@ -46,6 +46,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
           onMessage({
             id: tags['id'] || 'raid-' + Date.now(),
             platform: 'twitch',
+            login: tags['login'] || raider,
             username: raider,
             message: `is raiding with ${viewerCount} viewer${viewerCount !== 1 ? 's' : ''}!`,
             color: tags['color'] || '#a855f7',
@@ -53,6 +54,8 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
             isRaid: true,
             raidViewers: viewerCount,
             raidAvatar: avatar || '',
+            avatarUrl: avatar || '',
+            profileImageUrl: avatar || '',
           });
           continue;
         }
@@ -79,6 +82,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
         onMessage({
           id: tags['id'] || Date.now().toString() + Math.random(),
           platform: 'twitch',
+          login: tags['login'] || m[2],
           username: tags['display-name'] || m[2],
           message: m[3],
           color: tags['color'] || '',

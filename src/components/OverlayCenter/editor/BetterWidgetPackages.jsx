@@ -34,6 +34,7 @@ import {
 import NavbarWidget from "../widgets/NavbarWidget";
 import RtpStatsWidget from "../widgets/RtpStatsWidget";
 import BonusHuntWidget from "../widgets/BonusHuntWidget";
+import ChatWidget from "../widgets/ChatWidget";
 import { BetterBackgroundStyle, BetterGiveawayStyle } from "../widgets/shared/betterWidgetStyles";
 
 const DEFAULT_CARD_COLORS = [
@@ -150,7 +151,7 @@ const CHAT_PRESETS = [
   { name: "Ice", glow: "#9fd8ff", username: "#ffffff", text: "#dceeff", bubble: "#0b1a2b", panel: "#050c15" },
 ];
 
-const BETTER_CHAT_DEFAULT_SIZE = { width: 260, height: 520 };
+const BETTER_CHAT_DEFAULT_SIZE = { width: 218, height: 457 };
 const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
 const BETTER_NAVBAR_SPOTIFY_ONLY_MARKER = "betterNavbarSpotifyOnlyInitialized";
 const BETTER_NAVBAR_OPTIONAL_CASINO_MARKER = "betterNavbarOptionalCasinoInitialized";
@@ -428,16 +429,26 @@ export const DEFAULT_BETTER_CONFIG = {
     text: "#f4f7ff",
     bubble: "#001a47",
     panel: "#000d2d",
-    animation: "slide-down",
+    animation: "slide-up",
+    flow: "bottom-to-top",
     stagger: 120,
-    entry: "top",
+    entry: "bottom",
+    autoFade: false,
     lifespan: "persistent",
     fadeAfter: 6,
-    maxMessages: 4,
+    maxMessages: 10,
     live: false,
+    showViewerCount: false,
+    viewerCount: 1250,
     bg: "solid",
     texture: "none",
     textureStrength: 30,
+    celebrations: {
+      raid: true,
+      sub: true,
+      gift: true,
+      intensity: 5,
+    },
     emptyMessage: BETTER_CHAT_EMPTY_MESSAGE,
   },
   rtp_stats: {
@@ -544,7 +555,7 @@ export const BETTER_WIDGETS = [
   { type: "bonus_hunt", label: "Better Hunt", styleKey: "displayStyle", styleId: "better_bonus_hunt", icon: "BH", defaultSize: { width: 430, height: 860 } },
   { type: "giveaway", label: "Better Giveaway", styleKey: "displayStyle", styleId: "better_giveaway", icon: "GW", defaultSize: { width: 700, height: 270 } },
   { type: "navbar", label: "Better Navbar", styleKey: "displayStyle", styleId: "better_navbar", icon: "NB", defaultSize: { width: 1200, height: 72 } },
-  { type: "chat", label: "Better Chat", styleKey: "chatStyle", styleId: "better_chat", icon: "CH", defaultSize: { width: 260, height: 520 } },
+  { type: "chat", label: "Better Chat", styleKey: "chatStyle", styleId: "better_chat", icon: "CH", defaultSize: BETTER_CHAT_DEFAULT_SIZE },
   { type: "rtp_stats", label: "Better RTP Stats", styleKey: "displayStyle", styleId: "better_rtp", icon: "RT", defaultSize: { width: 1080, height: 88 } },
   { type: "background", label: "Better Background", styleKey: "displayStyle", styleId: "better_background", icon: "BG", defaultSize: { width: 1920, height: 1080 } },
   { type: "bets", label: "Better Bets", styleKey: "displayStyle", styleId: "better_bets", icon: "BT", defaultSize: { width: 380, height: 430 } },
@@ -652,6 +663,39 @@ function normalizeBetterRtpConfig(merged = {}) {
   return next;
 }
 
+function normalizeBetterChatConfig(merged = {}) {
+  const defaults = DEFAULT_BETTER_CONFIG.chat;
+  const next = {
+    ...merged,
+    celebrations: {
+      ...defaults.celebrations,
+      ...(merged.celebrations || {}),
+    },
+  };
+  const legacyFlow =
+    next.entry === "top" ? "top-to-bottom" : defaults.flow;
+  if (!["bottom-to-top", "top-to-bottom"].includes(next.flow)) {
+    next.flow = legacyFlow;
+  }
+  next.entry = next.flow === "top-to-bottom" ? "top" : "bottom";
+  if (typeof next.autoFade !== "boolean") {
+    next.autoFade = next.lifespan === "timed";
+  }
+  next.lifespan = next.autoFade ? "timed" : "persistent";
+  next.maxMessages = clampNumber(next.maxMessages, 2, 40, defaults.maxMessages);
+  next.fadeAfter = clampNumber(next.fadeAfter, 2, 15, defaults.fadeAfter);
+  next.stagger = clampNumber(next.stagger, 0, 400, defaults.stagger);
+  next.viewerCount = clampNumber(next.viewerCount, 0, 100000, defaults.viewerCount);
+  next.textureStrength = clampNumber(next.textureStrength, 5, 80, defaults.textureStrength);
+  next.celebrations.intensity = clampNumber(
+    next.celebrations.intensity,
+    1,
+    10,
+    defaults.celebrations.intensity,
+  );
+  return next;
+}
+
 export function ensureBetterWidgetConfig(type, config = {}) {
   const meta = getBetterWidgetMeta(type);
   const defaults = DEFAULT_BETTER_CONFIG[type] || {};
@@ -662,6 +706,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   };
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
+  if (type === "chat") return normalizeBetterChatConfig(merged);
   return merged;
 }
 
@@ -960,44 +1005,75 @@ function BetterBetsPreview({ config }) {
 
 function BetterChatPreview({ config, widget }) {
   const c = ensureBetterWidgetConfig("chat", config);
-  const messages = Array.isArray(c.previewMessages) ? c.previewMessages : [];
-  const visibleMessages = messages.slice(0, c.maxMessages || 4);
   const width = clampNumber(c.width ?? widget?.width, 150, 900, BETTER_CHAT_DEFAULT_SIZE.width);
   const height = clampNumber(c.height ?? widget?.height, 150, 900, BETTER_CHAT_DEFAULT_SIZE.height);
+  const sourceMessages = Array.isArray(c.previewMessages) && c.previewMessages.length
+    ? c.previewMessages
+    : [
+        {
+          id: "better-chat-preview-raid",
+          platform: "twitch",
+          username: "RaidLeader",
+          message: "RAID CHEGOU! 50 pessoas!",
+          type: "raid",
+          isRaid: true,
+          raidViewers: 50,
+          color: c.glow,
+        },
+        {
+          id: "better-chat-preview-sub",
+          platform: "twitch",
+          username: "LoyalSub",
+          message: "Acabei de assinar! PogChamp",
+          type: "sub",
+          isSub: true,
+          color: c.username,
+        },
+        {
+          id: "better-chat-preview-gift",
+          platform: "twitch",
+          username: "GiftBoss",
+          message: "Gifted 5 subs to the chat",
+          type: "gift",
+          giftCount: 5,
+          color: c.glow,
+        },
+        {
+          id: "better-chat-preview-chat",
+          platform: "twitch",
+          username: "ChatMaster",
+          message: "PogChamp esse overlay esta incrivel",
+          color: "#7dd3fc",
+        },
+      ];
+  const previewMessages = sourceMessages
+    .slice(0, c.maxMessages || 10)
+    .map((message, index) => ({
+      id: message.id || `better-chat-preview-${index}`,
+      platform: message.platform || "twitch",
+      username: message.username || message.user || "viewer",
+      message: message.message || message.text || "",
+      color: message.color || "",
+      type: message.type,
+      isRaid: message.isRaid || message.type === "raid",
+      isSub: message.isSub || message.type === "sub",
+      giftCount: message.giftCount || message.metadata?.giftCount || 0,
+      metadata: message.metadata || {},
+    }));
   return (
-    <div className="bp-chat-stage">
-      <section
-        className={`chat-widget wb-${c.bg}`}
-        style={{
-          width,
-          height,
-          "--glow": c.glow,
-          "--panel": c.panel,
-          "--bubble": c.bubble,
-          "--username": c.username,
-          "--text": c.text,
-          "--msg-font": c.font,
-          "--msg-size": `${c.fontSize}px`,
-          "--user-size": `${c.usernameSize}px`,
-        }}
-      >
-        {c.texture !== "none" && <div className={`chat-texture tex-${c.texture}`} style={{ "--tex-opacity": String((c.textureStrength || 30) / 100) }} />}
-        <div className={`chat-feed feed-${c.entry}`}>
-          {visibleMessages.length ? (
-            visibleMessages.map((message, index) => (
-              <article key={`${message.user}-${index}`} className={`chat-message anim-${c.animation}`} style={{ "--enter-delay": `${index * (c.stagger || 120)}ms` }}>
-                <span className={`avatar avatar--${index % 2 ? "blue" : "cyan"}`}><Users size={12} fill="currentColor" strokeWidth={0} /></span>
-                <div className="message-copy">
-                  <h2>{message.user || message.username}</h2>
-                  <p>{message.text || message.message}</p>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="chat-empty-state">{c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}</div>
-          )}
-        </div>
-      </section>
+    <div className="bp-chat-stage bp-chat-stage--renderer">
+      <div style={{ width, height }}>
+        <ChatWidget
+          key={c.replayNonce || "better-chat-preview"}
+          config={{
+            ...c,
+            twitchEnabled: false,
+            youtubeEnabled: false,
+            kickEnabled: false,
+            __appearancePreviewMessages: previewMessages,
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -1655,11 +1731,32 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
       </Section>
       <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Message font" value={c.font} options={CHAT_FONTS} onChange={(font) => set({ font })} /><SliderRow label="Message size" value={c.fontSize} min={9} max={20} unit="px" onChange={(fontSize) => set({ fontSize })} /><SliderRow label="Username size" value={c.usernameSize} min={9} max={20} unit="px" onChange={(usernameSize) => set({ usernameSize })} /></Section>
       <Section title="Colours" icon={<Palette size={13} />}><div className="bp-color-grid">{["glow", "username", "text", "bubble", "panel"].map((key) => <ColorRow key={key} label={key[0].toUpperCase() + key.slice(1)} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</div><div className="bp-chat-presets">{CHAT_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set(preset)}><span><i style={{ background: preset.glow }} /><i style={{ background: preset.username }} /><i style={{ background: preset.bubble }} /></span>{preset.name}</button>)}</div></Section>
+      <Section title="Display" icon={<Eye size={13} />}>
+        <ToggleRow label="Show viewer count" checked={!!c.showViewerCount} onChange={(showViewerCount) => set({ showViewerCount })} />
+        <SliderRow label="Viewer count" value={c.viewerCount} min={0} max={100000} step={10} disabled={!c.showViewerCount} onChange={(viewerCount) => set({ viewerCount })} />
+      </Section>
+      <Section title="Celebrations" icon={<Sparkles size={13} />}>
+        <ToggleRow label="Raid celebration" checked={c.celebrations?.raid !== false} onChange={(raid) => set({ celebrations: { ...c.celebrations, raid } })} />
+        <ToggleRow label="Sub highlight" checked={c.celebrations?.sub !== false} onChange={(sub) => set({ celebrations: { ...c.celebrations, sub } })} />
+        <ToggleRow label="Gift effect" checked={c.celebrations?.gift !== false} onChange={(gift) => set({ celebrations: { ...c.celebrations, gift } })} />
+        <SliderRow label="Effect intensity" value={c.celebrations?.intensity ?? 5} min={1} max={10} onChange={(intensity) => set({ celebrations: { ...c.celebrations, intensity } })} />
+      </Section>
       <Section title="Backdrop" icon={<Layers size={13} />}><Segmented value={c.bg} columns={3} options={["solid", "horizon", "beam", "nebula", "vignette", "split"].map((key) => ({ key, name: key }))} onChange={(bg) => set({ bg })} /><Segmented value={c.texture} columns={3} options={["none", "scanlines", "grid", "dots", "diagonal", "noise"].map((key) => ({ key, name: key }))} onChange={(texture) => set({ texture })} /><SliderRow label="Texture strength" value={c.textureStrength} min={5} max={80} step={5} unit="%" disabled={c.texture === "none"} onChange={(textureStrength) => set({ textureStrength })} /></Section>
-      <Section title="Message Motion" icon={<Waves size={13} />}><Segmented value={c.entry} options={[{ key: "bottom", name: "From bottom" }, { key: "top", name: "From top" }]} onChange={(entry) => set({ entry })} /><Segmented value={c.animation} columns={3} options={["slide-up", "slide-down", "slide-left", "slide-right", "fade", "none"].map((key) => ({ key, name: key.replace("slide-", "") }))} onChange={(animation) => set({ animation })} /><SliderRow label="Stagger between messages" value={c.stagger} min={0} max={400} step={20} unit="ms" onChange={(stagger) => set({ stagger })} /><Segmented value={c.lifespan} columns={3} options={[{ key: "persistent", name: "Keep all" }, { key: "timed", name: "Timed fade" }, { key: "capped", name: "Limit count" }]} onChange={(lifespan) => set({ lifespan })} /><SliderRow label="Fade after" value={c.fadeAfter} min={2} max={15} unit="s" disabled={c.lifespan !== "timed"} onChange={(fadeAfter) => set({ fadeAfter })} /><SliderRow label="Max messages" value={c.maxMessages} min={1} max={8} disabled={c.lifespan !== "capped"} onChange={(maxMessages) => set({ maxMessages })} /></Section>
+      <Section title="Message Behaviour" icon={<Waves size={13} />}>
+        <Segmented value={c.animation} columns={3} options={["slide-up", "slide-down", "slide-left", "slide-right", "fade", "none"].map((key) => ({ key, name: key === "none" ? "Instant" : key.replace("slide-", "") }))} onChange={(animation) => set({ animation })} />
+        <Segmented value={c.flow} options={[{ key: "bottom-to-top", name: "Bottom up" }, { key: "top-to-bottom", name: "Top down" }]} onChange={(flow) => set({ flow, entry: flow === "top-to-bottom" ? "top" : "bottom" })} />
+        <SliderRow label="Stagger" value={c.stagger} min={0} max={400} step={20} unit="ms" onChange={(stagger) => set({ stagger })} />
+        <ToggleRow label="Auto-fade" checked={!!c.autoFade} onChange={(autoFade) => set({ autoFade, lifespan: autoFade ? "timed" : "persistent" })} />
+        <SliderRow label="Fade after" value={c.fadeAfter} min={2} max={15} unit="s" disabled={!c.autoFade} onChange={(fadeAfter) => set({ fadeAfter })} />
+        <SliderRow label="Max messages" value={c.maxMessages} min={2} max={40} onChange={(maxMessages) => set({ maxMessages })} />
+        <ToggleRow label="Simulate live chat" checked={!!c.live} onChange={(live) => set({ live })} />
+      </Section>
       <Section title="Empty State" icon={<MessageSquare size={13} />}>
         <TextRow label="No-message text" value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE} onChange={(emptyMessage) => set({ emptyMessage })} />
       </Section>
+      <div className="bp-action-row">
+        <button type="button" onClick={() => set({ replayNonce: (Number(c.replayNonce) || 0) + 1 })}><RotateCcw size={13} /> Replay</button>
+      </div>
       <button className="bp-reset" type="button" onClick={resetChat}><RotateCcw size={13} /> Reset chat controls</button>
     </div>
   );

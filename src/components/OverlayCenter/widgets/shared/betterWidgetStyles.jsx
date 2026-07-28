@@ -83,6 +83,50 @@ function initials(value) {
     .join("");
 }
 
+function normalizedUsername(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+function twitchAvatarProxyUrl(username) {
+  const login = normalizedUsername(username);
+  return login ? `https://unavatar.io/twitch/${encodeURIComponent(login)}` : "";
+}
+
+function betterChatAvatarUrl(msg = {}) {
+  return (
+    msg.avatarUrl ||
+    msg.profileImageUrl ||
+    msg.profile_image_url ||
+    msg.userAvatar ||
+    msg.photoUrl ||
+    msg.raidAvatar ||
+    msg.metadata?.avatarUrl ||
+    msg.metadata?.profileImageUrl ||
+    (msg.platform === "twitch" ? twitchAvatarProxyUrl(msg.login || msg.username || msg.user) : "")
+  );
+}
+
+function betterChatMessageText(msg = {}) {
+  return msg.message || msg.text || "";
+}
+
+function betterChatMessageType(msg = {}) {
+  const raw = String(msg.type || msg.eventType || msg.noticeType || "").toLowerCase();
+  if (msg.isRaid || raw === "raid") return "raid";
+  if (msg.giftCount || msg.metadata?.giftCount || raw.includes("gift")) return "gift";
+  if (msg.isSub || msg.metadata?.isSub || raw === "sub" || raw === "subscriber") return "sub";
+  return "message";
+}
+
+function betterChatGiftTier(msg = {}) {
+  const count = Number(msg.giftCount || msg.metadata?.giftCount || msg.gift_count || 0);
+  if (count >= 11) return "large";
+  if (count >= 2) return "medium";
+  return count >= 1 ? "single" : "";
+}
+
 const GIVEAWAY_FONT_STACKS = {
   orbitron: "'Orbitron', sans-serif",
   rajdhani: "'Rajdhani', sans-serif",
@@ -2588,9 +2632,13 @@ export function BetterGiveawayStyle({ config }) {
 
 export function BetterChatHeader({ config, chatHeaderName, headerText, accentColor }) {
   const c = config || {};
+  const viewerCount = Number(c.viewerCount) || 0;
+  const isLive = Boolean(c.live || c.twitchEnabled || c.youtubeEnabled || c.kickEnabled);
   return (
     <div
       style={subElementStyle(c, "header", {
+        position: "relative",
+        zIndex: 2,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -2600,7 +2648,7 @@ export function BetterChatHeader({ config, chatHeaderName, headerText, accentCol
         background: `linear-gradient(90deg, ${alphaColor(accentColor, 0.18)}, rgba(2,8,23,0.18))`,
       })}
       {...attrs("chat", c, "header")}
-    >
+      >
       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
         <span
           style={{
@@ -2609,7 +2657,8 @@ export function BetterChatHeader({ config, chatHeaderName, headerText, accentCol
             borderRadius: "50%",
             background: accentColor,
             boxShadow: `0 0 12px ${accentColor}`,
-            animation: "better-soft-pulse 1.8s ease-in-out infinite",
+            opacity: isLive ? 1 : 0.45,
+            animation: isLive ? "better-soft-pulse 1.8s ease-in-out infinite" : "none",
           }}
           {...attrs("chat", c, "badge")}
         />
@@ -2617,8 +2666,9 @@ export function BetterChatHeader({ config, chatHeaderName, headerText, accentCol
           {chatHeaderName}
         </strong>
       </span>
-      <span style={{ color: alphaColor(headerText, 0.72), fontWeight: 900, fontSize: "0.72em", textTransform: "uppercase", letterSpacing: "0.16em" }}>
-        Live
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: alphaColor(headerText, 0.72), fontWeight: 900, fontSize: "0.72em", textTransform: "uppercase", letterSpacing: "0.16em", whiteSpace: "nowrap" }}>
+        {c.showViewerCount ? <span>{formatCompactNumber(viewerCount)}</span> : null}
+        <span>{isLive ? "Live" : "Idle"}</span>
       </span>
     </div>
   );
@@ -2635,11 +2685,43 @@ export function BetterChatMessage({
   const c = context.config || {};
   const accent = context.badgeBg || context.usernameColor || "#38bdf8";
   const baseBg = context.messageBg || "rgba(255,255,255,0.07)";
-  const rowPart = followerMessage ? "highlightedMessage" : "message";
-  const resolveRowStyle = followerMessage
+  const messageType = betterChatMessageType(msg);
+  const giftTier = betterChatGiftTier(msg);
+  const celebrations = c.celebrations || {};
+  const celebrationOn =
+    (messageType === "raid" && celebrations.raid !== false) ||
+    (messageType === "sub" && celebrations.sub !== false) ||
+    (messageType === "gift" && celebrations.gift !== false);
+  const rowPart = followerMessage || celebrationOn ? "highlightedMessage" : "message";
+  const resolveRowStyle = followerMessage || celebrationOn
     ? context.highlightedMessageStyle || context.messagePartStyle
     : context.messagePartStyle;
+  const animationKind = String(c.animation || "slide-up");
+  const animationMap = {
+    "slide-up": "better-chat-slide-up",
+    "slide-down": "better-chat-slide-down",
+    "slide-left": "better-chat-slide-left",
+    "slide-right": "better-chat-slide-right",
+    fade: "better-chat-fade-in",
+    none: "none",
+  };
+  const animationName = animationMap[animationKind] || animationMap["slide-up"];
+  const enterDelay = Math.min(msgIdx * (Number(c.stagger) || 0), 1200);
+  const intensity = clampNumber(celebrations.intensity, 1, 10, 5);
+  const effectSpeed = `${Math.max(0.8, 3 - intensity / 5)}s`;
+  const effectGlow = `${intensity * 3}px`;
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const avatarUrl = avatarFailed ? "" : betterChatAvatarUrl(msg);
+  const rowAccent =
+    messageType === "raid"
+      ? "#ec4899"
+      : messageType === "gift"
+        ? "#facc15"
+        : messageType === "sub"
+          ? "#22c55e"
+          : accent;
   const messageStyle = resolveRowStyle({
+    position: "relative",
     display: "grid",
     gridTemplateColumns: "34px minmax(0,1fr)",
     gap: 9,
@@ -2647,19 +2729,50 @@ export function BetterChatMessage({
     padding: "8px 10px",
     borderRadius: Math.max(10, Number(context.borderRadius) || 12),
     background: followerMessage
-      ? `linear-gradient(135deg, ${alphaColor(accent, 0.26)}, rgba(2,8,23,0.44))`
+      ? `linear-gradient(135deg, ${alphaColor(rowAccent, 0.26)}, rgba(2,8,23,0.44))`
       : `linear-gradient(135deg, ${baseBg}, rgba(2,8,23,0.3))`,
-    border: `${Number(context.borderWidth) || 1}px solid ${followerMessage ? alphaColor(accent, 0.5) : context.borderColor || alphaColor(accent, 0.24)}`,
-    boxShadow: followerMessage
-      ? `0 0 22px ${alphaColor(accent, 0.26)}, inset 0 1px 0 rgba(255,255,255,0.08)`
+    border: `${Number(context.borderWidth) || 1}px solid ${followerMessage || celebrationOn ? alphaColor(rowAccent, 0.5) : context.borderColor || alphaColor(accent, 0.24)}`,
+    boxShadow: followerMessage || celebrationOn
+      ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.32)}, inset 0 1px 0 rgba(255,255,255,0.08)`
       : `0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)`,
-    animation: followerMessage
-      ? "better-rise 200ms ease-out both, better-soft-pulse 2.2s ease-in-out infinite"
-      : "better-rise 200ms ease-out both",
-    animationDelay: `${Math.min(msgIdx * 25, 180)}ms`,
+    overflow: "hidden",
+    opacity: animationName === "none" ? 1 : 0,
+    animation:
+      animationName === "none"
+        ? "none"
+        : `${animationName} 460ms cubic-bezier(0.2,0.75,0.25,1) ${enterDelay}ms both${followerMessage || celebrationOn ? `, better-soft-pulse ${effectSpeed} ease-in-out ${enterDelay + 460}ms infinite` : ""}`,
   });
   return (
     <div style={messageStyle} {...attrs("chat", c, rowPart)}>
+      {messageType === "raid" && celebrations.raid !== false ? (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: -2,
+            borderRadius: "inherit",
+            border: `1px solid ${alphaColor(rowAccent, 0.64)}`,
+            boxShadow: `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.42)}`,
+            pointerEvents: "none",
+            animation: `better-soft-pulse ${effectSpeed} ease-in-out infinite`,
+          }}
+        />
+      ) : null}
+      {messageType === "gift" && celebrations.gift !== false ? (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: "-100%",
+            width: "100%",
+            background: `linear-gradient(90deg, transparent, ${alphaColor(rowAccent, giftTier === "large" ? 0.52 : 0.38)}, transparent)`,
+            animation: `better-chat-lantern ${effectSpeed} ease-in-out infinite`,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
       <span
         style={context.avatarStyle({
           width: 34,
@@ -2667,21 +2780,40 @@ export function BetterChatMessage({
           borderRadius: 10,
           display: "grid",
           placeItems: "center",
+          overflow: "hidden",
           background: alphaColor(nameColor || accent, 0.2),
           border: `1px solid ${alphaColor(nameColor || accent, 0.42)}`,
           color: nameColor || accent,
           fontWeight: 950,
           fontSize: 12,
+          boxShadow: `0 0 8px ${alphaColor(nameColor || accent, 0.28)}`,
         })}
         {...attrs("chat", c, "avatar")}
       >
-        {initials(msg.username)}
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            decoding="async"
+            referrerPolicy="no-referrer"
+            onError={() => setAvatarFailed(true)}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          initials(msg.username || msg.user)
+        )}
       </span>
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
           <strong
             style={context.usernameStyle({
               color: nameColor,
+              fontSize: cssPx(context.usernameSize),
               fontWeight: 900,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -2689,7 +2821,7 @@ export function BetterChatMessage({
             })}
             {...attrs("chat", c, "username")}
           >
-            {msg.username || "viewer"}
+            {msg.username || msg.user || "viewer"}
           </strong>
           <span
             style={context.badgeStyle({
@@ -2716,7 +2848,7 @@ export function BetterChatMessage({
           })}
           {...attrs("chat", c, "messageText")}
         >
-          {msg.message}
+          {betterChatMessageText(msg)}
         </span>
       </span>
     </div>
