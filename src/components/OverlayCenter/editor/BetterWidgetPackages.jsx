@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronDown,
   Coins,
   Crown,
@@ -32,7 +34,7 @@ import {
 import NavbarWidget from "../widgets/NavbarWidget";
 import RtpStatsWidget from "../widgets/RtpStatsWidget";
 import BonusHuntWidget from "../widgets/BonusHuntWidget";
-import { BetterGiveawayStyle } from "../widgets/shared/betterWidgetStyles";
+import { BetterBackgroundStyle, BetterGiveawayStyle } from "../widgets/shared/betterWidgetStyles";
 
 const DEFAULT_CARD_COLORS = [
   { accent: "#2fa1ff", accent2: "#19e3ff" },
@@ -381,9 +383,21 @@ export const DEFAULT_BETTER_CONFIG = {
     casinoImageSize: 100,
     nowPlayingLabel: "Now Playing",
     musicSource: "spotify",
-    musicDisplayStyle: "text",
+    musicDisplayStyle: "pill",
+    spotifyWidth: 420,
     cryptoDisplayMode: "horizontal",
     socialDisplayStyle: "icons",
+    sectionLayout: [
+      { id: "identity", zone: "left" },
+      { id: "badge", zone: "left" },
+      { id: "clock", zone: "center" },
+      { id: "nowPlaying", zone: "center" },
+      { id: "crypto", zone: "right" },
+      { id: "socials", zone: "right" },
+      { id: "cta", zone: "right" },
+      { id: "balance", zone: "right" },
+      { id: "casino", zone: "right" },
+    ],
     xUsername: "",
     instagramUsername: "",
     discordUrl: "",
@@ -398,7 +412,7 @@ export const DEFAULT_BETTER_CONFIG = {
     borderWidth: 1,
     borderRadius: 12,
     radius: 12,
-    maxWidth: 1152,
+    maxWidth: 1920,
     [BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER]: true,
     [BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER]: true,
   },
@@ -618,6 +632,8 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
 
   if (!next.streamerName && !next.brandName) next.streamerName = defaults.streamerName;
   if (!next.ctaText) next.ctaText = defaults.ctaText;
+  next.sectionLayout = normalizeBetterNavbarSectionLayout(next.sectionLayout);
+  next.maxWidth = Math.min(Math.max(Number(next.maxWidth) || defaults.maxWidth || 1920, 720), 1920);
   if (next.casinoImageSize === undefined || next.casinoImageSize === null || next.casinoImageSize === "") {
     next.casinoImageSize = defaults.casinoImageSize;
   }
@@ -1011,26 +1027,7 @@ function BetterRtpPreview({ config, allWidgets, userId, widget }) {
 
 function BetterBackgroundPreview({ config }) {
   const c = ensureBetterWidgetConfig("background", config);
-  const particles = useMemo(
-    () => Array.from({ length: 18 }, (_, index) => ({
-      left: `${(index * 37) % 100}%`,
-      top: `${(index * 53) % 100}%`,
-      size: 50 + ((index * 19) % 90),
-      delay: `${(index % 8) * -0.8}s`,
-    })),
-    [],
-  );
-  return (
-    <div className="bp-background-stage">
-      <div className={`bp-background bp-bg-${c.texture}`} style={{ "--bg-a": c.color1, "--bg-b": c.color2, "--bg-c": c.color3, "--bg-opacity": (Number(c.opacity) || 100) / 100, "--bg-speed": `${Number(c.animSpeed) || 10}s` }}>
-        {c.bgMode === "image" && c.imageUrl ? <img src={c.imageUrl} alt="" style={{ objectFit: c.imageFit, objectPosition: c.imagePosition }} /> : null}
-        {c.fxParticles && particles.map((particle, index) => <i key={index} className="bp-bg-particle" style={{ left: particle.left, top: particle.top, width: particle.size, height: particle.size, animationDelay: particle.delay }} />)}
-        {c.fxScanlines && <span className="bp-bg-scanlines" />}
-        {c.fxVignette && <span className="bp-bg-vignette" />}
-        <span className="bp-bg-tint" style={{ background: c.overlayColor, opacity: (Number(c.overlayOpacity) || 0) / 100 }} />
-      </div>
-    </div>
-  );
+  return <BetterBackgroundStyle config={c} />;
 }
 
 function BetterGiveawayPreview({ config }) {
@@ -1112,6 +1109,61 @@ const NAVBAR_CURRENCY_OPTIONS = [
   { value: "PLN ", label: "PLN" },
 ];
 
+const BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT = [
+  { id: "identity", zone: "left" },
+  { id: "badge", zone: "left" },
+  { id: "clock", zone: "center" },
+  { id: "nowPlaying", zone: "center" },
+  { id: "crypto", zone: "right" },
+  { id: "socials", zone: "right" },
+  { id: "cta", zone: "right" },
+  { id: "balance", zone: "right" },
+  { id: "casino", zone: "right" },
+];
+
+const BETTER_NAVBAR_SECTION_LABELS = {
+  identity: "Streamer",
+  badge: "Badge",
+  clock: "Clock",
+  nowPlaying: "Spotify",
+  crypto: "Crypto",
+  socials: "Socials",
+  cta: "CTA",
+  balance: "Balance",
+  casino: "Casino",
+};
+
+const BETTER_NAVBAR_ZONES = [
+  { key: "left", label: "Left" },
+  { key: "center", label: "Center" },
+  { key: "right", label: "Right" },
+];
+
+const BETTER_NAVBAR_SECTION_IDS = new Set(
+  BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT.map((section) => section.id),
+);
+
+function normalizeBetterNavbarSectionLayout(layout) {
+  const source = Array.isArray(layout) ? layout : BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT;
+  const normalized = [];
+  const seen = new Set();
+  source.forEach((section) => {
+    if (!section || !BETTER_NAVBAR_SECTION_IDS.has(section.id) || seen.has(section.id)) return;
+    const fallback = BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT.find((item) => item.id === section.id);
+    normalized.push({
+      id: section.id,
+      zone: BETTER_NAVBAR_ZONES.some((zone) => zone.key === section.zone)
+        ? section.zone
+        : fallback?.zone || "right",
+    });
+    seen.add(section.id);
+  });
+  BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT.forEach((section) => {
+    if (!seen.has(section.id)) normalized.push({ ...section });
+  });
+  return normalized;
+}
+
 function getTwitchIdentity(user) {
   const isTwitch = user?.app_metadata?.provider === "twitch";
   const username =
@@ -1123,7 +1175,7 @@ function getTwitchIdentity(user) {
   return { isTwitch, username, displayName, avatarUrl };
 }
 
-function BetterNavbarControls({ config, onChange, user }) {
+function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }) {
   const c = ensureBetterWidgetConfig("navbar", config);
   const set = (patch) => {
     const nextPatch = { ...patch };
@@ -1132,83 +1184,78 @@ function BetterNavbarControls({ config, onChange, user }) {
     }
     onChange({ ...c, ...nextPatch });
   };
-  const [tab, setTab] = useTab("identity");
+  const sectionLayout = normalizeBetterNavbarSectionLayout(c.sectionLayout);
+  const setLayout = (layout) => set({ sectionLayout: normalizeBetterNavbarSectionLayout(layout) });
+  const setSectionZone = (sectionId, zone) => {
+    setLayout(sectionLayout.map((section) => (
+      section.id === sectionId ? { ...section, zone } : section
+    )));
+  };
+  const moveSection = (sectionId, direction) => {
+    const index = sectionLayout.findIndex((section) => section.id === sectionId);
+    if (index < 0) return;
+    const currentSection = sectionLayout[index];
+    const step = direction === "up" ? -1 : 1;
+    let swapIndex = -1;
+    for (let nextIndex = index + step; nextIndex >= 0 && nextIndex < sectionLayout.length; nextIndex += step) {
+      if (sectionLayout[nextIndex].zone === currentSection.zone) {
+        swapIndex = nextIndex;
+        break;
+      }
+    }
+    if (swapIndex < 0) return;
+    const nextLayout = [...sectionLayout];
+    const [section] = nextLayout.splice(index, 1);
+    nextLayout.splice(swapIndex, 0, section);
+    setLayout(nextLayout);
+  };
+  const commitWidgetSize = (patch) => {
+    const width = clampNumber(patch.width ?? widget?.width, 720, 1920, widget?.width || 1200);
+    const height = clampNumber(patch.height ?? widget?.height, 46, 160, widget?.height || c.barHeight || 72);
+    const nextConfig = {
+      ...c,
+      width,
+      height,
+      barHeight: Math.min(Math.max(Number(c.barHeight) || 52, 42), Math.max(42, height)),
+      maxWidth: width,
+    };
+    if (onWidgetChange) {
+      onWidgetChange({ width, height, config: nextConfig });
+    } else {
+      onChange(nextConfig);
+    }
+  };
+  const [tab, setTab] = useTab("sections");
   const tabs = [
-    ["identity", <Users size={12} />, "Identity"],
     ["sections", <Layers size={12} />, "Sections"],
+    ["arrange", <SlidersHorizontal size={12} />, "Arrange"],
     ["music", <Music size={12} />, "Music"],
     ["crypto", <Coins size={12} />, "Crypto"],
     ["socials", <Users size={12} />, "Socials"],
     ["casino", <Coins size={12} />, "Casino"],
     ["cta", <Zap size={12} />, "CTA"],
+    ["size", <Maximize2 size={12} />, "Size"],
     ["style", <Palette size={12} />, "Style"],
   ];
-  const current = tabs.some(([key]) => key === tab) ? tab : "identity";
-  const twitch = getTwitchIdentity(user);
-
-  const syncFromTwitch = () => {
-    if (!twitch.displayName && !twitch.avatarUrl) return;
-    set({
-      streamerName: twitch.displayName || c.streamerName,
-      twitchUsername: twitch.username || c.twitchUsername,
-      avatarUrl: twitch.avatarUrl || c.avatarUrl,
-    });
-  };
+  const current = tabs.some(([key]) => key === tab) ? tab : "sections";
 
   return (
     <div className="bp-controls bp-controls--navbar">
       <PanelTabs active={current} onChange={setTab} tabs={tabs} />
 
-      {current === "identity" && (
-        <>
-          <Section title="Streamer" icon={<Users size={13} />}>
-            {twitch.displayName || twitch.avatarUrl ? (
-              <div className="bp-preset-row">
-                <button type="button" onClick={syncFromTwitch}>
-                  Sync Twitch profile
-                </button>
-              </div>
-            ) : null}
-            <TextRow
-              label="Streamer name"
-              value={c.streamerName || ""}
-              onChange={(streamerName) => set({ streamerName })}
-            />
-            <TextRow
-              label="Motto"
-              value={c.motto || ""}
-              onChange={(motto) => set({ motto })}
-            />
-            <ToggleRow
-              label="Show streamer avatar"
-              checked={c.showAvatar !== false}
-              onChange={(showAvatar) => set({ showAvatar })}
-            />
-            <TextRow
-              label="Avatar image URL"
-              value={c.avatarUrl || ""}
-              onChange={(avatarUrl) => set({ avatarUrl })}
-            />
-          </Section>
-
-          <Section title="Better brand block" icon={<Type size={13} />}>
-            <TextRow
-              label="Fallback brand title"
-              value={c.brandName || ""}
-              onChange={(brandName) => set({ brandName })}
-            />
-            <TextRow
-              label="Site text"
-              value={c.siteUrl || ""}
-              onChange={(siteUrl) => set({ siteUrl })}
-            />
-          </Section>
-        </>
-      )}
-
       {current === "sections" && (
         <>
           <Section title="Visible sections" icon={<Layers size={13} />}>
+            <ToggleRow
+              label="Streamer block"
+              checked={c.showIdentity !== false}
+              onChange={(showIdentity) => set({ showIdentity })}
+            />
+            <ToggleRow
+              label="Streamer avatar"
+              checked={c.showAvatar !== false}
+              onChange={(showAvatar) => set({ showAvatar })}
+            />
             <ToggleRow
               label="Clock"
               checked={c.showClock !== false}
@@ -1245,26 +1292,40 @@ function BetterNavbarControls({ config, onChange, user }) {
               onChange={(showSocials) => set({ showSocials })}
             />
           </Section>
-
-          <Section title="Start balance" icon={<Coins size={13} />}>
-            <TextRow
-              label="Label"
-              value={c.startLabel || ""}
-              onChange={(startLabel) => set({ startLabel })}
-            />
-            <TextRow
-              label="Amount"
-              value={c.startBalance ?? ""}
-              onChange={(startBalance) => set({ startBalance })}
-            />
-            <SelectRow
-              label="Currency"
-              value={c.balanceCurrency || "EUR "}
-              options={NAVBAR_CURRENCY_OPTIONS}
-              onChange={(balanceCurrency) => set({ balanceCurrency })}
-            />
-          </Section>
         </>
+      )}
+
+      {current === "arrange" && (
+        <Section title="Bar order" icon={<SlidersHorizontal size={13} />}>
+          <div className="bp-navbar-arrange">
+            {sectionLayout.map((section) => (
+              <div className="bp-navbar-arrange-row" key={section.id}>
+                <strong>{BETTER_NAVBAR_SECTION_LABELS[section.id] || section.id}</strong>
+                <div className="bp-navbar-zone-buttons">
+                  {BETTER_NAVBAR_ZONES.map((zone) => (
+                    <button
+                      key={zone.key}
+                      type="button"
+                      className={section.zone === zone.key ? "is-active" : ""}
+                      onClick={() => setSectionZone(section.id, zone.key)}
+                    >
+                      {zone.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="bp-navbar-order-buttons">
+                  <button type="button" onClick={() => moveSection(section.id, "up")} title="Move up">
+                    <ArrowUp size={13} />
+                  </button>
+                  <button type="button" onClick={() => moveSection(section.id, "down")} title="Move down">
+                    <ArrowDown size={13} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="bp-hint">Move Spotify to the left, streamer name to the right, or reorder any section inside its zone.</p>
+        </Section>
       )}
 
       {current === "music" && (
@@ -1282,9 +1343,18 @@ function BetterNavbarControls({ config, onChange, user }) {
             </p>
             <SelectRow
               label="Display style"
-              value={c.musicDisplayStyle || "text"}
+              value={c.musicDisplayStyle || "pill"}
               options={NAVBAR_MUSIC_DISPLAY_OPTIONS}
               onChange={(musicDisplayStyle) => set({ musicDisplayStyle })}
+            />
+            <SliderRow
+              label="Spotify section width"
+              value={c.spotifyWidth || 420}
+              min={180}
+              max={720}
+              step={10}
+              unit="px"
+              onChange={(spotifyWidth) => set({ spotifyWidth })}
             />
           </Section>
         </>
@@ -1330,41 +1400,7 @@ function BetterNavbarControls({ config, onChange, user }) {
             options={NAVBAR_SOCIAL_DISPLAY_OPTIONS}
             onChange={(socialDisplayStyle) => set({ socialDisplayStyle })}
           />
-          <TextRow
-            label="Twitch"
-            value={c.twitchUsername || ""}
-            onChange={(twitchUsername) => set({ twitchUsername })}
-          />
-          <TextRow
-            label="Kick"
-            value={c.kickChannelId || c.kickChannel || ""}
-            onChange={(kickChannelId) => set({ kickChannelId })}
-          />
-          <TextRow
-            label="YouTube"
-            value={c.youtubeChannel || ""}
-            onChange={(youtubeChannel) => set({ youtubeChannel })}
-          />
-          <TextRow
-            label="X"
-            value={c.xUsername || ""}
-            onChange={(xUsername) => set({ xUsername })}
-          />
-          <TextRow
-            label="Instagram"
-            value={c.instagramUsername || ""}
-            onChange={(instagramUsername) => set({ instagramUsername })}
-          />
-          <TextRow
-            label="Discord invite"
-            value={c.discordUrl || ""}
-            onChange={(discordUrl) => set({ discordUrl })}
-          />
-          <TextRow
-            label="TikTok"
-            value={c.tiktokUsername || ""}
-            onChange={(tiktokUsername) => set({ tiktokUsername })}
-          />
+          <p className="bp-hint">Social names and URLs come from the Navbar widget page.</p>
         </Section>
       )}
 
@@ -1376,21 +1412,6 @@ function BetterNavbarControls({ config, onChange, user }) {
               checked={!!c.showCasino}
               onChange={(showCasino) => set({ showCasino })}
             />
-            <TextRow
-              label="Casino name"
-              value={c.casinoName || ""}
-              onChange={(casinoName) => set({ casinoName })}
-            />
-            <TextRow
-              label="Casino command"
-              value={c.casinoCommand || ""}
-              onChange={(casinoCommand) => set({ casinoCommand })}
-            />
-            <TextRow
-              label="Casino logo URL"
-              value={c.casinoLogoUrl || ""}
-              onChange={(casinoLogoUrl) => set({ casinoLogoUrl })}
-            />
             <SliderRow
               label="Logo size"
               value={c.casinoImageSize ?? 100}
@@ -1399,6 +1420,7 @@ function BetterNavbarControls({ config, onChange, user }) {
               unit="%"
               onChange={(casinoImageSize) => set({ casinoImageSize })}
             />
+            <p className="bp-hint">Casino logo and command come from the Navbar widget page.</p>
           </Section>
         </>
       )}
@@ -1410,17 +1432,70 @@ function BetterNavbarControls({ config, onChange, user }) {
             checked={!!c.showCTA}
             onChange={(showCTA) => set({ showCTA })}
           />
-          <TextRow
-            label="CTA text"
-            value={c.ctaText || ""}
-            onChange={(ctaText) => set({ ctaText })}
-          />
           <ColorRow
             label="CTA colour"
             value={c.ctaColor || "#f97316"}
             onChange={(ctaColor) => set({ ctaColor })}
           />
+          <p className="bp-hint">CTA text comes from the Navbar widget page.</p>
         </Section>
+      )}
+
+      {current === "size" && (
+        <>
+          <Section title="Editor size" icon={<Maximize2 size={13} />}>
+            <SliderRow
+              label="Widget width"
+              value={clampNumber(widget?.width ?? c.width ?? 1200, 720, 1920, 1200)}
+              min={720}
+              max={1920}
+              step={16}
+              unit="px"
+              onChange={(width) => commitWidgetSize({ width })}
+            />
+            <SliderRow
+              label="Widget height"
+              value={clampNumber(widget?.height ?? c.height ?? 72, 46, 160, 72)}
+              min={46}
+              max={160}
+              step={2}
+              unit="px"
+              onChange={(height) => commitWidgetSize({ height })}
+            />
+            <div className="bp-preset-row">
+              <button type="button" onClick={() => commitWidgetSize({ width: 1920, height: widget?.height || 72 })}>Full 1920</button>
+              <button type="button" onClick={() => commitWidgetSize({ width: 1200, height: 72 })}>Default</button>
+            </div>
+          </Section>
+
+          <Section title="Bar shell" icon={<Maximize2 size={13} />}>
+            <SliderRow
+              label="Height"
+              value={c.barHeight || 52}
+              min={42}
+              max={120}
+              unit="px"
+              onChange={(barHeight) => set({ barHeight })}
+            />
+            <SliderRow
+              label="Radius"
+              value={c.radius ?? c.borderRadius ?? 12}
+              min={0}
+              max={36}
+              unit="px"
+              onChange={(radius) => set({ radius, borderRadius: radius })}
+            />
+            <SliderRow
+              label="Internal max width"
+              value={c.maxWidth || 1920}
+              min={720}
+              max={1920}
+              step={16}
+              unit="px"
+              onChange={(maxWidth) => set({ maxWidth })}
+            />
+          </Section>
+        </>
       )}
 
       {current === "style" && (
@@ -1453,34 +1528,6 @@ function BetterNavbarControls({ config, onChange, user }) {
                 onChange={(mutedColor) => set({ mutedColor })}
               />
             </div>
-          </Section>
-
-          <Section title="Size" icon={<Maximize2 size={13} />}>
-            <SliderRow
-              label="Height"
-              value={c.barHeight || 52}
-              min={42}
-              max={92}
-              unit="px"
-              onChange={(barHeight) => set({ barHeight })}
-            />
-            <SliderRow
-              label="Radius"
-              value={c.radius ?? c.borderRadius ?? 12}
-              min={0}
-              max={24}
-              unit="px"
-              onChange={(radius) => set({ radius, borderRadius: radius })}
-            />
-            <SliderRow
-              label="Max width"
-              value={c.maxWidth || 1152}
-              min={720}
-              max={1600}
-              step={16}
-              unit="px"
-              onChange={(maxWidth) => set({ maxWidth })}
-            />
           </Section>
 
           <button
@@ -1969,6 +2016,8 @@ export function BetterWidgetControls({ type, config, onChange, user, widget, onW
         config={config}
         onChange={onChange}
         user={user}
+        widget={widget}
+        onWidgetChange={onWidgetChange}
       />
     );
   }

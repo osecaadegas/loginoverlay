@@ -1240,12 +1240,37 @@
 
 .bp-controls--hunt {
   min-height: 0;
+  max-height: calc(100vh - 112px);
   color: #dcecff;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(69, 200, 255, 0.55) rgba(7, 16, 34, 0.72);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.bp-controls--hunt::-webkit-scrollbar {
+  width: 10px;
+}
+
+.bp-controls--hunt::-webkit-scrollbar-track {
+  background: rgba(7, 16, 34, 0.72);
+}
+
+.bp-controls--hunt::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(7, 16, 34, 0.72);
+  border-radius: 999px;
+  background: rgba(69, 200, 255, 0.55);
+}
+
+.bp-controls--hunt::-webkit-scrollbar-thumb:hover {
+  background: rgba(69, 200, 255, 0.78);
 }
 
 .bp-hunt-deck-head {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 6;
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
@@ -1448,6 +1473,65 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+
+.bp-navbar-arrange {
+  display: grid;
+  gap: 8px;
+}
+
+.bp-navbar-arrange-row {
+  display: grid;
+  grid-template-columns: minmax(72px, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  border-radius: 8px;
+  background: rgba(5, 12, 30, 0.58);
+}
+
+.bp-navbar-arrange-row strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bp-navbar-zone-buttons,
+.bp-navbar-order-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bp-navbar-zone-buttons button,
+.bp-navbar-order-buttons button {
+  display: inline-grid;
+  min-width: 28px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #8fb4ea;
+  font-size: 0.68rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.bp-navbar-zone-buttons button.is-active {
+  border-color: rgba(96, 205, 255, 0.8);
+  background: rgba(20, 90, 142, 0.5);
+  color: #effcff;
+  box-shadow: 0 0 12px rgba(66, 191, 255, 0.2);
+}
+
+.bp-navbar-order-buttons button {
+  min-width: 26px;
+  color: #dbeafe;
 }
 
 /* Navbar */
@@ -2185,4 +2269,16 @@
 @keyframes bp-bg-float {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
   50% { transform: translate3d(20px, -14px, 0) scale(1.08); }
+}
+
+@media (max-width: 1280px) {
+  .bp-controls--hunt {
+    max-height: calc(48vh - 92px);
+  }
+}
+
+@media (max-width: 780px) {
+  .bp-controls--hunt {
+    max-height: 70vh;
+  }
 }

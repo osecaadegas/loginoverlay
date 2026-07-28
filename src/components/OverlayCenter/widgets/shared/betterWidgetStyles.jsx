@@ -1093,6 +1093,8 @@ function BetterStyleSheet() {
       @keyframes better-sheen{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
       @keyframes better-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
       @keyframes better-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(var(--float-x,12px),var(--float-y,-10px),0)}}
+      @keyframes better-bg-pan{0%,100%{background-position:0% 0%,100% 20%,50% 100%,0 0}50%{background-position:100% 60%,0% 80%,50% 0%,32px 32px}}
+      @keyframes better-bg-scan{0%{transform:translateY(-54px)}100%{transform:translateY(54px)}}
       @keyframes better-rtp-bolt{0%,100%{filter:drop-shadow(0 0 2px var(--bolt-color));opacity:1}50%{filter:drop-shadow(0 0 6px var(--bolt-color));opacity:.82}}
       @keyframes better-rtp-trophy{0%,100%{filter:drop-shadow(0 0 2px var(--trophy-color))}50%{filter:drop-shadow(0 0 7px var(--trophy-color))}}
       @keyframes better-bets-widget-enter{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
@@ -3255,32 +3257,131 @@ export function BetterRtpStatsStyle({
   return bar;
 }
 
+function backgroundControlEnabled(value, fallback = true) {
+  if (value === undefined || value === null) return fallback;
+  if (value === false || value === 0) return false;
+  const normalized = String(value).trim().toLowerCase();
+  return normalized !== "false" && normalized !== "0" && normalized !== "none" && normalized !== "off";
+}
+
+function betterBackgroundTextureStyle({ texture, color1, color2, color3, intensity, speed }) {
+  const strength = clampNumber(intensity, 0, 100, 70) / 100;
+  const duration = `${Math.max(4, numberValue(speed, 10))}s`;
+  const softA = alphaColor(color2, 0.16 * strength);
+  const softB = alphaColor(color3, 0.2 * strength);
+  const strongA = alphaColor(color2, 0.34 * strength);
+  const strongB = alphaColor(color3, 0.32 * strength);
+  const line = alphaColor(color2, 0.24 * strength);
+  const faintLine = alphaColor(color3, 0.12 * strength);
+
+  switch (texture) {
+    case "grid":
+      return {
+        backgroundColor: color1,
+        backgroundImage: [
+          `radial-gradient(circle at 18% 20%, ${strongB}, transparent 28%)`,
+          `linear-gradient(${line} 1px, transparent 1px)`,
+          `linear-gradient(90deg, ${line} 1px, transparent 1px)`,
+        ].join(", "),
+        backgroundSize: "120% 120%, 52px 52px, 52px 52px",
+        animation: `better-bg-pan ${duration} linear infinite`,
+      };
+    case "dots":
+      return {
+        backgroundColor: color1,
+        backgroundImage: [
+          `radial-gradient(circle at 72% 28%, ${strongA}, transparent 31%)`,
+          `radial-gradient(circle, ${line} 1.4px, transparent 2px)`,
+        ].join(", "),
+        backgroundSize: "125% 125%, 28px 28px",
+        animation: `better-bg-pan ${duration} ease-in-out infinite`,
+      };
+    case "diagonal":
+      return {
+        backgroundColor: color1,
+        backgroundImage: [
+          `radial-gradient(circle at 82% 24%, ${strongB}, transparent 30%)`,
+          `repeating-linear-gradient(135deg, ${faintLine} 0 2px, transparent 2px 18px)`,
+          `linear-gradient(135deg, ${color1}, ${alphaColor(color2, 0.34 * strength)} 54%, ${color1})`,
+        ].join(", "),
+        backgroundSize: "120% 120%, 36px 36px, 140% 140%",
+        animation: `better-bg-pan ${duration} ease-in-out infinite`,
+      };
+    case "nebula":
+      return {
+        backgroundImage: [
+          `radial-gradient(circle at 20% 18%, ${strongB}, transparent 30%)`,
+          `radial-gradient(circle at 72% 34%, ${strongA}, transparent 34%)`,
+          `radial-gradient(circle at 48% 86%, ${alphaColor(color3, 0.18 * strength)}, transparent 36%)`,
+          `linear-gradient(145deg, ${color1}, ${alphaColor(color2, 0.22 * strength)} 52%, ${color1})`,
+        ].join(", "),
+        backgroundSize: "130% 130%, 126% 126%, 142% 142%, cover",
+        animation: `better-bg-pan ${duration} ease-in-out infinite`,
+      };
+    case "noise":
+      return {
+        backgroundColor: color1,
+        backgroundImage: [
+          `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E")`,
+          `radial-gradient(circle at 18% 22%, ${softB}, transparent 34%)`,
+          `linear-gradient(135deg, ${color1}, ${softA} 55%, ${color1})`,
+        ].join(", "),
+        backgroundBlendMode: "overlay, screen, normal",
+        backgroundSize: "256px 256px, 124% 124%, cover",
+        animation: `better-bg-pan ${duration} linear infinite`,
+      };
+    case "aurora":
+    default:
+      return {
+        backgroundImage: [
+          `radial-gradient(circle at 20% 20%, ${strongB}, transparent 30%)`,
+          `radial-gradient(circle at 82% 35%, ${strongA}, transparent 34%)`,
+          `linear-gradient(135deg, ${color1}, ${alphaColor(color2, 0.48 * strength)} 52%, ${color1})`,
+        ].join(", "),
+        backgroundSize: "130% 130%, 125% 125%, cover",
+        animation: `better-bg-pan ${duration} ease-in-out infinite`,
+      };
+  }
+}
+
 export function BetterBackgroundStyle({ config }) {
   const c = config || {};
   const color1 = subValue(c, "texture", "background", c.color1 || "#030712");
   const color2 = subValue(c, "texture", "accentColor", c.color2 || "#1d4ed8");
   const color3 = subValue(c, "texture", "fillColor", c.color3 || "#f59e0b");
+  const texture = subValue(c, "texture", "texture", c.texture || "aurora");
   const imageUrl = subValue(c, "media", "imageUrl", c.imageUrl || "");
   const videoUrl = subValue(c, "media", "videoUrl", c.videoUrl || "");
   const imageFit = subValue(c, "media", "imageFit", c.imageFit || "cover");
   const sourceMode = subValue(c, "source", "bgMode", c.bgMode || "texture");
   const opacity = Math.max(0, Math.min(100, numberValue(subValue(c, "canvas", "opacity", c.opacity ?? 100), 100))) / 100;
   const speed = Math.max(4, numberValue(subValue(c, "texture", "animSpeed", c.animSpeed || 10), 10));
+  const intensity = clampNumber(subValue(c, "texture", "intensity", c.intensity ?? 70), 0, 100, 70);
   const mediaOpacityRaw = numberValue(subValue(c, "media", "opacity", c.mediaOpacity ?? 88), 88);
   const mediaOpacity = mediaOpacityRaw > 1 ? mediaOpacityRaw / 100 : mediaOpacityRaw;
+  const brightness = numberValue(subValue(c, "media", "brightness", c.brightness ?? 100), 100);
+  const contrast = numberValue(subValue(c, "media", "contrast", c.contrast ?? 100), 100);
+  const saturation = numberValue(subValue(c, "media", "saturation", c.saturation ?? 100), 100);
+  const blur = numberValue(subValue(c, "media", "blur", c.blur ?? 0), 0);
+  const hueRotate = numberValue(subValue(c, "media", "hueRotate", c.hueRotate ?? 0), 0);
+  const grayscale = numberValue(subValue(c, "media", "grayscale", c.grayscale ?? 0), 0);
+  const sepia = numberValue(subValue(c, "media", "sepia", c.sepia ?? 0), 0);
   const mediaFilter = [
-    `brightness(${subValue(c, "media", "brightness", c.brightness ?? 100)}%)`,
-    `contrast(${subValue(c, "media", "contrast", c.contrast ?? 100)}%)`,
-    `saturate(${subValue(c, "media", "saturation", c.saturation ?? 100)}%)`,
-    `blur(${subValue(c, "media", "blur", c.blur ?? 0)}px)`,
-    `hue-rotate(${subValue(c, "media", "hueRotate", c.hueRotate ?? 0)}deg)`,
-    `grayscale(${subValue(c, "media", "grayscale", c.grayscale ?? 0)}%)`,
-    `sepia(${subValue(c, "media", "sepia", c.sepia ?? 0)}%)`,
+    `brightness(${brightness}%)`,
+    `contrast(${contrast}%)`,
+    `saturate(${saturation}%)`,
+    `blur(${blur}px)`,
+    `hue-rotate(${hueRotate}deg)`,
+    `grayscale(${grayscale}%)`,
+    `sepia(${sepia}%)`,
   ].join(" ");
   const imagePosition = subValue(c, "media", "backgroundPosition", c.imagePosition || "center");
   const tintColor = subValue(c, "tint", "background", c.overlayColor || "transparent");
   const tintOpacityRaw = numberValue(subValue(c, "tint", "opacity", c.overlayOpacity ?? 0), 0);
   const tintOpacity = tintOpacityRaw > 1 ? tintOpacityRaw / 100 : tintOpacityRaw;
+  const showParticles = backgroundControlEnabled(subValue(c, "effects", "fxParticles", c.fxParticles), true);
+  const showScanlines = backgroundControlEnabled(subValue(c, "effects", "fxScanlines", c.fxScanlines), true);
+  const showVignette = backgroundControlEnabled(subValue(c, "effects", "fxVignette", c.fxVignette), true);
   const particles = useMemo(
     () =>
       Array.from({ length: 22 }, (_, index) => ({
@@ -3292,6 +3393,10 @@ export function BetterBackgroundStyle({ config }) {
         color: index % 3 === 0 ? color3 : color2,
       })),
     [color2, color3, speed],
+  );
+  const textureStyle = useMemo(
+    () => betterBackgroundTextureStyle({ texture, color1, color2, color3, intensity, speed }),
+    [texture, color1, color2, color3, intensity, speed],
   );
 
   const layerBase = {
@@ -3319,8 +3424,9 @@ export function BetterBackgroundStyle({ config }) {
       <div
         style={subElementStyle(c, "texture", {
           ...layerBase,
-          background: `radial-gradient(circle at 20% 20%, ${alphaColor(color3, 0.28)}, transparent 30%), radial-gradient(circle at 82% 35%, ${alphaColor(color2, 0.32)}, transparent 34%), linear-gradient(135deg, ${color1}, ${alphaColor(color2, 0.48)} 52%, ${color1})`,
-          filter: `saturate(${c.saturation ?? 100}%) contrast(${c.contrast ?? 100}%) brightness(${c.brightness ?? 100}%)`,
+          inset: blur > 0 ? -Math.ceil(blur * 2) : 0,
+          ...textureStyle,
+          filter: mediaFilter,
         })}
         {...attrs("background", c, "texture")}
       />
@@ -3372,35 +3478,51 @@ export function BetterBackgroundStyle({ config }) {
         })}
         {...attrs("background", c, "effects")}
       >
-        {particles.map((particle, index) => (
-          <span
-            key={index}
-            style={{
-              position: "absolute",
-              left: particle.left,
-              top: particle.top,
-              width: particle.size,
-              height: particle.size,
-              borderRadius: "50%",
-              background: `radial-gradient(circle, ${alphaColor(particle.color, 0.26)}, transparent 68%)`,
-              filter: "blur(14px)",
-              animation: `better-float ${particle.duration} ease-in-out ${particle.delay} infinite`,
-              "--float-x": `${index % 2 ? -26 : 22}px`,
-              "--float-y": `${index % 3 ? -18 : 20}px`,
-            }}
-          />
-        ))}
+        {showParticles
+          ? particles.map((particle, index) => (
+              <span
+                key={index}
+                style={{
+                  position: "absolute",
+                  left: particle.left,
+                  top: particle.top,
+                  width: particle.size,
+                  height: particle.size,
+                  borderRadius: "50%",
+                  background: `radial-gradient(circle, ${alphaColor(particle.color, 0.26)}, transparent 68%)`,
+                  filter: "blur(14px)",
+                  animation: `better-float ${particle.duration} ease-in-out ${particle.delay} infinite`,
+                  "--float-x": `${index % 2 ? -26 : 22}px`,
+                  "--float-y": `${index % 3 ? -18 : 20}px`,
+                }}
+              />
+            ))
+          : null}
       </div>
-      <div
-        style={{
-          ...layerBase,
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-          backgroundSize: "54px 54px",
-          maskImage: "linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.18))",
-          pointerEvents: "none",
-        }}
-      />
+      {showScanlines ? (
+        <div
+          style={{
+            ...layerBase,
+            inset: "-54px 0",
+            backgroundImage:
+              "repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 5px)",
+            opacity: 0.46,
+            transform: "translateY(-54px)",
+            animation: `better-bg-scan ${Math.max(4, speed * 1.8)}s linear infinite`,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
+      {showVignette ? (
+        <div
+          style={{
+            ...layerBase,
+            background:
+              "radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.34) 76%, rgba(0,0,0,0.68) 100%)",
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
     </div>
   );
 }

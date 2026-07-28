@@ -1927,33 +1927,16 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     const packageBorder = c.navbarBorderColor || packageBlue;
     const packageHeight = Number(c.barHeight) || 52;
     const packageRadius = Number(c.radius ?? c.borderRadius ?? 12) || 12;
-    const packageMaxWidth = Number(c.maxWidth) || 1152;
+    const rawPackageMaxWidth = Number(c.maxWidth);
+    const packageMaxWidth = Number.isFinite(rawPackageMaxWidth)
+      ? Math.min(Math.max(rawPackageMaxWidth, 720), 1920)
+      : 1920;
     const brandName = String(
       c.streamerName ||
         c.brandName ||
         c.twitchUsername ||
         "STREAMER",
     ).toUpperCase();
-    const brandWords = brandName
-      .replace(/[^a-z0-9]+/gi, " ")
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
-    const compactBrandName = brandName.replace(/[^a-z0-9]/gi, "");
-    const brandStackWords =
-      brandWords.length >= 2
-        ? brandWords.slice(0, 2)
-        : compactBrandName.toLowerCase() === "brutuspolus"
-          ? ["BRUTUS", "POLUS"]
-          : [
-              compactBrandName.slice(0, Math.max(1, Math.ceil(compactBrandName.length / 2))),
-              compactBrandName.slice(Math.max(1, Math.ceil(compactBrandName.length / 2))),
-            ].filter(Boolean);
-    const formatBrandStackWord = (word) => {
-      const clean = String(word || "").trim();
-      if (!clean) return "";
-      return `${clean.slice(0, 1).toUpperCase()}${clean.slice(1).toLowerCase()}`;
-    };
     const packageAvatarSize =
       avatarImageSize ||
       packageHeight * 0.66 * ((Number(c.avatarSize) || 100) / 100);
@@ -2009,8 +1992,6 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     const showPackageCrypto = Boolean(c.showCrypto && activeCoins.length);
     const showPackageSocials = Boolean(c.showSocials && socialItems.length);
     const showPackageCta = Boolean(c.showCTA && c.ctaText);
-    const showPackageRightRail =
-      showBetterMusic || showPackageCrypto || showPackageSocials || showPackageCta;
     const renderPackageDivider = (push = false) => (
       <div
         {...partAttrs("separator")}
@@ -2050,6 +2031,302 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         />
       </svg>
     );
+    const bareBetterMusicStyle = ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle);
+    const renderBetterIdentitySection = () => {
+      if (c.showIdentity === false) return null;
+      return (
+        <div
+          {...partAttrs("displayName")}
+          style={withElementOffset(c, "displayName", {
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            height: "100%",
+            minWidth: 0,
+            position: "relative",
+            zIndex: 1,
+            flexShrink: 1,
+          })}
+        >
+          {showPackageAvatarImage ? (
+            <div
+              {...partAttrs("avatar")}
+              style={withElementOffset(c, "avatar", {
+                width: packageAvatarSize,
+                height: packageAvatarSize,
+                flex: "0 0 auto",
+                display: "grid",
+                placeItems: "center",
+                overflow: "hidden",
+                borderRadius: avatarRadius,
+                border: avatarBorderWidth
+                  ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
+                  : `1px solid ${alphaColor(packageBlue, 0.38)}`,
+                background: `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
+                boxShadow: `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
+              })}
+            >
+              <img
+                src={avatarUrl}
+                alt=""
+                {...partAttrs("avatar")}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: avatarFit,
+                  borderRadius: avatarRadius,
+                  display: "block",
+                }}
+              />
+            </div>
+          ) : (
+            renderOrangeArc()
+          )}
+          <div
+            style={{
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <span
+              style={{
+                overflow: "hidden",
+                color: textColor,
+                fontFamily,
+                fontSize: Math.max(18, fontSize * 1.3),
+                fontWeight: 950,
+                letterSpacing: "0.04em",
+                lineHeight: 1,
+                marginTop: 1,
+                textOverflow: "ellipsis",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {brandName}
+            </span>
+            {siteText && (
+              <span
+                style={{
+                  overflow: "hidden",
+                  color: alphaColor(mutedColor, 0.58),
+                  fontSize: 9,
+                  fontWeight: 800,
+                  letterSpacing: "0.2em",
+                  lineHeight: 1.15,
+                  marginTop: 3,
+                  maxWidth: 250,
+                  textOverflow: "ellipsis",
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {siteText}
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    };
+    const renderBetterClockSection = () =>
+      showPackageClock ? (
+        <div
+          style={{
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            position: "relative",
+            zIndex: 1,
+            flexShrink: 0,
+          }}
+        >
+          {renderClockSection()}
+        </div>
+      ) : null;
+    const renderBetterBalanceSection = () =>
+      showStart ? (
+        <div
+          {...partAttrs("balance")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            minWidth: 0,
+            height: "100%",
+            position: "relative",
+            zIndex: 1,
+            flexShrink: 0,
+          }}
+        >
+          {renderBolt()}
+          <span
+            style={{
+              color: alphaColor(mutedColor, 0.75),
+              fontSize: 11,
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            {c.startLabel || "Start"}
+          </span>
+          <span
+            style={{
+              color: textColor,
+              fontSize: 14,
+              fontWeight: 950,
+              letterSpacing: "0.04em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {startValue}
+          </span>
+        </div>
+      ) : null;
+    const renderBetterCasinoSection = () =>
+      showCasino ? (
+        <div
+          {...partAttrs("casino")}
+          style={withElementOffset(c, "casino", {
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            minWidth: 0,
+            height: "100%",
+            position: "relative",
+            zIndex: 1,
+            flexShrink: 0,
+          })}
+        >
+          {casinoLogoUrl ? (
+            <img
+              src={casinoLogoUrl}
+              alt=""
+              style={{
+                width: "auto",
+                height: betterCasinoLogoSize,
+                maxWidth: betterCasinoLogoSize * 2.4,
+                objectFit: casinoImageFit,
+                borderRadius: casinoImageRadius ?? Math.max(3, betterCasinoLogoSize * 0.18),
+                filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.42))",
+                flexShrink: 0,
+              }}
+            />
+          ) : null}
+          {casinoCommand ? (
+            <span
+              style={{
+                color: textColor,
+                fontSize: 14,
+                fontWeight: 950,
+                letterSpacing: "0.04em",
+                maxWidth: 170,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textTransform: casinoCommand.startsWith("!") ? "none" : "uppercase",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {casinoCommand}
+            </span>
+          ) : null}
+        </div>
+      ) : null;
+    const renderBetterMusicSection = () =>
+      showBetterMusic ? (
+        <div
+          {...partAttrs("music")}
+          style={withElementOffset(c, "music", {
+            display: "flex",
+            alignItems: "center",
+            minWidth: 0,
+            width: Math.min(Math.max(Number(c.spotifyWidth) || 420, 180), 720),
+            maxWidth: "100%",
+            flex: "1 1 auto",
+            flexShrink: 1,
+          })}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              minWidth: 0,
+              width: "100%",
+              maxWidth: "100%",
+              minHeight: Math.max(28, packageHeight * 0.56),
+              boxSizing: "border-box",
+              overflow: "hidden",
+              border: bareBetterMusicStyle ? "0" : `1px solid ${alphaColor(packageBlue, 0.32)}`,
+              borderRadius: 8,
+              background: bareBetterMusicStyle ? "transparent" : "rgba(12,27,59,0.6)",
+              boxShadow: bareBetterMusicStyle ? "none" : `inset 0 0 10px ${alphaColor(packageBlue, 0.1)}`,
+              padding: bareBetterMusicStyle ? "0 4px" : "4px 10px",
+            }}
+          >
+            <NowPlayingDisplay
+              data={betterNowPlaying}
+              musicDisplayStyle={betterMusicDisplayStyle}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={packageGold}
+              fontSize={Math.max(10, musicFontSize || 11)}
+              fontFamily={musicFontFamily || containerFontFamily}
+              fontWeight={musicFontWeight || 850}
+              isMetal={false}
+              barHeight={packageHeight}
+              compact
+            />
+          </div>
+        </div>
+      ) : null;
+    const betterSectionRenderers = {
+      identity: renderBetterIdentitySection,
+      badge: renderBadgeSection,
+      clock: renderBetterClockSection,
+      nowPlaying: renderBetterMusicSection,
+      crypto: () => (showPackageCrypto ? renderCryptoSection() : null),
+      socials: () => (showPackageSocials ? renderSocialsSection({ compact: true }) : null),
+      cta: () => (showPackageCta ? renderCtaSection() : null),
+      balance: renderBetterBalanceSection,
+      casino: renderBetterCasinoSection,
+    };
+    const renderBetterZone = (zone) => {
+      const rendered = layout
+        .filter((section) => section.zone === zone)
+        .map((section) => ({ id: section.id, el: betterSectionRenderers[section.id]?.() ?? null }))
+        .filter((section) => section.el);
+      const children = rendered.flatMap((section, index) =>
+        index === 0
+          ? [<React.Fragment key={section.id}>{section.el}</React.Fragment>]
+          : [
+              <React.Fragment key={`sep-${section.id}`}>{renderPackageDivider()}</React.Fragment>,
+              <React.Fragment key={section.id}>{section.el}</React.Fragment>,
+            ],
+      );
+      return (
+        <div
+          key={zone}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: zone === "left" ? "flex-start" : zone === "right" ? "flex-end" : "center",
+            gap: 10,
+            height: "100%",
+            minWidth: 0,
+            flex: zone === "center" ? "0 1 auto" : "1 1 0",
+            paddingLeft: zone === "left" ? Math.max(14, Number(containerPadding) || 20) : 0,
+            paddingRight: zone === "right" ? 12 : 0,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {children}
+        </div>
+      );
+    };
     return (
       <div
         style={{
@@ -2137,309 +2414,20 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
           />
 
           <div
-            {...partAttrs("displayName")}
-            style={withElementOffset(c, "displayName", {
+            style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              width: "100%",
               height: "100%",
               minWidth: 0,
-              paddingLeft: Math.max(14, Number(containerPadding) || 20),
-              paddingRight: 24,
               position: "relative",
               zIndex: 1,
-              flexShrink: 1,
-            })}
+            }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                justifyContent: "center",
-                flex: "0 0 auto",
-                minWidth: 34,
-                color: alphaColor(mutedColor, 0.62),
-                fontSize: 7,
-                fontWeight: 950,
-                letterSpacing: "0.14em",
-                lineHeight: 1.1,
-                textTransform: "uppercase",
-              }}
-            >
-              {brandStackWords.map((word, index) => (
-                <span key={`${word}-${index}`}>{formatBrandStackWord(word)}</span>
-              ))}
-            </div>
-            {showPackageAvatarImage ? (
-              <div
-                {...partAttrs("avatar")}
-                style={withElementOffset(c, "avatar", {
-                  width: packageAvatarSize,
-                  height: packageAvatarSize,
-                  flex: "0 0 auto",
-                  display: "grid",
-                  placeItems: "center",
-                  overflow: "hidden",
-                  borderRadius: avatarRadius,
-                  border: avatarBorderWidth
-                    ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
-                    : `1px solid ${alphaColor(packageBlue, 0.38)}`,
-                  background: `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
-                  boxShadow: `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
-                })}
-              >
-                <img
-                  src={avatarUrl}
-                  alt=""
-                  {...partAttrs("avatar")}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: avatarFit,
-                    borderRadius: avatarRadius,
-                    display: "block",
-                  }}
-                />
-              </div>
-            ) : (
-              renderOrangeArc()
-            )}
-            <div
-              style={{
-                minWidth: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <span
-                style={{
-                  overflow: "hidden",
-                  color: textColor,
-                  fontFamily,
-                  fontSize: Math.max(18, fontSize * 1.3),
-                  fontWeight: 950,
-                  letterSpacing: "0.04em",
-                  lineHeight: 1,
-                  marginTop: 1,
-                  textOverflow: "ellipsis",
-                  textTransform: "uppercase",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {brandName}
-              </span>
-              {siteText && (
-                <span
-                  style={{
-                    overflow: "hidden",
-                    color: alphaColor(mutedColor, 0.58),
-                    fontSize: 9,
-                    fontWeight: 800,
-                    letterSpacing: "0.2em",
-                    lineHeight: 1.15,
-                    marginTop: 3,
-                    maxWidth: 250,
-                    textOverflow: "ellipsis",
-                    textTransform: "uppercase",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {siteText}
-                </span>
-              )}
-            </div>
+            {renderBetterZone("left")}
+            {renderBetterZone("center")}
+            {renderBetterZone("right")}
           </div>
-
-          {showPackageClock && renderPackageDivider()}
-          {showPackageClock && (
-            <div
-              style={{
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                padding: "0 18px",
-                position: "relative",
-                zIndex: 1,
-                flexShrink: 0,
-              }}
-            >
-              {renderClockSection()}
-            </div>
-          )}
-
-          {(showStart || showCasino) && renderPackageDivider()}
-          {(showStart || showCasino) && (
-            <div
-              {...partAttrs("balance")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 22,
-                height: "100%",
-                padding: "0 24px",
-                position: "relative",
-                zIndex: 1,
-                flexShrink: 0,
-              }}
-            >
-              {showStart && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    minWidth: 0,
-                  }}
-                >
-                  {renderBolt()}
-                  <span
-                    style={{
-                      color: alphaColor(mutedColor, 0.75),
-                      fontSize: 11,
-                      fontWeight: 800,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {c.startLabel || "Start"}
-                  </span>
-                  <span
-                    style={{
-                      color: textColor,
-                      fontSize: 14,
-                      fontWeight: 950,
-                      letterSpacing: "0.04em",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {startValue}
-                  </span>
-                </div>
-              )}
-              {showCasino && (
-                <div
-                  {...partAttrs("casino")}
-                  style={withElementOffset(c, "casino", {
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    minWidth: 0,
-                  })}
-                >
-                  {casinoLogoUrl ? (
-                    <img
-                      src={casinoLogoUrl}
-                      alt=""
-                      style={{
-                        width: "auto",
-                        height: betterCasinoLogoSize,
-                        maxWidth: betterCasinoLogoSize * 2.4,
-                        objectFit: casinoImageFit,
-                        borderRadius: casinoImageRadius ?? Math.max(3, betterCasinoLogoSize * 0.18),
-                        filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.42))",
-                        flexShrink: 0,
-                      }}
-                    />
-                  ) : null}
-                  {casinoCommand ? (
-                    <span
-                      style={{
-                        color: textColor,
-                        fontSize: 14,
-                        fontWeight: 950,
-                        letterSpacing: "0.04em",
-                        maxWidth: 170,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        textTransform: casinoCommand.startsWith("!") ? "none" : "uppercase",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {casinoCommand}
-                    </span>
-                  ) : null}
-                </div>
-              )}
-            </div>
-          )}
-
-          {showPackageRightRail && renderPackageDivider(true)}
-          {showPackageRightRail && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                paddingRight: 12,
-                gap: 10,
-                height: "100%",
-                minWidth: 0,
-                position: "relative",
-                zIndex: 1,
-                flexShrink: 1,
-              }}
-            >
-              {showBetterMusic && (
-                <div
-                  {...partAttrs("music")}
-                  style={withElementOffset(c, "music", {
-                    display: "flex",
-                    alignItems: "center",
-                    minWidth: 0,
-                    flex: "1 1 360px",
-                    maxWidth: "min(46vw, 540px)",
-                    flexShrink: 1,
-                  })}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      minWidth: 0,
-                      width: "100%",
-                      maxWidth: "100%",
-                      minHeight: Math.max(28, packageHeight * 0.56),
-                      boxSizing: "border-box",
-                      overflow: "hidden",
-                      border: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
-                        ? "0"
-                        : `1px solid ${alphaColor(packageBlue, 0.32)}`,
-                      borderRadius: 8,
-                      background: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
-                        ? "transparent"
-                        : "rgba(12,27,59,0.6)",
-                      boxShadow: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
-                        ? "none"
-                        : `inset 0 0 10px ${alphaColor(packageBlue, 0.1)}`,
-                      padding: ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle)
-                        ? "0 4px"
-                        : "4px 10px",
-                    }}
-                  >
-                    <NowPlayingDisplay
-                      data={betterNowPlaying}
-                      musicDisplayStyle={betterMusicDisplayStyle}
-                      textColor={textColor}
-                      mutedColor={mutedColor}
-                      accentColor={packageGold}
-                      fontSize={Math.max(10, musicFontSize || 11)}
-                      fontFamily={musicFontFamily || containerFontFamily}
-                      fontWeight={musicFontWeight || 850}
-                      isMetal={false}
-                      barHeight={packageHeight}
-                      compact
-                    />
-                  </div>
-                </div>
-              )}
-
-              {showPackageCrypto && renderCryptoSection()}
-              {showPackageSocials && renderSocialsSection({ compact: true })}
-              {showPackageCta && renderCtaSection()}
-            </div>
-          )}
 
           {containerGlow ? (
             <div
