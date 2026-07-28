@@ -23,6 +23,7 @@ import {
   Undo2,
   Unlock,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
@@ -327,6 +328,7 @@ function WidgetListItem({
 }
 
 export default function WidgetEditorPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const shellRef = useRef(null);
   const layoutRef = useRef(createDefaultBetterLayout());
@@ -833,6 +835,10 @@ export default function WidgetEditorPage() {
           </div>
 
           <div className="better-editor-toolbar__group">
+            <button type="button" onClick={() => navigate("/apps")}>
+              <Grid3X3 size={15} />
+              Apps
+            </button>
             <button type="button" onClick={handleUndo} disabled={historyIndex <= 0}>
               <Undo2 size={15} />
               Undo
