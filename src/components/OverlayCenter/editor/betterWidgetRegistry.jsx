@@ -357,6 +357,62 @@ function pickLiveDataPatch(widgetType, liveConfig = {}) {
   }, {});
 }
 
+function firstLiveNumber(values, fallback = 0) {
+  for (const value of values) {
+    if (value === undefined || value === null || value === "") continue;
+    const parsed = typeof value === "number"
+      ? value
+      : Number.parseFloat(String(value).replace(/[^\d.-]/g, ""));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function hasFilledBonusPayment(bonus = {}) {
+  return firstLiveNumber([
+    bonus.payout,
+    bonus.pay,
+    bonus.win,
+    bonus.winAmount,
+    bonus.win_amount,
+    bonus.result,
+  ], 0) > 0;
+}
+
+function deriveBonusHuntSessionState(liveConfig = {}, livePatch = {}) {
+  const bonuses = Array.isArray(livePatch.bonuses)
+    ? livePatch.bonuses
+    : Array.isArray(liveConfig.bonuses)
+      ? liveConfig.bonuses
+      : [];
+
+  if (liveConfig.bonusOpening === true || livePatch.bonusOpening === true) {
+    return bonuses.length > 0 && bonuses.every(hasFilledBonusPayment) ? "ended" : "opening";
+  }
+
+  return "hunt";
+}
+
+function normalizeBonusHuntLivePatch(liveConfig = {}, livePatch = {}, baseConfig = {}) {
+  const next = { ...livePatch };
+
+  if (hasOwnKey(liveConfig, "showSlotRequests") || hasOwnKey(liveConfig, "showRequests")) {
+    const liveRequestsVisible =
+      (hasOwnKey(liveConfig, "showSlotRequests") ? liveConfig.showSlotRequests !== false : true) &&
+      (hasOwnKey(liveConfig, "showRequests") ? liveConfig.showRequests !== false : true);
+    next.showSlotRequests = liveRequestsVisible;
+    next.showRequests = baseConfig.showRequests !== false && liveRequestsVisible;
+  }
+
+  if (hasOwnKey(liveConfig, "bonuses") || hasOwnKey(liveConfig, "bonusOpening")) {
+    const sessionState = deriveBonusHuntSessionState(liveConfig, next);
+    next.sessionState = sessionState;
+    next.huntActive = sessionState === "hunt" && Array.isArray(next.bonuses) && next.bonuses.length > 0;
+  }
+
+  return next;
+}
+
 export function findBetterLiveSourceWidget(widgetType, liveWidgets = []) {
   if (!widgetType || !Array.isArray(liveWidgets)) return null;
   return liveWidgets.find((widget) => widget?.widget_type === widgetType) || null;
@@ -370,7 +426,9 @@ function resolveBetterLiveSourceWidget(widgetType, context = {}) {
 function mergeBetterLiveDataConfig(widgetType, baseConfig, liveWidget) {
   const liveConfig = liveWidget?.config;
   if (!liveConfig || typeof liveConfig !== "object") return baseConfig;
-  const livePatch = pickLiveDataPatch(widgetType, liveConfig);
+  const livePatch = widgetType === "bonus_hunt"
+    ? normalizeBonusHuntLivePatch(liveConfig, pickLiveDataPatch(widgetType, liveConfig), baseConfig)
+    : pickLiveDataPatch(widgetType, liveConfig);
   if (Object.keys(livePatch).length === 0) return baseConfig;
   return ensureBetterWidgetConfig(widgetType, {
     ...baseConfig,

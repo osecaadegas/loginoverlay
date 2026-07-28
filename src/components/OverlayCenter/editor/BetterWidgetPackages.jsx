@@ -790,7 +790,7 @@ function Segmented({ value, options, onChange, columns = 2 }) {
   );
 }
 
-function HuntChoiceGrid({ value, options, onChange, columns = 2 }) {
+function HuntChoiceGrid({ value, options, onChange, columns = 2, disabled = false }) {
   return (
     <div className="bp-hunt-choice-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
       {options.map((option) => {
@@ -800,7 +800,10 @@ function HuntChoiceGrid({ value, options, onChange, columns = 2 }) {
             key={optionValue}
             type="button"
             className={optionValue === value ? "is-active" : ""}
-            onClick={() => onChange(optionValue)}
+            disabled={disabled}
+            onClick={() => {
+              if (!disabled && typeof onChange === "function") onChange(optionValue);
+            }}
           >
             {option.swatch && <i style={{ background: option.swatch }} />}
             <strong>{option.label || option.name}</strong>
@@ -1605,6 +1608,9 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
 
 function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }) {
   const c = ensureBetterWidgetConfig(type, config);
+  const renderedConfig = type === "bonus_hunt" && widget?.config
+    ? ensureBetterWidgetConfig(type, widget.config)
+    : c;
   const set = (patch) => {
     const nextPatch = { ...patch };
     if (type === "navbar" && Object.prototype.hasOwnProperty.call(nextPatch, "casinoCommand")) {
@@ -1751,21 +1757,20 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
       bgColor: colour.bg,
     });
   };
-  const normalizedSessionState = c.sessionState || (c.bonusOpening ? "opening" : "hunt");
+  const normalizedSessionState = renderedConfig.sessionState || (renderedConfig.bonusOpening ? "opening" : "hunt");
   const orientationHint = c.orientation === "horizontal"
     ? "Wide two-column layout - the log drifts sideways as cards."
     : c.orientation === "mainstream"
       ? "Mainstream layout - active bonus and stats stay high, with the tracker below."
       : "The classic tall tracker - list scrolls upward.";
   const sessionHint = (BONUS_SESSION_STATES.find((item) => item.key === normalizedSessionState) || BONUS_SESSION_STATES[0]).hint;
+  const liveBonusCount = Array.isArray(renderedConfig.bonuses) ? renderedConfig.bonuses.length : 0;
+  const liveRequestsVisible = renderedConfig.showSlotRequests !== false;
+  const localRequestsVisible = c.showRequests !== false;
   const drawerHint = c.drawerMode === "expand"
     ? "The best / worst card expands the panel."
     : "The best / worst card reduces the list area.";
   const currentColour = BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
-  const applySessionState = (sessionState) => set({
-    sessionState,
-    bonusOpening: sessionState === "opening",
-  });
   const previewWin = (mult, extra = {}) => {
     if (typeof window === "undefined") return;
     window.dispatchEvent(new CustomEvent("better-bonus-hunt-preview-win", {
@@ -1782,16 +1787,6 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
   const widgetHeight = Number(c.widgetHeight ?? c.panelHeight ?? 0) || 0;
   const edgeRadius = Number(c.edgeRadius ?? c.radius ?? c.cardRadius ?? 14);
   const statRadius = Number(c.statRadius ?? 7);
-  const huntTabs = [
-    ["all", <SlidersHorizontal size={12} />, "All"],
-    ["style", <Palette size={12} />, "Style"],
-    ["state", <Timer size={12} />, "State"],
-    ["motion", <Wand2 size={12} />, "Motion"],
-    ["layout", <Maximize2 size={12} />, "Layout"],
-    ["list", <List size={12} />, "List"],
-  ];
-  const huntCurrent = activeTab(huntTabs);
-  const showHunt = (...groups) => huntCurrent === "all" || groups.includes(huntCurrent);
 
   return (
     <div className="bp-controls bp-controls--hunt">
@@ -1802,17 +1797,16 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           <p>bonus hunt tracker settings</p>
         </div>
       </header>
-      <PanelTabs active={huntCurrent} onChange={setTab} tabs={huntTabs} />
 
-      {showHunt("style") && <HuntSection title="Widget Style" icon={<Sparkles size={13} />}>
+      <HuntSection title="Widget Style" icon={<Sparkles size={13} />}>
         <HuntChoiceGrid
           value={c.skin || "modern"}
           options={BONUS_SKINS}
           onChange={(skin) => set({ skin })}
         />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("state") && <HuntSection title="Orientation" icon={<MonitorPlay size={13} />}>
+      <HuntSection title="Orientation" icon={<MonitorPlay size={13} />}>
         <HuntChoiceGrid
           value={c.orientation}
           columns={3}
@@ -1824,9 +1818,9 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           onChange={(orientation) => set({ orientation })}
         />
         <HuntHint>{orientationHint}</HuntHint>
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("motion") && <HuntSection title="Win FX" icon={<Sparkles size={13} />}>
+      <HuntSection title="Win FX" icon={<Sparkles size={13} />}>
         <div className="bp-hunt-fx-grid">
           {[
             { mult: 100, label: "100x", icon: Sparkles },
@@ -1847,28 +1841,31 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           ))}
         </div>
         <HuntHint>Preview celebrations. Overlay code can trigger the same effect with window.__boTriggerWin(multiplier).</HuntHint>
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("state") && <HuntSection title="Session State" icon={<Timer size={13} />}>
+      <HuntSection title="Session State" icon={<Timer size={13} />}>
         <HuntChoiceGrid
           value={normalizedSessionState}
           columns={3}
           options={BONUS_SESSION_STATES}
-          onChange={applySessionState}
+          disabled
         />
-        <HuntHint>{sessionHint}</HuntHint>
-      </HuntSection>}
+        <HuntHint>
+          {sessionHint}. Synced from Bonus Hunt: {liveBonusCount} slot{liveBonusCount === 1 ? "" : "s"},
+          opening {renderedConfig.bonusOpening ? "on" : "off"}.
+        </HuntHint>
+      </HuntSection>
 
-      {showHunt("style") && <HuntSection title="Texture" icon={<Layers size={13} />}>
+      <HuntSection title="Texture" icon={<Layers size={13} />}>
         <HuntChoiceGrid
           value={c.finish}
           columns={5}
           options={BONUS_FINISHES.map((key) => ({ key, label: key }))}
           onChange={(finish) => set({ finish })}
         />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("style") && <HuntSection title="Colour" icon={<Palette size={13} />}>
+      <HuntSection title="Colour" icon={<Palette size={13} />}>
         <div className="bp-hunt-swatch-row">
           {BONUS_COLOURS.map((colour) => (
             <button
@@ -1882,14 +1879,14 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           ))}
         </div>
         <HuntHint>{currentColour.name}</HuntHint>
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("motion") && <HuntSection title="Animations" icon={<Wand2 size={13} />}>
+      <HuntSection title="Animations" icon={<Wand2 size={13} />}>
         <ToggleRow label="Enable motion" checked={c.animations} onChange={(animations) => set({ animations })} />
         <SliderRow label="Speed" value={c.animSpeed} min={0.5} max={2} step={0.1} format={(value) => `${value.toFixed(1)}x`} onChange={(animSpeed) => set({ animSpeed })} />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("motion") && <HuntSection title="Carousel Style" icon={<Layers size={13} />}>
+      <HuntSection title="Carousel Style" icon={<Layers size={13} />}>
         <HuntChoiceGrid
           value={c.carouselMode}
           columns={3}
@@ -1900,18 +1897,22 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           ]}
           onChange={(carouselMode) => set({ carouselMode })}
         />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("motion") && <HuntSection title="Carousel Timing" icon={<Timer size={13} />}>
+      <HuntSection title="Carousel Timing" icon={<Timer size={13} />}>
         <SliderRow label="Rotate every" value={c.carouselMs} min={1500} max={6000} step={100} format={(value) => `${(value / 1000).toFixed(1)}s`} onChange={(carouselMs) => set({ carouselMs })} />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("state") && <HuntSection title="Twitch Requests" icon={<Users size={13} />}>
-        <ToggleRow label="Show requests feed" checked={c.showRequests !== false} onChange={(showRequests) => set({ showRequests })} />
-        <HuntHint>Drifting feed of !sr commands from chat. Toggle it off to hide the whole section on the widget.</HuntHint>
-      </HuntSection>}
+      <HuntSection title="Twitch Requests" icon={<MessageSquare size={13} />}>
+        <ToggleRow label="Show requests feed" checked={localRequestsVisible} onChange={(showRequests) => set({ showRequests })} />
+        <HuntHint>
+          {liveRequestsVisible
+            ? "Drifting feed of !sr commands from chat. Toggle it off here to hide the section on the Better widget."
+            : "Hidden because the requests handle is off on the Bonus Hunt page."}
+        </HuntHint>
+      </HuntSection>
 
-      {showHunt("layout") && <HuntSection title="Typography" icon={<Type size={13} />}>
+      <HuntSection title="Typography" icon={<Type size={13} />}>
         <HuntChoiceGrid
           value={c.font}
           columns={3}
@@ -1919,9 +1920,9 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           onChange={(font) => set({ font, fontFamily: BONUS_FONTS.find((item) => item.key === font)?.family || c.fontFamily })}
         />
         <SliderRow label="UI scale" value={c.uiScale} min={0.85} max={1.2} step={0.05} format={(value) => `${Math.round(value * 100)}%`} onChange={(uiScale) => set({ uiScale })} />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("layout") && <HuntSection title="Sizes & Layout" icon={<SlidersHorizontal size={13} />}>
+      <HuntSection title="Sizes & Layout" icon={<SlidersHorizontal size={13} />}>
         <SliderRow label="Widget width" value={widgetWidth} min={320} max={1280} step={10} unit="px" onChange={(value) => setBonusSize({ widgetWidth: value, panelWidth: value })} />
         <SliderRow label="Widget height" value={widgetHeight} min={0} max={980} step={10} format={(value) => value === 0 ? "Auto" : `${value}px`} onChange={(value) => setBonusSize({ widgetHeight: value, panelHeight: value })} />
         <SliderRow label="Rounded edges" value={edgeRadius} min={0} max={36} unit="px" onChange={(value) => set({ edgeRadius: value, radius: value, cardRadius: value })} />
@@ -1929,9 +1930,9 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
         <SliderRow label="Progress bar" value={c.barHeight} min={3} max={10} unit="px" onChange={(barHeight) => set({ barHeight })} />
         <SliderRow label="Avatar" value={c.avatarSize} min={20} max={44} step={2} unit="px" onChange={(avatarSize) => set({ avatarSize })} />
         <SliderRow label="Visible rows" value={c.visibleRows} min={3} max={8} onChange={(visibleRows) => set({ visibleRows })} />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("list") && <HuntSection title="List Style" icon={<List size={13} />}>
+      <HuntSection title="List Style" icon={<List size={13} />}>
         <HuntChoiceGrid
           value={c.listMode}
           columns={3}
@@ -1942,9 +1943,9 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           ]}
           onChange={(listMode) => set({ listMode })}
         />
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("list") && <HuntSection title="Best / Worst Card" icon={<Layers size={13} />}>
+      <HuntSection title="Best / Worst Card" icon={<Layers size={13} />}>
         <HuntChoiceGrid
           value={c.drawerMode}
           options={[
@@ -1954,9 +1955,9 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           onChange={(drawerMode) => set({ drawerMode })}
         />
         <HuntHint>{drawerHint}</HuntHint>
-      </HuntSection>}
+      </HuntSection>
 
-      {showHunt("list") && <button className="bp-reset bp-hunt-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.bonus_hunt)}><RotateCcw size={13} /> Reset defaults</button>}
+      <button className="bp-reset bp-hunt-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.bonus_hunt)}><RotateCcw size={13} /> Reset defaults</button>
     </div>
   );
 }

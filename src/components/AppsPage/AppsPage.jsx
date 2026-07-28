@@ -47,6 +47,14 @@ export default function AppsPage() {
             art: "overlay-center",
           },
           {
+            to: "/editor",
+            label: "Better Editor",
+            desc: "Live overlay canvas",
+            icon: SlidersHorizontal,
+            tone: "cyan",
+            art: "editor",
+          },
+          {
             to: "/overlay-center/presets",
             label: "Presets",
             desc: "Save, load and share overlay builds",

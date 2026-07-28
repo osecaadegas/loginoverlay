@@ -419,6 +419,9 @@ function BonusHuntWidget({ config, theme, userId, widgetId }) {
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
   if (isBetterBH) {
+    const betterRequestsVisible = sortedConfig.showSlotRequests === false
+      ? false
+      : sortedConfig.showRequests;
     return (
       <BetterBonusHuntStyle
         config={{
@@ -427,7 +430,7 @@ function BonusHuntWidget({ config, theme, userId, widgetId }) {
           slotRequests: Array.isArray(sortedConfig.slotRequests) && sortedConfig.slotRequests.length
             ? sortedConfig.slotRequests
             : classicRequestRows,
-          showRequests: sortedConfig.showRequests ?? sortedConfig.showSlotRequests,
+          showRequests: betterRequestsVisible,
         }}
         bonuses={bonuses}
         stats={stats}

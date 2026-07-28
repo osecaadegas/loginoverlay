@@ -1244,18 +1244,6 @@
   overflow: visible;
 }
 
-.bp-controls--hunt .bp-panel-tabs {
-  margin: 0;
-  top: 0;
-  z-index: 7;
-  border-bottom-color: rgba(69, 200, 255, 0.16);
-  background: rgba(3, 12, 31, 0.98);
-}
-
-.bp-controls--hunt .bp-panel-tabs button {
-  min-height: 38px;
-}
-
 .bp-hunt-deck-head {
   position: relative;
   z-index: 6;
@@ -1380,6 +1368,14 @@
   background: rgba(69, 200, 255, 0.15);
   color: #effcff;
   box-shadow: 0 0 12px rgba(69, 200, 255, 0.18);
+}
+
+.bp-hunt-choice-grid button:disabled {
+  cursor: default;
+}
+
+.bp-hunt-choice-grid button:disabled:not(.is-active) {
+  opacity: 0.55;
 }
 
 .bp-hunt-fx-grid {

@@ -680,8 +680,7 @@ function bonusOpened(bonus) {
       bonus?.isOpened ||
       bonus?.status === "opened" ||
       bonus?.state === "opened" ||
-      bonus?.payout !== undefined ||
-      bonus?.result !== undefined,
+      bonusPayout(bonus) > 0,
   );
 }
 
