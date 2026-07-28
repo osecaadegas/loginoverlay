@@ -438,6 +438,8 @@ export const DEFAULT_BETTER_CONFIG = {
     fadeAfter: 6,
     maxMessages: 10,
     live: false,
+    showHeaderName: true,
+    showLiveLabel: true,
     showViewerCount: false,
     viewerCount: 1250,
     bg: "solid",
@@ -685,6 +687,8 @@ function normalizeBetterChatConfig(merged = {}) {
   next.maxMessages = clampNumber(next.maxMessages, 2, 40, defaults.maxMessages);
   next.fadeAfter = clampNumber(next.fadeAfter, 2, 15, defaults.fadeAfter);
   next.stagger = clampNumber(next.stagger, 0, 400, defaults.stagger);
+  next.showHeaderName = next.showHeaderName !== false;
+  next.showLiveLabel = next.showLiveLabel !== false;
   next.viewerCount = clampNumber(next.viewerCount, 0, 100000, defaults.viewerCount);
   next.textureStrength = clampNumber(next.textureStrength, 5, 80, defaults.textureStrength);
   next.celebrations.intensity = clampNumber(
@@ -1732,6 +1736,8 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
       <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Message font" value={c.font} options={CHAT_FONTS} onChange={(font) => set({ font })} /><SliderRow label="Message size" value={c.fontSize} min={9} max={20} unit="px" onChange={(fontSize) => set({ fontSize })} /><SliderRow label="Username size" value={c.usernameSize} min={9} max={20} unit="px" onChange={(usernameSize) => set({ usernameSize })} /></Section>
       <Section title="Colours" icon={<Palette size={13} />}><div className="bp-color-grid">{["glow", "username", "text", "bubble", "panel"].map((key) => <ColorRow key={key} label={key[0].toUpperCase() + key.slice(1)} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</div><div className="bp-chat-presets">{CHAT_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set(preset)}><span><i style={{ background: preset.glow }} /><i style={{ background: preset.username }} /><i style={{ background: preset.bubble }} /></span>{preset.name}</button>)}</div></Section>
       <Section title="Display" icon={<Eye size={13} />}>
+        <ToggleRow label="Show name text" checked={c.showHeaderName !== false} onChange={(showHeaderName) => set({ showHeaderName })} />
+        <ToggleRow label="Show live text" checked={c.showLiveLabel !== false} onChange={(showLiveLabel) => set({ showLiveLabel })} />
         <ToggleRow label="Show viewer count" checked={!!c.showViewerCount} onChange={(showViewerCount) => set({ showViewerCount })} />
         <SliderRow label="Viewer count" value={c.viewerCount} min={0} max={100000} step={10} disabled={!c.showViewerCount} onChange={(viewerCount) => set({ viewerCount })} />
       </Section>

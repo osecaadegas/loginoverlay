@@ -2634,6 +2634,9 @@ export function BetterChatHeader({ config, chatHeaderName, headerText, accentCol
   const c = config || {};
   const viewerCount = Number(c.viewerCount) || 0;
   const isLive = Boolean(c.live || c.twitchEnabled || c.youtubeEnabled || c.kickEnabled);
+  const showHeaderName = c.showHeaderName !== false;
+  const showLiveLabel = c.showLiveLabel !== false;
+  const showRightText = Boolean(c.showViewerCount || showLiveLabel);
   return (
     <div
       style={subElementStyle(c, "header", {
@@ -2662,14 +2665,18 @@ export function BetterChatHeader({ config, chatHeaderName, headerText, accentCol
           }}
           {...attrs("chat", c, "badge")}
         />
-        <strong style={{ color: headerText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.12em" }}>
-          {chatHeaderName}
-        </strong>
+        {showHeaderName ? (
+          <strong style={{ color: headerText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+            {chatHeaderName}
+          </strong>
+        ) : null}
       </span>
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: alphaColor(headerText, 0.72), fontWeight: 900, fontSize: "0.72em", textTransform: "uppercase", letterSpacing: "0.16em", whiteSpace: "nowrap" }}>
-        {c.showViewerCount ? <span>{formatCompactNumber(viewerCount)}</span> : null}
-        <span>{isLive ? "Live" : "Idle"}</span>
-      </span>
+      {showRightText ? (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: alphaColor(headerText, 0.72), fontWeight: 900, fontSize: "0.72em", textTransform: "uppercase", letterSpacing: "0.16em", whiteSpace: "nowrap" }}>
+          {c.showViewerCount ? <span>{formatCompactNumber(viewerCount)}</span> : null}
+          {showLiveLabel ? <span>{isLive ? "Live" : "Idle"}</span> : null}
+        </span>
+      ) : null}
     </div>
   );
 }
