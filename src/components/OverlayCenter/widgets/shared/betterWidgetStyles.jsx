@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Trophy, Zap } from "lucide-react";
 import SlotImage from "../SlotImage";
 import {
   appearanceAttrs,
@@ -779,6 +780,8 @@ function BetterStyleSheet() {
       @keyframes better-sheen{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
       @keyframes better-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
       @keyframes better-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(var(--float-x,12px),var(--float-y,-10px),0)}}
+      @keyframes better-rtp-bolt{0%,100%{filter:drop-shadow(0 0 2px var(--bolt-color));opacity:1}50%{filter:drop-shadow(0 0 6px var(--bolt-color));opacity:.82}}
+      @keyframes better-rtp-trophy{0%,100%{filter:drop-shadow(0 0 2px var(--trophy-color))}50%{filter:drop-shadow(0 0 7px var(--trophy-color))}}
       @keyframes better-bets-widget-enter{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
       @keyframes better-bets-option-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
       @keyframes better-bets-sheen{0%,65%,100%{transform:translateX(0) rotate(22deg);opacity:0}72%{opacity:1}87%{transform:translateX(430px) rotate(22deg);opacity:0}}
@@ -2378,7 +2381,7 @@ export function BetterRtpStatsStyle({
   const borderWidth = Math.max(0, numberValue(c.borderWidth, 1));
   const radius = cssPx(c.radius ?? c.borderRadius ?? 14, "14px");
   const providerMode = c.providerMode || "name";
-  const providerName = displayProvider || "";
+  const providerName = displayProvider || (previewMode ? c.providerName : "") || "";
   const providerLogo = c.logoSrc || displayProviderLogo || "";
   const showProviderImage = providerMode !== "none" && providerMode !== "name" && Boolean(providerLogo);
   const showProviderName = providerMode !== "none" && providerMode !== "image" && Boolean(providerName);
@@ -2389,68 +2392,72 @@ export function BetterRtpStatsStyle({
   const logoPadY = clampNumber(c.logoPadY, 0, 32, 0);
   const logoOffsetX = clampNumber(c.logoOffsetX, -64, 64, 0);
   const logoOffsetY = clampNumber(c.logoOffsetY, -64, 64, 0);
-  const slotName = displaySlotName || "-";
+  const slotName = displaySlotName || (previewMode ? c.slotName : "") || "-";
   const liveRtp = displayInfo?.rtp;
   const livePotential = displayInfo?.max_win_multiplier ?? displayInfo?.max_win;
   const rtpValue =
     liveRtp !== undefined && liveRtp !== null && liveRtp !== ""
       ? `${String(liveRtp).replace(/%$/, "")}%`
-      : "-";
+      : previewMode && c.rtp
+        ? c.rtp
+        : "-";
   const potentialValue =
     livePotential !== undefined && livePotential !== null && livePotential !== ""
       ? formatMultiplier(livePotential)
-      : "-";
+      : previewMode && c.potential
+        ? c.potential
+        : "-";
   const volatilityValue = displayInfo?.volatility
     ? String(displayInfo.volatility).replace(/_/g, " ").toUpperCase()
-    : "-";
+    : previewMode && c.volatility
+      ? c.volatility
+      : "-";
   const bestAmount = displayBestWin?.best_win
     ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+    : previewMode && c.bestWin
+      ? c.bestWin
     : bestWinEmptyText || "-";
   const bestMulti = displayBestWin?.best_multiplier ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : "";
   const showDividers = c.showDividers !== false;
   const statItems = [
-    ["rtpValue", "RTP", rtpValue, showRtp],
-    ["maxWin", "Potential", potentialValue, showPotential],
-    ["volatility", "Volatility", String(volatilityValue).replace(/_/g, " ").toUpperCase(), showVolatility],
-    ["personalBest", "Best win", `${bestAmount}${bestMulti}`, showBestWin],
+    ["rtpValue", "RTP", rtpValue, showRtp, "0s"],
+    ["maxWin", "Potential", potentialValue, showPotential, ".5s"],
+    ["volatility", "Volatility", String(volatilityValue).replace(/_/g, " ").toUpperCase(), showVolatility, "1s"],
   ].filter(([, , , visible]) => visible);
-
-  return (
+  const bestWinValue = `${bestAmount}${bestMulti}`;
+  const bar = (
     <div
       className="oc-widget-inner rtp-stats-bar rtp-stats-bar--better"
       style={subElementStyle(c, "container", {
         width: "100%",
-        height: "100%",
+        maxWidth: previewMode ? 1120 : "100%",
+        height: previewMode ? barHeight : "100%",
         minHeight: barHeight,
         boxSizing: "border-box",
         display: "flex",
         alignItems: "center",
-        gap: 12,
+        gap: 16,
         padding: `${paddingY}px ${paddingX}px`,
         borderRadius: radius,
-        background: `linear-gradient(180deg, ${bgFrom} 0%, ${bgMid} 52%, ${bgTo} 100%)`,
+        background: `linear-gradient(180deg, ${bgFrom} 0%, ${bgMid} 46%, ${bgTo} 100%)`,
         border: `${borderWidth}px solid ${borderColor}`,
         color: text,
         fontFamily: font,
         fontSize,
-        boxShadow: `0 14px 34px rgba(0,0,0,0.35), 0 0 20px ${alphaColor(c.cRim || accent, 0.24)}`,
+        boxShadow: `0 0 0 1px rgba(3,12,32,0.9), 0 0 18px ${alphaColor(c.cRim || accent, 0.42)}, 0 0 44px ${alphaColor(c.cRim || accent, 0.2)}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.3)}, inset 0 -1px 0 rgba(0,0,0,0.45)`,
         overflow: "hidden",
         position: "relative",
+        flexShrink: 0,
       })}
       {...attrs("rtp_stats", c, "container")}
     >
       <BetterStyleSheet />
-      {!isLive && previewMode ? (
-        <span style={{ position: "absolute", top: 5, right: 8, color: muted, fontSize: 9, fontWeight: 900, letterSpacing: "0.12em" }}>
-          PREVIEW
-        </span>
-      ) : null}
       {hasProvider ? (
         <div
           style={subElementStyle(c, "provider", {
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 12,
             minWidth: 0,
             flexShrink: 0,
           })}
@@ -2460,117 +2467,251 @@ export function BetterRtpStatsStyle({
             <img
               src={providerLogo}
               alt=""
+              draggable={false}
               style={{
                 display: "block",
                 height: logoHeight,
-                maxWidth: logoMaxWidth,
+                maxHeight: "100%",
+                maxWidth: `min(${logoMaxWidth}px, 30vw)`,
+                width: "auto",
                 objectFit: c.logoFit || "contain",
                 padding: `${logoPadY}px ${logoPadX}px`,
                 transform: `translate(${logoOffsetX}px, ${logoOffsetY}px)`,
-                borderRadius: 6,
+                borderRadius: logoPadX || logoPadY ? 6 : 4,
               }}
             />
           ) : null}
           {showProviderName ? (
-            <span style={{ color: c.cBrand || accent, fontWeight: 950, letterSpacing: "0.16em", textTransform: "uppercase", fontSize: labelSize }}>
-              {providerName}
+            <span
+              style={{
+                color: c.cBrand || accent,
+                fontFamily: font,
+                fontSize: Math.max(7, labelSize - 2),
+                fontWeight: 900,
+                letterSpacing: "0.18em",
+                lineHeight: 1.15,
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {providerName.split(" ").filter(Boolean).map((word, index) => (
+                <span key={`${word}-${index}`} style={{ display: "block" }}>
+                  {word}
+                </span>
+              ))}
             </span>
           ) : null}
         </div>
       ) : null}
       {c.showEmblem !== false ? <BetterRtpEmblem config={c} /> : null}
-      <div
+      <h1
         style={subElementStyle(c, "slotTitle", {
           minWidth: 0,
-          flex: "1 1 auto",
+          overflow: "hidden",
+          flex: "0 0 auto",
+          maxWidth: "min(320px, 34vw)",
+          margin: 0,
+          color: text,
+          fontFamily: titleFont,
+          fontSize: titleSize,
+          fontWeight: 850,
+          letterSpacing: `${numberValue(c.titleTracking, 0.08)}em`,
+          lineHeight: 1,
+          textOverflow: "ellipsis",
+          textShadow: `0 1px 10px ${bgTo}`,
+          textTransform: "uppercase",
+          whiteSpace: "nowrap",
         })}
         {...attrs("rtp_stats", c, "slotTitle")}
       >
-        <strong
-          style={{
-            display: "block",
-            overflow: "hidden",
-            color: text,
-            fontFamily: titleFont,
-            fontSize: titleSize,
-            letterSpacing: `${numberValue(c.titleTracking, 0.08)}em`,
-            lineHeight: 1,
-            textOverflow: "ellipsis",
-            textTransform: "uppercase",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {slotName}
-        </strong>
-      </div>
+        {slotName}
+      </h1>
       {showDividers && statItems.length ? (
         <span
           style={{
             alignSelf: "stretch",
             width: 1,
             flexShrink: 0,
-            background: `linear-gradient(180deg, transparent, ${alphaColor(c.cRim || accent, 0.7)}, transparent)`,
+            background: `linear-gradient(180deg, transparent, ${alphaColor(c.cRim || accent, 0.55)} 30%, ${alphaColor(c.cRim || accent, 0.55)} 70%, transparent)`,
           }}
           aria-hidden="true"
         />
       ) : null}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          minWidth: 0,
-          flex: "0 0 auto",
-        }}
-      >
-        {statItems.map(([part, label, value]) => (
-          <div
-            key={part}
-            style={subElementStyle(c, "statCard", {
+      {statItems.length ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            minWidth: 0,
+            flex: "0 0 auto",
+          }}
+        >
+          {statItems.map(([part, label, value, , delay]) => (
+            <div
+              key={part}
+              style={subElementStyle(c, "statCard", {
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                flexShrink: 0,
+                minWidth: 0,
+                whiteSpace: "nowrap",
+              })}
+              {...attrs("rtp_stats", c, "statCard")}
+            >
+              <Zap
+                size={Math.round(labelSize * 1.3)}
+                fill={c.cBolt || accent}
+                stroke={c.cBolt || accent}
+                strokeWidth={1}
+                style={{
+                  "--bolt-color": c.cBolt || accent,
+                  animation: "better-rtp-bolt 2.4s ease-in-out infinite",
+                  animationDelay: delay,
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={subElementStyle(c, "label", {
+                  color: muted,
+                  fontFamily: font,
+                  fontSize: labelSize,
+                  fontWeight: 800,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
+                })}
+                {...attrs("rtp_stats", c, "label")}
+              >
+                {label}
+              </span>
+              <strong
+                style={subElementStyle(c, part, {
+                  color: part === "rtpValue" ? accent : text,
+                  fontFamily: titleFont,
+                  fontSize: valueSize,
+                  fontWeight: 850,
+                  letterSpacing: "0.04em",
+                  lineHeight: 1,
+                  whiteSpace: "nowrap",
+                })}
+                {...attrs("rtp_stats", c, part)}
+              >
+                {value}
+              </strong>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {showDividers && statItems.length && showBestWin ? (
+        <span
+          style={{
+            alignSelf: "stretch",
+            width: 1,
+            flexShrink: 0,
+            background: `linear-gradient(180deg, transparent, ${alphaColor(c.cRim || accent, 0.55)} 30%, ${alphaColor(c.cRim || accent, 0.55)} 70%, transparent)`,
+          }}
+          aria-hidden="true"
+        />
+      ) : null}
+      {showBestWin ? (
+        <div
+          style={subElementStyle(c, "personalBest", {
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0,
+            marginLeft: "auto",
+            padding: "7px 14px",
+            border: `1px solid ${alphaColor(c.cRim || accent, 0.55)}`,
+            borderRadius: Math.max(4, numberValue(c.radius, 10) - 4),
+            background: `linear-gradient(180deg, ${alphaColor(bgFrom, 0.85)}, ${alphaColor(bgTo, 0.9)})`,
+            boxShadow: `inset 0 0 12px ${alphaColor(c.cRim || accent, 0.26)}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.14)}`,
+            minWidth: 0,
+          })}
+          {...attrs("rtp_stats", c, "personalBest")}
+        >
+          <Trophy
+            size={14}
+            fill={c.cGold || "#ffc01e"}
+            stroke={c.cGold || "#ffc01e"}
+            strokeWidth={1.2}
+            style={{
+              "--trophy-color": c.cGold || "#ffc01e",
+              animation: "better-rtp-trophy 3.2s ease-in-out infinite",
               flexShrink: 0,
-              minWidth: part === "personalBest" ? 150 : 92,
-              padding: "6px 9px",
-              borderRadius: Math.max(4, numberValue(c.radius, 10) - 2),
-              background: "rgba(255,255,255,0.055)",
-              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          />
+          <span
+            style={subElementStyle(c, "label", {
+              color: muted,
+              fontFamily: font,
+              fontSize: labelSize,
+              fontWeight: 800,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
             })}
-            {...attrs("rtp_stats", c, "statCard")}
+            {...attrs("rtp_stats", c, "label")}
           >
-            <span
-              style={subElementStyle(c, "label", {
-                display: "block",
-                color: muted,
-                fontFamily: font,
-                fontSize: labelSize,
-                fontWeight: 900,
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
-                whiteSpace: "nowrap",
-              })}
-              {...attrs("rtp_stats", c, "label")}
-            >
-              {label}
-            </span>
-            <strong
-              style={subElementStyle(c, part, {
-                display: "block",
-                overflow: "hidden",
-                color: part === "rtpValue" ? accent : text,
-                fontFamily: titleFont,
-                fontSize: valueSize,
-                lineHeight: 1.05,
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              })}
-              {...attrs("rtp_stats", c, part)}
-            >
-              {value}
-            </strong>
-          </div>
-        ))}
-      </div>
+            Best Win
+          </span>
+          <span style={{ color: muted, fontSize: labelSize, opacity: 0.5 }}>-</span>
+          <strong
+            style={subElementStyle(c, "personalBest", {
+              overflow: "hidden",
+              color: text,
+              fontFamily: font,
+              fontSize: labelSize + 1,
+              fontWeight: 700,
+              lineHeight: 1,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            })}
+            {...attrs("rtp_stats", c, "personalBest")}
+          >
+            {bestWinValue}
+          </strong>
+        </div>
+      ) : null}
     </div>
   );
+
+  if (previewMode) {
+    return (
+      <div
+        className="better-rtp-preview-shell"
+        style={{
+          width: "100%",
+          height: "100%",
+          minWidth: 0,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          boxSizing: "border-box",
+        }}
+      >
+        {bar}
+        <span
+          aria-hidden="true"
+          style={{
+            width: "min(94%, 1040px)",
+            height: 24,
+            marginTop: -8,
+            borderRadius: "0 0 999px 999px",
+            background: `radial-gradient(50% 100% at 50% 0%, ${alphaColor(c.cRim || accent, 0.28)}, transparent 75%)`,
+            filter: "blur(6px)",
+            animation: "better-soft-pulse 4s ease-in-out infinite",
+          }}
+        />
+      </div>
+    );
+  }
+
+  return bar;
 }
 
 export function BetterBackgroundStyle({ config }) {
