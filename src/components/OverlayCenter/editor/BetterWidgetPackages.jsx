@@ -1626,6 +1626,25 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
     }
     onChange(next);
   };
+  const setBonusSize = (patch) => {
+    const next = { ...c, ...patch };
+    const nextWidth = Number(next.widgetWidth || next.panelWidth) || (
+      next.orientation === "horizontal" ? 1080 : next.orientation === "mainstream" ? 372 : 402
+    );
+    const nextHeight = Number(next.widgetHeight ?? next.panelHeight ?? 0) || 0;
+    if (typeof onWidgetChange === "function") {
+      const widgetPatch = {
+        width: clampNumber(nextWidth, 320, 1280, nextWidth),
+        config: next,
+      };
+      if (nextHeight > 0) {
+        widgetPatch.height = clampNumber(nextHeight, 320, 1080, nextHeight);
+      }
+      onWidgetChange(widgetPatch);
+      return;
+    }
+    onChange(next);
+  };
   const [tab, setTab] = useTab("theme");
   const activeTab = (tabs) => (tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0]);
 
@@ -1891,8 +1910,8 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
       </HuntSection>
 
       <HuntSection title="Sizes & Layout" icon={<SlidersHorizontal size={13} />}>
-        <SliderRow label="Widget width" value={widgetWidth} min={320} max={1280} step={10} unit="px" onChange={(value) => set({ widgetWidth: value, panelWidth: value })} />
-        <SliderRow label="Widget height" value={widgetHeight} min={0} max={980} step={10} format={(value) => value === 0 ? "Auto" : `${value}px`} onChange={(value) => set({ widgetHeight: value, panelHeight: value })} />
+        <SliderRow label="Widget width" value={widgetWidth} min={320} max={1280} step={10} unit="px" onChange={(value) => setBonusSize({ widgetWidth: value, panelWidth: value })} />
+        <SliderRow label="Widget height" value={widgetHeight} min={0} max={980} step={10} format={(value) => value === 0 ? "Auto" : `${value}px`} onChange={(value) => setBonusSize({ widgetHeight: value, panelHeight: value })} />
         <SliderRow label="Rounded edges" value={edgeRadius} min={0} max={36} unit="px" onChange={(value) => set({ edgeRadius: value, radius: value, cardRadius: value })} />
         <SliderRow label="Stat box corners" value={statRadius} min={0} max={22} unit="px" onChange={(statRadius) => set({ statRadius })} />
         <SliderRow label="Progress bar" value={c.barHeight} min={3} max={10} unit="px" onChange={(barHeight) => set({ barHeight })} />

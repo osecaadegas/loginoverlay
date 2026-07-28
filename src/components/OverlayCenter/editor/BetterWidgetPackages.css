@@ -1239,8 +1239,11 @@
 }
 
 .bp-controls--hunt {
-  margin: -14px;
+  height: 100%;
+  min-height: 0;
   color: #dcecff;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .bp-hunt-deck-head {
