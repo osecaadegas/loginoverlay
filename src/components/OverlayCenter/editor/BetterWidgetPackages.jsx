@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
   ChevronDown,
   Coins,
+  Crown,
   Eye,
   EyeOff,
   Flame,
@@ -242,6 +243,19 @@ const BONUS_FONTS = [
   { key: "orbitron", name: "Orbitron", family: "'Orbitron', sans-serif" },
   { key: "chakra", name: "Chakra", family: "'Chakra Petch', sans-serif" },
 ];
+const BONUS_SKINS = [
+  { key: "modern", label: "Modern", swatch: "linear-gradient(135deg,#081228,#45c8ff)", hint: "The dark neon tracker - the default look." },
+  { key: "roman", label: "Roman", swatch: "linear-gradient(135deg,#120e0a,#c0281c)", hint: "Parchment, bronze and laurels - an antiquity reskin of the whole widget." },
+  { key: "metal", label: "Metal", swatch: "linear-gradient(135deg,#12151a,#888d98)", hint: "Brushed gunmetal steel - real metal textures, no lines." },
+  { key: "cyberpunk", label: "Cyber", swatch: "linear-gradient(135deg,#ff2bd6,#00d9ff)", hint: "Retro neon - magenta, cyan, CRT scanlines and synthwave glow." },
+  { key: "spartan", label: "Spartan", swatch: "linear-gradient(135deg,#8a1010,#c8a030)", hint: "Dark chain mail, blood-red accents and gold casino trim." },
+  { key: "bloody", label: "Bloody", swatch: "linear-gradient(135deg,#080101,#ff2030)", hint: "Battle-torn armor with sword blades, shields, helmets and blood spatter." },
+];
+const BONUS_SESSION_STATES = [
+  { key: "hunt", label: "Hunt", hint: "Carousel rotates through queued bonuses" },
+  { key: "opening", label: "Opening", hint: "Locks onto the next unopened bonus" },
+  { key: "ended", label: "Ended", hint: "Freezes on the final hunt layout" },
+];
 
 const BACKGROUND_PRESETS = [
   { id: "midnight", name: "Midnight Mesh", patch: { color1: "#020611", color2: "#0a84ff", color3: "#f97316", texture: "aurora", animSpeed: 10 } },
@@ -255,10 +269,13 @@ export const DEFAULT_BETTER_CONFIG = {
     displayStyle: "better_bonus_hunt",
     colour: "ocean",
     finish: "flat",
+    skin: "modern",
     orientation: "vertical",
+    sessionState: "hunt",
     carouselMode: "3d",
     listMode: "compact",
     drawerMode: "shrink",
+    showRequests: true,
     animations: true,
     animSpeed: 1,
     carouselMs: 3200,
@@ -268,6 +285,13 @@ export const DEFAULT_BETTER_CONFIG = {
     barHeight: 6,
     avatarSize: 28,
     visibleRows: 5,
+    widgetWidth: 0,
+    widgetHeight: 0,
+    edgeRadius: 14,
+    statRadius: 7,
+    panelWidth: 402,
+    panelHeight: 0,
+    radius: 14,
     headerAccent: "#45c8ff",
     accentColor: "#45c8ff",
     headerColor: "#081228",
@@ -1579,7 +1603,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   );
 }
 
-function SimpleThemedControls({ type, config, onChange, onWidgetChange }) {
+function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }) {
   const c = ensureBetterWidgetConfig(type, config);
   const set = (patch) => {
     const nextPatch = { ...patch };
@@ -1708,13 +1732,37 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange }) {
       bgColor: colour.bg,
     });
   };
+  const normalizedSessionState = c.sessionState || (c.bonusOpening ? "opening" : "hunt");
   const orientationHint = c.orientation === "horizontal"
     ? "Wide two-column layout - the log drifts sideways as cards."
-    : "The classic tall tracker - list scrolls upward.";
+    : c.orientation === "mainstream"
+      ? "Mainstream layout - active bonus and stats stay high, with the tracker below."
+      : "The classic tall tracker - list scrolls upward.";
+  const sessionHint = (BONUS_SESSION_STATES.find((item) => item.key === normalizedSessionState) || BONUS_SESSION_STATES[0]).hint;
   const drawerHint = c.drawerMode === "expand"
     ? "The best / worst card expands the panel."
     : "The best / worst card reduces the list area.";
   const currentColour = BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
+  const applySessionState = (sessionState) => set({
+    sessionState,
+    bonusOpening: sessionState === "opening",
+  });
+  const previewWin = (mult, extra = {}) => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(new CustomEvent("better-bonus-hunt-preview-win", {
+      detail: {
+        instanceId: widget?.instanceId || widget?.id || c.__betterInstanceId,
+        mult,
+        max: extra.max === true,
+      },
+    }));
+  };
+  const widgetWidth = Number(c.widgetWidth || c.panelWidth) || (
+    c.orientation === "horizontal" ? 1080 : c.orientation === "mainstream" ? 372 : 402
+  );
+  const widgetHeight = Number(c.widgetHeight ?? c.panelHeight ?? 0) || 0;
+  const edgeRadius = Number(c.edgeRadius ?? c.radius ?? c.cardRadius ?? 14);
+  const statRadius = Number(c.statRadius ?? 7);
 
   return (
     <div className="bp-controls bp-controls--hunt">
@@ -1726,16 +1774,59 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange }) {
         </div>
       </header>
 
+      <HuntSection title="Widget Style" icon={<Sparkles size={13} />}>
+        <HuntChoiceGrid
+          value={c.skin || "modern"}
+          options={BONUS_SKINS}
+          onChange={(skin) => set({ skin })}
+        />
+      </HuntSection>
+
       <HuntSection title="Orientation" icon={<MonitorPlay size={13} />}>
         <HuntChoiceGrid
           value={c.orientation}
+          columns={3}
           options={[
             { key: "vertical", label: "Vertical", hint: "Classic tall tracker" },
             { key: "horizontal", label: "Horizontal", hint: "Wide two-column layout" },
+            { key: "mainstream", label: "Mainstream", hint: "Streamer opening layout" },
           ]}
           onChange={(orientation) => set({ orientation })}
         />
         <HuntHint>{orientationHint}</HuntHint>
+      </HuntSection>
+
+      <HuntSection title="Win FX" icon={<Sparkles size={13} />}>
+        <div className="bp-hunt-fx-grid">
+          {[
+            { mult: 100, label: "100x", icon: Sparkles },
+            { mult: 250, label: "250x", icon: Zap },
+            { mult: 500, label: "500x", icon: Flame },
+            { mult: 1000, label: "1K", icon: Flame },
+            { mult: 5000, label: "Max", icon: Crown, max: true },
+          ].map(({ mult, label, icon: Icon, max }) => (
+            <button
+              key={label}
+              type="button"
+              aria-label={`Preview ${label} win`}
+              onClick={() => previewWin(mult, max ? { max: true } : undefined)}
+            >
+              <Icon size={14} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+        <HuntHint>Preview celebrations. Overlay code can trigger the same effect with window.__boTriggerWin(multiplier).</HuntHint>
+      </HuntSection>
+
+      <HuntSection title="Session State" icon={<Timer size={13} />}>
+        <HuntChoiceGrid
+          value={normalizedSessionState}
+          columns={3}
+          options={BONUS_SESSION_STATES}
+          onChange={applySessionState}
+        />
+        <HuntHint>{sessionHint}</HuntHint>
       </HuntSection>
 
       <HuntSection title="Texture" icon={<Layers size={13} />}>
@@ -1785,6 +1876,10 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange }) {
         <SliderRow label="Rotate every" value={c.carouselMs} min={1500} max={6000} step={100} format={(value) => `${(value / 1000).toFixed(1)}s`} onChange={(carouselMs) => set({ carouselMs })} />
       </HuntSection>
 
+      <HuntSection title="Twitch Requests" icon={<Users size={13} />}>
+        <ToggleRow label="Show requests feed" checked={c.showRequests !== false} onChange={(showRequests) => set({ showRequests })} />
+      </HuntSection>
+
       <HuntSection title="Typography" icon={<Type size={13} />}>
         <HuntChoiceGrid
           value={c.font}
@@ -1796,6 +1891,10 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange }) {
       </HuntSection>
 
       <HuntSection title="Sizes & Layout" icon={<SlidersHorizontal size={13} />}>
+        <SliderRow label="Widget width" value={widgetWidth} min={320} max={1280} step={10} unit="px" onChange={(value) => set({ widgetWidth: value, panelWidth: value })} />
+        <SliderRow label="Widget height" value={widgetHeight} min={0} max={980} step={10} format={(value) => value === 0 ? "Auto" : `${value}px`} onChange={(value) => set({ widgetHeight: value, panelHeight: value })} />
+        <SliderRow label="Rounded edges" value={edgeRadius} min={0} max={36} unit="px" onChange={(value) => set({ edgeRadius: value, radius: value, cardRadius: value })} />
+        <SliderRow label="Stat box corners" value={statRadius} min={0} max={22} unit="px" onChange={(statRadius) => set({ statRadius })} />
         <SliderRow label="Progress bar" value={c.barHeight} min={3} max={10} unit="px" onChange={(barHeight) => set({ barHeight })} />
         <SliderRow label="Avatar" value={c.avatarSize} min={20} max={44} step={2} unit="px" onChange={(avatarSize) => set({ avatarSize })} />
         <SliderRow label="Visible rows" value={c.visibleRows} min={3} max={8} onChange={(visibleRows) => set({ visibleRows })} />
@@ -1852,5 +1951,5 @@ export function BetterWidgetControls({ type, config, onChange, user, widget, onW
       />
     );
   }
-  return <SimpleThemedControls type={type} config={config} onChange={onChange} onWidgetChange={onWidgetChange} />;
+  return <SimpleThemedControls type={type} config={config} onChange={onChange} onWidgetChange={onWidgetChange} widget={widget} />;
 }

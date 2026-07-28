@@ -79,6 +79,11 @@ const MOCK_WIDGET_CONFIGS = {
     startMoney: 2000,
     stopLoss: 700,
     currency: "EUR ",
+    requests: [
+      { username: "miguel", slotName: "Sweet Bonanza 1000" },
+      { username: "arena", slotName: "Gates of Olympus" },
+      { username: "seca", slotName: "Wanted Dead or a Wild" },
+    ],
   },
   giveaway: {
     title: "Giveaway #1",
@@ -159,6 +164,7 @@ const LIVE_DATA_KEYS = Object.freeze({
     "bonuses",
     "huntActive",
     "bonusOpening",
+    "sessionState",
     "previewSlotName",
     "startMoney",
     "targetMoney",
@@ -168,6 +174,12 @@ const LIVE_DATA_KEYS = Object.freeze({
     "sortDir",
     "showStatistics",
     "animatedTracker",
+    "showRequests",
+    "showSlotRequests",
+    "requests",
+    "slotRequests",
+    "pendingRequests",
+    "slotRequestQueue",
   ],
   giveaway: [
     "title",
@@ -310,7 +322,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
-  bonus_hunt: ["orientation", "texture", "colour", "animations", "carousel", "typography", "sizes", "list", "drawer"],
+  bonus_hunt: ["style", "orientation", "session", "texture", "colour", "animations", "carousel", "requests", "typography", "sizes", "list", "drawer"],
   giveaway: ["theme", "size", "edges", "type", "content"],
   navbar: ["identity", "provider", "content", "casino", "spotify", "socials", "layout", "colours"],
   chat: ["theme", "messages", "layout", "typography", "animation", "source"],
@@ -597,11 +609,16 @@ export function betterInstanceToLegacyWidget(instance, mode = "live", context = 
     ...context,
     liveWidget,
   });
+  const instanceConfig = {
+    ...config,
+    __betterInstanceId: instance.instanceId,
+  };
   return {
     id: liveWidget?.id || instance.instanceId,
+    instanceId: instance.instanceId,
     widget_type: instance.widgetType,
     label: instance.label,
-    config,
+    config: instanceConfig,
     is_visible: instance.visible !== false,
     position_x: instance.x,
     position_y: instance.y,

@@ -1370,6 +1370,41 @@
   box-shadow: 0 0 12px rgba(69, 200, 255, 0.18);
 }
 
+.bp-hunt-fx-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.bp-hunt-fx-grid button {
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  border: 1px solid rgba(69, 200, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(7, 16, 34, 0.76);
+  color: #9dbdf2;
+  cursor: pointer;
+  padding: 7px 4px;
+  text-align: center;
+}
+
+.bp-hunt-fx-grid button:hover {
+  border-color: rgba(255, 201, 61, 0.72);
+  color: #ffc93d;
+  box-shadow: 0 0 12px rgba(255, 201, 61, 0.15);
+}
+
+.bp-hunt-fx-grid button span {
+  color: currentColor;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .bp-hunt-swatch-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

@@ -205,7 +205,7 @@ function mergeHydratedBonusImages(bonuses, hydratedBonuses) {
   return changed ? nextBonuses : bonuses;
 }
 
-function BonusHuntWidget({ config, theme, userId }) {
+function BonusHuntWidget({ config, theme, userId, widgetId }) {
   const baseConfig = config || {};
   const rawBonuses = useMemo(
     () => (Array.isArray(baseConfig.bonuses) ? baseConfig.bonuses : []),
@@ -286,6 +286,7 @@ function BonusHuntWidget({ config, theme, userId }) {
   const ds = c.displayStyle || "v1";
   const isHorizontalBH = ds === "v5_horizontal";
   const isCompactBH = ds === "v6_compact";
+  const isBetterBH = ds === "better_bonus_hunt";
   const isClassicRequestsBH =
     ds === "v12_classic_sr" || ds === "v12_classic_sr_editable";
   const bonuses = sortedConfig.bonuses || [];
@@ -385,7 +386,11 @@ function BonusHuntWidget({ config, theme, userId }) {
   const { requests: classicRequestRows } = useBonusHuntRequestsData({
     config: sortedConfig,
     userId,
-    enabled: isClassicRequestsBH && sortedConfig.showSlotRequests !== false,
+    enabled: (
+      isClassicRequestsBH && sortedConfig.showSlotRequests !== false
+    ) || (
+      isBetterBH && sortedConfig.showRequests !== false && sortedConfig.showSlotRequests !== false
+    ),
   });
 
   /* ─── Style switcher (early returns AFTER all hooks) ─── */
@@ -413,10 +418,17 @@ function BonusHuntWidget({ config, theme, userId }) {
   }
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
-  if (c.displayStyle === "better_bonus_hunt") {
+  if (isBetterBH) {
     return (
       <BetterBonusHuntStyle
-        config={sortedConfig}
+        config={{
+          ...sortedConfig,
+          __betterInstanceId: sortedConfig.__betterInstanceId || widgetId,
+          slotRequests: Array.isArray(sortedConfig.slotRequests) && sortedConfig.slotRequests.length
+            ? sortedConfig.slotRequests
+            : classicRequestRows,
+          showRequests: sortedConfig.showRequests ?? sortedConfig.showSlotRequests,
+        }}
         bonuses={bonuses}
         stats={stats}
         currency={currency}
