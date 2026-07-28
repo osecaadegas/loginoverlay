@@ -63,6 +63,7 @@ function bonusImageCandidate(bonus) {
     bonus?.image ||
     bonus?.imageUrl ||
     bonus?.image_url ||
+    bonus?.imageSrc ||
     bonus?.slotImage ||
     bonus?.slotImageUrl ||
     bonus?.slot_image_url ||
@@ -72,7 +73,11 @@ function bonusImageCandidate(bonus) {
     bonus?.slot?.image ||
     bonus?.slot?.imageUrl ||
     bonus?.slot?.image_url ||
+    bonus?.slot?.imageSrc ||
+    bonus?.slot?.slotImageUrl ||
+    bonus?.slot?.slot_image_url ||
     bonus?.slot?.cover ||
+    bonus?.slot?.coverUrl ||
     bonus?.slot?.thumbnail ||
     ""
   );
@@ -83,6 +88,7 @@ function slotImageCandidate(slot) {
     slot?.image ||
     slot?.imageUrl ||
     slot?.image_url ||
+    slot?.imageSrc ||
     slot?.slotImageUrl ||
     slot?.slot_image_url ||
     slot?.cover ||
@@ -205,7 +211,47 @@ function mergeHydratedBonusImages(bonuses, hydratedBonuses) {
   return changed ? nextBonuses : bonuses;
 }
 
-function BonusHuntWidget({ config, theme, userId, widgetId }) {
+function firstFilledString(values = []) {
+  for (const value of values) {
+    if (typeof value !== "string") continue;
+    const trimmed = value.trim();
+    if (trimmed) return trimmed;
+  }
+  return "";
+}
+
+function resolveBonusHuntStreamerProfile(config = {}, allWidgets = []) {
+  const navbarWidget = (Array.isArray(allWidgets) ? allWidgets : []).find((widget) => (
+    widget?.widget_type === "navbar" || widget?.widgetType === "navbar"
+  ));
+  const navbarConfig = navbarWidget?.config || {};
+  const avatarUrl = firstFilledString([
+    config.avatarUrl,
+    config.streamerAvatar,
+    config.avatarImageUrl,
+    config.profileAvatarUrl,
+    config.avatar_url,
+    subValue(config, "avatar", "imageUrl", ""),
+    navbarConfig.avatarUrl,
+    navbarConfig.streamerAvatar,
+    navbarConfig.avatarImageUrl,
+    navbarConfig.profileAvatarUrl,
+    navbarConfig.avatar_url,
+    subValue(navbarConfig, "avatar", "imageUrl", ""),
+  ]);
+  const streamerName = firstFilledString([
+    config.streamerName,
+    config.brandName,
+    config.twitchUsername,
+    navbarConfig.streamerName,
+    navbarConfig.brandName,
+    navbarConfig.twitchUsername,
+  ]);
+
+  return { avatarUrl, streamerName };
+}
+
+function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
   const baseConfig = config || {};
   const rawBonuses = useMemo(
     () => (Array.isArray(baseConfig.bonuses) ? baseConfig.bonuses : []),
@@ -422,10 +468,13 @@ function BonusHuntWidget({ config, theme, userId, widgetId }) {
     const betterRequestsVisible = sortedConfig.showSlotRequests === false
       ? false
       : sortedConfig.showRequests;
+    const streamerProfile = resolveBonusHuntStreamerProfile(sortedConfig, allWidgets);
     return (
       <BetterBonusHuntStyle
         config={{
           ...sortedConfig,
+          avatarUrl: streamerProfile.avatarUrl,
+          streamerName: streamerProfile.streamerName || sortedConfig.streamerName,
           __betterInstanceId: sortedConfig.__betterInstanceId || widgetId,
           slotRequests: Array.isArray(sortedConfig.slotRequests) && sortedConfig.slotRequests.length
             ? sortedConfig.slotRequests

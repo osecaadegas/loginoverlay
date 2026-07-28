@@ -1035,11 +1035,16 @@ function BetterGiveawayPreview({ config }) {
   return <BetterGiveawayStyle config={c} />;
 }
 
-function BetterBonusHuntPreview({ config }) {
+function BetterBonusHuntPreview({ config, allWidgets, userId, widget }) {
   const c = ensureBetterWidgetConfig("bonus_hunt", config);
   return (
     <div className="bp-hunt-preview-stage">
-      <BonusHuntWidget config={c} />
+      <BonusHuntWidget
+        config={c}
+        allWidgets={allWidgets}
+        userId={userId}
+        widgetId={widget?.id || widget?.instanceId}
+      />
     </div>
   );
 }
@@ -1072,7 +1077,14 @@ export function BetterWidgetPreview({ type, config, allWidgets, userId, widget }
     case "giveaway":
       return <BetterGiveawayPreview config={config} />;
     case "bonus_hunt":
-      return <BetterBonusHuntPreview config={config} />;
+      return (
+        <BetterBonusHuntPreview
+          config={config}
+          allWidgets={allWidgets}
+          userId={userId}
+          widget={widget}
+        />
+      );
     default:
       return null;
   }
