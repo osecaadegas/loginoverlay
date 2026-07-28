@@ -32,6 +32,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   background: #07101f;
   border-color: rgba(148, 163, 184, 0.18);
 }
@@ -78,7 +79,9 @@
 
 .better-editor-widget-list,
 .better-editor-settings-scroll {
+  flex: 1 1 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -527,6 +530,7 @@
   gap: 14px;
   padding: 14px;
   background: #06101f;
+  overscroll-behavior: contain;
 }
 
 .better-editor-control-section,
