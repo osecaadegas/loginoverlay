@@ -3161,11 +3161,7 @@ export function BetterRtpStatsStyle({
       : c.potential
         ? c.potential
         : "-";
-  const volatilityValue = displayInfo?.volatility
-    ? String(displayInfo.volatility).replace(/_/g, " ").toUpperCase()
-    : c.volatility
-      ? c.volatility
-      : "-";
+  const volatilityValue = displayInfo?.volatility || c.volatility || "-";
   const bestAmount = displayBestWin?.best_win
     ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
     : c.bestWin
@@ -3176,7 +3172,7 @@ export function BetterRtpStatsStyle({
   const statItems = [
     ["rtpValue", "RTP", rtpValue, showRtp, "0s"],
     ["maxWin", "Potential", potentialValue, showPotential, ".5s"],
-    ["volatility", "Volatility", String(volatilityValue).replace(/_/g, " ").toUpperCase(), showVolatility, "1s"],
+    ["volatility", "Volatility", <BetterHuntVolatilityBars value={volatilityValue} />, showVolatility, "1s"],
   ].filter(([, , , visible]) => visible);
   const bestWinValue = `${bestAmount}${bestMulti}`;
   const bar = (
