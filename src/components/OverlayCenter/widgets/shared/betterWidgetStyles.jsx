@@ -767,6 +767,16 @@ function normalizeVolatilityLevel(value) {
   return { level: 0, label: String(value).replace(/_/g, " ") };
 }
 
+function firstKnownVolatility(...values) {
+  for (const value of values) {
+    if (value === undefined || value === null) continue;
+    const text = String(value).trim();
+    if (!text || text === "-" || text === "—" || text === "â€”") continue;
+    return value;
+  }
+  return "-";
+}
+
 function BetterHuntVolatilityBars({ value }) {
   const { level, label } = normalizeVolatilityLevel(value);
   return (
@@ -3161,7 +3171,7 @@ export function BetterRtpStatsStyle({
       : c.potential
         ? c.potential
         : "-";
-  const volatilityValue = displayInfo?.volatility || c.volatility || "-";
+  const volatilityValue = firstKnownVolatility(displayInfo?.volatility, c.volatility);
   const bestAmount = displayBestWin?.best_win
     ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
     : c.bestWin
