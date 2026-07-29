@@ -128,11 +128,11 @@ const SEO_BY_PATH = {
   },
   '/privacy': {
     title: 'Privacy Policy | Streamers Center',
-    description: 'How Streamers Center collects, uses and protects user data.',
+    description: 'How Streamers Center and Streamers Center Browser collect, use, store, protect and let users control their data.',
   },
   '/terms': {
     title: 'Terms of Service | Streamers Center',
-    description: 'Terms and conditions for using the Streamers Center platform.',
+    description: 'Terms and conditions for using Streamers Center web features, overlays, subscriptions and Streamers Center Browser.',
   },
 };
 

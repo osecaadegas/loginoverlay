@@ -5,181 +5,184 @@ export default function TermsOfService() {
     <div className="legal-page">
       <div className="legal-container">
         <h1 className="legal-title">Terms of Service</h1>
-        <p className="legal-updated">Last updated: June 5, 2026</p>
+        <p className="legal-updated">Last updated: July 29, 2026</p>
 
         <section className="legal-section">
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing and using <strong>https://streamerscenter.com</strong> (the "Service"),
-            you accept and agree to be bound by these Terms of Service. If you do not agree to
-            these terms, please do not use the Service.
+            By accessing or using <strong>https://streamerscenter.com</strong>, Streamers Center
+            web features, Streamers Center overlays, or <strong>Streamers Center Browser</strong>,
+            you agree to these Terms of Service. If you do not agree, do not use the service or app.
           </p>
         </section>
 
         <section className="legal-section">
           <h2>2. Description of Service</h2>
           <p>
-            Streamers Center is a streaming community platform that provides entertainment features
-            including, but not limited to:
+            Streamers Center provides streaming, overlay, dashboard, browser-source, player
+            tracking, community, and desktop browser tools for creators and players. Features may
+            include:
           </p>
           <ul>
-            <li>Community games and interactive features</li>
-            <li>Giveaways and tournaments</li>
-            <li>Points and loyalty system (via StreamElements)</li>
-            <li>Stream overlay tools (Overlay Control Center — premium feature)</li>
-            <li>Partner offers and promotions</li>
+            <li>Stream overlays, widgets, chat tools, slot requests, tournaments, and giveaways</li>
+            <li>Player bonus hunt, slot, casino session, and profit/loss tracking tools</li>
+            <li>Partner offers, creator tools, admin dashboards, and analytics</li>
+            <li>Streamers Center Browser, a Windows desktop app for multi-panel browser workflows</li>
           </ul>
         </section>
 
         <section className="legal-section">
-          <h2>3. Account Registration</h2>
+          <h2>3. Accounts and Eligibility</h2>
           <p>
-            To access certain features of the Service, you must log in using your Twitch account.
-            By doing so, you:
-          </p>
-          <ul>
-            <li>Confirm you are at least 18 years of age</li>
-            <li>Agree to provide accurate and complete information</li>
-            <li>Are responsible for maintaining the security of your Twitch account</li>
-            <li>Accept responsibility for all activities that occur through your account</li>
-          </ul>
-        </section>
-
-        <section className="legal-section">
-          <h2>4. Premium Access and Paid Services</h2>
-          <h3>4.1 Availability</h3>
-          <p>
-            We may offer premium access to selected features such as the Overlay Control Center or
-            other paid services. Any paid access terms, duration, and scope will be presented at
-            the time of purchase or activation.
-          </p>
-
-          <h3>4.2 Billing</h3>
-          <p>
-            If a paid plan or paid service is enabled, the applicable billing terms will be shown
-            before you complete the purchase. Where a third-party payment provider is used, that
-            checkout flow will govern the payment transaction itself.
-          </p>
-
-          <h3>4.3 Cancellation</h3>
-          <p>
-            If a recurring paid plan is active, you may cancel it at any time. Upon cancellation:
-          </p>
-          <ul>
-            <li>You will retain access until the end of your current billing period</li>
-            <li>No further charges will be made</li>
-            <li>No partial refunds are provided for the remaining period</li>
-          </ul>
-
-          <h3>4.4 Refunds</h3>
-          <p>
-            Refund requests may be considered on a case-by-case basis within 14 days of purchase,
-            subject to the terms shown at checkout and applicable EU consumer protection laws.
-            To request a refund, please contact us.
+            Some features require authentication through Twitch or another supported service. By
+            creating or using an account, you confirm that you are at least 18 years old, that your
+            information is accurate, and that you are responsible for activity through your account.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>5. User Conduct</h2>
-          <p>When using the Service, you agree not to:</p>
+          <h2>4. Streamers Center Browser</h2>
+          <p>
+            Streamers Center Browser lets users load third-party websites in independent browser
+            panels. Those websites are not controlled by Streamers Center. You are responsible for
+            complying with the terms, privacy policies, account rules, and local laws that apply to
+            any third-party website opened inside the app.
+          </p>
+          <p>
+            The app is provided as a productivity and streaming workflow tool. We do not guarantee
+            that every website will function, remain available, permit embedded desktop-browser
+            use, or support every browser capability.
+          </p>
+          <p>
+            If the app is distributed through Microsoft Store, Store installation, update,
+            certification, and signing processes may also be governed by Microsoft Store terms.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>5. Premium Access and Paid Services</h2>
+          <p>
+            We may offer paid access to selected features. Prices, billing intervals, trial terms,
+            cancellation rules, and included features are shown before purchase or activation.
+            Payment processing is handled by third-party providers such as Mollie and, where
+            applicable or legacy records exist, Stripe.
+          </p>
+          <p>
+            If a recurring paid plan is active, you may cancel it according to the cancellation
+            controls or support process available for that provider. Unless required by law or
+            stated at checkout, partial refunds are not guaranteed.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>6. User Conduct</h2>
+          <p>When using Streamers Center, you agree not to:</p>
           <ul>
-            <li>Violate any applicable laws or regulations</li>
-            <li>Impersonate any person or entity</li>
-            <li>Harass, abuse, or threaten other users</li>
-            <li>Attempt to gain unauthorized access to the Service or its systems</li>
-            <li>Use bots, scripts, or automated tools to interact with the Service</li>
+            <li>Violate applicable laws, platform rules, or third-party website terms</li>
+            <li>Impersonate another person or entity</li>
+            <li>Harass, abuse, threaten, or exploit other users</li>
+            <li>Attempt unauthorized access to Streamers Center, user accounts, APIs, or systems</li>
+            <li>Use bots, scripts, scraping, or automation where not explicitly allowed</li>
             <li>Exploit bugs or vulnerabilities instead of reporting them</li>
-            <li>Share your premium access or account credentials with others</li>
+            <li>Share premium access, private tokens, account credentials, or protected links</li>
           </ul>
         </section>
 
         <section className="legal-section">
-          <h2>6. Intellectual Property</h2>
+          <h2>7. Intellectual Property</h2>
           <p>
-            All content, features, and functionality of the Service — including but not limited to
-            text, graphics, logos, icons, software, and design — are owned by Streamers Center and
-            are protected by copyright and other intellectual property laws.
-          </p>
-          <p>
-            You may not reproduce, distribute, modify, or create derivative works from any part
-            of the Service without our prior written consent.
+            Streamers Center software, design, branding, features, text, graphics, logos, and code
+            are owned by Streamers Center or its licensors and are protected by intellectual
+            property laws. You may not copy, redistribute, resell, modify, or create derivative
+            works from the service except where expressly permitted.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>7. Games and Virtual Currency</h2>
+          <h2>8. Games, Points, Gambling, and Tracking</h2>
           <p>
-            Points and virtual currencies within the Service (including StreamElements points)
-            have no real monetary value and cannot be exchanged for real currency. They are for
-            entertainment purposes only within the platform.
+            Streamers Center tools are for streaming, entertainment, analytics, and record-keeping.
+            Points and virtual currencies inside the service have no real-money value and cannot be
+            exchanged for real currency through Streamers Center.
           </p>
           <p>
-            Games available on the platform are for entertainment purposes only. No real money
-            gambling is offered through the Service.
-          </p>
-        </section>
-
-        <section className="legal-section">
-          <h2>8. Giveaways and Tournaments</h2>
-          <p>
-            Giveaways and tournaments are subject to their own specific rules as stated at the
-            time of the event. We reserve the right to modify, suspend, or cancel any giveaway
-            or tournament at our discretion.
+            Streamers Center does not offer real-money gambling, does not process wagers, and does
+            not predict or guarantee gambling outcomes. Casino session, slot, bonus hunt, and
+            profit/loss tools are record-keeping tools only.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>9. Disclaimer of Warranties</h2>
+          <h2>9. Giveaways, Tournaments, and Partner Offers</h2>
           <p>
-            The Service is provided on an "as is" and "as available" basis without warranties of
-            any kind, either express or implied. We do not guarantee that the Service will be
-            uninterrupted, secure, or error-free.
+            Giveaways, tournaments, promotions, and partner offers may have separate rules, terms,
+            eligibility requirements, or third-party conditions. We may modify, suspend, or cancel
+            them where needed for fairness, security, compliance, or operational reasons.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>10. Limitation of Liability</h2>
+          <h2>10. Disclaimers</h2>
           <p>
-            To the maximum extent permitted by law, Streamers Center shall not be liable for any
-            indirect, incidental, special, consequential, or punitive damages resulting from your
-            use of or inability to use the Service.
+            Streamers Center is provided on an "as is" and "as available" basis. We do not guarantee
+            uninterrupted, secure, error-free, or loss-free operation. We do not guarantee that
+            overlays, widgets, browser panels, integrations, APIs, third-party websites, or payment
+            providers will always remain available or compatible.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>11. Termination</h2>
+          <h2>11. Limitation of Liability</h2>
           <p>
-            We reserve the right to suspend or terminate your access to the Service at any time,
-            with or without cause, including for violation of these Terms. Upon termination, your
-            right to use the Service will immediately cease.
+            To the maximum extent permitted by law, Streamers Center shall not be liable for
+            indirect, incidental, special, consequential, punitive, business-interruption, data-loss,
+            account-loss, or revenue-loss damages resulting from use of or inability to use the
+            service or desktop app.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>12. Governing Law</h2>
+          <h2>12. Suspension and Termination</h2>
           <p>
-            These Terms shall be governed by and construed in accordance with the laws of Portugal
-            and the European Union. Any disputes arising from these Terms shall be subject to the
-            exclusive jurisdiction of the courts of Portugal.
+            We may suspend or terminate access to the service at any time where required for
+            security, abuse prevention, legal compliance, payment issues, platform requirements, or
+            violation of these Terms. Upon termination, your right to use protected features ends.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>13. Changes to Terms</h2>
+          <h2>13. Privacy</h2>
           <p>
-            We reserve the right to modify these Terms at any time. We will notify users of
-            significant changes by updating the "Last updated" date. Continued use of the Service
-            after changes constitutes acceptance of the revised Terms.
+            Our handling of personal data is described in the Privacy Policy at
+            <strong> https://streamerscenter.com/privacy</strong>. By using the service or desktop
+            app, you acknowledge that the Privacy Policy applies.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>14. Contact Us</h2>
+          <h2>14. Governing Law</h2>
           <p>
-            If you have any questions about these Terms of Service, please contact us:
+            These Terms are governed by the laws of Portugal and applicable European Union law. Any
+            disputes shall be subject to the competent courts of Portugal, except where mandatory
+            consumer law provides otherwise.
           </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>15. Changes to Terms</h2>
+          <p>
+            We may update these Terms from time to time. We will notify users of changes by
+            updating the "Last updated" date. Continued use after changes means you accept the
+            revised Terms.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>16. Contact Us</h2>
+          <p>If you have questions about these Terms, contact us:</p>
           <ul>
             <li>Website: <strong>https://streamerscenter.com</strong></li>
+            <li>Email: <strong>privacy@streamerscenter.com</strong></li>
           </ul>
         </section>
       </div>
