@@ -2,6 +2,7 @@ import analyticsHandler from './_lib/routes/analytics.js';
 import autoDrawWinnersHandler from './_lib/routes/auto-draw-winners.js';
 import affiliateHandler from './_lib/routes/affiliate.js';
 import bettingHandler from './_lib/routes/betting.js';
+import chatHandler from './_lib/routes/chat.js';
 import playerSubscriptionHandler from './_lib/routes/player-subscription.js';
 import premiumHandler from './_lib/routes/premium.js';
 import serviceReadinessHandler from './_lib/routes/service-readiness.js';
@@ -12,6 +13,7 @@ const ROUTES = {
   analytics: analyticsHandler,
   'auto-draw-winners': autoDrawWinnersHandler,
   betting: bettingHandler,
+  chat: chatHandler,
   'player-subscription': playerSubscriptionHandler,
   premium: premiumHandler,
   'service-readiness': serviceReadinessHandler,

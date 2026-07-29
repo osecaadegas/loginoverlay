@@ -43,9 +43,9 @@ const BADGE_DEFS = [
 const MESSAGE_TTL_MS = 120 * 1000;
 const HIDDEN_BOTS = new Set(["streamelements", "nightbot", "moobot"]);
 const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
-const BTTV_GLOBAL_EMOTES_URL = "https://api.betterttv.net/3/cached/emotes/global";
-const BTTV_TWITCH_USER_URL = "https://api.betterttv.net/3/cached/users/twitch";
+const BTTV_EMOTES_API_URL = "/api/chat/emotes/bttv";
 const BTTV_CDN_URL = "https://cdn.betterttv.net/emote";
+const BTTV_CLIENT_CACHE_MS = 10 * 60 * 1000;
 const HEADER_CHAT_STYLES = new Set([
   "classic",
   "cards",
@@ -64,12 +64,7 @@ const BADGE_CHAT_STYLES = new Set([
   "better_chat",
 ]);
 const CHAT_PLATFORMS = ["twitch", "youtube", "kick"];
-const bttvGlobalCache = {
-  loaded: false,
-  promise: null,
-  emotes: [],
-};
-const bttvChannelCache = new Map();
+const bttvEmoteCache = new Map();
 
 const CHAT_STYLE_DEFAULTS = {
   textColor: {
@@ -280,77 +275,84 @@ function normalizeBttvEmote(item = {}) {
   const id = String(item.id || "").trim();
   const code = String(item.code || "").trim();
   if (!id || !code) return null;
-  return { id, code };
+  return {
+    id,
+    code,
+    imageType: String(item.imageType || ""),
+    animated: Boolean(item.animated),
+  };
 }
 
-async function fetchBttvJson(url) {
-  if (typeof fetch !== "function") return null;
-  const response = await fetch(url, {
+async function fetchBttvEmotesFromApi({
+  globalEnabled,
+  channelEnabled,
+  twitchUserId,
+  twitchChannel,
+}) {
+  if (typeof fetch !== "function") return [];
+  const params = new URLSearchParams();
+  params.set("global", globalEnabled ? "1" : "0");
+  params.set("channel", channelEnabled ? "1" : "0");
+
+  if (twitchUserId) {
+    params.set("channelId", twitchUserId);
+  } else if (twitchChannel) {
+    params.set("channelName", twitchChannel);
+  }
+
+  const response = await fetch(`${BTTV_EMOTES_API_URL}?${params.toString()}`, {
     headers: { Accept: "application/json" },
   });
   if (!response.ok) {
-    throw new Error(`BetterTTV request failed: ${response.status}`);
+    throw new Error(`BetterTTV emote route failed: ${response.status}`);
   }
-  return response.json();
+
+  const payload = await response.json();
+  return Array.isArray(payload?.emotes)
+    ? payload.emotes.map(normalizeBttvEmote).filter(Boolean)
+    : [];
 }
 
-function loadBttvGlobalEmotes() {
-  if (bttvGlobalCache.loaded) return Promise.resolve(bttvGlobalCache.emotes);
-  if (!bttvGlobalCache.promise) {
-    bttvGlobalCache.promise = fetchBttvJson(BTTV_GLOBAL_EMOTES_URL)
-      .then((items) => {
-        bttvGlobalCache.emotes = Array.isArray(items)
-          ? items.map(normalizeBttvEmote).filter(Boolean)
-          : [];
-        bttvGlobalCache.loaded = true;
-        return bttvGlobalCache.emotes;
-      })
-      .catch(() => {
-        bttvGlobalCache.loaded = true;
-        bttvGlobalCache.emotes = [];
-        return [];
-      });
-  }
-  return bttvGlobalCache.promise;
-}
-
-function loadBttvChannelEmotes(twitchUserId) {
-  const key = String(twitchUserId || "").trim();
-  if (!key) return Promise.resolve([]);
-  const cached = bttvChannelCache.get(key);
-  if (cached?.loaded) return Promise.resolve(cached.emotes);
-  if (cached?.promise) return cached.promise;
-
-  const entry = { loaded: false, promise: null, emotes: [] };
-  entry.promise = fetchBttvJson(`${BTTV_TWITCH_USER_URL}/${encodeURIComponent(key)}`)
-    .then((payload) => {
-      const channelEmotes = Array.isArray(payload?.channelEmotes)
-        ? payload.channelEmotes
-        : [];
-      const sharedEmotes = Array.isArray(payload?.sharedEmotes)
-        ? payload.sharedEmotes
-        : [];
-      entry.emotes = [...channelEmotes, ...sharedEmotes]
-        .map(normalizeBttvEmote)
-        .filter(Boolean);
-      entry.loaded = true;
-      return entry.emotes;
-    })
-    .catch(() => {
-      entry.loaded = true;
-      entry.emotes = [];
-      return [];
-    });
-  bttvChannelCache.set(key, entry);
-  return entry.promise;
-}
-
-function buildBttvMap(emoteGroups = []) {
+function buildBttvMap(emotes = []) {
   const map = new Map();
-  emoteGroups.flat().forEach((emote) => {
+  emotes.forEach((emote) => {
     if (emote?.code && emote?.id) map.set(emote.code, emote);
   });
   return map;
+}
+
+function loadBetterTtvEmotes(options = {}) {
+  const key = [
+    options.globalEnabled ? "global" : "no-global",
+    options.channelEnabled ? "channel" : "no-channel",
+    String(options.twitchUserId || "").trim(),
+    normalizedUsername(options.twitchChannel),
+  ].join(":");
+  const cached = bttvEmoteCache.get(key);
+
+  if (cached?.emotes && cached.expiresAt > Date.now()) {
+    return Promise.resolve(cached.emotes);
+  }
+  if (cached?.promise) return cached.promise;
+
+  const entry = { emotes: [], expiresAt: 0, promise: null };
+  entry.promise = fetchBttvEmotesFromApi(options)
+    .then((emotes) => {
+      entry.emotes = emotes;
+      entry.expiresAt = Date.now() + BTTV_CLIENT_CACHE_MS;
+      entry.promise = null;
+      return emotes;
+    })
+    .catch((error) => {
+      console.warn("Failed to load BetterTTV emotes:", error);
+      entry.emotes = [];
+      entry.expiresAt = Date.now() + 60 * 1000;
+      entry.promise = null;
+      return [];
+    });
+
+  bttvEmoteCache.set(key, entry);
+  return entry.promise;
 }
 
 function resolveBttvTwitchUserId(config = {}) {
@@ -361,7 +363,29 @@ function resolveBttvTwitchUserId(config = {}) {
       config.twitch_broadcaster_id ||
       config.broadcasterId ||
       config.broadcaster_id ||
+      config.twitchId ||
+      config.twitch_id ||
+      config.twitchUserID ||
+      config.userId ||
+      config.user_id ||
       config.providerId ||
+      config.provider_id ||
+      "",
+  ).trim();
+}
+
+function resolveBttvTwitchChannel(config = {}, fallbackChannel = "") {
+  return String(
+    config.twitchChannel ||
+      config.twitch_channel ||
+      config.twitchLogin ||
+      config.twitch_login ||
+      config.twitchUsername ||
+      config.twitch_username ||
+      config.channelLogin ||
+      config.channel_login ||
+      config.channel ||
+      fallbackChannel ||
       "",
   ).trim();
 }
@@ -371,6 +395,7 @@ function useBetterTtvEmotes({
   globalEnabled,
   channelEnabled,
   twitchUserId,
+  twitchChannel,
 }) {
   const [emoteMap, setEmoteMap] = useState(() => new Map());
 
@@ -381,24 +406,24 @@ function useBetterTtvEmotes({
       return undefined;
     }
 
-    const jobs = [];
-    if (globalEnabled) jobs.push(loadBttvGlobalEmotes());
-    if (channelEnabled && twitchUserId) {
-      jobs.push(loadBttvChannelEmotes(twitchUserId));
-    }
-    if (!jobs.length) {
+    if (!globalEnabled && !channelEnabled) {
       setEmoteMap(new Map());
       return undefined;
     }
 
-    Promise.all(jobs).then((groups) => {
-      if (!cancelled) setEmoteMap(buildBttvMap(groups));
+    loadBetterTtvEmotes({
+      globalEnabled,
+      channelEnabled,
+      twitchUserId,
+      twitchChannel,
+    }).then((emotes) => {
+      if (!cancelled) setEmoteMap(buildBttvMap(emotes));
     });
 
     return () => {
       cancelled = true;
     };
-  }, [channelEnabled, enabled, globalEnabled, twitchUserId]);
+  }, [channelEnabled, enabled, globalEnabled, twitchChannel, twitchUserId]);
 
   return emoteMap;
 }
@@ -425,6 +450,7 @@ function renderBttvMessageContent(text, emoteMap, scale = 2) {
         src={`${BTTV_CDN_URL}/${encodeURIComponent(emote.id)}/${cdnScale}x`}
         alt={emote.code}
         title={emote.code}
+        draggable={false}
         decoding="async"
         referrerPolicy="no-referrer"
         style={{ height: displayHeight, width: "auto" }}
@@ -657,12 +683,16 @@ function ChatWidget({ config, theme, allWidgets }) {
       ? "top-to-bottom"
       : "bottom-to-top"
     : "bottom-to-top";
+  const autoChannel = useTwitchChannel();
+  const resolvedTwitchChannel = c.twitchChannel || autoChannel || "";
   const bttvTwitchUserId = resolveBttvTwitchUserId(c);
+  const bttvTwitchChannel = resolveBttvTwitchChannel(c, resolvedTwitchChannel);
   const bttvEmotes = useBetterTtvEmotes({
     enabled: isBetterChat && c.bttvEnabled !== false,
     globalEnabled: c.bttvGlobal !== false,
     channelEnabled: c.bttvChannel !== false,
     twitchUserId: bttvTwitchUserId,
+    twitchChannel: bttvTwitchChannel,
   });
   const renderBetterChatMessageContent = useCallback(
     (text) => renderBttvMessageContent(text, bttvEmotes, c.bttvSize),
@@ -934,8 +964,6 @@ function ChatWidget({ config, theme, allWidgets }) {
   }, [messageTtlMs, shouldExpireMessages]);
 
   /* Connect to enabled platforms */
-  const autoChannel = useTwitchChannel();
-  const resolvedTwitchChannel = c.twitchChannel || autoChannel || "";
   useTwitchChat(c.twitchEnabled ? resolvedTwitchChannel : "", handleMessage, {
     parseRaids: true,
   });
@@ -1151,7 +1179,7 @@ function ChatWidget({ config, theme, allWidgets }) {
         @keyframes better-chat-slide-right{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
         @keyframes better-chat-fade-in{from{opacity:0}to{opacity:1}}
         @keyframes better-chat-lantern{0%{left:-100%}100%{left:100%}}
-        .ov-chat-widget--better_chat .ov-chat-bttv-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:4em;filter:drop-shadow(0 0 5px rgba(0,195,255,.22))}
+        .ov-chat-widget--better_chat .ov-chat-bttv-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:4em;line-height:1;user-select:none;filter:drop-shadow(0 0 5px rgba(0,195,255,.22))}
         .ov-chat-widget--better_chat .ov-chat-messages::-webkit-scrollbar{display:none}
       `}</style>
 
