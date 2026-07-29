@@ -7,6 +7,7 @@
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -42,7 +43,6 @@ import usePresets from "../../hooks/usePresets";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../../shared/analytics";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
-import OverlayPreview from "./OverlayPreview";
 import ConnectServicesStep from "./setup/ConnectServicesStep";
 import { buildSyncedConfig } from "./WidgetManager";
 import PresetLibrary from "./PresetLibrary";
@@ -57,7 +57,17 @@ import {
   TOOL_STATUS,
   resolveToolStatus,
 } from "./toolStatusResolver";
-import { buildOverlayAppearanceState } from "./appearance/appearanceModel";
+import {
+  getBetterEditorLiveSource,
+  getOrCreateBetterEditorOverlay,
+  subscribeToBetterLiveSource,
+  unsubscribeBetterLiveSource,
+} from "../../services/betterOverlayService";
+import {
+  BETTER_CANVAS,
+  normalizeBetterLayout,
+  renderBetterWidgetInstance,
+} from "./editor/betterWidgetRegistry";
 import "./OverlayCenter.css";
 import "./OverlayRenderer.css";
 import {
@@ -71,6 +81,7 @@ import {
 import "./widgets/builtinWidgets";
 
 const SETUP_VERSION = 1;
+const BETTER_PREVIEW_REFRESH_MS = 30000;
 const BONUS_HUNT_CURRENCY_OPTIONS = [
   { value: "\u20ac", label: "\u20ac EUR" },
   { value: "$", label: "$ USD" },
@@ -836,17 +847,229 @@ function PreviewToolRailCard({ tool, side, onOpen }) {
   );
 }
 
+class BetterPreviewWidgetBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.instanceId !== this.props.instanceId && this.state.error) {
+      this.setState({ error: null });
+    }
+  }
+
+  render() {
+    if (this.state.error) return null;
+    return this.props.children;
+  }
+}
+
+function useBetterPreviewScale(active) {
+  const shellRef = useRef(null);
+  const [scale, setScale] = useState(0.5);
+
+  useLayoutEffect(() => {
+    if (!active || !shellRef.current) return undefined;
+
+    const update = () => {
+      const rect = shellRef.current?.getBoundingClientRect();
+      if (!rect?.width || !rect?.height) return;
+      setScale(
+        Math.min(
+          rect.width / BETTER_CANVAS.width,
+          rect.height / BETTER_CANVAS.height,
+        ),
+      );
+    };
+
+    update();
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(update);
+      resizeObserver.observe(shellRef.current);
+    }
+    window.addEventListener("resize", update);
+    return () => {
+      if (resizeObserver) resizeObserver.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [active]);
+
+  return { shellRef, scale };
+}
+
+function BetterEditorInlinePreview({ userId, active, onStatusChange }) {
+  const { shellRef, scale } = useBetterPreviewScale(active);
+  const [layout, setLayout] = useState(null);
+  const [error, setError] = useState("");
+  const [liveSource, setLiveSource] = useState(() => ({
+    overlayId: null,
+    widgets: [],
+    theme: null,
+  }));
+
+  useEffect(() => {
+    if (!active || !userId) {
+      setLayout(null);
+      setError("");
+      onStatusChange?.("closed");
+      return undefined;
+    }
+
+    let alive = true;
+
+    const refreshLayout = async () => {
+      onStatusChange?.("connecting");
+      const record = await getOrCreateBetterEditorOverlay(userId);
+      if (!alive) return;
+      setLayout(normalizeBetterLayout(record.draftLayout));
+      setError("");
+      onStatusChange?.("connected");
+    };
+
+    refreshLayout().catch((loadError) => {
+      console.error("[OverlayCenter] Failed to load Better editor preview:", loadError);
+      if (!alive) return;
+      setError("Better editor preview could not load.");
+      onStatusChange?.("disconnected");
+    });
+
+    const fallbackInterval = window.setInterval(() => {
+      refreshLayout().catch((loadError) => {
+        console.error("[OverlayCenter] Failed to refresh Better editor preview:", loadError);
+      });
+    }, BETTER_PREVIEW_REFRESH_MS);
+
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshLayout().catch((loadError) => {
+          console.error("[OverlayCenter] Failed to refresh Better editor preview:", loadError);
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", refreshOnVisible);
+    return () => {
+      alive = false;
+      window.clearInterval(fallbackInterval);
+      document.removeEventListener("visibilitychange", refreshOnVisible);
+    };
+  }, [active, onStatusChange, userId]);
+
+  useEffect(() => {
+    if (!active || !userId) {
+      setLiveSource({ overlayId: null, widgets: [], theme: null });
+      return undefined;
+    }
+
+    let alive = true;
+    let channel = null;
+
+    const refreshLiveSource = async () => {
+      const source = await getBetterEditorLiveSource(userId);
+      if (!alive) return null;
+      setLiveSource(source);
+      return source;
+    };
+
+    refreshLiveSource()
+      .then((source) => {
+        if (!alive || !source?.overlayId) return;
+        channel = subscribeToBetterLiveSource(userId, source.overlayId, {
+          onWidgets: () => refreshLiveSource().catch((liveError) => {
+            console.error("[OverlayCenter] Failed to refresh Better preview live data:", liveError);
+          }),
+          onTheme: (theme) => {
+            setLiveSource((current) => ({ ...current, theme }));
+          },
+        });
+      })
+      .catch((liveError) => {
+        console.error("[OverlayCenter] Failed to load Better preview live data:", liveError);
+      });
+
+    const fallbackInterval = window.setInterval(() => {
+      refreshLiveSource().catch((liveError) => {
+        console.error("[OverlayCenter] Failed to refresh Better preview live data:", liveError);
+      });
+    }, BETTER_PREVIEW_REFRESH_MS);
+
+    return () => {
+      alive = false;
+      unsubscribeBetterLiveSource(channel);
+      window.clearInterval(fallbackInterval);
+    };
+  }, [active, userId]);
+
+  if (error) {
+    return <div className="oc2-better-preview-empty">{error}</div>;
+  }
+
+  if (!layout) {
+    return (
+      <div className="oc2-better-preview-empty">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  return (
+    <div className="oc2-better-preview-shell" ref={shellRef}>
+      <div
+        className="oc2-better-preview-canvas"
+        style={{
+          width: BETTER_CANVAS.width,
+          height: BETTER_CANVAS.height,
+          transform: `translate(-50%, -50%) scale(${scale})`,
+        }}
+      >
+        {layout.instances
+          .filter((instance) => instance.visible !== false)
+          .sort((a, b) => Number(a.zIndex) - Number(b.zIndex))
+          .map((instance) => (
+            <div
+              key={instance.instanceId}
+              className="oc2-better-preview-instance"
+              style={{
+                left: instance.x,
+                top: instance.y,
+                width: instance.width,
+                height: instance.height,
+                opacity: instance.opacity,
+                zIndex: instance.zIndex,
+              }}
+            >
+              <BetterPreviewWidgetBoundary instanceId={instance.instanceId}>
+                {renderBetterWidgetInstance({
+                  instance,
+                  layout,
+                  mode: "live",
+                  userId,
+                  theme: liveSource.theme,
+                  liveWidgets: liveSource.widgets,
+                })}
+              </BetterPreviewWidgetBoundary>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
 function ToolsLivePreviewDock({
   expanded,
   onToggle,
   previewStatus,
-  widgets,
-  theme,
-  appearance,
   userId,
   leftTools,
   rightTools,
   onOpenTool,
+  onStatusChange,
 }) {
   const toggleInlinePreview = (event) => {
     event.preventDefault();
@@ -904,17 +1127,13 @@ function ToolsLivePreviewDock({
                 className={`oc2-status-dot oc2-status-dot--${previewStatus || "closed"}`}
               />
               <strong>Live preview</strong>
-              <small>No iframe reload</small>
+              <small>Better editor draft</small>
             </div>
-            {widgets.length > 0 ? (
-              <OverlayPreview
-                widgets={widgets}
-                theme={theme}
-                appearance={appearance}
+            {userId ? (
+              <BetterEditorInlinePreview
                 userId={userId}
-                zoom="fit"
-                previewMode="full-overlay"
-                previewBackground="dark"
+                active={expanded}
+                onStatusChange={onStatusChange}
               />
             ) : (
               <div className="oc2-empty-strip">No enabled tools yet.</div>
@@ -1000,12 +1219,10 @@ function ToolWorkspace({
   integrations,
   isAdmin,
   previewStatus,
-  previewWidgets,
-  theme,
-  appearance,
   userId,
   previewActive,
   onPreviewToggle,
+  onPreviewStatusChange,
   onOpenTool,
   onToggleTool,
   onAddTool,
@@ -1060,13 +1277,11 @@ function ToolWorkspace({
         expanded={previewActive}
         onToggle={onPreviewToggle}
         previewStatus={previewStatus}
-        widgets={previewWidgets}
-        theme={theme}
-        appearance={appearance}
         userId={userId}
         leftTools={leftPreviewTools}
         rightTools={rightPreviewTools}
         onOpenTool={onOpenTool}
+        onStatusChange={onPreviewStatusChange}
       />
 
       {!previewActive && (
@@ -2116,14 +2331,6 @@ export default function OverlayControlCenter() {
     () => getOverlayUrl(instance, { preview: true }),
     [instance],
   );
-  const overlayAppearanceState = useMemo(
-    () => buildOverlayAppearanceState(overlayState || {}, { theme, widgets }),
-    [overlayState, theme, widgets],
-  );
-  const toolsPreviewWidgets = useMemo(
-    () => (widgets || []).filter((widget) => widget.is_visible !== false),
-    [widgets],
-  );
   const setup = useMemo(
     () => mergeSetupState(overlayState?.overlaySetup, widgets, theme, instance),
     [overlayState?.overlaySetup, widgets, theme, instance],
@@ -2551,12 +2758,10 @@ export default function OverlayControlCenter() {
             integrations={integrations}
             isAdmin={isAdmin}
             previewStatus={previewStatus}
-            previewWidgets={toolsPreviewWidgets}
-            theme={theme}
-            appearance={overlayAppearanceState.draft}
             userId={user?.id}
             previewActive={toolsPreviewExpanded}
             onPreviewToggle={() => setToolsPreviewExpanded((active) => !active)}
+            onPreviewStatusChange={setPreviewStatus}
             onOpenTool={(type) => {
               trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, {
                 widget_type: type,
