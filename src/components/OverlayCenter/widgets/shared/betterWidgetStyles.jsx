@@ -1403,7 +1403,7 @@ function BetterStyleSheet() {
       .better-hunt-fraction strong{color:var(--bh-ice);font-size:1.08em;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 50%,transparent)}
       .better-hunt-list{min-height:0;overflow:hidden}
       .better-hunt-list-inner{display:grid;gap:6px}
-      .better-hunt-list--scroll .better-hunt-list-inner{animation:better-hunt-marquee-up calc(26s / var(--anim-speed,1)) linear infinite}
+      .better-hunt-list--scroll .better-hunt-list-inner{animation:better-hunt-marquee-up calc(var(--bh-list-duration,26s) / var(--anim-speed,1)) linear infinite}
       .better-hunt-row{min-width:0;display:grid;align-items:center;border:1px solid color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:9px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 85%,transparent),color-mix(in srgb,var(--bh-card-lo) 85%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 7%,transparent)}
       .better-hunt-row--compact{grid-template-columns:26px auto minmax(0,1fr) auto;gap:9px;min-height:52px;padding:7px 8px}
       .better-hunt-row--names{grid-template-columns:26px minmax(0,1fr) auto;gap:8px;min-height:32px;padding:6px 8px}
@@ -1945,8 +1945,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const multi = bonusMultiplierValue(bonus);
     return !worst || multi < bonusMultiplierValue(worst) ? bonus : worst;
   }, null);
-  const listRows = rows.slice(0, visibleRows);
+  const listRows = rows;
   const scrollingRows = rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
+  const listDuration = `${Math.max(26, rows.length * 1.35)}s`;
   const winAccents = {
     roman: { ember: "#c0281c", tangerine: "#a06820" },
     metal: { ember: "#e04820", tangerine: "#c89430" },
@@ -2287,7 +2288,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const renderList = () => (
     <div
       className={`better-hunt-list better-hunt-list--${listMode}${rows.length > visibleRows && c.animations !== false ? " better-hunt-list--scroll" : ""}${skin !== "modern" ? " better-hunt-rails" : ""}`}
-      style={{ height: listHeight }}
+      style={{ height: listHeight, "--bh-list-duration": listDuration }}
       {...attrs("bonus_hunt", c, "slotListContainer")}
     >
       {rows.length ? (
