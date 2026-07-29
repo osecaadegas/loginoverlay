@@ -801,6 +801,30 @@ function resolveActiveRtpSlot({
 
 function resolveLocalSlotInfo({ slotName, currentBonus, activeSlot }) {
   if (!slotName) return null;
+  const currentBonusMetadata = currentBonus
+    ? {
+        rtp:
+          currentBonus.slot_rtp ??
+          currentBonus.slotRtp ??
+          currentBonus.rtp ??
+          currentBonus.slot?.rtp ??
+          null,
+        volatility:
+          currentBonus.slot_volatility ||
+          currentBonus.slotVolatility ||
+          currentBonus.volatility ||
+          currentBonus.slot?.volatility ||
+          null,
+        max_win_multiplier:
+          currentBonus.slot_max_win_multiplier ??
+          currentBonus.slotMaxWinMultiplier ??
+          currentBonus.max_win_multiplier ??
+          currentBonus.maxWinMultiplier ??
+          currentBonus.slot?.max_win_multiplier ??
+          currentBonus.slot?.maxWinMultiplier ??
+          null,
+      }
+    : {};
   const currentBonusRecord = currentBonus?.slot
     ? {
         slot_id: currentBonus.slot.id,
@@ -815,6 +839,7 @@ function resolveLocalSlotInfo({ slotName, currentBonus, activeSlot }) {
       name: currentBonus.slot.name || slotName,
       provider: currentBonus.slot.provider || activeSlot.provider || "",
       image: currentBonus.slot.image || activeSlot.image || "",
+      ...currentBonusMetadata,
       source: "selected_bonus",
     };
   }
@@ -823,8 +848,28 @@ function resolveLocalSlotInfo({ slotName, currentBonus, activeSlot }) {
     name: slotName,
     provider: activeSlot.provider || "",
     image: activeSlot.image || "",
+    ...currentBonusMetadata,
     source: "selected_slot",
   };
+}
+
+function knownSlotInfoValue(value) {
+  if (value === undefined || value === null) return false;
+  if (typeof value === "number") return Number.isFinite(value);
+  const text = String(value).trim();
+  return Boolean(text && text !== "-" && text !== "—" && text !== "â€”");
+}
+
+function mergeSlotInfo(primary, fallback) {
+  if (!primary) return fallback || null;
+  if (!fallback) return primary;
+  const merged = { ...fallback, ...primary };
+  ["rtp", "volatility", "max_win_multiplier", "max_win", "provider", "image"].forEach((key) => {
+    if (!knownSlotInfoValue(primary[key]) && knownSlotInfoValue(fallback[key])) {
+      merged[key] = fallback[key];
+    }
+  });
+  return merged;
 }
 
 function useRtpSlotInfo({ activeSlot, localSlotInfo, slotKey, slotName }) {
@@ -1774,7 +1819,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const displayInfo = resolveLivePreviewValue({
     isLive,
     showDemoData,
-    liveValue: slotInfo || localSlotInfo,
+    liveValue: mergeSlotInfo(slotInfo, localSlotInfo),
     demoValue: demoInfo,
     emptyValue: null,
   });
