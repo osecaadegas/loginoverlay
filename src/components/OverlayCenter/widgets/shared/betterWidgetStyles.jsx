@@ -72,10 +72,10 @@ function formatMoney(value, currency = "EUR") {
   })}`;
 }
 
-function formatMultiplier(value) {
+function formatMultiplier(value, maximumFractionDigits = 0) {
   const number = Number(value);
   if (!Number.isFinite(number) || number <= 0) return "-";
-  return `${number.toLocaleString(undefined, { maximumFractionDigits: 0 })}x`;
+  return `${number.toLocaleString(undefined, { maximumFractionDigits })}x`;
 }
 
 function clampNumber(value, min, max, fallback) {
@@ -716,6 +716,7 @@ function bonusBet(bonus) {
 
 function bonusPayout(bonus) {
   return firstMetric([
+    bonus?._payout,
     bonus?.payout,
     bonus?.pay,
     bonus?.win,
@@ -837,6 +838,7 @@ function bonusMaxWin(bonus) {
 
 function bonusMultiplierValue(bonus) {
   const explicit = firstMetric([
+    bonus?._multi,
     bonus?.multiplier,
     bonus?.multi,
     bonus?.x,
@@ -1059,9 +1061,9 @@ const BETTER_HUNT_FONTS = {
 };
 
 const BETTER_HUNT_ROW_HEIGHT = {
-  compact: 58,
-  image: 106,
-  names: 38,
+  compact: 52,
+  image: 88,
+  names: 34,
 };
 
 function useBetterHuntCarousel(count, intervalMs, enabled, seed = 0) {
@@ -1495,7 +1497,8 @@ function BetterStyleSheet() {
       .better-hunt-track{height:var(--bh-bar-height);flex:1;overflow:hidden;border-radius:999px;background:var(--bh-track);box-shadow:inset 0 1px 2px rgba(0,0,0,.7)}
       .better-hunt-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--bh-ice-deep),var(--bh-ice-mid),var(--bh-ice-deep));box-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 55%,transparent);transition:width .45s ease}
       .better-hunt-counts{display:flex;align-items:center;gap:7px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}
-      .better-hunt-counts span{display:inline-flex;align-items:center;gap:3px;color:var(--bh-ice);font-weight:900;font-size:.82em}
+      .better-hunt-counts span{display:inline-flex;align-items:center;gap:4px;color:var(--bh-ice);font-weight:900;font-size:.82em}
+      .better-hunt-counts span svg{width:12px;height:12px;filter:drop-shadow(0 0 5px currentColor)}
       .better-hunt-counts .is-extreme{color:#ff6a4d}.better-hunt-counts .is-super{color:#ffc93d}
       .better-hunt-fraction{display:flex;align-items:baseline;gap:3px;color:var(--bh-steel-hi);font-weight:900}
       .better-hunt-fraction strong{color:var(--bh-ice);font-size:1.08em;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 50%,transparent)}
@@ -1503,15 +1506,15 @@ function BetterStyleSheet() {
       .better-hunt-list-inner{display:grid;gap:6px}
       .better-hunt-list--scroll .better-hunt-list-inner{animation:better-hunt-marquee-up calc(var(--bh-list-duration,26s) / var(--anim-speed,1)) linear infinite}
       .better-hunt-row{min-width:0;display:grid;align-items:center;border:1px solid color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:9px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 85%,transparent),color-mix(in srgb,var(--bh-card-lo) 85%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 7%,transparent)}
-      .better-hunt-row--compact{grid-template-columns:26px auto minmax(0,1fr) auto;gap:9px;min-height:52px;padding:7px 8px}
-      .better-hunt-row--names{grid-template-columns:26px minmax(0,1fr) auto;gap:8px;min-height:32px;padding:6px 8px}
-      .better-hunt-row--image{position:relative;min-height:96px;overflow:hidden;padding:8px}
+      .better-hunt-row--compact{grid-template-columns:24px auto minmax(0,1fr) auto;gap:7px;min-height:48px;padding:5px 7px}
+      .better-hunt-row--names{grid-template-columns:24px minmax(0,1fr) auto;gap:7px;min-height:30px;padding:5px 7px}
+      .better-hunt-row--image{position:relative;min-height:82px;overflow:hidden;padding:5px}
       .better-hunt-row-bg{position:absolute;inset:0}.better-hunt-row-bg img{filter:saturate(1.08) contrast(1.02)}
       .better-hunt-row-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.38),transparent)}
-      .better-hunt-row-content{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:8px;align-items:end}
-      .better-hunt-row-id{height:22px;min-width:24px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.15);border-radius:5px;background:rgba(0,0,0,.45);color:var(--bh-steel-hi);font-size:.7em;font-weight:900}
-      .better-hunt-row-main{min-width:0}.better-hunt-row-main strong{display:block;overflow:hidden;color:#fff;font-size:.92em;font-weight:900;line-height:1.1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-row-main em{display:block;overflow:hidden;color:var(--bh-steel-dim);font-style:normal;font-size:.72em;text-overflow:ellipsis;white-space:nowrap}
-      .better-hunt-mini-stats{display:grid;gap:3px;min-width:66px}.better-hunt-mini-stat{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;font-size:.72em;font-weight:900}.better-hunt-mini-label{font-size:.62em;letter-spacing:.1em}
+      .better-hunt-row-content{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:7px;align-items:center}
+      .better-hunt-row-id{height:20px;min-width:22px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:5px;background:rgba(0,0,0,.5);color:var(--bh-steel-hi);font-size:.72em;font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+      .better-hunt-row-main{min-width:0}.better-hunt-row-main strong{display:block;overflow:hidden;color:#fff;font-size:.94em;font-weight:950;letter-spacing:.03em;line-height:1.08;text-overflow:ellipsis;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-row-main em{display:block;overflow:hidden;color:var(--bh-steel-hi);font-style:normal;font-size:.76em;font-weight:800;line-height:1.08;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.85);white-space:nowrap}
+      .better-hunt-mini-stats{display:grid;gap:2px;min-width:72px}.better-hunt-mini-stat{display:flex;align-items:center;justify-content:space-between;gap:7px;color:#f8fbff;font-size:.76em;font-weight:950;line-height:1.06;text-shadow:0 1px 3px rgba(0,0,0,.9)}.better-hunt-mini-label{color:var(--bh-steel-hi);font-size:.62em;letter-spacing:.1em;opacity:.86;text-shadow:0 1px 2px rgba(0,0,0,.75)}
       .better-hunt-empty{display:grid;place-items:center;min-height:80px;border:1px dashed color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:10px;background:rgba(0,0,0,.16);color:var(--bh-steel-dim);font-weight:800;text-align:center}
       .better-hunt-requests{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 38%,transparent);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 62%,transparent),color-mix(in srgb,var(--bh-card-lo) 70%,transparent));padding:8px}
       .better-hunt-requests-head{display:grid;min-width:74px;align-content:center;gap:4px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}.better-hunt-requests-head span{color:var(--bh-steel-dim);font-size:.62em;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.better-hunt-requests-head strong{color:var(--bh-ice);font-size:1.35em;font-weight:950;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 40%,transparent)}
@@ -1519,7 +1522,7 @@ function BetterStyleSheet() {
       .better-hunt-total{display:grid;gap:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:10px;background:rgba(0,0,0,.18)}
       .better-hunt-total-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
       .better-hunt-total-head span{color:var(--bh-steel-dim);font-size:.72em;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.better-hunt-total-head strong{color:var(--bh-ice);font-size:1.28em;font-weight:950;line-height:1}
-      .better-hunt-drawer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 8px 8px}.better-hunt-result{min-width:0;display:flex;align-items:center;gap:8px;border-radius:7px;padding:6px;background:rgba(255,255,255,.045)}.better-hunt-result strong{display:block;overflow:hidden;color:#fff;font-size:.78em;text-overflow:ellipsis;white-space:nowrap}.better-hunt-result em{display:inline-flex;border-radius:999px;padding:2px 5px;background:rgba(69,200,255,.12);color:var(--bh-ice);font-size:.62em;font-style:normal;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.better-hunt-result--worst em{background:rgba(255,84,112,.12);color:#ff6a4d}
+      .better-hunt-drawer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch;padding:0 8px 9px}.better-hunt-result{min-width:0;display:grid;grid-template-rows:auto minmax(58px,auto);gap:6px;border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:7px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.18));box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}.better-hunt-result-head{display:grid;gap:2px;min-width:0}.better-hunt-result-head em{display:inline-flex;width:max-content;border-radius:999px;padding:2px 6px;background:rgba(69,200,255,.13);color:var(--bh-ice);font-size:.58em;font-style:normal;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}.better-hunt-result--worst .better-hunt-result-head em{background:rgba(255,84,112,.13);color:#ff6a4d}.better-hunt-result-slot{display:block;overflow:hidden;color:#fff;font-size:.76em;font-weight:950;letter-spacing:.03em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.85);white-space:nowrap}.better-hunt-result-body{display:grid;grid-template-columns:minmax(52px,64px) minmax(0,1fr);gap:8px;align-items:center;min-width:0}.better-hunt-result-art{display:grid;place-items:center;min-width:0}.better-hunt-result-art img,.better-hunt-result-art .better-hunt-thumb{box-shadow:0 4px 12px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.08)}.better-hunt-result-stats{display:grid;gap:3px;min-width:0}.better-hunt-result-row{display:flex;align-items:center;justify-content:space-between;gap:7px;min-width:0;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:2px}.better-hunt-result-row:last-child{border-bottom:0;padding-bottom:0}.better-hunt-result-row span{color:var(--bh-steel-hi);font-size:.58em;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}.better-hunt-result-row strong{overflow:hidden;color:#fff;font-size:.72em;font-weight:950;line-height:1;text-align:right;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-result--best .better-hunt-result-row:last-child strong{color:#ffc93d}.better-hunt-result--worst .better-hunt-result-row:last-child strong{color:#ff8a74}
       .better-hunt-log-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}.better-hunt-log-head h3{margin:0;color:#fff;font-size:1.1em;font-weight:950;text-transform:uppercase}.better-hunt-log-head span{color:var(--bh-steel-dim);font-size:.74em;font-weight:800}
       .better-hunt-lanes{min-height:0;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:0 12px 12px;overflow:hidden}.better-hunt-lane{overflow:hidden;mask-image:linear-gradient(to right,transparent 0%,#000 5%,#000 95%,transparent 100%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 5%,#000 95%,transparent 100%)}.better-hunt-lane-track{display:flex;width:max-content;gap:10px}.better-hunt-lane-track--left{animation:better-hunt-marquee-left calc(48s / var(--anim-speed,1)) linear infinite}.better-hunt-lane-track--right{animation:better-hunt-marquee-right calc(54s / var(--anim-speed,1)) linear infinite}
       .better-hunt-hcard{position:relative;flex:0 0 auto;overflow:hidden;width:122px;height:172px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 50%,transparent);border-radius:10px;background:var(--bh-inset);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 4px 12px rgba(0,0,0,.55)}.better-hunt-hcard.is-large{width:144px;height:202px}.better-hunt-hcard img{width:100%;height:100%;object-fit:cover}.better-hunt-hcard::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.95),rgba(0,0,0,.35),transparent)}.better-hunt-hcard-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:8px}.better-hunt-hcard-top{display:flex;align-items:center;justify-content:space-between;gap:6px}.better-hunt-hcard-bet{max-width:58px;overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(0,0,0,.55);padding:2px 6px;color:var(--bh-ice);font-size:.68em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-hcard-title{overflow:hidden;color:#fff;font-size:.88em;font-weight:950;line-height:1.05;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
@@ -2029,6 +2032,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const totalBetOpened = opened.reduce((sum, bonus) => sum + bonusBet(bonus), 0);
   const avgMulti = firstMetric([stats?.avgMulti, c.avgMulti], totalBetOpened > 0 ? totalPay / totalBetOpened : 0);
   const breakEven = firstMetric([stats?.breakEven, c.breakEven, c.breakEvenMultiplier], 0);
+  const liveBreakEven = firstMetric([stats?.liveBE, c.liveBE, c.liveBreakEven, c.currentBE], Number.NaN);
+  const displayBreakEven = Number.isFinite(liveBreakEven) ? liveBreakEven : breakEven;
   const startKnown = [c.startMoney, c.startingBalance, stats?.startMoney, stats?.start].some((value) => value !== undefined && value !== null && value !== "");
   const stopKnown = [c.stopLoss, c.stopMoney, c.stopBalance, stats?.stopLoss, stats?.stop].some((value) => value !== undefined && value !== null && value !== "");
   const startValue = firstMetric([c.startMoney, c.startingBalance, stats?.startMoney, stats?.start], 0);
@@ -2045,6 +2050,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const multi = bonusMultiplierValue(bonus);
     return !worst || multi < bonusMultiplierValue(worst) ? bonus : worst;
   }, null);
+  const resultDrawerReady = opened.length >= 2 && (bestSlot || worstSlot);
   const listRows = rows;
   const scrollingRows = rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
   const listDuration = `${Math.max(26, rows.length * 1.35)}s`;
@@ -2189,7 +2195,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       {[
         ["Start", startKnown ? formatMoney(startValue, money) : "-"],
         ["Stop", stopKnown ? formatMoney(stopValue, money) : "-"],
-        ["B.E.", breakEven > 0 ? formatMultiplier(breakEven) : "-"],
+        ["B.E.", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-"],
         ["Avg.", avgMulti > 0 ? formatMultiplier(avgMulti) : "-"],
       ].map(([label, value]) => (
         <div key={label} className="better-hunt-stat" {...attrs("bonus_hunt", c, "statCell")}>
@@ -2206,8 +2212,14 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         <span style={{ width: `${progress}%` }} {...attrs("bonus_hunt", c, "progressBarFill")} />
       </div>
       <div className="better-hunt-counts" aria-label="Bonus tiers">
-        <span className="is-extreme">EX {extremeCount}</span>
-        <span className="is-super">S {superCount}</span>
+        <span className="is-extreme" aria-label={`${extremeCount} extreme bonuses`}>
+          <Flame size={12} fill="currentColor" strokeWidth={2.5} />
+          {extremeCount}
+        </span>
+        <span className="is-super" aria-label={`${superCount} super bonuses`}>
+          <Star size={12} fill="currentColor" strokeWidth={2.5} />
+          {superCount}
+        </span>
       </div>
       <div className="better-hunt-fraction">
         <strong>{activeStep}</strong>
@@ -2372,7 +2384,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     return (
       <div key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`} className="better-hunt-row better-hunt-row--compact" {...attrs("bonus_hunt", c, "slotRow", openedState ? "opened" : "unopened")}>
         <span className="better-hunt-row-id">{index + 1}</span>
-        <BetterHuntThumb bonus={bonus} size={44} />
+        <BetterHuntThumb bonus={bonus} size={38} />
         <span className="better-hunt-row-main">
           <strong {...attrs("bonus_hunt", c, "slotTitle")}>{bonusSlotName(bonus, index)}</strong>
           <em>{bonusProvider(bonus) || (openedState ? "opened" : "queued")}</em>
@@ -2404,15 +2416,32 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
   const renderResultCard = (label, bonus, variant) => {
     if (!bonus) return null;
+    const bet = bonusBet(bonus);
+    const payout = bonusPayout(bonus);
     const multi = bonusMultiplierValue(bonus);
     return (
       <div className={`better-hunt-result better-hunt-result--${variant}`}>
-        <BetterHuntThumb bonus={bonus} size={42} />
-        <span className="better-hunt-row-main">
+        <div className="better-hunt-result-head">
           <em>{label}</em>
-          <strong>{bonusSlotName(bonus, 0)}</strong>
-          <span className="better-hunt-mini-stat">{formatMoney(bonusPayout(bonus), money)} {multi > 0 ? formatMultiplier(multi) : ""}</span>
-        </span>
+          <strong className="better-hunt-result-slot">{bonusSlotName(bonus, 0)}</strong>
+        </div>
+        <div className="better-hunt-result-body">
+          <span className="better-hunt-result-art">
+            <BetterHuntThumb bonus={bonus} size={58} />
+          </span>
+          <span className="better-hunt-result-stats">
+            {[
+              ["Bet", bet > 0 ? formatMoney(bet, money) : "-"],
+              ["Payout", payout > 0 ? formatMoney(payout, money) : "-"],
+              ["Multi", multi > 0 ? formatMultiplier(multi, 2) : "-"],
+            ].map(([statLabel, value]) => (
+              <span key={statLabel} className="better-hunt-result-row">
+                <span>{statLabel}</span>
+                <strong>{value}</strong>
+              </span>
+            ))}
+          </span>
+        </div>
       </div>
     );
   };
@@ -2425,7 +2454,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <span>Total Pay</span>
           <strong>{formatMoney(totalPay, money)}</strong>
         </div>
-        {drawerOpen && (bestSlot || worstSlot) && (
+        {drawerOpen && resultDrawerReady && (
           <div className="better-hunt-drawer">
             {renderResultCard("Best", bestSlot, "best")}
             {renderResultCard("Worst", worstSlot, "worst")}
@@ -2524,7 +2553,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       {renderMainstreamHeader()}
       <div className="better-hunt-main-stat-pair">
         {renderMainstreamStat("Start", startKnown ? formatMoney(startValue, money) : "-", Wallet)}
-        {renderMainstreamStat("Breakeven", breakEven > 0 ? formatMultiplier(breakEven) : "-", TrendingUp)}
+        {renderMainstreamStat("Breakeven", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-", TrendingUp)}
       </div>
       <div className="better-hunt-main-count">
         <span>
@@ -2542,7 +2571,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       <div className="better-hunt-main-bottom">
         <div className="better-hunt-main-stat-pair">
           {renderMainstreamStat("Average", avgMulti > 0 ? formatMultiplier(avgMulti) : "-", Scale)}
-          {renderMainstreamStat("Breakeven", breakEven > 0 ? formatMultiplier(breakEven) : "-", TrendingUp)}
+          {renderMainstreamStat("Breakeven", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-", TrendingUp)}
         </div>
       </div>
       {renderTotalDrawer()}
