@@ -55,6 +55,9 @@ const WidgetEditorPage = lazy(
 const BetterObsOverlay = lazy(
   () => import("./components/OverlayCenter/editor/BetterObsOverlay"),
 );
+const OverlayRenderer = lazy(
+  () => import("./components/OverlayCenter/OverlayRenderer"),
+);
 
 const AnalyticsDashboard = lazy(
   () => import("./components/AnalyticsDashboard/AnalyticsDashboard"),
@@ -91,7 +94,12 @@ function AppRuntimeHooks() {
 
 function RouteBoundServices() {
   const location = useLocation();
-  if (location.pathname.startsWith("/obs/overlay/")) return null;
+  if (
+    location.pathname.startsWith("/overlay/") ||
+    location.pathname.startsWith("/obs/overlay/")
+  ) {
+    return null;
+  }
   return (
     <>
       <CookieConsent />
@@ -104,6 +112,7 @@ function RouteBoundServices() {
 function LayoutWrapper({ children }) {
   const location = useLocation();
   const isWidgetRoute = location.pathname.startsWith("/widgets/");
+  const isOBSOverlay = location.pathname.startsWith("/overlay/");
   const isBetterOBSOverlay = location.pathname.startsWith("/obs/overlay/");
   const isOverlayCenter = location.pathname.startsWith("/overlay-center");
   const isEditorRoute = location.pathname === "/editor";
@@ -116,6 +125,7 @@ function LayoutWrapper({ children }) {
   const showTopNavigation =
     !isLandingRoute &&
     !isWidgetRoute &&
+    !isOBSOverlay &&
     !isBetterOBSOverlay &&
     !isOverlayCenter &&
     !isEditorRoute &&
@@ -127,7 +137,7 @@ function LayoutWrapper({ children }) {
 
   return (
     <div className="app-layout">
-      {!isBetterOBSOverlay && <AppRuntimeHooks />}
+      {!isOBSOverlay && !isBetterOBSOverlay && <AppRuntimeHooks />}
       {showTopNavigation && <TopNavigation />}
       <div className="main-content main-content--no-sidebar">{children}</div>
     </div>
@@ -277,6 +287,10 @@ function App() {
                           <SlotDetectorDashboard />
                         </ProtectedAdminRoute>
                       }
+                    />
+                    <Route
+                      path="/overlay/:token"
+                      element={<OverlayRenderer />}
                     />
                     <Route
                       path="/obs/overlay/:publicOverlayId"
