@@ -311,7 +311,12 @@ function readScopedStateFromConfig(config = {}) {
   return {};
 }
 
-function writeExplicitSubElementValue(source, route, value, stateId = "default") {
+function writeExplicitSubElementValue(
+  source,
+  route,
+  value,
+  stateId = "default",
+) {
   const path =
     stateId && stateId !== "default"
       ? [route.registryElementId, "states", stateId, route.propertyId]
@@ -440,7 +445,10 @@ export function removeScopedAppearanceConfigValue(config, rawRoute) {
 }
 
 export function removeScopedAppearanceConfigElement(config, rawRoute) {
-  const route = createAppearanceRoute({ ...rawRoute, propertyId: "background" });
+  const route = createAppearanceRoute({
+    ...rawRoute,
+    propertyId: "background",
+  });
   const stateId = rawRoute.stateId || "default";
   const next = cloneObject(config);
   const scopedPath = [
@@ -567,10 +575,7 @@ export function getScopedAppearanceValue(state, rawRoute) {
 }
 
 export function getScopedAppearanceConfigValue(config, rawRoute) {
-  return getScopedAppearanceValue(
-    readScopedStateFromConfig(config),
-    rawRoute,
-  );
+  return getScopedAppearanceValue(readScopedStateFromConfig(config), rawRoute);
 }
 
 export function getAppearanceDomAttributes({

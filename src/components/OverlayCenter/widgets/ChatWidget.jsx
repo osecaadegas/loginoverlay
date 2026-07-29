@@ -43,6 +43,9 @@ const BADGE_DEFS = [
 const MESSAGE_TTL_MS = 120 * 1000;
 const HIDDEN_BOTS = new Set(["streamelements", "nightbot", "moobot"]);
 const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
+const BTTV_GLOBAL_EMOTES_URL = "https://api.betterttv.net/3/cached/emotes/global";
+const BTTV_TWITCH_USER_URL = "https://api.betterttv.net/3/cached/users/twitch";
+const BTTV_CDN_URL = "https://cdn.betterttv.net/emote";
 const HEADER_CHAT_STYLES = new Set([
   "classic",
   "cards",
@@ -61,6 +64,12 @@ const BADGE_CHAT_STYLES = new Set([
   "better_chat",
 ]);
 const CHAT_PLATFORMS = ["twitch", "youtube", "kick"];
+const bttvGlobalCache = {
+  loaded: false,
+  promise: null,
+  emotes: [],
+};
+const bttvChannelCache = new Map();
 
 const CHAT_STYLE_DEFAULTS = {
   textColor: {
@@ -241,6 +250,187 @@ function isRecentChatMessage(item, now, ttlMs = MESSAGE_TTL_MS) {
 
 function pruneExpiredChatMessages(items, now, ttlMs = MESSAGE_TTL_MS) {
   return items.filter((item) => isRecentChatMessage(item, now, ttlMs));
+}
+
+function normalizeChatMessage(item = {}, index = 0, now = Date.now()) {
+  const username =
+    item.username ||
+    item.user ||
+    item.displayName ||
+    item.display_name ||
+    item.name ||
+    "viewer";
+  const message =
+    item.message ||
+    item.text ||
+    item.body ||
+    item.content ||
+    "";
+  return {
+    ...item,
+    id: item.id || `${String(username).toLowerCase()}-${index}`,
+    platform: item.platform || "twitch",
+    username,
+    message,
+    timestamp: Number(item.timestamp) || now,
+  };
+}
+
+function normalizeBttvEmote(item = {}) {
+  const id = String(item.id || "").trim();
+  const code = String(item.code || "").trim();
+  if (!id || !code) return null;
+  return { id, code };
+}
+
+async function fetchBttvJson(url) {
+  if (typeof fetch !== "function") return null;
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`BetterTTV request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+function loadBttvGlobalEmotes() {
+  if (bttvGlobalCache.loaded) return Promise.resolve(bttvGlobalCache.emotes);
+  if (!bttvGlobalCache.promise) {
+    bttvGlobalCache.promise = fetchBttvJson(BTTV_GLOBAL_EMOTES_URL)
+      .then((items) => {
+        bttvGlobalCache.emotes = Array.isArray(items)
+          ? items.map(normalizeBttvEmote).filter(Boolean)
+          : [];
+        bttvGlobalCache.loaded = true;
+        return bttvGlobalCache.emotes;
+      })
+      .catch(() => {
+        bttvGlobalCache.loaded = true;
+        bttvGlobalCache.emotes = [];
+        return [];
+      });
+  }
+  return bttvGlobalCache.promise;
+}
+
+function loadBttvChannelEmotes(twitchUserId) {
+  const key = String(twitchUserId || "").trim();
+  if (!key) return Promise.resolve([]);
+  const cached = bttvChannelCache.get(key);
+  if (cached?.loaded) return Promise.resolve(cached.emotes);
+  if (cached?.promise) return cached.promise;
+
+  const entry = { loaded: false, promise: null, emotes: [] };
+  entry.promise = fetchBttvJson(`${BTTV_TWITCH_USER_URL}/${encodeURIComponent(key)}`)
+    .then((payload) => {
+      const channelEmotes = Array.isArray(payload?.channelEmotes)
+        ? payload.channelEmotes
+        : [];
+      const sharedEmotes = Array.isArray(payload?.sharedEmotes)
+        ? payload.sharedEmotes
+        : [];
+      entry.emotes = [...channelEmotes, ...sharedEmotes]
+        .map(normalizeBttvEmote)
+        .filter(Boolean);
+      entry.loaded = true;
+      return entry.emotes;
+    })
+    .catch(() => {
+      entry.loaded = true;
+      entry.emotes = [];
+      return [];
+    });
+  bttvChannelCache.set(key, entry);
+  return entry.promise;
+}
+
+function buildBttvMap(emoteGroups = []) {
+  const map = new Map();
+  emoteGroups.flat().forEach((emote) => {
+    if (emote?.code && emote?.id) map.set(emote.code, emote);
+  });
+  return map;
+}
+
+function resolveBttvTwitchUserId(config = {}) {
+  return String(
+    config.twitchUserId ||
+      config.twitch_user_id ||
+      config.twitchBroadcasterId ||
+      config.twitch_broadcaster_id ||
+      config.broadcasterId ||
+      config.broadcaster_id ||
+      config.providerId ||
+      "",
+  ).trim();
+}
+
+function useBetterTtvEmotes({
+  enabled,
+  globalEnabled,
+  channelEnabled,
+  twitchUserId,
+}) {
+  const [emoteMap, setEmoteMap] = useState(() => new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!enabled) {
+      setEmoteMap(new Map());
+      return undefined;
+    }
+
+    const jobs = [];
+    if (globalEnabled) jobs.push(loadBttvGlobalEmotes());
+    if (channelEnabled && twitchUserId) {
+      jobs.push(loadBttvChannelEmotes(twitchUserId));
+    }
+    if (!jobs.length) {
+      setEmoteMap(new Map());
+      return undefined;
+    }
+
+    Promise.all(jobs).then((groups) => {
+      if (!cancelled) setEmoteMap(buildBttvMap(groups));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [channelEnabled, enabled, globalEnabled, twitchUserId]);
+
+  return emoteMap;
+}
+
+function renderBttvMessageContent(text, emoteMap, scale = 2) {
+  const source = String(text || "");
+  if (!source || !(emoteMap instanceof Map) || emoteMap.size === 0) {
+    return source;
+  }
+  const cdnScale = Math.min(Math.max(Number(scale) || 2, 1), 3);
+  const displayHeight = cdnScale === 1 ? 20 : cdnScale === 3 ? 34 : 27;
+  return source.split(/(\s+)/).map((token, index) => {
+    if (!token || /^\s+$/.test(token)) {
+      return <React.Fragment key={`text-${index}`}>{token}</React.Fragment>;
+    }
+    const emote = emoteMap.get(token);
+    if (!emote) {
+      return <React.Fragment key={`text-${index}`}>{token}</React.Fragment>;
+    }
+    return (
+      <img
+        key={`bttv-${emote.id}-${index}`}
+        className="ov-chat-bttv-emote"
+        src={`${BTTV_CDN_URL}/${encodeURIComponent(emote.id)}/${cdnScale}x`}
+        alt={emote.code}
+        title={emote.code}
+        decoding="async"
+        referrerPolicy="no-referrer"
+        style={{ height: displayHeight, width: "auto" }}
+      />
+    );
+  });
 }
 
 function isFollowerMessage(msg = {}) {
@@ -467,6 +657,17 @@ function ChatWidget({ config, theme, allWidgets }) {
       ? "top-to-bottom"
       : "bottom-to-top"
     : "bottom-to-top";
+  const bttvTwitchUserId = resolveBttvTwitchUserId(c);
+  const bttvEmotes = useBetterTtvEmotes({
+    enabled: isBetterChat && c.bttvEnabled !== false,
+    globalEnabled: c.bttvGlobal !== false,
+    channelEnabled: c.bttvChannel !== false,
+    twitchUserId: bttvTwitchUserId,
+  });
+  const renderBetterChatMessageContent = useCallback(
+    (text) => renderBttvMessageContent(text, bttvEmotes, c.bttvSize),
+    [bttvEmotes, c.bttvSize],
+  );
   const showBetterChatEmptyState = !isBetterChat || c.showEmptyState !== false;
   const betterChatAutoFade = isBetterChat
     ? Boolean(c.autoFade || c.lifespan === "timed")
@@ -704,11 +905,8 @@ function ChatWidget({ config, theme, allWidgets }) {
   const handleMessage = useCallback(
     (msg) => {
       const now = Date.now();
-      if (HIDDEN_BOTS.has(normalizedUsername(msg.username))) return;
-      const stampedMessage = {
-        ...msg,
-        timestamp: Number(msg.timestamp) || now,
-      };
+      const stampedMessage = normalizeChatMessage(msg, now, now);
+      if (HIDDEN_BOTS.has(normalizedUsername(stampedMessage.username))) return;
       setMessages((prev) => {
         const recent = shouldExpireMessages
           ? pruneExpiredChatMessages(prev, now, messageTtlMs)
@@ -752,10 +950,19 @@ function ChatWidget({ config, theme, allWidgets }) {
   const previewMessages = Array.isArray(c.__appearancePreviewMessages)
     ? c.__appearancePreviewMessages
     : [];
-  const renderMessageSource = messages.length > 0 ? messages : previewMessages;
-  const renderMessages = renderMessageSource.length > maxMessages
+  const simulatedPreviewMessages = isBetterChat && c.live === false
+    ? []
+    : previewMessages;
+  const renderMessageSource = messages.length > 0 ? messages : simulatedPreviewMessages;
+  const limitedRenderMessages = renderMessageSource.length > maxMessages
     ? renderMessageSource.slice(-maxMessages)
     : renderMessageSource;
+  const normalizedRenderMessages = limitedRenderMessages.map((item, index) =>
+    normalizeChatMessage(item, index, 0)
+  );
+  const renderMessages = isBetterChat && betterChatFlow === "top-to-bottom"
+    ? normalizedRenderMessages.slice().reverse()
+    : normalizedRenderMessages;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -918,6 +1125,7 @@ function ChatWidget({ config, theme, allWidgets }) {
     messageTextStyle,
     usernameStyle,
     totalMessages: renderMessages.length,
+    renderMessageContent: isBetterChat ? renderBetterChatMessageContent : null,
   };
 
   const modeClass = ` ov-chat-widget--${chatStyle}`;
@@ -943,6 +1151,7 @@ function ChatWidget({ config, theme, allWidgets }) {
         @keyframes better-chat-slide-right{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
         @keyframes better-chat-fade-in{from{opacity:0}to{opacity:1}}
         @keyframes better-chat-lantern{0%{left:-100%}100%{left:100%}}
+        .ov-chat-widget--better_chat .ov-chat-bttv-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:4em;filter:drop-shadow(0 0 5px rgba(0,195,255,.22))}
         .ov-chat-widget--better_chat .ov-chat-messages::-webkit-scrollbar{display:none}
       `}</style>
 
@@ -1237,8 +1446,9 @@ function ChatWidget({ config, theme, allWidgets }) {
             flex: "1 1 auto",
             minHeight: 0,
             display: "flex",
-            flexDirection:
-              betterChatFlow === "top-to-bottom" ? "column-reverse" : "column",
+            flexDirection: "column",
+            justifyContent:
+              betterChatFlow === "bottom-to-top" ? "flex-end" : "flex-start",
             overflowY: "auto",
             padding: "7px 9px 10px",
             scrollbarWidth: "none",

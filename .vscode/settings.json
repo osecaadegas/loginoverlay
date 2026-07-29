@@ -1,5 +1,8 @@
 {
+  "css.validate": false,
+  "css.lint.unknownProperties": "ignore",
   "files.associations": {
+    "src/components/AdminPanel/AdminPanel.jsx": "javascriptreact",
     "*.jsx": "javascriptreact"
   }
 }

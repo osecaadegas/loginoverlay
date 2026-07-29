@@ -2082,26 +2082,23 @@ function updateAppearanceElementControl({
     ["width", "height"].includes(control.id) &&
     (!selectedStateId || selectedStateId === "default");
   if (isDefaultContainerSize) {
-    commitDraft(
-      (prev) => {
-        const next = setWidgetSizeOverridePaths(
-          prev,
-          selectedTargetRoot,
-          control.id,
-          normalized,
-          selectedWidgetUsesV2,
-        );
-        return selectedWidgetUsesV2
-          ? setScopedConfigAtRoot(
-              next,
-              selectedTargetRoot,
-              scopedRoute,
-              normalized,
-            )
-          : next;
-      },
-      `${elementId}.${control.id}`,
-    );
+    commitDraft((prev) => {
+      const next = setWidgetSizeOverridePaths(
+        prev,
+        selectedTargetRoot,
+        control.id,
+        normalized,
+        selectedWidgetUsesV2,
+      );
+      return selectedWidgetUsesV2
+        ? setScopedConfigAtRoot(
+            next,
+            selectedTargetRoot,
+            scopedRoute,
+            normalized,
+          )
+        : next;
+    }, `${elementId}.${control.id}`);
     return;
   }
   if (selectedWidgetUsesV2) {
@@ -2170,25 +2167,23 @@ function resetAppearanceElementControl({
     ["width", "height"].includes(control.id) &&
     (!selectedStateId || selectedStateId === "default");
   if (isDefaultContainerSize) {
-    commitDraft(
-      (prev) => {
-        const next = omitWidgetSizeOverridePaths(
-          prev,
-          selectedTargetRoot,
-          control.id,
-          selectedWidgetUsesV2,
-        );
-        return selectedWidgetUsesV2
-          ? removeScopedConfigValueAtRoot(next, selectedTargetRoot, scopedRoute)
-          : next;
-      },
-      `Reset ${elementId}.${control.id}`,
-    );
+    commitDraft((prev) => {
+      const next = omitWidgetSizeOverridePaths(
+        prev,
+        selectedTargetRoot,
+        control.id,
+        selectedWidgetUsesV2,
+      );
+      return selectedWidgetUsesV2
+        ? removeScopedConfigValueAtRoot(next, selectedTargetRoot, scopedRoute)
+        : next;
+    }, `Reset ${elementId}.${control.id}`);
     return;
   }
   if (selectedWidgetUsesV2) {
     commitDraft(
-      (prev) => removeScopedConfigValueAtRoot(prev, selectedTargetRoot, scopedRoute),
+      (prev) =>
+        removeScopedConfigValueAtRoot(prev, selectedTargetRoot, scopedRoute),
       `Reset ${elementId}.${control.id}`,
     );
     return;
@@ -2523,26 +2518,19 @@ function resetSelectedElementAppearance({
   const v2Path = statePath
     ? `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}.states.${selectedStateId}`
     : `${selectedTargetRoot}.appearanceV2.elementOverrides.${selectedElement.id}`;
-  commitDraft(
-    (prev) => {
-      const withoutLegacy = omitPath(
-        omitPath(omitPath(prev, modernPath), legacyPath),
-        v2Path,
-      );
-      if (!selectedWidgetUsesV2) return withoutLegacy;
-      return removeScopedConfigElementAtRoot(
-        withoutLegacy,
-        selectedTargetRoot,
-        {
-          widgetType: selectedWidgetType,
-          widgetVariant: selectedTarget?.styleId,
-          elementId: selectedElement.id,
-          stateId: selectedStateId || "default",
-        },
-      );
-    },
-    `Reset ${selectedElement.id}`,
-  );
+  commitDraft((prev) => {
+    const withoutLegacy = omitPath(
+      omitPath(omitPath(prev, modernPath), legacyPath),
+      v2Path,
+    );
+    if (!selectedWidgetUsesV2) return withoutLegacy;
+    return removeScopedConfigElementAtRoot(withoutLegacy, selectedTargetRoot, {
+      widgetType: selectedWidgetType,
+      widgetVariant: selectedTarget?.styleId,
+      elementId: selectedElement.id,
+      stateId: selectedStateId || "default",
+    });
+  }, `Reset ${selectedElement.id}`);
 }
 
 function resetSelectedWidgetAppearance({

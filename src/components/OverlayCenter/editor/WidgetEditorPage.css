@@ -93,6 +93,7 @@
 }
 
 .better-editor-widget-row {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
@@ -101,6 +102,7 @@
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.72);
+  overflow: visible;
 }
 
 .better-editor-widget-row.is-selected {
@@ -137,8 +139,9 @@
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.82);
   color: #c7f9ff;
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-weight: 850;
+  line-height: 1;
 }
 
 .better-editor-widget-row__main strong,
@@ -162,25 +165,81 @@
   font-size: 0.72rem;
 }
 
-.better-editor-widget-row__tools {
-  display: flex;
-  gap: 3px;
-  padding-right: 6px;
+.better-editor-widget-row__menu {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  padding-right: 7px;
 }
 
-.better-editor-icon-button {
-  width: 26px;
-  height: 28px;
+.better-editor-widget-row__menu[open] {
+  z-index: 20;
+}
+
+.better-editor-widget-row__menu-trigger {
+  width: 28px;
+  height: 30px;
   display: grid;
   place-items: center;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.62);
+  background: rgba(2, 6, 23, 0.72);
   color: #dbeafe;
   cursor: pointer;
+  list-style: none;
 }
 
-.better-editor-icon-button:disabled,
+.better-editor-widget-row__menu-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.better-editor-widget-row__menu-trigger::marker {
+  content: "";
+}
+
+.better-editor-widget-row__menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 7px;
+  width: 174px;
+  padding: 6px;
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  border-radius: 8px;
+  background: rgba(3, 10, 28, 0.98);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(15, 23, 42, 0.72);
+}
+
+.better-editor-widget-row__menu-panel button {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #dbeafe;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-align: left;
+}
+
+.better-editor-widget-row__menu-panel button:hover:not(:disabled) {
+  background: rgba(34, 211, 238, 0.12);
+  color: #ecfeff;
+}
+
+.better-editor-widget-row__menu-panel button.is-danger {
+  color: #fecaca;
+}
+
+.better-editor-widget-row__menu-panel button.is-danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.12);
+  color: #fff1f2;
+}
+
+.better-editor-widget-row__menu-panel button:disabled,
 .better-editor-toolbar button:disabled {
   cursor: not-allowed;
   opacity: 0.45;

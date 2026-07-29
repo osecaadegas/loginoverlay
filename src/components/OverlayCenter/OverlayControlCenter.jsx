@@ -700,7 +700,7 @@ function ToolCard({
     >
       <header className="oc2-tool-card__header">
         <div className="oc2-tool-card__icon" aria-hidden="true">
-          <span>{String(def.icon || "").slice(0, 2) || "SC"}</span>
+          <span>{def.icon || "SC"}</span>
         </div>
         <div className="oc2-tool-card__title">
           <h3>{copy.title || def.label}</h3>
@@ -819,7 +819,7 @@ function PreviewToolRailCard({ tool, side, onOpen }) {
   return (
     <article className={`oc2-preview-tool-card oc2-preview-tool-card--${side}`}>
       <div className="oc2-preview-tool-card__icon" aria-hidden="true">
-        <span>{String(def.icon || "").slice(0, 2) || "SC"}</span>
+        <span>{def.icon || "SC"}</span>
       </div>
       <div className="oc2-preview-tool-card__body">
         <strong>{copy.title || def.label}</strong>

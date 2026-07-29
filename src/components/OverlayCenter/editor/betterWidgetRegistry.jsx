@@ -240,6 +240,13 @@ const LIVE_DATA_KEYS = Object.freeze({
   chat: [
     "twitchEnabled",
     "twitchChannel",
+    "twitchUserId",
+    "twitch_user_id",
+    "twitchBroadcasterId",
+    "twitch_broadcaster_id",
+    "broadcasterId",
+    "broadcaster_id",
+    "providerId",
     "youtubeEnabled",
     "youtubeVideoId",
     "youtubeApiKey",

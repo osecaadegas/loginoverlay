@@ -12,6 +12,7 @@ import {
   EyeOff,
   Grid3X3,
   Lock,
+  MoreVertical,
   MousePointer2,
   Plus,
   Redo2,
@@ -20,6 +21,7 @@ import {
   Save,
   Send,
   SlidersHorizontal,
+  Trash2,
   Undo2,
   Unlock,
 } from "lucide-react";
@@ -245,21 +247,6 @@ class BetterEditorWidgetBoundary extends React.Component {
   }
 }
 
-function IconButton({ children, label, active = false, disabled = false, onClick }) {
-  return (
-    <button
-      type="button"
-      className={`better-editor-icon-button${active ? " is-active" : ""}`}
-      disabled={disabled}
-      title={label}
-      aria-label={label}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
-
 function WidgetListItem({
   instance,
   selected,
@@ -269,8 +256,17 @@ function WidgetListItem({
   onToggleVisible,
   onToggleLock,
   onDuplicate,
+  onDelete,
 }) {
   const definition = BETTER_WIDGET_REGISTRY[instance.widgetType];
+  const menuAction = (event, action) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof action === "function") action();
+    const menu = event.currentTarget.closest("details");
+    if (menu) menu.open = false;
+  };
+  const canEditInstance = instance.widgetType !== "background";
   return (
     <article
       className={`better-editor-widget-row${selected ? " is-selected" : ""}${instance.visible === false ? " is-hidden" : ""}`}
@@ -294,35 +290,59 @@ function WidgetListItem({
           </small>
         </span>
       </button>
-      <div className="better-editor-widget-row__tools">
-        <IconButton
-          label="Copy widget OBS URL"
-          disabled={!obsUrl}
-          onClick={() => onCopyUrl(obsUrl)}
+      <details
+        className="better-editor-widget-row__menu"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <summary
+          className="better-editor-widget-row__menu-trigger"
+          aria-label={`${instance.label || definition?.label || "Widget"} actions`}
         >
-          <Copy size={14} />
-        </IconButton>
-        <IconButton
-          label={instance.visible === false ? "Show widget" : "Hide widget"}
-          onClick={() => onToggleVisible(instance.instanceId)}
-        >
-          {instance.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}
-        </IconButton>
-        <IconButton
-          label={instance.locked ? "Unlock widget" : "Lock widget"}
-          disabled={instance.widgetType === "background"}
-          onClick={() => onToggleLock(instance.instanceId)}
-        >
-          {instance.locked ? <Lock size={14} /> : <Unlock size={14} />}
-        </IconButton>
-        <IconButton
-          label="Duplicate widget"
-          disabled={instance.widgetType === "background"}
-          onClick={() => onDuplicate(instance.instanceId)}
-        >
-          <Plus size={14} />
-        </IconButton>
-      </div>
+          <MoreVertical size={15} />
+        </summary>
+        <div className="better-editor-widget-row__menu-panel">
+          <button
+            type="button"
+            disabled={!obsUrl}
+            onClick={(event) => menuAction(event, () => onCopyUrl(obsUrl))}
+          >
+            <Copy size={14} />
+            <span>Copy OBS URL</span>
+          </button>
+          <button
+            type="button"
+            onClick={(event) => menuAction(event, () => onToggleVisible(instance.instanceId))}
+          >
+            {instance.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}
+            <span>{instance.visible === false ? "Show widget" : "Hide widget"}</span>
+          </button>
+          <button
+            type="button"
+            disabled={!canEditInstance}
+            onClick={(event) => menuAction(event, () => onToggleLock(instance.instanceId))}
+          >
+            {instance.locked ? <Lock size={14} /> : <Unlock size={14} />}
+            <span>{instance.locked ? "Unlock widget" : "Lock widget"}</span>
+          </button>
+          <button
+            type="button"
+            disabled={!canEditInstance}
+            onClick={(event) => menuAction(event, () => onDuplicate(instance.instanceId))}
+          >
+            <Plus size={14} />
+            <span>Add copy</span>
+          </button>
+          <button
+            type="button"
+            className="is-danger"
+            disabled={!canEditInstance}
+            onClick={(event) => menuAction(event, () => onDelete(instance.instanceId))}
+          >
+            <Trash2 size={14} />
+            <span>Delete widget</span>
+          </button>
+        </div>
+      </details>
     </article>
   );
 }
@@ -652,6 +672,26 @@ export default function WidgetEditorPage() {
     return nextLayout;
   }, [commitLayout]);
 
+  const handleDeleteInstance = useCallback((instanceId) => {
+    const current = layoutRef.current;
+    const instance = current.instances.find((item) => item.instanceId === instanceId);
+    if (!instance || instance.widgetType === "background") return null;
+    const foregroundCount = current.instances.filter((item) => item.widgetType !== "background").length;
+    if (foregroundCount <= 1) return null;
+    const nextLayout = commitLayout((layoutToUpdate) => ({
+      ...layoutToUpdate,
+      instances: layoutToUpdate.instances.filter((item) => item.instanceId !== instanceId),
+    }));
+    if (selectedInstanceId === instanceId) {
+      setSelectedInstanceId(
+        nextLayout.instances.find((item) => item.widgetType !== "background")?.instanceId ||
+          nextLayout.instances[0]?.instanceId ||
+          "",
+      );
+    }
+    return nextLayout;
+  }, [commitLayout, selectedInstanceId]);
+
   const handleUndo = useCallback(() => {
     if (historyIndex <= 0) return;
     const nextIndex = historyIndex - 1;
@@ -798,6 +838,7 @@ export default function WidgetEditorPage() {
                 onToggleVisible={handleToggleVisible}
                 onToggleLock={handleToggleLock}
                 onDuplicate={handleDuplicate}
+                onDelete={handleDeleteInstance}
               />
             ))}
         </div>

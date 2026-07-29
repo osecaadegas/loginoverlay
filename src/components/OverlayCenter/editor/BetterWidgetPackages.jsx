@@ -443,6 +443,10 @@ export const DEFAULT_BETTER_CONFIG = {
     showLiveLabel: true,
     showViewerCount: false,
     viewerCount: 1250,
+    bttvEnabled: true,
+    bttvGlobal: true,
+    bttvChannel: true,
+    bttvSize: 2,
     bg: "solid",
     texture: "none",
     textureStrength: 30,
@@ -548,13 +552,13 @@ export const DEFAULT_BETTER_CONFIG = {
 };
 
 export const BETTER_WIDGETS = [
-  { type: "bonus_hunt", label: "Better Hunt", styleKey: "displayStyle", styleId: "better_bonus_hunt", icon: "BH", defaultSize: { width: 430, height: 860 } },
-  { type: "giveaway", label: "Better Giveaway", styleKey: "displayStyle", styleId: "better_giveaway", icon: "GW", defaultSize: { width: 700, height: 270 } },
-  { type: "navbar", label: "Better Navbar", styleKey: "displayStyle", styleId: "better_navbar", icon: "NB", defaultSize: { width: 1200, height: 72 } },
-  { type: "chat", label: "Better Chat", styleKey: "chatStyle", styleId: "better_chat", icon: "CH", defaultSize: BETTER_CHAT_DEFAULT_SIZE },
-  { type: "rtp_stats", label: "Better RTP Stats", styleKey: "displayStyle", styleId: "better_rtp", icon: "RT", defaultSize: { width: 1080, height: 88 } },
-  { type: "background", label: "Better Background", styleKey: "displayStyle", styleId: "better_background", icon: "BG", defaultSize: { width: 1920, height: 1080 } },
-  { type: "bets", label: "Better Bets", styleKey: "displayStyle", styleId: "better_bets", icon: "BT", defaultSize: { width: 380, height: 430 } },
+  { type: "bonus_hunt", label: "Better Hunt", styleKey: "displayStyle", styleId: "better_bonus_hunt", icon: "🎯", defaultSize: { width: 430, height: 860 } },
+  { type: "giveaway", label: "Better Giveaway", styleKey: "displayStyle", styleId: "better_giveaway", icon: "🎁", defaultSize: { width: 700, height: 270 } },
+  { type: "navbar", label: "Better Navbar", styleKey: "displayStyle", styleId: "better_navbar", icon: "🧭", defaultSize: { width: 1200, height: 72 } },
+  { type: "chat", label: "Better Chat", styleKey: "chatStyle", styleId: "better_chat", icon: "💬", defaultSize: BETTER_CHAT_DEFAULT_SIZE },
+  { type: "rtp_stats", label: "Better RTP Stats", styleKey: "displayStyle", styleId: "better_rtp", icon: "📖", defaultSize: { width: 1080, height: 88 } },
+  { type: "background", label: "Better Background", styleKey: "displayStyle", styleId: "better_background", icon: "🖼️", defaultSize: { width: 1920, height: 1080 } },
+  { type: "bets", label: "Better Bets", styleKey: "displayStyle", styleId: "better_bets", icon: "💎", defaultSize: { width: 380, height: 430 } },
 ];
 
 export function getBetterWidgetMeta(type) {
@@ -687,6 +691,10 @@ function normalizeBetterChatConfig(merged = {}) {
   next.showHeaderName = next.showHeaderName !== false;
   next.showLiveLabel = next.showLiveLabel !== false;
   next.showEmptyState = next.showEmptyState !== false;
+  next.bttvEnabled = next.bttvEnabled !== false;
+  next.bttvGlobal = next.bttvGlobal !== false;
+  next.bttvChannel = next.bttvChannel !== false;
+  next.bttvSize = clampNumber(next.bttvSize, 1, 3, defaults.bttvSize);
   next.viewerCount = clampNumber(next.viewerCount, 0, 100000, defaults.viewerCount);
   next.textureStrength = clampNumber(next.textureStrength, 5, 80, defaults.textureStrength);
   next.celebrations.intensity = clampNumber(
@@ -1739,6 +1747,12 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
         <ToggleRow label="Show live text" checked={c.showLiveLabel !== false} onChange={(showLiveLabel) => set({ showLiveLabel })} />
         <ToggleRow label="Show viewer count" checked={!!c.showViewerCount} onChange={(showViewerCount) => set({ showViewerCount })} />
         <SliderRow label="Viewer count" value={c.viewerCount} min={0} max={100000} step={10} disabled={!c.showViewerCount} onChange={(viewerCount) => set({ viewerCount })} />
+      </Section>
+      <Section title="Emotes" icon={<Sparkles size={13} />}>
+        <ToggleRow label="BetterTTV emotes" checked={c.bttvEnabled !== false} onChange={(bttvEnabled) => set({ bttvEnabled })} />
+        <ToggleRow label="Global BTTV emotes" checked={c.bttvGlobal !== false} onChange={(bttvGlobal) => set({ bttvGlobal })} />
+        <ToggleRow label="Channel BTTV emotes" checked={c.bttvChannel !== false} onChange={(bttvChannel) => set({ bttvChannel })} />
+        <SliderRow label="Emote image size" value={c.bttvSize} min={1} max={3} step={1} unit="x" onChange={(bttvSize) => set({ bttvSize })} />
       </Section>
       <Section title="Celebrations" icon={<Sparkles size={13} />}>
         <ToggleRow label="Raid celebration" checked={c.celebrations?.raid !== false} onChange={(raid) => set({ celebrations: { ...c.celebrations, raid } })} />

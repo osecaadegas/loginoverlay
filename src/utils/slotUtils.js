@@ -1,13 +1,14 @@
-import { supabase } from '../config/supabaseClient';
+import { supabase } from "../config/supabaseClient";
 
 // Default slot image for fallback
-export const DEFAULT_SLOT_IMAGE = 'https://i.imgur.com/8E3ucNx.png';
+export const DEFAULT_SLOT_IMAGE = "https://i.imgur.com/8E3ucNx.png";
 
 // In-memory cache for slots
 let slotsCache = null;
 let cacheTimestamp = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const SLOT_CATALOG_SELECT = 'id, name, provider, image, rtp, volatility, max_win_multiplier, status, is_featured, sort_order';
+const SLOT_CATALOG_SELECT =
+  "id, name, provider, image, rtp, volatility, max_win_multiplier, status, is_featured, sort_order";
 
 function getRandomIndex(maxExclusive) {
   const values = new Uint32Array(1);
@@ -19,7 +20,10 @@ function shuffleSlots(slots) {
   const shuffled = [...slots];
   for (let index = shuffled.length - 1; index > 0; index--) {
     const swapIndex = getRandomIndex(index + 1);
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
   }
   return shuffled;
 }
@@ -30,7 +34,11 @@ function shuffleSlots(slots) {
  */
 export async function getAllSlots() {
   // Check if cache is valid
-  if (slotsCache && cacheTimestamp && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
+  if (
+    slotsCache &&
+    cacheTimestamp &&
+    Date.now() - cacheTimestamp < CACHE_DURATION
+  ) {
     return slotsCache;
   }
 
@@ -43,13 +51,13 @@ export async function getAllSlots() {
 
     while (hasMore) {
       const { data, error } = await supabase
-        .from('slots')
+        .from("slots")
         .select(SLOT_CATALOG_SELECT)
-        .order('name', { ascending: true })
+        .order("name", { ascending: true })
         .range(from, from + batchSize - 1);
 
       if (error) {
-        console.error('Error fetching slots:', error);
+        console.error("Error fetching slots:", error);
         break;
       }
 
@@ -68,7 +76,7 @@ export async function getAllSlots() {
 
     return slotsCache;
   } catch (error) {
-    console.error('Error fetching slots:', error);
+    console.error("Error fetching slots:", error);
     return slotsCache || [];
   }
 }
@@ -80,7 +88,9 @@ export async function getAllSlots() {
  */
 export async function findSlotByName(slotName) {
   const slots = await getAllSlots();
-  return slots.find(s => s.name.toLowerCase() === slotName.toLowerCase()) || null;
+  return (
+    slots.find((s) => s.name.toLowerCase() === slotName.toLowerCase()) || null
+  );
 }
 
 /**
@@ -89,7 +99,7 @@ export async function findSlotByName(slotName) {
  */
 export async function getAllProviders() {
   const slots = await getAllSlots();
-  const providers = [...new Set(slots.map(slot => slot.provider))];
+  const providers = [...new Set(slots.map((slot) => slot.provider))];
   return providers.sort((left, right) => left.localeCompare(right));
 }
 
@@ -103,7 +113,7 @@ export async function getSlotsByProviders(providers) {
   if (!providers || providers.length === 0) {
     return [];
   }
-  return slots.filter(slot => providers.includes(slot.provider));
+  return slots.filter((slot) => providers.includes(slot.provider));
 }
 
 /**
@@ -114,11 +124,11 @@ export async function getSlotsByProviders(providers) {
  */
 export async function getRandomSlots(count = 10, providers = null) {
   let slots = await getAllSlots();
-  
+
   if (providers && providers.length > 0) {
-    slots = slots.filter(slot => providers.includes(slot.provider));
+    slots = slots.filter((slot) => providers.includes(slot.provider));
   }
-  
+
   // Shuffle and take the requested count
   const shuffled = shuffleSlots(slots);
   return shuffled.slice(0, count);
@@ -129,13 +139,13 @@ export async function getRandomSlots(count = 10, providers = null) {
  * Lower index = higher priority. Providers not in this list sort alphabetically after.
  */
 const PROVIDER_PRIORITY = [
-  'pragmatic play',
-  'hacksaw',
-  'nolimit city',
-  'relax gaming',
-  'play\'n go',
-  'push gaming',
-  'bgaming',
+  "pragmatic play",
+  "hacksaw",
+  "nolimit city",
+  "relax gaming",
+  "play'n go",
+  "push gaming",
+  "bgaming",
 ];
 
 /**
@@ -152,7 +162,8 @@ export function sortSlotsByProviderPriority(slotList) {
     if (!provider) return PROVIDER_PRIORITY.length;
     const p = provider.toLowerCase();
     for (let i = 0; i < PROVIDER_PRIORITY.length; i++) {
-      if (p.includes(PROVIDER_PRIORITY[i]) || PROVIDER_PRIORITY[i].includes(p)) return i;
+      if (p.includes(PROVIDER_PRIORITY[i]) || PROVIDER_PRIORITY[i].includes(p))
+        return i;
     }
     return PROVIDER_PRIORITY.length;
   };
@@ -161,7 +172,7 @@ export function sortSlotsByProviderPriority(slotList) {
     const pa = getPriority(a.provider);
     const pb = getPriority(b.provider);
     if (pa !== pb) return pa - pb;
-    return (a.name || '').localeCompare(b.name || '');
+    return (a.name || "").localeCompare(b.name || "");
   });
 }
 
@@ -173,7 +184,9 @@ export function sortSlotsByProviderPriority(slotList) {
 export async function searchSlotsByName(searchTerm) {
   const slots = await getAllSlots();
   const term = searchTerm.toLowerCase();
-  const filtered = slots.filter(slot => slot.name.toLowerCase().includes(term));
+  const filtered = slots.filter((slot) =>
+    slot.name.toLowerCase().includes(term),
+  );
   return sortSlotsByProviderPriority(filtered);
 }
 
@@ -201,7 +214,7 @@ export function getCacheStatus() {
   return {
     isCached: !!slotsCache,
     age: cacheTimestamp ? Date.now() - cacheTimestamp : null,
-    count: slotsCache ? slotsCache.length : 0
+    count: slotsCache ? slotsCache.length : 0,
   };
 }
 
@@ -217,19 +230,22 @@ export function getCacheStatus() {
 export async function addSlot(slotData) {
   try {
     const { name, provider, image } = slotData;
-    
+
     if (!name || !provider || !image) {
-      return { success: false, error: 'Name, provider, and image are required' };
+      return {
+        success: false,
+        error: "Name, provider, and image are required",
+      };
     }
 
     const { data, error } = await supabase
-      .from('slots')
+      .from("slots")
       .insert([{ name, provider, image }])
       .select()
       .single();
 
     if (error) {
-      console.error('Error adding slot:', error);
+      console.error("Error adding slot:", error);
       return { success: false, error: error.message };
     }
 
@@ -238,7 +254,7 @@ export async function addSlot(slotData) {
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error adding slot:', error);
+    console.error("Error adding slot:", error);
     return { success: false, error: error.message };
   }
 }
@@ -252,14 +268,14 @@ export async function addSlot(slotData) {
 export async function updateSlot(slotId, updates) {
   try {
     const { data, error } = await supabase
-      .from('slots')
+      .from("slots")
       .update(updates)
-      .eq('id', slotId)
+      .eq("id", slotId)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating slot:', error);
+      console.error("Error updating slot:", error);
       return { success: false, error: error.message };
     }
 
@@ -268,7 +284,7 @@ export async function updateSlot(slotId, updates) {
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error updating slot:', error);
+    console.error("Error updating slot:", error);
     return { success: false, error: error.message };
   }
 }
@@ -280,13 +296,10 @@ export async function updateSlot(slotId, updates) {
  */
 export async function deleteSlot(slotId) {
   try {
-    const { error } = await supabase
-      .from('slots')
-      .delete()
-      .eq('id', slotId);
+    const { error } = await supabase.from("slots").delete().eq("id", slotId);
 
     if (error) {
-      console.error('Error deleting slot:', error);
+      console.error("Error deleting slot:", error);
       return { success: false, error: error.message };
     }
 
@@ -295,7 +308,7 @@ export async function deleteSlot(slotId) {
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting slot:', error);
+    console.error("Error deleting slot:", error);
     return { success: false, error: error.message };
   }
 }
@@ -308,19 +321,19 @@ export async function deleteSlot(slotId) {
 export async function getSlotById(slotId) {
   try {
     const { data, error } = await supabase
-      .from('slots')
-      .select('*')
-      .eq('id', slotId)
+      .from("slots")
+      .select("*")
+      .eq("id", slotId)
       .single();
 
     if (error) {
-      console.error('Error fetching slot:', error);
+      console.error("Error fetching slot:", error);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('Error fetching slot:', error);
+    console.error("Error fetching slot:", error);
     return null;
   }
 }
