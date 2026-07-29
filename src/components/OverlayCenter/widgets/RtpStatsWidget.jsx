@@ -595,6 +595,57 @@ function fmtVolatility(v) {
   return v.replaceAll("_", " ").toUpperCase();
 }
 
+function normalizeVolatilityLevel(value) {
+  const text = String(value || "").trim().toLowerCase().replace(/[_-]+/g, " ");
+  if (!text || text === "—" || text === "â€”" || text === "-") return { level: 0, label: "Unknown", color: "#94a3b8" };
+  if (text.includes("extreme") || text.includes("very high") || text.includes("extra high")) {
+    return { level: 4, label: "Very High", color: "#ff1f2d" };
+  }
+  if (text.includes("high")) return { level: 3, label: "High", color: "#ff453a" };
+  if (text.includes("medium") || text.includes("med")) return { level: 2, label: "Medium", color: "#ffd43b" };
+  if (text.includes("low")) return { level: 1, label: "Low", color: "#43e37d" };
+  return { level: 0, label: fmtVolatility(String(value)), color: "#94a3b8" };
+}
+
+function RtpVolatilityBars({ value }) {
+  const { level, label, color } = normalizeVolatilityLevel(value);
+  return (
+    <span
+      title={label}
+      aria-label={`Volatility ${label}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
+        gap: 3,
+        minWidth: 32,
+        height: 16,
+      }}
+    >
+      {Array.from({ length: 4 }).map((_, index) => {
+        const filled = index < level;
+        return (
+          <i
+            key={index}
+            style={{
+              display: "block",
+              width: 5,
+              height: [7, 10, 13, 16][index],
+              borderRadius: 999,
+              background: filled ? color : "rgba(110,128,160,.22)",
+              boxShadow: filled
+                ? level === 4
+                  ? "0 0 9px rgba(255,31,45,.95), 0 0 18px rgba(255,31,45,.75), inset 0 1px 0 rgba(255,255,255,.38)"
+                  : `0 0 7px ${color}aa, inset 0 1px 0 rgba(255,255,255,.32)`
+                : "inset 0 0 0 1px rgba(255,255,255,.08)",
+            }}
+          />
+        );
+      })}
+    </span>
+  );
+}
+
 /* ─── Format max win multiplier ─── */
 function fmtMultiplier(m) {
   if (!m) return "—";
@@ -1200,7 +1251,7 @@ function RtpStatsLeftSection({
         label="VOLATILITY"
         labelStyle={labelStyle}
       >
-        {fmtVolatility(displayInfo?.volatility)}
+        <RtpVolatilityBars value={displayInfo?.volatility} />
       </RtpStatsMetric>
     </div>
   );

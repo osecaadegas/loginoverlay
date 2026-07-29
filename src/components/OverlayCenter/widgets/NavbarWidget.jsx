@@ -289,6 +289,7 @@ function resolveNavbarStyleSecaValue(isStyleSeca, value, fallback) {
 function resolveDisplayNowPlaying(config, nowPlaying) {
   if (config.showNowPlaying === false || config.musicSource === "disabled") return null;
   if (!nowPlaying?.track && !nowPlaying?.artist) return null;
+  if (config.musicSource === "spotify" && nowPlaying.isPlaying === false) return null;
   return nowPlaying;
 }
 
@@ -1973,15 +1974,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       casinoImageSize ||
       Math.max(8, Math.min(packageHeight * 1.65, packageHeight * 0.55 * casinoLogoScale));
     const wantsBetterMusic = c.showNowPlaying !== false && c.musicSource !== "disabled";
-    const fallbackNowPlaying = wantsBetterMusic
-      ? {
-          track: c.musicFallbackTrack || "Fa Fa Fa - (Album Version)",
-          artist: c.musicFallbackArtist || "Datarock",
-          isPlaying: true,
-        }
-      : null;
-    const betterNowPlaying = displayNowPlaying || fallbackNowPlaying;
-    const showBetterMusic = Boolean(wantsBetterMusic);
+    const betterNowPlaying = displayNowPlaying;
+    const showBetterMusic = Boolean(wantsBetterMusic && betterNowPlaying);
     const betterMusicDisplayStyle = subValue(
       c,
       "music",

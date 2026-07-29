@@ -755,15 +755,52 @@ function bonusVolatility(bonus) {
   );
 }
 
-function bonusMaxWin(bonus) {
+function normalizeVolatilityLevel(value) {
+  const text = String(value || "").trim().toLowerCase().replace(/[_-]+/g, " ");
+  if (!text || text === "-") return { level: 0, label: "-" };
+  if (text.includes("extreme") || text.includes("very high") || text.includes("extra high")) {
+    return { level: 4, label: "Very High" };
+  }
+  if (text.includes("high")) return { level: 3, label: "High" };
+  if (text.includes("medium") || text.includes("med")) return { level: 2, label: "Medium" };
+  if (text.includes("low")) return { level: 1, label: "Low" };
+  return { level: 0, label: String(value).replace(/_/g, " ") };
+}
+
+function BetterHuntVolatilityBars({ value }) {
+  const { level, label } = normalizeVolatilityLevel(value);
   return (
+    <span className={`better-hunt-volatility-bars better-hunt-volatility-bars--${level}`} title={label} aria-label={`Volatility ${label}`}>
+      {Array.from({ length: 4 }).map((_, index) => (
+        <i key={index} className={index < level ? "is-filled" : ""} />
+      ))}
+    </span>
+  );
+}
+
+function bonusMaxWin(bonus) {
+  const value =
     bonus?.maxWin ||
+    bonus?.max_win ||
+    bonus?.maxWinMultiplier ||
+    bonus?.max_win_multiplier ||
     bonus?.slotMaxWin ||
     bonus?.slot_max_win ||
+    bonus?.slotMaxWinMultiplier ||
+    bonus?.slot_max_win_multiplier ||
     bonus?.slot?.maxWin ||
     bonus?.slot?.max_win ||
-    "-"
-  );
+    bonus?.slot?.maxWinMultiplier ||
+    bonus?.slot?.max_win_multiplier ||
+    bonus?.slot?.potential ||
+    bonus?.potential;
+  if (value === undefined || value === null || value === "") return "-";
+  if (typeof value === "number") return formatMultiplier(value);
+  const text = String(value).trim();
+  if (!text) return "-";
+  if (/x$/i.test(text)) return text;
+  const numeric = Number(text.replace(/,/g, ""));
+  return Number.isFinite(numeric) && numeric > 0 ? formatMultiplier(numeric) : text;
 }
 
 function bonusMultiplierValue(bonus) {
@@ -1387,11 +1424,12 @@ function BetterStyleSheet() {
       .better-hunt-stat-strip div{min-width:0;padding:7px 4px;text-align:center;border-left:1px solid rgba(255,255,255,.12)}
       .better-hunt-stat-strip div:first-child{border-left:0}
       .better-hunt-stat-strip strong{display:block;overflow:hidden;color:#fff;font-size:.94em;font-weight:900;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}
+      .better-hunt-volatility-bars{--bh-vol-color:#9aa8c3;display:inline-flex;align-items:flex-end;justify-content:flex-end;gap:3px;min-width:32px;height:16px}.better-hunt-volatility-bars i{display:block;width:5px;height:12px;border-radius:999px;background:rgba(110,128,160,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}.better-hunt-volatility-bars i:nth-child(1){height:7px}.better-hunt-volatility-bars i:nth-child(2){height:10px}.better-hunt-volatility-bars i:nth-child(3){height:13px}.better-hunt-volatility-bars i:nth-child(4){height:16px}.better-hunt-volatility-bars .is-filled{background:var(--bh-vol-color);box-shadow:0 0 7px color-mix(in srgb,var(--bh-vol-color) 72%,transparent),inset 0 1px 0 rgba(255,255,255,.32)}.better-hunt-volatility-bars--1{--bh-vol-color:#43e37d}.better-hunt-volatility-bars--2{--bh-vol-color:#ffd43b}.better-hunt-volatility-bars--3{--bh-vol-color:#ff453a}.better-hunt-volatility-bars--4{--bh-vol-color:#ff1f2d}.better-hunt-volatility-bars--4 .is-filled{box-shadow:0 0 9px rgba(255,31,45,.95),0 0 18px rgba(255,31,45,.75),inset 0 1px 0 rgba(255,255,255,.38)}
       .better-hunt-image-stats-panel{height:210px;display:grid;grid-template-columns:41% minmax(0,1fr);overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 60%,transparent);border-radius:12px;background:var(--bh-inset);box-shadow:0 6px 22px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent)}
       .better-hunt-image-stats-panel--super{animation:better-hunt-gold calc(2.4s / var(--anim-speed,1)) ease-in-out infinite;border-color:#ffd23d}
       .better-hunt-image-stats-panel--extreme{border-color:rgba(255,84,112,.72);border-style:dashed}
       .better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art img{animation:better-hunt-cloak calc(4s / var(--anim-speed,1)) ease-in-out infinite}
-      .better-hunt-image-stats-art{position:relative;min-width:0;overflow:hidden}.better-hunt-image-stats-art img{animation:better-hunt-kenburns calc(8s / var(--anim-speed,1)) ease-out both}.better-hunt-image-stats-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,transparent,var(--bh-inset)),linear-gradient(0deg,rgba(0,0,0,.45),transparent)}
+      .better-hunt-image-stats-art{position:relative;min-width:0;overflow:visible;background:var(--bh-inset)}.better-hunt-image-stats-art img{animation:better-hunt-kenburns calc(8s / var(--anim-speed,1)) ease-out both}.better-hunt-image-stats-art .better-hunt-image-stats-img{width:100%;height:100%;object-fit:contain;object-position:center}.better-hunt-image-stats-art::after{content:"";position:absolute;inset:0 -22px 0 0;background:linear-gradient(90deg,transparent 0%,rgba(2,8,23,.05) 58%,var(--bh-inset) 100%),linear-gradient(0deg,rgba(0,0,0,.35),transparent 58%);pointer-events:none}
       .better-hunt-image-stats-copy{min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px;padding:12px}.better-hunt-image-stats-title{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}.better-hunt-image-stats-title h3{min-width:0;overflow:hidden;margin:0;color:#fff;font-size:1.22em;font-weight:950;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-image-row{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding:5px 0}.better-hunt-image-row:last-child{border-bottom:0}.better-hunt-image-row strong{overflow:hidden;color:#fff;font-size:.94em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
       .better-hunt-progress{display:flex;align-items:center;gap:10px;margin-top:10px;padding:0 4px}
       .better-hunt-track{height:var(--bh-bar-height);flex:1;overflow:hidden;border-radius:999px;background:var(--bh-track);box-shadow:inset 0 1px 2px rgba(0,0,0,.7)}
@@ -2129,7 +2167,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const statCells = [
       ["Bet", bonusBet(current) > 0 ? formatMoney(bonusBet(current), money) : "-"],
       ["RTP", bonusRtp(current)],
-      ["Volatility", bonusVolatility(current)],
+      ["Volatility", <BetterHuntVolatilityBars value={bonusVolatility(current)} />],
       ["Max Win", bonusMaxWin(current)],
       ["Best", bonusMultiplierValue(current) > 0 ? formatMultiplier(bonusMultiplierValue(current)) : "-"],
     ];
@@ -2138,7 +2176,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         <div className="better-hunt-carousel" {...attrs("bonus_hunt", c, "slotCarouselContainer")}>
           <div className={`better-hunt-image-stats-panel better-hunt-image-stats-panel--${tier}`} {...attrs("bonus_hunt", c, "carouselBackdrop")}>
             <div className="better-hunt-image-stats-art">
-              <SlotImage src={bonusImage(current)} alt={bonusSlotName(current, activeIndex)} {...attrs("bonus_hunt", c, "slotImage")} />
+              <SlotImage src={bonusImage(current)} alt={bonusSlotName(current, activeIndex)} className="better-hunt-image-stats-img" {...attrs("bonus_hunt", c, "slotImage")} />
             </div>
             <div className="better-hunt-image-stats-copy">
               <div className="better-hunt-image-stats-title">
