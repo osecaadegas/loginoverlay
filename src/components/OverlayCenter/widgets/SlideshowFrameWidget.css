@@ -16,12 +16,12 @@
   padding: var(--bsf-pad);
   border: var(--bsf-border) solid color-mix(in srgb, var(--bsf-frame) 88%, transparent);
   border-radius: var(--bsf-radius);
+  clip-path: inset(0 round var(--bsf-radius));
   background:
     radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--bsf-frame) 18%, transparent), transparent 62%),
     linear-gradient(145deg, color-mix(in srgb, var(--bsf-bg) 92%, #0f172a), color-mix(in srgb, var(--bsf-bg) 70%, #000));
+  background-clip: padding-box;
   box-shadow:
-    0 0 calc(12px * var(--bsf-glow)) color-mix(in srgb, var(--bsf-frame) 58%, transparent),
-    0 0 calc(42px * var(--bsf-glow)) color-mix(in srgb, var(--bsf-frame) 30%, transparent),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
     inset 0 0 calc(28px * var(--bsf-glow)) color-mix(in srgb, var(--bsf-frame) 12%, transparent);
   box-sizing: border-box;
@@ -41,7 +41,7 @@
   height: 100%;
   overflow: hidden;
   border-radius: max(0px, calc(var(--bsf-radius) - var(--bsf-pad)));
-  background: #020617;
+  background: transparent;
 }
 
 .better-slideshow-frame__media {
@@ -162,8 +162,7 @@
     linear-gradient(145deg, color-mix(in srgb, var(--bsf-frame) 24%, #171923), #060812 52%, color-mix(in srgb, var(--bsf-accent) 18%, #0f1018));
   box-shadow:
     0 0 0 1px #020617,
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 14px 38px rgba(0, 0, 0, 0.42);
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .better-slideshow-frame[data-frame="minimal"] {
@@ -206,9 +205,13 @@
 .better-slideshow-frame[data-frame="none"] {
   padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--bsf-radius);
   background: transparent;
   box-shadow: none;
+}
+
+.better-slideshow-frame[data-frame="none"] .better-slideshow-frame__viewport {
+  border-radius: var(--bsf-radius);
 }
 
 .better-slideshow-frame[data-frame="none"] .better-slideshow-frame__inner,
