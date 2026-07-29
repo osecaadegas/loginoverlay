@@ -144,6 +144,11 @@ const FEATURE_COPY = {
     description: "Choose the visual background for your overlay.",
     action: "Change Background",
   },
+  slideshow_frame: {
+    title: "Slideshow Frame",
+    description: "Show image and video links inside a styled frame.",
+    action: "Open Editor",
+  },
   bonus_buys: {
     title: "Bonus Buys",
     description: "Track bonus-buy cost, payout and profit.",
@@ -179,6 +184,7 @@ const PRIMARY_TOOLS = [
   "rtp_stats",
   "navbar",
   "background",
+  "slideshow_frame",
   "bonus_buys",
   "tournament",
   "current_slot",
@@ -231,6 +237,12 @@ function toSlug(type) {
 
 function fromSlug(slug) {
   return String(slug || "").replace(/-/g, "_");
+}
+
+function getToolEditorRoute(type) {
+  return type === "slideshow_frame"
+    ? "/editor"
+    : `/overlay-center/widgets/${toSlug(type)}`;
 }
 
 function getOverlayUrl(instance, { preview = false, widgetId = null } = {}) {
@@ -1447,6 +1459,10 @@ function WidgetDetail({
   saveWidget,
   addWidget,
 }) {
+  if (widgetType === "slideshow_frame") {
+    return <Navigate to="/editor" replace />;
+  }
+
   const def = getWidgetDef(widgetType);
   const widget = widgets.find((item) => item.widget_type === widgetType);
   const ConfigComponent = def?.configPanel;
@@ -2634,7 +2650,7 @@ export default function OverlayControlCenter() {
     if (!def) return;
     await addWidget(type, def.defaults || {});
     trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_ENABLED, { widget_type: type });
-    navigate(`/overlay-center/widgets/${toSlug(type)}`);
+    navigate(getToolEditorRoute(type));
   };
 
   const handleToggleTool = async (widget) => {
@@ -2766,7 +2782,7 @@ export default function OverlayControlCenter() {
               trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, {
                 widget_type: type,
               });
-              navigate(`/overlay-center/widgets/${toSlug(type)}`);
+              navigate(getToolEditorRoute(type));
             }}
             onToggleTool={handleToggleTool}
             onAddTool={handleAddTool}

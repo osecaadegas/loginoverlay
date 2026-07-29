@@ -184,15 +184,6 @@ function BetterGiveawayGiftIcon() {
   );
 }
 
-function BetterGiveawayBroadcastIcon() {
-  return (
-    <svg className="better-gw-broadcast-icon" viewBox="0 0 16 16" aria-hidden="true">
-      <circle cx="8" cy="8" r="1.5" />
-      <path d="M5.7 5.7a3.25 3.25 0 0 0 0 4.6M10.3 5.7a3.25 3.25 0 0 1 0 4.6M3.4 3.4a6.5 6.5 0 0 0 0 9.2M12.6 3.4a6.5 6.5 0 0 1 0 9.2" />
-    </svg>
-  );
-}
-
 function BetterGiveawayRoulette({ participants, phase, winnerName, durationSec }) {
   const crowd = participants.length
     ? participants
@@ -1244,7 +1235,6 @@ function BetterStyleSheet() {
       @keyframes better-bets-plasma-2{0%,100%{transform:translate(0,0) scale(.9)}50%{transform:translate(-42px,12px) scale(1.15)}}
       @keyframes better-bets-plasma-3{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(16px,22px) scale(.82)}}
       @keyframes better-bets-bar-sheen{0%{left:-20%;opacity:0}15%{opacity:1}60%{left:105%;opacity:0}100%{left:105%;opacity:0}}
-      @keyframes better-gw-live-blink{0%,100%{opacity:1}50%{opacity:.42}}
       @keyframes better-gw-edge-pulse{0%,100%{opacity:.55;transform:scaleX(.7)}50%{opacity:1;transform:scaleX(1.15)}}
       @keyframes better-gw-sheen-sweep{0%,68%{transform:translateX(-120%)}86%,100%{transform:translateX(120%)}}
       @keyframes better-gw-winner-pop{0%{transform:scale(.6)}60%{transform:scale(1.22)}100%{transform:scale(1.14)}}
@@ -1271,25 +1261,20 @@ function BetterStyleSheet() {
       .better-gw-name span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .better-gw-gift-icon{width:20px;height:20px;flex:0 0 auto;overflow:visible;filter:drop-shadow(0 0 4px rgba(255,189,0,.48))}
       .better-gw-gift-box,.better-gw-gift-lid{fill:#ffbd09;stroke:#ff8b00;stroke-width:.7}.better-gw-gift-lid{fill:#ffc51b}.better-gw-gift-ribbon{fill:none;stroke:#ed3541;stroke-width:1.5}.better-gw-gift-bow{fill:#ef3c38;stroke:#ff8b00;stroke-width:.7}
-      .better-gw-live-toggle{display:inline-flex;align-items:center;gap:5px;min-height:22px;flex:0 0 auto;padding:3px 8px 3px 7px;color:#dbf4ff;border:1px solid hsl(var(--H) 90% 52% / .85);border-radius:999px;background:linear-gradient(180deg,hsl(var(--H) 88% 42% / .9),hsl(var(--H2) 95% 28% / .92));box-shadow:0 0 calc(8px * var(--G)) hsl(var(--H) 100% 50% / calc(.7 * var(--G))),inset 0 1px 2px hsl(var(--H) 90% 80% / .3);font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:9px;font-weight:700;letter-spacing:.11em;line-height:1;text-transform:uppercase}
-      .better-giveaway-widget.is-paused .better-gw-live-toggle{background:linear-gradient(180deg,rgba(47,82,129,.82),rgba(13,32,66,.92));box-shadow:0 0 7px rgba(32,89,141,.55),inset 0 1px 2px rgba(155,199,230,.2)}
-      .better-gw-live-dot{width:5px;height:5px;border-radius:50%;background:var(--w-accent-soft,#8ee9ff);box-shadow:0 0 6px var(--w-accent,#25c9ff);animation:better-gw-live-blink 1.7s ease-in-out infinite}
-      .better-giveaway-widget.is-paused .better-gw-live-dot{background:#9aacba;box-shadow:none;animation:none}
-      .better-gw-broadcast-icon{width:11px;height:11px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-width:1.35}.better-gw-broadcast-icon circle{fill:currentColor;stroke:none}
       .better-gw-rule{position:relative;height:1px;margin:6px 0 14px;background:linear-gradient(90deg,transparent,hsl(var(--H) var(--S) 45% / .6) 16%,hsl(var(--H2) var(--S) 40% / .3) 84%,transparent)}
       .better-gw-rule::before,.better-gw-rule::after{position:absolute;top:-1px;width:3px;height:3px;border-radius:50%;background:var(--w-accent,#57d7ff);box-shadow:0 0 calc(6px * var(--G)) hsl(var(--H) 100% 50% / var(--G));content:""}.better-gw-rule::before{left:8%}.better-gw-rule::after{right:8%}
       .better-gw-prize{display:flex;align-items:baseline;justify-content:center;gap:6px;min-height:42px;color:#f4f8ff;text-align:center;text-shadow:0 0 10px rgba(205,230,255,.25);transition:opacity 380ms ease,transform 520ms cubic-bezier(.22,.9,.24,1),filter 380ms ease}
       .better-gw-prize strong{min-width:0;overflow:hidden;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-prize-size,31px);font-style:var(--w-prize-style,italic);font-weight:var(--w-title-weight,700);letter-spacing:var(--w-letter,.015em);line-height:1;text-overflow:ellipsis;white-space:nowrap}
       .better-gw-prize span{min-width:0;color:#e5edf8;font-size:var(--w-sub-size,15px);font-style:var(--w-prize-style,italic);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .better-gw-metrics{display:grid;grid-template-columns:1fr 1fr;gap:var(--w-tile-gap,12px);margin-top:9px;transition:opacity 380ms ease,transform 520ms cubic-bezier(.22,.9,.24,1),filter 380ms ease}
-      .better-gw-metric-panel{position:relative;display:flex;min-width:0;min-height:62px;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:10px 15px;border:1px solid hsl(var(--H) var(--S) 38% / .85);border-radius:var(--w-tile-radius,10px);background:linear-gradient(180deg,hsl(var(--H) var(--S) calc(var(--L) + 5%) / .98),hsl(var(--H2) var(--S) var(--L) / .9));box-shadow:inset 0 0 calc(12px * var(--IG)) hsl(var(--H) 100% 32% / calc(.27 * var(--IG))),0 0 calc(8px * var(--G)) hsl(var(--H) 100% 30% / calc(.14 * var(--G)));transition:border-radius 320ms ease,background 480ms ease}
+      .better-gw-metrics{display:grid;grid-template-columns:1fr 1fr;gap:min(var(--w-tile-gap,12px),8px);margin-top:7px;transition:opacity 380ms ease,transform 520ms cubic-bezier(.22,.9,.24,1),filter 380ms ease}
+      .better-gw-metric-panel{position:relative;display:flex;min-width:0;min-height:clamp(34px,22cqh,50px);flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:6px 10px;border:1px solid hsl(var(--H) var(--S) 38% / .85);border-radius:var(--w-tile-radius,10px);background:linear-gradient(180deg,hsl(var(--H) var(--S) calc(var(--L) + 5%) / .98),hsl(var(--H2) var(--S) var(--L) / .9));box-shadow:inset 0 0 calc(12px * var(--IG)) hsl(var(--H) 100% 32% / calc(.27 * var(--IG))),0 0 calc(8px * var(--G)) hsl(var(--H) 100% 30% / calc(.14 * var(--G)));transition:border-radius 320ms ease,background 480ms ease}
       .better-giveaway-widget[data-surface="metallic"] .better-gw-metric-panel{background:linear-gradient(170deg,hsl(var(--H) var(--S) calc(var(--L) + 20%)),hsl(var(--H2) var(--S) calc(var(--L) + 2%)) 55%,hsl(var(--H) var(--S) calc(var(--L) + 12%)))}
       .better-giveaway-widget[data-surface="matte"] .better-gw-metric-panel{background:hsl(var(--H) var(--S) calc(var(--L) + 5%));box-shadow:inset 0 0 calc(18px * var(--IG)) hsl(var(--H) 40% 3% / calc(.5 * var(--IG)))}
       .better-giveaway-widget[data-surface="gloss"] .better-gw-metric-panel::after{position:absolute;top:0;right:0;left:0;height:46%;content:"";pointer-events:none;background:linear-gradient(180deg,hsl(0 0% 100% / .14),transparent)}
       .better-gw-metric-panel::before{position:absolute;inset:0;pointer-events:none;content:"";background:linear-gradient(110deg,transparent 8%,rgba(53,167,255,.06) 38%,transparent 59%)}
-      .better-gw-metric-label{position:relative;z-index:1;color:var(--w-accent,#52c9f4);font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-label-size,10px);font-weight:700;letter-spacing:calc(var(--w-letter,.17em) + .14em);line-height:1.1;text-transform:var(--w-label-transform,uppercase);text-shadow:0 0 calc(7px * var(--w-text-glow,1)) hsl(var(--H) 100% 55% / calc(.42 * var(--w-text-glow,1)))}
-      .better-gw-metric-value{position:relative;z-index:1;max-width:100%;overflow:hidden;margin-top:3px;color:#e8f5ff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-value-size,28px);font-weight:800;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 0 calc(10px * var(--w-text-glow,1)) hsl(var(--H) 100% 78% / calc(.34 * var(--w-text-glow,1)))}
-      .better-gw-keyword-value{color:var(--w-accent,#087bff);letter-spacing:var(--w-letter,.02em);text-shadow:0 0 calc(11px * var(--w-text-glow,1)) hsl(var(--H) 100% 50% / calc(.8 * var(--w-text-glow,1)))}
+      .better-gw-metric-label{position:relative;z-index:1;color:rgba(255,255,255,.88);font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:min(var(--w-label-size,10px),clamp(7px,4.5cqh,10px));font-weight:700;letter-spacing:calc(var(--w-letter,.17em) + .08em);line-height:1.1;text-transform:var(--w-label-transform,uppercase);text-shadow:0 0 calc(5px * var(--w-text-glow,1)) hsl(var(--H) 100% 55% / calc(.28 * var(--w-text-glow,1)))}
+      .better-gw-metric-value{position:relative;z-index:1;max-width:100%;overflow:hidden;margin-top:2px;color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:min(var(--w-value-size,28px),clamp(13px,9cqh,22px));font-weight:800;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 0 calc(8px * var(--w-text-glow,1)) hsl(var(--H) 100% 78% / calc(.3 * var(--w-text-glow,1)))}
+      .better-gw-keyword-value{color:#fff;letter-spacing:var(--w-letter,.02em);text-shadow:0 0 calc(8px * var(--w-text-glow,1)) hsl(var(--H) 100% 60% / calc(.55 * var(--w-text-glow,1)))}
       .better-gw-reel-zone{position:absolute;top:calc(var(--w-pad-y,22px) * 1.4 + 40px);right:var(--w-pad-x,31px);bottom:calc(var(--w-pad-y,22px) * .8);left:var(--w-pad-x,31px);z-index:2;opacity:0;transform:translateY(12px) scale(.97);pointer-events:none;transition:opacity 420ms ease,transform 560ms cubic-bezier(.22,.9,.24,1),visibility 0s linear 560ms;visibility:hidden}
       .better-giveaway-widget.is-tall .better-gw-reel-zone{opacity:1;transform:translateY(0) scale(1);visibility:visible;transition:opacity 420ms ease 60ms,transform 560ms cubic-bezier(.22,.9,.24,1),visibility 0s linear 0s}
       .better-giveaway-widget.is-tall .better-gw-prize{opacity:0;transform:translateY(-8px) scale(.97);filter:blur(2px);pointer-events:none}.better-giveaway-widget.is-tall .better-gw-metrics{opacity:0;transform:translateY(10px) scale(.97);filter:blur(2px);pointer-events:none}
@@ -2789,16 +2774,6 @@ export function BetterGiveawayStyle({ config }) {
             <BetterGiveawayGiftIcon />
             <span>{c.title || "Giveaway"}</span>
           </div>
-          <span
-            className="better-gw-live-toggle"
-            aria-label={isLive ? "Giveaway live" : hasWinner ? "Giveaway finished" : "Giveaway paused"}
-            data-widget-element="statusBadge"
-            {...attrs("giveaway", c, "statusBadge", hasWinner ? "winner" : isLive ? "live" : "closed")}
-          >
-            <span className="better-gw-live-dot" />
-            <span>{hasWinner ? "Winner" : isLive ? "Live" : "Paused"}</span>
-            <BetterGiveawayBroadcastIcon />
-          </span>
         </header>
 
         <div className="better-gw-rule" aria-hidden="true" />

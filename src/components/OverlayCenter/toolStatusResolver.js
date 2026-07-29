@@ -106,6 +106,15 @@ export function getToolSetupIssues(type, widget, integrations = {}) {
         issues.push({ kind: 'connection', label: 'Connect a chat channel', to: '/overlay-center/integrations' });
       }
       break;
+    case 'slideshow_frame':
+      if (
+        !hasText(config.mediaText) &&
+        !(Array.isArray(config.mediaItems) && config.mediaItems.length > 0) &&
+        !(Array.isArray(config.mediaUrls) && config.mediaUrls.length > 0)
+      ) {
+        issues.push({ kind: 'setup', label: 'Add image or video links', to: '/editor' });
+      }
+      break;
     case 'slot_requests':
       if (config.srChatEnabled !== false && !getTwitchReady(config, integrations)) {
         issues.push({ kind: 'connection', label: 'Twitch channel is not connected', to: '/overlay-center/integrations' });
