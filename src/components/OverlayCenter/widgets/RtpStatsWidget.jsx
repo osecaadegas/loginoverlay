@@ -596,7 +596,20 @@ function fmtVolatility(v) {
 }
 
 function normalizeVolatilityLevel(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const level = Math.min(4, Math.max(0, Math.round(value)));
+    const labels = ["Unknown", "Low", "Medium", "High", "Very High"];
+    const colors = ["#94a3b8", "#43e37d", "#ffd43b", "#ff453a", "#ff1f2d"];
+    return { level, label: labels[level] || "Unknown", color: colors[level] || "#94a3b8" };
+  }
   const text = String(value || "").trim().toLowerCase().replace(/[_-]+/g, " ");
+  const numericLevel = Number(text);
+  if (Number.isFinite(numericLevel)) {
+    const level = Math.min(4, Math.max(0, Math.round(numericLevel)));
+    const labels = ["Unknown", "Low", "Medium", "High", "Very High"];
+    const colors = ["#94a3b8", "#43e37d", "#ffd43b", "#ff453a", "#ff1f2d"];
+    return { level, label: labels[level] || "Unknown", color: colors[level] || "#94a3b8" };
+  }
   if (!text || text === "—" || text === "â€”" || text === "-") return { level: 0, label: "Unknown", color: "#94a3b8" };
   if (text.includes("extreme") || text.includes("very high") || text.includes("extra high")) {
     return { level: 4, label: "Very High", color: "#ff1f2d" };
@@ -857,6 +870,10 @@ function knownSlotInfoValue(value) {
   if (value === undefined || value === null) return false;
   if (typeof value === "number") return Number.isFinite(value);
   const text = String(value).trim();
+  const normalized = text.toLowerCase().replace(/[_-]+/g, " ");
+  if (normalized === "unknown" || normalized === "n/a" || normalized === "na" || normalized === "null") {
+    return false;
+  }
   return Boolean(text && text !== "-" && text !== "—" && text !== "â€”");
 }
 
@@ -865,7 +882,15 @@ function mergeSlotInfo(primary, fallback) {
   if (!fallback) return primary;
   const merged = { ...fallback, ...primary };
   ["rtp", "volatility", "max_win_multiplier", "max_win", "provider", "image"].forEach((key) => {
-    if (!knownSlotInfoValue(primary[key]) && knownSlotInfoValue(fallback[key])) {
+    const primaryKnown =
+      key === "volatility"
+        ? normalizeVolatilityLevel(primary[key]).level > 0
+        : knownSlotInfoValue(primary[key]);
+    const fallbackKnown =
+      key === "volatility"
+        ? normalizeVolatilityLevel(fallback[key]).level > 0
+        : knownSlotInfoValue(fallback[key]);
+    if (!primaryKnown && fallbackKnown) {
       merged[key] = fallback[key];
     }
   });
