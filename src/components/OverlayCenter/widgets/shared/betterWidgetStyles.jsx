@@ -1401,6 +1401,8 @@ function BetterStyleSheet() {
       .better-hunt-root::before,.better-hunt-root::after{content:none}
       .better-hunt-shell{position:relative;z-index:1;width:100%;height:100%;display:grid;place-items:center;padding:18px}
       .better-hunt-root[data-orientation="vertical"] .better-hunt-shell,.better-hunt-root[data-orientation="mainstream"] .better-hunt-shell{align-items:center}
+      .better-hunt-root[data-drawer-mode="expand"] .better-hunt-shell{place-items:start center;align-items:start}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream{height:var(--bh-panel-height,100%);max-height:100%}
       .better-hunt-panel{position:relative;width:100%;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:var(--bh-radius,14px);background:linear-gradient(180deg,var(--bh-panel-hi) 0%,var(--bh-panel-mid) 55%,var(--bh-panel-lo) 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 12%,transparent)}
       .better-hunt-panel > *{position:relative;z-index:6}
       .better-hunt-panel::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit}
@@ -1457,6 +1459,9 @@ function BetterStyleSheet() {
       .better-hunt-dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
       .better-hunt-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent)}
       .better-hunt-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+      .better-hunt-stat-grid--grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .better-hunt-stat-grid--grid .better-hunt-stat{min-height:50px;grid-template-columns:minmax(0,1fr) auto;align-items:center;align-content:center;text-align:left;padding:8px 10px}
+      .better-hunt-stat-grid--grid .better-hunt-stat strong{text-align:right}
       .better-hunt-stat{min-width:0;min-height:66px;display:grid;align-content:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 60%,transparent);border-radius:7px;background:linear-gradient(180deg,var(--bh-card-hi) 0%,var(--bh-card-lo) 100%);padding:8px 6px;text-align:center;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 2px 6px rgba(0,0,0,.55)}
       .better-hunt-stat strong{overflow:hidden;color:#fff;font-size:1em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap}
       .better-hunt-carousel{min-width:0}
@@ -1529,6 +1534,25 @@ function BetterStyleSheet() {
       .better-hunt-root[data-session="opening"] .better-hunt-pill{border-color:rgba(255,201,61,.72);background:rgba(255,201,61,.12);color:#ffc93d}.better-hunt-root[data-session="ended"] .better-hunt-pill{border-color:rgba(210,220,230,.34);background:rgba(210,220,230,.08);color:var(--bh-steel-hi)}
       .better-hunt-panel--shake{animation:better-hunt-widget-shake .6s ease-in-out .1s 3}
       .better-hunt-stat,.better-hunt-row,.better-hunt-total,.better-hunt-requests,.better-hunt-result{border-radius:var(--bh-stat-radius,7px)}
+      .better-hunt-drawer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(9px);padding:0 8px;transition:max-height .58s cubic-bezier(.22,.9,.3,1),opacity .34s ease,transform .48s cubic-bezier(.22,.9,.3,1),padding .48s cubic-bezier(.22,.9,.3,1)}
+      .better-hunt-drawer.is-open{max-height:128px;opacity:1;transform:translateY(0);padding:0 8px 9px}
+      .better-hunt-total--expand .better-hunt-drawer.is-open{max-height:142px}
+      .better-hunt-result{display:grid;grid-template-rows:auto minmax(68px,auto);gap:5px;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 14px rgba(0,0,0,.35)}
+      .better-hunt-result-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px;min-width:0}
+      .better-hunt-result-head em{display:inline-flex;width:max-content;border-radius:4px;padding:2px 4px;background:rgba(69,200,255,.13);color:var(--bh-ice);font-size:.52em;font-style:normal;font-weight:950;letter-spacing:.1em;line-height:1;text-transform:uppercase}
+      .better-hunt-result--worst .better-hunt-result-head em{background:rgba(255,84,112,.13);color:#ff6a4d}
+      .better-hunt-result-slot{display:block;overflow:hidden;color:#fff;font-size:.68em;font-weight:950;letter-spacing:.03em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.85);white-space:nowrap}
+      .better-hunt-result-body{display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:7px;align-items:center;min-width:0}
+      .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:68px minmax(0,1fr)}
+      .better-hunt-result-art{display:grid;place-items:center;min-width:0}
+      .better-hunt-result-art .better-hunt-thumb{width:66px!important;height:66px!important;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.1)}
+      .better-hunt-result-stats{display:grid;gap:3px;min-width:0}
+      .better-hunt-result-row{display:grid;gap:1px;min-width:0;border-bottom:0;padding:0}
+      .better-hunt-result-row span{color:var(--bh-steel-hi);font-size:.52em;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}
+      .better-hunt-result-row strong{overflow:hidden;color:#fff;font-size:.78em;font-weight:950;line-height:1;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
+      .better-hunt-result--best .better-hunt-result-row span,.better-hunt-result--best .better-hunt-result-row strong{text-align:right}
+      .better-hunt-result--worst .better-hunt-result-row span,.better-hunt-result--worst .better-hunt-result-row strong{text-align:left}
+      .better-hunt-result--best .better-hunt-result-row:nth-child(2) strong{color:#ffc93d}.better-hunt-result--worst .better-hunt-result-row:nth-child(2) strong{color:#ff8a74}
       .better-hunt-header{position:relative;justify-content:center;gap:10px;min-height:calc(var(--bh-avatar) + 6px)}
       .better-hunt-header--banner{margin:-12px -12px 0;padding:14px 48px 13px;border-top:2px solid var(--bh-line-hi);border-bottom:2px solid var(--bh-line-hi);background:linear-gradient(180deg,color-mix(in srgb,var(--bh-line-hi) 38%,var(--bh-panel-hi)),color-mix(in srgb,var(--bh-line) 38%,var(--bh-panel-mid)));box-shadow:inset 0 2px 8px rgba(0,0,0,.55),inset 0 -2px 8px rgba(0,0,0,.35)}
       .better-hunt-header--banner::before,.better-hunt-header--banner::after{content:"";position:absolute;left:8px;right:8px;height:1px;background:linear-gradient(90deg,transparent,var(--bh-line-hi),transparent);opacity:.6}.better-hunt-header--banner::before{top:5px}.better-hunt-header--banner::after{bottom:5px}
@@ -1992,6 +2016,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const orientation = ["horizontal", "mainstream"].includes(c.orientation) ? c.orientation : "vertical";
   const listMode = ["compact", "image", "names"].includes(c.listMode) ? c.listMode : "compact";
   const carouselMode = ["3d", "imagestats", "stats"].includes(c.carouselMode) ? c.carouselMode : "3d";
+  const drawerMode = c.drawerMode === "expand" ? "expand" : "contain";
+  const drawerRevealSeconds = clampNumber(c.drawerRevealSeconds ?? c.drawerTimingSeconds, 10, 90, 30);
+  const drawerRevealMs = drawerRevealSeconds * 1000;
+  const drawerHoldMs = Math.min(9000, Math.max(3600, Math.round(drawerRevealMs * 0.28)));
+  const statsLayout = c.statsLayout === "grid" || c.statsLayout === "2x2" ? "grid" : "row";
   const visibleRows = Math.max(3, Math.min(8, Number(c.visibleRows) || 5));
   const rowHeight = BETTER_HUNT_ROW_HEIGHT[listMode] || BETTER_HUNT_ROW_HEIGHT.compact;
   const listHeight = visibleRows * rowHeight + 6;
@@ -2051,6 +2080,33 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     return !worst || multi < bonusMultiplierValue(worst) ? bonus : worst;
   }, null);
   const resultDrawerReady = opened.length >= 2 && (bestSlot || worstSlot);
+  const [resultPeekOpen, setResultPeekOpen] = useState(false);
+  useEffect(() => {
+    if (drawerMode !== "contain" || !resultDrawerReady) {
+      setResultPeekOpen(false);
+      return undefined;
+    }
+
+    if (c.animations === false) {
+      setResultPeekOpen(true);
+      return undefined;
+    }
+
+    let hideTimer;
+    const reveal = () => {
+      setResultPeekOpen(true);
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => setResultPeekOpen(false), drawerHoldMs);
+    };
+
+    reveal();
+    const interval = window.setInterval(reveal, drawerRevealMs);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(hideTimer);
+    };
+  }, [c.animations, drawerHoldMs, drawerMode, drawerRevealMs, resultDrawerReady]);
   const listRows = rows;
   const scrollingRows = rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
   const listDuration = `${Math.max(26, rows.length * 1.35)}s`;
@@ -2191,7 +2247,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   );
 
   const renderStatBoxes = () => (
-    <div className="better-hunt-stat-grid" {...attrs("bonus_hunt", c, "mainStatsContainer")}>
+    <div className={`better-hunt-stat-grid better-hunt-stat-grid--${statsLayout}`} {...attrs("bonus_hunt", c, "mainStatsContainer")}>
       {[
         ["Start", startKnown ? formatMoney(startValue, money) : "-"],
         ["Stop", stopKnown ? formatMoney(stopValue, money) : "-"],
@@ -2398,27 +2454,50 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
   };
 
-  const renderList = () => (
-    <div
-      className={`better-hunt-list better-hunt-list--${listMode}${rows.length > visibleRows && c.animations !== false ? " better-hunt-list--scroll" : ""}${skin !== "modern" ? " better-hunt-rails" : ""}`}
-      style={{ height: listHeight, "--bh-list-duration": listDuration }}
-      {...attrs("bonus_hunt", c, "slotListContainer")}
-    >
-      {rows.length ? (
-        <div className="better-hunt-list-inner">
-          {scrollingRows.map((bonus, index) => renderListRow(bonus, index % Math.max(1, listRows.length), listMode, index))}
-        </div>
-      ) : (
-        <div className="better-hunt-empty">Waiting for hunt data</div>
-      )}
-    </div>
-  );
+  const renderList = () => {
+    const listStyle = {
+      "--bh-list-duration": listDuration,
+      "--bh-list-height": `${listHeight}px`,
+      height: drawerMode === "contain" ? "100%" : listHeight,
+      maxHeight: `${listHeight}px`,
+    };
+    return (
+      <div
+        className={`better-hunt-list better-hunt-list--${listMode}${rows.length > visibleRows && c.animations !== false ? " better-hunt-list--scroll" : ""}${skin !== "modern" ? " better-hunt-rails" : ""}`}
+        style={listStyle}
+        {...attrs("bonus_hunt", c, "slotListContainer")}
+      >
+        {rows.length ? (
+          <div className="better-hunt-list-inner">
+            {scrollingRows.map((bonus, index) => renderListRow(bonus, index % Math.max(1, listRows.length), listMode, index))}
+          </div>
+        ) : (
+          <div className="better-hunt-empty">Waiting for hunt data</div>
+        )}
+      </div>
+    );
+  };
 
   const renderResultCard = (label, bonus, variant) => {
     if (!bonus) return null;
     const bet = bonusBet(bonus);
     const payout = bonusPayout(bonus);
     const multi = bonusMultiplierValue(bonus);
+    const statRows = [
+      ["Payout", payout > 0 ? formatMoney(payout, money) : "-"],
+      ["Multi", multi > 0 ? formatMultiplier(multi, 2) : "-"],
+      ["Bet", bet > 0 ? formatMoney(bet, money) : "-"],
+    ];
+    const statsMarkup = (
+      <span className="better-hunt-result-stats">
+        {statRows.map(([statLabel, value]) => (
+          <span key={statLabel} className="better-hunt-result-row">
+            <span>{statLabel}</span>
+            <strong>{value}</strong>
+          </span>
+        ))}
+      </span>
+    );
     return (
       <div className={`better-hunt-result better-hunt-result--${variant}`}>
         <div className="better-hunt-result-head">
@@ -2426,36 +2505,38 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <strong className="better-hunt-result-slot">{bonusSlotName(bonus, 0)}</strong>
         </div>
         <div className="better-hunt-result-body">
+          {variant === "best" ? statsMarkup : null}
           <span className="better-hunt-result-art">
-            <BetterHuntThumb bonus={bonus} size={58} />
+            <BetterHuntThumb bonus={bonus} size={66} />
           </span>
-          <span className="better-hunt-result-stats">
-            {[
-              ["Bet", bet > 0 ? formatMoney(bet, money) : "-"],
-              ["Payout", payout > 0 ? formatMoney(payout, money) : "-"],
-              ["Multi", multi > 0 ? formatMultiplier(multi, 2) : "-"],
-            ].map(([statLabel, value]) => (
-              <span key={statLabel} className="better-hunt-result-row">
-                <span>{statLabel}</span>
-                <strong>{value}</strong>
-              </span>
-            ))}
-          </span>
+          {variant === "worst" ? statsMarkup : null}
         </div>
       </div>
     );
   };
 
   const renderTotalDrawer = () => {
-    const drawerOpen = c.drawerOpen === true || c.drawerPreviewOpen === true || c.drawerMode === "expand";
+    const drawerVisible = resultDrawerReady && (
+      drawerMode === "expand" ||
+      c.drawerOpen === true ||
+      c.drawerPreviewOpen === true ||
+      resultPeekOpen
+    );
+    const drawerMounted = resultDrawerReady && (
+      drawerMode === "contain" ||
+      drawerVisible
+    );
     return (
-      <div className="better-hunt-total" {...attrs("bonus_hunt", c, "footerContainer")}>
+      <div className={`better-hunt-total better-hunt-total--${drawerMode}`} {...attrs("bonus_hunt", c, "footerContainer")}>
         <div className="better-hunt-total-head">
           <span>Total Pay</span>
           <strong>{formatMoney(totalPay, money)}</strong>
         </div>
-        {drawerOpen && resultDrawerReady && (
-          <div className="better-hunt-drawer">
+        {drawerMounted && (
+          <div
+            className={`better-hunt-drawer${drawerVisible ? " is-open" : ""}`}
+            aria-hidden={!drawerVisible}
+          >
             {renderResultCard("Best", bestSlot, "best")}
             {renderResultCard("Worst", worstSlot, "worst")}
           </div>
@@ -2666,9 +2747,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       className="better-hunt-root"
       data-anim={c.animations === false ? "off" : "on"}
       data-finish={c.finish || "flat"}
+      data-drawer-mode={drawerMode}
       data-orientation={orientation}
       data-session={sessionState}
       data-skin={skin}
+      data-stats-layout={statsLayout}
       style={rootStyle}
       {...attrs("bonus_hunt", c, "container")}
     >

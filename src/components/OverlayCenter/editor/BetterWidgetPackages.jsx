@@ -323,7 +323,9 @@ export const DEFAULT_BETTER_CONFIG = {
     sessionState: "hunt",
     carouselMode: "3d",
     listMode: "compact",
-    drawerMode: "shrink",
+    drawerMode: "contain",
+    drawerRevealSeconds: 30,
+    statsLayout: "row",
     showRequests: true,
     animations: true,
     animSpeed: 1,
@@ -2074,9 +2076,11 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
   const liveBonusCount = Array.isArray(renderedConfig.bonuses) ? renderedConfig.bonuses.length : 0;
   const liveRequestsVisible = renderedConfig.showSlotRequests !== false;
   const localRequestsVisible = c.showRequests !== false;
-  const drawerHint = c.drawerMode === "expand"
+  const normalizedDrawerMode = c.drawerMode === "expand" ? "expand" : "contain";
+  const drawerRevealSeconds = Math.max(10, Math.min(90, Number(c.drawerRevealSeconds) || 30));
+  const drawerHint = normalizedDrawerMode === "expand"
     ? "The best / worst card expands the panel."
-    : "The best / worst card reduces the list area.";
+    : "The best / worst card stays inside the panel and temporarily reduces the list area.";
   const currentColour = BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
   const previewWin = (mult, extra = {}) => {
     if (typeof window === "undefined") return;
@@ -2210,6 +2214,17 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
         <SliderRow label="Rotate every" value={c.carouselMs} min={1500} max={6000} step={100} format={(value) => `${(value / 1000).toFixed(1)}s`} onChange={(carouselMs) => set({ carouselMs })} />
       </HuntSection>
 
+      <HuntSection title="Stats Layout" icon={<SlidersHorizontal size={13} />}>
+        <HuntChoiceGrid
+          value={c.statsLayout || "row"}
+          options={[
+            { key: "row", label: "4 across", hint: "Single row of stats" },
+            { key: "grid", label: "2 x 2", hint: "Two columns and two rows" },
+          ]}
+          onChange={(statsLayout) => set({ statsLayout })}
+        />
+      </HuntSection>
+
       <HuntSection title="Twitch Requests" icon={<MessageSquare size={13} />}>
         <ToggleRow label="Show requests feed" checked={localRequestsVisible} onChange={(showRequests) => set({ showRequests })} />
         <HuntHint>
@@ -2254,12 +2269,22 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
 
       <HuntSection title="Best / Worst Card" icon={<Layers size={13} />}>
         <HuntChoiceGrid
-          value={c.drawerMode}
+          value={normalizedDrawerMode}
           options={[
-            { key: "shrink", label: "Shrink list", hint: "Keep panel height" },
-            { key: "expand", label: "Expand panel", hint: "Open result card" },
+            { key: "contain", label: "Contain", hint: "Keep panel height" },
+            { key: "expand", label: "Expand", hint: "Grow from bottom" },
           ]}
           onChange={(drawerMode) => set({ drawerMode })}
+        />
+        <SliderRow
+          label="Reveal every"
+          value={drawerRevealSeconds}
+          min={10}
+          max={90}
+          step={5}
+          unit="s"
+          disabled={normalizedDrawerMode !== "contain"}
+          onChange={(drawerRevealSeconds) => set({ drawerRevealSeconds })}
         />
         <HuntHint>{drawerHint}</HuntHint>
       </HuntSection>
