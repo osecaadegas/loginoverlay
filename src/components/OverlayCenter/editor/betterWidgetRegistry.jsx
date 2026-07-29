@@ -6,6 +6,7 @@ import ChatWidget from "../widgets/ChatWidget";
 import RtpStatsWidget from "../widgets/RtpStatsWidget";
 import BackgroundWidget from "../widgets/BackgroundWidget";
 import BetsWidget from "../widgets/BetsWidget";
+import SlideshowFrameWidget from "../widgets/SlideshowFrameWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -136,6 +137,14 @@ const MOCK_WIDGET_CONFIGS = {
     bestWin: "No personal best yet",
   },
   background: {},
+  slideshow_frame: {
+    mediaText: [
+      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png|image|Gates of Olympus",
+      "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png|image|Medusas Madness",
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4|video|Demo video",
+    ].join("\n"),
+    showCounter: true,
+  },
   bets: {
     question: "Bonus Hunt Result",
     gameStatus: "open",
@@ -291,12 +300,14 @@ const LIVE_DATA_KEYS = Object.freeze({
     "bracketUsage",
   ],
   background: [],
+  slideshow_frame: [],
 });
 
 const DEFAULT_POSITIONS = {
   background: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0, locked: true },
   navbar: { x: 360, y: 26, width: 1200, height: 72, zIndex: 10 },
   rtp_stats: { x: 420, y: 126, width: 1080, height: 88, zIndex: 20 },
+  slideshow_frame: { x: 480, y: 300, width: 960, height: 360, zIndex: 25 },
   bonus_hunt: { x: 42, y: 150, width: 430, height: 860, zIndex: 30 },
   bets: { x: 1496, y: 134, width: 380, height: 430, zIndex: 40 },
   chat: { x: 1616, y: 544, width: 260, height: 500, zIndex: 50 },
@@ -310,6 +321,7 @@ const COMPONENTS = {
   chat: ChatWidget,
   rtp_stats: RtpStatsWidget,
   background: BackgroundWidget,
+  slideshow_frame: SlideshowFrameWidget,
   bets: BetsWidget,
 };
 
@@ -320,6 +332,7 @@ const CONTROL_SCHEMAS = {
   chat: ["theme", "messages", "layout", "typography", "animation", "source"],
   rtp_stats: ["presets", "provider", "display", "emblem", "colours", "type", "bar"],
   background: ["presets", "colors", "source", "textures", "effects"],
+  slideshow_frame: ["media", "frame", "timing", "size"],
   bets: ["theme", "cards", "fill", "layout", "text", "colours"],
 };
 
@@ -330,6 +343,7 @@ const SIZE_CONSTRAINTS = {
   chat: { minWidth: 180, minHeight: 220, maxWidth: 720, maxHeight: 900 },
   rtp_stats: { minWidth: 680, minHeight: 52, maxWidth: 1920, maxHeight: 160 },
   background: { minWidth: 1920, minHeight: 1080, maxWidth: 1920, maxHeight: 1080 },
+  slideshow_frame: { minWidth: 240, minHeight: 120, maxWidth: 1920, maxHeight: 1080 },
   bets: { minWidth: 280, minHeight: 300, maxWidth: 880, maxHeight: 920 },
 };
 
@@ -632,6 +646,7 @@ export function createDefaultBetterLayout() {
     "background",
     "navbar",
     "rtp_stats",
+    "slideshow_frame",
     "bonus_hunt",
     "bets",
     "chat",

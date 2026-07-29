@@ -237,15 +237,27 @@
 }
 
 .bp-text input,
-.bp-text select {
+.bp-text select,
+.bp-text textarea {
   width: 100%;
-  min-height: 36px;
   border: 1px solid rgba(34, 211, 238, 0.16);
   border-radius: 8px;
   background: rgba(2, 8, 23, 0.82);
   color: #f8fafc;
-  padding: 0 10px;
   outline: none;
+}
+
+.bp-text input,
+.bp-text select {
+  min-height: 36px;
+  padding: 0 10px;
+}
+
+.bp-text textarea {
+  min-height: 116px;
+  resize: vertical;
+  padding: 10px;
+  line-height: 1.35;
 }
 
 .bp-text select option {

@@ -25,6 +25,7 @@ const expectedTypes = [
   "chat",
   "rtp_stats",
   "background",
+  "slideshow_frame",
   "bets",
 ];
 

@@ -20,6 +20,7 @@ import NavbarConfig from "./NavbarConfig";
 import NavbarWidget from "./NavbarWidget";
 import RtpStatsConfig from "./RtpStatsConfig";
 import RtpStatsWidget from "./RtpStatsWidget";
+import SlideshowFrameWidget from "./SlideshowFrameWidget";
 
 const CURRENCY = "EUR ";
 
@@ -191,6 +192,40 @@ registerWidget({
     opacity: 100,
     overlayColor: "#000000",
     overlayOpacity: 0,
+  },
+});
+
+registerWidget({
+  type: "slideshow_frame",
+  label: "Slideshow Frame",
+  icon: "🎞️",
+  description: "Image and video slideshow frame used by the Better Editor overlay.",
+  category: "better",
+  component: SlideshowFrameWidget,
+  configPanel: null,
+  styleConfigKey: "displayStyle",
+  styles: [{ id: "better_slideshow_frame", icon: "🎞️", label: "Slideshow Frame" }],
+  defaults: {
+    displayStyle: "better_slideshow_frame",
+    mediaText: "",
+    frameStyle: "neon",
+    frameColor: "#20d8ff",
+    accentColor: "#ffb020",
+    backgroundColor: "#020817",
+    fit: "cover",
+    transition: "fade",
+    slideMs: 5000,
+    transitionMs: 650,
+    autoplay: true,
+    videoMuted: true,
+    videoLoop: true,
+    showVideoControls: false,
+    showCounter: false,
+    radius: 18,
+    borderWidth: 2,
+    padding: 12,
+    glow: 85,
+    aspectPreset: "banner",
   },
 });
 

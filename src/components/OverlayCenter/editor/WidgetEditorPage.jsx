@@ -42,6 +42,7 @@ import {
 import {
   BETTER_CANVAS,
   BETTER_WIDGET_REGISTRY,
+  createBetterInstance,
   createDefaultBetterLayout,
   duplicateBetterInstance,
   normalizeBetterLayout,
@@ -480,6 +481,11 @@ export default function WidgetEditorPage() {
     ),
     [dataMode, layout.instances, liveWidgetContext],
   );
+  const addableDefinitions = useMemo(() => {
+    const presentTypes = new Set(layout.instances.map((instance) => instance.widgetType));
+    return Object.values(BETTER_WIDGET_REGISTRY)
+      .filter((definition) => definition.widgetType !== "background" && !presentTypes.has(definition.widgetType));
+  }, [layout.instances]);
 
   const hasUnpublishedChanges = dirty || Boolean(overlayRecord?.hasUnpublishedChanges);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -672,6 +678,17 @@ export default function WidgetEditorPage() {
     return nextLayout;
   }, [commitLayout]);
 
+  const handleAddWidget = useCallback((widgetType) => {
+    const created = createBetterInstance(widgetType, { zIndex: getMaxZ(layoutRef.current) + 1 });
+    if (!created) return null;
+    const nextLayout = commitLayout((current) => ({
+      ...current,
+      instances: [...current.instances, created],
+    }));
+    setSelectedInstanceId(created.instanceId);
+    return nextLayout;
+  }, [commitLayout]);
+
   const handleDeleteInstance = useCallback((instanceId) => {
     const current = layoutRef.current;
     const instance = current.instances.find((item) => item.instanceId === instanceId);
@@ -842,6 +859,24 @@ export default function WidgetEditorPage() {
               />
             ))}
         </div>
+
+        {addableDefinitions.length > 0 && (
+          <section className="better-editor-sidebar-section better-editor-add-widget-section">
+            <span className="better-editor-sidebar-kicker">Add widget</span>
+            <div className="better-editor-add-widget-list">
+              {addableDefinitions.map((definition) => (
+                <button
+                  key={definition.widgetType}
+                  type="button"
+                  onClick={() => handleAddWidget(definition.widgetType)}
+                >
+                  <span>{definition.icon}</span>
+                  <strong>{definition.label}</strong>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="better-editor-sidebar-section">
           <div className="better-editor-mode-toggle">

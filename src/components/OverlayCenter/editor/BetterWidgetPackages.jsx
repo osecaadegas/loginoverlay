@@ -215,6 +215,51 @@ const RTP_EMBLEMS = [
   { key: "orbit", name: "Orbit Rings" },
 ];
 
+const SLIDESHOW_SAMPLE_MEDIA = [
+  "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png|image|Gates of Olympus",
+  "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png|image|Medusas Madness",
+  "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4|video|Demo video",
+].join("\n");
+
+const SLIDESHOW_FRAME_STYLES = [
+  { key: "neon", label: "Neon" },
+  { key: "glass", label: "Glass" },
+  { key: "metal", label: "Metal" },
+  { key: "minimal", label: "Minimal" },
+  { key: "film", label: "Film" },
+  { key: "none", label: "None" },
+];
+
+const SLIDESHOW_FITS = [
+  { key: "cover", label: "Cover" },
+  { key: "contain", label: "Contain" },
+  { key: "fill", label: "Fill" },
+  { key: "scale-down", label: "Scale down" },
+];
+
+const SLIDESHOW_TRANSITIONS = [
+  { key: "fade", label: "Fade" },
+  { key: "slide", label: "Slide" },
+  { key: "zoom", label: "Zoom" },
+  { key: "cut", label: "Cut" },
+];
+
+const SLIDESHOW_ASPECT_PRESETS = [
+  { key: "banner", label: "Banner", width: 1600, height: 300 },
+  { key: "wide", label: "16:9", width: 960, height: 540 },
+  { key: "square", label: "Square", width: 560, height: 560 },
+  { key: "portrait", label: "Portrait", width: 420, height: 720 },
+  { key: "strip", label: "Lower third", width: 1200, height: 180 },
+];
+
+const SLIDESHOW_COLOR_PRESETS = [
+  { name: "Ocean", patch: { frameColor: "#20d8ff", accentColor: "#ffb020", backgroundColor: "#020817" } },
+  { name: "Emerald", patch: { frameColor: "#34d399", accentColor: "#facc15", backgroundColor: "#03120c" } },
+  { name: "Crimson", patch: { frameColor: "#fb7185", accentColor: "#f97316", backgroundColor: "#16040a" } },
+  { name: "Violet", patch: { frameColor: "#a78bfa", accentColor: "#22d3ee", backgroundColor: "#10051f" } },
+  { name: "Gold", patch: { frameColor: "#facc15", accentColor: "#f97316", backgroundColor: "#120d04" } },
+];
+
 const GIVEAWAY_SURFACES = [
   { key: "metallic", label: "Metallic" },
   { key: "gradient", label: "Gradient" },
@@ -532,6 +577,28 @@ export const DEFAULT_BETTER_CONFIG = {
     fxScanlines: true,
     fxVignette: true,
   },
+  slideshow_frame: {
+    displayStyle: "better_slideshow_frame",
+    mediaText: "",
+    frameStyle: "neon",
+    frameColor: "#20d8ff",
+    accentColor: "#ffb020",
+    backgroundColor: "#020817",
+    fit: "cover",
+    transition: "fade",
+    slideMs: 5000,
+    transitionMs: 650,
+    autoplay: true,
+    videoMuted: true,
+    videoLoop: true,
+    showVideoControls: false,
+    showCounter: false,
+    radius: 18,
+    borderWidth: 2,
+    padding: 12,
+    glow: 85,
+    aspectPreset: "banner",
+  },
   bets: {
     displayStyle: "better_bets",
     theme: "neon",
@@ -552,6 +619,7 @@ export const DEFAULT_BETTER_CONFIG = {
 };
 
 export const BETTER_WIDGETS = [
+  { type: "slideshow_frame", label: "Slideshow Frame", styleKey: "displayStyle", styleId: "better_slideshow_frame", icon: "🎞️", defaultSize: { width: 960, height: 360 } },
   { type: "bonus_hunt", label: "Better Hunt", styleKey: "displayStyle", styleId: "better_bonus_hunt", icon: "🎯", defaultSize: { width: 430, height: 860 } },
   { type: "giveaway", label: "Better Giveaway", styleKey: "displayStyle", styleId: "better_giveaway", icon: "🎁", defaultSize: { width: 700, height: 270 } },
   { type: "navbar", label: "Better Navbar", styleKey: "displayStyle", styleId: "better_navbar", icon: "🧭", defaultSize: { width: 1200, height: 72 } },
@@ -663,6 +731,41 @@ function normalizeBetterRtpConfig(merged = {}) {
   return next;
 }
 
+function normalizeBetterSlideshowConfig(merged = {}) {
+  const defaults = DEFAULT_BETTER_CONFIG.slideshow_frame;
+  const next = { ...merged };
+  if (!SLIDESHOW_FRAME_STYLES.some((item) => item.key === next.frameStyle)) {
+    next.frameStyle = defaults.frameStyle;
+  }
+  if (!SLIDESHOW_FITS.some((item) => item.key === next.fit)) {
+    next.fit = defaults.fit;
+  }
+  if (!SLIDESHOW_TRANSITIONS.some((item) => item.key === next.transition)) {
+    next.transition = defaults.transition;
+  }
+  if (next.aspectPreset !== "custom" && !SLIDESHOW_ASPECT_PRESETS.some((item) => item.key === next.aspectPreset)) {
+    next.aspectPreset = defaults.aspectPreset;
+  }
+  if (typeof next.mediaText !== "string") next.mediaText = "";
+  next.slideMs = clampNumber(next.slideMs, 1000, 60000, defaults.slideMs);
+  next.transitionMs = clampNumber(
+    next.transitionMs,
+    0,
+    Math.max(0, Math.min(2500, next.slideMs - 100)),
+    defaults.transitionMs,
+  );
+  next.radius = clampNumber(next.radius, 0, 80, defaults.radius);
+  next.borderWidth = clampNumber(next.borderWidth, 0, 10, defaults.borderWidth);
+  next.padding = clampNumber(next.padding, 0, 60, defaults.padding);
+  next.glow = clampNumber(next.glow, 0, 160, defaults.glow);
+  next.autoplay = next.autoplay !== false;
+  next.videoMuted = next.videoMuted !== false;
+  next.videoLoop = next.videoLoop !== false;
+  next.showVideoControls = next.showVideoControls === true;
+  next.showCounter = next.showCounter === true;
+  return next;
+}
+
 function normalizeBetterChatConfig(merged = {}) {
   const defaults = DEFAULT_BETTER_CONFIG.chat;
   const next = {
@@ -717,6 +820,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
   if (type === "chat") return normalizeBetterChatConfig(merged);
+  if (type === "slideshow_frame") return normalizeBetterSlideshowConfig(merged);
   return merged;
 }
 
@@ -824,6 +928,20 @@ function TextRow({ label, value, onChange }) {
     <label className="bp-text">
       <span>{label}</span>
       <input value={value || ""} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
+function TextAreaRow({ label, value, onChange, rows = 6, placeholder = "" }) {
+  return (
+    <label className="bp-text bp-text--textarea">
+      <span>{label}</span>
+      <textarea
+        rows={rows}
+        value={value || ""}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
@@ -2151,7 +2269,206 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
   );
 }
 
+function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange }) {
+  const c = ensureBetterWidgetConfig("slideshow_frame", config);
+  const [tab, setTab] = useTab("media");
+  const tabs = [
+    ["media", <ImagePlus size={12} />, "Media"],
+    ["frame", <Frame size={12} />, "Frame"],
+    ["timing", <Timer size={12} />, "Timing"],
+    ["size", <Maximize2 size={12} />, "Size"],
+  ];
+  const current = tabs.some(([key]) => key === tab) ? tab : "media";
+  const widgetWidth = clampNumber(widget?.width, 240, 1920, 960);
+  const widgetHeight = clampNumber(widget?.height, 120, 1080, 360);
+
+  const set = (patch) => {
+    onChange(ensureBetterWidgetConfig("slideshow_frame", { ...c, ...patch }));
+  };
+
+  const setWidget = (layoutPatch = {}, configPatch = {}) => {
+    const nextConfig = ensureBetterWidgetConfig("slideshow_frame", { ...c, ...configPatch });
+    if (typeof onWidgetChange === "function") {
+      onWidgetChange({ ...layoutPatch, config: nextConfig });
+      return;
+    }
+    onChange(nextConfig);
+  };
+
+  const applyAspect = (aspectPreset) => {
+    const preset = SLIDESHOW_ASPECT_PRESETS.find((item) => item.key === aspectPreset);
+    if (!preset) {
+      set({ aspectPreset });
+      return;
+    }
+    setWidget({ width: preset.width, height: preset.height }, { aspectPreset });
+  };
+
+  return (
+    <div className="bp-controls">
+      <PanelTabs active={current} onChange={setTab} tabs={tabs} />
+
+      {current === "media" && (
+        <>
+          <Section title="Media links" icon={<ImagePlus size={13} />}>
+            <TextAreaRow
+              label="Image and video URLs"
+              value={c.mediaText}
+              rows={8}
+              placeholder={"One URL per line. Add |video or |image when the URL has no extension."}
+              onChange={(mediaText) => set({ mediaText })}
+            />
+            <p className="bp-hint">Supported lines: URL, URL|image|Label, or URL|video|Label.</p>
+            <div className="bp-preset-row">
+              <button type="button" onClick={() => set({ mediaText: SLIDESHOW_SAMPLE_MEDIA })}>
+                <ImagePlus size={12} />
+                Sample media
+              </button>
+              <button type="button" onClick={() => set({ mediaText: "" })}>
+                <RotateCcw size={12} />
+                Clear
+              </button>
+            </div>
+            <ToggleRow label="Show slide counter" checked={c.showCounter} onChange={(showCounter) => set({ showCounter })} />
+          </Section>
+        </>
+      )}
+
+      {current === "frame" && (
+        <>
+          <Section title="Frame style" icon={<Frame size={13} />}>
+            <Segmented
+              value={c.frameStyle}
+              columns={3}
+              options={SLIDESHOW_FRAME_STYLES}
+              onChange={(frameStyle) => set({ frameStyle })}
+            />
+          </Section>
+          <Section title="Colour" icon={<Palette size={13} />}>
+            <div className="bp-preset-row">
+              {SLIDESHOW_COLOR_PRESETS.map((preset) => (
+                <button key={preset.name} type="button" onClick={() => set(preset.patch)}>
+                  <i style={{ background: `linear-gradient(135deg, ${preset.patch.frameColor}, ${preset.patch.accentColor})` }} />
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+            <div className="bp-color-grid">
+              <ColorRow label="Frame" value={c.frameColor} onChange={(frameColor) => set({ frameColor })} />
+              <ColorRow label="Accent" value={c.accentColor} onChange={(accentColor) => set({ accentColor })} />
+              <ColorRow label="Background" value={c.backgroundColor} onChange={(backgroundColor) => set({ backgroundColor })} />
+            </div>
+          </Section>
+          <Section title="Shape" icon={<Layers size={13} />}>
+            <SliderRow label="Corner radius" value={c.radius} min={0} max={80} unit="px" onChange={(radius) => set({ radius })} />
+            <SliderRow label="Border width" value={c.borderWidth} min={0} max={10} unit="px" onChange={(borderWidth) => set({ borderWidth })} />
+            <SliderRow label="Padding" value={c.padding} min={0} max={60} unit="px" onChange={(padding) => set({ padding })} />
+            <SliderRow label="Glow" value={c.glow} min={0} max={160} unit="%" onChange={(glow) => set({ glow })} />
+          </Section>
+        </>
+      )}
+
+      {current === "timing" && (
+        <>
+          <Section title="Slideshow timing" icon={<Timer size={13} />}>
+            <ToggleRow label="Autoplay" checked={c.autoplay} onChange={(autoplay) => set({ autoplay })} />
+            <SliderRow
+              label="Slide duration"
+              value={c.slideMs}
+              min={1000}
+              max={30000}
+              step={250}
+              format={(value) => `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 2)}s`}
+              onChange={(slideMs) => set({ slideMs })}
+            />
+            <Segmented
+              value={c.transition}
+              columns={4}
+              options={SLIDESHOW_TRANSITIONS}
+              onChange={(transition) => set({ transition })}
+            />
+            <SliderRow
+              label="Transition"
+              value={c.transitionMs}
+              min={0}
+              max={2500}
+              step={50}
+              format={(value) => `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 2)}s`}
+              onChange={(transitionMs) => set({ transitionMs })}
+            />
+          </Section>
+          <Section title="Video playback" icon={<MonitorPlay size={13} />}>
+            <ToggleRow label="Muted" checked={c.videoMuted} onChange={(videoMuted) => set({ videoMuted })} />
+            <ToggleRow label="Loop videos" checked={c.videoLoop} onChange={(videoLoop) => set({ videoLoop })} />
+            <ToggleRow label="Show video controls" checked={c.showVideoControls} onChange={(showVideoControls) => set({ showVideoControls })} />
+          </Section>
+        </>
+      )}
+
+      {current === "size" && (
+        <>
+          <Section title="Aspect ratios" icon={<Maximize2 size={13} />}>
+            <div className="bp-preset-row">
+              {SLIDESHOW_ASPECT_PRESETS.map((preset) => (
+                <button
+                  key={preset.key}
+                  type="button"
+                  className={c.aspectPreset === preset.key ? "is-active" : ""}
+                  onClick={() => applyAspect(preset.key)}
+                >
+                  <MonitorPlay size={12} />
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+            <SliderRow
+              label="Canvas width"
+              value={widgetWidth}
+              min={240}
+              max={1920}
+              step={10}
+              unit="px"
+              onChange={(width) => setWidget({ width }, { aspectPreset: "custom" })}
+            />
+            <SliderRow
+              label="Canvas height"
+              value={widgetHeight}
+              min={120}
+              max={1080}
+              step={10}
+              unit="px"
+              onChange={(height) => setWidget({ height }, { aspectPreset: "custom" })}
+            />
+          </Section>
+          <Section title="Media fit" icon={<Frame size={13} />}>
+            <Segmented
+              value={c.fit}
+              columns={2}
+              options={SLIDESHOW_FITS}
+              onChange={(fit) => set({ fit })}
+            />
+          </Section>
+          <button className="bp-reset" type="button" onClick={() => setWidget({ width: 960, height: 360 }, DEFAULT_BETTER_CONFIG.slideshow_frame)}>
+            <RotateCcw size={13} />
+            Reset slideshow
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function BetterWidgetControls({ type, config, onChange, user, widget, onWidgetChange }) {
+  if (type === "slideshow_frame") {
+    return (
+      <BetterSlideshowFrameControls
+        config={config}
+        onChange={onChange}
+        widget={widget}
+        onWidgetChange={onWidgetChange}
+      />
+    );
+  }
   if (type === "navbar") {
     return (
       <BetterNavbarControls
