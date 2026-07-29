@@ -29,29 +29,8 @@ const SYNC_MAP = {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
   },
-  slot_requests: {
-    twitchUsername: 'twitchChannel',
-    kickChannel: 'kickChannelId',
-  },
-  spotify_now_playing: {
-    spotify_access_token: 'spotify_access_token',
-    spotify_refresh_token: 'spotify_refresh_token',
-    spotify_expires_at: 'spotify_expires_at',
-  },
-  coin_flip: {
-    twitchUsername: 'twitchChannel',
-    kickChannel: 'kickChannelId',
-  },
-  point_slot: {
-  },
-  salty_words: {
-  },
-  predictions: {
-  },
-  point_wheel: {
-    twitchUsername: 'twitchChannel',
-    kickChannel: 'kickChannelId',
-  },
+  background: {},
+  rtp_stats: {},
   bets: {
     twitchUsername: 'twitchChannel',
   },
@@ -243,12 +222,10 @@ export default function ProfileSection({ widgets, saveWidget }) {
     const nb = (widgets || []).find(w => w.widget_type === 'navbar')?.config || {};
     const chat = (widgets || []).find(w => w.widget_type === 'chat')?.config || {};
     const ga = (widgets || []).find(w => w.widget_type === 'giveaway')?.config || {};
-    const sp = (widgets || []).find(w => w.widget_type === 'spotify_now_playing')?.config || {};
 
-    /* Pick Spotify tokens from whichever widget has them */
-    const spotToken = nb.spotify_access_token || sp.spotify_access_token || '';
-    const spotRefresh = nb.spotify_refresh_token || sp.spotify_refresh_token || '';
-    const spotExpires = nb.spotify_expires_at || sp.spotify_expires_at || null;
+    const spotToken = nb.spotify_access_token || '';
+    const spotRefresh = nb.spotify_refresh_token || '';
+    const spotExpires = nb.spotify_expires_at || null;
 
     /* Load SE credentials ONLY from the user's own streamelements_connections row — never from widget configs */
     (async () => {
@@ -376,8 +353,6 @@ export default function ProfileSection({ widgets, saveWidget }) {
     for (const w of widgets) {
       if (w.widget_type === 'navbar') {
         await saveWidget({ ...w, config: { ...w.config, ...tokenPayload, musicSource: 'spotify', showNowPlaying: true } });
-      } else if (w.widget_type === 'spotify_now_playing') {
-        await saveWidget({ ...w, config: { ...w.config, ...tokenPayload } });
       }
     }
   }, [widgets, saveWidget]);
@@ -430,8 +405,6 @@ export default function ProfileSection({ widgets, saveWidget }) {
       for (const w of widgets) {
         if (w.widget_type === 'navbar') {
           await saveWidget({ ...w, config: { ...w.config, ...clearPayload, musicSource: 'spotify' } });
-        } else if (w.widget_type === 'spotify_now_playing') {
-          await saveWidget({ ...w, config: { ...w.config, ...clearPayload } });
         }
       }
     }
@@ -473,7 +446,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
         }
 
         /* Auto-enable platforms on chat/giveaway when channel names are set */
-        const autoEnableTypes = ['chat', 'giveaway', 'coin_flip', 'point_wheel'];
+        const autoEnableTypes = ['chat', 'giveaway'];
         if (autoEnableTypes.includes(widget.widget_type)) {
           if (profile.twitchUsername && !widget.config?.twitchEnabled) {
             updates.twitchEnabled = true;
@@ -648,7 +621,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).map(w => (
                 <span key={w.id} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 999, background: 'rgba(17,24,39,0.58)', color: '#d0dbe6', border: '1px solid rgba(148,163,184,0.28)', textTransform: 'capitalize' }}>
-                  {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : w.widget_type === 'bets' ? '🎲' : '🎁'} {w.widget_type.replace('_', ' ')}
+                  {w.widget_type === 'navbar' ? 'NB' : w.widget_type === 'chat' ? 'CH' : w.widget_type === 'bets' ? 'BT' : w.widget_type === 'rtp_stats' ? 'RT' : w.widget_type === 'background' ? 'BG' : w.widget_type === 'bonus_hunt' ? 'BH' : 'GW'} {w.widget_type.replace('_', ' ')}
                 </span>
               ))}
               {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
@@ -680,7 +653,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
         <div className="oc-profile-card oc-profile-card--obs" data-tour="profile-obs-guide" style={{ ...S.card }}>
           <h3 style={S.cardTitle}>🖥️ OBS Browser Source Setup</h3>
           <p style={{ fontSize: '0.75rem', color: '#aab6c8', margin: 0, lineHeight: 1.5 }}>
-            Add your overlay as a Browser Source in OBS. Go to <strong style={{ color: '#d0dbe6' }}>Overlay Center → Get Link</strong> and paste the URL into OBS. Recommended settings: <strong style={{ color: '#d0dbe6' }}>1920×1080</strong>, enable <strong style={{ color: '#d0dbe6' }}>Shutdown source when not visible</strong>.
+            Add your overlay as a Browser Source in OBS from <strong style={{ color: '#d0dbe6' }}>/editor</strong>. Publish the Better layout, copy the full overlay or individual widget URL there, and use <strong style={{ color: '#d0dbe6' }}>1920×1080</strong> for the full overlay source.
           </p>
           <p style={{ fontSize: '0.72rem', color: '#aab6c8', margin: 0, lineHeight: 1.5 }}>
             If the overlay looks blurry, right-click the source in OBS → <strong style={{ color: '#d0dbe6' }}>Transform → Edit Transform</strong> and make sure the size matches your canvas resolution exactly.
@@ -714,7 +687,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             </div>
             {spotifyError && <p style={{ fontSize: '0.74rem', color: '#f87171', margin: 0 }}>{spotifyError}</p>}
             <p style={{ fontSize: '0.72rem', color: '#aab6c8', margin: 0, lineHeight: 1.4 }}>
-              Connecting here auto-syncs to your Navbar &amp; Spotify widgets.
+              Connecting here auto-syncs to your Better Navbar data source.
             </p>
             {/* Song Request chat listener status */}
             {user && profile.twitchUsername && (

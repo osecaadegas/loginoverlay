@@ -1,23 +1,11 @@
-import { getAppearanceDomAttributes } from "../../appearance/v2/appearanceRouting";
-import { projectAppearanceDocumentToSubElements } from "../../appearance/appearanceDocument";
-
 const STYLE_KEY_BY_WIDGET_TYPE = Object.freeze({
   bonus_hunt: "displayStyle",
-  current_slot: "displayStyle",
-  tournament: "layout",
   giveaway: "displayStyle",
   navbar: "displayStyle",
   chat: "chatStyle",
-  image_slideshow: "displayStyle",
   rtp_stats: "displayStyle",
   background: "displayStyle",
-  raid_shoutout: "displayStyle",
-  spotify_now_playing: "displayStyle",
-  slot_requests: "displayStyle",
-  bh_stats: "displayStyle",
-  bonus_buys: "displayStyle",
   bets: "displayStyle",
-  container: "displayStyle",
 });
 
 export function getAppearanceVariant(config = {}, widgetType = "") {
@@ -39,27 +27,18 @@ export function appearanceAttrs({
   elementId,
   stateId,
 }) {
-  return getAppearanceDomAttributes({
-    widgetId,
-    widgetType,
-    widgetVariant: getAppearanceVariant(config, widgetType),
-    elementId,
-    stateId,
-  });
+  const attrs = {};
+  if (widgetId) attrs["data-better-widget-id"] = widgetId;
+  if (widgetType) attrs["data-better-widget-type"] = widgetType;
+  const variant = getAppearanceVariant(config, widgetType);
+  if (variant) attrs["data-better-widget-variant"] = variant;
+  if (elementId) attrs["data-better-element"] = elementId;
+  if (stateId && stateId !== "default") attrs["data-better-state"] = stateId;
+  return attrs;
 }
 
 export function getSubElement(config, elementId) {
   const sourceConfig = config || {};
-  if (sourceConfig.__appearanceDocument && sourceConfig.__appearanceWidgetType) {
-    const projected = projectAppearanceDocumentToSubElements(sourceConfig, {
-      widgetType: sourceConfig.__appearanceWidgetType,
-      widgetVariant: getAppearanceVariant(
-        sourceConfig,
-        sourceConfig.__appearanceWidgetType,
-      ),
-    });
-    if (projected?.[elementId]) return projected[elementId];
-  }
   const subElements = Object.hasOwn(
     sourceConfig,
     "__appearanceExplicitSubElements",

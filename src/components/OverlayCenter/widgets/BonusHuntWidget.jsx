@@ -5,11 +5,6 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import BonusHuntWidgetV3 from "./BonusHuntWidgetV3";
-import BonusHuntWidgetV8 from "./BonusHuntWidgetV8";
-import BonusHuntWidgetV9 from "./BonusHuntWidgetV9";
-import BonusHuntWidgetV11 from "./BonusHuntWidgetV11";
-import BonusHuntWidgetV12 from "./BonusHuntWidgetV12";
 import SlotImage from "./SlotImage";
 import { subValue } from "./shared/appearanceStyles";
 import { useBonusHuntRequestsData } from "./bonus-hunt/shared/useBonusHuntRequestsData";
@@ -333,8 +328,6 @@ function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
   const isHorizontalBH = ds === "v5_horizontal";
   const isCompactBH = ds === "v6_compact";
   const isBetterBH = ds === "better_bonus_hunt";
-  const isClassicRequestsBH =
-    ds === "v12_classic_sr" || ds === "v12_classic_sr_editable";
   const bonuses = sortedConfig.bonuses || [];
   const currency = c.currency || "€";
   const startMoney = Number(c.startMoney) || 0;
@@ -432,39 +425,14 @@ function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
   const { requests: classicRequestRows } = useBonusHuntRequestsData({
     config: sortedConfig,
     userId,
-    enabled: (
-      isClassicRequestsBH && sortedConfig.showSlotRequests !== false
-    ) || (
-      isBetterBH && sortedConfig.showRequests !== false && sortedConfig.showSlotRequests !== false
-    ),
+    enabled:
+      isBetterBH &&
+      sortedConfig.showRequests !== false &&
+      sortedConfig.showSlotRequests !== false,
   });
 
-  /* ─── Style switcher (early returns AFTER all hooks) ─── */
-  if (c.displayStyle === "v3") {
-    return <BonusHuntWidgetV3 config={sortedConfig} theme={theme} />;
-  }
-  if (c.displayStyle === "v8_card_stack") {
-    return <BonusHuntWidgetV8 config={sortedConfig} theme={theme} />;
-  }
-  if (c.displayStyle === "v9_hunt_board") {
-    return <BonusHuntWidgetV9 config={sortedConfig} theme={theme} />;
-  }
-  if (c.displayStyle === "v11_fever") {
-    return <BonusHuntWidgetV11 config={sortedConfig} theme={theme} />;
-  }
-  if (isClassicRequestsBH) {
-    return (
-      <BonusHuntWidgetV12
-        config={sortedConfig}
-        theme={theme}
-        userId={userId}
-        slotRequests={classicRequestRows}
-      />
-    );
-  }
-
-  /* ─── Dynamic title based on bonusOpening toggle ─── */
-  if (isBetterBH) {
+  /* Better Editor renderer. */
+    if (isBetterBH) {
     const betterRequestsVisible = sortedConfig.showSlotRequests === false
       ? false
       : sortedConfig.showRequests;

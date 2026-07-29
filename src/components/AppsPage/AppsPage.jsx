@@ -1,8 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart3,
-  CircleHelp,
-  ClipboardCheck,
   CreditCard,
   Crown,
   Database,
@@ -10,9 +8,7 @@ import {
   Handshake,
   LogIn,
   LogOut,
-  MonitorUp,
   Radar,
-  Route,
   ShieldCheck,
   SlidersHorizontal,
   Tags,
@@ -40,9 +36,9 @@ export default function AppsPage() {
       ? [
           {
             to: "/overlay-center",
-            label: "Overlay Center",
-            desc: "OBS widgets and tools",
-            icon: MonitorUp,
+            label: "Widget Data",
+            desc: "Live data for Better widgets",
+            icon: Database,
             tone: "teal",
             art: "overlay-center",
           },
@@ -53,14 +49,6 @@ export default function AppsPage() {
             icon: SlidersHorizontal,
             tone: "cyan",
             art: "editor",
-          },
-          {
-            to: "/overlay-center/presets",
-            label: "Presets",
-            desc: "Save, load and share overlay builds",
-            icon: SlidersHorizontal,
-            tone: "violet",
-            art: "presets",
           },
           {
             to: "/slot-detector",
@@ -105,26 +93,6 @@ export default function AppsPage() {
       tone: "sky",
       art: "screensplit",
     },
-    ...(hasOverlayAccess
-      ? [
-          {
-            to: "/overlay-center/setup",
-            label: "Guided Setup",
-            desc: "Restart overlay setup flow",
-            icon: Route,
-            tone: "indigo",
-            art: "guided-setup",
-          },
-          {
-            to: "/overlay-center/tutorial",
-            label: "Restart Tutorial",
-            desc: "Walk through Overlay Center again",
-            icon: CircleHelp,
-            tone: "cyan",
-            art: "restart-tutorial",
-          },
-        ]
-      : []),
     {
       to: "/offers",
       label: "Deals",
@@ -178,14 +146,6 @@ export default function AppsPage() {
             icon: CreditCard,
             tone: "amber",
             art: "subscriptions",
-          },
-          {
-            to: "/overlay-center/approvals",
-            label: "Approvals",
-            desc: "Review submitted slots",
-            icon: ClipboardCheck,
-            tone: "rose",
-            art: "approvals",
           },
           {
             to: "/analytics",

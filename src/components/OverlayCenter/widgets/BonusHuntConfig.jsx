@@ -14,8 +14,31 @@ import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
 import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
 import { getProviderImage } from '../../../utils/gameProviders';
 import SlotImage from './SlotImage';
-import { FONT_OPTIONS } from '../appearance/editorSchema';
-import { FontSelectInput } from '../appearance/propertyControls';
+
+const FONT_OPTIONS = Object.freeze([
+  { value: "'Inter', sans-serif", label: 'Inter' },
+  { value: "'Poppins', sans-serif", label: 'Poppins' },
+  { value: "'Roboto', sans-serif", label: 'Roboto' },
+  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
+  { value: "'Oswald', sans-serif", label: 'Oswald' },
+  { value: "'Bebas Neue', sans-serif", label: 'Bebas Neue' },
+  { value: "'Orbitron', sans-serif", label: 'Orbitron' },
+  { value: "'Rajdhani', sans-serif", label: 'Rajdhani' },
+  { value: "'Courier New', monospace", label: 'Courier New' },
+]);
+
+function FontSelectInput({ value, options = FONT_OPTIONS, onChange, className }) {
+  return (
+    <select className={className} value={value || ''} onChange={(event) => onChange(event.target.value)}>
+      <option value="">Default</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 const BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS = Object.freeze({
   headerColor: '#26282e',

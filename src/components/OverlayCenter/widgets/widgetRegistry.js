@@ -1,97 +1,26 @@
 /**
- * widgetRegistry.js — Plugin-style widget system.
+ * Minimal Better widget data-source registry.
  *
- * Each widget type registers:
- *  - type:         unique string key
- *  - label:        human display name
- *  - icon:         emoji or Lucide icon name
- *  - component:    React component to render inside the overlay
- *  - configPanel:  React component for the admin config form (optional)
- *  - defaults:     default config JSONB
- *  - category:     grouping for the add-widget menu
- *
- * To add a new widget, just call registerWidget() — no core rewrite required.
+ * /editor owns rendering, layout, and style controls. The registry here only
+ * keeps the live data-source configuration panels for the seven Better widgets.
  */
 
-const _registry = new Map();
-
-const DEFAULT_APPEARANCE_CAPABILITIES = {
-  colors: true,
-  typography: true,
-  container: true,
-  borders: true,
-  effects: true,
-  sizing: true,
-  motion: true,
-  controls: false,
-  responsive: true,
-  customTokens: [],
-  widgetSpecific: [],
-};
-
-function inferAppearanceCapabilities(definition) {
-  const defaults = definition.defaults || {};
-  const tokenKeys = Object.keys(defaults).filter((key) =>
-    /color|bg|radius|font|border|shadow|glow|padding|gap|size|opacity|blur/i.test(
-      key,
-    ),
-  );
-
-  return {
-    ...DEFAULT_APPEARANCE_CAPABILITIES,
-    controls: ["buttonBg", "buttonText", "inputBg", "progressColor"].some(
-      (key) => key in defaults,
-    ),
-    colors:
-      ["accentColor", "bgColor", "textColor", "mutedColor", "borderColor"].some(
-        (key) => key in defaults,
-      ) || DEFAULT_APPEARANCE_CAPABILITIES.colors,
-    typography:
-      ["fontFamily", "fontSize", "fontWeight"].some((key) => key in defaults) ||
-      DEFAULT_APPEARANCE_CAPABILITIES.typography,
-    container:
-      ["bgColor", "cardBg", "containerPadding", "cardGap"].some(
-        (key) => key in defaults,
-      ) || DEFAULT_APPEARANCE_CAPABILITIES.container,
-    borders:
-      ["borderColor", "borderRadius", "borderWidth", "cardRadius"].some(
-        (key) => key in defaults,
-      ) || DEFAULT_APPEARANCE_CAPABILITIES.borders,
-    sizing:
-      ["fontSize", "paddingX", "paddingY", "barHeight", "width", "height"].some(
-        (key) => key in defaults,
-      ) || DEFAULT_APPEARANCE_CAPABILITIES.sizing,
-    customTokens: [
-      ...new Set([
-        ...(definition.appearanceCapabilities?.customTokens || []),
-        ...(definition.appearanceCapabilities?.widgetSpecific || []),
-        ...tokenKeys,
-      ]),
-    ],
-    widgetSpecific: [
-      ...new Set([
-        ...(definition.appearanceCapabilities?.widgetSpecific || []),
-        ...tokenKeys,
-      ]),
-    ],
-    ...(definition.appearanceCapabilities || {}),
-  };
-}
+const registry = new Map();
 
 export function registerWidget(definition) {
-  if (!definition.type) throw new Error("Widget must have a type");
-  _registry.set(definition.type, {
+  if (!definition?.type) throw new Error("Widget must have a type");
+  registry.set(definition.type, {
     label: definition.type,
-    icon: "📦",
-    category: "general",
+    icon: "W",
+    category: "better",
     defaults: {},
+    styles: [],
     ...definition,
-    appearanceCapabilities: inferAppearanceCapabilities(definition),
   });
 }
 
 export function getWidgetDef(type) {
-  return _registry.get(type) || null;
+  return registry.get(type) || null;
 }
 
 export function getWidgetStyleDefaultSize(type, styleId) {
@@ -108,17 +37,17 @@ export function getWidgetStyleDefaultSize(type, styleId) {
 }
 
 export function getAllWidgetDefs() {
-  return Array.from(_registry.values());
+  return Array.from(registry.values());
 }
 
 export function getWidgetsByCategory() {
   const map = {};
-  for (const def of _registry.values()) {
-    const cat = def.category || "general";
-    if (!map[cat]) map[cat] = [];
-    map[cat].push(def);
+  for (const def of registry.values()) {
+    const category = def.category || "better";
+    if (!map[category]) map[category] = [];
+    map[category].push(def);
   }
   return map;
 }
 
-export default _registry;
+export default registry;
