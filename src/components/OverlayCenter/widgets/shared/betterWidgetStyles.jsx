@@ -3167,8 +3167,8 @@ export function BetterRtpStatsStyle({
   const borderWidth = Math.max(0, numberValue(c.borderWidth, 1));
   const radius = cssPx(c.radius ?? c.borderRadius ?? 14, "14px");
   const providerMode = c.providerMode || "name";
-  const providerName = displayProvider || c.providerName || "";
-  const providerLogo = c.logoSrc || displayProviderLogo || "";
+  const providerName = displayProvider || "";
+  const providerLogo = displayProviderLogo || "";
   const showProviderImage = providerMode !== "none" && providerMode !== "name" && Boolean(providerLogo);
   const showProviderName = providerMode !== "none" && providerMode !== "image" && Boolean(providerName);
   const hasProvider = showProviderImage || showProviderName;
@@ -3178,26 +3178,20 @@ export function BetterRtpStatsStyle({
   const logoPadY = clampNumber(c.logoPadY, 0, 32, 0);
   const logoOffsetX = clampNumber(c.logoOffsetX, -64, 64, 0);
   const logoOffsetY = clampNumber(c.logoOffsetY, -64, 64, 0);
-  const slotName = displaySlotName || c.slotName || "-";
+  const slotName = displaySlotName || "-";
   const liveRtp = displayInfo?.rtp;
   const livePotential = displayInfo?.max_win_multiplier ?? displayInfo?.max_win;
   const rtpValue =
     liveRtp !== undefined && liveRtp !== null && liveRtp !== ""
       ? `${String(liveRtp).replace(/%$/, "")}%`
-      : c.rtp
-        ? c.rtp
-        : "-";
+      : "-";
   const potentialValue =
     livePotential !== undefined && livePotential !== null && livePotential !== ""
       ? formatMultiplier(livePotential)
-      : c.potential
-        ? c.potential
-        : "-";
-  const volatilityValue = firstKnownVolatility(displayInfo?.volatility, c.volatility);
+      : "-";
+  const volatilityValue = firstKnownVolatility(displayInfo?.volatility);
   const bestAmount = displayBestWin?.best_win
     ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
-    : c.bestWin
-      ? c.bestWin
     : bestWinEmptyText || "-";
   const bestMulti = displayBestWin?.best_multiplier ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : "";
   const showDividers = c.showDividers !== false;

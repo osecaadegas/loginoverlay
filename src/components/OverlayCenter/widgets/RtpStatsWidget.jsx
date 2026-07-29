@@ -571,12 +571,14 @@ async function fetchSlotFromDB(slotRef) {
 }
 
 /* ─── API fallback (slot-ai pipeline: DB + Gemini) ─── */
-async function fetchSlotInfoAPI(name) {
+async function fetchSlotInfoAPI(name, provider = "") {
   try {
+    const body = { name };
+    if (provider) body.provider = provider;
     const res = await fetch("/api/slot-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) return null;
     const json = await res.json();
@@ -868,12 +870,14 @@ function resolveLocalSlotInfo({ slotName, currentBonus, activeSlot }) {
 
 function knownSlotInfoValue(value) {
   if (value === undefined || value === null) return false;
-  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value === "number") return Number.isFinite(value) && value > 0;
   const text = String(value).trim();
   const normalized = text.toLowerCase().replace(/[_-]+/g, " ");
   if (normalized === "unknown" || normalized === "n/a" || normalized === "na" || normalized === "null") {
     return false;
   }
+  const numeric = Number(text.replace(/[%x,]/gi, ""));
+  if (Number.isFinite(numeric) && numeric <= 0) return false;
   return Boolean(text && text !== "-" && text !== "—" && text !== "â€”");
 }
 
@@ -897,6 +901,15 @@ function mergeSlotInfo(primary, fallback) {
   return merged;
 }
 
+function needsSlotInfoEnrichment(info) {
+  if (!info) return true;
+  return Boolean(
+    !knownSlotInfoValue(info.rtp) ||
+      !knownSlotInfoValue(info.max_win_multiplier ?? info.max_win) ||
+      normalizeVolatilityLevel(info.volatility).level <= 0,
+  );
+}
+
 function useRtpSlotInfo({ activeSlot, localSlotInfo, slotKey, slotName }) {
   const [slotInfo, setSlotInfo] = useState(null);
   const lastSlotRef = useRef("");
@@ -915,10 +928,15 @@ function useRtpSlotInfo({ activeSlot, localSlotInfo, slotKey, slotName }) {
     async function lookup() {
       const dbResult = await fetchSlotFromDB(activeSlot);
       if (!cancelled && dbResult) {
-        setSlotInfo(dbResult);
+        if (!needsSlotInfoEnrichment(dbResult)) {
+          setSlotInfo(dbResult);
+          return;
+        }
+        const apiResult = await fetchSlotInfoAPI(slotName, activeSlot.provider);
+        if (!cancelled) setSlotInfo(apiResult ? mergeSlotInfo(dbResult, apiResult) : dbResult);
         return;
       }
-      const apiResult = await fetchSlotInfoAPI(slotName);
+      const apiResult = await fetchSlotInfoAPI(slotName, activeSlot.provider);
       if (!cancelled) setSlotInfo(apiResult);
     }
 

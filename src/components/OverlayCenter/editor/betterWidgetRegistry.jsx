@@ -245,12 +245,6 @@ const LIVE_DATA_KEYS = Object.freeze({
     "youtubeApiKey",
     "kickEnabled",
     "kickChannelId",
-    "maxMessages",
-    "showHeader",
-    "showLegend",
-    "showBadges",
-    "useNativeColors",
-    "nameBold",
   ],
   rtp_stats: [
     "showSpinner",
@@ -317,7 +311,7 @@ const CONTROL_SCHEMAS = {
   giveaway: ["theme", "size", "edges", "type", "content"],
   navbar: ["sections", "arrange", "spotify", "crypto", "socials", "casino", "cta", "size", "colours"],
   chat: ["theme", "messages", "layout", "typography", "animation", "source"],
-  rtp_stats: ["presets", "provider", "content", "emblem", "colours", "type", "bar"],
+  rtp_stats: ["presets", "provider", "display", "emblem", "colours", "type", "bar"],
   background: ["presets", "colors", "source", "textures", "effects"],
   bets: ["theme", "cards", "fill", "layout", "text", "colours"],
 };

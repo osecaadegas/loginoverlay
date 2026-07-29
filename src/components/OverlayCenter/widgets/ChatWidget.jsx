@@ -467,6 +467,7 @@ function ChatWidget({ config, theme, allWidgets }) {
       ? "top-to-bottom"
       : "bottom-to-top"
     : "bottom-to-top";
+  const showBetterChatEmptyState = !isBetterChat || c.showEmptyState !== false;
   const betterChatAutoFade = isBetterChat
     ? Boolean(c.autoFade || c.lifespan === "timed")
     : true;
@@ -720,6 +721,12 @@ function ChatWidget({ config, theme, allWidgets }) {
   );
 
   useEffect(() => {
+    setMessages((prev) => (
+      prev.length > maxMessages ? prev.slice(-maxMessages) : prev
+    ));
+  }, [maxMessages]);
+
+  useEffect(() => {
     if (!shouldExpireMessages) return undefined;
     const intervalId = setInterval(() => {
       const now = Date.now();
@@ -745,7 +752,10 @@ function ChatWidget({ config, theme, allWidgets }) {
   const previewMessages = Array.isArray(c.__appearancePreviewMessages)
     ? c.__appearancePreviewMessages
     : [];
-  const renderMessages = messages.length > 0 ? messages : previewMessages;
+  const renderMessageSource = messages.length > 0 ? messages : previewMessages;
+  const renderMessages = renderMessageSource.length > maxMessages
+    ? renderMessageSource.slice(-maxMessages)
+    : renderMessageSource;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -1235,7 +1245,7 @@ function ChatWidget({ config, theme, allWidgets }) {
           }),
         })}
       >
-        {renderMessages.length === 0 && chatStyle === "better_chat" && (
+        {renderMessages.length === 0 && chatStyle === "better_chat" && showBetterChatEmptyState && (
           <div
             className="ov-chat-empty ov-chat-empty--better"
             style={subElementStyle(c, "emptyState", {
@@ -1279,7 +1289,7 @@ function ChatWidget({ config, theme, allWidgets }) {
           if (chatStyle === "better_chat") {
             return (
               <BetterChatMessage
-                key={msg.id}
+                key={`${msg.id || msgIdx}-${c.replayNonce || 0}`}
                 msg={msg}
                 platform={plt}
                 nameColor={nameColor}

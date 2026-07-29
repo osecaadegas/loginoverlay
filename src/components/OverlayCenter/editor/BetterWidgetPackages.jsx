@@ -164,6 +164,7 @@ const BETTER_RTP_LIVE_CONTENT_KEYS = [
   "currentSlotName",
   "provider",
   "providerName",
+  "logoSrc",
   "rtp",
   "rtpValue",
   "potential",
@@ -451,14 +452,12 @@ export const DEFAULT_BETTER_CONFIG = {
       gift: true,
       intensity: 5,
     },
+    showEmptyState: true,
     emptyMessage: BETTER_CHAT_EMPTY_MESSAGE,
   },
   rtp_stats: {
     displayStyle: "better_rtp",
-    slotName: "5 Lions Megaways",
-    providerName: "Pragmatic Play",
     providerMode: "name",
-    logoSrc: "",
     logoFit: "contain",
     logoHeight: 30,
     logoMaxW: 160,
@@ -472,10 +471,6 @@ export const DEFAULT_BETTER_CONFIG = {
     showPotential: true,
     showVolatility: true,
     showBestWin: true,
-    rtp: "95.5%",
-    potential: "x5000",
-    volatility: "HIGH",
-    bestWin: "No personal best yet",
     cRim: "#2b7de9",
     cBarTop: "#0c2150",
     cBarMid: "#081735",
@@ -488,7 +483,6 @@ export const DEFAULT_BETTER_CONFIG = {
     cEmA: "#f7752a",
     cEmB: "#f7a41d",
     cEmBase: "#12295c",
-    cPage: "#020817",
     fontTitle: "'Barlow Condensed', sans-serif",
     fontBody: "'Barlow', sans-serif",
     titleSize: 21,
@@ -684,11 +678,15 @@ function normalizeBetterChatConfig(merged = {}) {
     next.autoFade = next.lifespan === "timed";
   }
   next.lifespan = next.autoFade ? "timed" : "persistent";
+  if (!["slide-up", "slide-down", "slide-left", "slide-right", "fade", "none"].includes(next.animation)) {
+    next.animation = defaults.animation;
+  }
   next.maxMessages = clampNumber(next.maxMessages, 2, 40, defaults.maxMessages);
   next.fadeAfter = clampNumber(next.fadeAfter, 2, 15, defaults.fadeAfter);
   next.stagger = clampNumber(next.stagger, 0, 400, defaults.stagger);
   next.showHeaderName = next.showHeaderName !== false;
   next.showLiveLabel = next.showLiveLabel !== false;
+  next.showEmptyState = next.showEmptyState !== false;
   next.viewerCount = clampNumber(next.viewerCount, 0, 100000, defaults.viewerCount);
   next.textureStrength = clampNumber(next.textureStrength, 5, 80, defaults.textureStrength);
   next.celebrations.intensity = clampNumber(
@@ -1050,8 +1048,9 @@ function BetterChatPreview({ config, widget }) {
           color: "#7dd3fc",
         },
       ];
+  const maxPreviewMessages = clampNumber(c.maxMessages, 2, 40, 10);
   const previewMessages = sourceMessages
-    .slice(0, c.maxMessages || 10)
+    .slice(-maxPreviewMessages)
     .map((message, index) => ({
       id: message.id || `better-chat-preview-${index}`,
       platform: message.platform || "twitch",
@@ -1758,7 +1757,10 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
         <ToggleRow label="Simulate live chat" checked={!!c.live} onChange={(live) => set({ live })} />
       </Section>
       <Section title="Empty State" icon={<MessageSquare size={13} />}>
-        <TextRow label="No-message text" value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE} onChange={(emptyMessage) => set({ emptyMessage })} />
+        <ToggleRow label="Show empty state" checked={c.showEmptyState !== false} onChange={(showEmptyState) => set({ showEmptyState })} />
+        {c.showEmptyState !== false && (
+          <TextRow label="No-message text" value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE} onChange={(emptyMessage) => set({ emptyMessage })} />
+        )}
       </Section>
       <div className="bp-action-row">
         <button type="button" onClick={() => set({ replayNonce: (Number(c.replayNonce) || 0) + 1 })}><RotateCcw size={13} /> Replay</button>
@@ -1813,6 +1815,17 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
     }
     onChange(next);
   };
+  const setRtpBar = (patch) => {
+    const next = { ...c, ...patch };
+    if (typeof onWidgetChange === "function" && Object.prototype.hasOwnProperty.call(patch, "barHeight")) {
+      onWidgetChange({
+        height: clampNumber(next.barHeight, 52, 160, widget?.height || 88),
+        config: next,
+      });
+      return;
+    }
+    onChange(next);
+  };
   const [tab, setTab] = useTab("theme");
   const activeTab = (tabs) => (tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0]);
 
@@ -1832,7 +1845,7 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
     const tabs = [
       ["presets", <Palette size={12} />, "Presets"],
       ["provider", <ImagePlus size={12} />, "Provider"],
-      ["content", <Type size={12} />, "Content"],
+      ["display", <Eye size={12} />, "Display"],
       ["emblem", <Sparkles size={12} />, "Emblem"],
       ["colours", <Pipette size={12} />, "Colours"],
       ["type", <Type size={12} />, "Type"],
@@ -1843,12 +1856,12 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
         {current === "presets" && <Section title="Presets" icon={<Palette size={13} />}><div className="bp-preset-row">{RTP_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set(preset.patch)}>{preset.name}</button>)}</div><button className="bp-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.rtp_stats)}><RotateCcw size={13} /> Reset to defaults</button></Section>}
-        {current === "provider" && <Section title="Provider" icon={<ImagePlus size={13} />}><Segmented value={c.providerMode} columns={4} options={["image", "name", "both", "none"].map((key) => ({ key, name: key }))} onChange={(providerMode) => set({ providerMode })} /><TextRow label="Provider name" value={c.providerName || ""} onChange={(providerName) => set({ providerName })} /><TextRow label="Logo image URL" value={c.logoSrc} onChange={(logoSrc) => set({ logoSrc })} /><SliderRow label="Height" value={c.logoHeight} min={18} max={72} unit="px" onChange={(logoHeight) => set({ logoHeight })} /><SliderRow label="Max width" value={c.logoMaxW} min={60} max={320} step={4} unit="px" onChange={(logoMaxW) => set({ logoMaxW })} /><SliderRow label="Padding top / bottom" value={c.logoPadY} min={0} max={16} unit="px" onChange={(logoPadY) => set({ logoPadY })} /><SliderRow label="Padding left / right" value={c.logoPadX} min={0} max={24} unit="px" onChange={(logoPadX) => set({ logoPadX })} /><SliderRow label="Nudge up / down" value={c.logoOffsetY} min={-14} max={14} unit="px" onChange={(logoOffsetY) => set({ logoOffsetY })} /><SliderRow label="Nudge left / right" value={c.logoOffsetX} min={-14} max={14} unit="px" onChange={(logoOffsetX) => set({ logoOffsetX })} /><Segmented value={c.logoFit} options={[{ key: "contain", name: "Contain" }, { key: "cover", name: "Crop" }]} onChange={(logoFit) => set({ logoFit })} /></Section>}
-        {current === "content" && <Section title="Content" icon={<Type size={13} />}><TextRow label="Slot name fallback" value={c.slotName || ""} onChange={(slotName) => set({ slotName })} /><TextRow label="RTP fallback" value={c.rtp || ""} onChange={(rtp) => set({ rtp })} /><TextRow label="Potential fallback" value={c.potential || ""} onChange={(potential) => set({ potential })} /><TextRow label="Volatility fallback" value={c.volatility || ""} onChange={(volatility) => set({ volatility })} /><TextRow label="Best win text fallback" value={c.bestWin || ""} onChange={(bestWin) => set({ bestWin })} /><ToggleRow label="Show RTP" checked={c.showRtp !== false} onChange={(showRtp) => set({ showRtp })} /><ToggleRow label="Show potential" checked={c.showPotential !== false} onChange={(showPotential) => set({ showPotential })} /><ToggleRow label="Show volatility" checked={c.showVolatility !== false} onChange={(showVolatility) => set({ showVolatility })} /><ToggleRow label="Show best win" checked={c.showBestWin !== false} onChange={(showBestWin) => set({ showBestWin })} /><ToggleRow label="Show dividers" checked={c.showDividers !== false} onChange={(showDividers) => set({ showDividers })} /></Section>}
+        {current === "provider" && <Section title="Provider" icon={<ImagePlus size={13} />}><Segmented value={c.providerMode} columns={4} options={["image", "name", "both", "none"].map((key) => ({ key, name: key }))} onChange={(providerMode) => set({ providerMode })} />{["image", "both"].includes(c.providerMode) && <><SliderRow label="Logo height" value={c.logoHeight} min={18} max={72} unit="px" onChange={(logoHeight) => set({ logoHeight })} /><SliderRow label="Logo max width" value={c.logoMaxW} min={60} max={320} step={4} unit="px" onChange={(logoMaxW) => set({ logoMaxW })} /><SliderRow label="Logo padding Y" value={c.logoPadY} min={0} max={16} unit="px" onChange={(logoPadY) => set({ logoPadY })} /><SliderRow label="Logo padding X" value={c.logoPadX} min={0} max={24} unit="px" onChange={(logoPadX) => set({ logoPadX })} /><SliderRow label="Logo nudge Y" value={c.logoOffsetY} min={-14} max={14} unit="px" onChange={(logoOffsetY) => set({ logoOffsetY })} /><SliderRow label="Logo nudge X" value={c.logoOffsetX} min={-14} max={14} unit="px" onChange={(logoOffsetX) => set({ logoOffsetX })} /><Segmented value={c.logoFit} options={[{ key: "contain", name: "Contain" }, { key: "cover", name: "Crop" }]} onChange={(logoFit) => set({ logoFit })} /></>}</Section>}
+        {current === "display" && <Section title="Display" icon={<Eye size={13} />}><ToggleRow label="Show RTP" checked={c.showRtp !== false} onChange={(showRtp) => set({ showRtp })} /><ToggleRow label="Show potential" checked={c.showPotential !== false} onChange={(showPotential) => set({ showPotential })} /><ToggleRow label="Show volatility" checked={c.showVolatility !== false} onChange={(showVolatility) => set({ showVolatility })} /><ToggleRow label="Show best win" checked={c.showBestWin !== false} onChange={(showBestWin) => set({ showBestWin })} /><ToggleRow label="Show dividers" checked={c.showDividers !== false} onChange={(showDividers) => set({ showDividers })} /></Section>}
         {current === "emblem" && <><Section title="Emblem" icon={<Sparkles size={13} />}><ToggleRow label="Show emblem" checked={c.showEmblem} onChange={(showEmblem) => set({ showEmblem })} /><ToggleRow label="Animate" checked={c.emblemAnimate} onChange={(emblemAnimate) => set({ emblemAnimate })} /><Segmented value={c.emblem} columns={4} options={RTP_EMBLEMS} onChange={(emblem) => set({ emblem })} /><SliderRow label="Speed" value={c.emblemSpeed} min={0.2} max={4} step={0.1} unit="x" onChange={(emblemSpeed) => set({ emblemSpeed })} /><SliderRow label="Size" value={c.emblemSize} min={16} max={64} unit="px" onChange={(emblemSize) => set({ emblemSize })} /><SliderRow label="Stroke / weight" value={c.emblemStroke} min={1} max={5} step={0.5} unit="px" onChange={(emblemStroke) => set({ emblemStroke })} /></Section><Section title="Emblem colours" icon={<Palette size={13} />}><ColorRow label="Primary" value={c.cEmA} onChange={(cEmA) => set({ cEmA })} /><ColorRow label="Secondary" value={c.cEmB} onChange={(cEmB) => set({ cEmB })} /><ColorRow label="Base / track" value={c.cEmBase} onChange={(cEmBase) => set({ cEmBase })} /></Section></>}
-        {current === "colours" && <Section title="Colours" icon={<Palette size={13} />}>{[["cRim", "Border / glow"], ["cBarTop", "Bar top"], ["cBarMid", "Bar middle"], ["cBarBot", "Bar bottom"], ["cLabel", "Label text"], ["cValue", "Value text"], ["cBolt", "Bolt icon"], ["cGold", "Trophy"], ["cBrand", "Provider text"], ["cPage", "Page background"]].map(([key, label]) => <ColorRow key={key} label={label} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>}
+        {current === "colours" && <Section title="Colours" icon={<Palette size={13} />}>{[["cRim", "Border / glow"], ["cBarTop", "Bar top"], ["cBarMid", "Bar middle"], ["cBarBot", "Bar bottom"], ["cLabel", "Label text"], ["cValue", "Value text"], ["cBolt", "Bolt icon"], ["cGold", "Trophy"], ["cBrand", "Provider text"]].map(([key, label]) => <ColorRow key={key} label={label} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>}
         {current === "type" && <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Title font" value={c.fontTitle} options={RTP_FONT_OPTIONS} onChange={(fontTitle) => set({ fontTitle })} /><SelectRow label="Body font" value={c.fontBody} options={RTP_FONT_OPTIONS} onChange={(fontBody) => set({ fontBody })} /><SliderRow label="Title size" value={c.titleSize} min={12} max={40} unit="px" onChange={(titleSize) => set({ titleSize })} /><SliderRow label="Title tracking" value={c.titleTracking} min={0} max={0.3} step={0.01} unit="em" onChange={(titleTracking) => set({ titleTracking })} /><SliderRow label="Value size" value={c.valueSize} min={10} max={28} unit="px" onChange={(valueSize) => set({ valueSize })} /><SliderRow label="Label size" value={c.labelSize} min={7} max={16} unit="px" onChange={(labelSize) => set({ labelSize })} /></Section>}
-        {current === "bar" && <Section title="Bar size" icon={<Maximize2 size={13} />}><SliderRow label="Total height" value={c.barHeight} min={40} max={120} unit="px" onChange={(barHeight) => set({ barHeight })} /><SliderRow label="Vertical gap" value={c.barPadY} min={2} max={28} unit="px" onChange={(barPadY) => set({ barPadY })} /><SliderRow label="Padding left / right" value={c.barPadX} min={4} max={48} unit="px" onChange={(barPadX) => set({ barPadX })} /><SliderRow label="Corner radius" value={c.radius} min={0} max={40} unit="px" onChange={(radius) => set({ radius })} /><SliderRow label="Border width" value={c.borderWidth} min={0} max={5} step={0.5} unit="px" onChange={(borderWidth) => set({ borderWidth })} /></Section>}
+        {current === "bar" && <Section title="Bar size" icon={<Maximize2 size={13} />}><SliderRow label="Total height" value={c.barHeight} min={52} max={120} unit="px" onChange={(barHeight) => setRtpBar({ barHeight })} /><SliderRow label="Vertical gap" value={c.barPadY} min={2} max={28} unit="px" onChange={(barPadY) => set({ barPadY })} /><SliderRow label="Padding left / right" value={c.barPadX} min={4} max={48} unit="px" onChange={(barPadX) => set({ barPadX })} /><SliderRow label="Corner radius" value={c.radius} min={0} max={40} unit="px" onChange={(radius) => set({ radius })} /><SliderRow label="Border width" value={c.borderWidth} min={0} max={5} step={0.5} unit="px" onChange={(borderWidth) => set({ borderWidth })} /></Section>}
       </div>
     );
   }
