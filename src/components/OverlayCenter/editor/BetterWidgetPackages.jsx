@@ -2227,7 +2227,7 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
         />
       </HuntSection>
 
-      <HuntSection title="Twitch Requests" icon={<MessageSquare size={13} />}>
+      <HuntSection title="Chat Requests" icon={<MessageSquare size={13} />}>
         <ToggleRow label="Show requests feed" checked={localRequestsVisible} onChange={(showRequests) => set({ showRequests })} />
         <HuntHint>
           {liveRequestsVisible

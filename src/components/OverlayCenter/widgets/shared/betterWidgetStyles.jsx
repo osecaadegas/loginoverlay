@@ -2225,7 +2225,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     return (
       <div className="better-hunt-requests" {...attrs("bonus_hunt", c, "requestContainer")}>
         <div className="better-hunt-requests-head">
-          <h3>Twitch Requests</h3>
+          <h3>Chat Requests</h3>
           <strong>{requestRows.length}</strong>
         </div>
         <div className="better-hunt-request-list">
