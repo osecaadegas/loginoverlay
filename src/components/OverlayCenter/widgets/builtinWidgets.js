@@ -14,6 +14,8 @@ import BonusHuntConfig from "./bonus-hunt/BonusHuntConfig";
 import BonusHuntWidget from "./bonus-hunt/BonusHuntWidget";
 import ChatConfig from "./chat/ChatConfig";
 import ChatWidget from "./chat/ChatWidget";
+import ConnectFourConfig from "./connect-four/ConnectFourConfig";
+import ConnectFourWidget from "./connect-four/ConnectFourWidget";
 import GiveawayConfig from "./giveaway/GiveawayConfig";
 import GiveawayWidget from "./giveaway/GiveawayWidget";
 import NavbarConfig from "./navbar/NavbarConfig";
@@ -27,6 +29,31 @@ import RaidShoutoutConfig from "./raid-shoutout/RaidShoutoutConfig";
 import RaidShoutoutWidget from "./raid-shoutout/RaidShoutoutWidget";
 
 const CURRENCY = "EUR ";
+
+registerWidget({
+  type: "connect_four",
+  label: "Chat Connect 4",
+  icon: "4",
+  description:
+    "Run Twitch chat Connect 4 matches with StreamElements point wagers.",
+  category: "better",
+  component: ConnectFourWidget,
+  configPanel: ConnectFourConfig,
+  styleConfigKey: "displayStyle",
+  styles: [{ id: "chat_connect_four", icon: "4", label: "Chat Connect 4" }],
+  defaults: {
+    displayStyle: "chat_connect_four",
+    title: "CHAT CONNECT 4",
+    playerOneColor: "#ffd23f",
+    playerTwoColor: "#f04444",
+    boardColor: "#08191f",
+    showWager: true,
+    showPlayers: true,
+    animateDrops: true,
+    chatCommand: "!connect4",
+    twitchChannel: "",
+  },
+});
 
 registerWidget({
   type: "raid_shoutout",
