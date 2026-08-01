@@ -339,6 +339,19 @@ try {
       /PRIMARY_TOOLS[\s\S]*?"raid_shoutout"/.test(overlayControlCenterSource),
     "Overlay Center shows a Twitch Shoutout tool tile",
   );
+  const profileSectionSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/ProfileSection.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    /raid_shoutout:\s*\{\s*twitchUsername:\s*"twitchChannel"/.test(
+      profileSectionSource,
+    ) && /raid_shoutout:\s*"SO"/.test(profileSectionSource),
+    "Widget Sync includes Shoutout and applies the profile Twitch channel",
+  );
   const shoutoutMigrationSource = readFileSync(
     new URL(
       "../migrations/032_shoutout_chat_command_deduplication.sql",

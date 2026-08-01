@@ -40,6 +40,20 @@ const SYNC_MAP = {
   bets: {
     twitchUsername: "twitchChannel",
   },
+  raid_shoutout: {
+    twitchUsername: "twitchChannel",
+  },
+};
+
+const SYNC_BADGES = {
+  navbar: "NB",
+  chat: "CH",
+  bets: "BT",
+  rtp_stats: "RT",
+  background: "BG",
+  bonus_hunt: "BH",
+  raid_shoutout: "SO",
+  giveaway: "GW",
 };
 
 const S = {
@@ -1042,19 +1056,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
                         textTransform: "capitalize",
                       }}
                     >
-                      {w.widget_type === "navbar"
-                        ? "NB"
-                        : w.widget_type === "chat"
-                          ? "CH"
-                          : w.widget_type === "bets"
-                            ? "BT"
-                            : w.widget_type === "rtp_stats"
-                              ? "RT"
-                              : w.widget_type === "background"
-                                ? "BG"
-                                : w.widget_type === "bonus_hunt"
-                                  ? "BH"
-                                  : "GW"}{" "}
+                      {SYNC_BADGES[w.widget_type] || "GW"}{" "}
                       {w.widget_type.replace("_", " ")}
                     </span>
                   ))}
