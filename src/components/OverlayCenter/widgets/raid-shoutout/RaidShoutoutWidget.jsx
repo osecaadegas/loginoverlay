@@ -276,7 +276,13 @@ export default function RaidShoutoutWidget({
   userId,
   runtime = "editor",
   publicOverlayId,
+  onActiveChange,
+  allWidgets = [],
 }) {
+  const hostedInChat = allWidgets.some(
+    (widget) =>
+      widget?.widget_type === "chat" && widget?.config?.shoutoutInChat === true,
+  );
   const previewAlert = useMemo(
     () => normalizeAlert(config.__previewAlert || {}),
     [config.__previewAlert],
@@ -307,7 +313,10 @@ export default function RaidShoutoutWidget({
   );
 
   useTwitchChat(
-    runtime === "obs" && config.chatCommandEnabled !== false && publicOverlayId
+    runtime === "obs" &&
+      !hostedInChat &&
+      config.chatCommandEnabled !== false &&
+      publicOverlayId
       ? twitchChannel
       : "",
     handleChatMessage,
@@ -320,6 +329,10 @@ export default function RaidShoutoutWidget({
     }
   }, [duration, previewAlert, runtime]);
 
+  useEffect(() => {
+    onActiveChange?.(Boolean(activeAlert));
+  }, [activeAlert, onActiveChange]);
+
   const enqueue = useCallback((alert) => {
     setQueue((current) => {
       if (current.some((item) => item.id === alert.id)) return current;
@@ -328,7 +341,7 @@ export default function RaidShoutoutWidget({
   }, []);
 
   useEffect(() => {
-    if (runtime !== "obs" || !userId) return undefined;
+    if (runtime !== "obs" || hostedInChat || !userId) return undefined;
     let alive = true;
     getPendingAlerts(userId).then((alerts) => {
       if (alive) alerts.forEach(enqueue);
@@ -338,17 +351,23 @@ export default function RaidShoutoutWidget({
       alive = false;
       unsubscribeShoutoutAlerts(channel);
     };
-  }, [enqueue, runtime, userId]);
+  }, [enqueue, hostedInChat, runtime, userId]);
 
   useEffect(() => {
-    if (runtime !== "obs" || activeAlert || queue.length === 0) return;
+    if (
+      runtime !== "obs" ||
+      hostedInChat ||
+      activeAlert ||
+      queue.length === 0
+    )
+      return;
     const [next, ...rest] = queue;
     setQueue(rest);
     setActiveAlert(next);
     setRemaining(duration);
     setPhase("entered");
     markAlertShown(next.id);
-  }, [activeAlert, duration, queue, runtime]);
+  }, [activeAlert, duration, hostedInChat, queue, runtime]);
 
   const finishAlert = useCallback(() => {
     if (runtime !== "obs" || !activeAlert || phase === "exiting") return;
@@ -376,7 +395,7 @@ export default function RaidShoutoutWidget({
     return () => window.clearInterval(timer);
   }, [activeAlert, finishAlert, phase, runtime]);
 
-  if (!activeAlert) return null;
+  if (hostedInChat || !activeAlert) return null;
 
   return (
     <div className="better-shoutout-stage">

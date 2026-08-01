@@ -23,6 +23,11 @@ import {
   BetterChatHeader,
   BetterChatMessage,
 } from "../shared/betterWidgetStyles";
+import RaidShoutoutWidget from "../raid-shoutout/RaidShoutoutWidget";
+import {
+  parseShoutoutChatCommand,
+  triggerShoutoutChatCommand,
+} from "../../../../services/shoutoutCommandService";
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -766,9 +771,19 @@ function useYoutubeChat(videoId, apiKey, onMessage) {
 }
 
 /* ─── Main Widget ─── */
-function ChatWidget({ config, theme, allWidgets }) {
+function ChatWidget({
+  config,
+  theme,
+  allWidgets,
+  userId,
+  runtime = "editor",
+  publicOverlayId,
+}) {
   const c = config || {};
   const [messages, setMessages] = useState([]);
+  const [shoutoutActive, setShoutoutActive] = useState(
+    () => runtime !== "obs" && c.shoutoutInChat === true,
+  );
   const [connectedTwitchChannelId, setConnectedTwitchChannelId] = useState("");
   const scrollRef = useRef(null);
   const maxMessages = Math.max(1, Number(c.maxMessages) || 50);
@@ -1048,6 +1063,20 @@ function ChatWidget({ config, theme, allWidgets }) {
       const now = Date.now();
       const stampedMessage = normalizeChatMessage(msg, now, now);
       if (HIDDEN_BOTS.has(normalizedUsername(stampedMessage.username))) return;
+      if (
+        c.shoutoutInChat === true &&
+        runtime === "obs" &&
+        publicOverlayId
+      ) {
+        const command = parseShoutoutChatCommand(stampedMessage);
+        if (command) {
+          triggerShoutoutChatCommand({ publicOverlayId, command }).catch(
+            (error) => {
+              console.error("[ChatWidget] !so command failed:", error);
+            },
+          );
+        }
+      }
       setMessages((prev) => {
         const recent = shouldExpireMessages
           ? pruneExpiredChatMessages(prev, now, messageTtlMs)
@@ -1056,7 +1085,14 @@ function ChatWidget({ config, theme, allWidgets }) {
         return next.length > maxMessages ? next.slice(-maxMessages) : next;
       });
     },
-    [maxMessages, messageTtlMs, shouldExpireMessages],
+    [
+      c.shoutoutInChat,
+      maxMessages,
+      messageTtlMs,
+      publicOverlayId,
+      runtime,
+      shouldExpireMessages,
+    ],
   );
 
   useEffect(() => {
@@ -1269,6 +1305,58 @@ function ChatWidget({ config, theme, allWidgets }) {
     totalMessages: renderMessages.length,
     renderMessageContent: isBetterChat ? renderBetterChatMessage : null,
   };
+
+  const shoutoutPosition = c.shoutoutPosition === "bottom" ? "bottom" : "top";
+  const shoutoutHeight = Math.max(120, Math.min(360, Number(c.shoutoutHeight) || 180));
+  const embeddedShoutout = c.shoutoutInChat === true ? (
+    <div
+      className="ov-chat-shoutout"
+      style={{
+        position: "relative",
+        zIndex: 4,
+        display: shoutoutActive ? "block" : "none",
+        flex: `0 0 ${shoutoutHeight}px`,
+        height: shoutoutHeight,
+        minHeight: 0,
+        margin: "7px 9px",
+        overflow: "hidden",
+        borderRadius: Math.max(8, Number(borderRadius) || 12),
+      }}
+    >
+      <RaidShoutoutWidget
+        config={{
+          frameStyle: "neon",
+          animation: "slide-left",
+          displayDuration: c.shoutoutDuration || 45,
+          chatCommandEnabled: false,
+          dismissOnClipEnd: c.shoutoutDismissOnClipEnd === true,
+          accentColor: c.roleEffects?.raidColor || "#ff2d8d",
+          secondaryColor: c.glow || "#45c8ff",
+          backgroundColor: c.panel || "#081228",
+          textColor: c.text || "#ffffff",
+          mutedColor: "#9dbdf2",
+          borderRadius: Math.max(8, Number(borderRadius) || 12),
+          borderWidth: 1,
+          glowIntensity: Math.min(
+            100,
+            Math.max(10, Number(c.roleEffects?.intensity || 8) * 10),
+          ),
+          showTimer: true,
+          showFooter: true,
+          showViews: true,
+          showClipTitle: true,
+          showStreamerInfo: true,
+          showCornerDots: true,
+          showScanline: true,
+          __previewAlert: c.__previewShoutoutAlert,
+        }}
+        userId={userId}
+        runtime={runtime}
+        publicOverlayId={publicOverlayId}
+        onActiveChange={setShoutoutActive}
+      />
+    </div>
+  ) : null;
 
   const modeClass = ` ov-chat-widget--${chatStyle}`;
 
@@ -1576,6 +1664,8 @@ function ChatWidget({ config, theme, allWidgets }) {
           </div>
         )}
 
+      {shoutoutPosition === "top" ? embeddedShoutout : null}
+
       <div
         className="ov-chat-messages"
         {...partAttrs("messageList")}
@@ -1791,6 +1881,8 @@ function ChatWidget({ config, theme, allWidgets }) {
           );
         })}
       </div>
+
+      {shoutoutPosition === "bottom" ? embeddedShoutout : null}
 
       {showLegend && (
         <div

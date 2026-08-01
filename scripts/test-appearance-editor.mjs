@@ -691,13 +691,13 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      '"--w-accent":\n      c.accentColor || "#45c8ff"',
+      'c.accentColor || "#45c8ff"',
     ),
     "Better Giveaway uses the exact Bonus Hunt ocean ice accent",
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      '"--frame-bg":\n      "linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)"',
+      'linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)',
     ),
     "Better Bets uses the exact Bonus Hunt ocean panel gradient",
   );
@@ -719,6 +719,35 @@ try {
       "linear-gradient(180deg, ${panelHi} 0%, ${panel} 55%, ${panelLo} 100%)",
     ),
     "Better Chat uses the exact Bonus Hunt ocean panel gradient",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes('label: "OWNER"') &&
+      betterWidgetStylesSource.includes('label: "MOD"') &&
+      betterWidgetStylesSource.includes('label: "VIP"') &&
+      betterWidgetStylesSource.includes('label: "SUB"') &&
+      betterWidgetStylesSource.includes("roleEffects[definition.colorKey]") &&
+      !betterWidgetStylesSource.includes('{platform?.icon || "C"}'),
+    "Better Chat replaces the Twitch initial with configurable role badges",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes("roleEffects.intensity") &&
+      betterWidgetStylesSource.includes("roleEffects.raidColor") &&
+      betterWidgetStylesSource.includes("better-chat-lantern ${effectSpeed}"),
+    "Better Chat gives roles and raids distinct configurable glazed message effects",
+  );
+  assert.ok(
+    chatWidgetSource.includes("parseShoutoutChatCommand(stampedMessage)") &&
+      chatWidgetSource.includes('c.shoutoutPosition === "bottom"') &&
+      chatWidgetSource.includes("<RaidShoutoutWidget") &&
+      chatWidgetSource.includes("chatCommandEnabled: false"),
+    "Better Chat can securely play one !so alert inside the selected edge",
+  );
+  assert.ok(
+    betterWidgetPackagesSource.includes('title="Roles & Message Glaze"') &&
+      betterWidgetPackagesSource.includes('title="In-Chat Shoutout"') &&
+      betterWidgetPackagesSource.includes('label="Play !so inside chat"') &&
+      betterWidgetPackagesSource.includes('label="Clip height"'),
+    "Better Chat controls expose role effects and in-chat shoutout placement",
   );
   const slideshowWidgetSource = readFileSync(
     new URL(

@@ -854,6 +854,21 @@ const BASE_BETTER_CONFIG = {
       gift: true,
       intensity: 5,
     },
+    showRoleBadges: true,
+    roleEffects: {
+      enabled: true,
+      intensity: 8,
+      ownerColor: "#ff3b5c",
+      moderatorColor: "#22d3ee",
+      vipColor: "#c084fc",
+      subscriberColor: "#facc15",
+      raidColor: "#ff2d8d",
+    },
+    shoutoutInChat: false,
+    shoutoutPosition: "top",
+    shoutoutHeight: 180,
+    shoutoutDuration: 45,
+    shoutoutDismissOnClipEnd: false,
     showEmptyState: true,
     emptyMessage: BETTER_CHAT_EMPTY_MESSAGE,
   },
@@ -1266,10 +1281,16 @@ function normalizeBetterChatConfig(merged = {}) {
   const defaults = DEFAULT_BETTER_CONFIG.chat;
   const next = {
     ...merged,
-    celebrations: {
-      ...defaults.celebrations,
-      ...(merged.celebrations || {}),
-    },
+    celebrations: Object.assign(
+      {},
+      defaults.celebrations,
+      merged.celebrations,
+    ),
+    roleEffects: Object.assign(
+      {},
+      defaults.roleEffects,
+      merged.roleEffects,
+    ),
   };
   const legacyFlow = next.entry === "top" ? "top-to-bottom" : defaults.flow;
   if (!["bottom-to-top", "top-to-bottom"].includes(next.flow)) {
@@ -1320,6 +1341,30 @@ function normalizeBetterChatConfig(merged = {}) {
     10,
     defaults.celebrations.intensity,
   );
+  next.showRoleBadges = next.showRoleBadges !== false;
+  next.roleEffects.enabled = next.roleEffects.enabled !== false;
+  next.roleEffects.intensity = clampNumber(
+    next.roleEffects.intensity,
+    1,
+    10,
+    defaults.roleEffects.intensity,
+  );
+  next.shoutoutInChat = next.shoutoutInChat === true;
+  next.shoutoutPosition =
+    next.shoutoutPosition === "bottom" ? "bottom" : "top";
+  next.shoutoutHeight = clampNumber(
+    next.shoutoutHeight,
+    120,
+    360,
+    defaults.shoutoutHeight,
+  );
+  next.shoutoutDuration = clampNumber(
+    next.shoutoutDuration,
+    10,
+    120,
+    defaults.shoutoutDuration,
+  );
+  next.shoutoutDismissOnClipEnd = next.shoutoutDismissOnClipEnd === true;
   return next;
 }
 
@@ -1804,6 +1849,22 @@ function BetterChatPreview({ config, widget }) {
             color: c.username,
           },
           {
+            id: "better-chat-preview-owner",
+            platform: "twitch",
+            username: "ChannelOwner",
+            message: "Welcome to the stream!",
+            isBroadcaster: true,
+            color: c.roleEffects?.ownerColor,
+          },
+          {
+            id: "better-chat-preview-vip",
+            platform: "twitch",
+            username: "CommunityVIP",
+            message: "That was a huge win!",
+            isVip: true,
+            color: c.roleEffects?.vipColor,
+          },
+          {
             id: "better-chat-preview-gift",
             platform: "twitch",
             username: "GiftBoss",
@@ -1832,6 +1893,9 @@ function BetterChatPreview({ config, widget }) {
       type: message.type,
       isRaid: message.isRaid || message.type === "raid",
       isSub: message.isSub || message.type === "sub",
+      isBroadcaster: Boolean(message.isBroadcaster),
+      isMod: Boolean(message.isMod),
+      isVip: Boolean(message.isVip),
       giftCount: message.giftCount || message.metadata?.giftCount || 0,
       metadata: message.metadata || {},
     }));
@@ -2984,6 +3048,90 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
           max={10}
           onChange={(intensity) =>
             set({ celebrations: { ...c.celebrations, intensity } })
+          }
+        />
+      </Section>
+      <Section title="Roles & Message Glaze" icon={<Sparkles size={13} />}>
+        <ToggleRow
+          label="Show role badges"
+          checked={c.showRoleBadges !== false}
+          onChange={(showRoleBadges) => set({ showRoleBadges })}
+        />
+        <ToggleRow
+          label="Role message effects"
+          checked={c.roleEffects?.enabled !== false}
+          onChange={(enabled) =>
+            set({ roleEffects: { ...c.roleEffects, enabled } })
+          }
+        />
+        <SliderRow
+          label="Glaze intensity"
+          value={c.roleEffects?.intensity ?? 8}
+          min={1}
+          max={10}
+          disabled={c.roleEffects?.enabled === false}
+          onChange={(intensity) =>
+            set({ roleEffects: { ...c.roleEffects, intensity } })
+          }
+        />
+        <div className="bp-color-grid">
+          {[
+            ["ownerColor", "Owner"],
+            ["moderatorColor", "Moderator"],
+            ["vipColor", "VIP"],
+            ["subscriberColor", "Subscriber"],
+            ["raidColor", "Raid"],
+          ].map(([key, label]) => (
+            <ColorRow
+              key={key}
+              label={label}
+              value={c.roleEffects?.[key]}
+              onChange={(value) =>
+                set({ roleEffects: { ...c.roleEffects, [key]: value } })
+              }
+            />
+          ))}
+        </div>
+      </Section>
+      <Section title="In-Chat Shoutout" icon={<MessageSquare size={13} />}>
+        <ToggleRow
+          label="Play !so inside chat"
+          checked={c.shoutoutInChat === true}
+          onChange={(shoutoutInChat) => set({ shoutoutInChat })}
+        />
+        <Segmented
+          value={c.shoutoutPosition}
+          options={[
+            { key: "top", name: "Top" },
+            { key: "bottom", name: "Bottom" },
+          ]}
+          onChange={(shoutoutPosition) => set({ shoutoutPosition })}
+        />
+        <SliderRow
+          label="Clip height"
+          value={c.shoutoutHeight}
+          min={120}
+          max={360}
+          step={10}
+          unit="px"
+          disabled={!c.shoutoutInChat}
+          onChange={(shoutoutHeight) => set({ shoutoutHeight })}
+        />
+        <SliderRow
+          label="Display duration"
+          value={c.shoutoutDuration}
+          min={10}
+          max={120}
+          unit="s"
+          disabled={!c.shoutoutInChat}
+          onChange={(shoutoutDuration) => set({ shoutoutDuration })}
+        />
+        <ToggleRow
+          label="Dismiss when clip ends"
+          checked={c.shoutoutDismissOnClipEnd === true}
+          disabled={!c.shoutoutInChat}
+          onChange={(shoutoutDismissOnClipEnd) =>
+            set({ shoutoutDismissOnClipEnd })
           }
         />
       </Section>

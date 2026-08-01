@@ -141,6 +141,22 @@ function betterChatGiftTier(msg = {}) {
   return count >= 1 ? "single" : "";
 }
 
+const BETTER_CHAT_ROLE_DEFS = [
+  { key: "isBroadcaster", label: "OWNER", colorKey: "ownerColor", color: "#ff3b5c" },
+  { key: "isMod", label: "MOD", colorKey: "moderatorColor", color: "#22d3ee" },
+  { key: "isVip", label: "VIP", colorKey: "vipColor", color: "#c084fc" },
+  { key: "isSub", label: "SUB", colorKey: "subscriberColor", color: "#facc15" },
+];
+
+function betterChatRole(msg = {}, roleEffects = {}) {
+  const definition = BETTER_CHAT_ROLE_DEFS.find((role) => msg[role.key]);
+  if (!definition) return null;
+  return {
+    ...definition,
+    color: roleEffects[definition.colorKey] || definition.color,
+  };
+}
+
 const GIVEAWAY_FONT_STACKS = {
   orbitron: "'Orbitron', sans-serif",
   rajdhani: "'Rajdhani', sans-serif",
@@ -3775,14 +3791,20 @@ export function BetterChatMessage({
   const messageType = betterChatMessageType(msg);
   const giftTier = betterChatGiftTier(msg);
   const celebrations = c.celebrations || {};
+  const roleEffects = c.roleEffects || {};
+  const role = betterChatRole(msg, roleEffects);
+  const roleEffectOn = roleEffects.enabled !== false && Boolean(role);
+  const roleBadgeOn = c.showRoleBadges !== false && Boolean(role);
   const celebrationOn =
     (messageType === "raid" && celebrations.raid !== false) ||
     (messageType === "sub" && celebrations.sub !== false) ||
     (messageType === "gift" && celebrations.gift !== false);
   const rowPart =
-    followerMessage || celebrationOn ? "highlightedMessage" : "message";
+    followerMessage || celebrationOn || roleEffectOn
+      ? "highlightedMessage"
+      : "message";
   const resolveRowStyle =
-    followerMessage || celebrationOn
+    followerMessage || celebrationOn || roleEffectOn
       ? context.highlightedMessageStyle || context.messagePartStyle
       : context.messagePartStyle;
   const animationKind = String(c.animation || "slide-up");
@@ -3796,19 +3818,24 @@ export function BetterChatMessage({
   };
   const animationName = animationMap[animationKind] || animationMap["slide-up"];
   const enterDelay = Math.min(msgIdx * (Number(c.stagger) || 0), 1200);
-  const intensity = clampNumber(celebrations.intensity, 1, 10, 5);
+  const celebrationIntensity = clampNumber(celebrations.intensity, 1, 10, 5);
+  const roleIntensity = clampNumber(roleEffects.intensity, 1, 10, 8);
+  const intensity = roleEffectOn ? roleIntensity : celebrationIntensity;
   const effectSpeed = `${Math.max(0.8, 3 - intensity / 5)}s`;
   const effectGlow = `${intensity * 3}px`;
   const [avatarFailed, setAvatarFailed] = useState(false);
   const avatarUrl = avatarFailed ? "" : betterChatAvatarUrl(msg);
   const rowAccent =
     messageType === "raid"
-      ? "#ec4899"
+      ? roleEffects.raidColor || "#ff2d8d"
       : messageType === "gift"
         ? "#facc15"
-        : messageType === "sub"
-          ? "#22c55e"
-          : accent;
+        : roleEffectOn
+          ? role.color
+          : messageType === "sub"
+            ? roleEffects.subscriberColor || "#facc15"
+            : accent;
+  const emphasized = followerMessage || celebrationOn || roleEffectOn;
   const messageStyle = resolveRowStyle({
     position: "relative",
     display: "grid",
@@ -3817,23 +3844,36 @@ export function BetterChatMessage({
     margin: `${Math.max(2, Number(context.msgSpacing) || 2)}px 8px`,
     padding: "8px 10px",
     borderRadius: Math.max(10, Number(context.borderRadius) || 12),
-    background: followerMessage
-      ? `linear-gradient(135deg, ${alphaColor(rowAccent, 0.26)}, rgba(2,8,23,0.44))`
+    background: emphasized
+      ? `linear-gradient(135deg, ${alphaColor(rowAccent, 0.46)}, ${alphaColor(rowAccent, 0.16)} 52%, rgba(2,8,23,0.9))`
       : `linear-gradient(180deg, ${baseBg}, ${c.cardLo || "#0a1836"})`,
-    border: `${Number(context.borderWidth) || 1}px solid ${followerMessage || celebrationOn ? alphaColor(rowAccent, 0.5) : context.borderColor || alphaColor(accent, 0.24)}`,
+    border: `${Number(context.borderWidth) || 1}px solid ${emphasized ? alphaColor(rowAccent, 0.8) : context.borderColor || alphaColor(accent, 0.24)}`,
     boxShadow:
-      followerMessage || celebrationOn
-        ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.32)}, inset 0 1px 0 rgba(255,255,255,0.08)`
+      emphasized
+        ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.5)}, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -12px 24px ${alphaColor(rowAccent, 0.12)}`
         : `0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)`,
     overflow: "hidden",
     opacity: animationName === "none" ? 1 : 0,
     animation:
       animationName === "none"
         ? "none"
-        : `${animationName} 460ms cubic-bezier(0.2,0.75,0.25,1) ${enterDelay}ms both${followerMessage || celebrationOn ? `, better-soft-pulse ${effectSpeed} ease-in-out ${enterDelay + 460}ms infinite` : ""}`,
+        : `${animationName} 460ms cubic-bezier(0.2,0.75,0.25,1) ${enterDelay}ms both${emphasized ? `, better-soft-pulse ${effectSpeed} ease-in-out ${enterDelay + 460}ms infinite` : ""}`,
   });
   return (
     <div style={messageStyle} {...attrs("chat", c, rowPart)}>
+      {emphasized ? (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(112deg, transparent 18%, ${alphaColor(rowAccent, 0.34)} 46%, transparent 68%)`,
+            transform: "translateX(-115%)",
+            animation: `better-chat-lantern ${effectSpeed} ease-in-out infinite`,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
       {messageType === "raid" && celebrations.raid !== false ? (
         <span
           aria-hidden="true"
@@ -3915,20 +3955,26 @@ export function BetterChatMessage({
           >
             {msg.username || msg.user || "viewer"}
           </strong>
-          <span
-            style={context.badgeStyle({
-              flexShrink: 0,
-              borderRadius: 999,
-              background: alphaColor(platform?.color || accent, 0.18),
-              color: platform?.color || accent,
-              fontSize: 10,
-              fontWeight: 900,
-              padding: "1px 6px",
-            })}
-            {...attrs("chat", c, "badge")}
-          >
-            {platform?.icon || "C"}
-          </span>
+          {roleBadgeOn ? (
+            <span
+              style={context.badgeStyle({
+                flexShrink: 0,
+                borderRadius: 4,
+                border: `1px solid ${alphaColor(role.color, 0.9)}`,
+                background: `linear-gradient(180deg, ${alphaColor(role.color, 0.5)}, ${alphaColor(role.color, 0.18)})`,
+                color: "#ffffff",
+                fontSize: 9,
+                fontWeight: 950,
+                letterSpacing: "0.08em",
+                padding: "2px 6px",
+                boxShadow: `0 0 ${Math.max(6, roleIntensity * 1.5)}px ${alphaColor(role.color, 0.72)}, inset 0 1px 0 rgba(255,255,255,0.3)`,
+                textShadow: "0 1px 2px rgba(0,0,0,0.9)",
+              })}
+              {...attrs("chat", c, "badge")}
+            >
+              {role.label}
+            </span>
+          ) : null}
         </span>
         <span
           style={context.messageTextStyle({

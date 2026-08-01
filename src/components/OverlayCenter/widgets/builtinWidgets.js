@@ -216,6 +216,21 @@ registerWidget({
     panelLo: "#081228",
     cardLo: "#0a1836",
     borderColor: "#2f63c9",
+    showRoleBadges: true,
+    roleEffects: {
+      enabled: true,
+      intensity: 8,
+      ownerColor: "#ff3b5c",
+      moderatorColor: "#22d3ee",
+      vipColor: "#c084fc",
+      subscriberColor: "#facc15",
+      raidColor: "#ff2d8d",
+    },
+    shoutoutInChat: false,
+    shoutoutPosition: "top",
+    shoutoutHeight: 180,
+    shoutoutDuration: 45,
+    shoutoutDismissOnClipEnd: false,
   },
 });
 
