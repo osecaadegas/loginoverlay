@@ -1536,9 +1536,9 @@ function BetterStyleSheet() {
       .better-hunt-root[data-session="opening"] .better-hunt-pill{border-color:rgba(255,201,61,.72);background:rgba(255,201,61,.12);color:#ffc93d}.better-hunt-root[data-session="ended"] .better-hunt-pill{border-color:rgba(210,220,230,.34);background:rgba(210,220,230,.08);color:var(--bh-steel-hi)}
       .better-hunt-panel--shake{animation:better-hunt-widget-shake .6s ease-in-out .1s 3}
       .better-hunt-stat,.better-hunt-row,.better-hunt-total,.better-hunt-requests,.better-hunt-result{border-radius:var(--bh-stat-radius,7px)}
-      .better-hunt-drawer{--bh-drawer-open-height:150px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(-12px);padding:0 6px;transition:max-height .64s cubic-bezier(.22,.9,.3,1),opacity .38s ease,transform .58s cubic-bezier(.22,.9,.3,1),padding .58s cubic-bezier(.22,.9,.3,1);will-change:max-height,opacity,transform}
+      .better-hunt-drawer{--bh-drawer-open-height:150px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(-12px);padding:0 6px;transition:max-height .95s cubic-bezier(.22,.9,.3,1),opacity .55s ease,transform .9s cubic-bezier(.22,.9,.3,1),padding .9s cubic-bezier(.22,.9,.3,1);will-change:max-height,opacity,transform}
       .better-hunt-drawer.is-open{max-height:var(--bh-drawer-open-height);opacity:1;transform:translateY(0);padding:0 6px 7px}
-      .better-hunt-root[data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in .64s cubic-bezier(.22,.9,.3,1) both}
+      .better-hunt-root[data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in .95s cubic-bezier(.22,.9,.3,1) both}
       .better-hunt-result{display:grid;grid-template-rows:auto minmax(68px,auto);gap:5px;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 14px rgba(0,0,0,.35)}
       .better-hunt-result-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px;min-width:0}
       .better-hunt-result-head em{display:inline-flex;width:max-content;border-radius:4px;padding:2px 4px;background:rgba(69,200,255,.13);color:var(--bh-ice);font-size:.52em;font-style:normal;font-weight:950;letter-spacing:.1em;line-height:1;text-transform:uppercase}
@@ -1550,8 +1550,8 @@ function BetterStyleSheet() {
       .better-hunt-result-art > img,.better-hunt-result-art .better-hunt-thumb{width:82px!important;height:94px!important;border-radius:7px!important;object-fit:cover;object-position:center;box-shadow:0 4px 12px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.12)}
       .better-hunt-result-stats{display:grid;gap:3px;min-width:0}
       .better-hunt-result-row{display:grid;gap:1px;min-width:0;border-bottom:0;padding:0}
-      .better-hunt-result-row span{color:var(--bh-steel-hi);font-size:.52em;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}
-      .better-hunt-result-row strong{overflow:hidden;color:#fff;font-size:.78em;font-weight:950;line-height:1;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
+      .better-hunt-result-row span{color:var(--bh-steel-hi);font-size:.58em;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}
+      .better-hunt-result-row strong{overflow:hidden;color:#fff;font-size:.88em;font-weight:950;line-height:1;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
       .better-hunt-result--best .better-hunt-result-row span,.better-hunt-result--best .better-hunt-result-row strong{text-align:right}
       .better-hunt-result--worst .better-hunt-result-row span,.better-hunt-result--worst .better-hunt-result-row strong{text-align:left}
       .better-hunt-result--best .better-hunt-result-row:nth-child(2) strong{color:#ffc93d}.better-hunt-result--worst .better-hunt-result-row:nth-child(2) strong{color:#ff8a74}
