@@ -52,6 +52,10 @@ import {
   betterInstanceToLegacyWidget,
 } from "./betterWidgetRegistry";
 import { BetterWidgetControls } from "./BetterWidgetPackages";
+import {
+  getBetterWidgetNudge,
+  normalizeBetterCoordinate,
+} from "./betterWidgetGeometry";
 import { downloadWidgetControlsPreset } from "./widgetControlsPreset";
 import "./BetterWidgetPackages.css";
 import "./WidgetEditorPage.css";
@@ -105,8 +109,8 @@ function clampGeometry(geometry, constraints = {}) {
   const width = clampNumber(geometry.width, minWidth, maxWidth, minWidth);
   const height = clampNumber(geometry.height, minHeight, maxHeight, minHeight);
   return {
-    x: clampNumber(geometry.x, 0, BETTER_CANVAS.width - width, 0),
-    y: clampNumber(geometry.y, 0, BETTER_CANVAS.height - height, 0),
+    x: normalizeBetterCoordinate(geometry.x),
+    y: normalizeBetterCoordinate(geometry.y),
     width,
     height,
   };
@@ -582,6 +586,36 @@ export default function WidgetEditorPage() {
     },
     [commitLayout, setLayoutDraft],
   );
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      const nudge = getBetterWidgetNudge(event.key);
+      if (!nudge || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (
+        event.target?.closest?.(
+          "input, textarea, select, button, a, [contenteditable='true']",
+        )
+      )
+        return;
+      const instance = layoutRef.current.instances.find(
+        (item) => item.instanceId === selectedInstanceId,
+      );
+      if (
+        !instance ||
+        instance.locked ||
+        instance.visible === false ||
+        instance.widgetType === "background"
+      )
+        return;
+      event.preventDefault();
+      updateInstance(instance.instanceId, {
+        x: normalizeBetterCoordinate(instance.x) + nudge.x,
+        y: normalizeBetterCoordinate(instance.y) + nudge.y,
+      });
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedInstanceId, updateInstance]);
 
   useEffect(() => {
     if (!loadedRef.current || !dirty || !user?.id) return undefined;

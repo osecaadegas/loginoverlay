@@ -14,6 +14,7 @@ import {
   ensureBetterWidgetConfig,
   getBetterWidgetMeta,
 } from "./BetterWidgetPackages";
+import { normalizeBetterCoordinate } from "./betterWidgetGeometry";
 
 export const BETTER_CANVAS = Object.freeze({ width: 1920, height: 1080 });
 export const BETTER_LAYOUT_SCHEMA_VERSION = 1;
@@ -716,18 +717,8 @@ function normalizeInstanceGeometry(widgetType, geometry = {}) {
     maxHeight,
     defaultPos.height || meta?.defaultSize?.height || 240,
   );
-  const x = clampNumber(
-    geometry.x,
-    0,
-    BETTER_CANVAS.width - width,
-    defaultPos.x || 0,
-  );
-  const y = clampNumber(
-    geometry.y,
-    0,
-    BETTER_CANVAS.height - height,
-    defaultPos.y || 0,
-  );
+  const x = normalizeBetterCoordinate(geometry.x, defaultPos.x ?? 0);
+  const y = normalizeBetterCoordinate(geometry.y, defaultPos.y ?? 0);
   return { x, y, width, height };
 }
 
@@ -834,18 +825,8 @@ export function duplicateBetterInstance(instance, overrides = {}) {
     label:
       overrides.label ||
       `${instance.label || getBetterWidgetMeta(instance.widgetType)?.label || "Widget"} Copy`,
-    x: clampNumber(
-      (Number(instance.x) || 0) + 32,
-      0,
-      BETTER_CANVAS.width - (Number(instance.width) || 0),
-      0,
-    ),
-    y: clampNumber(
-      (Number(instance.y) || 0) + 32,
-      0,
-      BETTER_CANVAS.height - (Number(instance.height) || 0),
-      0,
-    ),
+    x: normalizeBetterCoordinate(instance.x) + 32,
+    y: normalizeBetterCoordinate(instance.y) + 32,
     zIndex: Number(instance.zIndex || 1) + 1,
     config: cloneJson(instance.config || {}),
   });

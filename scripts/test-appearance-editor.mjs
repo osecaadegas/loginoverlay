@@ -56,7 +56,43 @@ const {
   "/src/components/OverlayCenter/editor/widgetControlsPreset.js",
 );
 
+const { getBetterWidgetNudge, normalizeBetterCoordinate } =
+  await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/betterWidgetGeometry.js",
+  );
+
 try {
+  assert.equal(
+    normalizeBetterCoordinate(-37, 0),
+    -37,
+    "Better Editor normalization preserves negative foreground coordinates",
+  );
+  assert.equal(
+    normalizeBetterCoordinate(1124, 0),
+    1124,
+    "Better Editor normalization preserves coordinates beyond the canvas",
+  );
+  assert.deepEqual(
+    getBetterWidgetNudge("ArrowLeft"),
+    { x: -1, y: 0 },
+    "Better Editor moves left by exactly one pixel",
+  );
+  assert.deepEqual(
+    getBetterWidgetNudge("ArrowDown"),
+    { x: 0, y: 1 },
+    "Better Editor moves down by exactly one pixel",
+  );
+  const widgetEditorPageSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/WidgetEditorPage.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    widgetEditorPageSource.includes("getBetterWidgetNudge(event.key)"),
+    "Better Editor routes arrow key presses through the tested pixel nudge map",
+  );
   const presetExportedAt = "2026-08-01T12:00:00.000Z";
   const preset = createWidgetControlsPreset(
     {
