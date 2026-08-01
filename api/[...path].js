@@ -3,6 +3,8 @@ import autoDrawWinnersHandler from './_lib/routes/auto-draw-winners.js';
 import affiliateHandler from './_lib/routes/affiliate.js';
 import bettingHandler from './_lib/routes/betting.js';
 import chatHandler from './_lib/routes/chat.js';
+import connectFourHandler from './_lib/routes/connect-four.js';
+import connectFourTurnHandler from './_lib/routes/connect-four-turn.js';
 import playerSubscriptionHandler from './_lib/routes/player-subscription.js';
 import premiumHandler from './_lib/routes/premium.js';
 import serviceReadinessHandler from './_lib/routes/service-readiness.js';
@@ -14,6 +16,8 @@ const ROUTES = {
   'auto-draw-winners': autoDrawWinnersHandler,
   betting: bettingHandler,
   chat: chatHandler,
+  'connect-four': connectFourHandler,
+  'connect-four-turn': connectFourTurnHandler,
   'player-subscription': playerSubscriptionHandler,
   premium: premiumHandler,
   'service-readiness': serviceReadinessHandler,

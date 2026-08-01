@@ -151,6 +151,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
           platform: "twitch",
           login: tags["login"] || m[2],
           username: tags["display-name"] || m[2],
+          twitchUserId: tags["user-id"] || "",
           message: m[3],
           color: tags["color"] || "",
           timestamp: Date.now(),

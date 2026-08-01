@@ -32,6 +32,7 @@ const CHAT_TOOL_TYPES = new Set([
   "chat",
   "giveaway",
   "bets",
+  "connect_four",
   "raid_shoutout",
 ]);
 
@@ -233,6 +234,22 @@ export function getToolSetupIssues(type, widget, integrations = {}) {
         config.betSeEnabled !== false &&
         !integrations.streamelementsConnected
       ) {
+        issues.push({
+          kind: "connection",
+          label: "StreamElements is not connected",
+          to: "/overlay-center/integrations",
+        });
+      }
+      break;
+    case "connect_four":
+      if (!getTwitchReady(config, integrations)) {
+        issues.push({
+          kind: "connection",
+          label: "Twitch channel is not connected",
+          to: "/overlay-center/integrations",
+        });
+      }
+      if (!integrations.streamelementsConnected) {
         issues.push({
           kind: "connection",
           label: "StreamElements is not connected",

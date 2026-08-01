@@ -180,11 +180,18 @@ const FEATURE_COPY = {
       "Play a Twitch clip when the owner or a moderator types !so username.",
     action: "Configure Shoutout",
   },
+  connect_four: {
+    title: "Chat Connect 4",
+    description:
+      "Run viewer matches from Twitch chat with StreamElements point wagers.",
+    action: "Configure Connect 4",
+  },
 };
 
 const PRIMARY_TOOLS = [
   "bonus_hunt",
   "bets",
+  "connect_four",
   "slot_requests",
   "giveaway",
   "rtp_stats",
@@ -203,13 +210,20 @@ const INTEGRATIONS = [
   {
     id: "twitch",
     name: "Twitch",
-    requiredFor: ["slot_requests", "chat", "giveaway", "bets", "raid_shoutout"],
+    requiredFor: [
+      "slot_requests",
+      "chat",
+      "giveaway",
+      "bets",
+      "connect_four",
+      "raid_shoutout",
+    ],
     detail: "Used for chat commands, requests, giveaways and viewer activity.",
   },
   {
     id: "streamelements",
     name: "StreamElements",
-    requiredFor: ["slot_requests", "bets"],
+    requiredFor: ["slot_requests", "bets", "connect_four"],
     detail:
       "Required when tools use loyalty points or StreamElements chat actions.",
   },

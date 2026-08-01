@@ -9,6 +9,7 @@ import {
   EyeOff,
   Flame,
   Frame,
+  Gamepad2,
   Gauge,
   ImagePlus,
   Layers,
@@ -994,6 +995,18 @@ const BASE_BETTER_CONFIG = {
     orientation: "vertical",
     cardColors: DEFAULT_CARD_COLORS,
   },
+  connect_four: {
+    displayStyle: "chat_connect_four",
+    title: "CHAT CONNECT 4",
+    playerOneColor: "#ffd23f",
+    playerTwoColor: "#f04444",
+    boardColor: "#08191f",
+    showWager: true,
+    showPlayers: true,
+    animateDrops: true,
+    chatCommand: "!connect4",
+    twitchChannel: "",
+  },
   raid_shoutout: {
     displayStyle: "better_raid_shoutout",
   },
@@ -1012,6 +1025,17 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  {
+    type: "connect_four",
+    label: "Chat Connect 4",
+    styleKey: "displayStyle",
+    styleId: "chat_connect_four",
+    icon: "4",
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.connect_four.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.connect_four.height,
+    },
+  },
   {
     type: "raid_shoutout",
     label: "Twitch Shoutout",
@@ -5869,6 +5893,98 @@ function BetterRaidShoutoutControls({
   );
 }
 
+function BetterConnectFourControls({ config, onChange }) {
+  const defaults = DEFAULT_BETTER_CONFIG.connect_four;
+  const c = ensureBetterWidgetConfig("connect_four", config);
+  const [tab, setTab] = useTab("content");
+  const set = (patch) => onChange({ ...c, ...patch });
+  const tabs = [
+    ["content", <MessageSquare key="content" size={12} />, "Content"],
+    ["players", <Users key="players" size={12} />, "Players"],
+    ["board", <Palette key="board" size={12} />, "Board"],
+    ["motion", <Wand2 key="motion" size={12} />, "Motion"],
+  ];
+
+  return (
+    <div className="bp-controls">
+      <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
+
+      {tab === "content" && (
+        <Section title="Game details" icon={<Gamepad2 size={13} />}>
+          <TextRow
+            label="Header title"
+            value={c.title}
+            onChange={(title) => set({ title: title.slice(0, 32) })}
+          />
+          <TextRow
+            label="Chat command"
+            value={c.chatCommand}
+            onChange={(chatCommand) => set({ chatCommand })}
+          />
+          <TextRow
+            label="Twitch channel"
+            value={c.twitchChannel}
+            onChange={(twitchChannel) => set({ twitchChannel })}
+          />
+          <ToggleRow
+            label="Show wager"
+            checked={c.showWager !== false}
+            onChange={(showWager) => set({ showWager })}
+          />
+        </Section>
+      )}
+
+      {tab === "players" && (
+        <Section title="Players" icon={<Users size={13} />}>
+          <ToggleRow
+            label="Show player names"
+            checked={c.showPlayers !== false}
+            onChange={(showPlayers) => set({ showPlayers })}
+          />
+          <ColorRow
+            label="Player one"
+            value={c.playerOneColor}
+            onChange={(playerOneColor) => set({ playerOneColor })}
+          />
+          <ColorRow
+            label="Player two"
+            value={c.playerTwoColor}
+            onChange={(playerTwoColor) => set({ playerTwoColor })}
+          />
+        </Section>
+      )}
+
+      {tab === "board" && (
+        <Section title="Board" icon={<Palette size={13} />}>
+          <ColorRow
+            label="Board color"
+            value={c.boardColor}
+            onChange={(boardColor) => set({ boardColor })}
+          />
+        </Section>
+      )}
+
+      {tab === "motion" && (
+        <Section title="Move animation" icon={<Wand2 size={13} />}>
+          <ToggleRow
+            label="Animate coin drops"
+            checked={c.animateDrops !== false}
+            onChange={(animateDrops) => set({ animateDrops })}
+          />
+        </Section>
+      )}
+
+      <button
+        className="bp-reset"
+        type="button"
+        onClick={() => onChange(defaults)}
+      >
+        <RotateCcw size={13} /> Reset widget
+      </button>
+    </div>
+  );
+}
+
 export function BetterWidgetControls({
   type,
   config,
@@ -5877,6 +5993,11 @@ export function BetterWidgetControls({
   widget,
   onWidgetChange,
 }) {
+  if (type === "connect_four") {
+    return (
+      <BetterConnectFourControls config={config} onChange={onChange} />
+    );
+  }
   if (type === "raid_shoutout") {
     return (
       <BetterRaidShoutoutControls

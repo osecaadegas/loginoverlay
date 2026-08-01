@@ -1,0 +1,200 @@
+.connect-four-config {
+  display: grid;
+  gap: 16px;
+  color: #e8eef8;
+}
+
+.connect-four-config__section {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  background: #09111f;
+}
+
+.connect-four-config__section > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #65d6c2;
+}
+
+.connect-four-config__section > header span {
+  color: #8fa1b8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.connect-four-config__section > header h2 {
+  margin: 2px 0 0;
+  color: #f8fafc;
+  font-size: 17px;
+}
+
+.connect-four-config__field,
+.connect-four-config__colors label {
+  display: grid;
+  gap: 7px;
+  color: #b8c5d6;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.connect-four-config__field input[type="text"] {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #26364d;
+  border-radius: 6px;
+  color: #f8fafc;
+  background: #050a13;
+}
+
+.connect-four-config__toggles,
+.connect-four-config__colors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.connect-four-config__toggles label,
+.connect-four-config__colors label {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 6px;
+  background: #060d18;
+}
+
+.connect-four-config__toggles label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dbe6f3;
+  font-size: 13px;
+}
+
+.connect-four-config__colors input[type="color"] {
+  width: 100%;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid #26364d;
+  border-radius: 5px;
+  background: #050a13;
+}
+
+.connect-four-config__reference dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.connect-four-config__reference dl div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.connect-four-config__reference dt {
+  color: #8fa1b8;
+  font-size: 12px;
+}
+
+.connect-four-config__reference dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #f4cd58;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+}
+
+.connect-four-config__reference p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0;
+  color: #9fb0c4;
+  font-size: 12px;
+}
+
+.connect-four-config__listener {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #7c3f47;
+  border-radius: 6px;
+  background: #1b1018;
+}
+
+.connect-four-config__listener.is-connected {
+  border-color: #22695e;
+  background: #0b1c1a;
+}
+
+.connect-four-config__listener span {
+  display: grid;
+  gap: 3px;
+}
+
+.connect-four-config__listener strong {
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.connect-four-config__listener small {
+  color: #9fb0c4;
+  font-size: 11px;
+}
+
+.connect-four-config__listener button {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 1px solid #65d6c2;
+  border-radius: 6px;
+  color: #04110f;
+  font-weight: 800;
+  background: #65d6c2;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .connect-four-config__toggles,
+  .connect-four-config__colors {
+    grid-template-columns: 1fr;
+  }
+
+  .connect-four-config__listener {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+.connect-four-config__command-url {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #26364d;
+  border-radius: 6px;
+  background: #050a13;
+}
+
+.connect-four-config__command-url strong {
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.connect-four-config__command-url small {
+  color: #9fb0c4;
+  font-size: 11px;
+}
+
+.connect-four-config__command-url code {
+  overflow-wrap: anywhere;
+  color: #65d6c2;
+  font-size: 11px;
+}
