@@ -1462,7 +1462,7 @@ function BetterStyleSheet() {
       .better-hunt-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent)}
       .better-hunt-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
       .better-hunt-stat-grid--grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .better-hunt-stat-grid--grid .better-hunt-stat{min-height:50px;grid-template-columns:minmax(0,1fr) auto;align-items:center;align-content:center;text-align:left;padding:8px 10px}
+      .better-hunt-stat-grid--grid .better-hunt-stat{min-height:50px;grid-template-columns:minmax(0,1fr) auto;align-items:center;align-content:center;text-align:left;padding:5px 7px}
       .better-hunt-stat-grid--grid .better-hunt-stat strong{text-align:right}
       .better-hunt-stat{min-width:0;min-height:66px;display:grid;align-content:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 60%,transparent);border-radius:7px;background:linear-gradient(180deg,var(--bh-card-hi) 0%,var(--bh-card-lo) 100%);padding:8px 6px;text-align:center;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 2px 6px rgba(0,0,0,.55)}
       .better-hunt-stat strong{overflow:hidden;color:#fff;font-size:1em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap}
@@ -2267,8 +2267,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       {[
         ["Start", startKnown ? formatMoney(startValue, money) : "-"],
         ["Stop", stopKnown ? formatMoney(stopValue, money) : "-"],
-        ["B.E.", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-"],
-        ["Avg.", avgMulti > 0 ? formatMultiplier(avgMulti) : "-"],
+        ["B.E.", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-"],
+        ["Avg.", avgMulti > 0 ? formatMultiplier(avgMulti, 0) : "-"],
       ].map(([label, value]) => (
         <div key={label} className="better-hunt-stat" {...attrs("bonus_hunt", c, "statCell")}>
           <span className="better-hunt-stat-label" {...attrs("bonus_hunt", c, "statLabel")}>{label}</span>
