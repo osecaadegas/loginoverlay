@@ -24,7 +24,30 @@ interface ConnectFourState {
 interface ConnectFourWidgetProps {
   userId?: string;
   config?: Record<string, unknown>;
+  runtime?: "editor" | "obs";
 }
+
+const CONNECT_FOUR_PREVIEW_STATE: ConnectFourState = {
+  match_id: "connect-four-editor-preview",
+  status: "active",
+  wager: 250,
+  board: [
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 2, 0, 0, 0],
+    [0, 0, 1, 1, 2, 0, 0],
+    [0, 1, 2, 1, 2, 0, 0],
+  ],
+  player_one_display_name: "Player One",
+  player_two_display_name: "Player Two",
+  current_player: 2,
+  winner: null,
+  move_count: 9,
+  last_move: { row: 3, column: 3, player: 2 },
+  completion_reason: null,
+  expires_at: null,
+};
 
 function stringValue(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
@@ -77,6 +100,7 @@ function getStatus(state: ConnectFourState | null): string {
 export default function ConnectFourWidget({
   userId,
   config = {},
+  runtime = "editor",
 }: Readonly<ConnectFourWidgetProps>) {
   const [state, setState] = useState<ConnectFourState | null>(null);
 
@@ -152,11 +176,14 @@ export default function ConnectFourWidget({
     };
   }, [state?.expires_at, state?.match_id, state?.status]);
 
-  if (!state) return null;
+  const displayedState = state ||
+    (runtime === "editor" ? CONNECT_FOUR_PREVIEW_STATE : null);
+  if (!displayedState) return null;
 
-  const board = state.board;
-  const playerOne = state.player_one_display_name;
-  const playerTwo = state.player_two_display_name || "Waiting for player";
+  const board = displayedState.board;
+  const playerOne = displayedState.player_one_display_name;
+  const playerTwo =
+    displayedState.player_two_display_name || "Waiting for player";
   const title = stringValue(config.title, "CHAT CONNECT 4");
   const playerOneColor = stringValue(config.playerOneColor, "#ffd23f");
   const playerTwoColor = stringValue(config.playerTwoColor, "#f04444");
@@ -170,10 +197,10 @@ export default function ConnectFourWidget({
       <header className="connect-four-head">
         <div>
           <span className="connect-four-kicker">{title}</span>
-          <strong>{getStatus(state)}</strong>
+          <strong>{getStatus(displayedState)}</strong>
         </div>
-        {showWager && state?.wager ? (
-          <b>{state.wager.toLocaleString()} PTS</b>
+        {showWager && displayedState.wager ? (
+          <b>{displayedState.wager.toLocaleString()} PTS</b>
         ) : null}
       </header>
 
@@ -186,8 +213,8 @@ export default function ConnectFourWidget({
         {board.flatMap((row, rowIndex) =>
           row.map((cell, columnIndex) => {
             const isLastMove =
-              state?.last_move?.row === rowIndex &&
-              state.last_move.column === columnIndex;
+              displayedState.last_move?.row === rowIndex &&
+              displayedState.last_move.column === columnIndex;
             return (
               <div
                 className="connect-four-cell"
@@ -196,7 +223,7 @@ export default function ConnectFourWidget({
               >
                 {cell !== 0 ? (
                   <span
-                    key={`${state?.match_id}-${state?.move_count}-${rowIndex}-${columnIndex}`}
+                    key={`${displayedState.match_id}-${displayedState.move_count}-${rowIndex}-${columnIndex}`}
                     className={`connect-four-coin connect-four-coin--p${cell}${isLastMove && animateDrops ? " is-latest" : ""}`}
                     style={{
                       backgroundColor:
@@ -211,14 +238,14 @@ export default function ConnectFourWidget({
       </div>
 
       {showPlayers && <footer className="connect-four-players">
-        <span className={state?.current_player === 1 ? "is-current" : ""}>
+        <span className={displayedState.current_player === 1 ? "is-current" : ""}>
           <i
             className="connect-four-dot connect-four-dot--p1"
             style={{ backgroundColor: playerOneColor }}
           />
           {playerOne}
         </span>
-        <span className={state?.current_player === 2 ? "is-current" : ""}>
+        <span className={displayedState.current_player === 2 ? "is-current" : ""}>
           <i
             className="connect-four-dot connect-four-dot--p2"
             style={{ backgroundColor: playerTwoColor }}

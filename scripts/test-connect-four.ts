@@ -267,6 +267,12 @@ const connectFourWidget = readFileSync(
   ),
   "utf8",
 );
+assert.match(connectFourWidget, /CONNECT_FOUR_PREVIEW_STATE/);
+assert.match(
+  connectFourWidget,
+  /runtime === "editor" \? CONNECT_FOUR_PREVIEW_STATE : null/,
+  "Connect 4 must show sample data only in the editor when no live match exists",
+);
 for (const setting of [
   "title",
   "playerOneColor",
