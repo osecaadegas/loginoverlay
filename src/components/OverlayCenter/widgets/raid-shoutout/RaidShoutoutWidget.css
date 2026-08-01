@@ -5,6 +5,7 @@
   align-items: stretch;
   justify-content: stretch;
   overflow: hidden;
+  container-type: size;
 }
 
 .better-shoutout-card {
@@ -447,15 +448,39 @@
   }
 }
 
-@media (max-width: 420px) {
+@container (max-width: 380px) {
   .better-shoutout-views {
     display: none;
   }
+  .better-shoutout-avatar-wrap {
+    display: none;
+  }
   .better-shoutout-header {
-    min-height: 54px;
+    min-height: 44px;
+    padding: 6px 8px;
   }
   .better-shoutout-footer {
-    min-height: 32px;
+    min-height: 28px;
+    padding: 5px 8px;
+  }
+  .better-shoutout-live {
+    display: none;
+  }
+  .better-shoutout-timer {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+}
+
+@container (max-height: 190px) {
+  .better-shoutout-heading span,
+  .better-shoutout-footer {
+    display: none;
+  }
+  .better-shoutout-header {
+    min-height: 40px;
+    padding-block: 4px;
   }
 }
 

@@ -375,6 +375,18 @@ try {
     "Shoutout clips autoplay muted and modern Twitch thumbnails bypass the obsolete MP4 derivation",
   );
   assert.ok(
+    betterWidgetRegistrySource.includes(
+      "raid_shoutout: {\n    minWidth: 240,\n    minHeight: 135",
+    ) &&
+      betterWidgetPackagesSource.includes(
+        "width: patch.width ?? widget?.width",
+      ) &&
+      betterWidgetPackagesSource.includes(
+        "height: patch.height ?? widget?.height",
+      ),
+    "Shoutout width and height can be resized independently down to compact dimensions",
+  );
+  assert.ok(
     shoutoutWidgetSource.includes('runtime !== "obs"') &&
       betterWidgetRegistrySource.includes('runtime = "editor"') &&
       betterObsOverlaySource.includes('runtime: "obs"'),

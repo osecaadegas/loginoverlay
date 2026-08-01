@@ -5453,11 +5453,9 @@ function BetterRaidShoutoutControls({
   const set = (patch) => onChange({ ...c, ...patch });
   const setSize = (patch) => {
     if (typeof onWidgetChange !== "function") return;
-    const width = patch.width ?? Math.round((patch.height * 16) / 9);
-    const height = patch.height ?? Math.round((patch.width * 9) / 16);
     onWidgetChange({
-      width,
-      height,
+      width: patch.width ?? widget?.width,
+      height: patch.height ?? widget?.height,
       config: c,
     });
   };
@@ -5575,7 +5573,7 @@ function BetterRaidShoutoutControls({
             <SliderRow
               label="Width"
               value={Number(widget?.width) || 640}
-              min={400}
+              min={240}
               max={1280}
               step={10}
               unit="px"
@@ -5584,7 +5582,7 @@ function BetterRaidShoutoutControls({
             <SliderRow
               label="Height"
               value={Number(widget?.height) || 360}
-              min={225}
+              min={135}
               max={720}
               step={10}
               unit="px"

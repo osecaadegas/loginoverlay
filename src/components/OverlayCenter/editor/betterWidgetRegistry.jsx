@@ -523,8 +523,8 @@ const SIZE_CONSTRAINTS = {
   },
   bets: { minWidth: 280, minHeight: 300, maxWidth: 880, maxHeight: 920 },
   raid_shoutout: {
-    minWidth: 400,
-    minHeight: 225,
+    minWidth: 240,
+    minHeight: 135,
     maxWidth: 1280,
     maxHeight: 720,
   },
