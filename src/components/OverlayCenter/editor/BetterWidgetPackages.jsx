@@ -994,7 +994,6 @@ const BASE_BETTER_CONFIG = {
     orientation: "vertical",
     cardColors: DEFAULT_CARD_COLORS,
   },
-  connect_four: {},
   raid_shoutout: {
     displayStyle: "better_raid_shoutout",
   },
@@ -1013,17 +1012,6 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
-  {
-    type: "connect_four",
-    label: "Chat Connect 4",
-    styleKey: "displayStyle",
-    styleId: "chat_connect_four",
-    icon: "4",
-    defaultSize: {
-      width: STANDARD_BETTER_WIDGET_GEOMETRY.connect_four.width,
-      height: STANDARD_BETTER_WIDGET_GEOMETRY.connect_four.height,
-    },
-  },
   {
     type: "raid_shoutout",
     label: "Twitch Shoutout",
@@ -5889,7 +5877,6 @@ export function BetterWidgetControls({
   widget,
   onWidgetChange,
 }) {
-  if (type === "connect_four") return null;
   if (type === "raid_shoutout") {
     return (
       <BetterRaidShoutoutControls

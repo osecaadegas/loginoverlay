@@ -39,11 +39,9 @@ export const STANDARD_BETTER_WIDGET_GEOMETRY = Object.freeze({
     zIndex: 60,
   },
   raid_shoutout: { x: 640, y: 360, width: 640, height: 360, zIndex: 70 },
-  connect_four: { x: 650, y: 135, width: 620, height: 790, zIndex: 65 },
 });
 
 export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
-  connect_four: {},
   raid_shoutout: {
     displayStyle: "better_raid_shoutout",
     frameStyle: "neon",

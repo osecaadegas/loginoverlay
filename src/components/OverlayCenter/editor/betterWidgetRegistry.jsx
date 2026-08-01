@@ -9,7 +9,6 @@ import BetsWidget from "../widgets/bets/BetsWidget";
 import SlideshowFrameWidget from "../widgets/slideshow-frame/SlideshowFrameWidget";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
-import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -437,7 +436,6 @@ const LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
-  connect_four: ConnectFourWidget,
   tournament: TournamentWidget,
   bonus_hunt: BonusHuntWidget,
   giveaway: GiveawayWidget,
@@ -451,7 +449,6 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
-  connect_four: [],
   tournament: ["surface", "layout", "cards", "typography", "palette"],
   bonus_hunt: [
     "style",
@@ -496,12 +493,6 @@ const CONTROL_SCHEMAS = {
 };
 
 const SIZE_CONSTRAINTS = {
-  connect_four: {
-    minWidth: 280,
-    minHeight: 360,
-    maxWidth: 960,
-    maxHeight: 1080,
-  },
   tournament: {
     minWidth: 320,
     minHeight: 220,
@@ -864,7 +855,9 @@ function migrateLegacyShoutoutConfig(widgetType, rawConfig) {
     secondaryColor: "#1385e9",
     backgroundColor: "#081228",
     mutedColor:
-      rawConfig.mutedColor === "#a5b4c7" ? "#8baacf" : rawConfig.mutedColor,
+      rawConfig.mutedColor === "#a5b4c7"
+        ? "#8baacf"
+        : rawConfig.mutedColor,
     borderRadius: rawConfig.borderRadius === 16 ? 12 : rawConfig.borderRadius,
     borderWidth: rawConfig.borderWidth === 2 ? 1 : rawConfig.borderWidth,
     glowIntensity:
