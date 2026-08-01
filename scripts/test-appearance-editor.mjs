@@ -93,6 +93,19 @@ try {
     widgetEditorPageSource.includes("getBetterWidgetNudge(event.key)"),
     "Better Editor routes arrow key presses through the tested pixel nudge map",
   );
+  const betterWidgetRegistrySource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    betterWidgetRegistrySource.includes(
+      "giveaway: { minWidth: 240, minHeight: 180",
+    ),
+    "Better Editor allows Giveaway widgets to shrink to the renderer's 240px minimum width",
+  );
   const presetExportedAt = "2026-08-01T12:00:00.000Z";
   const preset = createWidgetControlsPreset(
     {

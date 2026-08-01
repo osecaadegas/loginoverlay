@@ -506,7 +506,7 @@ const SIZE_CONSTRAINTS = {
     maxWidth: 1280,
     maxHeight: 1080,
   },
-  giveaway: { minWidth: 420, minHeight: 180, maxWidth: 1100, maxHeight: 520 },
+  giveaway: { minWidth: 240, minHeight: 180, maxWidth: 1100, maxHeight: 520 },
   navbar: { minWidth: 720, minHeight: 46, maxWidth: 1920, maxHeight: 160 },
   chat: { minWidth: 180, minHeight: 220, maxWidth: 720, maxHeight: 900 },
   rtp_stats: { minWidth: 680, minHeight: 52, maxWidth: 1920, maxHeight: 160 },
