@@ -736,6 +736,33 @@ try {
     "Better Chat gives roles and raids distinct configurable glazed message effects",
   );
   assert.ok(
+    betterWidgetStylesSource.includes(
+      '(title && title !== "Bonus" ? title : "Bonus")',
+    ) &&
+      betterWidgetStylesSource.includes(
+        "better-hunt-main-status--${sessionState}",
+      ),
+    "Mainstream Bonus Hunt uses the state badge instead of a Bonus Opening title",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      "roleEffects[role.effectKey] !== false",
+    ) &&
+      betterWidgetPackagesSource.includes('["ownerEnabled", "Owner effect"]') &&
+      betterWidgetPackagesSource.includes(
+        '["moderatorEnabled", "Moderator effect"]',
+      ) &&
+      betterWidgetPackagesSource.includes('["vipEnabled", "VIP effect"]') &&
+      betterWidgetPackagesSource.includes(
+        '["subscriberEnabled", "Subscriber effect"]',
+      ),
+    "Better Chat exposes an independent message-effect toggle for each role",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes('borderRadius: "50%"'),
+    "Better Chat renders circular avatars",
+  );
+  assert.ok(
     chatWidgetSource.includes("parseShoutoutChatCommand(stampedMessage)") &&
       chatWidgetSource.includes('c.shoutoutPosition === "bottom"') &&
       chatWidgetSource.includes("<RaidShoutoutWidget") &&

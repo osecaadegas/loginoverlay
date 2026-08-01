@@ -857,6 +857,10 @@ const BASE_BETTER_CONFIG = {
     showRoleBadges: true,
     roleEffects: {
       enabled: true,
+      ownerEnabled: true,
+      moderatorEnabled: true,
+      vipEnabled: true,
+      subscriberEnabled: true,
       intensity: 8,
       ownerColor: "#ff3b5c",
       moderatorColor: "#22d3ee",
@@ -1343,6 +1347,12 @@ function normalizeBetterChatConfig(merged = {}) {
   );
   next.showRoleBadges = next.showRoleBadges !== false;
   next.roleEffects.enabled = next.roleEffects.enabled !== false;
+  next.roleEffects.ownerEnabled = next.roleEffects.ownerEnabled !== false;
+  next.roleEffects.moderatorEnabled =
+    next.roleEffects.moderatorEnabled !== false;
+  next.roleEffects.vipEnabled = next.roleEffects.vipEnabled !== false;
+  next.roleEffects.subscriberEnabled =
+    next.roleEffects.subscriberEnabled !== false;
   next.roleEffects.intensity = clampNumber(
     next.roleEffects.intensity,
     1,
@@ -3064,6 +3074,22 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
             set({ roleEffects: { ...c.roleEffects, enabled } })
           }
         />
+        {[
+          ["ownerEnabled", "Owner effect"],
+          ["moderatorEnabled", "Moderator effect"],
+          ["vipEnabled", "VIP effect"],
+          ["subscriberEnabled", "Subscriber effect"],
+        ].map(([key, label]) => (
+          <ToggleRow
+            key={key}
+            label={label}
+            checked={c.roleEffects?.[key] !== false}
+            disabled={c.roleEffects?.enabled === false}
+            onChange={(enabled) =>
+              set({ roleEffects: { ...c.roleEffects, [key]: enabled } })
+            }
+          />
+        ))}
         <SliderRow
           label="Glaze intensity"
           value={c.roleEffects?.intensity ?? 8}

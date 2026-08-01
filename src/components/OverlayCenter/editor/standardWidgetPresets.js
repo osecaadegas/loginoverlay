@@ -324,6 +324,10 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     showRoleBadges: true,
     roleEffects: {
       enabled: true,
+      ownerEnabled: true,
+      moderatorEnabled: true,
+      vipEnabled: true,
+      subscriberEnabled: true,
       intensity: 8,
       ownerColor: "#ff3b5c",
       moderatorColor: "#22d3ee",

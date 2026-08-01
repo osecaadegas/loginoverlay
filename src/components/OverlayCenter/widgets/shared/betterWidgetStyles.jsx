@@ -142,10 +142,34 @@ function betterChatGiftTier(msg = {}) {
 }
 
 const BETTER_CHAT_ROLE_DEFS = [
-  { key: "isBroadcaster", label: "OWNER", colorKey: "ownerColor", color: "#ff3b5c" },
-  { key: "isMod", label: "MOD", colorKey: "moderatorColor", color: "#22d3ee" },
-  { key: "isVip", label: "VIP", colorKey: "vipColor", color: "#c084fc" },
-  { key: "isSub", label: "SUB", colorKey: "subscriberColor", color: "#facc15" },
+  {
+    key: "isBroadcaster",
+    label: "OWNER",
+    effectKey: "ownerEnabled",
+    colorKey: "ownerColor",
+    color: "#ff3b5c",
+  },
+  {
+    key: "isMod",
+    label: "MOD",
+    effectKey: "moderatorEnabled",
+    colorKey: "moderatorColor",
+    color: "#22d3ee",
+  },
+  {
+    key: "isVip",
+    label: "VIP",
+    effectKey: "vipEnabled",
+    colorKey: "vipColor",
+    color: "#c084fc",
+  },
+  {
+    key: "isSub",
+    label: "SUB",
+    effectKey: "subscriberEnabled",
+    colorKey: "subscriberColor",
+    color: "#facc15",
+  },
 ];
 
 function betterChatRole(msg = {}, roleEffects = {}) {
@@ -2464,7 +2488,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     c.mainstreamTitle ||
     c.openingTitle ||
     c.bonusOpeningTitle ||
-    (title && title !== "Bonus" ? title : "Bonus Opening");
+    (title && title !== "Bonus" ? title : "Bonus");
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const trigger = (detail = {}) => {
@@ -3793,7 +3817,10 @@ export function BetterChatMessage({
   const celebrations = c.celebrations || {};
   const roleEffects = c.roleEffects || {};
   const role = betterChatRole(msg, roleEffects);
-  const roleEffectOn = roleEffects.enabled !== false && Boolean(role);
+  const roleEffectOn =
+    roleEffects.enabled !== false &&
+    Boolean(role) &&
+    roleEffects[role.effectKey] !== false;
   const roleBadgeOn = c.showRoleBadges !== false && Boolean(role);
   const celebrationOn =
     (messageType === "raid" && celebrations.raid !== false) ||
@@ -3907,7 +3934,7 @@ export function BetterChatMessage({
         style={context.avatarStyle({
           width: 34,
           height: 34,
-          borderRadius: 10,
+          borderRadius: "50%",
           display: "grid",
           placeItems: "center",
           overflow: "hidden",
@@ -3932,6 +3959,7 @@ export function BetterChatMessage({
               width: "100%",
               height: "100%",
               objectFit: "cover",
+              borderRadius: "50%",
             }}
           />
         ) : (
