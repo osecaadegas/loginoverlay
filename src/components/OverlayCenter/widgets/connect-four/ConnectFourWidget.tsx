@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "../../../../config/supabaseClient";
 import {
   normalizeConnectFourBoard,
@@ -199,8 +199,8 @@ export default function ConnectFourWidget({
     return () => window.clearInterval(timer);
   }, [state?.expires_at, state?.status]);
 
-  const displayedState = state ||
-    (runtime === "editor" ? CONNECT_FOUR_PREVIEW_STATE : null);
+  const displayedState =
+    state || (runtime === "editor" ? CONNECT_FOUR_PREVIEW_STATE : null);
   if (!displayedState) return null;
 
   const board = displayedState.board;
@@ -208,18 +208,18 @@ export default function ConnectFourWidget({
   const playerTwo =
     displayedState.player_two_display_name || "Waiting for player";
   const title = stringValue(config.title, "CHAT CONNECT 4");
-  const playerOneColor = stringValue(config.playerOneColor, "#ffd23f");
-  const playerTwoColor = stringValue(config.playerTwoColor, "#f04444");
-  const boardColor = stringValue(config.boardColor, "#08191f");
-  const boardBorderColor = stringValue(config.boardBorderColor, "#a8d7df");
-  const titleColor = stringValue(config.titleColor, "#f5c542");
+  const playerOneColor = stringValue(config.playerOneColor, "#ef4444");
+  const playerTwoColor = stringValue(config.playerTwoColor, "#facc15");
+  const boardColor = stringValue(config.boardColor, "#1e3a8a");
+  const boardBorderColor = stringValue(config.boardBorderColor, "#1e3a8a");
+  const titleColor = stringValue(config.titleColor, "#fbbf24");
   const textColor = stringValue(config.textColor, "#f7fbff");
   const mutedColor = stringValue(config.mutedColor, "#fff2b8");
-  const fontFamily = stringValue(
-    config.fontFamily,
-    "'Rajdhani', sans-serif",
+  const fontFamily = stringValue(config.fontFamily, "'Rajdhani', sans-serif");
+  const fontScale = Math.min(
+    1.5,
+    Math.max(0.7, Number(config.fontScale) / 100 || 1),
   );
-  const fontScale = Math.min(1.5, Math.max(0.7, Number(config.fontScale) / 100 || 1));
   const showWager = config.showWager !== false;
   const showPlayers = config.showPlayers !== false;
   const showCommandHelp = config.showCommandHelp !== false;
@@ -227,109 +227,141 @@ export default function ConnectFourWidget({
   const showTurnTimer = config.showTurnTimer !== false;
   const animateDrops = config.animateDrops !== false;
   const secondsRemaining = displayedState.expires_at
-    ? Math.max(0, Math.ceil((Date.parse(displayedState.expires_at) - now) / 1000))
+    ? Math.max(
+        0,
+        Math.ceil((Date.parse(displayedState.expires_at) - now) / 1000),
+      )
     : null;
+  const pot = displayedState.wager * 2;
+  const widgetStyle = {
+    color: textColor,
+    fontFamily,
+    "--connect-four-p1": playerOneColor,
+    "--connect-four-p2": playerTwoColor,
+    "--connect-four-board": boardColor,
+    "--connect-four-board-border": boardBorderColor,
+  } as CSSProperties;
 
   return (
     <section
       className="connect-four-widget"
       aria-label="Chat Connect 4"
-      style={{ color: textColor, fontFamily }}
+      style={widgetStyle}
     >
-      <header className="connect-four-head">
-        <div>
-          <span
-            className="connect-four-kicker"
-            style={{
-              color: titleColor,
-              fontSize: `clamp(${10 * fontScale}px, ${2.2 * fontScale}cqh, ${18 * fontScale}px)`,
-            }}
-          >
-            {title}
-          </span>
-          <strong
-            style={{
-              fontSize: `clamp(${14 * fontScale}px, ${3.4 * fontScale}cqh, ${28 * fontScale}px)`,
-            }}
-          >
-            {getStatus(displayedState)}
-          </strong>
+      <div className="connect-four-game">
+        <div className="connect-four-title" style={{ color: titleColor }}>
+          {title}
         </div>
-        {showWager && displayedState.wager ? (
-          <b style={{ color: mutedColor }}>
-            {displayedState.wager.toLocaleString()} PTS
-          </b>
-        ) : null}
-      </header>
 
-      {(showCommandHelp || showMoveCount || showTurnTimer) && (
-        <div className="connect-four-details">
-          {showCommandHelp && <span>{getCommandHelp(displayedState)}</span>}
-          <div>
-            {showMoveCount && <b>MOVE {displayedState.move_count}/42</b>}
-            {showTurnTimer && displayedState.status === "active" && secondsRemaining !== null && (
-              <b className={secondsRemaining <= 10 ? "is-urgent" : ""}>
-                {secondsRemaining}s
-              </b>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div
-        className="connect-four-board"
-        role="grid"
-        aria-label="Connect 4 board"
-        style={{ backgroundColor: boardColor, borderColor: boardBorderColor }}
-      >
-        {board.flatMap((row, rowIndex) =>
-          row.map((cell, columnIndex) => {
-            const isLastMove =
-              displayedState.last_move?.row === rowIndex &&
-              displayedState.last_move.column === columnIndex;
-            return (
-              <div
-                className="connect-four-cell"
-                role="gridcell"
-                key={`${rowIndex}-${columnIndex}`}
-              >
-                {cell !== 0 ? (
-                  <span
-                    key={`${displayedState.match_id}-${displayedState.move_count}-${rowIndex}-${columnIndex}`}
-                    className={`connect-four-coin connect-four-coin--p${cell}${isLastMove && animateDrops ? " is-latest" : ""}`}
-                    style={{
-                      backgroundColor:
-                        cell === 1 ? playerOneColor : playerTwoColor,
-                    }}
-                  />
-                ) : null}
+        {showPlayers && (
+          <div className="connect-four-scorebar">
+            <div
+              className={`connect-four-player-card${displayedState.current_player === 1 ? " is-current" : ""}${displayedState.winner === 1 ? " is-winner" : ""}`}
+            >
+              <i className="connect-four-player-coin connect-four-player-coin--p1" />
+              <div>
+                <strong>{playerOne}</strong>
+                <span>
+                  {showWager && displayedState.wager
+                    ? `${displayedState.wager.toLocaleString()} PTS wagered`
+                    : "- PTS"}
+                </span>
               </div>
-            );
-          }),
-        )}
-      </div>
+              {displayedState.current_player === 1 &&
+                displayedState.status === "active" && <b>TURN</b>}
+            </div>
 
-      {showPlayers && <footer
-        className="connect-four-players"
-        style={{
-          fontSize: `clamp(${12 * fontScale}px, ${2.7 * fontScale}cqh, ${22 * fontScale}px)`,
-        }}
-      >
-        <span className={displayedState.current_player === 1 ? "is-current" : ""}>
-          <i
-            className="connect-four-dot connect-four-dot--p1"
-            style={{ backgroundColor: playerOneColor }}
-          />
-          {playerOne}
-        </span>
-        <span className={displayedState.current_player === 2 ? "is-current" : ""}>
-          <i
-            className="connect-four-dot connect-four-dot--p2"
-            style={{ backgroundColor: playerTwoColor }}
-          />
-          {playerTwo}
-        </span>
-      </footer>}
+            <div className="connect-four-versus">
+              <strong>VS</strong>
+              {showWager && pot > 0 && (
+                <span style={{ color: mutedColor }}>
+                  {pot.toLocaleString()} PTS pot
+                </span>
+              )}
+            </div>
+
+            <div
+              className={`connect-four-player-card${displayedState.current_player === 2 ? " is-current" : ""}${displayedState.winner === 2 ? " is-winner" : ""}`}
+            >
+              <i className="connect-four-player-coin connect-four-player-coin--p2" />
+              <div>
+                <strong>{playerTwo}</strong>
+                <span>
+                  {showWager && displayedState.wager
+                    ? `${displayedState.wager.toLocaleString()} PTS wagered`
+                    : "- PTS"}
+                </span>
+              </div>
+              {displayedState.current_player === 2 &&
+                displayedState.status === "active" && <b>TURN</b>}
+            </div>
+          </div>
+        )}
+
+        <div className="connect-four-column-labels" aria-hidden="true">
+          {Array.from({ length: 7 }, (_, column) => (
+            <span key={column}>{column + 1}</span>
+          ))}
+        </div>
+
+        <div
+          className="connect-four-board"
+          role="grid"
+          aria-label="Connect 4 board"
+        >
+          {board.flatMap((row, rowIndex) =>
+            row.map((cell, columnIndex) => {
+              const isLastMove =
+                displayedState.last_move?.row === rowIndex &&
+                displayedState.last_move.column === columnIndex;
+              return (
+                <div
+                  className="connect-four-cell"
+                  role="gridcell"
+                  key={`${rowIndex}-${columnIndex}`}
+                >
+                  {cell !== 0 ? (
+                    <span
+                      key={`${displayedState.match_id}-${displayedState.move_count}-${rowIndex}-${columnIndex}`}
+                      className={`connect-four-coin connect-four-coin--p${cell}${isLastMove && animateDrops ? " is-latest" : ""}`}
+                    />
+                  ) : null}
+                </div>
+              );
+            }),
+          )}
+          {displayedState.winner && (
+            <div className="connect-four-win-overlay">
+              <strong>
+                {displayedState.winner === 1 ? playerOne : playerTwo} WINS!
+              </strong>
+              {pot > 0 && <span>+{pot.toLocaleString()} PTS</span>}
+            </div>
+          )}
+        </div>
+
+        <div
+          className="connect-four-status"
+          style={{
+            fontSize: `clamp(${12 * fontScale}px, ${2.2 * fontScale}cqh, ${18 * fontScale}px)`,
+          }}
+        >
+          <strong>{getStatus(displayedState)}</strong>
+          {(showCommandHelp || showMoveCount || showTurnTimer) && (
+            <div className="connect-four-details">
+              {showCommandHelp && <span>{getCommandHelp(displayedState)}</span>}
+              {showMoveCount && <b>MOVE {displayedState.move_count}/42</b>}
+              {showTurnTimer &&
+                displayedState.status === "active" &&
+                secondsRemaining !== null && (
+                  <b className={secondsRemaining <= 10 ? "is-urgent" : ""}>
+                    {secondsRemaining}s
+                  </b>
+                )}
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
