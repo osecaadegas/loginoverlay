@@ -393,6 +393,15 @@ try {
     "editor preview cannot subscribe to or consume production shoutout alerts",
   );
   assert.ok(
+    betterObsOverlaySource.includes(
+      "isSingleWidget || !targetWidth || !targetHeight",
+    ) &&
+      betterObsOverlaySource.includes(
+        "Math.min(viewport.width / targetWidth, viewport.height / targetHeight)",
+      ),
+    "individual OBS widget URLs preserve saved pixel dimensions while full overlays still scale to the viewport",
+  );
+  assert.ok(
     betterWidgetRegistrySource.includes(
       'raid_shoutout: ["twitchChannel", "chatCommandEnabled"]',
     ) && betterWidgetRegistrySource.includes("publicOverlayId,"),
