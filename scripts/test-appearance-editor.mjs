@@ -236,6 +236,11 @@ try {
     "Better Navbar socials always show handles instead of text abbreviations",
   );
   assert.ok(
+    navbarWidgetSource.includes("Math.max(28, barHeight * 0.62)") &&
+      navbarWidgetSource.includes("size={compact ? 13 : 14}"),
+    "Better Navbar social pills remain tall and legible in compact OBS mode",
+  );
+  assert.ok(
     !betterWidgetPackagesSource.includes("NAVBAR_SOCIAL_DISPLAY_OPTIONS") &&
       !navbarConfigSource.includes('<span>Display</span>'),
     "Navbar controls expose one consistent social handle format",

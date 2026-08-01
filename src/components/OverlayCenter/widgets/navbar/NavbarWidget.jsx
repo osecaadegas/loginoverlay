@@ -1715,6 +1715,9 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
 
   const renderSocialsSection = ({ compact = false } = {}) => {
     if (!c.showSocials || socialItems.length === 0) return null;
+    const socialPillHeight = compact
+      ? Math.max(28, barHeight * 0.62)
+      : Math.max(28, barHeight * 0.58);
     return (
       <div
         {...partAttrs("socials")}
@@ -1737,12 +1740,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               rel="noreferrer"
               title={`${item.label}: ${item.value}`}
               style={{
-                height: compact
-                  ? Math.max(20, barHeight * 0.42)
-                  : Math.max(22, barHeight * 0.46),
-                minWidth: compact
-                  ? Math.max(20, barHeight * 0.42)
-                  : Math.max(22, barHeight * 0.46),
+                height: socialPillHeight,
+                minWidth: socialPillHeight,
                 maxWidth: 170,
                 display: "inline-flex",
                 alignItems: "center",
@@ -1751,12 +1750,12 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                 boxSizing: "border-box",
                 border: `1px solid ${alphaColor(item.color, 0.68)}`,
                 borderRadius: 999,
-                padding: compact ? "0 7px" : "0 9px",
+                padding: compact ? "0 10px" : "0 11px",
                 color: textColor,
                 background: `linear-gradient(135deg,${alphaColor(item.color, 0.28)},${alphaColor(item.color, 0.12)})`,
                 boxShadow: `inset 0 1px 0 ${alphaColor(item.color, 0.18)},0 0 10px ${alphaColor(item.color, 0.22)}`,
                 fontFamily,
-                fontSize: Math.max(8, fontSize * 0.72),
+                fontSize: Math.max(10, fontSize * (compact ? 0.82 : 0.78)),
                 fontWeight: 950,
                 letterSpacing: "0.04em",
                 lineHeight: 1,
@@ -1769,7 +1768,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
             >
               <SocialIcon
                 aria-hidden="true"
-                size={compact ? 10 : 11}
+                size={compact ? 13 : 14}
                 style={{ color: item.color, flex: "0 0 auto" }}
               />
               <span
