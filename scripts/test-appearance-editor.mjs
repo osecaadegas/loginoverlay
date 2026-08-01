@@ -56,7 +56,12 @@ const {
   "/src/components/OverlayCenter/editor/widgetControlsPreset.js",
 );
 
-const { getBetterWidgetNudge, normalizeBetterCoordinate } =
+const {
+  getBetterWidgetNudge,
+  moveBetterWidgetLayer,
+  normalizeBetterCoordinate,
+  reorderBetterWidgetLayers,
+} =
   await server.ssrLoadModule(
     "/src/components/OverlayCenter/editor/betterWidgetGeometry.js",
   );
@@ -81,6 +86,53 @@ try {
     getBetterWidgetNudge("ArrowDown"),
     { x: 0, y: 1 },
     "Better Editor moves down by exactly one pixel",
+  );
+  const layers = [
+    { instanceId: "background", widgetType: "background", zIndex: 0 },
+    { instanceId: "low", widgetType: "chat", zIndex: 1 },
+    { instanceId: "middle", widgetType: "navbar", zIndex: 2 },
+    { instanceId: "high", widgetType: "giveaway", zIndex: 3 },
+  ];
+  const draggedLayers = reorderBetterWidgetLayers(layers, "low", "high");
+  assert.deepEqual(
+    draggedLayers.map(({ instanceId, zIndex }) => ({ instanceId, zIndex })),
+    [
+      { instanceId: "background", zIndex: 0 },
+      { instanceId: "low", zIndex: 3 },
+      { instanceId: "middle", zIndex: 1 },
+      { instanceId: "high", zIndex: 2 },
+    ],
+    "dragging a sidebar row onto the highest row makes it the top OBS layer",
+  );
+  const keyboardLayers = moveBetterWidgetLayer(layers, "high", 1);
+  assert.equal(
+    keyboardLayers.find((instance) => instance.instanceId === "middle")?.zIndex,
+    3,
+    "moving a layer down promotes the next sidebar row above it",
+  );
+  const lowestLayers = reorderBetterWidgetLayers(layers, "high", "background");
+  assert.equal(
+    lowestLayers.find((instance) => instance.instanceId === "high")?.zIndex,
+    1,
+    "dropping on the fixed background moves a widget to the lowest foreground layer",
+  );
+  assert.equal(
+    lowestLayers.find((instance) => instance.instanceId === "background")?.zIndex,
+    0,
+    "layer reordering keeps the background fixed at z-index zero",
+  );
+  const betterObsOverlaySource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/BetterObsOverlay.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    betterObsOverlaySource.includes(
+      ".sort((a, b) => Number(a.zIndex) - Number(b.zIndex))",
+    ) && betterObsOverlaySource.includes("zIndex: instance.zIndex"),
+    "Better OBS renders the persisted sidebar layer order",
   );
   const widgetEditorPageSource = readFileSync(
     new URL(

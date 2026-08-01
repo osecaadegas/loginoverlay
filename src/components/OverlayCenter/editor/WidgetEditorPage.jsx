@@ -12,6 +12,7 @@ import {
   Eye,
   EyeOff,
   Grid3X3,
+  GripVertical,
   Lock,
   MoreVertical,
   MousePointer2,
@@ -54,7 +55,9 @@ import {
 import { BetterWidgetControls } from "./BetterWidgetPackages";
 import {
   getBetterWidgetNudge,
+  moveBetterWidgetLayer,
   normalizeBetterCoordinate,
+  reorderBetterWidgetLayers,
 } from "./betterWidgetGeometry";
 import { downloadWidgetControlsPreset } from "./widgetControlsPreset";
 import "./BetterWidgetPackages.css";
@@ -265,6 +268,13 @@ function WidgetListItem({
   onToggleLock,
   onDuplicate,
   onDelete,
+  dragging,
+  dragOver,
+  onLayerDragStart,
+  onLayerDragOver,
+  onLayerDrop,
+  onLayerDragEnd,
+  onLayerMove,
 }) {
   const definition = BETTER_WIDGET_REGISTRY[instance.widgetType];
   const menuAction = (event, action) => {
@@ -277,8 +287,27 @@ function WidgetListItem({
   const canEditInstance = instance.widgetType !== "background";
   return (
     <article
-      className={`better-editor-widget-row${selected ? " is-selected" : ""}${instance.visible === false ? " is-hidden" : ""}`}
+      className={`better-editor-widget-row${selected ? " is-selected" : ""}${instance.visible === false ? " is-hidden" : ""}${dragging ? " is-dragging" : ""}${dragOver ? " is-drag-over" : ""}`}
+      onDragOver={(event) => onLayerDragOver(event, instance.instanceId)}
+      onDrop={(event) => onLayerDrop(event, instance.instanceId)}
     >
+      <button
+        type="button"
+        className="better-editor-widget-row__drag-handle"
+        aria-label={`Reorder ${instance.label || definition?.label || "widget"} layer`}
+        disabled={!canEditInstance}
+        title={canEditInstance ? "Drag to change OBS layer" : "Background layer is fixed"}
+        draggable={canEditInstance}
+        onDragStart={(event) => onLayerDragStart(event, instance.instanceId)}
+        onDragEnd={onLayerDragEnd}
+        onKeyDown={(event) => {
+          if (!canEditInstance || !["ArrowUp", "ArrowDown"].includes(event.key)) return;
+          event.preventDefault();
+          onLayerMove(instance.instanceId, event.key === "ArrowUp" ? -1 : 1);
+        }}
+      >
+        <GripVertical size={16} />
+      </button>
       <button
         type="button"
         className="better-editor-widget-row__main"
@@ -390,6 +419,8 @@ export default function WidgetEditorPage() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [copyState, setCopyState] = useState("");
   const [interaction, setInteraction] = useState(null);
+  const [draggedLayerId, setDraggedLayerId] = useState("");
+  const [dragOverLayerId, setDragOverLayerId] = useState("");
 
   const scale = useCanvasScale(shellRef, zoom);
 
@@ -755,6 +786,59 @@ export default function WidgetEditorPage() {
     return nextLayout;
   }, [commitLayout, selectedInstanceId]);
 
+  const clearLayerDrag = useCallback(() => {
+    setDraggedLayerId("");
+    setDragOverLayerId("");
+  }, []);
+
+  const handleLayerDragStart = useCallback((event, instanceId) => {
+    const instance = layoutRef.current.instances.find(
+      (item) => item.instanceId === instanceId,
+    );
+    if (!instance || instance.widgetType === "background") {
+      event.preventDefault();
+      return;
+    }
+    setSelectedInstanceId(instanceId);
+    setDraggedLayerId(instanceId);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", instanceId);
+  }, []);
+
+  const handleLayerDragOver = useCallback((event, targetId) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverLayerId(targetId);
+  }, []);
+
+  const handleLayerDrop = useCallback((event, targetId) => {
+    event.preventDefault();
+    const sourceId =
+      event.dataTransfer.getData("text/plain") || draggedLayerId;
+    if (sourceId && sourceId !== targetId) {
+      commitLayout((current) => ({
+        ...current,
+        instances: reorderBetterWidgetLayers(
+          current.instances,
+          sourceId,
+          targetId,
+        ),
+      }));
+    }
+    clearLayerDrag();
+  }, [clearLayerDrag, commitLayout, draggedLayerId]);
+
+  const handleLayerMove = useCallback((instanceId, direction) => {
+    commitLayout((current) => ({
+      ...current,
+      instances: moveBetterWidgetLayer(
+        current.instances,
+        instanceId,
+        direction,
+      ),
+    }));
+  }, [commitLayout]);
+
   const handleUndo = useCallback(() => {
     if (historyIndex <= 0) return;
     const nextIndex = historyIndex - 1;
@@ -903,6 +987,13 @@ export default function WidgetEditorPage() {
                 onToggleLock={handleToggleLock}
                 onDuplicate={handleDuplicate}
                 onDelete={handleDeleteInstance}
+                dragging={instance.instanceId === draggedLayerId}
+                dragOver={instance.instanceId === dragOverLayerId}
+                onLayerDragStart={handleLayerDragStart}
+                onLayerDragOver={handleLayerDragOver}
+                onLayerDrop={handleLayerDrop}
+                onLayerDragEnd={clearLayerDrag}
+                onLayerMove={handleLayerMove}
               />
             ))}
         </div>
