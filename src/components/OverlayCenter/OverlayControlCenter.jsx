@@ -1491,6 +1491,67 @@ function BetsBracketShortcutTiles({ widget, saveWidget }) {
   );
 }
 
+function BufferedConfigPanel({
+  ConfigComponent,
+  config,
+  onCommit,
+  allWidgets,
+  mode,
+}) {
+  const [draft, setDraft] = useState(config);
+  const draftRef = useRef(config);
+  const dirtyRef = useRef(false);
+  const commitTimerRef = useRef(null);
+  const onCommitRef = useRef(onCommit);
+
+  useEffect(() => {
+    onCommitRef.current = onCommit;
+  }, [onCommit]);
+
+  useEffect(() => {
+    if (dirtyRef.current) return;
+    draftRef.current = config;
+    setDraft(config);
+  }, [config]);
+
+  const commit = useCallback(() => {
+    clearTimeout(commitTimerRef.current);
+    if (!dirtyRef.current) return;
+    dirtyRef.current = false;
+    onCommitRef.current(draftRef.current);
+  }, []);
+
+  const updateDraft = useCallback(
+    (nextConfig) => {
+      draftRef.current = nextConfig;
+      dirtyRef.current = true;
+      setDraft(nextConfig);
+      clearTimeout(commitTimerRef.current);
+      commitTimerRef.current = setTimeout(commit, 1000);
+    },
+    [commit],
+  );
+
+  useEffect(
+    () => () => {
+      clearTimeout(commitTimerRef.current);
+      if (dirtyRef.current) onCommitRef.current(draftRef.current);
+    },
+    [],
+  );
+
+  return (
+    <div onBlur={commit}>
+      <ConfigComponent
+        config={draft}
+        onChange={updateDraft}
+        allWidgets={allWidgets}
+        mode={mode}
+      />
+    </div>
+  );
+}
+
 function WidgetDetail({
   widgetType,
   widgets,
@@ -1618,9 +1679,10 @@ function WidgetDetail({
       <>
         <div className="oc2-config-shell oc2-config-shell--full">
           <div className="oc2-config-main">
-            <ConfigComponent
+            <BufferedConfigPanel
+              ConfigComponent={ConfigComponent}
               config={widget.config || {}}
-              onChange={(newConfig) => {
+              onCommit={(newConfig) => {
                 saveWidget({ ...widget, config: newConfig });
                 trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_CONFIGURED, {
                   widget_type: widgetType,

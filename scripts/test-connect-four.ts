@@ -256,6 +256,9 @@ assert.match(
   /const PRIMARY_TOOLS = \[[\s\S]*?"connect_four"/,
   "Connect 4 must remain visible in the Overlay Center catalog",
 );
+assert.match(overlayControlCenter, /function BufferedConfigPanel/);
+assert.match(overlayControlCenter, /onBlur=\{commit\}/);
+assert.match(overlayControlCenter, /setTimeout\(commit, 1000\)/);
 
 const connectFourWidget = readFileSync(
   new URL(
