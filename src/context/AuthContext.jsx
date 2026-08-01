@@ -7,27 +7,32 @@ const AuthContext = createContext({});
 const AUDIENCE_STORAGE_KEY = "streamerscenter:selectedAudience";
 const VALID_EXPERIENCES = new Set(["player", "streamer"]);
 
-async function connectTwitchChat(session) {
-  if (
-    session?.user?.app_metadata?.provider !== "twitch" ||
-    !session?.access_token ||
-    !session?.provider_token
-  )
-    return;
+async function requestTwitchChatListener(session, method = "GET") {
+  if (!session?.access_token) return { status: "signed_out" };
+  const isConnectRequest = method === "POST";
   const response = await fetch("/api/connect-four", {
-    method: "POST",
+    method,
     headers: {
       Authorization: `Bearer ${session.access_token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ providerToken: session.provider_token }),
+    ...(isConnectRequest
+      ? { body: JSON.stringify({ providerToken: session.provider_token }) }
+      : {}),
   });
+  const details = await response.json().catch(() => null);
   if (!response.ok) {
-    const details = await response.json().catch(() => null);
     throw new Error(
       details?.error || `Twitch chat connection failed (${response.status})`,
     );
   }
+  return details;
+}
+
+async function connectTwitchChat(session) {
+  const status = await requestTwitchChatListener(session);
+  if (status?.connected || !session?.provider_token) return status;
+  return requestTwitchChatListener(session, "POST");
 }
 
 export const useAuth = () => {
@@ -41,6 +46,12 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [twitchListener, setTwitchListener] = useState({
+    loading: true,
+    connected: false,
+    status: "checking",
+    error: "",
+  });
 
   useEffect(() => {
     const syncExperiencePreference = async (authUser) => {
@@ -87,9 +98,24 @@ export const AuthProvider = ({ children }) => {
           label: "Auth session check",
         });
         syncExperiencePreferenceInBackground(session?.user);
-        connectTwitchChat(session).catch((error) => {
-          console.warn("[Auth] Twitch chat connection failed:", error);
-        });
+        connectTwitchChat(session)
+          .then((result) =>
+            setTwitchListener({
+              loading: false,
+              connected: result?.connected === true,
+              status: result?.status || "authorization_required",
+              error: "",
+            }),
+          )
+          .catch((error) => {
+            console.warn("[Auth] Twitch chat connection failed:", error);
+            setTwitchListener({
+              loading: false,
+              connected: false,
+              status: "authorization_required",
+              error: error.message,
+            });
+          });
         if (mounted) setUser(session?.user ?? null);
       } catch (error) {
         console.warn("[Auth] Session unavailable:", error);
@@ -107,9 +133,24 @@ export const AuthProvider = ({ children }) => {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (_event === "SIGNED_IN" && session?.user) {
         syncExperiencePreferenceInBackground(session.user);
-        connectTwitchChat(session).catch((error) => {
-          console.warn("[Auth] Twitch chat connection failed:", error);
-        });
+        connectTwitchChat(session)
+          .then((result) =>
+            setTwitchListener({
+              loading: false,
+              connected: result?.connected === true,
+              status: result?.status || "authorization_required",
+              error: "",
+            }),
+          )
+          .catch((error) => {
+            console.warn("[Auth] Twitch chat connection failed:", error);
+            setTwitchListener({
+              loading: false,
+              connected: false,
+              status: "authorization_required",
+              error: error.message,
+            });
+          });
       }
       setUser(session?.user ?? null);
 
@@ -169,6 +210,7 @@ export const AuthProvider = ({ children }) => {
       options: {
         redirectTo: getOAuthRedirectTo(returnTo),
         scopes: "user:read:chat user:bot channel:bot",
+        queryParams: { force_verify: "true" },
       },
     });
     return { data, error };
@@ -193,6 +235,7 @@ export const AuthProvider = ({ children }) => {
     signInWithGoogle,
     signInWithTwitch,
     signInWithDiscord,
+    twitchListener,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

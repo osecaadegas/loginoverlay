@@ -222,6 +222,17 @@ assert.ok(
   "Vercel Hobby deployments support at most 12 serverless functions",
 );
 
+const connectFourRoute = readFileSync(
+  new URL("../api/_lib/routes/connect-four.js", import.meta.url),
+  "utf8",
+);
+assert.match(connectFourRoute, /req\.method !== "GET"/);
+assert.match(connectFourRoute, /findChatSubscription/);
+assert.match(
+  connectFourRoute,
+  /status:\s*enabled\?\.status\s*\|\|\s*"authorization_required"/,
+);
+
 const builtinWidgets = readFileSync(
   new URL(
     "../src/components/OverlayCenter/widgets/builtinWidgets.js",

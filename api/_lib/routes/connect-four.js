@@ -54,7 +54,7 @@ async function twitchEventSubRequest(appToken, path, options = {}) {
   });
 }
 
-async function reconcileChatSubscription(appToken, twitchUserId, callback) {
+async function findChatSubscription(appToken, twitchUserId, callback) {
   const listResponse = await twitchEventSubRequest(
     appToken,
     "?type=channel.chat.message",
@@ -71,10 +71,21 @@ async function reconcileChatSubscription(appToken, twitchUserId, callback) {
       subscription.condition?.user_id === twitchUserId &&
       subscription.transport?.method === "webhook",
   );
-  const enabled = relevant.find(
-    (subscription) =>
-      subscription.status === "enabled" &&
-      subscription.transport?.callback === callback,
+  return {
+    relevant,
+    enabled: relevant.find(
+      (subscription) =>
+        subscription.status === "enabled" &&
+        subscription.transport?.callback === callback,
+    ),
+  };
+}
+
+async function reconcileChatSubscription(appToken, twitchUserId, callback) {
+  const { relevant, enabled } = await findChatSubscription(
+    appToken,
+    twitchUserId,
+    callback,
   );
   if (enabled) return enabled;
 
@@ -119,7 +130,7 @@ async function reconcileChatSubscription(appToken, twitchUserId, callback) {
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(204).end();
-  if (req.method !== "POST")
+  if (req.method !== "GET" && req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
   if (
     !SUPABASE_URL ||
@@ -158,33 +169,58 @@ export default async function handler(req, res) {
   if (authError || !user)
     return res.status(401).json({ error: "Unauthorized" });
 
+  const twitchIdentity = user.identities?.find(
+    (identity) => identity.provider === "twitch",
+  );
+  const twitchUserId = String(twitchIdentity?.identity_data?.sub || "");
+  if (!twitchUserId) {
+    return res.status(409).json({
+      connected: false,
+      status: "twitch_login_required",
+      error: "Connect Twitch to enable the chat listener",
+    });
+  }
+
+  if (req.method === "GET") {
+    try {
+      const appToken = await getAppToken();
+      const { enabled } = await findChatSubscription(
+        appToken,
+        twitchUserId,
+        callback,
+      );
+      return res.status(200).json({
+        connected: Boolean(enabled),
+        status: enabled?.status || "authorization_required",
+      });
+    } catch (error) {
+      console.error("[ConnectFour] EventSub status failed", error);
+      return res.status(502).json({ error: "Twitch listener status failed" });
+    }
+  }
+
   const providerToken = String(req.body?.providerToken || "");
-  const twitchIdentity = await validateProviderToken(providerToken);
-  const scopes = new Set(twitchIdentity?.scopes || []);
+  const validatedTwitchIdentity = await validateProviderToken(providerToken);
+  const scopes = new Set(validatedTwitchIdentity?.scopes || []);
   const hasChatScopes = ["user:read:chat", "user:bot", "channel:bot"].every(
     (scope) => scopes.has(scope),
   );
   if (
-    !twitchIdentity?.user_id ||
-    twitchIdentity.client_id !== TWITCH_CLIENT_ID ||
+    !validatedTwitchIdentity?.user_id ||
+    validatedTwitchIdentity.client_id !== TWITCH_CLIENT_ID ||
     !hasChatScopes
   ) {
     return res.status(400).json({ error: "Twitch chat permission is missing" });
   }
 
-  const identityMatches = user.identities?.some(
-    (identity) =>
-      identity.provider === "twitch" &&
-      String(identity.identity_data?.sub) === twitchIdentity.user_id,
-  );
-  if (!identityMatches)
+  if (twitchUserId !== validatedTwitchIdentity.user_id)
     return res.status(403).json({ error: "Twitch identity mismatch" });
 
   const { error: profileError } = await supabase.from("user_profiles").upsert(
     {
       user_id: user.id,
-      twitch_id: twitchIdentity.user_id,
-      twitch_username: twitchIdentity.login,
+      twitch_id: validatedTwitchIdentity.user_id,
+      twitch_username: validatedTwitchIdentity.login,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" },
@@ -195,12 +231,12 @@ export default async function handler(req, res) {
     const appToken = await getAppToken();
     const subscription = await reconcileChatSubscription(
       appToken,
-      twitchIdentity.user_id,
+      validatedTwitchIdentity.user_id,
       callback,
     );
     console.info(
       "[ConnectFour] EventSub subscription",
-      twitchIdentity.user_id,
+      validatedTwitchIdentity.user_id,
       subscription?.status,
     );
     return res.status(200).json({

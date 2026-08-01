@@ -120,9 +120,56 @@
   font-size: 12px;
 }
 
+.connect-four-config__listener {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #7c3f47;
+  border-radius: 6px;
+  background: #1b1018;
+}
+
+.connect-four-config__listener.is-connected {
+  border-color: #22695e;
+  background: #0b1c1a;
+}
+
+.connect-four-config__listener span {
+  display: grid;
+  gap: 3px;
+}
+
+.connect-four-config__listener strong {
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.connect-four-config__listener small {
+  color: #9fb0c4;
+  font-size: 11px;
+}
+
+.connect-four-config__listener button {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 1px solid #65d6c2;
+  border-radius: 6px;
+  color: #04110f;
+  font-weight: 800;
+  background: #65d6c2;
+  cursor: pointer;
+}
+
 @media (max-width: 720px) {
   .connect-four-config__toggles,
   .connect-four-config__colors {
     grid-template-columns: 1fr;
+  }
+
+  .connect-four-config__listener {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

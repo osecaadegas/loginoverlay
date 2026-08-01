@@ -1,4 +1,5 @@
 import { Clock3, Gamepad2, MessageSquareText, Palette } from "lucide-react";
+import { useAuth } from "../../../../context/AuthContext";
 import "./ConnectFourConfig.css";
 
 const DEFAULTS = {
@@ -13,6 +14,7 @@ const DEFAULTS = {
 };
 
 export default function ConnectFourConfig({ config = {}, onChange }) {
+  const { signInWithTwitch, twitchListener } = useAuth();
   const value = { ...DEFAULTS, ...config };
   const set = (patch) => onChange({ ...value, ...patch });
 
@@ -106,6 +108,33 @@ export default function ConnectFourConfig({ config = {}, onChange }) {
           <div><dt>Cancel</dt><dd>!connect4 reset</dd></div>
         </dl>
         <p><Clock3 size={16} /> Each turn lasts 60 seconds with a warning at 10 seconds.</p>
+        <div
+          className={`connect-four-config__listener ${twitchListener?.connected ? "is-connected" : ""}`}
+        >
+          <span>
+            <strong>
+              {twitchListener?.connected
+                ? "Twitch listener connected"
+                : "Twitch listener needs authorization"}
+            </strong>
+            <small>
+              {twitchListener?.connected
+                ? "Chat commands are being received by Streamers Center."
+                : twitchListener?.error ||
+                  "Reconnect Twitch once to grant chat listener permissions."}
+            </small>
+          </span>
+          {!twitchListener?.connected && (
+            <button
+              type="button"
+              onClick={() =>
+                signInWithTwitch("/overlay-center/widgets/connect-four")
+              }
+            >
+              Connect Twitch listener
+            </button>
+          )}
+        </div>
       </section>
     </div>
   );
