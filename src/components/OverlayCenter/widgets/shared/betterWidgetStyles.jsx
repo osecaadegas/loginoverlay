@@ -1446,7 +1446,7 @@ function BetterStyleSheet() {
       .better-hunt-main-active-stats{display:flex;min-width:0;flex:1;flex-direction:column}
       .better-hunt-main-active-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;flex:1;border-top:1px solid rgba(255,255,255,.18);padding:10px 14px}.better-hunt-main-active-row:first-child{border-top:0}
       .better-hunt-main-active-row span{display:flex;align-items:center;gap:7px;min-width:0;color:rgba(255,255,255,.68);font-size:.7em;font-weight:950;letter-spacing:.2em;text-transform:uppercase}.better-hunt-main-active-row strong{overflow:hidden;color:#fff;font-size:1.5em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)}
-      .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-total{margin:8px 12px 12px}
+      .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-footer{margin:8px 12px 12px}
       .better-hunt-horizontal{max-width:1080px;height:min(100%,488px);display:grid;grid-template-columns:minmax(360px,460px) minmax(0,1fr)}
       .better-hunt-left{display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:10px;padding:12px;border-right:1px solid rgba(255,255,255,.08);min-width:0}
       .better-hunt-right{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0}
@@ -1462,7 +1462,7 @@ function BetterStyleSheet() {
       .better-hunt-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent)}
       .better-hunt-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
       .better-hunt-stat-grid--grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .better-hunt-stat-grid--grid .better-hunt-stat{min-height:50px;grid-template-columns:minmax(0,1fr) auto;align-items:center;align-content:center;text-align:left;padding:5px 7px}
+      .better-hunt-stat-grid--grid .better-hunt-stat{min-height:34px;grid-template-columns:minmax(0,1fr) auto;align-items:center;align-content:center;gap:4px;text-align:left;padding:3px 7px}
       .better-hunt-stat-grid--grid .better-hunt-stat strong{text-align:right}
       .better-hunt-stat{min-width:0;min-height:66px;display:grid;align-content:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 60%,transparent);border-radius:7px;background:linear-gradient(180deg,var(--bh-card-hi) 0%,var(--bh-card-lo) 100%);padding:8px 6px;text-align:center;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 2px 6px rgba(0,0,0,.55)}
       .better-hunt-stat strong{overflow:hidden;color:#fff;font-size:1em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap}
@@ -1526,6 +1526,7 @@ function BetterStyleSheet() {
       .better-hunt-requests{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 38%,transparent);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 62%,transparent),color-mix(in srgb,var(--bh-card-lo) 70%,transparent));padding:8px}
       .better-hunt-requests-head{display:grid;min-width:74px;align-content:center;gap:4px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}.better-hunt-requests-head span{color:var(--bh-steel-dim);font-size:.62em;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.better-hunt-requests-head strong{color:var(--bh-ice);font-size:1.35em;font-weight:950;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 40%,transparent)}
       .better-hunt-request-list{min-width:0;display:grid;gap:5px}.better-hunt-request{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:7px;background:rgba(0,0,0,.22);padding:5px 7px}.better-hunt-request span{overflow:hidden;color:var(--bh-steel-hi);font-size:.72em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request strong{overflow:hidden;color:#fff;font-size:.76em;font-weight:900;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-request--empty{justify-content:center;color:var(--bh-steel-dim)}
+      .better-hunt-footer{display:grid;min-width:0}
       .better-hunt-total{display:grid;gap:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:10px;background:rgba(0,0,0,.18)}
       .better-hunt-total-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
       .better-hunt-total-head span{color:var(--bh-steel-dim);font-size:.72em;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.better-hunt-total-head strong{color:var(--bh-ice);font-size:1.28em;font-weight:950;line-height:1}
@@ -1536,8 +1537,8 @@ function BetterStyleSheet() {
       .better-hunt-root[data-session="opening"] .better-hunt-pill{border-color:rgba(255,201,61,.72);background:rgba(255,201,61,.12);color:#ffc93d}.better-hunt-root[data-session="ended"] .better-hunt-pill{border-color:rgba(210,220,230,.34);background:rgba(210,220,230,.08);color:var(--bh-steel-hi)}
       .better-hunt-panel--shake{animation:better-hunt-widget-shake .6s ease-in-out .1s 3}
       .better-hunt-stat,.better-hunt-row,.better-hunt-total,.better-hunt-requests,.better-hunt-result{border-radius:var(--bh-stat-radius,7px)}
-      .better-hunt-drawer{--bh-drawer-open-height:150px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(-12px);padding:0 6px;transition:max-height .95s cubic-bezier(.22,.9,.3,1),opacity .55s ease,transform .9s cubic-bezier(.22,.9,.3,1),padding .9s cubic-bezier(.22,.9,.3,1);will-change:max-height,opacity,transform}
-      .better-hunt-drawer.is-open{max-height:var(--bh-drawer-open-height);opacity:1;transform:translateY(0);padding:0 6px 7px}
+      .better-hunt-drawer{--bh-drawer-open-height:150px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(-12px);margin:0 -8px;padding:0 6px;border:1px solid transparent;border-radius:var(--bh-stat-radius,7px);transition:max-height .95s cubic-bezier(.22,.9,.3,1),opacity .55s ease,transform .9s cubic-bezier(.22,.9,.3,1),margin .9s cubic-bezier(.22,.9,.3,1),padding .9s cubic-bezier(.22,.9,.3,1),border-color .45s ease;will-change:max-height,opacity,transform}
+      .better-hunt-drawer.is-open{max-height:var(--bh-drawer-open-height);opacity:1;transform:translateY(0);margin-top:8px;padding:6px;border-color:color-mix(in srgb,var(--bh-line-hi) 30%,transparent)}
       .better-hunt-root[data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in .95s cubic-bezier(.22,.9,.3,1) both}
       .better-hunt-result{display:grid;grid-template-rows:auto minmax(68px,auto);gap:5px;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 14px rgba(0,0,0,.35)}
       .better-hunt-result-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px;min-width:0}
@@ -2531,7 +2532,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
   };
 
-  const renderTotalDrawer = () => {
+  const renderBonusFooter = () => {
     const drawerVisible = resultDrawerReady && (
       c.drawerOpen === true ||
       c.drawerPreviewOpen === true ||
@@ -2539,10 +2540,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
     const drawerMounted = resultDrawerReady;
     return (
-      <div className={`better-hunt-total better-hunt-total--${drawerMode}`} {...attrs("bonus_hunt", c, "footerContainer")}>
-        <div className="better-hunt-total-head">
-          <span>Total Pay</span>
-          <strong>{formatMoney(totalPay, money)}</strong>
+      <div className="better-hunt-footer">
+        <div className={`better-hunt-total better-hunt-total--${drawerMode}`} {...attrs("bonus_hunt", c, "footerContainer")}>
+          <div className="better-hunt-total-head">
+            <span>Total Pay</span>
+            <strong>{formatMoney(totalPay, money)}</strong>
+          </div>
         </div>
         {drawerMounted && (
           <div
@@ -2667,7 +2670,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           {renderMainstreamStat("Breakeven", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-", TrendingUp)}
         </div>
       </div>
-      {renderTotalDrawer()}
+      {renderBonusFooter()}
       {previewWin ? <BetterHuntWinOverlay win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
     </section>
   );
@@ -2732,7 +2735,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         {renderStatBoxes()}
         {renderCarousel()}
         {renderRequests()}
-        {renderTotalDrawer()}
+        {renderBonusFooter()}
       </div>
       {renderHorizontalLog()}
       {previewWin ? <BetterHuntWinOverlay win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
@@ -2749,7 +2752,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       <div className="better-hunt-divider" />
       {renderList()}
       <div className="better-hunt-divider" />
-      {renderTotalDrawer()}
+      {renderBonusFooter()}
       {previewWin ? <BetterHuntWinOverlay win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
     </section>
   );
