@@ -6,14 +6,16 @@ import useTwitchChannel from "./useTwitchChannel";
 
 function getBetterConnectFourConfig(layout) {
   const instances = Array.isArray(layout?.instances) ? layout.instances : [];
-  return instances.find((instance) => instance?.widgetType === "connect_four")
-    ?.config || null;
+  return (
+    instances.find((instance) => instance?.widgetType === "connect_four")
+      ?.config || null
+  );
 }
 
 function normalizeConnectFourChatCommand(rawText, trigger) {
   const normalized = String(rawText || "").trim();
   const lowerText = normalized.toLowerCase();
-  if (lowerText === "!player2") return "!connect4 join";
+  if (/^!player2(?:\s+\d+)?$/i.test(normalized)) return "!connect4 join";
   if (lowerText.startsWith("!player1 ")) {
     return `!connect4 start ${normalized.slice(9).trim()}`;
   }
@@ -68,17 +70,21 @@ export default function useConnectFourListener() {
     const pollTimer = setInterval(load, 10_000);
     const channel = supabase
       .channel(`connect-four-listener-${user.id}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "better_editor_overlays",
-        filter: `user_id=eq.${user.id}`,
-      }, (payload) => {
-        const nextConfig = getBetterConnectFourConfig(
-          payload.new?.draft_layout,
-        );
-        setWidgetConfig(nextConfig);
-      })
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "better_editor_overlays",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const nextConfig = getBetterConnectFourConfig(
+            payload.new?.draft_layout,
+          );
+          setWidgetConfig(nextConfig);
+        },
+      )
       .subscribe();
 
     return () => {
@@ -92,37 +98,53 @@ export default function useConnectFourListener() {
     broadcasterIdRef.current = channelId;
   }, []);
 
-  const handleMessage = useCallback(async (message) => {
-    const config = configRef.current;
-    if (!config || !user || !message.twitchUserId || !broadcasterIdRef.current) return;
-    const trigger = String(config.chatCommand || "!connect4").trim().toLowerCase();
-    const rawText = String(message.message || "").trim();
-    const commandText = trigger
-      ? normalizeConnectFourChatCommand(rawText, trigger)
-      : null;
-    if (!commandText) return;
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData?.session?.access_token;
-    if (!token) return;
+  const handleMessage = useCallback(
+    async (message) => {
+      const config = configRef.current;
+      if (
+        !config ||
+        !user ||
+        !message.twitchUserId ||
+        !broadcasterIdRef.current
+      )
+        return;
+      const trigger = String(config.chatCommand || "!connect4")
+        .trim()
+        .toLowerCase();
+      const rawText = String(message.message || "").trim();
+      const commandText = trigger
+        ? normalizeConnectFourChatCommand(rawText, trigger)
+        : null;
+      if (!commandText) return;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) return;
 
-    fetch(`${window.location.origin}/api/chat-commands?cmd=connect-four`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        user_id: user.id,
-        message_id: message.id,
-        broadcaster_id: broadcasterIdRef.current,
-        chatter_id: message.twitchUserId,
-        requester: message.login,
-        display_name: message.username,
-        command_text: commandText,
-      }),
-    }).catch((error) => console.error("[ConnectFourListener]", error));
-  }, [user]);
+      fetch(`${window.location.origin}/api/chat-commands?cmd=connect-four`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          message_id: message.id,
+          broadcaster_id: broadcasterIdRef.current,
+          chatter_id: message.twitchUserId,
+          requester: message.login,
+          display_name: message.username,
+          command_text: commandText,
+        }),
+      }).catch((error) => console.error("[ConnectFourListener]", error));
+    },
+    [user],
+  );
 
   const twitchChannel = String(widgetConfig?.twitchChannel || autoChannel || "")
     .trim()
     .toLowerCase()
     .replace(/^#/, "");
-  useTwitchChat(widgetConfig ? twitchChannel : "", handleMessage, { onRoomState: handleRoomState });
+  useTwitchChat(widgetConfig ? twitchChannel : "", handleMessage, {
+    onRoomState: handleRoomState,
+  });
 }

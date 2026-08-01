@@ -14,7 +14,7 @@ export function parseConnectFourCommand(message) {
       ? { type: "start", wager }
       : null;
   }
-  if (root === "!player2" && parts.length === 1) return { type: "join" };
+  if (root === "!player2" && parts.length <= 2) return { type: "join" };
   if (root === "!play" && parts.length === 2) {
     const column = Number(parts[1]);
     return Number.isInteger(column) && column >= 1 && column <= 7
@@ -24,7 +24,7 @@ export function parseConnectFourCommand(message) {
   if (parts[0]?.toLowerCase() !== "!connect4") return null;
 
   const action = parts[1]?.toLowerCase();
-  if (action === "join" && parts.length === 2) return { type: "join" };
+  if (action === "join" && parts.length <= 3) return { type: "join" };
   if (action === "reset" && parts.length === 2) return { type: "reset" };
 
   if (action === "start" && parts.length === 3) {

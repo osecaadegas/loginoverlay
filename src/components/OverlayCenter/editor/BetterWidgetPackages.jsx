@@ -182,6 +182,15 @@ const CHAT_FONTS = [
   { label: "Impact", value: "Impact, 'Arial Black', sans-serif" },
 ];
 
+const CONNECT_FOUR_FONTS = [
+  { label: "Rajdhani", value: "'Rajdhani', sans-serif" },
+  { label: "Chakra Petch", value: "'Chakra Petch', sans-serif" },
+  { label: "Orbitron", value: "'Orbitron', sans-serif" },
+  { label: "Oswald", value: "'Oswald', sans-serif" },
+  { label: "Rubik", value: "'Rubik', sans-serif" },
+  { label: "Impact", value: "Impact, 'Arial Black', sans-serif" },
+];
+
 const CHAT_PRESETS = [
   {
     name: "Neon Cyan",
@@ -1001,8 +1010,17 @@ const BASE_BETTER_CONFIG = {
     playerOneColor: "#ffd23f",
     playerTwoColor: "#f04444",
     boardColor: "#08191f",
+    boardBorderColor: "#a8d7df",
+    titleColor: "#f5c542",
+    textColor: "#f7fbff",
+    mutedColor: "#fff2b8",
+    fontFamily: "'Rajdhani', sans-serif",
+    fontScale: 100,
     showWager: true,
     showPlayers: true,
+    showCommandHelp: true,
+    showMoveCount: true,
+    showTurnTimer: true,
     animateDrops: true,
     chatCommand: "!connect4",
     twitchChannel: "",
@@ -1313,16 +1331,8 @@ function normalizeBetterChatConfig(merged = {}) {
   const defaults = DEFAULT_BETTER_CONFIG.chat;
   const next = {
     ...merged,
-    celebrations: Object.assign(
-      {},
-      defaults.celebrations,
-      merged.celebrations,
-    ),
-    roleEffects: Object.assign(
-      {},
-      defaults.roleEffects,
-      merged.roleEffects,
-    ),
+    celebrations: Object.assign({}, defaults.celebrations, merged.celebrations),
+    roleEffects: Object.assign({}, defaults.roleEffects, merged.roleEffects),
   };
   const legacyFlow = next.entry === "top" ? "top-to-bottom" : defaults.flow;
   if (!["bottom-to-top", "top-to-bottom"].includes(next.flow)) {
@@ -1396,8 +1406,7 @@ function normalizeBetterChatConfig(merged = {}) {
     defaults.roleEffects.intensity,
   );
   next.shoutoutInChat = next.shoutoutInChat === true;
-  next.shoutoutPosition =
-    next.shoutoutPosition === "bottom" ? "bottom" : "top";
+  next.shoutoutPosition = next.shoutoutPosition === "bottom" ? "bottom" : "top";
   next.shoutoutHeight = clampNumber(
     next.shoutoutHeight,
     120,
@@ -5902,6 +5911,7 @@ function BetterConnectFourControls({ config, onChange }) {
     ["content", <MessageSquare key="content" size={12} />, "Content"],
     ["players", <Users key="players" size={12} />, "Players"],
     ["board", <Palette key="board" size={12} />, "Board"],
+    ["type", <Type key="type" size={12} />, "Type"],
     ["motion", <Wand2 key="motion" size={12} />, "Motion"],
   ];
 
@@ -5930,6 +5940,21 @@ function BetterConnectFourControls({ config, onChange }) {
             label="Show wager"
             checked={c.showWager !== false}
             onChange={(showWager) => set({ showWager })}
+          />
+          <ToggleRow
+            label="Show command help"
+            checked={c.showCommandHelp !== false}
+            onChange={(showCommandHelp) => set({ showCommandHelp })}
+          />
+          <ToggleRow
+            label="Show move count"
+            checked={c.showMoveCount !== false}
+            onChange={(showMoveCount) => set({ showMoveCount })}
+          />
+          <ToggleRow
+            label="Show turn timer"
+            checked={c.showTurnTimer !== false}
+            onChange={(showTurnTimer) => set({ showTurnTimer })}
           />
         </Section>
       )}
@@ -5960,6 +5985,45 @@ function BetterConnectFourControls({ config, onChange }) {
             label="Board color"
             value={c.boardColor}
             onChange={(boardColor) => set({ boardColor })}
+          />
+          <ColorRow
+            label="Board border"
+            value={c.boardBorderColor}
+            onChange={(boardBorderColor) => set({ boardBorderColor })}
+          />
+        </Section>
+      )}
+
+      {tab === "type" && (
+        <Section title="Typography" icon={<Type size={13} />}>
+          <SelectRow
+            label="Font"
+            value={c.fontFamily}
+            options={CONNECT_FOUR_FONTS}
+            onChange={(fontFamily) => set({ fontFamily })}
+          />
+          <SliderRow
+            label="Text scale"
+            value={c.fontScale}
+            min={70}
+            max={150}
+            unit="%"
+            onChange={(fontScale) => set({ fontScale })}
+          />
+          <ColorRow
+            label="Title"
+            value={c.titleColor}
+            onChange={(titleColor) => set({ titleColor })}
+          />
+          <ColorRow
+            label="Main text"
+            value={c.textColor}
+            onChange={(textColor) => set({ textColor })}
+          />
+          <ColorRow
+            label="Secondary text"
+            value={c.mutedColor}
+            onChange={(mutedColor) => set({ mutedColor })}
           />
         </Section>
       )}
@@ -5994,9 +6058,7 @@ export function BetterWidgetControls({
   onWidgetChange,
 }) {
   if (type === "connect_four") {
-    return (
-      <BetterConnectFourControls config={config} onChange={onChange} />
-    );
+    return <BetterConnectFourControls config={config} onChange={onChange} />;
   }
   if (type === "raid_shoutout") {
     return (
