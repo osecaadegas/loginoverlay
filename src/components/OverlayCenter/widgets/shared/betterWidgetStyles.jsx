@@ -146,6 +146,7 @@ const BETTER_CHAT_ROLE_DEFS = [
     key: "isBroadcaster",
     label: "OWNER",
     effectKey: "ownerEnabled",
+    movementKey: "ownerMovementEnabled",
     colorKey: "ownerColor",
     color: "#ff3b5c",
   },
@@ -153,6 +154,7 @@ const BETTER_CHAT_ROLE_DEFS = [
     key: "isMod",
     label: "MOD",
     effectKey: "moderatorEnabled",
+    movementKey: "moderatorMovementEnabled",
     colorKey: "moderatorColor",
     color: "#22d3ee",
   },
@@ -160,6 +162,7 @@ const BETTER_CHAT_ROLE_DEFS = [
     key: "isVip",
     label: "VIP",
     effectKey: "vipEnabled",
+    movementKey: "vipMovementEnabled",
     colorKey: "vipColor",
     color: "#c084fc",
   },
@@ -167,6 +170,7 @@ const BETTER_CHAT_ROLE_DEFS = [
     key: "isSub",
     label: "SUB",
     effectKey: "subscriberEnabled",
+    movementKey: "subscriberMovementEnabled",
     colorKey: "subscriberColor",
     color: "#facc15",
   },
@@ -3817,21 +3821,25 @@ export function BetterChatMessage({
   const celebrations = c.celebrations || {};
   const roleEffects = c.roleEffects || {};
   const role = betterChatRole(msg, roleEffects);
-  const roleEffectOn =
+  const roleColorOn =
     roleEffects.enabled !== false &&
     Boolean(role) &&
     roleEffects[role.effectKey] !== false;
+  const roleMovementOn =
+    roleEffects.enabled !== false &&
+    Boolean(role) &&
+    roleEffects[role.movementKey] !== false;
   const roleBadgeOn = c.showRoleBadges !== false && Boolean(role);
   const celebrationOn =
     (messageType === "raid" && celebrations.raid !== false) ||
     (messageType === "sub" && celebrations.sub !== false) ||
     (messageType === "gift" && celebrations.gift !== false);
   const rowPart =
-    followerMessage || celebrationOn || roleEffectOn
+    followerMessage || celebrationOn || roleColorOn
       ? "highlightedMessage"
       : "message";
   const resolveRowStyle =
-    followerMessage || celebrationOn || roleEffectOn
+    followerMessage || celebrationOn || roleColorOn
       ? context.highlightedMessageStyle || context.messagePartStyle
       : context.messagePartStyle;
   const animationKind = String(c.animation || "slide-up");
@@ -3847,7 +3855,8 @@ export function BetterChatMessage({
   const enterDelay = Math.min(msgIdx * (Number(c.stagger) || 0), 1200);
   const celebrationIntensity = clampNumber(celebrations.intensity, 1, 10, 5);
   const roleIntensity = clampNumber(roleEffects.intensity, 1, 10, 8);
-  const intensity = roleEffectOn ? roleIntensity : celebrationIntensity;
+  const intensity =
+    roleColorOn || roleMovementOn ? roleIntensity : celebrationIntensity;
   const effectSpeed = `${Math.max(0.8, 3 - intensity / 5)}s`;
   const effectGlow = `${intensity * 3}px`;
   const [avatarFailed, setAvatarFailed] = useState(false);
@@ -3857,12 +3866,14 @@ export function BetterChatMessage({
       ? roleEffects.raidColor || "#ff2d8d"
       : messageType === "gift"
         ? "#facc15"
-        : roleEffectOn
+        : roleColorOn
           ? role.color
           : messageType === "sub"
             ? roleEffects.subscriberColor || "#facc15"
             : accent;
-  const emphasized = followerMessage || celebrationOn || roleEffectOn;
+  const emphasized = followerMessage || celebrationOn || roleColorOn;
+  const animatedEffect = followerMessage || celebrationOn || roleMovementOn;
+  const movementAccent = roleMovementOn && !roleColorOn ? "#ffffff" : rowAccent;
   const messageStyle = resolveRowStyle({
     position: "relative",
     display: "grid",
@@ -3884,17 +3895,17 @@ export function BetterChatMessage({
     animation:
       animationName === "none"
         ? "none"
-        : `${animationName} 460ms cubic-bezier(0.2,0.75,0.25,1) ${enterDelay}ms both${emphasized ? `, better-soft-pulse ${effectSpeed} ease-in-out ${enterDelay + 460}ms infinite` : ""}`,
+        : `${animationName} 460ms cubic-bezier(0.2,0.75,0.25,1) ${enterDelay}ms both${animatedEffect ? `, better-soft-pulse ${effectSpeed} ease-in-out ${enterDelay + 460}ms infinite` : ""}`,
   });
   return (
     <div style={messageStyle} {...attrs("chat", c, rowPart)}>
-      {emphasized ? (
+      {animatedEffect ? (
         <span
           aria-hidden="true"
           style={{
             position: "absolute",
             inset: 0,
-            background: `linear-gradient(112deg, transparent 18%, ${alphaColor(rowAccent, 0.34)} 46%, transparent 68%)`,
+            background: `linear-gradient(112deg, transparent 18%, ${alphaColor(movementAccent, 0.34)} 46%, transparent 68%)`,
             transform: "translateX(-115%)",
             animation: `better-chat-lantern ${effectSpeed} ease-in-out infinite`,
             pointerEvents: "none",

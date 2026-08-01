@@ -858,9 +858,13 @@ const BASE_BETTER_CONFIG = {
     roleEffects: {
       enabled: true,
       ownerEnabled: true,
+      ownerMovementEnabled: true,
       moderatorEnabled: true,
+      moderatorMovementEnabled: true,
       vipEnabled: true,
+      vipMovementEnabled: true,
       subscriberEnabled: true,
+      subscriberMovementEnabled: true,
       intensity: 8,
       ownerColor: "#ff3b5c",
       moderatorColor: "#22d3ee",
@@ -1348,11 +1352,19 @@ function normalizeBetterChatConfig(merged = {}) {
   next.showRoleBadges = next.showRoleBadges !== false;
   next.roleEffects.enabled = next.roleEffects.enabled !== false;
   next.roleEffects.ownerEnabled = next.roleEffects.ownerEnabled !== false;
+  next.roleEffects.ownerMovementEnabled =
+    next.roleEffects.ownerMovementEnabled !== false;
   next.roleEffects.moderatorEnabled =
     next.roleEffects.moderatorEnabled !== false;
+  next.roleEffects.moderatorMovementEnabled =
+    next.roleEffects.moderatorMovementEnabled !== false;
   next.roleEffects.vipEnabled = next.roleEffects.vipEnabled !== false;
+  next.roleEffects.vipMovementEnabled =
+    next.roleEffects.vipMovementEnabled !== false;
   next.roleEffects.subscriberEnabled =
     next.roleEffects.subscriberEnabled !== false;
+  next.roleEffects.subscriberMovementEnabled =
+    next.roleEffects.subscriberMovementEnabled !== false;
   next.roleEffects.intensity = clampNumber(
     next.roleEffects.intensity,
     1,
@@ -3075,10 +3087,14 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
           }
         />
         {[
-          ["ownerEnabled", "Owner effect"],
-          ["moderatorEnabled", "Moderator effect"],
-          ["vipEnabled", "VIP effect"],
-          ["subscriberEnabled", "Subscriber effect"],
+          ["ownerEnabled", "Owner colour"],
+          ["ownerMovementEnabled", "Owner movement"],
+          ["moderatorEnabled", "Moderator colour"],
+          ["moderatorMovementEnabled", "Moderator movement"],
+          ["vipEnabled", "VIP colour"],
+          ["vipMovementEnabled", "VIP movement"],
+          ["subscriberEnabled", "Subscriber colour"],
+          ["subscriberMovementEnabled", "Subscriber movement"],
         ].map(([key, label]) => (
           <ToggleRow
             key={key}

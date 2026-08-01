@@ -756,18 +756,32 @@ try {
     "Mainstream Bonus Hunt shows Stop once, rounds Breakeven, and centers stat cards",
   );
   assert.ok(
-    betterWidgetStylesSource.includes(
-      "roleEffects[role.effectKey] !== false",
-    ) &&
-      betterWidgetPackagesSource.includes('["ownerEnabled", "Owner effect"]') &&
-      betterWidgetPackagesSource.includes(
-        '["moderatorEnabled", "Moderator effect"]',
+    betterWidgetStylesSource.includes("roleEffects[role.effectKey] !== false") &&
+      betterWidgetStylesSource.includes(
+        "roleEffects[role.movementKey] !== false",
       ) &&
-      betterWidgetPackagesSource.includes('["vipEnabled", "VIP effect"]') &&
+      betterWidgetStylesSource.includes("const animatedEffect") &&
+      betterWidgetPackagesSource.includes('["ownerEnabled", "Owner colour"]') &&
       betterWidgetPackagesSource.includes(
-        '["subscriberEnabled", "Subscriber effect"]',
+        '["ownerMovementEnabled", "Owner movement"]',
+      ) &&
+      betterWidgetPackagesSource.includes(
+        '["moderatorEnabled", "Moderator colour"]',
+      ) &&
+      betterWidgetPackagesSource.includes(
+        '["moderatorMovementEnabled", "Moderator movement"]',
+      ) &&
+      betterWidgetPackagesSource.includes('["vipEnabled", "VIP colour"]') &&
+      betterWidgetPackagesSource.includes(
+        '["vipMovementEnabled", "VIP movement"]',
+      ) &&
+      betterWidgetPackagesSource.includes(
+        '["subscriberEnabled", "Subscriber colour"]',
+      ) &&
+      betterWidgetPackagesSource.includes(
+        '["subscriberMovementEnabled", "Subscriber movement"]',
       ),
-    "Better Chat exposes an independent message-effect toggle for each role",
+    "Better Chat exposes independent colour and movement toggles for each role",
   );
   assert.ok(
     betterWidgetStylesSource.includes('borderRadius: "50%"'),

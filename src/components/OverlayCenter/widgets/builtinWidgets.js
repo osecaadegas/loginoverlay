@@ -220,9 +220,13 @@ registerWidget({
     roleEffects: {
       enabled: true,
       ownerEnabled: true,
+      ownerMovementEnabled: true,
       moderatorEnabled: true,
+      moderatorMovementEnabled: true,
       vipEnabled: true,
+      vipMovementEnabled: true,
       subscriberEnabled: true,
+      subscriberMovementEnabled: true,
       intensity: 8,
       ownerColor: "#ff3b5c",
       moderatorColor: "#22d3ee",
