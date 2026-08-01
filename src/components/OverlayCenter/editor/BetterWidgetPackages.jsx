@@ -325,6 +325,7 @@ export const DEFAULT_BETTER_CONFIG = {
     listMode: "compact",
     drawerMode: "contain",
     drawerRevealSeconds: 30,
+    drawerHoldSeconds: 8,
     statsLayout: "row",
     showRequests: true,
     animations: true,
@@ -2078,6 +2079,7 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
   const localRequestsVisible = c.showRequests !== false;
   const normalizedDrawerMode = c.drawerMode === "expand" ? "expand" : "contain";
   const drawerRevealSeconds = Math.max(10, Math.min(90, Number(c.drawerRevealSeconds) || 30));
+  const drawerHoldSeconds = Math.max(3, Math.min(15, Number(c.drawerHoldSeconds) || 8));
   const drawerHint = normalizedDrawerMode === "expand"
     ? "The best / worst card expands the panel."
     : "The best / worst card stays inside the panel and temporarily reduces the list area.";
@@ -2285,6 +2287,16 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           unit="s"
           disabled={normalizedDrawerMode !== "contain"}
           onChange={(drawerRevealSeconds) => set({ drawerRevealSeconds })}
+        />
+        <SliderRow
+          label="Stay visible"
+          value={drawerHoldSeconds}
+          min={3}
+          max={15}
+          step={1}
+          unit="s"
+          disabled={normalizedDrawerMode !== "contain"}
+          onChange={(drawerHoldSeconds) => set({ drawerHoldSeconds })}
         />
         <HuntHint>{drawerHint}</HuntHint>
       </HuntSection>
