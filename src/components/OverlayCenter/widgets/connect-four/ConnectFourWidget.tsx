@@ -343,7 +343,7 @@ export default function ConnectFourWidget({
         <div
           className="connect-four-status"
           style={{
-            fontSize: `clamp(${12 * fontScale}px, ${2.2 * fontScale}cqh, ${18 * fontScale}px)`,
+            fontSize: `clamp(${15 * fontScale}px, ${2.8 * fontScale}cqh, ${22 * fontScale}px)`,
           }}
         >
           <strong>{getStatus(displayedState)}</strong>
