@@ -149,7 +149,6 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
         onMessage({
           id: tags["id"] || Date.now().toString() + Math.random(),
           platform: "twitch",
-          twitchUserId: tags["user-id"] || "",
           login: tags["login"] || m[2],
           username: tags["display-name"] || m[2],
           message: m[3],

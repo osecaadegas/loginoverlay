@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import streamerDataHandler from './_lib/streamer-data.js';
 import imageSearchHandler from './_lib/image-search.js';
-import { processConnectFourCommand } from './_lib/connect-four-runtime.js';
 
 /**
  * /api/chat-commands — Unified chat command handler
@@ -53,78 +52,7 @@ export default async function handler(req, res) {
     case 'image-search': return imageSearchHandler(req, res);
     case 'bet':      return handleBet(req, res);
     case 'bet-payout': return handleBetPayout(req, res);
-    case 'connect-four': return handleConnectFour(req, res);
     default:         return res.status(400).json({ error: 'Unknown cmd' });
-  }
-}
-
-async function findTwitchUserId(login) {
-  const clientId = process.env.TWITCH_CLIENT_ID || process.env.VITE_TWITCH_CLIENT_ID;
-  const clientSecret = process.env.TWITCH_CLIENT_SECRET;
-  if (!clientId || !clientSecret || !login) return null;
-
-  const tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: 'client_credentials',
-    }),
-  });
-  if (!tokenResponse.ok) return null;
-  const token = await tokenResponse.json();
-  const userResponse = await fetch(
-    `https://api.twitch.tv/helix/users?login=${encodeURIComponent(login)}`,
-    { headers: { 'Client-ID': clientId, Authorization: `Bearer ${token.access_token}` } },
-  );
-  if (!userResponse.ok) return null;
-  const body = await userResponse.json();
-  return body?.data?.[0]?.id || null;
-}
-
-async function handleConnectFour(req, res) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(503).json({ error: 'Server config error' });
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const params = req.method === 'POST'
-    ? { ...(req.query || {}), ...(req.body || {}) }
-    : req.query;
-  const userId = String(params.user_id || '');
-  const chatterLogin = String(params.requester || '').replace(/^@/, '').trim().toLowerCase();
-  const commandText = String(params.command_text || `!connect4 ${buildFromWords(params)}`).trim();
-  if (!userId || !chatterLogin) return res.status(400).json({ error: 'Missing Connect Four identity' });
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const authenticatedUser = await verifyJwt(supabase, req);
-  if (authenticatedUser?.id !== userId) return res.status(401).json({ error: 'Unauthorized' });
-
-  const { data: profile, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('twitch_id')
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (profileError || !profile?.twitch_id) return res.status(404).json({ error: 'Twitch broadcaster not connected' });
-
-  const suppliedChatterId = String(params.chatter_id || '');
-  const chatterTwitchId = await findTwitchUserId(chatterLogin);
-  if (!chatterTwitchId) return res.status(200).send(`@${chatterLogin} Twitch user not found`);
-  if (!suppliedChatterId || suppliedChatterId !== chatterTwitchId) {
-    return res.status(403).json({ error: 'Twitch chatter identity mismatch' });
-  }
-
-  try {
-    const result = await processConnectFourCommand(supabase, {
-      messageId: String(params.message_id || ''),
-      broadcasterTwitchId: profile.twitch_id,
-      chatterTwitchId,
-      chatterLogin,
-      chatterDisplayName: String(params.display_name || chatterLogin),
-      text: commandText,
-    });
-    return res.status(200).json(result || { ok: true });
-  } catch (error) {
-    console.error('[ConnectFour] Chat command failed', error);
-    return res.status(500).json({ error: 'Connect Four command failed' });
   }
 }
 

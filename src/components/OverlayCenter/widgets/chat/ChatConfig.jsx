@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import TabBar from "../shared/TabBar";
 import { makePerStyleSetters } from "../shared/perStyleConfig";
 import { CHAT_STYLE_KEYS } from "../styleKeysRegistry";
@@ -15,16 +15,6 @@ export default function ChatConfig({ config, onChange }) {
   );
   const [activeTab, setActiveTab] = useState("platforms");
   const autoChannel = useTwitchChannel();
-
-  useEffect(() => {
-    if (autoChannel && (!c.twitchChannel || c.twitchEnabled === false)) {
-      onChange({
-        ...c,
-        twitchChannel: c.twitchChannel || autoChannel,
-        twitchEnabled: true,
-      });
-    }
-  }, [autoChannel, c, onChange]);
 
   // ─── Preset system ───
   const [presetName, setPresetName] = useState("");
@@ -175,20 +165,6 @@ export default function ChatConfig({ config, onChange }) {
                 </span>
               )}
             </label>
-            <input
-              value={c.twitchChannel || autoChannel || ""}
-              onChange={(event) =>
-                setMulti({
-                  twitchChannel: event.target.value
-                    .trim()
-                    .replace(/^#/, "")
-                    .toLowerCase(),
-                  twitchEnabled: true,
-                })
-              }
-              placeholder="Twitch channel username"
-              aria-label="Twitch channel username"
-            />
           </div>
 
           {/* YouTube */}
