@@ -8,6 +8,7 @@ import BackgroundWidget from "../widgets/background/BackgroundWidget";
 import BetsWidget from "../widgets/bets/BetsWidget";
 import SlideshowFrameWidget from "../widgets/slideshow-frame/SlideshowFrameWidget";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
+import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -84,6 +85,17 @@ const MOCK_BONUSES = [
 ];
 
 const MOCK_WIDGET_CONFIGS = {
+  raid_shoutout: {
+    __previewAlert: {
+      id: "mock-shoutout-alert",
+      raider_username: "streamerscenter",
+      raider_display_name: "Streamers Center",
+      raider_game: "Slots",
+      clip_title: "An unforgettable stream highlight",
+      clip_view_count: 12840,
+      raid_viewers: 247,
+    },
+  },
   tournament: {
     bracketPhase: "active",
     data: {
@@ -418,6 +430,7 @@ const LIVE_DATA_KEYS = Object.freeze({
   ],
   background: [],
   slideshow_frame: [],
+  raid_shoutout: [],
 });
 
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
@@ -432,6 +445,7 @@ const COMPONENTS = {
   background: BackgroundWidget,
   slideshow_frame: SlideshowFrameWidget,
   bets: BetsWidget,
+  raid_shoutout: RaidShoutoutWidget,
 };
 
 const CONTROL_SCHEMAS = {
@@ -475,6 +489,7 @@ const CONTROL_SCHEMAS = {
   background: ["presets", "colors", "source", "textures", "effects"],
   slideshow_frame: ["media", "frame", "timing", "size"],
   bets: ["theme", "cards", "fill", "layout", "text", "colours"],
+  raid_shoutout: ["content", "playback", "frame", "motion", "type", "colours"],
 };
 
 const SIZE_CONSTRAINTS = {
@@ -507,6 +522,12 @@ const SIZE_CONSTRAINTS = {
     maxHeight: 1080,
   },
   bets: { minWidth: 280, minHeight: 300, maxWidth: 880, maxHeight: 920 },
+  raid_shoutout: {
+    minWidth: 300,
+    minHeight: 240,
+    maxWidth: 1280,
+    maxHeight: 960,
+  },
 };
 
 function cloneJson(value) {
@@ -959,6 +980,7 @@ export function renderBetterWidgetInstance({
     widgetId: widget.id,
     userId,
     theme,
+    runtime: mode === "live" ? "obs" : "editor",
   };
   return <WidgetComponent {...commonProps} />;
 }

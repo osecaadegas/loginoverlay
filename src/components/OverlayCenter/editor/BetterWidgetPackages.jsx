@@ -971,6 +971,9 @@ const BASE_BETTER_CONFIG = {
     orientation: "vertical",
     cardColors: DEFAULT_CARD_COLORS,
   },
+  raid_shoutout: {
+    displayStyle: "better_raid_shoutout",
+  },
 };
 
 export const DEFAULT_BETTER_CONFIG = Object.freeze(
@@ -986,6 +989,17 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  {
+    type: "raid_shoutout",
+    label: "Twitch Shoutout",
+    styleKey: "displayStyle",
+    styleId: "better_raid_shoutout",
+    icon: "📣",
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.raid_shoutout.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.raid_shoutout.height,
+    },
+  },
   {
     type: "slideshow_frame",
     label: "Slideshow Frame",
@@ -5400,6 +5414,257 @@ function BetterTournamentControls({
   );
 }
 
+const SHOUTOUT_FRAME_STYLES = [
+  { value: "neon", label: "Neon", icon: <Zap size={11} /> },
+  { value: "glass", label: "Glass", icon: <Sparkles size={11} /> },
+  { value: "retro", label: "Retro", icon: <Frame size={11} /> },
+  { value: "minimal", label: "Minimal", icon: <Layers size={11} /> },
+  { value: "gaming", label: "Gaming", icon: <Gauge size={11} /> },
+];
+
+const SHOUTOUT_ANIMATIONS = [
+  { value: "slide-left", label: "From left" },
+  { value: "slide-right", label: "From right" },
+  { value: "slide-top", label: "From top" },
+  { value: "slide-bottom", label: "From bottom" },
+  { value: "zoom", label: "Zoom" },
+  { value: "flip", label: "Flip" },
+  { value: "bounce", label: "Bounce" },
+  { value: "glitch", label: "Glitch" },
+  { value: "roll", label: "Roll" },
+];
+
+const SHOUTOUT_FONTS = [
+  { value: "'Rajdhani', sans-serif", label: "Rajdhani" },
+  { value: "'Chakra Petch', sans-serif", label: "Chakra Petch" },
+  { value: "'Orbitron', sans-serif", label: "Orbitron" },
+  { value: "'Oswald', sans-serif", label: "Oswald" },
+];
+
+function BetterRaidShoutoutControls({
+  config,
+  onChange,
+  widget,
+  onWidgetChange,
+}) {
+  const defaults = DEFAULT_BETTER_CONFIG.raid_shoutout;
+  const c = ensureBetterWidgetConfig("raid_shoutout", config);
+  const [tab, setTab] = useTab("content");
+  const set = (patch) => onChange({ ...c, ...patch });
+  const setSize = (patch) => {
+    if (typeof onWidgetChange !== "function") return;
+    onWidgetChange({
+      width: patch.width ?? widget?.width,
+      height: patch.height ?? widget?.height,
+      config: c,
+    });
+  };
+  const tabs = [
+    ["content", <MessageSquare key="content" size={12} />, "Content"],
+    ["playback", <MonitorPlay key="playback" size={12} />, "Playback"],
+    ["frame", <Frame key="frame" size={12} />, "Frame"],
+    ["motion", <Wand2 key="motion" size={12} />, "Motion"],
+    ["type", <Type key="type" size={12} />, "Type"],
+    ["colours", <Palette key="colours" size={12} />, "Colours"],
+  ];
+
+  return (
+    <div className="bp-controls">
+      <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
+
+      {tab === "content" && (
+        <Section title="Headline" icon={<MessageSquare size={13} />}>
+          <TextRow
+            label="Heading text"
+            value={c.headingText}
+            onChange={(headingText) => set({ headingText })}
+          />
+          <ToggleRow
+            label="Streamer name"
+            checked={c.showStreamerInfo !== false}
+            onChange={(showStreamerInfo) => set({ showStreamerInfo })}
+          />
+          <ToggleRow
+            label="Clip title"
+            checked={c.showClipTitle !== false}
+            onChange={(showClipTitle) => set({ showClipTitle })}
+          />
+          <ToggleRow
+            label="View count"
+            checked={c.showViews !== false}
+            onChange={(showViews) => set({ showViews })}
+          />
+          <ToggleRow
+            label="Countdown"
+            checked={c.showTimer !== false}
+            onChange={(showTimer) => set({ showTimer })}
+          />
+          <ToggleRow
+            label="Channel footer"
+            checked={c.showFooter !== false}
+            onChange={(showFooter) => set({ showFooter })}
+          />
+        </Section>
+      )}
+
+      {tab === "playback" && (
+        <Section title="Alert playback" icon={<MonitorPlay size={13} />}>
+          <SliderRow
+            label="Display duration"
+            value={c.displayDuration}
+            min={10}
+            max={120}
+            unit="s"
+            onChange={(displayDuration) => set({ displayDuration })}
+          />
+          <ToggleRow
+            label="Autoplay clip"
+            checked={c.autoplay !== false}
+            onChange={(autoplay) => set({ autoplay })}
+          />
+          <ToggleRow
+            label="Mute clip"
+            checked={c.muted !== false}
+            onChange={(muted) => set({ muted })}
+          />
+          <ToggleRow
+            label="Close when clip ends"
+            checked={c.dismissOnClipEnd === true}
+            onChange={(dismissOnClipEnd) => set({ dismissOnClipEnd })}
+          />
+        </Section>
+      )}
+
+      {tab === "frame" && (
+        <>
+          <Section title="Frame style" icon={<Frame size={13} />}>
+            <Segmented
+              value={c.frameStyle}
+              options={SHOUTOUT_FRAME_STYLES}
+              columns={2}
+              onChange={(frameStyle) => set({ frameStyle })}
+            />
+            <SliderRow
+              label="Rounded corners"
+              value={c.borderRadius}
+              min={0}
+              max={48}
+              unit="px"
+              onChange={(borderRadius) => set({ borderRadius })}
+            />
+            <SliderRow
+              label="Border width"
+              value={c.borderWidth}
+              min={0}
+              max={8}
+              unit="px"
+              onChange={(borderWidth) => set({ borderWidth })}
+            />
+            <SliderRow
+              label="Glow"
+              value={c.glowIntensity}
+              min={0}
+              max={100}
+              unit="%"
+              onChange={(glowIntensity) => set({ glowIntensity })}
+            />
+            <ToggleRow
+              label="Corner lights"
+              checked={c.showCornerDots !== false}
+              onChange={(showCornerDots) => set({ showCornerDots })}
+            />
+            <ToggleRow
+              label="Scanning light"
+              checked={c.showScanline !== false}
+              onChange={(showScanline) => set({ showScanline })}
+            />
+          </Section>
+          <Section title="Widget size" icon={<Maximize2 size={13} />}>
+            <SliderRow
+              label="Width"
+              value={Number(widget?.width) || 560}
+              min={300}
+              max={1280}
+              step={10}
+              unit="px"
+              onChange={(width) => setSize({ width })}
+            />
+            <SliderRow
+              label="Height"
+              value={Number(widget?.height) || 420}
+              min={240}
+              max={960}
+              step={10}
+              unit="px"
+              onChange={(height) => setSize({ height })}
+            />
+          </Section>
+        </>
+      )}
+
+      {tab === "motion" && (
+        <Section title="Entrance animation" icon={<Wand2 size={13} />}>
+          <Segmented
+            value={c.animation}
+            options={SHOUTOUT_ANIMATIONS}
+            columns={2}
+            onChange={(animation) => set({ animation })}
+          />
+        </Section>
+      )}
+
+      {tab === "type" && (
+        <Section title="Typography" icon={<Type size={13} />}>
+          <SelectRow
+            label="Font"
+            value={c.fontFamily}
+            options={SHOUTOUT_FONTS}
+            onChange={(fontFamily) => set({ fontFamily })}
+          />
+          <SliderRow
+            label="Avatar size"
+            value={c.avatarSize}
+            min={24}
+            max={96}
+            unit="px"
+            onChange={(avatarSize) => set({ avatarSize })}
+          />
+          <SliderRow
+            label="Title size"
+            value={c.titleSize}
+            min={10}
+            max={32}
+            unit="px"
+            onChange={(titleSize) => set({ titleSize })}
+          />
+          <SliderRow
+            label="Subtitle size"
+            value={c.subtitleSize}
+            min={8}
+            max={24}
+            unit="px"
+            onChange={(subtitleSize) => set({ subtitleSize })}
+          />
+        </Section>
+      )}
+
+      {tab === "colours" && (
+        <Section title="Palette" icon={<Palette size={13} />}>
+          <ColorRow label="Accent" value={c.accentColor} onChange={(accentColor) => set({ accentColor })} />
+          <ColorRow label="Secondary" value={c.secondaryColor} onChange={(secondaryColor) => set({ secondaryColor })} />
+          <ColorRow label="Background" value={c.backgroundColor} onChange={(backgroundColor) => set({ backgroundColor })} />
+          <ColorRow label="Text" value={c.textColor} onChange={(textColor) => set({ textColor })} />
+          <ColorRow label="Muted text" value={c.mutedColor} onChange={(mutedColor) => set({ mutedColor })} />
+        </Section>
+      )}
+
+      <button className="bp-reset" type="button" onClick={() => onChange(defaults)}>
+        <RotateCcw size={13} /> Reset widget
+      </button>
+    </div>
+  );
+}
+
 export function BetterWidgetControls({
   type,
   config,
@@ -5408,6 +5673,16 @@ export function BetterWidgetControls({
   widget,
   onWidgetChange,
 }) {
+  if (type === "raid_shoutout") {
+    return (
+      <BetterRaidShoutoutControls
+        config={config}
+        onChange={onChange}
+        widget={widget}
+        onWidgetChange={onWidgetChange}
+      />
+    );
+  }
   if (type === "tournament") {
     return (
       <BetterTournamentControls

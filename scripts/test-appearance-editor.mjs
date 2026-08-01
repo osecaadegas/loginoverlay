@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
 globalThis.window = { location: { origin: "http://localhost" } };
@@ -66,7 +67,7 @@ const {
   "/src/components/OverlayCenter/editor/standardWidgetPresets.js",
 );
 
-const { createBetterInstance } = await server.ssrLoadModule(
+const { createBetterInstance, renderBetterWidgetInstance } = await server.ssrLoadModule(
   "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
 );
 
@@ -196,12 +197,99 @@ try {
     ),
     "utf8",
   );
+  const betterWidgetPackagesSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
   assert.ok(
     betterWidgetRegistrySource.includes(
       "giveaway: { minWidth: 240, minHeight: 180",
     ),
     "Better Editor allows Giveaway widgets to shrink to the renderer's 240px minimum width",
   );
+  const shoutoutInstance = createBetterInstance("raid_shoutout");
+  assert.equal(
+    shoutoutInstance.config.displayStyle,
+    "better_raid_shoutout",
+    "Twitch Shoutout is a first-class Better widget",
+  );
+  assert.ok(
+    !Object.keys(shoutoutInstance.config).some((key) =>
+      /client.?id|access.?token|oauth|secret/i.test(key),
+    ),
+    "Twitch Shoutout never persists Twitch credentials in widget configuration",
+  );
+  const shoutoutMarkup = renderToStaticMarkup(
+    renderBetterWidgetInstance({
+      instance: shoutoutInstance,
+      layout: { instances: [shoutoutInstance] },
+      mode: "mock",
+    }),
+  );
+  for (const elementId of [
+    "container",
+    "header",
+    "avatar",
+    "title",
+    "subtitle",
+    "viewsBadge",
+    "timer",
+    "clipFrame",
+    "footer",
+    "channel",
+    "liveBadge",
+  ]) {
+    assert.ok(
+      shoutoutMarkup.includes(`data-widget-element="${elementId}"`),
+      `Twitch Shoutout exposes the stable ${elementId} appearance element`,
+    );
+  }
+  const shoutoutWidgetSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/raid-shoutout/RaidShoutoutWidget.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    shoutoutWidgetSource.includes("subscribeToShoutoutAlerts") &&
+      shoutoutWidgetSource.includes("getPendingAlerts") &&
+      shoutoutWidgetSource.includes("markAlertShown") &&
+      shoutoutWidgetSource.includes("markAlertDismissed"),
+    "OBS shoutouts use the production realtime queue and lifecycle service",
+  );
+  assert.ok(
+    shoutoutWidgetSource.includes('runtime !== "obs"') &&
+      betterWidgetRegistrySource.includes(
+        'runtime: mode === "live" ? "obs" : "editor"',
+      ),
+    "editor preview cannot subscribe to or consume production shoutout alerts",
+  );
+  for (const frameStyle of ["neon", "glass", "retro", "minimal", "gaming"]) {
+    assert.ok(
+      betterWidgetPackagesSource.includes(`value: "${frameStyle}"`),
+      `Twitch Shoutout offers the supplied ${frameStyle} frame style`,
+    );
+  }
+  for (const animation of [
+    "slide-left",
+    "slide-right",
+    "slide-top",
+    "slide-bottom",
+    "zoom",
+    "flip",
+    "bounce",
+    "glitch",
+    "roll",
+  ]) {
+    assert.ok(
+      betterWidgetPackagesSource.includes(`value: "${animation}"`),
+      `Twitch Shoutout offers the supplied ${animation} animation`,
+    );
+  }
   const presetExportedAt = "2026-08-01T12:00:00.000Z";
   const preset = createWidgetControlsPreset(
     {
@@ -237,13 +325,6 @@ try {
     ),
     "bonus-hunt-controls-preset-2026-08-01.json",
     "widget control presets use a stable JSON filename",
-  );
-  const betterWidgetPackagesSource = readFileSync(
-    new URL(
-      "../src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
-      import.meta.url,
-    ),
-    "utf8",
   );
   const builtInWidgetsSource = readFileSync(
     new URL(
