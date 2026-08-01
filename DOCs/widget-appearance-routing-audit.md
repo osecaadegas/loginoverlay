@@ -382,7 +382,6 @@ Examples:
 - `StatsWidget.jsx`
 - `WheelOfNamesWidget.jsx`
 - `SlotmachineWidget.jsx`
-- `AIChatBotWidget.jsx`
 
 Required when registering any of these:
 

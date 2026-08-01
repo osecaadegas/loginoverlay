@@ -13,7 +13,7 @@ const TARGETS = [
   'src/components/OverlayCenter/appearance',
 ];
 
-const IGNORE_FILE = /(?:Config\.jsx|\.bak$|AvatarThumbnail\.jsx|ColorPicker\.jsx|TabBar\.jsx)$/;
+const IGNORE_FILE = /(?:Config\.jsx|\.bak$|ColorPicker\.jsx|TabBar\.jsx)$/;
 const VISUAL_LITERAL = /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|\b\d+(?:\.\d+)?(?:px|rem)\b|(?:linear|radial|conic)-gradient\([^)]*\)|['"`]\s*(?:Inter|Roboto|Arial|Segoe UI|sans-serif|serif|monospace)[^'"`]*['"`]/gi;
 const NUMERIC_APPEARANCE_PROP = /\b(?:fontSize|borderRadius|borderWidth|padding|gap|width|height|minWidth|maxWidth|minHeight|maxHeight|lineHeight|letterSpacing|opacity|shadowBlur|shadowSize|shadowIntensity|imageSize|iconSize|barHeight)\s*:\s*\d+(?:\.\d+)?\b/gi;
 const SHADOW_LITERAL_PROP = /\b(?:boxShadow|textShadow|filter)\s*:\s*['"`][^'"`]*(?:\d+px|drop-shadow|blur\(|rgba?\()[^'"`]*['"`]/gi;

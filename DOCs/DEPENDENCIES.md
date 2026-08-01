@@ -8,7 +8,6 @@ This project currently builds around these main runtime packages:
 - `@tanstack/react-query`
 - `@vercel/node`
 - `lucide-react`, `recharts`, `canvas-confetti`
-- `@react-three/fiber`, `@react-three/drei`, `three`
 
 Tooling and automation packages currently present:
 

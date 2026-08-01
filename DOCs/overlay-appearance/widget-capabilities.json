@@ -69,7 +69,6 @@
     "shared_overlay_presets": "Preset sharing and library state."
   },
   "unregisteredWidgetComponentFiles": [
-    "AIChatBotWidget.jsx",
     "CoinFlipWidget.jsx",
     "PointWheelWidget.jsx",
     "PredictionsWidget.jsx",

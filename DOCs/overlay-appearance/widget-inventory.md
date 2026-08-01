@@ -38,7 +38,6 @@ All active widget registrations are in `src/components/OverlayCenter/widgets/bui
 
 These component files exist under `src/components/OverlayCenter/widgets/` but are not active entries in `builtinWidgets.js` in the current registry. They may be legacy, incomplete, or used by non-overlay surfaces. Do not expose them in a future appearance editor until their runtime route is proven.
 
-- `AIChatBotWidget.jsx`
 - `CoinFlipWidget.jsx`
 - `PointWheelWidget.jsx`
 - `PredictionsWidget.jsx`
