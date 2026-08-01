@@ -160,6 +160,30 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
+      '[data-drawer-mode="contain"] .better-hunt-vertical > .better-hunt-list',
+    ) &&
+      betterWidgetStylesSource.includes(
+        '[data-drawer-mode="contain"] .better-hunt-main-list-wrap',
+      ) &&
+      betterWidgetStylesSource.includes(
+        '[data-drawer-mode="contain"] .better-hunt-left > .better-hunt-carousel',
+      ) &&
+      betterWidgetStylesSource.includes(
+        '[data-drawer-mode="contain"] .better-hunt-left{height:100%;min-height:0;overflow:hidden}',
+      ),
+    "contained Bonus Hunt assigns one shrinkable content region in every orientation",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      'height: drawerMode === "contain" ? undefined : listHeight',
+    ) &&
+      !betterWidgetStylesSource.includes(
+        'height: drawerMode === "contain" ? "100%" : listHeight',
+      ),
+    "contained Bonus Hunt lets layout shrink and restore the list instead of forcing full height",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
       '[data-drawer-mode="expand"][data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in',
     ),
     "expanded Bonus Hunt grows only the anchored panel bottom",

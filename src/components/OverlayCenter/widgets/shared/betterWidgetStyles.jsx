@@ -1552,6 +1552,11 @@ function BetterStyleSheet() {
       .better-hunt-root[data-drawer-mode="expand"] .better-hunt-shell{place-items:start center;align-items:start}
       .better-hunt-root[data-drawer-mode="expand"] .better-hunt-panel{align-self:start;transform-origin:top center}
       .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream{height:var(--bh-panel-height,100%);max-height:100%}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-left{display:flex;flex-direction:column}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-left{height:100%;min-height:0;overflow:hidden}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical > *,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream > *,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-left > *{flex:0 0 auto}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical > .better-hunt-list,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-main-list-wrap,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-left > .better-hunt-carousel{min-height:0;flex:1 1 var(--bh-list-height);overflow:hidden}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-main-list-wrap .better-hunt-list{height:100%}
       .better-hunt-panel{position:relative;width:100%;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:var(--bh-radius,14px);background:linear-gradient(180deg,var(--bh-panel-hi) 0%,var(--bh-panel-mid) 55%,var(--bh-panel-lo) 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 12%,transparent)}
       .better-hunt-panel > *{position:relative;z-index:6}
       .better-hunt-panel::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit}
@@ -2990,7 +2995,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const listStyle = {
       "--bh-list-duration": listDuration,
       "--bh-list-height": `${listHeight}px`,
-      height: drawerMode === "contain" ? "100%" : listHeight,
+      height: drawerMode === "contain" ? undefined : listHeight,
       maxHeight: `${listHeight}px`,
     };
     return (
