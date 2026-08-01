@@ -658,7 +658,7 @@ export const DEFAULT_BETTER_CONFIG = {
     listMode: "compact",
     drawerMode: "contain",
     drawerRevealSeconds: 30,
-    drawerHoldSeconds: 8,
+    drawerHoldSeconds: 15,
     statsLayout: "row",
     showRequests: true,
     animations: true,
@@ -4213,8 +4213,8 @@ function SimpleThemedControls({
     Math.min(90, Number(c.drawerRevealSeconds) || 30),
   );
   const drawerHoldSeconds = Math.max(
-    3,
-    Math.min(15, Number(c.drawerHoldSeconds) || 8),
+    12,
+    Math.min(30, Number(c.drawerHoldSeconds) || 15),
   );
   const drawerHint =
     normalizedDrawerMode === "expand"
@@ -4552,8 +4552,8 @@ function SimpleThemedControls({
         <SliderRow
           label="Stay visible"
           value={drawerHoldSeconds}
-          min={3}
-          max={15}
+          min={12}
+          max={30}
           step={1}
           unit="s"
           onChange={(drawerHoldSeconds) => set({ drawerHoldSeconds })}

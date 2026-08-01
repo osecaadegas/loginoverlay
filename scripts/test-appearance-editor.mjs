@@ -81,6 +81,25 @@ try {
     betterWidgetPackagesSource.includes("const next = { ...c }"),
     "Tournament appearance reset starts from the complete saved config",
   );
+  const betterWidgetStylesSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      '[data-drawer-mode="contain"] .better-hunt-drawer{height:var(--bh-drawer-open-height);min-height:var(--bh-drawer-open-height)',
+    ),
+    "contained Bonus Hunt reserves the best/worst drawer height while hidden",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      "clampNumber(c.drawerHoldSeconds, 12, 30, 15)",
+    ),
+    "Bonus Hunt best/worst cards remain visible long enough to read",
+  );
   for (const widgetType of [
     "bonus_hunt",
     "giveaway",

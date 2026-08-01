@@ -1688,9 +1688,12 @@ function BetterStyleSheet() {
       .better-hunt-root[data-session="opening"] .better-hunt-pill{border-color:rgba(255,201,61,.72);background:rgba(255,201,61,.12);color:#ffc93d}.better-hunt-root[data-session="ended"] .better-hunt-pill{border-color:rgba(210,220,230,.34);background:rgba(210,220,230,.08);color:var(--bh-steel-hi)}
       .better-hunt-panel--shake{animation:better-hunt-widget-shake .6s ease-in-out .1s 3}
       .better-hunt-stat,.better-hunt-row,.better-hunt-total,.better-hunt-requests,.better-hunt-result{border-radius:var(--bh-stat-radius,7px)}
-      .better-hunt-drawer{--bh-drawer-open-height:150px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(-12px);margin:0 -8px;padding:0;transition:max-height .95s cubic-bezier(.22,.9,.3,1),opacity .55s ease,transform .9s cubic-bezier(.22,.9,.3,1),margin .9s cubic-bezier(.22,.9,.3,1);will-change:max-height,opacity,transform}
+      .better-hunt-drawer{--bh-drawer-open-height:150px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(-12px);margin:0 -8px;padding:0;transition:max-height .95s cubic-bezier(.22,.9,.3,1),opacity .75s ease,transform .9s cubic-bezier(.22,.9,.3,1),margin .9s cubic-bezier(.22,.9,.3,1);will-change:max-height,opacity,transform}
       .better-hunt-drawer.is-open{max-height:var(--bh-drawer-open-height);opacity:1;transform:translateY(0);margin-top:8px}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-drawer{height:var(--bh-drawer-open-height);min-height:var(--bh-drawer-open-height);max-height:var(--bh-drawer-open-height);transform:none;margin-top:8px;visibility:hidden;transition:opacity .75s ease,visibility 0s linear .75s}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-drawer.is-open{opacity:1;visibility:visible;transition-delay:0s}
       .better-hunt-root[data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in .95s cubic-bezier(.22,.9,.3,1) both}
+      .better-hunt-root[data-drawer-mode="contain"][data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-stats-in .95s cubic-bezier(.22,.9,.3,1) both}
       .better-hunt-result{display:grid;grid-template-rows:auto minmax(68px,auto);gap:5px;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 14px rgba(0,0,0,.35)}
       .better-hunt-result-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px;min-width:0}
       .better-hunt-result-head em{display:inline-flex;width:max-content;border-radius:4px;padding:2px 4px;background:rgba(69,200,255,.13);color:var(--bh-ice);font-size:.52em;font-style:normal;font-weight:950;letter-spacing:.1em;line-height:1;text-transform:uppercase}
@@ -2260,7 +2263,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     30,
   );
   const drawerRevealMs = drawerRevealSeconds * 1000;
-  const drawerHoldMs = clampNumber(c.drawerHoldSeconds, 3, 15, 8) * 1000;
+  const drawerHoldMs = clampNumber(c.drawerHoldSeconds, 12, 30, 15) * 1000;
   const statsLayout =
     c.statsLayout === "grid" || c.statsLayout === "2x2" ? "grid" : "row";
   const visibleRows = Math.max(3, Math.min(8, Number(c.visibleRows) || 5));
