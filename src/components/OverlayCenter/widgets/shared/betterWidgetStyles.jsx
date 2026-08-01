@@ -1617,9 +1617,9 @@ function BetterStyleSheet() {
       .better-hunt-main-status{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;border:1px solid color-mix(in srgb,var(--bh-line-hi) 50%,transparent);border-radius:6px;background:color-mix(in srgb,var(--bh-ice) 10%,transparent);padding:5px 9px;color:var(--bh-ice);font-size:.76em;font-weight:950;letter-spacing:.16em;line-height:1;text-transform:uppercase;box-shadow:0 1px 4px rgba(0,0,0,.4)}
       .better-hunt-main-status--opening{border-color:rgba(255,201,61,.72);background:rgba(255,201,61,.12);color:#ffc93d}.better-hunt-main-status--ended{border-color:rgba(210,220,230,.34);background:rgba(210,220,230,.08);color:var(--bh-steel-hi)}
       .better-hunt-main-stat-pair{display:flex;gap:8px;min-width:0;padding:0 12px}
-      .better-hunt-main-stat{min-width:0;min-height:58px;display:grid;align-content:center;gap:4px;flex:1;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:var(--bh-stat-radius,7px);background:linear-gradient(180deg,var(--bh-card-hi),var(--bh-card-lo));padding:8px 10px;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 2px 8px rgba(0,0,0,.5)}
-      .better-hunt-main-stat-label{display:flex;align-items:center;gap:6px;min-width:0;color:var(--bh-steel);font-size:.68em;font-weight:950;letter-spacing:.18em;line-height:1;text-transform:uppercase}
-      .better-hunt-main-stat-label svg{width:11px;height:11px;flex:0 0 auto}.better-hunt-main-stat strong{overflow:hidden;color:#fff;font-size:1.18em;font-weight:950;line-height:1.05;text-overflow:ellipsis;white-space:nowrap}
+      .better-hunt-main-stat{min-width:0;min-height:58px;display:grid;align-content:center;justify-items:center;gap:4px;flex:1;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:var(--bh-stat-radius,7px);background:linear-gradient(180deg,var(--bh-card-hi),var(--bh-card-lo));padding:8px 10px;text-align:center;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 2px 8px rgba(0,0,0,.5)}
+      .better-hunt-main-stat-label{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;color:var(--bh-steel);font-size:.68em;font-weight:950;letter-spacing:.18em;line-height:1;text-align:center;text-transform:uppercase}
+      .better-hunt-main-stat-label svg{width:11px;height:11px;flex:0 0 auto}.better-hunt-main-stat strong{width:100%;overflow:hidden;color:#fff;font-size:1.18em;font-weight:950;line-height:1.05;text-align:center;text-overflow:ellipsis;white-space:nowrap}
       .better-hunt-main-count{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 12px 0;border:1px solid color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:var(--bh-stat-radius,7px);background:linear-gradient(180deg,var(--bh-card-hi),var(--bh-card-lo));padding:9px 12px;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 8%,transparent),0 2px 8px rgba(0,0,0,.45)}
       .better-hunt-main-count span{display:flex;align-items:center;gap:7px;color:var(--bh-steel);font-size:.76em;font-weight:950;letter-spacing:.18em;text-transform:uppercase}.better-hunt-main-count strong{color:#fff;font-size:1.2em;font-weight:950}
       .better-hunt-main-tier{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 12px 0;border-radius:7px;padding:7px 12px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
@@ -3290,9 +3290,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           Wallet,
         )}
         {renderMainstreamStat(
-          "Breakeven",
-          displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-",
-          TrendingUp,
+          "Stop",
+          stopKnown ? formatMoney(stopValue, money) : "-",
+          Shield,
         )}
       </div>
       <div className="better-hunt-main-count">
@@ -3329,7 +3329,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           )}
           {renderMainstreamStat(
             "Breakeven",
-            displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-",
+            displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-",
             TrendingUp,
           )}
         </div>

@@ -746,6 +746,17 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
+      '"Stop",\n          stopKnown ? formatMoney(stopValue, money) : "-"',
+    ) &&
+      betterWidgetStylesSource.includes(
+        'displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-"',
+      ) &&
+      betterWidgetStylesSource.includes("justify-items:center") &&
+      betterWidgetStylesSource.includes("text-align:center"),
+    "Mainstream Bonus Hunt shows Stop once, rounds Breakeven, and centers stat cards",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
       "roleEffects[role.effectKey] !== false",
     ) &&
       betterWidgetPackagesSource.includes('["ownerEnabled", "Owner effect"]') &&
