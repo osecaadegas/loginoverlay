@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createServer } from "vite";
 
+globalThis.window = { location: { origin: "http://localhost" } };
+
 const server = await createServer({
   logLevel: "silent",
   server: { middlewareMode: true },
@@ -50,10 +52,22 @@ const { subElementStyle } = await server.ssrLoadModule(
 
 const {
   WIDGET_CONTROLS_PRESET_KIND,
+  WIDGET_CONTROLS_PRESET_VERSION,
   createWidgetControlsPreset,
   getWidgetControlsPresetFilename,
 } = await server.ssrLoadModule(
   "/src/components/OverlayCenter/editor/widgetControlsPreset.js",
+);
+
+const {
+  STANDARD_BETTER_WIDGET_CONTROLS,
+  STANDARD_BETTER_WIDGET_GEOMETRY,
+} = await server.ssrLoadModule(
+  "/src/components/OverlayCenter/editor/standardWidgetPresets.js",
+);
+
+const { createBetterInstance } = await server.ssrLoadModule(
+  "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
 );
 
 const {
@@ -121,6 +135,36 @@ try {
     0,
     "layer reordering keeps the background fixed at z-index zero",
   );
+  Object.entries(STANDARD_BETTER_WIDGET_GEOMETRY).forEach(
+    ([widgetType, geometry]) => {
+      const instance = createBetterInstance(widgetType);
+      assert.ok(instance, `${widgetType} can be created from its standard`);
+      assert.deepEqual(
+        {
+          x: instance.x,
+          y: instance.y,
+          width: instance.width,
+          height: instance.height,
+        },
+        {
+          x: geometry.x,
+          y: geometry.y,
+          width: geometry.width,
+          height: geometry.height,
+        },
+        `${widgetType} uses the standard position and frame size when added`,
+      );
+      Object.entries(STANDARD_BETTER_WIDGET_CONTROLS[widgetType]).forEach(
+        ([key, value]) => {
+          assert.deepEqual(
+            instance.config[key],
+            value,
+            `${widgetType}.${key} uses the supplied standard control value`,
+          );
+        },
+      );
+    },
+  );
   const betterObsOverlaySource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/editor/BetterObsOverlay.jsx",
@@ -167,6 +211,7 @@ try {
       x: -37,
       y: 1124,
       width: 430,
+      height: 884,
       liveData: { totalPay: 1200 },
     },
     presetExportedAt,
@@ -175,14 +220,15 @@ try {
     preset,
     {
       kind: WIDGET_CONTROLS_PRESET_KIND,
-      schemaVersion: 1,
+      schemaVersion: WIDGET_CONTROLS_PRESET_VERSION,
       exportedAt: presetExportedAt,
       widgetType: "bonus_hunt",
       widgetLabel: "Better Hunt",
       position: { x: -37, y: 1124 },
+      size: { width: 430, height: 884 },
       controls: { drawerMode: "contain", accentColor: "#45c8ff" },
     },
-    "widget control presets contain current controls and signed canvas position without live state",
+    "widget control presets contain controls, signed position, and frame size without live state",
   );
   assert.equal(
     getWidgetControlsPresetFilename(

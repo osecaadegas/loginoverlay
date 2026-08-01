@@ -40,6 +40,10 @@ import {
   BetterBackgroundStyle,
   BetterGiveawayStyle,
 } from "../widgets/shared/betterWidgetStyles";
+import {
+  STANDARD_BETTER_WIDGET_CONTROLS,
+  STANDARD_BETTER_WIDGET_GEOMETRY,
+} from "./standardWidgetPresets";
 
 const DEFAULT_CARD_COLORS = [
   { accent: "#45c8ff", accent2: "#1e5ad6" },
@@ -599,7 +603,7 @@ const BACKGROUND_PRESETS = [
   },
 ];
 
-export const DEFAULT_BETTER_CONFIG = {
+const BASE_BETTER_CONFIG = {
   tournament: {
     layout: "grid",
     showBg: true,
@@ -969,6 +973,18 @@ export const DEFAULT_BETTER_CONFIG = {
   },
 };
 
+export const DEFAULT_BETTER_CONFIG = Object.freeze(
+  Object.fromEntries(
+    Object.entries(BASE_BETTER_CONFIG).map(([widgetType, config]) => [
+      widgetType,
+      {
+        ...config,
+        ...STANDARD_BETTER_WIDGET_CONTROLS[widgetType],
+      },
+    ]),
+  ),
+);
+
 export const BETTER_WIDGETS = [
   {
     type: "slideshow_frame",
@@ -976,7 +992,10 @@ export const BETTER_WIDGETS = [
     styleKey: "displayStyle",
     styleId: "better_slideshow_frame",
     icon: "🎞️",
-    defaultSize: { width: 960, height: 360 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.slideshow_frame.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.slideshow_frame.height,
+    },
   },
   {
     type: "tournament",
@@ -984,7 +1003,10 @@ export const BETTER_WIDGETS = [
     styleKey: "layout",
     styleId: "grid",
     icon: "🏆",
-    defaultSize: { width: 960, height: 720 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.tournament.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.tournament.height,
+    },
   },
   {
     type: "bonus_hunt",
@@ -992,7 +1014,10 @@ export const BETTER_WIDGETS = [
     styleKey: "displayStyle",
     styleId: "better_bonus_hunt",
     icon: "🎯",
-    defaultSize: { width: 430, height: 860 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.bonus_hunt.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.bonus_hunt.height,
+    },
   },
   {
     type: "giveaway",
@@ -1000,7 +1025,10 @@ export const BETTER_WIDGETS = [
     styleKey: "displayStyle",
     styleId: "better_giveaway",
     icon: "🎁",
-    defaultSize: { width: 700, height: 270 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.giveaway.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.giveaway.height,
+    },
   },
   {
     type: "navbar",
@@ -1008,7 +1036,10 @@ export const BETTER_WIDGETS = [
     styleKey: "displayStyle",
     styleId: "better_navbar",
     icon: "🧭",
-    defaultSize: { width: 1200, height: 72 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.navbar.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.navbar.height,
+    },
   },
   {
     type: "chat",
@@ -1016,7 +1047,10 @@ export const BETTER_WIDGETS = [
     styleKey: "chatStyle",
     styleId: "better_chat",
     icon: "💬",
-    defaultSize: BETTER_CHAT_DEFAULT_SIZE,
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.chat.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.chat.height,
+    },
   },
   {
     type: "rtp_stats",
@@ -1024,7 +1058,10 @@ export const BETTER_WIDGETS = [
     styleKey: "displayStyle",
     styleId: "better_rtp",
     icon: "📖",
-    defaultSize: { width: 1080, height: 88 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.rtp_stats.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.rtp_stats.height,
+    },
   },
   {
     type: "background",
@@ -1032,7 +1069,10 @@ export const BETTER_WIDGETS = [
     styleKey: "displayStyle",
     styleId: "better_background",
     icon: "🖼️",
-    defaultSize: { width: 1920, height: 1080 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.background.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.background.height,
+    },
   },
   {
     type: "bets",
@@ -1040,7 +1080,10 @@ export const BETTER_WIDGETS = [
     styleKey: "displayStyle",
     styleId: "better_bets",
     icon: "💎",
-    defaultSize: { width: 380, height: 430 },
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.bets.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.bets.height,
+    },
   },
 ];
 

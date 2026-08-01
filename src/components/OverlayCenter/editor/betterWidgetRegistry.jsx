@@ -15,6 +15,7 @@ import {
   getBetterWidgetMeta,
 } from "./BetterWidgetPackages";
 import { normalizeBetterCoordinate } from "./betterWidgetGeometry";
+import { STANDARD_BETTER_WIDGET_GEOMETRY } from "./standardWidgetPresets";
 
 export const BETTER_CANVAS = Object.freeze({ width: 1920, height: 1080 });
 export const BETTER_LAYOUT_SCHEMA_VERSION = 1;
@@ -419,24 +420,7 @@ const LIVE_DATA_KEYS = Object.freeze({
   slideshow_frame: [],
 });
 
-const DEFAULT_POSITIONS = {
-  background: {
-    x: 0,
-    y: 0,
-    width: 1920,
-    height: 1080,
-    zIndex: 0,
-    locked: true,
-  },
-  tournament: { x: 480, y: 180, width: 960, height: 720, zIndex: 28 },
-  navbar: { x: 360, y: 26, width: 1200, height: 72, zIndex: 10 },
-  rtp_stats: { x: 420, y: 126, width: 1080, height: 88, zIndex: 20 },
-  slideshow_frame: { x: 480, y: 300, width: 960, height: 360, zIndex: 25 },
-  bonus_hunt: { x: 42, y: 150, width: 430, height: 860, zIndex: 30 },
-  bets: { x: 1496, y: 134, width: 380, height: 430, zIndex: 40 },
-  chat: { x: 1616, y: 544, width: 260, height: 500, zIndex: 50 },
-  giveaway: { x: 610, y: 782, width: 700, height: 270, zIndex: 60 },
-};
+const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
   tournament: TournamentWidget,
