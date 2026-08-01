@@ -450,7 +450,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
-  tournament: ["bracket", "presets"],
+  tournament: ["surface", "layout", "cards", "typography", "palette"],
   bonus_hunt: [
     "style",
     "orientation",

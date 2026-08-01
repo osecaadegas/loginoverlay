@@ -35,7 +35,6 @@ import NavbarWidget from "../widgets/navbar/NavbarWidget";
 import RtpStatsWidget from "../widgets/rtp-stats/RtpStatsWidget";
 import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
 import ChatWidget from "../widgets/chat/ChatWidget";
-import TournamentConfig from "../widgets/tournament/TournamentConfig";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import {
   BetterBackgroundStyle,
@@ -603,6 +602,42 @@ const BACKGROUND_PRESETS = [
 export const DEFAULT_BETTER_CONFIG = {
   tournament: {
     layout: "grid",
+    showBg: true,
+    bgColor: "#07101f",
+    borderColor: "#1d4f73",
+    borderRadius: 20,
+    borderWidth: 1,
+    mainCardPadding: 14,
+    mainShadowColor: "#020617",
+    mainShadowBlur: 36,
+    mainShadowOpacity: 65,
+    mainGlow: 18,
+    mainBackdropBlur: 0,
+    containerPadding: 8,
+    cardGap: 8,
+    cardBg: "#101d31",
+    cardBorder: "#244563",
+    cardRadius: 14,
+    cardBorderWidth: 1,
+    nameColor: "#f8fafc",
+    multiColor: "#38bdf8",
+    slotNameColor: "#94a3b8",
+    nameSize: 16,
+    multiSize: 18,
+    slotNameSize: 12,
+    fontFamily: "'Rajdhani', sans-serif",
+    showSlotName: true,
+    slotImageRadius: 10,
+    swordSize: 24,
+    swordColor: "#38bdf8",
+    swordBg: "#0f2138",
+    xIconColor: "#ef4444",
+    xIconBg: "#1f1420",
+    activeStatusColor: "#38bdf8",
+    statusBadgeBg: "#10243d",
+    scoreNeutralColor: "#94a3b8",
+    scoreNegativeColor: "#ef4444",
+    eliminatedOpacity: 0.35,
     tournamentTitle: "Tournament",
     bracketName: "Tournament",
     bracketType: "bonus_bo3",
@@ -4828,6 +4863,229 @@ function BetterSlideshowFrameControls({
   );
 }
 
+const TOURNAMENT_LAYOUTS = [
+  { key: "grid", name: "Grid" },
+  { key: "vertical", name: "Vertical" },
+  { key: "minimal", name: "Minimal" },
+  { key: "arena", name: "Arena" },
+  { key: "esports", name: "Esports" },
+  { key: "scoreboard", name: "Scoreboard" },
+];
+
+const TOURNAMENT_FONTS = [
+  { value: "'Rajdhani', sans-serif", label: "Rajdhani" },
+  { value: "'Barlow Condensed', sans-serif", label: "Barlow Condensed" },
+  { value: "'Orbitron', sans-serif", label: "Orbitron" },
+  { value: "'Arial Narrow', sans-serif", label: "Arial Narrow" },
+];
+
+const TOURNAMENT_APPEARANCE_KEYS = Object.freeze([
+  "layout",
+  "showBg",
+  "bgColor",
+  "borderColor",
+  "borderRadius",
+  "borderWidth",
+  "mainCardPadding",
+  "mainShadowColor",
+  "mainShadowBlur",
+  "mainShadowOpacity",
+  "mainGlow",
+  "mainBackdropBlur",
+  "containerPadding",
+  "cardGap",
+  "cardBg",
+  "cardBorder",
+  "cardRadius",
+  "cardBorderWidth",
+  "nameColor",
+  "multiColor",
+  "slotNameColor",
+  "nameSize",
+  "multiSize",
+  "slotNameSize",
+  "fontFamily",
+  "showSlotName",
+  "slotImageRadius",
+  "swordSize",
+  "swordColor",
+  "swordBg",
+  "xIconColor",
+  "xIconBg",
+  "activeStatusColor",
+  "statusBadgeBg",
+  "scoreNeutralColor",
+  "scoreNegativeColor",
+  "eliminatedOpacity",
+  "arenaAccent",
+  "arenaWinColor",
+  "arenaCardBg",
+  "arenaLoseOpacity",
+  "esCyan",
+  "esPurple",
+  "esGold",
+  "esBg",
+  "esCardBg",
+  "esBorder",
+  "sbAccent",
+  "sbHeaderBg",
+  "sbCardBg",
+  "sbTextColor",
+  "sbPayColor",
+  "sbMultiColor",
+  "sbWinColor",
+  "sbLoseColor",
+  "sbTabBg",
+  "sbTabActive",
+]);
+
+function tournamentColor(value, fallback) {
+  return /^#[0-9a-f]{6}$/i.test(String(value || "")) ? value : fallback;
+}
+
+function BetterTournamentControls({ config, onChange, widget, onWidgetChange }) {
+  const defaults = DEFAULT_BETTER_CONFIG.tournament;
+  const c = ensureBetterWidgetConfig("tournament", config);
+  const [tab, setTab] = useTab("surface");
+  const tabs = [
+    ["surface", <Frame size={12} />, "Main card"],
+    ["layout", <Maximize2 size={12} />, "Layout"],
+    ["cards", <Layers size={12} />, "Cards"],
+    ["type", <Type size={12} />, "Text"],
+    ["palette", <Palette size={12} />, "Palette"],
+  ];
+  const set = (patch) => onChange({ ...c, ...patch });
+  const setSize = (patch) => {
+    if (typeof onWidgetChange !== "function") return;
+    onWidgetChange({
+      width: patch.width ?? widget?.width,
+      height: patch.height ?? widget?.height,
+      config: c,
+    });
+  };
+  const resetAppearance = () => {
+    const next = { ...c };
+    for (const key of TOURNAMENT_APPEARANCE_KEYS) {
+      if (Object.prototype.hasOwnProperty.call(defaults, key)) next[key] = defaults[key];
+      else delete next[key];
+    }
+    onChange(next);
+  };
+
+  return (
+    <div className="bp-controls">
+      <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
+
+      {tab === "surface" && (
+        <>
+          <Section title="Main card" icon={<Frame size={13} />}>
+            <ToggleRow label="Show background" checked={c.showBg !== false} onChange={(showBg) => set({ showBg })} />
+            {c.showBg !== false && (
+              <>
+                <ColorRow label="Background" value={tournamentColor(c.bgColor, defaults.bgColor)} onChange={(bgColor) => set({ bgColor })} />
+                <ColorRow label="Border" value={tournamentColor(c.borderColor, defaults.borderColor)} onChange={(borderColor) => set({ borderColor })} />
+                <SliderRow label="Border width" value={c.borderWidth} min={0} max={8} unit="px" onChange={(borderWidth) => set({ borderWidth })} />
+                <SliderRow label="Rounded corners" value={c.borderRadius} min={0} max={48} unit="px" onChange={(borderRadius) => set({ borderRadius })} />
+                <SliderRow label="Outer padding" value={c.mainCardPadding} min={0} max={40} unit="px" onChange={(mainCardPadding) => set({ mainCardPadding })} />
+              </>
+            )}
+          </Section>
+          <Section title="Shadow & depth" icon={<Sparkles size={13} />}>
+            <ColorRow label="Shadow" value={tournamentColor(c.mainShadowColor, defaults.mainShadowColor)} onChange={(mainShadowColor) => set({ mainShadowColor })} />
+            <SliderRow label="Shadow blur" value={c.mainShadowBlur} min={0} max={80} unit="px" onChange={(mainShadowBlur) => set({ mainShadowBlur })} />
+            <SliderRow label="Shadow opacity" value={c.mainShadowOpacity} min={0} max={100} unit="%" onChange={(mainShadowOpacity) => set({ mainShadowOpacity })} />
+            <SliderRow label="Accent glow" value={c.mainGlow} min={0} max={60} unit="px" onChange={(mainGlow) => set({ mainGlow })} />
+            <SliderRow label="Backdrop blur" value={c.mainBackdropBlur} min={0} max={30} unit="px" onChange={(mainBackdropBlur) => set({ mainBackdropBlur })} />
+          </Section>
+        </>
+      )}
+
+      {tab === "layout" && (
+        <>
+          <Section title="Visual layout" icon={<MonitorPlay size={13} />}>
+            <Segmented value={c.layout} columns={3} options={TOURNAMENT_LAYOUTS} onChange={(layout) => set({ layout })} />
+          </Section>
+          <Section title="Canvas & spacing" icon={<Maximize2 size={13} />}>
+            <SliderRow label="Widget width" value={Number(widget?.width) || 960} min={320} max={1920} step={10} unit="px" onChange={(width) => setSize({ width })} />
+            <SliderRow label="Widget height" value={Number(widget?.height) || 720} min={220} max={1080} step={10} unit="px" onChange={(height) => setSize({ height })} />
+            <SliderRow label="Content padding" value={c.containerPadding} min={0} max={32} unit="px" onChange={(containerPadding) => set({ containerPadding })} />
+            <SliderRow label="Card gap" value={c.cardGap} min={0} max={32} unit="px" onChange={(cardGap) => set({ cardGap })} />
+          </Section>
+        </>
+      )}
+
+      {tab === "cards" && (
+        <>
+          <Section title="Match cards" icon={<Layers size={13} />}>
+            <ColorRow label="Card background" value={tournamentColor(c.cardBg, defaults.cardBg)} onChange={(cardBg) => set({ cardBg })} />
+            <ColorRow label="Card border" value={tournamentColor(c.cardBorder, defaults.cardBorder)} onChange={(cardBorder) => set({ cardBorder })} />
+            <SliderRow label="Card border" value={c.cardBorderWidth} min={0} max={6} unit="px" onChange={(cardBorderWidth) => set({ cardBorderWidth })} />
+            <SliderRow label="Card corners" value={c.cardRadius} min={0} max={36} unit="px" onChange={(cardRadius) => set({ cardRadius })} />
+            <SliderRow label="Eliminated opacity" value={Math.round(Number(c.eliminatedOpacity) * 100)} min={10} max={100} unit="%" onChange={(value) => set({ eliminatedOpacity: value / 100 })} />
+          </Section>
+          <Section title="Slot images" icon={<ImagePlus size={13} />}>
+            <ToggleRow label="Show slot names" checked={c.showSlotName !== false} onChange={(showSlotName) => set({ showSlotName })} />
+            <SliderRow label="Image corners" value={c.slotImageRadius} min={0} max={36} unit="px" onChange={(slotImageRadius) => set({ slotImageRadius })} />
+          </Section>
+        </>
+      )}
+
+      {tab === "type" && (
+        <>
+          <Section title="Typography" icon={<Type size={13} />}>
+            <SelectRow label="Font" value={c.fontFamily} options={TOURNAMENT_FONTS} onChange={(fontFamily) => set({ fontFamily })} />
+            <ColorRow label="Player names" value={tournamentColor(c.nameColor, defaults.nameColor)} onChange={(nameColor) => set({ nameColor })} />
+            <SliderRow label="Player size" value={c.nameSize} min={9} max={34} unit="px" onChange={(nameSize) => set({ nameSize })} />
+            <ColorRow label="Score values" value={tournamentColor(c.multiColor, defaults.multiColor)} onChange={(multiColor) => set({ multiColor })} />
+            <SliderRow label="Score size" value={c.multiSize} min={9} max={40} unit="px" onChange={(multiSize) => set({ multiSize })} />
+            <ColorRow label="Slot names" value={tournamentColor(c.slotNameColor, defaults.slotNameColor)} onChange={(slotNameColor) => set({ slotNameColor })} />
+            <SliderRow label="Slot name size" value={c.slotNameSize} min={8} max={24} unit="px" onChange={(slotNameSize) => set({ slotNameSize })} />
+          </Section>
+          <Section title="Status & connector" icon={<Zap size={13} />}>
+            <ColorRow label="Live status" value={tournamentColor(c.activeStatusColor, defaults.activeStatusColor)} onChange={(activeStatusColor) => set({ activeStatusColor })} />
+            <ColorRow label="Status background" value={tournamentColor(c.statusBadgeBg, defaults.statusBadgeBg)} onChange={(statusBadgeBg) => set({ statusBadgeBg })} />
+            <ColorRow label="Negative score" value={tournamentColor(c.scoreNegativeColor, defaults.scoreNegativeColor)} onChange={(scoreNegativeColor) => set({ scoreNegativeColor })} />
+            <ColorRow label="Connector" value={tournamentColor(c.swordColor, defaults.swordColor)} onChange={(swordColor) => set({ swordColor })} />
+            <SliderRow label="Connector size" value={c.swordSize} min={12} max={54} unit="px" onChange={(swordSize) => set({ swordSize })} />
+          </Section>
+        </>
+      )}
+
+      {tab === "palette" && (
+        <Section title={`${c.layout} palette`} icon={<Palette size={13} />}>
+          {c.layout === "arena" ? (
+            <>
+              <ColorRow label="Arena accent" value={tournamentColor(c.arenaAccent, defaults.swordColor)} onChange={(arenaAccent) => set({ arenaAccent })} />
+              <ColorRow label="Winner" value={tournamentColor(c.arenaWinColor, "#22c55e")} onChange={(arenaWinColor) => set({ arenaWinColor })} />
+              <ColorRow label="Arena cards" value={tournamentColor(c.arenaCardBg, defaults.cardBg)} onChange={(arenaCardBg) => set({ arenaCardBg })} />
+            </>
+          ) : c.layout === "scoreboard" ? (
+            <>
+              <ColorRow label="Accent" value={tournamentColor(c.sbAccent, "#3b82f6")} onChange={(sbAccent) => set({ sbAccent })} />
+              <ColorRow label="Header" value={tournamentColor(c.sbHeaderBg, "#050b16")} onChange={(sbHeaderBg) => set({ sbHeaderBg })} />
+              <ColorRow label="Cards" value={tournamentColor(c.sbCardBg, "#1a1d2e")} onChange={(sbCardBg) => set({ sbCardBg })} />
+              <ColorRow label="Winner" value={tournamentColor(c.sbWinColor, "#22c55e")} onChange={(sbWinColor) => set({ sbWinColor })} />
+              <ColorRow label="Loser" value={tournamentColor(c.sbLoseColor, "#ef4444")} onChange={(sbLoseColor) => set({ sbLoseColor })} />
+            </>
+          ) : (
+            <>
+              <ColorRow label="Cyan accent" value={tournamentColor(c.esCyan, "#00e5ff")} onChange={(esCyan) => set({ esCyan })} />
+              <ColorRow label="Secondary" value={tournamentColor(c.esPurple, "#64748b")} onChange={(esPurple) => set({ esPurple })} />
+              <ColorRow label="Gold" value={tournamentColor(c.esGold, "#fbbf24")} onChange={(esGold) => set({ esGold })} />
+              <ColorRow label="Layout background" value={tournamentColor(c.esBg, "#030712")} onChange={(esBg) => set({ esBg })} />
+              <ColorRow label="Layout border" value={tournamentColor(c.esBorder, defaults.cardBorder)} onChange={(esBorder) => set({ esBorder })} />
+            </>
+          )}
+        </Section>
+      )}
+
+      <button className="bp-reset" type="button" onClick={resetAppearance}>
+        <RotateCcw size={13} /> Reset appearance
+      </button>
+    </div>
+  );
+}
+
 export function BetterWidgetControls({
   type,
   config,
@@ -4838,7 +5096,12 @@ export function BetterWidgetControls({
 }) {
   if (type === "tournament") {
     return (
-      <TournamentConfig config={config} onChange={onChange} mode="widget" />
+      <BetterTournamentControls
+        config={config}
+        onChange={onChange}
+        widget={widget}
+        onWidgetChange={onWidgetChange}
+      />
     );
   }
   if (type === "slideshow_frame") {

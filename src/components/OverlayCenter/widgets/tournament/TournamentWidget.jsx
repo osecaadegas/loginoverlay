@@ -134,6 +134,15 @@ function TournamentWidget({ config, theme }) {
   const borderColor = showBg ? subValue(c, 'container', 'borderColor', c.borderColor || widgetToken('border-color')) : 'transparent';
   const gap = subValue(c, 'matchCard', 'gap', subValue(c, 'participantCard', 'gap', c.cardGap ?? elementToken('participant-card', 'gap', widgetToken('gap'))));
   const padding = subValue(c, 'container', 'padding', c.containerPadding ?? widgetToken('padding'));
+  const mainCardPadding = showBg ? c.mainCardPadding ?? 14 : 0;
+  const mainShadowColor = c.mainShadowColor || '#020617';
+  const mainShadowBlur = Math.max(0, Number(c.mainShadowBlur) || 0);
+  const mainShadowOpacity = Math.max(0, Math.min(100, Number(c.mainShadowOpacity) || 0));
+  const mainGlow = Math.max(0, Number(c.mainGlow) || 0);
+  const mainBackdropBlur = Math.max(0, Number(c.mainBackdropBlur) || 0);
+  const mainCardShadow = showBg
+    ? `0 18px ${mainShadowBlur}px color-mix(in srgb, ${mainShadowColor} ${mainShadowOpacity}%, transparent), 0 0 ${mainGlow}px color-mix(in srgb, ${accentColor} 28%, transparent)`
+    : 'none';
   const swordColor = subValue(c, 'connector', 'textColor', c.swordColor || elementToken('connector', 'text-color', widgetToken('accent')));
   const swordBg = subValue(c, 'connector', 'background', c.swordBg || elementToken('connector', 'background', widgetToken('card-bg')));
   const swordSize = subValue(c, 'connector', 'imageSize', c.swordSize ?? elementToken('connector', 'image-size', widgetToken('font-size')));
@@ -190,6 +199,10 @@ function TournamentWidget({ config, theme }) {
         width: '100%', height: '100%', fontFamily,
         background: bgColor, borderRadius: cssLength(borderRadius),
         border: `${cssLength(borderWidth)} solid ${borderColor}`,
+        padding: cssLength(mainCardPadding), boxSizing: 'border-box',
+        boxShadow: mainCardShadow,
+        backdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
+        WebkitBackdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: emptyTextColor, fontSize: cssLength(emptyFontSize),
       }}>
@@ -2052,8 +2065,12 @@ function TournamentWidget({ config, theme }) {
   return (
     <div className={`tw-root${isMinimalLayout ? ' tw-root--minimal' : ''}`} {...partAttrs('container')} style={{
       width: '100%', height: '100%', fontFamily,
-      background: bgColor, borderRadius: `${borderRadius}px`,
-      border: `${borderWidth}px solid ${borderColor}`,
+      background: bgColor, borderRadius: cssLength(borderRadius),
+      border: `${cssLength(borderWidth)} solid ${borderColor}`,
+      padding: cssLength(mainCardPadding), boxSizing: 'border-box',
+      boxShadow: mainCardShadow,
+      backdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
+      WebkitBackdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>

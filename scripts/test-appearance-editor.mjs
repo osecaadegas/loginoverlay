@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createServer } from "vite";
 
 const server = await createServer({
@@ -48,6 +49,32 @@ const { subElementStyle } = await server.ssrLoadModule(
 );
 
 try {
+  const betterWidgetPackagesSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    !betterWidgetPackagesSource.includes('import TournamentConfig'),
+    "Better Editor does not import the full Tournament data manager",
+  );
+  assert.ok(
+    betterWidgetPackagesSource.includes("function BetterTournamentControls"),
+    "Better Editor provides dedicated Tournament appearance controls",
+  );
+  assert.ok(
+    /tournament:\s*\{[\s\S]*?showBg:\s*true,[\s\S]*?bgColor:\s*"#07101f"/.test(
+      betterWidgetPackagesSource,
+    ),
+    "Better Tournament has a visible canonical main card",
+  );
+  assert.ok(
+    betterWidgetPackagesSource.includes("const next = { ...c }"),
+    "Tournament appearance reset starts from the complete saved config",
+  );
+
   assert.equal(getModeLabel("simple"), "Simple Mode");
   assert.equal(getModeLabel("advanced"), "Advanced Mode");
   assert.equal(
