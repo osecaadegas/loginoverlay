@@ -309,6 +309,14 @@ BEGIN
       )
       RETURNING id INTO created_match_id;
 
+      DELETE FROM public.connect_four_command_events
+      WHERE broadcaster_twitch_id = p_broadcaster_twitch_id
+        AND twitch_message_id <> p_twitch_message_id;
+
+      DELETE FROM public.connect_four_matches
+      WHERE streamer_id = streamer_user_id
+        AND id <> created_match_id;
+
       INSERT INTO public.connect_four_point_operations (
         match_id, twitch_user_id, twitch_login, operation_type, player_number, amount
       ) VALUES (
@@ -460,12 +468,17 @@ BEGIN
     error_text := 'unsupported_command';
   END IF;
 
-  UPDATE public.connect_four_command_events
-  SET match_id = active_match.id,
-      result = CASE WHEN error_text IS NULL THEN 'processed' ELSE 'ignored' END,
-      error_message = error_text,
-      processed_at = now()
-  WHERE twitch_message_id = p_twitch_message_id;
+  IF error_text IS NOT NULL AND active_match.id IS NULL THEN
+    DELETE FROM public.connect_four_command_events
+    WHERE twitch_message_id = p_twitch_message_id;
+  ELSE
+    UPDATE public.connect_four_command_events
+    SET match_id = active_match.id,
+        result = CASE WHEN error_text IS NULL THEN 'processed' ELSE 'ignored' END,
+        error_message = error_text,
+        processed_at = now()
+    WHERE twitch_message_id = p_twitch_message_id;
+  END IF;
 
   IF error_text IS NOT NULL THEN
     RETURN jsonb_build_object('ok', false, 'error', error_text);

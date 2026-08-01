@@ -28,3 +28,5 @@ through audited point operations.
 
 The OBS/browser-source client reads only `connect_four_public_state`. Twitch
 message identity, command decisions, and all point mutations remain server-side.
+Starting a new match permanently removes that streamer's previous match and its
+command and point-operation records, so only the latest match is retained.

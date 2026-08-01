@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   createConnectFourBoard,
   dropConnectFourPiece,
@@ -89,6 +90,22 @@ assert.equal(
     secret,
   }),
   false,
+);
+
+const migration = readFileSync(
+  new URL("../migrations/033_chat_connect_four.sql", import.meta.url),
+  "utf8",
+);
+const commandRetention = migration.indexOf("DELETE FROM public.connect_four_command_events");
+const matchRetention = migration.indexOf("DELETE FROM public.connect_four_matches");
+const publicStateSync = migration.indexOf("PERFORM public.connect_four_sync_public_state(created_match_id)");
+assert.ok(commandRetention > 0, "new matches must remove prior command history");
+assert.ok(matchRetention > commandRetention, "new matches must remove the prior match after its commands");
+assert.ok(publicStateSync > matchRetention, "the latest snapshot must be published after retention cleanup");
+assert.match(
+  migration,
+  /IF error_text IS NOT NULL AND active_match\.id IS NULL THEN\s+DELETE FROM public\.connect_four_command_events/,
+  "ignored commands without a match must not accumulate",
 );
 
 console.log("connect four engine and parser tests passed");
