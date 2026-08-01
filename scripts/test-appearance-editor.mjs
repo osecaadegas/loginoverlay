@@ -229,14 +229,14 @@ try {
       import.meta.url,
     ),
     "utf8",
-  );
+  ).replaceAll("\r\n", "\n");
   const betterWidgetPackagesSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
       import.meta.url,
     ),
     "utf8",
-  );
+  ).replaceAll("\r\n", "\n");
   assert.ok(
     betterWidgetRegistrySource.includes(
       "giveaway: { minWidth: 240, minHeight: 180",
@@ -672,7 +672,7 @@ try {
       import.meta.url,
     ),
     "utf8",
-  );
+  ).replaceAll("\r\n", "\n");
   assert.ok(
     betterWidgetStylesSource.includes(
       '[data-drawer-mode="contain"] .better-hunt-drawer{height:auto;min-height:0;max-height:0;transform:translateY(100%)',
