@@ -50,6 +50,8 @@ registerWidget({
     showWager: true,
     showPlayers: true,
     animateDrops: true,
+    chatCommand: "!connect4",
+    twitchChannel: "",
   },
 });
 

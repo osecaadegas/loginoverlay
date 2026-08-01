@@ -283,4 +283,23 @@ for (const setting of [
   );
 }
 
+const connectFourListener = readFileSync(
+  new URL("../src/hooks/useConnectFourListener.js", import.meta.url),
+  "utf8",
+);
+assert.match(connectFourListener, /useTwitchChat/);
+assert.match(connectFourListener, /cmd=connect-four/);
+assert.match(connectFourListener, /message_id: message\.id/);
+assert.match(connectFourListener, /chatter_id: message\.twitchUserId/);
+
+const chatCommands = readFileSync(
+  new URL("../api/chat-commands.js", import.meta.url),
+  "utf8",
+);
+assert.match(chatCommands, /case 'connect-four'/);
+assert.match(chatCommands, /processConnectFourCommand/);
+
+const app = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+assert.match(app, /useConnectFourListener\(\)/);
+
 console.log("connect four engine and parser tests passed");

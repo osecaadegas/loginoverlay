@@ -261,3 +261,32 @@ export async function settleConnectFourOperations(supabase, operations) {
     }
   }
 }
+
+export async function processConnectFourCommand(supabase, command) {
+  const parsedCommand = parseConnectFourCommand(command.text);
+  if (!parsedCommand) return { ok: false, error: "invalid_command" };
+
+  const { data, error } = await supabase.rpc("process_connect_four_command", {
+    p_twitch_message_id: command.messageId,
+    p_broadcaster_twitch_id: command.broadcasterTwitchId,
+    p_chatter_twitch_id: command.chatterTwitchId,
+    p_chatter_login: command.chatterLogin,
+    p_chatter_display_name: command.chatterDisplayName,
+    p_command_text: command.text,
+    p_command_type: parsedCommand.type,
+    p_wager: parsedCommand.type === "start" ? parsedCommand.wager : null,
+    p_column: parsedCommand.type === "drop" ? parsedCommand.column : null,
+  });
+  if (error) throw error;
+  if (data?.duplicate || !data?.ok) return data;
+
+  await settleConnectFourOperations(supabase, data.operations);
+  await announceConnectFourState(
+    supabase,
+    data.matchId,
+    parsedCommand.type,
+  ).catch((chatError) =>
+    console.error("[ConnectFour] Chat announcement failed", chatError),
+  );
+  return data;
+}

@@ -25,6 +25,7 @@ import CookieConsent from "./components/CookieConsent/CookieConsent";
 import useSlotRequestListener from "./hooks/useSlotRequestListener";
 import usePredictionListener from "./hooks/usePredictionListener";
 import useBetsListener from "./hooks/useBetsListener";
+import useConnectFourListener from "./hooks/useConnectFourListener";
 import useAnalytics from "./hooks/useAnalytics";
 import { applyRouteSeo } from "./utils/seo";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
@@ -82,6 +83,7 @@ function AppRuntimeHooks() {
   useSlotRequestListener(); // persistent chat listener for !sr commands
   usePredictionListener(); // persistent chat listener for !bet commands
   useBetsListener(); // persistent chat listener for Bets widget
+  useConnectFourListener(); // persistent chat listener for Connect Four
   useAnalytics(); // page view tracking + user identification
   return null;
 }

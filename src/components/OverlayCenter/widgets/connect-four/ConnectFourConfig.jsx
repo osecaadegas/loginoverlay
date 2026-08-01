@@ -11,10 +11,12 @@ const DEFAULTS = {
   showWager: true,
   showPlayers: true,
   animateDrops: true,
+  chatCommand: "!connect4",
+  twitchChannel: "",
 };
 
 export default function ConnectFourConfig({ config = {}, onChange }) {
-  const { signInWithTwitch, twitchListener } = useAuth();
+  const { user, signInWithTwitch, twitchListener } = useAuth();
   const value = { ...DEFAULTS, ...config };
   const set = (patch) => onChange({ ...value, ...patch });
 
@@ -101,13 +103,36 @@ export default function ConnectFourConfig({ config = {}, onChange }) {
             <h2>Commands</h2>
           </div>
         </header>
+        <label className="connect-four-config__field">
+          <span>Chat command trigger</span>
+          <input
+            type="text"
+            value={value.chatCommand}
+            placeholder="!connect4"
+            onChange={(event) => set({ chatCommand: event.target.value })}
+          />
+        </label>
+        <label className="connect-four-config__field">
+          <span>Twitch channel (leave empty for auto-detect)</span>
+          <input
+            type="text"
+            value={value.twitchChannel}
+            placeholder="auto-detect from profile"
+            onChange={(event) => set({ twitchChannel: event.target.value })}
+          />
+        </label>
         <dl>
-          <div><dt>Start</dt><dd>!connect4 start 100</dd></div>
-          <div><dt>Join</dt><dd>!connect4 join</dd></div>
-          <div><dt>Move</dt><dd>!connect4 1 through !connect4 7</dd></div>
-          <div><dt>Cancel</dt><dd>!connect4 reset</dd></div>
+          <div><dt>Start</dt><dd>{value.chatCommand} start 100</dd></div>
+          <div><dt>Join</dt><dd>{value.chatCommand} join</dd></div>
+          <div><dt>Move</dt><dd>{value.chatCommand} 1 through {value.chatCommand} 7</dd></div>
+          <div><dt>Cancel</dt><dd>{value.chatCommand} reset</dd></div>
         </dl>
         <p><Clock3 size={16} /> Each turn lasts 60 seconds with a warning at 10 seconds.</p>
+        <div className="connect-four-config__command-url">
+          <strong>StreamElements command URL</strong>
+          <small>Create a custom command named {value.chatCommand} with this URL response.</small>
+          <code>{`${window.location.origin}/api/chat-commands?cmd=connect-four&user_id=${user?.id || "<your-user-id>"}&w1=\${1}&w2=\${2}&requester=\${user.username}`}</code>
+        </div>
         <div
           className={`connect-four-config__listener ${twitchListener?.connected ? "is-connected" : ""}`}
         >

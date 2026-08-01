@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import {
-  announceConnectFourState,
   parseConnectFourCommand,
-  settleConnectFourOperations,
+  processConnectFourCommand,
   verifyTwitchEventSubSignature,
 } from "./_lib/connect-four-runtime.js";
 
@@ -68,27 +67,14 @@ export default async function handler(req, res) {
   const supabase = createClient(supabaseUrl, serviceKey);
 
   try {
-    const { data, error } = await supabase.rpc("process_connect_four_command", {
-      p_twitch_message_id: event.message_id,
-      p_broadcaster_twitch_id: event.broadcaster_user_id,
-      p_chatter_twitch_id: event.chatter_user_id,
-      p_chatter_login: event.chatter_user_login,
-      p_chatter_display_name: event.chatter_user_name,
-      p_command_text: event.message?.text,
-      p_command_type: parsedCommand.type,
-      p_wager: parsedCommand.type === "start" ? parsedCommand.wager : null,
-      p_column: parsedCommand.type === "drop" ? parsedCommand.column : null,
+    await processConnectFourCommand(supabase, {
+      messageId: event.message_id,
+      broadcasterTwitchId: event.broadcaster_user_id,
+      chatterTwitchId: event.chatter_user_id,
+      chatterLogin: event.chatter_user_login,
+      chatterDisplayName: event.chatter_user_name,
+      text: event.message?.text,
     });
-    if (error) throw error;
-    if (data?.duplicate || !data?.ok) return res.status(204).end();
-    await settleConnectFourOperations(supabase, data?.operations);
-    await announceConnectFourState(
-      supabase,
-      data?.matchId,
-      parsedCommand.type,
-    ).catch((chatError) =>
-      console.error("[ConnectFour] Chat announcement failed", chatError),
-    );
     return res.status(204).end();
   } catch (error) {
     console.error("[ConnectFour] Event processing failed", error);
