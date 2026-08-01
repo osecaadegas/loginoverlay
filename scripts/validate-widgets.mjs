@@ -28,6 +28,7 @@ const expectedTypes = [
   "slideshow_frame",
   "bets",
   "tournament",
+  "raid_shoutout",
 ];
 
 const errors = [];
@@ -48,7 +49,6 @@ for (const type of expectedTypes) {
 const removedTypes = [
   "current_slot",
   "image_slideshow",
-  "raid_shoutout",
   "spotify_now_playing",
   "slot_requests",
   "bh_stats",

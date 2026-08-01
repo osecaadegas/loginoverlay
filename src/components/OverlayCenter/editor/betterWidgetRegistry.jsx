@@ -430,7 +430,7 @@ const LIVE_DATA_KEYS = Object.freeze({
   ],
   background: [],
   slideshow_frame: [],
-  raid_shoutout: [],
+  raid_shoutout: ["twitchChannel", "chatCommandEnabled"],
 });
 
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
@@ -652,6 +652,9 @@ function mergeBetterLiveDataConfig(widgetType, baseConfig, liveWidget) {
           baseConfig,
         )
       : pickLiveDataPatch(widgetType, liveConfig);
+  if (widgetType === "raid_shoutout" && liveWidget.is_visible === false) {
+    livePatch.chatCommandEnabled = false;
+  }
   if (Object.keys(livePatch).length === 0) return baseConfig;
   return ensureBetterWidgetConfig(widgetType, {
     ...baseConfig,
@@ -960,6 +963,7 @@ export function renderBetterWidgetInstance({
   userId,
   theme,
   liveWidgets = [],
+  publicOverlayId,
 }) {
   const definition = getBetterWidgetDefinition(instance?.widgetType);
   if (!definition?.component || !instance) return null;
@@ -981,6 +985,7 @@ export function renderBetterWidgetInstance({
     userId,
     theme,
     runtime: mode === "live" ? "obs" : "editor",
+    publicOverlayId,
   };
   return <WidgetComponent {...commonProps} />;
 }

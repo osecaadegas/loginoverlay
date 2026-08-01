@@ -41,8 +41,10 @@ class BetterObsWidgetBoundary extends React.Component {
 
 function useViewportSize() {
   const [size, setSize] = useState(() => ({
-    width: typeof window !== "undefined" ? window.innerWidth : BETTER_CANVAS.width,
-    height: typeof window !== "undefined" ? window.innerHeight : BETTER_CANVAS.height,
+    width:
+      typeof window !== "undefined" ? window.innerWidth : BETTER_CANVAS.width,
+    height:
+      typeof window !== "undefined" ? window.innerHeight : BETTER_CANVAS.height,
   }));
 
   useEffect(() => {
@@ -96,7 +98,9 @@ export default function BetterObsOverlay() {
     let channel = null;
 
     const refreshLiveSource = async () => {
-      const source = await getPublishedBetterLiveSource(publication.ownerUserId);
+      const source = await getPublishedBetterLiveSource(
+        publication.ownerUserId,
+      );
       if (!alive) return null;
       setLiveSource(source);
       return source;
@@ -105,29 +109,46 @@ export default function BetterObsOverlay() {
     refreshLiveSource()
       .then((source) => {
         if (!alive || !source?.overlayId) return;
-        channel = subscribeToBetterLiveSource(publication.ownerUserId, source.overlayId, {
-          onWidgets: () => refreshLiveSource().catch((liveError) => {
-            console.error("[BetterObsOverlay] Failed to refresh live widget data:", liveError);
-          }),
-          onTheme: (theme) => {
-            setLiveSource((current) => ({ ...current, theme }));
+        channel = subscribeToBetterLiveSource(
+          publication.ownerUserId,
+          source.overlayId,
+          {
+            onWidgets: () =>
+              refreshLiveSource().catch((liveError) => {
+                console.error(
+                  "[BetterObsOverlay] Failed to refresh live widget data:",
+                  liveError,
+                );
+              }),
+            onTheme: (theme) => {
+              setLiveSource((current) => ({ ...current, theme }));
+            },
           },
-        });
+        );
       })
       .catch((liveError) => {
-        console.error("[BetterObsOverlay] Failed to load live widget data:", liveError);
+        console.error(
+          "[BetterObsOverlay] Failed to load live widget data:",
+          liveError,
+        );
       });
 
     const fallbackInterval = window.setInterval(() => {
       refreshLiveSource().catch((liveError) => {
-        console.error("[BetterObsOverlay] Failed to refresh live widget data:", liveError);
+        console.error(
+          "[BetterObsOverlay] Failed to refresh live widget data:",
+          liveError,
+        );
       });
     }, FALLBACK_REFRESH_MS);
 
     const refreshOnVisible = () => {
       if (document.visibilityState === "visible") {
         refreshLiveSource().catch((liveError) => {
-          console.error("[BetterObsOverlay] Failed to refresh live widget data:", liveError);
+          console.error(
+            "[BetterObsOverlay] Failed to refresh live widget data:",
+            liveError,
+          );
         });
       }
     };
@@ -151,21 +172,25 @@ export default function BetterObsOverlay() {
       if (alive) setLoaded(true);
     });
 
-    const channel = subscribeToPublishedBetterOverlay(publicOverlayId, (nextPublication) => {
-      if (nextPublication) {
-        setPublication(nextPublication);
-        setLoaded(true);
-      } else {
-        loadPublication().catch(() => setPublication(null));
-      }
-    });
+    const channel = subscribeToPublishedBetterOverlay(
+      publicOverlayId,
+      (nextPublication) => {
+        if (nextPublication) {
+          setPublication(nextPublication);
+          setLoaded(true);
+        } else {
+          loadPublication().catch(() => setPublication(null));
+        }
+      },
+    );
 
     const fallbackInterval = window.setInterval(() => {
       loadPublication().catch(() => {});
     }, FALLBACK_REFRESH_MS);
 
     const refreshOnVisible = () => {
-      if (document.visibilityState === "visible") loadPublication().catch(() => {});
+      if (document.visibilityState === "visible")
+        loadPublication().catch(() => {});
     };
     const refreshOnline = () => loadPublication().catch(() => {});
 
@@ -182,12 +207,18 @@ export default function BetterObsOverlay() {
   }, [loadPublication, publicOverlayId]);
 
   const layout = useMemo(
-    () => (publication?.publishedLayout ? normalizeBetterLayout(publication.publishedLayout) : null),
+    () =>
+      publication?.publishedLayout
+        ? normalizeBetterLayout(publication.publishedLayout)
+        : null,
     [publication?.publishedLayout],
   );
 
   const targetInstance = useMemo(
-    () => layout?.instances.find((instance) => instance.instanceId === instanceId) || null,
+    () =>
+      layout?.instances.find(
+        (instance) => instance.instanceId === instanceId,
+      ) || null,
     [instanceId, layout?.instances],
   );
 
@@ -198,9 +229,10 @@ export default function BetterObsOverlay() {
   const targetHeight = isSingleWidget
     ? Number(targetInstance?.height || 0)
     : BETTER_CANVAS.height;
-  const scale = targetWidth && targetHeight
-    ? Math.min(viewport.width / targetWidth, viewport.height / targetHeight)
-    : 1;
+  const scale =
+    targetWidth && targetHeight
+      ? Math.min(viewport.width / targetWidth, viewport.height / targetHeight)
+      : 1;
 
   if (!loaded || !layout || (isSingleWidget && !targetInstance)) {
     return <main className="better-obs-overlay better-obs-overlay--empty" />;
@@ -237,6 +269,7 @@ export default function BetterObsOverlay() {
                   userId: publication.ownerUserId,
                   theme: liveSource.theme,
                   liveWidgets: liveSource.widgets,
+                  publicOverlayId,
                 })}
               </BetterObsWidgetBoundary>
             </div>
@@ -280,6 +313,7 @@ export default function BetterObsOverlay() {
                   userId: publication.ownerUserId,
                   theme: liveSource.theme,
                   liveWidgets: liveSource.widgets,
+                  publicOverlayId,
                 })}
               </BetterObsWidgetBoundary>
             </div>

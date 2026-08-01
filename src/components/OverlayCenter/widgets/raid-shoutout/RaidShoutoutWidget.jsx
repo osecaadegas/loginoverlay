@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import useTwitchChat from "../../../../hooks/useTwitchChat";
 import {
   getPendingAlerts,
   markAlertDismissed,
@@ -6,6 +7,10 @@ import {
   subscribeToShoutoutAlerts,
   unsubscribeShoutoutAlerts,
 } from "../../../../services/shoutoutService";
+import {
+  parseShoutoutChatCommand,
+  triggerShoutoutChatCommand,
+} from "../../../../services/shoutoutCommandService";
 import "./RaidShoutoutWidget.css";
 
 const EXIT_MS = 650;
@@ -29,12 +34,16 @@ function normalizeAlert(alert = {}) {
     id: alert.id || `preview-${alert.raider_username || "streamer"}`,
     login: alert.raider_username || alert.login || "streamer",
     displayName:
-      alert.raider_display_name || alert.displayName || alert.raider_username || "Streamer",
+      alert.raider_display_name ||
+      alert.displayName ||
+      alert.raider_username ||
+      "Streamer",
     avatarUrl: alert.raider_avatar_url || alert.avatarUrl || "",
     game: alert.raider_game || alert.game || "Just Chatting",
     viewerCount: Number(alert.viewer_count || alert.raid_viewers || 0),
     clipId: alert.clip_id || alert.clipId || "",
-    clipTitle: alert.clip_title || alert.clipTitle || "A highlight from the channel",
+    clipTitle:
+      alert.clip_title || alert.clipTitle || "A highlight from the channel",
     clipViews: Number(alert.clip_view_count || alert.clipViews || 0),
     clipVideoUrl: alert.clip_video_url || alert.clipVideoUrl || "",
     clipThumbnailUrl: alert.clip_thumbnail_url || alert.clipThumbnailUrl || "",
@@ -113,7 +122,10 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
       ) : null}
 
       <header className="better-shoutout-header" data-widget-element="header">
-        <div className="better-shoutout-avatar-wrap" data-widget-element="avatarContainer">
+        <div
+          className="better-shoutout-avatar-wrap"
+          data-widget-element="avatarContainer"
+        >
           {alert.avatarUrl ? (
             <img
               className="better-shoutout-avatar"
@@ -143,7 +155,10 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
         </div>
 
         {config.showViews !== false ? (
-          <span className="better-shoutout-views" data-widget-element="viewsBadge">
+          <span
+            className="better-shoutout-views"
+            data-widget-element="viewsBadge"
+          >
             {compactNumber(alert.clipViews)} views
           </span>
         ) : null}
@@ -196,10 +211,16 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
 
       {config.showFooter !== false ? (
         <footer className="better-shoutout-footer" data-widget-element="footer">
-          <span className="better-shoutout-channel" data-widget-element="channel">
+          <span
+            className="better-shoutout-channel"
+            data-widget-element="channel"
+          >
             <TwitchGlyph /> twitch.tv/{alert.login}
           </span>
-          <span className="better-shoutout-live" data-widget-element="liveBadge">
+          <span
+            className="better-shoutout-live"
+            data-widget-element="liveBadge"
+          >
             <i /> Live clip
           </span>
         </footer>
@@ -208,7 +229,12 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
   );
 }
 
-export default function RaidShoutoutWidget({ config = {}, userId, runtime = "editor" }) {
+export default function RaidShoutoutWidget({
+  config = {},
+  userId,
+  runtime = "editor",
+  publicOverlayId,
+}) {
   const previewAlert = useMemo(
     () => normalizeAlert(config.__previewAlert || {}),
     [config.__previewAlert],
@@ -220,6 +246,30 @@ export default function RaidShoutoutWidget({ config = {}, userId, runtime = "edi
   const [phase, setPhase] = useState("entered");
   const duration = clampNumber(config.displayDuration, 10, 120, 45);
   const [remaining, setRemaining] = useState(duration);
+  const twitchChannel = String(config.twitchChannel || "")
+    .trim()
+    .replace(/^#/, "")
+    .toLowerCase();
+
+  const handleChatMessage = useCallback(
+    (message) => {
+      const command = parseShoutoutChatCommand(message);
+      if (!command) return;
+      triggerShoutoutChatCommand({ publicOverlayId, command }).catch(
+        (error) => {
+          console.error("[RaidShoutoutWidget] !so command failed:", error);
+        },
+      );
+    },
+    [publicOverlayId],
+  );
+
+  useTwitchChat(
+    runtime === "obs" && config.chatCommandEnabled !== false && publicOverlayId
+      ? twitchChannel
+      : "",
+    handleChatMessage,
+  );
 
   useEffect(() => {
     if (runtime !== "obs") {
@@ -269,7 +319,8 @@ export default function RaidShoutoutWidget({ config = {}, userId, runtime = "edi
   }, [activeAlert, phase, runtime]);
 
   useEffect(() => {
-    if (runtime !== "obs" || !activeAlert || phase === "exiting") return undefined;
+    if (runtime !== "obs" || !activeAlert || phase === "exiting")
+      return undefined;
     const timer = window.setInterval(() => {
       setRemaining((current) => {
         if (current <= 1) {
@@ -293,7 +344,9 @@ export default function RaidShoutoutWidget({ config = {}, userId, runtime = "edi
         config={config}
         phase={phase}
         remaining={remaining}
-        onMediaEnded={config.dismissOnClipEnd === true ? finishAlert : undefined}
+        onMediaEnded={
+          config.dismissOnClipEnd === true ? finishAlert : undefined
+        }
       />
     </div>
   );

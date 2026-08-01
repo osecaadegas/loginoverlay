@@ -52,6 +52,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
     wsRef.current = ws;
 
     ws.onopen = () => {
+      ws.send("PASS SCHMOOPIIE");
       ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
       ws.send("NICK justinfan" + Math.floor(Math.random() * 99999));
       ws.send("JOIN #" + channel.toLowerCase().trim());

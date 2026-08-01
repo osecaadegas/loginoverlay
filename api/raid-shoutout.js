@@ -13,7 +13,31 @@
  * Also supports GET with query params for simple webhook triggers:
  * GET /api/raid-shoutout?raider=username&userId=xxx&secret=xxx
  */
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
+
+const TWITCH_LOGIN_PATTERN = /^[a-z0-9_]{1,25}$/i;
+const TWITCH_EVENT_PATTERN = /^[a-z0-9-]{8,100}$/i;
+const CHAT_ROLES = new Set(["broadcaster", "moderator"]);
+
+function normalizeTwitchLogin(value) {
+  const login = String(value || "")
+    .trim()
+    .replace(/^@+/, "")
+    .toLowerCase();
+  return TWITCH_LOGIN_PATTERN.test(login) ? login : "";
+}
+
+async function resolveChatCommandOwner(supabase, publicOverlayId) {
+  if (!/^bo_[a-f0-9]{48}$/i.test(String(publicOverlayId || ""))) return null;
+  const { data, error } = await supabase
+    .from("better_overlay_publications")
+    .select("owner_user_id")
+    .eq("public_overlay_id", publicOverlayId)
+    .is("revoked_at", null)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.owner_user_id || null;
+}
 
 // ─── Twitch App Access Token (Client Credentials) ───
 let cachedToken = null;
@@ -26,16 +50,18 @@ async function getTwitchAppToken() {
   const clientSecret = process.env.TWITCH_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error('Missing TWITCH_CLIENT_ID or TWITCH_CLIENT_SECRET environment variables');
+    throw new Error(
+      "Missing TWITCH_CLIENT_ID or TWITCH_CLIENT_SECRET environment variables",
+    );
   }
 
-  const res = await fetch('https://id.twitch.tv/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  const res = await fetch("https://id.twitch.tv/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
-      grant_type: 'client_credentials',
+      grant_type: "client_credentials",
     }),
   });
 
@@ -57,8 +83,8 @@ async function twitchGet(endpoint, params = {}) {
 
   const res = await fetch(url, {
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Client-Id': process.env.TWITCH_CLIENT_ID,
+      Authorization: `Bearer ${token}`,
+      "Client-Id": process.env.TWITCH_CLIENT_ID,
     },
   });
 
@@ -71,12 +97,12 @@ async function twitchGet(endpoint, params = {}) {
 }
 
 async function resolveUser(username) {
-  const { data } = await twitchGet('users', { login: username.toLowerCase() });
+  const { data } = await twitchGet("users", { login: username.toLowerCase() });
   return data?.[0] || null;
 }
 
 async function fetchClips(broadcasterId, maxClips = 50) {
-  const { data } = await twitchGet('clips', {
+  const { data } = await twitchGet("clips", {
     broadcaster_id: broadcasterId,
     first: String(Math.min(maxClips, 100)),
   });
@@ -84,13 +110,15 @@ async function fetchClips(broadcasterId, maxClips = 50) {
 }
 
 async function fetchChannel(broadcasterId) {
-  const { data } = await twitchGet('channels', { broadcaster_id: broadcasterId });
+  const { data } = await twitchGet("channels", {
+    broadcaster_id: broadcasterId,
+  });
   return data?.[0] || null;
 }
 
 function pickRandomClip(clips, maxDuration = 60) {
   // Prefer shorter clips (< maxDuration seconds) for alerts
-  const shortClips = clips.filter(c => c.duration <= maxDuration);
+  const shortClips = clips.filter((c) => c.duration <= maxDuration);
   const pool = shortClips.length > 0 ? shortClips : clips;
 
   if (pool.length === 0) return null;
@@ -107,18 +135,22 @@ async function resolveClipVideoUrl(thumbnailUrl) {
   if (!thumbnailUrl) return null;
 
   // Strip query params first
-  const clean = thumbnailUrl.split('?')[0];
+  const clean = thumbnailUrl.split("?")[0];
 
   // Primary derivation: strip "-preview-WxH.jpg"
-  const primary = clean.replace(/-preview-\d+x\d+\.jpg$/i, '.mp4');
+  const primary = clean.replace(/-preview-\d+x\d+\.jpg$/i, ".mp4");
   if (primary === clean) return null; // regex didn't match
 
   // Build candidate list (different CDN hostnames)
   const candidates = [primary];
-  if (primary.includes('clips-media-assets2')) {
-    candidates.push(primary.replace('clips-media-assets2', 'clips-media-assets'));
-  } else if (primary.includes('clips-media-assets.')) {
-    candidates.push(primary.replace('clips-media-assets.', 'clips-media-assets2.'));
+  if (primary.includes("clips-media-assets2")) {
+    candidates.push(
+      primary.replace("clips-media-assets2", "clips-media-assets"),
+    );
+  } else if (primary.includes("clips-media-assets.")) {
+    candidates.push(
+      primary.replace("clips-media-assets.", "clips-media-assets2."),
+    );
   }
   // Also try URL-decoded variant (AT-cm%7C → AT-cm|)
   const decoded = decodeURIComponent(primary);
@@ -127,15 +159,16 @@ async function resolveClipVideoUrl(thumbnailUrl) {
   for (const url of candidates) {
     try {
       const headRes = await fetch(url, {
-        method: 'HEAD',
-        redirect: 'follow',
+        method: "HEAD",
+        redirect: "follow",
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Referer': 'https://clips.twitch.tv/',
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          Referer: "https://clips.twitch.tv/",
         },
       });
       if (headRes.ok) {
-        console.log('[RaidShoutout] Verified clip video URL:', url);
+        console.log("[RaidShoutout] Verified clip video URL:", url);
         return url;
       }
       console.warn(`[RaidShoutout] HEAD ${headRes.status}: ${url}`);
@@ -146,63 +179,116 @@ async function resolveClipVideoUrl(thumbnailUrl) {
 
   // Even if HEAD failed, return the primary URL so the proxy can try at runtime
   // (the CDN might block HEAD but allow GET from a different IP)
-  console.log('[RaidShoutout] HEAD checks failed — returning primary URL for proxy to try:', primary);
+  console.log(
+    "[RaidShoutout] HEAD checks failed — returning primary URL for proxy to try:",
+    primary,
+  );
   return primary;
 }
 
 // ─── Main Handler ───
 export default async function handler(req, res) {
   // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Shoutout-Secret');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Shoutout-Secret",
+  );
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
     // Support both POST body and GET query params (for SE webhook)
     let raiderUsername, userId, triggeredBy, secret;
+    let publicOverlayId, sourceEventId, requesterRole;
 
-    if (req.method === 'POST') {
-      ({ raiderUsername, userId, triggeredBy } = req.body || {});
-    } else if (req.method === 'GET') {
+    if (req.method === "POST") {
+      ({
+        raiderUsername,
+        userId,
+        triggeredBy,
+        publicOverlayId,
+        sourceEventId,
+        requesterRole,
+      } = req.body || {});
+    } else if (req.method === "GET") {
       raiderUsername = req.query.raider;
       userId = req.query.userId;
-      triggeredBy = req.query.triggeredBy || 'chat_command';
+      triggeredBy = req.query.triggeredBy || "chat_command";
       secret = req.query.secret;
     } else {
-      return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
     // ── Validate required fields ──
+    raiderUsername = normalizeTwitchLogin(raiderUsername);
     if (!raiderUsername) {
-      return res.status(400).json({ error: 'Missing raiderUsername' });
+      return res.status(400).json({ error: "Missing raiderUsername" });
     }
-    if (!userId) {
-      return res.status(400).json({ error: 'Missing userId (overlay owner)' });
+
+    const supabaseAdmin = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+    );
+    const isChatCommand =
+      req.method === "POST" && triggeredBy === "chat_command";
+
+    if (isChatCommand) {
+      if (!CHAT_ROLES.has(requesterRole)) {
+        return res
+          .status(403)
+          .json({ error: "Only the broadcaster or a moderator can use !so" });
+      }
+      if (!TWITCH_EVENT_PATTERN.test(String(sourceEventId || ""))) {
+        return res.status(400).json({ error: "Missing Twitch source event" });
+      }
+      userId = await resolveChatCommandOwner(supabaseAdmin, publicOverlayId);
+      if (!userId) {
+        return res
+          .status(403)
+          .json({ error: "Invalid or revoked overlay publication" });
+      }
+
+      const { data: duplicate } = await supabaseAdmin
+        .from("shoutout_alerts")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("source_event_id", sourceEventId)
+        .maybeSingle();
+      if (duplicate) {
+        return res
+          .status(200)
+          .json({
+            success: true,
+            duplicate: true,
+            alert: { id: duplicate.id },
+          });
+      }
+    } else if (!userId) {
+      return res.status(400).json({ error: "Missing userId (overlay owner)" });
     }
 
     // ── Optional: verify webhook secret for GET triggers ──
     const expectedSecret = process.env.SHOUTOUT_WEBHOOK_SECRET;
-    if (expectedSecret && req.method === 'GET') {
-      const provided = secret || req.headers['x-shoutout-secret'];
+    if (expectedSecret && req.method === "GET") {
+      const provided = secret || req.headers["x-shoutout-secret"];
       if (provided !== expectedSecret) {
-        return res.status(403).json({ error: 'Invalid webhook secret' });
+        return res.status(403).json({ error: "Invalid webhook secret" });
       }
     }
 
     // ── For POST: verify auth via Bearer token (optional, depends on trigger) ──
-    if (req.method === 'POST' && !triggeredBy?.startsWith('webhook')) {
-      const supabaseAuth = createClient(
-        process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
+    if (req.method === "POST" && !triggeredBy?.startsWith("webhook")) {
       const authHeader = req.headers.authorization;
-      if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.replace('Bearer ', '');
-        const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.replace("Bearer ", "");
+        const {
+          data: { user },
+          error: authError,
+        } = await supabaseAdmin.auth.getUser(token);
         if (authError || !user) {
-          return res.status(401).json({ error: 'Invalid auth token' });
+          return res.status(401).json({ error: "Invalid auth token" });
         }
         // Override userId with authenticated user
         userId = user.id;
@@ -212,7 +298,9 @@ export default async function handler(req, res) {
     // ── Step 1: Resolve Twitch user ──
     const twitchUser = await resolveUser(raiderUsername);
     if (!twitchUser) {
-      return res.status(404).json({ error: `Twitch user "${raiderUsername}" not found` });
+      return res
+        .status(404)
+        .json({ error: `Twitch user "${raiderUsername}" not found` });
     }
 
     // ── Step 2: Fetch channel info (for current game) ──
@@ -223,7 +311,9 @@ export default async function handler(req, res) {
     const clip = pickRandomClip(clips, 60);
 
     // ── Step 4: Resolve direct .mp4 video URL (server-side, no CORS) ──
-    const clipVideoUrl = clip ? await resolveClipVideoUrl(clip.thumbnail_url) : null;
+    const clipVideoUrl = clip
+      ? await resolveClipVideoUrl(clip.thumbnail_url)
+      : null;
 
     // ── Step 5: Build alert payload ──
     const alertPayload = {
@@ -234,32 +324,38 @@ export default async function handler(req, res) {
       raider_game: channel?.game_name || null,
       clip_id: clip?.id || null,
       clip_url: clip?.url || null,
-      clip_embed_url: clip ? `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${process.env.OVERLAY_DOMAIN || 'streamerscenter.com'}` : null,
+      clip_embed_url: clip
+        ? `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${process.env.OVERLAY_DOMAIN || "streamerscenter.com"}`
+        : null,
       clip_thumbnail_url: clip?.thumbnail_url || null,
       clip_video_url: clipVideoUrl,
       clip_title: clip?.title || null,
       clip_duration: clip?.duration || null,
       clip_view_count: clip?.view_count || null,
       clip_game_name: clip?.game_name || null,
-      status: 'pending',
-      triggered_by: triggeredBy || 'manual',
+      status: "pending",
+      triggered_by: triggeredBy || "manual",
+      source_event_id: isChatCommand ? sourceEventId : null,
     };
 
     // ── Step 6: Insert into Supabase ──
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
-
-    const { data: alert, error: insertError } = await supabase
-      .from('shoutout_alerts')
+    const { data: alert, error: insertError } = await supabaseAdmin
+      .from("shoutout_alerts")
       .insert(alertPayload)
       .select()
       .single();
 
     if (insertError) {
-      console.error('Supabase insert error:', insertError);
-      return res.status(500).json({ error: 'Failed to create shoutout alert', details: insertError.message });
+      if (insertError.code === "23505" && isChatCommand) {
+        return res.status(200).json({ success: true, duplicate: true });
+      }
+      console.error("Supabase insert error:", insertError);
+      return res
+        .status(500)
+        .json({
+          error: "Failed to create shoutout alert",
+          details: insertError.message,
+        });
     }
 
     return res.status(200).json({
@@ -272,9 +368,10 @@ export default async function handler(req, res) {
         game: alert.raider_game,
       },
     });
-
   } catch (error) {
-    console.error('Raid shoutout API error:', error);
-    return res.status(500).json({ error: 'Internal server error', message: error.message });
+    console.error("Raid shoutout API error:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error", message: error.message });
   }
 }

@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "npx vite build",
     "validate:widgets": "node scripts/validate-widgets.mjs",
+    "test:appearance-editor": "node scripts/test-appearance-editor.mjs",
     "preview": "vite preview",
     "test:service-setup": "node scripts/test-service-setup.mjs",
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",

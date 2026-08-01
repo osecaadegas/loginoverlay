@@ -23,8 +23,30 @@ import RtpStatsWidget from "./rtp-stats/RtpStatsWidget";
 import SlideshowFrameWidget from "./slideshow-frame/SlideshowFrameWidget";
 import TournamentConfig from "./tournament/TournamentConfig";
 import TournamentWidget from "./tournament/TournamentWidget";
+import RaidShoutoutConfig from "./raid-shoutout/RaidShoutoutConfig";
+import RaidShoutoutWidget from "./raid-shoutout/RaidShoutoutWidget";
 
 const CURRENCY = "EUR ";
+
+registerWidget({
+  type: "raid_shoutout",
+  label: "Twitch Shoutout",
+  icon: "📣",
+  description:
+    "Play a Twitch clip when the channel owner or a moderator uses !so username.",
+  category: "better",
+  component: RaidShoutoutWidget,
+  configPanel: RaidShoutoutConfig,
+  styleConfigKey: "displayStyle",
+  styles: [
+    { id: "better_raid_shoutout", icon: "📣", label: "Twitch Shoutout" },
+  ],
+  defaults: {
+    displayStyle: "better_raid_shoutout",
+    twitchChannel: "",
+    chatCommandEnabled: true,
+  },
+});
 
 registerWidget({
   type: "bonus_hunt",

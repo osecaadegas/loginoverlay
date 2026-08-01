@@ -60,26 +60,28 @@ const {
   "/src/components/OverlayCenter/editor/widgetControlsPreset.js",
 );
 
-const {
-  STANDARD_BETTER_WIDGET_CONTROLS,
-  STANDARD_BETTER_WIDGET_GEOMETRY,
-} = await server.ssrLoadModule(
-  "/src/components/OverlayCenter/editor/standardWidgetPresets.js",
+const { STANDARD_BETTER_WIDGET_CONTROLS, STANDARD_BETTER_WIDGET_GEOMETRY } =
+  await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/standardWidgetPresets.js",
+  );
+
+const { parseShoutoutChatCommand } = await server.ssrLoadModule(
+  "/src/services/shoutoutCommandService.js",
 );
 
-const { createBetterInstance, renderBetterWidgetInstance } = await server.ssrLoadModule(
-  "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
-);
+const { createBetterInstance, renderBetterWidgetInstance } =
+  await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
+  );
 
 const {
   getBetterWidgetNudge,
   moveBetterWidgetLayer,
   normalizeBetterCoordinate,
   reorderBetterWidgetLayers,
-} =
-  await server.ssrLoadModule(
-    "/src/components/OverlayCenter/editor/betterWidgetGeometry.js",
-  );
+} = await server.ssrLoadModule(
+  "/src/components/OverlayCenter/editor/betterWidgetGeometry.js",
+);
 
 try {
   assert.equal(
@@ -132,7 +134,8 @@ try {
     "dropping on the fixed background moves a widget to the lowest foreground layer",
   );
   assert.equal(
-    lowestLayers.find((instance) => instance.instanceId === "background")?.zIndex,
+    lowestLayers.find((instance) => instance.instanceId === "background")
+      ?.zIndex,
     0,
     "layer reordering keeps the background fixed at z-index zero",
   );
@@ -222,6 +225,44 @@ try {
     ),
     "Twitch Shoutout never persists Twitch credentials in widget configuration",
   );
+  assert.deepEqual(
+    parseShoutoutChatCommand({
+      id: "twitch-message-owner",
+      message: '!so "@Some_Channel"',
+      isBroadcaster: true,
+      isMod: false,
+    }),
+    {
+      raiderUsername: "some_channel",
+      sourceEventId: "twitch-message-owner",
+      requesterRole: "broadcaster",
+    },
+    "channel owners can trigger !so with quoted or @-prefixed Twitch usernames",
+  );
+  assert.deepEqual(
+    parseShoutoutChatCommand({
+      id: "twitch-message-mod",
+      message: "!so target_user",
+      isBroadcaster: false,
+      isMod: true,
+    }),
+    {
+      raiderUsername: "target_user",
+      sourceEventId: "twitch-message-mod",
+      requesterRole: "moderator",
+    },
+    "channel moderators can trigger !so username",
+  );
+  assert.equal(
+    parseShoutoutChatCommand({
+      id: "twitch-message-viewer",
+      message: "!so target_user",
+      isBroadcaster: false,
+      isMod: false,
+    }),
+    null,
+    "ordinary viewers cannot trigger shoutout clips",
+  );
   const shoutoutMarkup = renderToStaticMarkup(
     renderBetterWidgetInstance({
       instance: shoutoutInstance,
@@ -267,6 +308,58 @@ try {
         'runtime: mode === "live" ? "obs" : "editor"',
       ),
     "editor preview cannot subscribe to or consume production shoutout alerts",
+  );
+  assert.ok(
+    betterWidgetRegistrySource.includes(
+      'raid_shoutout: ["twitchChannel", "chatCommandEnabled"]',
+    ) && betterWidgetRegistrySource.includes("publicOverlayId,"),
+    "published OBS shoutouts merge tile command settings and receive the public overlay token",
+  );
+  const builtinWidgetsSourceForShoutout = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/builtinWidgets.js",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const overlayControlCenterSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/OverlayControlCenter.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    builtinWidgetsSourceForShoutout.includes('type: "raid_shoutout"') &&
+      builtinWidgetsSourceForShoutout.includes("RaidShoutoutConfig"),
+    "Raid Shoutout is registered with an operational Overlay Center settings panel",
+  );
+  assert.ok(
+    overlayControlCenterSource.includes('title: "Twitch Shoutout"') &&
+      /PRIMARY_TOOLS[\s\S]*?"raid_shoutout"/.test(overlayControlCenterSource),
+    "Overlay Center shows a Twitch Shoutout tool tile",
+  );
+  const shoutoutMigrationSource = readFileSync(
+    new URL(
+      "../migrations/032_shoutout_chat_command_deduplication.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    shoutoutMigrationSource.includes("source_event_id") &&
+      shoutoutMigrationSource.includes("CREATE UNIQUE INDEX"),
+    "Twitch source event IDs prevent duplicate alerts across OBS browser sources",
+  );
+  const shoutoutApiSource = readFileSync(
+    new URL("../api/raid-shoutout.js", import.meta.url),
+    "utf8",
+  );
+  assert.ok(
+    shoutoutApiSource.includes(
+      'req.method === "POST" && triggeredBy === "chat_command"',
+    ),
+    "owner/mod command checks do not intercept legacy GET webhook triggers",
   );
   for (const frameStyle of ["neon", "glass", "retro", "minimal", "gaming"]) {
     assert.ok(
@@ -358,8 +451,9 @@ try {
     "Better Navbar renders official logos for every supported social platform",
   );
   assert.ok(
-    navbarWidgetSource.includes("const handle = formatSocialHandle(item.value)") &&
-      !navbarWidgetSource.includes("item.short"),
+    navbarWidgetSource.includes(
+      "const handle = formatSocialHandle(item.value)",
+    ) && !navbarWidgetSource.includes("item.short"),
     "Better Navbar socials always show handles instead of text abbreviations",
   );
   assert.ok(
@@ -369,7 +463,7 @@ try {
   );
   assert.ok(
     !betterWidgetPackagesSource.includes("NAVBAR_SOCIAL_DISPLAY_OPTIONS") &&
-      !navbarConfigSource.includes('<span>Display</span>'),
+      !navbarConfigSource.includes("<span>Display</span>"),
     "Navbar controls expose one consistent social handle format",
   );
   assert.ok(
@@ -398,15 +492,13 @@ try {
     "utf8",
   );
   assert.ok(
-    tournamentWidgetSource.includes(
-      'width: large ? "clamp(20px, 2.8vw, 34px)"',
+    /width:\s*large\s*\?\s*"clamp\(20px, 2\.8vw, 34px\)"/.test(
+      tournamentWidgetSource,
     ),
     "Tournament Now Playing keeps the VS column narrow so player images stay wide",
   );
   assert.ok(
-    tournamentWidgetSource.includes(
-      'minHeight: "clamp(96px, 19vh, 168px)"',
-    ),
+    tournamentWidgetSource.includes('minHeight: "clamp(96px, 19vh, 168px)"'),
     "Tournament Now Playing avoids reserving excess space below its cards",
   );
   const betterWidgetStylesSource = readFileSync(
@@ -471,15 +563,11 @@ try {
     "Bonus Hunt best/worst cards remain visible long enough to read",
   );
   assert.ok(
-    betterWidgetStylesSource.includes(
-      '"--w-bg": c.bgColor || "#0a1734"',
-    ),
+    betterWidgetStylesSource.includes('"--w-bg": c.bgColor || "#0a1734"'),
     "Better Giveaway routes its editable background color through the Bonus Hunt panel midpoint",
   );
   assert.ok(
-    betterWidgetStylesSource.includes(
-      '"--w-panel-hi": c.panelHi || "#0c1c40"',
-    ),
+    betterWidgetStylesSource.includes('"--w-panel-hi": c.panelHi || "#0c1c40"'),
     "Better Giveaway uses the exact Bonus Hunt ocean panel highlight",
   );
   assert.ok(

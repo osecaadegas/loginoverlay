@@ -174,6 +174,12 @@ const FEATURE_COPY = {
     description: "Show now-playing music on stream.",
     action: "Configure Spotify",
   },
+  raid_shoutout: {
+    title: "Twitch Shoutout",
+    description:
+      "Play a Twitch clip when the owner or a moderator types !so username.",
+    action: "Configure Shoutout",
+  },
 };
 
 const PRIMARY_TOOLS = [
@@ -190,13 +196,14 @@ const PRIMARY_TOOLS = [
   "current_slot",
   "chat",
   "spotify_now_playing",
+  "raid_shoutout",
 ];
 
 const INTEGRATIONS = [
   {
     id: "twitch",
     name: "Twitch",
-    requiredFor: ["slot_requests", "chat", "giveaway", "bets"],
+    requiredFor: ["slot_requests", "chat", "giveaway", "bets", "raid_shoutout"],
     detail: "Used for chat commands, requests, giveaways and viewer activity.",
   },
   {
@@ -2669,7 +2676,16 @@ export default function OverlayControlCenter() {
   const handleAddTool = async (type) => {
     const def = getWidgetDef(type);
     if (!def) return;
-    await addWidget(type, def.defaults || {});
+    const defaults = def.defaults || {};
+    await addWidget(
+      type,
+      type === "raid_shoutout"
+        ? {
+            ...defaults,
+            twitchChannel: defaults.twitchChannel || twitchChannel,
+          }
+        : defaults,
+    );
     trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_ENABLED, { widget_type: type });
     navigate(getToolEditorRoute(type));
   };
