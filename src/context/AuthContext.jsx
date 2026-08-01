@@ -23,7 +23,10 @@ async function connectTwitchChat(session) {
     body: JSON.stringify({ providerToken: session.provider_token }),
   });
   if (!response.ok) {
-    console.warn('[Auth] Twitch chat connection could not be completed');
+    const details = await response.json().catch(() => null);
+    throw new Error(
+      details?.error || `Twitch chat connection failed (${response.status})`,
+    );
   }
 }
 
@@ -76,6 +79,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const session = await getSessionWithFallback({ timeoutMs: 12000, label: 'Auth session check' });
         syncExperiencePreferenceInBackground(session?.user);
+        connectTwitchChat(session).catch((error) => {
+          console.warn('[Auth] Twitch chat connection failed:', error);
+        });
         if (mounted) setUser(session?.user ?? null);
       } catch (error) {
         console.warn('[Auth] Session unavailable:', error);
