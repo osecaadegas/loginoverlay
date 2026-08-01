@@ -99,6 +99,8 @@ try {
       widgetType: "bonus_hunt",
       label: "Better Hunt",
       config: { drawerMode: "contain", accentColor: "#45c8ff" },
+      x: -37,
+      y: 1124,
       width: 430,
       liveData: { totalPay: 1200 },
     },
@@ -112,9 +114,10 @@ try {
       exportedAt: presetExportedAt,
       widgetType: "bonus_hunt",
       widgetLabel: "Better Hunt",
+      position: { x: -37, y: 1124 },
       controls: { drawerMode: "contain", accentColor: "#45c8ff" },
     },
-    "widget control presets contain the current saved controls without canvas or live state",
+    "widget control presets contain current controls and signed canvas position without live state",
   );
   assert.equal(
     getWidgetControlsPresetFilename(

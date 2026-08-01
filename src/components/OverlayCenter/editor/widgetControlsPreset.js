@@ -1,3 +1,5 @@
+import { normalizeBetterCoordinate } from "./betterWidgetGeometry";
+
 export const WIDGET_CONTROLS_PRESET_KIND =
   "streamers-center.widget-controls-preset";
 export const WIDGET_CONTROLS_PRESET_VERSION = 1;
@@ -17,6 +19,10 @@ export function createWidgetControlsPreset(
     exportedAt,
     widgetType: instance?.widgetType || "unknown",
     widgetLabel: instance?.label || instance?.widgetType || "Widget",
+    position: {
+      x: normalizeBetterCoordinate(instance?.x),
+      y: normalizeBetterCoordinate(instance?.y),
+    },
     controls: cloneJson(instance?.config),
   };
 }
