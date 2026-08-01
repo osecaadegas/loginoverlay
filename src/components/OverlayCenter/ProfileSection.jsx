@@ -533,7 +533,6 @@ export default function ProfileSection({ widgets, saveWidget }) {
       }
     }
 
-    /* Keep localStorage in sync for standalone components (TwitchChat embed) */
     if (profile.twitchUsername) {
       localStorage.setItem('twitchChannel', profile.twitchUsername);
       localStorage.setItem('streamerName', profile.streamerName || profile.twitchUsername);

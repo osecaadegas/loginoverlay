@@ -33,7 +33,6 @@ import useBetsListener from "./hooks/useBetsListener";
 import useAnalytics from "./hooks/useAnalytics";
 import { applyRouteSeo } from "./utils/seo";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
-// ThemesPage is now rendered inside OverlayControlCenter
 
 /* -- Lazy-loaded heavy routes (code-split) -- */
 const AdminPanel = lazy(() => import("./components/AdminPanel/AdminPanel"));
