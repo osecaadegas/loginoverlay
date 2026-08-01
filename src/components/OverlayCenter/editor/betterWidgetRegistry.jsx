@@ -9,6 +9,7 @@ import BetsWidget from "../widgets/bets/BetsWidget";
 import SlideshowFrameWidget from "../widgets/slideshow-frame/SlideshowFrameWidget";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
+import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -436,6 +437,7 @@ const LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
+  connect_four: ConnectFourWidget,
   tournament: TournamentWidget,
   bonus_hunt: BonusHuntWidget,
   giveaway: GiveawayWidget,
@@ -449,6 +451,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
+  connect_four: [],
   tournament: ["surface", "layout", "cards", "typography", "palette"],
   bonus_hunt: [
     "style",

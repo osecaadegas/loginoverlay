@@ -8,6 +8,25 @@ const AuthContext = createContext({});
 const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
 const VALID_EXPERIENCES = new Set(['player', 'streamer']);
 
+async function connectTwitchChat(session) {
+  if (
+    session?.user?.app_metadata?.provider !== 'twitch' ||
+    !session?.access_token ||
+    !session?.provider_token
+  ) return;
+  const response = await fetch('/api/connect-four', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ providerToken: session.provider_token }),
+  });
+  if (!response.ok) {
+    console.warn('[Auth] Twitch chat connection could not be completed');
+  }
+}
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -72,6 +91,9 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (_event === 'SIGNED_IN' && session?.user) {
         syncExperiencePreferenceInBackground(session.user);
+        connectTwitchChat(session).catch((error) => {
+          console.warn('[Auth] Twitch chat connection failed:', error);
+        });
       }
       setUser(session?.user ?? null);
       
@@ -128,7 +150,8 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'twitch',
       options: {
-        redirectTo: getOAuthRedirectTo(returnTo)
+        redirectTo: getOAuthRedirectTo(returnTo),
+        scopes: 'user:read:chat user:bot channel:bot',
       }
     });
     return { data, error };
