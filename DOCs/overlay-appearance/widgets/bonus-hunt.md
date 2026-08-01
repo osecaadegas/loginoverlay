@@ -2,18 +2,18 @@
 
 ## Identity
 
-| Field | Value |
-| --- | --- |
-| Widget ID | `bonus_hunt` |
-| Name | Bonus Hunt |
-| OBS route | `/overlay/:token`, `/overlay/:token?widget=<id>` |
-| Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:17` |
-| Main component | `src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntWidget.jsx:15` |
+| Field              | Value                                                                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Widget ID          | `bonus_hunt`                                                                                                                  |
+| Name               | Bonus Hunt                                                                                                                    |
+| OBS route          | `/overlay/:token`, `/overlay/:token?widget=<id>`                                                                              |
+| Registry           | `src/components/OverlayCenter/widgets/builtinWidgets.js:17`                                                                   |
+| Main component     | `src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntWidget.jsx:15`                                                      |
 | Variant components | `BonusHuntWidgetV3.jsx`, `BonusHuntWidgetV8.jsx`, `BonusHuntWidgetV9.jsx`, `BonusHuntWidgetV11.jsx`, `BonusHuntWidgetV12.jsx` |
-| Config panel | `src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntConfig.jsx` |
-| Main style file | `src/components/OverlayCenter/OverlayRenderer.css` |
-| Data source | `overlay_widgets.config`, Bonus Hunt history/player data, optional `slot_requests` in V12 |
-| Persistence | `overlay_widgets.config`; draft/published appearance through `overlay_state` |
+| Config panel       | `src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntConfig.jsx`                                                         |
+| Main style file    | `src/components/OverlayCenter/OverlayRenderer.css`                                                                            |
+| Data source        | `overlay_widgets.config`, Bonus Hunt history/player data, optional `slot_requests` in V12                                     |
+| Persistence        | `overlay_widgets.config`; draft/published appearance through `overlay_state`                                                  |
 
 ## Rendering structure
 
@@ -59,12 +59,12 @@
 
 ## Hardcoded values and risks
 
-| Location | Value type | Affects | Safety |
-| --- | --- | --- | --- |
-| `OverlayRenderer.css:955-1172` | animation names, scroll timing, transforms | Stack/list/card motion | Dangerous unless animation distances are recalculated. |
-| `OverlayRenderer.css:980-991` | drop-shadow colors for super/extreme | Special state badges/cards | Constrained; color can change with readable state mapping. |
-| `BonusHuntWidgetV12.jsx:15` | extensive inline/layout values | V12 Classic + Requests | Constrained; use declared V12 element map. |
-| `BonusHuntWidget.jsx:15` | style routing and legacy sub-values | All styles | Coupled; generic controls may hit only one style. |
+| Location                       | Value type                                 | Affects                    | Safety                                                     |
+| ------------------------------ | ------------------------------------------ | -------------------------- | ---------------------------------------------------------- |
+| `OverlayRenderer.css:955-1172` | animation names, scroll timing, transforms | Stack/list/card motion     | Dangerous unless animation distances are recalculated.     |
+| `OverlayRenderer.css:980-991`  | drop-shadow colors for super/extreme       | Special state badges/cards | Constrained; color can change with readable state mapping. |
+| `BonusHuntWidgetV12.jsx:15`    | extensive inline/layout values             | V12 Classic + Requests     | Constrained; use declared V12 element map.                 |
+| `BonusHuntWidget.jsx:15`       | style routing and legacy sub-values        | All styles                 | Coupled; generic controls may hit only one style.          |
 
 ## Animation model
 

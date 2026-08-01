@@ -89,10 +89,8 @@ Both wrappers also use `getWidgetSlotSize` and `getWidgetSlotBehavior` from `app
 The wrapper exposes safe scoping attributes:
 
 ```html
-data-widget-id="..."
-data-widget-type="bonus_hunt"
-data-appearance-version="v2-1"
-data-material="metallic"
+data-widget-id="..." data-widget-type="bonus_hunt"
+data-appearance-version="v2-1" data-material="metallic"
 ```
 
 ## Widget Mapping

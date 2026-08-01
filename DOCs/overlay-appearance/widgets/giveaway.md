@@ -2,16 +2,16 @@
 
 ## Identity
 
-| Field | Value |
-| --- | --- |
-| Widget ID | `giveaway` |
-| Name | Giveaway |
-| Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:129` |
-| Main component | `src/components/OverlayCenter/widgets/giveaway/GiveawayWidget.jsx:198` |
-| Config panel | `src/components/OverlayCenter/widgets/giveaway/GiveawayConfig.jsx` |
-| Styles | `v1`, `v2`, `v3`, `v4`, `metal`, `bh_stats`, `v12` through `displayStyle` |
-| Data source | `overlay_widgets.config`, chat participant state |
-| Persistence | `overlay_widgets.config`; preview sample data in `previewWidgetSamples.js` |
+| Field          | Value                                                                      |
+| -------------- | -------------------------------------------------------------------------- |
+| Widget ID      | `giveaway`                                                                 |
+| Name           | Giveaway                                                                   |
+| Registry       | `src/components/OverlayCenter/widgets/builtinWidgets.js:129`               |
+| Main component | `src/components/OverlayCenter/widgets/giveaway/GiveawayWidget.jsx:198`     |
+| Config panel   | `src/components/OverlayCenter/widgets/giveaway/GiveawayConfig.jsx`         |
+| Styles         | `v1`, `v2`, `v3`, `v4`, `metal`, `bh_stats`, `v12` through `displayStyle`  |
+| Data source    | `overlay_widgets.config`, chat participant state                           |
+| Persistence    | `overlay_widgets.config`; preview sample data in `previewWidgetSamples.js` |
 
 ## Rendering structure
 

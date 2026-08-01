@@ -26,7 +26,13 @@ function normalizeSlotLookup(value) {
 }
 
 function bonusSlotId(bonus) {
-  return bonus?.slotId || bonus?.slot_id || bonus?.slot?.id || bonus?.slot?.slot_id || "";
+  return (
+    bonus?.slotId ||
+    bonus?.slot_id ||
+    bonus?.slot?.id ||
+    bonus?.slot?.slot_id ||
+    ""
+  );
 }
 
 function bonusSlotNameForLookup(bonus) {
@@ -104,7 +110,9 @@ function findCatalogSlotForBonus(bonus, slots) {
   if (!name) return null;
 
   const provider = normalizeSlotLookup(bonusProviderName(bonus));
-  const exactName = slots.filter((slot) => normalizeSlotLookup(slot?.name) === name);
+  const exactName = slots.filter(
+    (slot) => normalizeSlotLookup(slot?.name) === name,
+  );
   if (provider && exactName.length > 1) {
     const exactProvider = exactName.find(
       (slot) => normalizeSlotLookup(slot?.provider) === provider,
@@ -113,7 +121,9 @@ function findCatalogSlotForBonus(bonus, slots) {
   }
   if (exactName.length) return exactName[0];
 
-  return slots.find((slot) => normalizeSlotLookup(slot?.name).includes(name)) || null;
+  return (
+    slots.find((slot) => normalizeSlotLookup(slot?.name).includes(name)) || null
+  );
 }
 
 function hydrateBonusWithCatalogSlot(bonus, slot) {
@@ -168,11 +178,7 @@ function bonusImageMergeKey(bonus) {
   const id = String(bonusSlotId(bonus) || "");
   const name = normalizeSlotLookup(bonusSlotNameForLookup(bonus));
   if (!id && !name) return "";
-  return [
-    id,
-    name,
-    normalizeSlotLookup(bonusProviderName(bonus)),
-  ].join("|");
+  return [id, name, normalizeSlotLookup(bonusProviderName(bonus))].join("|");
 }
 
 function mergeHydratedBonusImages(bonuses, hydratedBonuses) {
@@ -216,9 +222,10 @@ function firstFilledString(values = []) {
 }
 
 function resolveBonusHuntStreamerProfile(config = {}, allWidgets = []) {
-  const navbarWidget = (Array.isArray(allWidgets) ? allWidgets : []).find((widget) => (
-    widget?.widget_type === "navbar" || widget?.widgetType === "navbar"
-  ));
+  const navbarWidget = (Array.isArray(allWidgets) ? allWidgets : []).find(
+    (widget) =>
+      widget?.widget_type === "navbar" || widget?.widgetType === "navbar",
+  );
   const navbarConfig = navbarWidget?.config || {};
   const avatarUrl = firstFilledString([
     config.avatarUrl,
@@ -261,7 +268,9 @@ function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
   useEffect(() => {
     const needsHydration =
       baseConfig.displayStyle === "better_bonus_hunt" &&
-      rawBonuses.some((bonus) => bonusSlotNameForLookup(bonus) && !bonusImageCandidate(bonus));
+      rawBonuses.some(
+        (bonus) => bonusSlotNameForLookup(bonus) && !bonusImageCandidate(bonus),
+      );
 
     if (!needsHydration) {
       setHydratedBonuses(null);
@@ -273,7 +282,9 @@ function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
       .then((slots) => {
         if (cancelled) return;
         const nextBonuses = hydrateBonusImagesFromSlots(rawBonuses, slots);
-        const changed = nextBonuses.some((bonus, index) => bonus !== rawBonuses[index]);
+        const changed = nextBonuses.some(
+          (bonus, index) => bonus !== rawBonuses[index],
+        );
         setHydratedBonuses(changed ? nextBonuses : null);
       })
       .catch((error) => {
@@ -432,21 +443,28 @@ function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
   });
 
   /* Better Editor renderer. */
-    if (isBetterBH) {
-    const betterRequestsVisible = sortedConfig.showSlotRequests === false
-      ? false
-      : sortedConfig.showRequests;
-    const streamerProfile = resolveBonusHuntStreamerProfile(sortedConfig, allWidgets);
+  if (isBetterBH) {
+    const betterRequestsVisible =
+      sortedConfig.showSlotRequests === false
+        ? false
+        : sortedConfig.showRequests;
+    const streamerProfile = resolveBonusHuntStreamerProfile(
+      sortedConfig,
+      allWidgets,
+    );
     return (
       <BetterBonusHuntStyle
         config={{
           ...sortedConfig,
           avatarUrl: streamerProfile.avatarUrl,
-          streamerName: streamerProfile.streamerName || sortedConfig.streamerName,
+          streamerName:
+            streamerProfile.streamerName || sortedConfig.streamerName,
           __betterInstanceId: sortedConfig.__betterInstanceId || widgetId,
-          slotRequests: Array.isArray(sortedConfig.slotRequests) && sortedConfig.slotRequests.length
-            ? sortedConfig.slotRequests
-            : classicRequestRows,
+          slotRequests:
+            Array.isArray(sortedConfig.slotRequests) &&
+            sortedConfig.slotRequests.length
+              ? sortedConfig.slotRequests
+              : classicRequestRows,
           showRequests: betterRequestsVisible,
         }}
         bonuses={bonuses}

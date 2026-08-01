@@ -40,8 +40,10 @@ const CRYPTO_IDS = {
 
 /* All coins that auto-cycle when crypto is enabled */
 const ALL_CRYPTO_COINS = Object.keys(CRYPTO_IDS);
-const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER = "betterNavbarOptionalCasinoCommandInitialized";
-const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER = "betterNavbarManualCasinoCommand";
+const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER =
+  "betterNavbarOptionalCasinoCommandInitialized";
+const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER =
+  "betterNavbarManualCasinoCommand";
 const LEGACY_CASINO_COMMAND = "!casino";
 
 const CRYPTO_SYMBOLS = {
@@ -90,7 +92,9 @@ const DEFAULT_SECTION_LAYOUT = [
   { id: "casino", zone: "right" },
 ];
 
-const SECTION_IDS = new Set(DEFAULT_SECTION_LAYOUT.map((section) => section.id));
+const SECTION_IDS = new Set(
+  DEFAULT_SECTION_LAYOUT.map((section) => section.id),
+);
 
 const SOCIAL_PLATFORM_META = [
   {
@@ -115,7 +119,8 @@ const SOCIAL_PLATFORM_META = [
     short: "YT",
     color: "#ff0033",
     keys: ["youtubeChannel", "youtubeVideoId"],
-    toUrl: (value) => `https://youtube.com/${value.startsWith("@") ? value : `@${value}`}`,
+    toUrl: (value) =>
+      `https://youtube.com/${value.startsWith("@") ? value : `@${value}`}`,
   },
   {
     id: "x",
@@ -139,7 +144,8 @@ const SOCIAL_PLATFORM_META = [
     short: "DC",
     color: "#5865f2",
     keys: ["discordUrl", "discordInvite", "discordTag"],
-    toUrl: (value) => (value.includes("/") ? value : `https://discord.gg/${value}`),
+    toUrl: (value) =>
+      value.includes("/") ? value : `https://discord.gg/${value}`,
   },
   {
     id: "tiktok",
@@ -287,9 +293,11 @@ function resolveNavbarStyleSecaValue(isStyleSeca, value, fallback) {
 }
 
 function resolveDisplayNowPlaying(config, nowPlaying) {
-  if (config.showNowPlaying === false || config.musicSource === "disabled") return null;
+  if (config.showNowPlaying === false || config.musicSource === "disabled")
+    return null;
   if (!nowPlaying?.track && !nowPlaying?.artist) return null;
-  if (config.musicSource === "spotify" && nowPlaying.isPlaying === false) return null;
+  if (config.musicSource === "spotify" && nowPlaying.isPlaying === false)
+    return null;
   return nowPlaying;
 }
 
@@ -810,8 +818,11 @@ function normalizeNavbarSectionLayout(layout) {
   const normalized = [];
   const seen = new Set();
   source.forEach((section) => {
-    if (!section || !SECTION_IDS.has(section.id) || seen.has(section.id)) return;
-    const fallback = DEFAULT_SECTION_LAYOUT.find((item) => item.id === section.id);
+    if (!section || !SECTION_IDS.has(section.id) || seen.has(section.id))
+      return;
+    const fallback = DEFAULT_SECTION_LAYOUT.find(
+      (item) => item.id === section.id,
+    );
     normalized.push({
       id: section.id,
       zone: ["left", "center", "right"].includes(section.zone)
@@ -827,7 +838,9 @@ function normalizeNavbarSectionLayout(layout) {
 }
 
 function cleanSocialValue(value) {
-  return String(value || "").trim().replace(/^@+/, "");
+  return String(value || "")
+    .trim()
+    .replace(/^@+/, "");
 }
 
 function resolveNavbarSocialItems(config = {}) {
@@ -1038,7 +1051,13 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       stopped = true;
       clearInterval(id);
     };
-  }, [c.musicSource, c.showNowPlaying, c.spotify_access_token, widgetId, userId]);
+  }, [
+    c.musicSource,
+    c.showNowPlaying,
+    c.spotify_access_token,
+    widgetId,
+    userId,
+  ]);
 
   // Live Spotify now-playing.
   const displayNowPlaying = resolveDisplayNowPlaying(c, nowPlaying);
@@ -1688,7 +1707,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         })}
       >
         {socialItems.map((item) => {
-          const showHandle = displayStyle === "handles" || displayStyle === "labels";
+          const showHandle =
+            displayStyle === "handles" || displayStyle === "labels";
           const label =
             displayStyle === "labels"
               ? item.label
@@ -1701,8 +1721,12 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               rel="noreferrer"
               title={`${item.label}: ${item.value}`}
               style={{
-                height: compact ? Math.max(20, barHeight * 0.42) : Math.max(22, barHeight * 0.46),
-                minWidth: compact ? Math.max(20, barHeight * 0.42) : Math.max(22, barHeight * 0.46),
+                height: compact
+                  ? Math.max(20, barHeight * 0.42)
+                  : Math.max(22, barHeight * 0.46),
+                minWidth: compact
+                  ? Math.max(20, barHeight * 0.42)
+                  : Math.max(22, barHeight * 0.46),
                 maxWidth: showHandle ? 150 : undefined,
                 display: "inline-flex",
                 alignItems: "center",
@@ -1933,10 +1957,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       ? Math.min(Math.max(rawPackageMaxWidth, 720), 1920)
       : 1920;
     const brandName = String(
-      c.streamerName ||
-        c.brandName ||
-        c.twitchUsername ||
-        "STREAMER",
+      c.streamerName || c.brandName || c.twitchUsername || "STREAMER",
     ).toUpperCase();
     const packageAvatarSize =
       avatarImageSize ||
@@ -1947,20 +1968,27 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       c.motto ||
       (c.twitchUsername ? `twitch.tv/${c.twitchUsername}` : "");
     const formattedStartBalance =
-      c.startBalance !== undefined && c.startBalance !== null && c.startBalance !== ""
-        ? `${c.balanceCurrency || "€"}${Number(c.startBalance).toLocaleString(undefined, {
-            maximumFractionDigits: 2,
-          })}`
+      c.startBalance !== undefined &&
+      c.startBalance !== null &&
+      c.startBalance !== ""
+        ? `${c.balanceCurrency || "€"}${Number(c.startBalance).toLocaleString(
+            undefined,
+            {
+              maximumFractionDigits: 2,
+            },
+          )}`
         : "";
     const startValue = c.startValue || formattedStartBalance;
-    const showStart = Boolean(c.startValue || (c.showStartBalance && startValue));
+    const showStart = Boolean(
+      c.startValue || (c.showStartBalance && startValue),
+    );
     const rawCasinoCommand = c.casinoCommand || "";
     const casinoCommand =
-      (
-        c[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
-        c[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] !== true
-      ) &&
-      String(rawCasinoCommand || "").trim().toLowerCase() === LEGACY_CASINO_COMMAND
+      (c[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
+        c[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] !== true) &&
+      String(rawCasinoCommand || "")
+        .trim()
+        .toLowerCase() === LEGACY_CASINO_COMMAND
         ? ""
         : rawCasinoCommand;
     const showCasino = Boolean(
@@ -1972,8 +2000,12 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       : 1;
     const betterCasinoLogoSize =
       casinoImageSize ||
-      Math.max(8, Math.min(packageHeight * 1.65, packageHeight * 0.55 * casinoLogoScale));
-    const wantsBetterMusic = c.showNowPlaying !== false && c.musicSource !== "disabled";
+      Math.max(
+        8,
+        Math.min(packageHeight * 1.65, packageHeight * 0.55 * casinoLogoScale),
+      );
+    const wantsBetterMusic =
+      c.showNowPlaying !== false && c.musicSource !== "disabled";
     const betterNowPlaying = displayNowPlaying;
     const showBetterMusic = Boolean(wantsBetterMusic && betterNowPlaying);
     const betterMusicDisplayStyle = subValue(
@@ -2000,7 +2032,13 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       />
     );
     const renderBolt = () => (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill={packageGold} aria-hidden="true">
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill={packageGold}
+        aria-hidden="true"
+      >
         <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
       </svg>
     );
@@ -2025,7 +2063,12 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         />
       </svg>
     );
-    const bareBetterMusicStyle = ["minimal", "wave", "equalizer", "vinyl"].includes(betterMusicDisplayStyle);
+    const bareBetterMusicStyle = [
+      "minimal",
+      "wave",
+      "equalizer",
+      "vinyl",
+    ].includes(betterMusicDisplayStyle);
     const renderBetterIdentitySection = () => {
       if (c.showIdentity === false) return null;
       return (
@@ -2203,7 +2246,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                 height: betterCasinoLogoSize,
                 maxWidth: betterCasinoLogoSize * 2.4,
                 objectFit: casinoImageFit,
-                borderRadius: casinoImageRadius ?? Math.max(3, betterCasinoLogoSize * 0.18),
+                borderRadius:
+                  casinoImageRadius ?? Math.max(3, betterCasinoLogoSize * 0.18),
                 filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.42))",
                 flexShrink: 0,
               }}
@@ -2219,7 +2263,9 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                 maxWidth: 170,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                textTransform: casinoCommand.startsWith("!") ? "none" : "uppercase",
+                textTransform: casinoCommand.startsWith("!")
+                  ? "none"
+                  : "uppercase",
                 whiteSpace: "nowrap",
               }}
             >
@@ -2253,10 +2299,16 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               minHeight: Math.max(28, packageHeight * 0.56),
               boxSizing: "border-box",
               overflow: "hidden",
-              border: bareBetterMusicStyle ? "0" : `1px solid ${alphaColor(packageBlue, 0.32)}`,
+              border: bareBetterMusicStyle
+                ? "0"
+                : `1px solid ${alphaColor(packageBlue, 0.32)}`,
               borderRadius: 8,
-              background: bareBetterMusicStyle ? "transparent" : "rgba(12,27,59,0.6)",
-              boxShadow: bareBetterMusicStyle ? "none" : `inset 0 0 10px ${alphaColor(packageBlue, 0.1)}`,
+              background: bareBetterMusicStyle
+                ? "transparent"
+                : "rgba(12,27,59,0.6)",
+              boxShadow: bareBetterMusicStyle
+                ? "none"
+                : `inset 0 0 10px ${alphaColor(packageBlue, 0.1)}`,
               padding: bareBetterMusicStyle ? "0 4px" : "4px 10px",
             }}
           >
@@ -2282,7 +2334,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       clock: renderBetterClockSection,
       nowPlaying: renderBetterMusicSection,
       crypto: () => (showPackageCrypto ? renderCryptoSection() : null),
-      socials: () => (showPackageSocials ? renderSocialsSection({ compact: true }) : null),
+      socials: () =>
+        showPackageSocials ? renderSocialsSection({ compact: true }) : null,
       cta: () => (showPackageCta ? renderCtaSection() : null),
       balance: renderBetterBalanceSection,
       casino: renderBetterCasinoSection,
@@ -2290,13 +2343,18 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     const renderBetterZone = (zone) => {
       const rendered = layout
         .filter((section) => section.zone === zone)
-        .map((section) => ({ id: section.id, el: betterSectionRenderers[section.id]?.() ?? null }))
+        .map((section) => ({
+          id: section.id,
+          el: betterSectionRenderers[section.id]?.() ?? null,
+        }))
         .filter((section) => section.el);
       const children = rendered.flatMap((section, index) =>
         index === 0
           ? [<React.Fragment key={section.id}>{section.el}</React.Fragment>]
           : [
-              <React.Fragment key={`sep-${section.id}`}>{renderPackageDivider()}</React.Fragment>,
+              <React.Fragment key={`sep-${section.id}`}>
+                {renderPackageDivider()}
+              </React.Fragment>,
               <React.Fragment key={section.id}>{section.el}</React.Fragment>,
             ],
       );
@@ -2306,12 +2364,20 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: zone === "left" ? "flex-start" : zone === "right" ? "flex-end" : "center",
+            justifyContent:
+              zone === "left"
+                ? "flex-start"
+                : zone === "right"
+                  ? "flex-end"
+                  : "center",
             gap: 10,
             height: "100%",
             minWidth: 0,
             flex: zone === "center" ? "0 1 auto" : "1 1 0",
-            paddingLeft: zone === "left" ? Math.max(14, Number(containerPadding) || 20) : 0,
+            paddingLeft:
+              zone === "left"
+                ? Math.max(14, Number(containerPadding) || 20)
+                : 0,
             paddingRight: zone === "right" ? 12 : 0,
             position: "relative",
             zIndex: 1,
@@ -2379,7 +2445,9 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
             filter: needsFilter ? filterStr : "none",
             transform: `scale(${widgetScale})`,
             transformOrigin: "center",
-            backdropFilter: containerBlur ? `blur(${containerBlur}px)` : undefined,
+            backdropFilter: containerBlur
+              ? `blur(${containerBlur}px)`
+              : undefined,
           }}
         >
           <div
@@ -2438,7 +2506,6 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
       </div>
     );
   }
-
 
   return (
     <div
@@ -2881,7 +2948,10 @@ function NowPlayingCompact({
           border: `1px solid ${accentColor}44`,
         }}
       >
-        <NowPlayingSpotifyMark accentColor={accentColor} size={Math.max(13, artSize * 0.54)} />
+        <NowPlayingSpotifyMark
+          accentColor={accentColor}
+          size={Math.max(13, artSize * 0.54)}
+        />
       </div>
     );
   };
@@ -2966,11 +3036,20 @@ function NowPlayingCompact({
             borderRadius: "50%",
             background: statusColor,
             boxShadow: isPlaying ? `0 0 8px ${accentColor}` : "none",
-            animation: isPlaying ? "spotifyPulse 1.5s ease-in-out infinite" : "none",
+            animation: isPlaying
+              ? "spotifyPulse 1.5s ease-in-out infinite"
+              : "none",
             flexShrink: 0,
           }}
         />
-        <div style={{ minWidth: 0, flex: 1, overflow: "hidden", whiteSpace: "nowrap" }}>
+        <div
+          style={{
+            minWidth: 0,
+            flex: 1,
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          }}
+        >
           <span
             style={{
               display: "inline-block",
@@ -3137,104 +3216,106 @@ function NowPlayingDisplay({
       barHeight={barHeight}
       {...typography}
     />
-  ) : (() => {
-    switch (musicDisplayStyle) {
-      case "pill":
-        return (
-          <NowPlayingPill
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            isMetal={isMetal}
-            barHeight={barHeight}
-            {...typography}
-          />
-        );
-      case "marquee":
-        return (
-          <NowPlayingMarquee
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            {...typography}
-          />
-        );
-      case "albumart":
-        return (
-          <NowPlayingAlbumArt
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            isMetal={isMetal}
-            barHeight={barHeight}
-            {...typography}
-          />
-        );
-      case "equalizer":
-        return (
-          <NowPlayingEqualizer
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            {...typography}
-          />
-        );
-      case "vinyl":
-        return (
-          <NowPlayingVinyl
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            barHeight={barHeight}
-            {...typography}
-          />
-        );
-      case "minimal":
-        return (
-          <NowPlayingMinimal
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            {...typography}
-          />
-        );
-      case "wave":
-        return (
-          <NowPlayingWave
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            accentColor={accentColor}
-            barHeight={barHeight}
-            {...typography}
-          />
-        );
-      case "text":
-      default:
-        return (
-          <NowPlayingText
-            data={data}
-            fontSize={fontSize}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            {...typography}
-          />
-        );
-    }
-  })();
+  ) : (
+    (() => {
+      switch (musicDisplayStyle) {
+        case "pill":
+          return (
+            <NowPlayingPill
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              isMetal={isMetal}
+              barHeight={barHeight}
+              {...typography}
+            />
+          );
+        case "marquee":
+          return (
+            <NowPlayingMarquee
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              {...typography}
+            />
+          );
+        case "albumart":
+          return (
+            <NowPlayingAlbumArt
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              isMetal={isMetal}
+              barHeight={barHeight}
+              {...typography}
+            />
+          );
+        case "equalizer":
+          return (
+            <NowPlayingEqualizer
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              {...typography}
+            />
+          );
+        case "vinyl":
+          return (
+            <NowPlayingVinyl
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              barHeight={barHeight}
+              {...typography}
+            />
+          );
+        case "minimal":
+          return (
+            <NowPlayingMinimal
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              {...typography}
+            />
+          );
+        case "wave":
+          return (
+            <NowPlayingWave
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              accentColor={accentColor}
+              barHeight={barHeight}
+              {...typography}
+            />
+          );
+        case "text":
+        default:
+          return (
+            <NowPlayingText
+              data={data}
+              fontSize={fontSize}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              {...typography}
+            />
+          );
+      }
+    })()
+  );
   return (
     <div
       style={{

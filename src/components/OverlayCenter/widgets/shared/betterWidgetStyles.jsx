@@ -11,11 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import SlotImage from "../SlotImage";
-import {
-  appearanceAttrs,
-  subElementStyle,
-  subValue,
-} from "./appearanceStyles";
+import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
 
 function attrs(widgetType, config, elementId, stateId) {
   return {
@@ -114,7 +110,9 @@ function betterChatAvatarUrl(msg = {}) {
     msg.raidAvatar ||
     msg.metadata?.avatarUrl ||
     msg.metadata?.profileImageUrl ||
-    (msg.platform === "twitch" ? twitchAvatarProxyUrl(msg.login || msg.username || msg.user) : "")
+    (msg.platform === "twitch"
+      ? twitchAvatarProxyUrl(msg.login || msg.username || msg.user)
+      : "")
   );
 }
 
@@ -123,15 +121,21 @@ function betterChatMessageText(msg = {}) {
 }
 
 function betterChatMessageType(msg = {}) {
-  const raw = String(msg.type || msg.eventType || msg.noticeType || "").toLowerCase();
+  const raw = String(
+    msg.type || msg.eventType || msg.noticeType || "",
+  ).toLowerCase();
   if (msg.isRaid || raw === "raid") return "raid";
-  if (msg.giftCount || msg.metadata?.giftCount || raw.includes("gift")) return "gift";
-  if (msg.isSub || msg.metadata?.isSub || raw === "sub" || raw === "subscriber") return "sub";
+  if (msg.giftCount || msg.metadata?.giftCount || raw.includes("gift"))
+    return "gift";
+  if (msg.isSub || msg.metadata?.isSub || raw === "sub" || raw === "subscriber")
+    return "sub";
   return "message";
 }
 
 function betterChatGiftTier(msg = {}) {
-  const count = Number(msg.giftCount || msg.metadata?.giftCount || msg.gift_count || 0);
+  const count = Number(
+    msg.giftCount || msg.metadata?.giftCount || msg.gift_count || 0,
+  );
   if (count >= 11) return "large";
   if (count >= 2) return "medium";
   return count >= 1 ? "single" : "";
@@ -149,11 +153,17 @@ const GIVEAWAY_FONT_STACKS = {
 };
 
 function giveawayFontStack(key, fallback = "rajdhani") {
-  return GIVEAWAY_FONT_STACKS[key] || GIVEAWAY_FONT_STACKS[fallback] || GIVEAWAY_FONT_STACKS.rajdhani;
+  return (
+    GIVEAWAY_FONT_STACKS[key] ||
+    GIVEAWAY_FONT_STACKS[fallback] ||
+    GIVEAWAY_FONT_STACKS.rajdhani
+  );
 }
 
 function stripBang(value) {
-  return String(value || "").trim().replace(/^!+/, "");
+  return String(value || "")
+    .trim()
+    .replace(/^!+/, "");
 }
 
 function normalizeHue(value, fallback = 208) {
@@ -165,26 +175,51 @@ function giveawayParticipant(value, index) {
   const name =
     typeof value === "string"
       ? value
-      : value?.name || value?.username || value?.displayName || value?.user || `Entry ${index + 1}`;
+      : value?.name ||
+        value?.username ||
+        value?.displayName ||
+        value?.user ||
+        `Entry ${index + 1}`;
   return {
-    id: typeof value === "object" && value?.id ? String(value.id) : `${name}-${index}`,
+    id:
+      typeof value === "object" && value?.id
+        ? String(value.id)
+        : `${name}-${index}`,
     name: String(name || `Entry ${index + 1}`),
-    hue: normalizeHue(typeof value === "object" ? value?.hue : undefined, 198 + index * 41),
+    hue: normalizeHue(
+      typeof value === "object" ? value?.hue : undefined,
+      198 + index * 41,
+    ),
   };
 }
 
 function BetterGiveawayGiftIcon() {
   return (
     <svg className="better-gw-gift-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect className="better-gw-gift-box" x="4" y="10" width="16" height="10" rx="2" />
+      <rect
+        className="better-gw-gift-box"
+        x="4"
+        y="10"
+        width="16"
+        height="10"
+        rx="2"
+      />
       <path className="better-gw-gift-lid" d="M3 7.5h18v4H3z" />
       <path className="better-gw-gift-ribbon" d="M12 7.5V20M4.5 12h15" />
-      <path className="better-gw-gift-bow" d="M12 7.5c-3.6-.2-5.1-1.1-5.1-2.5 0-1 .8-1.8 1.9-1.8 1.5 0 2.5 1.5 3.2 4.3Zm0 0c3.6-.2 5.1-1.1 5.1-2.5 0-1-.8-1.8-1.9-1.8-1.5 0-2.5 1.5-3.2 4.3Z" />
+      <path
+        className="better-gw-gift-bow"
+        d="M12 7.5c-3.6-.2-5.1-1.1-5.1-2.5 0-1 .8-1.8 1.9-1.8 1.5 0 2.5 1.5 3.2 4.3Zm0 0c3.6-.2 5.1-1.1 5.1-2.5 0-1-.8-1.8-1.9-1.8-1.5 0-2.5 1.5-3.2 4.3Z"
+      />
     </svg>
   );
 }
 
-function BetterGiveawayRoulette({ participants, phase, winnerName, durationSec }) {
+function BetterGiveawayRoulette({
+  participants,
+  phase,
+  winnerName,
+  durationSec,
+}) {
   const crowd = participants.length
     ? participants
     : [{ id: "waiting", name: "Waiting", hue: 208 }];
@@ -193,11 +228,21 @@ function BetterGiveawayRoulette({ participants, phase, winnerName, durationSec }
   const winnerKey = String(winnerName || "").toLowerCase();
 
   return (
-    <div className={`better-gw-roulette-stage better-gw-roulette-stage--${phase}`}>
-      <div className={`better-gw-winner-banner${phase === "winner" && winnerName ? " is-shown" : ""}`} role="status" aria-live="polite">
+    <div
+      className={`better-gw-roulette-stage better-gw-roulette-stage--${phase}`}
+    >
+      <div
+        className={`better-gw-winner-banner${phase === "winner" && winnerName ? " is-shown" : ""}`}
+        role="status"
+        aria-live="polite"
+      >
         {winnerName ? (
           <>
-            <Trophy className="better-gw-winner-crown" size={14} aria-hidden="true" />
+            <Trophy
+              className="better-gw-winner-crown"
+              size={14}
+              aria-hidden="true"
+            />
             <span className="better-gw-winner-kicker">Winner</span>
             <strong className="better-gw-winner-name">{winnerName}</strong>
           </>
@@ -207,7 +252,9 @@ function BetterGiveawayRoulette({ participants, phase, winnerName, durationSec }
       <div className="better-gw-roulette-viewport">
         <div
           className="better-gw-roulette-track"
-          style={{ "--gw-spin-duration": `${clampNumber(durationSec, 1.2, 12, 5.2)}s` }}
+          style={{
+            "--gw-spin-duration": `${clampNumber(durationSec, 1.2, 12, 5.2)}s`,
+          }}
         >
           {chips.map((participant, index) => {
             const isWinner =
@@ -226,8 +273,12 @@ function BetterGiveawayRoulette({ participants, phase, winnerName, durationSec }
                 >
                   {initials(participant.name)}
                 </span>
-                <span className="better-gw-avatar-name">{participant.name}</span>
-                {phase === "winner" && isWinner ? <span className="better-gw-chip-crown">WIN</span> : null}
+                <span className="better-gw-avatar-name">
+                  {participant.name}
+                </span>
+                {phase === "winner" && isWinner ? (
+                  <span className="better-gw-chip-crown">WIN</span>
+                ) : null}
               </div>
             );
           })}
@@ -240,7 +291,9 @@ function BetterGiveawayRoulette({ participants, phase, winnerName, durationSec }
       </div>
 
       <div className="better-gw-roulette-status">
-        {phase === "spinning" ? <span className="better-gw-status-spin">Drawing winner...</span> : null}
+        {phase === "spinning" ? (
+          <span className="better-gw-status-spin">Drawing winner...</span>
+        ) : null}
         {phase === "winner" && winnerName ? (
           <span className="better-gw-status-win">
             <Trophy size={12} aria-hidden="true" /> {winnerName} takes the prize
@@ -312,7 +365,8 @@ function bonusTier(bonus) {
       "",
   ).toLowerCase();
   if (bonus?.isExtremeBonus || raw.includes("extreme")) return "extreme";
-  if (bonus?.isSuperBonus || raw.includes("super") || raw.includes("supreme")) return "super";
+  if (bonus?.isSuperBonus || raw.includes("super") || raw.includes("supreme"))
+    return "super";
   return "normal";
 }
 
@@ -383,7 +437,8 @@ const BETTER_BETS_THEME_VARS = {
     "--stage-bg":
       "radial-gradient(circle at 50% 42%,rgba(140,160,190,0.12),transparent 45%),linear-gradient(160deg,#14191f,#0b0f14 52%,#06080b)",
     "--frame-border": "#8fa1b8",
-    "--frame-bg": "linear-gradient(155deg,#39434f,#232b35 32%,#141a21 70%,#0e1318)",
+    "--frame-bg":
+      "linear-gradient(155deg,#39434f,#232b35 32%,#141a21 70%,#0e1318)",
     "--frame-shadow":
       "inset 0 1px 0 rgba(255,255,255,0.25),inset 0 -1px 0 rgba(0,0,0,0.7),0 0 0 1px #05070a,0 8px 22px rgba(0,0,0,0.6)",
     "--bracket-color": "#d7e2f0",
@@ -405,14 +460,17 @@ const BETTER_BETS_THEME_VARS = {
     "--card-full-shadow":
       "inset 0 1px 0 rgba(255,255,255,0.1),inset 0 -6px 12px rgba(0,0,0,0.5)",
     "--card-topline": "rgba(235,244,255,0.55)",
-    "--badge-bg": "linear-gradient(160deg,#e8eef6,#9fb0c6 30%,#4d5b6d 70%,#2a333f)",
-    "--badge-shadow": "0 1px 2px rgba(0,0,0,0.7),inset 0 1px 1px rgba(255,255,255,0.8)",
+    "--badge-bg":
+      "linear-gradient(160deg,#e8eef6,#9fb0c6 30%,#4d5b6d 70%,#2a333f)",
+    "--badge-shadow":
+      "0 1px 2px rgba(0,0,0,0.7),inset 0 1px 1px rgba(255,255,255,0.8)",
     "--hard-shadow": "0 1px 2px rgba(0,0,0,0.9)",
     "--soft-glow": "0 1px 1px rgba(0,0,0,0.75)",
     "--detail-glow": "none",
     "--scrim-bg":
       "linear-gradient(180deg,rgba(8,11,15,0.05),rgba(8,11,15,0.28) 55%,rgba(8,11,15,0.5))",
-    "--glint-bg": "linear-gradient(90deg,transparent,rgba(255,255,255,0.85) 47%,transparent)",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,rgba(255,255,255,0.85) 47%,transparent)",
     "--glint-glow": "0 1px 2px rgba(0,0,0,0.5)",
     "--glint-opacity": "0.5",
     "--footer-rule": "rgba(120,138,160,0.3)",
@@ -424,7 +482,8 @@ const BETTER_BETS_THEME_VARS = {
     "--stage-bg":
       "radial-gradient(circle at 18% 20%,rgba(91,124,250,0.16),transparent 40%),radial-gradient(circle at 82% 80%,rgba(34,211,238,0.12),transparent 42%),linear-gradient(140deg,#0a0f2e,#101c44 48%,#071426)",
     "--frame-border": "#4f6cf0",
-    "--frame-bg": "linear-gradient(150deg,#1b2566,#131a4a 35%,#0a1130 70%,#081226)",
+    "--frame-bg":
+      "linear-gradient(150deg,#1b2566,#131a4a 35%,#0a1130 70%,#081226)",
     "--frame-shadow":
       "0 0 0 1px rgba(30,42,110,0.9) inset,0 0 calc(18px * var(--glow-mult)) rgba(79,108,240,0.5),0 0 calc(34px * var(--glow-mult)) rgba(34,211,238,0.22),inset 0 0 26px rgba(79,108,240,0.16)",
     "--bracket-color": "#9db4ff",
@@ -432,7 +491,8 @@ const BETTER_BETS_THEME_VARS = {
     "--sheen-color": "rgba(200,214,255,0.09)",
     "--title-glow": "0 0 8px rgba(130,156,255,0.9),0 1px 2px rgba(0,0,0,0.85)",
     "--meta-border": "#34408f",
-    "--meta-bg": "linear-gradient(120deg,rgba(35,45,120,0.92),rgba(16,24,68,0.92))",
+    "--meta-bg":
+      "linear-gradient(120deg,rgba(35,45,120,0.92),rgba(16,24,68,0.92))",
     "--meta-shadow": "inset 0 1px 8px rgba(91,124,250,0.22)",
     "--meta-divider": "rgba(80,96,190,0.45)",
     "--card-frame-mix": "#2c3a8c",
@@ -442,7 +502,8 @@ const BETTER_BETS_THEME_VARS = {
       "inset 0 0 calc(18px * var(--glow-mult)) color-mix(in srgb,var(--accent) 20%,transparent),0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 40%,transparent)",
     "--card-hover-shadow":
       "inset 0 0 calc(22px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 70%,transparent)",
-    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 24%,transparent)",
+    "--card-full-shadow":
+      "inset 0 0 20px color-mix(in srgb,var(--accent) 24%,transparent)",
     "--card-topline": "color-mix(in srgb,var(--accent) 50%,white 50%)",
     "--badge-bg": "linear-gradient(140deg,var(--accent),var(--accent-2))",
     "--badge-shadow":
@@ -453,7 +514,8 @@ const BETTER_BETS_THEME_VARS = {
       "0 0 calc(9px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
     "--scrim-bg":
       "linear-gradient(180deg,rgba(6,10,28,0.1),rgba(6,10,28,0.32) 55%,rgba(6,10,28,0.58))",
-    "--glint-bg": "linear-gradient(90deg,transparent,var(--accent-2) 47%,transparent)",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,var(--accent-2) 47%,transparent)",
     "--glint-glow": "0 0 calc(8px * var(--glow-mult)) 2px var(--accent)",
     "--footer-rule": "rgba(80,96,190,0.45)",
   },
@@ -476,7 +538,8 @@ const BETTER_BETS_THEME_VARS = {
     "--card-frame-mix": "#39424f",
     "--card-bg": "linear-gradient(180deg,#232932,#1e242c)",
     "--card-shadow": "inset 0 0 0 1px rgba(255,255,255,0.03)",
-    "--card-hover-shadow": "inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 10px rgba(0,0,0,0.3)",
+    "--card-hover-shadow":
+      "inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 10px rgba(0,0,0,0.3)",
     "--card-full-shadow": "inset 0 0 0 1px rgba(255,255,255,0.03)",
     "--card-topline": "rgba(255,255,255,0.1)",
     "--badge-bg": "color-mix(in srgb,var(--accent) 30%,#2a313b)",
@@ -486,7 +549,8 @@ const BETTER_BETS_THEME_VARS = {
     "--detail-glow": "none",
     "--scrim-bg":
       "linear-gradient(180deg,rgba(16,19,24,0),rgba(16,19,24,0.42) 60%,rgba(16,19,24,0.6))",
-    "--glint-bg": "linear-gradient(90deg,transparent,rgba(255,255,255,0.22) 47%,transparent)",
+    "--glint-bg":
+      "linear-gradient(90deg,transparent,rgba(255,255,255,0.22) 47%,transparent)",
     "--glint-glow": "none",
     "--glint-opacity": "0.6",
     "--footer-rule": "#2c333d",
@@ -506,7 +570,8 @@ const BETTER_BETS_THEME_VARS = {
     "--sheen-color": "rgba(255,150,170,0.06)",
     "--title-glow": "0 0 7px rgba(255,80,100,0.9),0 1px 2px rgba(0,0,0,0.9)",
     "--meta-border": "#5a1020",
-    "--meta-bg": "linear-gradient(180deg,rgba(50,10,20,0.94),rgba(20,5,10,0.91))",
+    "--meta-bg":
+      "linear-gradient(180deg,rgba(50,10,20,0.94),rgba(20,5,10,0.91))",
     "--meta-shadow": "inset 0 1px 7px rgba(200,30,60,0.2)",
     "--meta-divider": "rgba(120,30,50,0.5)",
     "--card-frame-mix": "#6a1828",
@@ -516,7 +581,8 @@ const BETTER_BETS_THEME_VARS = {
       "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
     "--card-hover-shadow":
       "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
-    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-full-shadow":
+      "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
     "--card-topline": "rgba(255,150,170,0.6)",
     "--badge-bg":
       "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#2a0810 60%) 70%)",
@@ -548,7 +614,8 @@ const BETTER_BETS_THEME_VARS = {
     "--sheen-color": "rgba(134,239,172,0.06)",
     "--title-glow": "0 0 7px rgba(52,211,153,0.9),0 1px 2px rgba(0,0,0,0.9)",
     "--meta-border": "#0a5040",
-    "--meta-bg": "linear-gradient(180deg,rgba(6,40,28,0.94),rgba(3,18,12,0.91))",
+    "--meta-bg":
+      "linear-gradient(180deg,rgba(6,40,28,0.94),rgba(3,18,12,0.91))",
     "--meta-shadow": "inset 0 1px 7px rgba(16,185,129,0.18)",
     "--meta-divider": "rgba(16,100,70,0.5)",
     "--card-frame-mix": "#0a5040",
@@ -558,7 +625,8 @@ const BETTER_BETS_THEME_VARS = {
       "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
     "--card-hover-shadow":
       "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
-    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-full-shadow":
+      "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
     "--card-topline": "rgba(134,239,172,0.6)",
     "--badge-bg":
       "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#051a0c 60%) 70%)",
@@ -590,7 +658,8 @@ const BETTER_BETS_THEME_VARS = {
     "--sheen-color": "rgba(251,191,36,0.06)",
     "--title-glow": "0 0 7px rgba(251,191,36,0.9),0 1px 2px rgba(0,0,0,0.9)",
     "--meta-border": "#5a3010",
-    "--meta-bg": "linear-gradient(180deg,rgba(50,24,8,0.94),rgba(20,10,4,0.91))",
+    "--meta-bg":
+      "linear-gradient(180deg,rgba(50,24,8,0.94),rgba(20,10,4,0.91))",
     "--meta-shadow": "inset 0 1px 7px rgba(224,105,32,0.18)",
     "--meta-divider": "rgba(120,60,20,0.5)",
     "--card-frame-mix": "#6a3818",
@@ -600,7 +669,8 @@ const BETTER_BETS_THEME_VARS = {
       "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
     "--card-hover-shadow":
       "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
-    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-full-shadow":
+      "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
     "--card-topline": "rgba(251,191,36,0.6)",
     "--badge-bg":
       "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#1a0a04 60%) 70%)",
@@ -632,7 +702,8 @@ const BETTER_BETS_THEME_VARS = {
     "--sheen-color": "rgba(196,181,253,0.06)",
     "--title-glow": "0 0 7px rgba(192,132,252,0.9),0 1px 2px rgba(0,0,0,0.9)",
     "--meta-border": "#3b1880",
-    "--meta-bg": "linear-gradient(180deg,rgba(25,10,60,0.94),rgba(10,4,28,0.91))",
+    "--meta-bg":
+      "linear-gradient(180deg,rgba(25,10,60,0.94),rgba(10,4,28,0.91))",
     "--meta-shadow": "inset 0 1px 7px rgba(124,58,237,0.18)",
     "--meta-divider": "rgba(80,40,150,0.5)",
     "--card-frame-mix": "#3b1880",
@@ -642,7 +713,8 @@ const BETTER_BETS_THEME_VARS = {
       "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 24%,transparent),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 50%,transparent)",
     "--card-hover-shadow":
       "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 30%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 75%,transparent)",
-    "--card-full-shadow": "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
+    "--card-full-shadow":
+      "inset 0 0 20px color-mix(in srgb,var(--accent) 20%,transparent)",
     "--card-topline": "rgba(196,181,253,0.6)",
     "--badge-bg":
       "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#08031a 60%) 70%)",
@@ -686,7 +758,8 @@ function formatBetterBetsDuration(seconds) {
 }
 
 function metricNumber(value, fallback = 0) {
-  if (typeof value === "number") return Number.isFinite(value) ? value : fallback;
+  if (typeof value === "number")
+    return Number.isFinite(value) ? value : fallback;
   if (typeof value === "string") {
     const normalized = value.replace(",", ".").replace(/[^0-9.-]/g, "");
     const parsed = Number.parseFloat(normalized);
@@ -729,10 +802,10 @@ function bonusPayout(bonus) {
 function bonusOpened(bonus) {
   return Boolean(
     bonus?.opened ||
-      bonus?.isOpened ||
-      bonus?.status === "opened" ||
-      bonus?.state === "opened" ||
-      bonusPayout(bonus) > 0,
+    bonus?.isOpened ||
+    bonus?.status === "opened" ||
+    bonus?.state === "opened" ||
+    bonusPayout(bonus) > 0,
   );
 }
 
@@ -763,7 +836,10 @@ function normalizeVolatilityLevel(value) {
     const labels = ["-", "Low", "Medium", "High", "Very High"];
     return { level, label: labels[level] || "-" };
   }
-  const text = String(value || "").trim().toLowerCase().replace(/[_-]+/g, " ");
+  const text = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ");
   if (!text || text === "-") return { level: 0, label: "-" };
   const numericLevel = Number(text);
   if (Number.isFinite(numericLevel)) {
@@ -771,11 +847,16 @@ function normalizeVolatilityLevel(value) {
     const labels = ["-", "Low", "Medium", "High", "Very High"];
     return { level, label: labels[level] || "-" };
   }
-  if (text.includes("extreme") || text.includes("very high") || text.includes("extra high")) {
+  if (
+    text.includes("extreme") ||
+    text.includes("very high") ||
+    text.includes("extra high")
+  ) {
     return { level: 4, label: "Very High" };
   }
   if (text.includes("high")) return { level: 3, label: "High" };
-  if (text.includes("medium") || text.includes("med")) return { level: 2, label: "Medium" };
+  if (text.includes("medium") || text.includes("med"))
+    return { level: 2, label: "Medium" };
   if (text.includes("low")) return { level: 1, label: "Low" };
   return { level: 0, label: String(value).replace(/_/g, " ") };
 }
@@ -794,7 +875,8 @@ function firstKnownVolatility(...values) {
       normalized === "n/a" ||
       normalized === "na" ||
       normalized === "null"
-    ) continue;
+    )
+      continue;
     return value;
   }
   return "-";
@@ -803,7 +885,11 @@ function firstKnownVolatility(...values) {
 function BetterHuntVolatilityBars({ value }) {
   const { level, label } = normalizeVolatilityLevel(value);
   return (
-    <span className={`better-hunt-volatility-bars better-hunt-volatility-bars--${level}`} title={label} aria-label={`Volatility ${label}`}>
+    <span
+      className={`better-hunt-volatility-bars better-hunt-volatility-bars--${level}`}
+      title={label}
+      aria-label={`Volatility ${label}`}
+    >
       {Array.from({ length: 4 }).map((_, index) => (
         <i key={index} className={index < level ? "is-filled" : ""} />
       ))}
@@ -833,17 +919,22 @@ function bonusMaxWin(bonus) {
   if (!text) return "-";
   if (/x$/i.test(text)) return text;
   const numeric = Number(text.replace(/,/g, ""));
-  return Number.isFinite(numeric) && numeric > 0 ? formatMultiplier(numeric) : text;
+  return Number.isFinite(numeric) && numeric > 0
+    ? formatMultiplier(numeric)
+    : text;
 }
 
 function bonusMultiplierValue(bonus) {
-  const explicit = firstMetric([
-    bonus?._multi,
-    bonus?.multiplier,
-    bonus?.multi,
-    bonus?.x,
-    bonus?.bonusMultiplier,
-  ], Number.NaN);
+  const explicit = firstMetric(
+    [
+      bonus?._multi,
+      bonus?.multiplier,
+      bonus?.multi,
+      bonus?.x,
+      bonus?.bonusMultiplier,
+    ],
+    Number.NaN,
+  );
   if (Number.isFinite(explicit)) return explicit;
   const bet = bonusBet(bonus);
   return bet > 0 ? bonusPayout(bonus) / bet : 0;
@@ -1052,7 +1143,14 @@ const BETTER_HUNT_THEMES = {
   },
 };
 
-const BETTER_HUNT_SKINS = new Set(["modern", "roman", "metal", "cyberpunk", "spartan", "bloody"]);
+const BETTER_HUNT_SKINS = new Set([
+  "modern",
+  "roman",
+  "metal",
+  "cyberpunk",
+  "spartan",
+  "bloody",
+]);
 
 const BETTER_HUNT_FONTS = {
   rajdhani: "'Rajdhani', 'Nunito', sans-serif",
@@ -1090,7 +1188,8 @@ function useBetterHuntCarousel(count, intervalMs, enabled, seed = 0) {
 }
 
 function normalizeBetterHuntSessionState(config = {}) {
-  if (["hunt", "opening", "ended"].includes(config.sessionState)) return config.sessionState;
+  if (["hunt", "opening", "ended"].includes(config.sessionState))
+    return config.sessionState;
   return config.bonusOpening === true ? "opening" : "hunt";
 }
 
@@ -1100,7 +1199,8 @@ function normalizeBetterHuntSkin(value) {
 
 function normalizeBetterHuntRequests(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
-  if (value && typeof value === "object") return Object.values(value).filter(Boolean);
+  if (value && typeof value === "object")
+    return Object.values(value).filter(Boolean);
   return [];
 }
 
@@ -1114,11 +1214,46 @@ function betterHuntWinTier(mult, max = false) {
 }
 
 const BETTER_HUNT_WIN_TIERS = {
-  big: { label: "Big Win", color: "var(--bh-ice)", glow: "rgba(69,200,255,.58)", count: 26, rings: 1, duration: 3000 },
-  mega: { label: "Mega Win", color: "var(--bh-tangerine)", glow: "rgba(255,138,61,.6)", count: 44, rings: 2, duration: 3800 },
-  epic: { label: "Epic Win", color: "#ffc93d", glow: "rgba(255,201,61,.68)", count: 60, rings: 2, duration: 4700 },
-  insane: { label: "Insane Win", color: "var(--bh-ember)", glow: "rgba(255,77,46,.72)", count: 80, rings: 3, duration: 5500 },
-  max: { label: "Max Win", color: "#ffdf6b", glow: "rgba(255,180,50,.82)", count: 100, rings: 3, duration: 6400 },
+  big: {
+    label: "Big Win",
+    color: "var(--bh-ice)",
+    glow: "rgba(69,200,255,.58)",
+    count: 26,
+    rings: 1,
+    duration: 3000,
+  },
+  mega: {
+    label: "Mega Win",
+    color: "var(--bh-tangerine)",
+    glow: "rgba(255,138,61,.6)",
+    count: 44,
+    rings: 2,
+    duration: 3800,
+  },
+  epic: {
+    label: "Epic Win",
+    color: "#ffc93d",
+    glow: "rgba(255,201,61,.68)",
+    count: 60,
+    rings: 2,
+    duration: 4700,
+  },
+  insane: {
+    label: "Insane Win",
+    color: "var(--bh-ember)",
+    glow: "rgba(255,77,46,.72)",
+    count: 80,
+    rings: 3,
+    duration: 5500,
+  },
+  max: {
+    label: "Max Win",
+    color: "#ffdf6b",
+    glow: "rgba(255,180,50,.82)",
+    count: 100,
+    rings: 3,
+    duration: 6400,
+  },
 };
 
 function BetterHuntWinOverlay({ win, onDone }) {
@@ -1127,12 +1262,18 @@ function BetterHuntWinOverlay({ win, onDone }) {
     if (!tier) return [];
     return Array.from({ length: tier.count }, (_, index) => ({
       id: index,
-      left: ((index * 37) % 100) + (((index * 13) % 7) / 10),
+      left: ((index * 37) % 100) + ((index * 13) % 7) / 10,
       delay: ((index * 11) % 16) / 10,
       duration: 1.9 + ((index * 7) % 16) / 10,
       width: 5 + (index % 5),
       height: 9 + ((index * 3) % 8),
-      color: ["var(--bh-ice)", "var(--bh-tangerine)", "#ffc93d", "var(--bh-ember)", "#ffffff"][index % 5],
+      color: [
+        "var(--bh-ice)",
+        "var(--bh-tangerine)",
+        "#ffc93d",
+        "var(--bh-ember)",
+        "#ffffff",
+      ][index % 5],
       sway: ((index * 19) % 60) - 30,
     }));
   }, [tier, win?.id]);
@@ -1140,7 +1281,11 @@ function BetterHuntWinOverlay({ win, onDone }) {
   return (
     <div
       className={`better-hunt-win better-hunt-win--${win.tier}`}
-      style={{ "--bh-win-duration": `${tier.duration}ms`, "--bh-win-color": tier.color, "--bh-win-glow": tier.glow }}
+      style={{
+        "--bh-win-duration": `${tier.duration}ms`,
+        "--bh-win-color": tier.color,
+        "--bh-win-glow": tier.glow,
+      }}
       onAnimationEnd={(event) => {
         if (event.animationName === "better-hunt-win-life") onDone();
       }}
@@ -1149,7 +1294,11 @@ function BetterHuntWinOverlay({ win, onDone }) {
       <span className="better-hunt-win-flash" />
       <span className="better-hunt-win-rays" />
       {Array.from({ length: tier.rings }, (_, index) => (
-        <span key={index} className="better-hunt-win-ring" style={{ animationDelay: `${index * 0.22}s` }} />
+        <span
+          key={index}
+          className="better-hunt-win-ring"
+          style={{ animationDelay: `${index * 0.22}s` }}
+        />
       ))}
       <span className="better-hunt-win-cannon better-hunt-win-cannon--left" />
       <span className="better-hunt-win-cannon better-hunt-win-cannon--right" />
@@ -1173,7 +1322,9 @@ function BetterHuntWinOverlay({ win, onDone }) {
         <strong>{Number(win.mult || 0).toLocaleString()}x</strong>
         {win.slot ? <em>{win.slot}</em> : null}
       </div>
-      {["epic", "insane", "max"].includes(win.tier) ? <span className="better-hunt-win-clip">Clip it</span> : null}
+      {["epic", "insane", "max"].includes(win.tier) ? (
+        <span className="better-hunt-win-clip">Clip it</span>
+      ) : null}
     </div>
   );
 }
@@ -1612,7 +1763,11 @@ function BetterBetsMetaIcon({ type }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="12" r="8" strokeWidth="2" />
-      <path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10.5" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10.5"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -1621,9 +1776,14 @@ function BetterBetsCardFill({ config, fillStyle, pct, stateId }) {
   return (
     <span
       className={`fill-wrap fill-${fillStyle}`}
-      style={subElementStyle(config, "progressBar", {
-        "--pct": `${pct}%`,
-      }, stateId)}
+      style={subElementStyle(
+        config,
+        "progressBar",
+        {
+          "--pct": `${pct}%`,
+        },
+        stateId,
+      )}
       {...attrs("bets", config, "progressBar", stateId)}
       aria-hidden="true"
     >
@@ -1646,9 +1806,14 @@ function BetterBetsBarFill({ config, fillStyle, pct, stateId }) {
   return (
     <span
       className={`bf bf-${fillStyle}`}
-      style={subElementStyle(config, "progressBar", {
-        "--pct": `${pct}%`,
-      }, stateId)}
+      style={subElementStyle(
+        config,
+        "progressBar",
+        {
+          "--pct": `${pct}%`,
+        },
+        stateId,
+      )}
       {...attrs("bets", config, "progressBar", stateId)}
       aria-hidden="true"
     >
@@ -1676,7 +1841,9 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
     { label: "400 - 499" },
     { label: "500 - 599" },
   ];
-  const options = safeArray(c.options).length ? safeArray(c.options) : fallbackOptions;
+  const options = safeArray(c.options).length
+    ? safeArray(c.options)
+    : fallbackOptions;
   const bets = c.bets || {};
   const betters = c.betters || {};
   const visibleLimit = Math.max(
@@ -1706,11 +1873,16 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
   })();
   const theme = normalizeBetterBetsTheme(c.theme || c.betTheme);
   const fillStyle = normalizeBetterBetsFillStyle(c.fillStyle || c.betFillStyle);
-  const layoutMode = normalizeBetterBetsLayoutMode(c.layoutMode || c.betLayoutMode);
+  const layoutMode = normalizeBetterBetsLayoutMode(
+    c.layoutMode || c.betLayoutMode,
+  );
   const orientation = normalizeBetterBetsOrientation(c.orientation);
   const columns = Math.max(
     1,
-    Math.min(3, numberValue(c.columns ?? c.betterColumns, layoutMode === "bars" ? 1 : 2)),
+    Math.min(
+      3,
+      numberValue(c.columns ?? c.betterColumns, layoutMode === "bars" ? 1 : 2),
+    ),
   );
   const rows = Math.max(1, Math.ceil(visibleOptions.length / columns));
   const itemHeight = layoutMode === "cards" ? 98 : 40;
@@ -1719,8 +1891,14 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
     orientation === "horizontal" ? 220 : 240,
     26 + 42 + 30 + 16 + rows * itemHeight + Math.max(0, rows - 1) * 6,
   );
-  const fontScale = Math.max(0.75, Math.min(1.4, numberValue(c.fontScale, 100) / 100));
-  const glowIntensity = Math.max(0, Math.min(2, numberValue(c.glowIntensity, 100) / 100));
+  const fontScale = Math.max(
+    0.75,
+    Math.min(1.4, numberValue(c.fontScale, 100) / 100),
+  );
+  const glowIntensity = Math.max(
+    0,
+    Math.min(2, numberValue(c.glowIntensity, 100) / 100),
+  );
   const opacity = Math.max(0.4, Math.min(1, numberValue(c.opacity, 100) / 100));
   const fillSpeed = Math.max(10, numberValue(c.fillSpeed, 100));
   const cardRadius = cssPx(
@@ -1759,7 +1937,9 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
     "--cols": columns,
     "--base-w": `${baseWidth}px`,
     "--base-h": `${baseHeight}px`,
-    ...(fontFamily ? { "--font-body": fontFamily, "--font-display": fontFamily } : {}),
+    ...(fontFamily
+      ? { "--font-body": fontFamily, "--font-display": fontFamily }
+      : {}),
   };
   const widgetStyle = subElementStyle(c, "widgetBackground", {});
   const statusTone =
@@ -1818,7 +1998,12 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
         <div className="event-meta">
           {[
             ["poolStat", "pool", formatCompactNumber(totalPool), "Pool"],
-            ["timerStat", "timer", timeText, status === "open" ? "Timer" : "State"],
+            [
+              "timerStat",
+              "timer",
+              timeText,
+              status === "open" ? "Timer" : "State",
+            ],
             ["betsStat", "users", formatCompactNumber(totalBetters), "Bets"],
           ].map(([part, icon, value, label]) => (
             <div
@@ -1857,8 +2042,16 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
                   : status === "locked"
                     ? "closed"
                     : "default";
-            const baseColor = colors[index % colors.length] || BETTER_BETS_CARD_COLORS[index % BETTER_BETS_CARD_COLORS.length];
-            const accent = subValue(c, "progressBar", "fillColor", baseColor.accent, stateId);
+            const baseColor =
+              colors[index % colors.length] ||
+              BETTER_BETS_CARD_COLORS[index % BETTER_BETS_CARD_COLORS.length];
+            const accent = subValue(
+              c,
+              "progressBar",
+              "fillColor",
+              baseColor.accent,
+              stateId,
+            );
             const accent2 = baseColor.accent2 || accent;
             const optionLabel = betOptionLabel(option, index);
             const detailLabel = isWinner
@@ -1889,7 +2082,12 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
                   ]
                     .filter(Boolean)
                     .join(" ")}
-                  style={subElementStyle(c, "individualBetCard", optionVars, stateId)}
+                  style={subElementStyle(
+                    c,
+                    "individualBetCard",
+                    optionVars,
+                    stateId,
+                  )}
                   {...attrs("bets", c, "individualBetCard", stateId)}
                   data-appearance-index={index}
                 >
@@ -1917,7 +2115,12 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
                   </span>
                   <span
                     className="bar-pct"
-                    style={subElementStyle(c, "cardPercentageText", {}, stateId)}
+                    style={subElementStyle(
+                      c,
+                      "cardPercentageText",
+                      {},
+                      stateId,
+                    )}
                     {...attrs("bets", c, "cardPercentageText", stateId)}
                   >
                     {pct}%
@@ -1938,7 +2141,12 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
                 ]
                   .filter(Boolean)
                   .join(" ")}
-                style={subElementStyle(c, "individualBetCard", optionVars, stateId)}
+                style={subElementStyle(
+                  c,
+                  "individualBetCard",
+                  optionVars,
+                  stateId,
+                )}
                 {...attrs("bets", c, "individualBetCard", stateId)}
                 data-appearance-index={index}
               >
@@ -1965,7 +2173,12 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
                 </span>
                 <span className="option-details">
                   <strong
-                    style={subElementStyle(c, "cardPercentageText", {}, stateId)}
+                    style={subElementStyle(
+                      c,
+                      "cardPercentageText",
+                      {},
+                      stateId,
+                    )}
                     {...attrs("bets", c, "cardPercentageText", stateId)}
                   >
                     {pct}%
@@ -2015,38 +2228,70 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     c.animations !== false && sessionState === "hunt",
     initialIndex,
   );
-  const lockedIndex = sessionState === "ended"
-    ? Math.max(0, rows.length - 1)
-    : firstUnopened >= 0
-      ? firstUnopened
-      : Math.max(0, rows.length - 1);
-  const activeIndex = rows.length && sessionState !== "hunt" ? lockedIndex : rotatingIndex;
+  const lockedIndex =
+    sessionState === "ended"
+      ? Math.max(0, rows.length - 1)
+      : firstUnopened >= 0
+        ? firstUnopened
+        : Math.max(0, rows.length - 1);
+  const activeIndex =
+    rows.length && sessionState !== "hunt" ? lockedIndex : rotatingIndex;
   const current = rows[activeIndex] || rows[initialIndex] || rows[0] || null;
   const money = currency || c.currency || "€";
   const skin = normalizeBetterHuntSkin(c.skin);
-  const theme = skin !== "modern"
-    ? BETTER_HUNT_THEMES[skin]
-    : BETTER_HUNT_THEMES[c.colour] || BETTER_HUNT_THEMES.ocean;
-  const orientation = ["horizontal", "mainstream"].includes(c.orientation) ? c.orientation : "vertical";
-  const listMode = ["compact", "image", "names"].includes(c.listMode) ? c.listMode : "compact";
-  const carouselMode = ["3d", "imagestats", "stats"].includes(c.carouselMode) ? c.carouselMode : "3d";
+  const theme =
+    skin !== "modern"
+      ? BETTER_HUNT_THEMES[skin]
+      : BETTER_HUNT_THEMES[c.colour] || BETTER_HUNT_THEMES.ocean;
+  const orientation = ["horizontal", "mainstream"].includes(c.orientation)
+    ? c.orientation
+    : "vertical";
+  const listMode = ["compact", "image", "names"].includes(c.listMode)
+    ? c.listMode
+    : "compact";
+  const carouselMode = ["3d", "imagestats", "stats"].includes(c.carouselMode)
+    ? c.carouselMode
+    : "3d";
   const drawerMode = c.drawerMode === "expand" ? "expand" : "contain";
-  const drawerRevealSeconds = clampNumber(c.drawerRevealSeconds ?? c.drawerTimingSeconds, 10, 90, 30);
+  const drawerRevealSeconds = clampNumber(
+    c.drawerRevealSeconds ?? c.drawerTimingSeconds,
+    10,
+    90,
+    30,
+  );
   const drawerRevealMs = drawerRevealSeconds * 1000;
   const drawerHoldMs = clampNumber(c.drawerHoldSeconds, 3, 15, 8) * 1000;
-  const statsLayout = c.statsLayout === "grid" || c.statsLayout === "2x2" ? "grid" : "row";
+  const statsLayout =
+    c.statsLayout === "grid" || c.statsLayout === "2x2" ? "grid" : "row";
   const visibleRows = Math.max(3, Math.min(8, Number(c.visibleRows) || 5));
-  const rowHeight = BETTER_HUNT_ROW_HEIGHT[listMode] || BETTER_HUNT_ROW_HEIGHT.compact;
+  const rowHeight =
+    BETTER_HUNT_ROW_HEIGHT[listMode] || BETTER_HUNT_ROW_HEIGHT.compact;
   const listHeight = visibleRows * rowHeight + 6;
   const uiScale = Math.max(0.75, Math.min(1.35, Number(c.uiScale) || 1));
   const barHeight = Math.max(3, Math.min(10, Number(c.barHeight) || 6));
   const avatarSize = Math.max(20, Math.min(44, Number(c.avatarSize) || 28));
-  const edgeRadius = clampNumber(c.edgeRadius ?? c.radius ?? c.cardRadius, 0, 36, 14);
+  const edgeRadius = clampNumber(
+    c.edgeRadius ?? c.radius ?? c.cardRadius,
+    0,
+    36,
+    14,
+  );
   const statRadius = clampNumber(c.statRadius, 0, 22, 7);
-  const defaultPanelWidth = orientation === "horizontal" ? 1080 : orientation === "mainstream" ? 372 : 402;
-  const panelWidth = clampNumber(c.widgetWidth ?? c.panelWidth, 320, 1280, defaultPanelWidth);
+  const defaultPanelWidth =
+    orientation === "horizontal"
+      ? 1080
+      : orientation === "mainstream"
+        ? 372
+        : 402;
+  const panelWidth = clampNumber(
+    c.widgetWidth ?? c.panelWidth,
+    320,
+    1280,
+    defaultPanelWidth,
+  );
   const panelHeight = clampNumber(c.widgetHeight ?? c.panelHeight, 0, 980, 0);
-  const font = c.fontFamily || BETTER_HUNT_FONTS[c.font] || BETTER_HUNT_FONTS.rajdhani;
+  const font =
+    c.fontFamily || BETTER_HUNT_FONTS[c.font] || BETTER_HUNT_FONTS.rajdhani;
   const title = c.title || c.huntTitle || "Bonus";
   const avatarUrl =
     c.avatarUrl ||
@@ -2055,45 +2300,104 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     c.profileAvatarUrl ||
     c.avatar_url ||
     "";
-  const progress = rows.length ? Math.round((opened.length / rows.length) * 100) : 0;
+  const progress = rows.length
+    ? Math.round((opened.length / rows.length) * 100)
+    : 0;
   const activeStep = rows.length
     ? sessionState === "ended"
       ? rows.length
       : Math.min(rows.length, Math.max(1, opened.length + 1))
     : 0;
-  const requestRows = ["requests", "slotRequests", "pendingRequests", "slotRequestQueue"].reduce((found, key) => (
-    found.length ? found : normalizeBetterHuntRequests(c[key])
-  ), []);
-  const totalBetFromStats = firstMetric([stats?.totalBetAll, stats?.totalBet, c.totalBet], Number.NaN);
-  const totalPayFromStats = firstMetric([stats?.totalWin, stats?.totalPay, c.totalPay], Number.NaN);
+  const requestRows = [
+    "requests",
+    "slotRequests",
+    "pendingRequests",
+    "slotRequestQueue",
+  ].reduce(
+    (found, key) =>
+      found.length ? found : normalizeBetterHuntRequests(c[key]),
+    [],
+  );
+  const totalBetFromStats = firstMetric(
+    [stats?.totalBetAll, stats?.totalBet, c.totalBet],
+    Number.NaN,
+  );
+  const totalPayFromStats = firstMetric(
+    [stats?.totalWin, stats?.totalPay, c.totalPay],
+    Number.NaN,
+  );
   const totalBet = Number.isFinite(totalBetFromStats)
     ? totalBetFromStats
     : rows.reduce((sum, bonus) => sum + bonusBet(bonus), 0);
   const totalPay = Number.isFinite(totalPayFromStats)
     ? totalPayFromStats
     : opened.reduce((sum, bonus) => sum + bonusPayout(bonus), 0);
-  const totalBetOpened = opened.reduce((sum, bonus) => sum + bonusBet(bonus), 0);
-  const avgMulti = firstMetric([stats?.avgMulti, c.avgMulti], totalBetOpened > 0 ? totalPay / totalBetOpened : 0);
-  const breakEven = firstMetric([stats?.breakEven, c.breakEven, c.breakEvenMultiplier], 0);
-  const liveBreakEven = firstMetric([stats?.liveBE, c.liveBE, c.liveBreakEven, c.currentBE], Number.NaN);
-  const displayBreakEven = Number.isFinite(liveBreakEven) ? liveBreakEven : breakEven;
-  const startKnown = [c.startMoney, c.startingBalance, stats?.startMoney, stats?.start].some((value) => value !== undefined && value !== null && value !== "");
-  const stopKnown = [c.stopLoss, c.stopMoney, c.stopBalance, stats?.stopLoss, stats?.stop].some((value) => value !== undefined && value !== null && value !== "");
-  const startValue = firstMetric([c.startMoney, c.startingBalance, stats?.startMoney, stats?.start], 0);
-  const stopValue = firstMetric([c.stopLoss, c.stopMoney, c.stopBalance, stats?.stopLoss, stats?.stop], 0);
-  const superCount = rows.filter((bonus) => bonusTier(bonus) === "super").length;
-  const extremeCount = rows.filter((bonus) => bonusTier(bonus) === "extreme").length;
-  const superOpened = rows.filter((bonus) => bonusTier(bonus) === "super" && bonusOpened(bonus)).length;
-  const extremeOpened = rows.filter((bonus) => bonusTier(bonus) === "extreme" && bonusOpened(bonus)).length;
-  const bestSlot = stats?.bestSlot || opened.reduce((best, bonus) => {
-    const multi = bonusMultiplierValue(bonus);
-    return !best || multi > bonusMultiplierValue(best) ? bonus : best;
-  }, null);
-  const worstSlot = stats?.worstSlot || opened.reduce((worst, bonus) => {
-    const multi = bonusMultiplierValue(bonus);
-    return !worst || multi < bonusMultiplierValue(worst) ? bonus : worst;
-  }, null);
-  const resultDrawerReady = opened.length >= 2 && Boolean(bestSlot || worstSlot);
+  const totalBetOpened = opened.reduce(
+    (sum, bonus) => sum + bonusBet(bonus),
+    0,
+  );
+  const avgMulti = firstMetric(
+    [stats?.avgMulti, c.avgMulti],
+    totalBetOpened > 0 ? totalPay / totalBetOpened : 0,
+  );
+  const breakEven = firstMetric(
+    [stats?.breakEven, c.breakEven, c.breakEvenMultiplier],
+    0,
+  );
+  const liveBreakEven = firstMetric(
+    [stats?.liveBE, c.liveBE, c.liveBreakEven, c.currentBE],
+    Number.NaN,
+  );
+  const displayBreakEven = Number.isFinite(liveBreakEven)
+    ? liveBreakEven
+    : breakEven;
+  const startKnown = [
+    c.startMoney,
+    c.startingBalance,
+    stats?.startMoney,
+    stats?.start,
+  ].some((value) => value !== undefined && value !== null && value !== "");
+  const stopKnown = [
+    c.stopLoss,
+    c.stopMoney,
+    c.stopBalance,
+    stats?.stopLoss,
+    stats?.stop,
+  ].some((value) => value !== undefined && value !== null && value !== "");
+  const startValue = firstMetric(
+    [c.startMoney, c.startingBalance, stats?.startMoney, stats?.start],
+    0,
+  );
+  const stopValue = firstMetric(
+    [c.stopLoss, c.stopMoney, c.stopBalance, stats?.stopLoss, stats?.stop],
+    0,
+  );
+  const superCount = rows.filter(
+    (bonus) => bonusTier(bonus) === "super",
+  ).length;
+  const extremeCount = rows.filter(
+    (bonus) => bonusTier(bonus) === "extreme",
+  ).length;
+  const superOpened = rows.filter(
+    (bonus) => bonusTier(bonus) === "super" && bonusOpened(bonus),
+  ).length;
+  const extremeOpened = rows.filter(
+    (bonus) => bonusTier(bonus) === "extreme" && bonusOpened(bonus),
+  ).length;
+  const bestSlot =
+    stats?.bestSlot ||
+    opened.reduce((best, bonus) => {
+      const multi = bonusMultiplierValue(bonus);
+      return !best || multi > bonusMultiplierValue(best) ? bonus : best;
+    }, null);
+  const worstSlot =
+    stats?.worstSlot ||
+    opened.reduce((worst, bonus) => {
+      const multi = bonusMultiplierValue(bonus);
+      return !worst || multi < bonusMultiplierValue(worst) ? bonus : worst;
+    }, null);
+  const resultDrawerReady =
+    opened.length >= 2 && Boolean(bestSlot || worstSlot);
   const [resultPeekOpen, setResultPeekOpen] = useState(false);
   useEffect(() => {
     if (!resultDrawerReady) {
@@ -2125,7 +2429,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     };
   }, [c.animations, drawerHoldMs, drawerRevealMs, resultDrawerReady]);
   const listRows = rows;
-  const scrollingRows = rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
+  const scrollingRows =
+    rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
   const listDuration = `${Math.max(26, rows.length * 1.35)}s`;
   const winAccents = {
     roman: { ember: "#c0281c", tangerine: "#a06820" },
@@ -2136,12 +2441,24 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   }[skin] || { ember: "#ff6a4d", tangerine: "#ffc93d" };
   const [previewWin, setPreviewWin] = useState(null);
   const activeSlotLabel = current ? bonusSlotName(current, activeIndex) : "";
-  const mainstreamTitle = c.mainstreamTitle || c.openingTitle || c.bonusOpeningTitle || (title && title !== "Bonus" ? title : "Bonus Opening");
+  const mainstreamTitle =
+    c.mainstreamTitle ||
+    c.openingTitle ||
+    c.bonusOpeningTitle ||
+    (title && title !== "Bonus" ? title : "Bonus Opening");
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const trigger = (detail = {}) => {
-      if (detail.instanceId && c.__betterInstanceId && detail.instanceId !== c.__betterInstanceId) return;
-      const mult = Math.max(1, Number(detail.mult || detail.multiplier || detail.x) || 100);
+      if (
+        detail.instanceId &&
+        c.__betterInstanceId &&
+        detail.instanceId !== c.__betterInstanceId
+      )
+        return;
+      const mult = Math.max(
+        1,
+        Number(detail.mult || detail.multiplier || detail.x) || 100,
+      );
       setPreviewWin({
         id: Date.now(),
         mult,
@@ -2154,21 +2471,25 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     if (!window.__betterBonusHuntTriggerInstalled) {
       const previousTrigger = window.__boTriggerWin;
       window.__boTriggerWin = (mult, extra = {}) => {
-        window.dispatchEvent(new CustomEvent("better-bonus-hunt-preview-win", {
-          detail: {
-            ...(extra || {}),
-            mult,
-          },
-        }));
+        window.dispatchEvent(
+          new CustomEvent("better-bonus-hunt-preview-win", {
+            detail: {
+              ...(extra || {}),
+              mult,
+            },
+          }),
+        );
         if (typeof previousTrigger === "function") previousTrigger(mult, extra);
       };
       window.__betterBonusHuntTriggerInstalled = true;
     }
-    return () => window.removeEventListener("better-bonus-hunt-preview-win", handler);
+    return () =>
+      window.removeEventListener("better-bonus-hunt-preview-win", handler);
   }, [activeSlotLabel, c.__betterInstanceId]);
-  const panelShakeClass = previewWin && ["epic", "insane", "max"].includes(previewWin.tier)
-    ? " better-hunt-panel--shake"
-    : "";
+  const panelShakeClass =
+    previewWin && ["epic", "insane", "max"].includes(previewWin.tier)
+      ? " better-hunt-panel--shake"
+      : "";
   const rootStyle = subElementStyle(c, "container", {
     "--bh-panel-hi": theme.panelHi,
     "--bh-panel-mid": theme.panelMid,
@@ -2183,7 +2504,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     "--bh-steel": theme.steel,
     "--bh-steel-dim": theme.steelDim,
     "--bh-steel-hi": theme.steelHi,
-    "--bh-ice": skin !== "modern" ? theme.ice : c.headerAccent || c.accentColor || theme.ice,
+    "--bh-ice":
+      skin !== "modern"
+        ? theme.ice
+        : c.headerAccent || c.accentColor || theme.ice,
     "--bh-ice-deep": theme.iceDeep,
     "--bh-ice-mid": theme.iceMid,
     "--bh-ember": winAccents.ember,
@@ -2201,7 +2525,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     "--anim-speed": Math.max(0.5, Number(c.animSpeed) || 1),
   });
 
-  const requestName = (request) => (
+  const requestName = (request) =>
     request?.displayName ||
     request?.username ||
     request?.user?.displayName ||
@@ -2209,33 +2533,39 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     (typeof request?.user === "string" ? request.user : "") ||
     request?.name ||
     request?.viewer ||
-    "viewer"
-  );
-  const requestSlot = (request) => (
+    "viewer";
+  const requestSlot = (request) =>
     request?.slotName ||
     request?.slot?.slotName ||
     request?.slot?.name ||
     (typeof request?.slot === "string" ? request.slot : "") ||
     request?.game ||
     request?.title ||
-    "Slot request"
-  );
+    "Slot request";
   const renderRequests = () => {
     if (c.showRequests === false) return null;
     const visibleRequests = requestRows.slice(0, 4);
     return (
-      <div className="better-hunt-requests" {...attrs("bonus_hunt", c, "requestContainer")}>
+      <div
+        className="better-hunt-requests"
+        {...attrs("bonus_hunt", c, "requestContainer")}
+      >
         <div className="better-hunt-requests-head">
           <h3>Chat Requests</h3>
           <strong>{requestRows.length}</strong>
         </div>
         <div className="better-hunt-request-list">
-          {visibleRequests.length ? visibleRequests.map((request, index) => (
-            <div key={`${requestName(request)}-${requestSlot(request)}-${index}`} className={`better-hunt-request better-hunt-request--${listMode}`}>
-              <span>{requestName(request)}</span>
-              <strong>{requestSlot(request)}</strong>
-            </div>
-          )) : (
+          {visibleRequests.length ? (
+            visibleRequests.map((request, index) => (
+              <div
+                key={`${requestName(request)}-${requestSlot(request)}-${index}`}
+                className={`better-hunt-request better-hunt-request--${listMode}`}
+              >
+                <span>{requestName(request)}</span>
+                <strong>{requestSlot(request)}</strong>
+              </div>
+            ))
+          ) : (
             <div className="better-hunt-request better-hunt-request--empty">
               <span>No requests yet</span>
             </div>
@@ -2250,29 +2580,67 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       className={`better-hunt-header${skin !== "modern" ? " better-hunt-header--banner" : ""}`}
       {...attrs("bonus_hunt", c, "headerContainer")}
     >
-      {skin === "roman" ? <span className="better-hunt-laurel better-hunt-laurel--left" /> : null}
-      {skin === "roman" ? <span className="better-hunt-laurel better-hunt-laurel--right" /> : null}
-      <span className={`better-hunt-avatar${skin !== "modern" ? " better-hunt-avatar--ring" : ""}`} style={{ width: avatarSize, height: avatarSize }}>
-        {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(c.streamerName || title)}
+      {skin === "roman" ? (
+        <span className="better-hunt-laurel better-hunt-laurel--left" />
+      ) : null}
+      {skin === "roman" ? (
+        <span className="better-hunt-laurel better-hunt-laurel--right" />
+      ) : null}
+      <span
+        className={`better-hunt-avatar${skin !== "modern" ? " better-hunt-avatar--ring" : ""}`}
+        style={{ width: avatarSize, height: avatarSize }}
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" />
+        ) : (
+          initials(c.streamerName || title)
+        )}
       </span>
-      <h1 className="better-hunt-main-title" {...attrs("bonus_hunt", c, "headerTitle")}>Bonus</h1>
-      <span className={`better-hunt-pill better-hunt-pill--${sessionState}`} {...attrs("bonus_hunt", c, "statValue")}>
+      <h1
+        className="better-hunt-main-title"
+        {...attrs("bonus_hunt", c, "headerTitle")}
+      >
+        Bonus
+      </h1>
+      <span
+        className={`better-hunt-pill better-hunt-pill--${sessionState}`}
+        {...attrs("bonus_hunt", c, "statValue")}
+      >
         {sessionState === "opening" ? <i className="better-hunt-dot" /> : null}
-        {sessionState === "opening" ? "Opening" : sessionState === "ended" ? "Ended" : "Hunt"}
+        {sessionState === "opening"
+          ? "Opening"
+          : sessionState === "ended"
+            ? "Ended"
+            : "Hunt"}
       </span>
     </header>
   );
 
   const renderStatBoxes = () => (
-    <div className={`better-hunt-stat-grid better-hunt-stat-grid--${statsLayout}`} {...attrs("bonus_hunt", c, "mainStatsContainer")}>
+    <div
+      className={`better-hunt-stat-grid better-hunt-stat-grid--${statsLayout}`}
+      {...attrs("bonus_hunt", c, "mainStatsContainer")}
+    >
       {[
         ["Start", startKnown ? formatMoney(startValue, money) : "-"],
         ["Stop", stopKnown ? formatMoney(stopValue, money) : "-"],
-        ["B.E.", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-"],
+        [
+          "B.E.",
+          displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-",
+        ],
         ["Avg.", avgMulti > 0 ? formatMultiplier(avgMulti, 0) : "-"],
       ].map(([label, value]) => (
-        <div key={label} className="better-hunt-stat" {...attrs("bonus_hunt", c, "statCell")}>
-          <span className="better-hunt-stat-label" {...attrs("bonus_hunt", c, "statLabel")}>{label}</span>
+        <div
+          key={label}
+          className="better-hunt-stat"
+          {...attrs("bonus_hunt", c, "statCell")}
+        >
+          <span
+            className="better-hunt-stat-label"
+            {...attrs("bonus_hunt", c, "statLabel")}
+          >
+            {label}
+          </span>
           <strong {...attrs("bonus_hunt", c, "statValue")}>{value}</strong>
         </div>
       ))}
@@ -2280,12 +2648,21 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   );
 
   const renderProgress = () => (
-    <div className="better-hunt-progress" {...attrs("bonus_hunt", c, "progressBar")}>
+    <div
+      className="better-hunt-progress"
+      {...attrs("bonus_hunt", c, "progressBar")}
+    >
       <div className="better-hunt-track">
-        <span style={{ width: `${progress}%` }} {...attrs("bonus_hunt", c, "progressBarFill")} />
+        <span
+          style={{ width: `${progress}%` }}
+          {...attrs("bonus_hunt", c, "progressBarFill")}
+        />
       </div>
       <div className="better-hunt-counts" aria-label="Bonus tiers">
-        <span className="is-extreme" aria-label={`${extremeCount} extreme bonuses`}>
+        <span
+          className="is-extreme"
+          aria-label={`${extremeCount} extreme bonuses`}
+        >
           <Flame size={12} fill="currentColor" strokeWidth={2.5} />
           {extremeCount}
         </span>
@@ -2305,36 +2682,72 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const renderStatsCarousel = () => {
     if (!current) {
       return (
-        <div className="better-hunt-carousel" {...attrs("bonus_hunt", c, "slotCarouselContainer")}>
-          <div className="better-hunt-stats-panel better-hunt-empty">No bonuses yet</div>
+        <div
+          className="better-hunt-carousel"
+          {...attrs("bonus_hunt", c, "slotCarouselContainer")}
+        >
+          <div className="better-hunt-stats-panel better-hunt-empty">
+            No bonuses yet
+          </div>
           {renderProgress()}
         </div>
       );
     }
     const tier = bonusTier(current);
     const statCells = [
-      ["Bet", bonusBet(current) > 0 ? formatMoney(bonusBet(current), money) : "-"],
+      [
+        "Bet",
+        bonusBet(current) > 0 ? formatMoney(bonusBet(current), money) : "-",
+      ],
       ["RTP", bonusRtp(current)],
-      ["Volatility", <BetterHuntVolatilityBars value={bonusVolatility(current)} />],
+      [
+        "Volatility",
+        <BetterHuntVolatilityBars value={bonusVolatility(current)} />,
+      ],
       ["Max Win", bonusMaxWin(current)],
-      ["Best", bonusMultiplierValue(current) > 0 ? formatMultiplier(bonusMultiplierValue(current)) : "-"],
+      [
+        "Best",
+        bonusMultiplierValue(current) > 0
+          ? formatMultiplier(bonusMultiplierValue(current))
+          : "-",
+      ],
     ];
     if (carouselMode === "imagestats") {
       return (
-        <div className="better-hunt-carousel" {...attrs("bonus_hunt", c, "slotCarouselContainer")}>
-          <div className={`better-hunt-image-stats-panel better-hunt-image-stats-panel--${tier}`} {...attrs("bonus_hunt", c, "carouselBackdrop")}>
+        <div
+          className="better-hunt-carousel"
+          {...attrs("bonus_hunt", c, "slotCarouselContainer")}
+        >
+          <div
+            className={`better-hunt-image-stats-panel better-hunt-image-stats-panel--${tier}`}
+            {...attrs("bonus_hunt", c, "carouselBackdrop")}
+          >
             <div className="better-hunt-image-stats-art">
-              <SlotImage src={bonusImage(current)} alt={bonusSlotName(current, activeIndex)} className="better-hunt-image-stats-img" {...attrs("bonus_hunt", c, "slotImage")} />
+              <SlotImage
+                src={bonusImage(current)}
+                alt={bonusSlotName(current, activeIndex)}
+                className="better-hunt-image-stats-img"
+                {...attrs("bonus_hunt", c, "slotImage")}
+              />
             </div>
             <div className="better-hunt-image-stats-copy">
               <div className="better-hunt-image-stats-title">
-                <h3 {...attrs("bonus_hunt", c, "slotTitle")}>{bonusSlotName(current, activeIndex)}</h3>
+                <h3 {...attrs("bonus_hunt", c, "slotTitle")}>
+                  {bonusSlotName(current, activeIndex)}
+                </h3>
               </div>
               <div>
                 {statCells.map(([label, value]) => (
                   <div className="better-hunt-image-row" key={label}>
-                    <span className="better-hunt-stat-label" {...attrs("bonus_hunt", c, "statLabel")}>{label}</span>
-                    <strong {...attrs("bonus_hunt", c, "statValue")}>{value}</strong>
+                    <span
+                      className="better-hunt-stat-label"
+                      {...attrs("bonus_hunt", c, "statLabel")}
+                    >
+                      {label}
+                    </span>
+                    <strong {...attrs("bonus_hunt", c, "statValue")}>
+                      {value}
+                    </strong>
                   </div>
                 ))}
               </div>
@@ -2345,25 +2758,51 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       );
     }
     return (
-      <div className="better-hunt-carousel" {...attrs("bonus_hunt", c, "slotCarouselContainer")}>
-        <div className={`better-hunt-stats-panel better-hunt-stats-panel--${carouselMode}`} {...attrs("bonus_hunt", c, "carouselBackdrop")}>
+      <div
+        className="better-hunt-carousel"
+        {...attrs("bonus_hunt", c, "slotCarouselContainer")}
+      >
+        <div
+          className={`better-hunt-stats-panel better-hunt-stats-panel--${carouselMode}`}
+          {...attrs("bonus_hunt", c, "carouselBackdrop")}
+        >
           <div className="better-hunt-stats-image">
-            <SlotImage src={bonusImage(current)} alt={bonusSlotName(current, activeIndex)} {...attrs("bonus_hunt", c, "slotImage")} />
+            <SlotImage
+              src={bonusImage(current)}
+              alt={bonusSlotName(current, activeIndex)}
+              {...attrs("bonus_hunt", c, "slotImage")}
+            />
           </div>
           <div className="better-hunt-stats-wash" />
           <div className="better-hunt-stats-content">
             <div className="better-hunt-stats-title">
               <div>
-                <h3 {...attrs("bonus_hunt", c, "slotTitle")}>{bonusSlotName(current, activeIndex)}</h3>
+                <h3 {...attrs("bonus_hunt", c, "slotTitle")}>
+                  {bonusSlotName(current, activeIndex)}
+                </h3>
                 <div className="better-hunt-eyebrow">Now spinning</div>
               </div>
-              <span className={`better-hunt-tier better-hunt-tier--${tier}`}>{tier === "extreme" ? "Extreme" : tier === "super" ? "Super" : "Normal"} Bonus</span>
+              <span className={`better-hunt-tier better-hunt-tier--${tier}`}>
+                {tier === "extreme"
+                  ? "Extreme"
+                  : tier === "super"
+                    ? "Super"
+                    : "Normal"}{" "}
+                Bonus
+              </span>
             </div>
             <div className="better-hunt-stat-strip">
               {statCells.map(([label, value]) => (
                 <div key={label}>
-                  <span className="better-hunt-stat-label" {...attrs("bonus_hunt", c, "statLabel")}>{label}</span>
-                  <strong {...attrs("bonus_hunt", c, "statValue")}>{value}</strong>
+                  <span
+                    className="better-hunt-stat-label"
+                    {...attrs("bonus_hunt", c, "statLabel")}
+                  >
+                    {label}
+                  </span>
+                  <strong {...attrs("bonus_hunt", c, "statValue")}>
+                    {value}
+                  </strong>
                 </div>
               ))}
             </div>
@@ -2375,8 +2814,14 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
 
   const renderRingCarousel = () => (
-    <div className="better-hunt-carousel" {...attrs("bonus_hunt", c, "slotCarouselContainer")}>
-      <div className="better-hunt-ring" {...attrs("bonus_hunt", c, "carouselBackdrop")}>
+    <div
+      className="better-hunt-carousel"
+      {...attrs("bonus_hunt", c, "slotCarouselContainer")}
+    >
+      <div
+        className="better-hunt-ring"
+        {...attrs("bonus_hunt", c, "carouselBackdrop")}
+      >
         {rows.length ? (
           <>
             <div className="better-hunt-ring-floor" />
@@ -2399,12 +2844,24 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                       pointerEvents: hidden ? "none" : undefined,
                       transformOrigin: "center center",
                       zIndex: 30 - abs * 10,
-                      filter: centered || tier === "extreme" ? undefined : "brightness(.62) saturate(.85)",
+                      filter:
+                        centered || tier === "extreme"
+                          ? undefined
+                          : "brightness(.62) saturate(.85)",
                       transform: `translate3d(-50%, -50%, 0) translate3d(${delta * 116}px, 0, ${-abs * 130}px) rotateY(${delta * -32}deg) scale(${centered ? 1.14 : 0.9})`,
                     }}
-                    {...attrs("bonus_hunt", c, "slotRow", bonusOpened(bonus) ? "opened" : "unopened")}
+                    {...attrs(
+                      "bonus_hunt",
+                      c,
+                      "slotRow",
+                      bonusOpened(bonus) ? "opened" : "unopened",
+                    )}
                   >
-                    <BetterHuntThumb bonus={bonus} size={112} className="better-hunt-card-img" />
+                    <BetterHuntThumb
+                      bonus={bonus}
+                      size={112}
+                      className="better-hunt-card-img"
+                    />
                     <span className="better-hunt-card-gloss" />
                   </div>
                 );
@@ -2419,7 +2876,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     </div>
   );
 
-  const renderCarousel = () => (carouselMode === "3d" ? renderRingCarousel() : renderStatsCarousel());
+  const renderCarousel = () =>
+    carouselMode === "3d" ? renderRingCarousel() : renderStatsCarousel();
 
   const renderListRow = (bonus, index, mode = listMode, keySuffix = "") => {
     const openedState = bonusOpened(bonus);
@@ -2428,18 +2886,42 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const multi = bonusMultiplierValue(bonus);
     if (mode === "image") {
       return (
-        <div key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`} className="better-hunt-row better-hunt-row--image" {...attrs("bonus_hunt", c, "slotRow", openedState ? "opened" : "unopened")}>
-          <div className="better-hunt-row-bg"><SlotImage src={bonusImage(bonus)} alt="" /></div>
+        <div
+          key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`}
+          className="better-hunt-row better-hunt-row--image"
+          {...attrs(
+            "bonus_hunt",
+            c,
+            "slotRow",
+            openedState ? "opened" : "unopened",
+          )}
+        >
+          <div className="better-hunt-row-bg">
+            <SlotImage src={bonusImage(bonus)} alt="" />
+          </div>
           <div className="better-hunt-row-content">
             <span className="better-hunt-row-id">{index + 1}</span>
             <span className="better-hunt-row-main">
-              <strong {...attrs("bonus_hunt", c, "slotTitle")}>{bonusSlotName(bonus, index)}</strong>
-              <em>{bonusProvider(bonus) || (openedState ? "opened" : "queued")}</em>
+              <strong {...attrs("bonus_hunt", c, "slotTitle")}>
+                {bonusSlotName(bonus, index)}
+              </strong>
+              <em>
+                {bonusProvider(bonus) || (openedState ? "opened" : "queued")}
+              </em>
             </span>
             <span className="better-hunt-mini-stats">
-              <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Win</span>{openedState ? formatMoney(payout, money) : "-"}</span>
-              <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Multi</span>{multi > 0 ? formatMultiplier(multi) : "-"}</span>
-              <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Bet</span>{bet > 0 ? formatMoney(bet, money) : "-"}</span>
+              <span className="better-hunt-mini-stat">
+                <span className="better-hunt-mini-label">Win</span>
+                {openedState ? formatMoney(payout, money) : "-"}
+              </span>
+              <span className="better-hunt-mini-stat">
+                <span className="better-hunt-mini-label">Multi</span>
+                {multi > 0 ? formatMultiplier(multi) : "-"}
+              </span>
+              <span className="better-hunt-mini-stat">
+                <span className="better-hunt-mini-label">Bet</span>
+                {bet > 0 ? formatMoney(bet, money) : "-"}
+              </span>
             </span>
           </div>
         </div>
@@ -2447,25 +2929,60 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     }
     if (mode === "names") {
       return (
-        <div key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`} className="better-hunt-row better-hunt-row--names" {...attrs("bonus_hunt", c, "slotRow", openedState ? "opened" : "unopened")}>
+        <div
+          key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`}
+          className="better-hunt-row better-hunt-row--names"
+          {...attrs(
+            "bonus_hunt",
+            c,
+            "slotRow",
+            openedState ? "opened" : "unopened",
+          )}
+        >
           <span className="better-hunt-row-id">{index + 1}</span>
-          <span className="better-hunt-row-main"><strong {...attrs("bonus_hunt", c, "slotTitle")}>{bonusSlotName(bonus, index)}</strong></span>
-          <span className="better-hunt-mini-stat">{bet > 0 ? formatMoney(bet, money) : "-"}</span>
+          <span className="better-hunt-row-main">
+            <strong {...attrs("bonus_hunt", c, "slotTitle")}>
+              {bonusSlotName(bonus, index)}
+            </strong>
+          </span>
+          <span className="better-hunt-mini-stat">
+            {bet > 0 ? formatMoney(bet, money) : "-"}
+          </span>
         </div>
       );
     }
     return (
-      <div key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`} className="better-hunt-row better-hunt-row--compact" {...attrs("bonus_hunt", c, "slotRow", openedState ? "opened" : "unopened")}>
+      <div
+        key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`}
+        className="better-hunt-row better-hunt-row--compact"
+        {...attrs(
+          "bonus_hunt",
+          c,
+          "slotRow",
+          openedState ? "opened" : "unopened",
+        )}
+      >
         <span className="better-hunt-row-id">{index + 1}</span>
         <BetterHuntThumb bonus={bonus} size={38} />
         <span className="better-hunt-row-main">
-          <strong {...attrs("bonus_hunt", c, "slotTitle")}>{bonusSlotName(bonus, index)}</strong>
+          <strong {...attrs("bonus_hunt", c, "slotTitle")}>
+            {bonusSlotName(bonus, index)}
+          </strong>
           <em>{bonusProvider(bonus) || (openedState ? "opened" : "queued")}</em>
         </span>
         <span className="better-hunt-mini-stats">
-          <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Win</span>{openedState ? formatMoney(payout, money) : "-"}</span>
-          <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Multi</span>{multi > 0 ? formatMultiplier(multi) : "-"}</span>
-          <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Bet</span>{bet > 0 ? formatMoney(bet, money) : "-"}</span>
+          <span className="better-hunt-mini-stat">
+            <span className="better-hunt-mini-label">Win</span>
+            {openedState ? formatMoney(payout, money) : "-"}
+          </span>
+          <span className="better-hunt-mini-stat">
+            <span className="better-hunt-mini-label">Multi</span>
+            {multi > 0 ? formatMultiplier(multi) : "-"}
+          </span>
+          <span className="better-hunt-mini-stat">
+            <span className="better-hunt-mini-label">Bet</span>
+            {bet > 0 ? formatMoney(bet, money) : "-"}
+          </span>
         </span>
       </div>
     );
@@ -2486,7 +3003,14 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       >
         {rows.length ? (
           <div className="better-hunt-list-inner">
-            {scrollingRows.map((bonus, index) => renderListRow(bonus, index % Math.max(1, listRows.length), listMode, index))}
+            {scrollingRows.map((bonus, index) =>
+              renderListRow(
+                bonus,
+                index % Math.max(1, listRows.length),
+                listMode,
+                index,
+              ),
+            )}
           </div>
         ) : (
           <div className="better-hunt-empty">Waiting for hunt data</div>
@@ -2516,10 +3040,15 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       </span>
     );
     return (
-      <div className={`better-hunt-result better-hunt-result--${variant}`} aria-label={`${label}: ${bonusSlotName(bonus, 0)}`}>
+      <div
+        className={`better-hunt-result better-hunt-result--${variant}`}
+        aria-label={`${label}: ${bonusSlotName(bonus, 0)}`}
+      >
         <div className="better-hunt-result-head">
           <em>{label}</em>
-          <strong className="better-hunt-result-slot">{bonusSlotName(bonus, 0)}</strong>
+          <strong className="better-hunt-result-slot">
+            {bonusSlotName(bonus, 0)}
+          </strong>
         </div>
         <div className="better-hunt-result-body">
           {variant === "best" ? statsMarkup : null}
@@ -2533,15 +3062,16 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
 
   const renderBonusFooter = () => {
-    const drawerVisible = resultDrawerReady && (
-      c.drawerOpen === true ||
-      c.drawerPreviewOpen === true ||
-      resultPeekOpen
-    );
+    const drawerVisible =
+      resultDrawerReady &&
+      (c.drawerOpen === true || c.drawerPreviewOpen === true || resultPeekOpen);
     const drawerMounted = resultDrawerReady;
     return (
       <div className="better-hunt-footer">
-        <div className={`better-hunt-total better-hunt-total--${drawerMode}`} {...attrs("bonus_hunt", c, "footerContainer")}>
+        <div
+          className={`better-hunt-total better-hunt-total--${drawerMode}`}
+          {...attrs("bonus_hunt", c, "footerContainer")}
+        >
           <div className="better-hunt-total-head">
             <span>Total Pay</span>
             <strong>{formatMoney(totalPay, money)}</strong>
@@ -2561,8 +3091,14 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
 
   const renderMainstreamStat = (label, value, Icon) => (
-    <div className="better-hunt-main-stat" {...attrs("bonus_hunt", c, "statCell")}>
-      <span className="better-hunt-main-stat-label" {...attrs("bonus_hunt", c, "statLabel")}>
+    <div
+      className="better-hunt-main-stat"
+      {...attrs("bonus_hunt", c, "statCell")}
+    >
+      <span
+        className="better-hunt-main-stat-label"
+        {...attrs("bonus_hunt", c, "statLabel")}
+      >
         {Icon ? <Icon size={11} strokeWidth={2.4} /> : null}
         {label}
       </span>
@@ -2571,21 +3107,40 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   );
 
   const renderMainstreamHeader = () => (
-    <header className="better-hunt-main-head" {...attrs("bonus_hunt", c, "headerContainer")}>
+    <header
+      className="better-hunt-main-head"
+      {...attrs("bonus_hunt", c, "headerContainer")}
+    >
       <span className="better-hunt-main-avatar-wrap">
         {avatarUrl ? (
           <img src={avatarUrl} alt="" />
         ) : (
-          <span className="better-hunt-main-avatar-fallback">{initials(c.streamerName || mainstreamTitle)}</span>
+          <span className="better-hunt-main-avatar-fallback">
+            {initials(c.streamerName || mainstreamTitle)}
+          </span>
         )}
-        {sessionState === "opening" ? <i className="better-hunt-main-live-dot" /> : null}
+        {sessionState === "opening" ? (
+          <i className="better-hunt-main-live-dot" />
+        ) : null}
       </span>
       <span className="better-hunt-main-title-wrap">
-        <h1 className="better-hunt-main-name" {...attrs("bonus_hunt", c, "headerTitle")}>{mainstreamTitle}</h1>
+        <h1
+          className="better-hunt-main-name"
+          {...attrs("bonus_hunt", c, "headerTitle")}
+        >
+          {mainstreamTitle}
+        </h1>
       </span>
-      <span className={`better-hunt-main-status better-hunt-main-status--${sessionState}`} {...attrs("bonus_hunt", c, "statValue")}>
+      <span
+        className={`better-hunt-main-status better-hunt-main-status--${sessionState}`}
+        {...attrs("bonus_hunt", c, "statValue")}
+      >
         {sessionState === "opening" ? <i className="better-hunt-dot" /> : null}
-        {sessionState === "opening" ? "Opening" : sessionState === "ended" ? "Ended" : "Hunt"}
+        {sessionState === "opening"
+          ? "Opening"
+          : sessionState === "ended"
+            ? "Ended"
+            : "Hunt"}
       </span>
     </header>
   );
@@ -2596,14 +3151,22 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         <Icon size={12} strokeWidth={2.6} />
         {label}
       </span>
-      <strong>{count}/{total}</strong>
+      <strong>
+        {count}/{total}
+      </strong>
     </div>
   );
 
   const renderMainstreamProgress = () => (
-    <div className="better-hunt-main-progress" {...attrs("bonus_hunt", c, "progressBar")}>
+    <div
+      className="better-hunt-main-progress"
+      {...attrs("bonus_hunt", c, "progressBar")}
+    >
       <div className="better-hunt-main-progress-track">
-        <span style={{ width: `${progress}%` }} {...attrs("bonus_hunt", c, "progressBarFill")} />
+        <span
+          style={{ width: `${progress}%` }}
+          {...attrs("bonus_hunt", c, "progressBarFill")}
+        />
       </div>
       <span className="better-hunt-main-progress-count">
         <strong>{opened.length}</strong>/{rows.length}
@@ -2613,21 +3176,49 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
   const renderMainstreamActive = () => {
     if (!current) {
-      return <div className="better-hunt-main-active better-hunt-empty">No bonuses yet</div>;
+      return (
+        <div className="better-hunt-main-active better-hunt-empty">
+          No bonuses yet
+        </div>
+      );
     }
     const tier = bonusTier(current);
     const currentBet = bonusBet(current);
     const currentMulti = bonusMultiplierValue(current);
     const activeRows = [
-      ["Win", bonusOpened(current) ? formatMoney(bonusPayout(current), money) : formatMoney(0, money), Wallet],
-      ["Multi", currentMulti > 0 ? formatMultiplier(currentMulti) : "0.0x", Star],
-      ["Bet", currentBet > 0 ? formatMoney(currentBet, money) : "-", DollarSign],
+      [
+        "Win",
+        bonusOpened(current)
+          ? formatMoney(bonusPayout(current), money)
+          : formatMoney(0, money),
+        Wallet,
+      ],
+      [
+        "Multi",
+        currentMulti > 0 ? formatMultiplier(currentMulti) : "0.0x",
+        Star,
+      ],
+      [
+        "Bet",
+        currentBet > 0 ? formatMoney(currentBet, money) : "-",
+        DollarSign,
+      ],
     ];
     return (
-      <div key={`mainstream-active-${activeIndex}`} className={`better-hunt-main-active better-hunt-main-active--${tier}`} {...attrs("bonus_hunt", c, "carouselBackdrop")}>
+      <div
+        key={`mainstream-active-${activeIndex}`}
+        className={`better-hunt-main-active better-hunt-main-active--${tier}`}
+        {...attrs("bonus_hunt", c, "carouselBackdrop")}
+      >
         <div className="better-hunt-main-active-art">
-          <SlotImage src={bonusImage(current)} alt={bonusSlotName(current, activeIndex)} {...attrs("bonus_hunt", c, "slotImage")} />
-          {tier === "extreme" ? <span className="better-hunt-main-active-shroud" /> : null}
+          <SlotImage
+            src={bonusImage(current)}
+            alt={bonusSlotName(current, activeIndex)}
+            {...attrs("bonus_hunt", c, "slotImage")}
+          />
+          {tier === "extreme" ? (
+            <span className="better-hunt-main-active-shroud" />
+          ) : null}
         </div>
         <div className="better-hunt-main-active-stats">
           {activeRows.map(([label, value, Icon]) => (
@@ -2645,11 +3236,21 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
 
   const renderMainstreamPanel = () => (
-    <section className={`better-hunt-panel better-hunt-mainstream${panelShakeClass}`}>
+    <section
+      className={`better-hunt-panel better-hunt-mainstream${panelShakeClass}`}
+    >
       {renderMainstreamHeader()}
       <div className="better-hunt-main-stat-pair">
-        {renderMainstreamStat("Start", startKnown ? formatMoney(startValue, money) : "-", Wallet)}
-        {renderMainstreamStat("Breakeven", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-", TrendingUp)}
+        {renderMainstreamStat(
+          "Start",
+          startKnown ? formatMoney(startValue, money) : "-",
+          Wallet,
+        )}
+        {renderMainstreamStat(
+          "Breakeven",
+          displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-",
+          TrendingUp,
+        )}
       </div>
       <div className="better-hunt-main-count">
         <span>
@@ -2658,20 +3259,45 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         </span>
         <strong>{rows.length}</strong>
       </div>
-      {renderMainstreamTierTracker("super", "Super", Star, superOpened, superCount)}
-      {renderMainstreamTierTracker("extreme", "Hidden", Flame, extremeOpened, extremeCount)}
+      {renderMainstreamTierTracker(
+        "super",
+        "Super",
+        Star,
+        superOpened,
+        superCount,
+      )}
+      {renderMainstreamTierTracker(
+        "extreme",
+        "Hidden",
+        Flame,
+        extremeOpened,
+        extremeCount,
+      )}
       {renderMainstreamProgress()}
       {renderMainstreamActive()}
       {renderRequests()}
       <div className="better-hunt-main-list-wrap">{renderList()}</div>
       <div className="better-hunt-main-bottom">
         <div className="better-hunt-main-stat-pair">
-          {renderMainstreamStat("Average", avgMulti > 0 ? formatMultiplier(avgMulti) : "-", Scale)}
-          {renderMainstreamStat("Breakeven", displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-", TrendingUp)}
+          {renderMainstreamStat(
+            "Average",
+            avgMulti > 0 ? formatMultiplier(avgMulti) : "-",
+            Scale,
+          )}
+          {renderMainstreamStat(
+            "Breakeven",
+            displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 2) : "-",
+            TrendingUp,
+          )}
         </div>
       </div>
       {renderBonusFooter()}
-      {previewWin ? <BetterHuntWinOverlay win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
+      {previewWin ? (
+        <BetterHuntWinOverlay
+          win={previewWin}
+          onDone={() => setPreviewWin(null)}
+        />
+      ) : null}
     </section>
   );
 
@@ -2680,20 +3306,43 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     return (
       <div className="better-hunt-lane">
         {loop.length ? (
-          <div className={`better-hunt-lane-track better-hunt-lane-track--${direction}`}>
+          <div
+            className={`better-hunt-lane-track better-hunt-lane-track--${direction}`}
+          >
             {loop.map((bonus, index) => (
-              <div key={`${bonusSlotName(bonus, index)}-${direction}-${index}`} className={`better-hunt-hcard${large ? " is-large" : ""}`}>
+              <div
+                key={`${bonusSlotName(bonus, index)}-${direction}-${index}`}
+                className={`better-hunt-hcard${large ? " is-large" : ""}`}
+              >
                 <SlotImage src={bonusImage(bonus)} alt="" />
                 <div className="better-hunt-hcard-content">
                   <div className="better-hunt-hcard-top">
-                    <span className="better-hunt-row-id">{(index % rows.length) + 1}</span>
-                    <span className="better-hunt-hcard-bet">{bonusBet(bonus) > 0 ? formatMoney(bonusBet(bonus), money) : "-"}</span>
+                    <span className="better-hunt-row-id">
+                      {(index % rows.length) + 1}
+                    </span>
+                    <span className="better-hunt-hcard-bet">
+                      {bonusBet(bonus) > 0
+                        ? formatMoney(bonusBet(bonus), money)
+                        : "-"}
+                    </span>
                   </div>
                   <div>
-                    <div className="better-hunt-hcard-title">{bonusSlotName(bonus, index)}</div>
+                    <div className="better-hunt-hcard-title">
+                      {bonusSlotName(bonus, index)}
+                    </div>
                     <div className="better-hunt-mini-stats">
-                      <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Win</span>{bonusOpened(bonus) ? formatMoney(bonusPayout(bonus), money) : "-"}</span>
-                      <span className="better-hunt-mini-stat"><span className="better-hunt-mini-label">Multi</span>{bonusMultiplierValue(bonus) > 0 ? formatMultiplier(bonusMultiplierValue(bonus)) : "-"}</span>
+                      <span className="better-hunt-mini-stat">
+                        <span className="better-hunt-mini-label">Win</span>
+                        {bonusOpened(bonus)
+                          ? formatMoney(bonusPayout(bonus), money)
+                          : "-"}
+                      </span>
+                      <span className="better-hunt-mini-stat">
+                        <span className="better-hunt-mini-label">Multi</span>
+                        {bonusMultiplierValue(bonus) > 0
+                          ? formatMultiplier(bonusMultiplierValue(bonus))
+                          : "-"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -2714,48 +3363,68 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <h3>Session Log</h3>
           <span>{rows.length} bonuses · auto-tracked</span>
         </div>
-        <span className="better-hunt-pill">{opened.length}/{rows.length}</span>
+        <span className="better-hunt-pill">
+          {opened.length}/{rows.length}
+        </span>
       </div>
       {listMode === "names" ? (
-        <div style={{ padding: "0 12px 12px", minHeight: 0 }}>{renderList()}</div>
+        <div style={{ padding: "0 12px 12px", minHeight: 0 }}>
+          {renderList()}
+        </div>
       ) : (
         <div className="better-hunt-lanes">
           {renderHorizontalCards(rows, "left", listMode === "image")}
-          {listMode === "compact" && renderHorizontalCards([...rows].reverse(), "right")}
+          {listMode === "compact" &&
+            renderHorizontalCards([...rows].reverse(), "right")}
         </div>
       )}
     </div>
   );
 
-  const content = orientation === "horizontal" ? (
-    <section className={`better-hunt-panel better-hunt-horizontal${panelShakeClass}`}>
-      <div className="better-hunt-left">
+  const content =
+    orientation === "horizontal" ? (
+      <section
+        className={`better-hunt-panel better-hunt-horizontal${panelShakeClass}`}
+      >
+        <div className="better-hunt-left">
+          {renderHeader()}
+          <div className="better-hunt-divider" />
+          {renderStatBoxes()}
+          {renderCarousel()}
+          {renderRequests()}
+          {renderBonusFooter()}
+        </div>
+        {renderHorizontalLog()}
+        {previewWin ? (
+          <BetterHuntWinOverlay
+            win={previewWin}
+            onDone={() => setPreviewWin(null)}
+          />
+        ) : null}
+      </section>
+    ) : orientation === "mainstream" ? (
+      renderMainstreamPanel()
+    ) : (
+      <section
+        className={`better-hunt-panel better-hunt-vertical${panelShakeClass}`}
+      >
         {renderHeader()}
         <div className="better-hunt-divider" />
         {renderStatBoxes()}
         {renderCarousel()}
         {renderRequests()}
+        <div className="better-hunt-divider" />
+        {renderList()}
+        <div className="better-hunt-divider" />
         {renderBonusFooter()}
-      </div>
-      {renderHorizontalLog()}
-      {previewWin ? <BetterHuntWinOverlay win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
-    </section>
-  ) : orientation === "mainstream" ? (
-    renderMainstreamPanel()
-  ) : (
-    <section className={`better-hunt-panel better-hunt-vertical${panelShakeClass}`}>
-      {renderHeader()}
-      <div className="better-hunt-divider" />
-      {renderStatBoxes()}
-      {renderCarousel()}
-      {renderRequests()}
-      <div className="better-hunt-divider" />
-      {renderList()}
-      <div className="better-hunt-divider" />
-      {renderBonusFooter()}
-      {previewWin ? <BetterHuntWinOverlay win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
-    </section>
-  );
+        {previewWin ? (
+          <BetterHuntWinOverlay
+            win={previewWin}
+            onDone={() => setPreviewWin(null)}
+          />
+        ) : null}
+      </section>
+    );
 
   return (
     <div
@@ -2785,7 +3454,10 @@ export function BetterGiveawayStyle({ config }) {
       : String(c.winner || "");
   const spinningWinner =
     typeof c.spinningWinner === "object"
-      ? c.spinningWinner?.name || c.spinningWinner?.username || c.spinningWinner?.displayName || ""
+      ? c.spinningWinner?.name ||
+        c.spinningWinner?.username ||
+        c.spinningWinner?.displayName ||
+        ""
       : String(c.spinningWinner || "");
   const keyword = stripBang(c.keyword);
   const hasWinner = Boolean(winnerName);
@@ -2807,7 +3479,9 @@ export function BetterGiveawayStyle({ config }) {
   const accentSat = clampNumber(c.accentSat, 0, 100, 96);
   const accentLight = clampNumber(c.accentLight, 30, 90, 58);
   const titleFont = giveawayFontStack(c.titleFont, "orbitron");
-  const bodyFont = c.bodyFont ? giveawayFontStack(c.bodyFont, "rajdhani") : c.fontFamily || giveawayFontStack("rajdhani");
+  const bodyFont = c.bodyFont
+    ? giveawayFontStack(c.bodyFont, "rajdhani")
+    : c.fontFamily || giveawayFontStack("rajdhani");
   const width = clampNumber(c.width, 240, 1600, 700);
   const height = clampNumber(c.height, 140, 900, 270);
   const letterSpacing = `${Math.max(0, numberValue(c.letterSpacing, 1)) / 100}em`;
@@ -2873,22 +3547,46 @@ export function BetterGiveawayStyle({ config }) {
       >
         {c.brackets !== false ? (
           <>
-            <span className="better-gw-edge better-gw-edge-top-left" aria-hidden="true" />
-            <span className="better-gw-edge better-gw-edge-top-right" aria-hidden="true" />
-            <span className="better-gw-edge better-gw-edge-bottom-left" aria-hidden="true" />
-            <span className="better-gw-edge better-gw-edge-bottom-right" aria-hidden="true" />
+            <span
+              className="better-gw-edge better-gw-edge-top-left"
+              aria-hidden="true"
+            />
+            <span
+              className="better-gw-edge better-gw-edge-top-right"
+              aria-hidden="true"
+            />
+            <span
+              className="better-gw-edge better-gw-edge-bottom-left"
+              aria-hidden="true"
+            />
+            <span
+              className="better-gw-edge better-gw-edge-bottom-right"
+              aria-hidden="true"
+            />
           </>
         ) : null}
         {c.edgeLights !== false ? (
           <>
-            <span className="better-gw-edge-light better-gw-edge-light-top" aria-hidden="true" />
-            <span className="better-gw-edge-light better-gw-edge-light-bottom" aria-hidden="true" />
+            <span
+              className="better-gw-edge-light better-gw-edge-light-top"
+              aria-hidden="true"
+            />
+            <span
+              className="better-gw-edge-light better-gw-edge-light-bottom"
+              aria-hidden="true"
+            />
           </>
         ) : null}
         {c.sideDashes !== false ? (
           <>
-            <span className="better-gw-side-dash better-gw-side-dash-left" aria-hidden="true" />
-            <span className="better-gw-side-dash better-gw-side-dash-right" aria-hidden="true" />
+            <span
+              className="better-gw-side-dash better-gw-side-dash-left"
+              aria-hidden="true"
+            />
+            <span
+              className="better-gw-side-dash better-gw-side-dash-right"
+              aria-hidden="true"
+            />
           </>
         ) : null}
 
@@ -2918,7 +3616,12 @@ export function BetterGiveawayStyle({ config }) {
           className="better-gw-reel-zone"
           aria-hidden={!reelOpen}
           data-widget-element="winnerArea"
-          {...attrs("giveaway", c, "winnerArea", hasWinner ? "winner" : spinningWinner ? "drawing" : "live")}
+          {...attrs(
+            "giveaway",
+            c,
+            "winnerArea",
+            hasWinner ? "winner" : spinningWinner ? "drawing" : "live",
+          )}
         >
           <BetterGiveawayRoulette
             participants={participants}
@@ -2935,7 +3638,9 @@ export function BetterGiveawayStyle({ config }) {
             {...attrs("giveaway", c, "keyword")}
           >
             <span className="better-gw-metric-label">Keyword</span>
-            <span className="better-gw-metric-value better-gw-keyword-value">{keyword ? `!${keyword}` : "-"}</span>
+            <span className="better-gw-metric-value better-gw-keyword-value">
+              {keyword ? `!${keyword}` : "-"}
+            </span>
           </div>
           <div
             className="better-gw-metric-panel better-gw-entries-panel"
@@ -2943,21 +3648,34 @@ export function BetterGiveawayStyle({ config }) {
             {...attrs("giveaway", c, "participantCount")}
           >
             <span className="better-gw-metric-label">Entries</span>
-            <span className="better-gw-metric-value">{formatCompactNumber(entries)}</span>
+            <span className="better-gw-metric-value">
+              {formatCompactNumber(entries)}
+            </span>
           </div>
         </div>
 
-        {hasWinner ? <span className="better-gw-winner-flash" aria-hidden="true" /> : null}
-        {c.sheen !== false ? <span className="better-gw-sheen" aria-hidden="true" /> : null}
+        {hasWinner ? (
+          <span className="better-gw-winner-flash" aria-hidden="true" />
+        ) : null}
+        {c.sheen !== false ? (
+          <span className="better-gw-sheen" aria-hidden="true" />
+        ) : null}
       </section>
     </div>
   );
 }
 
-export function BetterChatHeader({ config, chatHeaderName, headerText, accentColor }) {
+export function BetterChatHeader({
+  config,
+  chatHeaderName,
+  headerText,
+  accentColor,
+}) {
   const c = config || {};
   const viewerCount = Number(c.viewerCount) || 0;
-  const isLive = Boolean(c.live || c.twitchEnabled || c.youtubeEnabled || c.kickEnabled);
+  const isLive = Boolean(
+    c.live || c.twitchEnabled || c.youtubeEnabled || c.kickEnabled,
+  );
   const showHeaderName = c.showHeaderName !== false;
   const showLiveLabel = c.showLiveLabel !== false;
   const showRightText = Boolean(c.showViewerCount || showLiveLabel);
@@ -2975,8 +3693,10 @@ export function BetterChatHeader({ config, chatHeaderName, headerText, accentCol
         background: `linear-gradient(90deg, ${alphaColor(accentColor, 0.18)}, rgba(2,8,23,0.18))`,
       })}
       {...attrs("chat", c, "header")}
+    >
+      <span
+        style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}
       >
-      <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
         <span
           style={{
             width: 8,
@@ -2985,19 +3705,44 @@ export function BetterChatHeader({ config, chatHeaderName, headerText, accentCol
             background: accentColor,
             boxShadow: `0 0 12px ${accentColor}`,
             opacity: isLive ? 1 : 0.45,
-            animation: isLive ? "better-soft-pulse 1.8s ease-in-out infinite" : "none",
+            animation: isLive
+              ? "better-soft-pulse 1.8s ease-in-out infinite"
+              : "none",
           }}
           {...attrs("chat", c, "badge")}
         />
         {showHeaderName ? (
-          <strong style={{ color: headerText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+          <strong
+            style={{
+              color: headerText,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+            }}
+          >
             {chatHeaderName}
           </strong>
         ) : null}
       </span>
       {showRightText ? (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: alphaColor(headerText, 0.72), fontWeight: 900, fontSize: "0.72em", textTransform: "uppercase", letterSpacing: "0.16em", whiteSpace: "nowrap" }}>
-          {c.showViewerCount ? <span>{formatCompactNumber(viewerCount)}</span> : null}
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 7,
+            color: alphaColor(headerText, 0.72),
+            fontWeight: 900,
+            fontSize: "0.72em",
+            textTransform: "uppercase",
+            letterSpacing: "0.16em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {c.showViewerCount ? (
+            <span>{formatCompactNumber(viewerCount)}</span>
+          ) : null}
           {showLiveLabel ? <span>{isLive ? "Live" : "Idle"}</span> : null}
         </span>
       ) : null}
@@ -3023,10 +3768,12 @@ export function BetterChatMessage({
     (messageType === "raid" && celebrations.raid !== false) ||
     (messageType === "sub" && celebrations.sub !== false) ||
     (messageType === "gift" && celebrations.gift !== false);
-  const rowPart = followerMessage || celebrationOn ? "highlightedMessage" : "message";
-  const resolveRowStyle = followerMessage || celebrationOn
-    ? context.highlightedMessageStyle || context.messagePartStyle
-    : context.messagePartStyle;
+  const rowPart =
+    followerMessage || celebrationOn ? "highlightedMessage" : "message";
+  const resolveRowStyle =
+    followerMessage || celebrationOn
+      ? context.highlightedMessageStyle || context.messagePartStyle
+      : context.messagePartStyle;
   const animationKind = String(c.animation || "slide-up");
   const animationMap = {
     "slide-up": "better-chat-slide-up",
@@ -3063,9 +3810,10 @@ export function BetterChatMessage({
       ? `linear-gradient(135deg, ${alphaColor(rowAccent, 0.26)}, rgba(2,8,23,0.44))`
       : `linear-gradient(135deg, ${baseBg}, rgba(2,8,23,0.3))`,
     border: `${Number(context.borderWidth) || 1}px solid ${followerMessage || celebrationOn ? alphaColor(rowAccent, 0.5) : context.borderColor || alphaColor(accent, 0.24)}`,
-    boxShadow: followerMessage || celebrationOn
-      ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.32)}, inset 0 1px 0 rgba(255,255,255,0.08)`
-      : `0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)`,
+    boxShadow:
+      followerMessage || celebrationOn
+        ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.32)}, inset 0 1px 0 rgba(255,255,255,0.08)`
+        : `0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)`,
     overflow: "hidden",
     opacity: animationName === "none" ? 1 : 0,
     animation:
@@ -3140,7 +3888,9 @@ export function BetterChatMessage({
         )}
       </span>
       <span style={{ minWidth: 0 }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+        <span
+          style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}
+        >
           <strong
             style={context.usernameStyle({
               color: nameColor,
@@ -3204,7 +3954,9 @@ const BETTER_RTP_EMBLEM_DURATIONS = {
 
 function resolveBetterRtpEmblem(value) {
   const kind = String(value || "reel").toLowerCase();
-  return Object.prototype.hasOwnProperty.call(BETTER_RTP_EMBLEM_DURATIONS, kind) ? kind : "reel";
+  return Object.prototype.hasOwnProperty.call(BETTER_RTP_EMBLEM_DURATIONS, kind)
+    ? kind
+    : "reel";
 }
 
 function BetterRtpEmblemCss() {
@@ -3288,8 +4040,14 @@ function renderBetterRtpEmblem(kind) {
       return (
         <span className="better-rtp-em__gem">
           <svg viewBox="0 0 32 32" aria-hidden="true">
-            <polygon className="gem-face-a" points="16 4 27 12 23 27 9 27 5 12" />
-            <polygon className="gem-face-b" points="5 12 16 27 27 12 21 12 16 27 11 12" />
+            <polygon
+              className="gem-face-a"
+              points="16 4 27 12 23 27 9 27 5 12"
+            />
+            <polygon
+              className="gem-face-b"
+              points="5 12 16 27 27 12 21 12 16 27 11 12"
+            />
             <polygon className="gem-face-c" points="11 12 16 4 21 12 16 27" />
           </svg>
         </span>
@@ -3298,8 +4056,14 @@ function renderBetterRtpEmblem(kind) {
       return (
         <span className="better-rtp-em__flame">
           <svg viewBox="0 0 32 32" aria-hidden="true">
-            <path className="flame-a" d="M16 29c-5.1 0-8.8-3.7-8.8-8.5 0-4.1 2.7-6.9 5.7-9.9 1.6-1.6 2.8-3.4 2.9-6.1 5.1 3.5 8.9 8 8.9 14.7 0 5.7-3.8 9.8-8.7 9.8z" />
-            <path className="flame-b" d="M16.1 27c-2.7 0-4.6-1.9-4.6-4.5 0-2.4 1.7-4 3.1-5.8.8-1 1.2-2 1.2-3.5 2.9 2 5 4.5 5 8.1 0 3.2-2 5.7-4.7 5.7z" />
+            <path
+              className="flame-a"
+              d="M16 29c-5.1 0-8.8-3.7-8.8-8.5 0-4.1 2.7-6.9 5.7-9.9 1.6-1.6 2.8-3.4 2.9-6.1 5.1 3.5 8.9 8 8.9 14.7 0 5.7-3.8 9.8-8.7 9.8z"
+            />
+            <path
+              className="flame-b"
+              d="M16.1 27c-2.7 0-4.6-1.9-4.6-4.5 0-2.4 1.7-4 3.1-5.8.8-1 1.2-2 1.2-3.5 2.9 2 5 4.5 5 8.1 0 3.2-2 5.7-4.7 5.7z"
+            />
           </svg>
         </span>
       );
@@ -3342,9 +4106,11 @@ function renderBetterRtpEmblem(kind) {
       return (
         <span className="better-rtp-em__reel">
           <span className="better-rtp-em__reel-strip">
-            {["CH", "7", "BAR", "*", "GR", "DI", "CH", "7", "BAR", "*"].map((label, index) => (
-              <i key={`${label}-${index}`}>{label}</i>
-            ))}
+            {["CH", "7", "BAR", "*", "GR", "DI", "CH", "7", "BAR", "*"].map(
+              (label, index) => (
+                <i key={`${label}-${index}`}>{label}</i>
+              ),
+            )}
           </span>
         </span>
       );
@@ -3424,8 +4190,12 @@ export function BetterRtpStatsStyle({
   const providerMode = c.providerMode || "name";
   const providerName = displayProvider || "";
   const providerLogo = displayProviderLogo || "";
-  const showProviderImage = providerMode !== "none" && providerMode !== "name" && Boolean(providerLogo);
-  const showProviderName = providerMode !== "none" && providerMode !== "image" && Boolean(providerName);
+  const showProviderImage =
+    providerMode !== "none" && providerMode !== "name" && Boolean(providerLogo);
+  const showProviderName =
+    providerMode !== "none" &&
+    providerMode !== "image" &&
+    Boolean(providerName);
   const hasProvider = showProviderImage || showProviderName;
   const logoHeight = clampNumber(c.logoHeight, 12, 96, 30);
   const logoMaxWidth = clampNumber(c.logoMaxW, 32, 420, 160);
@@ -3441,19 +4211,29 @@ export function BetterRtpStatsStyle({
       ? `${String(liveRtp).replace(/%$/, "")}%`
       : "-";
   const potentialValue =
-    livePotential !== undefined && livePotential !== null && livePotential !== ""
+    livePotential !== undefined &&
+    livePotential !== null &&
+    livePotential !== ""
       ? formatMultiplier(livePotential)
       : "-";
   const volatilityValue = firstKnownVolatility(displayInfo?.volatility);
   const bestAmount = displayBestWin?.best_win
     ? `${currency || ""}${Number(displayBestWin.best_win).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
     : bestWinEmptyText || "-";
-  const bestMulti = displayBestWin?.best_multiplier ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : "";
+  const bestMulti = displayBestWin?.best_multiplier
+    ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}`
+    : "";
   const showDividers = c.showDividers !== false;
   const statItems = [
     ["rtpValue", "RTP", rtpValue, showRtp, "0s"],
     ["maxWin", "Potential", potentialValue, showPotential, ".5s"],
-    ["volatility", "Volatility", <BetterHuntVolatilityBars value={volatilityValue} />, showVolatility, "1s"],
+    [
+      "volatility",
+      "Volatility",
+      <BetterHuntVolatilityBars value={volatilityValue} />,
+      showVolatility,
+      "1s",
+    ],
   ].filter(([, , , visible]) => visible);
   const bestWinValue = `${bestAmount}${bestMulti}`;
   const bar = (
@@ -3525,11 +4305,14 @@ export function BetterRtpStatsStyle({
                 whiteSpace: "nowrap",
               }}
             >
-              {providerName.split(" ").filter(Boolean).map((word, index) => (
-                <span key={`${word}-${index}`} style={{ display: "block" }}>
-                  {word}
-                </span>
-              ))}
+              {providerName
+                .split(" ")
+                .filter(Boolean)
+                .map((word, index) => (
+                  <span key={`${word}-${index}`} style={{ display: "block" }}>
+                    {word}
+                  </span>
+                ))}
             </span>
           ) : null}
         </div>
@@ -3689,7 +4472,9 @@ export function BetterRtpStatsStyle({
           >
             Best Win
           </span>
-          <span style={{ color: muted, fontSize: labelSize, opacity: 0.5 }}>{"\u2014"}</span>
+          <span style={{ color: muted, fontSize: labelSize, opacity: 0.5 }}>
+            {"\u2014"}
+          </span>
           <strong
             style={{
               overflow: "hidden",
@@ -3740,10 +4525,22 @@ function backgroundControlEnabled(value, fallback = true) {
   if (value === undefined || value === null) return fallback;
   if (value === false || value === 0) return false;
   const normalized = String(value).trim().toLowerCase();
-  return normalized !== "false" && normalized !== "0" && normalized !== "none" && normalized !== "off";
+  return (
+    normalized !== "false" &&
+    normalized !== "0" &&
+    normalized !== "none" &&
+    normalized !== "off"
+  );
 }
 
-function betterBackgroundTextureStyle({ texture, color1, color2, color3, intensity, speed }) {
+function betterBackgroundTextureStyle({
+  texture,
+  color1,
+  color2,
+  color3,
+  intensity,
+  speed,
+}) {
   const strength = clampNumber(intensity, 0, 100, 70) / 100;
   const duration = `${Math.max(4, numberValue(speed, 10))}s`;
   const softA = alphaColor(color2, 0.16 * strength);
@@ -3833,17 +4630,51 @@ export function BetterBackgroundStyle({ config }) {
   const videoUrl = subValue(c, "media", "videoUrl", c.videoUrl || "");
   const imageFit = subValue(c, "media", "imageFit", c.imageFit || "cover");
   const sourceMode = subValue(c, "source", "bgMode", c.bgMode || "texture");
-  const opacity = Math.max(0, Math.min(100, numberValue(subValue(c, "canvas", "opacity", c.opacity ?? 100), 100))) / 100;
-  const speed = Math.max(4, numberValue(subValue(c, "texture", "animSpeed", c.animSpeed || 10), 10));
-  const intensity = clampNumber(subValue(c, "texture", "intensity", c.intensity ?? 70), 0, 100, 70);
-  const mediaOpacityRaw = numberValue(subValue(c, "media", "opacity", c.mediaOpacity ?? 88), 88);
-  const mediaOpacity = mediaOpacityRaw > 1 ? mediaOpacityRaw / 100 : mediaOpacityRaw;
-  const brightness = numberValue(subValue(c, "media", "brightness", c.brightness ?? 100), 100);
-  const contrast = numberValue(subValue(c, "media", "contrast", c.contrast ?? 100), 100);
-  const saturation = numberValue(subValue(c, "media", "saturation", c.saturation ?? 100), 100);
+  const opacity =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        numberValue(subValue(c, "canvas", "opacity", c.opacity ?? 100), 100),
+      ),
+    ) / 100;
+  const speed = Math.max(
+    4,
+    numberValue(subValue(c, "texture", "animSpeed", c.animSpeed || 10), 10),
+  );
+  const intensity = clampNumber(
+    subValue(c, "texture", "intensity", c.intensity ?? 70),
+    0,
+    100,
+    70,
+  );
+  const mediaOpacityRaw = numberValue(
+    subValue(c, "media", "opacity", c.mediaOpacity ?? 88),
+    88,
+  );
+  const mediaOpacity =
+    mediaOpacityRaw > 1 ? mediaOpacityRaw / 100 : mediaOpacityRaw;
+  const brightness = numberValue(
+    subValue(c, "media", "brightness", c.brightness ?? 100),
+    100,
+  );
+  const contrast = numberValue(
+    subValue(c, "media", "contrast", c.contrast ?? 100),
+    100,
+  );
+  const saturation = numberValue(
+    subValue(c, "media", "saturation", c.saturation ?? 100),
+    100,
+  );
   const blur = numberValue(subValue(c, "media", "blur", c.blur ?? 0), 0);
-  const hueRotate = numberValue(subValue(c, "media", "hueRotate", c.hueRotate ?? 0), 0);
-  const grayscale = numberValue(subValue(c, "media", "grayscale", c.grayscale ?? 0), 0);
+  const hueRotate = numberValue(
+    subValue(c, "media", "hueRotate", c.hueRotate ?? 0),
+    0,
+  );
+  const grayscale = numberValue(
+    subValue(c, "media", "grayscale", c.grayscale ?? 0),
+    0,
+  );
   const sepia = numberValue(subValue(c, "media", "sepia", c.sepia ?? 0), 0);
   const mediaFilter = [
     `brightness(${brightness}%)`,
@@ -3854,13 +4685,36 @@ export function BetterBackgroundStyle({ config }) {
     `grayscale(${grayscale}%)`,
     `sepia(${sepia}%)`,
   ].join(" ");
-  const imagePosition = subValue(c, "media", "backgroundPosition", c.imagePosition || "center");
-  const tintColor = subValue(c, "tint", "background", c.overlayColor || "transparent");
-  const tintOpacityRaw = numberValue(subValue(c, "tint", "opacity", c.overlayOpacity ?? 0), 0);
-  const tintOpacity = tintOpacityRaw > 1 ? tintOpacityRaw / 100 : tintOpacityRaw;
-  const showParticles = backgroundControlEnabled(subValue(c, "effects", "fxParticles", c.fxParticles), true);
-  const showScanlines = backgroundControlEnabled(subValue(c, "effects", "fxScanlines", c.fxScanlines), true);
-  const showVignette = backgroundControlEnabled(subValue(c, "effects", "fxVignette", c.fxVignette), true);
+  const imagePosition = subValue(
+    c,
+    "media",
+    "backgroundPosition",
+    c.imagePosition || "center",
+  );
+  const tintColor = subValue(
+    c,
+    "tint",
+    "background",
+    c.overlayColor || "transparent",
+  );
+  const tintOpacityRaw = numberValue(
+    subValue(c, "tint", "opacity", c.overlayOpacity ?? 0),
+    0,
+  );
+  const tintOpacity =
+    tintOpacityRaw > 1 ? tintOpacityRaw / 100 : tintOpacityRaw;
+  const showParticles = backgroundControlEnabled(
+    subValue(c, "effects", "fxParticles", c.fxParticles),
+    true,
+  );
+  const showScanlines = backgroundControlEnabled(
+    subValue(c, "effects", "fxScanlines", c.fxScanlines),
+    true,
+  );
+  const showVignette = backgroundControlEnabled(
+    subValue(c, "effects", "fxVignette", c.fxVignette),
+    true,
+  );
   const particles = useMemo(
     () =>
       Array.from({ length: 22 }, (_, index) => ({
@@ -3874,7 +4728,15 @@ export function BetterBackgroundStyle({ config }) {
     [color2, color3, speed],
   );
   const textureStyle = useMemo(
-    () => betterBackgroundTextureStyle({ texture, color1, color2, color3, intensity, speed }),
+    () =>
+      betterBackgroundTextureStyle({
+        texture,
+        color1,
+        color2,
+        color3,
+        intensity,
+        speed,
+      }),
     [texture, color1, color2, color3, intensity, speed],
   );
 

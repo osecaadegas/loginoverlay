@@ -26,9 +26,27 @@ const SAMPLE_TOURNAMENT_MATCHES = [
     status: "completed",
     winner: "player1",
     rounds: [
-      { roundNum: 1, player1: { bonusCost: 100, bonusPayout: 240 }, player2: { bonusCost: 100, bonusPayout: 80 }, winner: "player1", status: "completed" },
-      { roundNum: 2, player1: { bonusCost: 100, bonusPayout: 70 }, player2: { bonusCost: 100, bonusPayout: 165 }, winner: "player2", status: "completed" },
-      { roundNum: 3, player1: { bonusCost: 100, bonusPayout: 310 }, player2: { bonusCost: 100, bonusPayout: 125 }, winner: "player1", status: "completed" },
+      {
+        roundNum: 1,
+        player1: { bonusCost: 100, bonusPayout: 240 },
+        player2: { bonusCost: 100, bonusPayout: 80 },
+        winner: "player1",
+        status: "completed",
+      },
+      {
+        roundNum: 2,
+        player1: { bonusCost: 100, bonusPayout: 70 },
+        player2: { bonusCost: 100, bonusPayout: 165 },
+        winner: "player2",
+        status: "completed",
+      },
+      {
+        roundNum: 3,
+        player1: { bonusCost: 100, bonusPayout: 310 },
+        player2: { bonusCost: 100, bonusPayout: 125 },
+        winner: "player1",
+        status: "completed",
+      },
     ],
   },
   {
@@ -41,9 +59,27 @@ const SAMPLE_TOURNAMENT_MATCHES = [
     status: "in_progress",
     winner: null,
     rounds: [
-      { roundNum: 1, player1: { bonusCost: 100, bonusPayout: 190 }, player2: { bonusCost: 100, bonusPayout: 115 }, winner: "player1", status: "completed" },
-      { roundNum: 2, player1: { bonusCost: null, bonusPayout: null }, player2: { bonusCost: null, bonusPayout: null }, winner: null, status: "pending" },
-      { roundNum: 3, player1: { bonusCost: null, bonusPayout: null }, player2: { bonusCost: null, bonusPayout: null }, winner: null, status: "pending" },
+      {
+        roundNum: 1,
+        player1: { bonusCost: 100, bonusPayout: 190 },
+        player2: { bonusCost: 100, bonusPayout: 115 },
+        winner: "player1",
+        status: "completed",
+      },
+      {
+        roundNum: 2,
+        player1: { bonusCost: null, bonusPayout: null },
+        player2: { bonusCost: null, bonusPayout: null },
+        winner: null,
+        status: "pending",
+      },
+      {
+        roundNum: 3,
+        player1: { bonusCost: null, bonusPayout: null },
+        player2: { bonusCost: null, bonusPayout: null },
+        winner: null,
+        status: "pending",
+      },
     ],
   },
 ];

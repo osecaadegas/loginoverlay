@@ -2,16 +2,16 @@
 
 ## Identity
 
-| Field | Value |
-| --- | --- |
-| Widget ID | `chat` |
-| Name | Chat |
-| Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:226` |
-| Main component | `src/components/OverlayCenter/widgets/chat/ChatWidget.jsx:83` |
-| Config panel | `src/components/OverlayCenter/widgets/chat/ChatConfig.jsx` |
-| Styles | `classic`, `floating`, `bubble`, `stack`, `typewriter`, `sidebar`, `cards`, `metal`, `bh_stats` through `chatStyle` |
-| Data source | Twitch, YouTube, Kick, overlay config |
-| Persistence | `overlay_widgets.config` |
+| Field          | Value                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Widget ID      | `chat`                                                                                                              |
+| Name           | Chat                                                                                                                |
+| Registry       | `src/components/OverlayCenter/widgets/builtinWidgets.js:226`                                                        |
+| Main component | `src/components/OverlayCenter/widgets/chat/ChatWidget.jsx:83`                                                       |
+| Config panel   | `src/components/OverlayCenter/widgets/chat/ChatConfig.jsx`                                                          |
+| Styles         | `classic`, `floating`, `bubble`, `stack`, `typewriter`, `sidebar`, `cards`, `metal`, `bh_stats` through `chatStyle` |
+| Data source    | Twitch, YouTube, Kick, overlay config                                                                               |
+| Persistence    | `overlay_widgets.config`                                                                                            |
 
 ## Rendering structure
 

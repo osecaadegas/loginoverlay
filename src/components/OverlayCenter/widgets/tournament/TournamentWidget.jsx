@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   calcRoundResult,
   calcRoundMultiplier,
@@ -7,9 +7,9 @@ import {
   getTournamentStats,
   getTypeLabel,
   MATCH_STATUS,
-} from './tournamentEngine';
-import ShatterEffect from './ShatterEffect';
-import { subValue } from '../shared/appearanceStyles';
+} from "./tournamentEngine";
+import ShatterEffect from "./ShatterEffect";
+import { subValue } from "../shared/appearanceStyles";
 
 function widgetToken(property) {
   return `var(--widget-${property})`;
@@ -19,25 +19,31 @@ function elementToken(elementId, property, fallback = widgetToken(property)) {
   return `var(--widget-${elementId}-${property}, ${fallback})`;
 }
 
-function stateToken(elementId, stateId, property, fallback = elementToken(elementId, property)) {
+function stateToken(
+  elementId,
+  stateId,
+  property,
+  fallback = elementToken(elementId, property),
+) {
   return `var(--widget-${elementId}-${stateId}-${property}, ${fallback})`;
 }
 
 function cssLength(value) {
-  if (value === undefined || value === null || value === '') return undefined;
-  return typeof value === 'number' ? `${value}px` : value;
+  if (value === undefined || value === null || value === "") return undefined;
+  return typeof value === "number" ? `${value}px` : value;
 }
 
 function cssLengthAdd(value, delta) {
-  if (typeof value === 'number') return `${value + delta}px`;
-  if (value === undefined || value === null || value === '') return `${delta}px`;
+  if (typeof value === "number") return `${value + delta}px`;
+  if (value === undefined || value === null || value === "")
+    return `${delta}px`;
   return `calc(${value} + ${delta}px)`;
 }
 
 function partAttrs(partId) {
   return {
-    'data-widget-element': partId,
-    'data-appearance-part': partId,
+    "data-widget-element": partId,
+    "data-appearance-part": partId,
   };
 }
 
@@ -57,13 +63,14 @@ function TournamentWidget({ config, theme }) {
 
   /* Filter out future bracket matches where both players are still TBD */
   const allMatches = tData.matches || [];
-  const matches = allMatches.filter(m =>
-    (m.player1 && m.player1 !== 'TBD') || (m.player2 && m.player2 !== 'TBD')
+  const matches = allMatches.filter(
+    (m) =>
+      (m.player1 && m.player1 !== "TBD") || (m.player2 && m.player2 !== "TBD"),
   );
 
   /* Prefer the first in-progress match; fall back to stored index */
   const currentMatchIdx = (() => {
-    const ipIdx = matches.findIndex(m => m.status === 'in_progress');
+    const ipIdx = matches.findIndex((m) => m.status === "in_progress");
     if (ipIdx >= 0) return ipIdx;
     const orig = tData.currentMatchIdx ?? 0;
     const target = allMatches[orig];
@@ -74,106 +81,384 @@ function TournamentWidget({ config, theme }) {
 
   /* ─── Shatter effect: detect newly completed matches ─── */
   const [shatterInfo, setShatterInfo] = React.useState(null);
-  const prevWinnersRef = React.useRef('');
+  const prevWinnersRef = React.useRef("");
   /* Keep the just-finished match index visible during shatter animation */
   const [shatterMatchIdx, setShatterMatchIdx] = React.useState(null);
 
-  const winnersKey = allMatches.map(m => m.winner || '-').join('|');
+  const winnersKey = allMatches.map((m) => m.winner || "-").join("|");
   React.useLayoutEffect(() => {
     const prev = prevWinnersRef.current;
     prevWinnersRef.current = winnersKey;
     if (!prev) return; // first render — skip
-    const prevArr = prev.split('|');
-    const currArr = winnersKey.split('|');
+    const prevArr = prev.split("|");
+    const currArr = winnersKey.split("|");
     for (let i = 0; i < currArr.length; i++) {
-      if (currArr[i] !== '-' && prevArr[i] === '-') {
+      if (currArr[i] !== "-" && prevArr[i] === "-") {
         const m = allMatches[i];
         if (!m) continue;
-        const loserKey = m.winner === 'player1' ? 'player2' : 'player1';
-        const loserSlot = loserKey === 'player1' ? m.slot1 : m.slot2;
+        const loserKey = m.winner === "player1" ? "player2" : "player1";
+        const loserSlot = loserKey === "player1" ? m.slot1 : m.slot2;
         setShatterMatchIdx(i);
-        setShatterInfo(old => old ? old : {
-          imageUrl: loserSlot?.image || null,
-          side: loserKey === 'player1' ? 'left' : 'right',
-        });
+        setShatterInfo((old) =>
+          old
+            ? old
+            : {
+                imageUrl: loserSlot?.image || null,
+                side: loserKey === "player1" ? "left" : "right",
+              },
+        );
         break;
       }
     }
   }, [winnersKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Layout mode ─── */
-  const layout = c.layout || 'esports';
-  const isMinimalLayout = layout === 'minimal';
-  const isArenaLayout = layout === 'arena';
+  const layout = c.layout || "esports";
+  const isMinimalLayout = layout === "minimal";
+  const isArenaLayout = layout === "arena";
 
   /* ─── Flipper tick for "Now Playing" header rotation (every 15s) ─── */
   const [flipperTick, setFlipperTick] = React.useState(0);
   React.useEffect(() => {
-    const id = setInterval(() => setFlipperTick(t => t + 1), 15000);
+    const id = setInterval(() => setFlipperTick((t) => t + 1), 15000);
     return () => clearInterval(id);
   }, []);
 
   /* ─── Style config ─── */
   const showBg = c.showBg !== false;
-  const bgColor = showBg ? subValue(c, 'container', 'background', c.bgColor || elementToken('container', 'background', widgetToken('surface'))) : 'transparent';
-  const cardBg = subValue(c, 'matchCard', 'background', subValue(c, 'participantCard', 'background', c.cardBg || elementToken('participant-card', 'background', widgetToken('card-bg'))));
-  const cardBorder = subValue(c, 'matchCard', 'borderColor', subValue(c, 'participantCard', 'borderColor', c.cardBorder || elementToken('participant-card', 'border-color', widgetToken('border-color'))));
-  const cardRadius = subValue(c, 'matchCard', 'radius', subValue(c, 'participantCard', 'radius', c.cardRadius ?? elementToken('participant-card', 'radius', widgetToken('radius'))));
-  const cardBorderWidth = subValue(c, 'matchCard', 'borderWidth', subValue(c, 'participantCard', 'borderWidth', c.cardBorderWidth ?? elementToken('participant-card', 'border-width', widgetToken('border-width'))));
-  const nameColor = subValue(c, 'playerName', 'textColor', subValue(c, 'participantCard', 'textColor', c.nameColor || elementToken('participant-card', 'text-color', widgetToken('text'))));
-  const nameSize = subValue(c, 'playerName', 'fontSize', subValue(c, 'participantCard', 'fontSize', c.nameSize ?? elementToken('participant-card', 'font-size', widgetToken('font-size'))));
-  const accentColor = subValue(c, 'scoreValue', 'textColor', subValue(c, 'score', 'textColor', c.multiColor || elementToken('score', 'text-color', widgetToken('accent'))));
-  const resultSize = subValue(c, 'scoreValue', 'fontSize', subValue(c, 'score', 'fontSize', c.multiSize ?? elementToken('score', 'font-size', widgetToken('font-size'))));
-  const eliminatedOpacity = subValue(c, 'eliminatedState', 'opacity', c.eliminatedOpacity ?? stateToken('participant-card', 'eliminated', 'opacity', widgetToken('opacity')));
+  const bgColor = showBg
+    ? subValue(
+        c,
+        "container",
+        "background",
+        c.bgColor ||
+          elementToken("container", "background", widgetToken("surface")),
+      )
+    : "transparent";
+  const cardBg = subValue(
+    c,
+    "matchCard",
+    "background",
+    subValue(
+      c,
+      "participantCard",
+      "background",
+      c.cardBg ||
+        elementToken("participant-card", "background", widgetToken("card-bg")),
+    ),
+  );
+  const cardBorder = subValue(
+    c,
+    "matchCard",
+    "borderColor",
+    subValue(
+      c,
+      "participantCard",
+      "borderColor",
+      c.cardBorder ||
+        elementToken(
+          "participant-card",
+          "border-color",
+          widgetToken("border-color"),
+        ),
+    ),
+  );
+  const cardRadius = subValue(
+    c,
+    "matchCard",
+    "radius",
+    subValue(
+      c,
+      "participantCard",
+      "radius",
+      c.cardRadius ??
+        elementToken("participant-card", "radius", widgetToken("radius")),
+    ),
+  );
+  const cardBorderWidth = subValue(
+    c,
+    "matchCard",
+    "borderWidth",
+    subValue(
+      c,
+      "participantCard",
+      "borderWidth",
+      c.cardBorderWidth ??
+        elementToken(
+          "participant-card",
+          "border-width",
+          widgetToken("border-width"),
+        ),
+    ),
+  );
+  const nameColor = subValue(
+    c,
+    "playerName",
+    "textColor",
+    subValue(
+      c,
+      "participantCard",
+      "textColor",
+      c.nameColor ||
+        elementToken("participant-card", "text-color", widgetToken("text")),
+    ),
+  );
+  const nameSize = subValue(
+    c,
+    "playerName",
+    "fontSize",
+    subValue(
+      c,
+      "participantCard",
+      "fontSize",
+      c.nameSize ??
+        elementToken("participant-card", "font-size", widgetToken("font-size")),
+    ),
+  );
+  const accentColor = subValue(
+    c,
+    "scoreValue",
+    "textColor",
+    subValue(
+      c,
+      "score",
+      "textColor",
+      c.multiColor ||
+        elementToken("score", "text-color", widgetToken("accent")),
+    ),
+  );
+  const resultSize = subValue(
+    c,
+    "scoreValue",
+    "fontSize",
+    subValue(
+      c,
+      "score",
+      "fontSize",
+      c.multiSize ??
+        elementToken("score", "font-size", widgetToken("font-size")),
+    ),
+  );
+  const eliminatedOpacity = subValue(
+    c,
+    "eliminatedState",
+    "opacity",
+    c.eliminatedOpacity ??
+      stateToken(
+        "participant-card",
+        "eliminated",
+        "opacity",
+        widgetToken("opacity"),
+      ),
+  );
   const showSlotName = isMinimalLayout ? false : c.showSlotName !== false;
-  const slotNameColor = subValue(c, 'label', 'textColor', c.slotNameColor || elementToken('label', 'text-color', widgetToken('text')));
-  const slotNameSize = subValue(c, 'label', 'fontSize', c.slotNameSize ?? elementToken('label', 'font-size', widgetToken('font-size')));
-  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || widgetToken('font-family'));
-  const borderRadius = showBg ? subValue(c, 'container', 'radius', c.borderRadius ?? widgetToken('radius')) : 0;
-  const borderWidth = showBg ? subValue(c, 'container', 'borderWidth', c.borderWidth ?? widgetToken('border-width')) : 0;
-  const borderColor = showBg ? subValue(c, 'container', 'borderColor', c.borderColor || widgetToken('border-color')) : 'transparent';
-  const gap = subValue(c, 'matchCard', 'gap', subValue(c, 'participantCard', 'gap', c.cardGap ?? elementToken('participant-card', 'gap', widgetToken('gap'))));
-  const padding = subValue(c, 'container', 'padding', c.containerPadding ?? widgetToken('padding'));
-  const mainCardPadding = showBg ? c.mainCardPadding ?? 14 : 0;
-  const mainShadowColor = c.mainShadowColor || '#020617';
+  const slotNameColor = subValue(
+    c,
+    "label",
+    "textColor",
+    c.slotNameColor || elementToken("label", "text-color", widgetToken("text")),
+  );
+  const slotNameSize = subValue(
+    c,
+    "label",
+    "fontSize",
+    c.slotNameSize ??
+      elementToken("label", "font-size", widgetToken("font-size")),
+  );
+  const fontFamily = subValue(
+    c,
+    "container",
+    "fontFamily",
+    c.fontFamily || widgetToken("font-family"),
+  );
+  const borderRadius = showBg
+    ? subValue(
+        c,
+        "container",
+        "radius",
+        c.borderRadius ?? widgetToken("radius"),
+      )
+    : 0;
+  const borderWidth = showBg
+    ? subValue(
+        c,
+        "container",
+        "borderWidth",
+        c.borderWidth ?? widgetToken("border-width"),
+      )
+    : 0;
+  const borderColor = showBg
+    ? subValue(
+        c,
+        "container",
+        "borderColor",
+        c.borderColor || widgetToken("border-color"),
+      )
+    : "transparent";
+  const gap = subValue(
+    c,
+    "matchCard",
+    "gap",
+    subValue(
+      c,
+      "participantCard",
+      "gap",
+      c.cardGap ?? elementToken("participant-card", "gap", widgetToken("gap")),
+    ),
+  );
+  const padding = subValue(
+    c,
+    "container",
+    "padding",
+    c.containerPadding ?? widgetToken("padding"),
+  );
+  const mainCardPadding = showBg ? (c.mainCardPadding ?? 14) : 0;
+  const mainShadowColor = c.mainShadowColor || "#020617";
   const mainShadowBlur = Math.max(0, Number(c.mainShadowBlur) || 0);
-  const mainShadowOpacity = Math.max(0, Math.min(100, Number(c.mainShadowOpacity) || 0));
+  const mainShadowOpacity = Math.max(
+    0,
+    Math.min(100, Number(c.mainShadowOpacity) || 0),
+  );
   const mainGlow = Math.max(0, Number(c.mainGlow) || 0);
   const mainBackdropBlur = Math.max(0, Number(c.mainBackdropBlur) || 0);
   const mainCardShadow = showBg
     ? `0 18px ${mainShadowBlur}px color-mix(in srgb, ${mainShadowColor} ${mainShadowOpacity}%, transparent), 0 0 ${mainGlow}px color-mix(in srgb, ${accentColor} 28%, transparent)`
-    : 'none';
-  const swordColor = subValue(c, 'connector', 'textColor', c.swordColor || elementToken('connector', 'text-color', widgetToken('accent')));
-  const swordBg = subValue(c, 'connector', 'background', c.swordBg || elementToken('connector', 'background', widgetToken('card-bg')));
-  const swordSize = subValue(c, 'connector', 'imageSize', c.swordSize ?? elementToken('connector', 'image-size', widgetToken('font-size')));
-  const xIconColor = subValue(c, 'eliminatedState', 'textColor', c.xIconColor || stateToken('participant-card', 'eliminated', 'text-color', swordColor));
-  const xIconBg = subValue(c, 'eliminatedState', 'background', c.xIconBg || stateToken('participant-card', 'eliminated', 'background', swordBg));
-  const emptyTextColor = subValue(c, 'emptyState', 'textColor', c.emptyTextColor || elementToken('empty-state', 'text-color', widgetToken('muted')));
-  const emptyFontSize = subValue(c, 'emptyState', 'fontSize', c.emptyFontSize ?? elementToken('empty-state', 'font-size', widgetToken('font-size')));
-  const slotImageRadius = subValue(c, 'slotImage', 'radius', c.slotImageRadius ?? elementToken('slot-image', 'radius', widgetToken('radius')));
-  const slotImageFallbackBg = subValue(c, 'slotImage', 'background', c.slotImageFallbackBg || elementToken('slot-image', 'background', widgetToken('card-bg')));
-  const scoreNeutralColor = subValue(c, 'scoreValue', 'mutedColor', subValue(c, 'score', 'mutedColor', c.scoreNeutralColor || widgetToken('muted')));
-  const scoreNegativeColor = subValue(c, 'scoreValue', 'negativeColor', subValue(c, 'score', 'negativeColor', c.scoreNegativeColor || widgetToken('negative')));
-  const activeStatusColor = subValue(c, 'statusBadge', 'textColor', subValue(c, 'timer', 'textColor', c.activeStatusColor || elementToken('timer', 'text-color', widgetToken('accent'))));
-  const statusBadgeBg = subValue(c, 'statusBadge', 'background', subValue(c, 'timer', 'background', c.statusBadgeBg || elementToken('timer', 'background', widgetToken('card-bg'))));
-  const currency = c.currency || c.arenaCurrency || '€';
+    : "none";
+  const swordColor = subValue(
+    c,
+    "connector",
+    "textColor",
+    c.swordColor ||
+      elementToken("connector", "text-color", widgetToken("accent")),
+  );
+  const swordBg = subValue(
+    c,
+    "connector",
+    "background",
+    c.swordBg ||
+      elementToken("connector", "background", widgetToken("card-bg")),
+  );
+  const swordSize = subValue(
+    c,
+    "connector",
+    "imageSize",
+    c.swordSize ??
+      elementToken("connector", "image-size", widgetToken("font-size")),
+  );
+  const xIconColor = subValue(
+    c,
+    "eliminatedState",
+    "textColor",
+    c.xIconColor ||
+      stateToken("participant-card", "eliminated", "text-color", swordColor),
+  );
+  const xIconBg = subValue(
+    c,
+    "eliminatedState",
+    "background",
+    c.xIconBg ||
+      stateToken("participant-card", "eliminated", "background", swordBg),
+  );
+  const emptyTextColor = subValue(
+    c,
+    "emptyState",
+    "textColor",
+    c.emptyTextColor ||
+      elementToken("empty-state", "text-color", widgetToken("muted")),
+  );
+  const emptyFontSize = subValue(
+    c,
+    "emptyState",
+    "fontSize",
+    c.emptyFontSize ??
+      elementToken("empty-state", "font-size", widgetToken("font-size")),
+  );
+  const slotImageRadius = subValue(
+    c,
+    "slotImage",
+    "radius",
+    c.slotImageRadius ??
+      elementToken("slot-image", "radius", widgetToken("radius")),
+  );
+  const slotImageFallbackBg = subValue(
+    c,
+    "slotImage",
+    "background",
+    c.slotImageFallbackBg ||
+      elementToken("slot-image", "background", widgetToken("card-bg")),
+  );
+  const scoreNeutralColor = subValue(
+    c,
+    "scoreValue",
+    "mutedColor",
+    subValue(
+      c,
+      "score",
+      "mutedColor",
+      c.scoreNeutralColor || widgetToken("muted"),
+    ),
+  );
+  const scoreNegativeColor = subValue(
+    c,
+    "scoreValue",
+    "negativeColor",
+    subValue(
+      c,
+      "score",
+      "negativeColor",
+      c.scoreNegativeColor || widgetToken("negative"),
+    ),
+  );
+  const activeStatusColor = subValue(
+    c,
+    "statusBadge",
+    "textColor",
+    subValue(
+      c,
+      "timer",
+      "textColor",
+      c.activeStatusColor ||
+        elementToken("timer", "text-color", widgetToken("accent")),
+    ),
+  );
+  const statusBadgeBg = subValue(
+    c,
+    "statusBadge",
+    "background",
+    subValue(
+      c,
+      "timer",
+      "background",
+      c.statusBadgeBg ||
+        elementToken("timer", "background", widgetToken("card-bg")),
+    ),
+  );
+  const currency = c.currency || c.arenaCurrency || "€";
 
   /* ─── Engine helpers ─── */
   const getPlayerResult = (match, playerKey) => {
     if (!match?.rounds) return null;
-    if (match.type === 'bonus_bo3_classic') {
-      let total = 0, any = false;
+    if (match.type === "bonus_bo3_classic") {
+      let total = 0,
+        any = false;
       for (const round of match.rounds) {
         const r = calcRoundMultiplier(round[playerKey]);
-        if (r !== null) { total += r; any = true; }
+        if (r !== null) {
+          total += r;
+          any = true;
+        }
       }
       return any ? total : null;
     }
-    if (match.type === 'bonus_bo3') {
-      let total = 0, any = false;
+    if (match.type === "bonus_bo3") {
+      let total = 0,
+        any = false;
       for (const round of match.rounds) {
         const r = calcRoundResult(round[playerKey], match.type);
-        if (r !== null) { total += r; any = true; }
+        if (r !== null) {
+          total += r;
+          any = true;
+        }
       }
       return any ? total : null;
     }
@@ -181,31 +466,56 @@ function TournamentWidget({ config, theme }) {
   };
 
   const fmtResult = (val, match) => {
-    if (val === null || val === undefined) return '—';
-    if (match?.type === 'bonus_bo3_classic') return `${val.toFixed(2)}x`;
-    const sign = val > 0 ? '+' : '';
+    if (val === null || val === undefined) return "—";
+    if (match?.type === "bonus_bo3_classic") return `${val.toFixed(2)}x`;
+    const sign = val > 0 ? "+" : "";
     return `${sign}${val.toFixed(2)}${currency}`;
   };
 
   const valColor = (val, match) =>
-    val === null ? scoreNeutralColor
-    : match?.type === 'bonus_bo3_classic' ? (val >= 3 ? accentColor : val < 3 ? scoreNegativeColor : scoreNeutralColor)
-    : val > 0 ? accentColor : val < 0 ? scoreNegativeColor : scoreNeutralColor;
+    val === null
+      ? scoreNeutralColor
+      : match?.type === "bonus_bo3_classic"
+        ? val >= 3
+          ? accentColor
+          : val < 3
+            ? scoreNegativeColor
+            : scoreNeutralColor
+        : val > 0
+          ? accentColor
+          : val < 0
+            ? scoreNegativeColor
+            : scoreNeutralColor;
 
   /* ─── Empty state ─── */
   if (matches.length === 0) {
     return (
-      <div className="tw-root tw-empty" {...partAttrs('container')} style={{
-        width: '100%', height: '100%', fontFamily,
-        background: bgColor, borderRadius: cssLength(borderRadius),
-        border: `${cssLength(borderWidth)} solid ${borderColor}`,
-        padding: cssLength(mainCardPadding), boxSizing: 'border-box',
-        boxShadow: mainCardShadow,
-        backdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
-        WebkitBackdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: emptyTextColor, fontSize: cssLength(emptyFontSize),
-      }}>
+      <div
+        className="tw-root tw-empty"
+        {...partAttrs("container")}
+        style={{
+          width: "100%",
+          height: "100%",
+          fontFamily,
+          background: bgColor,
+          borderRadius: cssLength(borderRadius),
+          border: `${cssLength(borderWidth)} solid ${borderColor}`,
+          padding: cssLength(mainCardPadding),
+          boxSizing: "border-box",
+          boxShadow: mainCardShadow,
+          backdropFilter: mainBackdropBlur
+            ? `blur(${mainBackdropBlur}px)`
+            : undefined,
+          WebkitBackdropFilter: mainBackdropBlur
+            ? `blur(${mainBackdropBlur}px)`
+            : undefined,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: emptyTextColor,
+          fontSize: cssLength(emptyFontSize),
+        }}
+      >
         <span>🏆 No active tournament</span>
       </div>
     );
@@ -215,20 +525,37 @@ function TournamentWidget({ config, theme }) {
      BO3 ROUND DOTS — small indicators for best-of-3 matches
      ═══════════════════════════════════════════════════════════════ */
   const renderBo3Dots = (match) => {
-    if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
+    if (match.type !== "bonus_bo3" && match.type !== "bonus_bo3_classic")
+      return null;
     const scoreboard = getBoScoreboard(match);
     if (!scoreboard) return null;
     return (
-      <div style={{ display: 'flex', gap: 3, justifyContent: 'center', marginTop: 2 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 3,
+          justifyContent: "center",
+          marginTop: 2,
+        }}
+      >
         {scoreboard.roundResults.map((rr, i) => (
-          <div key={i} style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: rr.winner === 'player1' ? accentColor
-              : rr.winner === 'player2' ? widgetToken('negative')
-                : rr.winner === 'draw' ? swordColor
-                : widgetToken('muted'),
-            transition: 'background 0.2s',
-          }} />
+          <div
+            key={i}
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background:
+                rr.winner === "player1"
+                  ? accentColor
+                  : rr.winner === "player2"
+                    ? widgetToken("negative")
+                    : rr.winner === "draw"
+                      ? swordColor
+                      : widgetToken("muted"),
+              transition: "background 0.2s",
+            }}
+          />
         ))}
       </div>
     );
@@ -237,96 +564,187 @@ function TournamentWidget({ config, theme }) {
   /* ═══════════════════════════════════════════════════════════════
      PLAYER ROW — vertical & minimal layouts
      ═══════════════════════════════════════════════════════════════ */
-  const renderPlayerRow = (match, playerKey, isEliminated, side = 'left') => {
-    const name = match[playerKey] || 'Player';
-    const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+  const renderPlayerRow = (match, playerKey, isEliminated, side = "left") => {
+    const name = match[playerKey] || "Player";
+    const pSlot = playerKey === "player1" ? match.slot1 : match.slot2;
     const slotImage = pSlot?.image || null;
-    const slotName = pSlot?.name || '';
+    const slotName = pSlot?.name || "";
     const result = getPlayerResult(match, playerKey);
     const op = isEliminated ? eliminatedOpacity : 1;
-    const isRight = side === 'right';
+    const isRight = side === "right";
     const minimal = isMinimalLayout;
 
     return (
-      <div className="tw-player-row" {...partAttrs('matchCard')} style={{
-        display: 'flex',
-        alignItems: minimal ? 'stretch' : 'center',
-        gap: minimal ? 0 : cssLength(gap),
-        opacity: op, flex: 1, minWidth: 0,
-        flexDirection: isRight ? 'row-reverse' : 'row',
-      }}>
+      <div
+        className="tw-player-row"
+        {...partAttrs("matchCard")}
+        style={{
+          display: "flex",
+          alignItems: minimal ? "stretch" : "center",
+          gap: minimal ? 0 : cssLength(gap),
+          opacity: op,
+          flex: 1,
+          minWidth: 0,
+          flexDirection: isRight ? "row-reverse" : "row",
+        }}
+      >
         {/* Slot thumbnail */}
-        <div className="tw-slot-thumb" {...partAttrs('slotImage')} style={{
-          position: 'relative', flexShrink: 0, overflow: 'hidden',
-          ...(minimal
-            ? { width: 'clamp(56px, 38%, 160px)', borderRadius: 0 }
-            : { width: 'clamp(40px, 20%, 100px)', aspectRatio: '1 / 1', borderRadius: cssLength(slotImageRadius) }),
-        }}>
+        <div
+          className="tw-slot-thumb"
+          {...partAttrs("slotImage")}
+          style={{
+            position: "relative",
+            flexShrink: 0,
+            overflow: "hidden",
+            ...(minimal
+              ? { width: "clamp(56px, 38%, 160px)", borderRadius: 0 }
+              : {
+                  width: "clamp(40px, 20%, 100px)",
+                  aspectRatio: "1 / 1",
+                  borderRadius: cssLength(slotImageRadius),
+                }),
+          }}
+        >
           {slotImage ? (
-            <img {...partAttrs('slotImage')} src={slotImage} alt={slotName} style={{
-              width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block',
-              borderRadius: minimal ? 0 : cssLength(slotImageRadius),
-            }} />
+            <img
+              {...partAttrs("slotImage")}
+              src={slotImage}
+              alt={slotName}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                borderRadius: minimal ? 0 : cssLength(slotImageRadius),
+              }}
+            />
           ) : (
-            <div {...partAttrs('slotImage')} style={{ width: '100%', height: '100%', background: slotImageFallbackBg, borderRadius: minimal ? 0 : cssLength(slotImageRadius) }} />
+            <div
+              {...partAttrs("slotImage")}
+              style={{
+                width: "100%",
+                height: "100%",
+                background: slotImageFallbackBg,
+                borderRadius: minimal ? 0 : cssLength(slotImageRadius),
+              }}
+            />
           )}
           {isEliminated && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{
-                width: cssLengthAdd(swordSize, 4), height: cssLengthAdd(swordSize, 4), borderRadius: '50%',
-                background: xIconBg, border: `${cssLength(cardBorderWidth)} solid ${xIconColor}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: cssLength(slotNameSize), color: xIconColor, fontWeight: 700,
-              }}>✕</div>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: cssLengthAdd(swordSize, 4),
+                  height: cssLengthAdd(swordSize, 4),
+                  borderRadius: "50%",
+                  background: xIconBg,
+                  border: `${cssLength(cardBorderWidth)} solid ${xIconColor}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: cssLength(slotNameSize),
+                  color: xIconColor,
+                  fontWeight: 700,
+                }}
+              >
+                ✕
+              </div>
             </div>
           )}
         </div>
 
         {/* Name + result + slot name */}
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          gap: minimal ? 0 : 1,
-          minWidth: 0, flex: 1,
-          justifyContent: 'center',
-          alignItems: isRight ? 'flex-end' : 'flex-start',
-          textAlign: isRight ? 'right' : 'left',
-          ...(minimal ? { padding: '2px 6px' } : {}),
-        }}>
-          <span {...partAttrs('playerName')} style={{
-            fontWeight: 700, color: nameColor, fontFamily,
-            maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis',
-            lineHeight: 1.2,
-            ...(minimal
-              ? { fontSize: 'clamp(13px, 2.4vw, 20px)', whiteSpace: 'nowrap' }
-              : { fontSize: cssLengthAdd(nameSize, 2), whiteSpace: 'nowrap' }),
-          }}>{name}</span>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: minimal ? 0 : 1,
+            minWidth: 0,
+            flex: 1,
+            justifyContent: "center",
+            alignItems: isRight ? "flex-end" : "flex-start",
+            textAlign: isRight ? "right" : "left",
+            ...(minimal ? { padding: "2px 6px" } : {}),
+          }}
+        >
+          <span
+            {...partAttrs("playerName")}
+            style={{
+              fontWeight: 700,
+              color: nameColor,
+              fontFamily,
+              maxWidth: "100%",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.2,
+              ...(minimal
+                ? { fontSize: "clamp(13px, 2.4vw, 20px)", whiteSpace: "nowrap" }
+                : {
+                    fontSize: cssLengthAdd(nameSize, 2),
+                    whiteSpace: "nowrap",
+                  }),
+            }}
+          >
+            {name}
+          </span>
           {match.activePlayer === playerKey && !match.winner && (
-            <span {...partAttrs('statusBadge')} style={{
-              fontSize: minimal ? 'clamp(8px, 1.2vw, 10px)' : 8,
-              fontWeight: 800, color: activeStatusColor, fontFamily,
-              letterSpacing: '0.5px', lineHeight: 1,
-            }}>▶ PLAYING</span>
+            <span
+              {...partAttrs("statusBadge")}
+              style={{
+                fontSize: minimal ? "clamp(8px, 1.2vw, 10px)" : 8,
+                fontWeight: 800,
+                color: activeStatusColor,
+                fontFamily,
+                letterSpacing: "0.5px",
+                lineHeight: 1,
+              }}
+            >
+              ▶ PLAYING
+            </span>
           )}
           {showSlotName && slotName && (
-            <span {...partAttrs('label')} style={{
-              fontSize: minimal ? 'clamp(11px, 1.8vw, 15px)' : cssLength(slotNameSize),
-              color: slotNameColor, fontFamily,
-              opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              maxWidth: '100%', textTransform: 'uppercase', letterSpacing: '0.3px',
-              lineHeight: 1.2,
-            }}>{slotName}</span>
+            <span
+              {...partAttrs("label")}
+              style={{
+                fontSize: minimal
+                  ? "clamp(11px, 1.8vw, 15px)"
+                  : cssLength(slotNameSize),
+                color: slotNameColor,
+                fontFamily,
+                opacity: 0.8,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "100%",
+                textTransform: "uppercase",
+                letterSpacing: "0.3px",
+                lineHeight: 1.2,
+              }}
+            >
+              {slotName}
+            </span>
           )}
-          <span {...partAttrs('scoreValue')} style={{
-            fontWeight: 700, fontFamily,
-            color: valColor(result, match), lineHeight: 1.2,
-            ...(minimal
-              ? { fontSize: 'clamp(13px, 2.2vw, 18px)' }
-              : { fontSize: cssLength(resultSize) }),
-          }}>{fmtResult(result, match)}</span>
+          <span
+            {...partAttrs("scoreValue")}
+            style={{
+              fontWeight: 700,
+              fontFamily,
+              color: valColor(result, match),
+              lineHeight: 1.2,
+              ...(minimal
+                ? { fontSize: "clamp(13px, 2.2vw, 18px)" }
+                : { fontSize: cssLength(resultSize) }),
+            }}
+          >
+            {fmtResult(result, match)}
+          </span>
         </div>
       </div>
     );
@@ -336,21 +754,30 @@ function TournamentWidget({ config, theme }) {
      SWORD ICON (shared across layouts)
      ═══════════════════════════════════════════════════════════════ */
   const renderSword = (hasWinner, isCurrentMatch, size = swordSize) => (
-    <div className="tw-sword-icon" {...partAttrs('connector')} style={{
-      position: 'absolute',
-      top: '50%', left: '50%',
-      width: cssLengthAdd(size, 16), height: cssLengthAdd(size, 16),
-      borderRadius: '50%',
-      background: swordBg,
-      border: `2px solid ${swordColor}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 5, pointerEvents: 'none',
-      ...(isCurrentMatch
-        ? { animation: 'tw-sword-swing 1.2s ease-in-out infinite' }
-        : { transform: 'translate(-50%, -50%)' }),
-    }}>
+    <div
+      className="tw-sword-icon"
+      {...partAttrs("connector")}
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        width: cssLengthAdd(size, 16),
+        height: cssLengthAdd(size, 16),
+        borderRadius: "50%",
+        background: swordBg,
+        border: `2px solid ${swordColor}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 5,
+        pointerEvents: "none",
+        ...(isCurrentMatch
+          ? { animation: "tw-sword-swing 1.2s ease-in-out infinite" }
+          : { transform: "translate(-50%, -50%)" }),
+      }}
+    >
       <span style={{ fontSize: cssLength(size), lineHeight: 1 }}>
-        {hasWinner ? '✕' : '⚔️'}
+        {hasWinner ? "✕" : "⚔️"}
       </span>
     </div>
   );
@@ -359,41 +786,59 @@ function TournamentWidget({ config, theme }) {
      VERTICAL — matches stacked, each as a horizontal row
      ═══════════════════════════════════════════════════════════════ */
   const renderVertical = () => (
-    <div style={{
-      flex: 1, display: 'flex', flexDirection: 'column',
-      padding: cssLength(padding), gap: cssLength(gap), minHeight: 0,
-      overflow: 'hidden',
-    }}>
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        padding: cssLength(padding),
+        gap: cssLength(gap),
+        minHeight: 0,
+        overflow: "hidden",
+      }}
+    >
       {matches.map((match, idx) => {
         const hasWinner = match.winner != null;
-        const p1Won = match.winner === 'player1';
+        const p1Won = match.winner === "player1";
         const isCurrentMatch = idx === currentMatchIdx && !hasWinner;
 
         return (
-          <div key={idx} {...partAttrs('matchCard')} style={{
-            flex: 1, minHeight: 0,
-            background: cardBg,
-            border: `${cssLength(cardBorderWidth)} solid ${isCurrentMatch ? swordColor : cardBorder}`,
-            borderRadius: cssLength(cardRadius),
-            overflow: 'hidden', position: 'relative',
-            padding: isMinimalLayout ? 0 : cssLength(padding),
-            display: 'flex',
-            alignItems: isMinimalLayout ? 'stretch' : 'center',
-            gap: isMinimalLayout ? 0 : 6,
-            ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
-          }}>
-            {renderPlayerRow(match, 'player1', hasWinner && !p1Won, 'left')}
+          <div
+            key={idx}
+            {...partAttrs("matchCard")}
+            style={{
+              flex: 1,
+              minHeight: 0,
+              background: cardBg,
+              border: `${cssLength(cardBorderWidth)} solid ${isCurrentMatch ? swordColor : cardBorder}`,
+              borderRadius: cssLength(cardRadius),
+              overflow: "hidden",
+              position: "relative",
+              padding: isMinimalLayout ? 0 : cssLength(padding),
+              display: "flex",
+              alignItems: isMinimalLayout ? "stretch" : "center",
+              gap: isMinimalLayout ? 0 : 6,
+              ...(isCurrentMatch
+                ? { animation: "tw-current-glow 2s ease-in-out infinite" }
+                : {}),
+            }}
+          >
+            {renderPlayerRow(match, "player1", hasWinner && !p1Won, "left")}
 
             {/* Center sword */}
-            <div style={{
-              position: 'relative', flexShrink: 0,
-              width: cssLengthAdd(swordSize, 20), height: cssLengthAdd(swordSize, 20),
-              alignSelf: 'center',
-            }}>
+            <div
+              style={{
+                position: "relative",
+                flexShrink: 0,
+                width: cssLengthAdd(swordSize, 20),
+                height: cssLengthAdd(swordSize, 20),
+                alignSelf: "center",
+              }}
+            >
               {renderSword(hasWinner, isCurrentMatch)}
             </div>
 
-            {renderPlayerRow(match, 'player2', hasWinner && p1Won, 'right')}
+            {renderPlayerRow(match, "player2", hasWinner && p1Won, "right")}
           </div>
         );
       })}
@@ -404,109 +849,230 @@ function TournamentWidget({ config, theme }) {
      ARENA — Battle Arena style: large fighters, VS badge, WINNER
      ═══════════════════════════════════════════════════════════════ */
   const renderArena = () => {
-    const arenaAccent = subValue(c, 'connector', 'accentColor', c.arenaAccent || swordColor);
-    const arenaWinColor = subValue(c, 'participantCard', 'textColor', c.arenaWinColor || stateToken('participant-card', 'winner', 'text-color', widgetToken('positive')), 'winner');
-    const arenaLoseOpacity = subValue(c, 'eliminatedState', 'opacity', c.arenaLoseOpacity ?? 0.55);
-    const arenaCardBg = subValue(c, 'participantCard', 'background', c.arenaCardBg || cardBg);
+    const arenaAccent = subValue(
+      c,
+      "connector",
+      "accentColor",
+      c.arenaAccent || swordColor,
+    );
+    const arenaWinColor = subValue(
+      c,
+      "participantCard",
+      "textColor",
+      c.arenaWinColor ||
+        stateToken(
+          "participant-card",
+          "winner",
+          "text-color",
+          widgetToken("positive"),
+        ),
+      "winner",
+    );
+    const arenaLoseOpacity = subValue(
+      c,
+      "eliminatedState",
+      "opacity",
+      c.arenaLoseOpacity ?? 0.55,
+    );
+    const arenaCardBg = subValue(
+      c,
+      "participantCard",
+      "background",
+      c.arenaCardBg || cardBg,
+    );
 
     /* Helper: get raw round values for display (bet/cost + end/payout) */
     const getPlayerValues = (match, playerKey) => {
       const round = match?.rounds?.[0];
       const rd = round?.[playerKey];
       if (!rd) return null;
-      if (match.type === 'spins') {
-        const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+      if (match.type === "spins") {
+        const s = parseFloat(rd.startBalance),
+          e = parseFloat(rd.endBalance);
         return { val1: isNaN(s) ? null : s, val2: isNaN(e) ? null : e };
       }
-      const cost = parseFloat(rd.bonusCost), pay = parseFloat(rd.bonusPayout);
+      const cost = parseFloat(rd.bonusCost),
+        pay = parseFloat(rd.bonusPayout);
       return { val1: isNaN(cost) ? null : cost, val2: isNaN(pay) ? null : pay };
     };
 
     const renderArenaFighter = (match, playerKey, isWinner, isLoser) => {
-      const name = match[playerKey] || 'Fighter';
-      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const name = match[playerKey] || "Fighter";
+      const pSlot = playerKey === "player1" ? match.slot1 : match.slot2;
       const slotImage = pSlot?.image || null;
       const result = getPlayerResult(match, playerKey);
       const vals = getPlayerValues(match, playerKey);
 
       return (
-        <div {...partAttrs('bracketLine')} style={{
-          flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
-          borderRadius: cssLength(cardRadius), overflow: 'hidden', position: 'relative',
-          border: `${cssLength(cardBorderWidth)} solid ${isWinner ? arenaWinColor : cardBorder}`,
-          boxShadow: isWinner ? stateToken('participant-card', 'winner', 'shadow', widgetToken('shadow')) : 'none',
-          opacity: isLoser ? arenaLoseOpacity : 1,
-          background: arenaCardBg,
-          transition: 'all 0.3s ease',
-        }}>
+        <div
+          {...partAttrs("bracketLine")}
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+            borderRadius: cssLength(cardRadius),
+            overflow: "hidden",
+            position: "relative",
+            border: `${cssLength(cardBorderWidth)} solid ${isWinner ? arenaWinColor : cardBorder}`,
+            boxShadow: isWinner
+              ? stateToken(
+                  "participant-card",
+                  "winner",
+                  "shadow",
+                  widgetToken("shadow"),
+                )
+              : "none",
+            opacity: isLoser ? arenaLoseOpacity : 1,
+            background: arenaCardBg,
+            transition: "all 0.3s ease",
+          }}
+        >
           {/* Winner badge */}
           {isWinner && (
-            <div {...partAttrs('header')} style={{
-              position: 'absolute', top: 8,
-              left: playerKey === 'player1' ? 'auto' : 8,
-              right: playerKey === 'player1' ? 8 : 'auto',
-              background: statusBadgeBg, color: arenaWinColor, fontWeight: 800,
-              fontSize: cssLength(slotNameSize), padding: cssLength(gap), borderRadius: cssLength(cardRadius),
-              textTransform: 'uppercase', letterSpacing: '0.8px', zIndex: 3,
-              boxShadow: stateToken('participant-card', 'winner', 'shadow', widgetToken('shadow')),
-            }}>WINNER</div>
+            <div
+              {...partAttrs("header")}
+              style={{
+                position: "absolute",
+                top: 8,
+                left: playerKey === "player1" ? "auto" : 8,
+                right: playerKey === "player1" ? 8 : "auto",
+                background: statusBadgeBg,
+                color: arenaWinColor,
+                fontWeight: 800,
+                fontSize: cssLength(slotNameSize),
+                padding: cssLength(gap),
+                borderRadius: cssLength(cardRadius),
+                textTransform: "uppercase",
+                letterSpacing: "0.8px",
+                zIndex: 3,
+                boxShadow: stateToken(
+                  "participant-card",
+                  "winner",
+                  "shadow",
+                  widgetToken("shadow"),
+                ),
+              }}
+            >
+              WINNER
+            </div>
           )}
           {isWinner && (
-            <div style={{
-              position: 'absolute', top: 6,
-              left: playerKey === 'player1' ? 8 : 'auto',
-              right: playerKey === 'player1' ? 'auto' : 8,
-              fontSize: 18, zIndex: 3,
-            }}>🏆</div>
+            <div
+              style={{
+                position: "absolute",
+                top: 6,
+                left: playerKey === "player1" ? 8 : "auto",
+                right: playerKey === "player1" ? "auto" : 8,
+                fontSize: 18,
+                zIndex: 3,
+              }}
+            >
+              🏆
+            </div>
           )}
 
           {/* Player name — black stripe at top */}
-          <div style={{
-            background: statusBadgeBg, padding: cssLength(gap),
-            fontSize: cssLength(nameSize), fontWeight: 700, fontStyle: 'italic',
-            color: nameColor, fontFamily, letterSpacing: '0.3px',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            flexShrink: 0, zIndex: 2,
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
+          <div
+            style={{
+              background: statusBadgeBg,
+              padding: cssLength(gap),
+              fontSize: cssLength(nameSize),
+              fontWeight: 700,
+              fontStyle: "italic",
+              color: nameColor,
+              fontFamily,
+              letterSpacing: "0.3px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              flexShrink: 0,
+              zIndex: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
             {name}
             {match.activePlayer === playerKey && !match.winner && (
-              <span style={{ fontSize: cssLength(slotNameSize), fontWeight: 800, color: activeStatusColor, fontStyle: 'normal', letterSpacing: '0.5px' }}>▶ PLAYING</span>
+              <span
+                style={{
+                  fontSize: cssLength(slotNameSize),
+                  fontWeight: 800,
+                  color: activeStatusColor,
+                  fontStyle: "normal",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                ▶ PLAYING
+              </span>
             )}
           </div>
 
           {/* Fighter image — shows full image, no cropping */}
-          <div style={{
-            flex: 1, position: 'relative', overflow: 'hidden',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: slotImageFallbackBg,
-          }}>
+          <div
+            style={{
+              flex: 1,
+              position: "relative",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: slotImageFallbackBg,
+            }}
+          >
             {slotImage ? (
-              <img src={slotImage} alt={name} style={{
-                width: '100%', height: '100%',
-                objectFit: 'cover', display: 'block',
-              }} />
+              <img
+                src={slotImage}
+                alt={name}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
             ) : (
-              <div style={{
-                width: '100%', height: '100%',
-                background: slotImageFallbackBg,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: cssLength(nameSize), color: scoreNeutralColor,
-              }}>⚔</div>
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  background: slotImageFallbackBg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: cssLength(nameSize),
+                  color: scoreNeutralColor,
+                }}
+              >
+                ⚔
+              </div>
             )}
 
             {/* Result overlay — on the image */}
             {result !== null && (
-              <div style={{
-                position: 'absolute', top: '50%', left: '50%',
-                transform: 'translate(-50%, -50%)',
-                background: statusBadgeBg, padding: cssLength(gap),
-                borderRadius: cssLength(cardRadius), zIndex: 2,
-              }}>
-                <span style={{
-                  fontSize: cssLength(resultSize), fontWeight: 800,
-                  color: isWinner ? arenaWinColor : valColor(result, match), fontFamily,
-                }}>{fmtResult(result, match)}</span>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  background: statusBadgeBg,
+                  padding: cssLength(gap),
+                  borderRadius: cssLength(cardRadius),
+                  zIndex: 2,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: cssLength(resultSize),
+                    fontWeight: 800,
+                    color: isWinner ? arenaWinColor : valColor(result, match),
+                    fontFamily,
+                  }}
+                >
+                  {fmtResult(result, match)}
+                </span>
               </div>
             )}
           </div>
@@ -514,7 +1080,8 @@ function TournamentWidget({ config, theme }) {
           {/* Bottom bar — bet/cost + end/payout values (classic BH style) */}
           {renderStatBar(
             { cost: vals?.val1 ?? null, pay: vals?.val2 ?? null },
-            fontFamily, true
+            fontFamily,
+            true,
           )}
         </div>
       );
@@ -522,52 +1089,91 @@ function TournamentWidget({ config, theme }) {
 
     const renderArenaMatch = (match, idx) => {
       const hasWinner = match.winner != null;
-      const p1Won = match.winner === 'player1';
-      const p2Won = match.winner === 'player2';
+      const p1Won = match.winner === "player1";
+      const p2Won = match.winner === "player2";
       const isCurrentMatch = idx === currentMatchIdx && !hasWinner;
 
       return (
-        <div key={idx} style={{
-          display: 'flex', alignItems: 'stretch', gap: 0,
-          position: 'relative', minHeight: 160,
-          borderRadius: cssLength(cardRadius),
-          border: `${cssLength(cardBorderWidth)} solid ${isCurrentMatch ? arenaAccent : 'transparent'}`,
-          ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
-        }}>
-          <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
-            {renderArenaFighter(match, 'player1', p1Won, hasWinner && !p1Won)}
+        <div
+          key={idx}
+          style={{
+            display: "flex",
+            alignItems: "stretch",
+            gap: 0,
+            position: "relative",
+            minHeight: 160,
+            borderRadius: cssLength(cardRadius),
+            border: `${cssLength(cardBorderWidth)} solid ${isCurrentMatch ? arenaAccent : "transparent"}`,
+            ...(isCurrentMatch
+              ? { animation: "tw-current-glow 2s ease-in-out infinite" }
+              : {}),
+          }}
+        >
+          <div style={{ flex: 1, display: "flex", minWidth: 0 }}>
+            {renderArenaFighter(match, "player1", p1Won, hasWinner && !p1Won)}
           </div>
 
           {/* VS badge — spins on current match */}
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: cssLengthAdd(swordSize, 22), height: cssLengthAdd(swordSize, 22), borderRadius: '50%', zIndex: 10,
-            background: arenaAccent,
-            border: `${cssLength(cardBorderWidth)} solid ${cardBorder}`,
-            boxShadow: elementToken('connector', 'shadow', widgetToken('shadow')),
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: cssLength(slotNameSize), fontWeight: 900, color: bgColor, letterSpacing: '0.5px',
-            ...(isCurrentMatch ? { animation: 'tw-vs-spin 3s linear infinite' } : {}),
-          }}>VS</div>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: cssLengthAdd(swordSize, 22),
+              height: cssLengthAdd(swordSize, 22),
+              borderRadius: "50%",
+              zIndex: 10,
+              background: arenaAccent,
+              border: `${cssLength(cardBorderWidth)} solid ${cardBorder}`,
+              boxShadow: elementToken(
+                "connector",
+                "shadow",
+                widgetToken("shadow"),
+              ),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: cssLength(slotNameSize),
+              fontWeight: 900,
+              color: bgColor,
+              letterSpacing: "0.5px",
+              ...(isCurrentMatch
+                ? { animation: "tw-vs-spin 3s linear infinite" }
+                : {}),
+            }}
+          >
+            VS
+          </div>
 
-          <div style={{ flex: 1, display: 'flex', minWidth: 0, marginLeft: 4 }}>
-            {renderArenaFighter(match, 'player2', p2Won, hasWinner && !p2Won)}
+          <div style={{ flex: 1, display: "flex", minWidth: 0, marginLeft: 4 }}>
+            {renderArenaFighter(match, "player2", p2Won, hasWinner && !p2Won)}
           </div>
         </div>
       );
     };
 
     return (
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        overflow: 'auto', fontFamily,
-      }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "auto",
+          fontFamily,
+        }}
+      >
         {/* Match rows — reduced vertical gap */}
-        <div style={{
-          flex: 1, display: 'flex', flexDirection: 'column',
-          gap: 2, padding: `2px ${padding + 2}px ${padding}px`,
-          overflow: 'auto',
-        }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            padding: `2px ${padding + 2}px ${padding}px`,
+            overflow: "auto",
+          }}
+        >
           {matches.map((match, idx) => renderArenaMatch(match, idx))}
         </div>
       </div>
@@ -576,54 +1182,106 @@ function TournamentWidget({ config, theme }) {
 
   /* ── Shared stats bar — matches classic bonus hunt V12 style ── */
   const renderStatBar = (vals, font, large = false) => {
-    const payColor = vals.pay > (vals.cost || 0) ? '#4ade80' : '#f87171';
+    const payColor = vals.pay > (vals.cost || 0) ? "#4ade80" : "#f87171";
     return (
-      <div style={{
-        position: 'relative', zIndex: 2,
-        display: 'flex',
-        background: 'rgba(255,255,255,0.04)',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-        borderRadius: large ? '0 0 10px 10px' : '0 0 8px 8px',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          flex: 1, textAlign: 'center',
-          padding: large ? '6px 4px' : '4px 3px',
-        }}>
-          <div style={{
-            fontSize: large ? 'clamp(6px, 0.6vw, 8px)' : 'clamp(5px, 0.55vw, 7px)',
-            fontWeight: 600, color: '#93c5fd', opacity: 0.55,
-            textTransform: 'uppercase', letterSpacing: '1px', fontFamily: font,
-            lineHeight: 1, marginBottom: 1,
-          }}>Cost</div>
-          <div style={{
-            fontSize: large ? 'clamp(11px, 1.3vw, 14px)' : 'clamp(9px, 1vw, 12px)',
-            fontWeight: 800, color: '#fff', fontFamily: font,
-            fontVariantNumeric: 'tabular-nums',
-            textShadow: '0 1px 6px rgba(0,0,0,0.4)', lineHeight: 1.2,
-          }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          display: "flex",
+          background: "rgba(255,255,255,0.04)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: large ? "0 0 10px 10px" : "0 0 8px 8px",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            textAlign: "center",
+            padding: large ? "6px 4px" : "4px 3px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: large
+                ? "clamp(6px, 0.6vw, 8px)"
+                : "clamp(5px, 0.55vw, 7px)",
+              fontWeight: 600,
+              color: "#93c5fd",
+              opacity: 0.55,
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              fontFamily: font,
+              lineHeight: 1,
+              marginBottom: 1,
+            }}
+          >
+            Cost
+          </div>
+          <div
+            style={{
+              fontSize: large
+                ? "clamp(11px, 1.3vw, 14px)"
+                : "clamp(9px, 1vw, 12px)",
+              fontWeight: 800,
+              color: "#fff",
+              fontFamily: font,
+              fontVariantNumeric: "tabular-nums",
+              textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+              lineHeight: 1.2,
+            }}
+          >
+            {vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : "—"}
+          </div>
         </div>
-        <div style={{
-          width: 1, alignSelf: 'stretch',
-          margin: '20% 0',
-          background: 'rgba(255,255,255,0.08)',
-        }} />
-        <div style={{
-          flex: 1, textAlign: 'center',
-          padding: large ? '6px 4px' : '4px 3px',
-        }}>
-          <div style={{
-            fontSize: large ? 'clamp(6px, 0.6vw, 8px)' : 'clamp(5px, 0.55vw, 7px)',
-            fontWeight: 600, color: '#93c5fd', opacity: 0.55,
-            textTransform: 'uppercase', letterSpacing: '1px', fontFamily: font,
-            lineHeight: 1, marginBottom: 1,
-          }}>Pay</div>
-          <div style={{
-            fontSize: large ? 'clamp(11px, 1.3vw, 14px)' : 'clamp(9px, 1vw, 12px)',
-            fontWeight: 800, color: payColor, fontFamily: font,
-            fontVariantNumeric: 'tabular-nums',
-            textShadow: '0 1px 6px rgba(0,0,0,0.4)', lineHeight: 1.2,
-          }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
+        <div
+          style={{
+            width: 1,
+            alignSelf: "stretch",
+            margin: "20% 0",
+            background: "rgba(255,255,255,0.08)",
+          }}
+        />
+        <div
+          style={{
+            flex: 1,
+            textAlign: "center",
+            padding: large ? "6px 4px" : "4px 3px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: large
+                ? "clamp(6px, 0.6vw, 8px)"
+                : "clamp(5px, 0.55vw, 7px)",
+              fontWeight: 600,
+              color: "#93c5fd",
+              opacity: 0.55,
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              fontFamily: font,
+              lineHeight: 1,
+              marginBottom: 1,
+            }}
+          >
+            Pay
+          </div>
+          <div
+            style={{
+              fontSize: large
+                ? "clamp(11px, 1.3vw, 14px)"
+                : "clamp(9px, 1vw, 12px)",
+              fontWeight: 800,
+              color: payColor,
+              fontFamily: font,
+              fontVariantNumeric: "tabular-nums",
+              textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+              lineHeight: 1.2,
+            }}
+          >
+            {vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : "—"}
+          </div>
         </div>
       </div>
     );
@@ -633,81 +1291,118 @@ function TournamentWidget({ config, theme }) {
      ESPORTS — Cyberpunk 3D glass panels, bracket grid + current match
      ═══════════════════════════════════════════════════════════════ */
   const renderEsports = () => {
-    const esCyan   = c.esCyan   || '#00e5ff';
-    const esPurple = c.esPurple || '#64748b';
-    const esGold   = c.esGold   || '#fbbf24';
-    const esBg     = c.esBg     || '#030712';
-    const esCardBg = c.esCardBg || 'rgba(15,23,42,0.75)';
-    const esBorder = c.esBorder || 'rgba(0,229,255,0.18)';
-    const esFont   = fontFamily;
+    const esCyan = c.esCyan || "#00e5ff";
+    const esPurple = c.esPurple || "#64748b";
+    const esGold = c.esGold || "#fbbf24";
+    const esBg = c.esBg || "#030712";
+    const esCardBg = c.esCardBg || "rgba(15,23,42,0.75)";
+    const esBorder = c.esBorder || "rgba(0,229,255,0.18)";
+    const esFont = fontFamily;
 
     /* While the shatter animation plays, keep the just-finished match
        in the Now Playing slot so the loser card visually shatters first,
        THEN the winner slides to the done list. */
     const isShatterHolding = shatterMatchIdx != null && shatterInfo;
     const currentMatch = isShatterHolding
-      ? (allMatches[shatterMatchIdx] || matches[currentMatchIdx] || matches[0])
-      : (matches[currentMatchIdx] || matches[0]);
+      ? allMatches[shatterMatchIdx] || matches[currentMatchIdx] || matches[0]
+      : matches[currentMatchIdx] || matches[0];
     const otherMatches = matches.filter((_, i) => i !== currentMatchIdx);
-    const queuedMatches = otherMatches.filter(m => m.winner == null);
+    const queuedMatches = otherMatches.filter((m) => m.winner == null);
     const doneMatches = isShatterHolding
-      ? otherMatches.filter(m => m.winner != null && m !== allMatches[shatterMatchIdx])
-      : otherMatches.filter(m => m.winner != null);
+      ? otherMatches.filter(
+          (m) => m.winner != null && m !== allMatches[shatterMatchIdx],
+        )
+      : otherMatches.filter((m) => m.winner != null);
 
     /* ── Stable key for match transition animations ── */
-    const esMatchKey = currentMatch ? `${currentMatch.player1}|${currentMatch.player2}` : 'empty';
+    const esMatchKey = currentMatch
+      ? `${currentMatch.player1}|${currentMatch.player2}`
+      : "empty";
 
     /* Get cost/payment for a player (Bo3 sums all rounds) */
     const getVals = (match, pKey) => {
       if (!match?.rounds) return { cost: null, pay: null };
-      if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
-        let totalCost = 0, totalPay = 0, any = false;
+      if (match.type === "bonus_bo3" || match.type === "bonus_bo3_classic") {
+        let totalCost = 0,
+          totalPay = 0,
+          any = false;
         for (const round of match.rounds) {
           const rd = round[pKey];
           if (!rd) continue;
-          const c2 = parseFloat(rd.bonusCost), p2 = parseFloat(rd.bonusPayout);
-          if (!isNaN(c2)) { totalCost += c2; any = true; }
-          if (!isNaN(p2)) { totalPay += p2; any = true; }
+          const c2 = parseFloat(rd.bonusCost),
+            p2 = parseFloat(rd.bonusPayout);
+          if (!isNaN(c2)) {
+            totalCost += c2;
+            any = true;
+          }
+          if (!isNaN(p2)) {
+            totalPay += p2;
+            any = true;
+          }
         }
-        return any ? { cost: totalCost, pay: totalPay } : { cost: null, pay: null };
+        return any
+          ? { cost: totalCost, pay: totalPay }
+          : { cost: null, pay: null };
       }
       const rd = match?.rounds?.[0]?.[pKey];
       if (!rd) return { cost: null, pay: null };
-      if (match.type === 'spins') {
-        const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+      if (match.type === "spins") {
+        const s = parseFloat(rd.startBalance),
+          e = parseFloat(rd.endBalance);
         return { cost: isNaN(s) ? null : s, pay: isNaN(e) ? null : e };
       }
-      const cost = parseFloat(rd.bonusCost), pay = parseFloat(rd.bonusPayout);
+      const cost = parseFloat(rd.bonusCost),
+        pay = parseFloat(rd.bonusPayout);
       return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
     };
 
-    const esGreen = '#39ff14';
-    const esRed   = '#ff3b5c';
+    const esGreen = "#39ff14";
+    const esRed = "#ff3b5c";
 
     /* Bo3 pip system for esports */
     const renderEsPips = (match, playerKey) => {
-      if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
+      if (match.type !== "bonus_bo3" && match.type !== "bonus_bo3_classic")
+        return null;
       const scoreboard = getBoScoreboard(match);
       if (!scoreboard) return null;
       return (
-        <div style={{
-          display: 'flex', gap: 'clamp(3px, 0.5vw, 5px)',
-          justifyContent: 'center', marginTop: 2,
-        }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "clamp(3px, 0.5vw, 5px)",
+            justifyContent: "center",
+            marginTop: 2,
+          }}
+        >
           {scoreboard.roundResults.map((rr, i) => {
             const won = rr.winner === playerKey;
-            const lost = rr.winner && rr.winner !== playerKey && rr.winner !== 'draw';
-            const draw = rr.winner === 'draw';
+            const lost =
+              rr.winner && rr.winner !== playerKey && rr.winner !== "draw";
+            const draw = rr.winner === "draw";
             const played = rr.winner != null;
             return (
-              <div key={i} style={{
-                width: 'clamp(7px, 1vw, 10px)', height: 'clamp(7px, 1vw, 10px)',
-                borderRadius: '50%',
-                background: won ? esGreen : lost ? esRed : draw ? esGold : 'rgba(255,255,255,0.12)',
-                boxShadow: won ? `0 0 6px ${esGreen}80` : lost ? `0 0 4px ${esRed}60` : 'none',
-                border: played ? 'none' : '1px solid rgba(255,255,255,0.15)',
-                transition: 'all 0.4s ease',
-              }} />
+              <div
+                key={i}
+                style={{
+                  width: "clamp(7px, 1vw, 10px)",
+                  height: "clamp(7px, 1vw, 10px)",
+                  borderRadius: "50%",
+                  background: won
+                    ? esGreen
+                    : lost
+                      ? esRed
+                      : draw
+                        ? esGold
+                        : "rgba(255,255,255,0.12)",
+                  boxShadow: won
+                    ? `0 0 6px ${esGreen}80`
+                    : lost
+                      ? `0 0 4px ${esRed}60`
+                      : "none",
+                  border: played ? "none" : "1px solid rgba(255,255,255,0.15)",
+                  transition: "all 0.4s ease",
+                }}
+              />
             );
           })}
         </div>
@@ -716,8 +1411,8 @@ function TournamentWidget({ config, theme }) {
 
     /* ── Player Card — image fills card, neon glow, pips, stats ── */
     const renderEsCard = (match, playerKey, large = false) => {
-      const name = match[playerKey] || 'TBD';
-      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const name = match[playerKey] || "TBD";
+      const pSlot = playerKey === "player1" ? match.slot1 : match.slot2;
       const slotImage = pSlot?.image || null;
       const result = getPlayerResult(match, playerKey);
       const hasWinner = match.winner != null;
@@ -725,69 +1420,130 @@ function TournamentWidget({ config, theme }) {
       const isLoser = hasWinner && !isWinner;
       const vals = getVals(match, playerKey);
 
-      const nameFs = large ? 'clamp(12px, 1.8vw, 16px)' : 'clamp(10px, 1.4vw, 13px)';
-      const statFs = large ? 'clamp(12px, 1.4vw, 14px)' : 'clamp(10px, 1.1vw, 12px)';
-      const labelFs = large ? 'clamp(7px, 0.7vw, 9px)' : 'clamp(6px, 0.6vw, 8px)';
+      const nameFs = large
+        ? "clamp(12px, 1.8vw, 16px)"
+        : "clamp(10px, 1.4vw, 13px)";
+      const statFs = large
+        ? "clamp(12px, 1.4vw, 14px)"
+        : "clamp(10px, 1.1vw, 12px)";
+      const labelFs = large
+        ? "clamp(7px, 0.7vw, 9px)"
+        : "clamp(6px, 0.6vw, 8px)";
       const borderGlow = isWinner ? esGreen : isLoser ? esRed : esBorder;
 
       return (
-        <div style={{
-          width: '100%', height: '100%', position: 'relative',
-          display: 'flex', flexDirection: 'column',
-          border: `2px solid ${borderGlow}`,
-          borderRadius: large ? 14 : 8,
-          overflow: 'hidden',
-          transition: 'all 0.5s ease',
-          opacity: isLoser ? 0.35 : 1,
-          filter: isLoser ? 'grayscale(0.85) brightness(0.5)' : 'none',
-          boxShadow: isWinner
-            ? `0 0 16px ${esGreen}50, 0 0 40px ${esGreen}18`
-            : isLoser
-              ? `0 0 8px ${esRed}25`
-              : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${esCyan}10`,
-          ...(isLoser ? { animation: 'grid-loser-fade 0.8s ease-out forwards' } : {}),
-        }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            border: `2px solid ${borderGlow}`,
+            borderRadius: large ? 14 : 8,
+            overflow: "hidden",
+            transition: "all 0.5s ease",
+            opacity: isLoser ? 0.35 : 1,
+            filter: isLoser ? "grayscale(0.85) brightness(0.5)" : "none",
+            boxShadow: isWinner
+              ? `0 0 16px ${esGreen}50, 0 0 40px ${esGreen}18`
+              : isLoser
+                ? `0 0 8px ${esRed}25`
+                : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${esCyan}10`,
+            ...(isLoser
+              ? { animation: "grid-loser-fade 0.8s ease-out forwards" }
+              : {}),
+          }}
+        >
           {/* Full-bleed image */}
           {slotImage ? (
-            <img src={slotImage} alt={name} style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block',
-            }} />
+            <img
+              src={slotImage}
+              alt={name}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
           ) : (
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: `linear-gradient(135deg, ${esBg}, rgba(0,229,255,0.05))`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: large ? 28 : 16, color: 'rgba(255,255,255,0.06)',
-            }}>⚔</div>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `linear-gradient(135deg, ${esBg}, rgba(0,229,255,0.05))`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: large ? 28 : 16,
+                color: "rgba(255,255,255,0.06)",
+              }}
+            >
+              ⚔
+            </div>
           )}
 
           {/* Winner crown */}
           {isWinner && (
-            <div style={{
-              position: 'absolute', top: 4, right: 4, zIndex: 5,
-              fontSize: large ? 20 : 14,
-              filter: `drop-shadow(0 0 6px ${esGold})`,
-            }}>🏆</div>
+            <div
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                zIndex: 5,
+                fontSize: large ? 20 : 14,
+                filter: `drop-shadow(0 0 6px ${esGold})`,
+              }}
+            >
+              🏆
+            </div>
           )}
 
           {/* Name stripe + Bo3 pips — top */}
-          <div style={{
-            position: 'relative', zIndex: 2,
-            padding: large ? '5px 8px 3px' : '2px 5px 2px',
-            background: 'rgba(0,0,0,0.75)',
-            textAlign: 'center',
-          }}>
-            <div style={{
-              fontSize: nameFs, fontWeight: 800, fontFamily: esFont,
-              color: isWinner ? esGreen : isLoser ? 'rgba(255,255,255,0.3)' : '#fff',
-              textTransform: 'uppercase', letterSpacing: '0.8px',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              textShadow: isWinner ? `0 0 8px ${esGreen}40` : `0 0 8px ${esCyan}30`,
-            }}>
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              padding: large ? "5px 8px 3px" : "2px 5px 2px",
+              background: "rgba(0,0,0,0.75)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: nameFs,
+                fontWeight: 800,
+                fontFamily: esFont,
+                color: isWinner
+                  ? esGreen
+                  : isLoser
+                    ? "rgba(255,255,255,0.3)"
+                    : "#fff",
+                textTransform: "uppercase",
+                letterSpacing: "0.8px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textShadow: isWinner
+                  ? `0 0 8px ${esGreen}40`
+                  : `0 0 8px ${esCyan}30`,
+              }}
+            >
               {name}
               {match.activePlayer === playerKey && !match.winner && (
-                <span style={{ fontSize: 'clamp(6px, 0.6vw, 8px)', color: '#818cf8', marginLeft: 4, fontStyle: 'normal' }}>▶ PLAYING</span>
+                <span
+                  style={{
+                    fontSize: "clamp(6px, 0.6vw, 8px)",
+                    color: "#818cf8",
+                    marginLeft: 4,
+                    fontStyle: "normal",
+                  }}
+                >
+                  ▶ PLAYING
+                </span>
               )}
             </div>
             {renderEsPips(match, playerKey)}
@@ -798,22 +1554,34 @@ function TournamentWidget({ config, theme }) {
 
           {/* Result overlay with neon glow */}
           {result !== null && (
-            <div style={{
-              position: 'relative', zIndex: 2,
-              textAlign: 'center', padding: '2px 0',
-              background: 'rgba(0,0,0,0.65)',
-              backdropFilter: 'blur(4px)',
-            }}>
-              <span style={{
-                fontSize: large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(12px, 1.6vw, 16px)',
-                fontWeight: 900, fontFamily: esFont,
-                color: result > 0 ? esGreen : result < 0 ? esRed : '#94a3b8',
-                textShadow: result > 0
-                  ? `0 0 12px ${esGreen}70, 0 0 24px ${esGreen}30`
-                  : result < 0
-                    ? `0 0 10px ${esRed}60, 0 0 20px ${esRed}25`
-                    : 'none',
-              }}>{fmtResult(result, match)}</span>
+            <div
+              style={{
+                position: "relative",
+                zIndex: 2,
+                textAlign: "center",
+                padding: "2px 0",
+                background: "rgba(0,0,0,0.65)",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: large
+                    ? "clamp(16px, 2.5vw, 28px)"
+                    : "clamp(12px, 1.6vw, 16px)",
+                  fontWeight: 900,
+                  fontFamily: esFont,
+                  color: result > 0 ? esGreen : result < 0 ? esRed : "#94a3b8",
+                  textShadow:
+                    result > 0
+                      ? `0 0 12px ${esGreen}70, 0 0 24px ${esGreen}30`
+                      : result < 0
+                        ? `0 0 10px ${esRed}60, 0 0 20px ${esRed}25`
+                        : "none",
+                }}
+              >
+                {fmtResult(result, match)}
+              </span>
             </div>
           )}
 
@@ -825,20 +1593,35 @@ function TournamentWidget({ config, theme }) {
 
     /* ── VS badge (compact) ── */
     const renderEsVs = (large = false) => {
-      const sz = large ? 'clamp(22px, 3vw, 36px)' : 'clamp(14px, 1.8vw, 22px)';
+      const sz = large ? "clamp(22px, 3vw, 36px)" : "clamp(14px, 1.8vw, 22px)";
       const isCurrent = large;
       return (
-        <div style={{
-          width: sz, height: sz, borderRadius: '50%', flexShrink: 0,
-          background: `linear-gradient(135deg, ${esPurple}, ${esCyan})`,
-          border: '2px solid rgba(0,0,0,0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: large ? 'clamp(9px, 1.2vw, 14px)' : 'clamp(6px, 0.9vw, 10px)',
-          fontWeight: 900, color: '#fff', fontFamily: esFont,
-          boxShadow: `0 0 16px ${esPurple}40, 0 0 8px ${esCyan}30`,
-          alignSelf: 'center',
-          ...(isCurrent ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-        }}>VS</div>
+        <div
+          style={{
+            width: sz,
+            height: sz,
+            borderRadius: "50%",
+            flexShrink: 0,
+            background: `linear-gradient(135deg, ${esPurple}, ${esCyan})`,
+            border: "2px solid rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: large
+              ? "clamp(9px, 1.2vw, 14px)"
+              : "clamp(6px, 0.9vw, 10px)",
+            fontWeight: 900,
+            color: "#fff",
+            fontFamily: esFont,
+            boxShadow: `0 0 16px ${esPurple}40, 0 0 8px ${esCyan}30`,
+            alignSelf: "center",
+            ...(isCurrent
+              ? { animation: "es-vs-pulse 2s ease-in-out infinite" }
+              : {}),
+          }}
+        >
+          VS
+        </div>
       );
     };
 
@@ -849,23 +1632,31 @@ function TournamentWidget({ config, theme }) {
       const isCurrent = globalIdx === currentMatchIdx;
 
       return (
-        <div key={`${match.player1}|${match.player2}`} style={{
-          display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 8px)',
-          background: 'rgba(0,0,0,0.3)',
-          border: `1px solid ${isCurrent ? esCyan : esBorder}`,
-          borderRadius: 10, padding: 'clamp(4px, 0.6vw, 8px)',
-          position: 'relative', overflow: 'hidden',
-          backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
-          transition: 'border-color 0.3s',
-          minHeight: 'clamp(90px, 18vh, 160px)',
-          animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.07}s both`,
-        }}>
+        <div
+          key={`${match.player1}|${match.player2}`}
+          style={{
+            display: "flex",
+            alignItems: "stretch",
+            gap: "clamp(3px, 0.5vw, 8px)",
+            background: "rgba(0,0,0,0.3)",
+            border: `1px solid ${isCurrent ? esCyan : esBorder}`,
+            borderRadius: 10,
+            padding: "clamp(4px, 0.6vw, 8px)",
+            position: "relative",
+            overflow: "hidden",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            transition: "border-color 0.3s",
+            minHeight: "clamp(90px, 18vh, 160px)",
+            animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.07}s both`,
+          }}
+        >
           <div style={{ flex: 1, minWidth: 0 }}>
-            {renderEsCard(match, 'player1', false)}
+            {renderEsCard(match, "player1", false)}
           </div>
           {renderEsVs(false)}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {renderEsCard(match, 'player2', false)}
+            {renderEsCard(match, "player2", false)}
           </div>
         </div>
       );
@@ -874,129 +1665,235 @@ function TournamentWidget({ config, theme }) {
     /* ── Done match (list row: name vs name + winner badge) ── */
     const renderEsDoneRow = (match, idx) => {
       const winner = match.winner;
-      const p1Won = winner === 'player1';
-      const p2Won = winner === 'player2';
-      const p1 = match.player1 || 'TBD';
-      const p2 = match.player2 || 'TBD';
-      const fs = 'clamp(8px, 1.2vw, 13px)';
+      const p1Won = winner === "player1";
+      const p2Won = winner === "player2";
+      const p1 = match.player1 || "TBD";
+      const p2 = match.player2 || "TBD";
+      const fs = "clamp(8px, 1.2vw, 13px)";
       return (
-        <div key={`${p1}|${p2}`} style={{
-          display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 10px)',
-          padding: 'clamp(2px, 0.3vw, 5px) clamp(6px, 0.8vw, 12px)',
-          background: 'rgba(0,0,0,0.25)',
-          border: `1px solid ${esBorder}`,
-          borderRadius: 6,
-          backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-          animation: `tw-done-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.06}s both`,
-        }}>
-          <span style={{
-            flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 700, fontFamily: esFont,
-            color: p1Won ? esGreen : 'rgba(255,255,255,0.35)',
-            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            textShadow: p1Won ? `0 0 6px ${esGreen}40` : 'none',
-          }}>{p1Won ? '🏆 ' : ''}{p1}</span>
-          <span style={{
-            fontSize: 'clamp(6px, 0.8vw, 9px)', fontWeight: 800, color: '#475569',
-            fontFamily: esFont, flexShrink: 0,
-          }}>VS</span>
-          <span style={{
-            flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 700, fontFamily: esFont,
-            color: p2Won ? esGreen : 'rgba(255,255,255,0.35)',
-            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            textShadow: p2Won ? `0 0 6px ${esGreen}40` : 'none',
-          }}>{p2}{p2Won ? ' 🏆' : ''}</span>
+        <div
+          key={`${p1}|${p2}`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "clamp(4px, 0.6vw, 10px)",
+            padding: "clamp(2px, 0.3vw, 5px) clamp(6px, 0.8vw, 12px)",
+            background: "rgba(0,0,0,0.25)",
+            border: `1px solid ${esBorder}`,
+            borderRadius: 6,
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+            animation: `tw-done-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.06}s both`,
+          }}
+        >
+          <span
+            style={{
+              flex: 1,
+              textAlign: "right",
+              fontSize: fs,
+              fontWeight: 700,
+              fontFamily: esFont,
+              color: p1Won ? esGreen : "rgba(255,255,255,0.35)",
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              textShadow: p1Won ? `0 0 6px ${esGreen}40` : "none",
+            }}
+          >
+            {p1Won ? "🏆 " : ""}
+            {p1}
+          </span>
+          <span
+            style={{
+              fontSize: "clamp(6px, 0.8vw, 9px)",
+              fontWeight: 800,
+              color: "#475569",
+              fontFamily: esFont,
+              flexShrink: 0,
+            }}
+          >
+            VS
+          </span>
+          <span
+            style={{
+              flex: 1,
+              textAlign: "left",
+              fontSize: fs,
+              fontWeight: 700,
+              fontFamily: esFont,
+              color: p2Won ? esGreen : "rgba(255,255,255,0.35)",
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              textShadow: p2Won ? `0 0 6px ${esGreen}40` : "none",
+            }}
+          >
+            {p2}
+            {p2Won ? " 🏆" : ""}
+          </span>
         </div>
       );
     };
 
     return (
-      <div style={{
-        display: 'flex', flexDirection: 'column',
-        overflow: 'hidden', fontFamily: esFont,
-        background: 'transparent', perspective: '1200px',
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          fontFamily: esFont,
+          background: "transparent",
+          perspective: "1200px",
+        }}
+      >
         {/* ── Queued matches (single column, top) ── */}
         {queuedMatches.length > 0 && (
-          <div style={{
-            flexShrink: 0, display: 'flex', flexDirection: 'column',
-            gap: 'clamp(3px, 0.5vw, 8px)',
-            padding: 'clamp(3px, 0.5vw, 8px)',
-            overflow: 'hidden',
-          }}>
+          <div
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(3px, 0.5vw, 8px)",
+              padding: "clamp(3px, 0.5vw, 8px)",
+              overflow: "hidden",
+            }}
+          >
             {queuedMatches.map((m, i) => renderEsOverviewMatch(m, i))}
           </div>
         )}
 
         {/* ── Energy divider line ── */}
-        <div style={{
-          height: 2, flexShrink: 0, position: 'relative',
-          background: `linear-gradient(90deg, transparent, ${esCyan}60, ${esPurple}60, transparent)`,
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            position: 'absolute', top: 0, left: 0, width: '30%', height: '100%',
-            background: `linear-gradient(90deg, transparent, ${esCyan}, transparent)`,
-            animation: 'es-energy-line 2.5s linear infinite',
-          }} />
+        <div
+          style={{
+            height: 2,
+            flexShrink: 0,
+            position: "relative",
+            background: `linear-gradient(90deg, transparent, ${esCyan}60, ${esPurple}60, transparent)`,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "30%",
+              height: "100%",
+              background: `linear-gradient(90deg, transparent, ${esCyan}, transparent)`,
+              animation: "es-energy-line 2.5s linear infinite",
+            }}
+          />
         </div>
 
         {/* ── Current match (Now Playing) ── */}
         {currentMatch && (
-          <div style={{
-            flexShrink: 0, padding: 'clamp(4px, 0.8vw, 12px)',
-            position: 'relative',
-          }}>
+          <div
+            style={{
+              flexShrink: 0,
+              padding: "clamp(4px, 0.8vw, 12px)",
+              position: "relative",
+            }}
+          >
             {/* Pulsing bg glow */}
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 0,
-              background: `radial-gradient(ellipse at center, ${esPurple}12, transparent 70%)`,
-              animation: 'es-bg-pulse 3s ease-in-out infinite',
-            }} />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 0,
+                background: `radial-gradient(ellipse at center, ${esPurple}12, transparent 70%)`,
+                animation: "es-bg-pulse 3s ease-in-out infinite",
+              }}
+            />
 
             {/* "NOW PLAYING" header */}
-            <div style={{
-              textAlign: 'center', marginBottom: 'clamp(2px, 0.4vh, 6px)',
-              position: 'relative', zIndex: 1,
-            }}>
-              <span style={{
-                fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 800,
-                color: esGold, textTransform: 'uppercase', letterSpacing: '3px',
-                fontFamily: esFont,
-                textShadow: `0 0 12px ${esGold}50`,
-                animation: 'es-text-glow 2s ease-in-out infinite',
-              }}>⚡ Now Playing ⚡</span>
+            <div
+              style={{
+                textAlign: "center",
+                marginBottom: "clamp(2px, 0.4vh, 6px)",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "clamp(8px, 1.2vw, 14px)",
+                  fontWeight: 800,
+                  color: esGold,
+                  textTransform: "uppercase",
+                  letterSpacing: "3px",
+                  fontFamily: esFont,
+                  textShadow: `0 0 12px ${esGold}50`,
+                  animation: "es-text-glow 2s ease-in-out infinite",
+                }}
+              >
+                ⚡ Now Playing ⚡
+              </span>
             </div>
 
             {/* Match cards — same structure as overview matches */}
-            <div key={esMatchKey} style={{
-              display: 'flex', alignItems: 'stretch',
-              gap: 'clamp(3px, 0.5vw, 8px)',
-              background: 'rgba(0,0,0,0.3)',
-              border: `1px solid ${esCyan}`,
-              borderRadius: 10, padding: 'clamp(4px, 0.6vw, 8px)',
-              position: 'relative', zIndex: 1, overflow: 'hidden',
-              backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
-              minHeight: 'clamp(90px, 18vh, 160px)',
-              animation: 'tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-              transformStyle: 'preserve-3d',
-            }}>
-              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-l 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both' }}>
-                {renderEsCard(currentMatch, 'player1', false)}
+            <div
+              key={esMatchKey}
+              style={{
+                display: "flex",
+                alignItems: "stretch",
+                gap: "clamp(3px, 0.5vw, 8px)",
+                background: "rgba(0,0,0,0.3)",
+                border: `1px solid ${esCyan}`,
+                borderRadius: 10,
+                padding: "clamp(4px, 0.6vw, 8px)",
+                position: "relative",
+                zIndex: 1,
+                overflow: "hidden",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                minHeight: "clamp(90px, 18vh, 160px)",
+                animation:
+                  "tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
+                transformStyle: "preserve-3d",
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  animation:
+                    "tw-card-enter-l 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both",
+                }}
+              >
+                {renderEsCard(currentMatch, "player1", false)}
               </div>
-              <div style={{ flexShrink: 0, animation: 'tw-vs-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both' }}>
+              <div
+                style={{
+                  flexShrink: 0,
+                  animation:
+                    "tw-vs-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both",
+                }}
+              >
                 {renderEsVs(true)}
               </div>
-              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-r 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both' }}>
-                {renderEsCard(currentMatch, 'player2', false)}
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  animation:
+                    "tw-card-enter-r 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both",
+                }}
+              >
+                {renderEsCard(currentMatch, "player2", false)}
               </div>
 
               {/* Shatter overlay */}
-              {layout === 'esports' && shatterInfo && (
+              {layout === "esports" && shatterInfo && (
                 <ShatterEffect
                   imageUrl={shatterInfo.imageUrl}
                   side={shatterInfo.side}
                   accentColor={esCyan}
-                  onComplete={() => { setShatterInfo(null); setShatterMatchIdx(null); }}
+                  onComplete={() => {
+                    setShatterInfo(null);
+                    setShatterMatchIdx(null);
+                  }}
                 />
               )}
             </div>
@@ -1005,11 +1902,15 @@ function TournamentWidget({ config, theme }) {
 
         {/* ── Done matches (list, bottom) ── */}
         {doneMatches.length > 0 && (
-          <div style={{
-            flexShrink: 0, display: 'flex', flexDirection: 'column',
-            gap: 'clamp(2px, 0.3vw, 4px)',
-            padding: 'clamp(3px, 0.5vw, 8px)',
-          }}>
+          <div
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(2px, 0.3vw, 4px)",
+              padding: "clamp(3px, 0.5vw, 8px)",
+            }}
+          >
             {doneMatches.map((m, i) => renderEsDoneRow(m, i))}
           </div>
         )}
@@ -1022,17 +1923,17 @@ function TournamentWidget({ config, theme }) {
      Stacked player cards showing all rounds side-by-side with phase tabs.
      ═══════════════════════════════════════════════════════════════ */
   const renderScoreboard = () => {
-    const sbAccent   = c.sbAccent   || '#3b82f6';  // blue accent
-    const sbHeaderBg = c.sbHeaderBg || 'rgba(0,0,0,0.85)';
-    const sbCardBg   = c.sbCardBg   || '#1a1d2e';
-    const sbTextCol  = c.sbTextColor || '#ffffff';
-    const sbPayCol   = c.sbPayColor  || '#e2e8f0';
-    const sbMultiCol = c.sbMultiColor || '#facc15';
-    const sbWinCol   = c.sbWinColor  || '#22c55e';
-    const sbLoseCol  = c.sbLoseColor || '#ef4444';
-    const sbTabBg    = c.sbTabBg     || 'rgba(0,0,0,0.6)';
+    const sbAccent = c.sbAccent || "#3b82f6"; // blue accent
+    const sbHeaderBg = c.sbHeaderBg || "rgba(0,0,0,0.85)";
+    const sbCardBg = c.sbCardBg || "#1a1d2e";
+    const sbTextCol = c.sbTextColor || "#ffffff";
+    const sbPayCol = c.sbPayColor || "#e2e8f0";
+    const sbMultiCol = c.sbMultiColor || "#facc15";
+    const sbWinCol = c.sbWinColor || "#22c55e";
+    const sbLoseCol = c.sbLoseColor || "#ef4444";
+    const sbTabBg = c.sbTabBg || "rgba(0,0,0,0.6)";
     const sbTabActive = c.sbTabActive || sbAccent;
-    const sbFont     = fontFamily;
+    const sbFont = fontFamily;
     const bracketData = c.bracketData || [];
     const bracketActiveRound = c.bracketActiveRound ?? 0;
 
@@ -1040,7 +1941,7 @@ function TournamentWidget({ config, theme }) {
     const currentMatch = matches[currentMatchIdx] || matches[0];
     if (!currentMatch) return null;
 
-    const isBo3 = currentMatch.type === 'bonus_bo3';
+    const isBo3 = currentMatch.type === "bonus_bo3";
     const roundCount = isBo3 ? 3 : 1;
     const scoreboard = isBo3 ? getBoScoreboard(currentMatch) : null;
 
@@ -1048,30 +1949,44 @@ function TournamentWidget({ config, theme }) {
     const getRoundVals = (match, playerKey, roundIdx) => {
       const rd = match?.rounds?.[roundIdx]?.[playerKey];
       if (!rd) return { pay: null, multi: null };
-      if (match.type === 'spins') {
-        const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
-        const pay = (isNaN(s) || isNaN(e)) ? null : e;
-        const multi = (isNaN(s) || isNaN(e) || s === 0) ? null : (e - s) / s;
+      if (match.type === "spins") {
+        const s = parseFloat(rd.startBalance),
+          e = parseFloat(rd.endBalance);
+        const pay = isNaN(s) || isNaN(e) ? null : e;
+        const multi = isNaN(s) || isNaN(e) || s === 0 ? null : (e - s) / s;
         return { pay, multi };
       }
-      const cost = parseFloat(rd.bonusCost), payout = parseFloat(rd.bonusPayout);
+      const cost = parseFloat(rd.bonusCost),
+        payout = parseFloat(rd.bonusPayout);
       const pay = isNaN(payout) ? null : payout;
-      const multi = (isNaN(cost) || isNaN(payout) || cost === 0) ? null : payout / cost;
+      const multi =
+        isNaN(cost) || isNaN(payout) || cost === 0 ? null : payout / cost;
       return { pay, multi };
     };
 
     /* Total pay + multi across all rounds */
     const getPlayerTotals = (match, playerKey) => {
-      let totalPay = 0, totalCost = 0, anyData = false;
+      let totalPay = 0,
+        totalCost = 0,
+        anyData = false;
       for (let i = 0; i < roundCount; i++) {
         const rd = match?.rounds?.[i]?.[playerKey];
         if (!rd) continue;
-        if (match.type === 'spins') {
-          const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
-          if (!isNaN(s) && !isNaN(e)) { totalPay += e; totalCost += s; anyData = true; }
+        if (match.type === "spins") {
+          const s = parseFloat(rd.startBalance),
+            e = parseFloat(rd.endBalance);
+          if (!isNaN(s) && !isNaN(e)) {
+            totalPay += e;
+            totalCost += s;
+            anyData = true;
+          }
         } else {
-          const cost = parseFloat(rd.bonusCost), payout = parseFloat(rd.bonusPayout);
-          if (!isNaN(payout)) { totalPay += payout; anyData = true; }
+          const cost = parseFloat(rd.bonusCost),
+            payout = parseFloat(rd.bonusPayout);
+          if (!isNaN(payout)) {
+            totalPay += payout;
+            anyData = true;
+          }
           if (!isNaN(cost)) totalCost += cost;
         }
       }
@@ -1082,134 +1997,260 @@ function TournamentWidget({ config, theme }) {
 
     /* Render one player card */
     const renderSbPlayer = (match, playerKey) => {
-      const name = match[playerKey] || 'Player';
-      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const name = match[playerKey] || "Player";
+      const pSlot = playerKey === "player1" ? match.slot1 : match.slot2;
       const slotImage = pSlot?.image || null;
-      const slotName = pSlot?.name || '';
+      const slotName = pSlot?.name || "";
       const hasWinner = match.winner != null;
       const isWinner = match.winner === playerKey;
       const isLoser = hasWinner && !isWinner;
       const totals = getPlayerTotals(match, playerKey);
 
       return (
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          background: sbCardBg,
-          borderRadius: `${cardRadius}px`,
-          overflow: 'hidden',
-          border: isWinner
-            ? `2px solid ${sbWinCol}`
-            : isLoser ? `1px solid ${sbLoseCol}40` : `1px solid ${cardBorder}`,
-          opacity: isLoser ? 0.7 : 1,
-          transition: 'all 0.3s ease',
-          flex: 1, minHeight: 0,
-        }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            background: sbCardBg,
+            borderRadius: `${cardRadius}px`,
+            overflow: "hidden",
+            border: isWinner
+              ? `2px solid ${sbWinCol}`
+              : isLoser
+                ? `1px solid ${sbLoseCol}40`
+                : `1px solid ${cardBorder}`,
+            opacity: isLoser ? 0.7 : 1,
+            transition: "all 0.3s ease",
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           {/* Player name header */}
-          <div style={{
-            background: sbHeaderBg,
-            padding: '4px 10px',
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
+          <div
+            style={{
+              background: sbHeaderBg,
+              padding: "4px 10px",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
             {isWinner && <span style={{ fontSize: 14 }}>🏆</span>}
-            <span style={{
-              fontWeight: 700, color: sbTextCol, fontSize: 'clamp(11px, 1.6vw, 15px)',
-              fontFamily: sbFont, whiteSpace: 'nowrap', overflow: 'hidden',
-              textOverflow: 'ellipsis', flex: 1,
-            }}>{name}</span>
+            <span
+              style={{
+                fontWeight: 700,
+                color: sbTextCol,
+                fontSize: "clamp(11px, 1.6vw, 15px)",
+                fontFamily: sbFont,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                flex: 1,
+              }}
+            >
+              {name}
+            </span>
             {match.activePlayer === playerKey && !match.winner && (
-              <span style={{ fontSize: 8, fontWeight: 800, color: '#818cf8', letterSpacing: '0.5px' }}>▶ PLAYING</span>
+              <span
+                style={{
+                  fontSize: 8,
+                  fontWeight: 800,
+                  color: "#818cf8",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                ▶ PLAYING
+              </span>
             )}
           </div>
 
           {/* Content: slot image + round columns */}
-          <div style={{
-            flex: 1, display: 'flex', alignItems: 'stretch', minHeight: 0,
-          }}>
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "stretch",
+              minHeight: 0,
+            }}
+          >
             {/* Slot image */}
-            <div style={{
-              width: 'clamp(60px, 28%, 140px)', flexShrink: 0, position: 'relative',
-              overflow: 'hidden',
-            }}>
+            <div
+              style={{
+                width: "clamp(60px, 28%, 140px)",
+                flexShrink: 0,
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
               {slotImage ? (
-                <img src={slotImage} alt={slotName} style={{
-                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                }} />
+                <img
+                  src={slotImage}
+                  alt={slotName}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
               ) : (
-                <div style={{
-                  width: '100%', height: '100%',
-                  background: 'rgba(0,0,0,0.3)', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  fontSize: 24, color: 'rgba(255,255,255,0.1)',
-                }}>🎰</div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0,0,0,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 24,
+                    color: "rgba(255,255,255,0.1)",
+                  }}
+                >
+                  🎰
+                </div>
               )}
               {/* Slot name overlay */}
               {slotName && (
-                <div style={{
-                  position: 'absolute', bottom: 0, left: 0, right: 0,
-                  background: 'rgba(0,0,0,0.75)', padding: '2px 4px',
-                  fontSize: 'clamp(7px, 1vw, 10px)', fontWeight: 600,
-                  color: '#d4d8e0', textTransform: 'uppercase',
-                  letterSpacing: '0.3px', lineHeight: 1.2,
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  fontFamily: sbFont,
-                }}>{slotName}</div>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: "rgba(0,0,0,0.75)",
+                    padding: "2px 4px",
+                    fontSize: "clamp(7px, 1vw, 10px)",
+                    fontWeight: 600,
+                    color: "#d4d8e0",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.3px",
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontFamily: sbFont,
+                  }}
+                >
+                  {slotName}
+                </div>
               )}
             </div>
 
             {/* Round columns */}
-            <div style={{
-              flex: 1, display: 'flex', minWidth: 0,
-            }}>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                minWidth: 0,
+              }}
+            >
               {Array.from({ length: roundCount }, (_, rIdx) => {
                 const vals = getRoundVals(match, playerKey, rIdx);
                 const roundWinner = scoreboard?.roundResults?.[rIdx]?.winner;
                 const wonThisRound = roundWinner === playerKey;
-                const lostThisRound = roundWinner && roundWinner !== 'draw' && roundWinner !== playerKey;
+                const lostThisRound =
+                  roundWinner &&
+                  roundWinner !== "draw" &&
+                  roundWinner !== playerKey;
                 const roundDone = roundWinner != null;
 
                 return (
-                  <div key={rIdx} style={{
-                    flex: 1, display: 'flex', flexDirection: 'column',
-                    justifyContent: 'center', alignItems: 'flex-end',
-                    padding: '4px 8px', minWidth: 0,
-                    borderLeft: '1px solid rgba(255,255,255,0.06)',
-                    background: wonThisRound ? `${sbWinCol}10`
-                      : lostThisRound ? `${sbLoseCol}08` : 'transparent',
-                  }}>
+                  <div
+                    key={rIdx}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "flex-end",
+                      padding: "4px 8px",
+                      minWidth: 0,
+                      borderLeft: "1px solid rgba(255,255,255,0.06)",
+                      background: wonThisRound
+                        ? `${sbWinCol}10`
+                        : lostThisRound
+                          ? `${sbLoseCol}08`
+                          : "transparent",
+                    }}
+                  >
                     {/* PAY */}
-                    <div style={{
-                      display: 'flex', alignItems: 'baseline', gap: 4,
-                      justifyContent: 'flex-end', width: '100%',
-                    }}>
-                      <span style={{
-                        fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 600,
-                        color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
-                        letterSpacing: '1px', fontFamily: sbFont,
-                      }}>PAY</span>
-                      <span style={{
-                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 800,
-                        color: '#fff', fontFamily: sbFont,
-                        fontVariantNumeric: 'tabular-nums',
-                        textShadow: '0 1px 6px rgba(0,0,0,0.4)',
-                      }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(2)}` : '—'}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 4,
+                        justifyContent: "flex-end",
+                        width: "100%",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "clamp(6px, 0.7vw, 8px)",
+                          fontWeight: 600,
+                          color: "#93c5fd",
+                          opacity: 0.55,
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                          fontFamily: sbFont,
+                        }}
+                      >
+                        PAY
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "clamp(11px, 1.4vw, 15px)",
+                          fontWeight: 800,
+                          color: "#fff",
+                          fontFamily: sbFont,
+                          fontVariantNumeric: "tabular-nums",
+                          textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+                        }}
+                      >
+                        {vals.pay !== null
+                          ? `${currency}${vals.pay.toFixed(2)}`
+                          : "—"}
+                      </span>
                     </div>
                     {/* MULTI */}
-                    <div style={{
-                      display: 'flex', alignItems: 'baseline', gap: 4,
-                      justifyContent: 'flex-end', width: '100%',
-                    }}>
-                      <span style={{
-                        fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 600,
-                        color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
-                        letterSpacing: '1px', fontFamily: sbFont,
-                      }}>MULTI</span>
-                      <span style={{
-                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 800,
-                        color: vals.multi !== null && vals.multi >= 1 ? '#4ade80' : '#f87171',
-                        fontFamily: sbFont,
-                        fontVariantNumeric: 'tabular-nums',
-                        textShadow: '0 1px 6px rgba(0,0,0,0.4)',
-                      }}>{vals.multi !== null ? `${vals.multi.toFixed(2)}x` : '—'}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 4,
+                        justifyContent: "flex-end",
+                        width: "100%",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "clamp(6px, 0.7vw, 8px)",
+                          fontWeight: 600,
+                          color: "#93c5fd",
+                          opacity: 0.55,
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                          fontFamily: sbFont,
+                        }}
+                      >
+                        MULTI
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "clamp(11px, 1.4vw, 15px)",
+                          fontWeight: 800,
+                          color:
+                            vals.multi !== null && vals.multi >= 1
+                              ? "#4ade80"
+                              : "#f87171",
+                          fontFamily: sbFont,
+                          fontVariantNumeric: "tabular-nums",
+                          textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+                        }}
+                      >
+                        {vals.multi !== null
+                          ? `${vals.multi.toFixed(2)}x`
+                          : "—"}
+                      </span>
                     </div>
                   </div>
                 );
@@ -1218,23 +2259,35 @@ function TournamentWidget({ config, theme }) {
           </div>
 
           {/* Bottom score bar: per-round indicators + totals (classic BH style) */}
-          <div style={{
-            display: 'flex', alignItems: 'center', padding: '3px 6px',
-            background: 'rgba(255,255,255,0.04)', gap: 6,
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '0 0 10px 10px',
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: "3px 6px",
+              background: "rgba(255,255,255,0.04)",
+              gap: 6,
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: "0 0 10px 10px",
+            }}
+          >
             {/* Round win/loss indicators */}
             {isBo3 && scoreboard && (
-              <div style={{ display: 'flex', gap: 3 }}>
+              <div style={{ display: "flex", gap: 3 }}>
                 {scoreboard.roundResults.map((rr, i) => (
-                  <span key={i} style={{
-                    fontSize: 'clamp(10px, 1.2vw, 14px)',
-                    opacity: rr.winner ? 1 : 0.3,
-                  }}>
-                    {rr.winner === playerKey ? '🏅'
-                      : rr.winner === 'draw' ? '🤝'
-                      : rr.winner ? '❌' : '⚪'}
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: "clamp(10px, 1.2vw, 14px)",
+                      opacity: rr.winner ? 1 : 0.3,
+                    }}
+                  >
+                    {rr.winner === playerKey
+                      ? "🏅"
+                      : rr.winner === "draw"
+                        ? "🤝"
+                        : rr.winner
+                          ? "❌"
+                          : "⚪"}
                   </span>
                 ))}
               </div>
@@ -1243,59 +2296,113 @@ function TournamentWidget({ config, theme }) {
             <div style={{ flex: 1 }} />
 
             {/* Totals — BH-style muted labels + clean values */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              fontSize: 'clamp(9px, 1vw, 12px)', fontFamily: sbFont,
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 600,
-                  color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
-                  letterSpacing: '1px', lineHeight: 1,
-                }}>Pay</div>
-                <div style={{
-                  fontWeight: 800, color: '#fff',
-                  fontVariantNumeric: 'tabular-nums',
-                  textShadow: '0 1px 6px rgba(0,0,0,0.4)',
-                }}>
-                  {currency}{totals.pay !== null ? totals.pay.toFixed(2) : '0.00'}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: "clamp(9px, 1vw, 12px)",
+                fontFamily: sbFont,
+              }}
+            >
+              <div style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    fontSize: "clamp(5px, 0.55vw, 7px)",
+                    fontWeight: 600,
+                    color: "#93c5fd",
+                    opacity: 0.55,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    lineHeight: 1,
+                  }}
+                >
+                  Pay
+                </div>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    color: "#fff",
+                    fontVariantNumeric: "tabular-nums",
+                    textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {currency}
+                  {totals.pay !== null ? totals.pay.toFixed(2) : "0.00"}
                 </div>
               </div>
-              <div style={{
-                width: 1, height: '60%', alignSelf: 'stretch',
-                margin: '4px 0', background: 'rgba(255,255,255,0.08)',
-              }} />
-              <div style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 600,
-                  color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
-                  letterSpacing: '1px', lineHeight: 1,
-                }}>Multi</div>
-                <div style={{
-                  fontWeight: 800,
-                  fontVariantNumeric: 'tabular-nums',
-                  textShadow: '0 1px 6px rgba(0,0,0,0.4)',
-                  color: totals.multi !== null && totals.multi >= 1 ? '#4ade80' : '#f87171',
-                }}>
-                  {totals.multi !== null ? `${totals.multi.toFixed(2)}x` : '—'}
+              <div
+                style={{
+                  width: 1,
+                  height: "60%",
+                  alignSelf: "stretch",
+                  margin: "4px 0",
+                  background: "rgba(255,255,255,0.08)",
+                }}
+              />
+              <div style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    fontSize: "clamp(5px, 0.55vw, 7px)",
+                    fontWeight: 600,
+                    color: "#93c5fd",
+                    opacity: 0.55,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    lineHeight: 1,
+                  }}
+                >
+                  Multi
+                </div>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    fontVariantNumeric: "tabular-nums",
+                    textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+                    color:
+                      totals.multi !== null && totals.multi >= 1
+                        ? "#4ade80"
+                        : "#f87171",
+                  }}
+                >
+                  {totals.multi !== null ? `${totals.multi.toFixed(2)}x` : "—"}
                 </div>
               </div>
-              <div style={{
-                width: 1, height: '60%', alignSelf: 'stretch',
-                margin: '4px 0', background: 'rgba(255,255,255,0.08)',
-              }} />
-              <div style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 600,
-                  color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
-                  letterSpacing: '1px', lineHeight: 1,
-                }}>Cost</div>
-                <div style={{
-                  fontWeight: 800, color: '#fff',
-                  fontVariantNumeric: 'tabular-nums',
-                  textShadow: '0 1px 6px rgba(0,0,0,0.4)',
-                }}>
-                  {currency}{(totals.pay !== null && totals.multi !== null) ? ((totals.pay / totals.multi) || 0).toFixed(0) : '0'}
+              <div
+                style={{
+                  width: 1,
+                  height: "60%",
+                  alignSelf: "stretch",
+                  margin: "4px 0",
+                  background: "rgba(255,255,255,0.08)",
+                }}
+              />
+              <div style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    fontSize: "clamp(5px, 0.55vw, 7px)",
+                    fontWeight: 600,
+                    color: "#93c5fd",
+                    opacity: 0.55,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    lineHeight: 1,
+                  }}
+                >
+                  Cost
+                </div>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    color: "#fff",
+                    fontVariantNumeric: "tabular-nums",
+                    textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {currency}
+                  {totals.pay !== null && totals.multi !== null
+                    ? (totals.pay / totals.multi || 0).toFixed(0)
+                    : "0"}
                 </div>
               </div>
             </div>
@@ -1305,37 +2412,56 @@ function TournamentWidget({ config, theme }) {
     };
 
     return (
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        overflow: 'hidden', fontFamily: sbFont,
-        padding: `${padding}px`, gap: `${gap}px`,
-      }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          fontFamily: sbFont,
+          padding: `${padding}px`,
+          gap: `${gap}px`,
+        }}
+      >
         {/* Both player cards */}
-        {renderSbPlayer(currentMatch, 'player1')}
-        {renderSbPlayer(currentMatch, 'player2')}
+        {renderSbPlayer(currentMatch, "player1")}
+        {renderSbPlayer(currentMatch, "player2")}
 
         {/* Phase tabs at bottom */}
         {bracketData.length > 1 && (
-          <div style={{
-            display: 'flex', flexShrink: 0,
-            borderRadius: 6, overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}>
+          <div
+            style={{
+              display: "flex",
+              flexShrink: 0,
+              borderRadius: 6,
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
             {bracketData.map((round, rIdx) => {
               const isActive = rIdx === bracketActiveRound;
               return (
-                <div key={rIdx} style={{
-                  flex: 1, textAlign: 'center',
-                  padding: 'clamp(4px, 0.6vw, 8px) 4px',
-                  fontSize: 'clamp(8px, 1.1vw, 12px)',
-                  fontWeight: 800, fontFamily: sbFont,
-                  textTransform: 'uppercase', letterSpacing: '0.8px',
-                  color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
-                  background: isActive ? sbTabActive : sbTabBg,
-                  transition: 'all 0.2s',
-                  cursor: 'default',
-                  borderRight: rIdx < bracketData.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                }}>
+                <div
+                  key={rIdx}
+                  style={{
+                    flex: 1,
+                    textAlign: "center",
+                    padding: "clamp(4px, 0.6vw, 8px) 4px",
+                    fontSize: "clamp(8px, 1.1vw, 12px)",
+                    fontWeight: 800,
+                    fontFamily: sbFont,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.8px",
+                    color: isActive ? "#fff" : "rgba(255,255,255,0.4)",
+                    background: isActive ? sbTabActive : sbTabBg,
+                    transition: "all 0.2s",
+                    cursor: "default",
+                    borderRight:
+                      rIdx < bracketData.length - 1
+                        ? "1px solid rgba(255,255,255,0.08)"
+                        : "none",
+                  }}
+                >
                   {round.label}
                 </div>
               );
@@ -1351,85 +2477,122 @@ function TournamentWidget({ config, theme }) {
      Groups matches by bracket phase (Quarters / Semis / Final)
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
-    const gCyan   = c.esCyan   || '#00e5ff';
-    const gPurple = c.esPurple || '#64748b';
-    const gGold   = c.esGold   || '#fbbf24';
-    const gBg     = c.esBg     || '#030712';
-    const gBorder = c.esBorder || 'rgba(0,229,255,0.18)';
-    const gFont   = fontFamily;
-    const gGreen  = '#39ff14';
-    const gRed    = '#ff3b5c';
+    const gCyan = c.esCyan || "#00e5ff";
+    const gPurple = c.esPurple || "#64748b";
+    const gGold = c.esGold || "#fbbf24";
+    const gBg = c.esBg || "#030712";
+    const gBorder = c.esBorder || "rgba(0,229,255,0.18)";
+    const gFont = fontFamily;
+    const gGreen = "#39ff14";
+    const gRed = "#ff3b5c";
 
     /* ── Match classification (same as esports) ── */
     const isShatterHolding = shatterMatchIdx != null && shatterInfo;
     const currentMatch = isShatterHolding
-      ? (allMatches[shatterMatchIdx] || matches[currentMatchIdx] || matches[0])
-      : (matches[currentMatchIdx] || matches[0]);
+      ? allMatches[shatterMatchIdx] || matches[currentMatchIdx] || matches[0]
+      : matches[currentMatchIdx] || matches[0];
     const otherMatches = matches.filter((_, i) => i !== currentMatchIdx);
-    const queuedMatches = otherMatches.filter(m => m.winner == null);
+    const queuedMatches = otherMatches.filter((m) => m.winner == null);
     const doneMatches = isShatterHolding
-      ? otherMatches.filter(m => m.winner != null && m !== allMatches[shatterMatchIdx])
-      : otherMatches.filter(m => m.winner != null);
+      ? otherMatches.filter(
+          (m) => m.winner != null && m !== allMatches[shatterMatchIdx],
+        )
+      : otherMatches.filter((m) => m.winner != null);
 
     /* ── Phase info from bracket data ── */
     const bracketData = c.bracketData || [];
     const bracketActiveRound = c.bracketActiveRound ?? 0;
     const totalPhases = bracketData.length;
     const activePhaseLabel = bracketData[bracketActiveRound]?.label || null;
-    const isFinalPhase = bracketActiveRound === totalPhases - 1 && totalPhases > 1;
+    const isFinalPhase =
+      bracketActiveRound === totalPhases - 1 && totalPhases > 1;
     /* Champion celebration only when the LAST match of the entire tournament is decided */
-    const isGrandFinalMatch = isFinalPhase && currentMatch?.winner != null
-      && matches.every(m => m.winner != null);
+    const isGrandFinalMatch =
+      isFinalPhase &&
+      currentMatch?.winner != null &&
+      matches.every((m) => m.winner != null);
 
     /* Get cost & payment (Bo3 sums all rounds) */
     const getVals = (match, playerKey) => {
       if (!match?.rounds) return { cost: null, pay: null };
-      if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
-        let totalCost = 0, totalPay = 0, any = false;
+      if (match.type === "bonus_bo3" || match.type === "bonus_bo3_classic") {
+        let totalCost = 0,
+          totalPay = 0,
+          any = false;
         for (const round of match.rounds) {
           const rd = round[playerKey];
           if (!rd) continue;
-          const c2 = parseFloat(rd.bonusCost), p2 = parseFloat(rd.bonusPayout);
-          if (!isNaN(c2)) { totalCost += c2; any = true; }
-          if (!isNaN(p2)) { totalPay += p2; any = true; }
+          const c2 = parseFloat(rd.bonusCost),
+            p2 = parseFloat(rd.bonusPayout);
+          if (!isNaN(c2)) {
+            totalCost += c2;
+            any = true;
+          }
+          if (!isNaN(p2)) {
+            totalPay += p2;
+            any = true;
+          }
         }
-        return any ? { cost: totalCost, pay: totalPay } : { cost: null, pay: null };
+        return any
+          ? { cost: totalCost, pay: totalPay }
+          : { cost: null, pay: null };
       }
       const rd = match.rounds[0]?.[playerKey];
       if (!rd) return { cost: null, pay: null };
-      if (match.type === 'spins') {
-        const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+      if (match.type === "spins") {
+        const s = parseFloat(rd.startBalance),
+          e = parseFloat(rd.endBalance);
         return { cost: isNaN(s) ? null : s, pay: isNaN(e) ? null : e };
       }
-      const cost = parseFloat(rd.bonusCost), pay = parseFloat(rd.bonusPayout);
+      const cost = parseFloat(rd.bonusCost),
+        pay = parseFloat(rd.bonusPayout);
       return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
     };
 
     /* ── Bo3 pip system ── */
     const renderPips = (match, playerKey) => {
-      if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
+      if (match.type !== "bonus_bo3" && match.type !== "bonus_bo3_classic")
+        return null;
       const scoreboard = getBoScoreboard(match);
       if (!scoreboard) return null;
       return (
-        <div style={{
-          display: 'flex', gap: 'clamp(3px, 0.5vw, 5px)',
-          justifyContent: 'center', marginTop: 2,
-        }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "clamp(3px, 0.5vw, 5px)",
+            justifyContent: "center",
+            marginTop: 2,
+          }}
+        >
           {scoreboard.roundResults.map((rr, i) => {
             const won = rr.winner === playerKey;
-            const lost = rr.winner && rr.winner !== playerKey && rr.winner !== 'draw';
-            const draw = rr.winner === 'draw';
+            const lost =
+              rr.winner && rr.winner !== playerKey && rr.winner !== "draw";
+            const draw = rr.winner === "draw";
             const played = rr.winner != null;
             return (
-              <div key={i} style={{
-                width: 'clamp(8px, 1.2vw, 12px)', height: 'clamp(8px, 1.2vw, 12px)',
-                borderRadius: '50%',
-                background: won ? gGreen : lost ? gRed : draw ? gGold : 'rgba(255,255,255,0.12)',
-                boxShadow: won ? `0 0 6px ${gGreen}80, 0 0 12px ${gGreen}30`
-                  : lost ? `0 0 6px ${gRed}60` : 'none',
-                border: played ? 'none' : '1px solid rgba(255,255,255,0.15)',
-                transition: 'all 0.4s ease',
-              }} />
+              <div
+                key={i}
+                style={{
+                  width: "clamp(8px, 1.2vw, 12px)",
+                  height: "clamp(8px, 1.2vw, 12px)",
+                  borderRadius: "50%",
+                  background: won
+                    ? gGreen
+                    : lost
+                      ? gRed
+                      : draw
+                        ? gGold
+                        : "rgba(255,255,255,0.12)",
+                  boxShadow: won
+                    ? `0 0 6px ${gGreen}80, 0 0 12px ${gGreen}30`
+                    : lost
+                      ? `0 0 6px ${gRed}60`
+                      : "none",
+                  border: played ? "none" : "1px solid rgba(255,255,255,0.15)",
+                  transition: "all 0.4s ease",
+                }}
+              />
             );
           })}
         </div>
@@ -1437,9 +2600,15 @@ function TournamentWidget({ config, theme }) {
     };
 
     /* ── Enhanced player card (full-bleed image, neon glow, pips, cost/pay) ── */
-    const renderCard = (match, playerKey, large = false, isChampion = false, showStats = true) => {
-      const name = match[playerKey] || 'TBD';
-      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+    const renderCard = (
+      match,
+      playerKey,
+      large = false,
+      isChampion = false,
+      showStats = true,
+    ) => {
+      const name = match[playerKey] || "TBD";
+      const pSlot = playerKey === "player1" ? match.slot1 : match.slot2;
       const slotImage = pSlot?.image || null;
       const result = getPlayerResult(match, playerKey);
       const hasWinner = match.winner != null;
@@ -1447,19 +2616,34 @@ function TournamentWidget({ config, theme }) {
       const isLoser = hasWinner && !isWinner;
       const vals = getVals(match, playerKey);
 
-      const nameFs = large ? 'clamp(12px, 1.8vw, 16px)' : 'clamp(10px, 1.4vw, 13px)';
-      const statFs = large ? 'clamp(12px, 1.4vw, 14px)' : 'clamp(10px, 1.1vw, 12px)';
-      const labelFs = large ? 'clamp(7px, 0.7vw, 9px)' : 'clamp(6px, 0.6vw, 8px)';
-      const resultFs = large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(12px, 1.6vw, 16px)';
+      const nameFs = large
+        ? "clamp(12px, 1.8vw, 16px)"
+        : "clamp(10px, 1.4vw, 13px)";
+      const statFs = large
+        ? "clamp(12px, 1.4vw, 14px)"
+        : "clamp(10px, 1.1vw, 12px)";
+      const labelFs = large
+        ? "clamp(7px, 0.7vw, 9px)"
+        : "clamp(6px, 0.6vw, 8px)";
+      const resultFs = large
+        ? "clamp(16px, 2.5vw, 28px)"
+        : "clamp(12px, 1.6vw, 16px)";
 
       /* Neon status system — Super = gold glow, Extreme = red glow */
       const slotTag = pSlot?.tag; // 'super' | 'extreme' | null
-      const isSuper = slotTag === 'super';
-      const isExtreme = slotTag === 'extreme';
-      const gGoldBorder = '#fbbf24';
-      const gExtremeRed = '#ef4444';
-      const borderCol = isWinner ? gGreen : isLoser ? gRed
-        : isSuper ? gGoldBorder : isExtreme ? gExtremeRed : gBorder;
+      const isSuper = slotTag === "super";
+      const isExtreme = slotTag === "extreme";
+      const gGoldBorder = "#fbbf24";
+      const gExtremeRed = "#ef4444";
+      const borderCol = isWinner
+        ? gGreen
+        : isLoser
+          ? gRed
+          : isSuper
+            ? gGoldBorder
+            : isExtreme
+              ? gExtremeRed
+              : gBorder;
       const glowShadow = isWinner
         ? `0 0 16px ${gGreen}50, 0 0 40px ${gGreen}18`
         : isLoser
@@ -1471,109 +2655,187 @@ function TournamentWidget({ config, theme }) {
               : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${gCyan}10`;
 
       return (
-        <div style={{
-          width: '100%', height: '100%', position: 'relative',
-          display: 'flex', flexDirection: 'column',
-          border: `2px solid ${borderCol}`,
-          borderRadius: large ? 14 : 8,
-          overflow: 'hidden',
-          transition: 'all 0.5s ease',
-          boxShadow: glowShadow,
-          /* Loser gray-out animation */
-          opacity: isLoser ? 0.35 : 1,
-          filter: isLoser ? 'grayscale(0.85) brightness(0.5)' : 'none',
-          ...(isLoser ? { animation: 'grid-loser-fade 0.8s ease-out forwards' } : {}),
-          /* Champion holographic border */
-          ...(isChampion ? { animation: 'grid-champion-holo 3s linear infinite' } : {}),
-        }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            border: `2px solid ${borderCol}`,
+            borderRadius: large ? 14 : 8,
+            overflow: "hidden",
+            transition: "all 0.5s ease",
+            boxShadow: glowShadow,
+            /* Loser gray-out animation */
+            opacity: isLoser ? 0.35 : 1,
+            filter: isLoser ? "grayscale(0.85) brightness(0.5)" : "none",
+            ...(isLoser
+              ? { animation: "grid-loser-fade 0.8s ease-out forwards" }
+              : {}),
+            /* Champion holographic border */
+            ...(isChampion
+              ? { animation: "grid-champion-holo 3s linear infinite" }
+              : {}),
+          }}
+        >
           {/* Holographic foil overlay for champion */}
           {isChampion && (
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none',
-              background: 'linear-gradient(135deg, transparent 20%, rgba(57,255,20,0.08) 30%, rgba(0,229,255,0.1) 40%, rgba(251,191,36,0.08) 50%, transparent 60%)',
-              backgroundSize: '300% 300%',
-              animation: 'grid-holo-sweep 3s linear infinite',
-              mixBlendMode: 'screen', borderRadius: 'inherit',
-            }} />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 10,
+                pointerEvents: "none",
+                background:
+                  "linear-gradient(135deg, transparent 20%, rgba(57,255,20,0.08) 30%, rgba(0,229,255,0.1) 40%, rgba(251,191,36,0.08) 50%, transparent 60%)",
+                backgroundSize: "300% 300%",
+                animation: "grid-holo-sweep 3s linear infinite",
+                mixBlendMode: "screen",
+                borderRadius: "inherit",
+              }}
+            />
           )}
 
           {/* Full-bleed slot image */}
           {slotImage ? (
-            <img src={slotImage} alt={name} style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block',
-            }} />
+            <img
+              src={slotImage}
+              alt={name}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
           ) : (
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: `linear-gradient(135deg, ${gBg}, rgba(0,229,255,0.05))`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: large ? 28 : 16, color: 'rgba(255,255,255,0.06)',
-            }}>⚔</div>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `linear-gradient(135deg, ${gBg}, rgba(0,229,255,0.05))`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: large ? 28 : 16,
+                color: "rgba(255,255,255,0.06)",
+              }}
+            >
+              ⚔
+            </div>
           )}
 
           {/* Winner emoji (non-champion) */}
           {isWinner && !isChampion && (
-            <div style={{
-              position: 'absolute', top: 4, right: 4, zIndex: 5,
-              fontSize: large ? 20 : 14,
-              filter: `drop-shadow(0 0 6px ${gGold})`,
-            }}>🏆</div>
+            <div
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                zIndex: 5,
+                fontSize: large ? 20 : 14,
+                filter: `drop-shadow(0 0 6px ${gGold})`,
+              }}
+            >
+              🏆
+            </div>
           )}
 
           {/* Champion trophy emoji */}
           {isChampion && (
-            <div style={{
-              position: 'absolute', top: 4, right: 4, zIndex: 5,
-              fontSize: large ? 20 : 14,
-              filter: `drop-shadow(0 0 6px ${gGold})`,
-            }}>🏆</div>
+            <div
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                zIndex: 5,
+                fontSize: large ? 20 : 14,
+                filter: `drop-shadow(0 0 6px ${gGold})`,
+              }}
+            >
+              🏆
+            </div>
           )}
 
           {/* Super / Extreme tag badge — outer edge, vertical */}
-          {!isLoser && (isSuper || isExtreme) && (() => {
-            const isLeft = playerKey === 'player1';
-            const badgeText = isSuper ? 'SUPER' : 'EXTREME';
-            return (
-              <div style={{
-                position: 'absolute',
-                top: '50%', transform: 'translateY(-50%)',
-                ...(isLeft ? { left: 0 } : { right: 0 }),
-                zIndex: 6,
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                ...(isLeft ? { transform: 'translateY(-50%)' } : {}),
-                fontSize: 'clamp(7px, 0.85vw, 11px)', fontWeight: 900,
-                color: '#fff', textTransform: 'uppercase',
-                fontFamily: gFont, lineHeight: 1.3,
-                padding: 'clamp(4px, 0.5vw, 8px) clamp(3px, 0.4vw, 5px)',
-                borderRadius: isLeft ? '0 4px 4px 0' : '4px 0 0 4px',
-                background: isSuper
-                  ? `linear-gradient(180deg, ${gGoldBorder}, #d97706)`
-                  : `linear-gradient(180deg, ${gExtremeRed}, #b91c1c)`,
-                boxShadow: isSuper
-                  ? `0 0 12px ${gGoldBorder}70, inset 0 0 6px ${gGoldBorder}30`
-                  : `0 0 12px ${gExtremeRed}70, inset 0 0 6px ${gExtremeRed}30`,
-              }}>
-                {(isSuper ? '⭐' : '🔥')}
-                {badgeText.split('').map((ch, ci) => <span key={ci} style={{ display: 'block' }}>{ch}</span>)}
-              </div>
-            );
-          })()}
+          {!isLoser &&
+            (isSuper || isExtreme) &&
+            (() => {
+              const isLeft = playerKey === "player1";
+              const badgeText = isSuper ? "SUPER" : "EXTREME";
+              return (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    ...(isLeft ? { left: 0 } : { right: 0 }),
+                    zIndex: 6,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    ...(isLeft ? { transform: "translateY(-50%)" } : {}),
+                    fontSize: "clamp(7px, 0.85vw, 11px)",
+                    fontWeight: 900,
+                    color: "#fff",
+                    textTransform: "uppercase",
+                    fontFamily: gFont,
+                    lineHeight: 1.3,
+                    padding: "clamp(4px, 0.5vw, 8px) clamp(3px, 0.4vw, 5px)",
+                    borderRadius: isLeft ? "0 4px 4px 0" : "4px 0 0 4px",
+                    background: isSuper
+                      ? `linear-gradient(180deg, ${gGoldBorder}, #d97706)`
+                      : `linear-gradient(180deg, ${gExtremeRed}, #b91c1c)`,
+                    boxShadow: isSuper
+                      ? `0 0 12px ${gGoldBorder}70, inset 0 0 6px ${gGoldBorder}30`
+                      : `0 0 12px ${gExtremeRed}70, inset 0 0 6px ${gExtremeRed}30`,
+                  }}
+                >
+                  {isSuper ? "⭐" : "🔥"}
+                  {badgeText.split("").map((ch, ci) => (
+                    <span key={ci} style={{ display: "block" }}>
+                      {ch}
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
 
           {/* Name stripe + Bo3 pips — top */}
-          <div style={{
-            position: 'relative', zIndex: 2,
-            padding: large ? '5px 8px 3px' : '3px 6px 2px',
-            background: 'rgba(0,0,0,0.75)',
-            textAlign: 'center',
-          }}>
-            <div style={{
-              fontSize: nameFs, fontWeight: 800, fontFamily: gFont,
-              color: isWinner ? gGreen : isLoser ? 'rgba(255,255,255,0.3)' : '#fff',
-              textTransform: 'uppercase', letterSpacing: '0.8px',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              textShadow: isWinner ? `0 0 8px ${gGreen}40` : `0 0 8px ${gCyan}30`,
-            }}>{name}</div>
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              padding: large ? "5px 8px 3px" : "3px 6px 2px",
+              background: "rgba(0,0,0,0.75)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: nameFs,
+                fontWeight: 800,
+                fontFamily: gFont,
+                color: isWinner
+                  ? gGreen
+                  : isLoser
+                    ? "rgba(255,255,255,0.3)"
+                    : "#fff",
+                textTransform: "uppercase",
+                letterSpacing: "0.8px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textShadow: isWinner
+                  ? `0 0 8px ${gGreen}40`
+                  : `0 0 8px ${gCyan}30`,
+              }}
+            >
+              {name}
+            </div>
             {showStats && renderPips(match, playerKey)}
           </div>
 
@@ -1582,21 +2844,32 @@ function TournamentWidget({ config, theme }) {
 
           {/* Result overlay with neon glow */}
           {result !== null && (
-            <div style={{
-              position: 'relative', zIndex: 2,
-              textAlign: 'center', padding: '2px 0',
-              background: 'rgba(0,0,0,0.65)',
-              backdropFilter: 'blur(4px)',
-            }}>
-              <span style={{
-                fontSize: resultFs, fontWeight: 900, fontFamily: gFont,
-                color: result > 0 ? gGreen : result < 0 ? gRed : '#94a3b8',
-                textShadow: result > 0
-                  ? `0 0 12px ${gGreen}70, 0 0 24px ${gGreen}30`
-                  : result < 0
-                    ? `0 0 10px ${gRed}60, 0 0 20px ${gRed}25`
-                    : 'none',
-              }}>{fmtResult(result, match)}</span>
+            <div
+              style={{
+                position: "relative",
+                zIndex: 2,
+                textAlign: "center",
+                padding: "2px 0",
+                background: "rgba(0,0,0,0.65)",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: resultFs,
+                  fontWeight: 900,
+                  fontFamily: gFont,
+                  color: result > 0 ? gGreen : result < 0 ? gRed : "#94a3b8",
+                  textShadow:
+                    result > 0
+                      ? `0 0 12px ${gGreen}70, 0 0 24px ${gGreen}30`
+                      : result < 0
+                        ? `0 0 10px ${gRed}60, 0 0 20px ${gRed}25`
+                        : "none",
+                }}
+              >
+                {fmtResult(result, match)}
+              </span>
             </div>
           )}
 
@@ -1609,47 +2882,88 @@ function TournamentWidget({ config, theme }) {
     /* ── VS badge (⚔️ emoji) ── */
     const renderVs = (large = false, isLive = false) => {
       return (
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', flexShrink: 0, gap: 2,
-          padding: 0, background: 'none', border: 'none',
-          width: large ? 'clamp(30px, 4vw, 50px)' : 'clamp(20px, 3vw, 36px)',
-        }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            gap: 2,
+            padding: 0,
+            background: "none",
+            border: "none",
+            width: large ? "clamp(30px, 4vw, 50px)" : "clamp(20px, 3vw, 36px)",
+          }}
+        >
           {/* LIVE badge */}
           {isLive && (
-            <div style={{
-              fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 900,
-              color: '#fff', background: '#ef4444',
-              padding: '1px 5px', borderRadius: 3, letterSpacing: '1px',
-              textTransform: 'uppercase', fontFamily: gFont,
-              animation: 'grid-live-pulse 1.5s ease-in-out infinite',
-              boxShadow: '0 0 8px rgba(239,68,68,0.5)',
-            }}>LIVE</div>
+            <div
+              style={{
+                fontSize: "clamp(6px, 0.7vw, 8px)",
+                fontWeight: 900,
+                color: "#fff",
+                background: "#ef4444",
+                padding: "1px 5px",
+                borderRadius: 3,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                fontFamily: gFont,
+                animation: "grid-live-pulse 1.5s ease-in-out infinite",
+                boxShadow: "0 0 8px rgba(239,68,68,0.5)",
+              }}
+            >
+              LIVE
+            </div>
           )}
-          <div style={{
-            width: large ? 'clamp(36px, 4.5vw, 56px)' : 'clamp(24px, 3.2vw, 38px)',
-            height: large ? 'clamp(36px, 4.5vw, 56px)' : 'clamp(24px, 3.2vw, 38px)',
-            borderRadius: '50%',
-            background: 'transparent',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            overflow: 'hidden',
-            filter: `drop-shadow(0 0 10px ${gCyan}80) drop-shadow(0 0 22px ${gPurple}50)`,
-            ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-          }}>
-            <span style={{
-              fontSize: large ? 'clamp(22px, 3.2vw, 38px)' : 'clamp(16px, 2.4vw, 28px)',
-              lineHeight: 1,
-            }}>⚔️</span>
+          <div
+            style={{
+              width: large
+                ? "clamp(36px, 4.5vw, 56px)"
+                : "clamp(24px, 3.2vw, 38px)",
+              height: large
+                ? "clamp(36px, 4.5vw, 56px)"
+                : "clamp(24px, 3.2vw, 38px)",
+              borderRadius: "50%",
+              background: "transparent",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              filter: `drop-shadow(0 0 10px ${gCyan}80) drop-shadow(0 0 22px ${gPurple}50)`,
+              ...(large
+                ? { animation: "es-vs-pulse 2s ease-in-out infinite" }
+                : {}),
+            }}
+          >
+            <span
+              style={{
+                fontSize: large
+                  ? "clamp(22px, 3.2vw, 38px)"
+                  : "clamp(16px, 2.4vw, 28px)",
+                lineHeight: 1,
+              }}
+            >
+              ⚔️
+            </span>
           </div>
           {/* WINNER label for grand final */}
           {isGrandFinalMatch && large && (
-            <div style={{
-              fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 900,
-              color: gGold, fontFamily: gFont, letterSpacing: '1.5px',
-              textTransform: 'uppercase',
-              textShadow: `0 0 10px ${gGold}60, 0 0 20px ${gGold}30`,
-              animation: 'grid-winner-scale 1s ease-out forwards, es-text-glow 2s ease-in-out 1s infinite',
-            }}>WINNER</div>
+            <div
+              style={{
+                fontSize: "clamp(7px, 0.9vw, 10px)",
+                fontWeight: 900,
+                color: gGold,
+                fontFamily: gFont,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                textShadow: `0 0 10px ${gGold}60, 0 0 20px ${gGold}30`,
+                animation:
+                  "grid-winner-scale 1s ease-out forwards, es-text-glow 2s ease-in-out 1s infinite",
+              }}
+            >
+              WINNER
+            </div>
           )}
         </div>
       );
@@ -1657,20 +2971,43 @@ function TournamentWidget({ config, theme }) {
 
     /* ── Queued match row (3D perspective) ── */
     const renderQueuedMatch = (match, idx) => (
-      <div key={`${match.player1}|${match.player2}`} style={{
-        display: 'flex', alignItems: 'stretch', gap: 'clamp(1px, 0.2vw, 3px)',
-        background: 'transparent',
-        borderRadius: 10, padding: 'clamp(2px, 0.3vw, 4px)',
-        position: 'relative', overflow: 'visible',
-        minHeight: 'clamp(60px, 12vh, 110px)',
-        perspective: '600px',
-      }}>
-        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(8deg)', transformOrigin: 'right center', transition: 'transform 0.3s ease' }}>
-          {renderCard(match, 'player1', false, false, false)}
+      <div
+        key={`${match.player1}|${match.player2}`}
+        style={{
+          display: "flex",
+          alignItems: "stretch",
+          gap: "clamp(1px, 0.2vw, 3px)",
+          background: "transparent",
+          borderRadius: 10,
+          padding: "clamp(2px, 0.3vw, 4px)",
+          position: "relative",
+          overflow: "visible",
+          minHeight: "clamp(60px, 12vh, 110px)",
+          perspective: "600px",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            transform: "rotateY(8deg)",
+            transformOrigin: "right center",
+            transition: "transform 0.3s ease",
+          }}
+        >
+          {renderCard(match, "player1", false, false, false)}
         </div>
         {renderVs(false)}
-        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(-8deg)', transformOrigin: 'left center', transition: 'transform 0.3s ease' }}>
-          {renderCard(match, 'player2', false, false, false)}
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            transform: "rotateY(-8deg)",
+            transformOrigin: "left center",
+            transition: "transform 0.3s ease",
+          }}
+        >
+          {renderCard(match, "player2", false, false, false)}
         </div>
       </div>
     );
@@ -1678,48 +3015,87 @@ function TournamentWidget({ config, theme }) {
     /* ── Done match row ── */
     const renderDoneRow = (match, idx) => {
       const winner = match.winner;
-      const p1Won = winner === 'player1';
-      const p2Won = winner === 'player2';
-      const p1 = match.player1 || 'TBD';
-      const p2 = match.player2 || 'TBD';
-      const fs = 'clamp(9px, 1.3vw, 14px)';
+      const p1Won = winner === "player1";
+      const p2Won = winner === "player2";
+      const p1 = match.player1 || "TBD";
+      const p2 = match.player2 || "TBD";
+      const fs = "clamp(9px, 1.3vw, 14px)";
       return (
-        <div key={`${p1}|${p2}`} style={{
-          display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 8px)',
-          padding: 'clamp(2px, 0.35vw, 5px) clamp(6px, 0.8vw, 10px)',
-          background: 'rgba(0,0,0,0.35)',
-          border: `1px solid ${p1Won || p2Won ? `${gGreen}25` : gBorder}`,
-          borderRadius: 6,
-          backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-          animation: `tw-done-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.06}s both`,
-        }}>
-          <span style={{
-            flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 800, fontFamily: gFont,
-            color: p1Won ? gGreen : 'rgba(255,255,255,0.3)',
-            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            letterSpacing: '0.5px',
-            textShadow: p1Won ? `0 0 8px ${gGreen}50` : 'none',
-            textDecoration: !p1Won ? 'line-through' : 'none',
-            textDecorationColor: !p1Won ? '#ef4444' : undefined,
-            textDecorationThickness: '2px',
-          }}>{p1Won ? '🏆 ' : ''}{p1}</span>
-          <span style={{
-            fontSize: 'clamp(10px, 1.2vw, 14px)', flexShrink: 0,
-            width: 'clamp(18px, 2vw, 24px)', height: 'clamp(18px, 2vw, 24px)',
-            borderRadius: '50%', overflow: 'hidden',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            filter: `drop-shadow(0 0 4px ${gCyan}50)`,
-          }}>⚔️</span>
-          <span style={{
-            flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 800, fontFamily: gFont,
-            color: p2Won ? gGreen : 'rgba(255,255,255,0.3)',
-            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            letterSpacing: '0.5px',
-            textShadow: p2Won ? `0 0 8px ${gGreen}50` : 'none',
-            textDecoration: !p2Won ? 'line-through' : 'none',
-            textDecorationColor: !p2Won ? '#ef4444' : undefined,
-            textDecorationThickness: '2px',
-          }}>{p2}{p2Won ? ' 🏆' : ''}</span>
+        <div
+          key={`${p1}|${p2}`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "clamp(4px, 0.6vw, 8px)",
+            padding: "clamp(2px, 0.35vw, 5px) clamp(6px, 0.8vw, 10px)",
+            background: "rgba(0,0,0,0.35)",
+            border: `1px solid ${p1Won || p2Won ? `${gGreen}25` : gBorder}`,
+            borderRadius: 6,
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+            animation: `tw-done-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.06}s both`,
+          }}
+        >
+          <span
+            style={{
+              flex: 1,
+              textAlign: "right",
+              fontSize: fs,
+              fontWeight: 800,
+              fontFamily: gFont,
+              color: p1Won ? gGreen : "rgba(255,255,255,0.3)",
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              letterSpacing: "0.5px",
+              textShadow: p1Won ? `0 0 8px ${gGreen}50` : "none",
+              textDecoration: !p1Won ? "line-through" : "none",
+              textDecorationColor: !p1Won ? "#ef4444" : undefined,
+              textDecorationThickness: "2px",
+            }}
+          >
+            {p1Won ? "🏆 " : ""}
+            {p1}
+          </span>
+          <span
+            style={{
+              fontSize: "clamp(10px, 1.2vw, 14px)",
+              flexShrink: 0,
+              width: "clamp(18px, 2vw, 24px)",
+              height: "clamp(18px, 2vw, 24px)",
+              borderRadius: "50%",
+              overflow: "hidden",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              filter: `drop-shadow(0 0 4px ${gCyan}50)`,
+            }}
+          >
+            ⚔️
+          </span>
+          <span
+            style={{
+              flex: 1,
+              textAlign: "left",
+              fontSize: fs,
+              fontWeight: 800,
+              fontFamily: gFont,
+              color: p2Won ? gGreen : "rgba(255,255,255,0.3)",
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              letterSpacing: "0.5px",
+              textShadow: p2Won ? `0 0 8px ${gGreen}50` : "none",
+              textDecoration: !p2Won ? "line-through" : "none",
+              textDecorationColor: !p2Won ? "#ef4444" : undefined,
+              textDecorationThickness: "2px",
+            }}
+          >
+            {p2}
+            {p2Won ? " 🏆" : ""}
+          </span>
         </div>
       );
     };
@@ -1728,7 +3104,9 @@ function TournamentWidget({ config, theme }) {
     const isCurrentLive = !hasCurrentWinner;
 
     /* ── Stable key for match transition animations ── */
-    const matchKey = currentMatch ? `${currentMatch.player1}|${currentMatch.player2}` : 'empty';
+    const matchKey = currentMatch
+      ? `${currentMatch.player1}|${currentMatch.player2}`
+      : "empty";
 
     /* ── Phase lookup by flat index: map each allMatches index → phase label ── */
     const phaseLabelByIdx = (() => {
@@ -1744,17 +3122,18 @@ function TournamentWidget({ config, theme }) {
     })();
     const getMatchPhaseLabel = (match) => {
       const idx = allMatches.indexOf(match);
-      return idx >= 0 ? (phaseLabelByIdx[idx] || null) : null;
+      return idx >= 0 ? phaseLabelByIdx[idx] || null : null;
     };
 
     /* ── Bo3 current round indicator ── */
     const getCurrentBoRound = (match) => {
-      if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
+      if (match.type !== "bonus_bo3" && match.type !== "bonus_bo3_classic")
+        return null;
       if (match.winner != null) return null; // match done
       const scoreboard = getBoScoreboard(match);
       if (!scoreboard) return 1;
       // Current round = first round with no winner yet
-      const idx = scoreboard.roundResults.findIndex(rr => rr.winner == null);
+      const idx = scoreboard.roundResults.findIndex((rr) => rr.winner == null);
       return idx >= 0 ? idx + 1 : scoreboard.roundResults.length;
     };
 
@@ -1768,53 +3147,91 @@ function TournamentWidget({ config, theme }) {
     /* ── Group queued matches by phase, show divider label between phase groups ── */
     const queuedWithPhase = visibleQueued.map((m, i) => {
       const label = getMatchPhaseLabel(m);
-      const nextLabel = i < visibleQueued.length - 1 ? getMatchPhaseLabel(visibleQueued[i + 1]) : null;
+      const nextLabel =
+        i < visibleQueued.length - 1
+          ? getMatchPhaseLabel(visibleQueued[i + 1])
+          : null;
       // Show next phase label below the last match of each phase group (divider between phases)
-      return { match: m, showLabel: label && nextLabel && label !== nextLabel ? nextLabel : null };
+      return {
+        match: m,
+        showLabel: label && nextLabel && label !== nextLabel ? nextLabel : null,
+      };
     });
 
     return (
-      <div style={{
-        display: 'flex', flexDirection: 'column',
-        overflow: 'hidden', fontFamily: gFont,
-        background: 'transparent',
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          fontFamily: gFont,
+          background: "transparent",
+        }}
+      >
         {/* ── Tournament title ── */}
         {c.bracketName && (
-          <div style={{
-            textAlign: 'center', padding: 'clamp(3px, 0.4vw, 6px) 0',
-          }}>
-            <span style={{
-              fontSize: 'clamp(11px, 1.5vw, 18px)', fontWeight: 900,
-              color: '#fff', textTransform: 'uppercase', letterSpacing: '2.5px',
-              fontFamily: gFont, textShadow: `0 0 14px ${gCyan}35`,
-            }}>⚔ {c.bracketName}</span>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "clamp(3px, 0.4vw, 6px) 0",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "clamp(11px, 1.5vw, 18px)",
+                fontWeight: 900,
+                color: "#fff",
+                textTransform: "uppercase",
+                letterSpacing: "2.5px",
+                fontFamily: gFont,
+                textShadow: `0 0 14px ${gCyan}35`,
+              }}
+            >
+              ⚔ {c.bracketName}
+            </span>
           </div>
         )}
 
         {/* ── Queued matches (max 3 rows, phase label on first of each group) ── */}
         {visibleQueued.length > 0 && (
-          <div style={{
-            flexShrink: 0, display: 'flex', flexDirection: 'column',
-            gap: 'clamp(3px, 0.5vw, 8px)',
-            padding: 'clamp(3px, 0.5vw, 8px)',
-          }}>
+          <div
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(3px, 0.5vw, 8px)",
+              padding: "clamp(3px, 0.5vw, 8px)",
+            }}
+          >
             {queuedWithPhase.map((item, i) => (
-              <div key={`${item.match.player1}|${item.match.player2}`} style={{
-                display: 'flex', flexDirection: 'column', gap: 0,
-                animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.07}s both`,
-              }}>
+              <div
+                key={`${item.match.player1}|${item.match.player2}`}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 0,
+                  animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.07}s both`,
+                }}
+              >
                 {renderQueuedMatch(item.match, i)}
                 {/* Phase label — below the first match of each phase group */}
                 {item.showLabel && (
-                  <div style={{
-                    textAlign: 'center',
-                    fontSize: 'clamp(8px, 1vw, 12px)', fontWeight: 800,
-                    color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase',
-                    letterSpacing: '2.5px', fontFamily: gFont,
-                    padding: 'clamp(4px, 0.6vw, 8px) 0 clamp(2px, 0.3vw, 4px)',
-                    textShadow: `0 0 10px ${gCyan}30`,
-                  }}>— {item.showLabel} —</div>
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontSize: "clamp(8px, 1vw, 12px)",
+                      fontWeight: 800,
+                      color: "rgba(255,255,255,0.5)",
+                      textTransform: "uppercase",
+                      letterSpacing: "2.5px",
+                      fontFamily: gFont,
+                      padding:
+                        "clamp(4px, 0.6vw, 8px) 0 clamp(2px, 0.3vw, 4px)",
+                      textShadow: `0 0 10px ${gCyan}30`,
+                    }}
+                  >
+                    — {item.showLabel} —
+                  </div>
                 )}
               </div>
             ))}
@@ -1822,112 +3239,199 @@ function TournamentWidget({ config, theme }) {
         )}
 
         {/* ── Energy divider ── */}
-        <div style={{
-          height: 2, flexShrink: 0, position: 'relative',
-          background: `linear-gradient(90deg, transparent, ${gCyan}60, ${gPurple}60, transparent)`,
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            position: 'absolute', top: 0, left: 0, width: '30%', height: '100%',
-            background: `linear-gradient(90deg, transparent, ${gCyan}, transparent)`,
-            animation: 'es-energy-line 2.5s linear infinite',
-          }} />
+        <div
+          style={{
+            height: 2,
+            flexShrink: 0,
+            position: "relative",
+            background: `linear-gradient(90deg, transparent, ${gCyan}60, ${gPurple}60, transparent)`,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "30%",
+              height: "100%",
+              background: `linear-gradient(90deg, transparent, ${gCyan}, transparent)`,
+              animation: "es-energy-line 2.5s linear infinite",
+            }}
+          />
         </div>
 
         {/* ── Current match (Now Playing) ── */}
         {currentMatch && (
-          <div style={{
-            flexShrink: 0, padding: 'clamp(4px, 0.8vw, 12px)',
-            position: 'relative',
-          }}>
+          <div
+            style={{
+              flexShrink: 0,
+              padding: "clamp(4px, 0.8vw, 12px)",
+              position: "relative",
+            }}
+          >
             {/* Pulsing bg glow */}
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 0,
-              background: isGrandFinalMatch
-                ? `radial-gradient(ellipse at center, ${gGold}15, transparent 70%)`
-                : `radial-gradient(ellipse at center, ${gPurple}12, transparent 70%)`,
-              animation: 'es-bg-pulse 3s ease-in-out infinite',
-            }} />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 0,
+                background: isGrandFinalMatch
+                  ? `radial-gradient(ellipse at center, ${gGold}15, transparent 70%)`
+                  : `radial-gradient(ellipse at center, ${gPurple}12, transparent 70%)`,
+                animation: "es-bg-pulse 3s ease-in-out infinite",
+              }}
+            />
 
             {/* Grand final particle burst */}
             {isGrandFinalMatch && (
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-                background: `radial-gradient(circle at 30% 40%, ${gGold}10 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${gCyan}08 0%, transparent 50%)`,
-                animation: 'grid-sparkle-drift 4s linear infinite',
-              }} />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 0,
+                  pointerEvents: "none",
+                  background: `radial-gradient(circle at 30% 40%, ${gGold}10 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${gCyan}08 0%, transparent 50%)`,
+                  animation: "grid-sparkle-drift 4s linear infinite",
+                }}
+              />
             )}
 
             {/* Flipper header: alternates "Now Playing" ↔ phase label every 15s */}
-            <div style={{
-              textAlign: 'center', marginBottom: 'clamp(2px, 0.4vh, 6px)',
-              position: 'relative', zIndex: 1,
-            }}>
-              <div style={{
-                position: 'relative', overflow: 'hidden',
-                height: 'clamp(16px, 2.4vw, 26px)',
-              }}>
+            <div
+              style={{
+                textAlign: "center",
+                marginBottom: "clamp(2px, 0.4vh, 6px)",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  height: "clamp(16px, 2.4vw, 26px)",
+                }}
+              >
                 {/* "Now Playing" or phase label — CSS flip */}
-                <span key={flipperTick} style={{
-                  display: 'inline-block',
-                  fontSize: 'clamp(10px, 1.5vw, 17px)', fontWeight: 900,
-                  color: isGrandFinalMatch ? gGold : flipperShowPhase ? gCyan : gGold,
-                  textTransform: 'uppercase', letterSpacing: '3.5px',
-                  fontFamily: gFont,
-                  textShadow: isGrandFinalMatch
-                    ? `0 0 14px ${gGold}60, 0 0 28px ${gGold}25`
-                    : flipperShowPhase
-                      ? `0 0 12px ${gCyan}70, 0 0 24px ${gCyan}30`
-                      : `0 0 14px ${gGold}60, 0 0 28px ${gGold}25`,
-                  animation: 'grid-flipper-in 0.5s ease-out forwards',
-                }}>
+                <span
+                  key={flipperTick}
+                  style={{
+                    display: "inline-block",
+                    fontSize: "clamp(10px, 1.5vw, 17px)",
+                    fontWeight: 900,
+                    color: isGrandFinalMatch
+                      ? gGold
+                      : flipperShowPhase
+                        ? gCyan
+                        : gGold,
+                    textTransform: "uppercase",
+                    letterSpacing: "3.5px",
+                    fontFamily: gFont,
+                    textShadow: isGrandFinalMatch
+                      ? `0 0 14px ${gGold}60, 0 0 28px ${gGold}25`
+                      : flipperShowPhase
+                        ? `0 0 12px ${gCyan}70, 0 0 24px ${gCyan}30`
+                        : `0 0 14px ${gGold}60, 0 0 28px ${gGold}25`,
+                    animation: "grid-flipper-in 0.5s ease-out forwards",
+                  }}
+                >
                   {isGrandFinalMatch
-                    ? '🏆 Champion Crowned 🏆'
+                    ? "🏆 Champion Crowned 🏆"
                     : flipperShowPhase
                       ? `▸ ${activePhaseLabel}`
-                      : '⚡ Now Playing ⚡'}
+                      : "⚡ Now Playing ⚡"}
                 </span>
               </div>
 
               {/* Bo3 Round indicator */}
               {boRound && !isGrandFinalMatch && (
-                <div style={{
-                  fontSize: 'clamp(8px, 0.9vw, 11px)', fontWeight: 800,
-                  color: gPurple, textTransform: 'uppercase', letterSpacing: '2px',
-                  fontFamily: gFont, marginTop: 2,
-                  textShadow: `0 0 10px ${gPurple}50, 0 0 20px ${gPurple}20`,
-                }}>Round {boRound}</div>
+                <div
+                  style={{
+                    fontSize: "clamp(8px, 0.9vw, 11px)",
+                    fontWeight: 800,
+                    color: gPurple,
+                    textTransform: "uppercase",
+                    letterSpacing: "2px",
+                    fontFamily: gFont,
+                    marginTop: 2,
+                    textShadow: `0 0 10px ${gPurple}50, 0 0 20px ${gPurple}20`,
+                  }}
+                >
+                  Round {boRound}
+                </div>
               )}
             </div>
 
             {/* Match cards */}
-            <div key={matchKey} style={{
-              display: 'flex', alignItems: 'stretch',
-              gap: 'clamp(3px, 0.5vw, 8px)',
-              background: 'transparent',
-              borderRadius: 12, padding: 'clamp(2px, 0.3vw, 4px)',
-              position: 'relative', zIndex: 1, overflow: 'visible',
-              minHeight: 'clamp(110px, 24vh, 200px)',
-              animation: 'tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-              transformStyle: 'preserve-3d',
-            }}>
-              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-l 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both' }}>
-                {renderCard(currentMatch, 'player1', true, isGrandFinalMatch && currentMatch.winner === 'player1')}
+            <div
+              key={matchKey}
+              style={{
+                display: "flex",
+                alignItems: "stretch",
+                gap: "clamp(3px, 0.5vw, 8px)",
+                background: "transparent",
+                borderRadius: 12,
+                padding: "clamp(2px, 0.3vw, 4px)",
+                position: "relative",
+                zIndex: 1,
+                overflow: "visible",
+                minHeight: "clamp(110px, 24vh, 200px)",
+                animation:
+                  "tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
+                transformStyle: "preserve-3d",
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  animation:
+                    "tw-card-enter-l 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both",
+                }}
+              >
+                {renderCard(
+                  currentMatch,
+                  "player1",
+                  true,
+                  isGrandFinalMatch && currentMatch.winner === "player1",
+                )}
               </div>
-              <div style={{ flexShrink: 0, animation: 'tw-vs-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both' }}>
+              <div
+                style={{
+                  flexShrink: 0,
+                  animation:
+                    "tw-vs-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both",
+                }}
+              >
                 {renderVs(true, isCurrentLive)}
               </div>
-              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-r 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both' }}>
-                {renderCard(currentMatch, 'player2', true, isGrandFinalMatch && currentMatch.winner === 'player2')}
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  animation:
+                    "tw-card-enter-r 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both",
+                }}
+              >
+                {renderCard(
+                  currentMatch,
+                  "player2",
+                  true,
+                  isGrandFinalMatch && currentMatch.winner === "player2",
+                )}
               </div>
 
               {/* Shatter overlay */}
-              {layout === 'grid' && shatterInfo && (
+              {layout === "grid" && shatterInfo && (
                 <ShatterEffect
                   imageUrl={shatterInfo.imageUrl}
                   side={shatterInfo.side}
                   accentColor={gCyan}
-                  onComplete={() => { setShatterInfo(null); setShatterMatchIdx(null); }}
+                  onComplete={() => {
+                    setShatterInfo(null);
+                    setShatterMatchIdx(null);
+                  }}
                 />
               )}
             </div>
@@ -1935,123 +3439,199 @@ function TournamentWidget({ config, theme }) {
         )}
 
         {/* ── CHAMPION CELEBRATION OVERLAY — confetti + 3D winner display ── */}
-        {isGrandFinalMatch && (() => {
-          const champName = currentMatch.winner === 'player1' ? currentMatch.player1 : currentMatch.player2;
-          const champSlot = currentMatch.winner === 'player1' ? currentMatch.slot1 : currentMatch.slot2;
-          const champImg = champSlot?.image || null;
-          /* 30 confetti pieces with random positions, colours, delays */
-          const confettiColors = ['#fbbf24', '#39ff14', '#00e5ff', '#ff3e9d', '#7c3aed', '#ef4444', '#f472b6', '#34d399', '#facc15', '#60a5fa'];
-          const confetti = Array.from({ length: 40 }, (_, i) => ({
-            id: i,
-            left: `${Math.random() * 100}%`,
-            delay: `${Math.random() * 2.5}s`,
-            dur: `${2.5 + Math.random() * 2}s`,
-            size: 4 + Math.random() * 6,
-            color: confettiColors[i % confettiColors.length],
-            shape: i % 3, // 0=square, 1=circle, 2=rect
-            drift: (Math.random() - 0.5) * 80,
-            spin: Math.random() * 720 - 360,
-          }));
-          return (
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              overflow: 'hidden',
-              background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)',
-              animation: 'grid-champ-overlay-in 0.6s ease-out forwards',
-            }}>
-              {/* Confetti pieces */}
-              {confetti.map(p => (
-                <div key={p.id} style={{
-                  position: 'absolute', top: -10,
-                  left: p.left,
-                  width: p.shape === 2 ? p.size * 2 : p.size,
-                  height: p.shape === 2 ? p.size * 0.6 : p.size,
-                  borderRadius: p.shape === 1 ? '50%' : '1px',
-                  background: p.color,
-                  animationName: 'grid-confetti-fall',
-                  animationDuration: p.dur,
-                  animationDelay: p.delay,
-                  animationTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                  animationIterationCount: 'infinite',
-                  animationFillMode: 'forwards',
-                  opacity: 0.9,
-                  '--confetti-drift': `${p.drift}px`,
-                  '--confetti-spin': `${p.spin}deg`,
-                }} />
-              ))}
+        {isGrandFinalMatch &&
+          (() => {
+            const champName =
+              currentMatch.winner === "player1"
+                ? currentMatch.player1
+                : currentMatch.player2;
+            const champSlot =
+              currentMatch.winner === "player1"
+                ? currentMatch.slot1
+                : currentMatch.slot2;
+            const champImg = champSlot?.image || null;
+            /* 30 confetti pieces with random positions, colours, delays */
+            const confettiColors = [
+              "#fbbf24",
+              "#39ff14",
+              "#00e5ff",
+              "#ff3e9d",
+              "#7c3aed",
+              "#ef4444",
+              "#f472b6",
+              "#34d399",
+              "#facc15",
+              "#60a5fa",
+            ];
+            const confetti = Array.from({ length: 40 }, (_, i) => ({
+              id: i,
+              left: `${Math.random() * 100}%`,
+              delay: `${Math.random() * 2.5}s`,
+              dur: `${2.5 + Math.random() * 2}s`,
+              size: 4 + Math.random() * 6,
+              color: confettiColors[i % confettiColors.length],
+              shape: i % 3, // 0=square, 1=circle, 2=rect
+              drift: (Math.random() - 0.5) * 80,
+              spin: Math.random() * 720 - 360,
+            }));
+            return (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 50,
+                  pointerEvents: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  background:
+                    "radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)",
+                  animation: "grid-champ-overlay-in 0.6s ease-out forwards",
+                }}
+              >
+                {/* Confetti pieces */}
+                {confetti.map((p) => (
+                  <div
+                    key={p.id}
+                    style={{
+                      position: "absolute",
+                      top: -10,
+                      left: p.left,
+                      width: p.shape === 2 ? p.size * 2 : p.size,
+                      height: p.shape === 2 ? p.size * 0.6 : p.size,
+                      borderRadius: p.shape === 1 ? "50%" : "1px",
+                      background: p.color,
+                      animationName: "grid-confetti-fall",
+                      animationDuration: p.dur,
+                      animationDelay: p.delay,
+                      animationTimingFunction:
+                        "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      animationIterationCount: "infinite",
+                      animationFillMode: "forwards",
+                      opacity: 0.9,
+                      "--confetti-drift": `${p.drift}px`,
+                      "--confetti-spin": `${p.spin}deg`,
+                    }}
+                  />
+                ))}
 
-              {/* 3D Champion card */}
-              <div style={{
-                animation: 'grid-champ-card-in 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-                perspective: '800px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                transformStyle: 'preserve-3d',
-              }}>
-                {/* "CHAMPION" title */}
-                <div style={{
-                  fontSize: 'clamp(16px, 3vw, 32px)', fontWeight: 900,
-                  color: gGold, textTransform: 'uppercase',
-                  letterSpacing: '6px', fontFamily: gFont,
-                  textShadow: `0 0 20px ${gGold}80, 0 0 40px ${gGold}40, 0 2px 4px rgba(0,0,0,0.6)`,
-                  marginBottom: 'clamp(8px, 1.5vh, 16px)',
-                  animation: 'grid-champ-title-in 0.8s ease-out 0.4s both',
-                }}>🏆 CHAMPION 🏆</div>
-
-                {/* Slot image in 3D rotating frame */}
-                {champImg && (
-                  <div style={{
-                    width: 'clamp(120px, 22vw, 220px)', height: 'clamp(90px, 16vw, 165px)',
-                    borderRadius: 16, overflow: 'hidden', position: 'relative',
-                    border: `3px solid ${gGold}`,
-                    boxShadow: `0 0 30px ${gGold}50, 0 0 60px ${gGold}20, 0 8px 32px rgba(0,0,0,0.6)`,
-                    animation: 'grid-champ-3d-float 4s ease-in-out 1.2s infinite',
-                    transformStyle: 'preserve-3d',
-                  }}>
-                    <img src={champImg} alt={champName} style={{
-                      width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                    }} />
-                    {/* Shimmer sweep */}
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)',
-                      backgroundSize: '300% 100%',
-                      animation: 'grid-champ-shimmer 3s ease-in-out 1.5s infinite',
-                    }} />
+                {/* 3D Champion card */}
+                <div
+                  style={{
+                    animation:
+                      "grid-champ-card-in 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+                    perspective: "800px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    transformStyle: "preserve-3d",
+                  }}
+                >
+                  {/* "CHAMPION" title */}
+                  <div
+                    style={{
+                      fontSize: "clamp(16px, 3vw, 32px)",
+                      fontWeight: 900,
+                      color: gGold,
+                      textTransform: "uppercase",
+                      letterSpacing: "6px",
+                      fontFamily: gFont,
+                      textShadow: `0 0 20px ${gGold}80, 0 0 40px ${gGold}40, 0 2px 4px rgba(0,0,0,0.6)`,
+                      marginBottom: "clamp(8px, 1.5vh, 16px)",
+                      animation: "grid-champ-title-in 0.8s ease-out 0.4s both",
+                    }}
+                  >
+                    🏆 CHAMPION 🏆
                   </div>
-                )}
 
-                {/* Winner name */}
-                <div style={{
-                  marginTop: 'clamp(8px, 1.5vh, 16px)',
-                  fontSize: 'clamp(14px, 2.5vw, 26px)', fontWeight: 900,
-                  color: '#fff', textTransform: 'uppercase',
-                  letterSpacing: '4px', fontFamily: gFont,
-                  textShadow: `0 0 12px ${gCyan}60, 0 0 24px ${gCyan}30, 0 2px 4px rgba(0,0,0,0.6)`,
-                  animation: 'grid-champ-name-in 0.8s ease-out 0.8s both',
-                }}>{champName}</div>
+                  {/* Slot image in 3D rotating frame */}
+                  {champImg && (
+                    <div
+                      style={{
+                        width: "clamp(120px, 22vw, 220px)",
+                        height: "clamp(90px, 16vw, 165px)",
+                        borderRadius: 16,
+                        overflow: "hidden",
+                        position: "relative",
+                        border: `3px solid ${gGold}`,
+                        boxShadow: `0 0 30px ${gGold}50, 0 0 60px ${gGold}20, 0 8px 32px rgba(0,0,0,0.6)`,
+                        animation:
+                          "grid-champ-3d-float 4s ease-in-out 1.2s infinite",
+                        transformStyle: "preserve-3d",
+                      }}
+                    >
+                      <img
+                        src={champImg}
+                        alt={champName}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                      {/* Shimmer sweep */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background:
+                            "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)",
+                          backgroundSize: "300% 100%",
+                          animation:
+                            "grid-champ-shimmer 3s ease-in-out 1.5s infinite",
+                        }}
+                      />
+                    </div>
+                  )}
 
-                {/* Animated star/sparkle ring */}
-                <div style={{
-                  marginTop: 'clamp(4px, 0.8vh, 8px)',
-                  fontSize: 'clamp(12px, 2vw, 20px)',
-                  animation: 'grid-champ-stars-in 1s ease-out 1s both',
-                  letterSpacing: '4px',
-                  filter: `drop-shadow(0 0 6px ${gGold})`,
-                }}>✦ ✦ ✦ ✦ ✦</div>
+                  {/* Winner name */}
+                  <div
+                    style={{
+                      marginTop: "clamp(8px, 1.5vh, 16px)",
+                      fontSize: "clamp(14px, 2.5vw, 26px)",
+                      fontWeight: 900,
+                      color: "#fff",
+                      textTransform: "uppercase",
+                      letterSpacing: "4px",
+                      fontFamily: gFont,
+                      textShadow: `0 0 12px ${gCyan}60, 0 0 24px ${gCyan}30, 0 2px 4px rgba(0,0,0,0.6)`,
+                      animation: "grid-champ-name-in 0.8s ease-out 0.8s both",
+                    }}
+                  >
+                    {champName}
+                  </div>
+
+                  {/* Animated star/sparkle ring */}
+                  <div
+                    style={{
+                      marginTop: "clamp(4px, 0.8vh, 8px)",
+                      fontSize: "clamp(12px, 2vw, 20px)",
+                      animation: "grid-champ-stars-in 1s ease-out 1s both",
+                      letterSpacing: "4px",
+                      filter: `drop-shadow(0 0 6px ${gGold})`,
+                    }}
+                  >
+                    ✦ ✦ ✦ ✦ ✦
+                  </div>
+                </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
 
         {/* ── Done matches ── */}
         {doneMatches.length > 0 && (
-          <div style={{
-            flexShrink: 0, display: 'flex', flexDirection: 'column',
-            gap: 'clamp(1px, 0.15vw, 2px)',
-            padding: 'clamp(2px, 0.3vw, 4px) clamp(3px, 0.5vw, 8px)',
-          }}>
+          <div
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(1px, 0.15vw, 2px)",
+              padding: "clamp(2px, 0.3vw, 4px) clamp(3px, 0.5vw, 8px)",
+            }}
+          >
             {doneMatches.map((m, i) => renderDoneRow(m, i))}
           </div>
         )}
@@ -2063,17 +3643,30 @@ function TournamentWidget({ config, theme }) {
      MAIN RETURN
      ═══════════════════════════════════════════════════════════════ */
   return (
-    <div className={`tw-root${isMinimalLayout ? ' tw-root--minimal' : ''}`} {...partAttrs('container')} style={{
-      width: '100%', height: '100%', fontFamily,
-      background: bgColor, borderRadius: cssLength(borderRadius),
-      border: `${cssLength(borderWidth)} solid ${borderColor}`,
-      padding: cssLength(mainCardPadding), boxSizing: 'border-box',
-      boxShadow: mainCardShadow,
-      backdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
-      WebkitBackdropFilter: mainBackdropBlur ? `blur(${mainBackdropBlur}px)` : undefined,
-      display: 'flex', flexDirection: 'column',
-      overflow: 'hidden',
-    }}>
+    <div
+      className={`tw-root${isMinimalLayout ? " tw-root--minimal" : ""}`}
+      {...partAttrs("container")}
+      style={{
+        width: "100%",
+        height: "100%",
+        fontFamily,
+        background: bgColor,
+        borderRadius: cssLength(borderRadius),
+        border: `${cssLength(borderWidth)} solid ${borderColor}`,
+        padding: cssLength(mainCardPadding),
+        boxSizing: "border-box",
+        boxShadow: mainCardShadow,
+        backdropFilter: mainBackdropBlur
+          ? `blur(${mainBackdropBlur}px)`
+          : undefined,
+        WebkitBackdropFilter: mainBackdropBlur
+          ? `blur(${mainBackdropBlur}px)`
+          : undefined,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       {/* Injected keyframes */}
       <style>{`
         @keyframes tw-sword-swing {
@@ -2230,12 +3823,17 @@ function TournamentWidget({ config, theme }) {
       `}</style>
 
       {/* ── Layout-specific content ── */}
-      {layout === 'scoreboard' ? renderScoreboard()
-        : layout === 'esports' ? renderEsports()
-        : layout === 'arena' ? renderArena()
-        : layout === 'grid' ? renderGrid()
-        : (layout === 'vertical' || layout === 'minimal') ? renderVertical()
-        : renderEsports()}
+      {layout === "scoreboard"
+        ? renderScoreboard()
+        : layout === "esports"
+          ? renderEsports()
+          : layout === "arena"
+            ? renderArena()
+            : layout === "grid"
+              ? renderGrid()
+              : layout === "vertical" || layout === "minimal"
+                ? renderVertical()
+                : renderEsports()}
     </div>
   );
 }

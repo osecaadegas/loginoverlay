@@ -1,35 +1,70 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { getAllSlots, DEFAULT_SLOT_IMAGE, sortSlotsByProviderPriority } from '../../../../utils/slotUtils';
-import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../../utils/slotImageSearch';
-import { getMySubmissions, submitSlot } from '../../../../services/pendingSlotService';
-import ColorPicker from '../shared/ColorPicker';
-import { supabase } from '../../../../config/supabaseClient';
-import { useAuth } from '../../../../context/AuthContext';
-import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../../services/overlayService';
-import { saveSlotPersonalBestFromBonus, updateSlotRecordsFromHunt } from '../../../../services/slotRecordService';
-import TabBar from '../shared/TabBar';
-import { makePerStyleSetters } from '../shared/perStyleConfig';
-import { BONUS_HUNT_STYLE_KEYS } from '../styleKeysRegistry';
-import { getErrorMessage, isDuplicateError } from '../../../../utils/errorUtils';
-import { getProviderImage } from '../../../../utils/gameProviders';
-import SlotImage from '../SlotImage';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
+import { createPortal } from "react-dom";
+import {
+  getAllSlots,
+  DEFAULT_SLOT_IMAGE,
+  sortSlotsByProviderPriority,
+} from "../../../../utils/slotUtils";
+import {
+  buildGoogleSlotImageSearchUrl,
+  buildSlotImageSearchUrl,
+} from "../../../../utils/slotImageSearch";
+import {
+  getMySubmissions,
+  submitSlot,
+} from "../../../../services/pendingSlotService";
+import ColorPicker from "../shared/ColorPicker";
+import { supabase } from "../../../../config/supabaseClient";
+import { useAuth } from "../../../../context/AuthContext";
+import {
+  getBonusHuntHistory,
+  saveBonusHuntToHistory,
+  deleteBonusHuntHistory,
+} from "../../../../services/overlayService";
+import {
+  saveSlotPersonalBestFromBonus,
+  updateSlotRecordsFromHunt,
+} from "../../../../services/slotRecordService";
+import TabBar from "../shared/TabBar";
+import { makePerStyleSetters } from "../shared/perStyleConfig";
+import { BONUS_HUNT_STYLE_KEYS } from "../styleKeysRegistry";
+import {
+  getErrorMessage,
+  isDuplicateError,
+} from "../../../../utils/errorUtils";
+import { getProviderImage } from "../../../../utils/gameProviders";
+import SlotImage from "../SlotImage";
 
 const FONT_OPTIONS = Object.freeze([
-  { value: "'Inter', sans-serif", label: 'Inter' },
-  { value: "'Poppins', sans-serif", label: 'Poppins' },
-  { value: "'Roboto', sans-serif", label: 'Roboto' },
-  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { value: "'Oswald', sans-serif", label: 'Oswald' },
-  { value: "'Bebas Neue', sans-serif", label: 'Bebas Neue' },
-  { value: "'Orbitron', sans-serif", label: 'Orbitron' },
-  { value: "'Rajdhani', sans-serif", label: 'Rajdhani' },
-  { value: "'Courier New', monospace", label: 'Courier New' },
+  { value: "'Inter', sans-serif", label: "Inter" },
+  { value: "'Poppins', sans-serif", label: "Poppins" },
+  { value: "'Roboto', sans-serif", label: "Roboto" },
+  { value: "'Montserrat', sans-serif", label: "Montserrat" },
+  { value: "'Oswald', sans-serif", label: "Oswald" },
+  { value: "'Bebas Neue', sans-serif", label: "Bebas Neue" },
+  { value: "'Orbitron', sans-serif", label: "Orbitron" },
+  { value: "'Rajdhani', sans-serif", label: "Rajdhani" },
+  { value: "'Courier New', monospace", label: "Courier New" },
 ]);
 
-function FontSelectInput({ value, options = FONT_OPTIONS, onChange, className }) {
+function FontSelectInput({
+  value,
+  options = FONT_OPTIONS,
+  onChange,
+  className,
+}) {
   return (
-    <select className={className} value={value || ''} onChange={(event) => onChange(event.target.value)}>
+    <select
+      className={className}
+      value={value || ""}
+      onChange={(event) => onChange(event.target.value)}
+    >
       <option value="">Default</option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
@@ -41,22 +76,22 @@ function FontSelectInput({ value, options = FONT_OPTIONS, onChange, className })
 }
 
 const BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS = Object.freeze({
-  headerColor: '#26282e',
-  headerAccent: '#2dd4bf',
-  countCardColor: '#30343d',
-  currentBonusColor: '#1c1e22',
-  currentBonusAccent: '#2dd4bf',
-  listCardColor: '#26282e',
-  listCardAccent: '#cbd5e1',
-  summaryColor: '#26282e',
-  cardOutlineColor: 'transparent',
-  superBadgeColor: '#eab308',
-  extremeBadgeColor: '#ef4444',
-  totalPayColor: '#eab308',
-  totalPayText: '#ffffff',
-  textColor: '#ffffff',
-  mutedTextColor: '#8baacf',
-  statValueColor: '#ffffff',
+  headerColor: "#26282e",
+  headerAccent: "#2dd4bf",
+  countCardColor: "#30343d",
+  currentBonusColor: "#1c1e22",
+  currentBonusAccent: "#2dd4bf",
+  listCardColor: "#26282e",
+  listCardAccent: "#cbd5e1",
+  summaryColor: "#26282e",
+  cardOutlineColor: "transparent",
+  superBadgeColor: "#eab308",
+  extremeBadgeColor: "#ef4444",
+  totalPayColor: "#eab308",
+  totalPayText: "#ffffff",
+  textColor: "#ffffff",
+  mutedTextColor: "#8baacf",
+  statValueColor: "#ffffff",
 });
 
 function BonusHuntProviderLogo({ provider }) {
@@ -65,8 +100,15 @@ function BonusHuntProviderLogo({ provider }) {
 
   if (logo) {
     return (
-      <span className="bh-list-provider bh-list-provider--logo" title={provider}>
-        <img src={logo} alt={`${provider} logo`} onError={() => setFailed(true)} />
+      <span
+        className="bh-list-provider bh-list-provider--logo"
+        title={provider}
+      >
+        <img
+          src={logo}
+          alt={`${provider} logo`}
+          onError={() => setFailed(true)}
+        />
       </span>
     );
   }
@@ -75,9 +117,11 @@ function BonusHuntProviderLogo({ provider }) {
 }
 
 function findExistingProvider(provider, providers) {
-  const candidate = String(provider || '').trim().toLowerCase();
-  if (!candidate) return '';
-  return providers.find(item => item.toLowerCase() === candidate) || '';
+  const candidate = String(provider || "")
+    .trim()
+    .toLowerCase();
+  if (!candidate) return "";
+  return providers.find((item) => item.toLowerCase() === candidate) || "";
 }
 
 function getBonusHuntSpendTarget(startMoney, stopLoss) {
@@ -89,7 +133,9 @@ function getBonusHuntSpendTarget(startMoney, stopLoss) {
 function getSavedBonusHuntProfit(record) {
   const totalWin = Number(record?.total_win);
   if (!Number.isFinite(totalWin)) return Number(record?.profit) || 0;
-  return totalWin - getBonusHuntSpendTarget(record?.start_money, record?.stop_loss);
+  return (
+    totalWin - getBonusHuntSpendTarget(record?.start_money, record?.stop_loss)
+  );
 }
 
 function BonusHuntSubmitProviderLogo({ provider }) {
@@ -99,7 +145,11 @@ function BonusHuntSubmitProviderLogo({ provider }) {
   if (logo) {
     return (
       <span className="bh-submit-provider-logo" title={provider}>
-        <img src={logo} alt={`${provider} logo`} onError={() => setFailed(true)} />
+        <img
+          src={logo}
+          alt={`${provider} logo`}
+          onError={() => setFailed(true)}
+        />
       </span>
     );
   }
@@ -109,41 +159,72 @@ function BonusHuntSubmitProviderLogo({ provider }) {
 
 function BonusHuntProviderPicker({ providers, value, onChange }) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const pickerRef = useRef(null);
 
   useEffect(() => {
-    const close = (event) => { if (pickerRef.current && !pickerRef.current.contains(event.target)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
+    const close = (event) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
   }, []);
 
   const query = search.trim().toLowerCase();
-  const filteredProviders = (query ? providers.filter(provider => provider.toLowerCase().includes(query)) : providers).slice(0, 90);
+  const filteredProviders = (
+    query
+      ? providers.filter((provider) => provider.toLowerCase().includes(query))
+      : providers
+  ).slice(0, 90);
 
   const chooseProvider = (provider) => {
     onChange(provider);
-    setSearch('');
+    setSearch("");
     setOpen(false);
   };
 
   return (
     <div className="bh-submit-provider-picker" ref={pickerRef}>
-      <button type="button" className={`bh-submit-provider-trigger${value ? ' has-value' : ''}`} onClick={() => setOpen(prev => !prev)}>
-        {value ? <BonusHuntSubmitProviderLogo provider={value} /> : <span className="bh-submit-provider-placeholder">Select provider</span>}
+      <button
+        type="button"
+        className={`bh-submit-provider-trigger${value ? " has-value" : ""}`}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        {value ? (
+          <BonusHuntSubmitProviderLogo provider={value} />
+        ) : (
+          <span className="bh-submit-provider-placeholder">
+            Select provider
+          </span>
+        )}
         <span className="bh-submit-provider-caret">v</span>
       </button>
       {open && (
         <div className="bh-submit-provider-menu">
-          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search providers..." autoFocus />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search providers..."
+            autoFocus
+          />
           <div className="bh-submit-provider-options">
-            {filteredProviders.map(provider => (
-              <button key={provider} type="button" className={`bh-submit-provider-option${value === provider ? ' selected' : ''}`} onClick={() => chooseProvider(provider)}>
+            {filteredProviders.map((provider) => (
+              <button
+                key={provider}
+                type="button"
+                className={`bh-submit-provider-option${value === provider ? " selected" : ""}`}
+                onClick={() => chooseProvider(provider)}
+              >
                 <BonusHuntSubmitProviderLogo provider={provider} />
                 <span className="bh-submit-provider-name">{provider}</span>
               </button>
             ))}
-            {filteredProviders.length === 0 && <p className="bh-submit-provider-empty">No existing provider found</p>}
+            {filteredProviders.length === 0 && (
+              <p className="bh-submit-provider-empty">
+                No existing provider found
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -152,8 +233,8 @@ function BonusHuntProviderPicker({ providers, value, onChange }) {
 }
 
 function normalizePayoutDraftInput(value) {
-  const text = String(value ?? '');
-  let normalized = '';
+  const text = String(value ?? "");
+  let normalized = "";
   let hasDecimal = false;
 
   for (const char of text) {
@@ -161,8 +242,8 @@ function normalizePayoutDraftInput(value) {
       normalized += char;
       continue;
     }
-    if ((char === '.' || char === ',') && !hasDecimal) {
-      normalized += '.';
+    if ((char === "." || char === ",") && !hasDecimal) {
+      normalized += ".";
       hasDecimal = true;
     }
   }
@@ -174,63 +255,75 @@ function parsePayoutDraftInput(value) {
   const raw = normalizePayoutDraftInput(value).trim();
   if (!raw) return 0;
 
-  if (raw.includes('.')) {
+  if (raw.includes(".")) {
     const parsed = Number(raw);
     if (!Number.isFinite(parsed) || parsed < 0) return null;
     return Math.round((parsed + Number.EPSILON) * 100) / 100;
   }
 
-  const digits = raw.replace(/\D/g, '').replace(/^0+/, '') || '0';
+  const digits = raw.replace(/\D/g, "").replace(/^0+/, "") || "0";
   const cents = parseInt(digits, 10);
   if (!Number.isFinite(cents) || cents < 0) return null;
-  return Math.round(((cents / 100) + Number.EPSILON) * 100) / 100;
+  return Math.round((cents / 100 + Number.EPSILON) * 100) / 100;
 }
 
-export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
+export default function BonusHuntConfig({
+  config,
+  onChange,
+  allWidgets,
+  mode = "full",
+}) {
   const c = config || {};
-  const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
-  const currentStyle = c.displayStyle || 'v3';
-  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BONUS_HUNT_STYLE_KEYS);
-  const colorDefault = (key, fallback) => (
-    currentStyle === 'v12_classic_sr'
-      ? (BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS[key] ?? fallback)
-      : fallback
+  const [activeTab, setActiveTab] = useState(
+    mode === "widget" ? "style" : "content",
   );
+  const currentStyle = c.displayStyle || "v3";
+  const { set, setMulti } = makePerStyleSetters(
+    onChange,
+    c,
+    currentStyle,
+    BONUS_HUNT_STYLE_KEYS,
+  );
+  const colorDefault = (key, fallback) =>
+    currentStyle === "v12_classic_sr"
+      ? (BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS[key] ?? fallback)
+      : fallback;
 
   // Auth for history
   const { user } = useAuth();
 
   // Auto-fill streamer avatar from Twitch
-  const twitchAvatar = user?.user_metadata?.avatar_url || '';
+  const twitchAvatar = user?.user_metadata?.avatar_url || "";
   useEffect(() => {
     if (twitchAvatar && !c.avatarUrl) {
-      set('avatarUrl', twitchAvatar);
+      set("avatarUrl", twitchAvatar);
     }
   }, [twitchAvatar]);
 
   // Find navbar widget config for sync
-  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
+  const navbarConfig =
+    (allWidgets || []).find((w) => w.widget_type === "navbar")?.config || null;
 
   const syncFromNavbar = () => {
     if (!navbarConfig) return;
     const nb = navbarConfig;
     setMulti({
-      headerColor: nb.bgColor || '#111318',
-      headerAccent: nb.accentColor || '#f59e0b',
-      countCardColor: nb.bgColor || '#111318',
-      currentBonusColor: nb.bgColor || '#111318',
-      currentBonusAccent: nb.accentColor || '#f59e0b',
-      listCardColor: nb.bgColor || '#111318',
-      listCardAccent: nb.accentColor || '#f59e0b',
-      summaryColor: nb.bgColor || '#111318',
-      totalPayColor: nb.accentColor || '#f59e0b',
-      totalPayText: nb.textColor || '#f1f5f9',
-      superBadgeColor: nb.ctaColor || '#f43f5e',
-      extremeBadgeColor: nb.ctaColor || '#f43f5e',
-      textColor: nb.textColor || '#f1f5f9',
-      mutedTextColor: nb.mutedColor || '#94a3b8',
-      statValueColor: nb.textColor || '#f1f5f9',
-      cardOutlineColor: nb.borderColor || nb.accentColor || '#f59e0b',
+      headerColor: nb.bgColor || "#111318",
+      headerAccent: nb.accentColor || "#f59e0b",
+      countCardColor: nb.bgColor || "#111318",
+      currentBonusColor: nb.bgColor || "#111318",
+      currentBonusAccent: nb.accentColor || "#f59e0b",
+      listCardColor: nb.bgColor || "#111318",
+      listCardAccent: nb.accentColor || "#f59e0b",
+      summaryColor: nb.bgColor || "#111318",
+      totalPayColor: nb.accentColor || "#f59e0b",
+      totalPayText: nb.textColor || "#f1f5f9",
+      superBadgeColor: nb.ctaColor || "#f43f5e",
+      extremeBadgeColor: nb.ctaColor || "#f43f5e",
+      textColor: nb.textColor || "#f1f5f9",
+      mutedTextColor: nb.mutedColor || "#94a3b8",
+      statValueColor: nb.textColor || "#f1f5f9",
+      cardOutlineColor: nb.borderColor || nb.accentColor || "#f59e0b",
       cardOutlineWidth: nb.borderWidth ?? 2,
       fontFamily: nb.fontFamily || "'Inter', sans-serif",
       fontSize: nb.fontSize ?? 13,
@@ -241,263 +334,645 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
   };
 
   // ─── Preset system ───
-  const [presetName, setPresetName] = useState('');
+  const [presetName, setPresetName] = useState("");
   const PRESET_KEYS = [
-    'headerColor', 'headerAccent', 'countCardColor', 'currentBonusColor', 'currentBonusAccent',
-    'listCardColor', 'listCardAccent', 'summaryColor', 'totalPayColor', 'totalPayText',
-    'superBadgeColor', 'extremeBadgeColor', 'textColor', 'mutedTextColor', 'statValueColor',
-    'cardOutlineColor', 'cardOutlineWidth',
-    'fontFamily', 'fontSize', 'cardRadius', 'cardGap', 'widgetWidth', 'cardPadding',
-    'slotImageHeight', 'listMaxHeight', 'flipBackImage',
-    'flipShowProvider', 'flipShowRTP', 'flipShowPotential', 'flipShowVolatility', 'flipShowBetSize', 'flipShowWin',
-    'flipBackColor1', 'flipBackColor2', 'flipBackBorder',
-    'brightness', 'contrast', 'saturation',
-    'displayStyle',
-    'v8CardWidth', 'v8CardHeight', 'v8FontSize', 'v8AutoSpeed', 'v8ShowStats', 'v8ShowProgress',
-    'v8CardSpacing', 'v8CardRadius', 'v8StatsFontSize', 'v8NameFontSize',
-    'v9CardWidth', 'v9CardHeight', 'v9FontSize', 'v9AutoSpeed', 'v9ShowStats', 'v9ShowProgress',
-    'v9CardSpacing', 'v9CardRadius', 'v9StatsFontSize', 'v9TitleFontSize', 'v9ContainerRadius',
-    'v9ContainerBg', 'v9ShowHeader',
+    "headerColor",
+    "headerAccent",
+    "countCardColor",
+    "currentBonusColor",
+    "currentBonusAccent",
+    "listCardColor",
+    "listCardAccent",
+    "summaryColor",
+    "totalPayColor",
+    "totalPayText",
+    "superBadgeColor",
+    "extremeBadgeColor",
+    "textColor",
+    "mutedTextColor",
+    "statValueColor",
+    "cardOutlineColor",
+    "cardOutlineWidth",
+    "fontFamily",
+    "fontSize",
+    "cardRadius",
+    "cardGap",
+    "widgetWidth",
+    "cardPadding",
+    "slotImageHeight",
+    "listMaxHeight",
+    "flipBackImage",
+    "flipShowProvider",
+    "flipShowRTP",
+    "flipShowPotential",
+    "flipShowVolatility",
+    "flipShowBetSize",
+    "flipShowWin",
+    "flipBackColor1",
+    "flipBackColor2",
+    "flipBackBorder",
+    "brightness",
+    "contrast",
+    "saturation",
+    "displayStyle",
+    "v8CardWidth",
+    "v8CardHeight",
+    "v8FontSize",
+    "v8AutoSpeed",
+    "v8ShowStats",
+    "v8ShowProgress",
+    "v8CardSpacing",
+    "v8CardRadius",
+    "v8StatsFontSize",
+    "v8NameFontSize",
+    "v9CardWidth",
+    "v9CardHeight",
+    "v9FontSize",
+    "v9AutoSpeed",
+    "v9ShowStats",
+    "v9ShowProgress",
+    "v9CardSpacing",
+    "v9CardRadius",
+    "v9StatsFontSize",
+    "v9TitleFontSize",
+    "v9ContainerRadius",
+    "v9ContainerBg",
+    "v9ShowHeader",
   ];
 
   const savePreset = () => {
     const name = presetName.trim();
     if (!name) return;
     const snapshot = {};
-    PRESET_KEYS.forEach(k => { if (c[k] !== undefined) snapshot[k] = c[k]; });
+    PRESET_KEYS.forEach((k) => {
+      if (c[k] !== undefined) snapshot[k] = c[k];
+    });
     const existing = c.bhPresets || [];
-    const idx = existing.findIndex(p => p.name === name);
-    const updated = idx >= 0
-      ? existing.map((p, i) => i === idx ? { name, values: snapshot, savedAt: Date.now() } : p)
-      : [...existing, { name, values: snapshot, savedAt: Date.now() }];
-    set('bhPresets', updated);
-    setPresetName('');
+    const idx = existing.findIndex((p) => p.name === name);
+    const updated =
+      idx >= 0
+        ? existing.map((p, i) =>
+            i === idx ? { name, values: snapshot, savedAt: Date.now() } : p,
+          )
+        : [...existing, { name, values: snapshot, savedAt: Date.now() }];
+    set("bhPresets", updated);
+    setPresetName("");
   };
 
   const loadPreset = (preset) => setMulti(preset.values);
-  const deletePreset = (name) => set('bhPresets', (c.bhPresets || []).filter(p => p.name !== name));
+  const deletePreset = (name) =>
+    set(
+      "bhPresets",
+      (c.bhPresets || []).filter((p) => p.name !== name),
+    );
 
   const allTabs = [
-    { id: 'content', label: '📋 Content' },
-    { id: 'history', label: '📜 History' },
-    { id: 'style', label: '🎨 Style' },
-    { id: 'filters', label: '✨ Filters' },
-    { id: 'presets', label: '💾 Presets' },
+    { id: "content", label: "📋 Content" },
+    { id: "history", label: "📜 History" },
+    { id: "style", label: "🎨 Style" },
+    { id: "filters", label: "✨ Filters" },
+    { id: "presets", label: "💾 Presets" },
   ];
-  const SIDEBAR_TABS = new Set(['content', 'history']);
-  const WIDGET_TABS  = new Set(['style', 'filters', 'presets']);
-  const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
-             : mode === 'widget'  ? allTabs.filter(t => WIDGET_TABS.has(t.id))
-             : allTabs;
+  const SIDEBAR_TABS = new Set(["content", "history"]);
+  const WIDGET_TABS = new Set(["style", "filters", "presets"]);
+  const tabs =
+    mode === "sidebar"
+      ? allTabs.filter((t) => SIDEBAR_TABS.has(t.id))
+      : mode === "widget"
+        ? allTabs.filter((t) => WIDGET_TABS.has(t.id))
+        : allTabs;
 
   return (
     <div className="bh-config">
       {/* Top quick toggles — only in full mode. Widget detail owns compact header controls. */}
-      {mode === 'full' && <div className="bh-quick-row">
-        <label className="oc-config-field">
-          <span>Currency</span>
-          <select value={c.currency || '€'} onChange={e => set('currency', e.target.value)} style={{ width: 80 }}>
-            <option value="€">€ EUR</option>
-            <option value="$">$ USD</option>
-            <option value="£">£ GBP</option>
-            <option value="R$">R$ BRL</option>
-            <option value="kr">kr SEK/NOK</option>
-            <option value="¥">¥ JPY/CNY</option>
-            <option value="₹">₹ INR</option>
-            <option value="₿">₿ BTC</option>
-            <option value="C$">C$ CAD</option>
-            <option value="A$">A$ AUD</option>
-            <option value="CHF">CHF</option>
-            <option value="PLN">PLN</option>
-            <option value="TRY">₺ TRY</option>
-          </select>
-        </label>
-      </div>}
+      {mode === "full" && (
+        <div className="bh-quick-row">
+          <label className="oc-config-field">
+            <span>Currency</span>
+            <select
+              value={c.currency || "€"}
+              onChange={(e) => set("currency", e.target.value)}
+              style={{ width: 80 }}
+            >
+              <option value="€">€ EUR</option>
+              <option value="$">$ USD</option>
+              <option value="£">£ GBP</option>
+              <option value="R$">R$ BRL</option>
+              <option value="kr">kr SEK/NOK</option>
+              <option value="¥">¥ JPY/CNY</option>
+              <option value="₹">₹ INR</option>
+              <option value="₿">₿ BTC</option>
+              <option value="C$">C$ CAD</option>
+              <option value="A$">A$ AUD</option>
+              <option value="CHF">CHF</option>
+              <option value="PLN">PLN</option>
+              <option value="TRY">₺ TRY</option>
+            </select>
+          </label>
+        </div>
+      )}
 
       {/* Tab nav */}
-      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 8 }} />
+      <TabBar
+        tabs={tabs}
+        active={activeTab}
+        onChange={setActiveTab}
+        style={{ marginTop: 8 }}
+      />
 
       {/* ═══════ CONTENT TAB ═══════ */}
-      {activeTab === 'content' && (
-        <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} userAvatar={user?.user_metadata?.avatar_url} currency={c.currency || '€'} allWidgets={allWidgets} />
+      {activeTab === "content" && (
+        <BonusHuntPanel
+          config={c}
+          onChange={onChange}
+          userId={user?.id}
+          userAvatar={user?.user_metadata?.avatar_url}
+          currency={c.currency || "€"}
+          allWidgets={allWidgets}
+        />
       )}
 
       {/* ═══════ HISTORY TAB ═══════ */}
-      {activeTab === 'history' && (
-        <BonusHuntHistoryTab config={c} onChange={onChange} userId={user?.id} currency={c.currency || '€'} />
+      {activeTab === "history" && (
+        <BonusHuntHistoryTab
+          config={c}
+          onChange={onChange}
+          userId={user?.id}
+          currency={c.currency || "€"}
+        />
       )}
 
       {/* ═══════ STYLE TAB ═══════ */}
-      {activeTab === 'style' && (
+      {activeTab === "style" && (
         <div className="nb-section">
-          <p className="oc-config-hint" style={{ marginBottom: 10, fontSize: 11, textAlign: 'center', background: 'rgba(99,102,241,0.08)', padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.15)' }}>
-            🎨 Settings below are saved <b>per style</b> — each style remembers its own config.
+          <p
+            className="oc-config-hint"
+            style={{
+              marginBottom: 10,
+              fontSize: 11,
+              textAlign: "center",
+              background: "rgba(99,102,241,0.08)",
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "1px solid rgba(99,102,241,0.15)",
+            }}
+          >
+            🎨 Settings below are saved <b>per style</b> — each style remembers
+            its own config.
           </p>
 
           {navbarConfig && (
-            <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ marginBottom: 12, width: '100%' }} onClick={syncFromNavbar}>
+            <button
+              className="oc-btn oc-btn--sm oc-btn--primary"
+              style={{ marginBottom: 12, width: "100%" }}
+              onClick={syncFromNavbar}
+            >
               🔗 Sync Colors from Navbar
             </button>
           )}
 
           {/* ── Shared Colors (V1/V3/V5/V6) ── */}
-          {['v3','v5_horizontal','v11_fever','v12_classic_sr','better_bonus_hunt'].includes(currentStyle) && (<>
-            <h4 className="nb-subtitle">Card Colors</h4>
-            <div className="nb-color-grid">
-              <ColorPicker label="Header BG" value={c.headerColor || colorDefault('headerColor', '#1e3a8a')} onChange={v => set('headerColor', v)} />
-              <ColorPicker label="Header Accent" value={c.headerAccent || colorDefault('headerAccent', '#60a5fa')} onChange={v => set('headerAccent', v)} />
-              {currentStyle !== 'v3' && <>
-                <ColorPicker label="Count Card BG" value={c.countCardColor || colorDefault('countCardColor', '#1e3a8a')} onChange={v => set('countCardColor', v)} />
-                <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || colorDefault('currentBonusColor', '#334155')} onChange={v => set('currentBonusColor', v)} />
-                <ColorPicker label="Current Accent" value={c.currentBonusAccent || colorDefault('currentBonusAccent', '#dbe2e8')} onChange={v => set('currentBonusAccent', v)} />
-              </>}
-              <ColorPicker label="Slot List BG" value={c.listCardColor || colorDefault('listCardColor', '#581c87')} onChange={v => set('listCardColor', v)} />
-              {currentStyle !== 'v3' &&
-                <ColorPicker label="Slot List Accent" value={c.listCardAccent || colorDefault('listCardAccent', '#cbd5e1')} onChange={v => set('listCardAccent', v)} />
-              }
-              <ColorPicker label="Summary BG" value={c.summaryColor || colorDefault('summaryColor', '#1e3a8a')} onChange={v => set('summaryColor', v)} />
-              <ColorPicker label="Card Outline" value={c.cardOutlineColor || colorDefault('cardOutlineColor', 'transparent')} onChange={v => set('cardOutlineColor', v)} />
-            </div>
+          {[
+            "v3",
+            "v5_horizontal",
+            "v11_fever",
+            "v12_classic_sr",
+            "better_bonus_hunt",
+          ].includes(currentStyle) && (
+            <>
+              <h4 className="nb-subtitle">Card Colors</h4>
+              <div className="nb-color-grid">
+                <ColorPicker
+                  label="Header BG"
+                  value={
+                    c.headerColor || colorDefault("headerColor", "#1e3a8a")
+                  }
+                  onChange={(v) => set("headerColor", v)}
+                />
+                <ColorPicker
+                  label="Header Accent"
+                  value={
+                    c.headerAccent || colorDefault("headerAccent", "#60a5fa")
+                  }
+                  onChange={(v) => set("headerAccent", v)}
+                />
+                {currentStyle !== "v3" && (
+                  <>
+                    <ColorPicker
+                      label="Count Card BG"
+                      value={
+                        c.countCardColor ||
+                        colorDefault("countCardColor", "#1e3a8a")
+                      }
+                      onChange={(v) => set("countCardColor", v)}
+                    />
+                    <ColorPicker
+                      label="Current Bonus BG"
+                      value={
+                        c.currentBonusColor ||
+                        colorDefault("currentBonusColor", "#334155")
+                      }
+                      onChange={(v) => set("currentBonusColor", v)}
+                    />
+                    <ColorPicker
+                      label="Current Accent"
+                      value={
+                        c.currentBonusAccent ||
+                        colorDefault("currentBonusAccent", "#dbe2e8")
+                      }
+                      onChange={(v) => set("currentBonusAccent", v)}
+                    />
+                  </>
+                )}
+                <ColorPicker
+                  label="Slot List BG"
+                  value={
+                    c.listCardColor || colorDefault("listCardColor", "#581c87")
+                  }
+                  onChange={(v) => set("listCardColor", v)}
+                />
+                {currentStyle !== "v3" && (
+                  <ColorPicker
+                    label="Slot List Accent"
+                    value={
+                      c.listCardAccent ||
+                      colorDefault("listCardAccent", "#cbd5e1")
+                    }
+                    onChange={(v) => set("listCardAccent", v)}
+                  />
+                )}
+                <ColorPicker
+                  label="Summary BG"
+                  value={
+                    c.summaryColor || colorDefault("summaryColor", "#1e3a8a")
+                  }
+                  onChange={(v) => set("summaryColor", v)}
+                />
+                <ColorPicker
+                  label="Card Outline"
+                  value={
+                    c.cardOutlineColor ||
+                    colorDefault("cardOutlineColor", "transparent")
+                  }
+                  onChange={(v) => set("cardOutlineColor", v)}
+                />
+              </div>
 
-            <h4 className="nb-subtitle">Badge Colors</h4>
-            <div className="nb-color-grid">
-              <ColorPicker label="Super Badge" value={c.superBadgeColor || colorDefault('superBadgeColor', '#eab308')} onChange={v => set('superBadgeColor', v)} />
-              <ColorPicker label="Extreme Badge" value={c.extremeBadgeColor || colorDefault('extremeBadgeColor', '#ef4444')} onChange={v => set('extremeBadgeColor', v)} />
-              <ColorPicker label="Total Pay BG" value={c.totalPayColor || colorDefault('totalPayColor', '#eab308')} onChange={v => set('totalPayColor', v)} />
-              <ColorPicker label="Total Pay Text" value={c.totalPayText || colorDefault('totalPayText', '#ffffff')} onChange={v => set('totalPayText', v)} />
-            </div>
+              <h4 className="nb-subtitle">Badge Colors</h4>
+              <div className="nb-color-grid">
+                <ColorPicker
+                  label="Super Badge"
+                  value={
+                    c.superBadgeColor ||
+                    colorDefault("superBadgeColor", "#eab308")
+                  }
+                  onChange={(v) => set("superBadgeColor", v)}
+                />
+                <ColorPicker
+                  label="Extreme Badge"
+                  value={
+                    c.extremeBadgeColor ||
+                    colorDefault("extremeBadgeColor", "#ef4444")
+                  }
+                  onChange={(v) => set("extremeBadgeColor", v)}
+                />
+                <ColorPicker
+                  label="Total Pay BG"
+                  value={
+                    c.totalPayColor || colorDefault("totalPayColor", "#eab308")
+                  }
+                  onChange={(v) => set("totalPayColor", v)}
+                />
+                <ColorPicker
+                  label="Total Pay Text"
+                  value={
+                    c.totalPayText || colorDefault("totalPayText", "#ffffff")
+                  }
+                  onChange={(v) => set("totalPayText", v)}
+                />
+              </div>
 
-            <h4 className="nb-subtitle">Text Colors</h4>
-            <div className="nb-color-grid">
-              <ColorPicker label="Main Text" value={c.textColor || colorDefault('textColor', '#ffffff')} onChange={v => set('textColor', v)} />
-              <ColorPicker label="Muted Text" value={c.mutedTextColor || colorDefault('mutedTextColor', '#93c5fd')} onChange={v => set('mutedTextColor', v)} />
-              <ColorPicker label="Stat Values" value={c.statValueColor || colorDefault('statValueColor', '#ffffff')} onChange={v => set('statValueColor', v)} />
-            </div>
+              <h4 className="nb-subtitle">Text Colors</h4>
+              <div className="nb-color-grid">
+                <ColorPicker
+                  label="Main Text"
+                  value={c.textColor || colorDefault("textColor", "#ffffff")}
+                  onChange={(v) => set("textColor", v)}
+                />
+                <ColorPicker
+                  label="Muted Text"
+                  value={
+                    c.mutedTextColor ||
+                    colorDefault("mutedTextColor", "#93c5fd")
+                  }
+                  onChange={(v) => set("mutedTextColor", v)}
+                />
+                <ColorPicker
+                  label="Stat Values"
+                  value={
+                    c.statValueColor ||
+                    colorDefault("statValueColor", "#ffffff")
+                  }
+                  onChange={(v) => set("statValueColor", v)}
+                />
+              </div>
 
-            <h4 className="nb-subtitle">Typography</h4>
-            <label className="nb-field">
-              <span>Font</span>
-              <FontSelectInput
-                value={c.fontFamily || "'Inter', sans-serif"}
-                options={FONT_OPTIONS}
-                onChange={value => set('fontFamily', value)}
-                className="oc-config-font-select"
+              <h4 className="nb-subtitle">Typography</h4>
+              <label className="nb-field">
+                <span>Font</span>
+                <FontSelectInput
+                  value={c.fontFamily || "'Inter', sans-serif"}
+                  options={FONT_OPTIONS}
+                  onChange={(value) => set("fontFamily", value)}
+                  className="oc-config-font-select"
+                />
+              </label>
+              <SliderField
+                label="Font Size"
+                value={c.fontSize ?? 13}
+                min={8}
+                max={22}
+                step={1}
+                unit="px"
+                onChange={(v) => set("fontSize", v)}
               />
-            </label>
-            <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={22} step={1} unit="px"
-              onChange={v => set('fontSize', v)} />
 
-            {/* Dimensions — only for styles that use them */}
-            {['v5_horizontal','v11_fever','v12_classic_sr','better_bonus_hunt'].includes(currentStyle) && (<>
-              <h4 className="nb-subtitle">Dimensions</h4>
-              <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
-                onChange={v => set('widgetWidth', v)} />
-              <SliderField label="Card Padding" value={c.cardPadding ?? 14} min={6} max={30} step={1} unit="px"
-                onChange={v => set('cardPadding', v)} />
-              <SliderField label="Card Radius" value={c.cardRadius ?? 16} min={0} max={32} step={1} unit="px"
-                onChange={v => set('cardRadius', v)} />
-              <SliderField label="Card Gap" value={c.cardGap ?? 12} min={4} max={24} step={1} unit="px"
-                onChange={v => set('cardGap', v)} />
-              <SliderField label="Outline Width" value={c.cardOutlineWidth ?? 2} min={0} max={6} step={1} unit="px"
-                onChange={v => set('cardOutlineWidth', v)} />
-              <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 180} min={80} max={400} step={10} unit="px"
-                onChange={v => set('slotImageHeight', v)} />
-              <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"
-                onChange={v => set('listMaxHeight', v)} />
-            </>)}
+              {/* Dimensions — only for styles that use them */}
+              {[
+                "v5_horizontal",
+                "v11_fever",
+                "v12_classic_sr",
+                "better_bonus_hunt",
+              ].includes(currentStyle) && (
+                <>
+                  <h4 className="nb-subtitle">Dimensions</h4>
+                  <SliderField
+                    label="Widget Width"
+                    value={c.widgetWidth ?? 400}
+                    min={200}
+                    max={800}
+                    step={10}
+                    unit="px"
+                    onChange={(v) => set("widgetWidth", v)}
+                  />
+                  <SliderField
+                    label="Card Padding"
+                    value={c.cardPadding ?? 14}
+                    min={6}
+                    max={30}
+                    step={1}
+                    unit="px"
+                    onChange={(v) => set("cardPadding", v)}
+                  />
+                  <SliderField
+                    label="Card Radius"
+                    value={c.cardRadius ?? 16}
+                    min={0}
+                    max={32}
+                    step={1}
+                    unit="px"
+                    onChange={(v) => set("cardRadius", v)}
+                  />
+                  <SliderField
+                    label="Card Gap"
+                    value={c.cardGap ?? 12}
+                    min={4}
+                    max={24}
+                    step={1}
+                    unit="px"
+                    onChange={(v) => set("cardGap", v)}
+                  />
+                  <SliderField
+                    label="Outline Width"
+                    value={c.cardOutlineWidth ?? 2}
+                    min={0}
+                    max={6}
+                    step={1}
+                    unit="px"
+                    onChange={(v) => set("cardOutlineWidth", v)}
+                  />
+                  <SliderField
+                    label="Slot Image Height"
+                    value={c.slotImageHeight ?? 180}
+                    min={80}
+                    max={400}
+                    step={10}
+                    unit="px"
+                    onChange={(v) => set("slotImageHeight", v)}
+                  />
+                  <SliderField
+                    label="List Max Height"
+                    value={c.listMaxHeight ?? 400}
+                    min={200}
+                    max={1200}
+                    step={20}
+                    unit="px"
+                    onChange={(v) => set("listMaxHeight", v)}
+                  />
+                </>
+              )}
 
-            {/* V3 only — widgetWidth + cardRadius + slotImageHeight */}
-            {currentStyle === 'v3' && (<>
-              <h4 className="nb-subtitle">Dimensions</h4>
-              <SliderField label="Widget Width" value={c.widgetWidth ?? 420} min={200} max={800} step={10} unit="px"
-                onChange={v => set('widgetWidth', v)} />
-              <SliderField label="Card Radius" value={c.cardRadius ?? 16} min={0} max={32} step={1} unit="px"
-                onChange={v => set('cardRadius', v)} />
-              <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 220} min={80} max={400} step={10} unit="px"
-                onChange={v => set('slotImageHeight', v)} />
-            </>)}
-          </>)}
+              {/* V3 only — widgetWidth + cardRadius + slotImageHeight */}
+              {currentStyle === "v3" && (
+                <>
+                  <h4 className="nb-subtitle">Dimensions</h4>
+                  <SliderField
+                    label="Widget Width"
+                    value={c.widgetWidth ?? 420}
+                    min={200}
+                    max={800}
+                    step={10}
+                    unit="px"
+                    onChange={(v) => set("widgetWidth", v)}
+                  />
+                  <SliderField
+                    label="Card Radius"
+                    value={c.cardRadius ?? 16}
+                    min={0}
+                    max={32}
+                    step={1}
+                    unit="px"
+                    onChange={(v) => set("cardRadius", v)}
+                  />
+                  <SliderField
+                    label="Slot Image Height"
+                    value={c.slotImageHeight ?? 220}
+                    min={80}
+                    max={400}
+                    step={10}
+                    unit="px"
+                    onChange={(v) => set("slotImageHeight", v)}
+                  />
+                </>
+              )}
+            </>
+          )}
 
           {/* ── V12 Classic + Requests settings ── */}
-          {currentStyle === 'v12_classic_sr' && (<>
-            <h4 className="nb-subtitle">📋 Slot Requests</h4>
-            <label className="nb-field" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input
-                type="checkbox"
-                checked={c.showSlotRequests !== false}
-                onChange={e => set('showSlotRequests', e.target.checked)}
-              />
-              <span>Show Slot Requests Panel</span>
-            </label>
-            {c.showSlotRequests !== false && (<>
-              <label className="nb-field" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {currentStyle === "v12_classic_sr" && (
+            <>
+              <h4 className="nb-subtitle">📋 Slot Requests</h4>
+              <label
+                className="nb-field"
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
+              >
                 <input
                   type="checkbox"
-                  checked={c.srChatEnabled !== false}
-                  onChange={e => set('srChatEnabled', e.target.checked)}
+                  checked={c.showSlotRequests !== false}
+                  onChange={(e) => set("showSlotRequests", e.target.checked)}
                 />
-                <span>Listen to Chat for !sr Commands</span>
+                <span>Show Slot Requests Panel</span>
               </label>
-              <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '2px 0 4px' }}>
-                Twitch channel is auto-detected from your login.
-              </p>
-              <label className="nb-field">
-                <span>Command Trigger</span>
-                <input
-                  type="text"
-                  value={c.commandTrigger || '!sr'}
-                  placeholder="!sr"
-                  onChange={e => set('commandTrigger', e.target.value)}
-                />
-              </label>
-            </>)}
-          </>)}
+              {c.showSlotRequests !== false && (
+                <>
+                  <label
+                    className="nb-field"
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={c.srChatEnabled !== false}
+                      onChange={(e) => set("srChatEnabled", e.target.checked)}
+                    />
+                    <span>Listen to Chat for !sr Commands</span>
+                  </label>
+                  <p
+                    style={{
+                      fontSize: "0.65rem",
+                      color: "#94a3b8",
+                      margin: "2px 0 4px",
+                    }}
+                  >
+                    Twitch channel is auto-detected from your login.
+                  </p>
+                  <label className="nb-field">
+                    <span>Command Trigger</span>
+                    <input
+                      type="text"
+                      value={c.commandTrigger || "!sr"}
+                      placeholder="!sr"
+                      onChange={(e) => set("commandTrigger", e.target.value)}
+                    />
+                  </label>
+                </>
+              )}
+            </>
+          )}
 
           {/* ── V3 Flip Card Back (only for Flip Card style) ── */}
-          {currentStyle === 'v3' && (<>
-            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Colors</h4>
-            <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Background gradient and border for the back face of the 3D flip card.</p>
-            <div className="nb-color-grid">
-              <ColorPicker label="Back BG Start" value={c.flipBackColor1 || '#0f172a'} onChange={v => set('flipBackColor1', v)} />
-              <ColorPicker label="Back BG Middle" value={c.flipBackColor2 || '#1a1040'} onChange={v => set('flipBackColor2', v)} />
-              <ColorPicker label="Back Border" value={c.flipBackBorder || '#818cf8'} onChange={v => set('flipBackBorder', v)} />
-            </div>
+          {currentStyle === "v3" && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 18 }}>
+                Flip Card Back Colors
+              </h4>
+              <p
+                className="oc-config-hint"
+                style={{ marginBottom: 6, fontSize: 11 }}
+              >
+                Background gradient and border for the back face of the 3D flip
+                card.
+              </p>
+              <div className="nb-color-grid">
+                <ColorPicker
+                  label="Back BG Start"
+                  value={c.flipBackColor1 || "#0f172a"}
+                  onChange={(v) => set("flipBackColor1", v)}
+                />
+                <ColorPicker
+                  label="Back BG Middle"
+                  value={c.flipBackColor2 || "#1a1040"}
+                  onChange={(v) => set("flipBackColor2", v)}
+                />
+                <ColorPicker
+                  label="Back Border"
+                  value={c.flipBackBorder || "#818cf8"}
+                  onChange={(v) => set("flipBackBorder", v)}
+                />
+              </div>
 
-            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Image</h4>
-            <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Image URL for the back face of the 3D flip card. Default: /badges/back.png</p>
-            <input
-              className="oc-widget-css-input"
-              value={c.flipBackImage || '/badges/back.png'}
-              onChange={e => set('flipBackImage', e.target.value)}
-              placeholder="/badges/back.png"
-              style={{ width: '100%', padding: '6px 8px', marginBottom: 8, fontSize: 12 }}
-            />
+              <h4 className="nb-subtitle" style={{ marginTop: 18 }}>
+                Flip Card Back Image
+              </h4>
+              <p
+                className="oc-config-hint"
+                style={{ marginBottom: 6, fontSize: 11 }}
+              >
+                Image URL for the back face of the 3D flip card. Default:
+                /badges/back.png
+              </p>
+              <input
+                className="oc-widget-css-input"
+                value={c.flipBackImage || "/badges/back.png"}
+                onChange={(e) => set("flipBackImage", e.target.value)}
+                placeholder="/badges/back.png"
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  marginBottom: 8,
+                  fontSize: 12,
+                }}
+              />
 
-            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back — Visible Stats</h4>
-            <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Choose which stats appear on the back face.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-              {[
-                ['flipShowProvider', 'Provider Logo'],
-                ['flipShowRTP', 'RTP'],
-                ['flipShowPotential', 'Max Win (Potential)'],
-                ['flipShowVolatility', 'Volatility'],
-                ['flipShowBetSize', 'Bet Size'],
-                ['flipShowWin', 'Win Result'],
-              ].map(([key, label]) => (
-                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={c[key] !== false} onChange={e => set(key, e.target.checked)} />
-                  {label}
-                </label>
-              ))}
-            </div>
-          </>)}
+              <h4 className="nb-subtitle" style={{ marginTop: 18 }}>
+                Flip Card Back — Visible Stats
+              </h4>
+              <p
+                className="oc-config-hint"
+                style={{ marginBottom: 6, fontSize: 11 }}
+              >
+                Choose which stats appear on the back face.
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  marginBottom: 12,
+                }}
+              >
+                {[
+                  ["flipShowProvider", "Provider Logo"],
+                  ["flipShowRTP", "RTP"],
+                  ["flipShowPotential", "Max Win (Potential)"],
+                  ["flipShowVolatility", "Volatility"],
+                  ["flipShowBetSize", "Bet Size"],
+                  ["flipShowWin", "Win Result"],
+                ].map(([key, label]) => (
+                  <label
+                    key={key}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontSize: 12,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={c[key] !== false}
+                      onChange={(e) => set(key, e.target.checked)}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </>
+          )}
 
-          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>
+            Custom CSS
+          </h4>
+          <p
+            className="oc-config-hint"
+            style={{ marginBottom: 6, fontSize: 11 }}
+          >
+            Override styles for this widget in OBS.
+          </p>
           <textarea
             className="oc-widget-css-input"
-            value={c.custom_css || ''}
-            onChange={e => set('custom_css', e.target.value)}
+            value={c.custom_css || ""}
+            onChange={(e) => set("custom_css", e.target.value)}
             rows={4}
             placeholder={`/* custom CSS for this widget */`}
             spellCheck={false}
@@ -506,70 +981,127 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
       )}
 
       {/* ═══════ FILTERS TAB ═══════ */}
-      {activeTab === 'filters' && (
+      {activeTab === "filters" && (
         <div className="nb-section">
           <h4 className="nb-subtitle">Image Filters</h4>
           <p className="oc-config-hint" style={{ marginBottom: 12 }}>
-            Adjust the overall look of the entire bonus hunt widget on the OBS overlay.
+            Adjust the overall look of the entire bonus hunt widget on the OBS
+            overlay.
           </p>
-          <SliderField label="Brightness" value={c.brightness ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('brightness', v)} />
-          <SliderField label="Contrast" value={c.contrast ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('contrast', v)} />
-          <SliderField label="Saturation" value={c.saturation ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('saturation', v)} />
+          <SliderField
+            label="Brightness"
+            value={c.brightness ?? 100}
+            min={0}
+            max={200}
+            step={1}
+            unit="%"
+            onChange={(v) => set("brightness", v)}
+          />
+          <SliderField
+            label="Contrast"
+            value={c.contrast ?? 100}
+            min={0}
+            max={200}
+            step={1}
+            unit="%"
+            onChange={(v) => set("contrast", v)}
+          />
+          <SliderField
+            label="Saturation"
+            value={c.saturation ?? 100}
+            min={0}
+            max={200}
+            step={1}
+            unit="%"
+            onChange={(v) => set("saturation", v)}
+          />
 
-          <button className="oc-btn oc-btn--sm" style={{ marginTop: 12 }}
-            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
+          <button
+            className="oc-btn oc-btn--sm"
+            style={{ marginTop: 12 }}
+            onClick={() =>
+              setMulti({ brightness: 100, contrast: 100, saturation: 100 })
+            }
+          >
             Reset Filters
           </button>
         </div>
       )}
 
       {/* ═══════ PRESETS TAB ═══════ */}
-      {activeTab === 'presets' && (
+      {activeTab === "presets" && (
         <div className="nb-section">
           <h4 className="nb-subtitle">Save Current Style</h4>
           <p className="oc-config-hint" style={{ marginBottom: 8 }}>
-            Save your current colors, fonts, dimensions and filters as a reusable preset.
+            Save your current colors, fonts, dimensions and filters as a
+            reusable preset.
           </p>
           <div className="nb-preset-save-row">
             <input
               className="nb-preset-input"
               value={presetName}
-              onChange={e => setPresetName(e.target.value)}
+              onChange={(e) => setPresetName(e.target.value)}
               placeholder="Preset name..."
               maxLength={30}
-              onKeyDown={e => e.key === 'Enter' && savePreset()}
+              onKeyDown={(e) => e.key === "Enter" && savePreset()}
             />
-            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>
+            <button
+              className="nb-preset-save-btn"
+              onClick={savePreset}
+              disabled={!presetName.trim()}
+            >
               💾 Save
             </button>
           </div>
 
           <h4 className="nb-subtitle">Saved Presets</h4>
-          {(!c.bhPresets || c.bhPresets.length === 0) ? (
-            <p className="oc-config-hint">No presets saved yet. Customize your style and save it above.</p>
+          {!c.bhPresets || c.bhPresets.length === 0 ? (
+            <p className="oc-config-hint">
+              No presets saved yet. Customize your style and save it above.
+            </p>
           ) : (
             <div className="nb-preset-list">
-              {c.bhPresets.map(p => (
+              {c.bhPresets.map((p) => (
                 <div key={p.name} className="nb-preset-pill">
                   <div className="nb-preset-pill__info">
                     <span className="nb-preset-pill__name">{p.name}</span>
                     <span className="nb-preset-pill__date">
-                      {p.savedAt ? new Date(p.savedAt).toLocaleDateString() : ''}
+                      {p.savedAt
+                        ? new Date(p.savedAt).toLocaleDateString()
+                        : ""}
                     </span>
                     <div className="nb-preset-pill__swatches">
-                      {['headerColor', 'currentBonusColor', 'listCardColor', 'totalPayColor'].map(k =>
+                      {[
+                        "headerColor",
+                        "currentBonusColor",
+                        "listCardColor",
+                        "totalPayColor",
+                      ].map((k) =>
                         p.values[k] ? (
-                          <span key={k} className="nb-preset-pill__swatch" style={{ background: p.values[k] }} title={k} />
-                        ) : null
+                          <span
+                            key={k}
+                            className="nb-preset-pill__swatch"
+                            style={{ background: p.values[k] }}
+                            title={k}
+                          />
+                        ) : null,
                       )}
                     </div>
                   </div>
                   <div className="nb-preset-pill__actions">
-                    <button className="nb-preset-pill__load" onClick={() => loadPreset(p)}>Load</button>
-                    <button className="nb-preset-pill__delete" onClick={() => deletePreset(p.name)} title="Delete preset">🗑️</button>
+                    <button
+                      className="nb-preset-pill__load"
+                      onClick={() => loadPreset(p)}
+                    >
+                      Load
+                    </button>
+                    <button
+                      className="nb-preset-pill__delete"
+                      onClick={() => deletePreset(p.name)}
+                      title="Delete preset"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))}
@@ -582,47 +1114,72 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 }
 
 /* ─── Inline Dropdown Panel (replaces old modal) ─── */
-function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelCurrency, allWidgets }) {
+function BonusHuntPanel({
+  config,
+  onChange,
+  userId,
+  userAvatar,
+  currency: panelCurrency,
+  allWidgets,
+}) {
   const c = config || {};
-  const [startMoney, setStartMoney] = useState(c.startMoney || '');
-  const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
-  const [stopLoss, setStopLoss] = useState(c.stopLoss || '');
-  const [huntNumber, setHuntNumber] = useState(c.huntNumber || '');
-  const [casinoName, setCasinoName] = useState(c.casinoName || '');
-  const [betSize, setBetSize] = useState('');
-  const [slotSearch, setSlotSearch] = useState('');
+  const [startMoney, setStartMoney] = useState(c.startMoney || "");
+  const [targetMoney, setTargetMoney] = useState(c.targetMoney || "");
+  const [stopLoss, setStopLoss] = useState(c.stopLoss || "");
+  const [huntNumber, setHuntNumber] = useState(c.huntNumber || "");
+  const [casinoName, setCasinoName] = useState(c.casinoName || "");
+  const [betSize, setBetSize] = useState("");
+  const [slotSearch, setSlotSearch] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isSuperBonus, setIsSuperBonus] = useState(false);
   const [isExtremeBonus, setIsExtremeBonus] = useState(false);
   const [pendingRequester, setPendingRequester] = useState(null);
-  const [showStatistics, setShowStatistics] = useState(c.showStatistics ?? true);
-  const [animatedTracker, setAnimatedTracker] = useState(c.animatedTracker ?? true);
+  const [showStatistics, setShowStatistics] = useState(
+    c.showStatistics ?? true,
+  );
+  const [animatedTracker, setAnimatedTracker] = useState(
+    c.animatedTracker ?? true,
+  );
   const [bonusList, setBonusList] = useState(c.bonuses || []);
   const [payoutDrafts, setPayoutDrafts] = useState({});
-  const [sortBy, setSortBy] = useState(c.sortBy || 'default');
-  const [sortDir, setSortDir] = useState(c.sortDir || 'asc');
+  const [sortBy, setSortBy] = useState(c.sortBy || "default");
+  const [sortDir, setSortDir] = useState(c.sortDir || "asc");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [slots, setSlots] = useState([]);
   const slotsRef = useRef([]);
-  useEffect(() => { slotsRef.current = slots; }, [slots]);
+  useEffect(() => {
+    slotsRef.current = slots;
+  }, [slots]);
   const [bonusOpening, setBonusOpening] = useState(c.bonusOpening ?? false);
   const [editingId, setEditingId] = useState(null);
-  const [editName, setEditName] = useState('');
-  const [editBet, setEditBet] = useState('');
-  const [editBonusType, setEditBonusType] = useState('none');
+  const [editName, setEditName] = useState("");
+  const [editBet, setEditBet] = useState("");
+  const [editBonusType, setEditBonusType] = useState("none");
   const [dragIdx, setDragIdx] = useState(null);
   const searchRef = useRef(null);
 
   // Submit slot state — restore from localStorage cache
   const [showSubmitSlot, setShowSubmitSlot] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('bh_submitOpen')) || false; } catch { return false; }
+    try {
+      return JSON.parse(localStorage.getItem("bh_submitOpen")) || false;
+    } catch {
+      return false;
+    }
   });
   const [submitForm, setSubmitForm] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('bh_submitForm')) || {}; } catch { return {}; }
+    try {
+      return JSON.parse(localStorage.getItem("bh_submitForm")) || {};
+    } catch {
+      return {};
+    }
   });
   const [submitSaving, setSubmitSaving] = useState(false);
   const [submitImageResults, setSubmitImageResults] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('bh_submitImages')) || []; } catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem("bh_submitImages")) || [];
+    } catch {
+      return [];
+    }
   });
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
   const [imageSearchMeta, setImageSearchMeta] = useState(null);
@@ -634,46 +1191,73 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [prettyImage, setPrettyImage] = useState(false);
 
   // Persist submit slot state to localStorage
-  useEffect(() => { localStorage.setItem('bh_submitForm', JSON.stringify(submitForm)); }, [submitForm]);
-  useEffect(() => { localStorage.setItem('bh_submitOpen', JSON.stringify(showSubmitSlot)); }, [showSubmitSlot]);
-  useEffect(() => { localStorage.setItem('bh_submitImages', JSON.stringify(submitImageResults)); }, [submitImageResults]);
+  useEffect(() => {
+    localStorage.setItem("bh_submitForm", JSON.stringify(submitForm));
+  }, [submitForm]);
+  useEffect(() => {
+    localStorage.setItem("bh_submitOpen", JSON.stringify(showSubmitSlot));
+  }, [showSubmitSlot]);
+  useEffect(() => {
+    localStorage.setItem("bh_submitImages", JSON.stringify(submitImageResults));
+  }, [submitImageResults]);
 
-  const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
-  const slotProviders = useMemo(() => [...new Set(slots.map(s => s.provider).filter(Boolean))].sort(), [slots]);
+  const setField = (k, v) => setSubmitForm((p) => ({ ...p, [k]: v }));
+  const slotProviders = useMemo(
+    () => [...new Set(slots.map((s) => s.provider).filter(Boolean))].sort(),
+    [slots],
+  );
 
-  const hydratePendingSlotList = useCallback(async (createdSubmission = null) => {
-    const [allSlots, myPending] = await Promise.all([
-      getAllSlots(),
-      userId ? getMySubmissions(userId) : Promise.resolve([]),
-    ]);
-    const liveSlots = allSlots || [];
-    const submissionRows = createdSubmission
-      ? [createdSubmission, ...(myPending || []).filter(p => p.id !== createdSubmission.id)]
-      : (myPending || []);
-    const pendingAsSlots = submissionRows
-      .filter(p => p.status === 'pending')
-      .map(p => ({
-        id: `pending_${p.id}`,
-        name: p.name,
-        provider: p.provider,
-        image: p.image,
-        rtp: p.rtp,
-        volatility: p.volatility,
-        max_win_multiplier: p.max_win_multiplier,
-        _isPending: true,
-      }));
-    const liveNames = new Set(liveSlots.map(s => s.name?.toLowerCase()));
-    const uniquePending = pendingAsSlots.filter(p => !liveNames.has(p.name?.toLowerCase()));
-    setSlots([...liveSlots, ...uniquePending]);
-    return uniquePending;
-  }, [userId]);
+  const hydratePendingSlotList = useCallback(
+    async (createdSubmission = null) => {
+      const [allSlots, myPending] = await Promise.all([
+        getAllSlots(),
+        userId ? getMySubmissions(userId) : Promise.resolve([]),
+      ]);
+      const liveSlots = allSlots || [];
+      const submissionRows = createdSubmission
+        ? [
+            createdSubmission,
+            ...(myPending || []).filter((p) => p.id !== createdSubmission.id),
+          ]
+        : myPending || [];
+      const pendingAsSlots = submissionRows
+        .filter((p) => p.status === "pending")
+        .map((p) => ({
+          id: `pending_${p.id}`,
+          name: p.name,
+          provider: p.provider,
+          image: p.image,
+          rtp: p.rtp,
+          volatility: p.volatility,
+          max_win_multiplier: p.max_win_multiplier,
+          _isPending: true,
+        }));
+      const liveNames = new Set(liveSlots.map((s) => s.name?.toLowerCase()));
+      const uniquePending = pendingAsSlots.filter(
+        (p) => !liveNames.has(p.name?.toLowerCase()),
+      );
+      setSlots([...liveSlots, ...uniquePending]);
+      return uniquePending;
+    },
+    [userId],
+  );
 
   const searchSlotImages = async (nameOverride, providerOverride) => {
-    const n = (typeof nameOverride === 'string' ? nameOverride : submitForm.name || '').trim();
-    const p = (typeof providerOverride === 'string' ? providerOverride : submitForm.provider || '').trim();
+    const n = (
+      typeof nameOverride === "string" ? nameOverride : submitForm.name || ""
+    ).trim();
+    const p = (
+      typeof providerOverride === "string"
+        ? providerOverride
+        : submitForm.provider || ""
+    ).trim();
     if (!n && !p) return;
     const fallbackMeta = {
-      googleUrl: buildGoogleSlotImageSearchUrl({ name: n, provider: p, pretty: prettyImage }),
+      googleUrl: buildGoogleSlotImageSearchUrl({
+        name: n,
+        provider: p,
+        pretty: prettyImage,
+      }),
       totalResults: 0,
     };
     setSubmitImageSearching(true);
@@ -681,7 +1265,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     setImageSearchMeta(fallbackMeta);
     setImageShowCount(10);
     try {
-      const res = await fetch(buildSlotImageSearchUrl({ name: n, provider: p, pretty: prettyImage }));
+      const res = await fetch(
+        buildSlotImageSearchUrl({ name: n, provider: p, pretty: prettyImage }),
+      );
       const data = await res.json();
       if (res.ok) {
         setSubmitImageResults(data.images || []);
@@ -692,15 +1278,17 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           totalResults: data.images?.length || 0,
         });
       }
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     setSubmitImageSearching(false);
   };
 
   // Auto-fetch images when name + provider are both filled
-  const autoFetchRef = useRef('');
+  const autoFetchRef = useRef("");
   useEffect(() => {
-    const n = (submitForm.name || '').trim();
-    const p = (submitForm.provider || '').trim();
+    const n = (submitForm.name || "").trim();
+    const p = (submitForm.provider || "").trim();
     if (!n || !p || !showSubmitSlot) return;
     const key = `${n}|${p}|${prettyImage}`;
     if (key === autoFetchRef.current) return;
@@ -710,10 +1298,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   }, [submitForm.name, submitForm.provider, showSubmitSlot, prettyImage]);
 
   const [scrapedImages, setScrapedImages] = useState([]);
-  const submitScrapeRef = useRef('');
+  const submitScrapeRef = useRef("");
 
   useEffect(() => {
-    const n = (submitForm.name || '').trim();
+    const n = (submitForm.name || "").trim();
     if (!showSubmitSlot || !n || n.length < 3) return;
     if (n === submitScrapeRef.current) return;
     submitScrapeRef.current = n;
@@ -721,19 +1309,30 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     const timer = setTimeout(async () => {
       setSubmitScrapeLoading(true);
       try {
-        const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(n)}`);
+        const res = await fetch(
+          `/api/fetch-slot-info?name=${encodeURIComponent(n)}`,
+        );
         if (res.ok) {
           const { info } = await res.json();
           if (info) {
             const images = info.images || (info.image ? [info.image] : []);
-            const existingProvider = findExistingProvider(info.provider, slotProviders);
+            const existingProvider = findExistingProvider(
+              info.provider,
+              slotProviders,
+            );
             setScrapedImages(images);
-            setSubmitForm(prev => ({
+            setSubmitForm((prev) => ({
               ...prev,
-              ...(existingProvider && !prev.provider ? { provider: existingProvider } : {}),
+              ...(existingProvider && !prev.provider
+                ? { provider: existingProvider }
+                : {}),
               ...(info.rtp && !prev.rtp ? { rtp: String(info.rtp) } : {}),
-              ...(info.volatility && !prev.volatility ? { volatility: info.volatility } : {}),
-              ...(info.max_win_multiplier && !prev.max_win_multiplier ? { max_win_multiplier: String(info.max_win_multiplier) } : {}),
+              ...(info.volatility && !prev.volatility
+                ? { volatility: info.volatility }
+                : {}),
+              ...(info.max_win_multiplier && !prev.max_win_multiplier
+                ? { max_win_multiplier: String(info.max_win_multiplier) }
+                : {}),
               ...(info.image && !prev.image ? { image: info.image } : {}),
             }));
           } else {
@@ -754,20 +1353,23 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
   const handleSlotSubmit = async () => {
     if (!submitForm.name?.trim()) {
-      return alert('Slot name is required.');
+      return alert("Slot name is required.");
     }
 
     if (!userId) {
-      return alert('You must be logged in to submit a slot.');
+      return alert("You must be logged in to submit a slot.");
     }
 
     if (!submitForm.provider?.trim() || !submitForm.image?.trim()) {
-      return alert('Name, Provider, and Image URL are required for approval.');
+      return alert("Name, Provider, and Image URL are required for approval.");
     }
 
-    const existingProvider = findExistingProvider(submitForm.provider, slotProviders);
+    const existingProvider = findExistingProvider(
+      submitForm.provider,
+      slotProviders,
+    );
     if (!existingProvider) {
-      return alert('Select an existing provider from the provider list.');
+      return alert("Select an existing provider from the provider list.");
     }
 
     setSubmitSaving(true);
@@ -778,10 +1380,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         image: submitForm.image.trim(),
         rtp: submitForm.rtp ? parseFloat(submitForm.rtp) : null,
         volatility: submitForm.volatility || null,
-        max_win_multiplier: submitForm.max_win_multiplier ? parseFloat(submitForm.max_win_multiplier) : null,
+        max_win_multiplier: submitForm.max_win_multiplier
+          ? parseFloat(submitForm.max_win_multiplier)
+          : null,
       });
       const pendingSlots = await hydratePendingSlotList(createdSubmission);
-      const selectedPending = pendingSlots.find(s => s.id === `pending_${createdSubmission.id}`) || {
+      const selectedPending = pendingSlots.find(
+        (s) => s.id === `pending_${createdSubmission.id}`,
+      ) || {
         id: `pending_${createdSubmission.id}`,
         name: createdSubmission.name,
         provider: createdSubmission.provider,
@@ -798,19 +1404,23 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setImageSearchMeta(null);
       setScrapedImages([]);
       setShowSubmitSlot(false);
-      alert('Slot submitted for approval and selected for this hunt.');
+      alert("Slot submitted for approval and selected for this hunt.");
     } catch (e) {
-      const message = getErrorMessage(e, 'Could not add slot.');
-      alert(isDuplicateError(message) ? 'Slot already exists or pending.' : `Error: ${message}`);
+      const message = getErrorMessage(e, "Could not add slot.");
+      alert(
+        isDuplicateError(message)
+          ? "Slot already exists or pending."
+          : `Error: ${message}`,
+      );
     } finally {
       setSubmitSaving(false);
     }
   };
 
   // Save & Close state
-  const [saveHuntName, setSaveHuntName] = useState('');
+  const [saveHuntName, setSaveHuntName] = useState("");
   const [savingHunt, setSavingHunt] = useState(false);
-  const [saveHuntMsg, setSaveHuntMsg] = useState('');
+  const [saveHuntMsg, setSaveHuntMsg] = useState("");
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const autoSaveTimerRef = useRef(null);
   const autoSaveFiredRef = useRef(false);
@@ -821,7 +1431,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       autoSaveTimerRef.current = null;
     }
     autoSaveFiredRef.current = false;
-    setSaveHuntMsg('');
+    setSaveHuntMsg("");
   }, []);
 
   useEffect(() => {
@@ -834,8 +1444,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         const liveSlots = allSlots || [];
         // Add user's pending slots (not yet approved) so they can use them
         const pendingAsSlots = (myPending || [])
-          .filter(p => p.status === 'pending')
-          .map(p => ({
+          .filter((p) => p.status === "pending")
+          .map((p) => ({
             id: `pending_${p.id}`,
             name: p.name,
             provider: p.provider,
@@ -846,8 +1456,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             _isPending: true,
           }));
         // Merge, avoiding duplicates by name
-        const liveNames = new Set(liveSlots.map(s => s.name?.toLowerCase()));
-        const unique = pendingAsSlots.filter(p => !liveNames.has(p.name?.toLowerCase()));
+        const liveNames = new Set(liveSlots.map((s) => s.name?.toLowerCase()));
+        const unique = pendingAsSlots.filter(
+          (p) => !liveNames.has(p.name?.toLowerCase()),
+        );
         setSlots([...liveSlots, ...unique]);
       } catch {
         setSlots([]);
@@ -856,57 +1468,88 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     loadSlots();
   }, [userId, hydratePendingSlotList]);
 
-  const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
-    ? sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase())))
-    : [];
+  const filteredSlots =
+    slotSearch.trim().length > 0 && slots.length > 0
+      ? sortSlotsByProviderPriority(
+          slots.filter((s) =>
+            s?.name?.toLowerCase().includes(slotSearch.toLowerCase()),
+          ),
+        )
+      : [];
 
-  const save = useCallback((list = bonusList, extras = {}) => {
-    onChange({
-      ...config,
-      startMoney: Number(startMoney) || 0,
-      targetMoney: Number(targetMoney) || 0,
-      stopLoss: Number(stopLoss) || 0,
-      huntNumber: huntNumber,
-      casinoName: casinoName,
-      showStatistics, animatedTracker, bonusOpening,
-      autoTrackEnabled: false,
-      sortBy, sortDir,
-      bonuses: list,
-      huntActive: config?.huntActive ?? false,
-      ...extras,
-    });
-  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, casinoName, showStatistics, animatedTracker, bonusOpening, sortBy, sortDir, bonusList]);
+  const save = useCallback(
+    (list = bonusList, extras = {}) => {
+      onChange({
+        ...config,
+        startMoney: Number(startMoney) || 0,
+        targetMoney: Number(targetMoney) || 0,
+        stopLoss: Number(stopLoss) || 0,
+        huntNumber: huntNumber,
+        casinoName: casinoName,
+        showStatistics,
+        animatedTracker,
+        bonusOpening,
+        autoTrackEnabled: false,
+        sortBy,
+        sortDir,
+        bonuses: list,
+        huntActive: config?.huntActive ?? false,
+        ...extras,
+      });
+    },
+    [
+      config,
+      onChange,
+      startMoney,
+      targetMoney,
+      stopLoss,
+      huntNumber,
+      casinoName,
+      showStatistics,
+      animatedTracker,
+      bonusOpening,
+      sortBy,
+      sortDir,
+      bonusList,
+    ],
+  );
 
-  const cacheRtpStatsBestWin = useCallback((record) => {
-    if (!userId || !record?.best_win) return;
-    const rtpWidgets = (allWidgets || []).filter(widget => widget.widget_type === 'rtp_stats' && widget.id);
-    if (rtpWidgets.length === 0) return;
+  const cacheRtpStatsBestWin = useCallback(
+    (record) => {
+      if (!userId || !record?.best_win) return;
+      const rtpWidgets = (allWidgets || []).filter(
+        (widget) => widget.widget_type === "rtp_stats" && widget.id,
+      );
+      if (rtpWidgets.length === 0) return;
 
-    const cached = {
-      userId,
-      slotId: record.slot_id || null,
-      slotName: record.slot_name || '',
-      provider: record.slot_provider || null,
-      best_win: Number(record.best_win) || 0,
-      best_multiplier: Number(record.best_multiplier) || 0,
-    };
+      const cached = {
+        userId,
+        slotId: record.slot_id || null,
+        slotName: record.slot_name || "",
+        provider: record.slot_provider || null,
+        best_win: Number(record.best_win) || 0,
+        best_multiplier: Number(record.best_multiplier) || 0,
+      };
 
-    rtpWidgets.forEach((widget) => {
-      supabase
-        .from('overlay_widgets')
-        .update({
-          config: {
-            ...(widget.config || {}),
-            _cachedBestWin: cached,
-          },
-        })
-        .eq('id', widget.id)
-        .eq('user_id', userId)
-        .then(({ error }) => {
-          if (error) console.warn('RTP best win cache update failed:', error.message);
-        });
-    });
-  }, [allWidgets, userId]);
+      rtpWidgets.forEach((widget) => {
+        supabase
+          .from("overlay_widgets")
+          .update({
+            config: {
+              ...(widget.config || {}),
+              _cachedBestWin: cached,
+            },
+          })
+          .eq("id", widget.id)
+          .eq("user_id", userId)
+          .then(({ error }) => {
+            if (error)
+              console.warn("RTP best win cache update failed:", error.message);
+          });
+      });
+    },
+    [allWidgets, userId],
+  );
 
   const handleAddBonus = () => {
     const betNum = Number(betSize);
@@ -927,43 +1570,53 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     setBonusList(updated);
     save(updated);
     setSelectedSlot(null);
-    setSlotSearch('');
-    setBetSize('');
+    setSlotSearch("");
+    setBetSize("");
     setIsSuperBonus(false);
     setIsExtremeBonus(false);
     setPendingRequester(null);
-    onChange({ ...config, bonuses: updated, previewSlotName: '' });
+    onChange({ ...config, bonuses: updated, previewSlotName: "" });
   };
 
   const handleOpenBonus = (bonusId, result) => {
-    const updated = bonusList.map(b =>
-      b.id === bonusId ? { ...b, opened: true, result, payout: result } : b
+    const updated = bonusList.map((b) =>
+      b.id === bonusId ? { ...b, opened: true, result, payout: result } : b,
     );
     setBonusList(updated);
     save(updated);
   };
 
   const handleRemoveBonus = (bonusId) => {
-    const updated = bonusList.filter(b => b.id !== bonusId);
+    const updated = bonusList.filter((b) => b.id !== bonusId);
     setBonusList(updated);
     save(updated);
   };
 
   const handleCopyName = (bonus) => {
-    const name = bonus.slotName || bonus.slot?.name || '';
+    const name = bonus.slotName || bonus.slot?.name || "";
     navigator.clipboard.writeText(name).catch(() => {});
   };
 
   const handleStartEdit = (bonus) => {
     setEditingId(bonus.id);
-    setEditName(bonus.slotName || bonus.slot?.name || '');
-    setEditBet(String(bonus.betSize || ''));
-    setEditBonusType(bonus.isExtremeBonus ? 'extreme' : bonus.isSuperBonus ? 'super' : 'none');
+    setEditName(bonus.slotName || bonus.slot?.name || "");
+    setEditBet(String(bonus.betSize || ""));
+    setEditBonusType(
+      bonus.isExtremeBonus ? "extreme" : bonus.isSuperBonus ? "super" : "none",
+    );
   };
 
   const handleSaveEdit = (bonusId) => {
-    const updated = bonusList.map(b =>
-      b.id === bonusId ? { ...b, slotName: editName, betSize: Number(editBet) || b.betSize, isSuperBonus: editBonusType === 'super', isExtremeBonus: editBonusType === 'extreme' } : b
+    const updated = bonusList.map((b) =>
+      b.id === bonusId
+        ? {
+            ...b,
+            slotName: editName,
+            betSize: Number(editBet) || b.betSize,
+            isSuperBonus: editBonusType === "super",
+            isExtremeBonus: editBonusType === "extreme",
+          }
+        : b,
     );
     setBonusList(updated);
     save(updated);
@@ -981,15 +1634,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     save(updated);
   };
 
-  const getPayoutDraftValue = (bonus) => (
+  const getPayoutDraftValue = (bonus) =>
     Object.prototype.hasOwnProperty.call(payoutDrafts, bonus.id)
       ? payoutDrafts[bonus.id]
-      : formatPayoutDisplay(bonus.payout)
-  );
+      : formatPayoutDisplay(bonus.payout);
 
   const handlePayoutDraftChange = (bonusId, rawInput) => {
     cancelPendingAutoSave();
-    setPayoutDrafts(prev => ({
+    setPayoutDrafts((prev) => ({
       ...prev,
       [bonusId]: normalizePayoutDraftInput(rawInput),
     }));
@@ -999,42 +1651,56 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     const payout = parsePayoutDraftInput(rawInput);
     if (payout === null) return;
 
-    const currentBonus = bonusList.find(b => b.id === bonusId);
+    const currentBonus = bonusList.find((b) => b.id === bonusId);
     const currentPayout = Number(currentBonus?.payout || 0);
     const nextOpened = payout > 0;
-    if (Math.abs(currentPayout - payout) < 0.005 && Boolean(currentBonus?.opened) === nextOpened) {
-      setPayoutDrafts(prev => ({
+    if (
+      Math.abs(currentPayout - payout) < 0.005 &&
+      Boolean(currentBonus?.opened) === nextOpened
+    ) {
+      setPayoutDrafts((prev) => ({
         ...prev,
-        [bonusId]: payout > 0 ? payout.toFixed(2) : '',
+        [bonusId]: payout > 0 ? payout.toFixed(2) : "",
       }));
       return;
     }
 
-    const updated = bonusList.map(b =>
-      b.id === bonusId ? { ...b, opened: payout > 0, payout, result: payout } : b
+    const updated = bonusList.map((b) =>
+      b.id === bonusId
+        ? { ...b, opened: payout > 0, payout, result: payout }
+        : b,
     );
     setBonusList(updated);
     save(updated);
-    setPayoutDrafts(prev => ({
+    setPayoutDrafts((prev) => ({
       ...prev,
-      [bonusId]: payout > 0 ? payout.toFixed(2) : '',
+      [bonusId]: payout > 0 ? payout.toFixed(2) : "",
     }));
 
-    const updatedBonus = updated.find(b => b.id === bonusId);
+    const updatedBonus = updated.find((b) => b.id === bonusId);
     if (userId && updatedBonus && payout > 0) {
-      const huntName = saveHuntName.trim()
-        || [casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : ''].filter(Boolean).join(' / ')
-        || 'Live bonus hunt';
+      const huntName =
+        saveHuntName.trim() ||
+        [casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : ""]
+          .filter(Boolean)
+          .join(" / ") ||
+        "Live bonus hunt";
       saveSlotPersonalBestFromBonus(userId, updatedBonus, huntName)
-        .then(record => cacheRtpStatsBestWin(record))
-        .catch(e => console.warn('Slot personal best update failed:', e?.message || e));
+        .then((record) => cacheRtpStatsBestWin(record))
+        .catch((e) =>
+          console.warn("Slot personal best update failed:", e?.message || e),
+        );
     }
 
     // Auto-save: if all bonuses now have a payout > 0, save the hunt after 3s
-    if (bonusOpening && updated.length > 0 && updated.every(b => b.opened && Number(b.payout) > 0)) {
+    if (
+      bonusOpening &&
+      updated.length > 0 &&
+      updated.every((b) => b.opened && Number(b.payout) > 0)
+    ) {
       if (!autoSaveFiredRef.current) {
         if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-        setSaveHuntMsg('✅ All bonuses paid — auto-saving in 3s…');
+        setSaveHuntMsg("✅ All bonuses paid — auto-saving in 3s…");
         autoSaveTimerRef.current = setTimeout(() => {
           autoSaveFiredRef.current = true;
           handleSaveAndClose();
@@ -1046,34 +1712,58 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     }
   };
   const formatPayoutDisplay = (val) => {
-    if (!val && val !== 0) return '';
+    if (!val && val !== 0) return "";
     const n = Number(val);
-    if (n === 0) return '';
+    if (n === 0) return "";
     return n.toFixed(2);
   };
 
   // SHA-256 hash helper (must match admin panel)
   // Save hunt to library & start new
   const handleSaveAndClose = async () => {
-    if (!userId) { setSaveHuntMsg('⚠️ Not logged in'); return; }
-    if (bonusList.length === 0) { setSaveHuntMsg('⚠️ No bonuses to save'); return; }
-    const parts = [casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : '', new Date().toLocaleDateString()].filter(Boolean);
-    const name = saveHuntName.trim() || parts.join(' / ') || `Hunt ${new Date().toLocaleDateString()}`;
+    if (!userId) {
+      setSaveHuntMsg("⚠️ Not logged in");
+      return;
+    }
+    if (bonusList.length === 0) {
+      setSaveHuntMsg("⚠️ No bonuses to save");
+      return;
+    }
+    const parts = [
+      casinoName.trim(),
+      huntNumber ? `Hunt #${huntNumber}` : "",
+      new Date().toLocaleDateString(),
+    ].filter(Boolean);
+    const name =
+      saveHuntName.trim() ||
+      parts.join(" / ") ||
+      `Hunt ${new Date().toLocaleDateString()}`;
     setSavingHunt(true);
-    setSaveHuntMsg('');
+    setSaveHuntMsg("");
     try {
-      const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-      const opened = bonusList.filter(b => b.opened);
+      const totalBet = bonusList.reduce(
+        (s, b) => s + (Number(b.betSize) || 0),
+        0,
+      );
+      const opened = bonusList.filter((b) => b.opened);
       const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
       const spendTarget = getBonusHuntSpendTarget(startMoney, stopLoss);
       const profit = totalWin - spendTarget;
-      const avgMulti = opened.length > 0
-        ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
-        : 0;
-      let bestMulti = 0, bestSlotName = '';
-      opened.forEach(b => {
+      const avgMulti =
+        opened.length > 0
+          ? opened.reduce(
+              (s, b) => s + (Number(b.payout) || 0) / (Number(b.betSize) || 1),
+              0,
+            ) / opened.length
+          : 0;
+      let bestMulti = 0,
+        bestSlotName = "";
+      opened.forEach((b) => {
         const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
-        if (m > bestMulti) { bestMulti = m; bestSlotName = b.slotName || b.slot?.name || ''; }
+        if (m > bestMulti) {
+          bestMulti = m;
+          bestSlotName = b.slotName || b.slot?.name || "";
+        }
       });
       const record = {
         hunt_name: name,
@@ -1092,17 +1782,23 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       };
       await saveBonusHuntToHistory(userId, record);
       // Auto-update per-user slot records
-      try { await updateSlotRecordsFromHunt(userId, bonusList, name); } catch (e) { console.warn('Slot records update failed:', e); }
-      setSaveHuntName('');
+      try {
+        await updateSlotRecordsFromHunt(userId, bonusList, name);
+      } catch (e) {
+        console.warn("Slot records update failed:", e);
+      }
+      setSaveHuntName("");
       setShowSaveConfirm(false);
-      setSaveHuntMsg('✅ Hunt saved to Library!');
-      setTimeout(() => setSaveHuntMsg(''), 4000);
+      setSaveHuntMsg("✅ Hunt saved to Library!");
+      setTimeout(() => setSaveHuntMsg(""), 4000);
     } catch (err) {
-      const msg = err?.message || '';
-      if (msg.includes('42P01')) {
-        setSaveHuntMsg('⚠️ Table not found. Run the migration: add_bonus_hunt_history.sql');
+      const msg = err?.message || "";
+      if (msg.includes("42P01")) {
+        setSaveHuntMsg(
+          "⚠️ Table not found. Run the migration: add_bonus_hunt_history.sql",
+        );
       } else {
-        setSaveHuntMsg('⚠️ ' + (msg || 'Save failed'));
+        setSaveHuntMsg("⚠️ " + (msg || "Save failed"));
       }
     } finally {
       setSavingHunt(false);
@@ -1113,13 +1809,13 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const handleResetHunt = () => {
     setBonusList([]);
     setPayoutDrafts({});
-    setStartMoney('');
-    setTargetMoney('');
-    setStopLoss('');
-    setHuntNumber('');
-    setCasinoName('');
+    setStartMoney("");
+    setTargetMoney("");
+    setStopLoss("");
+    setHuntNumber("");
+    setCasinoName("");
     setBonusOpening(false);
-    setSaveHuntName('');
+    setSaveHuntName("");
     setShowSaveConfirm(false);
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     autoSaveTimerRef.current = null;
@@ -1130,40 +1826,54 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       startMoney: 0,
       targetMoney: 0,
       stopLoss: 0,
-      casinoName: '',
-      huntNumber: '',
+      casinoName: "",
+      huntNumber: "",
       bonusOpening: false,
       huntActive: false,
     });
-    setSaveHuntMsg('🔄 Hunt reset. Ready for a new hunt!');
-    setTimeout(() => setSaveHuntMsg(''), 3000);
+    setSaveHuntMsg("🔄 Hunt reset. Ready for a new hunt!");
+    setTimeout(() => setSaveHuntMsg(""), 3000);
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  const currency = config?.currency || '€';
+  const currency = config?.currency || "€";
 
   // Fetch slot requests
   useEffect(() => {
     if (!userId) return;
     const load = async () => {
       const { data } = await supabase
-        .from('slot_requests')
-        .select('id, slot_name, slot_image, requested_by, created_at')
-        .eq('user_id', userId)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: true });
+        .from("slot_requests")
+        .select("id, slot_name, slot_image, requested_by, created_at")
+        .eq("user_id", userId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
       if (data) setSlotRequests(data);
     };
     load();
-    const chan = supabase.channel('bh-sr-config-' + userId)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_requests', filter: `user_id=eq.${userId}` }, () => load())
+    const chan = supabase
+      .channel("bh-sr-config-" + userId)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "slot_requests",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => load(),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(chan); };
+    return () => {
+      supabase.removeChannel(chan);
+    };
   }, [userId]);
 
   const handlePickRequest = (req) => {
-    const match = slots.find(s => s.name.toLowerCase() === req.slot_name.toLowerCase());
+    const match = slots.find(
+      (s) => s.name.toLowerCase() === req.slot_name.toLowerCase(),
+    );
     if (match) {
       setSelectedSlot(match);
       setSlotSearch(match.name);
@@ -1175,67 +1885,97 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
   const handleDismissRequest = async (id) => {
     // 'cancelled' = removed without refund (is in the status CHECK constraint)
-    const { error } = await supabase.from('slot_requests').update({ status: 'cancelled' }).eq('id', id);
-    if (error) console.error('[bh-dismiss] DB error:', error.message);
-    setSlotRequests(prev => prev.filter(r => r.id !== id));
+    const { error } = await supabase
+      .from("slot_requests")
+      .update({ status: "cancelled" })
+      .eq("id", id);
+    if (error) console.error("[bh-dismiss] DB error:", error.message);
+    setSlotRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const srWidget = allWidgets?.find(w => w.widget_type === 'slot_requests');
+  const srWidget = allWidgets?.find((w) => w.widget_type === "slot_requests");
   const srConfig = srWidget?.config || {};
 
   const handleRejectRequest = async (id) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
-      const resp = await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
-        body: JSON.stringify({
-          request_id: id,
-          user_id: userId,
-          message_template: srConfig.srMsgRejected || undefined,
-        }),
-      });
+      const resp = await fetch(
+        `${window.location.origin}/api/chat-commands?cmd=sr-reject`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            request_id: id,
+            user_id: userId,
+            message_template: srConfig.srMsgRejected || undefined,
+          }),
+        },
+      );
       if (!resp.ok && resp.status !== 409) {
-        console.error('[bh-reject] API error:', resp.status);
+        console.error("[bh-reject] API error:", resp.status);
       }
       // Always re-fetch from DB — never trust optimistic local state
       const { data } = await supabase
-        .from('slot_requests').select('id, slot_name, slot_image, requested_by, created_at')
-        .eq('user_id', userId).eq('status', 'pending').order('created_at', { ascending: true });
+        .from("slot_requests")
+        .select("id, slot_name, slot_image, requested_by, created_at")
+        .eq("user_id", userId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
       if (data) setSlotRequests(data);
     } catch (err) {
-      console.error('[bh-reject] error:', err);
+      console.error("[bh-reject] error:", err);
     }
   };
 
   const handleClearAllRequests = async () => {
     if (!userId || slotRequests.length === 0) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
-      const resp = await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ user_id: userId }),
-      });
-      if (!resp.ok) console.error('[bh-clear-all] API error:', resp.status);
+      const resp = await fetch(
+        `${window.location.origin}/api/chat-commands?cmd=sr-clear-all`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ user_id: userId }),
+        },
+      );
+      if (!resp.ok) console.error("[bh-clear-all] API error:", resp.status);
     } catch (err) {
-      console.error('[bh-clear-all] error:', err);
+      console.error("[bh-clear-all] error:", err);
       // API failed — cancel all locally without refund so they at least leave the list
-      const ids = slotRequests.map(r => r.id);
-      await supabase.from('slot_requests').update({ status: 'cancelled' }).in('id', ids);
+      const ids = slotRequests.map((r) => r.id);
+      await supabase
+        .from("slot_requests")
+        .update({ status: "cancelled" })
+        .in("id", ids);
     } finally {
       // Always sync from DB truth
       const { data } = await supabase
-        .from('slot_requests').select('id, slot_name, slot_image, requested_by, created_at')
-        .eq('user_id', userId).eq('status', 'pending').order('created_at', { ascending: true });
+        .from("slot_requests")
+        .select("id, slot_name, slot_image, requested_by, created_at")
+        .eq("user_id", userId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
       setSlotRequests(data || []);
     }
   };
 
   const handleAddToBH = (req) => {
-    const match = slots.find(s => s.name.toLowerCase() === req.slot_name.toLowerCase());
+    const match = slots.find(
+      (s) => s.name.toLowerCase() === req.slot_name.toLowerCase(),
+    );
     if (match) {
       setSelectedSlot(match);
       setSlotSearch(match.name);
@@ -1247,21 +1987,28 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     handleDismissRequest(req.id);
   };
 
-  const openedCount = bonusList.filter(b => b.opened || Number(b.payout) > 0).length;
+  const openedCount = bonusList.filter(
+    (b) => b.opened || Number(b.payout) > 0,
+  ).length;
 
   return (
     <div className="bh-panel">
-
       {/* ─── Hunt Settings ─── */}
       <div className="bh-panel-section bh-panel-section--setup">
         {/* Casino name (optional) */}
         <div className="bh-settings-row" style={{ marginBottom: 8 }}>
-          <label className="bh-input-group bh-input-group--section" style={{ flex: 1 }}>
+          <label
+            className="bh-input-group bh-input-group--section"
+            style={{ flex: 1 }}
+          >
             <span className="bh-section-pill">🏛️ Casino (optional)</span>
-            <input type="text" value={casinoName}
+            <input
+              type="text"
+              value={casinoName}
               placeholder="e.g. Stake, Gamdom, Roobet…"
-              onChange={e => setCasinoName(e.target.value)}
-              onBlur={() => save()} />
+              onChange={(e) => setCasinoName(e.target.value)}
+              onBlur={() => save()}
+            />
           </label>
         </div>
         <div className="bh-hunt-split">
@@ -1271,81 +2018,143 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             <div className="bh-settings-row">
               <label className="bh-input-group bh-input-sm">
                 <span>Hunt #</span>
-                <input type="text" value={huntNumber}
+                <input
+                  type="text"
+                  value={huntNumber}
                   placeholder="42"
-                  onChange={e => setHuntNumber(e.target.value)}
-                  onBlur={() => save()} />
+                  onChange={(e) => setHuntNumber(e.target.value)}
+                  onBlur={() => save()}
+                />
               </label>
               <label className="bh-input-group bh-input-md">
                 <span>Start ({currency})</span>
-                <input type="number" value={startMoney}
+                <input
+                  type="number"
+                  value={startMoney}
                   placeholder="0"
-                  onChange={e => setStartMoney(e.target.value)}
-                  onBlur={() => save()} />
+                  onChange={(e) => setStartMoney(e.target.value)}
+                  onBlur={() => save()}
+                />
               </label>
               <label className="bh-input-group bh-input-md">
                 <span>Stop Loss ({currency})</span>
-                <input type="number" value={stopLoss}
+                <input
+                  type="number"
+                  value={stopLoss}
                   placeholder="0"
-                  onChange={e => setStopLoss(e.target.value)}
-                  onBlur={() => save()} />
+                  onChange={(e) => setStopLoss(e.target.value)}
+                  onBlur={() => save()}
+                />
               </label>
             </div>
 
             <div className="bh-inline-add">
-              <h4 className="bh-section-pill bh-section-pill--inline-add">Add Bonus</h4>
+              <h4 className="bh-section-pill bh-section-pill--inline-add">
+                Add Bonus
+              </h4>
 
               <div className="bh-add-row bh-add-row--search">
-                <div className="bh-search-container bh-search-half" ref={searchRef}>
+                <div
+                  className="bh-search-container bh-search-half"
+                  ref={searchRef}
+                >
                   <input
                     type="text"
                     className="bh-search-input"
                     value={selectedSlot ? selectedSlot.name : slotSearch}
-                    onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); if (!e.target.value.trim()) onChange({ ...config, previewSlotName: '' }); }}
+                    onChange={(e) => {
+                      setSlotSearch(e.target.value);
+                      setSelectedSlot(null);
+                      setShowSuggestions(true);
+                      if (!e.target.value.trim())
+                        onChange({ ...config, previewSlotName: "" });
+                    }}
                     onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
+                    onBlur={() =>
+                      setTimeout(() => setShowSuggestions(false), 200)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddBonus();
+                      }
+                    }}
                     placeholder={`Search ${slots.length} slots...`}
                   />
 
                   {showSuggestions && slotSearch.trim().length > 0 && (
                     <div className="bh-suggestions-dropdown">
                       {filteredSlots.length > 0 ? (
-                        filteredSlots.slice(0, 8).map(slot => (
-                          <div key={slot.id} className="bh-suggestion-item"
-                            onMouseDown={e => e.preventDefault()}
-                            onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); onChange({ ...config, previewSlotName: slot.name }); }}>
+                        filteredSlots.slice(0, 8).map((slot) => (
+                          <div
+                            key={slot.id}
+                            className="bh-suggestion-item"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              setSelectedSlot(slot);
+                              setSlotSearch(slot.name);
+                              setShowSuggestions(false);
+                              onChange({
+                                ...config,
+                                previewSlotName: slot.name,
+                              });
+                            }}
+                          >
                             <img
-                              src={slot.image || 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'}
+                              src={
+                                slot.image ||
+                                "https://via.placeholder.com/36x36/1a1d23/9346ff?text=S"
+                              }
                               alt={slot.name}
                               className="bh-suggestion-img"
-                              onError={e => { e.target.src = 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'; }}
+                              onError={(e) => {
+                                e.target.src =
+                                  "https://via.placeholder.com/36x36/1a1d23/9346ff?text=S";
+                              }}
                             />
                             <div className="bh-suggestion-info">
                               <span className="bh-suggestion-name">
                                 {slot.name}
-                                {slot._isPending && <span className="bh-pending-badge">Pending</span>}
+                                {slot._isPending && (
+                                  <span className="bh-pending-badge">
+                                    Pending
+                                  </span>
+                                )}
                               </span>
-                              {slot.provider && <span className="bh-suggestion-provider">{slot.provider}</span>}
+                              {slot.provider && (
+                                <span className="bh-suggestion-provider">
+                                  {slot.provider}
+                                </span>
+                              )}
                             </div>
                           </div>
                         ))
                       ) : (
-                        <div className="bh-suggestion-empty bh-suggestion-submit"
-                          onMouseDown={e => e.preventDefault()}
+                        <div
+                          className="bh-suggestion-empty bh-suggestion-submit"
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
-                            setField('name', slotSearch.trim());
+                            setField("name", slotSearch.trim());
                             setShowSubmitSlot(true);
                             setShowSuggestions(false);
-                          }}>
-                          {slots.length === 0 ? 'Loading slots...' : (
+                          }}
+                        >
+                          {slots.length === 0 ? (
+                            "Loading slots..."
+                          ) : (
                             <>
-                              <span className="bh-notfound-label">"{slotSearch.trim()}" isn't in the database yet</span>
+                              <span className="bh-notfound-label">
+                                "{slotSearch.trim()}" isn't in the database yet
+                              </span>
                               <span className="bh-submit-cta">
-                                <span className="bh-submit-cta-icon">&#x2b;</span>
+                                <span className="bh-submit-cta-icon">
+                                  &#x2b;
+                                </span>
                                 Click here to add it
                               </span>
-                              <span className="bh-submit-hint">Press to open the submit form</span>
+                              <span className="bh-submit-hint">
+                                Press to open the submit form
+                              </span>
                             </>
                           )}
                         </div>
@@ -1356,34 +2165,70 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               </div>
 
               <div className="bh-add-row bh-add-row--inline-actions">
-                <input type="number" className="bh-bet-field" value={betSize}
-                  onChange={e => setBetSize(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
-                  placeholder={`Bet (${currency})`} step="0.1" />
+                <input
+                  type="number"
+                  className="bh-bet-field"
+                  value={betSize}
+                  onChange={(e) => setBetSize(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddBonus();
+                    }
+                  }}
+                  placeholder={`Bet (${currency})`}
+                  step="0.1"
+                />
                 <button
                   type="button"
-                  className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
+                  className={`bh-super-btn${isSuperBonus ? " active" : ""}`}
                   title="Super Bonus (double-click to add)"
                   disabled={!betSize}
-                  onClick={() => { setIsSuperBonus(p => !p); if (!isSuperBonus) setIsExtremeBonus(false); }}
-                  onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsSuperBonus(true); setIsExtremeBonus(false); setTimeout(() => handleAddBonus(), 0); }}
-                >Super</button>
+                  onClick={() => {
+                    setIsSuperBonus((p) => !p);
+                    if (!isSuperBonus) setIsExtremeBonus(false);
+                  }}
+                  onDoubleClick={() => {
+                    if (!betSize || !selectedSlot) return;
+                    setIsSuperBonus(true);
+                    setIsExtremeBonus(false);
+                    setTimeout(() => handleAddBonus(), 0);
+                  }}
+                >
+                  Super
+                </button>
                 <button
                   type="button"
-                  className={`bh-extreme-btn${isExtremeBonus ? ' active' : ''}`}
+                  className={`bh-extreme-btn${isExtremeBonus ? " active" : ""}`}
                   title="Extreme Bonus (double-click to add)"
                   disabled={!betSize}
-                  onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
-                  onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
-                >Extreme</button>
-                <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
+                  onClick={() => {
+                    setIsExtremeBonus((p) => !p);
+                    if (!isExtremeBonus) setIsSuperBonus(false);
+                  }}
+                  onDoubleClick={() => {
+                    if (!betSize || !selectedSlot) return;
+                    setIsExtremeBonus(true);
+                    setIsSuperBonus(false);
+                    setTimeout(() => handleAddBonus(), 0);
+                  }}
+                >
+                  Extreme
+                </button>
+                <button
+                  className="bh-add-btn"
+                  onClick={handleAddBonus}
+                  disabled={!selectedSlot || !betSize}
+                >
                   + Add
                 </button>
                 {showSubmitSlot && (
                   <button
                     className="bh-submit-slot-btn active"
                     onClick={() => setShowSubmitSlot(false)}
-                  >Close</button>
+                  >
+                    Close
+                  </button>
                 )}
               </div>
 
@@ -1391,20 +2236,47 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <div className="bh-submit-dropdown">
                   <div className="bh-submit-grid">
                     <label className="bh-submit-field">
-                      <span>Name <em>*</em></span>
-                      <input value={submitForm.name || ''} onChange={e => setField('name', e.target.value)} placeholder="Sweet Bonanza" />
+                      <span>
+                        Name <em>*</em>
+                      </span>
+                      <input
+                        value={submitForm.name || ""}
+                        onChange={(e) => setField("name", e.target.value)}
+                        placeholder="Sweet Bonanza"
+                      />
                     </label>
                     <div className="bh-submit-field">
-                      <span>Provider <em>*</em></span>
-                      <BonusHuntProviderPicker providers={slotProviders} value={submitForm.provider || ''} onChange={provider => setField('provider', provider)} />
+                      <span>
+                        Provider <em>*</em>
+                      </span>
+                      <BonusHuntProviderPicker
+                        providers={slotProviders}
+                        value={submitForm.provider || ""}
+                        onChange={(provider) => setField("provider", provider)}
+                      />
                     </div>
                     <label className="bh-submit-field">
                       <span>RTP (%)</span>
-                      <input type="number" value={submitForm.rtp || ''} onChange={e => setField('rtp', e.target.value || null)} placeholder="96.50" step="0.01" min="80" max="100" />
+                      <input
+                        type="number"
+                        value={submitForm.rtp || ""}
+                        onChange={(e) =>
+                          setField("rtp", e.target.value || null)
+                        }
+                        placeholder="96.50"
+                        step="0.01"
+                        min="80"
+                        max="100"
+                      />
                     </label>
                     <label className="bh-submit-field">
                       <span>Volatility</span>
-                      <select value={submitForm.volatility || ''} onChange={e => setField('volatility', e.target.value || null)}>
+                      <select
+                        value={submitForm.volatility || ""}
+                        onChange={(e) =>
+                          setField("volatility", e.target.value || null)
+                        }
+                      >
                         <option value="">Select...</option>
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -1414,17 +2286,45 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </label>
                     <label className="bh-submit-field">
                       <span>Max Win (x)</span>
-                      <input type="number" value={submitForm.max_win_multiplier || ''} onChange={e => setField('max_win_multiplier', e.target.value || null)} placeholder="10000" />
+                      <input
+                        type="number"
+                        value={submitForm.max_win_multiplier || ""}
+                        onChange={(e) =>
+                          setField("max_win_multiplier", e.target.value || null)
+                        }
+                        placeholder="10000"
+                      />
                     </label>
                     <label className="bh-submit-field">
-                      <span>Image <em>*</em></span>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <input style={{ flex: 1, fontSize: '0.68rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="URL or search ->" />
-                        <button type="button" className="bh-submit-search-btn" onClick={() => searchSlotImages()} disabled={!submitForm.name || submitImageSearching}>
-                          {submitImageSearching ? '...' : 'Search'}
+                      <span>
+                        Image <em>*</em>
+                      </span>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <input
+                          style={{ flex: 1, fontSize: "0.68rem" }}
+                          value={submitForm.image || ""}
+                          onChange={(e) => setField("image", e.target.value)}
+                          placeholder="URL or search ->"
+                        />
+                        <button
+                          type="button"
+                          className="bh-submit-search-btn"
+                          onClick={() => searchSlotImages()}
+                          disabled={!submitForm.name || submitImageSearching}
+                        >
+                          {submitImageSearching ? "..." : "Search"}
                         </button>
                         {userAvatar && (
-                          <button type="button" className="bh-submit-search-btn" title="Use my stream logo" onClick={() => { setField('image', userAvatar); setSubmitImageResults([]); setImageSearchMeta(null); }}>
+                          <button
+                            type="button"
+                            className="bh-submit-search-btn"
+                            title="Use my stream logo"
+                            onClick={() => {
+                              setField("image", userAvatar);
+                              setSubmitImageResults([]);
+                              setImageSearchMeta(null);
+                            }}
+                          >
                             Logo
                           </button>
                         )}
@@ -1432,59 +2332,128 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </label>
                   </div>
                   {submitScrapeLoading && (
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 8px' }}>Auto-fetching slot info...</p>
+                    <p
+                      style={{
+                        fontSize: 11,
+                        color: "#94a3b8",
+                        margin: "0 0 8px",
+                      }}
+                    >
+                      Auto-fetching slot info...
+                    </p>
                   )}
-                  {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (<>
-                    <div className="bh-submit-images">
-                      {submitForm.image && (
-                        <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
-                      )}
-                      {scrapedImages.map((imgUrl, i) => {
-                        const src = imgUrl.includes('slotslaunch') ? 'SlotsLaunch' : imgUrl.includes('slotark') ? 'SlotArk' : 'DemoSlot';
-                        return (
-                        <button key={`scraped-${i}`} type="button"
-                          className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === imgUrl ? ' selected' : ''}`}
-                          onClick={() => setField('image', imgUrl)}
-                          title={`Image from ${src}`}>
-                          <img src={imgUrl} alt="" />
-                          <span className="bh-demoslot-badge">{src}</span>
+                  {(submitImageResults.length > 0 ||
+                    submitForm.image ||
+                    scrapedImages.length > 0 ||
+                    imageSearchMeta?.googleUrl) && (
+                    <>
+                      <div className="bh-submit-images">
+                        {submitForm.image && (
+                          <img
+                            src={submitForm.image}
+                            alt=""
+                            className="bh-submit-preview"
+                            onError={(e) => (e.target.src = DEFAULT_SLOT_IMAGE)}
+                          />
+                        )}
+                        {scrapedImages.map((imgUrl, i) => {
+                          const src = imgUrl.includes("slotslaunch")
+                            ? "SlotsLaunch"
+                            : imgUrl.includes("slotark")
+                              ? "SlotArk"
+                              : "DemoSlot";
+                          return (
+                            <button
+                              key={`scraped-${i}`}
+                              type="button"
+                              className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === imgUrl ? " selected" : ""}`}
+                              onClick={() => setField("image", imgUrl)}
+                              title={`Image from ${src}`}
+                            >
+                              <img src={imgUrl} alt="" />
+                              <span className="bh-demoslot-badge">{src}</span>
+                            </button>
+                          );
+                        })}
+                        {submitImageResults
+                          .slice(0, imageShowCount)
+                          .map((img, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              className={`bh-submit-img-btn${submitForm.image === img.url ? " selected" : ""}`}
+                              onClick={() => setField("image", img.url)}
+                            >
+                              <img src={img.url} alt="" />
+                            </button>
+                          ))}
+                        {submitImageResults.length > imageShowCount && (
+                          <button
+                            type="button"
+                            className="bh-show-more-btn"
+                            onClick={() => setImageShowCount((c) => c + 10)}
+                          >
+                            Show more
+                          </button>
+                        )}
+                        {imageSearchMeta?.googleUrl &&
+                          submitImageResults.length === 0 &&
+                          !submitImageSearching && (
+                            <a
+                              className="bh-google-images-link"
+                              href={imageSearchMeta.googleUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Open Google Images
+                            </a>
+                          )}
+                      </div>
+                      <div className="bh-image-toolbar">
+                        <button
+                          type="button"
+                          className={`bh-pretty-toggle${prettyImage ? " active" : ""}`}
+                          onClick={() => setPrettyImage((p) => !p)}
+                        >
+                          {prettyImage
+                            ? "Pretty Image: ON"
+                            : "Pretty Image: OFF"}
                         </button>
-                        );
-                      })}
-                      {submitImageResults.slice(0, imageShowCount).map((img, i) => (
-                        <button key={i} type="button" className={`bh-submit-img-btn${submitForm.image === img.url ? ' selected' : ''}`}
-                          onClick={() => setField('image', img.url)}>
-                          <img src={img.url} alt="" />
-                        </button>
-                      ))}
-                      {submitImageResults.length > imageShowCount && (
-                        <button type="button" className="bh-show-more-btn"
-                          onClick={() => setImageShowCount(c => c + 10)}>
-                          Show more
-                        </button>
-                      )}
-                      {imageSearchMeta?.googleUrl && submitImageResults.length === 0 && !submitImageSearching && (
-                        <a className="bh-google-images-link" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
-                          Open Google Images
-                        </a>
-                      )}
-                    </div>
-                    <div className="bh-image-toolbar">
-                      <button type="button" className={`bh-pretty-toggle${prettyImage ? ' active' : ''}`}
-                        onClick={() => setPrettyImage(p => !p)}>
-                        {prettyImage ? 'Pretty Image: ON' : 'Pretty Image: OFF'}
-                      </button>
-                      {imageSearchMeta?.googleUrl && submitImageResults.length > 0 && (
-                        <a className="bh-google-images-link bh-google-images-link--small" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
-                          Open Google Images
-                        </a>
-                      )}
-                    </div>
-                  </>)}
+                        {imageSearchMeta?.googleUrl &&
+                          submitImageResults.length > 0 && (
+                            <a
+                              className="bh-google-images-link bh-google-images-link--small"
+                              href={imageSearchMeta.googleUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Open Google Images
+                            </a>
+                          )}
+                      </div>
+                    </>
+                  )}
                   <div className="bh-submit-actions">
-                    <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setImageSearchMeta(null); setScrapedImages([]); setImageShowCount(10); setPrettyImage(false); }}>Cancel</button>
-                    <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
-                      {submitSaving ? 'Submitting...' : 'Submit for Approval'}
+                    <button
+                      className="bh-submit-cancel"
+                      onClick={() => {
+                        setShowSubmitSlot(false);
+                        setSubmitForm({});
+                        setSubmitImageResults([]);
+                        setImageSearchMeta(null);
+                        setScrapedImages([]);
+                        setImageShowCount(10);
+                        setPrettyImage(false);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="bh-submit-save"
+                      onClick={handleSlotSubmit}
+                      disabled={submitSaving}
+                    >
+                      {submitSaving ? "Submitting..." : "Submit for Approval"}
                     </button>
                   </div>
                 </div>
@@ -1494,11 +2463,26 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
           {/* Right half: Slot Requests queue */}
           <div className="bh-hunt-split-right">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span className="bh-section-pill">🎰 Requests <span className="bh-count">{slotRequests.length}</span></span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 4,
+              }}
+            >
+              <span className="bh-section-pill">
+                🎰 Requests{" "}
+                <span className="bh-count">{slotRequests.length}</span>
+              </span>
               {slotRequests.length > 0 && (
-                <button className="bh-sr-queue-btn bh-sr-queue-btn--clear" onClick={handleClearAllRequests}
-                  title="Refund SE points to all pending users and remove from queue">↩ Refund All</button>
+                <button
+                  className="bh-sr-queue-btn bh-sr-queue-btn--clear"
+                  onClick={handleClearAllRequests}
+                  title="Refund SE points to all pending users and remove from queue"
+                >
+                  ↩ Refund All
+                </button>
               )}
             </div>
 
@@ -1506,88 +2490,212 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             <div className="bh-sr-state-grid">
               {/* Toggle: Show/Hide SR Widget on overlay */}
               <button
-                className={`bh-sr-state-btn ${(c.showSlotRequests !== false) ? 'bh-sr-state-btn--on' : 'bh-sr-state-btn--off'}`}
-                onClick={() => onChange({ ...config, showSlotRequests: !(c.showSlotRequests !== false) })}
-                title={(c.showSlotRequests !== false) ? 'Hide slot requests widget on stream overlay' : 'Show slot requests widget on stream overlay'}
+                className={`bh-sr-state-btn ${c.showSlotRequests !== false ? "bh-sr-state-btn--on" : "bh-sr-state-btn--off"}`}
+                onClick={() =>
+                  onChange({
+                    ...config,
+                    showSlotRequests: !(c.showSlotRequests !== false),
+                  })
+                }
+                title={
+                  c.showSlotRequests !== false
+                    ? "Hide slot requests widget on stream overlay"
+                    : "Show slot requests widget on stream overlay"
+                }
               >
-                <span className="bh-sr-state-icon">{(c.showSlotRequests !== false) ? '👁️' : '🚫'}</span>
+                <span className="bh-sr-state-icon">
+                  {c.showSlotRequests !== false ? "👁️" : "🚫"}
+                </span>
                 <span className="bh-sr-state-copy">
                   <span className="bh-sr-state-label">Widget</span>
-                  <span className="bh-sr-state-value">{(c.showSlotRequests !== false) ? 'Visible on stream' : 'Hidden from stream'}</span>
+                  <span className="bh-sr-state-value">
+                    {c.showSlotRequests !== false
+                      ? "Visible on stream"
+                      : "Hidden from stream"}
+                  </span>
                 </span>
                 {/* Toggle pill */}
-                <span style={{
-                  marginLeft: 'auto', flexShrink: 0,
-                  display: 'inline-flex', alignItems: 'center',
-                  width: 36, height: 20, borderRadius: 10, padding: '0 2px',
-                  background: (c.showSlotRequests !== false) ? 'rgba(34,197,94,0.55)' : 'rgba(248,113,113,0.35)',
-                  border: `1px solid ${(c.showSlotRequests !== false) ? 'rgba(34,197,94,0.5)' : 'rgba(248,113,113,0.35)'}`,
-                  transition: 'background 0.2s, border-color 0.2s',
-                }}>
-                  <span style={{
-                    width: 14, height: 14, borderRadius: '50%',
-                    background: (c.showSlotRequests !== false) ? '#22c55e' : '#f87171',
-                    transform: (c.showSlotRequests !== false) ? 'translateX(16px)' : 'translateX(0)',
-                    transition: 'transform 0.2s, background 0.2s',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
-                  }} />
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    width: 36,
+                    height: 20,
+                    borderRadius: 10,
+                    padding: "0 2px",
+                    background:
+                      c.showSlotRequests !== false
+                        ? "rgba(34,197,94,0.55)"
+                        : "rgba(248,113,113,0.35)",
+                    border: `1px solid ${c.showSlotRequests !== false ? "rgba(34,197,94,0.5)" : "rgba(248,113,113,0.35)"}`,
+                    transition: "background 0.2s, border-color 0.2s",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: "50%",
+                      background:
+                        c.showSlotRequests !== false ? "#22c55e" : "#f87171",
+                      transform:
+                        c.showSlotRequests !== false
+                          ? "translateX(16px)"
+                          : "translateX(0)",
+                      transition: "transform 0.2s, background 0.2s",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.35)",
+                    }}
+                  />
                 </span>
               </button>
 
               {/* Toggle: Listen/Stop listening to !sr command */}
               <button
-                className={`bh-sr-state-btn ${(c.srChatEnabled !== false) ? 'bh-sr-state-btn--on' : 'bh-sr-state-btn--off'}`}
+                className={`bh-sr-state-btn ${c.srChatEnabled !== false ? "bh-sr-state-btn--on" : "bh-sr-state-btn--off"}`}
                 onClick={async () => {
                   const next = !(c.srChatEnabled !== false);
                   onChange({ ...config, srChatEnabled: next });
                   // Also propagate to the slot_requests widget so the API respects the toggle
                   if (srWidget?.id) {
-                    await supabase.from('overlay_widgets')
+                    await supabase
+                      .from("overlay_widgets")
                       .update({ config: { ...srConfig, srChatEnabled: next } })
-                      .eq('id', srWidget.id);
+                      .eq("id", srWidget.id);
                   }
                 }}
-                title={(c.srChatEnabled !== false) ? 'Stop listening for !sr commands in chat' : 'Start listening for !sr commands in chat'}
+                title={
+                  c.srChatEnabled !== false
+                    ? "Stop listening for !sr commands in chat"
+                    : "Start listening for !sr commands in chat"
+                }
               >
-                <span className="bh-sr-state-icon">{(c.srChatEnabled !== false) ? '📡' : '🔇'}</span>
+                <span className="bh-sr-state-icon">
+                  {c.srChatEnabled !== false ? "📡" : "🔇"}
+                </span>
                 <span className="bh-sr-state-copy">
                   <span className="bh-sr-state-label">Chat Sync</span>
-                  <span className="bh-sr-state-value">{(c.srChatEnabled !== false) ? 'Listening for !sr' : 'Requests paused'}</span>
+                  <span className="bh-sr-state-value">
+                    {c.srChatEnabled !== false
+                      ? "Listening for !sr"
+                      : "Requests paused"}
+                  </span>
                 </span>
                 {/* Toggle pill */}
-                <span style={{
-                  marginLeft: 'auto', flexShrink: 0,
-                  display: 'inline-flex', alignItems: 'center',
-                  width: 36, height: 20, borderRadius: 10, padding: '0 2px',
-                  background: (c.srChatEnabled !== false) ? 'rgba(34,197,94,0.55)' : 'rgba(248,113,113,0.35)',
-                  border: `1px solid ${(c.srChatEnabled !== false) ? 'rgba(34,197,94,0.5)' : 'rgba(248,113,113,0.35)'}`,
-                  transition: 'background 0.2s, border-color 0.2s',
-                }}>
-                  <span style={{
-                    width: 14, height: 14, borderRadius: '50%',
-                    background: (c.srChatEnabled !== false) ? '#22c55e' : '#f87171',
-                    transform: (c.srChatEnabled !== false) ? 'translateX(16px)' : 'translateX(0)',
-                    transition: 'transform 0.2s, background 0.2s',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
-                  }} />
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    width: 36,
+                    height: 20,
+                    borderRadius: 10,
+                    padding: "0 2px",
+                    background:
+                      c.srChatEnabled !== false
+                        ? "rgba(34,197,94,0.55)"
+                        : "rgba(248,113,113,0.35)",
+                    border: `1px solid ${c.srChatEnabled !== false ? "rgba(34,197,94,0.5)" : "rgba(248,113,113,0.35)"}`,
+                    transition: "background 0.2s, border-color 0.2s",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: "50%",
+                      background:
+                        c.srChatEnabled !== false ? "#22c55e" : "#f87171",
+                      transform:
+                        c.srChatEnabled !== false
+                          ? "translateX(16px)"
+                          : "translateX(0)",
+                      transition: "transform 0.2s, background 0.2s",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.35)",
+                    }}
+                  />
                 </span>
               </button>
             </div>
 
             {slotRequests.length > 0 ? (
               <div className="bh-sr-queue-list">
-                {slotRequests.map(req => (
-                  <div key={req.id} className="bh-sr-queue-item" onClick={() => handlePickRequest(req)} title={`Click to search "${req.slot_name}"`}>
-                    <SlotImage src={req.slot_image} alt={req.slot_name} className="bh-sr-queue-img" fit="contain" />
+                {slotRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="bh-sr-queue-item"
+                    onClick={() => handlePickRequest(req)}
+                    title={`Click to search "${req.slot_name}"`}
+                  >
+                    <SlotImage
+                      src={req.slot_image}
+                      alt={req.slot_name}
+                      className="bh-sr-queue-img"
+                      fit="contain"
+                    />
                     <div className="bh-sr-queue-info">
                       <span className="bh-sr-queue-name">{req.slot_name}</span>
-                      <span className="bh-sr-queue-by">by {req.requested_by}</span>
+                      <span className="bh-sr-queue-by">
+                        by {req.requested_by}
+                      </span>
                     </div>
-                    <div className="bh-sr-queue-actions" style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                      <button className="bh-sr-queue-btn" onClick={e => { e.stopPropagation(); handleAddToBH(req); }} title="Add to Bonus Hunt"
-                        style={{ fontSize: 10, padding: '3px 8px', background: 'rgba(226,232,240,0.12)', color: '#eef2f5', border: '1px solid rgba(200,208,216,0.24)', borderRadius: 4, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>+ Add to BH</button>
-                      <button className="bh-sr-queue-btn bh-sr-queue-btn--reject" onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund points" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>Points Back</button>
-                      <button className="bh-sr-queue-btn bh-sr-queue-btn--dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss" style={{ fontSize: 16, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>✕</button>
+                    <div
+                      className="bh-sr-queue-actions"
+                      style={{ display: "flex", gap: 3, alignItems: "center" }}
+                    >
+                      <button
+                        className="bh-sr-queue-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToBH(req);
+                        }}
+                        title="Add to Bonus Hunt"
+                        style={{
+                          fontSize: 10,
+                          padding: "3px 8px",
+                          background: "rgba(226,232,240,0.12)",
+                          color: "#eef2f5",
+                          border: "1px solid rgba(200,208,216,0.24)",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        + Add to BH
+                      </button>
+                      <button
+                        className="bh-sr-queue-btn bh-sr-queue-btn--reject"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRejectRequest(req.id);
+                        }}
+                        title="Reject &amp; refund points"
+                        style={{ fontSize: 10, whiteSpace: "nowrap" }}
+                      >
+                        Points Back
+                      </button>
+                      <button
+                        className="bh-sr-queue-btn bh-sr-queue-btn--dismiss"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDismissRequest(req.id);
+                        }}
+                        title="Dismiss"
+                        style={{
+                          fontSize: 16,
+                          width: 28,
+                          height: 28,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                        }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -1601,228 +2709,443 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Add Bonus ─── */}
       {false && (
-      <div className="bh-panel-section bh-panel-section--add">
-        <h4 className="bh-section-pill" style={{ margin: '0 0 4px 0' }}>Add Bonus</h4>
+        <div className="bh-panel-section bh-panel-section--add">
+          <h4 className="bh-section-pill" style={{ margin: "0 0 4px 0" }}>
+            Add Bonus
+          </h4>
 
-        {/* Row 1: Search */}
-        <div className="bh-add-row">
-          <div className="bh-search-container bh-search-half" ref={searchRef}>
-            <input
-              type="text"
-              className="bh-search-input"
-              value={selectedSlot ? selectedSlot.name : slotSearch}
-              onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); if (!e.target.value.trim()) onChange({ ...config, previewSlotName: '' }); }}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
-              placeholder={`Search ${slots.length} slots...`}
-            />
+          {/* Row 1: Search */}
+          <div className="bh-add-row">
+            <div className="bh-search-container bh-search-half" ref={searchRef}>
+              <input
+                type="text"
+                className="bh-search-input"
+                value={selectedSlot ? selectedSlot.name : slotSearch}
+                onChange={(e) => {
+                  setSlotSearch(e.target.value);
+                  setSelectedSlot(null);
+                  setShowSuggestions(true);
+                  if (!e.target.value.trim())
+                    onChange({ ...config, previewSlotName: "" });
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddBonus();
+                  }
+                }}
+                placeholder={`Search ${slots.length} slots...`}
+              />
 
-            {showSuggestions && slotSearch.trim().length > 0 && (
-              <div className="bh-suggestions-dropdown">
-                {filteredSlots.length > 0 ? (
-                  filteredSlots.slice(0, 8).map(slot => (
-                    <div key={slot.id} className="bh-suggestion-item"
-                      onMouseDown={e => e.preventDefault()}
-                      onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); onChange({ ...config, previewSlotName: slot.name }); }}>
-                      <img
-                        src={slot.image || 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'}
-                        alt={slot.name}
-                        className="bh-suggestion-img"
-                        onError={e => { e.target.src = 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'; }}
-                      />
-                      <div className="bh-suggestion-info">
-                        <span className="bh-suggestion-name">
-                          {slot.name}
-                          {slot._isPending && <span className="bh-pending-badge">Pending</span>}
-                        </span>
-                        {slot.provider && <span className="bh-suggestion-provider">{slot.provider}</span>}
+              {showSuggestions && slotSearch.trim().length > 0 && (
+                <div className="bh-suggestions-dropdown">
+                  {filteredSlots.length > 0 ? (
+                    filteredSlots.slice(0, 8).map((slot) => (
+                      <div
+                        key={slot.id}
+                        className="bh-suggestion-item"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setSelectedSlot(slot);
+                          setSlotSearch(slot.name);
+                          setShowSuggestions(false);
+                          onChange({ ...config, previewSlotName: slot.name });
+                        }}
+                      >
+                        <img
+                          src={
+                            slot.image ||
+                            "https://via.placeholder.com/36x36/1a1d23/9346ff?text=S"
+                          }
+                          alt={slot.name}
+                          className="bh-suggestion-img"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://via.placeholder.com/36x36/1a1d23/9346ff?text=S";
+                          }}
+                        />
+                        <div className="bh-suggestion-info">
+                          <span className="bh-suggestion-name">
+                            {slot.name}
+                            {slot._isPending && (
+                              <span className="bh-pending-badge">Pending</span>
+                            )}
+                          </span>
+                          {slot.provider && (
+                            <span className="bh-suggestion-provider">
+                              {slot.provider}
+                            </span>
+                          )}
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div
+                      className="bh-suggestion-empty bh-suggestion-submit"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setField("name", slotSearch.trim());
+                        setShowSubmitSlot(true);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {slots.length === 0 ? (
+                        "Loading slots..."
+                      ) : (
+                        <>
+                          <span className="bh-notfound-label">
+                            "{slotSearch.trim()}" isn't in the database yet
+                          </span>
+                          <span className="bh-submit-cta">
+                            <span className="bh-submit-cta-icon">&#x2b;</span>
+                            Click here to add it
+                          </span>
+                          <span className="bh-submit-hint">
+                            👆 Press to open the submit form
+                          </span>
+                        </>
+                      )}
                     </div>
-                  ))
-                ) : (
-                  <div className="bh-suggestion-empty bh-suggestion-submit"
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => {
-                      setField('name', slotSearch.trim());
-                      setShowSubmitSlot(true);
-                      setShowSuggestions(false);
-                    }}>
-                    {slots.length === 0 ? 'Loading slots...' : (
-                      <>
-                        <span className="bh-notfound-label">"{slotSearch.trim()}" isn't in the database yet</span>
-                        <span className="bh-submit-cta">
-                          <span className="bh-submit-cta-icon">&#x2b;</span>
-                          Click here to add it
-                        </span>
-                        <span className="bh-submit-hint">👆 Press to open the submit form</span>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Row 2: Bet */}
-        <div className="bh-add-row">
-          <input type="number" className="bh-bet-field" value={betSize}
-            onChange={e => setBetSize(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
-            placeholder={`Bet (${currency})`} step="0.1" />
-          {showSubmitSlot && (
-            <button
-              className="bh-submit-slot-btn active"
-              onClick={() => setShowSubmitSlot(false)}
-            >✕ Close</button>
-          )}
-        </div>
-
-        {/* Row 3: Add + Super + Extreme */}
-        <div className="bh-add-row">
-          <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
-            + Add
-          </button>
-          <button
-            type="button"
-            className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
-            title="Super Bonus (double-click to add)"
-            disabled={!betSize}
-            onClick={() => { setIsSuperBonus(p => !p); if (!isSuperBonus) setIsExtremeBonus(false); }}
-            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsSuperBonus(true); setIsExtremeBonus(false); setTimeout(() => handleAddBonus(), 0); }}
-          >Super</button>
-          <button
-            type="button"
-            className={`bh-extreme-btn${isExtremeBonus ? ' active' : ''}`}
-            title="Extreme Bonus (double-click to add)"
-            disabled={!betSize}
-            onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
-            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
-          >Extreme</button>
-        </div>
-
-        {/* Row 4: Submit Slot Form */}
-        {showSubmitSlot && (
-          <div className="bh-submit-dropdown">
-            <div className="bh-submit-grid">
-              <label className="bh-submit-field">
-                <span>Name <em>*</em></span>
-                <input value={submitForm.name || ''} onChange={e => setField('name', e.target.value)} placeholder="Sweet Bonanza" />
-              </label>
-              <div className="bh-submit-field">
-                <span>Provider <em>*</em></span>
-                <BonusHuntProviderPicker providers={slotProviders} value={submitForm.provider || ''} onChange={provider => setField('provider', provider)} />
-              </div>
-              <label className="bh-submit-field">
-                <span>RTP (%)</span>
-                <input type="number" value={submitForm.rtp || ''} onChange={e => setField('rtp', e.target.value || null)} placeholder="96.50" step="0.01" min="80" max="100" />
-              </label>
-              <label className="bh-submit-field">
-                <span>Volatility</span>
-                <select value={submitForm.volatility || ''} onChange={e => setField('volatility', e.target.value || null)}>
-                  <option value="">Select…</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="very_high">Very High</option>
-                </select>
-              </label>
-              <label className="bh-submit-field">
-                <span>Max Win (x)</span>
-                <input type="number" value={submitForm.max_win_multiplier || ''} onChange={e => setField('max_win_multiplier', e.target.value || null)} placeholder="10000" />
-              </label>
-              <label className="bh-submit-field">
-                <span>Image <em>*</em></span>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <input style={{ flex: 1, fontSize: '0.68rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="URL or search →" />
-                  <button type="button" className="bh-submit-search-btn" onClick={() => searchSlotImages()} disabled={!submitForm.name || submitImageSearching}>
-                    {submitImageSearching ? '⏳' : '🔍'}
-                  </button>
-                  {userAvatar && (
-                    <button type="button" className="bh-submit-search-btn" title="Use my stream logo" onClick={() => { setField('image', userAvatar); setSubmitImageResults([]); setImageSearchMeta(null); }}>
-                      📷
-                    </button>
                   )}
                 </div>
-              </label>
-            </div>
-            {submitScrapeLoading && (
-              <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 8px' }}>Auto-fetching slot info...</p>
-            )}
-            {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (<>
-              <div className="bh-submit-images">
-                {submitForm.image && (
-                  <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
-                )}
-                {scrapedImages.map((imgUrl, i) => {
-                  const src = imgUrl.includes('slotslaunch') ? 'SlotsLaunch' : imgUrl.includes('slotark') ? 'SlotArk' : 'DemoSlot';
-                  return (
-                  <button key={`scraped-${i}`} type="button"
-                    className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === imgUrl ? ' selected' : ''}`}
-                    onClick={() => setField('image', imgUrl)}
-                    title={`Image from ${src}`}>
-                    <img src={imgUrl} alt="" />
-                    <span className="bh-demoslot-badge">{src}</span>
-                  </button>
-                  );
-                })}
-                {submitImageResults.slice(0, imageShowCount).map((img, i) => (
-                  <button key={i} type="button" className={`bh-submit-img-btn${submitForm.image === img.url ? ' selected' : ''}`}
-                    onClick={() => setField('image', img.url)}>
-                    <img src={img.url} alt="" />
-                  </button>
-                ))}
-                {submitImageResults.length > imageShowCount && (
-                  <button type="button" className="bh-show-more-btn"
-                    onClick={() => setImageShowCount(c => c + 10)}>
-                    Show more
-                  </button>
-                )}
-                {imageSearchMeta?.googleUrl && submitImageResults.length === 0 && !submitImageSearching && (
-                  <a className="bh-google-images-link" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
-                    Open Google Images
-                  </a>
-                )}
-              </div>
-              <div className="bh-image-toolbar">
-                <button type="button" className={`bh-pretty-toggle${prettyImage ? ' active' : ''}`}
-                  onClick={() => setPrettyImage(p => !p)}>
-                  {prettyImage ? '✨ Pretty Image: ON' : '✨ Pretty Image: OFF'}
-                </button>
-                {imageSearchMeta?.googleUrl && submitImageResults.length > 0 && (
-                  <a className="bh-google-images-link bh-google-images-link--small" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
-                    Open Google Images
-                  </a>
-                )}
-              </div>
-            </>)}
-            <div className="bh-submit-actions">
-              <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setImageSearchMeta(null); setScrapedImages([]); setImageShowCount(10); setPrettyImage(false); }}>Cancel</button>
-              <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
-                {submitSaving ? 'Submitting...' : 'Submit for Approval'}
-              </button>
+              )}
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Row 2: Bet */}
+          <div className="bh-add-row">
+            <input
+              type="number"
+              className="bh-bet-field"
+              value={betSize}
+              onChange={(e) => setBetSize(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddBonus();
+                }
+              }}
+              placeholder={`Bet (${currency})`}
+              step="0.1"
+            />
+            {showSubmitSlot && (
+              <button
+                className="bh-submit-slot-btn active"
+                onClick={() => setShowSubmitSlot(false)}
+              >
+                ✕ Close
+              </button>
+            )}
+          </div>
+
+          {/* Row 3: Add + Super + Extreme */}
+          <div className="bh-add-row">
+            <button
+              className="bh-add-btn"
+              onClick={handleAddBonus}
+              disabled={!selectedSlot || !betSize}
+            >
+              + Add
+            </button>
+            <button
+              type="button"
+              className={`bh-super-btn${isSuperBonus ? " active" : ""}`}
+              title="Super Bonus (double-click to add)"
+              disabled={!betSize}
+              onClick={() => {
+                setIsSuperBonus((p) => !p);
+                if (!isSuperBonus) setIsExtremeBonus(false);
+              }}
+              onDoubleClick={() => {
+                if (!betSize || !selectedSlot) return;
+                setIsSuperBonus(true);
+                setIsExtremeBonus(false);
+                setTimeout(() => handleAddBonus(), 0);
+              }}
+            >
+              Super
+            </button>
+            <button
+              type="button"
+              className={`bh-extreme-btn${isExtremeBonus ? " active" : ""}`}
+              title="Extreme Bonus (double-click to add)"
+              disabled={!betSize}
+              onClick={() => {
+                setIsExtremeBonus((p) => !p);
+                if (!isExtremeBonus) setIsSuperBonus(false);
+              }}
+              onDoubleClick={() => {
+                if (!betSize || !selectedSlot) return;
+                setIsExtremeBonus(true);
+                setIsSuperBonus(false);
+                setTimeout(() => handleAddBonus(), 0);
+              }}
+            >
+              Extreme
+            </button>
+          </div>
+
+          {/* Row 4: Submit Slot Form */}
+          {showSubmitSlot && (
+            <div className="bh-submit-dropdown">
+              <div className="bh-submit-grid">
+                <label className="bh-submit-field">
+                  <span>
+                    Name <em>*</em>
+                  </span>
+                  <input
+                    value={submitForm.name || ""}
+                    onChange={(e) => setField("name", e.target.value)}
+                    placeholder="Sweet Bonanza"
+                  />
+                </label>
+                <div className="bh-submit-field">
+                  <span>
+                    Provider <em>*</em>
+                  </span>
+                  <BonusHuntProviderPicker
+                    providers={slotProviders}
+                    value={submitForm.provider || ""}
+                    onChange={(provider) => setField("provider", provider)}
+                  />
+                </div>
+                <label className="bh-submit-field">
+                  <span>RTP (%)</span>
+                  <input
+                    type="number"
+                    value={submitForm.rtp || ""}
+                    onChange={(e) => setField("rtp", e.target.value || null)}
+                    placeholder="96.50"
+                    step="0.01"
+                    min="80"
+                    max="100"
+                  />
+                </label>
+                <label className="bh-submit-field">
+                  <span>Volatility</span>
+                  <select
+                    value={submitForm.volatility || ""}
+                    onChange={(e) =>
+                      setField("volatility", e.target.value || null)
+                    }
+                  >
+                    <option value="">Select…</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="very_high">Very High</option>
+                  </select>
+                </label>
+                <label className="bh-submit-field">
+                  <span>Max Win (x)</span>
+                  <input
+                    type="number"
+                    value={submitForm.max_win_multiplier || ""}
+                    onChange={(e) =>
+                      setField("max_win_multiplier", e.target.value || null)
+                    }
+                    placeholder="10000"
+                  />
+                </label>
+                <label className="bh-submit-field">
+                  <span>
+                    Image <em>*</em>
+                  </span>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <input
+                      style={{ flex: 1, fontSize: "0.68rem" }}
+                      value={submitForm.image || ""}
+                      onChange={(e) => setField("image", e.target.value)}
+                      placeholder="URL or search →"
+                    />
+                    <button
+                      type="button"
+                      className="bh-submit-search-btn"
+                      onClick={() => searchSlotImages()}
+                      disabled={!submitForm.name || submitImageSearching}
+                    >
+                      {submitImageSearching ? "⏳" : "🔍"}
+                    </button>
+                    {userAvatar && (
+                      <button
+                        type="button"
+                        className="bh-submit-search-btn"
+                        title="Use my stream logo"
+                        onClick={() => {
+                          setField("image", userAvatar);
+                          setSubmitImageResults([]);
+                          setImageSearchMeta(null);
+                        }}
+                      >
+                        📷
+                      </button>
+                    )}
+                  </div>
+                </label>
+              </div>
+              {submitScrapeLoading && (
+                <p
+                  style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 8px" }}
+                >
+                  Auto-fetching slot info...
+                </p>
+              )}
+              {(submitImageResults.length > 0 ||
+                submitForm.image ||
+                scrapedImages.length > 0 ||
+                imageSearchMeta?.googleUrl) && (
+                <>
+                  <div className="bh-submit-images">
+                    {submitForm.image && (
+                      <img
+                        src={submitForm.image}
+                        alt=""
+                        className="bh-submit-preview"
+                        onError={(e) => (e.target.src = DEFAULT_SLOT_IMAGE)}
+                      />
+                    )}
+                    {scrapedImages.map((imgUrl, i) => {
+                      const src = imgUrl.includes("slotslaunch")
+                        ? "SlotsLaunch"
+                        : imgUrl.includes("slotark")
+                          ? "SlotArk"
+                          : "DemoSlot";
+                      return (
+                        <button
+                          key={`scraped-${i}`}
+                          type="button"
+                          className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === imgUrl ? " selected" : ""}`}
+                          onClick={() => setField("image", imgUrl)}
+                          title={`Image from ${src}`}
+                        >
+                          <img src={imgUrl} alt="" />
+                          <span className="bh-demoslot-badge">{src}</span>
+                        </button>
+                      );
+                    })}
+                    {submitImageResults
+                      .slice(0, imageShowCount)
+                      .map((img, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className={`bh-submit-img-btn${submitForm.image === img.url ? " selected" : ""}`}
+                          onClick={() => setField("image", img.url)}
+                        >
+                          <img src={img.url} alt="" />
+                        </button>
+                      ))}
+                    {submitImageResults.length > imageShowCount && (
+                      <button
+                        type="button"
+                        className="bh-show-more-btn"
+                        onClick={() => setImageShowCount((c) => c + 10)}
+                      >
+                        Show more
+                      </button>
+                    )}
+                    {imageSearchMeta?.googleUrl &&
+                      submitImageResults.length === 0 &&
+                      !submitImageSearching && (
+                        <a
+                          className="bh-google-images-link"
+                          href={imageSearchMeta.googleUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open Google Images
+                        </a>
+                      )}
+                  </div>
+                  <div className="bh-image-toolbar">
+                    <button
+                      type="button"
+                      className={`bh-pretty-toggle${prettyImage ? " active" : ""}`}
+                      onClick={() => setPrettyImage((p) => !p)}
+                    >
+                      {prettyImage
+                        ? "✨ Pretty Image: ON"
+                        : "✨ Pretty Image: OFF"}
+                    </button>
+                    {imageSearchMeta?.googleUrl &&
+                      submitImageResults.length > 0 && (
+                        <a
+                          className="bh-google-images-link bh-google-images-link--small"
+                          href={imageSearchMeta.googleUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open Google Images
+                        </a>
+                      )}
+                  </div>
+                </>
+              )}
+              <div className="bh-submit-actions">
+                <button
+                  className="bh-submit-cancel"
+                  onClick={() => {
+                    setShowSubmitSlot(false);
+                    setSubmitForm({});
+                    setSubmitImageResults([]);
+                    setImageSearchMeta(null);
+                    setScrapedImages([]);
+                    setImageShowCount(10);
+                    setPrettyImage(false);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bh-submit-save"
+                  onClick={handleSlotSubmit}
+                  disabled={submitSaving}
+                >
+                  {submitSaving ? "Submitting..." : "Submit for Approval"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ─── Bonus List ─── */}
       <div className="bh-panel-section bh-panel-section--list">
         {/* ── Bonus Opening toggle ── */}
         <div className="bh-toggles-row">
-          <label className={`bh-compact-toggle ${bonusOpening ? 'bh-compact-toggle--active' : ''}`}>
-            <input type="checkbox" checked={bonusOpening}
-              onChange={e => { setBonusOpening(e.target.checked); save(bonusList, { bonusOpening: e.target.checked }); }} />
+          <label
+            className={`bh-compact-toggle ${bonusOpening ? "bh-compact-toggle--active" : ""}`}
+          >
+            <input
+              type="checkbox"
+              checked={bonusOpening}
+              onChange={(e) => {
+                setBonusOpening(e.target.checked);
+                save(bonusList, { bonusOpening: e.target.checked });
+              }}
+            />
             <span className="bh-opening-switch" />
-            <span className="bh-compact-text">{bonusOpening ? '🎰 Opening' : '🔒 Opening'}</span>
+            <span className="bh-compact-text">
+              {bonusOpening ? "🎰 Opening" : "🔒 Opening"}
+            </span>
           </label>
-          <label className={`bh-compact-toggle ${showStatistics ? 'bh-compact-toggle--active' : ''}`}>
-            <input type="checkbox" checked={showStatistics}
-              onChange={e => { setShowStatistics(e.target.checked); save(bonusList, { showStatistics: e.target.checked }); }} />
+          <label
+            className={`bh-compact-toggle ${showStatistics ? "bh-compact-toggle--active" : ""}`}
+          >
+            <input
+              type="checkbox"
+              checked={showStatistics}
+              onChange={(e) => {
+                setShowStatistics(e.target.checked);
+                save(bonusList, { showStatistics: e.target.checked });
+              }}
+            />
             <span className="bh-opening-switch" />
-            <span className="bh-compact-text">{showStatistics ? '📊 Stats Bar' : '🚫 Stats Bar'}</span>
+            <span className="bh-compact-text">
+              {showStatistics ? "📊 Stats Bar" : "🚫 Stats Bar"}
+            </span>
           </label>
         </div>
 
@@ -1834,27 +3157,33 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         {bonusList.length > 1 && (
           <div className="bh-sort-controls">
             <span className="bh-sort-label">Sort by:</span>
-            {['default', 'bet', 'provider', 'type'].map(opt => {
-              const labels = { default: '📋 Order Added', bet: '💰 Bet', provider: '🏢 Provider', type: '⭐ Type' };
+            {["default", "bet", "provider", "type"].map((opt) => {
+              const labels = {
+                default: "📋 Order Added",
+                bet: "💰 Bet",
+                provider: "🏢 Provider",
+                type: "⭐ Type",
+              };
               const isActive = sortBy === opt;
-              const showArrow = isActive && opt !== 'default';
+              const showArrow = isActive && opt !== "default";
               return (
                 <button
                   key={opt}
-                  className={`bh-sort-btn${isActive ? ' bh-sort-btn--active' : ''}`}
+                  className={`bh-sort-btn${isActive ? " bh-sort-btn--active" : ""}`}
                   onClick={() => {
-                    if (isActive && opt !== 'default') {
-                      const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+                    if (isActive && opt !== "default") {
+                      const newDir = sortDir === "asc" ? "desc" : "asc";
                       setSortDir(newDir);
                       save(bonusList, { sortBy: opt, sortDir: newDir });
                     } else {
                       setSortBy(opt);
-                      setSortDir('asc');
-                      save(bonusList, { sortBy: opt, sortDir: 'asc' });
+                      setSortDir("asc");
+                      save(bonusList, { sortBy: opt, sortDir: "asc" });
                     }
                   }}
                 >
-                  {labels[opt]}{showArrow ? (sortDir === 'asc' ? ' ▲' : ' ▼') : ''}
+                  {labels[opt]}
+                  {showArrow ? (sortDir === "asc" ? " ▲" : " ▼") : ""}
                 </button>
               );
             })}
@@ -1864,164 +3193,321 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         <div className="bh-list">
           {bonusList.length === 0 ? (
             <p className="bh-list-empty">No bonuses added yet</p>
-          ) : (() => {
-            const canDrag = sortBy === 'default';
-            const sorted = [...bonusList].sort((a, b) => {
-              const dir = sortDir === 'desc' ? -1 : 1;
-              if (sortBy === 'bet') return ((a.betSize || 0) - (b.betSize || 0)) * dir;
-              if (sortBy === 'provider') {
-                const pa = (a.slot?.provider || '').toLowerCase();
-                const pb = (b.slot?.provider || '').toLowerCase();
-                if (pa !== pb) return pa.localeCompare(pb) * dir;
-                return (a.slotName || '').localeCompare(b.slotName || '') * dir;
-              }
-              if (sortBy === 'type') {
-                const rank = (x) => x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
-                return (rank(b) - rank(a)) * dir;
-              }
-              return 0;
-            });
-            const firstUnopenedId = bonusOpening ? sorted.find(b => !b.opened && !(Number(b.payout) > 0))?.id : null;
-            return sorted.map((bonus, i) => {
-              const realIdx = canDrag ? bonusList.indexOf(bonus) : i;
-              const needsInput = bonusOpening && bonus.id === firstUnopenedId;
-              const bonusType = bonus.isExtremeBonus ? 'extreme' : bonus.isSuperBonus ? 'super' : '';
-              return (
-            <div key={bonus.id}
-              className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''} ${bonus.isExtremeBonus ? 'bh-list-item--extreme' : ''}${dragIdx === realIdx ? ' bh-list-item--dragging' : ''}${needsInput ? ' bh-list-item--needs-input' : ''}`}
-              draggable={canDrag}
-              onDragStart={e => { if (!canDrag) return; setDragIdx(realIdx); e.dataTransfer.effectAllowed = 'move'; }}
-              onDragOver={e => { if (!canDrag || dragIdx === null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
-              onDrop={e => { if (!canDrag || dragIdx === null) return; e.preventDefault(); handleDragDrop(dragIdx, realIdx); setDragIdx(null); }}
-              onDragEnd={() => setDragIdx(null)}
-            >
-
-              {/* Drag handle + number */}
-              <span className={`bh-list-grip${canDrag ? ' bh-list-grip--active' : ''}`} title={canDrag ? 'Drag to reorder' : 'Set sort to Default to reorder'}>⠿</span>
-              <span
-                className={`bh-list-type-slot${bonusType ? ` bh-list-type-slot--${bonusType}` : ' bh-list-type-slot--empty'}`}
-                aria-label={bonusType ? `${bonusType} bonus` : 'Normal bonus'}
-              >
-                {bonusType === 'extreme' ? 'EXT' : bonusType === 'super' ? 'SUP' : ''}
-              </span>
-              <span className="bh-list-num">#{i + 1}</span>
-
-              {/* Name + provider — or inline edit */}
-              {editingId === bonus.id ? (
-                <div className="bh-list-main bh-list-main--editing">
-                  {bonus.slot?.image && (
-                    <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="cover" />
-                  )}
-                  <div className="bh-list-edit-row">
-                    <input className="bh-list-edit-input" value={editName}
-                      onChange={e => setEditName(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
-                      placeholder="Slot name" autoFocus />
-                    <input className="bh-list-edit-input bh-list-edit-bet" value={editBet}
-                      type="number" step="0.1"
-                      onChange={e => setEditBet(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
-                      placeholder="Bet" />
-                    <select className="bh-list-edit-input bh-list-edit-type" value={editBonusType}
-                      onChange={e => setEditBonusType(e.target.value)}>
-                      <option value="none">Normal</option>
-                      <option value="super">Super</option>
-                      <option value="extreme">Extreme</option>
-                    </select>
-                    <button className="bh-list-edit-save" onClick={() => handleSaveEdit(bonus.id)}>✓</button>
-                    <button className="bh-list-edit-cancel" onClick={handleCancelEdit}>✕</button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="bh-list-main">
-                    {bonus.slot?.image && (
-                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" fit="cover" />
-                    )}
-                    <div className="bh-list-info">
-                      <span className="bh-list-name">
-                        {bonus.slotName || bonus.slot?.name}
-                      </span>
-                      {bonus.slot?.provider && <BonusHuntProviderLogo provider={bonus.slot.provider} />}
-                    </div>
-                  </div>
-
-                  {/* Requester */}
-                  {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
-                    <div className="bh-list-field bh-list-field--requester">
-                      <span className="bh-list-field-label">By</span>
-                      <span className="bh-list-field-value bh-list-requester-val">{bonus.requestedBy}</span>
-                    </div>
-                  )}
-
-                  <div className="bh-list-side">
-                    <div className="bh-list-side-actions" aria-label="Bonus actions">
-                  {/* Copy + Edit buttons */}
-                  <button className="bh-list-icon-btn" title="Copy name" onClick={() => handleCopyName(bonus)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-                    </svg>
-                  </button>
-                  <button className="bh-list-icon-btn" title="Edit" onClick={() => handleStartEdit(bonus)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                    </svg>
-                  </button>
-
-                    </div>
-
-                  {/* Bet */}
-                  <div className="bh-list-field bh-list-field--bet">
-                    <span className="bh-list-field-label">Bet</span>
-                    <span className="bh-list-field-value">{bonus.betSize}</span>
-                  </div>
-
-                  {/* Payment — locked unless bonusOpening */}
-                  <div className="bh-list-field bh-list-field--payment">
-                    <span className="bh-list-field-label">Payment {!bonusOpening && '🔒'}</span>
-                    {bonusOpening ? (
-                      <input className="bh-list-payout-input" type="text" inputMode="decimal"
-                        data-payout-idx={i}
-                        value={getPayoutDraftValue(bonus)}
-                        placeholder="0.00"
-                        onChange={e => handlePayoutDraftChange(bonus.id, e.target.value)}
-                        onBlur={e => commitPayoutDraft(bonus.id, e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const next = document.querySelector(`[data-payout-idx="${i + 1}"]`);
-                            e.currentTarget.blur();
-                            if (next) next.focus();
-                          }
-                        }} />
-                    ) : (
-                      <span className="bh-list-field-value bh-list-field-locked">Locked</span>
-                    )}
-                  </div>
-
-                  {/* Mult */}
-                  <div className="bh-list-field bh-list-field--mult">
-                    <span className="bh-list-field-label">Mult</span>
-                    <span className="bh-list-field-value bh-list-field-mult">
-                      {bonus.betSize > 0 && bonus.payout > 0
-                        ? ((bonus.payout / bonus.betSize).toFixed(1)) + 'x'
-                        : '0x'}
+          ) : (
+            (() => {
+              const canDrag = sortBy === "default";
+              const sorted = [...bonusList].sort((a, b) => {
+                const dir = sortDir === "desc" ? -1 : 1;
+                if (sortBy === "bet")
+                  return ((a.betSize || 0) - (b.betSize || 0)) * dir;
+                if (sortBy === "provider") {
+                  const pa = (a.slot?.provider || "").toLowerCase();
+                  const pb = (b.slot?.provider || "").toLowerCase();
+                  if (pa !== pb) return pa.localeCompare(pb) * dir;
+                  return (
+                    (a.slotName || "").localeCompare(b.slotName || "") * dir
+                  );
+                }
+                if (sortBy === "type") {
+                  const rank = (x) =>
+                    x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
+                  return (rank(b) - rank(a)) * dir;
+                }
+                return 0;
+              });
+              const firstUnopenedId = bonusOpening
+                ? sorted.find((b) => !b.opened && !(Number(b.payout) > 0))?.id
+                : null;
+              return sorted.map((bonus, i) => {
+                const realIdx = canDrag ? bonusList.indexOf(bonus) : i;
+                const needsInput = bonusOpening && bonus.id === firstUnopenedId;
+                const bonusType = bonus.isExtremeBonus
+                  ? "extreme"
+                  : bonus.isSuperBonus
+                    ? "super"
+                    : "";
+                return (
+                  <div
+                    key={bonus.id}
+                    className={`bh-list-item ${bonus.opened ? "bh-list-item--opened" : ""} ${bonus.isSuperBonus ? "bh-list-item--super" : ""} ${bonus.isExtremeBonus ? "bh-list-item--extreme" : ""}${dragIdx === realIdx ? " bh-list-item--dragging" : ""}${needsInput ? " bh-list-item--needs-input" : ""}`}
+                    draggable={canDrag}
+                    onDragStart={(e) => {
+                      if (!canDrag) return;
+                      setDragIdx(realIdx);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragOver={(e) => {
+                      if (!canDrag || dragIdx === null) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                    }}
+                    onDrop={(e) => {
+                      if (!canDrag || dragIdx === null) return;
+                      e.preventDefault();
+                      handleDragDrop(dragIdx, realIdx);
+                      setDragIdx(null);
+                    }}
+                    onDragEnd={() => setDragIdx(null)}
+                  >
+                    {/* Drag handle + number */}
+                    <span
+                      className={`bh-list-grip${canDrag ? " bh-list-grip--active" : ""}`}
+                      title={
+                        canDrag
+                          ? "Drag to reorder"
+                          : "Set sort to Default to reorder"
+                      }
+                    >
+                      ⠿
                     </span>
-                  </div>
+                    <span
+                      className={`bh-list-type-slot${bonusType ? ` bh-list-type-slot--${bonusType}` : " bh-list-type-slot--empty"}`}
+                      aria-label={
+                        bonusType ? `${bonusType} bonus` : "Normal bonus"
+                      }
+                    >
+                      {bonusType === "extreme"
+                        ? "EXT"
+                        : bonusType === "super"
+                          ? "SUP"
+                          : ""}
+                    </span>
+                    <span className="bh-list-num">#{i + 1}</span>
 
-                  {/* Delete */}
-                  <button className="bh-list-remove" onClick={() => handleRemoveBonus(bonus.id)} title="Remove bonus">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                    </svg>
-                  </button>
+                    {/* Name + provider — or inline edit */}
+                    {editingId === bonus.id ? (
+                      <div className="bh-list-main bh-list-main--editing">
+                        {bonus.slot?.image && (
+                          <SlotImage
+                            src={bonus.slot.image}
+                            alt={bonus.slotName || bonus.slot?.name}
+                            className="bh-list-img"
+                            fit="cover"
+                          />
+                        )}
+                        <div className="bh-list-edit-row">
+                          <input
+                            className="bh-list-edit-input"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleSaveEdit(bonus.id);
+                              if (e.key === "Escape") handleCancelEdit();
+                            }}
+                            placeholder="Slot name"
+                            autoFocus
+                          />
+                          <input
+                            className="bh-list-edit-input bh-list-edit-bet"
+                            value={editBet}
+                            type="number"
+                            step="0.1"
+                            onChange={(e) => setEditBet(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleSaveEdit(bonus.id);
+                              if (e.key === "Escape") handleCancelEdit();
+                            }}
+                            placeholder="Bet"
+                          />
+                          <select
+                            className="bh-list-edit-input bh-list-edit-type"
+                            value={editBonusType}
+                            onChange={(e) => setEditBonusType(e.target.value)}
+                          >
+                            <option value="none">Normal</option>
+                            <option value="super">Super</option>
+                            <option value="extreme">Extreme</option>
+                          </select>
+                          <button
+                            className="bh-list-edit-save"
+                            onClick={() => handleSaveEdit(bonus.id)}
+                          >
+                            ✓
+                          </button>
+                          <button
+                            className="bh-list-edit-cancel"
+                            onClick={handleCancelEdit}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="bh-list-main">
+                          {bonus.slot?.image && (
+                            <SlotImage
+                              src={bonus.slot.image}
+                              alt={bonus.slotName || bonus.slot?.name}
+                              className="bh-list-img"
+                              fit="cover"
+                            />
+                          )}
+                          <div className="bh-list-info">
+                            <span className="bh-list-name">
+                              {bonus.slotName || bonus.slot?.name}
+                            </span>
+                            {bonus.slot?.provider && (
+                              <BonusHuntProviderLogo
+                                provider={bonus.slot.provider}
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Requester */}
+                        {bonus.requestedBy &&
+                          bonus.requestedBy !== "anonymous" && (
+                            <div className="bh-list-field bh-list-field--requester">
+                              <span className="bh-list-field-label">By</span>
+                              <span className="bh-list-field-value bh-list-requester-val">
+                                {bonus.requestedBy}
+                              </span>
+                            </div>
+                          )}
+
+                        <div className="bh-list-side">
+                          <div
+                            className="bh-list-side-actions"
+                            aria-label="Bonus actions"
+                          >
+                            {/* Copy + Edit buttons */}
+                            <button
+                              className="bh-list-icon-btn"
+                              title="Copy name"
+                              onClick={() => handleCopyName(bonus)}
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <rect
+                                  x="9"
+                                  y="9"
+                                  width="13"
+                                  height="13"
+                                  rx="2"
+                                  ry="2"
+                                />
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                              </svg>
+                            </button>
+                            <button
+                              className="bh-list-icon-btn"
+                              title="Edit"
+                              onClick={() => handleStartEdit(bonus)}
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          {/* Bet */}
+                          <div className="bh-list-field bh-list-field--bet">
+                            <span className="bh-list-field-label">Bet</span>
+                            <span className="bh-list-field-value">
+                              {bonus.betSize}
+                            </span>
+                          </div>
+
+                          {/* Payment — locked unless bonusOpening */}
+                          <div className="bh-list-field bh-list-field--payment">
+                            <span className="bh-list-field-label">
+                              Payment {!bonusOpening && "🔒"}
+                            </span>
+                            {bonusOpening ? (
+                              <input
+                                className="bh-list-payout-input"
+                                type="text"
+                                inputMode="decimal"
+                                data-payout-idx={i}
+                                value={getPayoutDraftValue(bonus)}
+                                placeholder="0.00"
+                                onChange={(e) =>
+                                  handlePayoutDraftChange(
+                                    bonus.id,
+                                    e.target.value,
+                                  )
+                                }
+                                onBlur={(e) =>
+                                  commitPayoutDraft(bonus.id, e.target.value)
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    const next = document.querySelector(
+                                      `[data-payout-idx="${i + 1}"]`,
+                                    );
+                                    e.currentTarget.blur();
+                                    if (next) next.focus();
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <span className="bh-list-field-value bh-list-field-locked">
+                                Locked
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Mult */}
+                          <div className="bh-list-field bh-list-field--mult">
+                            <span className="bh-list-field-label">Mult</span>
+                            <span className="bh-list-field-value bh-list-field-mult">
+                              {bonus.betSize > 0 && bonus.payout > 0
+                                ? (bonus.payout / bonus.betSize).toFixed(1) +
+                                  "x"
+                                : "0x"}
+                            </span>
+                          </div>
+
+                          {/* Delete */}
+                          <button
+                            className="bh-list-remove"
+                            onClick={() => handleRemoveBonus(bonus.id)}
+                            title="Remove bonus"
+                          >
+                            <svg
+                              width="13"
+                              height="13"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6l-1 14H6L5 6" />
+                              <path d="M10 11v6" />
+                              <path d="M14 11v6" />
+                              <path d="M9 6V4h6v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </>
-              )}
-            </div>
-              );
-            });
-          })()}
+                );
+              });
+            })()
+          )}
         </div>
       </div>
 
@@ -2033,12 +3519,16 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               <span className="bh-save-hunt-icon">📚</span>
               <div>
                 <span className="bh-save-hunt-title">Save Hunt to Library</span>
-                <span className="bh-save-hunt-desc">Save a snapshot to your hunt history</span>
+                <span className="bh-save-hunt-desc">
+                  Save a snapshot to your hunt history
+                </span>
               </div>
             </div>
 
             {saveHuntMsg && (
-              <div className={`bh-gtb-message ${saveHuntMsg.startsWith('✅') || saveHuntMsg.startsWith('🔄') ? 'bh-gtb-message--success' : 'bh-gtb-message--error'}`}>
+              <div
+                className={`bh-gtb-message ${saveHuntMsg.startsWith("✅") || saveHuntMsg.startsWith("🔄") ? "bh-gtb-message--success" : "bh-gtb-message--error"}`}
+              >
                 {saveHuntMsg}
               </div>
             )}
@@ -2054,18 +3544,40 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 {!showResetConfirm ? (
                   <button
                     className="bh-save-hunt-btn"
-                    style={{ background: 'linear-gradient(135deg, #991b1b 0%, #dc2626 100%)' }}
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #991b1b 0%, #dc2626 100%)",
+                    }}
                     onClick={() => setShowResetConfirm(true)}
                   >
                     🔄 Reset Hunt
                   </button>
                 ) : (
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, color: '#fca5a5' }}>Discard without saving?</span>
-                    <button className="bh-save-hunt-confirm" style={{ background: '#dc2626', fontSize: 12, padding: '4px 10px' }} onClick={() => { setShowResetConfirm(false); handleResetHunt(); }}>
+                  <div
+                    style={{ display: "flex", gap: 6, alignItems: "center" }}
+                  >
+                    <span style={{ fontSize: 12, color: "#fca5a5" }}>
+                      Discard without saving?
+                    </span>
+                    <button
+                      className="bh-save-hunt-confirm"
+                      style={{
+                        background: "#dc2626",
+                        fontSize: 12,
+                        padding: "4px 10px",
+                      }}
+                      onClick={() => {
+                        setShowResetConfirm(false);
+                        handleResetHunt();
+                      }}
+                    >
                       Yes, Reset
                     </button>
-                    <button className="bh-save-hunt-cancel" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => setShowResetConfirm(false)}>
+                    <button
+                      className="bh-save-hunt-cancel"
+                      style={{ fontSize: 12, padding: "4px 10px" }}
+                      onClick={() => setShowResetConfirm(false)}
+                    >
                       Cancel
                     </button>
                   </div>
@@ -2076,16 +3588,32 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <input
                   className="bh-gtb-input"
                   value={saveHuntName}
-                  onChange={e => setSaveHuntName(e.target.value)}
-                  placeholder={[casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : '', new Date().toLocaleDateString()].filter(Boolean).join(' / ') || `Hunt ${new Date().toLocaleDateString()}`}
+                  onChange={(e) => setSaveHuntName(e.target.value)}
+                  placeholder={
+                    [
+                      casinoName.trim(),
+                      huntNumber ? `Hunt #${huntNumber}` : "",
+                      new Date().toLocaleDateString(),
+                    ]
+                      .filter(Boolean)
+                      .join(" / ") || `Hunt ${new Date().toLocaleDateString()}`
+                  }
                   maxLength={60}
-                  onKeyDown={e => e.key === 'Enter' && handleSaveAndClose()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSaveAndClose()}
                   autoFocus
                 />
                 <div className="bh-save-hunt-summary">
                   <span>🎰 {bonusList.length} bonuses</span>
-                  <span>💰 Start: {currency}{Number(startMoney) || 0}</span>
-                  <span>📊 Total bet: {currency}{bonusList.reduce((s, b) => s + (b.betSize || 0), 0).toFixed(2)}</span>
+                  <span>
+                    💰 Start: {currency}
+                    {Number(startMoney) || 0}
+                  </span>
+                  <span>
+                    📊 Total bet: {currency}
+                    {bonusList
+                      .reduce((s, b) => s + (b.betSize || 0), 0)
+                      .toFixed(2)}
+                  </span>
                 </div>
                 <div className="bh-save-hunt-actions">
                   <button
@@ -2093,11 +3621,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     onClick={handleSaveAndClose}
                     disabled={savingHunt}
                   >
-                    {savingHunt ? '⏳ Saving...' : '✅ Confirm Save'}
+                    {savingHunt ? "⏳ Saving..." : "✅ Confirm Save"}
                   </button>
                   <button
                     className="bh-save-hunt-cancel"
-                    onClick={() => { setShowSaveConfirm(false); setSaveHuntMsg(''); }}
+                    onClick={() => {
+                      setShowSaveConfirm(false);
+                      setSaveHuntMsg("");
+                    }}
                   >
                     Cancel
                   </button>
@@ -2119,7 +3650,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           config={c}
         />
       )}
-
     </div>
   );
 }
@@ -2127,88 +3657,177 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 /* ═══════════════════════════════════════════════════════
    FLOATING STATS FAB — draggable, bottom-right default
    ═══════════════════════════════════════════════════════ */
-function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, currency, config }) {
+function FloatingStatsFab({
+  bonusList,
+  startMoney,
+  targetMoney,
+  stopLoss,
+  currency,
+  config,
+}) {
   /* Theme colors from widget config */
-  const accentColor = config?.headerAccent || '#7c3aed';
-  const bgColor = config?.headerColor || 'rgba(15, 10, 35, 0.65)';
-  const textColor = config?.textColor || '#e2e8f0';
-  const mutedColor = config?.mutedTextColor || '#94a3b8';
+  const accentColor = config?.headerAccent || "#7c3aed";
+  const bgColor = config?.headerColor || "rgba(15, 10, 35, 0.65)";
+  const textColor = config?.textColor || "#e2e8f0";
+  const mutedColor = config?.mutedTextColor || "#94a3b8";
 
   /* Compute stats */
   const total = bonusList.length;
-  const opened = bonusList.filter(b => b.opened);
+  const opened = bonusList.filter((b) => b.opened);
   const openedCount = opened.length;
   const totalPayout = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
   const start = Number(startMoney) || 0;
   const sl = Number(stopLoss) || 0;
   const target = sl > 0 ? start - sl : start;
   const profit = totalPayout - target;
-  const avgMulti = openedCount > 0
-    ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / openedCount
-    : 0;
-  let bestMulti = 0, bestSlot = '';
-  opened.forEach(b => {
+  const avgMulti =
+    openedCount > 0
+      ? opened.reduce(
+          (s, b) => s + (Number(b.payout) || 0) / (Number(b.betSize) || 1),
+          0,
+        ) / openedCount
+      : 0;
+  let bestMulti = 0,
+    bestSlot = "";
+  opened.forEach((b) => {
     const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
-    if (m > bestMulti) { bestMulti = m; bestSlot = b.slotName || b.slot?.name || ''; }
+    if (m > bestMulti) {
+      bestMulti = m;
+      bestSlot = b.slotName || b.slot?.name || "";
+    }
   });
-  let worstMulti = Infinity, worstSlot = '';
-  opened.forEach(b => {
+  let worstMulti = Infinity,
+    worstSlot = "";
+  opened.forEach((b) => {
     const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
-    if (m < worstMulti) { worstMulti = m; worstSlot = b.slotName || b.slot?.name || ''; }
+    if (m < worstMulti) {
+      worstMulti = m;
+      worstSlot = b.slotName || b.slot?.name || "";
+    }
   });
   if (!isFinite(worstMulti)) worstMulti = 0;
 
   const neededToBreakEven = Math.max(0, target - totalPayout);
   const remainingBonuses = total - openedCount;
-  const remainingBet = bonusList.filter(b => !b.opened).reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+  const remainingBet = bonusList
+    .filter((b) => !b.opened)
+    .reduce((s, b) => s + (Number(b.betSize) || 0), 0);
   const liveBE = remainingBet > 0 ? neededToBreakEven / remainingBet : 0;
-  const avgNeeded = remainingBonuses > 0 && neededToBreakEven > 0 ? neededToBreakEven / remainingBonuses : 0;
+  const avgNeeded =
+    remainingBonuses > 0 && neededToBreakEven > 0
+      ? neededToBreakEven / remainingBonuses
+      : 0;
 
   const fmtV = (v) => `${currency}${v.toFixed(2)}`;
 
   if (total === 0) return null;
 
-  const profitColor = profit > 0 ? '#eef2f5' : profit < 0 ? '#f87171' : '#cbd5e1';
+  const profitColor =
+    profit > 0 ? "#eef2f5" : profit < 0 ? "#f87171" : "#cbd5e1";
 
   return createPortal(
-    <div style={{
-      position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 99999,
-      background: bgColor,
-      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-      border: `1px solid ${accentColor}40`,
-      borderRadius: 999,
-      boxShadow: `0 4px 24px rgba(0,0,0,0.4), 0 0 12px ${accentColor}1a`,
-      padding: '6px 20px',
-      display: 'flex', alignItems: 'center', gap: 14,
-      fontFamily: config?.fontFamily || "'Inter', sans-serif",
-      color: textColor,
-      whiteSpace: 'nowrap',
-    }}>
-      <StatChip label="Bonuses" value={`${openedCount} / ${total}`} mutedColor={mutedColor} />
+    <div
+      style={{
+        position: "fixed",
+        bottom: 14,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 99999,
+        background: bgColor,
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: `1px solid ${accentColor}40`,
+        borderRadius: 999,
+        boxShadow: `0 4px 24px rgba(0,0,0,0.4), 0 0 12px ${accentColor}1a`,
+        padding: "6px 20px",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        fontFamily: config?.fontFamily || "'Inter', sans-serif",
+        color: textColor,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <StatChip
+        label="Bonuses"
+        value={`${openedCount} / ${total}`}
+        mutedColor={mutedColor}
+      />
       <StatChip label="Start" value={fmtV(start)} mutedColor={mutedColor} />
-      <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#eef2f5' : mutedColor} mutedColor={mutedColor} />
-      <StatChip label="Target" value={fmtV(target)} color={accentColor} mutedColor={mutedColor} />
-      <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} mutedColor={mutedColor} />
-      <StatChip label="BE x" value={`${liveBE.toFixed(2)}x`} color="#fbbf24" mutedColor={mutedColor} />
+      <StatChip
+        label="Payout"
+        value={fmtV(totalPayout)}
+        color={totalPayout > 0 ? "#eef2f5" : mutedColor}
+        mutedColor={mutedColor}
+      />
+      <StatChip
+        label="Target"
+        value={fmtV(target)}
+        color={accentColor}
+        mutedColor={mutedColor}
+      />
+      <StatChip
+        label="Avg x"
+        value={`${avgMulti.toFixed(2)}x`}
+        mutedColor={mutedColor}
+      />
+      <StatChip
+        label="BE x"
+        value={`${liveBE.toFixed(2)}x`}
+        color="#fbbf24"
+        mutedColor={mutedColor}
+      />
 
       {openedCount > 0 && (
         <>
-          <div style={{ width: 1, height: 24, background: `${accentColor}4d` }} />
-          <StatChip label="🏆 Best" value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + '…' : bestSlot} ${bestMulti.toFixed(1)}x`} color="#eef2f5" mutedColor={mutedColor} />
-          <StatChip label="💀 Worst" value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + '…' : worstSlot} ${worstMulti.toFixed(1)}x`} color="#f87171" mutedColor={mutedColor} />
+          <div
+            style={{ width: 1, height: 24, background: `${accentColor}4d` }}
+          />
+          <StatChip
+            label="🏆 Best"
+            value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + "…" : bestSlot} ${bestMulti.toFixed(1)}x`}
+            color="#eef2f5"
+            mutedColor={mutedColor}
+          />
+          <StatChip
+            label="💀 Worst"
+            value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + "…" : worstSlot} ${worstMulti.toFixed(1)}x`}
+            color="#f87171"
+            mutedColor={mutedColor}
+          />
         </>
       )}
     </div>,
-    document.body
+    document.body,
   );
 }
 
 /* Compact stat chip for the top bar */
 function StatChip({ label, value, color, mutedColor }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', whiteSpace: 'nowrap' }}>
-      <span style={{ fontSize: 10, color: mutedColor || '#94a3b8', fontWeight: 500, lineHeight: 1.2 }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 700, color: color || '#fff', lineHeight: 1.3 }}>{value}</span>
+    <div
+      style={{ display: "flex", flexDirection: "column", whiteSpace: "nowrap" }}
+    >
+      <span
+        style={{
+          fontSize: 10,
+          color: mutedColor || "#94a3b8",
+          fontWeight: 500,
+          lineHeight: 1.2,
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 700,
+          color: color || "#fff",
+          lineHeight: 1.3,
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -2221,17 +3840,22 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [expandedId, setExpandedId] = useState(null);
-  const [saveName, setSaveName] = useState(c.huntName || '');
+  const [saveName, setSaveName] = useState(c.huntName || "");
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Load history on mount
   useEffect(() => {
-    if (!userId) { setLoading(false); return; }
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     getBonusHuntHistory(userId)
-      .then(data => setHistory(data))
-      .catch(err => setMessage('⚠️ Could not load history. Run the migration first.'))
+      .then((data) => setHistory(data))
+      .catch((err) =>
+        setMessage("⚠️ Could not load history. Run the migration first."),
+      )
       .finally(() => setLoading(false));
   }, [userId]);
 
@@ -2239,33 +3863,60 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
 
   // Calculate current hunt stats
   const calcStats = (bonusList, startMoney, stopLoss) => {
-    const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const opened = bonusList.filter(b => b.opened);
+    const totalBet = bonusList.reduce(
+      (s, b) => s + (Number(b.betSize) || 0),
+      0,
+    );
+    const opened = bonusList.filter((b) => b.opened);
     const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
     const spendTarget = getBonusHuntSpendTarget(startMoney, stopLoss);
     const profit = totalWin - spendTarget;
-    const avgMulti = opened.length > 0
-      ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
-      : 0;
+    const avgMulti =
+      opened.length > 0
+        ? opened.reduce(
+            (s, b) => s + (Number(b.payout) || 0) / (Number(b.betSize) || 1),
+            0,
+          ) / opened.length
+        : 0;
 
     let bestMulti = 0;
-    let bestSlotName = '';
-    opened.forEach(b => {
+    let bestSlotName = "";
+    opened.forEach((b) => {
       const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
-      if (m > bestMulti) { bestMulti = m; bestSlotName = b.slotName || b.slot?.name || ''; }
+      if (m > bestMulti) {
+        bestMulti = m;
+        bestSlotName = b.slotName || b.slot?.name || "";
+      }
     });
 
-    return { totalBet, totalWin, profit, avgMulti, bestMulti, bestSlotName, bonusesOpened: opened.length };
+    return {
+      totalBet,
+      totalWin,
+      profit,
+      avgMulti,
+      bestMulti,
+      bestSlotName,
+      bonusesOpened: opened.length,
+    };
   };
 
   // Save current hunt to history
   const handleSave = async () => {
-    if (!userId) { setMessage('⚠️ Not logged in'); return; }
-    if (bonuses.length === 0) { setMessage('⚠️ No bonuses to save'); return; }
-    if (!saveName.trim()) { setMessage('⚠️ Enter a name for this hunt'); return; }
+    if (!userId) {
+      setMessage("⚠️ Not logged in");
+      return;
+    }
+    if (bonuses.length === 0) {
+      setMessage("⚠️ No bonuses to save");
+      return;
+    }
+    if (!saveName.trim()) {
+      setMessage("⚠️ Enter a name for this hunt");
+      return;
+    }
 
     setSaving(true);
-    setMessage('');
+    setMessage("");
 
     try {
       const stats = calcStats(bonuses, c.startMoney, c.stopLoss);
@@ -2287,17 +3938,23 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
 
       const saved = await saveBonusHuntToHistory(userId, record);
       // Auto-update per-user slot records
-      try { await updateSlotRecordsFromHunt(userId, bonuses, saveName.trim()); } catch (e) { console.warn('Slot records update failed:', e); }
-      setHistory(prev => [saved, ...prev]);
-      setMessage('✅ Hunt saved to history!');
-      setSaveName('');
-      setTimeout(() => setMessage(''), 3000);
+      try {
+        await updateSlotRecordsFromHunt(userId, bonuses, saveName.trim());
+      } catch (e) {
+        console.warn("Slot records update failed:", e);
+      }
+      setHistory((prev) => [saved, ...prev]);
+      setMessage("✅ Hunt saved to history!");
+      setSaveName("");
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      const msg = err?.message || '';
-      if (msg.includes('42P01')) {
-        setMessage('⚠️ Table not found. Run the migration: add_bonus_hunt_history.sql');
+      const msg = err?.message || "";
+      if (msg.includes("42P01")) {
+        setMessage(
+          "⚠️ Table not found. Run the migration: add_bonus_hunt_history.sql",
+        );
       } else {
-        setMessage('⚠️ ' + msg);
+        setMessage("⚠️ " + msg);
       }
     } finally {
       setSaving(false);
@@ -2316,37 +3973,53 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
       huntActive: true,
     });
     setMessage(`✅ Loaded "${record.hunt_name}" onto overlay`);
-    setTimeout(() => setMessage(''), 3000);
+    setTimeout(() => setMessage(""), 3000);
   };
 
   // Download a hunt from history as JSON
   const handleDownloadJSON = (record) => {
     const savedBonuses = record.bonuses || [];
-    const opened = savedBonuses.filter(b => b.opened);
-    const totalBet = savedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const totalBetOpened = opened.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const opened = savedBonuses.filter((b) => b.opened);
+    const totalBet = savedBonuses.reduce(
+      (s, b) => s + (Number(b.betSize) || 0),
+      0,
+    );
+    const totalBetOpened = opened.reduce(
+      (s, b) => s + (Number(b.betSize) || 0),
+      0,
+    );
     const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
     const startMoney = Number(record.start_money) || 0;
     const spendTarget = getBonusHuntSpendTarget(startMoney, record.stop_loss);
     const profit = totalWin - spendTarget;
-    const avgMultiPerSlot = opened.length > 0
-      ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
-      : 0;
+    const avgMultiPerSlot =
+      opened.length > 0
+        ? opened.reduce(
+            (s, b) => s + (Number(b.payout) || 0) / (Number(b.betSize) || 1),
+            0,
+          ) / opened.length
+        : 0;
     const overallMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
     const breakEvenMulti = totalBet > 0 ? spendTarget / totalBet : 0;
     let bestMulti = 0;
-    let bestSlotName = '';
+    let bestSlotName = "";
     let worstMulti = opened.length > 0 ? Infinity : 0;
-    let worstSlotName = '';
+    let worstSlotName = "";
 
-    opened.forEach(b => {
+    opened.forEach((b) => {
       const multi = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
-      if (multi > bestMulti) { bestMulti = multi; bestSlotName = b.slotName || b.slot?.name || ''; }
-      if (multi < worstMulti) { worstMulti = multi; worstSlotName = b.slotName || b.slot?.name || ''; }
+      if (multi > bestMulti) {
+        bestMulti = multi;
+        bestSlotName = b.slotName || b.slot?.name || "";
+      }
+      if (multi < worstMulti) {
+        worstMulti = multi;
+        worstSlotName = b.slotName || b.slot?.name || "";
+      }
     });
     if (opened.length === 0) worstMulti = 0;
 
-    const round2 = value => Math.round(value * 100) / 100;
+    const round2 = (value) => Math.round(value * 100) / 100;
     const data = {
       hunt_name: record.hunt_name,
       currency: record.currency || currency,
@@ -2368,12 +4041,16 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
       worst_slot_name: worstSlotName,
       bonuses: savedBonuses,
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const savedDate = record.created_at ? new Date(record.created_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+    const link = document.createElement("a");
+    const savedDate = record.created_at
+      ? new Date(record.created_at).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
     link.href = url;
-    link.download = `${(record.hunt_name || 'hunt').replace(/[^a-z0-9]/gi, '_')}_${savedDate}.json`;
+    link.download = `${(record.hunt_name || "hunt").replace(/[^a-z0-9]/gi, "_")}_${savedDate}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -2384,25 +4061,32 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
   const handleDelete = async (id) => {
     try {
       await deleteBonusHuntHistory(id);
-      setHistory(prev => prev.filter(h => h.id !== id));
+      setHistory((prev) => prev.filter((h) => h.id !== id));
       setConfirmDelete(null);
-      setMessage('🗑️ Deleted');
-      setTimeout(() => setMessage(''), 2000);
+      setMessage("🗑️ Deleted");
+      setTimeout(() => setMessage(""), 2000);
     } catch (err) {
-      setMessage('⚠️ ' + (err?.message || 'Delete failed'));
+      setMessage("⚠️ " + (err?.message || "Delete failed"));
     }
   };
 
   // Format date
   const fmtDate = (d) => {
-    if (!d) return '';
+    if (!d) return "";
     const dt = new Date(d);
-    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    return dt.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const fmtNum = (n) => {
     const num = Number(n) || 0;
-    return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   return (
@@ -2410,74 +4094,112 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
       {/* ── Save current hunt ── */}
       <h4 className="nb-subtitle">Save Current Hunt</h4>
       <p className="oc-config-hint" style={{ marginBottom: 8 }}>
-        Archive the current bonus hunt. You can load it back anytime to view or display on overlay.
+        Archive the current bonus hunt. You can load it back anytime to view or
+        display on overlay.
       </p>
       <div className="nb-preset-save-row">
         <input
           className="nb-preset-input"
           value={saveName}
-          onChange={e => setSaveName(e.target.value)}
+          onChange={(e) => setSaveName(e.target.value)}
           placeholder="Hunt name (e.g. Bonus Hunt #42)"
           maxLength={60}
-          onKeyDown={e => e.key === 'Enter' && handleSave()}
+          onKeyDown={(e) => e.key === "Enter" && handleSave()}
         />
-        <button className="nb-preset-save-btn" onClick={handleSave} disabled={saving || bonuses.length === 0}>
-          {saving ? '⏳' : '💾'} Save
+        <button
+          className="nb-preset-save-btn"
+          onClick={handleSave}
+          disabled={saving || bonuses.length === 0}
+        >
+          {saving ? "⏳" : "💾"} Save
         </button>
       </div>
 
       {/* Current hunt quick stats */}
-      {bonuses.length > 0 && (() => {
-        const s = calcStats(bonuses, c.startMoney, c.stopLoss);
-        return (
-          <div className="bh-history-current-stats">
-            <span>🎰 {bonuses.length} bonuses</span>
-            <span>💰 {currency}{fmtNum(s.totalWin)} won</span>
-            <span>{s.profit >= 0 ? '📈' : '📉'} {currency}{fmtNum(s.profit)}</span>
-          </div>
-        );
-      })()}
+      {bonuses.length > 0 &&
+        (() => {
+          const s = calcStats(bonuses, c.startMoney, c.stopLoss);
+          return (
+            <div className="bh-history-current-stats">
+              <span>🎰 {bonuses.length} bonuses</span>
+              <span>
+                💰 {currency}
+                {fmtNum(s.totalWin)} won
+              </span>
+              <span>
+                {s.profit >= 0 ? "📈" : "📉"} {currency}
+                {fmtNum(s.profit)}
+              </span>
+            </div>
+          );
+        })()}
 
       {message && (
-        <div className={`bh-history-msg ${message.startsWith('✅') ? 'bh-history-msg--ok' : message.startsWith('🗑') ? 'bh-history-msg--del' : 'bh-history-msg--err'}`}>
+        <div
+          className={`bh-history-msg ${message.startsWith("✅") ? "bh-history-msg--ok" : message.startsWith("🗑") ? "bh-history-msg--del" : "bh-history-msg--err"}`}
+        >
           {message}
         </div>
       )}
 
       {/* ── History list ── */}
-      <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Hunt History</h4>
+      <h4 className="nb-subtitle" style={{ marginTop: 16 }}>
+        Hunt History
+      </h4>
 
       {loading && <p className="oc-config-hint">Loading history...</p>}
 
       {!loading && history.length === 0 && (
         <p className="oc-config-hint" style={{ opacity: 0.6 }}>
-          No hunts saved yet. Complete a hunt and save it above to build your history.
+          No hunts saved yet. Complete a hunt and save it above to build your
+          history.
         </p>
       )}
 
       {!loading && history.length > 0 && (
         <div className="bh-history-list">
-          {history.map(h => {
+          {history.map((h) => {
             const isExpanded = expandedId === h.id;
             const prof = getSavedBonusHuntProfit(h);
             const isProfit = prof >= 0;
 
             return (
-              <div key={h.id} className={`bh-history-card ${isExpanded ? 'bh-history-card--expanded' : ''}`}>
+              <div
+                key={h.id}
+                className={`bh-history-card ${isExpanded ? "bh-history-card--expanded" : ""}`}
+              >
                 {/* Main row */}
-                <div className="bh-history-row" onClick={() => setExpandedId(isExpanded ? null : h.id)}>
+                <div
+                  className="bh-history-row"
+                  onClick={() => setExpandedId(isExpanded ? null : h.id)}
+                >
                   <div className="bh-history-main">
                     <div className="bh-history-name">{h.hunt_name}</div>
-                    <div className="bh-history-date">{fmtDate(h.created_at)}</div>
+                    <div className="bh-history-date">
+                      {fmtDate(h.created_at)}
+                    </div>
                   </div>
                   <div className="bh-history-quick">
-                    <span className="bh-history-stat-pill">🎰 {h.bonus_count}</span>
-                    <span className={`bh-history-stat-pill ${isProfit ? 'bh-history-pill--profit' : 'bh-history-pill--loss'}`}>
-                      {isProfit ? '+' : ''}{h.currency || currency}{fmtNum(prof)}
+                    <span className="bh-history-stat-pill">
+                      🎰 {h.bonus_count}
+                    </span>
+                    <span
+                      className={`bh-history-stat-pill ${isProfit ? "bh-history-pill--profit" : "bh-history-pill--loss"}`}
+                    >
+                      {isProfit ? "+" : ""}
+                      {h.currency || currency}
+                      {fmtNum(prof)}
                     </span>
                   </div>
-                  <svg className={`bh-history-chevron ${isExpanded ? 'bh-history-chevron--open' : ''}`}
-                    width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className={`bh-history-chevron ${isExpanded ? "bh-history-chevron--open" : ""}`}
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M3 5l4 4 4-4" strokeLinecap="round" />
                   </svg>
                 </div>
@@ -2488,34 +4210,56 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
                     <div className="bh-history-stats-grid">
                       <div className="bh-history-stat-box">
                         <span className="bh-history-stat-label">Start</span>
-                        <span className="bh-history-stat-val">{h.currency || currency}{fmtNum(h.start_money)}</span>
+                        <span className="bh-history-stat-val">
+                          {h.currency || currency}
+                          {fmtNum(h.start_money)}
+                        </span>
                       </div>
                       <div className="bh-history-stat-box">
                         <span className="bh-history-stat-label">Total Win</span>
-                        <span className="bh-history-stat-val">{h.currency || currency}{fmtNum(h.total_win)}</span>
+                        <span className="bh-history-stat-val">
+                          {h.currency || currency}
+                          {fmtNum(h.total_win)}
+                        </span>
                       </div>
                       <div className="bh-history-stat-box">
                         <span className="bh-history-stat-label">Profit</span>
-                        <span className={`bh-history-stat-val ${isProfit ? 'bh-history-val--profit' : 'bh-history-val--loss'}`}>
-                          {isProfit ? '+' : ''}{h.currency || currency}{fmtNum(prof)}
+                        <span
+                          className={`bh-history-stat-val ${isProfit ? "bh-history-val--profit" : "bh-history-val--loss"}`}
+                        >
+                          {isProfit ? "+" : ""}
+                          {h.currency || currency}
+                          {fmtNum(prof)}
                         </span>
                       </div>
                       <div className="bh-history-stat-box">
                         <span className="bh-history-stat-label">Avg Multi</span>
-                        <span className="bh-history-stat-val">{Number(h.avg_multi || 0).toFixed(2)}x</span>
+                        <span className="bh-history-stat-val">
+                          {Number(h.avg_multi || 0).toFixed(2)}x
+                        </span>
                       </div>
                       <div className="bh-history-stat-box">
-                        <span className="bh-history-stat-label">Best Multi</span>
-                        <span className="bh-history-stat-val">{Number(h.best_multi || 0).toFixed(2)}x</span>
+                        <span className="bh-history-stat-label">
+                          Best Multi
+                        </span>
+                        <span className="bh-history-stat-val">
+                          {Number(h.best_multi || 0).toFixed(2)}x
+                        </span>
                       </div>
                       <div className="bh-history-stat-box">
                         <span className="bh-history-stat-label">Bonuses</span>
-                        <span className="bh-history-stat-val">{h.bonuses_opened || 0}/{h.bonus_count || 0}</span>
+                        <span className="bh-history-stat-val">
+                          {h.bonuses_opened || 0}/{h.bonus_count || 0}
+                        </span>
                       </div>
                       {h.best_slot_name && (
                         <div className="bh-history-stat-box bh-history-stat-box--wide">
-                          <span className="bh-history-stat-label">🏆 Best Slot</span>
-                          <span className="bh-history-stat-val">{h.best_slot_name}</span>
+                          <span className="bh-history-stat-label">
+                            🏆 Best Slot
+                          </span>
+                          <span className="bh-history-stat-val">
+                            {h.best_slot_name}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -2524,17 +4268,32 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
                     {Array.isArray(h.bonuses) && h.bonuses.length > 0 && (
                       <div className="bh-history-bonus-preview">
                         <span className="bh-history-bonus-preview-label">
-                          {h.bonuses.length} bonus{h.bonuses.length !== 1 ? 'es' : ''} in this hunt
+                          {h.bonuses.length} bonus
+                          {h.bonuses.length !== 1 ? "es" : ""} in this hunt
                         </span>
                         <div className="bh-history-bonus-chips">
                           {h.bonuses.slice(0, 12).map((b, i) => (
-                            <span key={i} className={`bh-history-bonus-chip ${b.opened ? 'bh-history-chip--opened' : ''} ${b.isSuperBonus ? 'bh-history-chip--super' : ''}`}>
-                              {b.slotName || b.slot?.name || '?'}
-                              {b.opened && <em> {((Number(b.payout) || 0) / (Number(b.betSize) || 1)).toFixed(1)}x</em>}
+                            <span
+                              key={i}
+                              className={`bh-history-bonus-chip ${b.opened ? "bh-history-chip--opened" : ""} ${b.isSuperBonus ? "bh-history-chip--super" : ""}`}
+                            >
+                              {b.slotName || b.slot?.name || "?"}
+                              {b.opened && (
+                                <em>
+                                  {" "}
+                                  {(
+                                    (Number(b.payout) || 0) /
+                                    (Number(b.betSize) || 1)
+                                  ).toFixed(1)}
+                                  x
+                                </em>
+                              )}
                             </span>
                           ))}
                           {h.bonuses.length > 12 && (
-                            <span className="bh-history-bonus-chip bh-history-chip--more">+{h.bonuses.length - 12} more</span>
+                            <span className="bh-history-bonus-chip bh-history-chip--more">
+                              +{h.bonuses.length - 12} more
+                            </span>
                           )}
                         </div>
                       </div>
@@ -2542,20 +4301,42 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
 
                     {/* Actions */}
                     <div className="bh-history-actions">
-                      <button className="oc-btn oc-btn--sm oc-btn--primary" onClick={() => handleLoad(h)}>
+                      <button
+                        className="oc-btn oc-btn--sm oc-btn--primary"
+                        onClick={() => handleLoad(h)}
+                      >
                         📥 Load to Overlay
                       </button>
-                      <button className="oc-btn oc-btn--sm" onClick={() => handleDownloadJSON(h)} title="Download hunt data as JSON">
+                      <button
+                        className="oc-btn oc-btn--sm"
+                        onClick={() => handleDownloadJSON(h)}
+                        title="Download hunt data as JSON"
+                      >
                         💾 Download JSON
                       </button>
                       {confirmDelete === h.id ? (
                         <div className="bh-history-confirm-row">
-                          <span className="bh-history-confirm-text">Delete?</span>
-                          <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => handleDelete(h.id)}>Yes</button>
-                          <button className="oc-btn oc-btn--sm" onClick={() => setConfirmDelete(null)}>No</button>
+                          <span className="bh-history-confirm-text">
+                            Delete?
+                          </span>
+                          <button
+                            className="oc-btn oc-btn--sm oc-btn--danger"
+                            onClick={() => handleDelete(h.id)}
+                          >
+                            Yes
+                          </button>
+                          <button
+                            className="oc-btn oc-btn--sm"
+                            onClick={() => setConfirmDelete(null)}
+                          >
+                            No
+                          </button>
                         </div>
                       ) : (
-                        <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => setConfirmDelete(h.id)}>
+                        <button
+                          className="oc-btn oc-btn--sm oc-btn--danger"
+                          onClick={() => setConfirmDelete(h.id)}
+                        >
                           🗑️ Delete
                         </button>
                       )}
@@ -2577,10 +4358,19 @@ function SliderField({ label, value, min, max, step, unit, onChange }) {
     <div className="nb-slider-field">
       <div className="nb-slider-head">
         <span>{label}</span>
-        <span className="nb-slider-val">{value}{unit}</span>
+        <span className="nb-slider-val">
+          {value}
+          {unit}
+        </span>
       </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => onChange(Number(e.target.value))} />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
     </div>
   );
 }

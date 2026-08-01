@@ -39,15 +39,20 @@ const ZONE_CHOICES = [
   { z: "right", label: "R", color: "#34d399" },
 ];
 
-const SECTION_IDS = new Set(DEFAULT_SECTION_LAYOUT.map((section) => section.id));
+const SECTION_IDS = new Set(
+  DEFAULT_SECTION_LAYOUT.map((section) => section.id),
+);
 
 function normalizeNavbarSectionLayout(layout) {
   const source = Array.isArray(layout) ? layout : DEFAULT_SECTION_LAYOUT;
   const normalized = [];
   const seen = new Set();
   source.forEach((section) => {
-    if (!section || !SECTION_IDS.has(section.id) || seen.has(section.id)) return;
-    const fallback = DEFAULT_SECTION_LAYOUT.find((item) => item.id === section.id);
+    if (!section || !SECTION_IDS.has(section.id) || seen.has(section.id))
+      return;
+    const fallback = DEFAULT_SECTION_LAYOUT.find(
+      (item) => item.id === section.id,
+    );
     normalized.push({
       id: section.id,
       zone: ["left", "center", "right"].includes(section.zone)
@@ -540,9 +545,13 @@ export default function NavbarConfig({ config, onChange }) {
                   max={300}
                   step={5}
                   value={c.casinoImageSize ?? 100}
-                  onChange={(e) => set("casinoImageSize", Number(e.target.value))}
+                  onChange={(e) =>
+                    set("casinoImageSize", Number(e.target.value))
+                  }
                 />
-                <span className="nb-slider-value">{c.casinoImageSize ?? 100}%</span>
+                <span className="nb-slider-value">
+                  {c.casinoImageSize ?? 100}%
+                </span>
               </label>
             </>
           )}
@@ -679,7 +688,6 @@ export default function NavbarConfig({ config, onChange }) {
                   </button>
                 ))}
               </div>
-
             </>
           )}
 

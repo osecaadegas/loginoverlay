@@ -2,17 +2,17 @@
 
 ## Identity
 
-| Field | Value |
-| --- | --- |
-| Widget ID | `background` |
-| Name | Background |
-| Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:401` |
-| Main component | `src/components/OverlayCenter/widgets/background/BackgroundWidget.jsx:86` |
-| Config panel | `src/components/OverlayCenter/widgets/background/BackgroundConfig.jsx` |
-| Style file | `src/components/OverlayCenter/widgets/background/BackgroundWidget.css` |
-| Styles | `v1`, `aurora`, `matrix`, `starfield`, `waves`, `geometric` through `displayStyle` |
-| Data source | `overlay_widgets.config` |
-| Persistence | `overlay_widgets.config` |
+| Field          | Value                                                                              |
+| -------------- | ---------------------------------------------------------------------------------- |
+| Widget ID      | `background`                                                                       |
+| Name           | Background                                                                         |
+| Registry       | `src/components/OverlayCenter/widgets/builtinWidgets.js:401`                       |
+| Main component | `src/components/OverlayCenter/widgets/background/BackgroundWidget.jsx:86`          |
+| Config panel   | `src/components/OverlayCenter/widgets/background/BackgroundConfig.jsx`             |
+| Style file     | `src/components/OverlayCenter/widgets/background/BackgroundWidget.css`             |
+| Styles         | `v1`, `aurora`, `matrix`, `starfield`, `waves`, `geometric` through `displayStyle` |
+| Data source    | `overlay_widgets.config`                                                           |
+| Persistence    | `overlay_widgets.config`                                                           |
 
 ## Rendering structure
 

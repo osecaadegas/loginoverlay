@@ -12,15 +12,15 @@ import {
   createMatch,
   updateRoundData,
   MATCH_STATUS,
-} from '../OverlayCenter/widgets/tournament/tournamentEngine';
+} from "../OverlayCenter/widgets/tournament/tournamentEngine";
 
 /* ─── Round label by match count ─── */
 const ROUND_LABELS = {
-  1: 'Final',
-  2: 'Semi-Finals',
-  4: 'Quarter-Finals',
-  8: 'Round of 16',
-  16: 'Round of 32',
+  1: "Final",
+  2: "Semi-Finals",
+  4: "Quarter-Finals",
+  8: "Round of 16",
+  16: "Round of 32",
 };
 function getRoundLabel(matchCount) {
   return ROUND_LABELS[matchCount] || `Round of ${matchCount * 2}`;
@@ -28,11 +28,11 @@ function getRoundLabel(matchCount) {
 
 /* ─── Internal deep-clone of bracket ─── */
 function cloneBracket(bracketData) {
-  return bracketData.map(r => ({
+  return bracketData.map((r) => ({
     ...r,
-    matches: r.matches.map(m => ({
+    matches: r.matches.map((m) => ({
       ...m,
-      rounds: m.rounds.map(rd => ({
+      rounds: m.rounds.map((rd) => ({
         ...rd,
         player1: { ...rd.player1 },
         player2: { ...rd.player2 },
@@ -57,7 +57,11 @@ export function seedPlayers(players = []) {
  * @param {object} cfg           Type-specific config (e.g. { numSpins: 50 })
  * @returns {Array<{ label: string, round: number, matches: Match[] }>}
  */
-export function generateBracket(seededPlayers = [], bracketType = 'bonus', cfg = {}) {
+export function generateBracket(
+  seededPlayers = [],
+  bracketType = "bonus",
+  cfg = {},
+) {
   if (seededPlayers.length < 2) return [];
 
   const rounds = [];
@@ -69,16 +73,20 @@ export function generateBracket(seededPlayers = [], bracketType = 'bonus', cfg =
     const p2 = seededPlayers[i * 2 + 1];
     round1Matches.push(
       createMatch({
-        player1: p1?.name || 'TBD',
-        player2: p2?.name || 'TBD',
-        slot1: p1?.slot || { name: '', image: null },
-        slot2: p2?.slot || { name: '', image: null },
+        player1: p1?.name || "TBD",
+        player2: p2?.name || "TBD",
+        slot1: p1?.slot || { name: "", image: null },
+        slot2: p2?.slot || { name: "", image: null },
         type: bracketType,
         config: cfg,
-      })
+      }),
     );
   }
-  rounds.push({ label: getRoundLabel(round1Matches.length), round: 0, matches: round1Matches });
+  rounds.push({
+    label: getRoundLabel(round1Matches.length),
+    round: 0,
+    matches: round1Matches,
+  });
 
   // Subsequent rounds — TBD placeholder matches
   let prevCount = round1Matches.length;
@@ -89,16 +97,20 @@ export function generateBracket(seededPlayers = [], bracketType = 'bonus', cfg =
     for (let i = 0; i < nextCount; i++) {
       nextMatches.push(
         createMatch({
-          player1: 'TBD',
-          player2: 'TBD',
-          slot1: { name: '', image: null },
-          slot2: { name: '', image: null },
+          player1: "TBD",
+          player2: "TBD",
+          slot1: { name: "", image: null },
+          slot2: { name: "", image: null },
           type: bracketType,
           config: cfg,
-        })
+        }),
       );
     }
-    rounds.push({ label: getRoundLabel(nextCount), round: roundNum, matches: nextMatches });
+    rounds.push({
+      label: getRoundLabel(nextCount),
+      round: roundNum,
+      matches: nextMatches,
+    });
     prevCount = nextCount;
     roundNum++;
   }
@@ -120,7 +132,15 @@ export function generateBracket(seededPlayers = [], bracketType = 'bonus', cfg =
  * @param {Array}  _players      (unused, kept for API compatibility)
  * @returns {{ bracket: Array, matchCompleted: boolean }}
  */
-export function updateBracketMatch(bracketData, roundIdx, matchIdx, roundInputIdx, playerKey, data, _players = []) {
+export function updateBracketMatch(
+  bracketData,
+  roundIdx,
+  matchIdx,
+  roundInputIdx,
+  playerKey,
+  data,
+  _players = [],
+) {
   const match = bracketData[roundIdx]?.matches[matchIdx];
   if (!match) return { bracket: bracketData, matchCompleted: false };
 
@@ -133,10 +153,11 @@ export function updateBracketMatch(bracketData, roundIdx, matchIdx, roundInputId
   let newBracket = cloneBracket(bracketData);
   newBracket[roundIdx].matches[matchIdx] = updatedMatch;
 
-  const matchCompleted = !wasCompleted && updatedMatch.status === MATCH_STATUS.COMPLETED;
+  const matchCompleted =
+    !wasCompleted && updatedMatch.status === MATCH_STATUS.COMPLETED;
 
   // Propagate winner to the next round if the match just completed
-  if (matchCompleted && updatedMatch.winner && updatedMatch.winner !== 'draw') {
+  if (matchCompleted && updatedMatch.winner && updatedMatch.winner !== "draw") {
     newBracket = _propagateWinner(newBracket, roundIdx, matchIdx);
   }
 
@@ -153,7 +174,12 @@ export function updateBracketMatch(bracketData, roundIdx, matchIdx, roundInputId
  * @param {Array}  _players     (unused)
  * @returns {Array} New bracket data
  */
-export function propagateWinner(bracketData, roundIdx, matchIdx, _players = []) {
+export function propagateWinner(
+  bracketData,
+  roundIdx,
+  matchIdx,
+  _players = [],
+) {
   return _propagateWinner(bracketData, roundIdx, matchIdx);
 }
 
@@ -165,16 +191,16 @@ export function propagateWinner(bracketData, roundIdx, matchIdx, _players = []) 
  */
 function _propagateWinner(bracketData, roundIdx, matchIdx) {
   const match = bracketData[roundIdx]?.matches[matchIdx];
-  if (!match || !match.winner || match.winner === 'draw') return bracketData;
+  if (!match || !match.winner || match.winner === "draw") return bracketData;
 
   const nextRoundIdx = roundIdx + 1;
   if (nextRoundIdx >= bracketData.length) return bracketData; // already the final
 
   const nextMatchIdx = Math.floor(matchIdx / 2);
-  const fillPlayer1  = matchIdx % 2 === 0; // even → player1, odd → player2
+  const fillPlayer1 = matchIdx % 2 === 0; // even → player1, odd → player2
 
-  const winnerName = match.winner === 'player1' ? match.player1 : match.player2;
-  const winnerSlot = match.winner === 'player1' ? match.slot1  : match.slot2;
+  const winnerName = match.winner === "player1" ? match.player1 : match.player2;
+  const winnerSlot = match.winner === "player1" ? match.slot1 : match.slot2;
 
   return bracketData.map((r, rIdx) => {
     if (rIdx !== nextRoundIdx) return r;
@@ -200,7 +226,7 @@ export function getBracketStats(bracketData = []) {
   let total = 0;
   let completed = 0;
   for (const round of bracketData) {
-    for (const match of (round.matches || [])) {
+    for (const match of round.matches || []) {
       total++;
       if (match.status === MATCH_STATUS.COMPLETED || match.winner != null) {
         completed++;
@@ -221,6 +247,8 @@ export function getChampion(bracketData = []) {
   const lastRound = bracketData[bracketData.length - 1];
   if (!lastRound?.matches?.length) return null;
   const finalMatch = lastRound.matches[0];
-  if (!finalMatch?.winner || finalMatch.winner === 'draw') return null;
-  return finalMatch.winner === 'player1' ? finalMatch.player1 : finalMatch.player2;
+  if (!finalMatch?.winner || finalMatch.winner === "draw") return null;
+  return finalMatch.winner === "player1"
+    ? finalMatch.player1
+    : finalMatch.player2;
 }

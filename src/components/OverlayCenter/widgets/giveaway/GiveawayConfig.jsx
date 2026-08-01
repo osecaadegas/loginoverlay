@@ -1,17 +1,31 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import useTwitchChat from '../../../../hooks/useTwitchChat';
-import useKickChat from '../../../../hooks/useKickChat';
-import useTwitchChannel from '../../../../hooks/useTwitchChannel';
-import { makePerStyleSetters } from '../shared/perStyleConfig';
-import { GIVEAWAY_STYLE_KEYS } from '../styleKeysRegistry';
-import { SectionHeader } from '../../ui';
-import { CirclePlay, CircleStop, Trash2, Trophy, Users, Wifi, WifiOff, X } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import useTwitchChat from "../../../../hooks/useTwitchChat";
+import useKickChat from "../../../../hooks/useKickChat";
+import useTwitchChannel from "../../../../hooks/useTwitchChannel";
+import { makePerStyleSetters } from "../shared/perStyleConfig";
+import { GIVEAWAY_STYLE_KEYS } from "../styleKeysRegistry";
+import { SectionHeader } from "../../ui";
+import {
+  CirclePlay,
+  CircleStop,
+  Trash2,
+  Trophy,
+  Users,
+  Wifi,
+  WifiOff,
+  X,
+} from "lucide-react";
 
 /* ─── Giveaway Config Panel ─── */
 export default function GiveawayConfig({ config, onChange }) {
   const c = config || {};
-  const currentStyle = c.displayStyle || 'v1';
-  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, GIVEAWAY_STYLE_KEYS);
+  const currentStyle = c.displayStyle || "v1";
+  const { set, setMulti } = makePerStyleSetters(
+    onChange,
+    c,
+    currentStyle,
+    GIVEAWAY_STYLE_KEYS,
+  );
   const [confirmClear, setConfirmClear] = useState(false);
   const [chatStatus, setChatStatus] = useState({ twitch: false, kick: false });
 
@@ -46,31 +60,39 @@ export default function GiveawayConfig({ config, onChange }) {
     return () => clearInterval(flushTimer.current);
   });
 
-  const keyword = (c.keyword || '').toLowerCase().trim();
+  const keyword = (c.keyword || "").toLowerCase().trim();
   const autoChannel = useTwitchChannel();
-  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const resolvedChannel = c.twitchChannel || autoChannel || "";
   const isActive = !!c.isActive && !!keyword;
   const platformCount = Number(!!chatStatus.twitch) + Number(!!chatStatus.kick);
-  const configuredPlatformCount = Number(!!resolvedChannel && !!c.twitchEnabled) + Number(!!c.kickChannelId && !!c.kickEnabled);
+  const configuredPlatformCount =
+    Number(!!resolvedChannel && !!c.twitchEnabled) +
+    Number(!!c.kickChannelId && !!c.kickEnabled);
   const canStart = !!keyword && configuredPlatformCount > 0;
 
   // Chat message handler — check for keyword match
-  const handleMessage = useCallback((msg) => {
-    if (!keyword) return;
-    const text = (msg.message || '').trim().toLowerCase();
-    // Match "!keyword" exactly (with optional trailing whitespace)
-    if (text === `!${keyword}` || text.startsWith(`!${keyword} `)) {
-      const name = msg.username;
-      if (name && !participantsRef.current.has(name)) {
-        participantsRef.current.add(name);
-        pendingRef.current.push(name);
+  const handleMessage = useCallback(
+    (msg) => {
+      if (!keyword) return;
+      const text = (msg.message || "").trim().toLowerCase();
+      // Match "!keyword" exactly (with optional trailing whitespace)
+      if (text === `!${keyword}` || text.startsWith(`!${keyword} `)) {
+        const name = msg.username;
+        if (name && !participantsRef.current.has(name)) {
+          participantsRef.current.add(name);
+          pendingRef.current.push(name);
+        }
       }
-    }
-  }, [keyword]);
+    },
+    [keyword],
+  );
 
   // Connect to platforms when giveaway is active
-  useTwitchChat(isActive && c.twitchEnabled ? resolvedChannel : '', handleMessage);
-  useKickChat(isActive && c.kickEnabled ? c.kickChannelId : '', handleMessage);
+  useTwitchChat(
+    isActive && c.twitchEnabled ? resolvedChannel : "",
+    handleMessage,
+  );
+  useKickChat(isActive && c.kickEnabled ? c.kickChannelId : "", handleMessage);
 
   // Track connection status
   useEffect(() => {
@@ -78,7 +100,13 @@ export default function GiveawayConfig({ config, onChange }) {
       twitch: isActive && !!c.twitchEnabled && !!resolvedChannel,
       kick: isActive && !!c.kickEnabled && !!c.kickChannelId,
     });
-  }, [isActive, c.twitchEnabled, resolvedChannel, c.kickEnabled, c.kickChannelId]);
+  }, [
+    isActive,
+    c.twitchEnabled,
+    resolvedChannel,
+    c.kickEnabled,
+    c.kickChannelId,
+  ]);
 
   // Draw a random winner
   const drawWinner = () => {
@@ -87,27 +115,31 @@ export default function GiveawayConfig({ config, onChange }) {
     const idx = Math.floor(Math.random() * list.length);
     const winnerName = list[idx];
     // Show spin reel first, then reveal winner after animation
-    setMulti({ spinningWinner: winnerName, winner: '' });
+    setMulti({ spinningWinner: winnerName, winner: "" });
     setTimeout(() => {
       // Use refs to get latest config/onChange — avoids stale closure
       // 5s spin + 2s hold on winner before revealing = 7s total
       const latest = configRef.current;
-      onChangeRef.current({ ...latest, winner: winnerName, spinningWinner: '' });
+      onChangeRef.current({
+        ...latest,
+        winner: winnerName,
+        spinningWinner: "",
+      });
     }, 7000);
   };
 
   // Remove a single participant
   const removeParticipant = (name) => {
-    const updated = (c.participants || []).filter(n => n !== name);
+    const updated = (c.participants || []).filter((n) => n !== name);
     participantsRef.current.delete(name);
     const patch = { participants: updated };
-    if (c.winner === name) patch.winner = '';
+    if (c.winner === name) patch.winner = "";
     onChange({ ...c, ...patch });
   };
 
   // Clear all entries
   const clearEntries = () => {
-    setMulti({ participants: [], winner: '' });
+    setMulti({ participants: [], winner: "" });
     participantsRef.current.clear();
     pendingRef.current = [];
     setConfirmClear(false);
@@ -126,22 +158,36 @@ export default function GiveawayConfig({ config, onChange }) {
             <div className="giveaway-form-grid">
               <label className="nb-field giveaway-field">
                 <span>Overlay title</span>
-                <input value={c.title || ''} onChange={event => set('title', event.target.value)} placeholder="Friday Giveaway" />
+                <input
+                  value={c.title || ""}
+                  onChange={(event) => set("title", event.target.value)}
+                  placeholder="Friday Giveaway"
+                />
               </label>
               <label className="nb-field giveaway-field">
                 <span>Prize</span>
-                <input value={c.prize || ''} onChange={event => set('prize', event.target.value)} placeholder="500 bonus spins" />
+                <input
+                  value={c.prize || ""}
+                  onChange={(event) => set("prize", event.target.value)}
+                  placeholder="500 bonus spins"
+                />
               </label>
               <label className="nb-field giveaway-field giveaway-field--command">
                 <span>Chat command</span>
                 <div className="giveaway-command-input">
                   <span>!</span>
-                  <input value={c.keyword || ''} onChange={event => set('keyword', event.target.value.replace(/^!+/, ''))} placeholder="join" />
+                  <input
+                    value={c.keyword || ""}
+                    onChange={(event) =>
+                      set("keyword", event.target.value.replace(/^!+/, ""))
+                    }
+                    placeholder="join"
+                  />
                 </div>
               </label>
               <div className="giveaway-command-preview">
                 <span>Viewer command</span>
-                <strong>{keyword ? `!${keyword}` : '!join'}</strong>
+                <strong>{keyword ? `!${keyword}` : "!join"}</strong>
               </div>
             </div>
           </section>
@@ -153,52 +199,81 @@ export default function GiveawayConfig({ config, onChange }) {
               description="Enable the platforms that should collect entries while the giveaway is live."
             />
             <div className="giveaway-platform-grid">
-              <label className={`giveaway-platform-card${c.twitchEnabled ? ' giveaway-platform-card--enabled' : ''}${chatStatus.twitch ? ' giveaway-platform-card--live' : ''}${!resolvedChannel ? ' giveaway-platform-card--missing' : ''}`}>
+              <label
+                className={`giveaway-platform-card${c.twitchEnabled ? " giveaway-platform-card--enabled" : ""}${chatStatus.twitch ? " giveaway-platform-card--live" : ""}${!resolvedChannel ? " giveaway-platform-card--missing" : ""}`}
+              >
                 <input
                   type="checkbox"
                   checked={!!c.twitchEnabled}
                   disabled={!resolvedChannel}
-                  onChange={event => set('twitchEnabled', event.target.checked)}
+                  onChange={(event) =>
+                    set("twitchEnabled", event.target.checked)
+                  }
                 />
-                <span className="giveaway-platform-card__icon">{chatStatus.twitch ? <Wifi size={18} /> : <WifiOff size={18} />}</span>
+                <span className="giveaway-platform-card__icon">
+                  {chatStatus.twitch ? (
+                    <Wifi size={18} />
+                  ) : (
+                    <WifiOff size={18} />
+                  )}
+                </span>
                 <span className="giveaway-platform-card__copy">
                   <strong>Twitch</strong>
-                  <span>{resolvedChannel || 'Set channel in Profile'}</span>
+                  <span>{resolvedChannel || "Set channel in Profile"}</span>
                 </span>
                 <span className="giveaway-switch" aria-hidden="true" />
               </label>
 
-              <label className={`giveaway-platform-card${c.kickEnabled ? ' giveaway-platform-card--enabled' : ''}${chatStatus.kick ? ' giveaway-platform-card--live' : ''}${!c.kickChannelId ? ' giveaway-platform-card--missing' : ''}`}>
+              <label
+                className={`giveaway-platform-card${c.kickEnabled ? " giveaway-platform-card--enabled" : ""}${chatStatus.kick ? " giveaway-platform-card--live" : ""}${!c.kickChannelId ? " giveaway-platform-card--missing" : ""}`}
+              >
                 <input
                   type="checkbox"
                   checked={!!c.kickEnabled}
                   disabled={!c.kickChannelId}
-                  onChange={event => set('kickEnabled', event.target.checked)}
+                  onChange={(event) => set("kickEnabled", event.target.checked)}
                 />
-                <span className="giveaway-platform-card__icon">{chatStatus.kick ? <Wifi size={18} /> : <WifiOff size={18} />}</span>
+                <span className="giveaway-platform-card__icon">
+                  {chatStatus.kick ? <Wifi size={18} /> : <WifiOff size={18} />}
+                </span>
                 <span className="giveaway-platform-card__copy">
                   <strong>Kick</strong>
-                  <span>{c.kickChannelId || 'Set channel in Profile'}</span>
+                  <span>{c.kickChannelId || "Set channel in Profile"}</span>
                 </span>
                 <span className="giveaway-switch" aria-hidden="true" />
               </label>
             </div>
           </section>
 
-          <section className={`giveaway-live-panel${isActive ? ' giveaway-live-panel--active' : ''}`}>
+          <section
+            className={`giveaway-live-panel${isActive ? " giveaway-live-panel--active" : ""}`}
+          >
             <div>
-              <span>{isActive ? 'Live collection is running' : canStart ? 'Ready to collect entries' : 'Complete setup to go live'}</span>
-              <strong>{keyword ? `Listening for !${keyword}` : 'Add a command first'}</strong>
-              {isActive && !platformCount && <p>No live chat connection is active yet. Check your enabled listeners.</p>}
+              <span>
+                {isActive
+                  ? "Live collection is running"
+                  : canStart
+                    ? "Ready to collect entries"
+                    : "Complete setup to go live"}
+              </span>
+              <strong>
+                {keyword ? `Listening for !${keyword}` : "Add a command first"}
+              </strong>
+              {isActive && !platformCount && (
+                <p>
+                  No live chat connection is active yet. Check your enabled
+                  listeners.
+                </p>
+              )}
             </div>
             <button
               type="button"
-              className={`giveaway-primary-action${c.isActive ? ' giveaway-primary-action--stop' : ''}`}
+              className={`giveaway-primary-action${c.isActive ? " giveaway-primary-action--stop" : ""}`}
               disabled={!c.isActive && !canStart}
-              onClick={() => set('isActive', !c.isActive)}
+              onClick={() => set("isActive", !c.isActive)}
             >
               {c.isActive ? <CircleStop size={17} /> : <CirclePlay size={17} />}
-              {c.isActive ? 'Stop Giveaway' : 'Start Giveaway'}
+              {c.isActive ? "Stop Giveaway" : "Start Giveaway"}
             </button>
           </section>
         </div>
@@ -208,7 +283,11 @@ export default function GiveawayConfig({ config, onChange }) {
             <SectionHeader
               eyebrow="Step 3"
               title="Draw winner"
-              description={participants.length ? 'Pick a winner from the current entry list.' : 'Entries will appear here as viewers use the command.'}
+              description={
+                participants.length
+                  ? "Pick a winner from the current entry list."
+                  : "Entries will appear here as viewers use the command."
+              }
             />
             <button
               type="button"
@@ -223,12 +302,18 @@ export default function GiveawayConfig({ config, onChange }) {
               <div className="giveaway-winner">
                 <span>Winner</span>
                 <strong>{c.winner}</strong>
-                <button type="button" onClick={() => set('winner', '')}>Clear winner</button>
+                <button type="button" onClick={() => set("winner", "")}>
+                  Clear winner
+                </button>
               </div>
             ) : (
               <div className="giveaway-winner giveaway-winner--empty">
                 <span>No winner selected</span>
-                <strong>{participants.length ? `${participants.length} entries ready` : 'Waiting for entries'}</strong>
+                <strong>
+                  {participants.length
+                    ? `${participants.length} entries ready`
+                    : "Waiting for entries"}
+                </strong>
               </div>
             )}
           </section>
@@ -237,10 +322,18 @@ export default function GiveawayConfig({ config, onChange }) {
             <div className="giveaway-entries-header">
               <div>
                 <span>Entries</span>
-                <strong>{participants.length} participant{participants.length === 1 ? '' : 's'}</strong>
+                <strong>
+                  {participants.length} participant
+                  {participants.length === 1 ? "" : "s"}
+                </strong>
               </div>
               {participants.length > 0 && !confirmClear && (
-                <button type="button" className="giveaway-icon-button giveaway-icon-button--danger" onClick={() => setConfirmClear(true)} title="Clear all entries">
+                <button
+                  type="button"
+                  className="giveaway-icon-button giveaway-icon-button--danger"
+                  onClick={() => setConfirmClear(true)}
+                  title="Clear all entries"
+                >
                   <Trash2 size={15} />
                 </button>
               )}
@@ -249,11 +342,20 @@ export default function GiveawayConfig({ config, onChange }) {
             {participants.length > 0 ? (
               <div className="giveaway-entries-list">
                 {participants.map((name, index) => (
-                  <div key={name} className={`giveaway-entry-row${name === c.winner ? ' giveaway-entry-row--winner' : ''}`}>
-                    <span className="giveaway-entry-row__index">#{index + 1}</span>
+                  <div
+                    key={name}
+                    className={`giveaway-entry-row${name === c.winner ? " giveaway-entry-row--winner" : ""}`}
+                  >
+                    <span className="giveaway-entry-row__index">
+                      #{index + 1}
+                    </span>
                     <span className="giveaway-entry-row__name">{name}</span>
                     {name === c.winner && <Trophy size={14} />}
-                    <button type="button" onClick={() => removeParticipant(name)} title={`Remove ${name}`}>
+                    <button
+                      type="button"
+                      onClick={() => removeParticipant(name)}
+                      title={`Remove ${name}`}
+                    >
                       <X size={14} />
                     </button>
                   </div>
@@ -262,22 +364,31 @@ export default function GiveawayConfig({ config, onChange }) {
             ) : (
               <div className="giveaway-empty-state">
                 <Users size={22} />
-                <strong>{isActive ? 'Waiting for chat entries' : 'No entries yet'}</strong>
-                <span>{isActive ? `Viewers can type !${keyword}` : 'Start the giveaway when your prize and listeners are ready.'}</span>
+                <strong>
+                  {isActive ? "Waiting for chat entries" : "No entries yet"}
+                </strong>
+                <span>
+                  {isActive
+                    ? `Viewers can type !${keyword}`
+                    : "Start the giveaway when your prize and listeners are ready."}
+                </span>
               </div>
             )}
 
             {confirmClear && (
               <div className="giveaway-clear-confirm">
                 <span>Clear every entry?</span>
-                <button type="button" onClick={clearEntries}>Clear all</button>
-                <button type="button" onClick={() => setConfirmClear(false)}>Cancel</button>
+                <button type="button" onClick={clearEntries}>
+                  Clear all
+                </button>
+                <button type="button" onClick={() => setConfirmClear(false)}>
+                  Cancel
+                </button>
               </div>
             )}
           </section>
         </aside>
       </div>
-
     </div>
   );
 }

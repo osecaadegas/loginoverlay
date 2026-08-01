@@ -1,15 +1,30 @@
-﻿import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
-import useTwitchChat from '../../../../hooks/useTwitchChat';
-import useKickChat from '../../../../hooks/useKickChat';
-import useTwitchChannel from '../../../../hooks/useTwitchChannel';
-import { supabase } from '../../../../config/supabaseClient';
-import { subElementStyle, subValue } from '../shared/appearanceStyles';
-import { BetterGiveawayStyle } from '../shared/betterWidgetStyles';
+﻿import React, {
+  useRef,
+  useEffect,
+  useCallback,
+  useState,
+  useMemo,
+} from "react";
+import useTwitchChat from "../../../../hooks/useTwitchChat";
+import useKickChat from "../../../../hooks/useKickChat";
+import useTwitchChannel from "../../../../hooks/useTwitchChannel";
+import { supabase } from "../../../../config/supabaseClient";
+import { subElementStyle, subValue } from "../shared/appearanceStyles";
+import { BetterGiveawayStyle } from "../shared/betterWidgetStyles";
 
 /* ─── Confetti burst generator ─── */
 function ConfettiBurst({ count = 60, accentColor }) {
   const pieces = useMemo(() => {
-    const colors = [accentColor, '#ffd700', '#ff6b6b', '#22c55e', '#3b82f6', '#f59e0b', '#e879f9', '#ffffff'];
+    const colors = [
+      accentColor,
+      "#ffd700",
+      "#ff6b6b",
+      "#22c55e",
+      "#3b82f6",
+      "#f59e0b",
+      "#e879f9",
+      "#ffffff",
+    ];
     return Array.from({ length: count }, (_, i) => ({
       id: i,
       color: colors[i % colors.length],
@@ -19,70 +34,120 @@ function ConfettiBurst({ count = 60, accentColor }) {
       size: 4 + Math.random() * 6,
       rot: Math.random() * 720 - 360,
       drift: (Math.random() - 0.5) * 80,
-      shape: Math.random() > 0.5 ? 'rect' : 'circle',
+      shape: Math.random() > 0.5 ? "rect" : "circle",
     }));
   }, [count, accentColor]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 10 }}>
-      {pieces.map(p => (
-        <div key={p.id} style={{
-          position: 'absolute',
-          left: `${p.x}%`,
-          top: '-5%',
-          width: p.shape === 'rect' ? p.size : p.size * 0.8,
-          height: p.shape === 'rect' ? p.size * 0.6 : p.size * 0.8,
-          borderRadius: p.shape === 'circle' ? '50%' : '1px',
-          background: p.color,
-          animation: `ga-confetti-fall ${p.dur}s ${p.delay}s ease-in forwards`,
-          opacity: 0,
-          '--drift': `${p.drift}px`,
-          '--rot': `${p.rot}deg`,
-        }} />
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        overflow: "hidden",
+        pointerEvents: "none",
+        zIndex: 10,
+      }}
+    >
+      {pieces.map((p) => (
+        <div
+          key={p.id}
+          style={{
+            position: "absolute",
+            left: `${p.x}%`,
+            top: "-5%",
+            width: p.shape === "rect" ? p.size : p.size * 0.8,
+            height: p.shape === "rect" ? p.size * 0.6 : p.size * 0.8,
+            borderRadius: p.shape === "circle" ? "50%" : "1px",
+            background: p.color,
+            animation: `ga-confetti-fall ${p.dur}s ${p.delay}s ease-in forwards`,
+            opacity: 0,
+            "--drift": `${p.drift}px`,
+            "--rot": `${p.rot}deg`,
+          }}
+        />
       ))}
     </div>
   );
 }
 
 /* ─── 3D Trophy + Winner Name ─── */
-function TrophyWinner({ winner, accentColor, textColor, mutedColor, prize, fontSize = 'clamp(18px,8cqmin,42px)' }) {
+function TrophyWinner({
+  winner,
+  accentColor,
+  textColor,
+  mutedColor,
+  prize,
+  fontSize = "clamp(18px,8cqmin,42px)",
+}) {
   return (
-    <div style={{
-      textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
-      gap: 'clamp(2px,1cqmin,8px)', animation: 'ga-winner-entrance 0.8s cubic-bezier(.17,.67,.35,1.2) forwards',
-      zIndex: 5, position: 'relative',
-    }}>
+    <div
+      style={{
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "clamp(2px,1cqmin,8px)",
+        animation:
+          "ga-winner-entrance 0.8s cubic-bezier(.17,.67,.35,1.2) forwards",
+        zIndex: 5,
+        position: "relative",
+      }}
+    >
       {/* 3D Trophy */}
-      <div style={{
-        fontSize: 'clamp(28px,14cqmin,72px)', lineHeight: 1,
-        animation: 'ga-trophy-3d 2.5s ease-in-out infinite',
-        filter: 'drop-shadow(0 4px 12px rgba(255,215,0,0.5))',
-        transformStyle: 'preserve-3d',
-      }}>🏆</div>
+      <div
+        style={{
+          fontSize: "clamp(28px,14cqmin,72px)",
+          lineHeight: 1,
+          animation: "ga-trophy-3d 2.5s ease-in-out infinite",
+          filter: "drop-shadow(0 4px 12px rgba(255,215,0,0.5))",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        🏆
+      </div>
 
       {/* Winner label */}
-      <div style={{
-        fontSize: 'clamp(9px,2.5cqmin,13px)', color: mutedColor, textTransform: 'uppercase',
-        letterSpacing: '0.18em', fontWeight: 700,
-      }}>Winner</div>
+      <div
+        style={{
+          fontSize: "clamp(9px,2.5cqmin,13px)",
+          color: mutedColor,
+          textTransform: "uppercase",
+          letterSpacing: "0.18em",
+          fontWeight: 700,
+        }}
+      >
+        Winner
+      </div>
 
       {/* Winner name with glow */}
-      <div style={{
-        fontSize, fontWeight: 900, lineHeight: 1.1,
-        background: `linear-gradient(135deg, ${accentColor}, #ffd700, ${accentColor})`,
-        backgroundSize: '200% 200%',
-        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-        animation: 'ga-name-shimmer 3s ease-in-out infinite',
-        filter: `drop-shadow(0 0 12px ${accentColor}88)`,
-        textShadow: 'none',
-      }}>{winner}</div>
+      <div
+        style={{
+          fontSize,
+          fontWeight: 900,
+          lineHeight: 1.1,
+          background: `linear-gradient(135deg, ${accentColor}, #ffd700, ${accentColor})`,
+          backgroundSize: "200% 200%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          animation: "ga-name-shimmer 3s ease-in-out infinite",
+          filter: `drop-shadow(0 0 12px ${accentColor}88)`,
+          textShadow: "none",
+        }}
+      >
+        {winner}
+      </div>
 
       {/* Prize */}
       {prize && (
-        <div style={{
-          fontSize: 'clamp(11px,3.5cqmin,16px)', color: mutedColor, marginTop: 'clamp(1px,0.4cqmin,4px)',
-        }}>
-          Prize: <span style={{ color: '#fbbf24', fontWeight: 700 }}>{prize}</span>
+        <div
+          style={{
+            fontSize: "clamp(11px,3.5cqmin,16px)",
+            color: mutedColor,
+            marginTop: "clamp(1px,0.4cqmin,4px)",
+          }}
+        >
+          Prize:{" "}
+          <span style={{ color: "#fbbf24", fontWeight: 700 }}>{prize}</span>
         </div>
       )}
     </div>
@@ -90,7 +155,13 @@ function TrophyWinner({ winner, accentColor, textColor, mutedColor, prize, fontS
 }
 
 /* ─── Spin Reel ─── */
-function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor }) {
+function SpinReel({
+  participants,
+  winnerName,
+  accentColor,
+  textColor,
+  mutedColor,
+}) {
   const trackRef = useRef(null);
   const winnerElRef = useRef(null);
   const lockedRef = useRef(null);
@@ -113,22 +184,25 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
     names.push(winnerName);
     // pad after winner so it can sit in center
     const pad = Math.floor(VISIBLE / 2);
-    const others = participants.filter(n => n !== winnerName);
+    const others = participants.filter((n) => n !== winnerName);
     for (let i = 0; i < pad; i++) {
       names.push(others.length > 0 ? others[i % others.length] : `—`);
     }
     lockedRef.current = { names, winnerIdx: winIdx };
   }
 
-  const { names: reelNames, winnerIdx } = lockedRef.current || { names: [], winnerIdx: 0 };
+  const { names: reelNames, winnerIdx } = lockedRef.current || {
+    names: [],
+    winnerIdx: 0,
+  };
 
   useEffect(() => {
     const track = trackRef.current;
     const winEl = winnerElRef.current;
     if (!track || !winEl || !reelNames.length) return;
     // Start at top
-    track.style.transition = 'none';
-    track.style.transform = 'translateY(0)';
+    track.style.transition = "none";
+    track.style.transform = "translateY(0)";
     // Read actual DOM position of the winner element
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -136,12 +210,12 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
         const winnerTop = winEl.offsetTop;
         const winnerH = winEl.offsetHeight;
         // Scroll so the winner is vertically centered in the container
-        const target = winnerTop - (containerH / 2) + (winnerH / 2);
-        track.style.transition = 'transform 5s cubic-bezier(0.2, 0.0, 0.01, 1)';
+        const target = winnerTop - containerH / 2 + winnerH / 2;
+        track.style.transition = "transform 5s cubic-bezier(0.2, 0.0, 0.01, 1)";
         track.style.transform = `translateY(-${Math.max(0, target)}px)`;
       });
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!reelNames.length) return null;
@@ -149,47 +223,98 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
   const reelH = VISIBLE * ITEM_H;
 
   return (
-    <div style={{
-      position: 'relative', width: '90%', height: reelH, flexShrink: 0,
-      overflow: 'hidden', borderRadius: 10, margin: '0 auto',
-      background: 'rgba(0,0,0,0.35)',
-      maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
-      WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
-    }}>
+    <div
+      style={{
+        position: "relative",
+        width: "90%",
+        height: reelH,
+        flexShrink: 0,
+        overflow: "hidden",
+        borderRadius: 10,
+        margin: "0 auto",
+        background: "rgba(0,0,0,0.35)",
+        maskImage:
+          "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+        WebkitMaskImage:
+          "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+      }}
+    >
       {/* center highlight band */}
-      <div style={{
-        position: 'absolute', left: 0, right: 0,
-        top: '50%', transform: 'translateY(-50%)',
-        height: ITEM_H, borderTop: `2px solid ${accentColor}`, borderBottom: `2px solid ${accentColor}`,
-        background: `${accentColor}15`, zIndex: 3, pointerEvents: 'none',
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: "50%",
+          transform: "translateY(-50%)",
+          height: ITEM_H,
+          borderTop: `2px solid ${accentColor}`,
+          borderBottom: `2px solid ${accentColor}`,
+          background: `${accentColor}15`,
+          zIndex: 3,
+          pointerEvents: "none",
+        }}
+      />
       {/* left pointer */}
-      <div style={{
-        position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)',
-        fontSize: 14, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
-        animation: 'ga-pulse 1.2s ease-in-out infinite',
-      }}>▶</div>
+      <div
+        style={{
+          position: "absolute",
+          left: 4,
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: 14,
+          color: accentColor,
+          zIndex: 4,
+          filter: `drop-shadow(0 0 4px ${accentColor})`,
+          animation: "ga-pulse 1.2s ease-in-out infinite",
+        }}
+      >
+        ▶
+      </div>
       {/* right pointer */}
-      <div style={{
-        position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
-        fontSize: 14, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
-        animation: 'ga-pulse 1.2s ease-in-out infinite',
-      }}>◀</div>
+      <div
+        style={{
+          position: "absolute",
+          right: 4,
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: 14,
+          color: accentColor,
+          zIndex: 4,
+          filter: `drop-shadow(0 0 4px ${accentColor})`,
+          animation: "ga-pulse 1.2s ease-in-out infinite",
+        }}
+      >
+        ◀
+      </div>
       {/* scrolling track */}
-      <div ref={trackRef} style={{
-        display: 'flex', flexDirection: 'column', willChange: 'transform',
-      }}>
+      <div
+        ref={trackRef}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          willChange: "transform",
+        }}
+      >
         {reelNames.map((name, i) => (
           <div
             key={`sr-${i}`}
             ref={i === winnerIdx ? winnerElRef : undefined}
             style={{
-              height: ITEM_H, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 'clamp(13px, 4.5cqmin, 20px)', fontWeight: 700,
+              height: ITEM_H,
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "clamp(13px, 4.5cqmin, 20px)",
+              fontWeight: 700,
               color: i === winnerIdx ? accentColor : textColor,
-              textShadow: i === winnerIdx ? `0 0 8px ${accentColor}88` : 'none',
+              textShadow: i === winnerIdx ? `0 0 8px ${accentColor}88` : "none",
               opacity: i === winnerIdx ? 1 : 0.7,
-            }}>{name}</div>
+            }}
+          >
+            {name}
+          </div>
         ))}
       </div>
     </div>
@@ -198,30 +323,69 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
 
 function GiveawayWidget({ config, widgetId }) {
   const c = config || {};
-  const st = c.displayStyle || 'v1';
-  const bgColor = subValue(c, 'container', 'background', c.bgColor || '#0a0f1e');
-  const cardBg = subValue(c, 'card', 'background', c.cardBg || 'rgba(255,255,255,0.04)');
-  const borderColor = subValue(c, 'card', 'borderColor', c.borderColor || 'rgba(255,255,255,0.12)');
-  const accentColor = subValue(c, 'celebration', 'accentColor', c.accentColor || '#f59e0b');
-  const textColor = subValue(c, 'container', 'textColor', c.textColor || '#ffffff');
-  const mutedColor = subValue(c, 'label', 'textColor', c.mutedColor || '#94a3b8');
-  const fontFamily = subValue(c, 'container', 'fontFamily', c.fontFamily || "'Inter', sans-serif");
+  const st = c.displayStyle || "v1";
+  const bgColor = subValue(
+    c,
+    "container",
+    "background",
+    c.bgColor || "#0a0f1e",
+  );
+  const cardBg = subValue(
+    c,
+    "card",
+    "background",
+    c.cardBg || "rgba(255,255,255,0.04)",
+  );
+  const borderColor = subValue(
+    c,
+    "card",
+    "borderColor",
+    c.borderColor || "rgba(255,255,255,0.12)",
+  );
+  const accentColor = subValue(
+    c,
+    "celebration",
+    "accentColor",
+    c.accentColor || "#f59e0b",
+  );
+  const textColor = subValue(
+    c,
+    "container",
+    "textColor",
+    c.textColor || "#ffffff",
+  );
+  const mutedColor = subValue(
+    c,
+    "label",
+    "textColor",
+    c.mutedColor || "#94a3b8",
+  );
+  const fontFamily = subValue(
+    c,
+    "container",
+    "fontFamily",
+    c.fontFamily || "'Inter', sans-serif",
+  );
   const participants = c.participants || [];
   const count = participants.length;
-  const winner = c.winner || '';
-  const spinningWinner = c.spinningWinner || '';
+  const winner = c.winner || "";
+  const spinningWinner = c.spinningWinner || "";
   const isActive = !!c.isActive;
-  const keyword = (c.keyword || '').toLowerCase().trim();
-  const title = c.title || 'Giveaway';
-  const prize = c.prize || '';
+  const keyword = (c.keyword || "").toLowerCase().trim();
+  const title = c.title || "Giveaway";
+  const prize = c.prize || "";
   const isDone = !!winner;
-  const statusLabel = isDone ? 'FIM' : isActive ? 'LIVE' : 'OFF';
-  const statusState = isDone ? 'winner' : isActive ? 'live' : 'closed';
+  const statusLabel = isDone ? "FIM" : isActive ? "LIVE" : "OFF";
+  const statusState = isDone ? "winner" : isActive ? "live" : "closed";
   const statusColor = isDone
-    ? subValue(c, 'statusBadge', 'textColor', '#f59e0b', statusState)
-    : isActive ? subValue(c, 'statusBadge', 'textColor', '#22c55e', statusState) : subValue(c, 'statusBadge', 'textColor', '#64748b', statusState);
-  const elementStyle = (elementId, fallback = {}, stateId = 'default') => subElementStyle(c, elementId, fallback, stateId);
-  const statusBadgeStyle = fallback => elementStyle('statusBadge', fallback, statusState);
+    ? subValue(c, "statusBadge", "textColor", "#f59e0b", statusState)
+    : isActive
+      ? subValue(c, "statusBadge", "textColor", "#22c55e", statusState)
+      : subValue(c, "statusBadge", "textColor", "#64748b", statusState);
+  const elementStyle = (elementId, fallback = {}, stateId = "default") =>
+    subElementStyle(c, elementId, fallback, stateId);
+  const statusBadgeStyle = (fallback) =>
+    elementStyle("statusBadge", fallback, statusState);
 
   /* ─── Chat listener: detect keyword → add participants ─── */
   const participantsRef = useRef(new Set(participants));
@@ -244,20 +408,23 @@ function GiveawayWidget({ config, widgetId }) {
       try {
         // Read latest config from DB to avoid overwriting concurrent changes
         const { data } = await supabase
-          .from('overlay_widgets')
-          .select('config')
-          .eq('id', widgetId)
+          .from("overlay_widgets")
+          .select("config")
+          .eq("id", widgetId)
           .single();
         if (!data) return;
         const current = data.config?.participants || [];
         const merged = [...new Set([...current, ...batch])];
         if (merged.length === current.length) return; // nothing new
         await supabase
-          .from('overlay_widgets')
-          .update({ config: { ...data.config, participants: merged }, updated_at: new Date().toISOString() })
-          .eq('id', widgetId);
+          .from("overlay_widgets")
+          .update({
+            config: { ...data.config, participants: merged },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", widgetId);
       } catch (err) {
-        console.error('[GiveawayWidget] flush participants failed:', err);
+        console.error("[GiveawayWidget] flush participants failed:", err);
         // Put them back for next flush
         pendingRef.current = [...batch, ...pendingRef.current];
       }
@@ -269,7 +436,7 @@ function GiveawayWidget({ config, widgetId }) {
   const handleMessageRef = useRef(null);
   handleMessageRef.current = (msg) => {
     if (!keyword) return;
-    const text = (msg.message || '').trim().toLowerCase();
+    const text = (msg.message || "").trim().toLowerCase();
     if (text === `!${keyword}` || text.startsWith(`!${keyword} `)) {
       const name = msg.username;
       if (name && !participantsRef.current.has(name)) {
@@ -285,11 +452,11 @@ function GiveawayWidget({ config, widgetId }) {
   // Connect to chat platforms when keyword is set and no winner yet
   // Always listen if channel is configured — no need for isActive or enabled flags
   const autoChannel = useTwitchChannel();
-  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const resolvedChannel = c.twitchChannel || autoChannel || "";
   const listenTwitch = !isDone && !!keyword && !!resolvedChannel;
-  const listenKick   = !isDone && !!keyword && !!c.kickChannelId;
-  useTwitchChat(listenTwitch ? resolvedChannel : '', handleMessage);
-  useKickChat(listenKick ? c.kickChannelId : '', handleMessage);
+  const listenKick = !isDone && !!keyword && !!c.kickChannelId;
+  useTwitchChat(listenTwitch ? resolvedChannel : "", handleMessage);
+  useKickChat(listenKick ? c.kickChannelId : "", handleMessage);
 
   const kf = `
     @keyframes ga-pulse{0%,100%{opacity:.85}50%{opacity:1}}
@@ -328,302 +495,858 @@ function GiveawayWidget({ config, widgetId }) {
     }
   `;
 
-  if (st === 'better_giveaway') {
+  if (st === "better_giveaway") {
     return <BetterGiveawayStyle config={c} />;
   }
 
-  const isMetal = st === 'metal';
-  const mBg = subValue(c, 'container', 'background', 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)');
-  const mCardBg = subValue(c, 'card', 'background', 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)');
-  const mBorder = subValue(c, 'card', 'borderColor', 'rgba(200,210,225,0.12)');
-  const mText = subValue(c, 'container', 'textColor', '#d4d8e0');
-  const mMuted = subValue(c, 'label', 'textColor', '#7a8090');
-  const mAccent = subValue(c, 'celebration', 'accentColor', '#a8b0c0');
-  const mShadow = '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)';
-  const mInner = 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)';
+  const isMetal = st === "metal";
+  const mBg = subValue(
+    c,
+    "container",
+    "background",
+    "linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)",
+  );
+  const mCardBg = subValue(
+    c,
+    "card",
+    "background",
+    "linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)",
+  );
+  const mBorder = subValue(c, "card", "borderColor", "rgba(200,210,225,0.12)");
+  const mText = subValue(c, "container", "textColor", "#d4d8e0");
+  const mMuted = subValue(c, "label", "textColor", "#7a8090");
+  const mAccent = subValue(c, "celebration", "accentColor", "#a8b0c0");
+  const mShadow =
+    "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)";
+  const mInner =
+    "inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)";
 
   /* ─── Metal ─── */
-  if (isMetal) return (
-    <div data-widget-element="container" style={elementStyle('container', { width:'100%', height:'100%', fontFamily, background:mBg, color:mText,
-      borderRadius:'clamp(6px,2cqmin,14px)', border:`1px solid rgba(200,210,225,0.18)`,
-      boxShadow:mShadow, display:'flex', flexDirection:'column',
-      overflow:'hidden', boxSizing:'border-box', containerType:'size' })}>
-      <style>{kf}</style>
-
-      {/* ── Header row ── */}
-      <div data-widget-element="header" style={elementStyle('header', { display:'flex', alignItems:'center', justifyContent:'space-between',
-        padding:'clamp(6px,3cqmin,14px) clamp(8px,3cqmin,16px)', flexShrink:0 })}>
-        <div style={{ display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)' }}>
-          <span style={{ fontSize:'clamp(14px,5cqmin,26px)' }}>🎁</span>
-          <span style={{ fontWeight:800, fontSize:'clamp(14px,5cqmin,24px)', letterSpacing:'0.1em', textTransform:'uppercase',
-            background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{title}</span>
-        </div>
-        {isActive && !isDone && (
-          <span data-widget-element="statusBadge" style={statusBadgeStyle({ background:'rgba(34,197,94,0.15)', color:'#4ade80', fontSize:'clamp(11px,3cqmin,14px)', fontWeight:800,
-            padding:'clamp(2px,0.6cqmin,4px) clamp(6px,2cqmin,12px)', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.1em',
-            border:'1px solid rgba(34,197,94,0.25)',
-            animation:'ga-pulse 2s ease-in-out infinite' })}>LIVE</span>
-        )}
-      </div>
-
-      {/* ── Body ── */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-        padding:'0 clamp(8px,3cqmin,16px) clamp(6px,3cqmin,14px)', gap:'clamp(4px,2cqmin,12px)', minHeight:0 }}>
-        {spinningWinner && !winner ? (
-          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={mAccent} textColor={mText} mutedColor={mMuted} />
-        ) : winner ? (
-          <>
-            <ConfettiBurst accentColor={mAccent} count={50} />
-            <div data-widget-element="winnerArea" style={elementStyle('winnerArea', { animation: 'ga-haptic 0.5s ease-out' })}>
-              <TrophyWinner winner={winner} accentColor={mAccent} textColor={mText} mutedColor={mMuted} prize={prize}
-                fontSize="clamp(20px,10cqmin,48px)" />
-            </div>
-          </>
-        ) : isActive && keyword ? (
-          <>
-            {prize && (
-              <div data-widget-element="prize" style={elementStyle('prize', { fontSize:'clamp(18px,8cqmin,38px)', fontWeight:800, textAlign:'center', lineHeight:1.1,
-                background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' })}>{prize}</div>
-            )}
-            <div style={{ display:'flex', alignItems:'baseline', gap:'clamp(4px,1.5cqmin,8px)', textAlign:'center' }}>
-              <span style={{ fontSize:'clamp(12px,4cqmin,16px)', color:mMuted }}>Type</span>
-              <span data-widget-element="keyword" style={elementStyle('keyword', { fontSize:'clamp(16px,6cqmin,28px)', fontWeight:800, color:'#d4d8e0', textShadow:'0 1px 3px rgba(0,0,0,0.5)' })}>!{keyword}</span>
-              <span style={{ fontSize:'clamp(12px,4cqmin,16px)', color:mMuted }}>to enter</span>
-            </div>
-            <div style={{ display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)' }}>
-              <span style={{ fontSize:'clamp(12px,4cqmin,18px)' }}>👥</span>
-              <span data-widget-element="participantCount" style={elementStyle('participantCount', { fontSize:'clamp(18px,8cqmin,40px)', fontWeight:800, color:'#d4d8e0', textShadow:'0 1px 3px rgba(0,0,0,0.5)' })}>{count}</span>
-              <span style={{ fontSize:'clamp(12px,4cqmin,16px)', color:mMuted }}>participant{count !== 1 ? 's' : ''}</span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div style={{ fontSize:'clamp(24px,10cqmin,48px)', opacity:0.4 }}>🎁</div>
-            <div data-widget-element="emptyState" style={elementStyle('emptyState', { fontSize:'clamp(13px,4cqmin,18px)', color:mMuted })}>No active giveaway</div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-
-  /* ─── v12 — matches Bonus Hunt V12 style ─── */
-  if (st === 'v12') {
-    const v12Text  = subValue(c, 'container', 'textColor', c.textColor || '#fff');
-    const v12Muted = subValue(c, 'label', 'textColor', c.mutedColor || '#93c5fd');
-    const v12Accent = subValue(c, 'celebration', 'accentColor', c.accentColor || '#4ade80');
-    const v12Border = subValue(c, 'card', 'borderColor', c.borderColor || 'rgba(255,255,255,0.08)');
-    const v12Bg    = subValue(c, 'container', 'background', c.bgColor
-      ? `linear-gradient(160deg, ${c.bgColor}, ${c.bgColor})`
-      : 'linear-gradient(160deg, rgba(38,40,46,0.97), rgba(52,54,62,0.95))');
-    const v12Card  = subValue(c, 'card', 'background', 'rgba(255,255,255,0.04)');
-    const v12Div   = 'rgba(255,255,255,0.06)';
-    const v12Font  = fontFamily || "'Inter', sans-serif";
-
-    /* shared stat-box */
-    const statBox = (label, value, color = v12Text) => (
-      <div style={{ flex:1, textAlign:'center', padding:'clamp(5px,1.5cqmin,8px) clamp(3px,1cqmin,6px)', position:'relative' }}>
-        <div style={{
-          fontSize:'clamp(7px,2cqmin,10px)', fontWeight:600, color:v12Muted, opacity:0.55,
-          textTransform:'uppercase', letterSpacing:'1px', lineHeight:1, marginBottom:2,
-          textShadow:'none',
-        }}>{label}</div>
-        <div style={{
-          fontSize:'clamp(13px,4cqmin,20px)', fontWeight:800, color,
-          fontVariantNumeric:'tabular-nums', textShadow:'0 1px 6px rgba(0,0,0,0.4)', lineHeight:1.2,
-        }}>{value}</div>
-      </div>
-    );
-
-    /* thin vertical divider */
-    const vDiv = <div style={{ width:1, alignSelf:'stretch', margin:'20% 0', background:v12Border }} />;
-
+  if (isMetal)
     return (
-      <div data-widget-element="container" style={elementStyle('container', { width:'100%', height:'100%', fontFamily:v12Font, background:v12Bg, color:v12Text,
-        borderRadius:12, backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)',
-        display:'flex', flexDirection:'column', overflow:'hidden', boxSizing:'border-box',
-        containerType:'size', WebkitFontSmoothing:'antialiased',
-        border:'none', outline:'none', boxShadow:'none',
-      })}>
+      <div
+        data-widget-element="container"
+        style={elementStyle("container", {
+          width: "100%",
+          height: "100%",
+          fontFamily,
+          background: mBg,
+          color: mText,
+          borderRadius: "clamp(6px,2cqmin,14px)",
+          border: `1px solid rgba(200,210,225,0.18)`,
+          boxShadow: mShadow,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          containerType: "size",
+        })}
+      >
         <style>{kf}</style>
 
-        {/* ── Header ── */}
-        <div data-widget-element="header" style={elementStyle('header', { display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
-          padding:'clamp(6px,2cqmin,10px) clamp(8px,2.5cqmin,14px)', flexShrink:0 })}>
-          <span style={{ fontSize:'clamp(14px,4cqmin,20px)' }}>🎁</span>
-          <span style={{
-            fontWeight:800, fontSize:'clamp(12px,3.5cqmin,18px)',
-            letterSpacing:'1.5px', textTransform:'uppercase', color:v12Text,
-          }}>{title}</span>
+        {/* ── Header row ── */}
+        <div
+          data-widget-element="header"
+          style={elementStyle("header", {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "clamp(6px,3cqmin,14px) clamp(8px,3cqmin,16px)",
+            flexShrink: 0,
+          })}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "clamp(4px,1.5cqmin,8px)",
+            }}
+          >
+            <span style={{ fontSize: "clamp(14px,5cqmin,26px)" }}>🎁</span>
+            <span
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(14px,5cqmin,24px)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                background: "linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              {title}
+            </span>
+          </div>
           {isActive && !isDone && (
-            <span data-widget-element="statusBadge" style={statusBadgeStyle({
-              marginLeft:'auto',
-              background:'rgba(34,197,94,0.15)', color:v12Accent,
-              fontSize:'clamp(8px,1.8cqmin,11px)', fontWeight:700,
-              padding:'clamp(2px,0.5cqmin,3px) clamp(6px,1.5cqmin,10px)',
-              borderRadius:20, letterSpacing:'0.8px', textTransform:'uppercase',
-              border:'1px solid rgba(34,197,94,0.25)',
-              animation:'ga-pulse 2s ease-in-out infinite',
-            })}>LIVE</span>
-          )}
-          {isDone && (
-            <span data-widget-element="statusBadge" style={statusBadgeStyle({
-              marginLeft:'auto',
-              background:'rgba(100,116,139,0.15)', color:'#94a3b8',
-              fontSize:'clamp(8px,1.8cqmin,11px)', fontWeight:700,
-              padding:'clamp(2px,0.5cqmin,3px) clamp(6px,1.5cqmin,10px)',
-              borderRadius:20, letterSpacing:'0.8px', textTransform:'uppercase',
-              border:'1px solid rgba(100,116,139,0.25)',
-            })}>ENDED</span>
+            <span
+              data-widget-element="statusBadge"
+              style={statusBadgeStyle({
+                background: "rgba(34,197,94,0.15)",
+                color: "#4ade80",
+                fontSize: "clamp(11px,3cqmin,14px)",
+                fontWeight: 800,
+                padding: "clamp(2px,0.6cqmin,4px) clamp(6px,2cqmin,12px)",
+                borderRadius: 99,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                border: "1px solid rgba(34,197,94,0.25)",
+                animation: "ga-pulse 2s ease-in-out infinite",
+              })}
+            >
+              LIVE
+            </span>
           )}
         </div>
 
         {/* ── Body ── */}
-        <div style={{
-          flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-          padding:'clamp(4px,1.5cqmin,10px) clamp(8px,2.5cqmin,16px)', gap:'clamp(6px,2cqmin,14px)', minHeight:0,
-          borderTop:`1px solid ${v12Div}`,
-        }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 clamp(8px,3cqmin,16px) clamp(6px,3cqmin,14px)",
+            gap: "clamp(4px,2cqmin,12px)",
+            minHeight: 0,
+          }}
+        >
           {spinningWinner && !winner ? (
-            <SpinReel participants={participants} winnerName={spinningWinner} accentColor={v12Accent} textColor={v12Text} mutedColor={v12Muted} />
+            <SpinReel
+              participants={participants}
+              winnerName={spinningWinner}
+              accentColor={mAccent}
+              textColor={mText}
+              mutedColor={mMuted}
+            />
+          ) : winner ? (
+            <>
+              <ConfettiBurst accentColor={mAccent} count={50} />
+              <div
+                data-widget-element="winnerArea"
+                style={elementStyle("winnerArea", {
+                  animation: "ga-haptic 0.5s ease-out",
+                })}
+              >
+                <TrophyWinner
+                  winner={winner}
+                  accentColor={mAccent}
+                  textColor={mText}
+                  mutedColor={mMuted}
+                  prize={prize}
+                  fontSize="clamp(20px,10cqmin,48px)"
+                />
+              </div>
+            </>
+          ) : isActive && keyword ? (
+            <>
+              {prize && (
+                <div
+                  data-widget-element="prize"
+                  style={elementStyle("prize", {
+                    fontSize: "clamp(18px,8cqmin,38px)",
+                    fontWeight: 800,
+                    textAlign: "center",
+                    lineHeight: 1.1,
+                    background:
+                      "linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  })}
+                >
+                  {prize}
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "clamp(4px,1.5cqmin,8px)",
+                  textAlign: "center",
+                }}
+              >
+                <span
+                  style={{ fontSize: "clamp(12px,4cqmin,16px)", color: mMuted }}
+                >
+                  Type
+                </span>
+                <span
+                  data-widget-element="keyword"
+                  style={elementStyle("keyword", {
+                    fontSize: "clamp(16px,6cqmin,28px)",
+                    fontWeight: 800,
+                    color: "#d4d8e0",
+                    textShadow: "0 1px 3px rgba(0,0,0,0.5)",
+                  })}
+                >
+                  !{keyword}
+                </span>
+                <span
+                  style={{ fontSize: "clamp(12px,4cqmin,16px)", color: mMuted }}
+                >
+                  to enter
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "clamp(4px,1.5cqmin,8px)",
+                }}
+              >
+                <span style={{ fontSize: "clamp(12px,4cqmin,18px)" }}>👥</span>
+                <span
+                  data-widget-element="participantCount"
+                  style={elementStyle("participantCount", {
+                    fontSize: "clamp(18px,8cqmin,40px)",
+                    fontWeight: 800,
+                    color: "#d4d8e0",
+                    textShadow: "0 1px 3px rgba(0,0,0,0.5)",
+                  })}
+                >
+                  {count}
+                </span>
+                <span
+                  style={{ fontSize: "clamp(12px,4cqmin,16px)", color: mMuted }}
+                >
+                  participant{count !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                style={{ fontSize: "clamp(24px,10cqmin,48px)", opacity: 0.4 }}
+              >
+                🎁
+              </div>
+              <div
+                data-widget-element="emptyState"
+                style={elementStyle("emptyState", {
+                  fontSize: "clamp(13px,4cqmin,18px)",
+                  color: mMuted,
+                })}
+              >
+                No active giveaway
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+
+  /* ─── v12 — matches Bonus Hunt V12 style ─── */
+  if (st === "v12") {
+    const v12Text = subValue(
+      c,
+      "container",
+      "textColor",
+      c.textColor || "#fff",
+    );
+    const v12Muted = subValue(
+      c,
+      "label",
+      "textColor",
+      c.mutedColor || "#93c5fd",
+    );
+    const v12Accent = subValue(
+      c,
+      "celebration",
+      "accentColor",
+      c.accentColor || "#4ade80",
+    );
+    const v12Border = subValue(
+      c,
+      "card",
+      "borderColor",
+      c.borderColor || "rgba(255,255,255,0.08)",
+    );
+    const v12Bg = subValue(
+      c,
+      "container",
+      "background",
+      c.bgColor
+        ? `linear-gradient(160deg, ${c.bgColor}, ${c.bgColor})`
+        : "linear-gradient(160deg, rgba(38,40,46,0.97), rgba(52,54,62,0.95))",
+    );
+    const v12Card = subValue(c, "card", "background", "rgba(255,255,255,0.04)");
+    const v12Div = "rgba(255,255,255,0.06)";
+    const v12Font = fontFamily || "'Inter', sans-serif";
+
+    /* shared stat-box */
+    const statBox = (label, value, color = v12Text) => (
+      <div
+        style={{
+          flex: 1,
+          textAlign: "center",
+          padding: "clamp(5px,1.5cqmin,8px) clamp(3px,1cqmin,6px)",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "clamp(7px,2cqmin,10px)",
+            fontWeight: 600,
+            color: v12Muted,
+            opacity: 0.55,
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            lineHeight: 1,
+            marginBottom: 2,
+            textShadow: "none",
+          }}
+        >
+          {label}
+        </div>
+        <div
+          style={{
+            fontSize: "clamp(13px,4cqmin,20px)",
+            fontWeight: 800,
+            color,
+            fontVariantNumeric: "tabular-nums",
+            textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+            lineHeight: 1.2,
+          }}
+        >
+          {value}
+        </div>
+      </div>
+    );
+
+    /* thin vertical divider */
+    const vDiv = (
+      <div
+        style={{
+          width: 1,
+          alignSelf: "stretch",
+          margin: "20% 0",
+          background: v12Border,
+        }}
+      />
+    );
+
+    return (
+      <div
+        data-widget-element="container"
+        style={elementStyle("container", {
+          width: "100%",
+          height: "100%",
+          fontFamily: v12Font,
+          background: v12Bg,
+          color: v12Text,
+          borderRadius: 12,
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          containerType: "size",
+          WebkitFontSmoothing: "antialiased",
+          border: "none",
+          outline: "none",
+          boxShadow: "none",
+        })}
+      >
+        <style>{kf}</style>
+
+        {/* ── Header ── */}
+        <div
+          data-widget-element="header"
+          style={elementStyle("header", {
+            display: "flex",
+            alignItems: "center",
+            gap: "clamp(4px,1.5cqmin,8px)",
+            padding: "clamp(6px,2cqmin,10px) clamp(8px,2.5cqmin,14px)",
+            flexShrink: 0,
+          })}
+        >
+          <span style={{ fontSize: "clamp(14px,4cqmin,20px)" }}>🎁</span>
+          <span
+            style={{
+              fontWeight: 800,
+              fontSize: "clamp(12px,3.5cqmin,18px)",
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              color: v12Text,
+            }}
+          >
+            {title}
+          </span>
+          {isActive && !isDone && (
+            <span
+              data-widget-element="statusBadge"
+              style={statusBadgeStyle({
+                marginLeft: "auto",
+                background: "rgba(34,197,94,0.15)",
+                color: v12Accent,
+                fontSize: "clamp(8px,1.8cqmin,11px)",
+                fontWeight: 700,
+                padding: "clamp(2px,0.5cqmin,3px) clamp(6px,1.5cqmin,10px)",
+                borderRadius: 20,
+                letterSpacing: "0.8px",
+                textTransform: "uppercase",
+                border: "1px solid rgba(34,197,94,0.25)",
+                animation: "ga-pulse 2s ease-in-out infinite",
+              })}
+            >
+              LIVE
+            </span>
+          )}
+          {isDone && (
+            <span
+              data-widget-element="statusBadge"
+              style={statusBadgeStyle({
+                marginLeft: "auto",
+                background: "rgba(100,116,139,0.15)",
+                color: "#94a3b8",
+                fontSize: "clamp(8px,1.8cqmin,11px)",
+                fontWeight: 700,
+                padding: "clamp(2px,0.5cqmin,3px) clamp(6px,1.5cqmin,10px)",
+                borderRadius: 20,
+                letterSpacing: "0.8px",
+                textTransform: "uppercase",
+                border: "1px solid rgba(100,116,139,0.25)",
+              })}
+            >
+              ENDED
+            </span>
+          )}
+        </div>
+
+        {/* ── Body ── */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "clamp(4px,1.5cqmin,10px) clamp(8px,2.5cqmin,16px)",
+            gap: "clamp(6px,2cqmin,14px)",
+            minHeight: 0,
+            borderTop: `1px solid ${v12Div}`,
+          }}
+        >
+          {spinningWinner && !winner ? (
+            <SpinReel
+              participants={participants}
+              winnerName={spinningWinner}
+              accentColor={v12Accent}
+              textColor={v12Text}
+              mutedColor={v12Muted}
+            />
           ) : winner ? (
             <>
               <ConfettiBurst accentColor={v12Accent} count={50} />
-              <div data-widget-element="winnerArea" style={elementStyle('winnerArea', { animation:'ga-haptic 0.5s ease-out' })}>
-                <TrophyWinner winner={winner} accentColor={v12Accent} textColor={v12Text} mutedColor={v12Muted} prize={prize}
-                  fontSize="clamp(18px,8cqmin,40px)" />
+              <div
+                data-widget-element="winnerArea"
+                style={elementStyle("winnerArea", {
+                  animation: "ga-haptic 0.5s ease-out",
+                })}
+              >
+                <TrophyWinner
+                  winner={winner}
+                  accentColor={v12Accent}
+                  textColor={v12Text}
+                  mutedColor={v12Muted}
+                  prize={prize}
+                  fontSize="clamp(18px,8cqmin,40px)"
+                />
               </div>
             </>
           ) : isActive && keyword ? (
             <>
               {/* Prize — prominent center piece */}
               {prize && (
-                <div data-widget-element="prize" style={elementStyle('prize', {
-                  fontSize:'clamp(16px,7cqmin,34px)', fontWeight:800, textAlign:'center', lineHeight:1.15,
-                  color:v12Text, textShadow:'0 1px 8px rgba(0,0,0,0.5)',
-                })}>{prize}</div>
+                <div
+                  data-widget-element="prize"
+                  style={elementStyle("prize", {
+                    fontSize: "clamp(16px,7cqmin,34px)",
+                    fontWeight: 800,
+                    textAlign: "center",
+                    lineHeight: 1.15,
+                    color: v12Text,
+                    textShadow: "0 1px 8px rgba(0,0,0,0.5)",
+                  })}
+                >
+                  {prize}
+                </div>
               )}
 
               {/* Keyword instruction — styled tag (single row) */}
-              <div data-widget-element="keyword" style={elementStyle('keyword', {
-                display:'flex', alignItems:'center', gap:'clamp(4px,1.2cqmin,8px)',
-                background:v12Card, border:`1px solid ${v12Div}`, borderRadius:10,
-                padding:'clamp(4px,1.2cqmin,8px) clamp(8px,2.5cqmin,16px)',
-              })}>
-                <span style={{
-                  fontSize:'clamp(9px,2.5cqmin,13px)', fontWeight:600,
-                  color:v12Muted, opacity:0.55, letterSpacing:'0.5px',
-                }}>Type</span>
-                <span style={{
-                  fontSize:'clamp(14px,5cqmin,26px)', fontWeight:800, color:v12Text,
-                  textShadow:'0 1px 4px rgba(0,0,0,0.4)',
-                }}>!{keyword}</span>
-                <span style={{
-                  fontSize:'clamp(9px,2.5cqmin,13px)', fontWeight:600,
-                  color:v12Muted, opacity:0.55, letterSpacing:'0.5px',
-                }}>to enter</span>
+              <div
+                data-widget-element="keyword"
+                style={elementStyle("keyword", {
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "clamp(4px,1.2cqmin,8px)",
+                  background: v12Card,
+                  border: `1px solid ${v12Div}`,
+                  borderRadius: 10,
+                  padding: "clamp(4px,1.2cqmin,8px) clamp(8px,2.5cqmin,16px)",
+                })}
+              >
+                <span
+                  style={{
+                    fontSize: "clamp(9px,2.5cqmin,13px)",
+                    fontWeight: 600,
+                    color: v12Muted,
+                    opacity: 0.55,
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Type
+                </span>
+                <span
+                  style={{
+                    fontSize: "clamp(14px,5cqmin,26px)",
+                    fontWeight: 800,
+                    color: v12Text,
+                    textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  !{keyword}
+                </span>
+                <span
+                  style={{
+                    fontSize: "clamp(9px,2.5cqmin,13px)",
+                    fontWeight: 600,
+                    color: v12Muted,
+                    opacity: 0.55,
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  to enter
+                </span>
               </div>
 
               {/* Entries counter — prominent */}
-              <div data-widget-element="participantCount" style={elementStyle('participantCount', { display:'flex', alignItems:'center', gap:'clamp(3px,1cqmin,8px)' })}>
-                <span style={{ fontSize:'clamp(10px,3cqmin,16px)' }}>👥</span>
-                <span style={{
-                  fontSize:'clamp(18px,8cqmin,38px)', fontWeight:800, color:v12Text,
-                  fontVariantNumeric:'tabular-nums', textShadow:'0 1px 6px rgba(0,0,0,0.4)',
-                }}>{count}</span>
-                <span style={{
-                  fontSize:'clamp(9px,2.5cqmin,13px)', fontWeight:600,
-                  color:v12Muted, opacity:0.55,
-                }}>participant{count !== 1 ? 's' : ''}</span>
+              <div
+                data-widget-element="participantCount"
+                style={elementStyle("participantCount", {
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "clamp(3px,1cqmin,8px)",
+                })}
+              >
+                <span style={{ fontSize: "clamp(10px,3cqmin,16px)" }}>👥</span>
+                <span
+                  style={{
+                    fontSize: "clamp(18px,8cqmin,38px)",
+                    fontWeight: 800,
+                    color: v12Text,
+                    fontVariantNumeric: "tabular-nums",
+                    textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {count}
+                </span>
+                <span
+                  style={{
+                    fontSize: "clamp(9px,2.5cqmin,13px)",
+                    fontWeight: 600,
+                    color: v12Muted,
+                    opacity: 0.55,
+                  }}
+                >
+                  participant{count !== 1 ? "s" : ""}
+                </span>
               </div>
             </>
           ) : (
             <>
-              <div style={{ fontSize:'clamp(20px,8cqmin,40px)', opacity:0.3 }}>🎁</div>
-              <div data-widget-element="emptyState" style={elementStyle('emptyState', { fontSize:'clamp(10px,2.5cqmin,14px)', color:v12Muted, opacity:0.55 })}>No active giveaway</div>
+              <div
+                style={{ fontSize: "clamp(20px,8cqmin,40px)", opacity: 0.3 }}
+              >
+                🎁
+              </div>
+              <div
+                data-widget-element="emptyState"
+                style={elementStyle("emptyState", {
+                  fontSize: "clamp(10px,2.5cqmin,14px)",
+                  color: v12Muted,
+                  opacity: 0.55,
+                })}
+              >
+                No active giveaway
+              </div>
             </>
           )}
         </div>
 
         {/* ── Stats bar (V12 BH style) ── */}
-        <div data-widget-element="footer" style={elementStyle('footer', {
-          display:'flex', background:v12Card,
-          borderTop:`1px solid ${v12Div}`, borderRadius:'0 0 12px 12px',
-          overflow:'hidden', flexShrink:0,
-        })}>
-          {statBox('Keyword', keyword ? `!${keyword}` : '—', v12Text)}
+        <div
+          data-widget-element="footer"
+          style={elementStyle("footer", {
+            display: "flex",
+            background: v12Card,
+            borderTop: `1px solid ${v12Div}`,
+            borderRadius: "0 0 12px 12px",
+            overflow: "hidden",
+            flexShrink: 0,
+          })}
+        >
+          {statBox("Keyword", keyword ? `!${keyword}` : "—", v12Text)}
           {vDiv}
-          {statBox('Entries', count, v12Text)}
-          {isDone && <>{vDiv}{statBox('Winner', winner || '—', v12Accent)}</>}
+          {statBox("Entries", count, v12Text)}
+          {isDone && (
+            <>
+              {vDiv}
+              {statBox("Winner", winner || "—", v12Accent)}
+            </>
+          )}
         </div>
       </div>
     );
   }
 
   /* ─── bh_stats — matches Bonus Hunt Stats widget ─── */
-  if (st === 'bh_stats') {
-    const bhBg = subValue(c, 'container', 'background', 'rgba(15, 23, 42, 0.9)');
-    const bhCard = subValue(c, 'card', 'background', 'rgba(255,255,255,0.04)');
-    const bhBorder = subValue(c, 'card', 'borderColor', 'rgba(255,255,255,0.06)');
-    const bhAccent = subValue(c, 'celebration', 'accentColor', '#818cf8');
-    const bhText = subValue(c, 'container', 'textColor', '#f1f5f9');
-    const bhMuted = subValue(c, 'label', 'textColor', '#64748b');
-    const bhFont = subValue(c, 'container', 'fontFamily', "'Poppins', sans-serif");
+  if (st === "bh_stats") {
+    const bhBg = subValue(
+      c,
+      "container",
+      "background",
+      "rgba(15, 23, 42, 0.9)",
+    );
+    const bhCard = subValue(c, "card", "background", "rgba(255,255,255,0.04)");
+    const bhBorder = subValue(
+      c,
+      "card",
+      "borderColor",
+      "rgba(255,255,255,0.06)",
+    );
+    const bhAccent = subValue(c, "celebration", "accentColor", "#818cf8");
+    const bhText = subValue(c, "container", "textColor", "#f1f5f9");
+    const bhMuted = subValue(c, "label", "textColor", "#64748b");
+    const bhFont = subValue(
+      c,
+      "container",
+      "fontFamily",
+      "'Poppins', sans-serif",
+    );
     return (
-      <div data-widget-element="container" style={elementStyle('container', { width:'100%', height:'100%', fontFamily:bhFont, background:bhBg, color:bhText,
-        borderRadius:'clamp(6px,2cqmin,14px)', border:`1px solid ${bhBorder}`, display:'flex', flexDirection:'column',
-        overflow:'hidden', boxSizing:'border-box', containerType:'size', WebkitFontSmoothing:'antialiased' })}>
+      <div
+        data-widget-element="container"
+        style={elementStyle("container", {
+          width: "100%",
+          height: "100%",
+          fontFamily: bhFont,
+          background: bhBg,
+          color: bhText,
+          borderRadius: "clamp(6px,2cqmin,14px)",
+          border: `1px solid ${bhBorder}`,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          containerType: "size",
+          WebkitFontSmoothing: "antialiased",
+        })}
+      >
         <style>{kf}</style>
 
         {/* Header */}
-        <div data-widget-element="header" style={elementStyle('header', { display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
-          padding:'clamp(8px,2.5cqmin,12px) clamp(10px,3cqmin,16px)', flexShrink:0,
-          background:bhCard, borderBottom:`1px solid ${bhBorder}` })}>
-          <span style={{ fontSize:'clamp(14px,4cqmin,20px)' }}>🎁</span>
-          <span style={{ fontWeight:800, fontSize:'clamp(14px,4cqmin,20px)', letterSpacing:'0.03em', color:bhText }}>{title}</span>
+        <div
+          data-widget-element="header"
+          style={elementStyle("header", {
+            display: "flex",
+            alignItems: "center",
+            gap: "clamp(4px,1.5cqmin,8px)",
+            padding: "clamp(8px,2.5cqmin,12px) clamp(10px,3cqmin,16px)",
+            flexShrink: 0,
+            background: bhCard,
+            borderBottom: `1px solid ${bhBorder}`,
+          })}
+        >
+          <span style={{ fontSize: "clamp(14px,4cqmin,20px)" }}>🎁</span>
+          <span
+            style={{
+              fontWeight: 800,
+              fontSize: "clamp(14px,4cqmin,20px)",
+              letterSpacing: "0.03em",
+              color: bhText,
+            }}
+          >
+            {title}
+          </span>
           {isActive && !isDone && (
-            <span data-widget-element="statusBadge" style={statusBadgeStyle({ marginLeft:'auto', background:bhAccent, color:'#fff', fontSize:'clamp(9px,2cqmin,11px)', fontWeight:700,
-              padding:'clamp(2px,0.5cqmin,4px) clamp(6px,1.5cqmin,10px)', borderRadius:99, letterSpacing:'0.06em',
-              animation:'ga-pulse 2s ease-in-out infinite' })}>LIVE</span>
+            <span
+              data-widget-element="statusBadge"
+              style={statusBadgeStyle({
+                marginLeft: "auto",
+                background: bhAccent,
+                color: "#fff",
+                fontSize: "clamp(9px,2cqmin,11px)",
+                fontWeight: 700,
+                padding: "clamp(2px,0.5cqmin,4px) clamp(6px,1.5cqmin,10px)",
+                borderRadius: 99,
+                letterSpacing: "0.06em",
+                animation: "ga-pulse 2s ease-in-out infinite",
+              })}
+            >
+              LIVE
+            </span>
           )}
         </div>
 
         {/* Body — compact, no over-stretch */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-          padding:'clamp(8px,2.5cqmin,14px)', gap:'clamp(6px,2cqmin,12px)', minHeight:0, maxHeight:'100%' }}>
-
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "clamp(8px,2.5cqmin,14px)",
+            gap: "clamp(6px,2cqmin,12px)",
+            minHeight: 0,
+            maxHeight: "100%",
+          }}
+        >
           {spinningWinner && !winner ? (
-            <SpinReel participants={participants} winnerName={spinningWinner} accentColor={bhAccent} textColor={bhText} mutedColor={bhMuted} />
+            <SpinReel
+              participants={participants}
+              winnerName={spinningWinner}
+              accentColor={bhAccent}
+              textColor={bhText}
+              mutedColor={bhMuted}
+            />
           ) : winner ? (
             <>
               <ConfettiBurst accentColor={bhAccent} count={50} />
-              <div data-widget-element="winnerArea" style={elementStyle('winnerArea', { animation:'ga-haptic 0.5s ease-out' })}>
-                <TrophyWinner winner={winner} accentColor={bhAccent} textColor={bhText} mutedColor={bhMuted} prize={prize}
-                  fontSize="clamp(18px,7cqmin,36px)" />
+              <div
+                data-widget-element="winnerArea"
+                style={elementStyle("winnerArea", {
+                  animation: "ga-haptic 0.5s ease-out",
+                })}
+              >
+                <TrophyWinner
+                  winner={winner}
+                  accentColor={bhAccent}
+                  textColor={bhText}
+                  mutedColor={bhMuted}
+                  prize={prize}
+                  fontSize="clamp(18px,7cqmin,36px)"
+                />
               </div>
             </>
           ) : isActive && keyword ? (
             <>
               {prize && (
-                <div data-widget-element="prize" style={elementStyle('prize', { fontSize:'clamp(15px,5cqmin,26px)', fontWeight:800, textAlign:'center', lineHeight:1.2, color:bhText })}>{prize}</div>
+                <div
+                  data-widget-element="prize"
+                  style={elementStyle("prize", {
+                    fontSize: "clamp(15px,5cqmin,26px)",
+                    fontWeight: 800,
+                    textAlign: "center",
+                    lineHeight: 1.2,
+                    color: bhText,
+                  })}
+                >
+                  {prize}
+                </div>
               )}
               {/* Stat boxes row */}
-              <div data-widget-element="progressSection" style={elementStyle('progressSection', { display:'flex', gap:'clamp(6px,1.5cqmin,10px)', width:'100%', justifyContent:'center' })}>
-                <div data-widget-element="keyword" style={elementStyle('keyword', { background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(8px,2cqmin,12px) clamp(10px,2.5cqmin,16px)',
-                  display:'flex', flexDirection:'column', alignItems:'center', gap:3, minWidth:0, flex:1 })}>
-                  <span style={{ fontSize:'clamp(9px,2cqmin,12px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Keyword</span>
-                  <span style={{ fontSize:'clamp(16px,4cqmin,22px)', fontWeight:800, color:bhAccent }}>!{keyword}</span>
+              <div
+                data-widget-element="progressSection"
+                style={elementStyle("progressSection", {
+                  display: "flex",
+                  gap: "clamp(6px,1.5cqmin,10px)",
+                  width: "100%",
+                  justifyContent: "center",
+                })}
+              >
+                <div
+                  data-widget-element="keyword"
+                  style={elementStyle("keyword", {
+                    background: bhCard,
+                    border: `1px solid ${bhBorder}`,
+                    borderRadius: 12,
+                    padding: "clamp(8px,2cqmin,12px) clamp(10px,2.5cqmin,16px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 3,
+                    minWidth: 0,
+                    flex: 1,
+                  })}
+                >
+                  <span
+                    style={{
+                      fontSize: "clamp(9px,2cqmin,12px)",
+                      fontWeight: 700,
+                      color: bhMuted,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Keyword
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "clamp(16px,4cqmin,22px)",
+                      fontWeight: 800,
+                      color: bhAccent,
+                    }}
+                  >
+                    !{keyword}
+                  </span>
                 </div>
-                <div data-widget-element="participantCount" style={elementStyle('participantCount', { background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(8px,2cqmin,12px) clamp(10px,2.5cqmin,16px)',
-                  display:'flex', flexDirection:'column', alignItems:'center', gap:3, minWidth:0, flex:1 })}>
-                  <span style={{ fontSize:'clamp(9px,2cqmin,12px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Entries</span>
-                  <span style={{ fontSize:'clamp(16px,4cqmin,22px)', fontWeight:800, color:bhText }}>{count}</span>
+                <div
+                  data-widget-element="participantCount"
+                  style={elementStyle("participantCount", {
+                    background: bhCard,
+                    border: `1px solid ${bhBorder}`,
+                    borderRadius: 12,
+                    padding: "clamp(8px,2cqmin,12px) clamp(10px,2.5cqmin,16px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 3,
+                    minWidth: 0,
+                    flex: 1,
+                  })}
+                >
+                  <span
+                    style={{
+                      fontSize: "clamp(9px,2cqmin,12px)",
+                      fontWeight: 700,
+                      color: bhMuted,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Entries
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "clamp(16px,4cqmin,22px)",
+                      fontWeight: 800,
+                      color: bhText,
+                    }}
+                  >
+                    {count}
+                  </span>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <div style={{ fontSize:'clamp(20px,7cqmin,36px)', opacity:0.3 }}>🎁</div>
-              <div data-widget-element="emptyState" style={elementStyle('emptyState', { fontSize:'clamp(11px,2.5cqmin,14px)', color:bhMuted })}>No active giveaway</div>
+              <div
+                style={{ fontSize: "clamp(20px,7cqmin,36px)", opacity: 0.3 }}
+              >
+                🎁
+              </div>
+              <div
+                data-widget-element="emptyState"
+                style={elementStyle("emptyState", {
+                  fontSize: "clamp(11px,2.5cqmin,14px)",
+                  color: bhMuted,
+                })}
+              >
+                No active giveaway
+              </div>
             </>
           )}
         </div>
@@ -632,195 +1355,737 @@ function GiveawayWidget({ config, widgetId }) {
   }
 
   /* ─── v1 Classic Card ─── */
-  if (st === 'v1') return (
-    <div data-widget-element="container" style={elementStyle('container', { width:'100%', height:'100%', fontFamily, background:bgColor, color:textColor,
-      borderRadius:'clamp(6px,2cqmin,14px)', border:`1px solid ${borderColor}`, display:'flex', flexDirection:'column',
-      overflow:'hidden', boxSizing:'border-box', containerType:'size' })}>
-      <style>{kf}</style>
-      <div data-widget-element="header" style={elementStyle('header', { padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2cqmin,12px)', display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
-        borderBottom:`1px solid ${borderColor}`, flexShrink:0 })}>
-        <span style={{ fontSize:'clamp(12px,5cqmin,24px)' }}>🎁</span>
-        <span style={{ fontWeight:700, fontSize:'clamp(12px,4cqmin,20px)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{title}</span>
-        {isActive && !isDone && (
-          <span data-widget-element="statusBadge" style={statusBadgeStyle({ background:'#22c55e33', color:'#22c55e', fontSize:'clamp(10px,2.5cqmin,13px)', fontWeight:700,
-            padding:'clamp(1px,0.4cqmin,3px) clamp(4px,1.2cqmin,8px)', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.05em',
-            animation:'ga-pulse 2s ease-in-out infinite' })}>LIVE</span>
-        )}
-      </div>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-        padding:'clamp(3px,1.5cqmin,10px)', gap:'clamp(3px,1.5cqmin,8px)', minHeight:0, position:'relative' }}>
-        {spinningWinner && !winner ? (
-          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
-        ) : winner ? (
-          <>
-            <ConfettiBurst accentColor={accentColor} count={55} />
-            <div data-widget-element="winnerArea" style={elementStyle('winnerArea', { animation: 'ga-haptic 0.5s ease-out' })}>
-              <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={prize}
-                fontSize="clamp(16px,7cqmin,36px)" />
-            </div>
-          </>
-        ) : isActive && keyword ? (
-          <>
-            {prize && (
-              <div data-widget-element="prize" style={elementStyle('prize', { background:cardBg, border:`1px solid ${borderColor}`, borderRadius:'clamp(4px,1.5cqmin,8px)',
-                padding:'clamp(2px,1cqmin,6px) clamp(5px,2cqmin,14px)', textAlign:'center' })}>
-                <div style={{ fontSize:'clamp(10px,2.5cqmin,12px)', color:mutedColor, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:700 }}>Prize</div>
-                <div style={{ fontSize:'clamp(12px,5cqmin,24px)', fontWeight:700, color:'#fbbf24', marginTop:'clamp(1px,0.3cqmin,2px)' }}>{prize}</div>
+  if (st === "v1")
+    return (
+      <div
+        data-widget-element="container"
+        style={elementStyle("container", {
+          width: "100%",
+          height: "100%",
+          fontFamily,
+          background: bgColor,
+          color: textColor,
+          borderRadius: "clamp(6px,2cqmin,14px)",
+          border: `1px solid ${borderColor}`,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          containerType: "size",
+        })}
+      >
+        <style>{kf}</style>
+        <div
+          data-widget-element="header"
+          style={elementStyle("header", {
+            padding: "clamp(3px,1.5cqmin,8px) clamp(5px,2cqmin,12px)",
+            display: "flex",
+            alignItems: "center",
+            gap: "clamp(4px,1.5cqmin,8px)",
+            borderBottom: `1px solid ${borderColor}`,
+            flexShrink: 0,
+          })}
+        >
+          <span style={{ fontSize: "clamp(12px,5cqmin,24px)" }}>🎁</span>
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: "clamp(12px,4cqmin,20px)",
+              flex: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {title}
+          </span>
+          {isActive && !isDone && (
+            <span
+              data-widget-element="statusBadge"
+              style={statusBadgeStyle({
+                background: "#22c55e33",
+                color: "#22c55e",
+                fontSize: "clamp(10px,2.5cqmin,13px)",
+                fontWeight: 700,
+                padding: "clamp(1px,0.4cqmin,3px) clamp(4px,1.2cqmin,8px)",
+                borderRadius: 99,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                animation: "ga-pulse 2s ease-in-out infinite",
+              })}
+            >
+              LIVE
+            </span>
+          )}
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "clamp(3px,1.5cqmin,10px)",
+            gap: "clamp(3px,1.5cqmin,8px)",
+            minHeight: 0,
+            position: "relative",
+          }}
+        >
+          {spinningWinner && !winner ? (
+            <SpinReel
+              participants={participants}
+              winnerName={spinningWinner}
+              accentColor={accentColor}
+              textColor={textColor}
+              mutedColor={mutedColor}
+            />
+          ) : winner ? (
+            <>
+              <ConfettiBurst accentColor={accentColor} count={55} />
+              <div
+                data-widget-element="winnerArea"
+                style={elementStyle("winnerArea", {
+                  animation: "ga-haptic 0.5s ease-out",
+                })}
+              >
+                <TrophyWinner
+                  winner={winner}
+                  accentColor={accentColor}
+                  textColor={textColor}
+                  mutedColor={mutedColor}
+                  prize={prize}
+                  fontSize="clamp(16px,7cqmin,36px)"
+                />
               </div>
-            )}
-            <div data-widget-element="keyword" style={elementStyle('keyword', { background:`${accentColor}18`, border:`1px solid ${accentColor}44`, borderRadius:'clamp(4px,2cqmin,10px)',
-              padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2.5cqmin,14px)', textAlign:'center',
-              animation:'ga-glow 3s ease-in-out infinite' })}>
-              <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Type in chat to enter</div>
-              <div style={{ fontSize:'clamp(14px,6cqmin,30px)', fontWeight:800, color:accentColor, letterSpacing:'0.02em' }}>!{keyword}</div>
-            </div>
-            <div data-widget-element="participantCount" style={elementStyle('participantCount', { display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)', marginTop:'clamp(1px,0.4cqmin,3px)' })}>
-              <span style={{ fontSize:'clamp(10px,4cqmin,20px)' }}>👥</span>
-              <span style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:textColor, animation:count > 0 ? 'ga-bounce 0.4s ease' : 'none' }}>{count}</span>
-              <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor }}>participant{count !== 1 ? 's' : ''}</span>
-            </div>
-            {count > 0 && (
-              <div data-widget-element="progressSection" style={elementStyle('progressSection', { width:'100%', maxHeight:'20cqb', overflow:'hidden', display:'flex', flexWrap:'wrap', gap:'clamp(2px,0.5cqmin,4px)', justifyContent:'center' })}>
-                {participants.slice(-8).map((name, i) => (
-                  <span key={i} style={{ background:`${accentColor}22`, color:accentColor, fontSize:'clamp(10px,2.5cqmin,12px)', fontWeight:700,
-                    padding:'clamp(1px,0.3cqmin,2px) clamp(4px,1.2cqmin,8px)', borderRadius:99 }}>{name}</span>
-                ))}
+            </>
+          ) : isActive && keyword ? (
+            <>
+              {prize && (
+                <div
+                  data-widget-element="prize"
+                  style={elementStyle("prize", {
+                    background: cardBg,
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: "clamp(4px,1.5cqmin,8px)",
+                    padding: "clamp(2px,1cqmin,6px) clamp(5px,2cqmin,14px)",
+                    textAlign: "center",
+                  })}
+                >
+                  <div
+                    style={{
+                      fontSize: "clamp(10px,2.5cqmin,12px)",
+                      color: mutedColor,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Prize
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "clamp(12px,5cqmin,24px)",
+                      fontWeight: 700,
+                      color: "#fbbf24",
+                      marginTop: "clamp(1px,0.3cqmin,2px)",
+                    }}
+                  >
+                    {prize}
+                  </div>
+                </div>
+              )}
+              <div
+                data-widget-element="keyword"
+                style={elementStyle("keyword", {
+                  background: `${accentColor}18`,
+                  border: `1px solid ${accentColor}44`,
+                  borderRadius: "clamp(4px,2cqmin,10px)",
+                  padding: "clamp(3px,1.5cqmin,8px) clamp(5px,2.5cqmin,14px)",
+                  textAlign: "center",
+                  animation: "ga-glow 3s ease-in-out infinite",
+                })}
+              >
+                <div
+                  style={{
+                    fontSize: "clamp(10px,3cqmin,14px)",
+                    color: mutedColor,
+                    marginBottom: "clamp(1px,0.4cqmin,3px)",
+                  }}
+                >
+                  Type in chat to enter
+                </div>
+                <div
+                  style={{
+                    fontSize: "clamp(14px,6cqmin,30px)",
+                    fontWeight: 800,
+                    color: accentColor,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  !{keyword}
+                </div>
               </div>
-            )}
-          </>
-        ) : (
-          <div data-widget-element="emptyState" style={elementStyle('emptyState', { textAlign:'center' })}>
-            <div style={{ fontSize:'clamp(18px,8cqmin,36px)', marginBottom:'clamp(2px,1cqmin,6px)', opacity:0.5 }}>🎁</div>
-            <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mutedColor }}>No active giveaway</div>
-          </div>
-        )}
+              <div
+                data-widget-element="participantCount"
+                style={elementStyle("participantCount", {
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "clamp(3px,1.5cqmin,8px)",
+                  marginTop: "clamp(1px,0.4cqmin,3px)",
+                })}
+              >
+                <span style={{ fontSize: "clamp(10px,4cqmin,20px)" }}>👥</span>
+                <span
+                  style={{
+                    fontSize: "clamp(16px,7cqmin,36px)",
+                    fontWeight: 800,
+                    color: textColor,
+                    animation: count > 0 ? "ga-bounce 0.4s ease" : "none",
+                  }}
+                >
+                  {count}
+                </span>
+                <span
+                  style={{
+                    fontSize: "clamp(10px,3cqmin,14px)",
+                    color: mutedColor,
+                  }}
+                >
+                  participant{count !== 1 ? "s" : ""}
+                </span>
+              </div>
+              {count > 0 && (
+                <div
+                  data-widget-element="progressSection"
+                  style={elementStyle("progressSection", {
+                    width: "100%",
+                    maxHeight: "20cqb",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "clamp(2px,0.5cqmin,4px)",
+                    justifyContent: "center",
+                  })}
+                >
+                  {participants.slice(-8).map((name, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        background: `${accentColor}22`,
+                        color: accentColor,
+                        fontSize: "clamp(10px,2.5cqmin,12px)",
+                        fontWeight: 700,
+                        padding:
+                          "clamp(1px,0.3cqmin,2px) clamp(4px,1.2cqmin,8px)",
+                        borderRadius: 99,
+                      }}
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div
+              data-widget-element="emptyState"
+              style={elementStyle("emptyState", { textAlign: "center" })}
+            >
+              <div
+                style={{
+                  fontSize: "clamp(18px,8cqmin,36px)",
+                  marginBottom: "clamp(2px,1cqmin,6px)",
+                  opacity: 0.5,
+                }}
+              >
+                🎁
+              </div>
+              <div
+                style={{
+                  fontSize: "clamp(11px,3.5cqmin,16px)",
+                  color: mutedColor,
+                }}
+              >
+                No active giveaway
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
 
   /* ─── v2 Compact Banner (stream overlay) ─── */
-  if (st === 'v2') return (
-    <div data-widget-element="container" style={elementStyle('container', { width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontFamily, background:'transparent', containerType:'size' })}>
-      <style>{kf}</style>
-      <div data-widget-element="progressSection" style={elementStyle('progressSection', {
-        width:'96%', height:'92%', background:bgColor, borderRadius:'clamp(8px,3cqmin,16px)',
-        border:`2px solid ${borderColor}`, padding:'clamp(4px,2cqmin,12px) clamp(6px,2.5cqmin,14px)',
-        display:'flex', flexDirection:'column', justifyContent:'center', gap:'clamp(3px,1.8cqmin,10px)',
-        boxSizing:'border-box',
-      })}>
-        {/* Top row: participants + status */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,10px)' }}>
-            <span style={{ fontSize:'clamp(14px,6cqmin,28px)' }}>👥</span>
-            <span style={{ fontSize:'clamp(12px,4.5cqmin,22px)', color:accentColor }}>⭐</span>
-            <span style={{ fontSize:'clamp(18px,9cqmin,44px)', fontWeight:800, color:textColor }}>{count}</span>
-          </div>
-          <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)' }}>
-            <span data-widget-element="statusBadge" style={statusBadgeStyle({ width:'clamp(6px,2.5cqmin,12px)', height:'clamp(6px,2.5cqmin,12px)', borderRadius:'50%', background:statusColor, display:'inline-block',
-              animation:isActive && !isDone ? 'ga-pulse 2s infinite' : 'none' })} />
-            <span data-widget-element="statusBadge" style={statusBadgeStyle({ fontSize:'clamp(11px,4.5cqmin,22px)', fontWeight:700, color:statusColor, textTransform:'uppercase', letterSpacing:'0.06em' })}>{statusLabel}</span>
-          </div>
-        </div>
-        {/* Keyword instruction */}
-        {keyword && (isActive || isDone) && (
-          <div style={{ textAlign:'center', fontSize:'clamp(12px,4.5cqmin,20px)', color:mutedColor, lineHeight:1.4 }}>
-            Type <span data-widget-element="keyword" style={elementStyle('keyword', { background:`${accentColor}33`, color:accentColor, padding:'clamp(2px,0.5cqmin,4px) clamp(4px,1.2cqmin,8px)',
-              borderRadius:'clamp(3px,1cqmin,6px)', fontWeight:700, fontSize:'clamp(12px,5cqmin,22px)' })}>!{keyword}</span> in chat to win!
-          </div>
-        )}
-        {/* Prize or Winner */}
-        {spinningWinner && !winner ? (
-          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
-        ) : winner ? (
-          <div style={{ textAlign:'center', padding:'clamp(2px,0.8cqmin,6px) 0', position:'relative' }}>
-            <ConfettiBurst accentColor={accentColor} count={45} />
-            <div data-widget-element="winnerArea" style={elementStyle('winnerArea', { animation: 'ga-haptic 0.5s ease-out' })}>
-              <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={null}
-                fontSize="clamp(18px,8cqmin,40px)" />
+  if (st === "v2")
+    return (
+      <div
+        data-widget-element="container"
+        style={elementStyle("container", {
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily,
+          background: "transparent",
+          containerType: "size",
+        })}
+      >
+        <style>{kf}</style>
+        <div
+          data-widget-element="progressSection"
+          style={elementStyle("progressSection", {
+            width: "96%",
+            height: "92%",
+            background: bgColor,
+            borderRadius: "clamp(8px,3cqmin,16px)",
+            border: `2px solid ${borderColor}`,
+            padding: "clamp(4px,2cqmin,12px) clamp(6px,2.5cqmin,14px)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: "clamp(3px,1.8cqmin,10px)",
+            boxSizing: "border-box",
+          })}
+        >
+          {/* Top row: participants + status */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "clamp(3px,1.5cqmin,10px)",
+              }}
+            >
+              <span style={{ fontSize: "clamp(14px,6cqmin,28px)" }}>👥</span>
+              <span
+                style={{
+                  fontSize: "clamp(12px,4.5cqmin,22px)",
+                  color: accentColor,
+                }}
+              >
+                ⭐
+              </span>
+              <span
+                style={{
+                  fontSize: "clamp(18px,9cqmin,44px)",
+                  fontWeight: 800,
+                  color: textColor,
+                }}
+              >
+                {count}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "clamp(3px,1.5cqmin,8px)",
+              }}
+            >
+              <span
+                data-widget-element="statusBadge"
+                style={statusBadgeStyle({
+                  width: "clamp(6px,2.5cqmin,12px)",
+                  height: "clamp(6px,2.5cqmin,12px)",
+                  borderRadius: "50%",
+                  background: statusColor,
+                  display: "inline-block",
+                  animation:
+                    isActive && !isDone ? "ga-pulse 2s infinite" : "none",
+                })}
+              />
+              <span
+                data-widget-element="statusBadge"
+                style={statusBadgeStyle({
+                  fontSize: "clamp(11px,4.5cqmin,22px)",
+                  fontWeight: 700,
+                  color: statusColor,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                })}
+              >
+                {statusLabel}
+              </span>
             </div>
           </div>
-        ) : prize ? (
-          <div data-widget-element="prize" style={elementStyle('prize', { textAlign:'center', fontSize:'clamp(18px,8cqmin,40px)', fontWeight:800, color:textColor })}>{prize}</div>
-        ) : (
-          <div data-widget-element="emptyState" style={elementStyle('emptyState', { textAlign:'center', fontSize:'clamp(12px,4.5cqmin,20px)', color:mutedColor })}>No active giveaway</div>
-        )}
+          {/* Keyword instruction */}
+          {keyword && (isActive || isDone) && (
+            <div
+              style={{
+                textAlign: "center",
+                fontSize: "clamp(12px,4.5cqmin,20px)",
+                color: mutedColor,
+                lineHeight: 1.4,
+              }}
+            >
+              Type{" "}
+              <span
+                data-widget-element="keyword"
+                style={elementStyle("keyword", {
+                  background: `${accentColor}33`,
+                  color: accentColor,
+                  padding: "clamp(2px,0.5cqmin,4px) clamp(4px,1.2cqmin,8px)",
+                  borderRadius: "clamp(3px,1cqmin,6px)",
+                  fontWeight: 700,
+                  fontSize: "clamp(12px,5cqmin,22px)",
+                })}
+              >
+                !{keyword}
+              </span>{" "}
+              in chat to win!
+            </div>
+          )}
+          {/* Prize or Winner */}
+          {spinningWinner && !winner ? (
+            <SpinReel
+              participants={participants}
+              winnerName={spinningWinner}
+              accentColor={accentColor}
+              textColor={textColor}
+              mutedColor={mutedColor}
+            />
+          ) : winner ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "clamp(2px,0.8cqmin,6px) 0",
+                position: "relative",
+              }}
+            >
+              <ConfettiBurst accentColor={accentColor} count={45} />
+              <div
+                data-widget-element="winnerArea"
+                style={elementStyle("winnerArea", {
+                  animation: "ga-haptic 0.5s ease-out",
+                })}
+              >
+                <TrophyWinner
+                  winner={winner}
+                  accentColor={accentColor}
+                  textColor={textColor}
+                  mutedColor={mutedColor}
+                  prize={null}
+                  fontSize="clamp(18px,8cqmin,40px)"
+                />
+              </div>
+            </div>
+          ) : prize ? (
+            <div
+              data-widget-element="prize"
+              style={elementStyle("prize", {
+                textAlign: "center",
+                fontSize: "clamp(18px,8cqmin,40px)",
+                fontWeight: 800,
+                color: textColor,
+              })}
+            >
+              {prize}
+            </div>
+          ) : (
+            <div
+              data-widget-element="emptyState"
+              style={elementStyle("emptyState", {
+                textAlign: "center",
+                fontSize: "clamp(12px,4.5cqmin,20px)",
+                color: mutedColor,
+              })}
+            >
+              No active giveaway
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
 
   /* ─── v3 Neon Glow ─── */
-  if (st === 'v3') return (
-    <div data-widget-element="container" style={elementStyle('container', { width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontFamily, background:'transparent', containerType:'size' })}>
-      <style>{kf}</style>
-      <div data-widget-element="progressSection" style={elementStyle('progressSection', {
-        width:'94%', height:'92%', background:'rgba(5,5,18,0.95)', borderRadius:'clamp(6px,3cqmin,20px)',
-        border:`2px solid ${accentColor}55`, boxShadow:`0 0 30px ${accentColor}22`,
-        padding:'clamp(3px,2cqmin,12px)', display:'flex', flexDirection:'column', alignItems:'center',
-        justifyContent:'center', gap:'clamp(3px,1.8cqmin,10px)', boxSizing:'border-box',
-        animation:isActive && !isDone ? 'ga-glow 3s ease-in-out infinite' : 'none',
-      })}>
-        <div style={{ fontSize:'clamp(10px,3.5cqmin,18px)', fontWeight:800, color:accentColor, letterSpacing:'0.2em', textTransform:'uppercase',
-          textShadow:`0 0 8px ${accentColor}88` }}>
-          {isDone ? '★ ENDED ★' : isActive ? '★ GIVEAWAY ★' : '★ GIVEAWAY ★'}
-        </div>
-        {spinningWinner && !winner ? (
-          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
-        ) : winner ? (
-          <>
-            <ConfettiBurst accentColor={accentColor} count={55} />
-            <div data-widget-element="winnerArea" style={elementStyle('winnerArea', { animation: 'ga-haptic 0.5s ease-out' })}>
-              <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={null}
-                fontSize="clamp(16px,7cqmin,36px)" />
-            </div>
-          </>
-        ) : isActive ? (
-          <>
-            {prize && <div data-widget-element="prize" style={elementStyle('prize', { fontSize:'clamp(14px,7cqmin,34px)', fontWeight:800, color:textColor, textShadow:'0 0 10px rgba(255,255,255,0.2)' })}>{prize}</div>}
-            {keyword && (
-              <div style={{ fontSize:'clamp(10px,3.5cqmin,18px)', color:mutedColor }}>
-                Type <span data-widget-element="keyword" style={elementStyle('keyword', { color:accentColor, fontWeight:700, textShadow:`0 0 6px ${accentColor}` })}>!{keyword}</span> to enter
+  if (st === "v3")
+    return (
+      <div
+        data-widget-element="container"
+        style={elementStyle("container", {
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily,
+          background: "transparent",
+          containerType: "size",
+        })}
+      >
+        <style>{kf}</style>
+        <div
+          data-widget-element="progressSection"
+          style={elementStyle("progressSection", {
+            width: "94%",
+            height: "92%",
+            background: "rgba(5,5,18,0.95)",
+            borderRadius: "clamp(6px,3cqmin,20px)",
+            border: `2px solid ${accentColor}55`,
+            boxShadow: `0 0 30px ${accentColor}22`,
+            padding: "clamp(3px,2cqmin,12px)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "clamp(3px,1.8cqmin,10px)",
+            boxSizing: "border-box",
+            animation:
+              isActive && !isDone ? "ga-glow 3s ease-in-out infinite" : "none",
+          })}
+        >
+          <div
+            style={{
+              fontSize: "clamp(10px,3.5cqmin,18px)",
+              fontWeight: 800,
+              color: accentColor,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              textShadow: `0 0 8px ${accentColor}88`,
+            }}
+          >
+            {isDone ? "★ ENDED ★" : isActive ? "★ GIVEAWAY ★" : "★ GIVEAWAY ★"}
+          </div>
+          {spinningWinner && !winner ? (
+            <SpinReel
+              participants={participants}
+              winnerName={spinningWinner}
+              accentColor={accentColor}
+              textColor={textColor}
+              mutedColor={mutedColor}
+            />
+          ) : winner ? (
+            <>
+              <ConfettiBurst accentColor={accentColor} count={55} />
+              <div
+                data-widget-element="winnerArea"
+                style={elementStyle("winnerArea", {
+                  animation: "ga-haptic 0.5s ease-out",
+                })}
+              >
+                <TrophyWinner
+                  winner={winner}
+                  accentColor={accentColor}
+                  textColor={textColor}
+                  mutedColor={mutedColor}
+                  prize={null}
+                  fontSize="clamp(16px,7cqmin,36px)"
+                />
               </div>
-            )}
-            <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)' }}>
-              <span data-widget-element="participantCount" style={elementStyle('participantCount', { fontSize:'clamp(14px,7cqmin,36px)', fontWeight:800, color:accentColor, textShadow:`0 0 12px ${accentColor}66` })}>{count}</span>
-              <span style={{ fontSize:'clamp(10px,3.5cqmin,16px)', color:mutedColor }}>entries</span>
+            </>
+          ) : isActive ? (
+            <>
+              {prize && (
+                <div
+                  data-widget-element="prize"
+                  style={elementStyle("prize", {
+                    fontSize: "clamp(14px,7cqmin,34px)",
+                    fontWeight: 800,
+                    color: textColor,
+                    textShadow: "0 0 10px rgba(255,255,255,0.2)",
+                  })}
+                >
+                  {prize}
+                </div>
+              )}
+              {keyword && (
+                <div
+                  style={{
+                    fontSize: "clamp(10px,3.5cqmin,18px)",
+                    color: mutedColor,
+                  }}
+                >
+                  Type{" "}
+                  <span
+                    data-widget-element="keyword"
+                    style={elementStyle("keyword", {
+                      color: accentColor,
+                      fontWeight: 700,
+                      textShadow: `0 0 6px ${accentColor}`,
+                    })}
+                  >
+                    !{keyword}
+                  </span>{" "}
+                  to enter
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "clamp(3px,1.5cqmin,8px)",
+                }}
+              >
+                <span
+                  data-widget-element="participantCount"
+                  style={elementStyle("participantCount", {
+                    fontSize: "clamp(14px,7cqmin,36px)",
+                    fontWeight: 800,
+                    color: accentColor,
+                    textShadow: `0 0 12px ${accentColor}66`,
+                  })}
+                >
+                  {count}
+                </span>
+                <span
+                  style={{
+                    fontSize: "clamp(10px,3.5cqmin,16px)",
+                    color: mutedColor,
+                  }}
+                >
+                  entries
+                </span>
+              </div>
+            </>
+          ) : (
+            <div
+              data-widget-element="emptyState"
+              style={elementStyle("emptyState", {
+                fontSize: "clamp(10px,3.5cqmin,16px)",
+                color: mutedColor,
+              })}
+            >
+              No active giveaway
             </div>
-          </>
-        ) : (
-          <div data-widget-element="emptyState" style={elementStyle('emptyState', { fontSize:'clamp(10px,3.5cqmin,16px)', color:mutedColor })}>No active giveaway</div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
 
   /* ─── v4 Minimal ─── */
   return (
-    <div data-widget-element="container" style={elementStyle('container', { width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-      fontFamily, background:'transparent', containerType:'size', gap:'clamp(3px,1.5cqmin,10px)' })}>
+    <div
+      data-widget-element="container"
+      style={elementStyle("container", {
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily,
+        background: "transparent",
+        containerType: "size",
+        gap: "clamp(3px,1.5cqmin,10px)",
+      })}
+    >
       <style>{kf}</style>
-      <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)' }}>
-        <span data-widget-element="statusBadge" style={statusBadgeStyle({ width:'clamp(5px,2cqmin,10px)', height:'clamp(5px,2cqmin,10px)', borderRadius:'50%', background:statusColor, display:'inline-block',
-          animation:isActive && !isDone ? 'ga-pulse 2s infinite' : 'none' })} />
-        <span data-widget-element="statusBadge" style={statusBadgeStyle({ fontSize:'clamp(10px,3.5cqmin,16px)', fontWeight:700, color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em' })}>{statusLabel}</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "clamp(3px,1.5cqmin,8px)",
+        }}
+      >
+        <span
+          data-widget-element="statusBadge"
+          style={statusBadgeStyle({
+            width: "clamp(5px,2cqmin,10px)",
+            height: "clamp(5px,2cqmin,10px)",
+            borderRadius: "50%",
+            background: statusColor,
+            display: "inline-block",
+            animation: isActive && !isDone ? "ga-pulse 2s infinite" : "none",
+          })}
+        />
+        <span
+          data-widget-element="statusBadge"
+          style={statusBadgeStyle({
+            fontSize: "clamp(10px,3.5cqmin,16px)",
+            fontWeight: 700,
+            color: mutedColor,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          })}
+        >
+          {statusLabel}
+        </span>
       </div>
       {spinningWinner && !winner ? (
-        <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
+        <SpinReel
+          participants={participants}
+          winnerName={spinningWinner}
+          accentColor={accentColor}
+          textColor={textColor}
+          mutedColor={mutedColor}
+        />
       ) : winner ? (
-        <div style={{ textAlign:'center', position:'relative' }}>
+        <div style={{ textAlign: "center", position: "relative" }}>
           <ConfettiBurst accentColor={accentColor} count={40} />
-          <div data-widget-element="winnerArea" style={elementStyle('winnerArea', { animation: 'ga-haptic 0.5s ease-out' })}>
-            <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={null}
-              fontSize="clamp(16px,8cqmin,40px)" />
+          <div
+            data-widget-element="winnerArea"
+            style={elementStyle("winnerArea", {
+              animation: "ga-haptic 0.5s ease-out",
+            })}
+          >
+            <TrophyWinner
+              winner={winner}
+              accentColor={accentColor}
+              textColor={textColor}
+              mutedColor={mutedColor}
+              prize={null}
+              fontSize="clamp(16px,8cqmin,40px)"
+            />
           </div>
         </div>
       ) : isActive ? (
         <>
-          {prize && <div data-widget-element="prize" style={elementStyle('prize', { fontSize:'clamp(14px,7cqmin,36px)', fontWeight:800, color:textColor })}>{prize}</div>}
-          {keyword && <div data-widget-element="keyword" style={elementStyle('keyword', { fontSize:'clamp(10px,3.5cqmin,16px)', color:mutedColor })}>!{keyword}</div>}
-          <div data-widget-element="participantCount" style={elementStyle('participantCount', { fontSize:'clamp(10px,5cqmin,24px)', fontWeight:700, color:accentColor })}>{count} <span style={{ fontWeight:400, color:mutedColor, fontSize:'0.7em' }}>entries</span></div>
+          {prize && (
+            <div
+              data-widget-element="prize"
+              style={elementStyle("prize", {
+                fontSize: "clamp(14px,7cqmin,36px)",
+                fontWeight: 800,
+                color: textColor,
+              })}
+            >
+              {prize}
+            </div>
+          )}
+          {keyword && (
+            <div
+              data-widget-element="keyword"
+              style={elementStyle("keyword", {
+                fontSize: "clamp(10px,3.5cqmin,16px)",
+                color: mutedColor,
+              })}
+            >
+              !{keyword}
+            </div>
+          )}
+          <div
+            data-widget-element="participantCount"
+            style={elementStyle("participantCount", {
+              fontSize: "clamp(10px,5cqmin,24px)",
+              fontWeight: 700,
+              color: accentColor,
+            })}
+          >
+            {count}{" "}
+            <span
+              style={{ fontWeight: 400, color: mutedColor, fontSize: "0.7em" }}
+            >
+              entries
+            </span>
+          </div>
         </>
       ) : (
-        <div data-widget-element="emptyState" style={elementStyle('emptyState', { fontSize:'clamp(10px,4cqmin,18px)', color:mutedColor, opacity:0.5 })}>🎁</div>
+        <div
+          data-widget-element="emptyState"
+          style={elementStyle("emptyState", {
+            fontSize: "clamp(10px,4cqmin,18px)",
+            color: mutedColor,
+            opacity: 0.5,
+          })}
+        >
+          🎁
+        </div>
       )}
     </div>
   );

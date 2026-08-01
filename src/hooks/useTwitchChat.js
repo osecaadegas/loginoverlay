@@ -9,27 +9,36 @@
  * @param {object}   [options]
  * @param {boolean}  [options.parseRaids=false] – Also emit raid USERNOTICE events
  */
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from "react";
 
-function parseIrcTags(tagString = '') {
+function parseIrcTags(tagString = "") {
   return Object.fromEntries(
-    tagString.split(';').map(tag => {
-      const [key, ...value] = tag.split('=');
-      return [key, value.join('=')];
-    })
+    tagString.split(";").map((tag) => {
+      const [key, ...value] = tag.split("=");
+      return [key, value.join("=")];
+    }),
   );
 }
 
-function parseTwitchEmotes(value = '') {
+function parseTwitchEmotes(value = "") {
   if (!value) return [];
-  return value.split('/').map(entry => {
-    const [id, rangeList = ''] = entry.split(':');
-    const indices = rangeList.split(',').map(range => {
-      const [start, end] = range.split('-').map(Number);
-      return [start, end];
-    }).filter(([start, end]) => Number.isInteger(start) && Number.isInteger(end) && end >= start);
-    return { id, indices };
-  }).filter(emote => emote.id && emote.indices.length > 0);
+  return value
+    .split("/")
+    .map((entry) => {
+      const [id, rangeList = ""] = entry.split(":");
+      const indices = rangeList
+        .split(",")
+        .map((range) => {
+          const [start, end] = range.split("-").map(Number);
+          return [start, end];
+        })
+        .filter(
+          ([start, end]) =>
+            Number.isInteger(start) && Number.isInteger(end) && end >= start,
+        );
+      return { id, indices };
+    })
+    .filter((emote) => emote.id && emote.indices.length > 0);
 }
 
 export default function useTwitchChat(channel, onMessage, options = {}) {
@@ -39,54 +48,72 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
 
   const connect = useCallback(() => {
     if (!channel) return;
-    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+    const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
     wsRef.current = ws;
 
     ws.onopen = () => {
-      ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
-      ws.send('NICK justinfan' + Math.floor(Math.random() * 99999));
-      ws.send('JOIN #' + channel.toLowerCase().trim());
+      ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
+      ws.send("NICK justinfan" + Math.floor(Math.random() * 99999));
+      ws.send("JOIN #" + channel.toLowerCase().trim());
     };
 
     ws.onmessage = (evt) => {
-      const lines = evt.data.split('\r\n');
+      const lines = evt.data.split("\r\n");
       for (const line of lines) {
-        if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
+        if (line.startsWith("PING")) {
+          ws.send("PONG :tmi.twitch.tv");
+          continue;
+        }
 
-        if (line.includes(' ROOMSTATE #')) {
-          const tagStr = line.match(/@([^ ]+)/)?.[1] || '';
+        if (line.includes(" ROOMSTATE #")) {
+          const tagStr = line.match(/@([^ ]+)/)?.[1] || "";
           const tags = parseIrcTags(tagStr);
-          const connectedChannel = line.match(/ ROOMSTATE #([^ ]+)/)?.[1] || channel;
+          const connectedChannel =
+            line.match(/ ROOMSTATE #([^ ]+)/)?.[1] || channel;
           onRoomState?.({
             channel: connectedChannel,
-            channelId: tags['room-id'] || '',
+            channelId: tags["room-id"] || "",
             tags,
           });
           continue;
         }
 
         /* ── Raid USERNOTICE (opt-in) ── */
-        if (parseRaids && line.includes('USERNOTICE') && line.includes('msg-id=raid')) {
-          const tagStr = line.match(/@([^ ]+)/)?.[1] || '';
+        if (
+          parseRaids &&
+          line.includes("USERNOTICE") &&
+          line.includes("msg-id=raid")
+        ) {
+          const tagStr = line.match(/@([^ ]+)/)?.[1] || "";
           const tags = parseIrcTags(tagStr);
-          const raider = tags['msg-param-displayName'] || tags['display-name'] || tags['login'] || 'Someone';
-          const viewerCount = parseInt(tags['msg-param-viewerCount'] || '0', 10);
-          let avatar = (tags['msg-param-profileImageURL'] || '').replace(/%s/g, '');
-          if (avatar && !avatar.startsWith('http')) avatar = '';
+          const raider =
+            tags["msg-param-displayName"] ||
+            tags["display-name"] ||
+            tags["login"] ||
+            "Someone";
+          const viewerCount = parseInt(
+            tags["msg-param-viewerCount"] || "0",
+            10,
+          );
+          let avatar = (tags["msg-param-profileImageURL"] || "").replace(
+            /%s/g,
+            "",
+          );
+          if (avatar && !avatar.startsWith("http")) avatar = "";
 
           onMessage({
-            id: tags['id'] || 'raid-' + Date.now(),
-            platform: 'twitch',
-            login: tags['login'] || raider,
+            id: tags["id"] || "raid-" + Date.now(),
+            platform: "twitch",
+            login: tags["login"] || raider,
             username: raider,
-            message: `is raiding with ${viewerCount} viewer${viewerCount !== 1 ? 's' : ''}!`,
-            color: tags['color'] || '#a855f7',
+            message: `is raiding with ${viewerCount} viewer${viewerCount !== 1 ? "s" : ""}!`,
+            color: tags["color"] || "#a855f7",
             timestamp: Date.now(),
             isRaid: true,
             raidViewers: viewerCount,
-            raidAvatar: avatar || '',
-            avatarUrl: avatar || '',
-            profileImageUrl: avatar || '',
+            raidAvatar: avatar || "",
+            avatarUrl: avatar || "",
+            profileImageUrl: avatar || "",
           });
           continue;
         }
@@ -97,24 +124,34 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
         const tags = parseIrcTags(m[1]);
 
         /* Parse Twitch badges string e.g. "broadcaster/1,subscriber/12,premium/1" */
-        const badgeStr = tags['badges'] || '';
-        const badgeEntries = badgeStr ? badgeStr.split(',').map(b => { const [n, v] = b.split('/'); return [n, v]; }) : [];
+        const badgeStr = tags["badges"] || "";
+        const badgeEntries = badgeStr
+          ? badgeStr.split(",").map((b) => {
+              const [n, v] = b.split("/");
+              return [n, v];
+            })
+          : [];
         const badgeMap = Object.fromEntries(badgeEntries);
 
-        const isMod = tags['mod'] === '1' || 'moderator' in badgeMap;
-        const isSub = tags['subscriber'] === '1' || 'subscriber' in badgeMap;
-        const isVip = 'vip' in badgeMap;
-        const isBroadcaster = 'broadcaster' in badgeMap;
-        const isFirstMsg = tags['first-msg'] === '1';
-        const subMonths = parseInt(tags['badge-info']?.split('subscriber/')?.[1] || badgeMap['subscriber'] || '0', 10);
+        const isMod = tags["mod"] === "1" || "moderator" in badgeMap;
+        const isSub = tags["subscriber"] === "1" || "subscriber" in badgeMap;
+        const isVip = "vip" in badgeMap;
+        const isBroadcaster = "broadcaster" in badgeMap;
+        const isFirstMsg = tags["first-msg"] === "1";
+        const subMonths = parseInt(
+          tags["badge-info"]?.split("subscriber/")?.[1] ||
+            badgeMap["subscriber"] ||
+            "0",
+          10,
+        );
 
         onMessage({
-          id: tags['id'] || Date.now().toString() + Math.random(),
-          platform: 'twitch',
-          login: tags['login'] || m[2],
-          username: tags['display-name'] || m[2],
+          id: tags["id"] || Date.now().toString() + Math.random(),
+          platform: "twitch",
+          login: tags["login"] || m[2],
+          username: tags["display-name"] || m[2],
           message: m[3],
-          color: tags['color'] || '',
+          color: tags["color"] || "",
           timestamp: Date.now(),
           /* Twitch badges */
           badges: badgeMap,
@@ -124,7 +161,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
           isBroadcaster,
           isFirstMsg,
           subMonths,
-          twitchEmotes: parseTwitchEmotes(tags['emotes']),
+          twitchEmotes: parseTwitchEmotes(tags["emotes"]),
         });
       }
     };

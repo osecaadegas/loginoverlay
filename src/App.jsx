@@ -1,10 +1,5 @@
 import { useEffect, lazy, Suspense } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import "./App.css";
 import { AuthProvider } from "./context/AuthContext";

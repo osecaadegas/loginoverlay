@@ -2,17 +2,17 @@
 
 ## Identity
 
-| Field | Value |
-| --- | --- |
-| Widget ID | `tournament` |
-| Name | Tournament |
-| Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:78` |
-| Main component | `src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx:47` |
-| Child components | `widgets/tournament/PlayerCard.jsx`, `MatchCard.jsx`, `RoundDisplay.jsx`, `ShatterEffect.jsx` |
-| Config panel | `src/components/OverlayCenter/widgets/tournament/TournamentConfig.jsx` |
-| Styles | `grid`, `showcase`, `vertical`, `bracket`, `neon`, `minimal`, `arena`, `futuristic`, `esports` through `layout` |
-| Data source | `overlay_widgets.config`, tournament engine state |
-| Persistence | `overlay_widgets.config` and saved widget presets |
+| Field            | Value                                                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| Widget ID        | `tournament`                                                                                                    |
+| Name             | Tournament                                                                                                      |
+| Registry         | `src/components/OverlayCenter/widgets/builtinWidgets.js:78`                                                     |
+| Main component   | `src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx:47`                                       |
+| Child components | `widgets/tournament/PlayerCard.jsx`, `MatchCard.jsx`, `RoundDisplay.jsx`, `ShatterEffect.jsx`                   |
+| Config panel     | `src/components/OverlayCenter/widgets/tournament/TournamentConfig.jsx`                                          |
+| Styles           | `grid`, `showcase`, `vertical`, `bracket`, `neon`, `minimal`, `arena`, `futuristic`, `esports` through `layout` |
+| Data source      | `overlay_widgets.config`, tournament engine state                                                               |
+| Persistence      | `overlay_widgets.config` and saved widget presets                                                               |
 
 ## Rendering structure
 
@@ -46,11 +46,11 @@
 
 ## Hardcoded values and risks
 
-| Location | Value type | Affects | Safety |
-| --- | --- | --- | --- |
-| `TournamentWidget.jsx:47` | 170+ inline style objects | Almost all visuals | High risk; only mapped tokens are safe. |
-| `TournamentWidget.jsx:2055-2204` | keyframes | Arena/bracket/effects motion | Dangerous. |
-| `widgets/tournament/MatchCard.jsx:82` | card state styles and animations | Current match/winner | Constrained. |
+| Location                              | Value type                       | Affects                      | Safety                                  |
+| ------------------------------------- | -------------------------------- | ---------------------------- | --------------------------------------- |
+| `TournamentWidget.jsx:47`             | 170+ inline style objects        | Almost all visuals           | High risk; only mapped tokens are safe. |
+| `TournamentWidget.jsx:2055-2204`      | keyframes                        | Arena/bracket/effects motion | Dangerous.                              |
+| `widgets/tournament/MatchCard.jsx:82` | card state styles and animations | Current match/winner         | Constrained.                            |
 
 ## Animation model
 

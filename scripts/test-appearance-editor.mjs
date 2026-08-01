@@ -56,8 +56,15 @@ try {
     ),
     "utf8",
   );
+  const builtInWidgetsSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/builtinWidgets.js",
+      import.meta.url,
+    ),
+    "utf8",
+  );
   assert.ok(
-    !betterWidgetPackagesSource.includes('import TournamentConfig'),
+    !betterWidgetPackagesSource.includes("import TournamentConfig"),
     "Better Editor does not import the full Tournament data manager",
   );
   assert.ok(
@@ -65,7 +72,7 @@ try {
     "Better Editor provides dedicated Tournament appearance controls",
   );
   assert.ok(
-    /tournament:\s*\{[\s\S]*?showBg:\s*true,[\s\S]*?bgColor:\s*"#07101f"/.test(
+    /tournament:\s*\{[\s\S]*?showBg:\s*true,[\s\S]*?bgColor:\s*"#061126"/.test(
       betterWidgetPackagesSource,
     ),
     "Better Tournament has a visible canonical main card",
@@ -74,6 +81,32 @@ try {
     betterWidgetPackagesSource.includes("const next = { ...c }"),
     "Tournament appearance reset starts from the complete saved config",
   );
+  for (const widgetType of [
+    "bonus_hunt",
+    "giveaway",
+    "navbar",
+    "chat",
+    "rtp_stats",
+    "tournament",
+  ]) {
+    const widgetDefaults = new RegExp(
+      `type: "${widgetType}"[\\s\\S]*?defaults: \\{[\\s\\S]*?"#061126"`,
+    );
+    assert.ok(
+      widgetDefaults.test(builtInWidgetsSource),
+      `${widgetType} built-in defaults use the standard navy surface`,
+    );
+  }
+  for (const sharedColor of ["#061126", "#20d8ff", "#ffb020"]) {
+    assert.ok(
+      betterWidgetPackagesSource.includes(sharedColor),
+      `Better Editor defaults include shared theme color ${sharedColor}`,
+    );
+    assert.ok(
+      builtInWidgetsSource.includes(sharedColor),
+      `built-in defaults include shared theme color ${sharedColor}`,
+    );
+  }
 
   assert.equal(getModeLabel("simple"), "Simple Mode");
   assert.equal(getModeLabel("advanced"), "Advanced Mode");

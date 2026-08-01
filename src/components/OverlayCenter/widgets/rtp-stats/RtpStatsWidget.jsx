@@ -602,22 +602,40 @@ function normalizeVolatilityLevel(value) {
     const level = Math.min(4, Math.max(0, Math.round(value)));
     const labels = ["Unknown", "Low", "Medium", "High", "Very High"];
     const colors = ["#94a3b8", "#43e37d", "#ffd43b", "#ff453a", "#ff1f2d"];
-    return { level, label: labels[level] || "Unknown", color: colors[level] || "#94a3b8" };
+    return {
+      level,
+      label: labels[level] || "Unknown",
+      color: colors[level] || "#94a3b8",
+    };
   }
-  const text = String(value || "").trim().toLowerCase().replace(/[_-]+/g, " ");
+  const text = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ");
   const numericLevel = Number(text);
   if (Number.isFinite(numericLevel)) {
     const level = Math.min(4, Math.max(0, Math.round(numericLevel)));
     const labels = ["Unknown", "Low", "Medium", "High", "Very High"];
     const colors = ["#94a3b8", "#43e37d", "#ffd43b", "#ff453a", "#ff1f2d"];
-    return { level, label: labels[level] || "Unknown", color: colors[level] || "#94a3b8" };
+    return {
+      level,
+      label: labels[level] || "Unknown",
+      color: colors[level] || "#94a3b8",
+    };
   }
-  if (!text || text === "—" || text === "â€”" || text === "-") return { level: 0, label: "Unknown", color: "#94a3b8" };
-  if (text.includes("extreme") || text.includes("very high") || text.includes("extra high")) {
+  if (!text || text === "—" || text === "â€”" || text === "-")
+    return { level: 0, label: "Unknown", color: "#94a3b8" };
+  if (
+    text.includes("extreme") ||
+    text.includes("very high") ||
+    text.includes("extra high")
+  ) {
     return { level: 4, label: "Very High", color: "#ff1f2d" };
   }
-  if (text.includes("high")) return { level: 3, label: "High", color: "#ff453a" };
-  if (text.includes("medium") || text.includes("med")) return { level: 2, label: "Medium", color: "#ffd43b" };
+  if (text.includes("high"))
+    return { level: 3, label: "High", color: "#ff453a" };
+  if (text.includes("medium") || text.includes("med"))
+    return { level: 2, label: "Medium", color: "#ffd43b" };
   if (text.includes("low")) return { level: 1, label: "Low", color: "#43e37d" };
   return { level: 0, label: fmtVolatility(String(value)), color: "#94a3b8" };
 }
@@ -873,7 +891,12 @@ function knownSlotInfoValue(value) {
   if (typeof value === "number") return Number.isFinite(value) && value > 0;
   const text = String(value).trim();
   const normalized = text.toLowerCase().replace(/[_-]+/g, " ");
-  if (normalized === "unknown" || normalized === "n/a" || normalized === "na" || normalized === "null") {
+  if (
+    normalized === "unknown" ||
+    normalized === "n/a" ||
+    normalized === "na" ||
+    normalized === "null"
+  ) {
     return false;
   }
   const numeric = Number(text.replace(/[%x,]/gi, ""));
@@ -885,7 +908,14 @@ function mergeSlotInfo(primary, fallback) {
   if (!primary) return fallback || null;
   if (!fallback) return primary;
   const merged = { ...fallback, ...primary };
-  ["rtp", "volatility", "max_win_multiplier", "max_win", "provider", "image"].forEach((key) => {
+  [
+    "rtp",
+    "volatility",
+    "max_win_multiplier",
+    "max_win",
+    "provider",
+    "image",
+  ].forEach((key) => {
     const primaryKnown =
       key === "volatility"
         ? normalizeVolatilityLevel(primary[key]).level > 0
@@ -905,8 +935,8 @@ function needsSlotInfoEnrichment(info) {
   if (!info) return true;
   return Boolean(
     !knownSlotInfoValue(info.rtp) ||
-      !knownSlotInfoValue(info.max_win_multiplier ?? info.max_win) ||
-      normalizeVolatilityLevel(info.volatility).level <= 0,
+    !knownSlotInfoValue(info.max_win_multiplier ?? info.max_win) ||
+    normalizeVolatilityLevel(info.volatility).level <= 0,
   );
 }
 
@@ -933,7 +963,10 @@ function useRtpSlotInfo({ activeSlot, localSlotInfo, slotKey, slotName }) {
           return;
         }
         const apiResult = await fetchSlotInfoAPI(slotName, activeSlot.provider);
-        if (!cancelled) setSlotInfo(apiResult ? mergeSlotInfo(dbResult, apiResult) : dbResult);
+        if (!cancelled)
+          setSlotInfo(
+            apiResult ? mergeSlotInfo(dbResult, apiResult) : dbResult,
+          );
         return;
       }
       const apiResult = await fetchSlotInfoAPI(slotName, activeSlot.provider);

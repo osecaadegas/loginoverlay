@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { makePerStyleSetters } from '../shared/perStyleConfig';
-import { TOURNAMENT_STYLE_KEYS } from '../styleKeysRegistry';
-import { getAllSlots, sortSlotsByProviderPriority } from '../../../../utils/slotUtils';
-import { useAuth } from '../../../../context/AuthContext';
-import { updateSlotRecordsFromHunt } from '../../../../services/slotRecordService';
-import TabBar from '../shared/TabBar';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { makePerStyleSetters } from "../shared/perStyleConfig";
+import { TOURNAMENT_STYLE_KEYS } from "../styleKeysRegistry";
+import {
+  getAllSlots,
+  sortSlotsByProviderPriority,
+} from "../../../../utils/slotUtils";
+import { useAuth } from "../../../../context/AuthContext";
+import { updateSlotRecordsFromHunt } from "../../../../services/slotRecordService";
+import TabBar from "../shared/TabBar";
 import {
   TOURNAMENT_TYPES,
   MATCH_STATUS,
@@ -16,7 +19,7 @@ import {
   getBoScoreboard,
   formatResult,
   getRoundInputFields,
-} from './tournamentEngine';
+} from "./tournamentEngine";
 import {
   generateBracket,
   updateBracketMatch,
@@ -24,13 +27,22 @@ import {
   getBracketStats,
   getChampion,
   seedPlayers,
-} from '../../../TournamentsPage/bracketUtils';
+} from "../../../TournamentsPage/bracketUtils";
 
 /* ─── Numeric input with controlled value ─── */
-function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = {}, onNext }) {
-  const [local, setLocal] = useState(value ?? '');
+function NumInput({
+  value,
+  onChange,
+  placeholder = "0",
+  prefix = "€",
+  style = {},
+  onNext,
+}) {
+  const [local, setLocal] = useState(value ?? "");
   const committedRef = useRef(false);
-  useEffect(() => { setLocal(value ?? ''); }, [value]);
+  useEffect(() => {
+    setLocal(value ?? "");
+  }, [value]);
   const commit = () => {
     if (committedRef.current) return;
     committedRef.current = true;
@@ -38,75 +50,148 @@ function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = 
     onChange(isNaN(v) ? null : v);
   };
   return (
-    <label style={{ display: 'flex', alignItems: 'center', gap: 4, ...style }}>
-      {prefix && <span style={{ fontSize: 11, color: '#94a3b8' }}>{prefix}</span>}
+    <label style={{ display: "flex", alignItems: "center", gap: 4, ...style }}>
+      {prefix && (
+        <span style={{ fontSize: 11, color: "#94a3b8" }}>{prefix}</span>
+      )}
       <input
         type="number"
         step="any"
         value={local}
-        onChange={e => { setLocal(e.target.value); committedRef.current = false; }}
+        onChange={(e) => {
+          setLocal(e.target.value);
+          committedRef.current = false;
+        }}
         onBlur={commit}
-        onKeyDown={e => {
-          if (e.key === 'Enter') {
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
             commit();
-            if (onNext) { e.preventDefault(); onNext(); }
+            if (onNext) {
+              e.preventDefault();
+              onNext();
+            }
           }
         }}
         placeholder={placeholder}
-        style={{ width: '100%' }}
+        style={{ width: "100%" }}
       />
     </label>
   );
 }
 
-export default function TournamentConfig({ config, onChange, mode = 'full' }) {
+export default function TournamentConfig({ config, onChange, mode = "full" }) {
   const { user } = useAuth();
   const c = config || {};
-  const currentStyle = c.layout || 'grid';
-  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, TOURNAMENT_STYLE_KEYS);
-  const [activeTab, setActiveTab] = useState('bracket');
+  const currentStyle = c.layout || "grid";
+  const { set, setMulti } = makePerStyleSetters(
+    onChange,
+    c,
+    currentStyle,
+    TOURNAMENT_STYLE_KEYS,
+  );
+  const [activeTab, setActiveTab] = useState("bracket");
 
   /* ─── Slot data (for search) ─── */
   const [slots, setSlots] = useState([]);
   useEffect(() => {
-    getAllSlots().then(d => setSlots(d || [])).catch(() => setSlots([]));
+    getAllSlots()
+      .then((d) => setSlots(d || []))
+      .catch(() => setSlots([]));
   }, []);
 
   /* ─── Slot search ─── */
-  const filteredSlots = useCallback((term) => {
-    if (!term || term.length < 1) return [];
-    return sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(term.toLowerCase()))).slice(0, 5);
-  }, [slots]);
+  const filteredSlots = useCallback(
+    (term) => {
+      if (!term || term.length < 1) return [];
+      return sortSlotsByProviderPriority(
+        slots.filter((s) =>
+          s?.name?.toLowerCase().includes(term.toLowerCase()),
+        ),
+      ).slice(0, 5);
+    },
+    [slots],
+  );
 
   /* ─── Preset system ─── */
-  const [presetName, setPresetName] = useState('');
+  const [presetName, setPresetName] = useState("");
   const PRESET_KEYS = [
-    'layout', 'showBg', 'bgColor', 'cardBg', 'cardBorder', 'cardRadius', 'cardBorderWidth',
-    'nameColor', 'nameSize', 'multiColor', 'multiSize',
-    'tabBg', 'tabActiveBg', 'tabColor', 'tabActiveColor', 'tabBorder',
-    'eliminatedOpacity', 'showSlotName', 'slotNameColor', 'slotNameSize',
-    'fontFamily', 'borderRadius', 'borderWidth', 'borderColor',
-    'cardGap', 'containerPadding', 'swordColor', 'swordBg', 'swordSize',
-    'xIconColor', 'xIconBg',
-    'bkHeaderBg', 'bkHeaderColor', 'bkAccent', 'bkDividerColor',
-    'bkFinalBg', 'bkFinalBorder', 'bkRowBg', 'tournamentNumber',
-    'arenaAccent', 'arenaWinColor', 'arenaCardBg', 'arenaCurrency', 'arenaLoseOpacity',
-    'ftAccent', 'ftCyan', 'ftBg', 'ftCardBg', 'ftBorder',
-    'esCyan', 'esPurple', 'esGold', 'esBg', 'esCardBg', 'esBorder',
-    'sbAccent', 'sbHeaderBg', 'sbCardBg', 'sbTextColor', 'sbPayColor', 'sbMultiColor',
-    'sbWinColor', 'sbLoseColor', 'sbTabBg', 'sbTabActive',
+    "layout",
+    "showBg",
+    "bgColor",
+    "cardBg",
+    "cardBorder",
+    "cardRadius",
+    "cardBorderWidth",
+    "nameColor",
+    "nameSize",
+    "multiColor",
+    "multiSize",
+    "tabBg",
+    "tabActiveBg",
+    "tabColor",
+    "tabActiveColor",
+    "tabBorder",
+    "eliminatedOpacity",
+    "showSlotName",
+    "slotNameColor",
+    "slotNameSize",
+    "fontFamily",
+    "borderRadius",
+    "borderWidth",
+    "borderColor",
+    "cardGap",
+    "containerPadding",
+    "swordColor",
+    "swordBg",
+    "swordSize",
+    "xIconColor",
+    "xIconBg",
+    "bkHeaderBg",
+    "bkHeaderColor",
+    "bkAccent",
+    "bkDividerColor",
+    "bkFinalBg",
+    "bkFinalBorder",
+    "bkRowBg",
+    "tournamentNumber",
+    "arenaAccent",
+    "arenaWinColor",
+    "arenaCardBg",
+    "arenaCurrency",
+    "arenaLoseOpacity",
+    "ftAccent",
+    "ftCyan",
+    "ftBg",
+    "ftCardBg",
+    "ftBorder",
+    "esCyan",
+    "esPurple",
+    "esGold",
+    "esBg",
+    "esCardBg",
+    "esBorder",
+    "sbAccent",
+    "sbHeaderBg",
+    "sbCardBg",
+    "sbTextColor",
+    "sbPayColor",
+    "sbMultiColor",
+    "sbWinColor",
+    "sbLoseColor",
+    "sbTabBg",
+    "sbTabActive",
   ];
 
   /* ─── Built-in presets ─── */
   const BUILTIN_PRESETS = [
     {
-      name: '🖼️ Showcase (Large Images)',
+      name: "🖼️ Showcase (Large Images)",
       builtin: true,
       values: {
-        layout: 'vertical',
+        layout: "vertical",
         showBg: false,
-        cardBg: '#1a1d2e',
-        cardBorder: 'rgba(255,255,255,0.1)',
+        cardBg: "#1a1d2e",
+        cardBorder: "rgba(255,255,255,0.1)",
         cardRadius: 14,
         cardBorderWidth: 1,
         nameSize: 18,
@@ -120,13 +205,13 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
       },
     },
     {
-      name: '📋 Vertical Stack',
+      name: "📋 Vertical Stack",
       builtin: true,
       values: {
-        layout: 'vertical',
+        layout: "vertical",
         showBg: false,
-        cardBg: '#1a1d2e',
-        cardBorder: 'rgba(255,255,255,0.08)',
+        cardBg: "#1a1d2e",
+        cardBorder: "rgba(255,255,255,0.08)",
         cardRadius: 10,
         cardBorderWidth: 1,
         nameSize: 13,
@@ -140,12 +225,12 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
       },
     },
     {
-      name: '⚔️ Battle Arena',
+      name: "⚔️ Battle Arena",
       builtin: true,
       values: {
-        layout: 'arena',
+        layout: "arena",
         showBg: true,
-        bgColor: '#1a1040',
+        bgColor: "#1a1040",
         cardRadius: 10,
         nameSize: 15,
         multiSize: 16,
@@ -155,101 +240,127 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
         eliminatedOpacity: 0.55,
         borderRadius: 14,
         borderWidth: 0,
-        arenaAccent: '#eab308',
-        arenaWinColor: '#dbe2e8',
-        arenaCardBg: '#1e1550',
-        arenaCurrency: '$',
+        arenaAccent: "#eab308",
+        arenaWinColor: "#dbe2e8",
+        arenaCardBg: "#1e1550",
+        arenaCurrency: "$",
       },
     },
     {
-      name: '🎮 Cyberpunk Esports',
+      name: "🎮 Cyberpunk Esports",
       builtin: true,
       values: {
-        layout: 'esports',
+        layout: "esports",
         showBg: true,
-        bgColor: '#030712',
+        bgColor: "#030712",
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: 'rgba(0,229,255,0.15)',
+        borderColor: "rgba(0,229,255,0.15)",
         nameSize: 14,
         multiSize: 16,
         showSlotName: false,
         containerPadding: 6,
         cardGap: 6,
         eliminatedOpacity: 0.35,
-        esCyan: '#00e5ff',
-        esPurple: '#64748b',
-        esGold: '#fbbf24',
-        esBg: '#030712',
-        esCardBg: 'rgba(15,23,42,0.75)',
-        esBorder: 'rgba(0,229,255,0.18)',
+        esCyan: "#00e5ff",
+        esPurple: "#64748b",
+        esGold: "#fbbf24",
+        esBg: "#030712",
+        esCardBg: "rgba(15,23,42,0.75)",
+        esBorder: "rgba(0,229,255,0.18)",
       },
     },
     {
-      name: '🏆 Bo3 Scoreboard',
+      name: "🏆 Bo3 Scoreboard",
       builtin: true,
       values: {
-        layout: 'scoreboard',
+        layout: "scoreboard",
         showBg: true,
-        bgColor: '#0f1120',
+        bgColor: "#0f1120",
         borderRadius: 10,
         borderWidth: 0,
         containerPadding: 6,
         cardGap: 6,
         cardRadius: 8,
-        cardBorder: 'rgba(255,255,255,0.08)',
-        sbAccent: '#3b82f6',
-        sbHeaderBg: 'rgba(0,0,0,0.85)',
-        sbCardBg: '#1a1d2e',
-        sbTextColor: '#ffffff',
-        sbPayColor: '#e2e8f0',
-        sbMultiColor: '#facc15',
-        sbWinColor: '#dbe2e8',
-        sbLoseColor: '#ef4444',
-        sbTabBg: 'rgba(0,0,0,0.6)',
-        sbTabActive: '#3b82f6',
+        cardBorder: "rgba(255,255,255,0.08)",
+        sbAccent: "#3b82f6",
+        sbHeaderBg: "rgba(0,0,0,0.85)",
+        sbCardBg: "#1a1d2e",
+        sbTextColor: "#ffffff",
+        sbPayColor: "#e2e8f0",
+        sbMultiColor: "#facc15",
+        sbWinColor: "#dbe2e8",
+        sbLoseColor: "#ef4444",
+        sbTabBg: "rgba(0,0,0,0.6)",
+        sbTabActive: "#3b82f6",
       },
     },
   ];
 
   const savePreset = () => {
-    const name = presetName.trim(); if (!name) return;
+    const name = presetName.trim();
+    if (!name) return;
     const snapshot = {};
-    PRESET_KEYS.forEach(k => { if (c[k] !== undefined) snapshot[k] = c[k]; });
+    PRESET_KEYS.forEach((k) => {
+      if (c[k] !== undefined) snapshot[k] = c[k];
+    });
     const existing = c.tournamentPresets || [];
-    const idx = existing.findIndex(p => p.name === name);
-    const updated = idx >= 0
-      ? existing.map((p, i) => i === idx ? { name, values: snapshot, savedAt: Date.now() } : p)
-      : [...existing, { name, values: snapshot, savedAt: Date.now() }];
-    set('tournamentPresets', updated);
-    setPresetName('');
+    const idx = existing.findIndex((p) => p.name === name);
+    const updated =
+      idx >= 0
+        ? existing.map((p, i) =>
+            i === idx ? { name, values: snapshot, savedAt: Date.now() } : p,
+          )
+        : [...existing, { name, values: snapshot, savedAt: Date.now() }];
+    set("tournamentPresets", updated);
+    setPresetName("");
   };
   const loadPreset = (preset) => setMulti(preset.values);
-  const deletePreset = (name) => set('tournamentPresets', (c.tournamentPresets || []).filter(p => p.name !== name));
+  const deletePreset = (name) =>
+    set(
+      "tournamentPresets",
+      (c.tournamentPresets || []).filter((p) => p.name !== name),
+    );
 
   /* ─── Bracket tournament state ─── */
-  const bracketPhase = c.bracketPhase || 'setup'; // setup | active | completed
+  const bracketPhase = c.bracketPhase || "setup"; // setup | active | completed
   const bracketData = c.bracketData || [];
   const bracketPlayers = c.bracketPlayers || [];
-  const bracketType = c.bracketType || 'bonus';
+  const bracketType = c.bracketType || "bonus";
   const bracketPlayerCount = c.bracketPlayerCount || 8;
   const bracketActiveRound = c.bracketActiveRound ?? 0;
   const bracketActiveMatch = c.bracketActiveMatch ?? 0;
-  const bracketTypeConfig = c.bracketTypeConfig || { numSpins: 50, drawRule: 'no_point' };
+  const bracketTypeConfig = c.bracketTypeConfig || {
+    numSpins: 50,
+    drawRule: "no_point",
+  };
 
   /* ─── Refs to prevent stale-closure value swaps ─── */
   const activeRoundRef = useRef(bracketActiveRound);
   const activeMatchRef = useRef(bracketActiveMatch);
   const bracketDataRef = useRef(bracketData);
-  useEffect(() => { activeRoundRef.current = bracketActiveRound; }, [bracketActiveRound]);
-  useEffect(() => { activeMatchRef.current = bracketActiveMatch; }, [bracketActiveMatch]);
-  useEffect(() => { bracketDataRef.current = bracketData; }, [bracketData]);
+  useEffect(() => {
+    activeRoundRef.current = bracketActiveRound;
+  }, [bracketActiveRound]);
+  useEffect(() => {
+    activeMatchRef.current = bracketActiveMatch;
+  }, [bracketActiveMatch]);
+  useEffect(() => {
+    bracketDataRef.current = bracketData;
+  }, [bracketData]);
 
   /* Init bracket players when count changes */
   const [localBracketPlayers, setLocalBracketPlayers] = useState(() => {
     const arr = [];
     for (let i = 0; i < bracketPlayerCount; i++) {
-      arr.push(bracketPlayers[i] || { id: `p${i}`, name: '', twitchUsername: '', slot: { name: '', image: null } });
+      arr.push(
+        bracketPlayers[i] || {
+          id: `p${i}`,
+          name: "",
+          twitchUsername: "",
+          slot: { name: "", image: null },
+        },
+      );
     }
     return arr;
   });
@@ -257,20 +368,27 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
   /* ─── Persist setup state: sync localBracketPlayers → widget config on change ─── */
   const persistPlayersRef = useRef(null);
   useEffect(() => {
-    if (bracketPhase !== 'setup') return;
+    if (bracketPhase !== "setup") return;
     clearTimeout(persistPlayersRef.current);
     persistPlayersRef.current = setTimeout(() => {
-      set('bracketPlayers', localBracketPlayers);
+      set("bracketPlayers", localBracketPlayers);
     }, 600);
     return () => clearTimeout(persistPlayersRef.current);
   }, [localBracketPlayers, bracketPhase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (bracketPhase !== 'setup') return;
-    setLocalBracketPlayers(prev => {
+    if (bracketPhase !== "setup") return;
+    setLocalBracketPlayers((prev) => {
       const arr = [];
       for (let i = 0; i < bracketPlayerCount; i++) {
-        arr.push(prev[i] || { id: `p${i}`, name: '', twitchUsername: '', slot: { name: '', image: null } });
+        arr.push(
+          prev[i] || {
+            id: `p${i}`,
+            name: "",
+            twitchUsername: "",
+            slot: { name: "", image: null },
+          },
+        );
       }
       return arr;
     });
@@ -280,90 +398,131 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
   const [bkSlotSearches, setBkSlotSearches] = useState({});
   const [bkShowSuggestions, setBkShowSuggestions] = useState({});
   const [editingMatchSlots, setEditingMatchSlots] = useState(false);
-  const [matchSlotSearch, setMatchSlotSearch] = useState({ player1: '', player2: '' });
-  const [matchSlotSuggest, setMatchSlotSuggest] = useState({ player1: false, player2: false });
+  const [matchSlotSearch, setMatchSlotSearch] = useState({
+    player1: "",
+    player2: "",
+  });
+  const [matchSlotSuggest, setMatchSlotSuggest] = useState({
+    player1: false,
+    player2: false,
+  });
 
   const updateBracketPlayer = (idx, field, value) => {
-    setLocalBracketPlayers(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
+    setLocalBracketPlayers((prev) =>
+      prev.map((p, i) => (i === idx ? { ...p, [field]: value } : p)),
+    );
   };
 
   const handleBkSlotSearch = (idx, term) => {
-    setBkSlotSearches(prev => ({ ...prev, [idx]: term }));
-    setBkShowSuggestions(prev => ({ ...prev, [idx]: term.length > 0 }));
+    setBkSlotSearches((prev) => ({ ...prev, [idx]: term }));
+    setBkShowSuggestions((prev) => ({ ...prev, [idx]: term.length > 0 }));
   };
 
   const [bkEditingSlot, setBkEditingSlot] = useState({});
 
   const handleBkSlotSelect = (idx, slot) => {
-    updateBracketPlayer(idx, 'slot', { id: slot.id || null, name: slot.name, provider: slot.provider || '', image: slot.image || slot.image_url || null });
-    setBkSlotSearches(prev => ({ ...prev, [idx]: '' }));
-    setBkShowSuggestions(prev => ({ ...prev, [idx]: false }));
-    setBkEditingSlot(prev => ({ ...prev, [idx]: false }));
+    updateBracketPlayer(idx, "slot", {
+      id: slot.id || null,
+      name: slot.name,
+      provider: slot.provider || "",
+      image: slot.image || slot.image_url || null,
+    });
+    setBkSlotSearches((prev) => ({ ...prev, [idx]: "" }));
+    setBkShowSuggestions((prev) => ({ ...prev, [idx]: false }));
+    setBkEditingSlot((prev) => ({ ...prev, [idx]: false }));
   };
 
   const handleBkSlotDelete = (idx) => {
-    updateBracketPlayer(idx, 'slot', null);
-    setBkSlotSearches(prev => ({ ...prev, [idx]: '' }));
-    setBkEditingSlot(prev => ({ ...prev, [idx]: true }));
+    updateBracketPlayer(idx, "slot", null);
+    setBkSlotSearches((prev) => ({ ...prev, [idx]: "" }));
+    setBkEditingSlot((prev) => ({ ...prev, [idx]: true }));
   };
 
   const handleBkSlotEdit = (idx) => {
-    setBkEditingSlot(prev => ({ ...prev, [idx]: true }));
-    setBkSlotSearches(prev => ({ ...prev, [idx]: '' }));
+    setBkEditingSlot((prev) => ({ ...prev, [idx]: true }));
+    setBkSlotSearches((prev) => ({ ...prev, [idx]: "" }));
   };
 
   const toggleBkSlotTag = (idx, tag) => {
     const player = localBracketPlayers[idx];
     const currentTag = player.slot?.tag;
-    updateBracketPlayer(idx, 'slot', { ...player.slot, tag: currentTag === tag ? null : tag });
+    updateBracketPlayer(idx, "slot", {
+      ...player.slot,
+      tag: currentTag === tag ? null : tag,
+    });
   };
 
   /* ─── Fill random players for testing ─── */
   const RANDOM_NAMES = [
-    'xNightmare', 'LuckyDraw', 'SlotKing', 'BonusBeast', 'SpinMaster',
-    'CasinoWolf', 'JackpotJoe', 'ReelQueen', 'BigWinBob', 'MegaMulti',
-    'WildCard', 'ScatterGod', 'FreeSpin77', 'MaxBetMike', 'TurboSpin',
-    'GoldRush', 'DiamondDan', 'CherryPop', 'ThunderWin', 'RoyalFlush',
+    "xNightmare",
+    "LuckyDraw",
+    "SlotKing",
+    "BonusBeast",
+    "SpinMaster",
+    "CasinoWolf",
+    "JackpotJoe",
+    "ReelQueen",
+    "BigWinBob",
+    "MegaMulti",
+    "WildCard",
+    "ScatterGod",
+    "FreeSpin77",
+    "MaxBetMike",
+    "TurboSpin",
+    "GoldRush",
+    "DiamondDan",
+    "CherryPop",
+    "ThunderWin",
+    "RoyalFlush",
   ];
 
   const fillRandomPlayers = () => {
     const shuffled = [...RANDOM_NAMES].sort(() => Math.random() - 0.5);
-    const randomSlots = slots.length > 0
-      ? [...slots].sort(() => Math.random() - 0.5)
-      : [];
+    const randomSlots =
+      slots.length > 0 ? [...slots].sort(() => Math.random() - 0.5) : [];
     const filled = localBracketPlayers.map((p, i) => ({
       ...p,
       name: shuffled[i % shuffled.length],
       slot: randomSlots[i]
-        ? { id: randomSlots[i].id || null, name: randomSlots[i].name, provider: randomSlots[i].provider || '', image: randomSlots[i].image || randomSlots[i].image_url || null }
+        ? {
+            id: randomSlots[i].id || null,
+            name: randomSlots[i].name,
+            provider: randomSlots[i].provider || "",
+            image: randomSlots[i].image || randomSlots[i].image_url || null,
+          }
         : p.slot,
     }));
     setLocalBracketPlayers(filled);
     const newSearches = {};
-    filled.forEach((p, i) => { if (p.slot?.name) newSearches[i] = p.slot.name; });
+    filled.forEach((p, i) => {
+      if (p.slot?.name) newSearches[i] = p.slot.name;
+    });
     setBkSlotSearches(newSearches);
   };
 
   /* ─── Start bracket tournament ─── */
-  const canStartBracket = localBracketPlayers.every(p => p.name.trim().length > 0);
+  const canStartBracket = localBracketPlayers.every(
+    (p) => p.name.trim().length > 0,
+  );
 
   const startBracketTournament = () => {
     if (!canStartBracket) return;
     const seeded = seedPlayers(localBracketPlayers);
-    const cfg = bracketType === 'spins'
-      ? { numSpins: bracketTypeConfig.numSpins || 50 }
-      : bracketType === 'bonus_bo3'
-        ? { drawRule: bracketTypeConfig.drawRule || 'no_point' }
-        : bracketType === 'bonus_bo3_classic'
-          ? {}
-          : {};
+    const cfg =
+      bracketType === "spins"
+        ? { numSpins: bracketTypeConfig.numSpins || 50 }
+        : bracketType === "bonus_bo3"
+          ? { drawRule: bracketTypeConfig.drawRule || "no_point" }
+          : bracketType === "bonus_bo3_classic"
+            ? {}
+            : {};
     const newBracket = generateBracket(seeded, bracketType, cfg);
 
     // Flatten bracket matches for OBS widget compatibility
-    const flatMatches = newBracket.flatMap(r => r.matches);
+    const flatMatches = newBracket.flatMap((r) => r.matches);
 
     setMulti({
-      bracketPhase: 'active',
+      bracketPhase: "active",
       bracketData: newBracket,
       bracketPlayers: localBracketPlayers,
       bracketType,
@@ -383,9 +542,9 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
   };
 
   const resetBracketTournament = () => {
-    if (!window.confirm('Reset the bracket tournament?')) return;
+    if (!window.confirm("Reset the bracket tournament?")) return;
     setMulti({
-      bracketPhase: 'setup',
+      bracketPhase: "setup",
       bracketData: [],
       bracketPlayers: [],
       bracketActiveRound: 0,
@@ -396,7 +555,8 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
   };
 
   /* ─── Bracket match editing ─── */
-  const currentBracketMatch = bracketData[bracketActiveRound]?.matches[bracketActiveMatch] || null;
+  const currentBracketMatch =
+    bracketData[bracketActiveRound]?.matches[bracketActiveMatch] || null;
 
   /* Helper: find next non-completed match after the current one */
   const findNextMatch = (bracket, curRound, curMatch) => {
@@ -404,7 +564,12 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
       const startM = r === curRound ? curMatch + 1 : 0;
       for (let m = startM; m < bracket[r].matches.length; m++) {
         const mt = bracket[r].matches[m];
-        if (mt.status !== MATCH_STATUS.COMPLETED && mt.winner == null && mt.player1 && mt.player2) {
+        if (
+          mt.status !== MATCH_STATUS.COMPLETED &&
+          mt.winner == null &&
+          mt.player1 &&
+          mt.player2
+        ) {
           return { round: r, match: m };
         }
       }
@@ -412,57 +577,101 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
     return null;
   };
 
-  const handleBracketRoundInput = (pinnedRound, pinnedMatch, roundIdx, playerKey, field, value) => {
+  const handleBracketRoundInput = (
+    pinnedRound,
+    pinnedMatch,
+    roundIdx,
+    playerKey,
+    field,
+    value,
+  ) => {
     /* Use pinned round/match from closure creation time to prevent stale value swaps */
     const curData = bracketDataRef.current;
     const curMatch = curData[pinnedRound]?.matches[pinnedMatch];
     if (!curMatch) return;
     const { bracket: newBracket, matchCompleted } = updateBracketMatch(
-      curData, pinnedRound, pinnedMatch, roundIdx, playerKey, { [field]: value }, localBracketPlayers
+      curData,
+      pinnedRound,
+      pinnedMatch,
+      roundIdx,
+      playerKey,
+      { [field]: value },
+      localBracketPlayers,
     );
     let nextRound = pinnedRound;
     let nextMatch = pinnedMatch;
 
     if (matchCompleted) {
       const next = findNextMatch(newBracket, pinnedRound, pinnedMatch);
-      if (next) { nextRound = next.round; nextMatch = next.match; }
+      if (next) {
+        nextRound = next.round;
+        nextMatch = next.match;
+      }
     }
 
     /* Compute active player turn for overlay: player1 finishes all rounds first, then player2 */
     const updatedMatch = newBracket[pinnedRound]?.matches[pinnedMatch];
     if (updatedMatch && !matchCompleted) {
-      const isCls = updatedMatch.type === 'bonus_bo3_classic';
-      let p1Done = 0, p2Done = 0;
+      const isCls = updatedMatch.type === "bonus_bo3_classic";
+      let p1Done = 0,
+        p2Done = 0;
       for (const rd of updatedMatch.rounds) {
-        if ((isCls ? calcRoundMultiplier(rd.player1) : calcRoundResult(rd.player1, updatedMatch.type)) !== null) p1Done++;
-        if ((isCls ? calcRoundMultiplier(rd.player2) : calcRoundResult(rd.player2, updatedMatch.type)) !== null) p2Done++;
+        if (
+          (isCls
+            ? calcRoundMultiplier(rd.player1)
+            : calcRoundResult(rd.player1, updatedMatch.type)) !== null
+        )
+          p1Done++;
+        if (
+          (isCls
+            ? calcRoundMultiplier(rd.player2)
+            : calcRoundResult(rd.player2, updatedMatch.type)) !== null
+        )
+          p2Done++;
       }
-      updatedMatch.activePlayer = p1Done < updatedMatch.rounds.length ? 'player1' : p2Done < updatedMatch.rounds.length ? 'player2' : null;
+      updatedMatch.activePlayer =
+        p1Done < updatedMatch.rounds.length
+          ? "player1"
+          : p2Done < updatedMatch.rounds.length
+            ? "player2"
+            : null;
     }
 
-    const flatMatches = newBracket.flatMap(r => r.matches);
-    const activeFlat = flatMatches.indexOf(newBracket[nextRound]?.matches[nextMatch]);
+    const flatMatches = newBracket.flatMap((r) => r.matches);
+    const activeFlat = flatMatches.indexOf(
+      newBracket[nextRound]?.matches[nextMatch],
+    );
     const updates = {
       bracketData: newBracket,
       bracketActiveRound: nextRound,
       bracketActiveMatch: nextMatch,
-      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
+      data: {
+        ...c.data,
+        matches: flatMatches,
+        currentMatchIdx:
+          activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0),
+      },
     };
     if (matchCompleted && getChampion(newBracket)) {
-      updates.bracketPhase = 'completed';
+      updates.bracketPhase = "completed";
     }
 
     // Track slot records when a match completes (bonus/bonus_bo3 only)
     if (matchCompleted && user?.id) {
       const match = newBracket[pinnedRound]?.matches[pinnedMatch];
-      if (match && match.type !== 'spins') {
+      if (match && match.type !== "spins") {
         const results = [];
         for (const round of match.rounds) {
-          if (round.status !== 'completed') continue;
+          if (round.status !== "completed") continue;
           if (match.slot1?.name && round.player1?.bonusPayout != null) {
             results.push({
               slotName: match.slot1.name,
-              slot: { id: match.slot1.id || null, name: match.slot1.name, provider: match.slot1.provider || '', image: match.slot1.image },
+              slot: {
+                id: match.slot1.id || null,
+                name: match.slot1.name,
+                provider: match.slot1.provider || "",
+                image: match.slot1.image,
+              },
               betSize: Number(round.player1.bonusCost) || 0,
               payout: Number(round.player1.bonusPayout) || 0,
               opened: true,
@@ -471,7 +680,12 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
           if (match.slot2?.name && round.player2?.bonusPayout != null) {
             results.push({
               slotName: match.slot2.name,
-              slot: { id: match.slot2.id || null, name: match.slot2.name, provider: match.slot2.provider || '', image: match.slot2.image },
+              slot: {
+                id: match.slot2.id || null,
+                name: match.slot2.name,
+                provider: match.slot2.provider || "",
+                image: match.slot2.image,
+              },
               betSize: Number(round.player2.bonusCost) || 0,
               payout: Number(round.player2.bonusPayout) || 0,
               opened: true,
@@ -479,7 +693,11 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
           }
         }
         if (results.length > 0) {
-          updateSlotRecordsFromHunt(user.id, results, `Tournament: ${c.bracketName || 'Bracket'}`);
+          updateSlotRecordsFromHunt(
+            user.id,
+            results,
+            `Tournament: ${c.bracketName || "Bracket"}`,
+          );
         }
       }
     }
@@ -488,13 +706,25 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
   };
 
   /* Set bonusCost on ALL rounds at once for a given player (shared cost in BO3) */
-  const handleSharedBonusCost = (pinnedRound, pinnedMatch, playerKey, value) => {
+  const handleSharedBonusCost = (
+    pinnedRound,
+    pinnedMatch,
+    playerKey,
+    value,
+  ) => {
     const curData = bracketDataRef.current;
     const curMatch = curData[pinnedRound]?.matches[pinnedMatch];
     if (!curMatch) return;
-    let newBracket = curData.map(r => ({
+    let newBracket = curData.map((r) => ({
       ...r,
-      matches: r.matches.map(m => ({ ...m, rounds: m.rounds.map(rd => ({ ...rd, player1: { ...rd.player1 }, player2: { ...rd.player2 } })) })),
+      matches: r.matches.map((m) => ({
+        ...m,
+        rounds: m.rounds.map((rd) => ({
+          ...rd,
+          player1: { ...rd.player1 },
+          player2: { ...rd.player2 },
+        })),
+      })),
     }));
     const match = newBracket[pinnedRound].matches[pinnedMatch];
     for (const rd of match.rounds) {
@@ -502,7 +732,13 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
     }
     // Recalculate round winners & match status
     const { bracket: recalced, matchCompleted } = updateBracketMatch(
-      newBracket, pinnedRound, pinnedMatch, 0, playerKey, { bonusCost: value }, localBracketPlayers
+      newBracket,
+      pinnedRound,
+      pinnedMatch,
+      0,
+      playerKey,
+      { bonusCost: value },
+      localBracketPlayers,
     );
     // Ensure all rounds have the same cost (updateBracketMatch may have only updated round 0)
     const recalcedMatch = recalced[pinnedRound].matches[pinnedMatch];
@@ -512,29 +748,47 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
     // Re-run updateRoundData for each round to recalculate winners
     let finalBracket = recalced;
     for (let ri = 1; ri < recalcedMatch.rounds.length; ri++) {
-      const res = updateBracketMatch(finalBracket, pinnedRound, pinnedMatch, ri, playerKey, { bonusCost: value }, localBracketPlayers);
+      const res = updateBracketMatch(
+        finalBracket,
+        pinnedRound,
+        pinnedMatch,
+        ri,
+        playerKey,
+        { bonusCost: value },
+        localBracketPlayers,
+      );
       finalBracket = res.bracket;
     }
 
     let nextRound = pinnedRound;
     let nextMatch = pinnedMatch;
     const finalMatch = finalBracket[pinnedRound]?.matches[pinnedMatch];
-    const matchDone = finalMatch?.status === 'completed';
+    const matchDone = finalMatch?.status === "completed";
     if (matchDone) {
       const next = findNextMatch(finalBracket, pinnedRound, pinnedMatch);
-      if (next) { nextRound = next.round; nextMatch = next.match; }
+      if (next) {
+        nextRound = next.round;
+        nextMatch = next.match;
+      }
     }
 
-    const flatMatches = finalBracket.flatMap(r => r.matches);
-    const activeFlat = flatMatches.indexOf(finalBracket[nextRound]?.matches[nextMatch]);
+    const flatMatches = finalBracket.flatMap((r) => r.matches);
+    const activeFlat = flatMatches.indexOf(
+      finalBracket[nextRound]?.matches[nextMatch],
+    );
     const updates = {
       bracketData: finalBracket,
       bracketActiveRound: nextRound,
       bracketActiveMatch: nextMatch,
-      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
+      data: {
+        ...c.data,
+        matches: flatMatches,
+        currentMatchIdx:
+          activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0),
+      },
     };
     if (matchDone && getChampion(finalBracket)) {
-      updates.bracketPhase = 'completed';
+      updates.bracketPhase = "completed";
     }
     setMulti(updates);
   };
@@ -543,91 +797,146 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
     if (!currentBracketMatch) return;
     const current = currentBracketMatch.winner;
     const newWinner = current === winner ? null : winner;
-    let newBracket = bracketData.map(r => ({
+    let newBracket = bracketData.map((r) => ({
       ...r,
-      matches: r.matches.map(m => ({ ...m, rounds: m.rounds.map(rd => ({ ...rd })) })),
+      matches: r.matches.map((m) => ({
+        ...m,
+        rounds: m.rounds.map((rd) => ({ ...rd })),
+      })),
     }));
-    newBracket[bracketActiveRound].matches[bracketActiveMatch] = setManualWinner(currentBracketMatch, newWinner);
+    newBracket[bracketActiveRound].matches[bracketActiveMatch] =
+      setManualWinner(currentBracketMatch, newWinner);
     if (newWinner) {
-      newBracket = propagateWinner(newBracket, bracketActiveRound, bracketActiveMatch, localBracketPlayers);
+      newBracket = propagateWinner(
+        newBracket,
+        bracketActiveRound,
+        bracketActiveMatch,
+        localBracketPlayers,
+      );
     }
 
     let nextRound = bracketActiveRound;
     let nextMatch = bracketActiveMatch;
     if (newWinner) {
-      const next = findNextMatch(newBracket, bracketActiveRound, bracketActiveMatch);
-      if (next) { nextRound = next.round; nextMatch = next.match; }
+      const next = findNextMatch(
+        newBracket,
+        bracketActiveRound,
+        bracketActiveMatch,
+      );
+      if (next) {
+        nextRound = next.round;
+        nextMatch = next.match;
+      }
     }
 
-    const flatMatches = newBracket.flatMap(r => r.matches);
-    const activeFlat = flatMatches.indexOf(newBracket[nextRound]?.matches[nextMatch]);
+    const flatMatches = newBracket.flatMap((r) => r.matches);
+    const activeFlat = flatMatches.indexOf(
+      newBracket[nextRound]?.matches[nextMatch],
+    );
     const updates = {
       bracketData: newBracket,
       bracketActiveRound: nextRound,
       bracketActiveMatch: nextMatch,
-      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
+      data: {
+        ...c.data,
+        matches: flatMatches,
+        currentMatchIdx:
+          activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0),
+      },
     };
     if (newWinner && getChampion(newBracket)) {
-      updates.bracketPhase = 'completed';
+      updates.bracketPhase = "completed";
     }
     setMulti(updates);
   };
 
   const handleBracketResetMatch = () => {
-    let newBracket = bracketData.map(r => ({
+    let newBracket = bracketData.map((r) => ({
       ...r,
-      matches: r.matches.map(m => ({ ...m, rounds: m.rounds.map(rd => ({ ...rd })) })),
+      matches: r.matches.map((m) => ({
+        ...m,
+        rounds: m.rounds.map((rd) => ({ ...rd })),
+      })),
     }));
-    newBracket[bracketActiveRound].matches[bracketActiveMatch] = resetMatch(currentBracketMatch);
-    const flatMatches = newBracket.flatMap(r => r.matches);
-    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
+    newBracket[bracketActiveRound].matches[bracketActiveMatch] =
+      resetMatch(currentBracketMatch);
+    const flatMatches = newBracket.flatMap((r) => r.matches);
+    const activeFlat = flatMatches.indexOf(
+      newBracket[bracketActiveRound]?.matches[bracketActiveMatch],
+    );
     setMulti({
       bracketData: newBracket,
-      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
+      data: {
+        ...c.data,
+        matches: flatMatches,
+        currentMatchIdx:
+          activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0),
+      },
     });
   };
 
   const handleMatchSlotChange = (playerKey, slot) => {
-    const slotKey = playerKey === 'player1' ? 'slot1' : 'slot2';
-    let newBracket = bracketData.map(r => ({
+    const slotKey = playerKey === "player1" ? "slot1" : "slot2";
+    let newBracket = bracketData.map((r) => ({
       ...r,
-      matches: r.matches.map(m => ({ ...m, rounds: m.rounds.map(rd => ({ ...rd })) })),
+      matches: r.matches.map((m) => ({
+        ...m,
+        rounds: m.rounds.map((rd) => ({ ...rd })),
+      })),
     }));
     newBracket[bracketActiveRound].matches[bracketActiveMatch] = {
       ...newBracket[bracketActiveRound].matches[bracketActiveMatch],
-      [slotKey]: { id: slot.id || null, name: slot.name, provider: slot.provider || '', image: slot.image || slot.image_url || null },
+      [slotKey]: {
+        id: slot.id || null,
+        name: slot.name,
+        provider: slot.provider || "",
+        image: slot.image || slot.image_url || null,
+      },
     };
-    const flatMatches = newBracket.flatMap(r => r.matches);
-    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
+    const flatMatches = newBracket.flatMap((r) => r.matches);
+    const activeFlat = flatMatches.indexOf(
+      newBracket[bracketActiveRound]?.matches[bracketActiveMatch],
+    );
     setMulti({
       bracketData: newBracket,
-      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
+      data: {
+        ...c.data,
+        matches: flatMatches,
+        currentMatchIdx:
+          activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0),
+      },
     });
-    setMatchSlotSearch(prev => ({ ...prev, [playerKey]: slot.name }));
-    setMatchSlotSuggest(prev => ({ ...prev, [playerKey]: false }));
+    setMatchSlotSearch((prev) => ({ ...prev, [playerKey]: slot.name }));
+    setMatchSlotSuggest((prev) => ({ ...prev, [playerKey]: false }));
   };
 
   const bracketStats = getBracketStats(bracketData);
   const bracketChampion = getChampion(bracketData);
 
   const allTabs = [
-    { id: 'bracket', label: '🏅 Bracket' },
-    { id: 'presets', label: '💾 Presets' },
+    { id: "bracket", label: "🏅 Bracket" },
+    { id: "presets", label: "💾 Presets" },
   ];
-  const SIDEBAR_TABS = new Set(['bracket']);
-  const WIDGET_TABS  = new Set(['bracket', 'presets']);
-  const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
-             : mode === 'widget'  ? allTabs.filter(t => WIDGET_TABS.has(t.id))
-             : allTabs;
+  const SIDEBAR_TABS = new Set(["bracket"]);
+  const WIDGET_TABS = new Set(["bracket", "presets"]);
+  const tabs =
+    mode === "sidebar"
+      ? allTabs.filter((t) => SIDEBAR_TABS.has(t.id))
+      : mode === "widget"
+        ? allTabs.filter((t) => WIDGET_TABS.has(t.id))
+        : allTabs;
 
-  const currency = c.arenaCurrency || '€';
-  const readyPlayersCount = localBracketPlayers.filter(player => player.name.trim().length > 0).length;
+  const currency = c.arenaCurrency || "€";
+  const readyPlayersCount = localBracketPlayers.filter(
+    (player) => player.name.trim().length > 0,
+  ).length;
   const selectedTournamentType = TOURNAMENT_TYPES[bracketType];
-  const activeMatchLabel = bracketPhase === 'setup'
-    ? `${readyPlayersCount}/${bracketPlayerCount} ready`
-    : bracketData[bracketActiveRound]?.matches?.length
-      ? `Match ${bracketActiveMatch + 1}/${bracketData[bracketActiveRound].matches.length}`
-      : 'Awaiting match';
+  const activeMatchLabel =
+    bracketPhase === "setup"
+      ? `${readyPlayersCount}/${bracketPlayerCount} ready`
+      : bracketData[bracketActiveRound]?.matches?.length
+        ? `Match ${bracketActiveMatch + 1}/${bracketData[bracketActiveRound].matches.length}`
+        : "Awaiting match";
 
   return (
     <div className="bh-config tm-page">
@@ -635,210 +944,401 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
         <div className="tm-command-copy">
           <span className="tm-page-eyebrow">Widget detail</span>
           <h3 className="tm-page-title">Tournament</h3>
-          <p className="tm-page-subtitle">Build the bracket, assign players, and run matches without leaving this screen.</p>
+          <p className="tm-page-subtitle">
+            Build the bracket, assign players, and run matches without leaving
+            this screen.
+          </p>
         </div>
         <div className="tm-command-status">
-          <span className="tm-status-pill">{bracketPhase === 'setup' ? 'Setup' : bracketPhase === 'active' ? 'Live' : 'Done'}</span>
-          <span className="tm-status-pill">{readyPlayersCount}/{bracketPlayerCount} ready</span>
+          <span className="tm-status-pill">
+            {bracketPhase === "setup"
+              ? "Setup"
+              : bracketPhase === "active"
+                ? "Live"
+                : "Done"}
+          </span>
+          <span className="tm-status-pill">
+            {readyPlayersCount}/{bracketPlayerCount} ready
+          </span>
           <span className="tm-status-pill">{activeMatchLabel}</span>
         </div>
       </div>
 
       {/* Tab nav */}
       {tabs.length > 1 && (
-        <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 0 }} />
+        <TabBar
+          tabs={tabs}
+          active={activeTab}
+          onChange={setActiveTab}
+          style={{ marginTop: 0 }}
+        />
       )}
 
       {/* ═══════ BRACKET TAB ═══════ */}
-      {activeTab === 'bracket' && (
+      {activeTab === "bracket" && (
         <div className="bk-tab">
-          {bracketPhase === 'setup' && (
+          {bracketPhase === "setup" && (
             <>
-            <div className="tm-section-heading">
-              <div>
-                <span className="tm-section-eyebrow">Bracket Setup</span>
-                <h3 className="tm-section-title">Prepare the lineup and launch when every player is ready</h3>
-              </div>
-              <span className="tm-section-pill">{readyPlayersCount}/{bracketPlayerCount} ready</span>
-            </div>
-
-            <div className="bk-setup">
-              {/* ── Settings card ── */}
-              <div className="bk-card tm-card tm-card--setup">
-                <div className="tm-card-head">
-                  <div>
-                    <span className="tm-section-eyebrow">Step 1</span>
-                    <h4 className="bk-card-title">Bracket setup</h4>
-                  </div>
-                  <span className="tm-section-pill">{selectedTournamentType?.label || 'Bonus'}</span>
+              <div className="tm-section-heading">
+                <div>
+                  <span className="tm-section-eyebrow">Bracket Setup</span>
+                  <h3 className="tm-section-title">
+                    Prepare the lineup and launch when every player is ready
+                  </h3>
                 </div>
-
-                <label className="bk-field">
-                  <span className="bk-label">Tournament Name</span>
-                  <input className="bk-input" value={c.bracketName || ''} onChange={e => set('bracketName', e.target.value)} placeholder="e.g. Friday Night Showdown" />
-                </label>
-
-                <span className="bk-label">Tournament Type</span>
-                <div className="bk-type-grid">
-                  {Object.values(TOURNAMENT_TYPES).map(t => (
-                    <button key={t.id}
-                      className={`bk-type-btn ${bracketType === t.id ? 'bk-type-btn--active' : ''}`}
-                      onClick={() => set('bracketType', t.id)}>
-                      <span className="bk-type-icon">{t.icon}</span>
-                      <span className="bk-type-name">{t.label.replace(' Tournament', '')}</span>
-                      <span className="bk-type-desc">{t.description}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {bracketType === 'spins' && (
-                  <label className="bk-field" style={{ marginTop: 8 }}>
-                    <span className="bk-label"># Spins</span>
-                    <input className="bk-input bk-input--sm" type="number" min={1} value={bracketTypeConfig.numSpins || 50}
-                      onChange={e => set('bracketTypeConfig', { ...bracketTypeConfig, numSpins: parseInt(e.target.value) || 50 })} />
-                  </label>
-                )}
-                {bracketType === 'bonus_bo3' && (
-                  <label className="bk-field" style={{ marginTop: 8 }}>
-                    <span className="bk-label">Draw Rule</span>
-                    <select className="bk-input" value={bracketTypeConfig.drawRule || 'no_point'}
-                      onChange={e => set('bracketTypeConfig', { ...bracketTypeConfig, drawRule: e.target.value })}>
-                      <option value="no_point">No point (draw = no point)</option>
-                      <option value="replay">Replay (draw = round replayed)</option>
-                    </select>
-                  </label>
-                )}
-
-                <span className="bk-label" style={{ marginTop: 12 }}>Player Count</span>
-                <div className="bk-count-row">
-                  {[4, 8, 16].map(n => (
-                    <button key={n}
-                      className={`bk-count-btn ${bracketPlayerCount === n ? 'bk-count-btn--active' : ''}`}
-                      onClick={() => set('bracketPlayerCount', n)}>
-                      {n} Players
-                    </button>
-                  ))}
-                </div>
+                <span className="tm-section-pill">
+                  {readyPlayersCount}/{bracketPlayerCount} ready
+                </span>
               </div>
 
-              {/* ── Players card ── */}
-              <div className="bk-card tm-card tm-card--players">
-                <div className="tm-card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <div>
-                    <span className="tm-section-eyebrow">Step 2</span>
-                    <h4 className="bk-card-title" style={{ margin: 0 }}>Players and slots</h4>
+              <div className="bk-setup">
+                {/* ── Settings card ── */}
+                <div className="bk-card tm-card tm-card--setup">
+                  <div className="tm-card-head">
+                    <div>
+                      <span className="tm-section-eyebrow">Step 1</span>
+                      <h4 className="bk-card-title">Bracket setup</h4>
+                    </div>
+                    <span className="tm-section-pill">
+                      {selectedTournamentType?.label || "Bonus"}
+                    </span>
                   </div>
-                  <button className="bk-fill-btn" onClick={fillRandomPlayers}>Fill Random</button>
+
+                  <label className="bk-field">
+                    <span className="bk-label">Tournament Name</span>
+                    <input
+                      className="bk-input"
+                      value={c.bracketName || ""}
+                      onChange={(e) => set("bracketName", e.target.value)}
+                      placeholder="e.g. Friday Night Showdown"
+                    />
+                  </label>
+
+                  <span className="bk-label">Tournament Type</span>
+                  <div className="bk-type-grid">
+                    {Object.values(TOURNAMENT_TYPES).map((t) => (
+                      <button
+                        key={t.id}
+                        className={`bk-type-btn ${bracketType === t.id ? "bk-type-btn--active" : ""}`}
+                        onClick={() => set("bracketType", t.id)}
+                      >
+                        <span className="bk-type-icon">{t.icon}</span>
+                        <span className="bk-type-name">
+                          {t.label.replace(" Tournament", "")}
+                        </span>
+                        <span className="bk-type-desc">{t.description}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {bracketType === "spins" && (
+                    <label className="bk-field" style={{ marginTop: 8 }}>
+                      <span className="bk-label"># Spins</span>
+                      <input
+                        className="bk-input bk-input--sm"
+                        type="number"
+                        min={1}
+                        value={bracketTypeConfig.numSpins || 50}
+                        onChange={(e) =>
+                          set("bracketTypeConfig", {
+                            ...bracketTypeConfig,
+                            numSpins: parseInt(e.target.value) || 50,
+                          })
+                        }
+                      />
+                    </label>
+                  )}
+                  {bracketType === "bonus_bo3" && (
+                    <label className="bk-field" style={{ marginTop: 8 }}>
+                      <span className="bk-label">Draw Rule</span>
+                      <select
+                        className="bk-input"
+                        value={bracketTypeConfig.drawRule || "no_point"}
+                        onChange={(e) =>
+                          set("bracketTypeConfig", {
+                            ...bracketTypeConfig,
+                            drawRule: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="no_point">
+                          No point (draw = no point)
+                        </option>
+                        <option value="replay">
+                          Replay (draw = round replayed)
+                        </option>
+                      </select>
+                    </label>
+                  )}
+
+                  <span className="bk-label" style={{ marginTop: 12 }}>
+                    Player Count
+                  </span>
+                  <div className="bk-count-row">
+                    {[4, 8, 16].map((n) => (
+                      <button
+                        key={n}
+                        className={`bk-count-btn ${bracketPlayerCount === n ? "bk-count-btn--active" : ""}`}
+                        onClick={() => set("bracketPlayerCount", n)}
+                      >
+                        {n} Players
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="bk-players-scroll">
-                  {localBracketPlayers.map((player, idx) => (
-                    <div key={idx} className="bk-player-row">
-                      <div className="bk-player-seed">#{idx + 1}</div>
-                      <div className="bk-player-fields">
-                        <input className="bk-input" type="text" value={player.name} placeholder="Player name"
-                          onChange={e => updateBracketPlayer(idx, 'name', e.target.value)} />
-                        <div className="bk-slot-wrap">
-                          {player.slot?.name && !bkEditingSlot[idx] ? (
-                            /* ── Locked slot view ── */
-                            <div className="bk-slot-locked">
-                              <div className="bk-slot-locked-info">
-                                {player.slot.image && <img src={player.slot.image} alt="" className="bk-slot-thumb" />}
-                                <span className="bk-slot-locked-name">{player.slot.name}</span>
-                                {player.slot.tag && (
-                                  <span className={`bk-slot-tag bk-slot-tag--${player.slot.tag}`}>{player.slot.tag}</span>
-                                )}
-                              </div>
-                              <div className="bk-slot-locked-actions">
-                                <button className={`bk-slot-tag-btn bk-slot-tag-btn--super ${player.slot.tag === 'super' ? 'bk-slot-tag-btn--active' : ''}`}
-                                  onClick={() => toggleBkSlotTag(idx, 'super')}>Super</button>
-                                <button className={`bk-slot-tag-btn bk-slot-tag-btn--extreme ${player.slot.tag === 'extreme' ? 'bk-slot-tag-btn--active' : ''}`}
-                                  onClick={() => toggleBkSlotTag(idx, 'extreme')}>Extreme</button>
-                                <button className="bk-slot-action-btn bk-slot-action-btn--edit" onClick={() => handleBkSlotEdit(idx)} title="Edit">✏️</button>
-                                <button className="bk-slot-action-btn bk-slot-action-btn--delete" onClick={() => handleBkSlotDelete(idx)} title="Delete">🗑️</button>
-                              </div>
-                            </div>
-                          ) : (
-                            /* ── Search input ── */
-                            <>
-                              <div className="bk-slot-input-row">
-                                <input className="bk-input bk-input--slot" type="text"
-                                  value={bkSlotSearches[idx] ?? ''}
-                                  placeholder="🎰 Search slot..."
-                                  onChange={e => handleBkSlotSearch(idx, e.target.value)}
-                                  onFocus={() => { if ((bkSlotSearches[idx] || '').length > 0) setBkShowSuggestions(p => ({ ...p, [idx]: true })); }}
-                                  onBlur={() => setTimeout(() => setBkShowSuggestions(p => ({ ...p, [idx]: false })), 200)} />
-                              </div>
-                              {bkShowSuggestions[idx] && filteredSlots(bkSlotSearches[idx] || '').length > 0 && (
-                                <div className="bk-slot-dropdown">
-                                  {filteredSlots(bkSlotSearches[idx] || '').map(slot => (
-                                    <button key={slot.id} className="bk-slot-option"
-                                      onMouseDown={(e) => { e.preventDefault(); handleBkSlotSelect(idx, slot); }}>
-                                      {slot.image && <img src={slot.image} alt={slot.name} className="bk-slot-thumb" />}
-                                      <span>{slot.name}</span>
-                                    </button>
-                                  ))}
+
+                {/* ── Players card ── */}
+                <div className="bk-card tm-card tm-card--players">
+                  <div
+                    className="tm-card-head"
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div>
+                      <span className="tm-section-eyebrow">Step 2</span>
+                      <h4 className="bk-card-title" style={{ margin: 0 }}>
+                        Players and slots
+                      </h4>
+                    </div>
+                    <button className="bk-fill-btn" onClick={fillRandomPlayers}>
+                      Fill Random
+                    </button>
+                  </div>
+                  <div className="bk-players-scroll">
+                    {localBracketPlayers.map((player, idx) => (
+                      <div key={idx} className="bk-player-row">
+                        <div className="bk-player-seed">#{idx + 1}</div>
+                        <div className="bk-player-fields">
+                          <input
+                            className="bk-input"
+                            type="text"
+                            value={player.name}
+                            placeholder="Player name"
+                            onChange={(e) =>
+                              updateBracketPlayer(idx, "name", e.target.value)
+                            }
+                          />
+                          <div className="bk-slot-wrap">
+                            {player.slot?.name && !bkEditingSlot[idx] ? (
+                              /* ── Locked slot view ── */
+                              <div className="bk-slot-locked">
+                                <div className="bk-slot-locked-info">
+                                  {player.slot.image && (
+                                    <img
+                                      src={player.slot.image}
+                                      alt=""
+                                      className="bk-slot-thumb"
+                                    />
+                                  )}
+                                  <span className="bk-slot-locked-name">
+                                    {player.slot.name}
+                                  </span>
+                                  {player.slot.tag && (
+                                    <span
+                                      className={`bk-slot-tag bk-slot-tag--${player.slot.tag}`}
+                                    >
+                                      {player.slot.tag}
+                                    </span>
+                                  )}
                                 </div>
-                              )}
-                            </>
-                          )}
+                                <div className="bk-slot-locked-actions">
+                                  <button
+                                    className={`bk-slot-tag-btn bk-slot-tag-btn--super ${player.slot.tag === "super" ? "bk-slot-tag-btn--active" : ""}`}
+                                    onClick={() =>
+                                      toggleBkSlotTag(idx, "super")
+                                    }
+                                  >
+                                    Super
+                                  </button>
+                                  <button
+                                    className={`bk-slot-tag-btn bk-slot-tag-btn--extreme ${player.slot.tag === "extreme" ? "bk-slot-tag-btn--active" : ""}`}
+                                    onClick={() =>
+                                      toggleBkSlotTag(idx, "extreme")
+                                    }
+                                  >
+                                    Extreme
+                                  </button>
+                                  <button
+                                    className="bk-slot-action-btn bk-slot-action-btn--edit"
+                                    onClick={() => handleBkSlotEdit(idx)}
+                                    title="Edit"
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    className="bk-slot-action-btn bk-slot-action-btn--delete"
+                                    onClick={() => handleBkSlotDelete(idx)}
+                                    title="Delete"
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              /* ── Search input ── */
+                              <>
+                                <div className="bk-slot-input-row">
+                                  <input
+                                    className="bk-input bk-input--slot"
+                                    type="text"
+                                    value={bkSlotSearches[idx] ?? ""}
+                                    placeholder="🎰 Search slot..."
+                                    onChange={(e) =>
+                                      handleBkSlotSearch(idx, e.target.value)
+                                    }
+                                    onFocus={() => {
+                                      if (
+                                        (bkSlotSearches[idx] || "").length > 0
+                                      )
+                                        setBkShowSuggestions((p) => ({
+                                          ...p,
+                                          [idx]: true,
+                                        }));
+                                    }}
+                                    onBlur={() =>
+                                      setTimeout(
+                                        () =>
+                                          setBkShowSuggestions((p) => ({
+                                            ...p,
+                                            [idx]: false,
+                                          })),
+                                        200,
+                                      )
+                                    }
+                                  />
+                                </div>
+                                {bkShowSuggestions[idx] &&
+                                  filteredSlots(bkSlotSearches[idx] || "")
+                                    .length > 0 && (
+                                    <div className="bk-slot-dropdown">
+                                      {filteredSlots(
+                                        bkSlotSearches[idx] || "",
+                                      ).map((slot) => (
+                                        <button
+                                          key={slot.id}
+                                          className="bk-slot-option"
+                                          onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            handleBkSlotSelect(idx, slot);
+                                          }}
+                                        >
+                                          {slot.image && (
+                                            <img
+                                              src={slot.image}
+                                              alt={slot.name}
+                                              className="bk-slot-thumb"
+                                            />
+                                          )}
+                                          <span>{slot.name}</span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* ── Start button ── */}
-              <div className="bk-start-area tm-start-area">
-                <div className="tm-start-copy">
-                  <span className="tm-section-eyebrow">Step 3</span>
-                  <strong>{canStartBracket ? 'Ready to launch' : `${bracketPlayerCount - readyPlayersCount} players missing`}</strong>
+                {/* ── Start button ── */}
+                <div className="bk-start-area tm-start-area">
+                  <div className="tm-start-copy">
+                    <span className="tm-section-eyebrow">Step 3</span>
+                    <strong>
+                      {canStartBracket
+                        ? "Ready to launch"
+                        : `${bracketPlayerCount - readyPlayersCount} players missing`}
+                    </strong>
+                  </div>
+                  <button
+                    className={`bk-start-btn ${!canStartBracket ? "bk-start-btn--disabled" : ""}`}
+                    onClick={startBracketTournament}
+                    disabled={!canStartBracket}
+                  >
+                    Start Bracket Tournament
+                  </button>
                 </div>
-                <button className={`bk-start-btn ${!canStartBracket ? 'bk-start-btn--disabled' : ''}`}
-                  onClick={startBracketTournament} disabled={!canStartBracket}>
-                  Start Bracket Tournament
-                </button>
               </div>
-            </div>
             </>
           )}
 
-          {(bracketPhase === 'active' || bracketPhase === 'completed') && (
+          {(bracketPhase === "active" || bracketPhase === "completed") && (
             <div className="bk-active">
               <div className="tm-section-heading tm-section-heading--active">
                 <div>
                   <span className="tm-section-eyebrow">Match Operations</span>
-                  <h3 className="tm-section-title">Run the live bracket, enter outcomes, and move the tournament forward</h3>
+                  <h3 className="tm-section-title">
+                    Run the live bracket, enter outcomes, and move the
+                    tournament forward
+                  </h3>
                 </div>
-                <span className="tm-section-pill">{bracketStats.completed}/{bracketStats.total} complete</span>
+                <span className="tm-section-pill">
+                  {bracketStats.completed}/{bracketStats.total} complete
+                </span>
               </div>
 
               {/* ── Header ── */}
               <div className="bk-active-header">
                 <div>
-                  <h3 className="bk-active-title">{c.bracketName || 'Bracket Tournament'}</h3>
+                  <h3 className="bk-active-title">
+                    {c.bracketName || "Bracket Tournament"}
+                  </h3>
                   <div className="bk-active-meta">
-                    <span className="bk-badge bk-badge--type">{TOURNAMENT_TYPES[bracketType]?.icon} {TOURNAMENT_TYPES[bracketType]?.label}</span>
-                    <span className="bk-badge bk-badge--players">{bracketPlayerCount} Players</span>
-                    {bracketPhase === 'active' && <span className="bk-badge bk-badge--live">● Live</span>}
+                    <span className="bk-badge bk-badge--type">
+                      {TOURNAMENT_TYPES[bracketType]?.icon}{" "}
+                      {TOURNAMENT_TYPES[bracketType]?.label}
+                    </span>
+                    <span className="bk-badge bk-badge--players">
+                      {bracketPlayerCount} Players
+                    </span>
+                    {bracketPhase === "active" && (
+                      <span className="bk-badge bk-badge--live">● Live</span>
+                    )}
                   </div>
                 </div>
-                <button className="bk-reset-btn" onClick={resetBracketTournament}>🗑️ Reset</button>
+                <button
+                  className="bk-reset-btn"
+                  onClick={resetBracketTournament}
+                >
+                  🗑️ Reset
+                </button>
               </div>
 
               {/* ── Progress bar ── */}
               <div className="bk-progress">
                 <div className="bk-progress-info">
-                  <span>{bracketStats.completed}/{bracketStats.total} matches completed</span>
-                  <span>{bracketStats.total > 0 ? Math.round((bracketStats.completed / bracketStats.total) * 100) : 0}%</span>
+                  <span>
+                    {bracketStats.completed}/{bracketStats.total} matches
+                    completed
+                  </span>
+                  <span>
+                    {bracketStats.total > 0
+                      ? Math.round(
+                          (bracketStats.completed / bracketStats.total) * 100,
+                        )
+                      : 0}
+                    %
+                  </span>
                 </div>
                 <div className="bk-progress-track">
-                  <div className="bk-progress-fill" style={{ width: `${bracketStats.total > 0 ? (bracketStats.completed / bracketStats.total) * 100 : 0}%` }} />
+                  <div
+                    className="bk-progress-fill"
+                    style={{
+                      width: `${bracketStats.total > 0 ? (bracketStats.completed / bracketStats.total) * 100 : 0}%`,
+                    }}
+                  />
                 </div>
               </div>
 
               {/* ── Champion banner ── */}
-              {bracketPhase === 'completed' && bracketChampion && (
+              {bracketPhase === "completed" && bracketChampion && (
                 <div className="bk-champion">
                   <div className="bk-champion-trophy">🏆</div>
                   <div className="bk-champion-name">{bracketChampion}</div>
@@ -848,418 +1348,888 @@ export default function TournamentConfig({ config, onChange, mode = 'full' }) {
 
               {/* ── Bracket tree + Match panel side-by-side ── */}
               <div className="bk-active-grid">
-              {/* ── Bracket tree (horizontal scroll) ── */}
-              <div className="bk-bracket-card tm-card tm-card--bracket">
-                <div className="bk-bracket-scroll">
-                  <div className="bk-bracket-rounds">
-                    {bracketData.map((round, rIdx) => (
-                      <div key={rIdx} className="bk-bracket-round">
-                        <div className="bk-round-label">{round.label}</div>
-                        <div className="bk-round-matches">
-                          {round.matches.map((match, mIdx) => {
-                            const isActive = rIdx === bracketActiveRound && mIdx === bracketActiveMatch;
-                            const winner = match.winner ?? calcMatchWinner(match);
-                            const isComplete = match.status === MATCH_STATUS.COMPLETED || winner != null;
+                {/* ── Bracket tree (horizontal scroll) ── */}
+                <div className="bk-bracket-card tm-card tm-card--bracket">
+                  <div className="bk-bracket-scroll">
+                    <div className="bk-bracket-rounds">
+                      {bracketData.map((round, rIdx) => (
+                        <div key={rIdx} className="bk-bracket-round">
+                          <div className="bk-round-label">{round.label}</div>
+                          <div className="bk-round-matches">
+                            {round.matches.map((match, mIdx) => {
+                              const isActive =
+                                rIdx === bracketActiveRound &&
+                                mIdx === bracketActiveMatch;
+                              const winner =
+                                match.winner ?? calcMatchWinner(match);
+                              const isComplete =
+                                match.status === MATCH_STATUS.COMPLETED ||
+                                winner != null;
 
-                            return (
-                              <button key={mIdx}
-                                className={`bk-match-card ${isActive ? 'bk-match-card--active' : ''} ${isComplete ? 'bk-match-card--done' : ''}`}
-                                onClick={() => {
-                                  const flatIdx = bracketData.slice(0, rIdx).reduce((s, r) => s + r.matches.length, 0) + mIdx;
-                                  setMulti({ bracketActiveRound: rIdx, bracketActiveMatch: mIdx, data: { ...c.data, currentMatchIdx: flatIdx } });
-                                }}>
-                                <div className={`bk-mc-player ${winner === 'player1' ? 'bk-mc-player--win' : ''} ${winner === 'player2' ? 'bk-mc-player--lose' : ''}`}>
-                                  {match.slot1?.image && <img src={match.slot1.image} alt="" className="bk-mc-slot-img" onError={e => { e.target.style.display = 'none'; }} />}
-                                  <span className="bk-mc-name">{match.player1 || 'TBD'}</span>
-                                </div>
-                                <div className="bk-mc-vs">VS</div>
-                                <div className={`bk-mc-player ${winner === 'player2' ? 'bk-mc-player--win' : ''} ${winner === 'player1' ? 'bk-mc-player--lose' : ''}`}>
-                                  {match.slot2?.image && <img src={match.slot2.image} alt="" className="bk-mc-slot-img" onError={e => { e.target.style.display = 'none'; }} />}
-                                  <span className="bk-mc-name">{match.player2 || 'TBD'}</span>
-                                </div>
-                                {isComplete && winner && (
-                                  <div className="bk-mc-winner-badge">
-                                    ✓ {winner === 'player1' ? match.player1 : winner === 'player2' ? match.player2 : 'Draw'}
+                              return (
+                                <button
+                                  key={mIdx}
+                                  className={`bk-match-card ${isActive ? "bk-match-card--active" : ""} ${isComplete ? "bk-match-card--done" : ""}`}
+                                  onClick={() => {
+                                    const flatIdx =
+                                      bracketData
+                                        .slice(0, rIdx)
+                                        .reduce(
+                                          (s, r) => s + r.matches.length,
+                                          0,
+                                        ) + mIdx;
+                                    setMulti({
+                                      bracketActiveRound: rIdx,
+                                      bracketActiveMatch: mIdx,
+                                      data: {
+                                        ...c.data,
+                                        currentMatchIdx: flatIdx,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  <div
+                                    className={`bk-mc-player ${winner === "player1" ? "bk-mc-player--win" : ""} ${winner === "player2" ? "bk-mc-player--lose" : ""}`}
+                                  >
+                                    {match.slot1?.image && (
+                                      <img
+                                        src={match.slot1.image}
+                                        alt=""
+                                        className="bk-mc-slot-img"
+                                        onError={(e) => {
+                                          e.target.style.display = "none";
+                                        }}
+                                      />
+                                    )}
+                                    <span className="bk-mc-name">
+                                      {match.player1 || "TBD"}
+                                    </span>
                                   </div>
-                                )}
-                              </button>
-                            );
-                          })}
+                                  <div className="bk-mc-vs">VS</div>
+                                  <div
+                                    className={`bk-mc-player ${winner === "player2" ? "bk-mc-player--win" : ""} ${winner === "player1" ? "bk-mc-player--lose" : ""}`}
+                                  >
+                                    {match.slot2?.image && (
+                                      <img
+                                        src={match.slot2.image}
+                                        alt=""
+                                        className="bk-mc-slot-img"
+                                        onError={(e) => {
+                                          e.target.style.display = "none";
+                                        }}
+                                      />
+                                    )}
+                                    <span className="bk-mc-name">
+                                      {match.player2 || "TBD"}
+                                    </span>
+                                  </div>
+                                  {isComplete && winner && (
+                                    <div className="bk-mc-winner-badge">
+                                      ✓{" "}
+                                      {winner === "player1"
+                                        ? match.player1
+                                        : winner === "player2"
+                                          ? match.player2
+                                          : "Draw"}
+                                    </div>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* ── Match control panel ── */}
-              {currentBracketMatch && bracketPhase === 'active' && (() => {
-                const inputFields = getRoundInputFields(currentBracketMatch.type);
-                const isBo3 = currentBracketMatch.type === 'bonus_bo3' || currentBracketMatch.type === 'bonus_bo3_classic';
-                const scoreboard = isBo3 ? getBoScoreboard(currentBracketMatch) : null;
-                const matchWinner = currentBracketMatch.winner ?? calcMatchWinner(currentBracketMatch);
+                {/* ── Match control panel ── */}
+                {currentBracketMatch &&
+                  bracketPhase === "active" &&
+                  (() => {
+                    const inputFields = getRoundInputFields(
+                      currentBracketMatch.type,
+                    );
+                    const isBo3 =
+                      currentBracketMatch.type === "bonus_bo3" ||
+                      currentBracketMatch.type === "bonus_bo3_classic";
+                    const scoreboard = isBo3
+                      ? getBoScoreboard(currentBracketMatch)
+                      : null;
+                    const matchWinner =
+                      currentBracketMatch.winner ??
+                      calcMatchWinner(currentBracketMatch);
 
-                /* Pin round/match at render time — these values are safe inside callbacks */
-                const pinR = bracketActiveRound;
-                const pinM = bracketActiveMatch;
+                    /* Pin round/match at render time — these values are safe inside callbacks */
+                    const pinR = bracketActiveRound;
+                    const pinM = bracketActiveMatch;
 
-                /* Focus-next helper: advances to next number input in the panel */
-                const focusNextInput = (currentInput) => {
-                  const panel = currentInput?.closest('.bk-match-panel');
-                  if (!panel) return;
-                  const inputs = Array.from(panel.querySelectorAll('input[type="number"]'));
-                  const idx = inputs.indexOf(currentInput);
-                  if (idx >= 0 && idx < inputs.length - 1) {
-                    inputs[idx + 1].focus();
-                    inputs[idx + 1].select();
-                  }
-                };
+                    /* Focus-next helper: advances to next number input in the panel */
+                    const focusNextInput = (currentInput) => {
+                      const panel = currentInput?.closest(".bk-match-panel");
+                      if (!panel) return;
+                      const inputs = Array.from(
+                        panel.querySelectorAll('input[type="number"]'),
+                      );
+                      const idx = inputs.indexOf(currentInput);
+                      if (idx >= 0 && idx < inputs.length - 1) {
+                        inputs[idx + 1].focus();
+                        inputs[idx + 1].select();
+                      }
+                    };
 
-                return (
-                  <div className="bk-match-panel tm-card tm-card--match-panel">
-                    <div className="bk-mp-header">
-                      <h4 className="bk-mp-title">
-                        {bracketData[bracketActiveRound]?.label} — Match {bracketActiveMatch + 1}/{bracketData[bracketActiveRound]?.matches.length}
-                      </h4>
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                        <button
-                          className={`bk-badge ${editingMatchSlots ? 'bk-badge--live' : ''}`}
-                          style={{ cursor: 'pointer', border: 'none', fontSize: 10, padding: '2px 8px' }}
-                          onClick={() => {
-                            setEditingMatchSlots(prev => !prev);
-                            if (!editingMatchSlots) {
-                              setMatchSlotSearch({
-                                player1: currentBracketMatch.slot1?.name || '',
-                                player2: currentBracketMatch.slot2?.name || '',
-                              });
-                            }
-                          }}>
-                          ✏️ Slots
-                        </button>
-                        <div className="bk-mp-status">
-                          {currentBracketMatch.status === MATCH_STATUS.COMPLETED
-                            ? <span className="bk-badge bk-badge--done">Completed</span>
-                            : currentBracketMatch.status === MATCH_STATUS.IN_PROGRESS
-                              ? <span className="bk-badge bk-badge--live">In Progress</span>
-                              : <span className="bk-badge bk-badge--pending">Pending</span>
-                          }
+                    return (
+                      <div className="bk-match-panel tm-card tm-card--match-panel">
+                        <div className="bk-mp-header">
+                          <h4 className="bk-mp-title">
+                            {bracketData[bracketActiveRound]?.label} — Match{" "}
+                            {bracketActiveMatch + 1}/
+                            {bracketData[bracketActiveRound]?.matches.length}
+                          </h4>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              alignItems: "center",
+                            }}
+                          >
+                            <button
+                              className={`bk-badge ${editingMatchSlots ? "bk-badge--live" : ""}`}
+                              style={{
+                                cursor: "pointer",
+                                border: "none",
+                                fontSize: 10,
+                                padding: "2px 8px",
+                              }}
+                              onClick={() => {
+                                setEditingMatchSlots((prev) => !prev);
+                                if (!editingMatchSlots) {
+                                  setMatchSlotSearch({
+                                    player1:
+                                      currentBracketMatch.slot1?.name || "",
+                                    player2:
+                                      currentBracketMatch.slot2?.name || "",
+                                  });
+                                }
+                              }}
+                            >
+                              ✏️ Slots
+                            </button>
+                            <div className="bk-mp-status">
+                              {currentBracketMatch.status ===
+                              MATCH_STATUS.COMPLETED ? (
+                                <span className="bk-badge bk-badge--done">
+                                  Completed
+                                </span>
+                              ) : currentBracketMatch.status ===
+                                MATCH_STATUS.IN_PROGRESS ? (
+                                <span className="bk-badge bk-badge--live">
+                                  In Progress
+                                </span>
+                              ) : (
+                                <span className="bk-badge bk-badge--pending">
+                                  Pending
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Inline slot editor */}
-                    {editingMatchSlots && (
-                      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                        {['player1', 'player2'].map(pk => {
-                          const slotKey = pk === 'player1' ? 'slot1' : 'slot2';
-                          return (
-                            <div key={pk} style={{ flex: 1, position: 'relative' }}>
-                              <div style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginBottom: 2 }}>
-                                {currentBracketMatch[pk]} slot
-                              </div>
-                              <input
-                                type="text"
-                                value={matchSlotSearch[pk]}
-                                onChange={e => {
-                                  setMatchSlotSearch(prev => ({ ...prev, [pk]: e.target.value }));
-                                  setMatchSlotSuggest(prev => ({ ...prev, [pk]: e.target.value.length > 0 }));
-                                }}
-                                onFocus={() => { if (matchSlotSearch[pk]?.length > 0) setMatchSlotSuggest(p => ({ ...p, [pk]: true })); }}
-                                placeholder="Search slot..."
-                                style={{ width: '100%', fontSize: 11 }}
+                        {/* Inline slot editor */}
+                        {editingMatchSlots && (
+                          <div
+                            style={{ display: "flex", gap: 8, marginBottom: 8 }}
+                          >
+                            {["player1", "player2"].map((pk) => {
+                              const slotKey =
+                                pk === "player1" ? "slot1" : "slot2";
+                              return (
+                                <div
+                                  key={pk}
+                                  style={{ flex: 1, position: "relative" }}
+                                >
+                                  <div
+                                    style={{
+                                      fontSize: 9,
+                                      fontWeight: 700,
+                                      color: "#64748b",
+                                      marginBottom: 2,
+                                    }}
+                                  >
+                                    {currentBracketMatch[pk]} slot
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={matchSlotSearch[pk]}
+                                    onChange={(e) => {
+                                      setMatchSlotSearch((prev) => ({
+                                        ...prev,
+                                        [pk]: e.target.value,
+                                      }));
+                                      setMatchSlotSuggest((prev) => ({
+                                        ...prev,
+                                        [pk]: e.target.value.length > 0,
+                                      }));
+                                    }}
+                                    onFocus={() => {
+                                      if (matchSlotSearch[pk]?.length > 0)
+                                        setMatchSlotSuggest((p) => ({
+                                          ...p,
+                                          [pk]: true,
+                                        }));
+                                    }}
+                                    placeholder="Search slot..."
+                                    style={{ width: "100%", fontSize: 11 }}
+                                  />
+                                  {matchSlotSuggest[pk] &&
+                                    filteredSlots(matchSlotSearch[pk] || "")
+                                      .length > 0 && (
+                                      <div
+                                        className="bk-slot-dropdown"
+                                        style={{ maxHeight: 120 }}
+                                      >
+                                        {filteredSlots(
+                                          matchSlotSearch[pk] || "",
+                                        ).map((slot) => (
+                                          <button
+                                            key={slot.id || slot.name}
+                                            className="bk-slot-option"
+                                            onMouseDown={() =>
+                                              handleMatchSlotChange(pk, slot)
+                                            }
+                                          >
+                                            {slot.image && (
+                                              <img
+                                                src={
+                                                  slot.image || slot.image_url
+                                                }
+                                                alt=""
+                                                className="bk-slot-option-img"
+                                              />
+                                            )}
+                                            <span>{slot.name}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Player names banner */}
+                        <div className="bk-mp-players">
+                          <div
+                            className={`bk-mp-p ${matchWinner === "player1" ? "bk-mp-p--win" : ""}`}
+                          >
+                            {currentBracketMatch.slot1?.image && (
+                              <img
+                                src={currentBracketMatch.slot1.image}
+                                alt=""
+                                className="bk-mp-slot-img"
                               />
-                              {matchSlotSuggest[pk] && filteredSlots(matchSlotSearch[pk] || '').length > 0 && (
-                                <div className="bk-slot-dropdown" style={{ maxHeight: 120 }}>
-                                  {filteredSlots(matchSlotSearch[pk] || '').map(slot => (
-                                    <button key={slot.id || slot.name}
-                                      className="bk-slot-option"
-                                      onMouseDown={() => handleMatchSlotChange(pk, slot)}>
-                                      {slot.image && <img src={slot.image || slot.image_url} alt="" className="bk-slot-option-img" />}
-                                      <span>{slot.name}</span>
-                                    </button>
+                            )}
+                            <div>
+                              <div className="bk-mp-p-name">
+                                {currentBracketMatch.player1}
+                              </div>
+                              {currentBracketMatch.slot1?.name && (
+                                <div className="bk-mp-p-slot">
+                                  {currentBracketMatch.slot1.name}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="bk-mp-vs">VS</div>
+                          <div
+                            className={`bk-mp-p ${matchWinner === "player2" ? "bk-mp-p--win" : ""}`}
+                          >
+                            <div style={{ textAlign: "right" }}>
+                              <div className="bk-mp-p-name">
+                                {currentBracketMatch.player2}
+                              </div>
+                              {currentBracketMatch.slot2?.name && (
+                                <div className="bk-mp-p-slot">
+                                  {currentBracketMatch.slot2.name}
+                                </div>
+                              )}
+                            </div>
+                            {currentBracketMatch.slot2?.image && (
+                              <img
+                                src={currentBracketMatch.slot2.image}
+                                alt=""
+                                className="bk-mp-slot-img"
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Bo3 scoreboard */}
+                        {isBo3 && scoreboard && (
+                          <div className="bk-mp-scoreboard">
+                            <span
+                              className={
+                                scoreboard.p1Wins >= 2 ? "bk-score-win" : ""
+                              }
+                            >
+                              {scoreboard.p1Wins}
+                            </span>
+                            <span className="bk-score-sep">&ndash;</span>
+                            <span
+                              className={
+                                scoreboard.p2Wins >= 2 ? "bk-score-win" : ""
+                              }
+                            >
+                              {scoreboard.p2Wins}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Shared Bonus Cost for BO3 (same cost across all rounds) */}
+                        {isBo3 && currentBracketMatch.type !== "spins" && (
+                          <div className="bk-mp-round">
+                            <div className="bk-mp-round-label">Bonus Cost</div>
+                            <div className="bk-mp-round-grid">
+                              <div className="bk-mp-round-side">
+                                <div className="bk-mp-side-name">
+                                  {currentBracketMatch.player1}
+                                </div>
+                                <label className="bk-mp-input-label">
+                                  <span>Bonus Cost</span>
+                                  <div className="bk-mp-input-wrap">
+                                    <span className="bk-mp-input-prefix">
+                                      €
+                                    </span>
+                                    <NumInput
+                                      value={
+                                        currentBracketMatch.rounds[0]?.player1
+                                          ?.bonusCost
+                                      }
+                                      prefix=""
+                                      placeholder="0"
+                                      onChange={(v) =>
+                                        handleSharedBonusCost(
+                                          pinR,
+                                          pinM,
+                                          "player1",
+                                          v,
+                                        )
+                                      }
+                                      onNext={() =>
+                                        focusNextInput(document.activeElement)
+                                      }
+                                    />
+                                  </div>
+                                </label>
+                              </div>
+                              <div className="bk-mp-round-vs">VS</div>
+                              <div className="bk-mp-round-side">
+                                <div className="bk-mp-side-name">
+                                  {currentBracketMatch.player2}
+                                </div>
+                                <label className="bk-mp-input-label">
+                                  <span>Bonus Cost</span>
+                                  <div className="bk-mp-input-wrap">
+                                    <span className="bk-mp-input-prefix">
+                                      €
+                                    </span>
+                                    <NumInput
+                                      value={
+                                        currentBracketMatch.rounds[0]?.player2
+                                          ?.bonusCost
+                                      }
+                                      prefix=""
+                                      placeholder="0"
+                                      onChange={(v) =>
+                                        handleSharedBonusCost(
+                                          pinR,
+                                          pinM,
+                                          "player2",
+                                          v,
+                                        )
+                                      }
+                                      onNext={() =>
+                                        focusNextInput(document.activeElement)
+                                      }
+                                    />
+                                  </div>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Round inputs */}
+                        {currentBracketMatch.rounds.map((round, rIdx) => {
+                          const roundFields =
+                            isBo3 && currentBracketMatch.type !== "spins"
+                              ? inputFields.filter((f) => f.key !== "bonusCost")
+                              : inputFields;
+                          return (
+                            <div key={rIdx} className="bk-mp-round">
+                              {isBo3 && (
+                                <div className="bk-mp-round-label">
+                                  Round {rIdx + 1}
+                                </div>
+                              )}
+                              <div className="bk-mp-round-grid">
+                                {/* Player 1 */}
+                                <div className="bk-mp-round-side">
+                                  <div className="bk-mp-side-name">
+                                    {currentBracketMatch.player1}
+                                  </div>
+                                  {roundFields.map((f) => (
+                                    <label
+                                      key={`p1-${rIdx}-${f.key}`}
+                                      className="bk-mp-input-label"
+                                    >
+                                      <span>{f.label}</span>
+                                      <div className="bk-mp-input-wrap">
+                                        <span className="bk-mp-input-prefix">
+                                          {f.prefix}
+                                        </span>
+                                        <NumInput
+                                          value={round.player1[f.key]}
+                                          prefix=""
+                                          placeholder="0"
+                                          onChange={(v) =>
+                                            handleBracketRoundInput(
+                                              pinR,
+                                              pinM,
+                                              rIdx,
+                                              "player1",
+                                              f.key,
+                                              v,
+                                            )
+                                          }
+                                          onNext={() =>
+                                            focusNextInput(
+                                              document.activeElement,
+                                            )
+                                          }
+                                        />
+                                      </div>
+                                    </label>
                                   ))}
+                                  {(() => {
+                                    const isClassic =
+                                      currentBracketMatch.type ===
+                                      "bonus_bo3_classic";
+                                    const r = isClassic
+                                      ? calcRoundMultiplier(round.player1)
+                                      : calcRoundResult(
+                                          round.player1,
+                                          currentBracketMatch.type,
+                                        );
+                                    return r !== null ? (
+                                      <div
+                                        className={`bk-mp-result ${isClassic ? "" : r > 0 ? "bk-mp-result--pos" : r < 0 ? "bk-mp-result--neg" : ""}`}
+                                      >
+                                        {formatResult(
+                                          r,
+                                          currency,
+                                          isClassic ? "multiplier" : undefined,
+                                        )}
+                                      </div>
+                                    ) : null;
+                                  })()}
+                                </div>
+
+                                <div className="bk-mp-round-vs">VS</div>
+
+                                {/* Player 2 */}
+                                <div className="bk-mp-round-side">
+                                  <div className="bk-mp-side-name">
+                                    {currentBracketMatch.player2}
+                                  </div>
+                                  {roundFields.map((f) => (
+                                    <label
+                                      key={`p2-${rIdx}-${f.key}`}
+                                      className="bk-mp-input-label"
+                                    >
+                                      <span>{f.label}</span>
+                                      <div className="bk-mp-input-wrap">
+                                        <span className="bk-mp-input-prefix">
+                                          {f.prefix}
+                                        </span>
+                                        <NumInput
+                                          value={round.player2[f.key]}
+                                          prefix=""
+                                          placeholder="0"
+                                          onChange={(v) =>
+                                            handleBracketRoundInput(
+                                              pinR,
+                                              pinM,
+                                              rIdx,
+                                              "player2",
+                                              f.key,
+                                              v,
+                                            )
+                                          }
+                                          onNext={() =>
+                                            focusNextInput(
+                                              document.activeElement,
+                                            )
+                                          }
+                                        />
+                                      </div>
+                                    </label>
+                                  ))}
+                                  {(() => {
+                                    const isClassic =
+                                      currentBracketMatch.type ===
+                                      "bonus_bo3_classic";
+                                    const r = isClassic
+                                      ? calcRoundMultiplier(round.player2)
+                                      : calcRoundResult(
+                                          round.player2,
+                                          currentBracketMatch.type,
+                                        );
+                                    return r !== null ? (
+                                      <div
+                                        className={`bk-mp-result ${isClassic ? "" : r > 0 ? "bk-mp-result--pos" : r < 0 ? "bk-mp-result--neg" : ""}`}
+                                      >
+                                        {formatResult(
+                                          r,
+                                          currency,
+                                          isClassic ? "multiplier" : undefined,
+                                        )}
+                                      </div>
+                                    ) : null;
+                                  })()}
+                                </div>
+                              </div>
+
+                              {round.winner && (
+                                <div className="bk-mp-round-winner">
+                                  ✓{" "}
+                                  {round.winner === "player1"
+                                    ? currentBracketMatch.player1
+                                    : round.winner === "player2"
+                                      ? currentBracketMatch.player2
+                                      : "Draw"}
                                 </div>
                               )}
                             </div>
                           );
                         })}
-                      </div>
-                    )}
 
-                    {/* Player names banner */}
-                    <div className="bk-mp-players">
-                      <div className={`bk-mp-p ${matchWinner === 'player1' ? 'bk-mp-p--win' : ''}`}>
-                        {currentBracketMatch.slot1?.image && <img src={currentBracketMatch.slot1.image} alt="" className="bk-mp-slot-img" />}
-                        <div>
-                          <div className="bk-mp-p-name">{currentBracketMatch.player1}</div>
-                          {currentBracketMatch.slot1?.name && <div className="bk-mp-p-slot">{currentBracketMatch.slot1.name}</div>}
-                        </div>
-                      </div>
-                      <div className="bk-mp-vs">VS</div>
-                      <div className={`bk-mp-p ${matchWinner === 'player2' ? 'bk-mp-p--win' : ''}`}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div className="bk-mp-p-name">{currentBracketMatch.player2}</div>
-                          {currentBracketMatch.slot2?.name && <div className="bk-mp-p-slot">{currentBracketMatch.slot2.name}</div>}
-                        </div>
-                        {currentBracketMatch.slot2?.image && <img src={currentBracketMatch.slot2.image} alt="" className="bk-mp-slot-img" />}
-                      </div>
-                    </div>
+                        {/* Winner / Manual override + Reset */}
+                        {(() => {
+                          /* Compute multiplier (or result) totals per player across all 3 rounds */
+                          const isClassic =
+                            currentBracketMatch.type === "bonus_bo3_classic";
+                          let p1Total = 0,
+                            p2Total = 0,
+                            p1Count = 0,
+                            p2Count = 0;
+                          for (const round of currentBracketMatch.rounds) {
+                            const r1 = isClassic
+                              ? calcRoundMultiplier(round.player1)
+                              : calcRoundResult(
+                                  round.player1,
+                                  currentBracketMatch.type,
+                                );
+                            const r2 = isClassic
+                              ? calcRoundMultiplier(round.player2)
+                              : calcRoundResult(
+                                  round.player2,
+                                  currentBracketMatch.type,
+                                );
+                            if (r1 !== null) {
+                              p1Total += r1;
+                              p1Count++;
+                            }
+                            if (r2 !== null) {
+                              p2Total += r2;
+                              p2Count++;
+                            }
+                          }
+                          const roundCount = currentBracketMatch.rounds.length;
+                          const allP1Done = p1Count === roundCount;
+                          const allP2Done = p2Count === roundCount;
+                          const allDone = allP1Done && allP2Done;
+                          const autoWinner = allDone
+                            ? p1Total > p2Total
+                              ? "player1"
+                              : p2Total > p1Total
+                                ? "player2"
+                                : "draw"
+                            : null;
 
-                    {/* Bo3 scoreboard */}
-                    {isBo3 && scoreboard && (
-                      <div className="bk-mp-scoreboard">
-                        <span className={scoreboard.p1Wins >= 2 ? 'bk-score-win' : ''}>{scoreboard.p1Wins}</span>
-                        <span className="bk-score-sep">&ndash;</span>
-                        <span className={scoreboard.p2Wins >= 2 ? 'bk-score-win' : ''}>{scoreboard.p2Wins}</span>
-                      </div>
-                    )}
+                          /* Active player turn: player1 first, then player2 */
+                          const activePlayer = !allP1Done
+                            ? "player1"
+                            : !allP2Done
+                              ? "player2"
+                              : null;
 
-                    {/* Shared Bonus Cost for BO3 (same cost across all rounds) */}
-                    {isBo3 && currentBracketMatch.type !== 'spins' && (
-                      <div className="bk-mp-round">
-                        <div className="bk-mp-round-label">Bonus Cost</div>
-                        <div className="bk-mp-round-grid">
-                          <div className="bk-mp-round-side">
-                            <div className="bk-mp-side-name">{currentBracketMatch.player1}</div>
-                            <label className="bk-mp-input-label">
-                              <span>Bonus Cost</span>
-                              <div className="bk-mp-input-wrap">
-                                <span className="bk-mp-input-prefix">€</span>
-                                <NumInput value={currentBracketMatch.rounds[0]?.player1?.bonusCost} prefix="" placeholder="0"
-                                  onChange={v => handleSharedBonusCost(pinR, pinM, 'player1', v)}
-                                  onNext={() => focusNextInput(document.activeElement)} />
-                              </div>
-                            </label>
-                          </div>
-                          <div className="bk-mp-round-vs">VS</div>
-                          <div className="bk-mp-round-side">
-                            <div className="bk-mp-side-name">{currentBracketMatch.player2}</div>
-                            <label className="bk-mp-input-label">
-                              <span>Bonus Cost</span>
-                              <div className="bk-mp-input-wrap">
-                                <span className="bk-mp-input-prefix">€</span>
-                                <NumInput value={currentBracketMatch.rounds[0]?.player2?.bonusCost} prefix="" placeholder="0"
-                                  onChange={v => handleSharedBonusCost(pinR, pinM, 'player2', v)}
-                                  onNext={() => focusNextInput(document.activeElement)} />
-                              </div>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Round inputs */}
-                    {currentBracketMatch.rounds.map((round, rIdx) => {
-                      const roundFields = isBo3 && currentBracketMatch.type !== 'spins'
-                        ? inputFields.filter(f => f.key !== 'bonusCost')
-                        : inputFields;
-                      return (
-                      <div key={rIdx} className="bk-mp-round">
-                        {isBo3 && <div className="bk-mp-round-label">Round {rIdx + 1}</div>}
-                        <div className="bk-mp-round-grid">
-                          {/* Player 1 */}
-                          <div className="bk-mp-round-side">
-                            <div className="bk-mp-side-name">{currentBracketMatch.player1}</div>
-                            {roundFields.map(f => (
-                              <label key={`p1-${rIdx}-${f.key}`} className="bk-mp-input-label">
-                                <span>{f.label}</span>
-                                <div className="bk-mp-input-wrap">
-                                  <span className="bk-mp-input-prefix">{f.prefix}</span>
-                                  <NumInput value={round.player1[f.key]} prefix="" placeholder="0"
-                                    onChange={v => handleBracketRoundInput(pinR, pinM, rIdx, 'player1', f.key, v)}
-                                    onNext={() => focusNextInput(document.activeElement)} />
+                          return (
+                            <>
+                              {/* Multiplier sum display */}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  padding: "8px 12px",
+                                  background: "rgba(255,255,255,0.03)",
+                                  borderRadius: 8,
+                                  border: "1px solid rgba(255,255,255,0.06)",
+                                  marginTop: 4,
+                                }}
+                              >
+                                <div style={{ textAlign: "center", flex: 1 }}>
+                                  <div
+                                    style={{
+                                      fontSize: 9,
+                                      fontWeight: 700,
+                                      color: "#64748b",
+                                      textTransform: "uppercase",
+                                      marginBottom: 2,
+                                    }}
+                                  >
+                                    {currentBracketMatch.player1}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: 18,
+                                      fontWeight: 800,
+                                      fontFamily: "'Inter', monospace",
+                                      color:
+                                        allDone && autoWinner === "player1"
+                                          ? "#eef2f5"
+                                          : allDone && autoWinner === "player2"
+                                            ? "#ef4444"
+                                            : "#facc15",
+                                    }}
+                                  >
+                                    {p1Count > 0
+                                      ? isClassic
+                                        ? `${p1Total.toFixed(2)}x`
+                                        : `${p1Total > 0 ? "+" : ""}${p1Total.toFixed(2)}${currency}`
+                                      : "—"}
+                                  </div>
+                                  {activePlayer === "player1" && !allDone && (
+                                    <div
+                                      style={{
+                                        fontSize: 8,
+                                        color: "#818cf8",
+                                        fontWeight: 700,
+                                        marginTop: 2,
+                                      }}
+                                    >
+                                      ▶ PLAYING
+                                    </div>
+                                  )}
                                 </div>
-                              </label>
-                            ))}
-                            {(() => {
-                              const isClassic = currentBracketMatch.type === 'bonus_bo3_classic';
-                              const r = isClassic ? calcRoundMultiplier(round.player1) : calcRoundResult(round.player1, currentBracketMatch.type);
-                              return r !== null ? (
-                                <div className={`bk-mp-result ${isClassic ? '' : r > 0 ? 'bk-mp-result--pos' : r < 0 ? 'bk-mp-result--neg' : ''}`}>
-                                  {formatResult(r, currency, isClassic ? 'multiplier' : undefined)}
+                                <div
+                                  style={{
+                                    fontSize: 10,
+                                    color: "#475569",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  VS
                                 </div>
-                              ) : null;
-                            })()}
-                          </div>
-
-                          <div className="bk-mp-round-vs">VS</div>
-
-                          {/* Player 2 */}
-                          <div className="bk-mp-round-side">
-                            <div className="bk-mp-side-name">{currentBracketMatch.player2}</div>
-                            {roundFields.map(f => (
-                              <label key={`p2-${rIdx}-${f.key}`} className="bk-mp-input-label">
-                                <span>{f.label}</span>
-                                <div className="bk-mp-input-wrap">
-                                  <span className="bk-mp-input-prefix">{f.prefix}</span>
-                                  <NumInput value={round.player2[f.key]} prefix="" placeholder="0"
-                                    onChange={v => handleBracketRoundInput(pinR, pinM, rIdx, 'player2', f.key, v)}
-                                    onNext={() => focusNextInput(document.activeElement)} />
+                                <div style={{ textAlign: "center", flex: 1 }}>
+                                  <div
+                                    style={{
+                                      fontSize: 9,
+                                      fontWeight: 700,
+                                      color: "#64748b",
+                                      textTransform: "uppercase",
+                                      marginBottom: 2,
+                                    }}
+                                  >
+                                    {currentBracketMatch.player2}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: 18,
+                                      fontWeight: 800,
+                                      fontFamily: "'Inter', monospace",
+                                      color:
+                                        allDone && autoWinner === "player2"
+                                          ? "#eef2f5"
+                                          : allDone && autoWinner === "player1"
+                                            ? "#ef4444"
+                                            : "#facc15",
+                                    }}
+                                  >
+                                    {p2Count > 0
+                                      ? isClassic
+                                        ? `${p2Total.toFixed(2)}x`
+                                        : `${p2Total > 0 ? "+" : ""}${p2Total.toFixed(2)}${currency}`
+                                      : "—"}
+                                  </div>
+                                  {activePlayer === "player2" && !allDone && (
+                                    <div
+                                      style={{
+                                        fontSize: 8,
+                                        color: "#818cf8",
+                                        fontWeight: 700,
+                                        marginTop: 2,
+                                      }}
+                                    >
+                                      ▶ PLAYING
+                                    </div>
+                                  )}
                                 </div>
-                              </label>
-                            ))}
-                            {(() => {
-                              const isClassic = currentBracketMatch.type === 'bonus_bo3_classic';
-                              const r = isClassic ? calcRoundMultiplier(round.player2) : calcRoundResult(round.player2, currentBracketMatch.type);
-                              return r !== null ? (
-                                <div className={`bk-mp-result ${isClassic ? '' : r > 0 ? 'bk-mp-result--pos' : r < 0 ? 'bk-mp-result--neg' : ''}`}>
-                                  {formatResult(r, currency, isClassic ? 'multiplier' : undefined)}
-                                </div>
-                              ) : null;
-                            })()}
-                          </div>
-                        </div>
-
-                        {round.winner && (
-                          <div className="bk-mp-round-winner">
-                            ✓ {round.winner === 'player1' ? currentBracketMatch.player1 : round.winner === 'player2' ? currentBracketMatch.player2 : 'Draw'}
-                          </div>
-                        )}
-                      </div>
-                      );
-                    })}
-
-                    {/* Winner / Manual override + Reset */}
-                    {(() => {
-                      /* Compute multiplier (or result) totals per player across all 3 rounds */
-                      const isClassic = currentBracketMatch.type === 'bonus_bo3_classic';
-                      let p1Total = 0, p2Total = 0, p1Count = 0, p2Count = 0;
-                      for (const round of currentBracketMatch.rounds) {
-                        const r1 = isClassic ? calcRoundMultiplier(round.player1) : calcRoundResult(round.player1, currentBracketMatch.type);
-                        const r2 = isClassic ? calcRoundMultiplier(round.player2) : calcRoundResult(round.player2, currentBracketMatch.type);
-                        if (r1 !== null) { p1Total += r1; p1Count++; }
-                        if (r2 !== null) { p2Total += r2; p2Count++; }
-                      }
-                      const roundCount = currentBracketMatch.rounds.length;
-                      const allP1Done = p1Count === roundCount;
-                      const allP2Done = p2Count === roundCount;
-                      const allDone = allP1Done && allP2Done;
-                      const autoWinner = allDone ? (p1Total > p2Total ? 'player1' : p2Total > p1Total ? 'player2' : 'draw') : null;
-
-                      /* Active player turn: player1 first, then player2 */
-                      const activePlayer = !allP1Done ? 'player1' : !allP2Done ? 'player2' : null;
-
-                      return (
-                        <>
-                          {/* Multiplier sum display */}
-                          <div style={{
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8,
-                            border: '1px solid rgba(255,255,255,0.06)', marginTop: 4,
-                          }}>
-                            <div style={{ textAlign: 'center', flex: 1 }}>
-                              <div style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: 2 }}>
-                                {currentBracketMatch.player1}
                               </div>
-                              <div style={{
-                                fontSize: 18, fontWeight: 800, fontFamily: "'Inter', monospace",
-                                color: allDone && autoWinner === 'player1' ? '#eef2f5' : allDone && autoWinner === 'player2' ? '#ef4444' : '#facc15',
-                              }}>
-                                {p1Count > 0
-                                  ? (isClassic ? `${p1Total.toFixed(2)}x` : `${p1Total > 0 ? '+' : ''}${p1Total.toFixed(2)}${currency}`)
-                                  : '—'}
-                              </div>
-                              {activePlayer === 'player1' && !allDone && (
-                                <div style={{ fontSize: 8, color: '#818cf8', fontWeight: 700, marginTop: 2 }}>▶ PLAYING</div>
+
+                              {/* Confirm Winner button */}
+                              {allDone && !currentBracketMatch.winner && (
+                                <button
+                                  className="bk-mp-winner-btn bk-mp-winner-btn--active"
+                                  style={{
+                                    width: "100%",
+                                    marginTop: 6,
+                                    padding: "10px 0",
+                                    fontSize: 13,
+                                  }}
+                                  onClick={() =>
+                                    handleBracketManualWinner(autoWinner)
+                                  }
+                                >
+                                  ✅ Confirm Winner:{" "}
+                                  {autoWinner === "player1"
+                                    ? currentBracketMatch.player1
+                                    : autoWinner === "player2"
+                                      ? currentBracketMatch.player2
+                                      : "Draw"}
+                                </button>
                               )}
-                            </div>
-                            <div style={{ fontSize: 10, color: '#475569', fontWeight: 700 }}>VS</div>
-                            <div style={{ textAlign: 'center', flex: 1 }}>
-                              <div style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: 2 }}>
-                                {currentBracketMatch.player2}
-                              </div>
-                              <div style={{
-                                fontSize: 18, fontWeight: 800, fontFamily: "'Inter', monospace",
-                                color: allDone && autoWinner === 'player2' ? '#eef2f5' : allDone && autoWinner === 'player1' ? '#ef4444' : '#facc15',
-                              }}>
-                                {p2Count > 0
-                                  ? (isClassic ? `${p2Total.toFixed(2)}x` : `${p2Total > 0 ? '+' : ''}${p2Total.toFixed(2)}${currency}`)
-                                  : '—'}
-                              </div>
-                              {activePlayer === 'player2' && !allDone && (
-                                <div style={{ fontSize: 8, color: '#818cf8', fontWeight: 700, marginTop: 2 }}>▶ PLAYING</div>
+                              {currentBracketMatch.winner && (
+                                <div
+                                  style={{
+                                    textAlign: "center",
+                                    padding: "8px 0",
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    color: "#eef2f5",
+                                    marginTop: 4,
+                                  }}
+                                >
+                                  👑 Winner:{" "}
+                                  {currentBracketMatch.winner === "player1"
+                                    ? currentBracketMatch.player1
+                                    : currentBracketMatch.winner === "player2"
+                                      ? currentBracketMatch.player2
+                                      : "Draw"}
+                                </div>
                               )}
-                            </div>
-                          </div>
-
-                          {/* Confirm Winner button */}
-                          {allDone && !currentBracketMatch.winner && (
-                            <button
-                              className="bk-mp-winner-btn bk-mp-winner-btn--active"
-                              style={{ width: '100%', marginTop: 6, padding: '10px 0', fontSize: 13 }}
-                              onClick={() => handleBracketManualWinner(autoWinner)}>
-                              ✅ Confirm Winner: {autoWinner === 'player1' ? currentBracketMatch.player1 : autoWinner === 'player2' ? currentBracketMatch.player2 : 'Draw'}
-                            </button>
-                          )}
-                          {currentBracketMatch.winner && (
-                            <div style={{
-                              textAlign: 'center', padding: '8px 0', fontSize: 13, fontWeight: 700,
-                              color: '#eef2f5', marginTop: 4,
-                            }}>
-                              👑 Winner: {currentBracketMatch.winner === 'player1' ? currentBracketMatch.player1 : currentBracketMatch.winner === 'player2' ? currentBracketMatch.player2 : 'Draw'}
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                    <button className="bk-reset-match-btn" onClick={handleBracketResetMatch}>
-                      🔄 Reset Match
-                    </button>
-                  </div>
-                );
-              })()}
-              </div>{/* end bk-active-grid */}
+                            </>
+                          );
+                        })()}
+                        <button
+                          className="bk-reset-match-btn"
+                          onClick={handleBracketResetMatch}
+                        >
+                          🔄 Reset Match
+                        </button>
+                      </div>
+                    );
+                  })()}
+              </div>
+              {/* end bk-active-grid */}
             </div>
           )}
         </div>
       )}
 
       {/* ═══════ PRESETS TAB ═══════ */}
-      {activeTab === 'presets' && (
+      {activeTab === "presets" && (
         <div className="nb-section">
           <div className="tm-tab-intro">
             <span className="tm-section-eyebrow">Preset Library</span>
-            <h3 className="tm-section-title">Save visual systems and reuse them across tournament formats</h3>
-            <p className="tm-tab-intro-copy">Keep built-in layouts close, store your own tournament looks, and load them instantly before going live.</p>
+            <h3 className="tm-section-title">
+              Save visual systems and reuse them across tournament formats
+            </h3>
+            <p className="tm-tab-intro-copy">
+              Keep built-in layouts close, store your own tournament looks, and
+              load them instantly before going live.
+            </p>
           </div>
 
           <h4 className="nb-subtitle">Save Current Style</h4>
           <div className="nb-preset-save">
-            <input className="nb-preset-input"
-              value={presetName} onChange={e => setPresetName(e.target.value)}
-              placeholder="Preset name…" onKeyDown={e => e.key === 'Enter' && savePreset()} />
-            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>Save</button>
+            <input
+              className="nb-preset-input"
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              placeholder="Preset name…"
+              onKeyDown={(e) => e.key === "Enter" && savePreset()}
+            />
+            <button
+              className="nb-preset-save-btn"
+              onClick={savePreset}
+              disabled={!presetName.trim()}
+            >
+              Save
+            </button>
           </div>
 
           {/* Built-in presets */}
-          <h4 className="nb-subtitle" style={{ marginTop: 10 }}>Built-in</h4>
+          <h4 className="nb-subtitle" style={{ marginTop: 10 }}>
+            Built-in
+          </h4>
           <div className="nb-preset-list">
-            {BUILTIN_PRESETS.map(p => (
-              <div key={p.name} className="nb-preset-pill nb-preset-pill--builtin">
+            {BUILTIN_PRESETS.map((p) => (
+              <div
+                key={p.name}
+                className="nb-preset-pill nb-preset-pill--builtin"
+              >
                 <div className="nb-preset-pill__info">
                   <span className="nb-preset-pill__name">{p.name}</span>
                 </div>
                 <div className="nb-preset-pill__actions">
-                  <button className="nb-preset-pill__load" onClick={() => loadPreset(p)}>Load</button>
+                  <button
+                    className="nb-preset-pill__load"
+                    onClick={() => loadPreset(p)}
+                  >
+                    Load
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Saved</h4>
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
+            Saved
+          </h4>
           {(c.tournamentPresets || []).length === 0 ? (
-            <p className="oc-config-hint" style={{ marginTop: 4, opacity: 0.6 }}>No saved presets yet.</p>
+            <p
+              className="oc-config-hint"
+              style={{ marginTop: 4, opacity: 0.6 }}
+            >
+              No saved presets yet.
+            </p>
           ) : (
             <div className="nb-preset-list">
-              {(c.tournamentPresets || []).map(p => (
+              {(c.tournamentPresets || []).map((p) => (
                 <div key={p.name} className="nb-preset-pill">
                   <div className="nb-preset-pill__info">
                     <span className="nb-preset-pill__name">{p.name}</span>
-                    <span className="nb-preset-pill__date">{new Date(p.savedAt).toLocaleDateString()}</span>
+                    <span className="nb-preset-pill__date">
+                      {new Date(p.savedAt).toLocaleDateString()}
+                    </span>
                   </div>
                   <div className="nb-preset-pill__actions">
-                    <button className="nb-preset-pill__load" onClick={() => loadPreset(p)}>Load</button>
-                    <button className="nb-preset-pill__delete" onClick={() => deletePreset(p.name)} title="Delete preset">🗑️</button>
+                    <button
+                      className="nb-preset-pill__load"
+                      onClick={() => loadPreset(p)}
+                    >
+                      Load
+                    </button>
+                    <button
+                      className="nb-preset-pill__delete"
+                      onClick={() => deletePreset(p.name)}
+                      title="Delete preset"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))}
