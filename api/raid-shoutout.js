@@ -186,6 +186,59 @@ async function resolveClipVideoUrl(thumbnailUrl) {
   return primary;
 }
 
+async function resolveModernClipVideoUrl(clipSlug) {
+  if (!clipSlug) return null;
+  const query = `
+    query ClipPlaybackAccessToken($slug: ID!) {
+      clip(slug: $slug) {
+        playbackAccessToken(
+          params: {
+            platform: "web"
+            playerBackend: "mediaplayer"
+            playerType: "site"
+          }
+        ) {
+          signature
+          value
+        }
+        videoQualities {
+          quality
+          sourceURL
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch("https://gql.twitch.tv/gql", {
+      method: "POST",
+      headers: {
+        "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query, variables: { slug: clipSlug } }),
+    });
+    if (!response.ok) return null;
+    const clip = (await response.json())?.data?.clip;
+    const access = clip?.playbackAccessToken;
+    const qualities = Array.isArray(clip?.videoQualities)
+      ? clip.videoQualities
+      : [];
+    const quality =
+      qualities.find((item) => item.quality === "720") ||
+      qualities.find((item) => item.quality === "480") ||
+      qualities[0];
+    if (!quality?.sourceURL || !access?.signature || !access?.value) return null;
+    const url = new URL(quality.sourceURL);
+    url.searchParams.set("sig", access.signature);
+    url.searchParams.set("token", access.value);
+    return url.toString();
+  } catch (error) {
+    console.warn("[RaidShoutout] Modern clip resolution failed:", error.message);
+    return null;
+  }
+}
+
 // ─── Main Handler ───
 export default async function handler(req, res) {
   // CORS
@@ -257,13 +310,11 @@ export default async function handler(req, res) {
         .eq("source_event_id", sourceEventId)
         .maybeSingle();
       if (duplicate) {
-        return res
-          .status(200)
-          .json({
-            success: true,
-            duplicate: true,
-            alert: { id: duplicate.id },
-          });
+        return res.status(200).json({
+          success: true,
+          duplicate: true,
+          alert: { id: duplicate.id },
+        });
       }
     } else if (!userId) {
       return res.status(400).json({ error: "Missing userId (overlay owner)" });
@@ -312,7 +363,8 @@ export default async function handler(req, res) {
 
     // ── Step 4: Resolve direct .mp4 video URL (server-side, no CORS) ──
     const clipVideoUrl = clip
-      ? await resolveClipVideoUrl(clip.thumbnail_url)
+      ? (await resolveModernClipVideoUrl(clip.id)) ||
+        (await resolveClipVideoUrl(clip.thumbnail_url))
       : null;
 
     // ── Step 5: Build alert payload ──
@@ -367,12 +419,10 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, duplicate: true });
       }
       console.error("Supabase insert error:", insertError);
-      return res
-        .status(500)
-        .json({
-          error: "Failed to create shoutout alert",
-          details: insertError.message,
-        });
+      return res.status(500).json({
+        error: "Failed to create shoutout alert",
+        details: insertError.message,
+      });
     }
 
     return res.status(200).json({

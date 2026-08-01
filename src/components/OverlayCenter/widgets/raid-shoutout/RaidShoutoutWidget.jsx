@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useTwitchChat from "../../../../hooks/useTwitchChat";
 import {
   getPendingAlerts,
@@ -16,11 +16,11 @@ import "./RaidShoutoutWidget.css";
 const EXIT_MS = 650;
 
 const FRAME_PRESETS = {
-  neon: { accent: "#9146ff", secondary: "#22d3ee", surface: "#090711" },
-  glass: { accent: "#ffffff", secondary: "#c4b5fd", surface: "#111827" },
-  retro: { accent: "#fbbf24", secondary: "#f59e0b", surface: "#451a03" },
-  minimal: { accent: "#64748b", secondary: "#94a3b8", surface: "#111827" },
-  gaming: { accent: "#22d3ee", secondary: "#3b82f6", surface: "#020617" },
+  neon: { accent: "#45c8ff", secondary: "#1385e9", surface: "#081228" },
+  glass: { accent: "#9dbdf2", secondary: "#45c8ff", surface: "#0a1734" },
+  retro: { accent: "#45c8ff", secondary: "#2f63c9", surface: "#0c1c40" },
+  minimal: { accent: "#8baacf", secondary: "#2f63c9", surface: "#081228" },
+  gaming: { accent: "#20d8ff", secondary: "#1385e9", surface: "#061126" },
 };
 
 function clampNumber(value, min, max, fallback) {
@@ -60,10 +60,39 @@ function clipProxyUrl(alert) {
   if (alert.clipVideoUrl) {
     return `/api/clip-video?url=${encodeURIComponent(alert.clipVideoUrl)}`;
   }
-  if (alert.clipThumbnailUrl) {
+  if (/-preview-\d+x\d+\.jpg(?:\?|$)/i.test(alert.clipThumbnailUrl)) {
     return `/api/clip-video?thumbnail=${encodeURIComponent(alert.clipThumbnailUrl)}`;
   }
   return "";
+}
+
+function AutoplayClipVideo({ src, poster, onEnded, onError }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return undefined;
+    video.defaultMuted = true;
+    video.muted = true;
+    const play = () => video.play().catch(() => undefined);
+    play();
+    video.addEventListener("canplay", play, { once: true });
+    return () => video.removeEventListener("canplay", play);
+  }, [src]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      poster={poster || undefined}
+      autoPlay
+      muted
+      playsInline
+      preload="auto"
+      onEnded={onEnded}
+      onError={onError}
+    />
+  );
 }
 
 function TwitchGlyph() {
@@ -77,6 +106,39 @@ function TwitchGlyph() {
   );
 }
 
+function ShoutoutMedia({ alert, videoUrl, embedUrl, mediaFailed, onMediaEnded, onMediaFailed }) {
+  if (videoUrl && !mediaFailed) {
+    return (
+      <AutoplayClipVideo
+        src={videoUrl}
+        poster={alert.clipThumbnailUrl}
+        onEnded={onMediaEnded}
+        onError={onMediaFailed}
+      />
+    );
+  }
+  if (embedUrl) {
+    return (
+      <iframe
+        src={embedUrl}
+        title={`Twitch clip by ${alert.displayName}`}
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+  if (alert.clipThumbnailUrl) {
+    return <img src={alert.clipThumbnailUrl} alt="" />;
+  }
+  return (
+    <div className="better-shoutout-media-empty">
+      <TwitchGlyph />
+      <strong>{alert.displayName}</strong>
+      <span>{alert.game}</span>
+    </div>
+  );
+}
+
 function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
   const [mediaFailed, setMediaFailed] = useState(false);
   const preset = FRAME_PRESETS[config.frameStyle] || FRAME_PRESETS.neon;
@@ -87,10 +149,8 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
   const progress = Math.max(0, Math.min(1, remaining / duration));
   const videoUrl = clipProxyUrl(alert);
   const embedUrl = alert.clipId
-    ? `https://clips.twitch.tv/embed?clip=${encodeURIComponent(alert.clipId)}&parent=${window.location.hostname || "localhost"}&autoplay=true&muted=${config.muted === false ? "false" : "true"}`
+    ? `https://clips.twitch.tv/embed?clip=${encodeURIComponent(alert.clipId)}&parent=${window.location.hostname || "localhost"}&autoplay=true&muted=true`
     : "";
-  const canShowVideo = Boolean(videoUrl && !mediaFailed);
-  const canShowEmbed = Boolean(!canShowVideo && embedUrl);
   const style = {
     "--so-accent": accent,
     "--so-secondary": secondary,
@@ -181,32 +241,14 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
       </header>
 
       <div className="better-shoutout-media" data-widget-element="clipFrame">
-        {canShowVideo ? (
-          <video
-            src={videoUrl}
-            poster={alert.clipThumbnailUrl || undefined}
-            autoPlay={config.autoplay !== false}
-            muted={config.muted !== false}
-            playsInline
-            onEnded={onMediaEnded}
-            onError={() => setMediaFailed(true)}
-          />
-        ) : canShowEmbed ? (
-          <iframe
-            src={embedUrl}
-            title={`Twitch clip by ${alert.displayName}`}
-            allow="autoplay; fullscreen"
-            allowFullScreen
-          />
-        ) : alert.clipThumbnailUrl ? (
-          <img src={alert.clipThumbnailUrl} alt="" />
-        ) : (
-          <div className="better-shoutout-media-empty">
-            <TwitchGlyph />
-            <strong>{alert.displayName}</strong>
-            <span>{alert.game}</span>
-          </div>
-        )}
+        <ShoutoutMedia
+          alert={alert}
+          videoUrl={videoUrl}
+          embedUrl={embedUrl}
+          mediaFailed={mediaFailed}
+          onMediaEnded={onMediaEnded}
+          onMediaFailed={() => setMediaFailed(true)}
+        />
       </div>
 
       {config.showFooter !== false ? (

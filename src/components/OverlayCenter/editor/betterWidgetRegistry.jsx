@@ -523,10 +523,10 @@ const SIZE_CONSTRAINTS = {
   },
   bets: { minWidth: 280, minHeight: 300, maxWidth: 880, maxHeight: 920 },
   raid_shoutout: {
-    minWidth: 300,
-    minHeight: 240,
+    minWidth: 400,
+    minHeight: 225,
     maxWidth: 1280,
-    maxHeight: 960,
+    maxHeight: 720,
   },
 };
 
@@ -840,21 +840,60 @@ export function duplicateBetterInstance(instance, overrides = {}) {
   });
 }
 
+function migrateLegacyShoutoutConfig(widgetType, rawConfig) {
+  if (
+    widgetType !== "raid_shoutout" ||
+    rawConfig.accentColor !== "#9146ff" ||
+    rawConfig.secondaryColor !== "#22d3ee" ||
+    rawConfig.backgroundColor !== "#090711"
+  ) {
+    return rawConfig;
+  }
+  return {
+    ...rawConfig,
+    accentColor: "#45c8ff",
+    secondaryColor: "#1385e9",
+    backgroundColor: "#081228",
+    mutedColor:
+      rawConfig.mutedColor === "#a5b4c7"
+        ? "#8baacf"
+        : rawConfig.mutedColor,
+    borderRadius: rawConfig.borderRadius === 16 ? 12 : rawConfig.borderRadius,
+    borderWidth: rawConfig.borderWidth === 2 ? 1 : rawConfig.borderWidth,
+    glowIntensity:
+      rawConfig.glowIntensity === 55 ? 35 : rawConfig.glowIntensity,
+  };
+}
+
 export function normalizeBetterInstance(rawInstance = {}) {
   const widgetType =
     rawInstance.widgetType || rawInstance.widget_type || rawInstance.type;
   const definition = getBetterWidgetDefinition(widgetType);
   if (!definition) return null;
-  const geometry = normalizeInstanceGeometry(widgetType, rawInstance);
+  const usesLegacyShoutoutGeometry =
+    widgetType === "raid_shoutout" &&
+    Number(rawInstance.width) === 560 &&
+    Number(rawInstance.height) === 420;
+  const geometry = normalizeInstanceGeometry(
+    widgetType,
+    usesLegacyShoutoutGeometry
+      ? {
+          ...rawInstance,
+          x: normalizeBetterCoordinate(rawInstance.x) - 40,
+          y: normalizeBetterCoordinate(rawInstance.y) + 30,
+          width: 640,
+          height: 360,
+        }
+      : rawInstance,
+  );
+  const rawConfig = rawInstance.config || definition.defaultConfig;
+  const config = migrateLegacyShoutoutConfig(widgetType, rawConfig);
   return {
     instanceId:
       rawInstance.instanceId || rawInstance.id || makeInstanceId(widgetType),
     widgetType,
     label: rawInstance.label || definition.label,
-    config: validateBetterWidgetConfig(
-      widgetType,
-      rawInstance.config || definition.defaultConfig,
-    ),
+    config: validateBetterWidgetConfig(widgetType, config),
     visible: rawInstance.visible !== false && rawInstance.is_visible !== false,
     locked: widgetType === BACKGROUND_TYPE ? true : rawInstance.locked === true,
     opacity: clampNumber(rawInstance.opacity, MIN_OPACITY, MAX_OPACITY, 1),
@@ -960,6 +999,7 @@ export function renderBetterWidgetInstance({
   instance,
   layout,
   mode = "live",
+  runtime = "editor",
   userId,
   theme,
   liveWidgets = [],
@@ -984,7 +1024,7 @@ export function renderBetterWidgetInstance({
     widgetId: widget.id,
     userId,
     theme,
-    runtime: mode === "live" ? "obs" : "editor",
+    runtime,
     publicOverlayId,
   };
   return <WidgetComponent {...commonProps} />;

@@ -69,7 +69,11 @@ const { parseShoutoutChatCommand } = await server.ssrLoadModule(
   "/src/services/shoutoutCommandService.js",
 );
 
-const { createBetterInstance, renderBetterWidgetInstance } =
+const {
+  createBetterInstance,
+  normalizeBetterInstance,
+  renderBetterWidgetInstance,
+} =
   await server.ssrLoadModule(
     "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
   );
@@ -219,6 +223,53 @@ try {
     "better_raid_shoutout",
     "Twitch Shoutout is a first-class Better widget",
   );
+  assert.deepEqual(
+    {
+      width: shoutoutInstance.width,
+      height: shoutoutInstance.height,
+      accentColor: shoutoutInstance.config.accentColor,
+      backgroundColor: shoutoutInstance.config.backgroundColor,
+    },
+    {
+      width: 640,
+      height: 360,
+      accentColor: "#45c8ff",
+      backgroundColor: "#081228",
+    },
+    "Twitch Shoutout defaults to a widescreen player in the shared blue palette",
+  );
+  const migratedShoutout = normalizeBetterInstance({
+    ...shoutoutInstance,
+    x: 680,
+    y: 330,
+    width: 560,
+    height: 420,
+    config: {
+      ...shoutoutInstance.config,
+      accentColor: "#9146ff",
+      secondaryColor: "#22d3ee",
+      backgroundColor: "#090711",
+    },
+  });
+  assert.deepEqual(
+    {
+      x: migratedShoutout.x,
+      y: migratedShoutout.y,
+      width: migratedShoutout.width,
+      height: migratedShoutout.height,
+      accentColor: migratedShoutout.config.accentColor,
+      secondaryColor: migratedShoutout.config.secondaryColor,
+    },
+    {
+      x: 640,
+      y: 360,
+      width: 640,
+      height: 360,
+      accentColor: "#45c8ff",
+      secondaryColor: "#1385e9",
+    },
+    "legacy default Shoutouts migrate in place to widescreen blue without moving their centre",
+  );
   assert.ok(
     !Object.keys(shoutoutInstance.config).some((key) =>
       /client.?id|access.?token|oauth|secret/i.test(key),
@@ -288,6 +339,18 @@ try {
       `Twitch Shoutout exposes the stable ${elementId} appearance element`,
     );
   }
+  const liveShoutoutEditorMarkup = renderToStaticMarkup(
+    renderBetterWidgetInstance({
+      instance: shoutoutInstance,
+      layout: { instances: [shoutoutInstance] },
+      mode: "live",
+      runtime: "editor",
+    }),
+  );
+  assert.ok(
+    liveShoutoutEditorMarkup.includes("better-shoutout-stage"),
+    "live data mode still renders the Twitch Shoutout preview in the editor",
+  );
   const shoutoutWidgetSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/widgets/raid-shoutout/RaidShoutoutWidget.jsx",
@@ -303,10 +366,18 @@ try {
     "OBS shoutouts use the production realtime queue and lifecycle service",
   );
   assert.ok(
+    shoutoutWidgetSource.includes("video.defaultMuted = true") &&
+      shoutoutWidgetSource.includes("video.play()") &&
+      shoutoutWidgetSource.includes("autoplay=true&muted=true") &&
+      shoutoutWidgetSource.includes(String.raw`-preview-\d+x\d+`) &&
+      !betterWidgetPackagesSource.includes('label="Autoplay clip"') &&
+      !betterWidgetPackagesSource.includes('label="Mute clip"'),
+    "Shoutout clips autoplay muted and modern Twitch thumbnails bypass the obsolete MP4 derivation",
+  );
+  assert.ok(
     shoutoutWidgetSource.includes('runtime !== "obs"') &&
-      betterWidgetRegistrySource.includes(
-        'runtime: mode === "live" ? "obs" : "editor"',
-      ),
+      betterWidgetRegistrySource.includes('runtime = "editor"') &&
+      betterObsOverlaySource.includes('runtime: "obs"'),
     "editor preview cannot subscribe to or consume production shoutout alerts",
   );
   assert.ok(
@@ -375,6 +446,14 @@ try {
       shoutoutApiSource.includes('["PGRST204", "42703"]') &&
       shoutoutApiSource.includes("delete legacyAlertPayload.source_event_id"),
     "owner/mod command checks do not intercept legacy GET webhook triggers",
+  );
+  assert.ok(
+    shoutoutApiSource.includes("resolveModernClipVideoUrl(clip.id)") &&
+      shoutoutApiSource.includes("playbackAccessToken") &&
+      shoutoutApiSource.includes(
+        'qualities.find((item) => item.quality === "720")',
+      ),
+    "modern Twitch clips resolve to signed 720p MP4 sources before the iframe fallback",
   );
   for (const frameStyle of ["neon", "glass", "retro", "minimal", "gaming"]) {
     assert.ok(

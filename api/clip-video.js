@@ -23,6 +23,7 @@ const ALLOWED_HOSTS = [
   'vod-metro.twitch.tv',
   'd1m7jfoe9zdc1j.cloudfront.net',
   'd2nvs31859zcd8.cloudfront.net',
+  'd1ndex63qxojbr.cloudfront.net',
 ];
 
 function isTwitchCdn(urlStr) {

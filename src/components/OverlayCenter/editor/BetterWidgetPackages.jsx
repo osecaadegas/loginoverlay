@@ -5453,9 +5453,11 @@ function BetterRaidShoutoutControls({
   const set = (patch) => onChange({ ...c, ...patch });
   const setSize = (patch) => {
     if (typeof onWidgetChange !== "function") return;
+    const width = patch.width ?? Math.round((patch.height * 16) / 9);
+    const height = patch.height ?? Math.round((patch.width * 9) / 16);
     onWidgetChange({
-      width: patch.width ?? widget?.width,
-      height: patch.height ?? widget?.height,
+      width,
+      height,
       config: c,
     });
   };
@@ -5518,16 +5520,6 @@ function BetterRaidShoutoutControls({
             onChange={(displayDuration) => set({ displayDuration })}
           />
           <ToggleRow
-            label="Autoplay clip"
-            checked={c.autoplay !== false}
-            onChange={(autoplay) => set({ autoplay })}
-          />
-          <ToggleRow
-            label="Mute clip"
-            checked={c.muted !== false}
-            onChange={(muted) => set({ muted })}
-          />
-          <ToggleRow
             label="Close when clip ends"
             checked={c.dismissOnClipEnd === true}
             onChange={(dismissOnClipEnd) => set({ dismissOnClipEnd })}
@@ -5582,8 +5574,8 @@ function BetterRaidShoutoutControls({
           <Section title="Widget size" icon={<Maximize2 size={13} />}>
             <SliderRow
               label="Width"
-              value={Number(widget?.width) || 560}
-              min={300}
+              value={Number(widget?.width) || 640}
+              min={400}
               max={1280}
               step={10}
               unit="px"
@@ -5591,9 +5583,9 @@ function BetterRaidShoutoutControls({
             />
             <SliderRow
               label="Height"
-              value={Number(widget?.height) || 420}
-              min={240}
-              max={960}
+              value={Number(widget?.height) || 360}
+              min={225}
+              max={720}
               step={10}
               unit="px"
               onChange={(height) => setSize({ height })}
@@ -5650,15 +5642,39 @@ function BetterRaidShoutoutControls({
 
       {tab === "colours" && (
         <Section title="Palette" icon={<Palette size={13} />}>
-          <ColorRow label="Accent" value={c.accentColor} onChange={(accentColor) => set({ accentColor })} />
-          <ColorRow label="Secondary" value={c.secondaryColor} onChange={(secondaryColor) => set({ secondaryColor })} />
-          <ColorRow label="Background" value={c.backgroundColor} onChange={(backgroundColor) => set({ backgroundColor })} />
-          <ColorRow label="Text" value={c.textColor} onChange={(textColor) => set({ textColor })} />
-          <ColorRow label="Muted text" value={c.mutedColor} onChange={(mutedColor) => set({ mutedColor })} />
+          <ColorRow
+            label="Accent"
+            value={c.accentColor}
+            onChange={(accentColor) => set({ accentColor })}
+          />
+          <ColorRow
+            label="Secondary"
+            value={c.secondaryColor}
+            onChange={(secondaryColor) => set({ secondaryColor })}
+          />
+          <ColorRow
+            label="Background"
+            value={c.backgroundColor}
+            onChange={(backgroundColor) => set({ backgroundColor })}
+          />
+          <ColorRow
+            label="Text"
+            value={c.textColor}
+            onChange={(textColor) => set({ textColor })}
+          />
+          <ColorRow
+            label="Muted text"
+            value={c.mutedColor}
+            onChange={(mutedColor) => set({ mutedColor })}
+          />
         </Section>
       )}
 
-      <button className="bp-reset" type="button" onClick={() => onChange(defaults)}>
+      <button
+        className="bp-reset"
+        type="button"
+        onClick={() => onChange(defaults)}
+      >
         <RotateCcw size={13} /> Reset widget
       </button>
     </div>
