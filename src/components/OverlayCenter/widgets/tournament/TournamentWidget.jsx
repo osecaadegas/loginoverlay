@@ -2896,7 +2896,7 @@ function TournamentWidget({ config, theme }) {
             padding: 0,
             background: "none",
             border: "none",
-            width: large ? "clamp(30px, 4vw, 50px)" : "clamp(20px, 3vw, 36px)",
+            width: large ? "clamp(20px, 2.8vw, 34px)" : "clamp(20px, 3vw, 36px)",
           }}
         >
           {/* LIVE badge */}
@@ -2922,10 +2922,10 @@ function TournamentWidget({ config, theme }) {
           <div
             style={{
               width: large
-                ? "clamp(36px, 4.5vw, 56px)"
+                ? "clamp(28px, 3.4vw, 42px)"
                 : "clamp(24px, 3.2vw, 38px)",
               height: large
-                ? "clamp(36px, 4.5vw, 56px)"
+                ? "clamp(28px, 3.4vw, 42px)"
                 : "clamp(24px, 3.2vw, 38px)",
               borderRadius: "50%",
               background: "transparent",
@@ -2942,7 +2942,7 @@ function TournamentWidget({ config, theme }) {
             <span
               style={{
                 fontSize: large
-                  ? "clamp(22px, 3.2vw, 38px)"
+                  ? "clamp(18px, 2.5vw, 28px)"
                   : "clamp(16px, 2.4vw, 28px)",
                 lineHeight: 1,
               }}
@@ -3269,7 +3269,7 @@ function TournamentWidget({ config, theme }) {
           <div
             style={{
               flexShrink: 0,
-              padding: "clamp(4px, 0.8vw, 12px)",
+              padding: "clamp(2px, 0.4vw, 6px)",
               position: "relative",
             }}
           >
@@ -3372,14 +3372,14 @@ function TournamentWidget({ config, theme }) {
               style={{
                 display: "flex",
                 alignItems: "stretch",
-                gap: "clamp(3px, 0.5vw, 8px)",
+                gap: "clamp(2px, 0.3vw, 4px)",
                 background: "transparent",
                 borderRadius: 12,
-                padding: "clamp(2px, 0.3vw, 4px)",
+                padding: 0,
                 position: "relative",
                 zIndex: 1,
                 overflow: "visible",
-                minHeight: "clamp(110px, 24vh, 200px)",
+                minHeight: "clamp(96px, 19vh, 168px)",
                 animation:
                   "tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
                 transformStyle: "preserve-3d",

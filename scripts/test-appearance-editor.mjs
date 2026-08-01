@@ -81,6 +81,25 @@ try {
     betterWidgetPackagesSource.includes("const next = { ...c }"),
     "Tournament appearance reset starts from the complete saved config",
   );
+  const tournamentWidgetSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    tournamentWidgetSource.includes(
+      'width: large ? "clamp(20px, 2.8vw, 34px)"',
+    ),
+    "Tournament Now Playing keeps the VS column narrow so player images stay wide",
+  );
+  assert.ok(
+    tournamentWidgetSource.includes(
+      'minHeight: "clamp(96px, 19vh, 168px)"',
+    ),
+    "Tournament Now Playing avoids reserving excess space below its cards",
+  );
   const betterWidgetStylesSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx",
