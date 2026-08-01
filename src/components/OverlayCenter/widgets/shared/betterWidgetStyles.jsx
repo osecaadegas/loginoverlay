@@ -2092,7 +2092,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const multi = bonusMultiplierValue(bonus);
     return !worst || multi < bonusMultiplierValue(worst) ? bonus : worst;
   }, null);
-  const resultDrawerReady = opened.length >= 2 && (bestSlot || worstSlot);
+  const resultDrawerReady = opened.length >= 2 && Boolean(bestSlot || worstSlot);
   const [resultPeekOpen, setResultPeekOpen] = useState(false);
   useEffect(() => {
     if (!resultDrawerReady) {
@@ -2116,7 +2116,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       }, drawerHoldMs);
     };
 
-    revealTimer = window.setTimeout(reveal, drawerRevealMs);
+    reveal();
 
     return () => {
       window.clearTimeout(revealTimer);
@@ -2537,10 +2537,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       c.drawerPreviewOpen === true ||
       resultPeekOpen
     );
-    const drawerMounted = resultDrawerReady && (
-      drawerMode === "contain" ||
-      drawerVisible
-    );
+    const drawerMounted = resultDrawerReady;
     return (
       <div className={`better-hunt-total better-hunt-total--${drawerMode}`} {...attrs("bonus_hunt", c, "footerContainer")}>
         <div className="better-hunt-total-head">
