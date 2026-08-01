@@ -35,7 +35,12 @@ import NavbarWidget from "../widgets/NavbarWidget";
 import RtpStatsWidget from "../widgets/RtpStatsWidget";
 import BonusHuntWidget from "../widgets/BonusHuntWidget";
 import ChatWidget from "../widgets/ChatWidget";
-import { BetterBackgroundStyle, BetterGiveawayStyle } from "../widgets/shared/betterWidgetStyles";
+import TournamentConfig from "../widgets/TournamentConfig";
+import TournamentWidget from "../widgets/TournamentWidget";
+import {
+  BetterBackgroundStyle,
+  BetterGiveawayStyle,
+} from "../widgets/shared/betterWidgetStyles";
 
 const DEFAULT_CARD_COLORS = [
   { accent: "#2fa1ff", accent2: "#19e3ff" },
@@ -111,12 +116,42 @@ const QUICK_COLORS = [
 ];
 
 const BET_THEMES = [
-  { key: "neon", name: "Neon", icon: <Zap size={11} />, swatches: ["#071a44", "#0a84ff", "#59d6ff"] },
-  { key: "metallic", name: "Metallic", icon: <Layers size={11} />, swatches: ["#1b232e", "#8fa1b8", "#e8eef6"] },
-  { key: "gradient", name: "Gradient", icon: <Sparkles size={11} />, swatches: ["#171f5e", "#5b7cfa", "#22d3ee"] },
-  { key: "matte", name: "Matte", icon: <Settings size={11} />, swatches: ["#171b22", "#39424f", "#aab4c2"] },
-  { key: "crimson", name: "Crimson", icon: <Flame size={11} />, swatches: ["#1a0610", "#c0192e", "#ff6b81"] },
-  { key: "emerald", name: "Emerald", icon: <Waves size={11} />, swatches: ["#041a12", "#059669", "#34d399"] },
+  {
+    key: "neon",
+    name: "Neon",
+    icon: <Zap size={11} />,
+    swatches: ["#071a44", "#0a84ff", "#59d6ff"],
+  },
+  {
+    key: "metallic",
+    name: "Metallic",
+    icon: <Layers size={11} />,
+    swatches: ["#1b232e", "#8fa1b8", "#e8eef6"],
+  },
+  {
+    key: "gradient",
+    name: "Gradient",
+    icon: <Sparkles size={11} />,
+    swatches: ["#171f5e", "#5b7cfa", "#22d3ee"],
+  },
+  {
+    key: "matte",
+    name: "Matte",
+    icon: <Settings size={11} />,
+    swatches: ["#171b22", "#39424f", "#aab4c2"],
+  },
+  {
+    key: "crimson",
+    name: "Crimson",
+    icon: <Flame size={11} />,
+    swatches: ["#1a0610", "#c0192e", "#ff6b81"],
+  },
+  {
+    key: "emerald",
+    name: "Emerald",
+    icon: <Waves size={11} />,
+    swatches: ["#041a12", "#059669", "#34d399"],
+  },
 ];
 
 const FILL_STYLES = [
@@ -144,19 +179,58 @@ const CHAT_FONTS = [
 ];
 
 const CHAT_PRESETS = [
-  { name: "Neon Cyan", glow: "#00c3ff", username: "#ffb800", text: "#f4f7ff", bubble: "#001a47", panel: "#000d2d" },
-  { name: "Toxic", glow: "#3dff8f", username: "#d8ff3f", text: "#eafff2", bubble: "#03251a", panel: "#02130b" },
-  { name: "Magma", glow: "#ff5c39", username: "#ffd23f", text: "#fff3ec", bubble: "#2c0d08", panel: "#170604" },
-  { name: "Pulse", glow: "#b44bff", username: "#ffd166", text: "#f6efff", bubble: "#1d0a36", panel: "#0d0519" },
-  { name: "Ice", glow: "#9fd8ff", username: "#ffffff", text: "#dceeff", bubble: "#0b1a2b", panel: "#050c15" },
+  {
+    name: "Neon Cyan",
+    glow: "#00c3ff",
+    username: "#ffb800",
+    text: "#f4f7ff",
+    bubble: "#001a47",
+    panel: "#000d2d",
+  },
+  {
+    name: "Toxic",
+    glow: "#3dff8f",
+    username: "#d8ff3f",
+    text: "#eafff2",
+    bubble: "#03251a",
+    panel: "#02130b",
+  },
+  {
+    name: "Magma",
+    glow: "#ff5c39",
+    username: "#ffd23f",
+    text: "#fff3ec",
+    bubble: "#2c0d08",
+    panel: "#170604",
+  },
+  {
+    name: "Pulse",
+    glow: "#b44bff",
+    username: "#ffd166",
+    text: "#f6efff",
+    bubble: "#1d0a36",
+    panel: "#0d0519",
+  },
+  {
+    name: "Ice",
+    glow: "#9fd8ff",
+    username: "#ffffff",
+    text: "#dceeff",
+    bubble: "#0b1a2b",
+    panel: "#050c15",
+  },
 ];
 
 const BETTER_CHAT_DEFAULT_SIZE = { width: 218, height: 457 };
-const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
+const BETTER_CHAT_EMPTY_MESSAGE =
+  "Hey you dont you think this chat its too quiet ?";
 const BETTER_NAVBAR_SPOTIFY_ONLY_MARKER = "betterNavbarSpotifyOnlyInitialized";
-const BETTER_NAVBAR_OPTIONAL_CASINO_MARKER = "betterNavbarOptionalCasinoInitialized";
-const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER = "betterNavbarOptionalCasinoCommandInitialized";
-const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER = "betterNavbarManualCasinoCommand";
+const BETTER_NAVBAR_OPTIONAL_CASINO_MARKER =
+  "betterNavbarOptionalCasinoInitialized";
+const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER =
+  "betterNavbarOptionalCasinoCommandInitialized";
+const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER =
+  "betterNavbarManualCasinoCommand";
 const LEGACY_CASINO_COMMAND = "!casino";
 const BETTER_RTP_LIVE_CONTENT_KEYS = [
   "slotName",
@@ -174,18 +248,110 @@ const BETTER_RTP_LIVE_CONTENT_KEYS = [
 ];
 
 const GIVEAWAY_PRESETS = [
-  { id: "cyber-blue", name: "Cyber Blue", swatch: "linear-gradient(135deg,#087eff,#43d3ff)", patch: { hue: 210, hueShift: 24, saturation: 82, accentSat: 96, accentLight: 56 } },
-  { id: "gold-room", name: "Gold Room", swatch: "linear-gradient(135deg,#9b6b0b,#ffc51b)", patch: { hue: 42, hueShift: -12, saturation: 78, accentSat: 92, accentLight: 58 } },
-  { id: "violet", name: "Violet", swatch: "linear-gradient(135deg,#7c3aed,#43d3ff)", patch: { hue: 268, hueShift: 42, saturation: 78, accentSat: 90, accentLight: 62 } },
-  { id: "emerald", name: "Emerald", swatch: "linear-gradient(135deg,#059669,#43d3ff)", patch: { hue: 156, hueShift: -34, saturation: 70, accentSat: 86, accentLight: 50 } },
+  {
+    id: "cyber-blue",
+    name: "Cyber Blue",
+    swatch: "linear-gradient(135deg,#087eff,#43d3ff)",
+    patch: {
+      hue: 210,
+      hueShift: 24,
+      saturation: 82,
+      accentSat: 96,
+      accentLight: 56,
+    },
+  },
+  {
+    id: "gold-room",
+    name: "Gold Room",
+    swatch: "linear-gradient(135deg,#9b6b0b,#ffc51b)",
+    patch: {
+      hue: 42,
+      hueShift: -12,
+      saturation: 78,
+      accentSat: 92,
+      accentLight: 58,
+    },
+  },
+  {
+    id: "violet",
+    name: "Violet",
+    swatch: "linear-gradient(135deg,#7c3aed,#43d3ff)",
+    patch: {
+      hue: 268,
+      hueShift: 42,
+      saturation: 78,
+      accentSat: 90,
+      accentLight: 62,
+    },
+  },
+  {
+    id: "emerald",
+    name: "Emerald",
+    swatch: "linear-gradient(135deg,#059669,#43d3ff)",
+    patch: {
+      hue: 156,
+      hueShift: -34,
+      saturation: 70,
+      accentSat: 86,
+      accentLight: 50,
+    },
+  },
 ];
 
 const RTP_PRESETS = [
   { name: "Pragmatic Blue", patch: {} },
-  { name: "Emerald", patch: { cRim: "#2fd48a", cBarTop: "#0b3a2c", cBarMid: "#07281e", cBarBot: "#041a14", cLabel: "#9fe6c6", cBolt: "#ffd75e", cGold: "#ffe066", cBrand: "#9fe6c6" } },
-  { name: "Crimson", patch: { cRim: "#ff4d5e", cBarTop: "#4a0d1c", cBarMid: "#320812", cBarBot: "#20050c", cLabel: "#ffb3bd", cBolt: "#ffb020", cGold: "#ffcf4d", cBrand: "#ffb3bd" } },
-  { name: "Neon Violet", patch: { cRim: "#a855f7", cBarTop: "#2e1065", cBarMid: "#210b4a", cBarBot: "#150733", cLabel: "#d8b4fe", cBolt: "#22d3ee", cGold: "#f0abfc", cBrand: "#d8b4fe" } },
-  { name: "Midnight Gold", patch: { cRim: "#d4af37", cBarTop: "#231d0d", cBarMid: "#171207", cBarBot: "#0d0a04", cLabel: "#e8d9a0", cBolt: "#ffd700", cGold: "#ffd700", cBrand: "#e8d9a0" } },
+  {
+    name: "Emerald",
+    patch: {
+      cRim: "#2fd48a",
+      cBarTop: "#0b3a2c",
+      cBarMid: "#07281e",
+      cBarBot: "#041a14",
+      cLabel: "#9fe6c6",
+      cBolt: "#ffd75e",
+      cGold: "#ffe066",
+      cBrand: "#9fe6c6",
+    },
+  },
+  {
+    name: "Crimson",
+    patch: {
+      cRim: "#ff4d5e",
+      cBarTop: "#4a0d1c",
+      cBarMid: "#320812",
+      cBarBot: "#20050c",
+      cLabel: "#ffb3bd",
+      cBolt: "#ffb020",
+      cGold: "#ffcf4d",
+      cBrand: "#ffb3bd",
+    },
+  },
+  {
+    name: "Neon Violet",
+    patch: {
+      cRim: "#a855f7",
+      cBarTop: "#2e1065",
+      cBarMid: "#210b4a",
+      cBarBot: "#150733",
+      cLabel: "#d8b4fe",
+      cBolt: "#22d3ee",
+      cGold: "#f0abfc",
+      cBrand: "#d8b4fe",
+    },
+  },
+  {
+    name: "Midnight Gold",
+    patch: {
+      cRim: "#d4af37",
+      cBarTop: "#231d0d",
+      cBarMid: "#171207",
+      cBarBot: "#0d0a04",
+      cLabel: "#e8d9a0",
+      cBolt: "#ffd700",
+      cGold: "#ffd700",
+      cBrand: "#e8d9a0",
+    },
+  },
 ];
 
 const RTP_FONT_OPTIONS = [
@@ -253,11 +419,46 @@ const SLIDESHOW_ASPECT_PRESETS = [
 ];
 
 const SLIDESHOW_COLOR_PRESETS = [
-  { name: "Ocean", patch: { frameColor: "#20d8ff", accentColor: "#ffb020", backgroundColor: "#020817" } },
-  { name: "Emerald", patch: { frameColor: "#34d399", accentColor: "#facc15", backgroundColor: "#03120c" } },
-  { name: "Crimson", patch: { frameColor: "#fb7185", accentColor: "#f97316", backgroundColor: "#16040a" } },
-  { name: "Violet", patch: { frameColor: "#a78bfa", accentColor: "#22d3ee", backgroundColor: "#10051f" } },
-  { name: "Gold", patch: { frameColor: "#facc15", accentColor: "#f97316", backgroundColor: "#120d04" } },
+  {
+    name: "Ocean",
+    patch: {
+      frameColor: "#20d8ff",
+      accentColor: "#ffb020",
+      backgroundColor: "#020817",
+    },
+  },
+  {
+    name: "Emerald",
+    patch: {
+      frameColor: "#34d399",
+      accentColor: "#facc15",
+      backgroundColor: "#03120c",
+    },
+  },
+  {
+    name: "Crimson",
+    patch: {
+      frameColor: "#fb7185",
+      accentColor: "#f97316",
+      backgroundColor: "#16040a",
+    },
+  },
+  {
+    name: "Violet",
+    patch: {
+      frameColor: "#a78bfa",
+      accentColor: "#22d3ee",
+      backgroundColor: "#10051f",
+    },
+  },
+  {
+    name: "Gold",
+    patch: {
+      frameColor: "#facc15",
+      accentColor: "#f97316",
+      backgroundColor: "#120d04",
+    },
+  },
 ];
 
 const GIVEAWAY_SURFACES = [
@@ -273,8 +474,16 @@ const GIVEAWAY_FONTS = [
   { key: "chakra", label: "Chakra Petch", stack: "'Chakra Petch', sans-serif" },
   { key: "audiowide", label: "Audiowide", stack: "'Audiowide', cursive" },
   { key: "bebas", label: "Bebas Neue", stack: "'Bebas Neue', sans-serif" },
-  { key: "inter", label: "System Sans", stack: "system-ui, -apple-system, 'Segoe UI', sans-serif" },
-  { key: "mono", label: "Mono", stack: "ui-monospace, 'Courier New', monospace" },
+  {
+    key: "inter",
+    label: "System Sans",
+    stack: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+  },
+  {
+    key: "mono",
+    label: "Mono",
+    stack: "ui-monospace, 'Courier New', monospace",
+  },
   { key: "serif", label: "Serif", stack: "Georgia, 'Times New Roman', serif" },
 ];
 
@@ -293,27 +502,116 @@ const BONUS_FONTS = [
   { key: "chakra", name: "Chakra", family: "'Chakra Petch', sans-serif" },
 ];
 const BONUS_SKINS = [
-  { key: "modern", label: "Modern", swatch: "linear-gradient(135deg,#081228,#45c8ff)", hint: "The dark neon tracker - the default look." },
-  { key: "roman", label: "Roman", swatch: "linear-gradient(135deg,#120e0a,#c0281c)", hint: "Parchment, bronze and laurels - an antiquity reskin of the whole widget." },
-  { key: "metal", label: "Metal", swatch: "linear-gradient(135deg,#12151a,#888d98)", hint: "Brushed gunmetal steel - real metal textures, no lines." },
-  { key: "cyberpunk", label: "Cyber", swatch: "linear-gradient(135deg,#ff2bd6,#00d9ff)", hint: "Retro neon - magenta, cyan, CRT scanlines and synthwave glow." },
-  { key: "spartan", label: "Spartan", swatch: "linear-gradient(135deg,#8a1010,#c8a030)", hint: "Dark chain mail, blood-red accents and gold casino trim." },
-  { key: "bloody", label: "Bloody", swatch: "linear-gradient(135deg,#080101,#ff2030)", hint: "Battle-torn armor with sword blades, shields, helmets and blood spatter." },
+  {
+    key: "modern",
+    label: "Modern",
+    swatch: "linear-gradient(135deg,#081228,#45c8ff)",
+    hint: "The dark neon tracker - the default look.",
+  },
+  {
+    key: "roman",
+    label: "Roman",
+    swatch: "linear-gradient(135deg,#120e0a,#c0281c)",
+    hint: "Parchment, bronze and laurels - an antiquity reskin of the whole widget.",
+  },
+  {
+    key: "metal",
+    label: "Metal",
+    swatch: "linear-gradient(135deg,#12151a,#888d98)",
+    hint: "Brushed gunmetal steel - real metal textures, no lines.",
+  },
+  {
+    key: "cyberpunk",
+    label: "Cyber",
+    swatch: "linear-gradient(135deg,#ff2bd6,#00d9ff)",
+    hint: "Retro neon - magenta, cyan, CRT scanlines and synthwave glow.",
+  },
+  {
+    key: "spartan",
+    label: "Spartan",
+    swatch: "linear-gradient(135deg,#8a1010,#c8a030)",
+    hint: "Dark chain mail, blood-red accents and gold casino trim.",
+  },
+  {
+    key: "bloody",
+    label: "Bloody",
+    swatch: "linear-gradient(135deg,#080101,#ff2030)",
+    hint: "Battle-torn armor with sword blades, shields, helmets and blood spatter.",
+  },
 ];
 const BONUS_SESSION_STATES = [
-  { key: "hunt", label: "Hunt", hint: "Carousel rotates through queued bonuses" },
-  { key: "opening", label: "Opening", hint: "Locks onto the next unopened bonus" },
+  {
+    key: "hunt",
+    label: "Hunt",
+    hint: "Carousel rotates through queued bonuses",
+  },
+  {
+    key: "opening",
+    label: "Opening",
+    hint: "Locks onto the next unopened bonus",
+  },
   { key: "ended", label: "Ended", hint: "Freezes on the final hunt layout" },
 ];
 
 const BACKGROUND_PRESETS = [
-  { id: "midnight", name: "Midnight Mesh", patch: { color1: "#020611", color2: "#0a84ff", color3: "#f97316", texture: "aurora", animSpeed: 10 } },
-  { id: "emerald", name: "Emerald Smoke", patch: { color1: "#03120c", color2: "#10b981", color3: "#d9f99d", texture: "nebula", animSpeed: 13 } },
-  { id: "violet", name: "Violet Glow", patch: { color1: "#0b0418", color2: "#8b5cf6", color3: "#22d3ee", texture: "diagonal", animSpeed: 9 } },
-  { id: "gold", name: "Gold Room", patch: { color1: "#0d0a03", color2: "#b7791f", color3: "#fbbf24", texture: "grid", animSpeed: 14 } },
+  {
+    id: "midnight",
+    name: "Midnight Mesh",
+    patch: {
+      color1: "#020611",
+      color2: "#0a84ff",
+      color3: "#f97316",
+      texture: "aurora",
+      animSpeed: 10,
+    },
+  },
+  {
+    id: "emerald",
+    name: "Emerald Smoke",
+    patch: {
+      color1: "#03120c",
+      color2: "#10b981",
+      color3: "#d9f99d",
+      texture: "nebula",
+      animSpeed: 13,
+    },
+  },
+  {
+    id: "violet",
+    name: "Violet Glow",
+    patch: {
+      color1: "#0b0418",
+      color2: "#8b5cf6",
+      color3: "#22d3ee",
+      texture: "diagonal",
+      animSpeed: 9,
+    },
+  },
+  {
+    id: "gold",
+    name: "Gold Room",
+    patch: {
+      color1: "#0d0a03",
+      color2: "#b7791f",
+      color3: "#fbbf24",
+      texture: "grid",
+      animSpeed: 14,
+    },
+  },
 ];
 
 export const DEFAULT_BETTER_CONFIG = {
+  tournament: {
+    layout: "grid",
+    tournamentTitle: "Tournament",
+    bracketName: "Tournament",
+    bracketType: "bonus_bo3",
+    bracketPlayerCount: 8,
+    bracketPlayers: [],
+    bracketData: [],
+    bracketPhase: "setup",
+    data: { matches: [], currentMatchIdx: 0 },
+  },
   bonus_hunt: {
     displayStyle: "better_bonus_hunt",
     colour: "ocean",
@@ -622,14 +920,78 @@ export const DEFAULT_BETTER_CONFIG = {
 };
 
 export const BETTER_WIDGETS = [
-  { type: "slideshow_frame", label: "Slideshow Frame", styleKey: "displayStyle", styleId: "better_slideshow_frame", icon: "🎞️", defaultSize: { width: 960, height: 360 } },
-  { type: "bonus_hunt", label: "Better Hunt", styleKey: "displayStyle", styleId: "better_bonus_hunt", icon: "🎯", defaultSize: { width: 430, height: 860 } },
-  { type: "giveaway", label: "Better Giveaway", styleKey: "displayStyle", styleId: "better_giveaway", icon: "🎁", defaultSize: { width: 700, height: 270 } },
-  { type: "navbar", label: "Better Navbar", styleKey: "displayStyle", styleId: "better_navbar", icon: "🧭", defaultSize: { width: 1200, height: 72 } },
-  { type: "chat", label: "Better Chat", styleKey: "chatStyle", styleId: "better_chat", icon: "💬", defaultSize: BETTER_CHAT_DEFAULT_SIZE },
-  { type: "rtp_stats", label: "Better RTP Stats", styleKey: "displayStyle", styleId: "better_rtp", icon: "📖", defaultSize: { width: 1080, height: 88 } },
-  { type: "background", label: "Better Background", styleKey: "displayStyle", styleId: "better_background", icon: "🖼️", defaultSize: { width: 1920, height: 1080 } },
-  { type: "bets", label: "Better Bets", styleKey: "displayStyle", styleId: "better_bets", icon: "💎", defaultSize: { width: 380, height: 430 } },
+  {
+    type: "slideshow_frame",
+    label: "Slideshow Frame",
+    styleKey: "displayStyle",
+    styleId: "better_slideshow_frame",
+    icon: "🎞️",
+    defaultSize: { width: 960, height: 360 },
+  },
+  {
+    type: "tournament",
+    label: "Tournament",
+    styleKey: "layout",
+    styleId: "grid",
+    icon: "🏆",
+    defaultSize: { width: 960, height: 720 },
+  },
+  {
+    type: "bonus_hunt",
+    label: "Better Hunt",
+    styleKey: "displayStyle",
+    styleId: "better_bonus_hunt",
+    icon: "🎯",
+    defaultSize: { width: 430, height: 860 },
+  },
+  {
+    type: "giveaway",
+    label: "Better Giveaway",
+    styleKey: "displayStyle",
+    styleId: "better_giveaway",
+    icon: "🎁",
+    defaultSize: { width: 700, height: 270 },
+  },
+  {
+    type: "navbar",
+    label: "Better Navbar",
+    styleKey: "displayStyle",
+    styleId: "better_navbar",
+    icon: "🧭",
+    defaultSize: { width: 1200, height: 72 },
+  },
+  {
+    type: "chat",
+    label: "Better Chat",
+    styleKey: "chatStyle",
+    styleId: "better_chat",
+    icon: "💬",
+    defaultSize: BETTER_CHAT_DEFAULT_SIZE,
+  },
+  {
+    type: "rtp_stats",
+    label: "Better RTP Stats",
+    styleKey: "displayStyle",
+    styleId: "better_rtp",
+    icon: "📖",
+    defaultSize: { width: 1080, height: 88 },
+  },
+  {
+    type: "background",
+    label: "Better Background",
+    styleKey: "displayStyle",
+    styleId: "better_background",
+    icon: "🖼️",
+    defaultSize: { width: 1920, height: 1080 },
+  },
+  {
+    type: "bets",
+    label: "Better Bets",
+    styleKey: "displayStyle",
+    styleId: "better_bets",
+    icon: "💎",
+    defaultSize: { width: 380, height: 430 },
+  },
 ];
 
 export function getBetterWidgetMeta(type) {
@@ -644,11 +1006,9 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     normalizedCasinoCommand.toLowerCase() === LEGACY_CASINO_COMMAND;
   const hasManualCasinoCommand =
     config[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] === true ||
-    (
-      normalizedCasinoCommand &&
+    (normalizedCasinoCommand &&
       normalizedCasinoCommand.toLowerCase() !== LEGACY_CASINO_COMMAND &&
-      originalCasinoCommand === normalizedCasinoCommand
-    );
+      originalCasinoCommand === normalizedCasinoCommand);
   const next = {
     ...merged,
     betterNavbarFeaturesInitialized: true,
@@ -686,23 +1046,34 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
   delete next.musicFallbackMessage;
 
   if (config[BETTER_NAVBAR_OPTIONAL_CASINO_MARKER] !== true) {
-    if (String(next.casinoName || "").trim().toLowerCase() === "casino") {
+    if (
+      String(next.casinoName || "")
+        .trim()
+        .toLowerCase() === "casino"
+    ) {
       next.casinoName = "";
     }
-    if (String(next.casinoCommand || "").trim().toLowerCase() === LEGACY_CASINO_COMMAND) {
+    if (
+      String(next.casinoCommand || "")
+        .trim()
+        .toLowerCase() === LEGACY_CASINO_COMMAND
+    ) {
       next.casinoCommand = "";
     }
   }
   if (
-    (
-      config[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
-      !hasManualCasinoCommand
-    ) &&
-    String(next.casinoCommand || "").trim().toLowerCase() === LEGACY_CASINO_COMMAND
+    (config[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
+      !hasManualCasinoCommand) &&
+    String(next.casinoCommand || "")
+      .trim()
+      .toLowerCase() === LEGACY_CASINO_COMMAND
   ) {
     next.casinoCommand = "";
   }
-  if (!next.startValue && (config.startValue === undefined || config.startValue === null)) {
+  if (
+    !next.startValue &&
+    (config.startValue === undefined || config.startValue === null)
+  ) {
     next.startValue = defaults.startValue;
   }
   if (!next.casinoCommand && next.showCasino !== false) {
@@ -712,14 +1083,26 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     next[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = false;
   }
 
-  if (!next.streamerName && !next.brandName) next.streamerName = defaults.streamerName;
+  if (!next.streamerName && !next.brandName)
+    next.streamerName = defaults.streamerName;
   if (!next.ctaText) next.ctaText = defaults.ctaText;
   next.sectionLayout = normalizeBetterNavbarSectionLayout(next.sectionLayout);
-  next.maxWidth = Math.min(Math.max(Number(next.maxWidth) || defaults.maxWidth || 1920, 720), 1920);
-  if (next.casinoImageSize === undefined || next.casinoImageSize === null || next.casinoImageSize === "") {
+  next.maxWidth = Math.min(
+    Math.max(Number(next.maxWidth) || defaults.maxWidth || 1920, 720),
+    1920,
+  );
+  if (
+    next.casinoImageSize === undefined ||
+    next.casinoImageSize === null ||
+    next.casinoImageSize === ""
+  ) {
     next.casinoImageSize = defaults.casinoImageSize;
   }
-  if (next.startBalance === undefined || next.startBalance === null || next.startBalance === "") {
+  if (
+    next.startBalance === undefined ||
+    next.startBalance === null ||
+    next.startBalance === ""
+  ) {
     next.startBalance = defaults.startBalance;
   }
   if (!next.balanceCurrency) next.balanceCurrency = defaults.balanceCurrency;
@@ -746,7 +1129,10 @@ function normalizeBetterSlideshowConfig(merged = {}) {
   if (!SLIDESHOW_TRANSITIONS.some((item) => item.key === next.transition)) {
     next.transition = defaults.transition;
   }
-  if (next.aspectPreset !== "custom" && !SLIDESHOW_ASPECT_PRESETS.some((item) => item.key === next.aspectPreset)) {
+  if (
+    next.aspectPreset !== "custom" &&
+    !SLIDESHOW_ASPECT_PRESETS.some((item) => item.key === next.aspectPreset)
+  ) {
     next.aspectPreset = defaults.aspectPreset;
   }
   if (typeof next.mediaText !== "string") next.mediaText = "";
@@ -778,8 +1164,7 @@ function normalizeBetterChatConfig(merged = {}) {
       ...(merged.celebrations || {}),
     },
   };
-  const legacyFlow =
-    next.entry === "top" ? "top-to-bottom" : defaults.flow;
+  const legacyFlow = next.entry === "top" ? "top-to-bottom" : defaults.flow;
   if (!["bottom-to-top", "top-to-bottom"].includes(next.flow)) {
     next.flow = legacyFlow;
   }
@@ -788,7 +1173,16 @@ function normalizeBetterChatConfig(merged = {}) {
     next.autoFade = next.lifespan === "timed";
   }
   next.lifespan = next.autoFade ? "timed" : "persistent";
-  if (!["slide-up", "slide-down", "slide-left", "slide-right", "fade", "none"].includes(next.animation)) {
+  if (
+    ![
+      "slide-up",
+      "slide-down",
+      "slide-left",
+      "slide-right",
+      "fade",
+      "none",
+    ].includes(next.animation)
+  ) {
     next.animation = defaults.animation;
   }
   next.maxMessages = clampNumber(next.maxMessages, 2, 40, defaults.maxMessages);
@@ -801,8 +1195,18 @@ function normalizeBetterChatConfig(merged = {}) {
   next.bttvGlobal = next.bttvGlobal !== false;
   next.bttvChannel = next.bttvChannel !== false;
   next.bttvSize = clampNumber(next.bttvSize, 1, 3, defaults.bttvSize);
-  next.viewerCount = clampNumber(next.viewerCount, 0, 100000, defaults.viewerCount);
-  next.textureStrength = clampNumber(next.textureStrength, 5, 80, defaults.textureStrength);
+  next.viewerCount = clampNumber(
+    next.viewerCount,
+    0,
+    100000,
+    defaults.viewerCount,
+  );
+  next.textureStrength = clampNumber(
+    next.textureStrength,
+    5,
+    80,
+    defaults.textureStrength,
+  );
   next.celebrations.intensity = clampNumber(
     next.celebrations.intensity,
     1,
@@ -818,7 +1222,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   const merged = {
     ...defaults,
     ...config,
-    ...(meta ? { [meta.styleKey]: meta.styleId } : {}),
+    ...(meta && type !== "tournament" ? { [meta.styleKey]: meta.styleId } : {}),
   };
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
@@ -853,7 +1257,9 @@ function formatMoney(value, currency = "EUR ") {
 }
 
 function betLabel(option, index) {
-  return typeof option === "string" ? option : option?.label || `Set ${index + 1}`;
+  return typeof option === "string"
+    ? option
+    : option?.label || `Set ${index + 1}`;
 }
 
 function useTab(defaultTab) {
@@ -870,8 +1276,15 @@ function Section({ title, icon, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <section className="bp-section">
-      <button className="bp-section__head" type="button" onClick={() => setOpen((value) => !value)}>
-        <span>{icon}{title}</span>
+      <button
+        className="bp-section__head"
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span>
+          {icon}
+          {title}
+        </span>
         <ChevronDown size={14} className={open ? "is-open" : ""} />
       </button>
       {open && <div className="bp-section__body">{children}</div>}
@@ -879,9 +1292,20 @@ function Section({ title, icon, children, defaultOpen = true }) {
   );
 }
 
-function SliderRow({ label, value, min, max, step = 1, unit = "", onChange, disabled = false, format }) {
+function SliderRow({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  unit = "",
+  onChange,
+  disabled = false,
+  format,
+}) {
   const pct = ((Number(value) - min) / (max - min)) * 100;
-  const displayValue = typeof format === "function" ? format(Number(value)) : `${value}${unit}`;
+  const displayValue =
+    typeof format === "function" ? format(Number(value)) : `${value}${unit}`;
   return (
     <label className={`bp-slider${disabled ? " is-disabled" : ""}`}>
       <span>
@@ -896,7 +1320,9 @@ function SliderRow({ label, value, min, max, step = 1, unit = "", onChange, disa
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(Number(event.target.value))}
-        style={{ background: `linear-gradient(90deg, #00c3ff ${pct}%, #0a2547 ${pct}%)` }}
+        style={{
+          background: `linear-gradient(90deg, #00c3ff ${pct}%, #0a2547 ${pct}%)`,
+        }}
       />
     </label>
   );
@@ -904,7 +1330,11 @@ function SliderRow({ label, value, min, max, step = 1, unit = "", onChange, disa
 
 function ToggleRow({ label, checked, onChange, hint }) {
   return (
-    <button className={`bp-toggle${checked ? " is-on" : ""}`} type="button" onClick={() => onChange(!checked)}>
+    <button
+      className={`bp-toggle${checked ? " is-on" : ""}`}
+      type="button"
+      onClick={() => onChange(!checked)}
+    >
       <span>
         <strong>{label}</strong>
         {hint && <em>{hint}</em>}
@@ -921,7 +1351,11 @@ function ColorRow({ label, value, onChange }) {
         <strong>{label}</strong>
         <em>{value}</em>
       </span>
-      <input type="color" value={value} onChange={(event) => onChange(event.target.value)} />
+      <input
+        type="color"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
@@ -930,7 +1364,10 @@ function TextRow({ label, value, onChange }) {
   return (
     <label className="bp-text">
       <span>{label}</span>
-      <input value={value || ""} onChange={(event) => onChange(event.target.value)} />
+      <input
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
@@ -953,9 +1390,15 @@ function SelectRow({ label, value, options, onChange }) {
   return (
     <label className="bp-text">
       <span>{label}</span>
-      <select value={value || ""} onChange={(event) => onChange(event.target.value)}>
+      <select
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+      >
         {options.map((option) => (
-          <option key={option.value || option.key} value={option.value || option.key}>
+          <option
+            key={option.value || option.key}
+            value={option.value || option.key}
+          >
             {option.label || option.name}
           </option>
         ))}
@@ -966,7 +1409,10 @@ function SelectRow({ label, value, options, onChange }) {
 
 function Segmented({ value, options, onChange, columns = 2 }) {
   return (
-    <div className="bp-segmented" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+    <div
+      className="bp-segmented"
+      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+    >
       {options.map((option) => (
         <button
           key={option.value || option.key}
@@ -982,9 +1428,18 @@ function Segmented({ value, options, onChange, columns = 2 }) {
   );
 }
 
-function HuntChoiceGrid({ value, options, onChange, columns = 2, disabled = false }) {
+function HuntChoiceGrid({
+  value,
+  options,
+  onChange,
+  columns = 2,
+  disabled = false,
+}) {
   return (
-    <div className="bp-hunt-choice-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+    <div
+      className="bp-hunt-choice-grid"
+      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+    >
       {options.map((option) => {
         const optionValue = option.value || option.key;
         return (
@@ -994,7 +1449,8 @@ function HuntChoiceGrid({ value, options, onChange, columns = 2, disabled = fals
             className={optionValue === value ? "is-active" : ""}
             disabled={disabled}
             onClick={() => {
-              if (!disabled && typeof onChange === "function") onChange(optionValue);
+              if (!disabled && typeof onChange === "function")
+                onChange(optionValue);
             }}
           >
             {option.swatch && <i style={{ background: option.swatch }} />}
@@ -1014,7 +1470,10 @@ function HuntHint({ children }) {
 function HuntSection({ title, icon, children }) {
   return (
     <section className="bp-hunt-section">
-      <h4>{icon}{title}</h4>
+      <h4>
+        {icon}
+        {title}
+      </h4>
       <div className="bp-hunt-section__body">{children}</div>
     </section>
   );
@@ -1064,13 +1523,27 @@ function BetterBetsPreviewBarFill({ fillStyle }) {
 function BetterBetsPreview({ config }) {
   const c = ensureBetterWidgetConfig("bets", config);
   const fillStyle = normalizeBetFillStyle(c.fillStyle);
-  const options = Array.isArray(c.options) && c.options.length
-    ? c.options.slice(0, 6)
-    : ["0 - 99", "100 - 199", "200 - 299", "300 - 399", "400 - 499", "500 - 599"];
+  const options =
+    Array.isArray(c.options) && c.options.length
+      ? c.options.slice(0, 6)
+      : [
+          "0 - 99",
+          "100 - 199",
+          "200 - 299",
+          "300 - 399",
+          "400 - 499",
+          "500 - 599",
+        ];
   const bets = c.bets || {};
-  const totalPool = options.reduce((sum, _, index) => sum + (Number(bets[`opt_${index}`]) || 0), 0);
+  const totalPool = options.reduce(
+    (sum, _, index) => sum + (Number(bets[`opt_${index}`]) || 0),
+    0,
+  );
   const totalBets = Object.keys(c.betters || {}).length;
-  const colors = Array.isArray(c.cardColors) && c.cardColors.length >= 6 ? c.cardColors : DEFAULT_CARD_COLORS;
+  const colors =
+    Array.isArray(c.cardColors) && c.cardColors.length >= 6
+      ? c.cardColors
+      : DEFAULT_CARD_COLORS;
   const values = options.map((_, index) => {
     const realAmount = Number(bets[`opt_${index}`]) || 0;
     if (totalPool > 0) return Math.round((realAmount / totalPool) * 100);
@@ -1086,39 +1559,88 @@ function BetterBetsPreview({ config }) {
   };
 
   return (
-    <div className="bp-bets-stage" data-theme={c.theme} data-font={c.font} data-fill={fillStyle} style={cssVars}>
-      <section className={`bet-widget${!c.showBrackets ? " hide-brackets" : ""}${!c.showSheen ? " hide-sheen" : ""}${c.orientation === "horizontal" ? " is-horizontal" : ""}`} data-cols={Number(c.columns) || 2}>
+    <div
+      className="bp-bets-stage"
+      data-theme={c.theme}
+      data-font={c.font}
+      data-fill={fillStyle}
+      style={cssVars}
+    >
+      <section
+        className={`bet-widget${!c.showBrackets ? " hide-brackets" : ""}${!c.showSheen ? " hide-sheen" : ""}${c.orientation === "horizontal" ? " is-horizontal" : ""}`}
+        data-cols={Number(c.columns) || 2}
+      >
         <div className="widget-sheen" />
         <header className="widget-header">
           <div className="title-lockup">
             <span className="title-mark" />
             <h1>{c.question || "Place Your Bets"}</h1>
           </div>
-          <span className="open-status"><i /> {String(c.gameStatus || "OPEN").toUpperCase()}</span>
+          <span className="open-status">
+            <i /> {String(c.gameStatus || "OPEN").toUpperCase()}
+          </span>
         </header>
         <div className="event-meta">
-          <div className="meta-item"><strong>{formatMoney(totalPool, "")}</strong><span><Coins size={10} /> Pool</span></div>
-          <div className="meta-item"><strong>{c.countdown ? `${c.countdown}s` : "0:00"}</strong><span><Timer size={10} /> Timer</span></div>
-          <div className="meta-item"><strong>{totalBets}</strong><span><Users size={10} /> Bets</span></div>
+          <div className="meta-item">
+            <strong>{formatMoney(totalPool, "")}</strong>
+            <span>
+              <Coins size={10} /> Pool
+            </span>
+          </div>
+          <div className="meta-item">
+            <strong>{c.countdown ? `${c.countdown}s` : "0:00"}</strong>
+            <span>
+              <Timer size={10} /> Timer
+            </span>
+          </div>
+          <div className="meta-item">
+            <strong>{totalBets}</strong>
+            <span>
+              <Users size={10} /> Bets
+            </span>
+          </div>
         </div>
         <div className={c.layoutMode === "bars" ? "bars-grid" : "bets-grid"}>
           {options.map((option, index) => {
             const pct = values[index];
             const cc = colors[index % colors.length];
             return c.layoutMode === "bars" ? (
-              <button key={index} className="bet-bar" type="button" style={{ "--fill": `${pct}%`, "--accent": cc.accent, "--accent-2": cc.accent2 }}>
+              <button
+                key={index}
+                className="bet-bar"
+                type="button"
+                style={{
+                  "--fill": `${pct}%`,
+                  "--accent": cc.accent,
+                  "--accent-2": cc.accent2,
+                }}
+              >
                 <span className="bar-num">{index + 1}</span>
                 <span className="bar-range">{betLabel(option, index)}</span>
-                <span className="bar-track"><BetterBetsPreviewBarFill fillStyle={fillStyle} /></span>
+                <span className="bar-track">
+                  <BetterBetsPreviewBarFill fillStyle={fillStyle} />
+                </span>
                 <span className="bar-pct">{pct}%</span>
               </button>
             ) : (
-              <button key={index} className="bet-option" type="button" style={{ "--fill": `${pct}%`, "--accent": cc.accent, "--accent-2": cc.accent2 }}>
+              <button
+                key={index}
+                className="bet-option"
+                type="button"
+                style={{
+                  "--fill": `${pct}%`,
+                  "--accent": cc.accent,
+                  "--accent-2": cc.accent2,
+                }}
+              >
                 <BetterBetsPreviewFill fillStyle={fillStyle} />
                 <span className="option-scrim" />
                 <span className="option-number">{index + 1}</span>
                 <span className="option-range">{betLabel(option, index)}</span>
-                <span className="option-details"><strong>{pct}%</strong><small>Set {index + 1}</small></span>
+                <span className="option-details">
+                  <strong>{pct}%</strong>
+                  <small>Set {index + 1}</small>
+                </span>
                 <span className="option-glint" />
               </button>
             );
@@ -1126,7 +1648,10 @@ function BetterBetsPreview({ config }) {
         </div>
         <div className="bet-entry">
           <span>&gt;&gt;&gt;</span>
-          <input readOnly placeholder={`Type ${c.chatCommand || "!bet"} number to bet`} />
+          <input
+            readOnly
+            placeholder={`Type ${c.chatCommand || "!bet"} number to bet`}
+          />
           <kbd>Enter</kbd>
         </div>
       </section>
@@ -1136,47 +1661,58 @@ function BetterBetsPreview({ config }) {
 
 function BetterChatPreview({ config, widget }) {
   const c = ensureBetterWidgetConfig("chat", config);
-  const width = clampNumber(c.width ?? widget?.width, 150, 900, BETTER_CHAT_DEFAULT_SIZE.width);
-  const height = clampNumber(c.height ?? widget?.height, 150, 900, BETTER_CHAT_DEFAULT_SIZE.height);
-  const sourceMessages = Array.isArray(c.previewMessages) && c.previewMessages.length
-    ? c.previewMessages
-    : [
-        {
-          id: "better-chat-preview-raid",
-          platform: "twitch",
-          username: "RaidLeader",
-          message: "RAID CHEGOU! 50 pessoas!",
-          type: "raid",
-          isRaid: true,
-          raidViewers: 50,
-          color: c.glow,
-        },
-        {
-          id: "better-chat-preview-sub",
-          platform: "twitch",
-          username: "LoyalSub",
-          message: "Acabei de assinar! PogChamp",
-          type: "sub",
-          isSub: true,
-          color: c.username,
-        },
-        {
-          id: "better-chat-preview-gift",
-          platform: "twitch",
-          username: "GiftBoss",
-          message: "Gifted 5 subs to the chat",
-          type: "gift",
-          giftCount: 5,
-          color: c.glow,
-        },
-        {
-          id: "better-chat-preview-chat",
-          platform: "twitch",
-          username: "ChatMaster",
-          message: "PogChamp esse overlay esta incrivel",
-          color: "#7dd3fc",
-        },
-      ];
+  const width = clampNumber(
+    c.width ?? widget?.width,
+    150,
+    900,
+    BETTER_CHAT_DEFAULT_SIZE.width,
+  );
+  const height = clampNumber(
+    c.height ?? widget?.height,
+    150,
+    900,
+    BETTER_CHAT_DEFAULT_SIZE.height,
+  );
+  const sourceMessages =
+    Array.isArray(c.previewMessages) && c.previewMessages.length
+      ? c.previewMessages
+      : [
+          {
+            id: "better-chat-preview-raid",
+            platform: "twitch",
+            username: "RaidLeader",
+            message: "RAID CHEGOU! 50 pessoas!",
+            type: "raid",
+            isRaid: true,
+            raidViewers: 50,
+            color: c.glow,
+          },
+          {
+            id: "better-chat-preview-sub",
+            platform: "twitch",
+            username: "LoyalSub",
+            message: "Acabei de assinar! PogChamp",
+            type: "sub",
+            isSub: true,
+            color: c.username,
+          },
+          {
+            id: "better-chat-preview-gift",
+            platform: "twitch",
+            username: "GiftBoss",
+            message: "Gifted 5 subs to the chat",
+            type: "gift",
+            giftCount: 5,
+            color: c.glow,
+          },
+          {
+            id: "better-chat-preview-chat",
+            platform: "twitch",
+            username: "ChatMaster",
+            message: "PogChamp esse overlay esta incrivel",
+            color: "#7dd3fc",
+          },
+        ];
   const maxPreviewMessages = clampNumber(c.maxMessages, 2, 40, 10);
   const previewMessages = sourceMessages
     .slice(-maxPreviewMessages)
@@ -1257,8 +1793,16 @@ function BetterBonusHuntPreview({ config, allWidgets, userId, widget }) {
   );
 }
 
-export function BetterWidgetPreview({ type, config, allWidgets, userId, widget }) {
+export function BetterWidgetPreview({
+  type,
+  config,
+  allWidgets,
+  userId,
+  widget,
+}) {
   switch (type) {
+    case "tournament":
+      return <TournamentWidget config={config} />;
     case "bets":
       return <BetterBetsPreview config={config} />;
     case "chat":
@@ -1364,12 +1908,21 @@ const BETTER_NAVBAR_SECTION_IDS = new Set(
 );
 
 function normalizeBetterNavbarSectionLayout(layout) {
-  const source = Array.isArray(layout) ? layout : BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT;
+  const source = Array.isArray(layout)
+    ? layout
+    : BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT;
   const normalized = [];
   const seen = new Set();
   source.forEach((section) => {
-    if (!section || !BETTER_NAVBAR_SECTION_IDS.has(section.id) || seen.has(section.id)) return;
-    const fallback = BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT.find((item) => item.id === section.id);
+    if (
+      !section ||
+      !BETTER_NAVBAR_SECTION_IDS.has(section.id) ||
+      seen.has(section.id)
+    )
+      return;
+    const fallback = BETTER_NAVBAR_DEFAULT_SECTION_LAYOUT.find(
+      (item) => item.id === section.id,
+    );
     normalized.push({
       id: section.id,
       zone: BETTER_NAVBAR_ZONES.some((zone) => zone.key === section.zone)
@@ -1395,7 +1948,13 @@ function getTwitchIdentity(user) {
   return { isTwitch, username, displayName, avatarUrl };
 }
 
-function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }) {
+function BetterNavbarControls({
+  config,
+  onChange,
+  user,
+  widget,
+  onWidgetChange,
+}) {
   const c = ensureBetterWidgetConfig("navbar", config);
   const set = (patch) => {
     const nextPatch = { ...patch };
@@ -1405,19 +1964,28 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
     onChange({ ...c, ...nextPatch });
   };
   const sectionLayout = normalizeBetterNavbarSectionLayout(c.sectionLayout);
-  const setLayout = (layout) => set({ sectionLayout: normalizeBetterNavbarSectionLayout(layout) });
+  const setLayout = (layout) =>
+    set({ sectionLayout: normalizeBetterNavbarSectionLayout(layout) });
   const setSectionZone = (sectionId, zone) => {
-    setLayout(sectionLayout.map((section) => (
-      section.id === sectionId ? { ...section, zone } : section
-    )));
+    setLayout(
+      sectionLayout.map((section) =>
+        section.id === sectionId ? { ...section, zone } : section,
+      ),
+    );
   };
   const moveSection = (sectionId, direction) => {
-    const index = sectionLayout.findIndex((section) => section.id === sectionId);
+    const index = sectionLayout.findIndex(
+      (section) => section.id === sectionId,
+    );
     if (index < 0) return;
     const currentSection = sectionLayout[index];
     const step = direction === "up" ? -1 : 1;
     let swapIndex = -1;
-    for (let nextIndex = index + step; nextIndex >= 0 && nextIndex < sectionLayout.length; nextIndex += step) {
+    for (
+      let nextIndex = index + step;
+      nextIndex >= 0 && nextIndex < sectionLayout.length;
+      nextIndex += step
+    ) {
       if (sectionLayout[nextIndex].zone === currentSection.zone) {
         swapIndex = nextIndex;
         break;
@@ -1430,13 +1998,26 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
     setLayout(nextLayout);
   };
   const commitWidgetSize = (patch) => {
-    const width = clampNumber(patch.width ?? widget?.width, 720, 1920, widget?.width || 1200);
-    const height = clampNumber(patch.height ?? widget?.height, 46, 160, widget?.height || c.barHeight || 72);
+    const width = clampNumber(
+      patch.width ?? widget?.width,
+      720,
+      1920,
+      widget?.width || 1200,
+    );
+    const height = clampNumber(
+      patch.height ?? widget?.height,
+      46,
+      160,
+      widget?.height || c.barHeight || 72,
+    );
     const nextConfig = {
       ...c,
       width,
       height,
-      barHeight: Math.min(Math.max(Number(c.barHeight) || 52, 42), Math.max(42, height)),
+      barHeight: Math.min(
+        Math.max(Number(c.barHeight) || 52, 42),
+        Math.max(42, height),
+      ),
       maxWidth: width,
     };
     if (onWidgetChange) {
@@ -1483,7 +2064,9 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
             />
             <ToggleRow
               label="Now playing"
-              checked={c.showNowPlaying !== false && c.musicSource !== "disabled"}
+              checked={
+                c.showNowPlaying !== false && c.musicSource !== "disabled"
+              }
               onChange={(showNowPlaying) => set({ showNowPlaying })}
             />
             <ToggleRow
@@ -1520,7 +2103,9 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
           <div className="bp-navbar-arrange">
             {sectionLayout.map((section) => (
               <div className="bp-navbar-arrange-row" key={section.id}>
-                <strong>{BETTER_NAVBAR_SECTION_LABELS[section.id] || section.id}</strong>
+                <strong>
+                  {BETTER_NAVBAR_SECTION_LABELS[section.id] || section.id}
+                </strong>
                 <div className="bp-navbar-zone-buttons">
                   {BETTER_NAVBAR_ZONES.map((zone) => (
                     <button
@@ -1534,17 +2119,28 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
                   ))}
                 </div>
                 <div className="bp-navbar-order-buttons">
-                  <button type="button" onClick={() => moveSection(section.id, "up")} title="Move up">
+                  <button
+                    type="button"
+                    onClick={() => moveSection(section.id, "up")}
+                    title="Move up"
+                  >
                     <ArrowUp size={13} />
                   </button>
-                  <button type="button" onClick={() => moveSection(section.id, "down")} title="Move down">
+                  <button
+                    type="button"
+                    onClick={() => moveSection(section.id, "down")}
+                    title="Move down"
+                  >
                     <ArrowDown size={13} />
                   </button>
                 </div>
               </div>
             ))}
           </div>
-          <p className="bp-hint">Move Spotify to the left, streamer name to the right, or reorder any section inside its zone.</p>
+          <p className="bp-hint">
+            Move Spotify to the left, streamer name to the right, or reorder any
+            section inside its zone.
+          </p>
         </Section>
       )}
 
@@ -1559,7 +2155,9 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
               }
             />
             <p className="bp-hint">
-              {c.spotify_access_token ? "Spotify connected." : "Connect Spotify in Profile."}
+              {c.spotify_access_token
+                ? "Spotify connected."
+                : "Connect Spotify in Profile."}
             </p>
             <SelectRow
               label="Display style"
@@ -1603,7 +2201,10 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
             value={c.cryptoDownColor || "#f87171"}
             onChange={(cryptoDownColor) => set({ cryptoDownColor })}
           />
-          <p className="bp-hint">The ticker uses live CoinGecko prices and cycles the supported coins automatically.</p>
+          <p className="bp-hint">
+            The ticker uses live CoinGecko prices and cycles the supported coins
+            automatically.
+          </p>
         </Section>
       )}
 
@@ -1620,7 +2221,9 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
             options={NAVBAR_SOCIAL_DISPLAY_OPTIONS}
             onChange={(socialDisplayStyle) => set({ socialDisplayStyle })}
           />
-          <p className="bp-hint">Social names and URLs come from the Navbar widget page.</p>
+          <p className="bp-hint">
+            Social names and URLs come from the Navbar widget page.
+          </p>
         </Section>
       )}
 
@@ -1640,7 +2243,9 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
               unit="%"
               onChange={(casinoImageSize) => set({ casinoImageSize })}
             />
-            <p className="bp-hint">Casino logo and command come from the Navbar widget page.</p>
+            <p className="bp-hint">
+              Casino logo and command come from the Navbar widget page.
+            </p>
           </Section>
         </>
       )}
@@ -1666,7 +2271,12 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
           <Section title="Editor size" icon={<Maximize2 size={13} />}>
             <SliderRow
               label="Widget width"
-              value={clampNumber(widget?.width ?? c.width ?? 1200, 720, 1920, 1200)}
+              value={clampNumber(
+                widget?.width ?? c.width ?? 1200,
+                720,
+                1920,
+                1200,
+              )}
               min={720}
               max={1920}
               step={16}
@@ -1683,8 +2293,23 @@ function BetterNavbarControls({ config, onChange, user, widget, onWidgetChange }
               onChange={(height) => commitWidgetSize({ height })}
             />
             <div className="bp-preset-row">
-              <button type="button" onClick={() => commitWidgetSize({ width: 1920, height: widget?.height || 72 })}>Full 1920</button>
-              <button type="button" onClick={() => commitWidgetSize({ width: 1200, height: 72 })}>Default</button>
+              <button
+                type="button"
+                onClick={() =>
+                  commitWidgetSize({
+                    width: 1920,
+                    height: widget?.height || 72,
+                  })
+                }
+              >
+                Full 1920
+              </button>
+              <button
+                type="button"
+                onClick={() => commitWidgetSize({ width: 1200, height: 72 })}
+              >
+                Default
+              </button>
             </div>
           </Section>
 
@@ -1768,44 +2393,248 @@ function BetterBetsControls({ config, onChange }) {
   const [tab, setTab] = useTab("theme");
   const set = (patch) => onChange({ ...c, ...patch });
   const setCardColor = (index, key, value) => {
-    const next = [...(Array.isArray(c.cardColors) ? c.cardColors : DEFAULT_CARD_COLORS)];
+    const next = [
+      ...(Array.isArray(c.cardColors) ? c.cardColors : DEFAULT_CARD_COLORS),
+    ];
     next[index] = { ...next[index], [key]: value };
     set({ cardColors: next });
   };
 
   return (
     <div className="bp-controls bp-controls--bets">
-      <PanelTabs active={tab} onChange={setTab} tabs={[
-        ["theme", <Palette size={12} />, "Theme"],
-        ["colors", <Pipette size={12} />, "Colors"],
-        ["text", <Type size={12} />, "Text"],
-        ["effects", <Sparkles size={12} />, "FX"],
-        ["layout", <Sliders size={12} />, "Layout"],
-      ]} />
-      {tab === "theme" && <>
-        <Section title="Colour Theme" icon={<Palette size={12} />}><div className="bp-theme-grid">{BET_THEMES.map((theme) => <button key={theme.key} type="button" className={c.theme === theme.key ? "is-active" : ""} onClick={() => set({ theme: theme.key })}><span>{theme.swatches.map((color) => <i key={color} style={{ background: color }} />)}</span><strong>{theme.icon}{theme.name}</strong></button>)}</div></Section>
-        <Section title="Widget Opacity" icon={<Eye size={12} />}><SliderRow label="Opacity" value={c.opacity} min={40} max={100} step={5} unit="%" onChange={(opacity) => set({ opacity })} /></Section>
-      </>}
-      {tab === "colors" && <>
-        <Section title="Colour Presets" icon={<Palette size={12} />}><div className="bp-preset-row">{CARD_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set({ cardColors: preset.colors })}><span>{preset.colors.map((color, index) => <i key={index} style={{ background: color.accent }} />)}</span>{preset.name}</button>)}</div></Section>
-        <Section title="Per-Card Colours" icon={<Pipette size={12} />}>{(Array.isArray(c.cardColors) ? c.cardColors : DEFAULT_CARD_COLORS).slice(0, 6).map((color, index) => <div className="bp-card-color-row" key={index}><span>Set {index + 1}</span><input type="color" value={color.accent} onChange={(event) => setCardColor(index, "accent", event.target.value)} /><input type="color" value={color.accent2} onChange={(event) => setCardColor(index, "accent2", event.target.value)} /></div>)}<div className="bp-quick-colors">{QUICK_COLORS.map((color) => <button key={color} type="button" style={{ background: color }} onClick={() => setCardColor(0, "accent", color)} />)}</div></Section>
-      </>}
-      {tab === "text" && <>
-        <Section title="Font Family" icon={<Type size={12} />}><div className="bp-font-grid">{FONT_OPTIONS.map((font) => <button key={font.key} type="button" className={c.font === font.key ? "is-active" : ""} onClick={() => set({ font: font.key })}><span style={{ fontFamily: font.family }}>Aa</span><strong>{font.name}</strong></button>)}</div></Section>
-        <Section title="Text Size" icon={<Maximize2 size={12} />}><SliderRow label="Size" value={c.fontScale} min={75} max={140} step={5} unit="%" onChange={(fontScale) => set({ fontScale })} /></Section>
-      </>}
-      {tab === "effects" && <>
-        <Section title="Fill Style" icon={<Waves size={12} />}><Segmented value={c.fillStyle} options={FILL_STYLES} columns={3} onChange={(fillStyle) => set({ fillStyle })} /></Section>
-        <Section title="Glow Intensity" icon={<Zap size={12} />}><SliderRow label="Glow" value={c.glowIntensity} min={0} max={200} step={10} unit="%" onChange={(glowIntensity) => set({ glowIntensity })} /></Section>
-        <Section title="Animation Speed" icon={<Gauge size={12} />}><SliderRow label="Speed" value={c.fillSpeed} min={20} max={200} step={10} unit="%" onChange={(fillSpeed) => set({ fillSpeed })} /></Section>
-        <Section title="Toggles" icon={<Eye size={12} />}><ToggleRow label="Corner brackets" checked={c.showBrackets} onChange={(showBrackets) => set({ showBrackets })} /><ToggleRow label="Sheen sweep" checked={c.showSheen} onChange={(showSheen) => set({ showSheen })} /></Section>
-      </>}
-      {tab === "layout" && <>
-        <Section title="Display Mode" icon={<Layers size={12} />}><Segmented value={c.layoutMode} options={[{ key: "cards", name: "Stat Cards", icon: <Layers size={12} /> }, { key: "bars", name: "Progress Bars", icon: <Gauge size={12} /> }]} onChange={(layoutMode) => set({ layoutMode })} /></Section>
-        <Section title="Grid Columns" icon={<Sliders size={12} />}><Segmented value={String(c.columns)} options={[{ key: "1", name: "1 Col" }, { key: "2", name: "2 Cols" }, { key: "3", name: "3 Cols" }]} columns={3} onChange={(columns) => set({ columns: Number(columns) })} /></Section>
-        <Section title="Orientation" icon={<MonitorPlay size={12} />}><Segmented value={c.orientation} options={[{ key: "vertical", name: "Vertical" }, { key: "horizontal", name: "Horizontal" }]} onChange={(orientation) => set({ orientation })} /></Section>
-        <Section title="Card Radius" icon={<Gauge size={12} />}><SliderRow label="Radius" value={c.borderRadius} min={0} max={20} unit="px" onChange={(borderRadius) => set({ borderRadius })} /></Section>
-      </>}
+      <PanelTabs
+        active={tab}
+        onChange={setTab}
+        tabs={[
+          ["theme", <Palette size={12} />, "Theme"],
+          ["colors", <Pipette size={12} />, "Colors"],
+          ["text", <Type size={12} />, "Text"],
+          ["effects", <Sparkles size={12} />, "FX"],
+          ["layout", <Sliders size={12} />, "Layout"],
+        ]}
+      />
+      {tab === "theme" && (
+        <>
+          <Section title="Colour Theme" icon={<Palette size={12} />}>
+            <div className="bp-theme-grid">
+              {BET_THEMES.map((theme) => (
+                <button
+                  key={theme.key}
+                  type="button"
+                  className={c.theme === theme.key ? "is-active" : ""}
+                  onClick={() => set({ theme: theme.key })}
+                >
+                  <span>
+                    {theme.swatches.map((color) => (
+                      <i key={color} style={{ background: color }} />
+                    ))}
+                  </span>
+                  <strong>
+                    {theme.icon}
+                    {theme.name}
+                  </strong>
+                </button>
+              ))}
+            </div>
+          </Section>
+          <Section title="Widget Opacity" icon={<Eye size={12} />}>
+            <SliderRow
+              label="Opacity"
+              value={c.opacity}
+              min={40}
+              max={100}
+              step={5}
+              unit="%"
+              onChange={(opacity) => set({ opacity })}
+            />
+          </Section>
+        </>
+      )}
+      {tab === "colors" && (
+        <>
+          <Section title="Colour Presets" icon={<Palette size={12} />}>
+            <div className="bp-preset-row">
+              {CARD_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => set({ cardColors: preset.colors })}
+                >
+                  <span>
+                    {preset.colors.map((color, index) => (
+                      <i key={index} style={{ background: color.accent }} />
+                    ))}
+                  </span>
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+          </Section>
+          <Section title="Per-Card Colours" icon={<Pipette size={12} />}>
+            {(Array.isArray(c.cardColors) ? c.cardColors : DEFAULT_CARD_COLORS)
+              .slice(0, 6)
+              .map((color, index) => (
+                <div className="bp-card-color-row" key={index}>
+                  <span>Set {index + 1}</span>
+                  <input
+                    type="color"
+                    value={color.accent}
+                    onChange={(event) =>
+                      setCardColor(index, "accent", event.target.value)
+                    }
+                  />
+                  <input
+                    type="color"
+                    value={color.accent2}
+                    onChange={(event) =>
+                      setCardColor(index, "accent2", event.target.value)
+                    }
+                  />
+                </div>
+              ))}
+            <div className="bp-quick-colors">
+              {QUICK_COLORS.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  style={{ background: color }}
+                  onClick={() => setCardColor(0, "accent", color)}
+                />
+              ))}
+            </div>
+          </Section>
+        </>
+      )}
+      {tab === "text" && (
+        <>
+          <Section title="Font Family" icon={<Type size={12} />}>
+            <div className="bp-font-grid">
+              {FONT_OPTIONS.map((font) => (
+                <button
+                  key={font.key}
+                  type="button"
+                  className={c.font === font.key ? "is-active" : ""}
+                  onClick={() => set({ font: font.key })}
+                >
+                  <span style={{ fontFamily: font.family }}>Aa</span>
+                  <strong>{font.name}</strong>
+                </button>
+              ))}
+            </div>
+          </Section>
+          <Section title="Text Size" icon={<Maximize2 size={12} />}>
+            <SliderRow
+              label="Size"
+              value={c.fontScale}
+              min={75}
+              max={140}
+              step={5}
+              unit="%"
+              onChange={(fontScale) => set({ fontScale })}
+            />
+          </Section>
+        </>
+      )}
+      {tab === "effects" && (
+        <>
+          <Section title="Fill Style" icon={<Waves size={12} />}>
+            <Segmented
+              value={c.fillStyle}
+              options={FILL_STYLES}
+              columns={3}
+              onChange={(fillStyle) => set({ fillStyle })}
+            />
+          </Section>
+          <Section title="Glow Intensity" icon={<Zap size={12} />}>
+            <SliderRow
+              label="Glow"
+              value={c.glowIntensity}
+              min={0}
+              max={200}
+              step={10}
+              unit="%"
+              onChange={(glowIntensity) => set({ glowIntensity })}
+            />
+          </Section>
+          <Section title="Animation Speed" icon={<Gauge size={12} />}>
+            <SliderRow
+              label="Speed"
+              value={c.fillSpeed}
+              min={20}
+              max={200}
+              step={10}
+              unit="%"
+              onChange={(fillSpeed) => set({ fillSpeed })}
+            />
+          </Section>
+          <Section title="Toggles" icon={<Eye size={12} />}>
+            <ToggleRow
+              label="Corner brackets"
+              checked={c.showBrackets}
+              onChange={(showBrackets) => set({ showBrackets })}
+            />
+            <ToggleRow
+              label="Sheen sweep"
+              checked={c.showSheen}
+              onChange={(showSheen) => set({ showSheen })}
+            />
+          </Section>
+        </>
+      )}
+      {tab === "layout" && (
+        <>
+          <Section title="Display Mode" icon={<Layers size={12} />}>
+            <Segmented
+              value={c.layoutMode}
+              options={[
+                {
+                  key: "cards",
+                  name: "Stat Cards",
+                  icon: <Layers size={12} />,
+                },
+                {
+                  key: "bars",
+                  name: "Progress Bars",
+                  icon: <Gauge size={12} />,
+                },
+              ]}
+              onChange={(layoutMode) => set({ layoutMode })}
+            />
+          </Section>
+          <Section title="Grid Columns" icon={<Sliders size={12} />}>
+            <Segmented
+              value={String(c.columns)}
+              options={[
+                { key: "1", name: "1 Col" },
+                { key: "2", name: "2 Cols" },
+                { key: "3", name: "3 Cols" },
+              ]}
+              columns={3}
+              onChange={(columns) => set({ columns: Number(columns) })}
+            />
+          </Section>
+          <Section title="Orientation" icon={<MonitorPlay size={12} />}>
+            <Segmented
+              value={c.orientation}
+              options={[
+                { key: "vertical", name: "Vertical" },
+                { key: "horizontal", name: "Horizontal" },
+              ]}
+              onChange={(orientation) => set({ orientation })}
+            />
+          </Section>
+          <Section title="Card Radius" icon={<Gauge size={12} />}>
+            <SliderRow
+              label="Radius"
+              value={c.borderRadius}
+              min={0}
+              max={20}
+              unit="px"
+              onChange={(borderRadius) => set({ borderRadius })}
+            />
+          </Section>
+        </>
+      )}
     </div>
   );
 }
@@ -1814,8 +2643,14 @@ function PanelTabs({ tabs, active, onChange }) {
   return (
     <nav className="bp-panel-tabs">
       {tabs.map(([key, icon, label]) => (
-        <button key={key} type="button" className={active === key ? "is-active" : ""} onClick={() => onChange(key)}>
-          {icon}<span>{label}</span>
+        <button
+          key={key}
+          type="button"
+          className={active === key ? "is-active" : ""}
+          onClick={() => onChange(key)}
+        >
+          {icon}
+          <span>{label}</span>
         </button>
       ))}
     </nav>
@@ -1827,8 +2662,18 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   const set = (patch) => onChange({ ...c, ...patch });
   const commitSize = (patch) => {
     const next = ensureBetterWidgetConfig("chat", { ...c, ...patch });
-    const width = clampNumber(next.width, 150, 900, BETTER_CHAT_DEFAULT_SIZE.width);
-    const height = clampNumber(next.height, 150, 900, BETTER_CHAT_DEFAULT_SIZE.height);
+    const width = clampNumber(
+      next.width,
+      150,
+      900,
+      BETTER_CHAT_DEFAULT_SIZE.width,
+    );
+    const height = clampNumber(
+      next.height,
+      150,
+      900,
+      BETTER_CHAT_DEFAULT_SIZE.height,
+    );
     const sizedConfig = { ...next, width, height };
     if (typeof onWidgetChange === "function") {
       onWidgetChange({ width, height, config: sizedConfig });
@@ -1850,69 +2695,353 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   };
   return (
     <div className="bp-controls bp-controls--chat">
-      <header className="bp-chat-panel-head"><MessageSquare size={17} /><div><h3>Overlay Studio</h3><p>stream chat customizer</p></div><span className={c.live ? "is-live" : ""}><i />{c.live ? "Live" : "Idle"}</span></header>
+      <header className="bp-chat-panel-head">
+        <MessageSquare size={17} />
+        <div>
+          <h3>Overlay Studio</h3>
+          <p>stream chat customizer</p>
+        </div>
+        <span className={c.live ? "is-live" : ""}>
+          <i />
+          {c.live ? "Live" : "Idle"}
+        </span>
+      </header>
       <Section title="Chat Box Size" icon={<Maximize2 size={13} />}>
-        <SliderRow label="Width" value={clampNumber(c.width ?? widget?.width, 150, 900, BETTER_CHAT_DEFAULT_SIZE.width)} min={150} max={900} step={10} unit="px" onChange={(width) => commitSize({ width })} />
-        <SliderRow label="Height" value={clampNumber(c.height ?? widget?.height, 150, 900, BETTER_CHAT_DEFAULT_SIZE.height)} min={150} max={900} step={10} unit="px" onChange={(height) => commitSize({ height })} />
+        <SliderRow
+          label="Width"
+          value={clampNumber(
+            c.width ?? widget?.width,
+            150,
+            900,
+            BETTER_CHAT_DEFAULT_SIZE.width,
+          )}
+          min={150}
+          max={900}
+          step={10}
+          unit="px"
+          onChange={(width) => commitSize({ width })}
+        />
+        <SliderRow
+          label="Height"
+          value={clampNumber(
+            c.height ?? widget?.height,
+            150,
+            900,
+            BETTER_CHAT_DEFAULT_SIZE.height,
+          )}
+          min={150}
+          max={900}
+          step={10}
+          unit="px"
+          onChange={(height) => commitSize({ height })}
+        />
         <div className="bp-preset-row">
-          <button type="button" onClick={() => commitSize(BETTER_CHAT_DEFAULT_SIZE)}>Default</button>
-          <button type="button" onClick={() => commitSize({ width: 360, height: 520 })}>Wide</button>
-          <button type="button" onClick={() => commitSize({ width: 260, height: 720 })}>Tall</button>
-          <button type="button" onClick={() => commitSize({ width: 420, height: 360 })}>Compact</button>
+          <button
+            type="button"
+            onClick={() => commitSize(BETTER_CHAT_DEFAULT_SIZE)}
+          >
+            Default
+          </button>
+          <button
+            type="button"
+            onClick={() => commitSize({ width: 360, height: 520 })}
+          >
+            Wide
+          </button>
+          <button
+            type="button"
+            onClick={() => commitSize({ width: 260, height: 720 })}
+          >
+            Tall
+          </button>
+          <button
+            type="button"
+            onClick={() => commitSize({ width: 420, height: 360 })}
+          >
+            Compact
+          </button>
         </div>
       </Section>
-      <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Message font" value={c.font} options={CHAT_FONTS} onChange={(font) => set({ font })} /><SliderRow label="Message size" value={c.fontSize} min={9} max={20} unit="px" onChange={(fontSize) => set({ fontSize })} /><SliderRow label="Username size" value={c.usernameSize} min={9} max={20} unit="px" onChange={(usernameSize) => set({ usernameSize })} /></Section>
-      <Section title="Colours" icon={<Palette size={13} />}><div className="bp-color-grid">{["glow", "username", "text", "bubble", "panel"].map((key) => <ColorRow key={key} label={key[0].toUpperCase() + key.slice(1)} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</div><div className="bp-chat-presets">{CHAT_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set(preset)}><span><i style={{ background: preset.glow }} /><i style={{ background: preset.username }} /><i style={{ background: preset.bubble }} /></span>{preset.name}</button>)}</div></Section>
+      <Section title="Typography" icon={<Type size={13} />}>
+        <SelectRow
+          label="Message font"
+          value={c.font}
+          options={CHAT_FONTS}
+          onChange={(font) => set({ font })}
+        />
+        <SliderRow
+          label="Message size"
+          value={c.fontSize}
+          min={9}
+          max={20}
+          unit="px"
+          onChange={(fontSize) => set({ fontSize })}
+        />
+        <SliderRow
+          label="Username size"
+          value={c.usernameSize}
+          min={9}
+          max={20}
+          unit="px"
+          onChange={(usernameSize) => set({ usernameSize })}
+        />
+      </Section>
+      <Section title="Colours" icon={<Palette size={13} />}>
+        <div className="bp-color-grid">
+          {["glow", "username", "text", "bubble", "panel"].map((key) => (
+            <ColorRow
+              key={key}
+              label={key[0].toUpperCase() + key.slice(1)}
+              value={c[key]}
+              onChange={(value) => set({ [key]: value })}
+            />
+          ))}
+        </div>
+        <div className="bp-chat-presets">
+          {CHAT_PRESETS.map((preset) => (
+            <button key={preset.name} type="button" onClick={() => set(preset)}>
+              <span>
+                <i style={{ background: preset.glow }} />
+                <i style={{ background: preset.username }} />
+                <i style={{ background: preset.bubble }} />
+              </span>
+              {preset.name}
+            </button>
+          ))}
+        </div>
+      </Section>
       <Section title="Display" icon={<Eye size={13} />}>
-        <ToggleRow label="Show name text" checked={c.showHeaderName !== false} onChange={(showHeaderName) => set({ showHeaderName })} />
-        <ToggleRow label="Show live text" checked={c.showLiveLabel !== false} onChange={(showLiveLabel) => set({ showLiveLabel })} />
-        <ToggleRow label="Show viewer count" checked={!!c.showViewerCount} onChange={(showViewerCount) => set({ showViewerCount })} />
-        <SliderRow label="Viewer count" value={c.viewerCount} min={0} max={100000} step={10} disabled={!c.showViewerCount} onChange={(viewerCount) => set({ viewerCount })} />
+        <ToggleRow
+          label="Show name text"
+          checked={c.showHeaderName !== false}
+          onChange={(showHeaderName) => set({ showHeaderName })}
+        />
+        <ToggleRow
+          label="Show live text"
+          checked={c.showLiveLabel !== false}
+          onChange={(showLiveLabel) => set({ showLiveLabel })}
+        />
+        <ToggleRow
+          label="Show viewer count"
+          checked={!!c.showViewerCount}
+          onChange={(showViewerCount) => set({ showViewerCount })}
+        />
+        <SliderRow
+          label="Viewer count"
+          value={c.viewerCount}
+          min={0}
+          max={100000}
+          step={10}
+          disabled={!c.showViewerCount}
+          onChange={(viewerCount) => set({ viewerCount })}
+        />
       </Section>
       <Section title="Emotes" icon={<Sparkles size={13} />}>
-        <ToggleRow label="BetterTTV emotes" checked={c.bttvEnabled !== false} onChange={(bttvEnabled) => set({ bttvEnabled })} />
-        <ToggleRow label="Global BTTV emotes" checked={c.bttvGlobal !== false} onChange={(bttvGlobal) => set({ bttvGlobal })} />
-        <ToggleRow label="Channel BTTV emotes" checked={c.bttvChannel !== false} onChange={(bttvChannel) => set({ bttvChannel })} />
-        <SliderRow label="Emote image size" value={c.bttvSize} min={1} max={3} step={1} unit="x" onChange={(bttvSize) => set({ bttvSize })} />
+        <ToggleRow
+          label="BetterTTV emotes"
+          checked={c.bttvEnabled !== false}
+          onChange={(bttvEnabled) => set({ bttvEnabled })}
+        />
+        <ToggleRow
+          label="Global BTTV emotes"
+          checked={c.bttvGlobal !== false}
+          onChange={(bttvGlobal) => set({ bttvGlobal })}
+        />
+        <ToggleRow
+          label="Channel BTTV emotes"
+          checked={c.bttvChannel !== false}
+          onChange={(bttvChannel) => set({ bttvChannel })}
+        />
+        <SliderRow
+          label="Emote image size"
+          value={c.bttvSize}
+          min={1}
+          max={3}
+          step={1}
+          unit="x"
+          onChange={(bttvSize) => set({ bttvSize })}
+        />
       </Section>
       <Section title="Celebrations" icon={<Sparkles size={13} />}>
-        <ToggleRow label="Raid celebration" checked={c.celebrations?.raid !== false} onChange={(raid) => set({ celebrations: { ...c.celebrations, raid } })} />
-        <ToggleRow label="Sub highlight" checked={c.celebrations?.sub !== false} onChange={(sub) => set({ celebrations: { ...c.celebrations, sub } })} />
-        <ToggleRow label="Gift effect" checked={c.celebrations?.gift !== false} onChange={(gift) => set({ celebrations: { ...c.celebrations, gift } })} />
-        <SliderRow label="Effect intensity" value={c.celebrations?.intensity ?? 5} min={1} max={10} onChange={(intensity) => set({ celebrations: { ...c.celebrations, intensity } })} />
+        <ToggleRow
+          label="Raid celebration"
+          checked={c.celebrations?.raid !== false}
+          onChange={(raid) =>
+            set({ celebrations: { ...c.celebrations, raid } })
+          }
+        />
+        <ToggleRow
+          label="Sub highlight"
+          checked={c.celebrations?.sub !== false}
+          onChange={(sub) => set({ celebrations: { ...c.celebrations, sub } })}
+        />
+        <ToggleRow
+          label="Gift effect"
+          checked={c.celebrations?.gift !== false}
+          onChange={(gift) =>
+            set({ celebrations: { ...c.celebrations, gift } })
+          }
+        />
+        <SliderRow
+          label="Effect intensity"
+          value={c.celebrations?.intensity ?? 5}
+          min={1}
+          max={10}
+          onChange={(intensity) =>
+            set({ celebrations: { ...c.celebrations, intensity } })
+          }
+        />
       </Section>
-      <Section title="Backdrop" icon={<Layers size={13} />}><Segmented value={c.bg} columns={3} options={["solid", "horizon", "beam", "nebula", "vignette", "split"].map((key) => ({ key, name: key }))} onChange={(bg) => set({ bg })} /><Segmented value={c.texture} columns={3} options={["none", "scanlines", "grid", "dots", "diagonal", "noise"].map((key) => ({ key, name: key }))} onChange={(texture) => set({ texture })} /><SliderRow label="Texture strength" value={c.textureStrength} min={5} max={80} step={5} unit="%" disabled={c.texture === "none"} onChange={(textureStrength) => set({ textureStrength })} /></Section>
+      <Section title="Backdrop" icon={<Layers size={13} />}>
+        <Segmented
+          value={c.bg}
+          columns={3}
+          options={[
+            "solid",
+            "horizon",
+            "beam",
+            "nebula",
+            "vignette",
+            "split",
+          ].map((key) => ({ key, name: key }))}
+          onChange={(bg) => set({ bg })}
+        />
+        <Segmented
+          value={c.texture}
+          columns={3}
+          options={[
+            "none",
+            "scanlines",
+            "grid",
+            "dots",
+            "diagonal",
+            "noise",
+          ].map((key) => ({ key, name: key }))}
+          onChange={(texture) => set({ texture })}
+        />
+        <SliderRow
+          label="Texture strength"
+          value={c.textureStrength}
+          min={5}
+          max={80}
+          step={5}
+          unit="%"
+          disabled={c.texture === "none"}
+          onChange={(textureStrength) => set({ textureStrength })}
+        />
+      </Section>
       <Section title="Message Behaviour" icon={<Waves size={13} />}>
-        <Segmented value={c.animation} columns={3} options={["slide-up", "slide-down", "slide-left", "slide-right", "fade", "none"].map((key) => ({ key, name: key === "none" ? "Instant" : key.replace("slide-", "") }))} onChange={(animation) => set({ animation })} />
-        <Segmented value={c.flow} options={[{ key: "bottom-to-top", name: "Bottom up" }, { key: "top-to-bottom", name: "Top down" }]} onChange={(flow) => set({ flow, entry: flow === "top-to-bottom" ? "top" : "bottom" })} />
-        <SliderRow label="Stagger" value={c.stagger} min={0} max={400} step={20} unit="ms" onChange={(stagger) => set({ stagger })} />
-        <ToggleRow label="Auto-fade" checked={!!c.autoFade} onChange={(autoFade) => set({ autoFade, lifespan: autoFade ? "timed" : "persistent" })} />
-        <SliderRow label="Fade after" value={c.fadeAfter} min={2} max={15} unit="s" disabled={!c.autoFade} onChange={(fadeAfter) => set({ fadeAfter })} />
-        <SliderRow label="Max messages" value={c.maxMessages} min={2} max={40} onChange={(maxMessages) => set({ maxMessages })} />
-        <ToggleRow label="Simulate live chat" checked={!!c.live} onChange={(live) => set({ live })} />
+        <Segmented
+          value={c.animation}
+          columns={3}
+          options={[
+            "slide-up",
+            "slide-down",
+            "slide-left",
+            "slide-right",
+            "fade",
+            "none",
+          ].map((key) => ({
+            key,
+            name: key === "none" ? "Instant" : key.replace("slide-", ""),
+          }))}
+          onChange={(animation) => set({ animation })}
+        />
+        <Segmented
+          value={c.flow}
+          options={[
+            { key: "bottom-to-top", name: "Bottom up" },
+            { key: "top-to-bottom", name: "Top down" },
+          ]}
+          onChange={(flow) =>
+            set({ flow, entry: flow === "top-to-bottom" ? "top" : "bottom" })
+          }
+        />
+        <SliderRow
+          label="Stagger"
+          value={c.stagger}
+          min={0}
+          max={400}
+          step={20}
+          unit="ms"
+          onChange={(stagger) => set({ stagger })}
+        />
+        <ToggleRow
+          label="Auto-fade"
+          checked={!!c.autoFade}
+          onChange={(autoFade) =>
+            set({ autoFade, lifespan: autoFade ? "timed" : "persistent" })
+          }
+        />
+        <SliderRow
+          label="Fade after"
+          value={c.fadeAfter}
+          min={2}
+          max={15}
+          unit="s"
+          disabled={!c.autoFade}
+          onChange={(fadeAfter) => set({ fadeAfter })}
+        />
+        <SliderRow
+          label="Max messages"
+          value={c.maxMessages}
+          min={2}
+          max={40}
+          onChange={(maxMessages) => set({ maxMessages })}
+        />
+        <ToggleRow
+          label="Simulate live chat"
+          checked={!!c.live}
+          onChange={(live) => set({ live })}
+        />
       </Section>
       <Section title="Empty State" icon={<MessageSquare size={13} />}>
-        <ToggleRow label="Show empty state" checked={c.showEmptyState !== false} onChange={(showEmptyState) => set({ showEmptyState })} />
+        <ToggleRow
+          label="Show empty state"
+          checked={c.showEmptyState !== false}
+          onChange={(showEmptyState) => set({ showEmptyState })}
+        />
         {c.showEmptyState !== false && (
-          <TextRow label="No-message text" value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE} onChange={(emptyMessage) => set({ emptyMessage })} />
+          <TextRow
+            label="No-message text"
+            value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}
+            onChange={(emptyMessage) => set({ emptyMessage })}
+          />
         )}
       </Section>
       <div className="bp-action-row">
-        <button type="button" onClick={() => set({ replayNonce: (Number(c.replayNonce) || 0) + 1 })}><RotateCcw size={13} /> Replay</button>
+        <button
+          type="button"
+          onClick={() => set({ replayNonce: (Number(c.replayNonce) || 0) + 1 })}
+        >
+          <RotateCcw size={13} /> Replay
+        </button>
       </div>
-      <button className="bp-reset" type="button" onClick={resetChat}><RotateCcw size={13} /> Reset chat controls</button>
+      <button className="bp-reset" type="button" onClick={resetChat}>
+        <RotateCcw size={13} /> Reset chat controls
+      </button>
     </div>
   );
 }
 
-function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }) {
+function SimpleThemedControls({
+  type,
+  config,
+  onChange,
+  onWidgetChange,
+  widget,
+}) {
   const c = ensureBetterWidgetConfig(type, config);
-  const renderedConfig = type === "bonus_hunt" && widget?.config
-    ? ensureBetterWidgetConfig(type, widget.config)
-    : c;
+  const renderedConfig =
+    type === "bonus_hunt" && widget?.config
+      ? ensureBetterWidgetConfig(type, widget.config)
+      : c;
   const set = (patch) => {
     const nextPatch = { ...patch };
-    if (type === "navbar" && Object.prototype.hasOwnProperty.call(nextPatch, "casinoCommand")) {
+    if (
+      type === "navbar" &&
+      Object.prototype.hasOwnProperty.call(nextPatch, "casinoCommand")
+    ) {
       nextPatch[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = true;
     }
     onChange({ ...c, ...nextPatch });
@@ -1933,9 +3062,13 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
   };
   const setBonusSize = (patch) => {
     const next = { ...c, ...patch };
-    const nextWidth = Number(next.widgetWidth || next.panelWidth) || (
-      next.orientation === "horizontal" ? 1080 : next.orientation === "mainstream" ? 372 : 402
-    );
+    const nextWidth =
+      Number(next.widgetWidth || next.panelWidth) ||
+      (next.orientation === "horizontal"
+        ? 1080
+        : next.orientation === "mainstream"
+          ? 372
+          : 402);
     const nextHeight = Number(next.widgetHeight ?? next.panelHeight ?? 0) || 0;
     if (typeof onWidgetChange === "function") {
       const widgetPatch = {
@@ -1952,7 +3085,10 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
   };
   const setRtpBar = (patch) => {
     const next = { ...c, ...patch };
-    if (typeof onWidgetChange === "function" && Object.prototype.hasOwnProperty.call(patch, "barHeight")) {
+    if (
+      typeof onWidgetChange === "function" &&
+      Object.prototype.hasOwnProperty.call(patch, "barHeight")
+    ) {
       onWidgetChange({
         height: clampNumber(next.barHeight, 52, 160, widget?.height || 88),
         config: next,
@@ -1962,16 +3098,99 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
     onChange(next);
   };
   const [tab, setTab] = useTab("theme");
-  const activeTab = (tabs) => (tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0]);
+  const activeTab = (tabs) =>
+    tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0];
 
   if (type === "navbar") {
     return (
       <div className="bp-controls">
-        <Section title="Content" icon={<Type size={13} />}>{["brandName", "siteUrl", "startValue"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>
-        <Section title="Options" icon={<Layers size={13} />}><ToggleRow label="Casino" checked={!!c.showCasino} onChange={(showCasino) => set({ showCasino })} /><ToggleRow label="Crypto ticker" checked={!!c.showCrypto} onChange={(showCrypto) => set({ showCrypto })} /><ToggleRow label="Socials" checked={!!c.showSocials} onChange={(showSocials) => set({ showSocials })} /></Section>
-        <Section title="Casino" icon={<Coins size={13} />}><TextRow label="Logo URL" value={c.casinoLogoUrl || ""} onChange={(casinoLogoUrl) => set({ casinoLogoUrl })} /><SliderRow label="Logo size" value={c.casinoImageSize ?? 100} min={20} max={300} step={5} unit="%" onChange={(casinoImageSize) => set({ casinoImageSize })} /><TextRow label="Manual text" value={c.casinoCommand || ""} onChange={(casinoCommand) => set({ casinoCommand })} /></Section>
-        <Section title="Colours" icon={<Palette size={13} />}><ColorRow label="Blue glow" value={c.accentBlue} onChange={(accentBlue) => set({ accentBlue })} /><ColorRow label="Accent" value={c.accentGold} onChange={(accentGold) => set({ accentGold })} /></Section>
-        <Section title="Size" icon={<Maximize2 size={13} />}><SliderRow label="Height" value={c.barHeight} min={42} max={92} unit="px" onChange={(barHeight) => set({ barHeight })} /><SliderRow label="Radius" value={c.radius} min={0} max={24} unit="px" onChange={(radius) => set({ radius })} /><SliderRow label="Max width" value={c.maxWidth} min={720} max={1600} step={16} unit="px" onChange={(maxWidth) => set({ maxWidth })} /></Section>
+        <Section title="Content" icon={<Type size={13} />}>
+          {["brandName", "siteUrl", "startValue"].map((key) => (
+            <TextRow
+              key={key}
+              label={key}
+              value={c[key]}
+              onChange={(value) => set({ [key]: value })}
+            />
+          ))}
+        </Section>
+        <Section title="Options" icon={<Layers size={13} />}>
+          <ToggleRow
+            label="Casino"
+            checked={!!c.showCasino}
+            onChange={(showCasino) => set({ showCasino })}
+          />
+          <ToggleRow
+            label="Crypto ticker"
+            checked={!!c.showCrypto}
+            onChange={(showCrypto) => set({ showCrypto })}
+          />
+          <ToggleRow
+            label="Socials"
+            checked={!!c.showSocials}
+            onChange={(showSocials) => set({ showSocials })}
+          />
+        </Section>
+        <Section title="Casino" icon={<Coins size={13} />}>
+          <TextRow
+            label="Logo URL"
+            value={c.casinoLogoUrl || ""}
+            onChange={(casinoLogoUrl) => set({ casinoLogoUrl })}
+          />
+          <SliderRow
+            label="Logo size"
+            value={c.casinoImageSize ?? 100}
+            min={20}
+            max={300}
+            step={5}
+            unit="%"
+            onChange={(casinoImageSize) => set({ casinoImageSize })}
+          />
+          <TextRow
+            label="Manual text"
+            value={c.casinoCommand || ""}
+            onChange={(casinoCommand) => set({ casinoCommand })}
+          />
+        </Section>
+        <Section title="Colours" icon={<Palette size={13} />}>
+          <ColorRow
+            label="Blue glow"
+            value={c.accentBlue}
+            onChange={(accentBlue) => set({ accentBlue })}
+          />
+          <ColorRow
+            label="Accent"
+            value={c.accentGold}
+            onChange={(accentGold) => set({ accentGold })}
+          />
+        </Section>
+        <Section title="Size" icon={<Maximize2 size={13} />}>
+          <SliderRow
+            label="Height"
+            value={c.barHeight}
+            min={42}
+            max={92}
+            unit="px"
+            onChange={(barHeight) => set({ barHeight })}
+          />
+          <SliderRow
+            label="Radius"
+            value={c.radius}
+            min={0}
+            max={24}
+            unit="px"
+            onChange={(radius) => set({ radius })}
+          />
+          <SliderRow
+            label="Max width"
+            value={c.maxWidth}
+            min={720}
+            max={1600}
+            step={16}
+            unit="px"
+            onChange={(maxWidth) => set({ maxWidth })}
+          />
+        </Section>
       </div>
     );
   }
@@ -1990,13 +3209,312 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
     return (
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
-        {current === "presets" && <Section title="Presets" icon={<Palette size={13} />}><div className="bp-preset-row">{RTP_PRESETS.map((preset) => <button key={preset.name} type="button" onClick={() => set(preset.patch)}>{preset.name}</button>)}</div><button className="bp-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.rtp_stats)}><RotateCcw size={13} /> Reset to defaults</button></Section>}
-        {current === "provider" && <Section title="Provider" icon={<ImagePlus size={13} />}><Segmented value={c.providerMode} columns={4} options={["image", "name", "both", "none"].map((key) => ({ key, name: key }))} onChange={(providerMode) => set({ providerMode })} />{["image", "both"].includes(c.providerMode) && <><SliderRow label="Logo height" value={c.logoHeight} min={18} max={72} unit="px" onChange={(logoHeight) => set({ logoHeight })} /><SliderRow label="Logo max width" value={c.logoMaxW} min={60} max={320} step={4} unit="px" onChange={(logoMaxW) => set({ logoMaxW })} /><SliderRow label="Logo padding Y" value={c.logoPadY} min={0} max={16} unit="px" onChange={(logoPadY) => set({ logoPadY })} /><SliderRow label="Logo padding X" value={c.logoPadX} min={0} max={24} unit="px" onChange={(logoPadX) => set({ logoPadX })} /><SliderRow label="Logo nudge Y" value={c.logoOffsetY} min={-14} max={14} unit="px" onChange={(logoOffsetY) => set({ logoOffsetY })} /><SliderRow label="Logo nudge X" value={c.logoOffsetX} min={-14} max={14} unit="px" onChange={(logoOffsetX) => set({ logoOffsetX })} /><Segmented value={c.logoFit} options={[{ key: "contain", name: "Contain" }, { key: "cover", name: "Crop" }]} onChange={(logoFit) => set({ logoFit })} /></>}</Section>}
-        {current === "display" && <Section title="Display" icon={<Eye size={13} />}><ToggleRow label="Show RTP" checked={c.showRtp !== false} onChange={(showRtp) => set({ showRtp })} /><ToggleRow label="Show potential" checked={c.showPotential !== false} onChange={(showPotential) => set({ showPotential })} /><ToggleRow label="Show volatility" checked={c.showVolatility !== false} onChange={(showVolatility) => set({ showVolatility })} /><ToggleRow label="Show best win" checked={c.showBestWin !== false} onChange={(showBestWin) => set({ showBestWin })} /><ToggleRow label="Show dividers" checked={c.showDividers !== false} onChange={(showDividers) => set({ showDividers })} /></Section>}
-        {current === "emblem" && <><Section title="Emblem" icon={<Sparkles size={13} />}><ToggleRow label="Show emblem" checked={c.showEmblem} onChange={(showEmblem) => set({ showEmblem })} /><ToggleRow label="Animate" checked={c.emblemAnimate} onChange={(emblemAnimate) => set({ emblemAnimate })} /><Segmented value={c.emblem} columns={4} options={RTP_EMBLEMS} onChange={(emblem) => set({ emblem })} /><SliderRow label="Speed" value={c.emblemSpeed} min={0.2} max={4} step={0.1} unit="x" onChange={(emblemSpeed) => set({ emblemSpeed })} /><SliderRow label="Size" value={c.emblemSize} min={16} max={64} unit="px" onChange={(emblemSize) => set({ emblemSize })} /><SliderRow label="Stroke / weight" value={c.emblemStroke} min={1} max={5} step={0.5} unit="px" onChange={(emblemStroke) => set({ emblemStroke })} /></Section><Section title="Emblem colours" icon={<Palette size={13} />}><ColorRow label="Primary" value={c.cEmA} onChange={(cEmA) => set({ cEmA })} /><ColorRow label="Secondary" value={c.cEmB} onChange={(cEmB) => set({ cEmB })} /><ColorRow label="Base / track" value={c.cEmBase} onChange={(cEmBase) => set({ cEmBase })} /></Section></>}
-        {current === "colours" && <Section title="Colours" icon={<Palette size={13} />}>{[["cRim", "Border / glow"], ["cBarTop", "Bar top"], ["cBarMid", "Bar middle"], ["cBarBot", "Bar bottom"], ["cLabel", "Label text"], ["cValue", "Value text"], ["cBolt", "Bolt icon"], ["cGold", "Trophy"], ["cBrand", "Provider text"]].map(([key, label]) => <ColorRow key={key} label={label} value={c[key]} onChange={(value) => set({ [key]: value })} />)}</Section>}
-        {current === "type" && <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Title font" value={c.fontTitle} options={RTP_FONT_OPTIONS} onChange={(fontTitle) => set({ fontTitle })} /><SelectRow label="Body font" value={c.fontBody} options={RTP_FONT_OPTIONS} onChange={(fontBody) => set({ fontBody })} /><SliderRow label="Title size" value={c.titleSize} min={12} max={40} unit="px" onChange={(titleSize) => set({ titleSize })} /><SliderRow label="Title tracking" value={c.titleTracking} min={0} max={0.3} step={0.01} unit="em" onChange={(titleTracking) => set({ titleTracking })} /><SliderRow label="Value size" value={c.valueSize} min={10} max={28} unit="px" onChange={(valueSize) => set({ valueSize })} /><SliderRow label="Label size" value={c.labelSize} min={7} max={16} unit="px" onChange={(labelSize) => set({ labelSize })} /></Section>}
-        {current === "bar" && <Section title="Bar size" icon={<Maximize2 size={13} />}><SliderRow label="Total height" value={c.barHeight} min={52} max={120} unit="px" onChange={(barHeight) => setRtpBar({ barHeight })} /><SliderRow label="Vertical gap" value={c.barPadY} min={2} max={28} unit="px" onChange={(barPadY) => set({ barPadY })} /><SliderRow label="Padding left / right" value={c.barPadX} min={4} max={48} unit="px" onChange={(barPadX) => set({ barPadX })} /><SliderRow label="Corner radius" value={c.radius} min={0} max={40} unit="px" onChange={(radius) => set({ radius })} /><SliderRow label="Border width" value={c.borderWidth} min={0} max={5} step={0.5} unit="px" onChange={(borderWidth) => set({ borderWidth })} /></Section>}
+        {current === "presets" && (
+          <Section title="Presets" icon={<Palette size={13} />}>
+            <div className="bp-preset-row">
+              {RTP_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => set(preset.patch)}
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+            <button
+              className="bp-reset"
+              type="button"
+              onClick={() => onChange(DEFAULT_BETTER_CONFIG.rtp_stats)}
+            >
+              <RotateCcw size={13} /> Reset to defaults
+            </button>
+          </Section>
+        )}
+        {current === "provider" && (
+          <Section title="Provider" icon={<ImagePlus size={13} />}>
+            <Segmented
+              value={c.providerMode}
+              columns={4}
+              options={["image", "name", "both", "none"].map((key) => ({
+                key,
+                name: key,
+              }))}
+              onChange={(providerMode) => set({ providerMode })}
+            />
+            {["image", "both"].includes(c.providerMode) && (
+              <>
+                <SliderRow
+                  label="Logo height"
+                  value={c.logoHeight}
+                  min={18}
+                  max={72}
+                  unit="px"
+                  onChange={(logoHeight) => set({ logoHeight })}
+                />
+                <SliderRow
+                  label="Logo max width"
+                  value={c.logoMaxW}
+                  min={60}
+                  max={320}
+                  step={4}
+                  unit="px"
+                  onChange={(logoMaxW) => set({ logoMaxW })}
+                />
+                <SliderRow
+                  label="Logo padding Y"
+                  value={c.logoPadY}
+                  min={0}
+                  max={16}
+                  unit="px"
+                  onChange={(logoPadY) => set({ logoPadY })}
+                />
+                <SliderRow
+                  label="Logo padding X"
+                  value={c.logoPadX}
+                  min={0}
+                  max={24}
+                  unit="px"
+                  onChange={(logoPadX) => set({ logoPadX })}
+                />
+                <SliderRow
+                  label="Logo nudge Y"
+                  value={c.logoOffsetY}
+                  min={-14}
+                  max={14}
+                  unit="px"
+                  onChange={(logoOffsetY) => set({ logoOffsetY })}
+                />
+                <SliderRow
+                  label="Logo nudge X"
+                  value={c.logoOffsetX}
+                  min={-14}
+                  max={14}
+                  unit="px"
+                  onChange={(logoOffsetX) => set({ logoOffsetX })}
+                />
+                <Segmented
+                  value={c.logoFit}
+                  options={[
+                    { key: "contain", name: "Contain" },
+                    { key: "cover", name: "Crop" },
+                  ]}
+                  onChange={(logoFit) => set({ logoFit })}
+                />
+              </>
+            )}
+          </Section>
+        )}
+        {current === "display" && (
+          <Section title="Display" icon={<Eye size={13} />}>
+            <ToggleRow
+              label="Show RTP"
+              checked={c.showRtp !== false}
+              onChange={(showRtp) => set({ showRtp })}
+            />
+            <ToggleRow
+              label="Show potential"
+              checked={c.showPotential !== false}
+              onChange={(showPotential) => set({ showPotential })}
+            />
+            <ToggleRow
+              label="Show volatility"
+              checked={c.showVolatility !== false}
+              onChange={(showVolatility) => set({ showVolatility })}
+            />
+            <ToggleRow
+              label="Show best win"
+              checked={c.showBestWin !== false}
+              onChange={(showBestWin) => set({ showBestWin })}
+            />
+            <ToggleRow
+              label="Show dividers"
+              checked={c.showDividers !== false}
+              onChange={(showDividers) => set({ showDividers })}
+            />
+          </Section>
+        )}
+        {current === "emblem" && (
+          <>
+            <Section title="Emblem" icon={<Sparkles size={13} />}>
+              <ToggleRow
+                label="Show emblem"
+                checked={c.showEmblem}
+                onChange={(showEmblem) => set({ showEmblem })}
+              />
+              <ToggleRow
+                label="Animate"
+                checked={c.emblemAnimate}
+                onChange={(emblemAnimate) => set({ emblemAnimate })}
+              />
+              <Segmented
+                value={c.emblem}
+                columns={4}
+                options={RTP_EMBLEMS}
+                onChange={(emblem) => set({ emblem })}
+              />
+              <SliderRow
+                label="Speed"
+                value={c.emblemSpeed}
+                min={0.2}
+                max={4}
+                step={0.1}
+                unit="x"
+                onChange={(emblemSpeed) => set({ emblemSpeed })}
+              />
+              <SliderRow
+                label="Size"
+                value={c.emblemSize}
+                min={16}
+                max={64}
+                unit="px"
+                onChange={(emblemSize) => set({ emblemSize })}
+              />
+              <SliderRow
+                label="Stroke / weight"
+                value={c.emblemStroke}
+                min={1}
+                max={5}
+                step={0.5}
+                unit="px"
+                onChange={(emblemStroke) => set({ emblemStroke })}
+              />
+            </Section>
+            <Section title="Emblem colours" icon={<Palette size={13} />}>
+              <ColorRow
+                label="Primary"
+                value={c.cEmA}
+                onChange={(cEmA) => set({ cEmA })}
+              />
+              <ColorRow
+                label="Secondary"
+                value={c.cEmB}
+                onChange={(cEmB) => set({ cEmB })}
+              />
+              <ColorRow
+                label="Base / track"
+                value={c.cEmBase}
+                onChange={(cEmBase) => set({ cEmBase })}
+              />
+            </Section>
+          </>
+        )}
+        {current === "colours" && (
+          <Section title="Colours" icon={<Palette size={13} />}>
+            {[
+              ["cRim", "Border / glow"],
+              ["cBarTop", "Bar top"],
+              ["cBarMid", "Bar middle"],
+              ["cBarBot", "Bar bottom"],
+              ["cLabel", "Label text"],
+              ["cValue", "Value text"],
+              ["cBolt", "Bolt icon"],
+              ["cGold", "Trophy"],
+              ["cBrand", "Provider text"],
+            ].map(([key, label]) => (
+              <ColorRow
+                key={key}
+                label={label}
+                value={c[key]}
+                onChange={(value) => set({ [key]: value })}
+              />
+            ))}
+          </Section>
+        )}
+        {current === "type" && (
+          <Section title="Typography" icon={<Type size={13} />}>
+            <SelectRow
+              label="Title font"
+              value={c.fontTitle}
+              options={RTP_FONT_OPTIONS}
+              onChange={(fontTitle) => set({ fontTitle })}
+            />
+            <SelectRow
+              label="Body font"
+              value={c.fontBody}
+              options={RTP_FONT_OPTIONS}
+              onChange={(fontBody) => set({ fontBody })}
+            />
+            <SliderRow
+              label="Title size"
+              value={c.titleSize}
+              min={12}
+              max={40}
+              unit="px"
+              onChange={(titleSize) => set({ titleSize })}
+            />
+            <SliderRow
+              label="Title tracking"
+              value={c.titleTracking}
+              min={0}
+              max={0.3}
+              step={0.01}
+              unit="em"
+              onChange={(titleTracking) => set({ titleTracking })}
+            />
+            <SliderRow
+              label="Value size"
+              value={c.valueSize}
+              min={10}
+              max={28}
+              unit="px"
+              onChange={(valueSize) => set({ valueSize })}
+            />
+            <SliderRow
+              label="Label size"
+              value={c.labelSize}
+              min={7}
+              max={16}
+              unit="px"
+              onChange={(labelSize) => set({ labelSize })}
+            />
+          </Section>
+        )}
+        {current === "bar" && (
+          <Section title="Bar size" icon={<Maximize2 size={13} />}>
+            <SliderRow
+              label="Total height"
+              value={c.barHeight}
+              min={52}
+              max={120}
+              unit="px"
+              onChange={(barHeight) => setRtpBar({ barHeight })}
+            />
+            <SliderRow
+              label="Vertical gap"
+              value={c.barPadY}
+              min={2}
+              max={28}
+              unit="px"
+              onChange={(barPadY) => set({ barPadY })}
+            />
+            <SliderRow
+              label="Padding left / right"
+              value={c.barPadX}
+              min={4}
+              max={48}
+              unit="px"
+              onChange={(barPadX) => set({ barPadX })}
+            />
+            <SliderRow
+              label="Corner radius"
+              value={c.radius}
+              min={0}
+              max={40}
+              unit="px"
+              onChange={(radius) => set({ radius })}
+            />
+            <SliderRow
+              label="Border width"
+              value={c.borderWidth}
+              min={0}
+              max={5}
+              step={0.5}
+              unit="px"
+              onChange={(borderWidth) => set({ borderWidth })}
+            />
+          </Section>
+        )}
       </div>
     );
   }
@@ -2013,11 +3531,219 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
     return (
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
-        {current === "presets" && <Section title="Curated Atmospheres" icon={<Sparkles size={13} />}><div className="bp-preset-row">{BACKGROUND_PRESETS.map((preset) => <button key={preset.id} type="button" onClick={() => set(preset.patch)}><i style={{ background: `linear-gradient(135deg, ${preset.patch.color2}, ${preset.patch.color3})` }} />{preset.name}</button>)}</div><button className="bp-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.background)}><RotateCcw size={13} /> Reset background</button></Section>}
-        {current === "colors" && <Section title="Palette Configuration" icon={<Palette size={13} />}>{[["color1", "Base Backdrop"], ["color2", "Primary Hue"], ["color3", "Accent Tone"], ["overlayColor", "Tint"]].map(([key, label]) => <ColorRow key={key} label={label} value={c[key]} onChange={(value) => set({ [key]: value })} />)}<SliderRow label="Color Saturation & Intensity" value={c.intensity} min={20} max={100} unit="%" onChange={(intensity) => set({ intensity })} /><SliderRow label="Tint opacity" value={c.overlayOpacity} min={0} max={80} unit="%" onChange={(overlayOpacity) => set({ overlayOpacity })} /></Section>}
-        {current === "source" && <Section title="Source" icon={<ImagePlus size={13} />}><Segmented value={c.bgMode} columns={3} options={["texture", "image", "video"].map((key) => ({ key, name: key }))} onChange={(bgMode) => set({ bgMode })} /><TextRow label="Image URL" value={c.imageUrl} onChange={(imageUrl) => set({ imageUrl })} /><TextRow label="Video URL" value={c.videoUrl} onChange={(videoUrl) => set({ videoUrl })} /><Segmented value={c.imageFit} columns={3} options={["cover", "contain", "fill"].map((key) => ({ key, name: key }))} onChange={(imageFit) => set({ imageFit })} /><TextRow label="Image position" value={c.imagePosition} onChange={(imagePosition) => set({ imagePosition })} /><SliderRow label="Media opacity" value={c.mediaOpacity} min={0} max={100} unit="%" onChange={(mediaOpacity) => set({ mediaOpacity })} /></Section>}
-        {current === "textures" && <Section title="Tactile Texture Layers" icon={<Waves size={13} />}><Segmented value={c.texture} columns={3} options={["aurora", "grid", "dots", "diagonal", "nebula", "noise"].map((key) => ({ key, name: key }))} onChange={(texture) => set({ texture })} /><SliderRow label="Flow Animation Speed" value={c.animSpeed} min={4} max={30} unit="s" onChange={(animSpeed) => set({ animSpeed })} /><SliderRow label="Opacity" value={c.opacity} min={0} max={100} unit="%" onChange={(opacity) => set({ opacity })} /><SliderRow label="Brightness" value={c.brightness} min={40} max={180} unit="%" onChange={(brightness) => set({ brightness })} /><SliderRow label="Contrast" value={c.contrast} min={40} max={180} unit="%" onChange={(contrast) => set({ contrast })} /><SliderRow label="Saturation" value={c.saturation} min={0} max={200} unit="%" onChange={(saturation) => set({ saturation })} /></Section>}
-        {current === "effects" && <Section title="Particle & Fluid FX" icon={<Sparkles size={13} />}><ToggleRow label="Particles" checked={c.fxParticles} onChange={(fxParticles) => set({ fxParticles })} /><ToggleRow label="Scanlines" checked={c.fxScanlines} onChange={(fxScanlines) => set({ fxScanlines })} /><ToggleRow label="Vignette" checked={c.fxVignette} onChange={(fxVignette) => set({ fxVignette })} /><SliderRow label="Blur" value={c.blur} min={0} max={18} unit="px" onChange={(blur) => set({ blur })} /><SliderRow label="Hue rotate" value={c.hueRotate} min={-180} max={180} unit="deg" onChange={(hueRotate) => set({ hueRotate })} /><SliderRow label="Grayscale" value={c.grayscale} min={0} max={100} unit="%" onChange={(grayscale) => set({ grayscale })} /><SliderRow label="Sepia" value={c.sepia} min={0} max={100} unit="%" onChange={(sepia) => set({ sepia })} /></Section>}
+        {current === "presets" && (
+          <Section title="Curated Atmospheres" icon={<Sparkles size={13} />}>
+            <div className="bp-preset-row">
+              {BACKGROUND_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => set(preset.patch)}
+                >
+                  <i
+                    style={{
+                      background: `linear-gradient(135deg, ${preset.patch.color2}, ${preset.patch.color3})`,
+                    }}
+                  />
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+            <button
+              className="bp-reset"
+              type="button"
+              onClick={() => onChange(DEFAULT_BETTER_CONFIG.background)}
+            >
+              <RotateCcw size={13} /> Reset background
+            </button>
+          </Section>
+        )}
+        {current === "colors" && (
+          <Section title="Palette Configuration" icon={<Palette size={13} />}>
+            {[
+              ["color1", "Base Backdrop"],
+              ["color2", "Primary Hue"],
+              ["color3", "Accent Tone"],
+              ["overlayColor", "Tint"],
+            ].map(([key, label]) => (
+              <ColorRow
+                key={key}
+                label={label}
+                value={c[key]}
+                onChange={(value) => set({ [key]: value })}
+              />
+            ))}
+            <SliderRow
+              label="Color Saturation & Intensity"
+              value={c.intensity}
+              min={20}
+              max={100}
+              unit="%"
+              onChange={(intensity) => set({ intensity })}
+            />
+            <SliderRow
+              label="Tint opacity"
+              value={c.overlayOpacity}
+              min={0}
+              max={80}
+              unit="%"
+              onChange={(overlayOpacity) => set({ overlayOpacity })}
+            />
+          </Section>
+        )}
+        {current === "source" && (
+          <Section title="Source" icon={<ImagePlus size={13} />}>
+            <Segmented
+              value={c.bgMode}
+              columns={3}
+              options={["texture", "image", "video"].map((key) => ({
+                key,
+                name: key,
+              }))}
+              onChange={(bgMode) => set({ bgMode })}
+            />
+            <TextRow
+              label="Image URL"
+              value={c.imageUrl}
+              onChange={(imageUrl) => set({ imageUrl })}
+            />
+            <TextRow
+              label="Video URL"
+              value={c.videoUrl}
+              onChange={(videoUrl) => set({ videoUrl })}
+            />
+            <Segmented
+              value={c.imageFit}
+              columns={3}
+              options={["cover", "contain", "fill"].map((key) => ({
+                key,
+                name: key,
+              }))}
+              onChange={(imageFit) => set({ imageFit })}
+            />
+            <TextRow
+              label="Image position"
+              value={c.imagePosition}
+              onChange={(imagePosition) => set({ imagePosition })}
+            />
+            <SliderRow
+              label="Media opacity"
+              value={c.mediaOpacity}
+              min={0}
+              max={100}
+              unit="%"
+              onChange={(mediaOpacity) => set({ mediaOpacity })}
+            />
+          </Section>
+        )}
+        {current === "textures" && (
+          <Section title="Tactile Texture Layers" icon={<Waves size={13} />}>
+            <Segmented
+              value={c.texture}
+              columns={3}
+              options={[
+                "aurora",
+                "grid",
+                "dots",
+                "diagonal",
+                "nebula",
+                "noise",
+              ].map((key) => ({ key, name: key }))}
+              onChange={(texture) => set({ texture })}
+            />
+            <SliderRow
+              label="Flow Animation Speed"
+              value={c.animSpeed}
+              min={4}
+              max={30}
+              unit="s"
+              onChange={(animSpeed) => set({ animSpeed })}
+            />
+            <SliderRow
+              label="Opacity"
+              value={c.opacity}
+              min={0}
+              max={100}
+              unit="%"
+              onChange={(opacity) => set({ opacity })}
+            />
+            <SliderRow
+              label="Brightness"
+              value={c.brightness}
+              min={40}
+              max={180}
+              unit="%"
+              onChange={(brightness) => set({ brightness })}
+            />
+            <SliderRow
+              label="Contrast"
+              value={c.contrast}
+              min={40}
+              max={180}
+              unit="%"
+              onChange={(contrast) => set({ contrast })}
+            />
+            <SliderRow
+              label="Saturation"
+              value={c.saturation}
+              min={0}
+              max={200}
+              unit="%"
+              onChange={(saturation) => set({ saturation })}
+            />
+          </Section>
+        )}
+        {current === "effects" && (
+          <Section title="Particle & Fluid FX" icon={<Sparkles size={13} />}>
+            <ToggleRow
+              label="Particles"
+              checked={c.fxParticles}
+              onChange={(fxParticles) => set({ fxParticles })}
+            />
+            <ToggleRow
+              label="Scanlines"
+              checked={c.fxScanlines}
+              onChange={(fxScanlines) => set({ fxScanlines })}
+            />
+            <ToggleRow
+              label="Vignette"
+              checked={c.fxVignette}
+              onChange={(fxVignette) => set({ fxVignette })}
+            />
+            <SliderRow
+              label="Blur"
+              value={c.blur}
+              min={0}
+              max={18}
+              unit="px"
+              onChange={(blur) => set({ blur })}
+            />
+            <SliderRow
+              label="Hue rotate"
+              value={c.hueRotate}
+              min={-180}
+              max={180}
+              unit="deg"
+              onChange={(hueRotate) => set({ hueRotate })}
+            />
+            <SliderRow
+              label="Grayscale"
+              value={c.grayscale}
+              min={0}
+              max={100}
+              unit="%"
+              onChange={(grayscale) => set({ grayscale })}
+            />
+            <SliderRow
+              label="Sepia"
+              value={c.sepia}
+              min={0}
+              max={100}
+              unit="%"
+              onChange={(sepia) => set({ sepia })}
+            />
+          </Section>
+        )}
       </div>
     );
   }
@@ -2034,31 +3760,392 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
     return (
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
-        {current === "theme" && <><Section title="Presets" icon={<Palette size={13} />}><div className="bp-preset-row">{GIVEAWAY_PRESETS.map((preset) => <button key={preset.id} type="button" onClick={() => set(preset.patch)}><i style={{ background: preset.swatch }} />{preset.name}</button>)}</div></Section><Section title="Finish" icon={<Layers size={13} />}><Segmented value={c.surface} columns={2} options={GIVEAWAY_SURFACES} onChange={(surface) => set({ surface })} /></Section><Section title="Colour" icon={<Palette size={13} />}><SliderRow label="Base hue" value={c.hue} min={0} max={360} unit="deg" onChange={(hue) => set({ hue })} /><SliderRow label="Hue spread" value={c.hueShift} min={-90} max={90} unit="deg" onChange={(hueShift) => set({ hueShift })} /><SliderRow label="Saturation" value={c.saturation} min={0} max={100} unit="%" onChange={(saturation) => set({ saturation })} /><SliderRow label="Backdrop light" value={c.lightness} min={2} max={40} unit="%" onChange={(lightness) => set({ lightness })} /><SliderRow label="Accent vividness" value={c.accentSat} min={0} max={100} unit="%" onChange={(accentSat) => set({ accentSat })} /><SliderRow label="Accent brightness" value={c.accentLight} min={30} max={90} unit="%" onChange={(accentLight) => set({ accentLight })} /><ColorRow label="Renderer accent" value={c.accentColor} onChange={(accentColor) => set({ accentColor })} /><ColorRow label="Renderer background" value={c.bgColor} onChange={(bgColor) => set({ bgColor })} /></Section></>}
+        {current === "theme" && (
+          <>
+            <Section title="Presets" icon={<Palette size={13} />}>
+              <div className="bp-preset-row">
+                {GIVEAWAY_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => set(preset.patch)}
+                  >
+                    <i style={{ background: preset.swatch }} />
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </Section>
+            <Section title="Finish" icon={<Layers size={13} />}>
+              <Segmented
+                value={c.surface}
+                columns={2}
+                options={GIVEAWAY_SURFACES}
+                onChange={(surface) => set({ surface })}
+              />
+            </Section>
+            <Section title="Colour" icon={<Palette size={13} />}>
+              <SliderRow
+                label="Base hue"
+                value={c.hue}
+                min={0}
+                max={360}
+                unit="deg"
+                onChange={(hue) => set({ hue })}
+              />
+              <SliderRow
+                label="Hue spread"
+                value={c.hueShift}
+                min={-90}
+                max={90}
+                unit="deg"
+                onChange={(hueShift) => set({ hueShift })}
+              />
+              <SliderRow
+                label="Saturation"
+                value={c.saturation}
+                min={0}
+                max={100}
+                unit="%"
+                onChange={(saturation) => set({ saturation })}
+              />
+              <SliderRow
+                label="Backdrop light"
+                value={c.lightness}
+                min={2}
+                max={40}
+                unit="%"
+                onChange={(lightness) => set({ lightness })}
+              />
+              <SliderRow
+                label="Accent vividness"
+                value={c.accentSat}
+                min={0}
+                max={100}
+                unit="%"
+                onChange={(accentSat) => set({ accentSat })}
+              />
+              <SliderRow
+                label="Accent brightness"
+                value={c.accentLight}
+                min={30}
+                max={90}
+                unit="%"
+                onChange={(accentLight) => set({ accentLight })}
+              />
+              <ColorRow
+                label="Renderer accent"
+                value={c.accentColor}
+                onChange={(accentColor) => set({ accentColor })}
+              />
+              <ColorRow
+                label="Renderer background"
+                value={c.bgColor}
+                onChange={(bgColor) => set({ bgColor })}
+              />
+            </Section>
+          </>
+        )}
         {current === "size" && (
           <Section title="Card dimensions" icon={<Maximize2 size={13} />}>
-            <SliderRow label="Width" value={c.width} min={420} max={900} unit="px" onChange={(width) => setGiveawaySize({ width })} />
-            <SliderRow label="Height" value={c.height} min={180} max={420} unit="px" onChange={(height) => setGiveawaySize({ height })} />
+            <SliderRow
+              label="Width"
+              value={c.width}
+              min={420}
+              max={900}
+              unit="px"
+              onChange={(width) => setGiveawaySize({ width })}
+            />
+            <SliderRow
+              label="Height"
+              value={c.height}
+              min={180}
+              max={420}
+              unit="px"
+              onChange={(height) => setGiveawaySize({ height })}
+            />
             <div className="bp-preset-row">
-              <button type="button" onClick={() => setGiveawaySize({ width: 700, height: 270 })}>Default</button>
-              <button type="button" onClick={() => setGiveawaySize({ width: 640, height: 360 })}>16:9</button>
-              <button type="button" onClick={() => setGiveawaySize({ width: 800, height: 200 })}>Banner</button>
-              <button type="button" onClick={() => setGiveawaySize({ width: 460, height: 380 })}>Tall</button>
+              <button
+                type="button"
+                onClick={() => setGiveawaySize({ width: 700, height: 270 })}
+              >
+                Default
+              </button>
+              <button
+                type="button"
+                onClick={() => setGiveawaySize({ width: 640, height: 360 })}
+              >
+                16:9
+              </button>
+              <button
+                type="button"
+                onClick={() => setGiveawaySize({ width: 800, height: 200 })}
+              >
+                Banner
+              </button>
+              <button
+                type="button"
+                onClick={() => setGiveawaySize({ width: 460, height: 380 })}
+              >
+                Tall
+              </button>
             </div>
-            <SliderRow label="Padding X" value={c.padX} min={8} max={70} unit="px" onChange={(padX) => set({ padX })} />
-            <SliderRow label="Padding Y" value={c.padY} min={6} max={60} unit="px" onChange={(padY) => set({ padY })} />
-            <SliderRow label="Tile gap" value={c.tileGap} min={0} max={40} unit="px" onChange={(tileGap) => set({ tileGap })} />
+            <SliderRow
+              label="Padding X"
+              value={c.padX}
+              min={8}
+              max={70}
+              unit="px"
+              onChange={(padX) => set({ padX })}
+            />
+            <SliderRow
+              label="Padding Y"
+              value={c.padY}
+              min={6}
+              max={60}
+              unit="px"
+              onChange={(padY) => set({ padY })}
+            />
+            <SliderRow
+              label="Tile gap"
+              value={c.tileGap}
+              min={0}
+              max={40}
+              unit="px"
+              onChange={(tileGap) => set({ tileGap })}
+            />
           </Section>
         )}
-        {current === "edges" && <><Section title="Border" icon={<Layers size={13} />}><SliderRow label="Corner radius" value={c.radius} min={0} max={60} unit="px" onChange={(radius) => set({ radius, borderRadius: radius })} /><SliderRow label="Border width" value={c.borderWidth} min={0} max={6} step={0.5} unit="px" onChange={(borderWidth) => set({ borderWidth })} /><SliderRow label="Border opacity" value={c.borderAlpha} min={0} max={1} step={0.05} onChange={(borderAlpha) => set({ borderAlpha })} /><SliderRow label="Tile radius" value={c.tileRadius} min={0} max={40} unit="px" onChange={(tileRadius) => set({ tileRadius })} /></Section><Section title="Frame details" icon={<Frame size={13} />}><ToggleRow label="Inner frame" checked={c.innerFrame} onChange={(innerFrame) => set({ innerFrame })} /><SliderRow label="Frame inset" value={c.innerInset} min={2} max={18} unit="px" disabled={!c.innerFrame} onChange={(innerInset) => set({ innerInset })} /><ToggleRow label="Corner brackets" checked={c.brackets} onChange={(brackets) => set({ brackets })} /><SliderRow label="Bracket length" value={c.bracketSize} min={10} max={80} unit="px" disabled={!c.brackets} onChange={(bracketSize) => set({ bracketSize })} /><SliderRow label="Bracket weight" value={c.bracketWidth} min={1} max={6} step={0.5} unit="px" disabled={!c.brackets} onChange={(bracketWidth) => set({ bracketWidth })} /><ToggleRow label="Edge light bars" checked={c.edgeLights} onChange={(edgeLights) => set({ edgeLights })} /><ToggleRow label="Side dashes" checked={c.sideDashes} onChange={(sideDashes) => set({ sideDashes })} /><ToggleRow label="Sheen sweep" checked={c.sheen} onChange={(sheen) => set({ sheen })} /><SliderRow label="Outer glow" value={c.glow} min={0} max={160} unit="%" onChange={(glow) => set({ glow })} /><SliderRow label="Inner glow" value={c.innerGlow} min={0} max={160} unit="%" onChange={(innerGlow) => set({ innerGlow })} /></Section></>}
-        {current === "type" && <Section title="Typography" icon={<Type size={13} />}><SelectRow label="Display font" value={c.titleFont} options={GIVEAWAY_FONTS} onChange={(titleFont) => set({ titleFont })} /><SelectRow label="Body font" value={c.bodyFont} options={GIVEAWAY_FONTS} onChange={(bodyFont) => set({ bodyFont, fontFamily: GIVEAWAY_FONTS.find((font) => font.key === bodyFont)?.stack || c.fontFamily })} /><SliderRow label="Title" value={c.titleSize} min={10} max={44} unit="px" onChange={(titleSize) => set({ titleSize })} /><SliderRow label="Prize" value={c.prizeSize} min={14} max={64} unit="px" onChange={(prizeSize) => set({ prizeSize })} /><SliderRow label="Subtitle" value={c.subSize} min={8} max={30} unit="px" onChange={(subSize) => set({ subSize })} /><SliderRow label="Tile label" value={c.labelSize} min={6} max={20} unit="px" onChange={(labelSize) => set({ labelSize })} /><SliderRow label="Tile value" value={c.valueSize} min={12} max={54} unit="px" onChange={(valueSize) => set({ valueSize })} /><SliderRow label="Letter spacing" value={c.letterSpacing} min={0} max={20} step={0.5} unit="%" onChange={(letterSpacing) => set({ letterSpacing })} /><SliderRow label="Text glow" value={c.textGlow} min={0} max={200} unit="%" onChange={(textGlow) => set({ textGlow })} /><ToggleRow label="Italic prize" checked={c.italicPrize} onChange={(italicPrize) => set({ italicPrize })} /><ToggleRow label="Uppercase labels" checked={c.uppercaseLabels} onChange={(uppercaseLabels) => set({ uppercaseLabels })} /></Section>}
-        {current === "content" && <Section title="Card copy" icon={<Type size={13} />}>{["title", "prize", "subtitle", "keyword"].map((key) => <TextRow key={key} label={key} value={c[key]} onChange={(value) => set({ [key]: value })} />)}<p className="bp-hint">The keyword tile shows an exclamation mark automatically, so type just the word.</p><button className="bp-reset" type="button" onClick={() => setGiveawaySize(DEFAULT_BETTER_CONFIG.giveaway)}><RotateCcw size={13} /> Reset everything</button></Section>}
+        {current === "edges" && (
+          <>
+            <Section title="Border" icon={<Layers size={13} />}>
+              <SliderRow
+                label="Corner radius"
+                value={c.radius}
+                min={0}
+                max={60}
+                unit="px"
+                onChange={(radius) => set({ radius, borderRadius: radius })}
+              />
+              <SliderRow
+                label="Border width"
+                value={c.borderWidth}
+                min={0}
+                max={6}
+                step={0.5}
+                unit="px"
+                onChange={(borderWidth) => set({ borderWidth })}
+              />
+              <SliderRow
+                label="Border opacity"
+                value={c.borderAlpha}
+                min={0}
+                max={1}
+                step={0.05}
+                onChange={(borderAlpha) => set({ borderAlpha })}
+              />
+              <SliderRow
+                label="Tile radius"
+                value={c.tileRadius}
+                min={0}
+                max={40}
+                unit="px"
+                onChange={(tileRadius) => set({ tileRadius })}
+              />
+            </Section>
+            <Section title="Frame details" icon={<Frame size={13} />}>
+              <ToggleRow
+                label="Inner frame"
+                checked={c.innerFrame}
+                onChange={(innerFrame) => set({ innerFrame })}
+              />
+              <SliderRow
+                label="Frame inset"
+                value={c.innerInset}
+                min={2}
+                max={18}
+                unit="px"
+                disabled={!c.innerFrame}
+                onChange={(innerInset) => set({ innerInset })}
+              />
+              <ToggleRow
+                label="Corner brackets"
+                checked={c.brackets}
+                onChange={(brackets) => set({ brackets })}
+              />
+              <SliderRow
+                label="Bracket length"
+                value={c.bracketSize}
+                min={10}
+                max={80}
+                unit="px"
+                disabled={!c.brackets}
+                onChange={(bracketSize) => set({ bracketSize })}
+              />
+              <SliderRow
+                label="Bracket weight"
+                value={c.bracketWidth}
+                min={1}
+                max={6}
+                step={0.5}
+                unit="px"
+                disabled={!c.brackets}
+                onChange={(bracketWidth) => set({ bracketWidth })}
+              />
+              <ToggleRow
+                label="Edge light bars"
+                checked={c.edgeLights}
+                onChange={(edgeLights) => set({ edgeLights })}
+              />
+              <ToggleRow
+                label="Side dashes"
+                checked={c.sideDashes}
+                onChange={(sideDashes) => set({ sideDashes })}
+              />
+              <ToggleRow
+                label="Sheen sweep"
+                checked={c.sheen}
+                onChange={(sheen) => set({ sheen })}
+              />
+              <SliderRow
+                label="Outer glow"
+                value={c.glow}
+                min={0}
+                max={160}
+                unit="%"
+                onChange={(glow) => set({ glow })}
+              />
+              <SliderRow
+                label="Inner glow"
+                value={c.innerGlow}
+                min={0}
+                max={160}
+                unit="%"
+                onChange={(innerGlow) => set({ innerGlow })}
+              />
+            </Section>
+          </>
+        )}
+        {current === "type" && (
+          <Section title="Typography" icon={<Type size={13} />}>
+            <SelectRow
+              label="Display font"
+              value={c.titleFont}
+              options={GIVEAWAY_FONTS}
+              onChange={(titleFont) => set({ titleFont })}
+            />
+            <SelectRow
+              label="Body font"
+              value={c.bodyFont}
+              options={GIVEAWAY_FONTS}
+              onChange={(bodyFont) =>
+                set({
+                  bodyFont,
+                  fontFamily:
+                    GIVEAWAY_FONTS.find((font) => font.key === bodyFont)
+                      ?.stack || c.fontFamily,
+                })
+              }
+            />
+            <SliderRow
+              label="Title"
+              value={c.titleSize}
+              min={10}
+              max={44}
+              unit="px"
+              onChange={(titleSize) => set({ titleSize })}
+            />
+            <SliderRow
+              label="Prize"
+              value={c.prizeSize}
+              min={14}
+              max={64}
+              unit="px"
+              onChange={(prizeSize) => set({ prizeSize })}
+            />
+            <SliderRow
+              label="Subtitle"
+              value={c.subSize}
+              min={8}
+              max={30}
+              unit="px"
+              onChange={(subSize) => set({ subSize })}
+            />
+            <SliderRow
+              label="Tile label"
+              value={c.labelSize}
+              min={6}
+              max={20}
+              unit="px"
+              onChange={(labelSize) => set({ labelSize })}
+            />
+            <SliderRow
+              label="Tile value"
+              value={c.valueSize}
+              min={12}
+              max={54}
+              unit="px"
+              onChange={(valueSize) => set({ valueSize })}
+            />
+            <SliderRow
+              label="Letter spacing"
+              value={c.letterSpacing}
+              min={0}
+              max={20}
+              step={0.5}
+              unit="%"
+              onChange={(letterSpacing) => set({ letterSpacing })}
+            />
+            <SliderRow
+              label="Text glow"
+              value={c.textGlow}
+              min={0}
+              max={200}
+              unit="%"
+              onChange={(textGlow) => set({ textGlow })}
+            />
+            <ToggleRow
+              label="Italic prize"
+              checked={c.italicPrize}
+              onChange={(italicPrize) => set({ italicPrize })}
+            />
+            <ToggleRow
+              label="Uppercase labels"
+              checked={c.uppercaseLabels}
+              onChange={(uppercaseLabels) => set({ uppercaseLabels })}
+            />
+          </Section>
+        )}
+        {current === "content" && (
+          <Section title="Card copy" icon={<Type size={13} />}>
+            {["title", "prize", "subtitle", "keyword"].map((key) => (
+              <TextRow
+                key={key}
+                label={key}
+                value={c[key]}
+                onChange={(value) => set({ [key]: value })}
+              />
+            ))}
+            <p className="bp-hint">
+              The keyword tile shows an exclamation mark automatically, so type
+              just the word.
+            </p>
+            <button
+              className="bp-reset"
+              type="button"
+              onClick={() => setGiveawaySize(DEFAULT_BETTER_CONFIG.giveaway)}
+            >
+              <RotateCcw size={13} /> Reset everything
+            </button>
+          </Section>
+        )}
       </div>
     );
   }
 
   const applyBonusColour = (colourKey) => {
-    const colour = BONUS_COLOURS.find((item) => item.key === colourKey) || BONUS_COLOURS[0];
+    const colour =
+      BONUS_COLOURS.find((item) => item.key === colourKey) || BONUS_COLOURS[0];
     set({
       colour: colour.key,
       headerAccent: colour.accent,
@@ -2067,36 +4154,58 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
       bgColor: colour.bg,
     });
   };
-  const normalizedSessionState = renderedConfig.sessionState || (renderedConfig.bonusOpening ? "opening" : "hunt");
-  const orientationHint = c.orientation === "horizontal"
-    ? "Wide two-column layout - the log drifts sideways as cards."
-    : c.orientation === "mainstream"
-      ? "Mainstream layout - active bonus and stats stay high, with the tracker below."
-      : "The classic tall tracker - list scrolls upward.";
-  const sessionHint = (BONUS_SESSION_STATES.find((item) => item.key === normalizedSessionState) || BONUS_SESSION_STATES[0]).hint;
-  const liveBonusCount = Array.isArray(renderedConfig.bonuses) ? renderedConfig.bonuses.length : 0;
+  const normalizedSessionState =
+    renderedConfig.sessionState ||
+    (renderedConfig.bonusOpening ? "opening" : "hunt");
+  const orientationHint =
+    c.orientation === "horizontal"
+      ? "Wide two-column layout - the log drifts sideways as cards."
+      : c.orientation === "mainstream"
+        ? "Mainstream layout - active bonus and stats stay high, with the tracker below."
+        : "The classic tall tracker - list scrolls upward.";
+  const sessionHint = (
+    BONUS_SESSION_STATES.find((item) => item.key === normalizedSessionState) ||
+    BONUS_SESSION_STATES[0]
+  ).hint;
+  const liveBonusCount = Array.isArray(renderedConfig.bonuses)
+    ? renderedConfig.bonuses.length
+    : 0;
   const liveRequestsVisible = renderedConfig.showSlotRequests !== false;
   const localRequestsVisible = c.showRequests !== false;
   const normalizedDrawerMode = c.drawerMode === "expand" ? "expand" : "contain";
-  const drawerRevealSeconds = Math.max(10, Math.min(90, Number(c.drawerRevealSeconds) || 30));
-  const drawerHoldSeconds = Math.max(3, Math.min(15, Number(c.drawerHoldSeconds) || 8));
-  const drawerHint = normalizedDrawerMode === "expand"
-    ? "The best / worst card expands only the bottom of the panel on the configured timer."
-    : "The best / worst card stays inside the panel and temporarily reduces the list area on the configured timer.";
-  const currentColour = BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
+  const drawerRevealSeconds = Math.max(
+    10,
+    Math.min(90, Number(c.drawerRevealSeconds) || 30),
+  );
+  const drawerHoldSeconds = Math.max(
+    3,
+    Math.min(15, Number(c.drawerHoldSeconds) || 8),
+  );
+  const drawerHint =
+    normalizedDrawerMode === "expand"
+      ? "The best / worst card expands only the bottom of the panel on the configured timer."
+      : "The best / worst card stays inside the panel and temporarily reduces the list area on the configured timer.";
+  const currentColour =
+    BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
   const previewWin = (mult, extra = {}) => {
     if (typeof window === "undefined") return;
-    window.dispatchEvent(new CustomEvent("better-bonus-hunt-preview-win", {
-      detail: {
-        instanceId: widget?.instanceId || widget?.id || c.__betterInstanceId,
-        mult,
-        max: extra.max === true,
-      },
-    }));
+    window.dispatchEvent(
+      new CustomEvent("better-bonus-hunt-preview-win", {
+        detail: {
+          instanceId: widget?.instanceId || widget?.id || c.__betterInstanceId,
+          mult,
+          max: extra.max === true,
+        },
+      }),
+    );
   };
-  const widgetWidth = Number(c.widgetWidth || c.panelWidth) || (
-    c.orientation === "horizontal" ? 1080 : c.orientation === "mainstream" ? 372 : 402
-  );
+  const widgetWidth =
+    Number(c.widgetWidth || c.panelWidth) ||
+    (c.orientation === "horizontal"
+      ? 1080
+      : c.orientation === "mainstream"
+        ? 372
+        : 402);
   const widgetHeight = Number(c.widgetHeight ?? c.panelHeight ?? 0) || 0;
   const edgeRadius = Number(c.edgeRadius ?? c.radius ?? c.cardRadius ?? 14);
   const statRadius = Number(c.statRadius ?? 7);
@@ -2124,9 +4233,21 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           value={c.orientation}
           columns={3}
           options={[
-            { key: "vertical", label: "Vertical", hint: "Classic tall tracker" },
-            { key: "horizontal", label: "Horizontal", hint: "Wide two-column layout" },
-            { key: "mainstream", label: "Mainstream", hint: "Streamer opening layout" },
+            {
+              key: "vertical",
+              label: "Vertical",
+              hint: "Classic tall tracker",
+            },
+            {
+              key: "horizontal",
+              label: "Horizontal",
+              hint: "Wide two-column layout",
+            },
+            {
+              key: "mainstream",
+              label: "Mainstream",
+              hint: "Streamer opening layout",
+            },
           ]}
           onChange={(orientation) => set({ orientation })}
         />
@@ -2153,7 +4274,10 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
             </button>
           ))}
         </div>
-        <HuntHint>Preview celebrations. Overlay code can trigger the same effect with window.__boTriggerWin(multiplier).</HuntHint>
+        <HuntHint>
+          Preview celebrations. Overlay code can trigger the same effect with
+          window.__boTriggerWin(multiplier).
+        </HuntHint>
       </HuntSection>
 
       <HuntSection title="Session State" icon={<Timer size={13} />}>
@@ -2164,8 +4288,9 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           disabled
         />
         <HuntHint>
-          {sessionHint}. Synced from Bonus Hunt: {liveBonusCount} slot{liveBonusCount === 1 ? "" : "s"},
-          opening {renderedConfig.bonusOpening ? "on" : "off"}.
+          {sessionHint}. Synced from Bonus Hunt: {liveBonusCount} slot
+          {liveBonusCount === 1 ? "" : "s"}, opening{" "}
+          {renderedConfig.bonusOpening ? "on" : "off"}.
         </HuntHint>
       </HuntSection>
 
@@ -2195,8 +4320,20 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
       </HuntSection>
 
       <HuntSection title="Animations" icon={<Wand2 size={13} />}>
-        <ToggleRow label="Enable motion" checked={c.animations} onChange={(animations) => set({ animations })} />
-        <SliderRow label="Speed" value={c.animSpeed} min={0.5} max={2} step={0.1} format={(value) => `${value.toFixed(1)}x`} onChange={(animSpeed) => set({ animSpeed })} />
+        <ToggleRow
+          label="Enable motion"
+          checked={c.animations}
+          onChange={(animations) => set({ animations })}
+        />
+        <SliderRow
+          label="Speed"
+          value={c.animSpeed}
+          min={0.5}
+          max={2}
+          step={0.1}
+          format={(value) => `${value.toFixed(1)}x`}
+          onChange={(animSpeed) => set({ animSpeed })}
+        />
       </HuntSection>
 
       <HuntSection title="Carousel Style" icon={<Layers size={13} />}>
@@ -2213,7 +4350,15 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
       </HuntSection>
 
       <HuntSection title="Carousel Timing" icon={<Timer size={13} />}>
-        <SliderRow label="Rotate every" value={c.carouselMs} min={1500} max={6000} step={100} format={(value) => `${(value / 1000).toFixed(1)}s`} onChange={(carouselMs) => set({ carouselMs })} />
+        <SliderRow
+          label="Rotate every"
+          value={c.carouselMs}
+          min={1500}
+          max={6000}
+          step={100}
+          format={(value) => `${(value / 1000).toFixed(1)}s`}
+          onChange={(carouselMs) => set({ carouselMs })}
+        />
       </HuntSection>
 
       <HuntSection title="Stats Layout" icon={<SlidersHorizontal size={13} />}>
@@ -2228,7 +4373,11 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
       </HuntSection>
 
       <HuntSection title="Chat Requests" icon={<MessageSquare size={13} />}>
-        <ToggleRow label="Show requests feed" checked={localRequestsVisible} onChange={(showRequests) => set({ showRequests })} />
+        <ToggleRow
+          label="Show requests feed"
+          checked={localRequestsVisible}
+          onChange={(showRequests) => set({ showRequests })}
+        />
         <HuntHint>
           {liveRequestsVisible
             ? "Drifting feed of !sr commands from chat. Toggle it off here to hide the section on the Better widget."
@@ -2240,20 +4389,98 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
         <HuntChoiceGrid
           value={c.font}
           columns={3}
-          options={BONUS_FONTS.map((font) => ({ key: font.key, label: font.name }))}
-          onChange={(font) => set({ font, fontFamily: BONUS_FONTS.find((item) => item.key === font)?.family || c.fontFamily })}
+          options={BONUS_FONTS.map((font) => ({
+            key: font.key,
+            label: font.name,
+          }))}
+          onChange={(font) =>
+            set({
+              font,
+              fontFamily:
+                BONUS_FONTS.find((item) => item.key === font)?.family ||
+                c.fontFamily,
+            })
+          }
         />
-        <SliderRow label="UI scale" value={c.uiScale} min={0.85} max={1.2} step={0.05} format={(value) => `${Math.round(value * 100)}%`} onChange={(uiScale) => set({ uiScale })} />
+        <SliderRow
+          label="UI scale"
+          value={c.uiScale}
+          min={0.85}
+          max={1.2}
+          step={0.05}
+          format={(value) => `${Math.round(value * 100)}%`}
+          onChange={(uiScale) => set({ uiScale })}
+        />
       </HuntSection>
 
-      <HuntSection title="Sizes & Layout" icon={<SlidersHorizontal size={13} />}>
-        <SliderRow label="Widget width" value={widgetWidth} min={320} max={1280} step={10} unit="px" onChange={(value) => setBonusSize({ widgetWidth: value, panelWidth: value })} />
-        <SliderRow label="Widget height" value={widgetHeight} min={0} max={980} step={10} format={(value) => value === 0 ? "Auto" : `${value}px`} onChange={(value) => setBonusSize({ widgetHeight: value, panelHeight: value })} />
-        <SliderRow label="Rounded edges" value={edgeRadius} min={0} max={36} unit="px" onChange={(value) => set({ edgeRadius: value, radius: value, cardRadius: value })} />
-        <SliderRow label="Stat box corners" value={statRadius} min={0} max={22} unit="px" onChange={(statRadius) => set({ statRadius })} />
-        <SliderRow label="Progress bar" value={c.barHeight} min={3} max={10} unit="px" onChange={(barHeight) => set({ barHeight })} />
-        <SliderRow label="Avatar" value={c.avatarSize} min={20} max={44} step={2} unit="px" onChange={(avatarSize) => set({ avatarSize })} />
-        <SliderRow label="Visible rows" value={c.visibleRows} min={3} max={8} onChange={(visibleRows) => set({ visibleRows })} />
+      <HuntSection
+        title="Sizes & Layout"
+        icon={<SlidersHorizontal size={13} />}
+      >
+        <SliderRow
+          label="Widget width"
+          value={widgetWidth}
+          min={320}
+          max={1280}
+          step={10}
+          unit="px"
+          onChange={(value) =>
+            setBonusSize({ widgetWidth: value, panelWidth: value })
+          }
+        />
+        <SliderRow
+          label="Widget height"
+          value={widgetHeight}
+          min={0}
+          max={980}
+          step={10}
+          format={(value) => (value === 0 ? "Auto" : `${value}px`)}
+          onChange={(value) =>
+            setBonusSize({ widgetHeight: value, panelHeight: value })
+          }
+        />
+        <SliderRow
+          label="Rounded edges"
+          value={edgeRadius}
+          min={0}
+          max={36}
+          unit="px"
+          onChange={(value) =>
+            set({ edgeRadius: value, radius: value, cardRadius: value })
+          }
+        />
+        <SliderRow
+          label="Stat box corners"
+          value={statRadius}
+          min={0}
+          max={22}
+          unit="px"
+          onChange={(statRadius) => set({ statRadius })}
+        />
+        <SliderRow
+          label="Progress bar"
+          value={c.barHeight}
+          min={3}
+          max={10}
+          unit="px"
+          onChange={(barHeight) => set({ barHeight })}
+        />
+        <SliderRow
+          label="Avatar"
+          value={c.avatarSize}
+          min={20}
+          max={44}
+          step={2}
+          unit="px"
+          onChange={(avatarSize) => set({ avatarSize })}
+        />
+        <SliderRow
+          label="Visible rows"
+          value={c.visibleRows}
+          min={3}
+          max={8}
+          onChange={(visibleRows) => set({ visibleRows })}
+        />
       </HuntSection>
 
       <HuntSection title="List Style" icon={<List size={13} />}>
@@ -2299,12 +4526,23 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
         <HuntHint>{drawerHint}</HuntHint>
       </HuntSection>
 
-      <button className="bp-reset bp-hunt-reset" type="button" onClick={() => onChange(DEFAULT_BETTER_CONFIG.bonus_hunt)}><RotateCcw size={13} /> Reset defaults</button>
+      <button
+        className="bp-reset bp-hunt-reset"
+        type="button"
+        onClick={() => onChange(DEFAULT_BETTER_CONFIG.bonus_hunt)}
+      >
+        <RotateCcw size={13} /> Reset defaults
+      </button>
     </div>
   );
 }
 
-function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange }) {
+function BetterSlideshowFrameControls({
+  config,
+  onChange,
+  widget,
+  onWidgetChange,
+}) {
   const c = ensureBetterWidgetConfig("slideshow_frame", config);
   const [tab, setTab] = useTab("media");
   const tabs = [
@@ -2322,7 +4560,10 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
   };
 
   const setWidget = (layoutPatch = {}, configPatch = {}) => {
-    const nextConfig = ensureBetterWidgetConfig("slideshow_frame", { ...c, ...configPatch });
+    const nextConfig = ensureBetterWidgetConfig("slideshow_frame", {
+      ...c,
+      ...configPatch,
+    });
     if (typeof onWidgetChange === "function") {
       onWidgetChange({ ...layoutPatch, config: nextConfig });
       return;
@@ -2331,7 +4572,9 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
   };
 
   const applyAspect = (aspectPreset) => {
-    const preset = SLIDESHOW_ASPECT_PRESETS.find((item) => item.key === aspectPreset);
+    const preset = SLIDESHOW_ASPECT_PRESETS.find(
+      (item) => item.key === aspectPreset,
+    );
     if (!preset) {
       set({ aspectPreset });
       return;
@@ -2350,12 +4593,19 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
               label="Image and video URLs"
               value={c.mediaText}
               rows={8}
-              placeholder={"One URL per line. Add |video or |image when the URL has no extension."}
+              placeholder={
+                "One URL per line. Add |video or |image when the URL has no extension."
+              }
               onChange={(mediaText) => set({ mediaText })}
             />
-            <p className="bp-hint">Supported lines: URL, URL|image|Label, or URL|video|Label.</p>
+            <p className="bp-hint">
+              Supported lines: URL, URL|image|Label, or URL|video|Label.
+            </p>
             <div className="bp-preset-row">
-              <button type="button" onClick={() => set({ mediaText: SLIDESHOW_SAMPLE_MEDIA })}>
+              <button
+                type="button"
+                onClick={() => set({ mediaText: SLIDESHOW_SAMPLE_MEDIA })}
+              >
                 <ImagePlus size={12} />
                 Sample media
               </button>
@@ -2364,7 +4614,11 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
                 Clear
               </button>
             </div>
-            <ToggleRow label="Show slide counter" checked={c.showCounter} onChange={(showCounter) => set({ showCounter })} />
+            <ToggleRow
+              label="Show slide counter"
+              checked={c.showCounter}
+              onChange={(showCounter) => set({ showCounter })}
+            />
           </Section>
         </>
       )}
@@ -2382,23 +4636,71 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
           <Section title="Colour" icon={<Palette size={13} />}>
             <div className="bp-preset-row">
               {SLIDESHOW_COLOR_PRESETS.map((preset) => (
-                <button key={preset.name} type="button" onClick={() => set(preset.patch)}>
-                  <i style={{ background: `linear-gradient(135deg, ${preset.patch.frameColor}, ${preset.patch.accentColor})` }} />
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => set(preset.patch)}
+                >
+                  <i
+                    style={{
+                      background: `linear-gradient(135deg, ${preset.patch.frameColor}, ${preset.patch.accentColor})`,
+                    }}
+                  />
                   {preset.name}
                 </button>
               ))}
             </div>
             <div className="bp-color-grid">
-              <ColorRow label="Frame" value={c.frameColor} onChange={(frameColor) => set({ frameColor })} />
-              <ColorRow label="Accent" value={c.accentColor} onChange={(accentColor) => set({ accentColor })} />
-              <ColorRow label="Background" value={c.backgroundColor} onChange={(backgroundColor) => set({ backgroundColor })} />
+              <ColorRow
+                label="Frame"
+                value={c.frameColor}
+                onChange={(frameColor) => set({ frameColor })}
+              />
+              <ColorRow
+                label="Accent"
+                value={c.accentColor}
+                onChange={(accentColor) => set({ accentColor })}
+              />
+              <ColorRow
+                label="Background"
+                value={c.backgroundColor}
+                onChange={(backgroundColor) => set({ backgroundColor })}
+              />
             </div>
           </Section>
           <Section title="Shape" icon={<Layers size={13} />}>
-            <SliderRow label="Corner radius" value={c.radius} min={0} max={80} unit="px" onChange={(radius) => set({ radius })} />
-            <SliderRow label="Border width" value={c.borderWidth} min={0} max={10} unit="px" onChange={(borderWidth) => set({ borderWidth })} />
-            <SliderRow label="Padding" value={c.padding} min={0} max={60} unit="px" onChange={(padding) => set({ padding })} />
-            <SliderRow label="Glow" value={c.glow} min={0} max={160} unit="%" onChange={(glow) => set({ glow })} />
+            <SliderRow
+              label="Corner radius"
+              value={c.radius}
+              min={0}
+              max={80}
+              unit="px"
+              onChange={(radius) => set({ radius })}
+            />
+            <SliderRow
+              label="Border width"
+              value={c.borderWidth}
+              min={0}
+              max={10}
+              unit="px"
+              onChange={(borderWidth) => set({ borderWidth })}
+            />
+            <SliderRow
+              label="Padding"
+              value={c.padding}
+              min={0}
+              max={60}
+              unit="px"
+              onChange={(padding) => set({ padding })}
+            />
+            <SliderRow
+              label="Glow"
+              value={c.glow}
+              min={0}
+              max={160}
+              unit="%"
+              onChange={(glow) => set({ glow })}
+            />
           </Section>
         </>
       )}
@@ -2406,14 +4708,20 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
       {current === "timing" && (
         <>
           <Section title="Slideshow timing" icon={<Timer size={13} />}>
-            <ToggleRow label="Autoplay" checked={c.autoplay} onChange={(autoplay) => set({ autoplay })} />
+            <ToggleRow
+              label="Autoplay"
+              checked={c.autoplay}
+              onChange={(autoplay) => set({ autoplay })}
+            />
             <SliderRow
               label="Slide duration"
               value={c.slideMs}
               min={1000}
               max={30000}
               step={250}
-              format={(value) => `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 2)}s`}
+              format={(value) =>
+                `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 2)}s`
+              }
               onChange={(slideMs) => set({ slideMs })}
             />
             <Segmented
@@ -2428,14 +4736,28 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
               min={0}
               max={2500}
               step={50}
-              format={(value) => `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 2)}s`}
+              format={(value) =>
+                `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 2)}s`
+              }
               onChange={(transitionMs) => set({ transitionMs })}
             />
           </Section>
           <Section title="Video playback" icon={<MonitorPlay size={13} />}>
-            <ToggleRow label="Muted" checked={c.videoMuted} onChange={(videoMuted) => set({ videoMuted })} />
-            <ToggleRow label="Loop videos" checked={c.videoLoop} onChange={(videoLoop) => set({ videoLoop })} />
-            <ToggleRow label="Show video controls" checked={c.showVideoControls} onChange={(showVideoControls) => set({ showVideoControls })} />
+            <ToggleRow
+              label="Muted"
+              checked={c.videoMuted}
+              onChange={(videoMuted) => set({ videoMuted })}
+            />
+            <ToggleRow
+              label="Loop videos"
+              checked={c.videoLoop}
+              onChange={(videoLoop) => set({ videoLoop })}
+            />
+            <ToggleRow
+              label="Show video controls"
+              checked={c.showVideoControls}
+              onChange={(showVideoControls) => set({ showVideoControls })}
+            />
           </Section>
         </>
       )}
@@ -2463,7 +4785,9 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
               max={1920}
               step={10}
               unit="px"
-              onChange={(width) => setWidget({ width }, { aspectPreset: "custom" })}
+              onChange={(width) =>
+                setWidget({ width }, { aspectPreset: "custom" })
+              }
             />
             <SliderRow
               label="Canvas height"
@@ -2472,7 +4796,9 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
               max={1080}
               step={10}
               unit="px"
-              onChange={(height) => setWidget({ height }, { aspectPreset: "custom" })}
+              onChange={(height) =>
+                setWidget({ height }, { aspectPreset: "custom" })
+              }
             />
           </Section>
           <Section title="Media fit" icon={<Frame size={13} />}>
@@ -2483,7 +4809,16 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
               onChange={(fit) => set({ fit })}
             />
           </Section>
-          <button className="bp-reset" type="button" onClick={() => setWidget({ width: 960, height: 360 }, DEFAULT_BETTER_CONFIG.slideshow_frame)}>
+          <button
+            className="bp-reset"
+            type="button"
+            onClick={() =>
+              setWidget(
+                { width: 960, height: 360 },
+                DEFAULT_BETTER_CONFIG.slideshow_frame,
+              )
+            }
+          >
             <RotateCcw size={13} />
             Reset slideshow
           </button>
@@ -2493,7 +4828,19 @@ function BetterSlideshowFrameControls({ config, onChange, widget, onWidgetChange
   );
 }
 
-export function BetterWidgetControls({ type, config, onChange, user, widget, onWidgetChange }) {
+export function BetterWidgetControls({
+  type,
+  config,
+  onChange,
+  user,
+  widget,
+  onWidgetChange,
+}) {
+  if (type === "tournament") {
+    return (
+      <TournamentConfig config={config} onChange={onChange} mode="widget" />
+    );
+  }
   if (type === "slideshow_frame") {
     return (
       <BetterSlideshowFrameControls
@@ -2515,7 +4862,8 @@ export function BetterWidgetControls({ type, config, onChange, user, widget, onW
       />
     );
   }
-  if (type === "bets") return <BetterBetsControls config={config} onChange={onChange} />;
+  if (type === "bets")
+    return <BetterBetsControls config={config} onChange={onChange} />;
   if (type === "chat") {
     return (
       <BetterChatControls
@@ -2526,5 +4874,13 @@ export function BetterWidgetControls({ type, config, onChange, user, widget, onW
       />
     );
   }
-  return <SimpleThemedControls type={type} config={config} onChange={onChange} onWidgetChange={onWidgetChange} widget={widget} />;
+  return (
+    <SimpleThemedControls
+      type={type}
+      config={config}
+      onChange={onChange}
+      onWidgetChange={onWidgetChange}
+      widget={widget}
+    />
+  );
 }

@@ -8,6 +8,46 @@ const SAMPLE_BETS_OPTIONS = [
 
 const SAMPLE_BET_AMOUNTS = [1280, 820, 1540, 420, 960, 610, 360, 1180, 740];
 
+const SAMPLE_TOURNAMENT_MATCHES = [
+  {
+    id: "preview-tournament-1",
+    player1: "Brutus",
+    player2: "Miguel",
+    slot1: {
+      name: "Gates of Olympus 1000",
+      image:
+        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+    },
+    slot2: {
+      name: "Le Digger",
+      image: "https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png",
+    },
+    type: "bonus_bo3",
+    status: "completed",
+    winner: "player1",
+    rounds: [
+      { roundNum: 1, player1: { bonusCost: 100, bonusPayout: 240 }, player2: { bonusCost: 100, bonusPayout: 80 }, winner: "player1", status: "completed" },
+      { roundNum: 2, player1: { bonusCost: 100, bonusPayout: 70 }, player2: { bonusCost: 100, bonusPayout: 165 }, winner: "player2", status: "completed" },
+      { roundNum: 3, player1: { bonusCost: 100, bonusPayout: 310 }, player2: { bonusCost: 100, bonusPayout: 125 }, winner: "player1", status: "completed" },
+    ],
+  },
+  {
+    id: "preview-tournament-2",
+    player1: "Sofia",
+    player2: "Rafa",
+    slot1: { name: "Sugar Rush 1000", image: "" },
+    slot2: { name: "Wanted Dead or a Wild", image: "" },
+    type: "bonus_bo3",
+    status: "in_progress",
+    winner: null,
+    rounds: [
+      { roundNum: 1, player1: { bonusCost: 100, bonusPayout: 190 }, player2: { bonusCost: 100, bonusPayout: 115 }, winner: "player1", status: "completed" },
+      { roundNum: 2, player1: { bonusCost: null, bonusPayout: null }, player2: { bonusCost: null, bonusPayout: null }, winner: null, status: "pending" },
+      { roundNum: 3, player1: { bonusCost: null, bonusPayout: null }, player2: { bonusCost: null, bonusPayout: null }, winner: null, status: "pending" },
+    ],
+  },
+];
+
 const SAMPLE_GIVEAWAY_PARTICIPANTS = [
   "Afonso",
   "Beatriz",
@@ -369,6 +409,21 @@ function applyBonusHuntPreviewSample(config = {}) {
   };
 }
 
+function applyTournamentPreviewSample(config = {}) {
+  const existingMatches = config.data?.matches;
+  return {
+    ...config,
+    bracketName: config.bracketName || "Friday Night Showdown",
+    bracketPhase: "active",
+    data: {
+      ...(config.data || {}),
+      currentMatchIdx: config.data?.currentMatchIdx ?? 1,
+      matches: nonEmptyArrayOr(existingMatches, SAMPLE_TOURNAMENT_MATCHES),
+    },
+    __appearancePreviewSample: true,
+  };
+}
+
 function getBetsPreviewFrame(config) {
   if (config.displayStyle === "StyleSecaBets")
     return { width: 400, height: 510 };
@@ -414,6 +469,7 @@ const PREVIEW_FRAME_BUILDERS = Object.freeze({
   giveaway: () => ({ width: 480, height: 360 }),
   slot_requests: getSlotRequestsPreviewFrame,
   spotify_now_playing: getSpotifyPreviewFrame,
+  tournament: () => ({ width: 960, height: 720 }),
 });
 
 function getPreviewFrame(widgetType, config = {}) {
@@ -447,6 +503,11 @@ function applyWidgetPreviewSample(widget, now) {
     return {
       ...widget,
       config: applyBonusHuntPreviewSample(widget.config || {}),
+    };
+  if (widget.widget_type === "tournament")
+    return {
+      ...widget,
+      config: applyTournamentPreviewSample(widget.config || {}),
     };
   if (widget.widget_type === "slot_requests")
     return {

@@ -1031,28 +1031,6 @@ export const widgetAppearanceRegistry = Object.freeze({
           "statusBadge",
         ],
       }),
-      makeRuntimeStyle(
-        "showcase",
-        "Showcase",
-        "Large tournament showcase layout.",
-        {
-          capabilities: {
-            ...IMAGE_QUICK_CAPABILITIES,
-            statCards: true,
-            glow: true,
-            glowIntensity: true,
-          },
-          elementIds: [
-            "container",
-            "header",
-            "matchCard",
-            "playerName",
-            "slotImage",
-            "scoreValue",
-            "statusBadge",
-          ],
-        },
-      ),
       makeRuntimeStyle("vertical", "Vertical", "Stacked tournament list.", {
         capabilities: { ...IMAGE_QUICK_CAPABILITIES, rows: true },
         elementIds: [
@@ -1062,40 +1040,6 @@ export const widgetAppearanceRegistry = Object.freeze({
           "playerName",
           "slotImage",
           "scoreValue",
-        ],
-      }),
-      makeRuntimeStyle(
-        "bracket",
-        "Bracket",
-        "Tournament bracket with connector lines.",
-        {
-          capabilities: { statCards: true, rows: true, columns: true },
-          elementIds: [
-            "container",
-            "header",
-            "matchCard",
-            "playerName",
-            "scoreValue",
-            "bracketLine",
-            "statusBadge",
-          ],
-        },
-      ),
-      makeRuntimeStyle("neon", "Neon", "Glow-heavy tournament layout.", {
-        capabilities: {
-          ...IMAGE_QUICK_CAPABILITIES,
-          statCards: true,
-          glow: true,
-          glowIntensity: true,
-        },
-        elementIds: [
-          "container",
-          "header",
-          "matchCard",
-          "playerName",
-          "slotImage",
-          "scoreValue",
-          "statusBadge",
         ],
       }),
       makeRuntimeStyle(
@@ -1130,28 +1074,6 @@ export const widgetAppearanceRegistry = Object.freeze({
           "statusBadge",
         ],
       }),
-      makeRuntimeStyle(
-        "futuristic",
-        "Futuristic",
-        "Futuristic tournament board.",
-        {
-          capabilities: {
-            ...IMAGE_QUICK_CAPABILITIES,
-            statCards: true,
-            glow: true,
-            glowIntensity: true,
-          },
-          elementIds: [
-            "container",
-            "header",
-            "matchCard",
-            "playerName",
-            "slotImage",
-            "scoreValue",
-            "statusBadge",
-          ],
-        },
-      ),
       makeRuntimeStyle("esports", "Esports", "Esports scoreboard style.", {
         capabilities: {
           ...IMAGE_QUICK_CAPABILITIES,
@@ -1169,6 +1091,27 @@ export const widgetAppearanceRegistry = Object.freeze({
           "statusBadge",
         ],
       }),
+      makeRuntimeStyle(
+        "scoreboard",
+        "Scoreboard",
+        "Focused best-of-three scoreboard with live round results.",
+        {
+          capabilities: {
+            ...IMAGE_QUICK_CAPABILITIES,
+            statCards: true,
+            rows: true,
+          },
+          elementIds: [
+            "container",
+            "header",
+            "matchCard",
+            "playerName",
+            "slotImage",
+            "scoreValue",
+            "statusBadge",
+          ],
+        },
+      ),
     ],
     responsive: {
       minWidth: 320,

@@ -7,6 +7,7 @@ import RtpStatsWidget from "../widgets/RtpStatsWidget";
 import BackgroundWidget from "../widgets/BackgroundWidget";
 import BetsWidget from "../widgets/BetsWidget";
 import SlideshowFrameWidget from "../widgets/SlideshowFrameWidget";
+import TournamentWidget from "../widgets/TournamentWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -26,7 +27,8 @@ const MOCK_BONUSES = [
   {
     id: "mock-wolf-gold",
     slotName: "Wolf Gold",
-    imageUrl: "https://images-cdn.softswiss.net/i/s2/pragmaticplay/WolfGold.png",
+    imageUrl:
+      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/WolfGold.png",
     betSize: 4,
     payout: 136,
     opened: true,
@@ -38,7 +40,8 @@ const MOCK_BONUSES = [
   {
     id: "mock-medusa",
     slotName: "Medusas Madness",
-    imageUrl: "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png",
+    imageUrl:
+      "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png",
     betSize: 5,
     payout: 0,
     opened: false,
@@ -50,31 +53,124 @@ const MOCK_BONUSES = [
   {
     id: "mock-gates",
     slotName: "Gates of Olympus",
-    imageUrl: "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+    imageUrl:
+      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
     betSize: 6,
     payout: 312,
     opened: true,
     isSuperBonus: true,
     slot: {
       provider: "Pragmatic Play",
-      image: "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+      image:
+        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
     },
   },
   {
     id: "mock-sugar",
     slotName: "Sugar Rush 1000",
-    imageUrl: "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
+    imageUrl:
+      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
     betSize: 3,
     payout: 0,
     opened: false,
     slot: {
       provider: "Pragmatic Play",
-      image: "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
+      image:
+        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
     },
   },
 ];
 
 const MOCK_WIDGET_CONFIGS = {
+  tournament: {
+    bracketPhase: "active",
+    data: {
+      currentMatchIdx: 1,
+      matches: [
+        {
+          id: "mock-quarter-final-1",
+          player1: "Brutus",
+          player2: "Miguel",
+          slot1: {
+            name: "Gates of Olympus 1000",
+            image:
+              "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+          },
+          slot2: {
+            name: "Le Digger",
+            image: "https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png",
+          },
+          type: "bonus_bo3",
+          status: "completed",
+          winner: "player1",
+          rounds: [
+            {
+              roundNum: 1,
+              player1: { bonusCost: 100, bonusPayout: 240 },
+              player2: { bonusCost: 100, bonusPayout: 80 },
+              winner: "player1",
+              status: "completed",
+            },
+            {
+              roundNum: 2,
+              player1: { bonusCost: 100, bonusPayout: 70 },
+              player2: { bonusCost: 100, bonusPayout: 165 },
+              winner: "player2",
+              status: "completed",
+            },
+            {
+              roundNum: 3,
+              player1: { bonusCost: 100, bonusPayout: 310 },
+              player2: { bonusCost: 100, bonusPayout: 125 },
+              winner: "player1",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "mock-quarter-final-2",
+          player1: "Sofia",
+          player2: "Rafa",
+          slot1: {
+            name: "Sugar Rush 1000",
+            image:
+              "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
+          },
+          slot2: {
+            name: "Wanted Dead or a Wild",
+            image:
+              "https://images-cdn.softswiss.net/i/s2/hacksaw/WantedDeadOrAWild.png",
+          },
+          type: "bonus_bo3",
+          status: "in_progress",
+          winner: null,
+          rounds: [
+            {
+              roundNum: 1,
+              player1: { bonusCost: 100, bonusPayout: 190 },
+              player2: { bonusCost: 100, bonusPayout: 115 },
+              winner: "player1",
+              status: "completed",
+            },
+            {
+              roundNum: 2,
+              player1: { bonusCost: null, bonusPayout: null },
+              player2: { bonusCost: null, bonusPayout: null },
+              winner: null,
+              status: "pending",
+            },
+            {
+              roundNum: 3,
+              player1: { bonusCost: null, bonusPayout: null },
+              player2: { bonusCost: null, bonusPayout: null },
+              winner: null,
+              status: "pending",
+            },
+          ],
+        },
+      ],
+    },
+  },
   bonus_hunt: {
     bonuses: MOCK_BONUSES,
     startMoney: 2000,
@@ -169,6 +265,15 @@ const MOCK_WIDGET_CONFIGS = {
 };
 
 const LIVE_DATA_KEYS = Object.freeze({
+  tournament: [
+    "bracketName",
+    "bracketType",
+    "bracketPlayerCount",
+    "bracketPlayers",
+    "bracketData",
+    "bracketPhase",
+    "data",
+  ],
   bonus_hunt: [
     "bonuses",
     "huntActive",
@@ -314,7 +419,15 @@ const LIVE_DATA_KEYS = Object.freeze({
 });
 
 const DEFAULT_POSITIONS = {
-  background: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0, locked: true },
+  background: {
+    x: 0,
+    y: 0,
+    width: 1920,
+    height: 1080,
+    zIndex: 0,
+    locked: true,
+  },
+  tournament: { x: 480, y: 180, width: 960, height: 720, zIndex: 28 },
   navbar: { x: 360, y: 26, width: 1200, height: 72, zIndex: 10 },
   rtp_stats: { x: 420, y: 126, width: 1080, height: 88, zIndex: 20 },
   slideshow_frame: { x: 480, y: 300, width: 960, height: 360, zIndex: 25 },
@@ -325,6 +438,7 @@ const DEFAULT_POSITIONS = {
 };
 
 const COMPONENTS = {
+  tournament: TournamentWidget,
   bonus_hunt: BonusHuntWidget,
   giveaway: GiveawayWidget,
   navbar: NavbarWidget,
@@ -336,24 +450,77 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
-  bonus_hunt: ["style", "orientation", "session", "texture", "colour", "animations", "carousel", "requests", "typography", "sizes", "list", "drawer"],
+  tournament: ["bracket", "presets"],
+  bonus_hunt: [
+    "style",
+    "orientation",
+    "session",
+    "texture",
+    "colour",
+    "animations",
+    "carousel",
+    "requests",
+    "typography",
+    "sizes",
+    "list",
+    "drawer",
+  ],
   giveaway: ["theme", "size", "edges", "type", "content"],
-  navbar: ["sections", "arrange", "spotify", "crypto", "socials", "casino", "cta", "size", "colours"],
+  navbar: [
+    "sections",
+    "arrange",
+    "spotify",
+    "crypto",
+    "socials",
+    "casino",
+    "cta",
+    "size",
+    "colours",
+  ],
   chat: ["theme", "messages", "layout", "typography", "animation", "source"],
-  rtp_stats: ["presets", "provider", "display", "emblem", "colours", "type", "bar"],
+  rtp_stats: [
+    "presets",
+    "provider",
+    "display",
+    "emblem",
+    "colours",
+    "type",
+    "bar",
+  ],
   background: ["presets", "colors", "source", "textures", "effects"],
   slideshow_frame: ["media", "frame", "timing", "size"],
   bets: ["theme", "cards", "fill", "layout", "text", "colours"],
 };
 
 const SIZE_CONSTRAINTS = {
-  bonus_hunt: { minWidth: 320, minHeight: 320, maxWidth: 1280, maxHeight: 1080 },
+  tournament: {
+    minWidth: 320,
+    minHeight: 220,
+    maxWidth: 1920,
+    maxHeight: 1080,
+  },
+  bonus_hunt: {
+    minWidth: 320,
+    minHeight: 320,
+    maxWidth: 1280,
+    maxHeight: 1080,
+  },
   giveaway: { minWidth: 420, minHeight: 180, maxWidth: 1100, maxHeight: 520 },
   navbar: { minWidth: 720, minHeight: 46, maxWidth: 1920, maxHeight: 160 },
   chat: { minWidth: 180, minHeight: 220, maxWidth: 720, maxHeight: 900 },
   rtp_stats: { minWidth: 680, minHeight: 52, maxWidth: 1920, maxHeight: 160 },
-  background: { minWidth: 1920, minHeight: 1080, maxWidth: 1920, maxHeight: 1080 },
-  slideshow_frame: { minWidth: 240, minHeight: 120, maxWidth: 1920, maxHeight: 1080 },
+  background: {
+    minWidth: 1920,
+    minHeight: 1080,
+    maxWidth: 1920,
+    maxHeight: 1080,
+  },
+  slideshow_frame: {
+    minWidth: 240,
+    minHeight: 120,
+    maxWidth: 1920,
+    maxHeight: 1080,
+  },
   bets: { minWidth: 280, minHeight: 300, maxWidth: 880, maxHeight: 920 },
 };
 
@@ -376,23 +543,29 @@ function pickLiveDataPatch(widgetType, liveConfig = {}) {
 function firstLiveNumber(values, fallback = 0) {
   for (const value of values) {
     if (value === undefined || value === null || value === "") continue;
-    const parsed = typeof value === "number"
-      ? value
-      : Number.parseFloat(String(value).replace(/[^\d.-]/g, ""));
+    const parsed =
+      typeof value === "number"
+        ? value
+        : Number.parseFloat(String(value).replace(/[^\d.-]/g, ""));
     if (Number.isFinite(parsed)) return parsed;
   }
   return fallback;
 }
 
 function hasFilledBonusPayment(bonus = {}) {
-  return firstLiveNumber([
-    bonus.payout,
-    bonus.pay,
-    bonus.win,
-    bonus.winAmount,
-    bonus.win_amount,
-    bonus.result,
-  ], 0) > 0;
+  return (
+    firstLiveNumber(
+      [
+        bonus.payout,
+        bonus.pay,
+        bonus.win,
+        bonus.winAmount,
+        bonus.win_amount,
+        bonus.result,
+      ],
+      0,
+    ) > 0
+  );
 }
 
 function deriveBonusHuntSessionState(liveConfig = {}, livePatch = {}) {
@@ -403,27 +576,47 @@ function deriveBonusHuntSessionState(liveConfig = {}, livePatch = {}) {
       : [];
 
   if (liveConfig.bonusOpening === true || livePatch.bonusOpening === true) {
-    return bonuses.length > 0 && bonuses.every(hasFilledBonusPayment) ? "ended" : "opening";
+    return bonuses.length > 0 && bonuses.every(hasFilledBonusPayment)
+      ? "ended"
+      : "opening";
   }
 
   return "hunt";
 }
 
-function normalizeBonusHuntLivePatch(liveConfig = {}, livePatch = {}, baseConfig = {}) {
+function normalizeBonusHuntLivePatch(
+  liveConfig = {},
+  livePatch = {},
+  baseConfig = {},
+) {
   const next = { ...livePatch };
 
-  if (hasOwnKey(liveConfig, "showSlotRequests") || hasOwnKey(liveConfig, "showRequests")) {
+  if (
+    hasOwnKey(liveConfig, "showSlotRequests") ||
+    hasOwnKey(liveConfig, "showRequests")
+  ) {
     const liveRequestsVisible =
-      (hasOwnKey(liveConfig, "showSlotRequests") ? liveConfig.showSlotRequests !== false : true) &&
-      (hasOwnKey(liveConfig, "showRequests") ? liveConfig.showRequests !== false : true);
+      (hasOwnKey(liveConfig, "showSlotRequests")
+        ? liveConfig.showSlotRequests !== false
+        : true) &&
+      (hasOwnKey(liveConfig, "showRequests")
+        ? liveConfig.showRequests !== false
+        : true);
     next.showSlotRequests = liveRequestsVisible;
-    next.showRequests = baseConfig.showRequests !== false && liveRequestsVisible;
+    next.showRequests =
+      baseConfig.showRequests !== false && liveRequestsVisible;
   }
 
-  if (hasOwnKey(liveConfig, "bonuses") || hasOwnKey(liveConfig, "bonusOpening")) {
+  if (
+    hasOwnKey(liveConfig, "bonuses") ||
+    hasOwnKey(liveConfig, "bonusOpening")
+  ) {
     const sessionState = deriveBonusHuntSessionState(liveConfig, next);
     next.sessionState = sessionState;
-    next.huntActive = sessionState === "hunt" && Array.isArray(next.bonuses) && next.bonuses.length > 0;
+    next.huntActive =
+      sessionState === "hunt" &&
+      Array.isArray(next.bonuses) &&
+      next.bonuses.length > 0;
   }
 
   return next;
@@ -431,20 +624,28 @@ function normalizeBonusHuntLivePatch(liveConfig = {}, livePatch = {}, baseConfig
 
 export function findBetterLiveSourceWidget(widgetType, liveWidgets = []) {
   if (!widgetType || !Array.isArray(liveWidgets)) return null;
-  return liveWidgets.find((widget) => widget?.widget_type === widgetType) || null;
+  return (
+    liveWidgets.find((widget) => widget?.widget_type === widgetType) || null
+  );
 }
 
 function resolveBetterLiveSourceWidget(widgetType, context = {}) {
-  if (context?.liveWidget?.widget_type === widgetType) return context.liveWidget;
+  if (context?.liveWidget?.widget_type === widgetType)
+    return context.liveWidget;
   return findBetterLiveSourceWidget(widgetType, context?.liveWidgets);
 }
 
 function mergeBetterLiveDataConfig(widgetType, baseConfig, liveWidget) {
   const liveConfig = liveWidget?.config;
   if (!liveConfig || typeof liveConfig !== "object") return baseConfig;
-  const livePatch = widgetType === "bonus_hunt"
-    ? normalizeBonusHuntLivePatch(liveConfig, pickLiveDataPatch(widgetType, liveConfig), baseConfig)
-    : pickLiveDataPatch(widgetType, liveConfig);
+  const livePatch =
+    widgetType === "bonus_hunt"
+      ? normalizeBonusHuntLivePatch(
+          liveConfig,
+          pickLiveDataPatch(widgetType, liveConfig),
+          baseConfig,
+        )
+      : pickLiveDataPatch(widgetType, liveConfig);
   if (Object.keys(livePatch).length === 0) return baseConfig;
   return ensureBetterWidgetConfig(widgetType, {
     ...baseConfig,
@@ -467,7 +668,9 @@ function makeInstanceId(widgetType) {
 }
 
 function normalizeZIndexes(instances) {
-  const background = instances.find((item) => item.widgetType === BACKGROUND_TYPE);
+  const background = instances.find(
+    (item) => item.widgetType === BACKGROUND_TYPE,
+  );
   const foreground = instances
     .filter((item) => item.widgetType !== BACKGROUND_TYPE)
     .sort((a, b) => Number(a.zIndex) - Number(b.zIndex));
@@ -513,8 +716,18 @@ function normalizeInstanceGeometry(widgetType, geometry = {}) {
     maxHeight,
     defaultPos.height || meta?.defaultSize?.height || 240,
   );
-  const x = clampNumber(geometry.x, 0, BETTER_CANVAS.width - width, defaultPos.x || 0);
-  const y = clampNumber(geometry.y, 0, BETTER_CANVAS.height - height, defaultPos.y || 0);
+  const x = clampNumber(
+    geometry.x,
+    0,
+    BETTER_CANVAS.width - width,
+    defaultPos.x || 0,
+  );
+  const y = clampNumber(
+    geometry.y,
+    0,
+    BETTER_CANVAS.height - height,
+    defaultPos.y || 0,
+  );
   return { x, y, width, height };
 }
 
@@ -530,7 +743,8 @@ function buildDefinition(meta) {
     constraints: SIZE_CONSTRAINTS[meta.type],
     controlSchema: CONTROL_SCHEMAS[meta.type] || [],
     component: COMPONENTS[meta.type],
-    validateConfig: (config) => ensureBetterWidgetConfig(meta.type, config || {}),
+    validateConfig: (config) =>
+      ensureBetterWidgetConfig(meta.type, config || {}),
     dataAdapter: ({ config, mode, liveWidget }) => {
       const baseConfig = ensureBetterWidgetConfig(meta.type, config || {});
       if (mode !== "mock") {
@@ -545,7 +759,9 @@ function buildDefinition(meta) {
 }
 
 export const BETTER_WIDGET_REGISTRY = Object.freeze(
-  Object.fromEntries(BETTER_WIDGETS.map((meta) => [meta.type, buildDefinition(meta)])),
+  Object.fromEntries(
+    BETTER_WIDGETS.map((meta) => [meta.type, buildDefinition(meta)]),
+  ),
 );
 
 export function getBetterWidgetTypes() {
@@ -566,13 +782,19 @@ export function validateBetterWidgetConfig(widgetType, config = {}) {
   return definition.validateConfig(config);
 }
 
-export function resolveBetterWidgetConfig(widgetType, config = {}, mode = "live", context = {}) {
+export function resolveBetterWidgetConfig(
+  widgetType,
+  config = {},
+  mode = "live",
+  context = {},
+) {
   const definition = getBetterWidgetDefinition(widgetType);
   if (!definition) return {};
   const normalizedMode = BETTER_DATA_MODES.includes(mode) ? mode : "live";
-  const liveWidget = normalizedMode === "live"
-    ? resolveBetterLiveSourceWidget(widgetType, context)
-    : null;
+  const liveWidget =
+    normalizedMode === "live"
+      ? resolveBetterLiveSourceWidget(widgetType, context)
+      : null;
   return definition.dataAdapter({ config, mode: normalizedMode, liveWidget });
 }
 
@@ -588,11 +810,17 @@ export function createBetterInstance(widgetType, overrides = {}) {
     instanceId: overrides.instanceId || makeInstanceId(widgetType),
     widgetType,
     label: overrides.label || definition.label,
-    config: validateBetterWidgetConfig(widgetType, overrides.config || definition.defaultConfig),
+    config: validateBetterWidgetConfig(
+      widgetType,
+      overrides.config || definition.defaultConfig,
+    ),
     visible: overrides.visible !== false,
     locked: widgetType === BACKGROUND_TYPE ? true : overrides.locked === true,
     opacity: clampNumber(overrides.opacity, MIN_OPACITY, MAX_OPACITY, 1),
-    zIndex: widgetType === BACKGROUND_TYPE ? 0 : Number(overrides.zIndex || defaultPos.zIndex || 1),
+    zIndex:
+      widgetType === BACKGROUND_TYPE
+        ? 0
+        : Number(overrides.zIndex || defaultPos.zIndex || 1),
     ...geometry,
   };
 }
@@ -603,28 +831,48 @@ export function duplicateBetterInstance(instance, overrides = {}) {
     ...instance,
     ...overrides,
     instanceId: makeInstanceId(instance.widgetType),
-    label: overrides.label || `${instance.label || getBetterWidgetMeta(instance.widgetType)?.label || "Widget"} Copy`,
-    x: clampNumber((Number(instance.x) || 0) + 32, 0, BETTER_CANVAS.width - (Number(instance.width) || 0), 0),
-    y: clampNumber((Number(instance.y) || 0) + 32, 0, BETTER_CANVAS.height - (Number(instance.height) || 0), 0),
+    label:
+      overrides.label ||
+      `${instance.label || getBetterWidgetMeta(instance.widgetType)?.label || "Widget"} Copy`,
+    x: clampNumber(
+      (Number(instance.x) || 0) + 32,
+      0,
+      BETTER_CANVAS.width - (Number(instance.width) || 0),
+      0,
+    ),
+    y: clampNumber(
+      (Number(instance.y) || 0) + 32,
+      0,
+      BETTER_CANVAS.height - (Number(instance.height) || 0),
+      0,
+    ),
     zIndex: Number(instance.zIndex || 1) + 1,
     config: cloneJson(instance.config || {}),
   });
 }
 
 export function normalizeBetterInstance(rawInstance = {}) {
-  const widgetType = rawInstance.widgetType || rawInstance.widget_type || rawInstance.type;
+  const widgetType =
+    rawInstance.widgetType || rawInstance.widget_type || rawInstance.type;
   const definition = getBetterWidgetDefinition(widgetType);
   if (!definition) return null;
   const geometry = normalizeInstanceGeometry(widgetType, rawInstance);
   return {
-    instanceId: rawInstance.instanceId || rawInstance.id || makeInstanceId(widgetType),
+    instanceId:
+      rawInstance.instanceId || rawInstance.id || makeInstanceId(widgetType),
     widgetType,
     label: rawInstance.label || definition.label,
-    config: validateBetterWidgetConfig(widgetType, rawInstance.config || definition.defaultConfig),
+    config: validateBetterWidgetConfig(
+      widgetType,
+      rawInstance.config || definition.defaultConfig,
+    ),
     visible: rawInstance.visible !== false && rawInstance.is_visible !== false,
     locked: widgetType === BACKGROUND_TYPE ? true : rawInstance.locked === true,
     opacity: clampNumber(rawInstance.opacity, MIN_OPACITY, MAX_OPACITY, 1),
-    zIndex: widgetType === BACKGROUND_TYPE ? 0 : Number(rawInstance.zIndex ?? rawInstance.z_index ?? 1),
+    zIndex:
+      widgetType === BACKGROUND_TYPE
+        ? 0
+        : Number(rawInstance.zIndex ?? rawInstance.z_index ?? 1),
     ...geometry,
   };
 }
@@ -634,9 +882,13 @@ export function normalizeBetterLayout(layout = {}) {
   const normalized = rawInstances
     .map((instance) => normalizeBetterInstance(instance))
     .filter(Boolean);
-  const hasBackground = normalized.some((instance) => instance.widgetType === BACKGROUND_TYPE);
+  const hasBackground = normalized.some(
+    (instance) => instance.widgetType === BACKGROUND_TYPE,
+  );
   if (!hasBackground) normalized.unshift(createBetterInstance(BACKGROUND_TYPE));
-  const hasAnyForeground = normalized.some((instance) => instance.widgetType !== BACKGROUND_TYPE);
+  const hasAnyForeground = normalized.some(
+    (instance) => instance.widgetType !== BACKGROUND_TYPE,
+  );
   const instances = hasAnyForeground
     ? normalizeZIndexes(normalized)
     : createDefaultBetterLayout().instances;
@@ -663,7 +915,9 @@ export function createDefaultBetterLayout() {
     "giveaway",
   ];
   const instances = preferredOrder
-    .map((widgetType) => createBetterInstance(widgetType, DEFAULT_POSITIONS[widgetType]))
+    .map((widgetType) =>
+      createBetterInstance(widgetType, DEFAULT_POSITIONS[widgetType]),
+    )
     .filter(Boolean);
   return {
     schemaVersion: BETTER_LAYOUT_SCHEMA_VERSION,
@@ -676,14 +930,24 @@ export function createDefaultBetterLayout() {
   };
 }
 
-export function betterInstanceToLegacyWidget(instance, mode = "live", context = {}) {
-  const liveWidget = mode === "live"
-    ? resolveBetterLiveSourceWidget(instance.widgetType, context)
-    : null;
-  const config = resolveBetterWidgetConfig(instance.widgetType, instance.config, mode, {
-    ...context,
-    liveWidget,
-  });
+export function betterInstanceToLegacyWidget(
+  instance,
+  mode = "live",
+  context = {},
+) {
+  const liveWidget =
+    mode === "live"
+      ? resolveBetterLiveSourceWidget(instance.widgetType, context)
+      : null;
+  const config = resolveBetterWidgetConfig(
+    instance.widgetType,
+    instance.config,
+    mode,
+    {
+      ...context,
+      liveWidget,
+    },
+  );
   const instanceConfig = {
     ...config,
     __betterInstanceId: instance.instanceId,
@@ -719,7 +983,11 @@ export function renderBetterWidgetInstance({
   const allWidgets = normalizedLayout.instances.map((item) =>
     betterInstanceToLegacyWidget(item, mode, liveSourceContext),
   );
-  const widget = betterInstanceToLegacyWidget(instance, mode, liveSourceContext);
+  const widget = betterInstanceToLegacyWidget(
+    instance,
+    mode,
+    liveSourceContext,
+  );
   const commonProps = {
     config: widget.config,
     allWidgets,

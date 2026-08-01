@@ -21,6 +21,8 @@ import NavbarWidget from "./NavbarWidget";
 import RtpStatsConfig from "./RtpStatsConfig";
 import RtpStatsWidget from "./RtpStatsWidget";
 import SlideshowFrameWidget from "./SlideshowFrameWidget";
+import TournamentConfig from "./TournamentConfig";
+import TournamentWidget from "./TournamentWidget";
 
 const CURRENCY = "EUR ";
 
@@ -53,7 +55,8 @@ registerWidget({
   type: "giveaway",
   label: "Better Giveaway",
   icon: "🎁",
-  description: "Live giveaway entries and winner data used by the Better Editor widget.",
+  description:
+    "Live giveaway entries and winner data used by the Better Editor widget.",
   category: "better",
   component: GiveawayWidget,
   configPanel: GiveawayConfig,
@@ -78,7 +81,8 @@ registerWidget({
   type: "navbar",
   label: "Better Navbar",
   icon: "🧭",
-  description: "Streamer identity, Spotify, socials, and status data used by the Better Editor navbar.",
+  description:
+    "Streamer identity, Spotify, socials, and status data used by the Better Editor navbar.",
   category: "better",
   component: NavbarWidget,
   configPanel: NavbarConfig,
@@ -115,7 +119,8 @@ registerWidget({
   type: "chat",
   label: "Better Chat",
   icon: "💬",
-  description: "Live Twitch, YouTube, or Kick chat data used by the Better Editor chat.",
+  description:
+    "Live Twitch, YouTube, or Kick chat data used by the Better Editor chat.",
   category: "better",
   component: ChatWidget,
   configPanel: ChatConfig,
@@ -142,7 +147,8 @@ registerWidget({
   type: "rtp_stats",
   label: "Better RTP Stats",
   icon: "📖",
-  description: "Current slot RTP, potential, volatility, and personal best data.",
+  description:
+    "Current slot RTP, potential, volatility, and personal best data.",
   category: "better",
   component: RtpStatsWidget,
   configPanel: RtpStatsConfig,
@@ -169,7 +175,8 @@ registerWidget({
   type: "background",
   label: "Better Background",
   icon: "🖼️",
-  description: "Background source and effects used by the Better Editor overlay.",
+  description:
+    "Background source and effects used by the Better Editor overlay.",
   category: "better",
   component: BackgroundWidget,
   configPanel: BackgroundConfig,
@@ -199,12 +206,15 @@ registerWidget({
   type: "slideshow_frame",
   label: "Slideshow Frame",
   icon: "🎞️",
-  description: "Image and video slideshow frame used by the Better Editor overlay.",
+  description:
+    "Image and video slideshow frame used by the Better Editor overlay.",
   category: "better",
   component: SlideshowFrameWidget,
   configPanel: null,
   styleConfigKey: "displayStyle",
-  styles: [{ id: "better_slideshow_frame", icon: "🎞️", label: "Slideshow Frame" }],
+  styles: [
+    { id: "better_slideshow_frame", icon: "🎞️", label: "Slideshow Frame" },
+  ],
   defaults: {
     displayStyle: "better_slideshow_frame",
     mediaText: "",
@@ -267,5 +277,39 @@ registerWidget({
     betsHistory: [],
     bracketHistory: [],
     bracketUsage: [],
+  },
+});
+
+registerWidget({
+  type: "tournament",
+  label: "Tournament",
+  icon: "🏆",
+  description:
+    "Create brackets, run matches, and show live tournament standings.",
+  category: "better",
+  component: TournamentWidget,
+  configPanel: TournamentConfig,
+  styleConfigKey: "layout",
+  styles: [
+    { id: "grid", icon: "▦", label: "Grid" },
+    { id: "vertical", icon: "↕", label: "Vertical" },
+    { id: "minimal", icon: "−", label: "Minimal" },
+    { id: "arena", icon: "⚔", label: "Arena" },
+    { id: "esports", icon: "🎮", label: "Esports" },
+    { id: "scoreboard", icon: "▤", label: "Scoreboard" },
+  ],
+  defaults: {
+    layout: "grid",
+    tournamentTitle: "Tournament",
+    bracketName: "Tournament",
+    bracketType: "bonus_bo3",
+    bracketPlayerCount: 8,
+    bracketPlayers: [],
+    bracketData: [],
+    bracketPhase: "setup",
+    data: {
+      matches: [],
+      currentMatchIdx: 0,
+    },
   },
 });

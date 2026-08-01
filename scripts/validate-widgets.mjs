@@ -27,6 +27,7 @@ const expectedTypes = [
   "background",
   "slideshow_frame",
   "bets",
+  "tournament",
 ];
 
 const errors = [];
@@ -46,7 +47,6 @@ for (const type of expectedTypes) {
 
 const removedTypes = [
   "current_slot",
-  "tournament",
   "image_slideshow",
   "raid_shoutout",
   "spotify_now_playing",
@@ -65,7 +65,10 @@ const removedTypes = [
 ];
 
 for (const type of removedTypes) {
-  if (builtinSource.includes(`type: "${type}"`) || builtinSource.includes(`type: '${type}'`)) {
+  if (
+    builtinSource.includes(`type: "${type}"`) ||
+    builtinSource.includes(`type: '${type}'`)
+  ) {
     errors.push(`Removed widget type is still registered: ${type}`);
   }
 }

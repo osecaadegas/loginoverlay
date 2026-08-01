@@ -945,7 +945,10 @@ function BetterEditorInlinePreview({ userId, active, onStatusChange }) {
     };
 
     refreshLayout().catch((loadError) => {
-      console.error("[OverlayCenter] Failed to load Better editor preview:", loadError);
+      console.error(
+        "[OverlayCenter] Failed to load Better editor preview:",
+        loadError,
+      );
       if (!alive) return;
       setError("Better editor preview could not load.");
       onStatusChange?.("disconnected");
@@ -953,14 +956,20 @@ function BetterEditorInlinePreview({ userId, active, onStatusChange }) {
 
     const fallbackInterval = window.setInterval(() => {
       refreshLayout().catch((loadError) => {
-        console.error("[OverlayCenter] Failed to refresh Better editor preview:", loadError);
+        console.error(
+          "[OverlayCenter] Failed to refresh Better editor preview:",
+          loadError,
+        );
       });
     }, BETTER_PREVIEW_REFRESH_MS);
 
     const refreshOnVisible = () => {
       if (document.visibilityState === "visible") {
         refreshLayout().catch((loadError) => {
-          console.error("[OverlayCenter] Failed to refresh Better editor preview:", loadError);
+          console.error(
+            "[OverlayCenter] Failed to refresh Better editor preview:",
+            loadError,
+          );
         });
       }
     };
@@ -993,21 +1002,31 @@ function BetterEditorInlinePreview({ userId, active, onStatusChange }) {
       .then((source) => {
         if (!alive || !source?.overlayId) return;
         channel = subscribeToBetterLiveSource(userId, source.overlayId, {
-          onWidgets: () => refreshLiveSource().catch((liveError) => {
-            console.error("[OverlayCenter] Failed to refresh Better preview live data:", liveError);
-          }),
+          onWidgets: () =>
+            refreshLiveSource().catch((liveError) => {
+              console.error(
+                "[OverlayCenter] Failed to refresh Better preview live data:",
+                liveError,
+              );
+            }),
           onTheme: (theme) => {
             setLiveSource((current) => ({ ...current, theme }));
           },
         });
       })
       .catch((liveError) => {
-        console.error("[OverlayCenter] Failed to load Better preview live data:", liveError);
+        console.error(
+          "[OverlayCenter] Failed to load Better preview live data:",
+          liveError,
+        );
       });
 
     const fallbackInterval = window.setInterval(() => {
       refreshLiveSource().catch((liveError) => {
-        console.error("[OverlayCenter] Failed to refresh Better preview live data:", liveError);
+        console.error(
+          "[OverlayCenter] Failed to refresh Better preview live data:",
+          liveError,
+        );
       });
     }, BETTER_PREVIEW_REFRESH_MS);
 
@@ -1498,7 +1517,9 @@ function WidgetDetail({
   };
 
   const status = resolveToolStatus({ type: widgetType, widget, integrations });
-  const useFullWidthConfig = widgetType === "slot_requests";
+  const useFullWidthConfig = ["slot_requests", "tournament"].includes(
+    widgetType,
+  );
   const detailModifier = `oc2-detail--${widgetType.replace(/_/g, "-")}`;
   const showHeaderTools = Boolean(widget);
   const showBonusHuntHeaderCurrency =
