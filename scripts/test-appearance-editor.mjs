@@ -72,10 +72,10 @@ try {
     "Better Editor provides dedicated Tournament appearance controls",
   );
   assert.ok(
-    /tournament:\s*\{[\s\S]*?showBg:\s*true,[\s\S]*?bgColor:\s*"#061126"/.test(
+    /tournament:\s*\{[\s\S]*?showBg:\s*true,[\s\S]*?panelHi:\s*"#0c1c40"[\s\S]*?bgColor:\s*"#0a1734"[\s\S]*?panelLo:\s*"#081228"/.test(
       betterWidgetPackagesSource,
     ),
-    "Better Tournament has a visible canonical main card",
+    "Better Tournament has the exact Bonus Hunt ocean main card",
   );
   assert.ok(
     betterWidgetPackagesSource.includes("const next = { ...c }"),
@@ -118,6 +118,18 @@ try {
     ),
     "Better Giveaway uses the exact Bonus Hunt ocean ice accent",
   );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      '"--frame-bg":\n      "linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)"',
+    ),
+    "Better Bets uses the exact Bonus Hunt ocean panel gradient",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      '"--card-bg": "linear-gradient(180deg,#0d2049,#0a1836)"',
+    ),
+    "Better Bets uses the exact Bonus Hunt ocean card gradient",
+  );
   const chatWidgetSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx",
@@ -145,8 +157,8 @@ try {
     "Slideshow Frame uses the exact Bonus Hunt ocean panel midpoint",
   );
   assert.ok(
-    /slideshow_frame:\s*\{[\s\S]*?frameColor:\s*"#2f63c9"[\s\S]*?accentColor:\s*"#45c8ff"[\s\S]*?backgroundColor:\s*"#0a1734"/.test(
-      betterWidgetPackagesSource,
+    betterWidgetPackagesSource.includes(
+      'frameColor: "#2f63c9",\n    accentColor: "#45c8ff",\n    backgroundColor: "#0a1734"',
     ),
     "Slideshow Frame first-add defaults use the Bonus Hunt line, ice, and panel colors",
   );
@@ -156,7 +168,7 @@ try {
     navbar: "#061126",
     chat: "#0a1734",
     rtp_stats: "#061126",
-    tournament: "#061126",
+    tournament: "#0a1734",
     slideshow_frame: "#0a1734",
   })) {
     const widgetDefaults = new RegExp(

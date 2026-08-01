@@ -375,52 +375,48 @@ function safeArray(value) {
 }
 
 const BETTER_BETS_CARD_COLORS = [
-  { accent: "#2fa1ff", accent2: "#19e3ff" },
-  { accent: "#a06bff", accent2: "#ff4fd8" },
-  { accent: "#22e0a6", accent2: "#8bf06b" },
-  { accent: "#ff9d42", accent2: "#ff4d5e" },
-  { accent: "#ff5c8a", accent2: "#ffb84d" },
-  { accent: "#ffd542", accent2: "#6ee86e" },
+  { accent: "#45c8ff", accent2: "#1e5ad6" },
+  { accent: "#2f63c9", accent2: "#4aa0ff" },
+  { accent: "#45c8ff", accent2: "#2a55ad" },
+  { accent: "#1e5ad6", accent2: "#45c8ff" },
+  { accent: "#4aa0ff", accent2: "#2f63c9" },
+  { accent: "#2a55ad", accent2: "#45c8ff" },
 ];
 
 const BETTER_BETS_THEME_VARS = {
   neon: {
-    "--ui-accent": "#1e9bff",
-    "--text-bright": "#f2f9ff",
-    "--text-dim": "#9fc9f5",
-    "--stage-bg":
-      "radial-gradient(circle at 50% 47%,rgba(0,86,207,0.19),transparent 37%),linear-gradient(135deg,#00040e,#020818 47%,#000308)",
-    "--frame-border": "#1385e9",
+    "--ui-accent": "#45c8ff",
+    "--text-bright": "#eef6ff",
+    "--text-dim": "#6d8cc4",
+    "--stage-bg": "transparent",
+    "--frame-border": "color-mix(in srgb,#2f63c9 55%,transparent)",
     "--frame-bg":
-      "linear-gradient(90deg,rgba(0,116,230,0.11),transparent 17%,transparent 83%,rgba(0,116,230,0.11)),linear-gradient(155deg,#031a49,#020e2f 26%,#010818)",
+      "linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)",
     "--frame-shadow":
-      "0 0 0 1px rgba(4,35,93,0.9) inset,0 0 0 3px rgba(0,42,109,0.44),0 0 calc(11px * var(--glow-mult)) rgba(0,127,255,0.94),0 0 calc(27px * var(--glow-mult)) rgba(0,51,168,0.76),inset 0 0 23px rgba(0,100,255,0.17)",
-    "--bracket-color": "#6fb8ff",
-    "--bracket-filter": "drop-shadow(0 0 3px #0a89ff)",
-    "--sheen-color": "rgba(166,226,255,0.075)",
-    "--title-glow": "0 0 7px rgba(102,193,255,0.95),0 1px 2px rgba(0,0,0,0.9)",
-    "--meta-border": "#073b91",
-    "--meta-bg":
-      "linear-gradient(180deg,rgba(3,27,77,0.94),rgba(1,13,43,0.91))",
+      "0 0 0 1px rgba(0,0,0,0.55),inset 0 1px 0 color-mix(in srgb,#9dbdf2 12%,transparent)",
+    "--bracket-color": "#2f63c9",
+    "--bracket-filter": "drop-shadow(0 0 3px color-mix(in srgb,#45c8ff 40%,transparent))",
+    "--sheen-color": "color-mix(in srgb,#9dbdf2 8%,transparent)",
+    "--title-glow": "0 1px 3px rgba(0,0,0,0.9)",
+    "--meta-border": "color-mix(in srgb,#2f63c9 55%,transparent)",
+    "--meta-bg": "linear-gradient(180deg,#0d2049,#0a1836)",
     "--meta-shadow":
-      "inset 0 1px 7px rgba(15,123,255,0.19),0 1px 7px rgba(0,55,158,0.35)",
-    "--meta-divider": "rgba(16,83,176,0.55)",
-    "--card-frame-mix": "#0a3a75",
-    "--card-bg":
-      "radial-gradient(ellipse at 35% 110%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 40%),linear-gradient(130deg,#031c52,#010a24 62%,#021338)",
+      "inset 0 1px 0 color-mix(in srgb,#9dbdf2 10%,transparent),0 2px 8px rgba(0,0,0,0.5)",
+    "--meta-divider": "color-mix(in srgb,#2f63c9 45%,transparent)",
+    "--card-frame-mix": "#2f63c9",
+    "--card-bg": "linear-gradient(180deg,#0d2049,#0a1836)",
     "--card-shadow":
-      "inset 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb,var(--accent) 26%,transparent),inset 0 1px 0 rgba(152,217,255,0.12),0 0 calc(7px * var(--glow-mult)) color-mix(in srgb,var(--accent) 55%,transparent)",
+      "inset 0 1px 0 color-mix(in srgb,#9dbdf2 10%,transparent),0 2px 8px rgba(0,0,0,0.5)",
     "--card-hover-shadow":
-      "inset 0 0 calc(19px * var(--glow-mult)) color-mix(in srgb,var(--accent) 32%,transparent),0 0 calc(13px * var(--glow-mult)) color-mix(in srgb,var(--accent) 80%,transparent)",
+      "inset 0 1px 0 color-mix(in srgb,#9dbdf2 14%,transparent),0 0 calc(10px * var(--glow-mult)) color-mix(in srgb,#45c8ff 35%,transparent)",
     "--card-full-shadow":
       "inset 0 0 20px color-mix(in srgb,var(--accent) 22%,transparent),0 0 6px color-mix(in srgb,var(--accent) 45%,transparent)",
-    "--card-topline": "rgba(169,225,255,0.75)",
-    "--badge-bg":
-      "radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--accent) 75%,white 5%),color-mix(in srgb,var(--accent) 40%,#05245c 60%) 70%)",
+    "--card-topline": "color-mix(in srgb,#9dbdf2 45%,transparent)",
+    "--badge-bg": "linear-gradient(140deg,#45c8ff,#1e5ad6)",
     "--badge-shadow":
       "0 0 0 2px rgba(2,15,40,0.6),0 0 calc(8px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,0.55)",
     "--hard-shadow": "0 1px 3px rgba(0,0,0,0.95)",
-    "--soft-glow": "0 0 5px rgba(113,196,255,0.75),0 1px 2px rgba(0,0,0,0.85)",
+    "--soft-glow": "0 1px 2px rgba(0,0,0,0.85)",
     "--detail-glow":
       "0 0 calc(8px * var(--glow-mult)) color-mix(in srgb,var(--accent) 80%,transparent)",
     "--scrim-bg":
@@ -428,7 +424,7 @@ const BETTER_BETS_THEME_VARS = {
     "--glint-bg":
       "linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 60%,white 40%) 47%,transparent)",
     "--glint-glow": "0 0 calc(7px * var(--glow-mult)) 2px var(--accent)",
-    "--footer-rule": "rgba(8,73,164,0.56)",
+    "--footer-rule": "color-mix(in srgb,#2f63c9 45%,transparent)",
   },
   metallic: {
     "--ui-accent": "#a9bdd8",

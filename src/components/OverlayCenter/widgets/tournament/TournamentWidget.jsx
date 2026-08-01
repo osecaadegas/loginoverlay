@@ -135,6 +135,9 @@ function TournamentWidget({ config, theme }) {
           elementToken("container", "background", widgetToken("surface")),
       )
     : "transparent";
+  const containerBackground = showBg
+    ? `linear-gradient(180deg, ${c.panelHi || "#0c1c40"} 0%, ${bgColor} 55%, ${c.panelLo || "#081228"} 100%)`
+    : "transparent";
   const cardBg = subValue(
     c,
     "matchCard",
@@ -497,7 +500,7 @@ function TournamentWidget({ config, theme }) {
           width: "100%",
           height: "100%",
           fontFamily,
-          background: bgColor,
+          background: containerBackground,
           borderRadius: cssLength(borderRadius),
           border: `${cssLength(borderWidth)} solid ${borderColor}`,
           padding: cssLength(mainCardPadding),
@@ -3650,7 +3653,7 @@ function TournamentWidget({ config, theme }) {
         width: "100%",
         height: "100%",
         fontFamily,
-        background: bgColor,
+        background: containerBackground,
         borderRadius: cssLength(borderRadius),
         border: `${cssLength(borderWidth)} solid ${borderColor}`,
         padding: cssLength(mainCardPadding),
