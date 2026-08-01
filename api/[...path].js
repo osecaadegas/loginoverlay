@@ -1,34 +1,40 @@
-import analyticsHandler from './_lib/routes/analytics.js';
-import autoDrawWinnersHandler from './_lib/routes/auto-draw-winners.js';
-import affiliateHandler from './_lib/routes/affiliate.js';
-import bettingHandler from './_lib/routes/betting.js';
-import chatHandler from './_lib/routes/chat.js';
-import connectFourHandler from './_lib/routes/connect-four.js';
-import playerSubscriptionHandler from './_lib/routes/player-subscription.js';
-import premiumHandler from './_lib/routes/premium.js';
-import serviceReadinessHandler from './_lib/routes/service-readiness.js';
-import streamerDataHandler from './_lib/streamer-data.js';
+import analyticsHandler from "./_lib/routes/analytics.js";
+import autoDrawWinnersHandler from "./_lib/routes/auto-draw-winners.js";
+import affiliateHandler from "./_lib/routes/affiliate.js";
+import bettingHandler from "./_lib/routes/betting.js";
+import chatHandler from "./_lib/routes/chat.js";
+import connectFourHandler from "./_lib/routes/connect-four.js";
+import connectFourTurnHandler from "./_lib/routes/connect-four-turn.js";
+import createCheckoutSessionHandler from "./_lib/routes/create-checkout-session.js";
+import playerSubscriptionHandler from "./_lib/routes/player-subscription.js";
+import premiumHandler from "./_lib/routes/premium.js";
+import serviceReadinessHandler from "./_lib/routes/service-readiness.js";
+import streamerDataHandler from "./_lib/streamer-data.js";
 
 const ROUTES = {
   affiliate: affiliateHandler,
   analytics: analyticsHandler,
-  'auto-draw-winners': autoDrawWinnersHandler,
+  "auto-draw-winners": autoDrawWinnersHandler,
   betting: bettingHandler,
   chat: chatHandler,
-  'connect-four': connectFourHandler,
-  'player-subscription': playerSubscriptionHandler,
+  "connect-four": connectFourHandler,
+  "connect-four-turn": connectFourTurnHandler,
+  "create-checkout-session": createCheckoutSessionHandler,
+  "player-subscription": playerSubscriptionHandler,
   premium: premiumHandler,
-  'service-readiness': serviceReadinessHandler,
-  'streamer-data': streamerDataHandler,
+  "service-readiness": serviceReadinessHandler,
+  "streamer-data": streamerDataHandler,
 };
 
 function getRouteName(req) {
   const dynamicPath = req.query?.path;
   if (Array.isArray(dynamicPath) && dynamicPath[0]) return dynamicPath[0];
-  if (typeof dynamicPath === 'string' && dynamicPath) return dynamicPath.split('/')[0];
+  if (typeof dynamicPath === "string" && dynamicPath)
+    return dynamicPath.split("/")[0];
 
-  const pathname = new URL(req.url || '/', 'https://streamerscenter.com').pathname;
-  return pathname.replace(/^\/api\/?/, '').split('/')[0];
+  const pathname = new URL(req.url || "/", "https://streamerscenter.com")
+    .pathname;
+  return pathname.replace(/^\/api\/?/, "").split("/")[0];
 }
 
 export default async function handler(req, res) {
@@ -36,7 +42,7 @@ export default async function handler(req, res) {
   const routeHandler = ROUTES[routeName];
 
   if (!routeHandler) {
-    return res.status(404).json({ error: 'API route not found' });
+    return res.status(404).json({ error: "API route not found" });
   }
 
   return routeHandler(req, res);

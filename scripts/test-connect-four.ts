@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import {
   createConnectFourBoard,
   dropConnectFourPiece,
@@ -201,6 +201,25 @@ assert.match(deadlineMigration, /completion_reason = 'timeout'/);
 assert.match(
   deadlineMigration,
   /REVOKE ALL ON FUNCTION public\.process_connect_four_turn_deadline\(uuid\) FROM PUBLIC/,
+);
+
+const apiRouter = readFileSync(
+  new URL("../api/[...path].js", import.meta.url),
+  "utf8",
+);
+assert.match(apiRouter, /"connect-four-turn": connectFourTurnHandler/);
+assert.equal(
+  existsSync(new URL("../api/connect-four-turn.js", import.meta.url)),
+  false,
+  "the deadline endpoint must remain behind the catch-all function",
+);
+const topLevelApiFunctions = readdirSync(
+  new URL("../api/", import.meta.url),
+  { withFileTypes: true },
+).filter((entry) => entry.isFile() && entry.name.endsWith(".js"));
+assert.ok(
+  topLevelApiFunctions.length <= 12,
+  "Vercel Hobby deployments support at most 12 serverless functions",
 );
 
 console.log("connect four engine and parser tests passed");

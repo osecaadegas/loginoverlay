@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   announceConnectFourState,
   settleConnectFourOperations,
-} from "./_lib/connect-four-runtime.js";
+} from "../connect-four-runtime.js";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
