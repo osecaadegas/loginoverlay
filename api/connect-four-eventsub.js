@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import {
+  announceConnectFourState,
   parseConnectFourCommand,
   settleConnectFourOperations,
   verifyTwitchEventSubSignature,
@@ -9,7 +10,8 @@ export const config = { api: { bodyParser: false } };
 
 async function readRawBody(req) {
   const chunks = [];
-  for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  for await (const chunk of req)
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   return Buffer.concat(chunks);
 }
 
@@ -17,10 +19,13 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
   const secret = process.env.CONNECT_FOUR_EVENTSUB_SECRET;
-  if (!secret || secret.length < 10 || secret.length > 100) return res.status(503).end();
+  if (!secret || secret.length < 10 || secret.length > 100)
+    return res.status(503).end();
 
   const rawBody = await readRawBody(req);
-  if (!verifyTwitchEventSubSignature({ headers: req.headers, rawBody, secret })) {
+  if (
+    !verifyTwitchEventSubSignature({ headers: req.headers, rawBody, secret })
+  ) {
     return res.status(403).end();
   }
 
@@ -39,10 +44,17 @@ export default async function handler(req, res) {
     return res.status(200).send(challenge);
   }
   if (messageType === "revocation") {
-    console.warn("[ConnectFour] EventSub revoked", payload.subscription?.status, payload.subscription?.condition);
+    console.warn(
+      "[ConnectFour] EventSub revoked",
+      payload.subscription?.status,
+      payload.subscription?.condition,
+    );
     return res.status(204).end();
   }
-  if (messageType !== "notification" || payload.subscription?.type !== "channel.chat.message") {
+  if (
+    messageType !== "notification" ||
+    payload.subscription?.type !== "channel.chat.message"
+  ) {
     return res.status(204).end();
   }
 
@@ -68,7 +80,15 @@ export default async function handler(req, res) {
       p_column: parsedCommand.type === "drop" ? parsedCommand.column : null,
     });
     if (error) throw error;
+    if (data?.duplicate || !data?.ok) return res.status(204).end();
     await settleConnectFourOperations(supabase, data?.operations);
+    await announceConnectFourState(
+      supabase,
+      data?.matchId,
+      parsedCommand.type,
+    ).catch((chatError) =>
+      console.error("[ConnectFour] Chat announcement failed", chatError),
+    );
     return res.status(204).end();
   } catch (error) {
     console.error("[ConnectFour] Event processing failed", error);

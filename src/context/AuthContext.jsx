@@ -1,24 +1,24 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../config/supabaseClient';
-import { withTimeout } from '../utils/asyncTimeout';
-import { getSessionWithFallback } from '../utils/authSession';
-
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../config/supabaseClient";
+import { withTimeout } from "../utils/asyncTimeout";
+import { getSessionWithFallback } from "../utils/authSession";
 
 const AuthContext = createContext({});
-const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
-const VALID_EXPERIENCES = new Set(['player', 'streamer']);
+const AUDIENCE_STORAGE_KEY = "streamerscenter:selectedAudience";
+const VALID_EXPERIENCES = new Set(["player", "streamer"]);
 
 async function connectTwitchChat(session) {
   if (
-    session?.user?.app_metadata?.provider !== 'twitch' ||
+    session?.user?.app_metadata?.provider !== "twitch" ||
     !session?.access_token ||
     !session?.provider_token
-  ) return;
-  const response = await fetch('/api/connect-four', {
-    method: 'POST',
+  )
+    return;
+  const response = await fetch("/api/connect-four", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ providerToken: session.provider_token }),
   });
@@ -33,7 +33,7 @@ async function connectTwitchChat(session) {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -49,8 +49,13 @@ export const AuthProvider = ({ children }) => {
         const storedExperience = localStorage.getItem(AUDIENCE_STORAGE_KEY);
         const profileExperience = authUser.user_metadata?.selected_experience;
 
-        if (VALID_EXPERIENCES.has(storedExperience) && storedExperience !== profileExperience) {
-          await supabase.auth.updateUser({ data: { selected_experience: storedExperience } });
+        if (
+          VALID_EXPERIENCES.has(storedExperience) &&
+          storedExperience !== profileExperience
+        ) {
+          await supabase.auth.updateUser({
+            data: { selected_experience: storedExperience },
+          });
           return;
         }
 
@@ -58,7 +63,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem(AUDIENCE_STORAGE_KEY, profileExperience);
         }
       } catch (error) {
-        console.warn('[Auth] Failed to sync selected experience:', error);
+        console.warn("[Auth] Failed to sync selected experience:", error);
       }
     };
 
@@ -67,9 +72,9 @@ export const AuthProvider = ({ children }) => {
       withTimeout(
         syncExperiencePreference(authUser),
         5000,
-        'Experience preference sync'
+        "Experience preference sync",
       ).catch((error) => {
-        console.warn('[Auth] Failed to sync selected experience:', error);
+        console.warn("[Auth] Failed to sync selected experience:", error);
       });
     };
 
@@ -77,14 +82,17 @@ export const AuthProvider = ({ children }) => {
 
     const initializeSession = async () => {
       try {
-        const session = await getSessionWithFallback({ timeoutMs: 12000, label: 'Auth session check' });
+        const session = await getSessionWithFallback({
+          timeoutMs: 12000,
+          label: "Auth session check",
+        });
         syncExperiencePreferenceInBackground(session?.user);
         connectTwitchChat(session).catch((error) => {
-          console.warn('[Auth] Twitch chat connection failed:', error);
+          console.warn("[Auth] Twitch chat connection failed:", error);
         });
         if (mounted) setUser(session?.user ?? null);
       } catch (error) {
-        console.warn('[Auth] Session unavailable:', error);
+        console.warn("[Auth] Session unavailable:", error);
         if (mounted) setUser(null);
       } finally {
         if (mounted) setLoading(false);
@@ -94,18 +102,20 @@ export const AuthProvider = ({ children }) => {
     initializeSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (_event === 'SIGNED_IN' && session?.user) {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (_event === "SIGNED_IN" && session?.user) {
         syncExperiencePreferenceInBackground(session.user);
         connectTwitchChat(session).catch((error) => {
-          console.warn('[Auth] Twitch chat connection failed:', error);
+          console.warn("[Auth] Twitch chat connection failed:", error);
         });
       }
       setUser(session?.user ?? null);
-      
-      if (_event === 'SIGNED_IN' && session?.user) {
+
+      if (_event === "SIGNED_IN" && session?.user) {
         // User logged in
-      } else if (_event === 'SIGNED_OUT') {
+      } else if (_event === "SIGNED_OUT") {
         // User logged out
       }
     });
@@ -115,7 +125,7 @@ export const AuthProvider = ({ children }) => {
       subscription.unsubscribe();
     };
   }, []);
-  
+
   const signUp = async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -137,38 +147,39 @@ export const AuthProvider = ({ children }) => {
     return { error };
   };
 
-  const getOAuthRedirectTo = (returnTo = '/') => {
-    const safeReturnTo = typeof returnTo === 'string' && returnTo.startsWith('/') ? returnTo : '/';
+  const getOAuthRedirectTo = (returnTo = "/") => {
+    const safeReturnTo =
+      typeof returnTo === "string" && returnTo.startsWith("/") ? returnTo : "/";
     return `${window.location.origin}/login?redirectTo=${encodeURIComponent(safeReturnTo)}`;
   };
 
-  const signInWithGoogle = async (returnTo = '/') => {
+  const signInWithGoogle = async (returnTo = "/") => {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: getOAuthRedirectTo(returnTo)
-      }
-    });
-    return { data, error };
-  };
-
-  const signInWithTwitch = async (returnTo = '/') => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'twitch',
+      provider: "google",
       options: {
         redirectTo: getOAuthRedirectTo(returnTo),
-        scopes: 'user:read:chat user:bot channel:bot',
-      }
+      },
     });
     return { data, error };
   };
 
-  const signInWithDiscord = async (returnTo = '/') => {
+  const signInWithTwitch = async (returnTo = "/") => {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
+      provider: "twitch",
       options: {
-        redirectTo: getOAuthRedirectTo(returnTo)
-      }
+        redirectTo: getOAuthRedirectTo(returnTo),
+        scopes: "user:read:chat user:bot channel:bot",
+      },
+    });
+    return { data, error };
+  };
+
+  const signInWithDiscord = async (returnTo = "/") => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: {
+        redirectTo: getOAuthRedirectTo(returnTo),
+      },
     });
     return { data, error };
   };
@@ -184,9 +195,5 @@ export const AuthProvider = ({ children }) => {
     signInWithDiscord,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

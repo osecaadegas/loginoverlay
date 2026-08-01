@@ -295,6 +295,10 @@ function App() {
                       element={<BetterObsOverlay />}
                     />
                     <Route
+                      path="/obs/connect-four/:publicOverlayId/:instanceId"
+                      element={<BetterObsOverlay />}
+                    />
+                    <Route
                       path="/developer"
                       element={
                         <ProtectedAdminRoute>

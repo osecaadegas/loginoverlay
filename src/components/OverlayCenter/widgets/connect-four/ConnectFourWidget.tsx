@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../../config/supabaseClient";
 import {
-  createConnectFourBoard,
   normalizeConnectFourBoard,
   type ConnectFourBoard,
 } from "../../../../features/connectFour/engine";
@@ -19,38 +18,49 @@ interface ConnectFourState {
   move_count: number;
   last_move: { row: number; column: number; player: 1 | 2 } | null;
   completion_reason: string | null;
+  expires_at: string | null;
 }
 
 interface ConnectFourWidgetProps {
   userId?: string;
 }
 
+function stringValue(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
 function normalizeState(value: Record<string, unknown>): ConnectFourState {
   return {
-    match_id: String(value.match_id || ""),
-    status: String(value.status || "waiting"),
+    match_id: stringValue(value.match_id),
+    status: stringValue(value.status, "waiting"),
     wager: Number(value.wager) || 0,
     board: normalizeConnectFourBoard(value.board),
-    player_one_display_name: String(value.player_one_display_name || "Player 1"),
-    player_two_display_name: value.player_two_display_name
-      ? String(value.player_two_display_name)
-      : null,
-    current_player: value.current_player === 1 || value.current_player === 2
-      ? value.current_player
-      : null,
+    player_one_display_name: stringValue(
+      value.player_one_display_name,
+      "Player 1",
+    ),
+    player_two_display_name: stringValue(value.player_two_display_name) || null,
+    current_player:
+      value.current_player === 1 || value.current_player === 2
+        ? value.current_player
+        : null,
     winner: value.winner === 1 || value.winner === 2 ? value.winner : null,
     move_count: Number(value.move_count) || 0,
-    last_move: value.last_move && typeof value.last_move === "object"
-      ? value.last_move as ConnectFourState["last_move"]
-      : null,
-    completion_reason: value.completion_reason ? String(value.completion_reason) : null,
+    last_move:
+      value.last_move && typeof value.last_move === "object"
+        ? (value.last_move as ConnectFourState["last_move"])
+        : null,
+    completion_reason: stringValue(value.completion_reason) || null,
+    expires_at: stringValue(value.expires_at) || null,
   };
 }
 
 function getStatus(state: ConnectFourState | null): string {
   if (!state) return "!connect4 start <points>";
-  if (state.status === "funding_start" || state.status === "funding_join") return "Confirming points";
-  if (state.status === "waiting") return `Join for ${state.wager.toLocaleString()} points`;
+  if (state.status === "funding_start" || state.status === "funding_join")
+    return "Confirming points";
+  if (state.status === "waiting")
+    return `Join for ${state.wager.toLocaleString()} points`;
   if (state.status === "active" && state.current_player) {
     return `${state.current_player === 1 ? state.player_one_display_name : state.player_two_display_name}'s turn`;
   }
@@ -63,7 +73,9 @@ function getStatus(state: ConnectFourState | null): string {
   return "Game complete";
 }
 
-export default function ConnectFourWidget({ userId }: ConnectFourWidgetProps) {
+export default function ConnectFourWidget({
+  userId,
+}: Readonly<ConnectFourWidgetProps>) {
   const [state, setState] = useState<ConnectFourState | null>(null);
 
   useEffect(() => {
@@ -72,11 +84,14 @@ export default function ConnectFourWidget({ userId }: ConnectFourWidgetProps) {
 
     supabase
       .from("connect_four_public_state")
-      .select("match_id,status,wager,board,player_one_display_name,player_two_display_name,current_player,winner,move_count,last_move,completion_reason")
+      .select(
+        "match_id,status,wager,board,player_one_display_name,player_two_display_name,current_player,winner,move_count,last_move,completion_reason,expires_at",
+      )
       .eq("streamer_id", userId)
       .maybeSingle()
       .then(({ data, error }) => {
-        if (error) console.warn("[ConnectFour] State load failed", error.message);
+        if (error)
+          console.warn("[ConnectFour] State load failed", error.message);
         if (active && data) setState(normalizeState(data));
       });
 
@@ -93,6 +108,8 @@ export default function ConnectFourWidget({ userId }: ConnectFourWidgetProps) {
         (payload) => {
           if (active && payload.new && Object.keys(payload.new).length > 0) {
             setState(normalizeState(payload.new));
+          } else if (active && payload.eventType === "DELETE") {
+            setState(null);
           }
         },
       )
@@ -104,9 +121,40 @@ export default function ConnectFourWidget({ userId }: ConnectFourWidgetProps) {
     };
   }, [userId]);
 
-  const board = state?.board || createConnectFourBoard();
-  const playerOne = state?.player_one_display_name || "Player 1";
-  const playerTwo = state?.player_two_display_name || "Player 2";
+  useEffect(() => {
+    if (state?.status !== "active" || !state.expires_at) return undefined;
+    const expiresAt = Date.parse(state.expires_at);
+    if (!Number.isFinite(expiresAt)) return undefined;
+
+    const processDeadline = () => {
+      fetch("/api/connect-four-turn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId: state.match_id }),
+      }).catch((error) =>
+        console.warn("[ConnectFour] Deadline check failed", error),
+      );
+    };
+    const reminderTimer = window.setTimeout(
+      processDeadline,
+      Math.max(0, expiresAt - Date.now() - 10_000),
+    );
+    const expiryTimer = window.setTimeout(
+      processDeadline,
+      Math.max(0, expiresAt - Date.now() + 250),
+    );
+
+    return () => {
+      window.clearTimeout(reminderTimer);
+      window.clearTimeout(expiryTimer);
+    };
+  }, [state?.expires_at, state?.match_id, state?.status]);
+
+  if (!state) return null;
+
+  const board = state.board;
+  const playerOne = state.player_one_display_name;
+  const playerTwo = state.player_two_display_name || "Waiting for player";
 
   return (
     <section className="connect-four-widget" aria-label="Chat Connect 4">
@@ -118,13 +166,22 @@ export default function ConnectFourWidget({ userId }: ConnectFourWidgetProps) {
         {state?.wager ? <b>{state.wager.toLocaleString()} PTS</b> : null}
       </header>
 
-      <div className="connect-four-board" role="grid" aria-label="Connect 4 board">
+      <div
+        className="connect-four-board"
+        role="grid"
+        aria-label="Connect 4 board"
+      >
         {board.flatMap((row, rowIndex) =>
           row.map((cell, columnIndex) => {
-            const isLastMove = state?.last_move?.row === rowIndex
-              && state.last_move.column === columnIndex;
+            const isLastMove =
+              state?.last_move?.row === rowIndex &&
+              state.last_move.column === columnIndex;
             return (
-              <div className="connect-four-cell" role="gridcell" key={`${rowIndex}-${columnIndex}`}>
+              <div
+                className="connect-four-cell"
+                role="gridcell"
+                key={`${rowIndex}-${columnIndex}`}
+              >
                 {cell !== 0 ? (
                   <span
                     key={`${state?.match_id}-${state?.move_count}-${rowIndex}-${columnIndex}`}
@@ -139,10 +196,12 @@ export default function ConnectFourWidget({ userId }: ConnectFourWidgetProps) {
 
       <footer className="connect-four-players">
         <span className={state?.current_player === 1 ? "is-current" : ""}>
-          <i className="connect-four-dot connect-four-dot--p1" />{playerOne}
+          <i className="connect-four-dot connect-four-dot--p1" />
+          {playerOne}
         </span>
         <span className={state?.current_player === 2 ? "is-current" : ""}>
-          <i className="connect-four-dot connect-four-dot--p2" />{playerTwo}
+          <i className="connect-four-dot connect-four-dot--p2" />
+          {playerTwo}
         </span>
       </footer>
     </section>

@@ -496,6 +496,12 @@ const CONTROL_SCHEMAS = {
 };
 
 const SIZE_CONSTRAINTS = {
+  connect_four: {
+    minWidth: 280,
+    minHeight: 360,
+    maxWidth: 960,
+    maxHeight: 1080,
+  },
   tournament: {
     minWidth: 320,
     minHeight: 220,
@@ -858,9 +864,7 @@ function migrateLegacyShoutoutConfig(widgetType, rawConfig) {
     secondaryColor: "#1385e9",
     backgroundColor: "#081228",
     mutedColor:
-      rawConfig.mutedColor === "#a5b4c7"
-        ? "#8baacf"
-        : rawConfig.mutedColor,
+      rawConfig.mutedColor === "#a5b4c7" ? "#8baacf" : rawConfig.mutedColor,
     borderRadius: rawConfig.borderRadius === 16 ? 12 : rawConfig.borderRadius,
     borderWidth: rawConfig.borderWidth === 2 ? 1 : rawConfig.borderWidth,
     glowIntensity:
