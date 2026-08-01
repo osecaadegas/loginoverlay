@@ -1715,16 +1715,21 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
 
   const renderSocialsSection = ({ compact = false } = {}) => {
     if (!c.showSocials || socialItems.length === 0) return null;
-    const socialPillHeight = compact
-      ? Math.max(28, barHeight * 0.62)
-      : Math.max(28, barHeight * 0.58);
+    const socialIconSize = Math.max(
+      compact ? 18 : 20,
+      Math.min(compact ? 22 : 24, barHeight * (compact ? 0.4 : 0.44)),
+    );
+    const socialHandleSize = Math.max(
+      compact ? 12 : 13,
+      Math.min(compact ? 16 : 17, fontSize * (compact ? 1 : 1.05)),
+    );
     return (
       <div
         {...partAttrs("socials")}
         style={withElementOffset(c, "socials", {
           display: "flex",
           alignItems: "center",
-          gap: compact ? 5 : 6,
+          gap: compact ? 12 : 16,
           minWidth: 0,
           flexShrink: 0,
         })}
@@ -1740,24 +1745,23 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
               rel="noreferrer"
               title={`${item.label}: ${item.value}`}
               style={{
-                height: socialPillHeight,
-                minWidth: socialPillHeight,
-                maxWidth: 170,
+                minWidth: 0,
+                maxWidth: 210,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
+                gap: compact ? 7 : 9,
                 boxSizing: "border-box",
-                border: `1px solid ${alphaColor(item.color, 0.68)}`,
-                borderRadius: 999,
-                padding: compact ? "0 10px" : "0 11px",
+                border: 0,
+                borderRadius: 0,
+                padding: compact ? "3px 2px" : "4px 3px",
                 color: textColor,
-                background: `linear-gradient(135deg,${alphaColor(item.color, 0.28)},${alphaColor(item.color, 0.12)})`,
-                boxShadow: `inset 0 1px 0 ${alphaColor(item.color, 0.18)},0 0 10px ${alphaColor(item.color, 0.22)}`,
+                background: "transparent",
+                boxShadow: "none",
                 fontFamily,
-                fontSize: Math.max(10, fontSize * (compact ? 0.82 : 0.78)),
+                fontSize: socialHandleSize,
                 fontWeight: 950,
-                letterSpacing: "0.04em",
+                letterSpacing: "0.02em",
                 lineHeight: 1,
                 textDecoration: "none",
                 textTransform: "uppercase",
@@ -1768,8 +1772,13 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
             >
               <SocialIcon
                 aria-hidden="true"
-                size={compact ? 13 : 14}
-                style={{ color: item.color, flex: "0 0 auto" }}
+                size={socialIconSize}
+                strokeWidth={2.6}
+                style={{
+                  color: item.color,
+                  flex: "0 0 auto",
+                  filter: `drop-shadow(0 0 5px ${alphaColor(item.color, 0.72)})`,
+                }}
               />
               <span
                 style={{
@@ -1777,6 +1786,7 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   color: textColor,
+                  textShadow: `0 0 8px ${alphaColor(item.color, 0.5)}, 0 1px 2px rgba(0,0,0,0.9)`,
                 }}
               >
                 {handle}
