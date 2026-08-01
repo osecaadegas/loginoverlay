@@ -1562,6 +1562,8 @@ function BetterStyleSheet() {
       .better-hunt-result-head{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
       .better-hunt-result-body{gap:2px;align-items:stretch}
       .better-hunt-result-stats{align-content:center}
+      .better-hunt-result--best .better-hunt-result-stats,.better-hunt-result--best .better-hunt-result-row{width:100%;justify-content:end;justify-items:end;text-align:right}
+      .better-hunt-result--worst .better-hunt-result-stats,.better-hunt-result--worst .better-hunt-result-row{width:100%;justify-content:start;justify-items:start;text-align:left}
       .better-hunt-result--best .better-hunt-result-body{grid-template-columns:minmax(0,1fr) 82px}
       .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:82px minmax(0,1fr)}
       .better-hunt-header{position:relative;justify-content:center;gap:10px;min-height:calc(var(--bh-avatar) + 6px)}
