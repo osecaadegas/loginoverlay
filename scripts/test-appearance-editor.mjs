@@ -755,6 +755,7 @@ try {
     betterWidgetStylesSource.includes(
       '"Stop",\n          stopKnown ? formatMoney(stopValue, money) : "-"',
     ) &&
+      !betterWidgetStylesSource.includes("          Shield,") &&
       betterWidgetStylesSource.includes(
         'displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-"',
       ) &&

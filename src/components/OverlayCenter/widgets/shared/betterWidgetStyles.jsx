@@ -3296,7 +3296,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         {renderMainstreamStat(
           "Stop",
           stopKnown ? formatMoney(stopValue, money) : "-",
-          Shield,
+          DollarSign,
         )}
       </div>
       <div className="better-hunt-main-count">
