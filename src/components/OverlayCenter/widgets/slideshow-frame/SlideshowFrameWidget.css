@@ -1,11 +1,11 @@
 .better-slideshow-frame {
   --bsf-frame: #20d8ff;
   --bsf-accent: #ffb020;
-  --bsf-bg: #020817;
-  --bsf-radius: 18px;
-  --bsf-border: 2px;
-  --bsf-pad: 12px;
-  --bsf-glow: 0.85;
+  --bsf-bg: #061126;
+  --bsf-radius: 12px;
+  --bsf-border: 1px;
+  --bsf-pad: 8px;
+  --bsf-glow: 0.35;
   --bsf-transition: 650ms;
   position: relative;
   width: 100%;

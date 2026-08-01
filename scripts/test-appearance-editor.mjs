@@ -100,6 +100,50 @@ try {
     ),
     "Bonus Hunt best/worst cards remain visible long enough to read",
   );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      '"--w-bg": c.bgColor || "#061126"',
+    ),
+    "Better Giveaway routes its editable background color into the rendered surface",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      'c.accentColor || `hsl(${accentHue} ${accentSat}% ${accentLight}%)`',
+    ),
+    "Better Giveaway routes its editable accent color into the rendered surface",
+  );
+  const chatWidgetSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    chatWidgetSource.includes(
+      "color-mix(in srgb, ${panel} 92%, #0a1a33)",
+    ),
+    "Better Chat retains the shared navy panel instead of darkening it to black",
+  );
+  const slideshowWidgetSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/slideshow-frame/SlideshowFrameWidget.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    slideshowWidgetSource.includes(
+      '"--bsf-bg": c.backgroundColor || "#061126"',
+    ),
+    "Slideshow Frame uses the shared navy first-add surface",
+  );
+  assert.ok(
+    /slideshow_frame:\s*\{[\s\S]*?backgroundColor:\s*"#061126"[\s\S]*?borderWidth:\s*1,[\s\S]*?glow:\s*35/.test(
+      betterWidgetPackagesSource,
+    ),
+    "Slideshow Frame first-add defaults use the restrained standard frame",
+  );
   for (const widgetType of [
     "bonus_hunt",
     "giveaway",

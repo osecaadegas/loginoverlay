@@ -92,11 +92,11 @@ export default function SlideshowFrameWidget({ config }) {
   const rootStyle = {
     "--bsf-frame": c.frameColor || "#20d8ff",
     "--bsf-accent": c.accentColor || "#ffb020",
-    "--bsf-bg": c.backgroundColor || "#020817",
-    "--bsf-radius": `${clampNumber(c.radius, 0, 80, 18)}px`,
-    "--bsf-border": `${clampNumber(c.borderWidth, 0, 10, 2)}px`,
-    "--bsf-pad": `${clampNumber(c.padding, 0, 60, 12)}px`,
-    "--bsf-glow": clampNumber(c.glow, 0, 160, 85) / 100,
+    "--bsf-bg": c.backgroundColor || "#061126",
+    "--bsf-radius": `${clampNumber(c.radius, 0, 80, 12)}px`,
+    "--bsf-border": `${clampNumber(c.borderWidth, 0, 10, 1)}px`,
+    "--bsf-pad": `${clampNumber(c.padding, 0, 60, 8)}px`,
+    "--bsf-glow": clampNumber(c.glow, 0, 160, 35) / 100,
     "--bsf-transition": `${transitionMs}ms`,
   };
 

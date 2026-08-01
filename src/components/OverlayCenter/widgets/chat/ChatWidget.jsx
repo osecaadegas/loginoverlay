@@ -602,7 +602,7 @@ function resolveBetterChatBackground(config = {}) {
   if (mode === "nebula" || mode === "vignette" || mode === "split") {
     return `radial-gradient(90% 52% at 8% -6%, color-mix(in srgb, ${glow} 26%, transparent), transparent 60%), radial-gradient(85% 58% at 106% 106%, color-mix(in srgb, ${glow} 20%, transparent), transparent 62%), linear-gradient(180deg, #02060f 0%, ${panel} 100%)`;
   }
-  return `radial-gradient(120% 55% at 50% 108%, color-mix(in srgb, ${glow} 16%, transparent), transparent 62%), linear-gradient(180deg, color-mix(in srgb, ${panel} 74%, #000) 0%, ${panel} 100%)`;
+  return `radial-gradient(120% 55% at 50% 108%, color-mix(in srgb, ${glow} 8%, transparent), transparent 62%), linear-gradient(180deg, color-mix(in srgb, ${panel} 92%, #0a1a33) 0%, ${panel} 100%)`;
 }
 
 function resolveBetterChatTextureStyle(config = {}) {
