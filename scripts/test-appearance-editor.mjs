@@ -358,7 +358,9 @@ try {
   assert.ok(
     shoutoutApiSource.includes(
       'req.method === "POST" && triggeredBy === "chat_command"',
-    ),
+    ) &&
+      shoutoutApiSource.includes('["PGRST204", "42703"]') &&
+      shoutoutApiSource.includes("delete legacyAlertPayload.source_event_id"),
     "owner/mod command checks do not intercept legacy GET webhook triggers",
   );
   for (const frameStyle of ["neon", "glass", "retro", "minimal", "gaming"]) {

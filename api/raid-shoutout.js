@@ -339,11 +339,28 @@ export default async function handler(req, res) {
     };
 
     // ── Step 6: Insert into Supabase ──
-    const { data: alert, error: insertError } = await supabaseAdmin
+    let { data: alert, error: insertError } = await supabaseAdmin
       .from("shoutout_alerts")
       .insert(alertPayload)
       .select()
       .single();
+
+    const sourceEventColumnMissing =
+      isChatCommand &&
+      ["PGRST204", "42703"].includes(insertError?.code) &&
+      insertError?.message?.includes("source_event_id");
+    if (sourceEventColumnMissing) {
+      console.warn(
+        "[RaidShoutout] Migration 032 is pending; queueing without event deduplication",
+      );
+      const legacyAlertPayload = { ...alertPayload };
+      delete legacyAlertPayload.source_event_id;
+      ({ data: alert, error: insertError } = await supabaseAdmin
+        .from("shoutout_alerts")
+        .insert(legacyAlertPayload)
+        .select()
+        .single());
+    }
 
     if (insertError) {
       if (insertError.code === "23505" && isChatCommand) {
