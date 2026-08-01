@@ -781,11 +781,11 @@ function ChatWidget({
 }) {
   const c = config || {};
   const [messages, setMessages] = useState([]);
-  const [shoutoutActive, setShoutoutActive] = useState(
-    () => runtime !== "obs" && c.shoutoutInChat === true,
-  );
+  const [shoutoutActive, setShoutoutActive] = useState(false);
+  const [visibleBetterChatCount, setVisibleBetterChatCount] = useState(1);
   const [connectedTwitchChannelId, setConnectedTwitchChannelId] = useState("");
   const scrollRef = useRef(null);
+  const betterChatRowRefs = useRef([]);
   const maxMessages = Math.max(1, Number(c.maxMessages) || 50);
   const chatStyle = c.chatStyle || "classic";
   const isMetal = chatStyle === "metal";
@@ -1141,6 +1141,83 @@ function ChatWidget({
     isBetterChat && betterChatFlow === "top-to-bottom"
       ? normalizedRenderMessages.slice().reverse()
       : normalizedRenderMessages;
+  const betterChatMeasurementKey = renderMessages
+    .map((message, index) => message.id || `${message.username}-${index}`)
+    .join("|");
+
+  useEffect(() => {
+    if (!isBetterChat || !scrollRef.current) return undefined;
+    const container = scrollRef.current;
+    let frameId = 0;
+
+    const measureVisibleRows = () => {
+      const containerStyle = window.getComputedStyle(container);
+      const availableHeight = Math.max(
+        0,
+        container.clientHeight -
+          (Number.parseFloat(containerStyle.paddingTop) || 0) -
+          (Number.parseFloat(containerStyle.paddingBottom) || 0),
+      );
+      const indices = Array.from(
+        { length: renderMessages.length },
+        (_, index) =>
+          betterChatFlow === "top-to-bottom"
+            ? index
+            : renderMessages.length - 1 - index,
+      );
+      let usedHeight = 0;
+      let nextCount = 0;
+
+      for (const index of indices) {
+        const row = betterChatRowRefs.current[index];
+        if (!row) continue;
+        const rowStyle = window.getComputedStyle(row);
+        const rowHeight =
+          row.getBoundingClientRect().height +
+          (Number.parseFloat(rowStyle.marginTop) || 0) +
+          (Number.parseFloat(rowStyle.marginBottom) || 0);
+        if (nextCount > 0 && usedHeight + rowHeight > availableHeight + 0.5) {
+          break;
+        }
+        usedHeight += rowHeight;
+        nextCount += 1;
+      }
+
+      const fittedCount = Math.min(
+        renderMessages.length,
+        Math.max(renderMessages.length > 0 ? 1 : 0, nextCount),
+      );
+      setVisibleBetterChatCount((current) =>
+        current === fittedCount ? current : fittedCount,
+      );
+    };
+
+    const scheduleMeasure = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(measureVisibleRows);
+    };
+    if (typeof ResizeObserver === "undefined") {
+      scheduleMeasure();
+      return () => window.cancelAnimationFrame(frameId);
+    }
+    const resizeObserver = new ResizeObserver(scheduleMeasure);
+    resizeObserver.observe(container);
+    betterChatRowRefs.current.forEach((row) => {
+      if (row) resizeObserver.observe(row);
+    });
+    scheduleMeasure();
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+    };
+  }, [
+    betterChatFlow,
+    betterChatMeasurementKey,
+    isBetterChat,
+    renderMessages.length,
+    shoutoutActive,
+  ]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -1354,6 +1431,7 @@ function ChatWidget({
         runtime={runtime}
         publicOverlayId={publicOverlayId}
         onActiveChange={setShoutoutActive}
+        allowFallbackPreview={false}
       />
     </div>
   ) : null;
@@ -1681,7 +1759,7 @@ function ChatWidget({
             flexDirection: "column",
             justifyContent:
               betterChatFlow === "bottom-to-top" ? "flex-end" : "flex-start",
-            overflowY: "auto",
+            overflowY: "hidden",
             padding: "7px 9px 10px",
             scrollbarWidth: "none",
           }),
@@ -1731,6 +1809,10 @@ function ChatWidget({
 
           /* ── Style: StyleSeca Chat — two-colour metallic hunt chat ── */
           if (chatStyle === "better_chat") {
+            const visible =
+              betterChatFlow === "top-to-bottom"
+                ? msgIdx < visibleBetterChatCount
+                : msgIdx >= renderMessages.length - visibleBetterChatCount;
             return (
               <BetterChatMessage
                 key={`${msg.id || msgIdx}-${c.replayNonce || 0}`}
@@ -1740,6 +1822,10 @@ function ChatWidget({
                 followerMessage={followerMessage}
                 context={messageRenderContext}
                 msgIdx={msgIdx}
+                rootRef={(node) => {
+                  betterChatRowRefs.current[msgIdx] = node;
+                }}
+                visible={visible}
               />
             );
           }

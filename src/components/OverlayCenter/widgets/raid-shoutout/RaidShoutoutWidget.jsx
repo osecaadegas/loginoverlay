@@ -278,14 +278,18 @@ export default function RaidShoutoutWidget({
   publicOverlayId,
   onActiveChange,
   allWidgets = [],
+  allowFallbackPreview = true,
 }) {
   const hostedInChat = allWidgets.some(
     (widget) =>
       widget?.widget_type === "chat" && widget?.config?.shoutoutInChat === true,
   );
   const previewAlert = useMemo(
-    () => normalizeAlert(config.__previewAlert || {}),
-    [config.__previewAlert],
+    () =>
+      config.__previewAlert || allowFallbackPreview
+        ? normalizeAlert(config.__previewAlert || {})
+        : null,
+    [allowFallbackPreview, config.__previewAlert],
   );
   const [activeAlert, setActiveAlert] = useState(() =>
     runtime === "obs" ? null : previewAlert,

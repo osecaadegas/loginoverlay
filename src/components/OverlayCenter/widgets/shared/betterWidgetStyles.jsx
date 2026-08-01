@@ -3812,6 +3812,8 @@ export function BetterChatMessage({
   followerMessage = false,
   context,
   msgIdx,
+  rootRef,
+  visible = true,
 }) {
   const c = context.config || {};
   const accent = context.badgeBg || context.usernameColor || "#45c8ff";
@@ -3898,7 +3900,12 @@ export function BetterChatMessage({
         : `${animationName} 460ms cubic-bezier(0.2,0.75,0.25,1) ${enterDelay}ms both${animatedEffect ? `, better-soft-pulse ${effectSpeed} ease-in-out ${enterDelay + 460}ms infinite` : ""}`,
   });
   return (
-    <div style={messageStyle} {...attrs("chat", c, rowPart)}>
+    <div
+      ref={rootRef}
+      aria-hidden={!visible}
+      style={{ ...messageStyle, visibility: visible ? "visible" : "hidden" }}
+      {...attrs("chat", c, rowPart)}
+    >
       {animatedEffect ? (
         <span
           aria-hidden="true"

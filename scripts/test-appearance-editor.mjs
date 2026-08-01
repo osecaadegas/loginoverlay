@@ -714,6 +714,13 @@ try {
     ),
     "utf8",
   );
+  const raidShoutoutSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/raid-shoutout/RaidShoutoutWidget.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
   assert.ok(
     chatWidgetSource.includes(
       "linear-gradient(180deg, ${panelHi} 0%, ${panel} 55%, ${panelLo} 100%)",
@@ -793,6 +800,20 @@ try {
       chatWidgetSource.includes("<RaidShoutoutWidget") &&
       chatWidgetSource.includes("chatCommandEnabled: false"),
     "Better Chat can securely play one !so alert inside the selected edge",
+  );
+  assert.ok(
+    chatWidgetSource.includes("visibleBetterChatCount") &&
+      chatWidgetSource.includes("betterChatMeasurementKey") &&
+      chatWidgetSource.includes("new ResizeObserver(scheduleMeasure)") &&
+      chatWidgetSource.includes('overflowY: "hidden"') &&
+      betterWidgetStylesSource.includes(
+        'visibility: visible ? "visible" : "hidden"',
+      ) &&
+      raidShoutoutSource.includes(
+        "config.__previewAlert || allowFallbackPreview",
+      ) &&
+      chatWidgetSource.includes("allowFallbackPreview={false}"),
+    "Better Chat fits complete message rows and releases inactive !so space",
   );
   assert.ok(
     betterWidgetPackagesSource.includes('title="Roles & Message Glaze"') &&
