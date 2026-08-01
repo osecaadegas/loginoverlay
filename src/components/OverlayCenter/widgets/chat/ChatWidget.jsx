@@ -74,7 +74,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "#d4d8e0",
     glow_panel: "#dbeafe",
     bh_stats: "#f1f5f9",
-    better_chat: "#eaf6ff",
+    better_chat: "#eef6ff",
     default: "#e2e8f0",
   },
   headerBg: {
@@ -91,7 +91,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "#a8b0c0",
     glow_panel: "#22d3ee",
     bh_stats: "#64748b",
-    better_chat: "#f59e0b",
+    better_chat: "#45c8ff",
     default: "#94a3b8",
   },
   messageRadius: {
@@ -115,7 +115,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "rgba(200,210,225,0.18)",
     glow_panel: "rgba(34,211,238,0.22)",
     bh_stats: "rgba(255,255,255,0.06)",
-    better_chat: "rgba(59,130,246,0.24)",
+    better_chat: "rgba(47,99,201,0.45)",
     default: "rgba(51,65,85,0.5)",
   },
   containerBorderColor: {
@@ -123,7 +123,7 @@ const CHAT_STYLE_DEFAULTS = {
     metal: "rgba(200,210,225,0.18)",
     glow_panel: "rgba(34,211,238,0.26)",
     bh_stats: "rgba(255,255,255,0.06)",
-    better_chat: "rgba(59,130,246,0.38)",
+    better_chat: "rgba(47,99,201,0.55)",
     default: "rgba(51,65,85,0.5)",
   },
 };
@@ -590,8 +590,10 @@ function messageAvatarUrl(msg = {}) {
 }
 
 function resolveBetterChatBackground(config = {}) {
-  const glow = config.glow || "#00c3ff";
-  const panel = config.panel || "#000d2d";
+  const glow = config.glow || "#45c8ff";
+  const panelHi = config.panelHi || "#0c1c40";
+  const panel = config.panel || "#0a1734";
+  const panelLo = config.panelLo || "#081228";
   const mode = config.bg || "solid";
   if (mode === "horizon") {
     return `linear-gradient(0deg, color-mix(in srgb, ${glow} 28%, transparent), transparent 32%), linear-gradient(180deg, color-mix(in srgb, ${panel} 62%, #000) 0%, ${panel} 100%)`;
@@ -602,11 +604,11 @@ function resolveBetterChatBackground(config = {}) {
   if (mode === "nebula" || mode === "vignette" || mode === "split") {
     return `radial-gradient(90% 52% at 8% -6%, color-mix(in srgb, ${glow} 26%, transparent), transparent 60%), radial-gradient(85% 58% at 106% 106%, color-mix(in srgb, ${glow} 20%, transparent), transparent 62%), linear-gradient(180deg, #02060f 0%, ${panel} 100%)`;
   }
-  return `radial-gradient(120% 55% at 50% 108%, color-mix(in srgb, ${glow} 8%, transparent), transparent 62%), linear-gradient(180deg, color-mix(in srgb, ${panel} 92%, #0a1a33) 0%, ${panel} 100%)`;
+  return `radial-gradient(120% 55% at 50% 108%, color-mix(in srgb, ${glow} 8%, transparent), transparent 62%), linear-gradient(180deg, ${panelHi} 0%, ${panel} 55%, ${panelLo} 100%)`;
 }
 
 function resolveBetterChatTextureStyle(config = {}) {
-  const glow = config.glow || "#00c3ff";
+  const glow = config.glow || "#45c8ff";
   const texture = config.texture || "none";
   const base = {
     position: "absolute",
@@ -992,7 +994,7 @@ function ChatWidget({ config, theme, allWidgets }) {
   const avatarBorder = subValue(c, "avatar", "borderColor", borderColor);
   const badgeBg =
     syncedPrimaryColor ||
-    (isBetterChat ? c.glow || "#00c3ff" : undefined) ||
+    (isBetterChat ? c.glow || "#45c8ff" : undefined) ||
     styleSecaValue(
       subValue(
         c,
@@ -1203,7 +1205,8 @@ function ChatWidget({ config, theme, allWidgets }) {
     }),
     ...(isBetterChat && {
       isolation: "isolate",
-      boxShadow: `inset 0 0 5px color-mix(in srgb, ${c.glow || "#00c3ff"} 78%, transparent), inset 0 0 14px color-mix(in srgb, ${c.glow || "#00c3ff"} 20%, transparent), 0 0 5px color-mix(in srgb, ${c.glow || "#00c3ff"} 68%, transparent), 0 0 17px color-mix(in srgb, ${c.glow || "#00c3ff"} 20%, transparent)`,
+      boxShadow:
+        "0 0 0 1px rgba(0,0,0,0.55), inset 0 1px 0 color-mix(in srgb, #9dbdf2 12%, transparent)",
     }),
     /* Cards CSS vars — synced from config */
     "--chat-card-bg": messageBg || c.cardBg || "rgba(20,15,40,0.85)",

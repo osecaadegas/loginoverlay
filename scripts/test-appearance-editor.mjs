@@ -102,15 +102,21 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      '"--w-bg": c.bgColor || "#061126"',
+      '"--w-bg": c.bgColor || "#0a1734"',
     ),
-    "Better Giveaway routes its editable background color into the rendered surface",
+    "Better Giveaway routes its editable background color through the Bonus Hunt panel midpoint",
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      'c.accentColor || `hsl(${accentHue} ${accentSat}% ${accentLight}%)`',
+      '"--w-panel-hi": c.panelHi || "#0c1c40"',
     ),
-    "Better Giveaway routes its editable accent color into the rendered surface",
+    "Better Giveaway uses the exact Bonus Hunt ocean panel highlight",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      '"--w-accent":\n      c.accentColor || "#45c8ff"',
+    ),
+    "Better Giveaway uses the exact Bonus Hunt ocean ice accent",
   );
   const chatWidgetSource = readFileSync(
     new URL(
@@ -121,9 +127,9 @@ try {
   );
   assert.ok(
     chatWidgetSource.includes(
-      "color-mix(in srgb, ${panel} 92%, #0a1a33)",
+      "linear-gradient(180deg, ${panelHi} 0%, ${panel} 55%, ${panelLo} 100%)",
     ),
-    "Better Chat retains the shared navy panel instead of darkening it to black",
+    "Better Chat uses the exact Bonus Hunt ocean panel gradient",
   );
   const slideshowWidgetSource = readFileSync(
     new URL(
@@ -134,30 +140,31 @@ try {
   );
   assert.ok(
     slideshowWidgetSource.includes(
-      '"--bsf-bg": c.backgroundColor || "#061126"',
+      '"--bsf-bg": c.backgroundColor || "#0a1734"',
     ),
-    "Slideshow Frame uses the shared navy first-add surface",
+    "Slideshow Frame uses the exact Bonus Hunt ocean panel midpoint",
   );
   assert.ok(
-    /slideshow_frame:\s*\{[\s\S]*?backgroundColor:\s*"#061126"[\s\S]*?borderWidth:\s*1,[\s\S]*?glow:\s*35/.test(
+    /slideshow_frame:\s*\{[\s\S]*?frameColor:\s*"#2f63c9"[\s\S]*?accentColor:\s*"#45c8ff"[\s\S]*?backgroundColor:\s*"#0a1734"/.test(
       betterWidgetPackagesSource,
     ),
-    "Slideshow Frame first-add defaults use the restrained standard frame",
+    "Slideshow Frame first-add defaults use the Bonus Hunt line, ice, and panel colors",
   );
-  for (const widgetType of [
-    "bonus_hunt",
-    "giveaway",
-    "navbar",
-    "chat",
-    "rtp_stats",
-    "tournament",
-  ]) {
+  for (const [widgetType, surfaceColor] of Object.entries({
+    bonus_hunt: "#061126",
+    giveaway: "#0a1734",
+    navbar: "#061126",
+    chat: "#0a1734",
+    rtp_stats: "#061126",
+    tournament: "#061126",
+    slideshow_frame: "#0a1734",
+  })) {
     const widgetDefaults = new RegExp(
-      `type: "${widgetType}"[\\s\\S]*?defaults: \\{[\\s\\S]*?"#061126"`,
+      String.raw`type: "${widgetType}"[\s\S]*?defaults: \{[\s\S]*?"${surfaceColor}"`,
     );
     assert.ok(
       widgetDefaults.test(builtInWidgetsSource),
-      `${widgetType} built-in defaults use the standard navy surface`,
+      `${widgetType} built-in defaults use its expected panel surface`,
     );
   }
   for (const sharedColor of ["#061126", "#20d8ff", "#ffb020"]) {

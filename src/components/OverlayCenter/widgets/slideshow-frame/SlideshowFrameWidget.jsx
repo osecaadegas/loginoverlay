@@ -90,9 +90,11 @@ export default function SlideshowFrameWidget({ config }) {
   }, [c.autoplay, mediaItems.length, slideMs]);
 
   const rootStyle = {
-    "--bsf-frame": c.frameColor || "#20d8ff",
-    "--bsf-accent": c.accentColor || "#ffb020",
-    "--bsf-bg": c.backgroundColor || "#061126",
+    "--bsf-frame": c.frameColor || "#2f63c9",
+    "--bsf-accent": c.accentColor || "#45c8ff",
+    "--bsf-panel-hi": c.panelHi || "#0c1c40",
+    "--bsf-bg": c.backgroundColor || "#0a1734",
+    "--bsf-panel-lo": c.panelLo || "#081228",
     "--bsf-radius": `${clampNumber(c.radius, 0, 80, 12)}px`,
     "--bsf-border": `${clampNumber(c.borderWidth, 0, 10, 1)}px`,
     "--bsf-pad": `${clampNumber(c.padding, 0, 60, 8)}px`,

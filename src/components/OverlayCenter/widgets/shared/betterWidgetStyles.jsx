@@ -1398,11 +1398,11 @@ function BetterStyleSheet() {
       @keyframes better-gw-reel-spin{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-50%,0,0)}}
       .better-giveaway-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:clamp(8px,2vmin,28px);box-sizing:border-box;container-type:size;background:transparent;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif)}
       .better-giveaway-stage *{box-sizing:border-box}
-      .better-giveaway-widget{--cyan:var(--w-accent,#20d8ff);--blue:var(--w-accent-2,#1385e9);--H:var(--w-hue,195);--H2:var(--w-hue2,205);--H3:var(--w-hue3,190);--S:var(--w-sat,88%);--L:var(--w-lum,7%);--G:var(--w-glow,.3);--IG:var(--w-inner-glow,.35);position:relative;display:flex;width:min(100%,var(--w-width,700px));height:min(100%,var(--w-height,270px));min-width:0;min-height:0;flex-direction:column;justify-content:center;overflow:hidden;padding:var(--w-pad-y,22px) var(--w-pad-x,31px);border:var(--w-border-w,1px) solid color-mix(in srgb,var(--w-accent,#20d8ff) calc(var(--w-border-a,.9) * 72%),transparent);border-radius:var(--w-radius,12px);background:linear-gradient(115deg,color-mix(in srgb,var(--w-bg,#061126) 88%,var(--w-accent,#20d8ff) 12%),var(--w-bg,#061126) 53%,color-mix(in srgb,var(--w-bg,#061126) 94%,var(--w-accent-2,#1385e9) 6%));box-shadow:0 0 0 1px color-mix(in srgb,var(--w-bg,#061126) 70%,#000 30%),0 0 calc(9px * var(--G)) color-mix(in srgb,var(--w-accent,#20d8ff) 58%,transparent),0 0 calc(24px * var(--G)) color-mix(in srgb,var(--w-accent-2,#1385e9) 30%,transparent),inset 0 0 0 1px color-mix(in srgb,var(--w-accent,#20d8ff) 22%,transparent),inset 0 0 calc(22px * var(--IG)) color-mix(in srgb,var(--w-accent,#20d8ff) 12%,transparent);color:#eff6ff;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif);isolation:isolate;transition:border-color 480ms ease,box-shadow 480ms ease,background 480ms ease,border-radius 320ms ease,width 260ms ease,height 260ms ease,padding 260ms ease,filter 320ms ease}
+      .better-giveaway-widget{--cyan:var(--w-accent,#45c8ff);--blue:var(--w-accent-2,#1e5ad6);--H:var(--w-hue,195);--H2:var(--w-hue2,205);--H3:var(--w-hue3,190);--S:var(--w-sat,88%);--L:var(--w-lum,7%);--G:var(--w-glow,.3);--IG:var(--w-inner-glow,.35);position:relative;display:flex;width:min(100%,var(--w-width,700px));height:min(100%,var(--w-height,270px));min-width:0;min-height:0;flex-direction:column;justify-content:center;overflow:hidden;padding:var(--w-pad-y,22px) var(--w-pad-x,31px);border:var(--w-border-w,1px) solid color-mix(in srgb,var(--w-line,#2f63c9) calc(var(--w-border-a,.9) * 55%),transparent);border-radius:var(--w-radius,12px);background:linear-gradient(180deg,var(--w-panel-hi,#0c1c40) 0%,var(--w-bg,#0a1734) 55%,var(--w-panel-lo,#081228) 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--w-steel-hi,#9dbdf2) 12%,transparent);color:#eef6ff;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif);isolation:isolate;transition:border-color 480ms ease,box-shadow 480ms ease,background 480ms ease,border-radius 320ms ease,width 260ms ease,height 260ms ease,padding 260ms ease,filter 320ms ease}
       .better-giveaway-widget[data-surface="metallic"]{background:repeating-linear-gradient(92deg,hsl(var(--H) var(--S) calc(var(--L) + 15%) / .22) 0 1px,transparent 1px 3px),linear-gradient(166deg,hsl(var(--H) var(--S) calc(var(--L) + 16%)) 0%,hsl(var(--H2) var(--S) calc(var(--L) - 2%)) 22%,hsl(var(--H) calc(var(--S) + 6%) calc(var(--L) + 30%)) 46%,hsl(var(--H3) var(--S) calc(var(--L) - 1%)) 68%,hsl(var(--H) var(--S) calc(var(--L) + 18%)) 100%)}
       .better-giveaway-widget[data-surface="gradient"]{background:linear-gradient(125deg,hsl(var(--H) var(--S) calc(var(--L) + 12%)),hsl(var(--H2) var(--S) calc(var(--L) + 2%)) 46%,hsl(var(--H3) var(--S) calc(var(--L) + 14%)))}
-      .better-giveaway-widget[data-surface="matte"]{background:var(--w-bg,#061126);box-shadow:0 0 0 1px color-mix(in srgb,var(--w-bg,#061126) 70%,#000 30%),0 0 calc(14px * var(--G)) color-mix(in srgb,var(--w-accent,#20d8ff) 32%,transparent),inset 0 0 calc(24px * var(--IG)) color-mix(in srgb,var(--w-bg,#061126) 72%,#000 28%)}
-      .better-giveaway-widget::before{position:absolute;inset:var(--w-inner-inset,5px);z-index:-1;border:1px solid hsl(var(--H) var(--S) 45% / .78);border-radius:max(0px,calc(var(--w-radius,12px) - var(--w-inner-inset,5px)));opacity:var(--w-inner-op,1);pointer-events:none;content:"";box-shadow:inset 0 0 calc(13px * var(--IG)) hsl(var(--H) 100% 34% / calc(.21 * var(--IG)));transition:inset 200ms ease,opacity 240ms ease,border-radius 320ms ease}
+      .better-giveaway-widget[data-surface="matte"]{background:linear-gradient(180deg,var(--w-panel-hi,#0c1c40) 0%,var(--w-bg,#0a1734) 55%,var(--w-panel-lo,#081228) 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--w-steel-hi,#9dbdf2) 12%,transparent)}
+      .better-giveaway-widget::before{position:absolute;inset:var(--w-inner-inset,5px);z-index:-1;border:1px solid color-mix(in srgb,var(--w-line,#2f63c9) 55%,transparent);border-radius:max(0px,calc(var(--w-radius,12px) - var(--w-inner-inset,5px)));opacity:var(--w-inner-op,1);pointer-events:none;content:"";box-shadow:inset 0 0 calc(13px * var(--IG)) color-mix(in srgb,var(--w-accent,#45c8ff) 12%,transparent);transition:inset 200ms ease,opacity 240ms ease,border-radius 320ms ease}
       .better-giveaway-widget::after{position:absolute;inset:0;z-index:-1;pointer-events:none;content:"";background:linear-gradient(112deg,transparent 0 17%,hsl(var(--H) 100% 60% / .08) 17.2%,transparent 17.5% 69%,hsl(var(--H2) 100% 65% / .04) 69.2%,transparent 70%),radial-gradient(ellipse at 50% 0%,hsl(var(--H) 100% 50% / .12),transparent 56%)}
       .better-giveaway-widget[data-surface="gloss"]::after{background:linear-gradient(180deg,hsl(0 0% 100% / .16) 0%,hsl(0 0% 100% / .04) 34%,transparent 52%),radial-gradient(ellipse at 50% -20%,hsl(var(--H) 100% 70% / .22),transparent 62%)}
       .better-giveaway-widget[data-surface="matte"]::after{background:none}
@@ -1420,9 +1420,9 @@ function BetterStyleSheet() {
       .better-gw-prize strong{min-width:0;overflow:hidden;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:var(--w-prize-size,31px);font-style:var(--w-prize-style,italic);font-weight:var(--w-title-weight,700);letter-spacing:var(--w-letter,.015em);line-height:1;text-overflow:ellipsis;white-space:nowrap}
       .better-gw-prize span{min-width:0;color:#e5edf8;font-size:var(--w-sub-size,15px);font-style:var(--w-prize-style,italic);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .better-gw-metrics{display:grid;grid-template-columns:1fr 1fr;gap:min(var(--w-tile-gap,12px),8px);margin-top:7px;transition:opacity 380ms ease,transform 520ms cubic-bezier(.22,.9,.24,1),filter 380ms ease}
-      .better-gw-metric-panel{position:relative;display:flex;min-width:0;min-height:clamp(34px,22cqh,50px);flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:6px 10px;border:1px solid hsl(var(--H) var(--S) 38% / .85);border-radius:var(--w-tile-radius,10px);background:linear-gradient(180deg,hsl(var(--H) var(--S) calc(var(--L) + 5%) / .98),hsl(var(--H2) var(--S) var(--L) / .9));box-shadow:inset 0 0 calc(12px * var(--IG)) hsl(var(--H) 100% 32% / calc(.27 * var(--IG))),0 0 calc(8px * var(--G)) hsl(var(--H) 100% 30% / calc(.14 * var(--G)));transition:border-radius 320ms ease,background 480ms ease}
+      .better-gw-metric-panel{position:relative;display:flex;min-width:0;min-height:clamp(34px,22cqh,50px);flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:6px 10px;border:1px solid color-mix(in srgb,var(--w-line,#2f63c9) 55%,transparent);border-radius:var(--w-tile-radius,10px);background:linear-gradient(180deg,var(--w-card-hi,#0d2049),var(--w-card-lo,#0a1836));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--w-steel-hi,#9dbdf2) 10%,transparent),0 2px 8px rgba(0,0,0,.5);transition:border-radius 320ms ease,background 480ms ease}
       .better-giveaway-widget[data-surface="metallic"] .better-gw-metric-panel{background:linear-gradient(170deg,hsl(var(--H) var(--S) calc(var(--L) + 20%)),hsl(var(--H2) var(--S) calc(var(--L) + 2%)) 55%,hsl(var(--H) var(--S) calc(var(--L) + 12%)))}
-      .better-giveaway-widget[data-surface="matte"] .better-gw-metric-panel{background:hsl(var(--H) var(--S) calc(var(--L) + 5%));box-shadow:inset 0 0 calc(18px * var(--IG)) hsl(var(--H) 40% 3% / calc(.5 * var(--IG)))}
+      .better-giveaway-widget[data-surface="matte"] .better-gw-metric-panel{background:linear-gradient(180deg,var(--w-card-hi,#0d2049),var(--w-card-lo,#0a1836));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--w-steel-hi,#9dbdf2) 10%,transparent),0 2px 8px rgba(0,0,0,.5)}
       .better-giveaway-widget[data-surface="gloss"] .better-gw-metric-panel::after{position:absolute;top:0;right:0;left:0;height:46%;content:"";pointer-events:none;background:linear-gradient(180deg,hsl(0 0% 100% / .14),transparent)}
       .better-gw-metric-panel::before{position:absolute;inset:0;pointer-events:none;content:"";background:linear-gradient(110deg,transparent 8%,rgba(53,167,255,.06) 38%,transparent 59%)}
       .better-gw-metric-label{position:relative;z-index:1;color:rgba(255,255,255,.88);font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:min(var(--w-label-size,10px),clamp(7px,4.5cqh,10px));font-weight:700;letter-spacing:calc(var(--w-letter,.17em) + .08em);line-height:1.1;text-transform:var(--w-label-transform,uppercase);text-shadow:0 0 calc(5px * var(--w-text-glow,1)) hsl(var(--H) 100% 55% / calc(.28 * var(--w-text-glow,1)))}
@@ -3525,10 +3525,16 @@ export function BetterGiveawayStyle({ config }) {
     "--w-hue3": hue3,
     "--w-sat": `${saturation}%`,
     "--w-lum": `${lightness}%`,
-    "--w-bg": c.bgColor || "#061126",
+    "--w-panel-hi": c.panelHi || "#0c1c40",
+    "--w-bg": c.bgColor || "#0a1734",
+    "--w-panel-lo": c.panelLo || "#081228",
+    "--w-card-hi": c.cardHi || "#0d2049",
+    "--w-card-lo": c.cardLo || "#0a1836",
+    "--w-line": c.lineColor || "#2f63c9",
+    "--w-steel-hi": c.secondaryTextColor || "#9dbdf2",
     "--w-accent":
-      c.accentColor || `hsl(${accentHue} ${accentSat}% ${accentLight}%)`,
-    "--w-accent-2": `hsl(${hue2} ${accentSat}% ${Math.max(34, accentLight - 14)}%)`,
+      c.accentColor || "#45c8ff",
+    "--w-accent-2": c.deepAccentColor || "#1e5ad6",
     "--w-accent-soft": `hsl(${accentHue} ${accentSat}% ${Math.min(86, accentLight + 20)}%)`,
   };
   const className = [
@@ -3694,8 +3700,8 @@ export function BetterChatHeader({
         justifyContent: "space-between",
         gap: 10,
         padding: "10px 12px",
-        borderBottom: `1px solid ${alphaColor(accentColor, 0.28)}`,
-        background: `linear-gradient(90deg, ${alphaColor(accentColor, 0.18)}, rgba(2,8,23,0.18))`,
+        borderBottom: `1px solid ${alphaColor(c.borderColor || "#2f63c9", 0.55)}`,
+        background: `linear-gradient(180deg, ${c.bubble || "#0d2049"}, ${c.cardLo || "#0a1836"})`,
       })}
       {...attrs("chat", c, "header")}
     >
@@ -3764,8 +3770,8 @@ export function BetterChatMessage({
   msgIdx,
 }) {
   const c = context.config || {};
-  const accent = context.badgeBg || context.usernameColor || "#38bdf8";
-  const baseBg = context.messageBg || "rgba(255,255,255,0.07)";
+  const accent = context.badgeBg || context.usernameColor || "#45c8ff";
+  const baseBg = context.messageBg || "#0d2049";
   const messageType = betterChatMessageType(msg);
   const giftTier = betterChatGiftTier(msg);
   const celebrations = c.celebrations || {};
@@ -3813,7 +3819,7 @@ export function BetterChatMessage({
     borderRadius: Math.max(10, Number(context.borderRadius) || 12),
     background: followerMessage
       ? `linear-gradient(135deg, ${alphaColor(rowAccent, 0.26)}, rgba(2,8,23,0.44))`
-      : `linear-gradient(135deg, ${baseBg}, rgba(2,8,23,0.3))`,
+      : `linear-gradient(180deg, ${baseBg}, ${c.cardLo || "#0a1836"})`,
     border: `${Number(context.borderWidth) || 1}px solid ${followerMessage || celebrationOn ? alphaColor(rowAccent, 0.5) : context.borderColor || alphaColor(accent, 0.24)}`,
     boxShadow:
       followerMessage || celebrationOn

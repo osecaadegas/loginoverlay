@@ -1,7 +1,9 @@
 .better-slideshow-frame {
-  --bsf-frame: #20d8ff;
-  --bsf-accent: #ffb020;
-  --bsf-bg: #061126;
+  --bsf-frame: #2f63c9;
+  --bsf-accent: #45c8ff;
+  --bsf-panel-hi: #0c1c40;
+  --bsf-bg: #0a1734;
+  --bsf-panel-lo: #081228;
   --bsf-radius: 12px;
   --bsf-border: 1px;
   --bsf-pad: 8px;
@@ -14,16 +16,14 @@
   min-height: 0;
   overflow: hidden;
   padding: var(--bsf-pad);
-  border: var(--bsf-border) solid color-mix(in srgb, var(--bsf-frame) 88%, transparent);
+  border: var(--bsf-border) solid color-mix(in srgb, var(--bsf-frame) 55%, transparent);
   border-radius: var(--bsf-radius);
   clip-path: inset(0 round var(--bsf-radius));
-  background:
-    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--bsf-frame) 18%, transparent), transparent 62%),
-    linear-gradient(145deg, color-mix(in srgb, var(--bsf-bg) 92%, #0f172a), color-mix(in srgb, var(--bsf-bg) 70%, #000));
+  background: linear-gradient(180deg, var(--bsf-panel-hi) 0%, var(--bsf-bg) 55%, var(--bsf-panel-lo) 100%);
   background-clip: padding-box;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 0 calc(28px * var(--bsf-glow)) color-mix(in srgb, var(--bsf-frame) 12%, transparent);
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 color-mix(in srgb, #9dbdf2 12%, transparent);
   box-sizing: border-box;
   color: #f8fafc;
   container-type: size;
@@ -145,7 +145,7 @@
 }
 
 .better-slideshow-frame__empty span {
-  color: #93c5fd;
+  color: #9dbdf2;
   font-size: clamp(11px, 2.4cqw, 16px);
   font-weight: 700;
 }
