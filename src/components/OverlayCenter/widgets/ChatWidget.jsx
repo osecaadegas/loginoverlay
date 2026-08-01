@@ -45,6 +45,7 @@ const HIDDEN_BOTS = new Set(["streamelements", "nightbot", "moobot"]);
 const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
 const BTTV_EMOTES_API_URL = "/api/chat/emotes/bttv";
 const BTTV_CDN_URL = "https://cdn.betterttv.net/emote";
+const TWITCH_EMOTE_CDN_URL = "https://static-cdn.jtvnw.net/emoticons/v2";
 const BTTV_CLIENT_CACHE_MS = 10 * 60 * 1000;
 const HEADER_CHAT_STYLES = new Set([
   "classic",
@@ -428,24 +429,33 @@ function useBetterTtvEmotes({
   return emoteMap;
 }
 
+function emoteDisplayHeight(scale) {
+  if (scale === 1) return 20;
+  if (scale === 3) return 34;
+  return 27;
+}
+
 function renderBttvMessageContent(text, emoteMap, scale = 2) {
   const source = String(text || "");
   if (!source || !(emoteMap instanceof Map) || emoteMap.size === 0) {
-    return source;
+    return [source];
   }
   const cdnScale = Math.min(Math.max(Number(scale) || 2, 1), 3);
-  const displayHeight = cdnScale === 1 ? 20 : cdnScale === 3 ? 34 : 27;
-  return source.split(/(\s+)/).map((token, index) => {
+  const displayHeight = emoteDisplayHeight(cdnScale);
+  let tokenOffset = 0;
+  return source.split(/(\s+)/).map((token) => {
+    const currentOffset = tokenOffset;
+    tokenOffset += token.length;
     if (!token || /^\s+$/.test(token)) {
-      return <React.Fragment key={`text-${index}`}>{token}</React.Fragment>;
+      return <React.Fragment key={`text-${currentOffset}`}>{token}</React.Fragment>;
     }
     const emote = emoteMap.get(token);
     if (!emote) {
-      return <React.Fragment key={`text-${index}`}>{token}</React.Fragment>;
+      return <React.Fragment key={`text-${currentOffset}`}>{token}</React.Fragment>;
     }
     return (
       <img
-        key={`bttv-${emote.id}-${index}`}
+        key={`bttv-${emote.id}-${currentOffset}`}
         className="ov-chat-bttv-emote"
         src={`${BTTV_CDN_URL}/${encodeURIComponent(emote.id)}/${cdnScale}x`}
         alt={emote.code}
@@ -457,6 +467,84 @@ function renderBttvMessageContent(text, emoteMap, scale = 2) {
       />
     );
   });
+}
+
+function renderBetterChatMessageContent(msg, emoteMap, scale = 2) {
+  const text = String(msg?.message || msg?.text || "");
+  if (msg?.platform !== "twitch" || !Array.isArray(msg?.twitchEmotes)) {
+    return renderBttvMessageContent(text, emoteMap, scale);
+  }
+
+  const codePoints = Array.from(text);
+  const toStringOffset = (codePointOffset) =>
+    codePoints.slice(0, codePointOffset).join("").length;
+
+  const ranges = msg.twitchEmotes
+    .flatMap((emote) =>
+      (emote.indices || []).map(([start, end]) => {
+        const codePointStart = Number(start);
+        const codePointEnd = Number(end);
+        return {
+          id: String(emote.id || ""),
+          start: toStringOffset(codePointStart),
+          end: toStringOffset(codePointEnd + 1) - 1,
+        };
+      }),
+    )
+    .filter(
+      (range) =>
+        range.id &&
+        Number.isInteger(range.start) &&
+        Number.isInteger(range.end) &&
+        range.start >= 0 &&
+        range.end >= range.start &&
+        range.end < text.length,
+    )
+    .sort((left, right) => left.start - right.start);
+
+  if (ranges.length === 0) {
+    return renderBttvMessageContent(text, emoteMap, scale);
+  }
+
+  const cdnScale = Math.min(Math.max(Number(scale) || 2, 1), 3);
+  const displayHeight = emoteDisplayHeight(cdnScale);
+  const content = [];
+  let cursor = 0;
+
+  ranges.forEach((range) => {
+    if (range.start < cursor) return;
+    if (range.start > cursor) {
+      content.push(
+        <React.Fragment key={`bttv-segment-${cursor}`}>
+          {renderBttvMessageContent(text.slice(cursor, range.start), emoteMap, scale)}
+        </React.Fragment>,
+      );
+    }
+    const code = text.slice(range.start, range.end + 1);
+    content.push(
+      <img
+        key={`twitch-${range.id}-${range.start}`}
+        className="ov-chat-twitch-emote"
+        src={`${TWITCH_EMOTE_CDN_URL}/${encodeURIComponent(range.id)}/default/dark/${cdnScale}.0`}
+        alt={code}
+        title={code}
+        draggable={false}
+        decoding="async"
+        referrerPolicy="no-referrer"
+        style={{ height: displayHeight, width: "auto" }}
+      />,
+    );
+    cursor = range.end + 1;
+  });
+
+  if (cursor < text.length) {
+    content.push(
+      <React.Fragment key="bttv-segment-tail">
+        {renderBttvMessageContent(text.slice(cursor), emoteMap, scale)}
+      </React.Fragment>,
+    );
+  }
+  return content;
 }
 
 function isFollowerMessage(msg = {}) {
@@ -670,6 +758,7 @@ function useYoutubeChat(videoId, apiKey, onMessage) {
 function ChatWidget({ config, theme, allWidgets }) {
   const c = config || {};
   const [messages, setMessages] = useState([]);
+  const [connectedTwitchChannelId, setConnectedTwitchChannelId] = useState("");
   const scrollRef = useRef(null);
   const maxMessages = Math.max(1, Number(c.maxMessages) || 50);
   const chatStyle = c.chatStyle || "classic";
@@ -685,7 +774,8 @@ function ChatWidget({ config, theme, allWidgets }) {
     : "bottom-to-top";
   const autoChannel = useTwitchChannel();
   const resolvedTwitchChannel = c.twitchChannel || autoChannel || "";
-  const bttvTwitchUserId = resolveBttvTwitchUserId(c);
+  const configuredBttvTwitchUserId = resolveBttvTwitchUserId(c);
+  const bttvTwitchUserId = connectedTwitchChannelId || configuredBttvTwitchUserId;
   const bttvTwitchChannel = resolveBttvTwitchChannel(c, resolvedTwitchChannel);
   const bttvEmotes = useBetterTtvEmotes({
     enabled: isBetterChat && c.bttvEnabled !== false,
@@ -694,10 +784,17 @@ function ChatWidget({ config, theme, allWidgets }) {
     twitchUserId: bttvTwitchUserId,
     twitchChannel: bttvTwitchChannel,
   });
-  const renderBetterChatMessageContent = useCallback(
-    (text) => renderBttvMessageContent(text, bttvEmotes, c.bttvSize),
+  const renderBetterChatMessage = useCallback(
+    (msg) => renderBetterChatMessageContent(msg, bttvEmotes, c.bttvSize),
     [bttvEmotes, c.bttvSize],
   );
+  const handleTwitchRoomState = useCallback(({ channelId }) => {
+    setConnectedTwitchChannelId(String(channelId || ""));
+  }, []);
+
+  useEffect(() => {
+    setConnectedTwitchChannelId("");
+  }, [resolvedTwitchChannel]);
   const showBetterChatEmptyState = !isBetterChat || c.showEmptyState !== false;
   const betterChatAutoFade = isBetterChat
     ? Boolean(c.autoFade || c.lifespan === "timed")
@@ -966,6 +1063,7 @@ function ChatWidget({ config, theme, allWidgets }) {
   /* Connect to enabled platforms */
   useTwitchChat(c.twitchEnabled ? resolvedTwitchChannel : "", handleMessage, {
     parseRaids: true,
+    onRoomState: handleTwitchRoomState,
   });
   useYoutubeChat(
     c.youtubeEnabled ? c.youtubeVideoId : "",
@@ -1153,7 +1251,7 @@ function ChatWidget({ config, theme, allWidgets }) {
     messageTextStyle,
     usernameStyle,
     totalMessages: renderMessages.length,
-    renderMessageContent: isBetterChat ? renderBetterChatMessageContent : null,
+    renderMessageContent: isBetterChat ? renderBetterChatMessage : null,
   };
 
   const modeClass = ` ov-chat-widget--${chatStyle}`;

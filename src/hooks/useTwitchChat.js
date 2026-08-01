@@ -11,8 +11,29 @@
  */
 import { useEffect, useRef, useCallback } from 'react';
 
+function parseIrcTags(tagString = '') {
+  return Object.fromEntries(
+    tagString.split(';').map(tag => {
+      const [key, ...value] = tag.split('=');
+      return [key, value.join('=')];
+    })
+  );
+}
+
+function parseTwitchEmotes(value = '') {
+  if (!value) return [];
+  return value.split('/').map(entry => {
+    const [id, rangeList = ''] = entry.split(':');
+    const indices = rangeList.split(',').map(range => {
+      const [start, end] = range.split('-').map(Number);
+      return [start, end];
+    }).filter(([start, end]) => Number.isInteger(start) && Number.isInteger(end) && end >= start);
+    return { id, indices };
+  }).filter(emote => emote.id && emote.indices.length > 0);
+}
+
 export default function useTwitchChat(channel, onMessage, options = {}) {
-  const { parseRaids = false } = options;
+  const { parseRaids = false, onRoomState } = options;
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
 
@@ -32,12 +53,22 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
       for (const line of lines) {
         if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
 
+        if (line.includes(' ROOMSTATE #')) {
+          const tagStr = line.match(/@([^ ]+)/)?.[1] || '';
+          const tags = parseIrcTags(tagStr);
+          const connectedChannel = line.match(/ ROOMSTATE #([^ ]+)/)?.[1] || channel;
+          onRoomState?.({
+            channel: connectedChannel,
+            channelId: tags['room-id'] || '',
+            tags,
+          });
+          continue;
+        }
+
         /* ── Raid USERNOTICE (opt-in) ── */
         if (parseRaids && line.includes('USERNOTICE') && line.includes('msg-id=raid')) {
           const tagStr = line.match(/@([^ ]+)/)?.[1] || '';
-          const tags = Object.fromEntries(
-            tagStr.split(';').map(t => { const [k, ...v] = t.split('='); return [k, v.join('=')]; })
-          );
+          const tags = parseIrcTags(tagStr);
           const raider = tags['msg-param-displayName'] || tags['display-name'] || tags['login'] || 'Someone';
           const viewerCount = parseInt(tags['msg-param-viewerCount'] || '0', 10);
           let avatar = (tags['msg-param-profileImageURL'] || '').replace(/%s/g, '');
@@ -63,9 +94,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
         /* ── Normal PRIVMSG ── */
         const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
         if (!m) continue;
-        const tags = Object.fromEntries(
-          m[1].split(';').map(t => { const [k, ...v] = t.split('='); return [k, v.join('=')]; })
-        );
+        const tags = parseIrcTags(m[1]);
 
         /* Parse Twitch badges string e.g. "broadcaster/1,subscriber/12,premium/1" */
         const badgeStr = tags['badges'] || '';
@@ -95,6 +124,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
           isBroadcaster,
           isFirstMsg,
           subMonths,
+          twitchEmotes: parseTwitchEmotes(tags['emotes']),
         });
       }
     };
@@ -107,7 +137,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
         reconnectTimer.current = setTimeout(connect, 3000);
       }
     };
-  }, [channel, onMessage, parseRaids]);
+  }, [channel, onMessage, onRoomState, parseRaids]);
 
   useEffect(() => {
     connect();

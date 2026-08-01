@@ -3177,7 +3177,7 @@ export function BetterChatMessage({
           {...attrs("chat", c, "messageText")}
         >
           {typeof context.renderMessageContent === "function"
-            ? context.renderMessageContent(betterChatMessageText(msg))
+            ? context.renderMessageContent(msg)
             : betterChatMessageText(msg)}
         </span>
       </span>
