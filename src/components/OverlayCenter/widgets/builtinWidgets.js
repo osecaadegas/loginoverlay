@@ -135,7 +135,7 @@ registerWidget({
     showCTA: false,
     ctaText: "Be Gamble Aware!",
     cryptoCoins: [],
-    socialDisplayStyle: "icons",
+    socialDisplayStyle: "handles",
     kickChannelId: "",
     youtubeChannel: "",
     xUsername: "",

@@ -562,17 +562,6 @@ export default function NavbarConfig({ config, onChange }) {
                 Socials
               </h4>
               <label className="nb-field">
-                <span>Display</span>
-                <select
-                  value={c.socialDisplayStyle || "icons"}
-                  onChange={(e) => set("socialDisplayStyle", e.target.value)}
-                >
-                  <option value="icons">Icons</option>
-                  <option value="labels">Labels</option>
-                  <option value="handles">Handles</option>
-                </select>
-              </label>
-              <label className="nb-field">
                 <span>Twitch</span>
                 <input
                   value={c.twitchUsername || ""}

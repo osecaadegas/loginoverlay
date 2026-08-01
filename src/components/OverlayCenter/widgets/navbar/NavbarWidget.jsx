@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
+  SiDiscord,
+  SiInstagram,
+  SiKick,
+  SiTiktok,
+  SiTwitch,
+  SiX,
+  SiYoutube,
+} from "react-icons/si";
+import {
   fetchNowPlaying,
   serverRefreshToken,
 } from "../../../../utils/spotifyAuth";
@@ -100,7 +109,7 @@ const SOCIAL_PLATFORM_META = [
   {
     id: "twitch",
     label: "Twitch",
-    short: "TW",
+    icon: SiTwitch,
     color: "#9146ff",
     keys: ["twitchUsername"],
     toUrl: (value) => `https://twitch.tv/${value}`,
@@ -108,7 +117,7 @@ const SOCIAL_PLATFORM_META = [
   {
     id: "kick",
     label: "Kick",
-    short: "K",
+    icon: SiKick,
     color: "#53fc18",
     keys: ["kickChannelId", "kickChannel"],
     toUrl: (value) => `https://kick.com/${value}`,
@@ -116,8 +125,8 @@ const SOCIAL_PLATFORM_META = [
   {
     id: "youtube",
     label: "YouTube",
-    short: "YT",
-    color: "#ff0033",
+    icon: SiYoutube,
+    color: "#ff0000",
     keys: ["youtubeChannel", "youtubeVideoId"],
     toUrl: (value) =>
       `https://youtube.com/${value.startsWith("@") ? value : `@${value}`}`,
@@ -125,7 +134,7 @@ const SOCIAL_PLATFORM_META = [
   {
     id: "x",
     label: "X",
-    short: "X",
+    icon: SiX,
     color: "#f8fafc",
     keys: ["xUsername", "twitterUsername"],
     toUrl: (value) => `https://x.com/${value}`,
@@ -133,15 +142,15 @@ const SOCIAL_PLATFORM_META = [
   {
     id: "instagram",
     label: "Instagram",
-    short: "IG",
-    color: "#f472b6",
+    icon: SiInstagram,
+    color: "#e1306c",
     keys: ["instagramUsername"],
     toUrl: (value) => `https://instagram.com/${value}`,
   },
   {
     id: "discord",
     label: "Discord",
-    short: "DC",
+    icon: SiDiscord,
     color: "#5865f2",
     keys: ["discordUrl", "discordInvite", "discordTag"],
     toUrl: (value) =>
@@ -150,7 +159,7 @@ const SOCIAL_PLATFORM_META = [
   {
     id: "tiktok",
     label: "TikTok",
-    short: "TT",
+    icon: SiTiktok,
     color: "#22d3ee",
     keys: ["tiktokUsername"],
     toUrl: (value) => `https://tiktok.com/@${value}`,
@@ -841,6 +850,18 @@ function cleanSocialValue(value) {
   return String(value || "")
     .trim()
     .replace(/^@+/, "");
+}
+
+function formatSocialHandle(value) {
+  const cleaned = cleanSocialValue(value);
+  if (!/^https?:\/\//i.test(cleaned)) return `@${cleaned}`;
+  try {
+    const url = new URL(cleaned);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    return `@${pathParts.at(-1) || url.hostname.replace(/^www\./i, "")}`;
+  } catch {
+    return `@${cleaned.replace(/^https?:\/\/(?:www\.)?/i, "")}`;
+  }
 }
 
 function resolveNavbarSocialItems(config = {}) {
@@ -1694,7 +1715,6 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
 
   const renderSocialsSection = ({ compact = false } = {}) => {
     if (!c.showSocials || socialItems.length === 0) return null;
-    const displayStyle = c.socialDisplayStyle || "icons";
     return (
       <div
         {...partAttrs("socials")}
@@ -1707,12 +1727,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
         })}
       >
         {socialItems.map((item) => {
-          const showHandle =
-            displayStyle === "handles" || displayStyle === "labels";
-          const label =
-            displayStyle === "labels"
-              ? item.label
-              : `@${item.value.replace(/^https?:\/\//i, "")}`;
+          const SocialIcon = item.icon;
+          const handle = formatSocialHandle(item.value);
           return (
             <a
               key={item.id}
@@ -1727,18 +1743,18 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                 minWidth: compact
                   ? Math.max(20, barHeight * 0.42)
                   : Math.max(22, barHeight * 0.46),
-                maxWidth: showHandle ? 150 : undefined,
+                maxWidth: 170,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 6,
                 boxSizing: "border-box",
-                border: `1px solid ${alphaColor(item.color, 0.42)}`,
+                border: `1px solid ${alphaColor(item.color, 0.68)}`,
                 borderRadius: 999,
-                padding: showHandle ? "0 8px" : 0,
+                padding: compact ? "0 7px" : "0 9px",
                 color: textColor,
-                background: alphaColor(item.color, 0.12),
-                boxShadow: `0 0 10px ${alphaColor(item.color, 0.14)}`,
+                background: `linear-gradient(135deg,${alphaColor(item.color, 0.28)},${alphaColor(item.color, 0.12)})`,
+                boxShadow: `inset 0 1px 0 ${alphaColor(item.color, 0.18)},0 0 10px ${alphaColor(item.color, 0.22)}`,
                 fontFamily,
                 fontSize: Math.max(8, fontSize * 0.72),
                 fontWeight: 950,
@@ -1751,19 +1767,21 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
                 flexShrink: 0,
               }}
             >
-              <span style={{ color: item.color }}>{item.short}</span>
-              {showHandle ? (
-                <span
-                  style={{
-                    minWidth: 0,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    color: textColor,
-                  }}
-                >
-                  {label}
-                </span>
-              ) : null}
+              <SocialIcon
+                aria-hidden="true"
+                size={compact ? 10 : 11}
+                style={{ color: item.color, flex: "0 0 auto" }}
+              />
+              <span
+                style={{
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  color: textColor,
+                }}
+              >
+                {handle}
+              </span>
             </a>
           );
         })}

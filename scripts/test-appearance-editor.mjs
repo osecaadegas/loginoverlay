@@ -141,6 +141,40 @@ try {
     ),
     "utf8",
   );
+  const navbarWidgetSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const navbarConfigSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/navbar/NavbarConfig.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    navbarWidgetSource.includes("SiTwitch") &&
+      navbarWidgetSource.includes("SiKick") &&
+      navbarWidgetSource.includes("SiYoutube") &&
+      navbarWidgetSource.includes("SiX") &&
+      navbarWidgetSource.includes("SiInstagram") &&
+      navbarWidgetSource.includes("SiDiscord") &&
+      navbarWidgetSource.includes("SiTiktok"),
+    "Better Navbar renders official logos for every supported social platform",
+  );
+  assert.ok(
+    navbarWidgetSource.includes("const handle = formatSocialHandle(item.value)") &&
+      !navbarWidgetSource.includes("item.short"),
+    "Better Navbar socials always show handles instead of text abbreviations",
+  );
+  assert.ok(
+    !betterWidgetPackagesSource.includes("NAVBAR_SOCIAL_DISPLAY_OPTIONS") &&
+      !navbarConfigSource.includes('<span>Display</span>'),
+    "Navbar controls expose one consistent social handle format",
+  );
   assert.ok(
     !betterWidgetPackagesSource.includes("import TournamentConfig"),
     "Better Editor does not import the full Tournament data manager",

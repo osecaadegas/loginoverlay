@@ -778,7 +778,7 @@ export const DEFAULT_BETTER_CONFIG = {
     musicDisplayStyle: "pill",
     spotifyWidth: 420,
     cryptoDisplayMode: "horizontal",
-    socialDisplayStyle: "icons",
+    socialDisplayStyle: "handles",
     sectionLayout: [
       { id: "identity", zone: "left" },
       { id: "badge", zone: "left" },
@@ -1909,12 +1909,6 @@ const NAVBAR_CRYPTO_DISPLAY_OPTIONS = [
   { key: "fade", name: "Fade" },
 ];
 
-const NAVBAR_SOCIAL_DISPLAY_OPTIONS = [
-  { key: "icons", name: "Icons" },
-  { key: "labels", name: "Labels" },
-  { key: "handles", name: "Handles" },
-];
-
 const NAVBAR_CURRENCY_OPTIONS = [
   { value: "€", label: "EUR €" },
   { value: "EUR ", label: "EUR" },
@@ -2265,14 +2259,8 @@ function BetterNavbarControls({
             checked={!!c.showSocials}
             onChange={(showSocials) => set({ showSocials })}
           />
-          <SelectRow
-            label="Display"
-            value={c.socialDisplayStyle || "icons"}
-            options={NAVBAR_SOCIAL_DISPLAY_OPTIONS}
-            onChange={(socialDisplayStyle) => set({ socialDisplayStyle })}
-          />
           <p className="bp-hint">
-            Social names and URLs come from the Navbar widget page.
+            Social handles and URLs come from the Navbar widget page.
           </p>
         </Section>
       )}
