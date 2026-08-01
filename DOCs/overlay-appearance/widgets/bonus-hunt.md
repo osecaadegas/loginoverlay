@@ -8,9 +8,9 @@
 | Name | Bonus Hunt |
 | OBS route | `/overlay/:token`, `/overlay/:token?widget=<id>` |
 | Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:17` |
-| Main component | `src/components/OverlayCenter/widgets/BonusHuntWidget.jsx:15` |
+| Main component | `src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntWidget.jsx:15` |
 | Variant components | `BonusHuntWidgetV3.jsx`, `BonusHuntWidgetV8.jsx`, `BonusHuntWidgetV9.jsx`, `BonusHuntWidgetV11.jsx`, `BonusHuntWidgetV12.jsx` |
-| Config panel | `src/components/OverlayCenter/widgets/BonusHuntConfig.jsx` |
+| Config panel | `src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntConfig.jsx` |
 | Main style file | `src/components/OverlayCenter/OverlayRenderer.css` |
 | Data source | `overlay_widgets.config`, Bonus Hunt history/player data, optional `slot_requests` in V12 |
 | Persistence | `overlay_widgets.config`; draft/published appearance through `overlay_state` |

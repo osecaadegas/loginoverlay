@@ -7,8 +7,8 @@
 | Widget ID | `bets` |
 | Name | Bets |
 | Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:648` |
-| Main component | `src/components/OverlayCenter/widgets/BetsWidget.jsx:104` |
-| Config panel | `src/components/OverlayCenter/widgets/BetsConfig.jsx` |
+| Main component | `src/components/OverlayCenter/widgets/bets/BetsWidget.jsx:104` |
+| Config panel | `src/components/OverlayCenter/widgets/bets/BetsConfig.jsx` |
 | Styles | `v1_list`, `v2_grid`, `v3_grid_2x3` |
 | Data source | `overlay_widgets.config`, chat/points betting state |
 | Persistence | `overlay_widgets.config` |

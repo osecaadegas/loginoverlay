@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import TabBar from "./shared/TabBar";
-import { makePerStyleSetters } from "./shared/perStyleConfig";
-import { CHAT_STYLE_KEYS } from "./styleKeysRegistry";
-import useTwitchChannel from "../../../hooks/useTwitchChannel";
+import TabBar from "../shared/TabBar";
+import { makePerStyleSetters } from "../shared/perStyleConfig";
+import { CHAT_STYLE_KEYS } from "../styleKeysRegistry";
+import useTwitchChannel from "../../../../hooks/useTwitchChannel";
 
 export default function ChatConfig({ config, onChange }) {
   const c = config || {};

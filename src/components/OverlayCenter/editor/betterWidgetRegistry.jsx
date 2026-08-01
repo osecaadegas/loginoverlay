@@ -1,13 +1,13 @@
 import React from "react";
-import BonusHuntWidget from "../widgets/BonusHuntWidget";
-import GiveawayWidget from "../widgets/GiveawayWidget";
-import NavbarWidget from "../widgets/NavbarWidget";
-import ChatWidget from "../widgets/ChatWidget";
-import RtpStatsWidget from "../widgets/RtpStatsWidget";
-import BackgroundWidget from "../widgets/BackgroundWidget";
-import BetsWidget from "../widgets/BetsWidget";
-import SlideshowFrameWidget from "../widgets/SlideshowFrameWidget";
-import TournamentWidget from "../widgets/TournamentWidget";
+import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
+import GiveawayWidget from "../widgets/giveaway/GiveawayWidget";
+import NavbarWidget from "../widgets/navbar/NavbarWidget";
+import ChatWidget from "../widgets/chat/ChatWidget";
+import RtpStatsWidget from "../widgets/rtp-stats/RtpStatsWidget";
+import BackgroundWidget from "../widgets/background/BackgroundWidget";
+import BetsWidget from "../widgets/bets/BetsWidget";
+import SlideshowFrameWidget from "../widgets/slideshow-frame/SlideshowFrameWidget";
+import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,

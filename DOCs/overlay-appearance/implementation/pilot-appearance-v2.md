@@ -6,7 +6,7 @@ The first production pilot migrates two audited widgets only:
 
 - `bh_stats` (`src/components/OverlayCenter/widgets/BHStatsWidget.jsx`)
   - Selected as the simple pilot because it has a small DOM shape, limited state variants, no layout-distance animations, and already reads scoped sub-element values via `subValue`.
-- `bonus_hunt` (`src/components/OverlayCenter/widgets/BonusHuntWidget.jsx` and `BonusHuntWidgetV12.jsx`)
+- `bonus_hunt` (`src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntWidget.jsx` and `BonusHuntWidgetV12.jsx`)
   - Selected as the complex pilot because it includes nested surfaces, stats, slot rows/cards, slot images, progress, positive/negative states, request rows, and animation-sensitive carousel/flip behavior.
 
 The next production migration added `slot_requests` and `giveaway`; see `implementation/slot-requests-giveaway-v2.md`.

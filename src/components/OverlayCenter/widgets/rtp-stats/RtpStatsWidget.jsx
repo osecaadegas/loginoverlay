@@ -1,24 +1,24 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { supabase } from "../../../config/supabaseClient";
+import { supabase } from "../../../../config/supabaseClient";
 import {
   findUserSlotRecord,
   getSlotIdentity,
   hydrateSlotPersonalBestFromHistory,
   recordMatchesSlot,
-} from "../../../services/slotRecordService";
-import { getProviderImage } from "../../../utils/gameProviders";
-import { subElementStyle, subValue } from "./shared/appearanceStyles";
+} from "../../../../services/slotRecordService";
+import { getProviderImage } from "../../../../utils/gameProviders";
+import { subElementStyle, subValue } from "../shared/appearanceStyles";
 import {
   brushedMetalBackground,
   metalBorderColor,
   metalSurfaceShadow,
-} from "./shared/metalTexture";
+} from "../shared/metalTexture";
 import {
   STYLE_SECA,
   resolveStyleSecaValue,
   styleSecaSurfaceGradient,
-} from "./shared/styleSecaTheme";
-import { BetterRtpStatsStyle } from "./shared/betterWidgetStyles";
+} from "../shared/styleSecaTheme";
+import { BetterRtpStatsStyle } from "../shared/betterWidgetStyles";
 
 const DEFAULT_RTP_METAL = Object.freeze({
   primaryColor: "#6f7d91",

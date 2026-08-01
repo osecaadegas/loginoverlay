@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../../context/AuthContext";
-import { makePerStyleSetters } from "./shared/perStyleConfig";
-import { NAVBAR_STYLE_KEYS } from "./styleKeysRegistry";
-import TabBar from "./shared/TabBar";
+import { useAuth } from "../../../../context/AuthContext";
+import { makePerStyleSetters } from "../shared/perStyleConfig";
+import { NAVBAR_STYLE_KEYS } from "../styleKeysRegistry";
+import TabBar from "../shared/TabBar";
 
 const DEFAULT_SECTION_LAYOUT = [
   { id: "identity", zone: "left" },

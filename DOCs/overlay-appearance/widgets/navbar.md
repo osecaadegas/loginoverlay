@@ -7,8 +7,8 @@
 | Widget ID | `navbar` |
 | Name | Navbar |
 | Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:167` |
-| Main component | `src/components/OverlayCenter/widgets/NavbarWidget.jsx:93` |
-| Config panel | `src/components/OverlayCenter/widgets/NavbarConfig.jsx` |
+| Main component | `src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx:93` |
+| Config panel | `src/components/OverlayCenter/widgets/navbar/NavbarConfig.jsx` |
 | Styles | `v1`, `metallic`, `glass`, `retro` through `displayStyle` |
 | Data source | `overlay_widgets.config`, clock, crypto/music/profile integrations |
 | Persistence | `overlay_widgets.config` and saved navbar presets |

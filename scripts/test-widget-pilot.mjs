@@ -312,7 +312,7 @@ try {
   await server.close();
 }
 
-const bonusHuntDispatcherSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/BonusHuntWidget.jsx', import.meta.url), 'utf8');
+const bonusHuntDispatcherSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntWidget.jsx', import.meta.url), 'utf8');
 assert.ok(bonusHuntDispatcherSource.includes('useBonusHuntRequestsData'), 'Bonus Hunt dispatcher uses shared request data hook');
 assert.ok(bonusHuntDispatcherSource.includes('v12_classic_sr_editable'), 'Bonus Hunt dispatcher can route to the editable Classic + Requests style');
 

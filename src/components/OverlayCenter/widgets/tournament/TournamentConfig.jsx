@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { makePerStyleSetters } from './shared/perStyleConfig';
-import { TOURNAMENT_STYLE_KEYS } from './styleKeysRegistry';
-import { getAllSlots, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
-import { useAuth } from '../../../context/AuthContext';
-import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
-import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from '../shared/perStyleConfig';
+import { TOURNAMENT_STYLE_KEYS } from '../styleKeysRegistry';
+import { getAllSlots, sortSlotsByProviderPriority } from '../../../../utils/slotUtils';
+import { useAuth } from '../../../../context/AuthContext';
+import { updateSlotRecordsFromHunt } from '../../../../services/slotRecordService';
+import TabBar from '../shared/TabBar';
 import {
   TOURNAMENT_TYPES,
   MATCH_STATUS,
@@ -16,7 +16,7 @@ import {
   getBoScoreboard,
   formatResult,
   getRoundInputFields,
-} from './tournament/tournamentEngine';
+} from './tournamentEngine';
 import {
   generateBracket,
   updateBracketMatch,
@@ -24,7 +24,7 @@ import {
   getBracketStats,
   getChampion,
   seedPlayers,
-} from '../../TournamentsPage/bracketUtils';
+} from '../../../TournamentsPage/bracketUtils';
 
 /* ─── Numeric input with controlled value ─── */
 function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = {}, onNext }) {

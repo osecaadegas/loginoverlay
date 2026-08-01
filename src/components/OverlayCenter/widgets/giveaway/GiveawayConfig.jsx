@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import useTwitchChat from '../../../hooks/useTwitchChat';
-import useKickChat from '../../../hooks/useKickChat';
-import useTwitchChannel from '../../../hooks/useTwitchChannel';
-import { makePerStyleSetters } from './shared/perStyleConfig';
-import { GIVEAWAY_STYLE_KEYS } from './styleKeysRegistry';
-import { SectionHeader } from '../ui';
+import useTwitchChat from '../../../../hooks/useTwitchChat';
+import useKickChat from '../../../../hooks/useKickChat';
+import useTwitchChannel from '../../../../hooks/useTwitchChannel';
+import { makePerStyleSetters } from '../shared/perStyleConfig';
+import { GIVEAWAY_STYLE_KEYS } from '../styleKeysRegistry';
+import { SectionHeader } from '../../ui';
 import { CirclePlay, CircleStop, Trash2, Trophy, Users, Wifi, WifiOff, X } from 'lucide-react';
 
 /* ─── Giveaway Config Panel ─── */

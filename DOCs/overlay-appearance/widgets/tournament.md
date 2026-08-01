@@ -7,9 +7,9 @@
 | Widget ID | `tournament` |
 | Name | Tournament |
 | Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:78` |
-| Main component | `src/components/OverlayCenter/widgets/TournamentWidget.jsx:47` |
+| Main component | `src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx:47` |
 | Child components | `widgets/tournament/PlayerCard.jsx`, `MatchCard.jsx`, `RoundDisplay.jsx`, `ShatterEffect.jsx` |
-| Config panel | `src/components/OverlayCenter/widgets/TournamentConfig.jsx` |
+| Config panel | `src/components/OverlayCenter/widgets/tournament/TournamentConfig.jsx` |
 | Styles | `grid`, `showcase`, `vertical`, `bracket`, `neon`, `minimal`, `arena`, `futuristic`, `esports` through `layout` |
 | Data source | `overlay_widgets.config`, tournament engine state |
 | Persistence | `overlay_widgets.config` and saved widget presets |

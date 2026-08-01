@@ -6,23 +6,23 @@
  */
 import { registerWidget } from "./widgetRegistry";
 
-import BackgroundConfig from "./BackgroundConfig";
-import BackgroundWidget from "./BackgroundWidget";
-import BetsConfig from "./BetsConfig";
-import BetsWidget from "./BetsWidget";
-import BonusHuntConfig from "./BonusHuntConfig";
-import BonusHuntWidget from "./BonusHuntWidget";
-import ChatConfig from "./ChatConfig";
-import ChatWidget from "./ChatWidget";
-import GiveawayConfig from "./GiveawayConfig";
-import GiveawayWidget from "./GiveawayWidget";
-import NavbarConfig from "./NavbarConfig";
-import NavbarWidget from "./NavbarWidget";
-import RtpStatsConfig from "./RtpStatsConfig";
-import RtpStatsWidget from "./RtpStatsWidget";
-import SlideshowFrameWidget from "./SlideshowFrameWidget";
-import TournamentConfig from "./TournamentConfig";
-import TournamentWidget from "./TournamentWidget";
+import BackgroundConfig from "./background/BackgroundConfig";
+import BackgroundWidget from "./background/BackgroundWidget";
+import BetsConfig from "./bets/BetsConfig";
+import BetsWidget from "./bets/BetsWidget";
+import BonusHuntConfig from "./bonus-hunt/BonusHuntConfig";
+import BonusHuntWidget from "./bonus-hunt/BonusHuntWidget";
+import ChatConfig from "./chat/ChatConfig";
+import ChatWidget from "./chat/ChatWidget";
+import GiveawayConfig from "./giveaway/GiveawayConfig";
+import GiveawayWidget from "./giveaway/GiveawayWidget";
+import NavbarConfig from "./navbar/NavbarConfig";
+import NavbarWidget from "./navbar/NavbarWidget";
+import RtpStatsConfig from "./rtp-stats/RtpStatsConfig";
+import RtpStatsWidget from "./rtp-stats/RtpStatsWidget";
+import SlideshowFrameWidget from "./slideshow-frame/SlideshowFrameWidget";
+import TournamentConfig from "./tournament/TournamentConfig";
+import TournamentWidget from "./tournament/TournamentWidget";
 
 const CURRENCY = "EUR ";
 

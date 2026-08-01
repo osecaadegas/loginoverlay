@@ -3324,7 +3324,7 @@ try {
   );
   const rtpWidgetSource = readFileSync(
     new URL(
-      "../src/components/OverlayCenter/widgets/RtpStatsWidget.jsx",
+      "../src/components/OverlayCenter/widgets/rtp-stats/RtpStatsWidget.jsx",
       import.meta.url,
     ),
     "utf8",
@@ -3600,7 +3600,7 @@ try {
   );
   const navbarWidgetSource = readFileSync(
     new URL(
-      "../src/components/OverlayCenter/widgets/NavbarWidget.jsx",
+      "../src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx",
       import.meta.url,
     ),
     "utf8",
@@ -3893,7 +3893,7 @@ try {
   );
   const betsRendererSource = readFileSync(
     new URL(
-      "../src/components/OverlayCenter/widgets/BetsWidget.jsx",
+      "../src/components/OverlayCenter/widgets/bets/BetsWidget.jsx",
       import.meta.url,
     ),
     "utf8",
@@ -4018,7 +4018,7 @@ try {
   );
   const backgroundWidgetSource = readFileSync(
     new URL(
-      "../src/components/OverlayCenter/widgets/BackgroundWidget.jsx",
+      "../src/components/OverlayCenter/widgets/background/BackgroundWidget.jsx",
       import.meta.url,
     ),
     "utf8",
@@ -4189,7 +4189,7 @@ try {
   );
   const tournamentRendererSource = readFileSync(
     new URL(
-      "../src/components/OverlayCenter/widgets/TournamentWidget.jsx",
+      "../src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx",
       import.meta.url,
     ),
     "utf8",
@@ -4300,7 +4300,7 @@ try {
   );
   const chatRendererSource = readFileSync(
     new URL(
-      "../src/components/OverlayCenter/widgets/ChatWidget.jsx",
+      "../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx",
       import.meta.url,
     ),
     "utf8",

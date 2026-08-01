@@ -82,13 +82,13 @@ Remote application result:
 
 The most recent grouped audit before this report showed the largest clusters in:
 
-- `src/components/OverlayCenter/widgets/TournamentWidget.jsx`
+- `src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx`
 - `src/components/OverlayCenter/appearance/AppearanceCenter.css`
-- `src/components/OverlayCenter/widgets/GiveawayWidget.jsx`
+- `src/components/OverlayCenter/widgets/giveaway/GiveawayWidget.jsx`
 - `src/components/OverlayCenter/widgets/PointWheelWidget.jsx`
-- `src/components/OverlayCenter/widgets/NavbarWidget.jsx`
+- `src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx`
 - `src/components/OverlayCenter/widgets/SpotifyWidget.jsx`
-- `src/components/OverlayCenter/widgets/ChatWidget.jsx`
+- `src/components/OverlayCenter/widgets/chat/ChatWidget.jsx`
 - `src/components/OverlayCenter/appearance/appearanceModel.js` for central defaults and validation literals
 
 ## Validation So Far

@@ -5,8 +5,8 @@
  * Follows the same pattern as PredictionsConfig + BonusHuntConfig.
  */
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
-import TabBar from './shared/TabBar';
+import { useAuth } from '../../../../context/AuthContext';
+import TabBar from '../shared/TabBar';
 
 const BETS_OPTION_PALETTE = [
   '#6366f1',

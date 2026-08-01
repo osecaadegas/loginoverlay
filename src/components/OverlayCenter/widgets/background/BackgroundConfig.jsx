@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { makePerStyleSetters } from './shared/perStyleConfig';
-import { BACKGROUND_STYLE_KEYS } from './styleKeysRegistry';
-import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from '../shared/perStyleConfig';
+import { BACKGROUND_STYLE_KEYS } from '../styleKeysRegistry';
+import TabBar from '../shared/TabBar';
 
 /* ─── Texture options ─── */
 const TEXTURE_OPTIONS = [

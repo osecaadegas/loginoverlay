@@ -7,9 +7,9 @@ import {
   getTournamentStats,
   getTypeLabel,
   MATCH_STATUS,
-} from './tournament/tournamentEngine';
-import ShatterEffect from './tournament/ShatterEffect';
-import { subValue } from './shared/appearanceStyles';
+} from './tournamentEngine';
+import ShatterEffect from './ShatterEffect';
+import { subValue } from '../shared/appearanceStyles';
 
 function widgetToken(property) {
   return `var(--widget-${property})`;

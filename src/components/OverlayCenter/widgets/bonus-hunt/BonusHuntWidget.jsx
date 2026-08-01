@@ -5,11 +5,11 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import SlotImage from "./SlotImage";
-import { subValue } from "./shared/appearanceStyles";
-import { useBonusHuntRequestsData } from "./bonus-hunt/shared/useBonusHuntRequestsData";
-import { BetterBonusHuntStyle } from "./shared/betterWidgetStyles";
-import { getAllSlots } from "../../../utils/slotUtils";
+import SlotImage from "../SlotImage";
+import { subValue } from "../shared/appearanceStyles";
+import { useBonusHuntRequestsData } from "./shared/useBonusHuntRequestsData";
+import { BetterBonusHuntStyle } from "../shared/betterWidgetStyles";
+import { getAllSlots } from "../../../../utils/slotUtils";
 
 function cssPx(value) {
   if (value === undefined || value === null || value === "") return undefined;

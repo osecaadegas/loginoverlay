@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { getAllSlots, DEFAULT_SLOT_IMAGE, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
-import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../utils/slotImageSearch';
-import { getMySubmissions, submitSlot } from '../../../services/pendingSlotService';
-import ColorPicker from './shared/ColorPicker';
-import { supabase } from '../../../config/supabaseClient';
-import { useAuth } from '../../../context/AuthContext';
-import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../services/overlayService';
-import { saveSlotPersonalBestFromBonus, updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
-import TabBar from './shared/TabBar';
-import { makePerStyleSetters } from './shared/perStyleConfig';
-import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
-import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
-import { getProviderImage } from '../../../utils/gameProviders';
-import SlotImage from './SlotImage';
+import { getAllSlots, DEFAULT_SLOT_IMAGE, sortSlotsByProviderPriority } from '../../../../utils/slotUtils';
+import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../../utils/slotImageSearch';
+import { getMySubmissions, submitSlot } from '../../../../services/pendingSlotService';
+import ColorPicker from '../shared/ColorPicker';
+import { supabase } from '../../../../config/supabaseClient';
+import { useAuth } from '../../../../context/AuthContext';
+import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../../services/overlayService';
+import { saveSlotPersonalBestFromBonus, updateSlotRecordsFromHunt } from '../../../../services/slotRecordService';
+import TabBar from '../shared/TabBar';
+import { makePerStyleSetters } from '../shared/perStyleConfig';
+import { BONUS_HUNT_STYLE_KEYS } from '../styleKeysRegistry';
+import { getErrorMessage, isDuplicateError } from '../../../../utils/errorUtils';
+import { getProviderImage } from '../../../../utils/gameProviders';
+import SlotImage from '../SlotImage';
 
 const FONT_OPTIONS = Object.freeze([
   { value: "'Inter', sans-serif", label: 'Inter' },

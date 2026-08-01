@@ -80,8 +80,8 @@ The preview data is injected only by `applyPreviewWidgetSamples`; live OBS conti
 
 ### Source Files Inspected
 
-- `src/components/OverlayCenter/widgets/GiveawayWidget.jsx`
-- `src/components/OverlayCenter/widgets/GiveawayConfig.jsx`
+- `src/components/OverlayCenter/widgets/giveaway/GiveawayWidget.jsx`
+- `src/components/OverlayCenter/widgets/giveaway/GiveawayConfig.jsx`
 - `src/components/OverlayCenter/appearance/previewWidgetSamples.js`
 
 ### Registered Elements

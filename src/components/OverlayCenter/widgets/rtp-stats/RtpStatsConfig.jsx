@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { makePerStyleSetters } from "./shared/perStyleConfig";
-import { RTP_STATS_STYLE_KEYS } from "./styleKeysRegistry";
-import TabBar from "./shared/TabBar";
+import { makePerStyleSetters } from "../shared/perStyleConfig";
+import { RTP_STATS_STYLE_KEYS } from "../styleKeysRegistry";
+import TabBar from "../shared/TabBar";
 
 export default function RtpStatsConfig({ config, onChange, allWidgets }) {
   const c = config || {};

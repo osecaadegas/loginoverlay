@@ -1,28 +1,28 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import useTwitchChat from "../../../hooks/useTwitchChat";
-import useKickChat from "../../../hooks/useKickChat";
-import useTwitchChannel from "../../../hooks/useTwitchChannel";
+import useTwitchChat from "../../../../hooks/useTwitchChat";
+import useKickChat from "../../../../hooks/useKickChat";
+import useTwitchChannel from "../../../../hooks/useTwitchChannel";
 import {
   appearanceAttrs,
   subElementStyle,
   subValue,
-} from "./shared/appearanceStyles";
+} from "../shared/appearanceStyles";
 import {
   brushedMetalBackground,
   metalBorderColor,
   metalSurfaceShadow,
-} from "./shared/metalTexture";
+} from "../shared/metalTexture";
 import {
   STYLE_SECA,
   resolveStyleSecaValue,
   styleSecaHeaderGradient,
   styleSecaSurfaceGradient,
-} from "./shared/styleSecaTheme";
-import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
+} from "../shared/styleSecaTheme";
+import { resolveBonusHuntSyncedColors } from "../shared/bonusHuntColorSync";
 import {
   BetterChatHeader,
   BetterChatMessage,
-} from "./shared/betterWidgetStyles";
+} from "../shared/betterWidgetStyles";
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -42,7 +42,8 @@ const BADGE_DEFS = [
 
 const MESSAGE_TTL_MS = 120 * 1000;
 const HIDDEN_BOTS = new Set(["streamelements", "nightbot", "moobot"]);
-const BETTER_CHAT_EMPTY_MESSAGE = "Hey you dont you think this chat its too quiet ?";
+const BETTER_CHAT_EMPTY_MESSAGE =
+  "Hey you dont you think this chat its too quiet ?";
 const BTTV_EMOTES_API_URL = "/api/chat/emotes/bttv";
 const BTTV_CDN_URL = "https://cdn.betterttv.net/emote";
 const TWITCH_EMOTE_CDN_URL = "https://static-cdn.jtvnw.net/emoticons/v2";
@@ -256,12 +257,7 @@ function normalizeChatMessage(item = {}, index = 0, now = Date.now()) {
     item.display_name ||
     item.name ||
     "viewer";
-  const message =
-    item.message ||
-    item.text ||
-    item.body ||
-    item.content ||
-    "";
+  const message = item.message || item.text || item.body || item.content || "";
   return {
     ...item,
     id: item.id || `${String(username).toLowerCase()}-${index}`,
@@ -447,11 +443,15 @@ function renderBttvMessageContent(text, emoteMap, scale = 2) {
     const currentOffset = tokenOffset;
     tokenOffset += token.length;
     if (!token || /^\s+$/.test(token)) {
-      return <React.Fragment key={`text-${currentOffset}`}>{token}</React.Fragment>;
+      return (
+        <React.Fragment key={`text-${currentOffset}`}>{token}</React.Fragment>
+      );
     }
     const emote = emoteMap.get(token);
     if (!emote) {
-      return <React.Fragment key={`text-${currentOffset}`}>{token}</React.Fragment>;
+      return (
+        <React.Fragment key={`text-${currentOffset}`}>{token}</React.Fragment>
+      );
     }
     return (
       <img
@@ -516,7 +516,11 @@ function renderBetterChatMessageContent(msg, emoteMap, scale = 2) {
     if (range.start > cursor) {
       content.push(
         <React.Fragment key={`bttv-segment-${cursor}`}>
-          {renderBttvMessageContent(text.slice(cursor, range.start), emoteMap, scale)}
+          {renderBttvMessageContent(
+            text.slice(cursor, range.start),
+            emoteMap,
+            scale,
+          )}
         </React.Fragment>,
       );
     }
@@ -579,7 +583,9 @@ function messageAvatarUrl(msg = {}) {
     msg.userAvatar ||
     msg.photoUrl ||
     msg.raidAvatar ||
-    (msg.platform === "twitch" ? twitchAvatarProxyUrl(msg.login || msg.username) : "")
+    (msg.platform === "twitch"
+      ? twitchAvatarProxyUrl(msg.login || msg.username)
+      : "")
   );
 }
 
@@ -607,7 +613,10 @@ function resolveBetterChatTextureStyle(config = {}) {
     zIndex: 1,
     inset: 0,
     pointerEvents: "none",
-    opacity: Math.max(0, Math.min(1, (Number(config.textureStrength) || 30) / 100)),
+    opacity: Math.max(
+      0,
+      Math.min(1, (Number(config.textureStrength) || 30) / 100),
+    ),
   };
   if (texture === "scanlines") {
     return {
@@ -775,7 +784,8 @@ function ChatWidget({ config, theme, allWidgets }) {
   const autoChannel = useTwitchChannel();
   const resolvedTwitchChannel = c.twitchChannel || autoChannel || "";
   const configuredBttvTwitchUserId = resolveBttvTwitchUserId(c);
-  const bttvTwitchUserId = connectedTwitchChannelId || configuredBttvTwitchUserId;
+  const bttvTwitchUserId =
+    connectedTwitchChannelId || configuredBttvTwitchUserId;
   const bttvTwitchChannel = resolveBttvTwitchChannel(c, resolvedTwitchChannel);
   const bttvEmotes = useBetterTtvEmotes({
     enabled: isBetterChat && c.bttvEnabled !== false,
@@ -839,7 +849,9 @@ function ChatWidget({ config, theme, allWidgets }) {
         c,
         "message",
         "textColor",
-        (isBetterChat ? c.text : c.textColor) || c.textColor || defaultTextColor,
+        (isBetterChat ? c.text : c.textColor) ||
+          c.textColor ||
+          defaultTextColor,
       ),
     ),
     STYLE_SECA.text,
@@ -1046,9 +1058,9 @@ function ChatWidget({ config, theme, allWidgets }) {
   );
 
   useEffect(() => {
-    setMessages((prev) => (
-      prev.length > maxMessages ? prev.slice(-maxMessages) : prev
-    ));
+    setMessages((prev) =>
+      prev.length > maxMessages ? prev.slice(-maxMessages) : prev,
+    );
   }, [maxMessages]);
 
   useEffect(() => {
@@ -1076,19 +1088,21 @@ function ChatWidget({ config, theme, allWidgets }) {
   const previewMessages = Array.isArray(c.__appearancePreviewMessages)
     ? c.__appearancePreviewMessages
     : [];
-  const simulatedPreviewMessages = isBetterChat && c.live === false
-    ? []
-    : previewMessages;
-  const renderMessageSource = messages.length > 0 ? messages : simulatedPreviewMessages;
-  const limitedRenderMessages = renderMessageSource.length > maxMessages
-    ? renderMessageSource.slice(-maxMessages)
-    : renderMessageSource;
+  const simulatedPreviewMessages =
+    isBetterChat && c.live === false ? [] : previewMessages;
+  const renderMessageSource =
+    messages.length > 0 ? messages : simulatedPreviewMessages;
+  const limitedRenderMessages =
+    renderMessageSource.length > maxMessages
+      ? renderMessageSource.slice(-maxMessages)
+      : renderMessageSource;
   const normalizedRenderMessages = limitedRenderMessages.map((item, index) =>
-    normalizeChatMessage(item, index, 0)
+    normalizeChatMessage(item, index, 0),
   );
-  const renderMessages = isBetterChat && betterChatFlow === "top-to-bottom"
-    ? normalizedRenderMessages.slice().reverse()
-    : normalizedRenderMessages;
+  const renderMessages =
+    isBetterChat && betterChatFlow === "top-to-bottom"
+      ? normalizedRenderMessages.slice().reverse()
+      : normalizedRenderMessages;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -1189,8 +1203,7 @@ function ChatWidget({ config, theme, allWidgets }) {
     }),
     ...(isBetterChat && {
       isolation: "isolate",
-      boxShadow:
-        `inset 0 0 5px color-mix(in srgb, ${c.glow || "#00c3ff"} 78%, transparent), inset 0 0 14px color-mix(in srgb, ${c.glow || "#00c3ff"} 20%, transparent), 0 0 5px color-mix(in srgb, ${c.glow || "#00c3ff"} 68%, transparent), 0 0 17px color-mix(in srgb, ${c.glow || "#00c3ff"} 20%, transparent)`,
+      boxShadow: `inset 0 0 5px color-mix(in srgb, ${c.glow || "#00c3ff"} 78%, transparent), inset 0 0 14px color-mix(in srgb, ${c.glow || "#00c3ff"} 20%, transparent), 0 0 5px color-mix(in srgb, ${c.glow || "#00c3ff"} 68%, transparent), 0 0 17px color-mix(in srgb, ${c.glow || "#00c3ff"} 20%, transparent)`,
     }),
     /* Cards CSS vars — synced from config */
     "--chat-card-bg": messageBg || c.cardBg || "rgba(20,15,40,0.85)",
@@ -1581,26 +1594,28 @@ function ChatWidget({ config, theme, allWidgets }) {
           }),
         })}
       >
-        {renderMessages.length === 0 && chatStyle === "better_chat" && showBetterChatEmptyState && (
-          <div
-            className="ov-chat-empty ov-chat-empty--better"
-            style={subElementStyle(c, "emptyState", {
-              minHeight: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "18px",
-              color: textColor,
-              fontWeight: 800,
-              lineHeight: 1.35,
-              textAlign: "center",
-              opacity: 0.78,
-            })}
-            {...partAttrs("emptyState")}
-          >
-            {c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}
-          </div>
-        )}
+        {renderMessages.length === 0 &&
+          chatStyle === "better_chat" &&
+          showBetterChatEmptyState && (
+            <div
+              className="ov-chat-empty ov-chat-empty--better"
+              style={subElementStyle(c, "emptyState", {
+                minHeight: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "18px",
+                color: textColor,
+                fontWeight: 800,
+                lineHeight: 1.35,
+                textAlign: "center",
+                opacity: 0.78,
+              })}
+              {...partAttrs("emptyState")}
+            >
+              {c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}
+            </div>
+          )}
         {renderMessages.map((msg, msgIdx) => {
           const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
           const nameColor =

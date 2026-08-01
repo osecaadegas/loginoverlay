@@ -10,15 +10,15 @@ import {
   appearanceAttrs,
   subElementStyle,
   subValue,
-} from "./shared/appearanceStyles";
+} from "../shared/appearanceStyles";
 import {
   STYLE_SECA,
   resolveStyleSecaValue,
   styleSecaHeaderGradient,
   styleSecaSurfaceGradient,
-} from "./shared/styleSecaTheme";
-import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
-import { BetterBetsStyle } from "./shared/betterWidgetStyles";
+} from "../shared/styleSecaTheme";
+import { resolveBonusHuntSyncedColors } from "../shared/bonusHuntColorSync";
+import { BetterBetsStyle } from "../shared/betterWidgetStyles";
 
 const STYLE_SECA_BETS_DESIGN_WIDTH = 400;
 const STYLE_SECA_BETS_DESIGN_HEIGHT = 510;

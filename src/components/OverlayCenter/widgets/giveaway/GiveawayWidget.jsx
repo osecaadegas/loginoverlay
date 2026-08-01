@@ -1,10 +1,10 @@
 ﻿import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
-import useTwitchChat from '../../../hooks/useTwitchChat';
-import useKickChat from '../../../hooks/useKickChat';
-import useTwitchChannel from '../../../hooks/useTwitchChannel';
-import { supabase } from '../../../config/supabaseClient';
-import { subElementStyle, subValue } from './shared/appearanceStyles';
-import { BetterGiveawayStyle } from './shared/betterWidgetStyles';
+import useTwitchChat from '../../../../hooks/useTwitchChat';
+import useKickChat from '../../../../hooks/useKickChat';
+import useTwitchChannel from '../../../../hooks/useTwitchChannel';
+import { supabase } from '../../../../config/supabaseClient';
+import { subElementStyle, subValue } from '../shared/appearanceStyles';
+import { BetterGiveawayStyle } from '../shared/betterWidgetStyles';
 
 /* ─── Confetti burst generator ─── */
 function ConfettiBurst({ count = 60, accentColor }) {

@@ -7,8 +7,8 @@
 | Widget ID | `rtp_stats` |
 | Name | RTP Stats Bar |
 | Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:340` |
-| Main component | `src/components/OverlayCenter/widgets/RtpStatsWidget.jsx:150` |
-| Config panel | `src/components/OverlayCenter/widgets/RtpStatsConfig.jsx` |
+| Main component | `src/components/OverlayCenter/widgets/rtp-stats/RtpStatsWidget.jsx:150` |
+| Config panel | `src/components/OverlayCenter/widgets/rtp-stats/RtpStatsConfig.jsx` |
 | Styles | `v1`, `vertical`, `neon`, `minimal`, `glass` through `displayStyle` |
 | Data source | `slots`, active/current slot config, optional slot AI endpoint |
 | Persistence | `overlay_widgets.config` |

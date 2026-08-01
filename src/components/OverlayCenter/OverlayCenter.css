@@ -9677,7 +9677,7 @@ body.wm-resizing {
 /* -----------------------------------------------------------
    17. BACKGROUND WIDGET
    Runtime styles (.oc-bg-*, keyframes, effects) moved to
-   widgets/BackgroundWidget.css so they load in OBS too.
+  widgets/background/BackgroundWidget.css so they load in OBS too.
    ----------------------------------------------------------- */
 
 /* -- Config: source mode buttons (admin only) -- */
@@ -9789,11 +9789,11 @@ body.wm-resizing {
 }
 
 /* ------- BACKGROUND ANIMATED EFFECTS -------
-   Moved to widgets/BackgroundWidget.css for OBS compatibility.
+  Moved to widgets/background/BackgroundWidget.css for OBS compatibility.
    ------------------------------------------- */
 
 /* (Orbs, Fireflies, Bokeh, Snow, Rain, Fog, Glimpse keyframes
-   moved to widgets/BackgroundWidget.css) */
+  moved to widgets/background/BackgroundWidget.css) */
 
 /* ------- TOURNAMENT INLINE CONFIG ------- */
 
@@ -12377,7 +12377,7 @@ body.wm-resizing {
    moved to OverlayRenderer.css for OBS compatibility --- */
 
 /* (Aurora, Matrix, Starfield, Waves, Geometric styles
-   moved to widgets/BackgroundWidget.css) */
+  moved to widgets/background/BackgroundWidget.css) */
 
 /* V8/V9 Bonus Hunt CSS moved to OverlayRenderer.css for OBS compatibility */
 /* (keeping comment for reference ï¿½ styles are in OverlayRenderer.css) */

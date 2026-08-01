@@ -2,22 +2,22 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   fetchNowPlaying,
   serverRefreshToken,
-} from "../../../utils/spotifyAuth";
-import { subElementStyle, subValue } from "./shared/appearanceStyles";
+} from "../../../../utils/spotifyAuth";
+import { subElementStyle, subValue } from "../shared/appearanceStyles";
 import {
   brushedMetalBackground,
   brushedMetalTextBackground,
   colorToRgbString,
   metalBorderColor,
   metalSurfaceShadow,
-} from "./shared/metalTexture";
+} from "../shared/metalTexture";
 import {
   STYLE_SECA,
   resolveStyleSecaValue,
   styleSecaHeaderGradient,
   styleSecaSurfaceGradient,
-} from "./shared/styleSecaTheme";
-import { resolveBonusHuntSyncedColors } from "./shared/bonusHuntColorSync";
+} from "../shared/styleSecaTheme";
+import { resolveBonusHuntSyncedColors } from "../shared/bonusHuntColorSync";
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {

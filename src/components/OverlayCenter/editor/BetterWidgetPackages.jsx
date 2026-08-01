@@ -31,12 +31,12 @@ import {
   Waves,
   Zap,
 } from "lucide-react";
-import NavbarWidget from "../widgets/NavbarWidget";
-import RtpStatsWidget from "../widgets/RtpStatsWidget";
-import BonusHuntWidget from "../widgets/BonusHuntWidget";
-import ChatWidget from "../widgets/ChatWidget";
-import TournamentConfig from "../widgets/TournamentConfig";
-import TournamentWidget from "../widgets/TournamentWidget";
+import NavbarWidget from "../widgets/navbar/NavbarWidget";
+import RtpStatsWidget from "../widgets/rtp-stats/RtpStatsWidget";
+import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
+import ChatWidget from "../widgets/chat/ChatWidget";
+import TournamentConfig from "../widgets/tournament/TournamentConfig";
+import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import {
   BetterBackgroundStyle,
   BetterGiveawayStyle,
