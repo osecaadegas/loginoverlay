@@ -222,4 +222,51 @@ assert.ok(
   "Vercel Hobby deployments support at most 12 serverless functions",
 );
 
+const builtinWidgets = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/widgets/builtinWidgets.js",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.match(builtinWidgets, /type: "connect_four"/);
+assert.match(builtinWidgets, /configPanel: ConnectFourConfig/);
+assert.match(builtinWidgets, /component: ConnectFourWidget/);
+
+const overlayControlCenter = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/OverlayControlCenter.jsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.match(
+  overlayControlCenter,
+  /const PRIMARY_TOOLS = \[[\s\S]*?"connect_four"/,
+  "Connect 4 must remain visible in the Overlay Center catalog",
+);
+
+const connectFourWidget = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/widgets/connect-four/ConnectFourWidget.tsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
+for (const setting of [
+  "title",
+  "playerOneColor",
+  "playerTwoColor",
+  "boardColor",
+  "showWager",
+  "showPlayers",
+  "animateDrops",
+]) {
+  assert.match(
+    connectFourWidget,
+    new RegExp(`config\\.${setting}`),
+    `${setting} must be consumed by the OBS renderer`,
+  );
+}
+
 console.log("connect four engine and parser tests passed");

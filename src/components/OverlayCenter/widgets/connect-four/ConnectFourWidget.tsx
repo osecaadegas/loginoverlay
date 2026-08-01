@@ -23,6 +23,7 @@ interface ConnectFourState {
 
 interface ConnectFourWidgetProps {
   userId?: string;
+  config?: Record<string, unknown>;
 }
 
 function stringValue(value: unknown, fallback = ""): string {
@@ -75,6 +76,7 @@ function getStatus(state: ConnectFourState | null): string {
 
 export default function ConnectFourWidget({
   userId,
+  config = {},
 }: Readonly<ConnectFourWidgetProps>) {
   const [state, setState] = useState<ConnectFourState | null>(null);
 
@@ -155,21 +157,31 @@ export default function ConnectFourWidget({
   const board = state.board;
   const playerOne = state.player_one_display_name;
   const playerTwo = state.player_two_display_name || "Waiting for player";
+  const title = stringValue(config.title, "CHAT CONNECT 4");
+  const playerOneColor = stringValue(config.playerOneColor, "#ffd23f");
+  const playerTwoColor = stringValue(config.playerTwoColor, "#f04444");
+  const boardColor = stringValue(config.boardColor, "#08191f");
+  const showWager = config.showWager !== false;
+  const showPlayers = config.showPlayers !== false;
+  const animateDrops = config.animateDrops !== false;
 
   return (
     <section className="connect-four-widget" aria-label="Chat Connect 4">
       <header className="connect-four-head">
         <div>
-          <span className="connect-four-kicker">CHAT CONNECT 4</span>
+          <span className="connect-four-kicker">{title}</span>
           <strong>{getStatus(state)}</strong>
         </div>
-        {state?.wager ? <b>{state.wager.toLocaleString()} PTS</b> : null}
+        {showWager && state?.wager ? (
+          <b>{state.wager.toLocaleString()} PTS</b>
+        ) : null}
       </header>
 
       <div
         className="connect-four-board"
         role="grid"
         aria-label="Connect 4 board"
+        style={{ backgroundColor: boardColor }}
       >
         {board.flatMap((row, rowIndex) =>
           row.map((cell, columnIndex) => {
@@ -185,7 +197,11 @@ export default function ConnectFourWidget({
                 {cell !== 0 ? (
                   <span
                     key={`${state?.match_id}-${state?.move_count}-${rowIndex}-${columnIndex}`}
-                    className={`connect-four-coin connect-four-coin--p${cell}${isLastMove ? " is-latest" : ""}`}
+                    className={`connect-four-coin connect-four-coin--p${cell}${isLastMove && animateDrops ? " is-latest" : ""}`}
+                    style={{
+                      backgroundColor:
+                        cell === 1 ? playerOneColor : playerTwoColor,
+                    }}
                   />
                 ) : null}
               </div>
@@ -194,16 +210,22 @@ export default function ConnectFourWidget({
         )}
       </div>
 
-      <footer className="connect-four-players">
+      {showPlayers && <footer className="connect-four-players">
         <span className={state?.current_player === 1 ? "is-current" : ""}>
-          <i className="connect-four-dot connect-four-dot--p1" />
+          <i
+            className="connect-four-dot connect-four-dot--p1"
+            style={{ backgroundColor: playerOneColor }}
+          />
           {playerOne}
         </span>
         <span className={state?.current_player === 2 ? "is-current" : ""}>
-          <i className="connect-four-dot connect-four-dot--p2" />
+          <i
+            className="connect-four-dot connect-four-dot--p2"
+            style={{ backgroundColor: playerTwoColor }}
+          />
           {playerTwo}
         </span>
-      </footer>
+      </footer>}
     </section>
   );
 }
