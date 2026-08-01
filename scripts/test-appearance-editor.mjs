@@ -774,6 +774,13 @@ try {
     "Better Chat uses the exact Bonus Hunt ocean panel gradient",
   );
   assert.ok(
+    chatWidgetSource.includes("useTwitchChat(resolvedTwitchChannel") &&
+      /type:\s*"chat"[\s\S]*?defaults:\s*\{[\s\S]*?twitchEnabled:\s*true/.test(
+        builtInWidgetsSource,
+      ),
+    "Better Chat connects whenever a Twitch channel resolves",
+  );
+  assert.ok(
     betterWidgetStylesSource.includes('label: "OWNER"') &&
       betterWidgetStylesSource.includes('label: "MOD"') &&
       betterWidgetStylesSource.includes('label: "VIP"') &&

@@ -194,7 +194,7 @@ registerWidget({
   styles: [{ id: "better_chat", icon: "💬", label: "Better Chat" }],
   defaults: {
     chatStyle: "better_chat",
-    twitchEnabled: false,
+    twitchEnabled: true,
     twitchChannel: "",
     youtubeEnabled: false,
     youtubeVideoId: "",

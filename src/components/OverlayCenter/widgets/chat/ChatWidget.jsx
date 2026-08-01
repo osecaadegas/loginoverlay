@@ -1111,7 +1111,7 @@ function ChatWidget({
   }, [messageTtlMs, shouldExpireMessages]);
 
   /* Connect to enabled platforms */
-  useTwitchChat(c.twitchEnabled ? resolvedTwitchChannel : "", handleMessage, {
+  useTwitchChat(resolvedTwitchChannel, handleMessage, {
     parseRaids: true,
     onRoomState: handleTwitchRoomState,
   });
