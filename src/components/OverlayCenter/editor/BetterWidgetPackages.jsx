@@ -2081,8 +2081,8 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
   const drawerRevealSeconds = Math.max(10, Math.min(90, Number(c.drawerRevealSeconds) || 30));
   const drawerHoldSeconds = Math.max(3, Math.min(15, Number(c.drawerHoldSeconds) || 8));
   const drawerHint = normalizedDrawerMode === "expand"
-    ? "The best / worst card expands the panel."
-    : "The best / worst card stays inside the panel and temporarily reduces the list area.";
+    ? "The best / worst card expands only the bottom of the panel on the configured timer."
+    : "The best / worst card stays inside the panel and temporarily reduces the list area on the configured timer.";
   const currentColour = BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
   const previewWin = (mult, extra = {}) => {
     if (typeof window === "undefined") return;
@@ -2285,7 +2285,6 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           max={90}
           step={5}
           unit="s"
-          disabled={normalizedDrawerMode !== "contain"}
           onChange={(drawerRevealSeconds) => set({ drawerRevealSeconds })}
         />
         <SliderRow
@@ -2295,7 +2294,6 @@ function SimpleThemedControls({ type, config, onChange, onWidgetChange, widget }
           max={15}
           step={1}
           unit="s"
-          disabled={normalizedDrawerMode !== "contain"}
           onChange={(drawerHoldSeconds) => set({ drawerHoldSeconds })}
         />
         <HuntHint>{drawerHint}</HuntHint>

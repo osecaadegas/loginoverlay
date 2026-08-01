@@ -1382,6 +1382,7 @@ function BetterStyleSheet() {
       @keyframes better-hunt-marquee-up{from{transform:translateY(0)}to{transform:translateY(-50%)}}
       @keyframes better-hunt-marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       @keyframes better-hunt-marquee-right{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+      @keyframes better-hunt-drawer-in{from{max-height:0;opacity:0;transform:translateY(-12px);padding-bottom:0}to{max-height:var(--bh-drawer-open-height,150px);opacity:1;transform:translateY(0);padding-bottom:7px}}
       @keyframes better-hunt-stats-in{from{opacity:0;transform:translateX(34px) scale(.97);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
       @keyframes better-hunt-kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(1.5%,-1.5%)}}
       @keyframes better-hunt-cloak{0%,100%{filter:blur(1px) brightness(.65) contrast(1.2) saturate(.3);opacity:.44}50%{filter:blur(2.5px) brightness(.9) contrast(.95) saturate(.1);opacity:.28}}
@@ -1535,9 +1536,9 @@ function BetterStyleSheet() {
       .better-hunt-root[data-session="opening"] .better-hunt-pill{border-color:rgba(255,201,61,.72);background:rgba(255,201,61,.12);color:#ffc93d}.better-hunt-root[data-session="ended"] .better-hunt-pill{border-color:rgba(210,220,230,.34);background:rgba(210,220,230,.08);color:var(--bh-steel-hi)}
       .better-hunt-panel--shake{animation:better-hunt-widget-shake .6s ease-in-out .1s 3}
       .better-hunt-stat,.better-hunt-row,.better-hunt-total,.better-hunt-requests,.better-hunt-result{border-radius:var(--bh-stat-radius,7px)}
-      .better-hunt-drawer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(9px);padding:0 8px;transition:max-height .58s cubic-bezier(.22,.9,.3,1),opacity .34s ease,transform .48s cubic-bezier(.22,.9,.3,1),padding .48s cubic-bezier(.22,.9,.3,1)}
-      .better-hunt-drawer.is-open{max-height:128px;opacity:1;transform:translateY(0);padding:0 8px 9px}
-      .better-hunt-total--expand .better-hunt-drawer.is-open{max-height:142px}
+      .better-hunt-drawer{--bh-drawer-open-height:150px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;overflow:hidden;max-height:0;opacity:0;transform:translateY(-12px);padding:0 6px;transition:max-height .64s cubic-bezier(.22,.9,.3,1),opacity .38s ease,transform .58s cubic-bezier(.22,.9,.3,1),padding .58s cubic-bezier(.22,.9,.3,1);will-change:max-height,opacity,transform}
+      .better-hunt-drawer.is-open{max-height:var(--bh-drawer-open-height);opacity:1;transform:translateY(0);padding:0 6px 7px}
+      .better-hunt-root[data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in .64s cubic-bezier(.22,.9,.3,1) both}
       .better-hunt-result{display:grid;grid-template-rows:auto minmax(68px,auto);gap:5px;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 14px rgba(0,0,0,.35)}
       .better-hunt-result-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px;min-width:0}
       .better-hunt-result-head em{display:inline-flex;width:max-content;border-radius:4px;padding:2px 4px;background:rgba(69,200,255,.13);color:var(--bh-ice);font-size:.52em;font-style:normal;font-weight:950;letter-spacing:.1em;line-height:1;text-transform:uppercase}
@@ -1546,7 +1547,7 @@ function BetterStyleSheet() {
       .better-hunt-result-body{display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:7px;align-items:center;min-width:0}
       .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:68px minmax(0,1fr)}
       .better-hunt-result-art{display:grid;place-items:center;min-width:0}
-      .better-hunt-result-art .better-hunt-thumb{width:66px!important;height:66px!important;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.1)}
+      .better-hunt-result-art > img,.better-hunt-result-art .better-hunt-thumb{width:82px!important;height:94px!important;border-radius:7px!important;object-fit:cover;object-position:center;box-shadow:0 4px 12px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.12)}
       .better-hunt-result-stats{display:grid;gap:3px;min-width:0}
       .better-hunt-result-row{display:grid;gap:1px;min-width:0;border-bottom:0;padding:0}
       .better-hunt-result-row span{color:var(--bh-steel-hi);font-size:.52em;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}
@@ -1554,12 +1555,15 @@ function BetterStyleSheet() {
       .better-hunt-result--best .better-hunt-result-row span,.better-hunt-result--best .better-hunt-result-row strong{text-align:right}
       .better-hunt-result--worst .better-hunt-result-row span,.better-hunt-result--worst .better-hunt-result-row strong{text-align:left}
       .better-hunt-result--best .better-hunt-result-row:nth-child(2) strong{color:#ffc93d}.better-hunt-result--worst .better-hunt-result-row:nth-child(2) strong{color:#ff8a74}
-      .better-hunt-drawer{gap:3px;background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(255,255,255,.025),rgba(0,0,0,.16))}
-      .better-hunt-result{grid-template-rows:minmax(68px,auto);border:0;background:transparent;padding:5px 3px;box-shadow:none}
+      .better-hunt-drawer{gap:4px;background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(255,255,255,.02),rgba(0,0,0,.14))}
+      .better-hunt-result{grid-template-rows:minmax(94px,auto);border:1px solid transparent;padding:3px;box-shadow:none}
+      .better-hunt-result--best{border-color:rgba(52,211,153,.18);background:linear-gradient(90deg,rgba(16,185,129,.13),rgba(5,46,35,.2))}
+      .better-hunt-result--worst{border-color:rgba(248,113,113,.2);background:linear-gradient(90deg,rgba(69,10,10,.2),rgba(239,68,68,.13))}
       .better-hunt-result-head{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-      .better-hunt-result-body{gap:5px}
-      .better-hunt-result--best .better-hunt-result-body{grid-template-columns:minmax(0,1fr) 68px}
-      .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:68px minmax(0,1fr)}
+      .better-hunt-result-body{gap:2px;align-items:stretch}
+      .better-hunt-result-stats{align-content:center}
+      .better-hunt-result--best .better-hunt-result-body{grid-template-columns:minmax(0,1fr) 82px}
+      .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:82px minmax(0,1fr)}
       .better-hunt-header{position:relative;justify-content:center;gap:10px;min-height:calc(var(--bh-avatar) + 6px)}
       .better-hunt-header--banner{margin:-12px -12px 0;padding:14px 48px 13px;border-top:2px solid var(--bh-line-hi);border-bottom:2px solid var(--bh-line-hi);background:linear-gradient(180deg,color-mix(in srgb,var(--bh-line-hi) 38%,var(--bh-panel-hi)),color-mix(in srgb,var(--bh-line) 38%,var(--bh-panel-mid)));box-shadow:inset 0 2px 8px rgba(0,0,0,.55),inset 0 -2px 8px rgba(0,0,0,.35)}
       .better-hunt-header--banner::before,.better-hunt-header--banner::after{content:"";position:absolute;left:8px;right:8px;height:1px;background:linear-gradient(90deg,transparent,var(--bh-line-hi),transparent);opacity:.6}.better-hunt-header--banner::before{top:5px}.better-hunt-header--banner::after{bottom:5px}
@@ -2089,7 +2093,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const resultDrawerReady = opened.length >= 2 && (bestSlot || worstSlot);
   const [resultPeekOpen, setResultPeekOpen] = useState(false);
   useEffect(() => {
-    if (drawerMode !== "contain" || !resultDrawerReady) {
+    if (!resultDrawerReady) {
       setResultPeekOpen(false);
       return undefined;
     }
@@ -2116,7 +2120,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       window.clearTimeout(revealTimer);
       window.clearTimeout(hideTimer);
     };
-  }, [c.animations, drawerHoldMs, drawerMode, drawerRevealMs, resultDrawerReady]);
+  }, [c.animations, drawerHoldMs, drawerRevealMs, resultDrawerReady]);
   const listRows = rows;
   const scrollingRows = rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
   const listDuration = `${Math.max(26, rows.length * 1.35)}s`;
@@ -2527,7 +2531,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
   const renderTotalDrawer = () => {
     const drawerVisible = resultDrawerReady && (
-      drawerMode === "expand" ||
       c.drawerOpen === true ||
       c.drawerPreviewOpen === true ||
       resultPeekOpen
