@@ -298,6 +298,8 @@ const chatCommands = readFileSync(
 );
 assert.match(chatCommands, /case 'connect-four'/);
 assert.match(chatCommands, /processConnectFourCommand/);
+assert.match(chatCommands, /authenticatedUser\?\.id !== userId/);
+assert.match(chatCommands, /Twitch chatter identity mismatch/);
 
 const app = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
 assert.match(app, /useConnectFourListener\(\)/);

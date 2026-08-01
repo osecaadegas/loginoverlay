@@ -16,7 +16,7 @@ const DEFAULTS = {
 };
 
 export default function ConnectFourConfig({ config = {}, onChange }) {
-  const { user, signInWithTwitch, twitchListener } = useAuth();
+  const { signInWithTwitch, twitchListener } = useAuth();
   const value = { ...DEFAULTS, ...config };
   const set = (patch) => onChange({ ...value, ...patch });
 
@@ -128,11 +128,6 @@ export default function ConnectFourConfig({ config = {}, onChange }) {
           <div><dt>Cancel</dt><dd>{value.chatCommand} reset</dd></div>
         </dl>
         <p><Clock3 size={16} /> Each turn lasts 60 seconds with a warning at 10 seconds.</p>
-        <div className="connect-four-config__command-url">
-          <strong>StreamElements command URL</strong>
-          <small>Create a custom command named {value.chatCommand} with this URL response.</small>
-          <code>{`${window.location.origin}/api/chat-commands?cmd=connect-four&user_id=${user?.id || "<your-user-id>"}&w1=\${1}&w2=\${2}&requester=\${user.username}`}</code>
-        </div>
         <div
           className={`connect-four-config__listener ${twitchListener?.connected ? "is-connected" : ""}`}
         >

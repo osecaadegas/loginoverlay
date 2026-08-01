@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { randomUUID } from 'node:crypto';
 import streamerDataHandler from './_lib/streamer-data.js';
 import imageSearchHandler from './_lib/image-search.js';
 import { processConnectFourCommand } from './_lib/connect-four-runtime.js';
@@ -86,6 +85,7 @@ async function findTwitchUserId(login) {
 
 async function handleConnectFour(req, res) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(503).json({ error: 'Server config error' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const params = req.method === 'POST'
     ? { ...(req.query || {}), ...(req.body || {}) }
     : req.query;
@@ -95,6 +95,9 @@ async function handleConnectFour(req, res) {
   if (!userId || !chatterLogin) return res.status(400).json({ error: 'Missing Connect Four identity' });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  const authenticatedUser = await verifyJwt(supabase, req);
+  if (authenticatedUser?.id !== userId) return res.status(401).json({ error: 'Unauthorized' });
+
   const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('twitch_id')
@@ -102,14 +105,16 @@ async function handleConnectFour(req, res) {
     .maybeSingle();
   if (profileError || !profile?.twitch_id) return res.status(404).json({ error: 'Twitch broadcaster not connected' });
 
-  const authenticatedUser = await verifyJwt(supabase, req);
-  const suppliedChatterId = authenticatedUser?.id === userId ? String(params.chatter_id || '') : '';
-  const chatterTwitchId = suppliedChatterId || await findTwitchUserId(chatterLogin);
+  const suppliedChatterId = String(params.chatter_id || '');
+  const chatterTwitchId = await findTwitchUserId(chatterLogin);
   if (!chatterTwitchId) return res.status(200).send(`@${chatterLogin} Twitch user not found`);
+  if (!suppliedChatterId || suppliedChatterId !== chatterTwitchId) {
+    return res.status(403).json({ error: 'Twitch chatter identity mismatch' });
+  }
 
   try {
     const result = await processConnectFourCommand(supabase, {
-      messageId: String(params.message_id || `connect-four-${randomUUID()}`),
+      messageId: String(params.message_id || ''),
       broadcasterTwitchId: profile.twitch_id,
       chatterTwitchId,
       chatterLogin,
