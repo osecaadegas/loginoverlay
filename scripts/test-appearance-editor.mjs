@@ -109,9 +109,27 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      '[data-drawer-mode="contain"] .better-hunt-drawer{height:var(--bh-drawer-open-height);min-height:var(--bh-drawer-open-height)',
+      '[data-drawer-mode="contain"] .better-hunt-drawer{height:auto;min-height:0;max-height:0;transform:translateY(100%)',
     ),
-    "contained Bonus Hunt reserves the best/worst drawer height while hidden",
+    "contained Bonus Hunt hides the drawer below Total Pay without reserving list space",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      '[data-drawer-mode="contain"] .better-hunt-drawer.is-open{max-height:var(--bh-drawer-open-height);opacity:1;transform:translateY(0)',
+    ),
+    "contained Bonus Hunt slides the drawer upward while shrinking the list",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      '[data-drawer-mode="expand"][data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in',
+    ),
+    "expanded Bonus Hunt grows only the anchored panel bottom",
+  );
+  assert.ok(
+    !betterWidgetStylesSource.includes(
+      '[data-drawer-mode="contain"][data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-stats-in',
+    ),
+    "contained Bonus Hunt never slides best and worst cards horizontally",
   );
   assert.ok(
     betterWidgetStylesSource.includes(
