@@ -71,6 +71,7 @@ const { parseShoutoutChatCommand } = await server.ssrLoadModule(
 
 const {
   createBetterInstance,
+  getBetterWidgetTypes,
   normalizeBetterInstance,
   renderBetterWidgetInstance,
 } =
@@ -196,6 +197,31 @@ try {
   assert.ok(
     widgetEditorPageSource.includes("getBetterWidgetNudge(event.key)"),
     "Better Editor routes arrow key presses through the tested pixel nudge map",
+  );
+  const widgetEditorPageCssSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/WidgetEditorPage.css",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    widgetEditorPageCssSource.includes(
+      ".better-editor-widget-row:has(.better-editor-widget-row__menu[open]) {",
+    ) &&
+      !widgetEditorPageCssSource.includes(
+        ".better-editor-widget-row.is-hidden {\n  opacity:",
+      ),
+    "hidden widget menus remain opaque and stack above adjacent widget rows",
+  );
+  assert.ok(
+    widgetEditorPageSource.includes(
+      'instance.locked ? <Unlock size={14} /> : <Lock size={14} />',
+    ) &&
+      widgetEditorPageSource.includes(
+        'instance.locked ? "Unlock widget" : "Lock widget"',
+      ),
+    "movable widgets expose matching lock and unlock actions",
   );
   const betterWidgetRegistrySource = readFileSync(
     new URL(
@@ -522,10 +548,30 @@ try {
       widgetLabel: "Better Hunt",
       position: { x: -37, y: 1124 },
       size: { width: 430, height: 884 },
+      layout: { visible: true, locked: false, opacity: 1, zIndex: 1 },
       controls: { drawerMode: "contain", accentColor: "#45c8ff" },
     },
     "widget control presets contain controls, signed position, and frame size without live state",
   );
+  for (const widgetType of getBetterWidgetTypes()) {
+    const instance = createBetterInstance(widgetType);
+    const widgetPreset = createWidgetControlsPreset(instance, presetExportedAt);
+    assert.deepEqual(
+      widgetPreset.controls,
+      instance.config,
+      `${widgetType} exports every normalized widget control`,
+    );
+    assert.deepEqual(
+      widgetPreset.layout,
+      {
+        visible: instance.visible,
+        locked: instance.locked,
+        opacity: instance.opacity,
+        zIndex: instance.zIndex,
+      },
+      `${widgetType} exports all instance-level controls`,
+    );
+  }
   assert.equal(
     getWidgetControlsPresetFilename(
       { widgetType: "bonus_hunt" },

@@ -367,7 +367,7 @@ function WidgetListItem({
             disabled={!canEditInstance}
             onClick={(event) => menuAction(event, () => onToggleLock(instance.instanceId))}
           >
-            {instance.locked ? <Lock size={14} /> : <Unlock size={14} />}
+            {instance.locked ? <Unlock size={14} /> : <Lock size={14} />}
             <span>{instance.locked ? "Unlock widget" : "Lock widget"}</span>
           </button>
           <button

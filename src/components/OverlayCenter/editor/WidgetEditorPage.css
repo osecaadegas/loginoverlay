@@ -111,8 +111,13 @@
   box-shadow: inset 3px 0 0 #14d8d8;
 }
 
-.better-editor-widget-row.is-hidden {
+.better-editor-widget-row.is-hidden > .better-editor-widget-row__drag-handle,
+.better-editor-widget-row.is-hidden > .better-editor-widget-row__main {
   opacity: 0.62;
+}
+
+.better-editor-widget-row:has(.better-editor-widget-row__menu[open]) {
+  z-index: 30;
 }
 
 .better-editor-widget-row.is-dragging {
