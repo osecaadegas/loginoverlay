@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import {
   Copy,
+  Download,
   Eye,
   EyeOff,
   Grid3X3,
@@ -51,6 +52,7 @@ import {
   betterInstanceToLegacyWidget,
 } from "./betterWidgetRegistry";
 import { BetterWidgetControls } from "./BetterWidgetPackages";
+import { downloadWidgetControlsPreset } from "./widgetControlsPreset";
 import "./BetterWidgetPackages.css";
 import "./WidgetEditorPage.css";
 
@@ -254,6 +256,7 @@ function WidgetListItem({
   obsUrl,
   onSelect,
   onCopyUrl,
+  onDownloadPreset,
   onToggleVisible,
   onToggleLock,
   onDuplicate,
@@ -309,6 +312,15 @@ function WidgetListItem({
           >
             <Copy size={14} />
             <span>Copy OBS URL</span>
+          </button>
+          <button
+            type="button"
+            onClick={(event) =>
+              menuAction(event, () => onDownloadPreset(instance))
+            }
+          >
+            <Download size={14} />
+            <span>Download controls preset</span>
           </button>
           <button
             type="button"
@@ -852,6 +864,7 @@ export default function WidgetEditorPage() {
                 obsUrl={publicOverlayId ? `${origin}/obs/overlay/${publicOverlayId}/widget/${instance.instanceId}` : ""}
                 onSelect={setSelectedInstanceId}
                 onCopyUrl={copyUrl}
+                onDownloadPreset={downloadWidgetControlsPreset}
                 onToggleVisible={handleToggleVisible}
                 onToggleLock={handleToggleLock}
                 onDuplicate={handleDuplicate}

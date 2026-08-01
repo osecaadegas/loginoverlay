@@ -48,7 +48,46 @@ const { subElementStyle } = await server.ssrLoadModule(
   "/src/components/OverlayCenter/widgets/shared/appearanceStyles.js",
 );
 
+const {
+  WIDGET_CONTROLS_PRESET_KIND,
+  createWidgetControlsPreset,
+  getWidgetControlsPresetFilename,
+} = await server.ssrLoadModule(
+  "/src/components/OverlayCenter/editor/widgetControlsPreset.js",
+);
+
 try {
+  const presetExportedAt = "2026-08-01T12:00:00.000Z";
+  const preset = createWidgetControlsPreset(
+    {
+      widgetType: "bonus_hunt",
+      label: "Better Hunt",
+      config: { drawerMode: "contain", accentColor: "#45c8ff" },
+      width: 430,
+      liveData: { totalPay: 1200 },
+    },
+    presetExportedAt,
+  );
+  assert.deepEqual(
+    preset,
+    {
+      kind: WIDGET_CONTROLS_PRESET_KIND,
+      schemaVersion: 1,
+      exportedAt: presetExportedAt,
+      widgetType: "bonus_hunt",
+      widgetLabel: "Better Hunt",
+      controls: { drawerMode: "contain", accentColor: "#45c8ff" },
+    },
+    "widget control presets contain the current saved controls without canvas or live state",
+  );
+  assert.equal(
+    getWidgetControlsPresetFilename(
+      { widgetType: "bonus_hunt" },
+      presetExportedAt,
+    ),
+    "bonus-hunt-controls-preset-2026-08-01.json",
+    "widget control presets use a stable JSON filename",
+  );
   const betterWidgetPackagesSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
