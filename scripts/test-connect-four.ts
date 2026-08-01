@@ -296,7 +296,7 @@ const chatCommands = readFileSync(
   new URL("../api/chat-commands.js", import.meta.url),
   "utf8",
 );
-assert.match(chatCommands, /case ["']connect-four["']/);
+assert.match(chatCommands, /case 'connect-four'/);
 assert.match(chatCommands, /processConnectFourCommand/);
 assert.match(chatCommands, /authenticatedUser\?\.id !== userId/);
 assert.match(chatCommands, /Twitch chatter identity mismatch/);
