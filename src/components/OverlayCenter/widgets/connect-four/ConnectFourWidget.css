@@ -69,18 +69,21 @@
 }
 
 .connect-four-player-rail {
-  width: clamp(28px, 5.5cqh, 44px);
+  width: clamp(44px, 8cqh, 64px);
   min-width: 0;
-  align-self: center;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1cqh;
-  padding: 1cqh 0.5cqh;
+  justify-content: flex-start;
+  gap: 1.2cqh;
+  padding: 1.4cqh 0.8cqh;
   box-sizing: border-box;
-  border-radius: 1.2cqh;
-  background: rgba(2, 6, 23, 0.78);
-  text-shadow: 0 2px 8px #000;
+  border-radius: 1.6cqh;
+  background: rgba(2, 6, 23, 0.94);
+  text-shadow:
+    0 2px 4px #000,
+    0 0 8px currentColor;
 }
 
 .connect-four-player-rail--p1 {
@@ -98,22 +101,34 @@
 }
 
 .connect-four-player-rail .connect-four-player-coin {
-  width: clamp(20px, 4cqh, 32px);
+  width: clamp(28px, 5.5cqh, 44px);
 }
 
 .connect-four-player-rail strong {
+  min-height: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-evenly;
   color: inherit;
-  font-size: clamp(9px, 1.7cqh, 14px);
+  font-size: clamp(15px, 2.8cqh, 22px);
   font-weight: 900;
-  line-height: 1;
+  line-height: 0.9;
   text-transform: uppercase;
 }
 
 .connect-four-player-rail strong span {
-  min-height: 1em;
+  display: block;
+  min-height: 0.9em;
+}
+
+.connect-four-player-rail.is-long strong {
+  font-size: clamp(13px, 2.35cqh, 18px);
+}
+
+.connect-four-player-rail.is-extra-long strong {
+  font-size: clamp(11px, 2cqh, 16px);
 }
 
 .connect-four-info {

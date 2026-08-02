@@ -88,6 +88,12 @@ function getWaitingMessage(state: ConnectFourState): string {
   return "Waiting for Player 2";
 }
 
+function getPlayerRailLengthClass(name: string): string {
+  if (name.length > 16) return " is-extra-long";
+  if (name.length > 12) return " is-long";
+  return "";
+}
+
 export default function ConnectFourWidget({
   userId,
   config = {},
@@ -176,6 +182,8 @@ export default function ConnectFourWidget({
   const playerTwo =
     displayedState.player_two_display_name || "Waiting for player";
   const playerTwoRailName = displayedState.player_two_display_name || "Player 2";
+  const playerOneRailLengthClass = getPlayerRailLengthClass(playerOne);
+  const playerTwoRailLengthClass = getPlayerRailLengthClass(playerTwoRailName);
   const title = stringValue(config.title, "CHAT CONNECT 4");
   const playerOneColor = stringValue(config.playerOneColor, "#ef4444");
   const playerTwoColor = stringValue(config.playerTwoColor, "#facc15");
@@ -216,7 +224,7 @@ export default function ConnectFourWidget({
         <div className="connect-four-play-area">
           {showPlayers && (
             <div
-              className={`connect-four-player-rail connect-four-player-rail--p1${displayedState.current_player === 1 ? " is-current" : ""}`}
+              className={`connect-four-player-rail connect-four-player-rail--p1${playerOneRailLengthClass}${displayedState.current_player === 1 ? " is-current" : ""}`}
               aria-label={`Player 1: ${playerOne}`}
             >
               <i className="connect-four-player-coin connect-four-player-coin--p1" />
@@ -276,7 +284,7 @@ export default function ConnectFourWidget({
 
           {showPlayers && (
             <div
-              className={`connect-four-player-rail connect-four-player-rail--p2${displayedState.current_player === 2 ? " is-current" : ""}`}
+              className={`connect-four-player-rail connect-four-player-rail--p2${playerTwoRailLengthClass}${displayedState.current_player === 2 ? " is-current" : ""}`}
               aria-label={`Player 2: ${playerTwoRailName}`}
             >
               <i className="connect-four-player-coin connect-four-player-coin--p2" />
