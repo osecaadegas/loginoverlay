@@ -79,46 +79,12 @@ function normalizeState(value: Record<string, unknown>): ConnectFourState {
   };
 }
 
-function getStatus(state: ConnectFourState | null): string {
-  if (!state) return "!connect4 start <points>";
-  if (state.status === "funding_start" || state.status === "funding_join")
-    return "Confirming points";
-  if (state.status === "waiting")
-    return `Join for ${state.wager.toLocaleString()} points`;
-  if (state.status === "active" && state.current_player) {
-    return `${state.current_player === 1 ? state.player_one_display_name : state.player_two_display_name}'s turn`;
-  }
-  if (state.completion_reason === "draw") return "Draw - points refunded";
-  if (state.completion_reason === "reset") return "Game cancelled";
-  if (state.completion_reason === "funding_failed")
-    return "Wager failed - reconnect StreamElements";
-  if (state.winner) {
-    return `${state.winner === 1 ? state.player_one_display_name : state.player_two_display_name} wins`;
-  }
-  if (state.status === "error") return "Point settlement needs attention";
-  return "Game complete";
-}
-
-function getCommandHelp(state: ConnectFourState): string {
-  if (state.completion_reason === "funding_failed") {
-    return "Reconnect StreamElements, then start a new game";
-  }
-  if (state.status === "waiting") {
-    return "Player 2: !player2 or !connect4 join";
-  }
-  if (state.status === "active") {
-    return "Move: !play 1-7 or !connect4 1-7";
-  }
-  return "Start: !player1 100 or !connect4 start 100";
-}
-
 export default function ConnectFourWidget({
   userId,
   config = {},
   runtime = "editor",
 }: Readonly<ConnectFourWidgetProps>) {
   const [state, setState] = useState<ConnectFourState | null>(null);
-  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!userId) return undefined;
@@ -192,13 +158,6 @@ export default function ConnectFourWidget({
     };
   }, [state?.expires_at, state?.match_id, state?.status]);
 
-  useEffect(() => {
-    if (state?.status !== "active" || !state.expires_at) return undefined;
-    setNow(Date.now());
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [state?.expires_at, state?.status]);
-
   const displayedState =
     state || (runtime === "editor" ? CONNECT_FOUR_PREVIEW_STATE : null);
   if (!displayedState) return null;
@@ -216,22 +175,13 @@ export default function ConnectFourWidget({
   const textColor = stringValue(config.textColor, "#f7fbff");
   const mutedColor = stringValue(config.mutedColor, "#fff2b8");
   const fontFamily = stringValue(config.fontFamily, "'Rajdhani', sans-serif");
-  const fontScale = Math.min(
-    1.5,
-    Math.max(0.7, Number(config.fontScale) / 100 || 1),
+  const boardScale = Math.min(
+    100,
+    Math.max(70, Number(config.boardScale) || 84),
   );
   const showWager = config.showWager !== false;
   const showPlayers = config.showPlayers !== false;
-  const showCommandHelp = config.showCommandHelp !== false;
-  const showMoveCount = config.showMoveCount !== false;
-  const showTurnTimer = config.showTurnTimer !== false;
   const animateDrops = config.animateDrops !== false;
-  const secondsRemaining = displayedState.expires_at
-    ? Math.max(
-        0,
-        Math.ceil((Date.parse(displayedState.expires_at) - now) / 1000),
-      )
-    : null;
   const pot = displayedState.wager * 2;
   const widgetStyle = {
     color: textColor,
@@ -240,6 +190,7 @@ export default function ConnectFourWidget({
     "--connect-four-p2": playerTwoColor,
     "--connect-four-board": boardColor,
     "--connect-four-board-border": boardBorderColor,
+    "--connect-four-board-scale": `${boardScale}%`,
   } as CSSProperties;
 
   return (
@@ -340,27 +291,6 @@ export default function ConnectFourWidget({
           )}
         </div>
 
-        <div
-          className="connect-four-status"
-          style={{
-            fontSize: `clamp(${15 * fontScale}px, ${2.8 * fontScale}cqh, ${22 * fontScale}px)`,
-          }}
-        >
-          <strong>{getStatus(displayedState)}</strong>
-          {(showCommandHelp || showMoveCount || showTurnTimer) && (
-            <div className="connect-four-details">
-              {showCommandHelp && <span>{getCommandHelp(displayedState)}</span>}
-              {showMoveCount && <b>MOVE {displayedState.move_count}/42</b>}
-              {showTurnTimer &&
-                displayedState.status === "active" &&
-                secondsRemaining !== null && (
-                  <b className={secondsRemaining <= 10 ? "is-urgent" : ""}>
-                    {secondsRemaining}s
-                  </b>
-                )}
-            </div>
-          )}
-        </div>
       </div>
     </section>
   );

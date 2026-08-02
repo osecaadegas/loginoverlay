@@ -1015,12 +1015,9 @@ const BASE_BETTER_CONFIG = {
     textColor: "#f7fbff",
     mutedColor: "#fff2b8",
     fontFamily: "'Rajdhani', sans-serif",
-    fontScale: 100,
+    boardScale: 84,
     showWager: true,
     showPlayers: true,
-    showCommandHelp: true,
-    showMoveCount: true,
-    showTurnTimer: true,
     animateDrops: true,
     chatCommand: "!connect4",
     twitchChannel: "",
@@ -5941,21 +5938,6 @@ function BetterConnectFourControls({ config, onChange }) {
             checked={c.showWager !== false}
             onChange={(showWager) => set({ showWager })}
           />
-          <ToggleRow
-            label="Show command help"
-            checked={c.showCommandHelp !== false}
-            onChange={(showCommandHelp) => set({ showCommandHelp })}
-          />
-          <ToggleRow
-            label="Show move count"
-            checked={c.showMoveCount !== false}
-            onChange={(showMoveCount) => set({ showMoveCount })}
-          />
-          <ToggleRow
-            label="Show turn timer"
-            checked={c.showTurnTimer !== false}
-            onChange={(showTurnTimer) => set({ showTurnTimer })}
-          />
         </Section>
       )}
 
@@ -5981,6 +5963,14 @@ function BetterConnectFourControls({ config, onChange }) {
 
       {tab === "board" && (
         <Section title="Board" icon={<Palette size={13} />}>
+          <SliderRow
+            label="Board size"
+            value={c.boardScale}
+            min={70}
+            max={100}
+            unit="%"
+            onChange={(boardScale) => set({ boardScale })}
+          />
           <ColorRow
             label="Board color"
             value={c.boardColor}
@@ -6001,14 +5991,6 @@ function BetterConnectFourControls({ config, onChange }) {
             value={c.fontFamily}
             options={CONNECT_FOUR_FONTS}
             onChange={(fontFamily) => set({ fontFamily })}
-          />
-          <SliderRow
-            label="Text scale"
-            value={c.fontScale}
-            min={70}
-            max={150}
-            unit="%"
-            onChange={(fontScale) => set({ fontScale })}
           />
           <ColorRow
             label="Title"

@@ -136,7 +136,7 @@
 }
 
 .connect-four-column-labels {
-  width: 84%;
+  width: var(--connect-four-board-scale, 84%);
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1.65%;
@@ -160,7 +160,7 @@
 
 .connect-four-board {
   position: relative;
-  width: 84%;
+  width: var(--connect-four-board-scale, 84%);
   aspect-ratio: 7 / 6;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -258,56 +258,6 @@
   font-weight: 800;
 }
 
-.connect-four-status {
-  width: min(96%, 720px);
-  margin-inline: auto;
-  padding: 1.2cqh 1.8cqh;
-  box-sizing: border-box;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  border-radius: 1.4cqh;
-  color: #f8fafc;
-  background: rgba(2, 6, 23, 0.84);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
-  text-align: center;
-  text-shadow: 0 2px 8px #000;
-  backdrop-filter: blur(8px);
-}
-
-.connect-four-status > strong {
-  display: block;
-  line-height: 1.2;
-  font-weight: 900;
-}
-
-.connect-four-details {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1cqh;
-  margin-top: 0.7cqh;
-  color: inherit;
-  font-size: clamp(11px, 1.8cqh, 15px);
-  font-weight: 800;
-}
-
-.connect-four-details span {
-  opacity: 1;
-  white-space: nowrap;
-}
-
-.connect-four-details b {
-  padding: 0.35cqh 0.8cqh;
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  border-radius: 0.5cqh;
-  background: rgba(15, 23, 42, 0.92);
-  white-space: nowrap;
-}
-
-.connect-four-details b.is-urgent {
-  color: #ff6464;
-  border-color: rgba(255, 100, 100, 0.55);
-}
-
 @keyframes connect-four-drop {
   0% {
     transform: translateY(-700%);
@@ -355,9 +305,6 @@
     padding-inline: 1cqh;
   }
   .connect-four-player-card span {
-    display: none;
-  }
-  .connect-four-details span {
     display: none;
   }
 }
