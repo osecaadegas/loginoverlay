@@ -23,7 +23,7 @@ function normalizeConnectFourChatCommand(rawText, trigger) {
     return `!c4 ${normalized.slice(9).trim()}`;
   }
   if (/^!play\s+[1-7]$/i.test(normalized)) {
-    return `!c4 ${normalized.split(/\s+/)[1]}`;
+    return normalized;
   }
   if (lowerText === trigger || lowerText.startsWith(`${trigger} `)) {
     const suffix = normalized.slice(trigger.length);

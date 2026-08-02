@@ -9,7 +9,10 @@ import {
   normalizeConnectFourBoard,
   parseConnectFourCommand,
 } from "../src/features/connectFour/engine.js";
-import { parseConnectFourCommand as parseRuntimeCommand } from "../api/_lib/connect-four-runtime.js";
+import {
+  buildConnectFourAnnouncement,
+  parseConnectFourCommand as parseRuntimeCommand,
+} from "../api/_lib/connect-four-runtime.js";
 
 const emptyBoard = createConnectFourBoard();
 assert.equal(emptyBoard.length, 6);
@@ -75,14 +78,12 @@ assert.deepEqual(parseRuntimeCommand("!connect4 start 250"), {
   wager: 250,
 });
 assert.deepEqual(parseRuntimeCommand("!c4 250"), {
-  type: "wager_or_drop",
+  type: "start",
   wager: 250,
-  column: null,
 });
 assert.deepEqual(parseRuntimeCommand("!c4 7"), {
-  type: "wager_or_drop",
+  type: "start",
   wager: 7,
-  column: 6,
 });
 assert.deepEqual(parseRuntimeCommand("!c4 join"), { type: "join" });
 assert.deepEqual(parseRuntimeCommand("!connect4 join"), { type: "join" });
@@ -101,6 +102,17 @@ assert.deepEqual(parseRuntimeCommand("!play 7"), {
   type: "drop",
   column: 6,
 });
+assert.match(
+  buildConnectFourAnnouncement(
+    {
+      status: "active",
+      player_one_display_name: "Player One",
+      player_two_display_name: "Player Two",
+    },
+    "join",
+  ),
+  /play with !play 1 through !play 7/,
+);
 
 const packagesSource = readFileSync(
   new URL(

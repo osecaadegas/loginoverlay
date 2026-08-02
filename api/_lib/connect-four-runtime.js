@@ -35,13 +35,9 @@ export function parseConnectFourCommand(message) {
   }
 
   if (root === "!c4" && parts.length === 2) {
-    const value = Number(parts[1]);
-    return Number.isSafeInteger(value) && value > 0 && value <= 1_000_000_000
-      ? {
-          type: "wager_or_drop",
-          wager: value,
-          column: value <= 7 ? value - 1 : null,
-        }
+    const wager = Number(parts[1]);
+    return Number.isSafeInteger(wager) && wager > 0 && wager <= 1_000_000_000
+      ? { type: "start", wager }
       : null;
   }
 
@@ -120,7 +116,7 @@ const announcementBuilders = {
   },
   join(state) {
     if (state.status !== "active") return null;
-    return `${state.player_two_display_name} joined ${state.player_one_display_name}. ${state.player_one_display_name} starts: play with !c4 1 through !c4 7`;
+    return `${state.player_two_display_name} joined ${state.player_one_display_name}. ${state.player_one_display_name} starts: play with !play 1 through !play 7`;
   },
   drop(state) {
     if (state.status === "active") {
@@ -128,7 +124,7 @@ const announcementBuilders = {
         state.current_player === 1
           ? state.player_one_display_name
           : state.player_two_display_name;
-      return `${nextPlayer}'s turn. Play with !c4 1 through !c4 7`;
+      return `${nextPlayer}'s turn. Play with !play 1 through !play 7`;
     }
     if (state.completion_reason === "draw")
       return "Connect 4 ended in a draw. Both wagers were refunded.";
@@ -150,7 +146,7 @@ const announcementBuilders = {
       state.current_player === 1
         ? state.player_one_display_name
         : state.player_two_display_name;
-    return `${currentPlayer}, 10 seconds left! Play with !c4 1 through !c4 7`;
+    return `${currentPlayer}, 10 seconds left! Play with !play 1 through !play 7`;
   },
   timeout(state) {
     if (state.completion_reason !== "timeout") return null;
@@ -288,34 +284,8 @@ export async function settleConnectFourOperations(supabase, operations) {
 }
 
 export async function processConnectFourCommand(supabase, command) {
-  let parsedCommand = parseConnectFourCommand(command.text);
+  const parsedCommand = parseConnectFourCommand(command.text);
   if (!parsedCommand) return { ok: false, error: "invalid_command" };
-
-  if (parsedCommand.type === "wager_or_drop") {
-    let activeMatch = null;
-    if (parsedCommand.column !== null) {
-      const { data, error } = await supabase
-        .from("connect_four_matches")
-        .select("status")
-        .eq("broadcaster_twitch_id", command.broadcasterTwitchId)
-        .in("status", [
-          "funding_start",
-          "waiting",
-          "funding_join",
-          "active",
-          "settling",
-        ])
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      activeMatch = data;
-    }
-    parsedCommand =
-      activeMatch?.status === "active"
-        ? { type: "drop", column: parsedCommand.column }
-        : { type: "start", wager: parsedCommand.wager };
-  }
 
   const { data, error } = await supabase.rpc("process_connect_four_command", {
     p_twitch_message_id: command.messageId,

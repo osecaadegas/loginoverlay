@@ -131,7 +131,7 @@ export default function ConnectFourConfig({ config = {}, onChange }) {
         <dl>
           <div><dt>Start</dt><dd>{value.chatCommand} 100</dd></div>
           <div><dt>Join</dt><dd>{value.chatCommand} join</dd></div>
-          <div><dt>Move</dt><dd>{value.chatCommand} 1 through {value.chatCommand} 7</dd></div>
+          <div><dt>Move</dt><dd>!play 1 through !play 7</dd></div>
           <div><dt>Cancel</dt><dd>{value.chatCommand} reset</dd></div>
         </dl>
         <p><Clock3 size={16} /> Each turn lasts 60 seconds with a warning at 10 seconds.</p>
