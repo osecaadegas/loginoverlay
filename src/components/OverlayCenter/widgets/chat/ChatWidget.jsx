@@ -436,6 +436,20 @@ function emoteDisplayHeight(scale) {
   return 27;
 }
 
+function chatEmoteImageStyle(displayHeight) {
+  return {
+    display: "inline-block",
+    verticalAlign: "middle",
+    height: displayHeight,
+    width: "auto",
+    objectFit: "contain",
+    margin: "0 2px",
+    maxWidth: "4em",
+    lineHeight: 1,
+    userSelect: "none",
+  };
+}
+
 function renderBttvMessageContent(text, emoteMap, scale = 2) {
   const source = String(text || "");
   if (!source || !(emoteMap instanceof Map) || emoteMap.size === 0) {
@@ -468,7 +482,7 @@ function renderBttvMessageContent(text, emoteMap, scale = 2) {
         draggable={false}
         decoding="async"
         referrerPolicy="no-referrer"
-        style={{ height: displayHeight, width: "auto" }}
+        style={chatEmoteImageStyle(displayHeight)}
       />
     );
   });
@@ -540,7 +554,7 @@ function renderBetterChatMessageContent(msg, emoteMap, scale = 2) {
         draggable={false}
         decoding="async"
         referrerPolicy="no-referrer"
-        style={{ height: displayHeight, width: "auto" }}
+        style={chatEmoteImageStyle(displayHeight)}
       />,
     );
     cursor = range.end + 1;
@@ -1459,7 +1473,7 @@ function ChatWidget({
         @keyframes better-chat-slide-right{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
         @keyframes better-chat-fade-in{from{opacity:0}to{opacity:1}}
         @keyframes better-chat-lantern{0%{left:-100%}100%{left:100%}}
-        .ov-chat-widget--better_chat .ov-chat-bttv-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:4em;line-height:1;user-select:none;filter:drop-shadow(0 0 5px rgba(0,195,255,.22))}
+        .ov-chat-widget--better_chat .ov-chat-bttv-emote,.ov-chat-widget--better_chat .ov-chat-twitch-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:4em;line-height:1;user-select:none;filter:drop-shadow(0 0 5px rgba(0,195,255,.22))}
         .ov-chat-widget--better_chat .ov-chat-messages::-webkit-scrollbar{display:none}
       `}</style>
 
