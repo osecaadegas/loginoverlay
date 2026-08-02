@@ -160,6 +160,10 @@ assert.match(
   /rowIndex === 0[\s\S]*?className="connect-four-hole-number"[\s\S]*?columnIndex \+ 1/,
 );
 assert.match(widgetStylesSource, /\.connect-four-info \{/);
+assert.match(widgetStylesSource, /width: clamp\(210px, 34%, 300px\)/);
+assert.match(widgetStylesSource, /\.connect-four-info \.connect-four-title \{[\s\S]*?font-size: clamp\(18px, 3cqh, 24px\)/);
+assert.match(widgetStylesSource, /\.connect-four-info > strong \{[\s\S]*?font-size: clamp\(16px, 2\.7cqh, 22px\)/);
+assert.match(widgetStylesSource, /\.connect-four-info > span \{[\s\S]*?font-size: clamp\(14px, 2\.2cqh, 18px\)/);
 assert.match(widgetStylesSource, /\.connect-four-player-rail strong \{/);
 assert.match(widgetStylesSource, /\.connect-four-player-rail\.is-long strong \{/);
 assert.match(widgetStylesSource, /color: #fff;[\s\S]*?font-size: clamp\(18px, 3\.2cqh, 26px\)/);

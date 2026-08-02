@@ -132,12 +132,12 @@
 }
 
 .connect-four-info {
-  width: clamp(150px, 28%, 220px);
+  width: clamp(210px, 34%, 300px);
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.8cqh;
-  padding: 2cqh;
+  gap: clamp(8px, 1.2cqh, 12px);
+  padding: clamp(14px, 2.6cqh, 22px);
   box-sizing: border-box;
   border-left: max(2px, 0.3cqh) solid var(--connect-four-p1);
   color: #f8fafc;
@@ -146,19 +146,21 @@
 }
 
 .connect-four-info .connect-four-title {
-  margin-bottom: 0.8cqh;
+  margin-bottom: clamp(4px, 0.8cqh, 8px);
+  font-size: clamp(18px, 3cqh, 24px);
   text-align: left;
 }
 
 .connect-four-info > strong {
-  font-size: clamp(13px, 2.2cqh, 18px);
+  font-size: clamp(16px, 2.7cqh, 22px);
   line-height: 1.2;
 }
 
 .connect-four-info > span {
   color: #cbd5e1;
-  font-size: clamp(10px, 1.7cqh, 14px);
+  font-size: clamp(14px, 2.2cqh, 18px);
   font-weight: 800;
+  line-height: 1.25;
 }
 
 .connect-four-board {
