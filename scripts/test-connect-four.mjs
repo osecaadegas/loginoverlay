@@ -153,6 +153,8 @@ assert.match(
   widgetSource,
   /connect-four-player-rail--p1[\s\S]*?connect-four-board-stack[\s\S]*?connect-four-player-rail--p2/,
 );
+assert.doesNotMatch(widgetSource, /showPlayers && hasTwoPlayers/);
+assert.doesNotMatch(widgetSource, /connect-four-scorebar/);
 assert.match(
   widgetSource,
   /rowIndex === 0[\s\S]*?className="connect-four-hole-number"[\s\S]*?columnIndex \+ 1/,

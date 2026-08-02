@@ -175,6 +175,7 @@ export default function ConnectFourWidget({
   const playerOne = displayedState.player_one_display_name;
   const playerTwo =
     displayedState.player_two_display_name || "Waiting for player";
+  const playerTwoRailName = displayedState.player_two_display_name || "Player 2";
   const title = stringValue(config.title, "CHAT CONNECT 4");
   const playerOneColor = stringValue(config.playerOneColor, "#ef4444");
   const playerTwoColor = stringValue(config.playerTwoColor, "#facc15");
@@ -212,55 +213,8 @@ export default function ConnectFourWidget({
       <div
         className={`connect-four-game${hasTwoPlayers ? " is-playing" : " is-waiting"}`}
       >
-        {showPlayers && !hasTwoPlayers && (
-          <div className="connect-four-scorebar">
-            <div
-              className={`connect-four-player-card${displayedState.current_player === 1 ? " is-current" : ""}${displayedState.winner === 1 ? " is-winner" : ""}`}
-            >
-              <i className="connect-four-player-coin connect-four-player-coin--p1" />
-              <div>
-                <strong>{playerOne}</strong>
-                {!hasTwoPlayers && (
-                  <span>
-                    {showWager && displayedState.wager
-                      ? `${displayedState.wager.toLocaleString()} PTS wagered`
-                      : "- PTS"}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {!hasTwoPlayers && (
-              <div className="connect-four-versus">
-                <strong>VS</strong>
-                {showWager && pot > 0 && (
-                  <span style={{ color: mutedColor }}>
-                    {pot.toLocaleString()} PTS pot
-                  </span>
-                )}
-              </div>
-            )}
-
-            <div
-              className={`connect-four-player-card${displayedState.current_player === 2 ? " is-current" : ""}${displayedState.winner === 2 ? " is-winner" : ""}`}
-            >
-              <i className="connect-four-player-coin connect-four-player-coin--p2" />
-              <div>
-                <strong>{playerTwo}</strong>
-                {!hasTwoPlayers && (
-                  <span>
-                    {showWager && displayedState.wager
-                      ? `${displayedState.wager.toLocaleString()} PTS wagered`
-                      : "- PTS"}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="connect-four-play-area">
-          {showPlayers && hasTwoPlayers && (
+          {showPlayers && (
             <div
               className={`connect-four-player-rail connect-four-player-rail--p1${displayedState.current_player === 1 ? " is-current" : ""}`}
               aria-label={`Player 1: ${playerOne}`}
@@ -320,14 +274,14 @@ export default function ConnectFourWidget({
             </div>
           </div>
 
-          {showPlayers && hasTwoPlayers && (
+          {showPlayers && (
             <div
               className={`connect-four-player-rail connect-four-player-rail--p2${displayedState.current_player === 2 ? " is-current" : ""}`}
-              aria-label={`Player 2: ${playerTwo}`}
+              aria-label={`Player 2: ${playerTwoRailName}`}
             >
               <i className="connect-four-player-coin connect-four-player-coin--p2" />
               <strong>
-                {Array.from(playerTwo).map((character, index) => (
+                {Array.from(playerTwoRailName).map((character, index) => (
                   <span key={`${character}-${index}`}>{character}</span>
                 ))}
               </strong>
@@ -340,6 +294,12 @@ export default function ConnectFourWidget({
                 {title}
               </div>
               <strong>{getWaitingMessage(displayedState)}</strong>
+              {showWager && displayedState.wager > 0 && (
+                <span style={{ color: mutedColor }}>
+                  {displayedState.wager.toLocaleString()} PTS each ·{" "}
+                  {pot.toLocaleString()} PTS pot
+                </span>
+              )}
               <span>Join with !player2</span>
               <span>or !connect4 join</span>
             </aside>
