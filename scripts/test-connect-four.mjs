@@ -135,6 +135,10 @@ assert.match(packagesSource, /type: "connect_four"/);
 assert.match(packagesSource, /BetterConnectFourControls/);
 assert.match(packagesSource, /label="Board size"[\s\S]*?min=\{40\}/);
 assert.match(registrySource, /connect_four: ConnectFourWidget/);
+assert.match(
+  registrySource,
+  /function migrateLegacyConnectFourConfig[\s\S]*?playerOneColor: "#facc15"[\s\S]*?playerTwoColor: "#ef4444"/,
+);
 assert.match(listenerSource, /better_editor_overlays/);
 assert.match(widgetSource, /Math\.max\(40, Number\(config\.boardScale\)/);
 assert.match(
@@ -145,7 +149,17 @@ assert.match(
   widgetSource,
   /!hasTwoPlayers && \([\s\S]*?<aside className="connect-four-info">/,
 );
+assert.match(
+  widgetSource,
+  /connect-four-player-rail--p1[\s\S]*?connect-four-board-stack[\s\S]*?connect-four-player-rail--p2/,
+);
+assert.match(
+  widgetSource,
+  /rowIndex === 0[\s\S]*?className="connect-four-hole-number"[\s\S]*?columnIndex \+ 1/,
+);
 assert.match(widgetStylesSource, /\.connect-four-info \{/);
+assert.match(widgetStylesSource, /\.connect-four-player-rail strong \{/);
+assert.match(widgetStylesSource, /\.connect-four-hole-number \{/);
 assert.match(apiSource, /case ["']connect-four["']/);
 assert.match(
   baseMigration,

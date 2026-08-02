@@ -874,6 +874,21 @@ function migrateLegacyShoutoutConfig(widgetType, rawConfig) {
   };
 }
 
+function migrateLegacyConnectFourConfig(widgetType, rawConfig) {
+  if (
+    widgetType !== "connect_four" ||
+    rawConfig.playerOneColor !== "#ef4444" ||
+    rawConfig.playerTwoColor !== "#facc15"
+  ) {
+    return rawConfig;
+  }
+  return {
+    ...rawConfig,
+    playerOneColor: "#facc15",
+    playerTwoColor: "#ef4444",
+  };
+}
+
 export function normalizeBetterInstance(rawInstance = {}) {
   const widgetType =
     rawInstance.widgetType || rawInstance.widget_type || rawInstance.type;
@@ -896,7 +911,10 @@ export function normalizeBetterInstance(rawInstance = {}) {
       : rawInstance,
   );
   const rawConfig = rawInstance.config || definition.defaultConfig;
-  const config = migrateLegacyShoutoutConfig(widgetType, rawConfig);
+  const config = migrateLegacyConnectFourConfig(
+    widgetType,
+    migrateLegacyShoutoutConfig(widgetType, rawConfig),
+  );
   return {
     instanceId:
       rawInstance.instanceId || rawInstance.id || makeInstanceId(widgetType),

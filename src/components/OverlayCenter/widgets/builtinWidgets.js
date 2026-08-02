@@ -51,8 +51,8 @@ registerWidget({
   defaults: {
     displayStyle: "chat_connect_four",
     title: "CHAT CONNECT 4",
-    playerOneColor: "#ef4444",
-    playerTwoColor: "#facc15",
+    playerOneColor: "#facc15",
+    playerTwoColor: "#ef4444",
     boardColor: "#1e3a8a",
     boardBorderColor: "#1e3a8a",
     titleColor: "#fbbf24",

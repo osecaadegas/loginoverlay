@@ -212,7 +212,7 @@ export default function ConnectFourWidget({
       <div
         className={`connect-four-game${hasTwoPlayers ? " is-playing" : " is-waiting"}`}
       >
-        {showPlayers && (
+        {showPlayers && !hasTwoPlayers && (
           <div className="connect-four-scorebar">
             <div
               className={`connect-four-player-card${displayedState.current_player === 1 ? " is-current" : ""}${displayedState.winner === 1 ? " is-winner" : ""}`}
@@ -260,13 +260,21 @@ export default function ConnectFourWidget({
         )}
 
         <div className="connect-four-play-area">
-          <div className="connect-four-board-stack">
-            <div className="connect-four-column-labels" aria-hidden="true">
-              {Array.from({ length: 7 }, (_, column) => (
-                <span key={column}>{column + 1}</span>
-              ))}
+          {showPlayers && hasTwoPlayers && (
+            <div
+              className={`connect-four-player-rail connect-four-player-rail--p1${displayedState.current_player === 1 ? " is-current" : ""}`}
+              aria-label={`Player 1: ${playerOne}`}
+            >
+              <i className="connect-four-player-coin connect-four-player-coin--p1" />
+              <strong>
+                {Array.from(playerOne).map((character, index) => (
+                  <span key={`${character}-${index}`}>{character}</span>
+                ))}
+              </strong>
             </div>
+          )}
 
+          <div className="connect-four-board-stack">
             <div
               className="connect-four-board"
               role="grid"
@@ -283,6 +291,14 @@ export default function ConnectFourWidget({
                       role="gridcell"
                       key={`${rowIndex}-${columnIndex}`}
                     >
+                      {rowIndex === 0 && (
+                        <span
+                          className="connect-four-hole-number"
+                          aria-hidden="true"
+                        >
+                          {columnIndex + 1}
+                        </span>
+                      )}
                       {cell !== 0 ? (
                         <span
                           key={`${displayedState.match_id}-${displayedState.move_count}-${rowIndex}-${columnIndex}`}
@@ -303,6 +319,20 @@ export default function ConnectFourWidget({
               )}
             </div>
           </div>
+
+          {showPlayers && hasTwoPlayers && (
+            <div
+              className={`connect-four-player-rail connect-four-player-rail--p2${displayedState.current_player === 2 ? " is-current" : ""}`}
+              aria-label={`Player 2: ${playerTwo}`}
+            >
+              <i className="connect-four-player-coin connect-four-player-coin--p2" />
+              <strong>
+                {Array.from(playerTwo).map((character, index) => (
+                  <span key={`${character}-${index}`}>{character}</span>
+                ))}
+              </strong>
+            </div>
+          )}
 
           {!hasTwoPlayers && (
             <aside className="connect-four-info">
