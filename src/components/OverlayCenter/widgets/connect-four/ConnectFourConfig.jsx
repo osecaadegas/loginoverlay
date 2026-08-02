@@ -11,13 +11,20 @@ const DEFAULTS = {
   showWager: true,
   showPlayers: true,
   animateDrops: true,
-  chatCommand: "!connect4",
+  chatCommand: "!c4",
   twitchChannel: "",
 };
 
 export default function ConnectFourConfig({ config = {}, onChange }) {
   const { signInWithTwitch, twitchListener } = useAuth();
-  const value = { ...DEFAULTS, ...config };
+  const mergedValue = { ...DEFAULTS, ...config };
+  const value = {
+    ...mergedValue,
+    chatCommand:
+      mergedValue.chatCommand === "!connect4"
+        ? "!c4"
+        : mergedValue.chatCommand,
+  };
   const set = (patch) => onChange({ ...value, ...patch });
 
   return (
@@ -108,7 +115,7 @@ export default function ConnectFourConfig({ config = {}, onChange }) {
           <input
             type="text"
             value={value.chatCommand}
-            placeholder="!connect4"
+            placeholder="!c4"
             onChange={(event) => set({ chatCommand: event.target.value })}
           />
         </label>
@@ -122,7 +129,7 @@ export default function ConnectFourConfig({ config = {}, onChange }) {
           />
         </label>
         <dl>
-          <div><dt>Start</dt><dd>{value.chatCommand} start 100</dd></div>
+          <div><dt>Start</dt><dd>{value.chatCommand} 100</dd></div>
           <div><dt>Join</dt><dd>{value.chatCommand} join</dd></div>
           <div><dt>Move</dt><dd>{value.chatCommand} 1 through {value.chatCommand} 7</dd></div>
           <div><dt>Cancel</dt><dd>{value.chatCommand} reset</dd></div>

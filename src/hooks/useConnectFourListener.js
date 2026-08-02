@@ -15,15 +15,21 @@ function getBetterConnectFourConfig(layout) {
 function normalizeConnectFourChatCommand(rawText, trigger) {
   const normalized = String(rawText || "").trim();
   const lowerText = normalized.toLowerCase();
-  if (/^!player2(?:\s+\d+)?$/i.test(normalized)) return "!connect4 join";
+  if (lowerText === "!c4" || lowerText.startsWith("!c4 ")) {
+    return normalized;
+  }
+  if (/^!player2(?:\s+\d+)?$/i.test(normalized)) return "!c4 join";
   if (lowerText.startsWith("!player1 ")) {
-    return `!connect4 start ${normalized.slice(9).trim()}`;
+    return `!c4 ${normalized.slice(9).trim()}`;
   }
   if (/^!play\s+[1-7]$/i.test(normalized)) {
-    return `!connect4 ${normalized.split(/\s+/)[1]}`;
+    return `!c4 ${normalized.split(/\s+/)[1]}`;
   }
   if (lowerText === trigger || lowerText.startsWith(`${trigger} `)) {
-    return `!connect4${normalized.slice(trigger.length)}`;
+    const suffix = normalized.slice(trigger.length);
+    return /^\s+start\s+/i.test(suffix)
+      ? `!c4 ${suffix.trim().replace(/^start\s+/i, "")}`
+      : `!c4${suffix}`;
   }
   return null;
 }
@@ -108,7 +114,7 @@ export default function useConnectFourListener() {
         !broadcasterIdRef.current
       )
         return;
-      const trigger = String(config.chatCommand || "!connect4")
+      const trigger = String(config.chatCommand || "!c4")
         .trim()
         .toLowerCase();
       const rawText = String(message.message || "").trim();

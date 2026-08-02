@@ -102,6 +102,13 @@ export function parseConnectFourCommand(rawValue) {
   const [rawCommand, rawArgument] = text.split(/\s+/, 2);
   const command = rawCommand.toLowerCase();
 
+  if (command === "!c4") {
+    if (rawArgument?.toLowerCase() === "join") return { type: "join" };
+    const amount = Number(rawArgument);
+    return Number.isSafeInteger(amount) && amount > 0
+      ? { type: "start", amount }
+      : { type: "invalid", reason: "start_amount" };
+  }
   if (command === "!player1") {
     const amount = Number(rawArgument);
     return Number.isSafeInteger(amount) && amount > 0

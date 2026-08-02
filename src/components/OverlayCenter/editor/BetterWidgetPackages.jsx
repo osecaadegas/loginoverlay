@@ -1019,7 +1019,7 @@ const BASE_BETTER_CONFIG = {
     showWager: true,
     showPlayers: true,
     animateDrops: true,
-    chatCommand: "!connect4",
+    chatCommand: "!c4",
     twitchChannel: "",
   },
   raid_shoutout: {
@@ -5901,7 +5901,14 @@ function BetterRaidShoutoutControls({
 
 function BetterConnectFourControls({ config, onChange }) {
   const defaults = DEFAULT_BETTER_CONFIG.connect_four;
-  const c = ensureBetterWidgetConfig("connect_four", config);
+  const mergedConfig = ensureBetterWidgetConfig("connect_four", config);
+  const c = {
+    ...mergedConfig,
+    chatCommand:
+      mergedConfig.chatCommand === "!connect4"
+        ? "!c4"
+        : mergedConfig.chatCommand,
+  };
   const [tab, setTab] = useTab("content");
   const set = (patch) => onChange({ ...c, ...patch });
   const tabs = [

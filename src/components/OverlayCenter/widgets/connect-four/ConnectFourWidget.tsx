@@ -181,7 +181,8 @@ export default function ConnectFourWidget({
   const playerOne = displayedState.player_one_display_name;
   const playerTwo =
     displayedState.player_two_display_name || "Waiting for player";
-  const playerTwoRailName = displayedState.player_two_display_name || "Player 2";
+  const playerTwoRailName =
+    displayedState.player_two_display_name || "Player 2";
   const playerOneRailLengthClass = getPlayerRailLengthClass(playerOne);
   const playerTwoRailLengthClass = getPlayerRailLengthClass(playerTwoRailName);
   const title = stringValue(config.title, "CHAT CONNECT 4");
@@ -308,8 +309,7 @@ export default function ConnectFourWidget({
                   {pot.toLocaleString()} PTS pot
                 </span>
               )}
-              <span>Join with !player2</span>
-              <span>or !connect4 join</span>
+              <span>Join with !c4 join</span>
             </aside>
           )}
         </div>
