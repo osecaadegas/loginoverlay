@@ -79,6 +79,15 @@ function normalizeState(value: Record<string, unknown>): ConnectFourState {
   };
 }
 
+function getWaitingMessage(state: ConnectFourState): string {
+  if (state.status === "funding_start") return "Confirming Player 1 wager";
+  if (state.status === "funding_join") return "Confirming Player 2 wager";
+  if (state.completion_reason === "funding_failed") {
+    return "Reconnect StreamElements and start again";
+  }
+  return "Waiting for Player 2";
+}
+
 export default function ConnectFourWidget({
   userId,
   config = {},
@@ -177,12 +186,13 @@ export default function ConnectFourWidget({
   const fontFamily = stringValue(config.fontFamily, "'Rajdhani', sans-serif");
   const boardScale = Math.min(
     100,
-    Math.max(70, Number(config.boardScale) || 84),
+    Math.max(40, Number(config.boardScale) || 84),
   );
   const showWager = config.showWager !== false;
   const showPlayers = config.showPlayers !== false;
   const animateDrops = config.animateDrops !== false;
   const pot = displayedState.wager * 2;
+  const hasTwoPlayers = Boolean(displayedState.player_two_display_name);
   const widgetStyle = {
     color: textColor,
     fontFamily,
@@ -199,11 +209,9 @@ export default function ConnectFourWidget({
       aria-label="Chat Connect 4"
       style={widgetStyle}
     >
-      <div className="connect-four-game">
-        <div className="connect-four-title" style={{ color: titleColor }}>
-          {title}
-        </div>
-
+      <div
+        className={`connect-four-game${hasTwoPlayers ? " is-playing" : " is-waiting"}`}
+      >
         {showPlayers && (
           <div className="connect-four-scorebar">
             <div
@@ -212,24 +220,26 @@ export default function ConnectFourWidget({
               <i className="connect-four-player-coin connect-four-player-coin--p1" />
               <div>
                 <strong>{playerOne}</strong>
-                <span>
-                  {showWager && displayedState.wager
-                    ? `${displayedState.wager.toLocaleString()} PTS wagered`
-                    : "- PTS"}
-                </span>
+                {!hasTwoPlayers && (
+                  <span>
+                    {showWager && displayedState.wager
+                      ? `${displayedState.wager.toLocaleString()} PTS wagered`
+                      : "- PTS"}
+                  </span>
+                )}
               </div>
-              {displayedState.current_player === 1 &&
-                displayedState.status === "active" && <b>TURN</b>}
             </div>
 
-            <div className="connect-four-versus">
-              <strong>VS</strong>
-              {showWager && pot > 0 && (
-                <span style={{ color: mutedColor }}>
-                  {pot.toLocaleString()} PTS pot
-                </span>
-              )}
-            </div>
+            {!hasTwoPlayers && (
+              <div className="connect-four-versus">
+                <strong>VS</strong>
+                {showWager && pot > 0 && (
+                  <span style={{ color: mutedColor }}>
+                    {pot.toLocaleString()} PTS pot
+                  </span>
+                )}
+              </div>
+            )}
 
             <div
               className={`connect-four-player-card${displayedState.current_player === 2 ? " is-current" : ""}${displayedState.winner === 2 ? " is-winner" : ""}`}
@@ -237,60 +247,74 @@ export default function ConnectFourWidget({
               <i className="connect-four-player-coin connect-four-player-coin--p2" />
               <div>
                 <strong>{playerTwo}</strong>
-                <span>
-                  {showWager && displayedState.wager
-                    ? `${displayedState.wager.toLocaleString()} PTS wagered`
-                    : "- PTS"}
-                </span>
+                {!hasTwoPlayers && (
+                  <span>
+                    {showWager && displayedState.wager
+                      ? `${displayedState.wager.toLocaleString()} PTS wagered`
+                      : "- PTS"}
+                  </span>
+                )}
               </div>
-              {displayedState.current_player === 2 &&
-                displayedState.status === "active" && <b>TURN</b>}
             </div>
           </div>
         )}
 
-        <div className="connect-four-column-labels" aria-hidden="true">
-          {Array.from({ length: 7 }, (_, column) => (
-            <span key={column}>{column + 1}</span>
-          ))}
-        </div>
-
-        <div
-          className="connect-four-board"
-          role="grid"
-          aria-label="Connect 4 board"
-        >
-          {board.flatMap((row, rowIndex) =>
-            row.map((cell, columnIndex) => {
-              const isLastMove =
-                displayedState.last_move?.row === rowIndex &&
-                displayedState.last_move.column === columnIndex;
-              return (
-                <div
-                  className="connect-four-cell"
-                  role="gridcell"
-                  key={`${rowIndex}-${columnIndex}`}
-                >
-                  {cell !== 0 ? (
-                    <span
-                      key={`${displayedState.match_id}-${displayedState.move_count}-${rowIndex}-${columnIndex}`}
-                      className={`connect-four-coin connect-four-coin--p${cell}${isLastMove && animateDrops ? " is-latest" : ""}`}
-                    />
-                  ) : null}
-                </div>
-              );
-            }),
-          )}
-          {displayedState.winner && (
-            <div className="connect-four-win-overlay">
-              <strong>
-                {displayedState.winner === 1 ? playerOne : playerTwo} WINS!
-              </strong>
-              {pot > 0 && <span>+{pot.toLocaleString()} PTS</span>}
+        <div className="connect-four-play-area">
+          <div className="connect-four-board-stack">
+            <div className="connect-four-column-labels" aria-hidden="true">
+              {Array.from({ length: 7 }, (_, column) => (
+                <span key={column}>{column + 1}</span>
+              ))}
             </div>
+
+            <div
+              className="connect-four-board"
+              role="grid"
+              aria-label="Connect 4 board"
+            >
+              {board.flatMap((row, rowIndex) =>
+                row.map((cell, columnIndex) => {
+                  const isLastMove =
+                    displayedState.last_move?.row === rowIndex &&
+                    displayedState.last_move.column === columnIndex;
+                  return (
+                    <div
+                      className="connect-four-cell"
+                      role="gridcell"
+                      key={`${rowIndex}-${columnIndex}`}
+                    >
+                      {cell !== 0 ? (
+                        <span
+                          key={`${displayedState.match_id}-${displayedState.move_count}-${rowIndex}-${columnIndex}`}
+                          className={`connect-four-coin connect-four-coin--p${cell}${isLastMove && animateDrops ? " is-latest" : ""}`}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                }),
+              )}
+              {displayedState.winner && (
+                <div className="connect-four-win-overlay">
+                  <strong>
+                    {displayedState.winner === 1 ? playerOne : playerTwo} WINS!
+                  </strong>
+                  {pot > 0 && <span>+{pot.toLocaleString()} PTS</span>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {!hasTwoPlayers && (
+            <aside className="connect-four-info">
+              <div className="connect-four-title" style={{ color: titleColor }}>
+                {title}
+              </div>
+              <strong>{getWaitingMessage(displayedState)}</strong>
+              <span>Join with !player2</span>
+              <span>or !connect4 join</span>
+            </aside>
           )}
         </div>
-
       </div>
     </section>
   );

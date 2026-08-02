@@ -104,6 +104,20 @@ const listenerSource = readFileSync(
   new URL("../src/hooks/useConnectFourListener.js", import.meta.url),
   "utf8",
 );
+const widgetSource = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/widgets/connect-four/ConnectFourWidget.tsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const widgetStylesSource = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/widgets/connect-four/ConnectFourWidget.css",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const apiSource = readFileSync(
   new URL("../api/chat-commands.js", import.meta.url),
   "utf8",
@@ -119,8 +133,19 @@ const deadlineMigration = readFileSync(
 
 assert.match(packagesSource, /type: "connect_four"/);
 assert.match(packagesSource, /BetterConnectFourControls/);
+assert.match(packagesSource, /label="Board size"[\s\S]*?min=\{40\}/);
 assert.match(registrySource, /connect_four: ConnectFourWidget/);
 assert.match(listenerSource, /better_editor_overlays/);
+assert.match(widgetSource, /Math\.max\(40, Number\(config\.boardScale\)/);
+assert.match(
+  widgetSource,
+  /const hasTwoPlayers = Boolean\(displayedState\.player_two_display_name\)/,
+);
+assert.match(
+  widgetSource,
+  /!hasTwoPlayers && \([\s\S]*?<aside className="connect-four-info">/,
+);
+assert.match(widgetStylesSource, /\.connect-four-info \{/);
 assert.match(apiSource, /case ["']connect-four["']/);
 assert.match(
   baseMigration,

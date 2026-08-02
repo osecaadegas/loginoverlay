@@ -34,6 +34,12 @@
   gap: 1.4cqh;
 }
 
+.connect-four-game.is-playing .connect-four-scorebar {
+  width: var(--connect-four-board-scale, 84%);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-inline: auto;
+}
+
 .connect-four-player-card {
   position: relative;
   min-width: 0;
@@ -133,6 +139,50 @@
   font-size: clamp(9px, 1.6cqh, 13px);
   font-weight: 800;
   white-space: nowrap;
+}
+
+.connect-four-play-area {
+  display: flex;
+  align-items: center;
+  gap: 2.4cqh;
+}
+
+.connect-four-board-stack {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2cqh;
+}
+
+.connect-four-info {
+  width: clamp(150px, 28%, 220px);
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8cqh;
+  padding: 2cqh;
+  box-sizing: border-box;
+  border-left: max(2px, 0.3cqh) solid var(--connect-four-p1);
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.82);
+  text-shadow: 0 2px 8px #000;
+}
+
+.connect-four-info .connect-four-title {
+  margin-bottom: 0.8cqh;
+  text-align: left;
+}
+
+.connect-four-info > strong {
+  font-size: clamp(13px, 2.2cqh, 18px);
+  line-height: 1.2;
+}
+
+.connect-four-info > span {
+  color: #cbd5e1;
+  font-size: clamp(10px, 1.7cqh, 14px);
+  font-weight: 800;
 }
 
 .connect-four-column-labels {
@@ -298,8 +348,15 @@
 }
 
 @container (max-width: 430px) {
-  .connect-four-title {
-    display: none;
+  .connect-four-play-area {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .connect-four-info {
+    width: var(--connect-four-board-scale, 84%);
+    margin-inline: auto;
+    border-left: 0;
+    border-top: max(2px, 0.3cqh) solid var(--connect-four-p1);
   }
   .connect-four-player-card {
     padding-inline: 1cqh;

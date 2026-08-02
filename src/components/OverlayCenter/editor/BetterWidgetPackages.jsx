@@ -5966,7 +5966,7 @@ function BetterConnectFourControls({ config, onChange }) {
           <SliderRow
             label="Board size"
             value={c.boardScale}
-            min={70}
+            min={40}
             max={100}
             unit="%"
             onChange={(boardScale) => set({ boardScale })}
