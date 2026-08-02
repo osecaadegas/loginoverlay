@@ -162,8 +162,9 @@ assert.match(
 assert.match(widgetStylesSource, /\.connect-four-info \{/);
 assert.match(widgetStylesSource, /\.connect-four-player-rail strong \{/);
 assert.match(widgetStylesSource, /\.connect-four-player-rail\.is-long strong \{/);
-assert.match(widgetStylesSource, /font-size: clamp\(15px, 2\.8cqh, 22px\)/);
+assert.match(widgetStylesSource, /color: #fff;[\s\S]*?font-size: clamp\(18px, 3\.2cqh, 26px\)/);
 assert.match(widgetStylesSource, /\.connect-four-hole-number \{/);
+assert.match(widgetStylesSource, /font-size: clamp\(14px, 3cqh, 23px\)/);
 assert.match(apiSource, /case ["']connect-four["']/);
 assert.match(
   baseMigration,
