@@ -10,6 +10,7 @@ import {
 } from "./tournamentEngine";
 import ShatterEffect from "./ShatterEffect";
 import { subValue } from "../shared/appearanceStyles";
+import SlotImage from "../SlotImage";
 
 function widgetToken(property) {
   return `var(--widget-${property})`;
@@ -608,30 +609,18 @@ function TournamentWidget({ config, theme }) {
                 }),
           }}
         >
-          {slotImage ? (
-            <img
-              {...partAttrs("slotImage")}
-              src={slotImage}
-              alt={slotName}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-                borderRadius: minimal ? 0 : cssLength(slotImageRadius),
-              }}
-            />
-          ) : (
-            <div
-              {...partAttrs("slotImage")}
-              style={{
-                width: "100%",
-                height: "100%",
-                background: slotImageFallbackBg,
-                borderRadius: minimal ? 0 : cssLength(slotImageRadius),
-              }}
-            />
-          )}
+          <SlotImage
+            {...partAttrs("slotImage")}
+            src={slotImage}
+            alt={slotName}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+              borderRadius: minimal ? 0 : cssLength(slotImageRadius),
+            }}
+          />
           {isEliminated && (
             <div
               style={{
@@ -1024,33 +1013,7 @@ function TournamentWidget({ config, theme }) {
               background: slotImageFallbackBg,
             }}
           >
-            {slotImage ? (
-              <img
-                src={slotImage}
-                alt={name}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  background: slotImageFallbackBg,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: cssLength(nameSize),
-                  color: scoreNeutralColor,
-                }}
-              >
-                ⚔
-              </div>
-            )}
+            <SlotImage src={slotImage} alt={name} />
 
             {/* Result overlay — on the image */}
             {result !== null && (
@@ -1297,8 +1260,6 @@ function TournamentWidget({ config, theme }) {
     const esCyan = c.esCyan || "#00e5ff";
     const esPurple = c.esPurple || "#64748b";
     const esGold = c.esGold || "#fbbf24";
-    const esBg = c.esBg || "#030712";
-    const esCardBg = c.esCardBg || "rgba(15,23,42,0.75)";
     const esBorder = c.esBorder || "rgba(0,229,255,0.18)";
     const esFont = fontFamily;
 
@@ -1459,35 +1420,11 @@ function TournamentWidget({ config, theme }) {
           }}
         >
           {/* Full-bleed image */}
-          {slotImage ? (
-            <img
-              src={slotImage}
-              alt={name}
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: `linear-gradient(135deg, ${esBg}, rgba(0,229,255,0.05))`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: large ? 28 : 16,
-                color: "rgba(255,255,255,0.06)",
-              }}
-            >
-              ⚔
-            </div>
-          )}
+          <SlotImage
+            src={slotImage}
+            alt={name}
+            style={{ position: "absolute", inset: 0 }}
+          />
 
           {/* Winner crown */}
           {isWinner && (
@@ -2085,33 +2022,7 @@ function TournamentWidget({ config, theme }) {
                 overflow: "hidden",
               }}
             >
-              {slotImage ? (
-                <img
-                  src={slotImage}
-                  alt={slotName}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    background: "rgba(0,0,0,0.3)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 24,
-                    color: "rgba(255,255,255,0.1)",
-                  }}
-                >
-                  🎰
-                </div>
-              )}
+              <SlotImage src={slotImage} alt={slotName} />
               {/* Slot name overlay */}
               {slotName && (
                 <div
@@ -2483,7 +2394,6 @@ function TournamentWidget({ config, theme }) {
     const gCyan = c.esCyan || "#00e5ff";
     const gPurple = c.esPurple || "#64748b";
     const gGold = c.esGold || "#fbbf24";
-    const gBg = c.esBg || "#030712";
     const gBorder = c.esBorder || "rgba(0,229,255,0.18)";
     const gFont = fontFamily;
     const gGreen = "#39ff14";
@@ -2701,35 +2611,11 @@ function TournamentWidget({ config, theme }) {
           )}
 
           {/* Full-bleed slot image */}
-          {slotImage ? (
-            <img
-              src={slotImage}
-              alt={name}
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: `linear-gradient(135deg, ${gBg}, rgba(0,229,255,0.05))`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: large ? 28 : 16,
-                color: "rgba(255,255,255,0.06)",
-              }}
-            >
-              ⚔
-            </div>
-          )}
+          <SlotImage
+            src={slotImage}
+            alt={name}
+            style={{ position: "absolute", inset: 0 }}
+          />
 
           {/* Winner emoji (non-champion) */}
           {isWinner && !isChampion && (

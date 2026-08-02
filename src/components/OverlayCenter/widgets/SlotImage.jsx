@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { DEFAULT_SLOT_IMAGE } from '../../../utils/slotUtils';
+import { DEFAULT_SLOT_IMAGE, resolveSlotImage } from '../../../utils/slotUtils';
 
 export default function SlotImage({ src, alt, className, fit = 'cover', ...props }) {
-  const [currentSrc, setCurrentSrc] = useState(src || DEFAULT_SLOT_IMAGE);
+  const [currentSrc, setCurrentSrc] = useState(resolveSlotImage(src));
   const { style, ...imgProps } = props;
   const objectFit = style?.objectFit || fit;
   const objectPosition = style?.objectPosition || 'center center';
 
   useEffect(() => {
-    setCurrentSrc(src || DEFAULT_SLOT_IMAGE);
+    setCurrentSrc(resolveSlotImage(src));
   }, [src]);
 
   return (

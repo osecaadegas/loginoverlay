@@ -8,6 +8,16 @@ const SAMPLE_BETS_OPTIONS = [
 
 const SAMPLE_BET_AMOUNTS = [1280, 820, 1540, 420, 960, 610, 360, 1180, 740];
 
+export const PREVIEW_SLOT_NAMES = Object.freeze([
+  "Gates of Olympus 1000",
+  "Le Digger",
+  "Sugar Rush 1000",
+  "Wanted Dead or a Wild",
+  "Big Bass Secrets of the Golden Lake",
+  "Cyber Runner",
+  "Banana Town",
+]);
+
 const SAMPLE_TOURNAMENT_MATCHES = [
   {
     id: "preview-tournament-1",
@@ -15,12 +25,11 @@ const SAMPLE_TOURNAMENT_MATCHES = [
     player2: "Miguel",
     slot1: {
       name: "Gates of Olympus 1000",
-      image:
-        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+      image: "",
     },
     slot2: {
       name: "Le Digger",
-      image: "https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png",
+      image: "",
     },
     type: "bonus_bo3",
     status: "completed",
@@ -99,23 +108,21 @@ const SAMPLE_SLOT_REQUESTS = [
   {
     id: "preview-sr-1",
     slot_name: "Gates of Olympus 1000",
-    slot_image:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+    slot_image: "",
     requested_by: "brutuspolus",
     created_at: "2026-07-16T10:00:00.000Z",
   },
   {
     id: "preview-sr-2",
     slot_name: "Le Digger",
-    slot_image: "https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png",
+    slot_image: "",
     requested_by: "miguel",
     created_at: "2026-07-16T10:01:00.000Z",
   },
   {
     id: "preview-sr-3",
     slot_name: "Big Bass Secrets of the Golden Lake",
-    slot_image:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/BigBassSecretsOfTheGoldenLake.png",
+    slot_image: "",
     requested_by: "viewer_42",
     created_at: "2026-07-16T10:02:00.000Z",
   },
@@ -163,8 +170,7 @@ const SAMPLE_BONUS_HUNT_BONUSES = [
     slotName: "Gates of Olympus 1000",
     slot: {
       name: "Gates of Olympus 1000",
-      image:
-        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+      image: "",
       provider: "Pragmatic Play",
     },
     betSize: 1,
@@ -177,7 +183,7 @@ const SAMPLE_BONUS_HUNT_BONUSES = [
     slotName: "Le Digger",
     slot: {
       name: "Le Digger",
-      image: "https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png",
+      image: "",
       provider: "Hacksaw Gaming",
     },
     betSize: 2,
@@ -189,8 +195,7 @@ const SAMPLE_BONUS_HUNT_BONUSES = [
     slotName: "Big Bass Secrets of the Golden Lake",
     slot: {
       name: "Big Bass Secrets of the Golden Lake",
-      image:
-        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/BigBassSecretsOfTheGoldenLake.png",
+      image: "",
       provider: "Pragmatic Play",
     },
     betSize: 1,
@@ -215,7 +220,7 @@ const SAMPLE_BONUS_HUNT_BONUSES = [
     slotName: "Banana Town",
     slot: {
       name: "Banana Town",
-      image: "https://images-cdn.softswiss.net/i/s2/evoplay/BananaTown.png",
+      image: "",
       provider: "Evoplay",
     },
     betSize: 1,
@@ -272,6 +277,53 @@ function positiveNumberOr(value, fallback) {
 function nonEmptyArrayOr(value, fallback) {
   if (Array.isArray(value) && value.length > 0) return value;
   return fallback;
+}
+
+function normalizeSlotName(value) {
+  return String(value || "").trim().toLocaleLowerCase();
+}
+
+function buildPreviewSlotCatalog(records = []) {
+  return new Map(
+    records
+      .filter((record) => record?.name)
+      .map((record) => [normalizeSlotName(record.name), record]),
+  );
+}
+
+function hydratePreviewSlot(slot = {}, catalog) {
+  const record = catalog.get(normalizeSlotName(slot.name));
+  return {
+    ...slot,
+    image: record?.image || "",
+    provider: record?.provider || slot.provider || "",
+  };
+}
+
+function hydratePreviewRequests(requests, catalog) {
+  return requests.map((request) => {
+    const record = catalog.get(normalizeSlotName(request.slot_name));
+    return {
+      ...request,
+      slot_image: record?.image || "",
+      slot_provider: record?.provider || request.slot_provider || "",
+    };
+  });
+}
+
+function hydratePreviewBonuses(bonuses, catalog) {
+  return bonuses.map((bonus) => ({
+    ...bonus,
+    slot: hydratePreviewSlot(bonus.slot, catalog),
+  }));
+}
+
+function hydratePreviewMatches(matches, catalog) {
+  return matches.map((match) => ({
+    ...match,
+    slot1: hydratePreviewSlot(match.slot1, catalog),
+    slot2: hydratePreviewSlot(match.slot2, catalog),
+  }));
 }
 
 function previewOpeningState(previewState, config) {
@@ -403,12 +455,15 @@ function applyGiveawayPreviewSample(config = {}) {
   };
 }
 
-function applySlotRequestsPreviewSample(config = {}) {
+function applySlotRequestsPreviewSample(config = {}, slotCatalog) {
   if (Array.isArray(config.__appearancePreviewRequests)) {
     return { ...config, __appearancePreviewSample: true };
   }
   const state = config.__appearancePreviewState || "with_requests";
-  const requests = getSlotRequestsPreviewRequests(state);
+  const requests = hydratePreviewRequests(
+    getSlotRequestsPreviewRequests(state),
+    slotCatalog,
+  );
   return {
     ...config,
     __appearancePreviewRequests: requests,
@@ -427,9 +482,12 @@ function applyChatPreviewSample(config = {}) {
   };
 }
 
-function applyBonusHuntPreviewSample(config = {}) {
+function applyBonusHuntPreviewSample(config = {}, slotCatalog) {
   const previewState = config.__appearancePreviewState || "hunt_live";
-  const requests = getBonusHuntPreviewRequests(previewState);
+  const requests = hydratePreviewRequests(
+    getBonusHuntPreviewRequests(previewState),
+    slotCatalog,
+  );
   return {
     ...config,
     displayStyle: config.displayStyle || "v12_classic_sr",
@@ -438,14 +496,17 @@ function applyBonusHuntPreviewSample(config = {}) {
     startMoney: positiveNumberOr(config.startMoney, 1500),
     stopLoss: positiveNumberOr(config.stopLoss, 200),
     bonusOpening: previewOpeningState(previewState, config),
-    bonuses: nonEmptyArrayOr(config.bonuses, SAMPLE_BONUS_HUNT_BONUSES),
+    bonuses: nonEmptyArrayOr(
+      config.bonuses,
+      hydratePreviewBonuses(SAMPLE_BONUS_HUNT_BONUSES, slotCatalog),
+    ),
     showSlotRequests: config.showSlotRequests !== false,
     __appearancePreviewRequests: requests,
     __appearancePreviewSample: true,
   };
 }
 
-function applyTournamentPreviewSample(config = {}) {
+function applyTournamentPreviewSample(config = {}, slotCatalog) {
   const existingMatches = config.data?.matches;
   return {
     ...config,
@@ -454,7 +515,10 @@ function applyTournamentPreviewSample(config = {}) {
     data: {
       ...(config.data || {}),
       currentMatchIdx: config.data?.currentMatchIdx ?? 1,
-      matches: nonEmptyArrayOr(existingMatches, SAMPLE_TOURNAMENT_MATCHES),
+      matches: nonEmptyArrayOr(
+        existingMatches,
+        hydratePreviewMatches(SAMPLE_TOURNAMENT_MATCHES, slotCatalog),
+      ),
     },
     __appearancePreviewSample: true,
   };
@@ -514,7 +578,7 @@ function getPreviewFrame(widgetType, config = {}) {
   return frameBuilder(config);
 }
 
-function applyWidgetPreviewSample(widget, now) {
+function applyWidgetPreviewSample(widget, now, slotCatalog) {
   if (!widget) return widget;
   if (widget.widget_type === "bets")
     return {
@@ -538,17 +602,17 @@ function applyWidgetPreviewSample(widget, now) {
   if (widget.widget_type === "bonus_hunt")
     return {
       ...widget,
-      config: applyBonusHuntPreviewSample(widget.config || {}),
+      config: applyBonusHuntPreviewSample(widget.config || {}, slotCatalog),
     };
   if (widget.widget_type === "tournament")
     return {
       ...widget,
-      config: applyTournamentPreviewSample(widget.config || {}),
+      config: applyTournamentPreviewSample(widget.config || {}, slotCatalog),
     };
   if (widget.widget_type === "slot_requests")
     return {
       ...widget,
-      config: applySlotRequestsPreviewSample(widget.config || {}),
+      config: applySlotRequestsPreviewSample(widget.config || {}, slotCatalog),
     };
   return widget;
 }
@@ -556,8 +620,9 @@ function applyWidgetPreviewSample(widget, now) {
 export function applyPreviewWidgetSamples(widgets = [], options = {}) {
   const now = Number(options.now) || Date.now();
   const expandFrames = options.expandFrames === true;
+  const slotCatalog = buildPreviewSlotCatalog(options.slotCatalog);
   return widgets.map((widget) => {
-    const sampled = applyWidgetPreviewSample(widget, now);
+    const sampled = applyWidgetPreviewSample(widget, now, slotCatalog);
     if (!expandFrames || sampled === widget) return sampled;
     const frame = getPreviewFrame(sampled.widget_type, sampled.config || {});
     if (!frame) return sampled;

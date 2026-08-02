@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { submitSlot, getMySubmissions } from '../../../services/pendingSlotService';
 import { supabase } from '../../../config/supabaseClient';
-import { DEFAULT_SLOT_IMAGE } from '../../../utils/slotUtils';
+import { DEFAULT_SLOT_IMAGE, resolveSlotImage } from '../../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../utils/slotImageSearch';
 import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
 import '../../SlotManager/SlotManagerV2.css';
@@ -302,7 +302,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
       {(imageResults.length > 0 || form.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (
         <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {form.image && (
-            <img src={form.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(148,163,184,0.4)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+            <img src={resolveSlotImage(form.image)} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(148,163,184,0.4)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
           )}
           {scrapedImages.slice(0, 8).map((url, i) => (
             <button key={`scraped-${i}`} type="button" onClick={() => set('image', url)}
@@ -384,7 +384,7 @@ const MySubmissionsPanel = memo(({ onClose }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {subs.map(s => (
                 <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(13,17,23,0.68)', borderRadius: 16, border: '1px solid rgba(148,163,184,0.24)' }}>
-                  <img src={s.image || DEFAULT_SLOT_IMAGE} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                  <img src={resolveSlotImage(s.image)} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
                     <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>{s.provider}</div>
@@ -631,7 +631,7 @@ export default function SlotSubmissions() {
                   {slots.map((slot, i) => (
                     <tr key={slot.id} className={`sm-row ${i % 2 ? 'odd' : ''}`}>
                       <td className="sm-td-img">
-                        <img src={slot.image || DEFAULT_SLOT_IMAGE} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                        <img src={resolveSlotImage(slot.image)} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                       </td>
                       <td className="sm-td-name">
                         {slot.name}

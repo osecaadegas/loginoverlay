@@ -52,7 +52,7 @@ export function slotFromIngestionResult(result) {
     id: slot.id,
     name: slot.name,
     provider: slot.provider || '',
-    image: slot.image || 'https://i.imgur.com/8E3ucNx.png',
+    image: slot.image || '/placeholder.png',
     rtp: slot.rtp ?? null,
     volatility: slot.volatility || null,
     max_win_multiplier: slot.max_win_multiplier ?? null,

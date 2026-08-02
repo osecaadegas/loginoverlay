@@ -17,6 +17,7 @@ import React, {
   memo,
 } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import { supabase } from "../../config/supabaseClient";
 import {
   getInstanceByToken,
   getWidgets,
@@ -34,7 +35,10 @@ import {
   normalizeAppearance,
   resolveWidgetsForAppearance,
 } from "./appearance/appearanceModel";
-import { applyPreviewWidgetSamples } from "./appearance/previewWidgetSamples";
+import {
+  applyPreviewWidgetSamples,
+  PREVIEW_SLOT_NAMES,
+} from "./appearance/previewWidgetSamples";
 import {
   getWidgetSlotBehavior,
   getWidgetSlotSize,
@@ -223,6 +227,7 @@ export default function OverlayRenderer() {
   const [overlayState, setOverlayState] = useState({});
   const [previewDraft, setPreviewDraft] = useState(null);
   const [previewStyleSelections, setPreviewStyleSelections] = useState({});
+  const [previewSlotCatalog, setPreviewSlotCatalog] = useState([]);
   const previewNowRef = useRef(Date.now());
   const [error, setError] = useState(null);
   const [ready, setReady] = useState(false);
@@ -351,6 +356,38 @@ export default function OverlayRenderer() {
     };
   }, [isPreviewMode, ready, token]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!isPreviewMode) {
+      setPreviewSlotCatalog([]);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    supabase
+      .from("slots")
+      .select("name, provider, image")
+      .in("name", PREVIEW_SLOT_NAMES)
+      .then(({ data, error: slotError }) => {
+        if (cancelled) return;
+        if (slotError) {
+          console.warn(
+            "[OverlayRenderer] Failed to load preview slot images:",
+            slotError.message,
+          );
+          setPreviewSlotCatalog([]);
+          return;
+        }
+        setPreviewSlotCatalog(data || []);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPreviewMode]);
+
   // ── Theme CSS variables ──
   const appearanceState = useMemo(
     () => buildOverlayAppearanceState(overlayState || {}, { theme, widgets }),
@@ -372,9 +409,17 @@ export default function OverlayRenderer() {
       ? applyPreviewWidgetSamples(resolved, {
           now: previewNowRef.current,
           expandFrames: true,
+          slotCatalog: previewSlotCatalog,
         })
       : resolved;
-  }, [widgets, activeAppearance, theme, isPreviewMode, previewStyleSelections]);
+  }, [
+    widgets,
+    activeAppearance,
+    theme,
+    isPreviewMode,
+    previewStyleSelections,
+    previewSlotCatalog,
+  ]);
 
   const themeVars = useMemo(
     () => buildThemeVars(theme, activeAppearance),

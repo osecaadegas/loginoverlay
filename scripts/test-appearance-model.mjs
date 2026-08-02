@@ -584,7 +584,17 @@ const previewSampleWidgets = applyPreviewWidgetSamples([
   { id: 'bets_preview', widget_type: 'bets', width: 320, height: 180, config: { gameStatus: 'idle', options: [] } },
   { id: 'spotify_preview', widget_type: 'spotify_now_playing', width: 260, height: 100, config: {} },
   { id: 'giveaway_preview', widget_type: 'giveaway', width: 280, height: 180, config: {} },
-], { now: 1000000, expandFrames: true });
+  { id: 'slot_requests_preview', widget_type: 'slot_requests', width: 360, height: 520, config: {} },
+  { id: 'bonus_hunt_preview', widget_type: 'bonus_hunt', width: 300, height: 820, config: {} },
+  { id: 'tournament_preview', widget_type: 'tournament', width: 960, height: 720, config: {} },
+], {
+  now: 1000000,
+  expandFrames: true,
+  slotCatalog: [
+    { name: 'Gates of Olympus 1000', provider: 'Pragmatic Play', image: 'https://database.test/gates.png' },
+    { name: 'Le Digger', provider: 'Hacksaw Gaming', image: 'https://database.test/le-digger.png' },
+  ],
+});
 const sampledBets = previewSampleWidgets.find(widget => widget.id === 'bets_preview');
 assert.equal(sampledBets.config.gameStatus, 'open', 'preview samples open idle bets widgets');
 assert.ok(sampledBets.config.options.length >= 4, 'preview samples provide bets options');
@@ -595,6 +605,12 @@ assert.equal(sampledSpotify.config.manualTrack, 'Bonus Hunt Live', 'preview samp
 const sampledGiveaway = previewSampleWidgets.find(widget => widget.id === 'giveaway_preview');
 assert.equal(sampledGiveaway.config.isActive, true, 'preview samples activate giveaway widgets');
 assert.ok(sampledGiveaway.config.participants.length > 0, 'preview samples provide giveaway participants');
+const sampledSlotRequests = previewSampleWidgets.find(widget => widget.id === 'slot_requests_preview');
+assert.equal(sampledSlotRequests.config.__appearancePreviewRequests[0].slot_image, 'https://database.test/gates.png', 'slot request previews use database slot images');
+const sampledBonusHunt = previewSampleWidgets.find(widget => widget.id === 'bonus_hunt_preview');
+assert.equal(sampledBonusHunt.config.bonuses[0].slot.image, 'https://database.test/gates.png', 'bonus hunt previews use database slot images');
+const sampledTournament = previewSampleWidgets.find(widget => widget.id === 'tournament_preview');
+assert.equal(sampledTournament.config.data.matches[0].slot2.image, 'https://database.test/le-digger.png', 'tournament previews use database slot images');
 
 const betsDefinition = getWidgetAppearanceDefinition('bets');
 for (const elementId of ['container', 'title', 'status', 'statistics', 'optionRow', 'optionNumber', 'optionLabel', 'percentage', 'footer', 'progressBar']) {

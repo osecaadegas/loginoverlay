@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { supabase } from '../../config/supabaseClient';
-import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
+import { DEFAULT_SLOT_IMAGE, resolveSlotImage } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
 import { getErrorMessage } from '../../utils/errorUtils';
 import { getLocalProviderNames, getProviderIdentityKey, getProviderImage } from '../../utils/gameProviders';
@@ -461,7 +461,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew, o
             <>
               {form.image && (
                 <div className="sm-img-preview">
-                  <img src={form.image || DEFAULT_SLOT_IMAGE} alt="" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                  <img src={resolveSlotImage(form.image)} alt="" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                 </div>
               )}
               <label className="sm-field">
@@ -1511,7 +1511,7 @@ const SlotManagerV2 = () => {
                       <input type="checkbox" checked={selected} onChange={() => toggleSelect(slot.id)} />
                     </td>
                     <td className="sm-td-img">
-                      <img src={slot.image || DEFAULT_SLOT_IMAGE} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                      <img src={resolveSlotImage(slot.image)} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                     </td>
                     <td className="sm-td-name">
                       <div className="sm-slot-title-row">
