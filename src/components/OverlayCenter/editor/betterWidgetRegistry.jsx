@@ -434,6 +434,42 @@ const LIVE_DATA_KEYS = Object.freeze({
   raid_shoutout: ["twitchChannel", "chatCommandEnabled"],
 });
 
+const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
+  chat: new Set([
+    "twitchChannel",
+    "twitch_channel",
+    "twitchLogin",
+    "twitch_login",
+    "twitchUsername",
+    "twitch_username",
+    "twitchUserId",
+    "twitch_user_id",
+    "twitchId",
+    "twitch_id",
+    "twitchBroadcasterId",
+    "twitch_broadcaster_id",
+    "broadcasterId",
+    "broadcaster_id",
+    "providerId",
+    "provider_id",
+    "channelLogin",
+    "channel_login",
+    "youtubeVideoId",
+    "youtubeApiKey",
+    "kickChannelId",
+  ]),
+  giveaway: new Set(["twitchChannel", "kickChannelId"]),
+  navbar: new Set([
+    "twitchUsername",
+    "kickChannelId",
+    "kickChannel",
+    "youtubeChannel",
+    "youtubeVideoId",
+  ]),
+  bets: new Set(["twitchChannel"]),
+  raid_shoutout: new Set(["twitchChannel"]),
+});
+
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
@@ -549,8 +585,17 @@ function hasOwnKey(value, key) {
 
 function pickLiveDataPatch(widgetType, liveConfig = {}) {
   const keys = LIVE_DATA_KEYS[widgetType] || [];
+  const nonEmptyKeys = NON_EMPTY_LIVE_DATA_KEYS[widgetType];
   return keys.reduce((patch, key) => {
-    if (hasOwnKey(liveConfig, key)) patch[key] = liveConfig[key];
+    if (!hasOwnKey(liveConfig, key)) return patch;
+    const value = liveConfig[key];
+    if (
+      nonEmptyKeys?.has(key) &&
+      (value === null || value === undefined || String(value).trim() === "")
+    ) {
+      return patch;
+    }
+    patch[key] = value;
     return patch;
   }, {});
 }

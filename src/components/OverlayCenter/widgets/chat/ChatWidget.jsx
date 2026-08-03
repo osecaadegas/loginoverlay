@@ -813,7 +813,16 @@ function ChatWidget({
       : "bottom-to-top"
     : "bottom-to-top";
   const autoChannel = useTwitchChannel();
-  const resolvedTwitchChannel = c.twitchChannel || autoChannel || "";
+  const navbarConfig =
+    allWidgets?.find?.((widget) => widget?.widget_type === "navbar")?.config ||
+    {};
+  const fallbackTwitchChannel = resolveBttvTwitchChannel(
+    navbarConfig,
+    autoChannel,
+  );
+  const resolvedTwitchChannel = normalizedUsername(
+    resolveBttvTwitchChannel(c, fallbackTwitchChannel),
+  );
   const configuredBttvTwitchUserId = resolveBttvTwitchUserId(c);
   const bttvTwitchUserId =
     connectedTwitchChannelId || configuredBttvTwitchUserId;
@@ -1497,8 +1506,8 @@ function ChatWidget({
             </span>
           </div>
           <span className="ov-cards-header-channel" {...partAttrs("header")}>
-            {c.twitchChannel || autoChannel
-              ? (c.twitchChannel || autoChannel).toUpperCase()
+            {resolvedTwitchChannel
+              ? resolvedTwitchChannel.toUpperCase()
               : "CHANNEL"}
           </span>
         </div>
