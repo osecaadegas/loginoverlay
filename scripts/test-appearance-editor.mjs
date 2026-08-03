@@ -867,10 +867,10 @@ try {
       betterWidgetStylesSource.includes("better-hunt-request-landing") &&
       betterWidgetStylesSource.includes("better-hunt-request-shard") &&
       betterWidgetStylesSource.includes(
-        "const source = liveSource || cached?.row || fallback;",
+        "const sourceAnchorNode =",
       ) &&
       betterWidgetStylesSource.includes(
-        'rootRef.current || node.closest(".better-hunt-root")',
+        '".better-hunt-request-list, .better-hunt-request--empty"',
       ) &&
       betterWidgetStylesSource.includes(
         "better-hunt-request-shard-surface",
@@ -891,10 +891,10 @@ try {
         "const scaleY = rootRect.height / rootNode.clientHeight || 1;",
       ) &&
       betterWidgetStylesSource.includes(
-        "const liveSource = cached?.node?.isConnected",
+        'requestArea?.querySelector(".better-hunt-request-card.is-center")',
       ) &&
       betterWidgetStylesSource.includes(
-        "const source = liveSource || cached?.row || fallback;",
+        "height: Math.max(32, rowHeight - 6)",
       ) &&
       betterWidgetStylesSource.includes(
         "filter:brightness(1.12) saturate(1.14)",
@@ -931,9 +931,6 @@ try {
       ) &&
       betterWidgetPackagesSource.includes(
         "checked={c.requestActionAnimations === true}",
-      ) &&
-      betterWidgetStylesSource.includes(
-        "copy === 0 ? (node) => rememberRequestNode(request, node) : undefined",
       ) &&
       betterWidgetStylesSource.includes(
         "`${action.id}-shard-${row}-${column}`",

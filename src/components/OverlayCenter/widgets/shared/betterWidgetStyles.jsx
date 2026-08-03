@@ -2820,7 +2820,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
   };
   const rootRef = useRef(null);
-  const requestRectsRef = useRef(new Map());
   const seenRequestActionsRef = useRef(new Set());
   const [requestActionQueue, setRequestActionQueue] = useState([]);
   const [requestActionVisual, setRequestActionVisual] = useState(null);
@@ -2838,18 +2837,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       width: nodeRect.width / scaleX,
       height: nodeRect.height / scaleY,
     };
-  };
-
-  const rememberRequestNode = (request, node) => {
-    if (!node || !request?.id) return;
-    const rootNode = rootRef.current || node.closest(".better-hunt-root");
-    if (!rootNode) return;
-    const artworkNode = node.querySelector("img") || node;
-    requestRectsRef.current.set(String(request.id), {
-      node,
-      row: measureRequestRect(rootNode, node),
-      artwork: measureRequestRect(rootNode, artworkNode),
-    });
   };
 
   useEffect(() => {
@@ -2877,23 +2864,30 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     }
     const [action, ...remaining] = requestActionQueue;
     const rootNode = rootRef.current;
-    const cached = requestRectsRef.current.get(String(action.id));
-    const liveSource = cached?.node?.isConnected
-      ? measureRequestRect(rootNode, cached.node)
-      : null;
     const requestArea = rootNode.querySelector(".better-hunt-requests");
-    const fallbackNode =
-      requestArea?.querySelector(".better-hunt-request-list") ||
-      requestArea?.querySelector(".better-hunt-request-stage") ||
-      requestArea;
-    const fallbackMeasured = measureRequestRect(rootNode, fallbackNode);
+    const sourceAnchorNode =
+      requestView === "list"
+        ? requestArea?.querySelector(
+            ".better-hunt-request-list, .better-hunt-request--empty",
+          )
+        : requestArea?.querySelector(".better-hunt-request-card.is-center");
+    const sourceAnchor = measureRequestRect(rootNode, sourceAnchorNode);
+    const fallbackMeasured = measureRequestRect(rootNode, requestArea);
     const fallback = {
       left: fallbackMeasured?.left || 0,
       top: fallbackMeasured?.top || 0,
       width: Math.max(72, fallbackMeasured?.width || 180),
-      height: action.action === "accepted" ? 96 : 52,
+      height: Math.max(32, rowHeight - 6),
     };
-    const source = liveSource || cached?.row || fallback;
+    const source = sourceAnchor
+      ? {
+          ...sourceAnchor,
+          height:
+            requestView === "list"
+              ? Math.max(32, rowHeight - 6)
+              : sourceAnchor.height,
+        }
+      : fallback;
     const targetNode =
       rootRef.current.querySelector(".better-hunt-card--center") ||
       rootRef.current.querySelector(".better-hunt-stats-image") ||
@@ -3055,7 +3049,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <div
             key={`${key}-${copy}`}
             className={`better-hunt-request better-hunt-request--image${actionSource ? " is-action-source" : ""}`}
-            ref={copy === 0 ? (node) => rememberRequestNode(request, node) : undefined}
           >
             {renderRequestContents(request, listMode)}
           </div>
@@ -3066,7 +3059,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <div
             key={`${key}-${copy}`}
             className={`better-hunt-request better-hunt-request--names${actionSource ? " is-action-source" : ""}`}
-            ref={copy === 0 ? (node) => rememberRequestNode(request, node) : undefined}
           >
             {renderRequestContents(request, listMode)}
           </div>
@@ -3076,7 +3068,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         <div
           key={`${key}-${copy}`}
           className={`better-hunt-request better-hunt-request--compact${actionSource ? " is-action-source" : ""}`}
-          ref={copy === 0 ? (node) => rememberRequestNode(request, node) : undefined}
         >
           {renderRequestContents(request, listMode)}
         </div>
@@ -3111,7 +3102,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                         `${requestName(request)}-${requestSlot(request)}-${index}`
                       }
                       className={`better-hunt-request-card${center ? " is-center" : ""}`}
-                      ref={(node) => rememberRequestNode(request, node)}
                       style={{
                         opacity: hidden ? 0 : abs === 2 ? 0.25 : 1,
                         pointerEvents: hidden ? "none" : undefined,
