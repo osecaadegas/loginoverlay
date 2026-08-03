@@ -867,7 +867,7 @@ try {
       betterWidgetStylesSource.includes("better-hunt-request-landing") &&
       betterWidgetStylesSource.includes("better-hunt-request-shard") &&
       betterWidgetStylesSource.includes(
-        "const source = cached?.row || fallback;",
+        "const source = liveSource || cached?.row || fallback;",
       ) &&
       betterWidgetStylesSource.includes(
         'rootRef.current || node.closest(".better-hunt-root")',
@@ -883,6 +883,24 @@ try {
       ) &&
       betterWidgetStylesSource.includes(
         'className="better-hunt-request-transfer-ring"',
+      ) &&
+      betterWidgetStylesSource.includes(
+        "const scaleX = rootRect.width / rootNode.clientWidth || 1;",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "const scaleY = rootRect.height / rootNode.clientHeight || 1;",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "const liveSource = cached?.node?.isConnected",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "const source = liveSource || cached?.row || fallback;",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "filter:brightness(1.12) saturate(1.14)",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "better-hunt-request-ring-reveal{0%{opacity:.82}12%,100%{opacity:1}}",
       ) &&
       betterWidgetStylesSource.includes(
         "Math.min(8, Math.round(source.width / 44))",
