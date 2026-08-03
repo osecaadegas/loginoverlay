@@ -1438,6 +1438,122 @@
   min-height: 176px;
 }
 
+.lp-tool-page {
+  min-height: 100vh;
+}
+
+.lp-tool-nav {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px clamp(18px, 4vw, 54px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(5, 9, 15, 0.72);
+}
+
+.lp-tool-nav .lp-brand {
+  grid-column: auto;
+  justify-self: start;
+}
+
+.lp-tool-nav nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lp-tool-nav a {
+  color: #dbe7f5;
+  text-decoration: none;
+  font-weight: 820;
+}
+
+.lp-tool-hero {
+  position: relative;
+  max-width: 1500px;
+  min-height: min(78vh, 820px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(360px, 0.68fr);
+  align-items: center;
+  gap: 30px;
+  margin: 0 auto;
+  padding: 74px clamp(18px, 4vw, 54px) 44px;
+}
+
+.lp-tool-hero__copy {
+  display: grid;
+  gap: 16px;
+}
+
+.lp-tool-hero h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 5.4vw, 5.8rem);
+  line-height: 0.96;
+  max-width: 980px;
+}
+
+.lp-tool-hero p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--lp-muted);
+  font-size: clamp(1rem, 1.4vw, 1.22rem);
+  line-height: 1.62;
+}
+
+.lp-tool-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lp-tool-hero__meta span {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.86rem;
+  font-weight: 820;
+}
+
+.lp-tool-hero__media {
+  min-height: 430px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(196, 181, 253, 0.18);
+  background: #05070d;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+}
+
+.lp-tool-hero__media img {
+  width: 100%;
+  height: 100%;
+  min-height: 430px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.lp-tool-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.lp-tool-faq__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .lp-section-heading {
   display: grid;
   gap: 10px;
@@ -1880,7 +1996,8 @@
 
   .lp-journey-overview,
   .lp-streamer-intro,
-  .lp-demo-stage {
+  .lp-demo-stage,
+  .lp-tool-hero {
     grid-template-columns: 1fr;
   }
 
@@ -1890,6 +2007,11 @@
   }
 
   .lp-how-it-works ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lp-tool-feature-grid,
+  .lp-tool-faq__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2050,7 +2172,9 @@
   .lp-partners-grid,
   .lp-streamer-showcase,
   .lp-journey-overview .lp-feature-grid,
-  .lp-how-it-works ol {
+  .lp-how-it-works ol,
+  .lp-tool-feature-grid,
+  .lp-tool-faq__grid {
     grid-template-columns: 1fr;
   }
 

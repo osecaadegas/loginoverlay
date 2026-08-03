@@ -48,6 +48,48 @@ const ROUTE_TOPICS = {
     'stream tournaments',
     'giveaway tools for streamers',
   ],
+  '/streamer-overlays': [
+    'iGaming overlays',
+    'casino streamer overlays',
+    'OBS browser-source overlays',
+    'interactive stream overlays',
+  ],
+  '/bonus-hunt-tracker': [
+    'bonus hunt tracker',
+    'casino bonus hunt tracker',
+    'slot bonus tracking',
+    'break-even progress tracker',
+  ],
+  '/casino-profit-loss-tracker': [
+    'casino profit and loss tracker',
+    'deposit and withdrawal tracking',
+    'casino session accounting',
+    'slot result tracking',
+  ],
+  '/slot-request-widget': [
+    'slot request widget',
+    'slot request overlay',
+    'chat slot requests',
+    'casino streamer request queue',
+  ],
+  '/tournament-overlay': [
+    'tournament overlay',
+    'stream tournament widget',
+    'casino streamer tournament',
+    'viewer tournament display',
+  ],
+  '/giveaway-widget': [
+    'giveaway widget',
+    'stream giveaway overlay',
+    'viewer giveaway tool',
+    'chat giveaway display',
+  ],
+  '/chat-games': [
+    'chat games',
+    'stream chat games',
+    'viewer games',
+    'iGaming chat interaction',
+  ],
   '/offers': [
     'streamer partnerships',
     'creator partnership marketplace',
@@ -100,6 +142,76 @@ const FAQ_BY_PATH = {
       answer: 'Streamers Center is built for iGaming, casino and slot content creators on platforms such as Twitch, Kick and YouTube Live.',
     },
   ],
+  '/streamer-overlays': [
+    {
+      question: 'Can Streamers Center overlays be used in OBS?',
+      answer: 'Yes. Streamers Center overlays are designed for browser-source live production workflows such as OBS.',
+    },
+    {
+      question: 'Are Streamers Center overlays casino games?',
+      answer: 'No. They are visual and interaction tools for streams. Streamers Center does not operate gambling services.',
+    },
+  ],
+  '/bonus-hunt-tracker': [
+    {
+      question: 'Does the bonus hunt tracker predict results?',
+      answer: 'No. It records results and progress. It does not predict winnings or guarantee outcomes.',
+    },
+    {
+      question: 'Can streamers show bonus hunt progress on stream?',
+      answer: 'Yes. Streamers can use widget and overlay workflows where available.',
+    },
+  ],
+  '/casino-profit-loss-tracker': [
+    {
+      question: 'Is Streamers Center a casino?',
+      answer: 'No. Streamers Center is tracking software and does not accept deposits or process wagers.',
+    },
+    {
+      question: 'Does the gambler tracker require OBS?',
+      answer: 'No. The gambler tracker is a private web dashboard.',
+    },
+  ],
+  '/slot-request-widget': [
+    {
+      question: 'Can viewers request slots from chat?',
+      answer: 'The slot request widget is built around chat-friendly request workflows where integrations are configured.',
+    },
+    {
+      question: 'Can the streamer control the queue?',
+      answer: 'Yes. Streamers keep control over what appears and what gets played.',
+    },
+  ],
+  '/tournament-overlay': [
+    {
+      question: 'Is the tournament overlay for real-money betting?',
+      answer: 'No. Streamers Center provides stream presentation tools and does not process wagers.',
+    },
+    {
+      question: 'Can it be used for community events?',
+      answer: 'Yes. The goal is to create organized stream moments viewers can follow.',
+    },
+  ],
+  '/giveaway-widget': [
+    {
+      question: 'Does Streamers Center ship giveaway prizes?',
+      answer: 'No. It provides the software display and workflow. Creators remain responsible for giveaway rules and fulfillment.',
+    },
+    {
+      question: 'Can giveaway widgets match my stream style?',
+      answer: 'Widgets are designed to fit branded stream visuals.',
+    },
+  ],
+  '/chat-games': [
+    {
+      question: 'Are chat games gambling?',
+      answer: 'No. They are stream interaction tools. Streamers Center does not accept wagers or deposits.',
+    },
+    {
+      question: 'Do viewers need accounts?',
+      answer: 'Viewer requirements depend on the configured integration and widget workflow.',
+    },
+  ],
 };
 
 const SEO_BY_PATH = {
@@ -116,6 +228,41 @@ const SEO_BY_PATH = {
   '/streamer': {
     title: 'iGaming Overlays & Casino Streamer Tools | Streamers Center',
     description: 'Run iGaming streams with casino overlays, browser-source overlay trackers, bonus hunt trackers, slot requests, tournaments, giveaways, chat tools and viewer games.',
+    image: `${SITE_URL}/streamer.png`,
+  },
+  '/streamer-overlays': {
+    title: 'Interactive iGaming Overlays for OBS | Streamers Center',
+    description: 'Create OBS-ready iGaming overlays for bonus hunts, slot requests, tournaments, giveaways and chat moments with Streamers Center.',
+    image: `${SITE_URL}/streamer.png`,
+  },
+  '/bonus-hunt-tracker': {
+    title: 'Bonus Hunt Tracker for Streamers and Gamblers | Streamers Center',
+    description: 'Track opened bonuses, payouts, multipliers, slot images, providers and break-even progress for stream overlays or private sessions.',
+    image: `${SITE_URL}/player.png`,
+  },
+  '/casino-profit-loss-tracker': {
+    title: 'Casino Profit and Loss Tracker | Streamers Center',
+    description: 'Track casino deposits, withdrawals, slot results and profit or loss by day, week, month or session in a private gambler dashboard.',
+    image: `${SITE_URL}/player.png`,
+  },
+  '/slot-request-widget': {
+    title: 'Slot Request Widget for Casino Streams | Streamers Center',
+    description: 'Let viewers request slots and keep chat suggestions organized with a streamer-controlled slot request widget and overlay workflow.',
+    image: `${SITE_URL}/streamer.png`,
+  },
+  '/tournament-overlay': {
+    title: 'Tournament Overlay for iGaming Streams | Streamers Center',
+    description: 'Create tournament-style stream moments with round, bracket and viewer event displays built for iGaming creators.',
+    image: `${SITE_URL}/streamer.png`,
+  },
+  '/giveaway-widget': {
+    title: 'Giveaway Widget for Streamers | Streamers Center',
+    description: 'Run stream-friendly giveaway displays with clear entry, status and winner-ready layouts for iGaming communities.',
+    image: `${SITE_URL}/streamer.png`,
+  },
+  '/chat-games': {
+    title: 'Chat Games for iGaming Streamers | Streamers Center',
+    description: 'Add chat games, predictions and viewer interactions that keep iGaming stream communities active between spins.',
     image: `${SITE_URL}/streamer.png`,
   },
   '/offers': {

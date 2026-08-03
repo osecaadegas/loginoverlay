@@ -7,6 +7,7 @@ import { StreamElementsProvider } from "./context/StreamElementsContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import LandingPage from "./components/LandingPage/LandingPage";
+import ToolLandingPage from "./components/LandingPage/ToolLandingPage";
 import TopNavigation from "./components/Navigation/TopNavigation";
 import OffersPage from "./components/OffersPage/OffersPage";
 
@@ -107,6 +108,15 @@ function RouteBoundServices() {
 // Layout wrapper to show sidebar on all pages except overlay and widget display routes
 function LayoutWrapper({ children }) {
   const location = useLocation();
+  const marketingLandingRoutes = new Set([
+    "/streamer-overlays",
+    "/bonus-hunt-tracker",
+    "/casino-profit-loss-tracker",
+    "/slot-request-widget",
+    "/tournament-overlay",
+    "/giveaway-widget",
+    "/chat-games",
+  ]);
   const isWidgetRoute = location.pathname.startsWith("/widgets/");
   const isOBSOverlay = location.pathname.startsWith("/overlay/");
   const isBetterOBSOverlay = location.pathname.startsWith("/obs/overlay/");
@@ -116,7 +126,8 @@ function LayoutWrapper({ children }) {
   const isLandingRoute =
     location.pathname === "/" ||
     location.pathname === "/player" ||
-    location.pathname === "/streamer";
+    location.pathname === "/streamer" ||
+    marketingLandingRoutes.has(location.pathname);
   const isUtilityRoute =
     location.pathname === "/login" || location.pathname === "/spotify-callback";
   const showTopNavigation =
@@ -166,6 +177,13 @@ function App() {
                       path="/streamer"
                       element={<LandingPage mode="streamer" />}
                     />
+                    <Route path="/streamer-overlays" element={<ToolLandingPage />} />
+                    <Route path="/bonus-hunt-tracker" element={<ToolLandingPage />} />
+                    <Route path="/casino-profit-loss-tracker" element={<ToolLandingPage />} />
+                    <Route path="/slot-request-widget" element={<ToolLandingPage />} />
+                    <Route path="/tournament-overlay" element={<ToolLandingPage />} />
+                    <Route path="/giveaway-widget" element={<ToolLandingPage />} />
+                    <Route path="/chat-games" element={<ToolLandingPage />} />
                     <Route path="/offers" element={<OffersPage />} />
                     <Route path="/apps" element={<AppsPage />} />
 
