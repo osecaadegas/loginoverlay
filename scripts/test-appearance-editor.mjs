@@ -903,6 +903,15 @@ try {
         "better-hunt-request-ring-reveal{0%{opacity:.82}12%,100%{opacity:1}}",
       ) &&
       betterWidgetStylesSource.includes(
+        ".better-hunt-row--compact{grid-template-columns:auto minmax(0,1fr) auto;gap:7px;min-height:52px;padding:5px 8px 5px 26px}",
+      ) &&
+      betterWidgetStylesSource.includes(
+        ".better-hunt-row--names{grid-template-columns:minmax(0,1fr) auto;gap:7px;min-height:32px;padding:6px 8px 6px 26px}",
+      ) &&
+      betterWidgetStylesSource.includes(
+        ".better-hunt-row-id{position:absolute;left:3px;top:50%",
+      ) &&
+      betterWidgetStylesSource.includes(
         "Math.min(8, Math.round(source.width / 44))",
       ) &&
       betterWidgetStylesSource.includes(
