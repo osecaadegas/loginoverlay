@@ -28,6 +28,51 @@ function stripeId(value) {
   return typeof value === 'string' ? value : value.id;
 }
 
+function buildStripeEventSummary(event, syncResult = null) {
+  const object = event.data?.object || {};
+  const metadata = object.metadata || {};
+  const subscriptionMetadata = object.subscription_details?.metadata || {};
+  const item = object.items?.data?.[0] || object.lines?.data?.[0] || {};
+  const subscriptionId =
+    stripeId(object.subscription) ||
+    (object.object === 'subscription' ? object.id : null);
+  const invoiceId =
+    object.object === 'invoice'
+      ? object.id
+      : stripeId(object.invoice) || stripeId(object.latest_invoice);
+
+  return {
+    event_id: event.id || null,
+    event_type: event.type || null,
+    api_version: event.api_version || null,
+    livemode: !!event.livemode,
+    created: event.created || null,
+    object_type: object.object || null,
+    object_id: object.id || null,
+    customer_id: stripeId(object.customer),
+    subscription_id: subscriptionId,
+    invoice_id: invoiceId,
+    user_id:
+      syncResult?.userId ||
+      object.client_reference_id ||
+      metadata.supabase_user_id ||
+      subscriptionMetadata.supabase_user_id ||
+      null,
+    product_code:
+      syncResult?.productCode ||
+      metadata.product_code ||
+      subscriptionMetadata.product_code ||
+      null,
+    plan_id:
+      metadata.plan_id ||
+      subscriptionMetadata.plan_id ||
+      null,
+    status: syncResult?.status || object.status || null,
+    payment_status: object.payment_status || item.payment_status || null,
+    price_id: stripeId(item.price),
+  };
+}
+
 async function alreadyProcessed(supabase, eventId) {
   const { data, error } = await supabase
     .from('stripe_webhook_events')
@@ -39,13 +84,14 @@ async function alreadyProcessed(supabase, eventId) {
   return !!data;
 }
 
-async function recordProcessedEvent(supabase, event) {
+async function recordProcessedEvent(supabase, event, syncResult) {
+  const eventSummary = buildStripeEventSummary(event, syncResult);
   const { error } = await supabase
     .from('stripe_webhook_events')
     .upsert({
       stripe_event_id: event.id,
       event_type: event.type,
-      raw_event: event,
+      raw_event: eventSummary,
       processed_at: new Date().toISOString(),
     }, { onConflict: 'stripe_event_id' });
 
@@ -94,6 +140,7 @@ async function handleStripeEvent(supabase, event) {
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted':
       return syncStripeSubscription(supabase, object);
+    case 'invoice.paid':
     case 'invoice.payment_succeeded':
     case 'invoice.payment_failed':
       return handleInvoiceEvent(supabase, object);
@@ -104,28 +151,17 @@ async function handleStripeEvent(supabase, event) {
 
 async function recordSubscriptionEvent(supabase, event, syncResult) {
   if (!event?.id) return;
-  const object = event.data?.object || {};
-  const userId =
-    syncResult?.userId ||
-    object.client_reference_id ||
-    object.metadata?.supabase_user_id ||
-    object.subscription_details?.metadata?.supabase_user_id ||
-    null;
-  const productCode =
-    syncResult?.productCode ||
-    object.metadata?.product_code ||
-    object.subscription_details?.metadata?.product_code ||
-    null;
+  const eventSummary = buildStripeEventSummary(event, syncResult);
 
   const { error } = await supabase
     .from('subscription_events')
     .upsert({
-      user_id: userId,
-      product_code: productCode,
+      user_id: eventSummary.user_id,
+      product_code: eventSummary.product_code,
       provider: 'stripe',
       provider_event_id: event.id,
       event_type: event.type,
-      payload: event,
+      payload: eventSummary,
       processed_at: new Date().toISOString(),
     }, { onConflict: 'provider,provider_event_id' });
   if (error && error.code !== '42P01') throw error;
@@ -162,7 +198,7 @@ export default async function handler(req, res) {
 
     const syncResult = await handleStripeEvent(supabase, event);
     await recordSubscriptionEvent(supabase, event, syncResult);
-    await recordProcessedEvent(supabase, event);
+    await recordProcessedEvent(supabase, event, syncResult);
 
     return res.status(200).json({ received: true });
   } catch (err) {

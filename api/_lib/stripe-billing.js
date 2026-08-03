@@ -82,7 +82,19 @@ function throwSupabaseError(result, message) {
 }
 
 export function getSiteUrl(req) {
-  const configured = process.env.APP_URL || process.env.VITE_EBS_URL || process.env.PUBLIC_SITE_URL;
+  const appUrl = process.env.APP_URL;
+  if (appUrl) return appUrl.replace(/\/$/, '');
+
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    process.env.VERCEL_ENV === 'production';
+  if (isProduction) {
+    const err = new Error('APP_URL must be configured in production for Stripe redirect URLs.');
+    err.statusCode = 500;
+    throw err;
+  }
+
+  const configured = process.env.VITE_EBS_URL || process.env.PUBLIC_SITE_URL;
   if (configured) return configured.replace(/\/$/, '');
 
   const host = req.headers['x-forwarded-host'] || req.headers.host;
