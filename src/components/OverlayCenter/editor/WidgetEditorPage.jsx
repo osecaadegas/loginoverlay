@@ -68,6 +68,7 @@ const SNAP_GRID = 20;
 const HISTORY_LIMIT = 80;
 const AUTOSAVE_MS = 800;
 const LIVE_SOURCE_FALLBACK_MS = 30000;
+const EDITOR_SYNC_CHANNEL = "streamers-center-better-editor";
 
 const RESIZE_HANDLES = [
   "nw",
@@ -405,6 +406,9 @@ export default function WidgetEditorPage() {
   const layoutRef = useRef(createDefaultBetterLayout());
   const interactionRef = useRef(null);
   const loadedRef = useRef(false);
+  const dirtyRef = useRef(false);
+  const draftVersionRef = useRef(0);
+  const editorSyncChannelRef = useRef(null);
 
   const [layout, setLayout] = useState(createDefaultBetterLayout);
   const [overlayRecord, setOverlayRecord] = useState(null);
@@ -432,6 +436,14 @@ export default function WidgetEditorPage() {
   useEffect(() => {
     layoutRef.current = layout;
   }, [layout]);
+
+  useEffect(() => {
+    dirtyRef.current = dirty;
+  }, [dirty]);
+
+  useEffect(() => {
+    draftVersionRef.current = Number(overlayRecord?.draftVersion || 0);
+  }, [overlayRecord?.draftVersion]);
 
   useEffect(() => {
     let mounted = true;
@@ -462,6 +474,46 @@ export default function WidgetEditorPage() {
       mounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || typeof BroadcastChannel === "undefined") return undefined;
+    const channel = new BroadcastChannel(`${EDITOR_SYNC_CHANNEL}:${user.id}`);
+    editorSyncChannelRef.current = channel;
+    channel.onmessage = async (event) => {
+      const nextVersion = Number(event.data?.draftVersion || 0);
+      if (
+        event.data?.type !== "better-editor-draft-saved" ||
+        nextVersion <= draftVersionRef.current ||
+        dirtyRef.current
+      ) {
+        return;
+      }
+      try {
+        const record = await getOrCreateBetterEditorOverlay(user.id);
+        if (Number(record?.draftVersion || 0) <= draftVersionRef.current) return;
+        const nextLayout = normalizeBetterLayout(record.draftLayout);
+        setOverlayRecord(record);
+        setLayout(nextLayout);
+        layoutRef.current = nextLayout;
+        setHistory([nextLayout]);
+        setHistoryIndex(0);
+        setSavingState("saved");
+      } catch (syncError) {
+        console.error("[BetterEditor] Failed to sync another window:", syncError);
+      }
+    };
+    return () => {
+      channel.close();
+      editorSyncChannelRef.current = null;
+    };
+  }, [user?.id]);
+
+  const announceEditorRecord = useCallback((record) => {
+    editorSyncChannelRef.current?.postMessage({
+      type: "better-editor-draft-saved",
+      draftVersion: record?.draftVersion,
+    });
+  }, []);
 
   useEffect(() => {
     if (!user?.id) {
@@ -658,8 +710,13 @@ export default function WidgetEditorPage() {
     const timeout = window.setTimeout(async () => {
       try {
         setSavingState("saving");
-        const record = await saveBetterDraft(user.id, layoutRef.current);
+        const record = await saveBetterDraft(
+          user.id,
+          layoutRef.current,
+          overlayRecord?.draftVersion,
+        );
         setOverlayRecord(record);
+        announceEditorRecord(record);
         setSavingState("saved");
         setDirty(false);
       } catch (saveError) {
@@ -668,7 +725,7 @@ export default function WidgetEditorPage() {
       }
     }, AUTOSAVE_MS);
     return () => window.clearTimeout(timeout);
-  }, [dirty, layout, user?.id]);
+  }, [announceEditorRecord, dirty, layout, overlayRecord?.draftVersion, user?.id]);
 
   useEffect(() => {
     if (!interaction) return undefined;
@@ -867,54 +924,92 @@ export default function WidgetEditorPage() {
   const saveDraftNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("saving");
-    const record = await saveBetterDraft(user.id, layoutRef.current);
-    setOverlayRecord(record);
-    setSavingState("saved");
-    setDirty(false);
-  }, [user?.id]);
+    try {
+      const record = await saveBetterDraft(
+        user.id,
+        layoutRef.current,
+        overlayRecord?.draftVersion,
+      );
+      setOverlayRecord(record);
+      announceEditorRecord(record);
+      setSavingState("saved");
+      setDirty(false);
+    } catch (saveError) {
+      setSavingState("error");
+      setError(saveError);
+    }
+  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
 
   const publishNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("publishing");
-    const record = await publishBetterOverlay(user.id, layoutRef.current);
-    setOverlayRecord(record);
-    const publishedLayout = normalizeBetterLayout(record.draftLayout);
-    setLayout(publishedLayout);
-    layoutRef.current = publishedLayout;
-    setHistory([publishedLayout]);
-    setHistoryIndex(0);
-    setDirty(false);
-    setSavingState("published");
-  }, [user?.id]);
+    try {
+      const record = await publishBetterOverlay(
+        user.id,
+        layoutRef.current,
+        overlayRecord?.draftVersion,
+      );
+      setOverlayRecord(record);
+      announceEditorRecord(record);
+      const publishedLayout = normalizeBetterLayout(record.draftLayout);
+      setLayout(publishedLayout);
+      layoutRef.current = publishedLayout;
+      setHistory([publishedLayout]);
+      setHistoryIndex(0);
+      setDirty(false);
+      setSavingState("published");
+    } catch (publishError) {
+      setSavingState("error");
+      setError(publishError);
+    }
+  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
 
   const revertNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("saving");
-    const record = await revertBetterDraftToPublished(user.id);
-    const nextLayout = normalizeBetterLayout(record.draftLayout);
-    setOverlayRecord(record);
-    setLayout(nextLayout);
-    layoutRef.current = nextLayout;
-    setHistory([nextLayout]);
-    setHistoryIndex(0);
-    setDirty(false);
-    setSavingState("saved");
-  }, [user?.id]);
+    try {
+      const record = await revertBetterDraftToPublished(
+        user.id,
+        overlayRecord?.draftVersion,
+      );
+      const nextLayout = normalizeBetterLayout(record.draftLayout);
+      setOverlayRecord(record);
+      announceEditorRecord(record);
+      setLayout(nextLayout);
+      layoutRef.current = nextLayout;
+      setHistory([nextLayout]);
+      setHistoryIndex(0);
+      setDirty(false);
+      setSavingState("saved");
+    } catch (revertError) {
+      setSavingState("error");
+      setError(revertError);
+    }
+  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
 
   const resetLayoutNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("saving");
-    const record = await resetBetterDraftLayout(user.id);
-    const nextLayout = normalizeBetterLayout(record.draftLayout);
-    setOverlayRecord(record);
-    setLayout(nextLayout);
-    layoutRef.current = nextLayout;
-    setHistory([nextLayout]);
-    setHistoryIndex(0);
-    setSelectedInstanceId(nextLayout.instances.find((item) => item.widgetType !== "background")?.instanceId || "");
-    setDirty(false);
-    setSavingState("saved");
-  }, [user?.id]);
+    try {
+      const record = await resetBetterDraftLayout(
+        user.id,
+        overlayRecord?.draftVersion,
+      );
+      const nextLayout = normalizeBetterLayout(record.draftLayout);
+      setOverlayRecord(record);
+      announceEditorRecord(record);
+      setLayout(nextLayout);
+      layoutRef.current = nextLayout;
+      setHistory([nextLayout]);
+      setHistoryIndex(0);
+      setSelectedInstanceId(nextLayout.instances.find((item) => item.widgetType !== "background")?.instanceId || "");
+      setDirty(false);
+      setSavingState("saved");
+    } catch (resetError) {
+      setSavingState("error");
+      setError(resetError);
+    }
+  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
 
   const regenerateLinkNow = useCallback(async () => {
     if (!user?.id) return;

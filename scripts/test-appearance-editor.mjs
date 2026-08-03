@@ -750,6 +750,25 @@ try {
       overlayCenterStylesSource.includes("object-position: left center"),
     "Bonus Hunt row provider logos stay fully visible and left aligned",
   );
+  const betterOverlayServiceSource = readFileSync(
+    new URL("../src/services/betterOverlayService.js", import.meta.url),
+    "utf8",
+  );
+  const multiWindowEditorSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/WidgetEditorPage.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    betterOverlayServiceSource.includes('.eq("draft_version", baseDraftVersion)') &&
+      betterOverlayServiceSource.includes("BETTER_OVERLAY_DRAFT_CONFLICT") &&
+      multiWindowEditorSource.includes("overlayRecord?.draftVersion") &&
+      multiWindowEditorSource.includes("streamers-center-better-editor") &&
+      multiWindowEditorSource.includes("better-editor-draft-saved"),
+    "Better Editor synchronizes clean windows and rejects stale writes",
+  );
   assert.ok(
     betterWidgetStylesSource.includes("request?.requested_by") &&
       betterWidgetStylesSource.includes("request?.slot_name") &&

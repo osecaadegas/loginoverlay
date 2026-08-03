@@ -14,6 +14,14 @@ import {
 const EDITOR_TABLE = "better_editor_overlays";
 const PUBLIC_TABLE = "better_overlay_publications";
 
+function createDraftConflictError() {
+  const error = new Error(
+    "This overlay was changed in another window. Refresh this page to load the latest version.",
+  );
+  error.code = "BETTER_OVERLAY_DRAFT_CONFLICT";
+  return error;
+}
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -167,13 +175,18 @@ export function unsubscribeBetterLiveSource(channel) {
   unsubscribeOverlay(channel);
 }
 
-export async function saveBetterDraft(userId, layout) {
+export async function saveBetterDraft(userId, layout, expectedDraftVersion = null) {
   const row = await getOrCreateOwnedBetterOverlayRow(userId);
+  const currentDraftVersion = Number(row.draft_version || 0);
+  const baseDraftVersion = expectedDraftVersion == null
+    ? currentDraftVersion
+    : Number(expectedDraftVersion);
+  if (baseDraftVersion !== currentDraftVersion) throw createDraftConflictError();
   const draftLayout = normalizeBetterLayout({
     ...layout,
     updatedAt: nowIso(),
   });
-  const nextDraftVersion = Number(row.draft_version || 0) + 1;
+  const nextDraftVersion = baseDraftVersion + 1;
   const { data, error } = await supabase
     .from(EDITOR_TABLE)
     .update({
@@ -183,19 +196,26 @@ export async function saveBetterDraft(userId, layout) {
     })
     .eq("id", row.id)
     .eq("user_id", userId)
+    .eq("draft_version", baseDraftVersion)
     .select("*")
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw createDraftConflictError();
   return normalizeEditorRow(data);
 }
 
-export async function publishBetterOverlay(userId, layout) {
+export async function publishBetterOverlay(userId, layout, expectedDraftVersion = null) {
   const row = await getOrCreateOwnedBetterOverlayRow(userId);
+  const currentDraftVersion = Number(row.draft_version || 0);
+  const baseDraftVersion = expectedDraftVersion == null
+    ? currentDraftVersion
+    : Number(expectedDraftVersion);
+  if (baseDraftVersion !== currentDraftVersion) throw createDraftConflictError();
   const publishedLayout = normalizeBetterLayout({
     ...(layout || row.draft_layout),
     updatedAt: nowIso(),
   });
-  const nextDraftVersion = Number(row.draft_version || 0) + 1;
+  const nextDraftVersion = baseDraftVersion + 1;
   const nextPublishedVersion = Math.max(
     Number(row.published_version || 0) + 1,
     nextDraftVersion,
@@ -213,9 +233,11 @@ export async function publishBetterOverlay(userId, layout) {
     })
     .eq("id", row.id)
     .eq("user_id", userId)
+    .eq("draft_version", baseDraftVersion)
     .select("*")
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw createDraftConflictError();
 
   const { error: publicError } = await supabase
     .from(PUBLIC_TABLE)
@@ -234,8 +256,13 @@ export async function publishBetterOverlay(userId, layout) {
   return normalizeEditorRow(data);
 }
 
-export async function revertBetterDraftToPublished(userId) {
+export async function revertBetterDraftToPublished(userId, expectedDraftVersion = null) {
   const row = await getOrCreateOwnedBetterOverlayRow(userId);
+  const currentDraftVersion = Number(row.draft_version || 0);
+  const baseDraftVersion = expectedDraftVersion == null
+    ? currentDraftVersion
+    : Number(expectedDraftVersion);
+  if (baseDraftVersion !== currentDraftVersion) throw createDraftConflictError();
   const publishedLayout = row.published_layout
     ? normalizeBetterLayout(row.published_layout)
     : createDefaultBetterLayout();
@@ -249,14 +276,16 @@ export async function revertBetterDraftToPublished(userId) {
     })
     .eq("id", row.id)
     .eq("user_id", userId)
+    .eq("draft_version", baseDraftVersion)
     .select("*")
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw createDraftConflictError();
   return normalizeEditorRow(data);
 }
 
-export async function resetBetterDraftLayout(userId) {
-  return saveBetterDraft(userId, createDefaultBetterLayout());
+export async function resetBetterDraftLayout(userId, expectedDraftVersion = null) {
+  return saveBetterDraft(userId, createDefaultBetterLayout(), expectedDraftVersion);
 }
 
 export async function regenerateBetterPublicOverlayId(userId) {
