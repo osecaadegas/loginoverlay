@@ -48,12 +48,24 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
 
+  const { action } = req.query;
+
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    if (action === "session") {
+      const body = parseJsonBody(req);
+      return res.status(200).json({
+        session_id: randomUUID(),
+        visitor_id: body.anonymous_id || body.fingerprint || randomUUID(),
+        persisted: false,
+      });
+    }
+    if (action === "track" || action === "identify") {
+      return res.status(202).json({ persisted: false });
+    }
     return res.status(500).json({ error: "Server config error" });
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const { action } = req.query;
 
   try {
     switch (action) {
@@ -108,6 +120,17 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error("[Analytics API]", err);
+    if (action === "session") {
+      const body = parseJsonBody(req);
+      return res.status(200).json({
+        session_id: randomUUID(),
+        visitor_id: body.anonymous_id || body.fingerprint || randomUUID(),
+        persisted: false,
+      });
+    }
+    if (action === "track" || action === "identify") {
+      return res.status(202).json({ persisted: false });
+    }
     return res.status(500).json({ error: "Internal server error" });
   }
 }

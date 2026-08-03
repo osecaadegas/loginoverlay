@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   ANALYTICS_EVENTS,
   getAnalyticsPeriodRange,
@@ -33,5 +34,28 @@ assert.equal(range.previousStart, '2026-06-26T12:00:00.000Z');
 assert.equal(safeRatio(50, 200), 25);
 assert.equal(safeRatio(1, 3, 2), 33.33);
 assert.equal(safeRatio(1, 0), 0);
+
+const vercelConfig = JSON.parse(
+  readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'),
+);
+const contentSecurityPolicies = vercelConfig.headers
+  .flatMap((entry) => entry.headers || [])
+  .filter((header) => header.key === 'Content-Security-Policy');
+assert.ok(contentSecurityPolicies.length > 0);
+contentSecurityPolicies.forEach((header) => {
+  assert.ok(header.value.includes('https://fonts.googleapis.com'));
+  assert.ok(header.value.includes('https://fonts.gstatic.com'));
+});
+
+const mainSource = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
+assert.ok(mainSource.includes("window.addEventListener('vite:preloadError'"));
+assert.ok(mainSource.includes('window.location.reload()'));
+
+const analyticsRouteSource = readFileSync(
+  new URL('../api/_lib/routes/analytics.js', import.meta.url),
+  'utf8',
+);
+assert.ok(analyticsRouteSource.includes('if (action === "session")'));
+assert.ok(analyticsRouteSource.includes('persisted: false'));
 
 console.log('Analytics tests passed');
