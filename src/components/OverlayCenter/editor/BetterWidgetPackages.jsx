@@ -982,6 +982,7 @@ const BASE_BETTER_CONFIG = {
     videoLoop: true,
     showVideoControls: false,
     showCounter: false,
+    showConnectFour: false,
     radius: 12,
     borderWidth: 1,
     padding: 8,
@@ -1322,6 +1323,7 @@ function normalizeBetterSlideshowConfig(merged = {}) {
   next.videoLoop = next.videoLoop !== false;
   next.showVideoControls = next.showVideoControls === true;
   next.showCounter = next.showCounter === true;
+  next.showConnectFour = next.showConnectFour === true;
   return next;
 }
 
@@ -4953,6 +4955,15 @@ function BetterSlideshowFrameControls({
               checked={c.showCounter}
               onChange={(showCounter) => set({ showCounter })}
             />
+            <ToggleRow
+              label="Connect 4 takeover"
+              checked={c.showConnectFour}
+              onChange={(showConnectFour) => set({ showConnectFour })}
+            />
+            <p className="bp-hint">
+              Pauses the slideshow and brings the live Connect 4 match into this
+              frame.
+            </p>
           </Section>
         </>
       )}

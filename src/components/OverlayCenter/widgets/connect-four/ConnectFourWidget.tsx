@@ -7,8 +7,8 @@ import {
 import "./ConnectFourWidget.css";
 
 interface ConnectFourState {
-                {playerOne.split("").map((character, index) => (
-                  <span key={`${character}-${index}`}>{character}</span>
+  match_id: string;
+  status: string;
   wager: number;
   board: ConnectFourBoard;
   player_one_display_name: string;
@@ -22,10 +22,14 @@ interface ConnectFourState {
   updated_at: string | null;
 }
 
-                {playerTwoRailName.split("").map((character, index) => (
-                  <span key={`${character}-${index}`}>{character}</span>
+interface ConnectFourWidgetProps {
+  userId?: string;
   config?: Record<string, unknown>;
   runtime?: "editor" | "obs";
+  previewWhenIdle?: boolean;
+  winnerDisplayMs?: number;
+  winnerHideAfterMs?: number;
+  onVisibilityChange?: (visible: boolean) => void;
 }
 
 const CONNECT_FOUR_PREVIEW_STATE: ConnectFourState = {
@@ -104,6 +108,10 @@ export default function ConnectFourWidget({
   userId,
   config = {},
   runtime = "editor",
+  previewWhenIdle = true,
+  winnerDisplayMs = WINNER_DISPLAY_MS,
+  winnerHideAfterMs,
+  onVisibilityChange,
 }: Readonly<ConnectFourWidgetProps>) {
   const [state, setState] = useState<ConnectFourState | null>(null);
   const [winnerVisibility, setWinnerVisibility] = useState<
@@ -200,7 +208,11 @@ export default function ConnectFourWidget({
         : Date.now();
       winnerDeadlineRef.current = {
         matchId: state.match_id,
-        deadline: winnerStartedAt + WINNER_DISPLAY_MS,
+        deadline:
+          winnerStartedAt +
+          (Number.isFinite(winnerHideAfterMs)
+            ? Math.max(0, Number(winnerHideAfterMs) - WIDGET_FADE_MS)
+            : Math.max(0, Number(winnerDisplayMs) || WINNER_DISPLAY_MS)),
       };
     }
 
@@ -233,11 +245,29 @@ export default function ConnectFourWidget({
       if (fadeTimer !== undefined) window.clearTimeout(fadeTimer);
       if (hideTimer !== undefined) window.clearTimeout(hideTimer);
     };
-  }, [state?.match_id, state?.updated_at, state?.winner]);
+  }, [
+    state?.match_id,
+    state?.updated_at,
+    state?.winner,
+    winnerDisplayMs,
+    winnerHideAfterMs,
+  ]);
 
   const displayedState =
-    state || (runtime === "editor" ? CONNECT_FOUR_PREVIEW_STATE : null);
-  if (!displayedState || winnerVisibility === "hidden") return null;
+    state ||
+    (runtime === "editor" && previewWhenIdle
+      ? CONNECT_FOUR_PREVIEW_STATE
+      : null);
+  const isVisible = Boolean(
+    displayedState && winnerVisibility !== "hidden",
+  );
+
+  useEffect(() => {
+    onVisibilityChange?.(isVisible);
+    return () => onVisibilityChange?.(false);
+  }, [isVisible, onVisibilityChange]);
+
+  if (!displayedState || !isVisible) return null;
 
   const board = displayedState.board;
   const playerOne = displayedState.player_one_display_name;

@@ -6,10 +6,22 @@ import useTwitchChannel from "./useTwitchChannel";
 
 function getBetterConnectFourConfig(layout) {
   const instances = Array.isArray(layout?.instances) ? layout.instances : [];
-  return (
-    instances.find((instance) => instance?.widgetType === "connect_four")
-      ?.config || null
-  );
+  const standaloneConfig = instances.find(
+    (instance) => instance?.widgetType === "connect_four",
+  )?.config;
+  if (standaloneConfig) return standaloneConfig;
+
+  const slideshowConfig = instances.find(
+    (instance) =>
+      instance?.widgetType === "slideshow_frame" &&
+      instance?.config?.showConnectFour === true,
+  )?.config;
+  return slideshowConfig
+    ? {
+        ...slideshowConfig,
+        chatCommand: slideshowConfig.chatCommand || "!c4",
+      }
+    : null;
 }
 
 function normalizeConnectFourChatCommand(rawText, trigger) {

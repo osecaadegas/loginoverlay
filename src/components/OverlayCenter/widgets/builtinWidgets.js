@@ -385,6 +385,7 @@ registerWidget({
     videoLoop: true,
     showVideoControls: false,
     showCounter: false,
+    showConnectFour: false,
     radius: 12,
     borderWidth: 1,
     padding: 8,

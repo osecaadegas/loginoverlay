@@ -153,6 +153,20 @@ const widgetStylesSource = readFileSync(
   ),
   "utf8",
 );
+const slideshowSource = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/widgets/slideshow-frame/SlideshowFrameWidget.jsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const slideshowStylesSource = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/widgets/slideshow-frame/SlideshowFrameWidget.css",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const apiSource = readFileSync(
   new URL("../api/chat-commands.js", import.meta.url),
   "utf8",
@@ -168,6 +182,14 @@ const deadlineMigration = readFileSync(
 
 assert.match(packagesSource, /type: "connect_four"/);
 assert.match(packagesSource, /BetterConnectFourControls/);
+assert.match(
+  packagesSource,
+  /showConnectFour: false[\s\S]*?next\.showConnectFour = next\.showConnectFour === true/,
+);
+assert.match(
+  packagesSource,
+  /label="Connect 4 takeover"[\s\S]*?set\(\{ showConnectFour \}\)/,
+);
 assert.match(packagesSource, /label="Board size"[\s\S]*?min=\{40\}/);
 assert.match(packagesSource, /connect_four: \{[\s\S]*?chatCommand: "!c4"/);
 assert.match(
@@ -180,6 +202,10 @@ assert.match(
   /function migrateLegacyConnectFourConfig[\s\S]*?playerOneColor: "#facc15"[\s\S]*?playerTwoColor: "#ef4444"/,
 );
 assert.match(listenerSource, /better_editor_overlays/);
+assert.match(
+  listenerSource,
+  /widgetType === "slideshow_frame"[\s\S]*?showConnectFour === true/,
+);
 assert.match(listenerSource, /lowerText === "!c4"/);
 assert.match(listenerSource, /config\.chatCommand \|\| "!c4"/);
 assert.match(widgetSource, /Math\.max\(40, Number\(config\.boardScale\)/);
@@ -187,13 +213,20 @@ assert.match(widgetSource, /Join with !c4 join/);
 assert.doesNotMatch(widgetSource, /!player2|!connect4/);
 assert.match(widgetSource, /const WINNER_DISPLAY_MS = 10_000/);
 assert.match(widgetSource, /const WIDGET_FADE_MS = 700/);
-assert.match(obsOverlaySource, /renderBetterWidgetInstance\(\{[\s\S]*?runtime: "obs"/);
+assert.match(widgetSource, /previewWhenIdle = true/);
+assert.match(widgetSource, /winnerDisplayMs = WINNER_DISPLAY_MS/);
+assert.match(widgetSource, /winnerHideAfterMs/);
+assert.match(widgetSource, /onVisibilityChange\?\.\(isVisible\)/);
+assert.match(
+  obsOverlaySource,
+  /renderBetterWidgetInstance\(\{[\s\S]*?runtime: "obs"/,
+);
 assert.match(
   widgetSource,
   /winnerDeadlineRef\.current\?\.matchId !== state\.match_id/,
 );
-assert.match(widgetSource, /deadline: winnerStartedAt \+ WINNER_DISPLAY_MS/);
-assert.match(widgetSource, /winnerVisibility === "hidden"/);
+assert.match(widgetSource, /winnerStartedAt \+[\s\S]*?winnerDisplayMs/);
+assert.match(widgetSource, /winnerVisibility !== "hidden"/);
 assert.match(widgetSource, /winnerVisibility === "fading"/);
 assert.match(
   widgetSource,
@@ -202,6 +235,18 @@ assert.match(
 assert.match(
   widgetSource,
   /className="connect-four-winner-card"[\s\S]*?connect-four-winner-label[\s\S]*?connect-four-winner-points/,
+);
+assert.match(
+  slideshowSource,
+  /connectFourActive \|\|[\s\S]*?window\.setInterval/,
+);
+assert.match(
+  slideshowSource,
+  /<ConnectFourWidget[\s\S]*?previewWhenIdle=\{false\}[\s\S]*?winnerHideAfterMs=\{5_000\}[\s\S]*?onVisibilityChange=\{handleConnectFourVisibility\}/,
+);
+assert.match(
+  slideshowSource,
+  /data-connect-four=\{connectFourActive \? "active" : "idle"\}/,
 );
 assert.match(
   widgetSource,
@@ -237,6 +282,18 @@ assert.match(
 assert.match(
   widgetStylesSource,
   /\.connect-four-confetti \{[\s\S]*?z-index: 11;[\s\S]*?connect-four-confetti-splash/,
+);
+assert.match(
+  slideshowStylesSource,
+  /data-connect-four="active"[\s\S]*?better-slideshow-frame__media-layer[\s\S]*?opacity: 0/,
+);
+assert.match(
+  slideshowStylesSource,
+  /\.better-slideshow-frame__connect-four \{[\s\S]*?transform: translateY\(105%\)/,
+);
+assert.match(
+  slideshowStylesSource,
+  /\.better-slideshow-frame__connect-four\.is-active \{[\s\S]*?transform: translateY\(0\)/,
 );
 assert.match(widgetStylesSource, /width: clamp\(210px, 34%, 300px\)/);
 assert.match(

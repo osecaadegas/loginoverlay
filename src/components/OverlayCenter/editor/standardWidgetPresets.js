@@ -441,6 +441,7 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     videoLoop: true,
     showVideoControls: false,
     showCounter: false,
+    showConnectFour: false,
     radius: 15,
     borderWidth: 2,
     padding: 12,
