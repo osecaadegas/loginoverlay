@@ -265,6 +265,14 @@
   transition: grid-template-columns 920ms var(--lp-ease);
 }
 
+.lp-gateway--preview-player {
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+}
+
+.lp-gateway--preview-streamer {
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+}
+
 .lp-gateway--selecting-player {
   grid-template-columns: minmax(0, 1fr) minmax(0, 0fr);
 }
@@ -297,6 +305,14 @@
   transform: translateX(-50%);
   pointer-events: none;
   transition: left 920ms var(--lp-ease), opacity 500ms ease;
+}
+
+.lp-gateway--preview-player .lp-audience-divider {
+  left: 59%;
+}
+
+.lp-gateway--preview-streamer .lp-audience-divider {
+  left: 41%;
 }
 
 .lp-gateway--selecting-player .lp-audience-divider,
@@ -380,7 +396,7 @@
 .lp-audience-panel.is-previewed .lp-audience-panel__media img,
 .lp-audience-panel.is-selecting .lp-audience-panel__media img,
 .lp-audience-panel:focus-visible .lp-audience-panel__media img {
-  transform: scale(1.06);
+  transform: scale(1.012);
   filter: saturate(1.06) contrast(1.03) brightness(0.98);
 }
 

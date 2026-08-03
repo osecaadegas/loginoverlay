@@ -357,10 +357,14 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
       <span className="lp-audience-panel__content">
         <span className="lp-audience-panel__title">{title}</span>
       </span>
-      <span className="lp-audience-panel__desc">{description}</span>
-      <span className="lp-audience-panel__preview">
-        <Preview expanded={selecting} />
-      </span>
+      {isPlayer && (
+        <>
+          <span className="lp-audience-panel__desc">{description}</span>
+          <span className="lp-audience-panel__preview">
+            <Preview expanded={selecting} />
+          </span>
+        </>
+      )}
     </button>
   );
 }
@@ -372,6 +376,7 @@ function AudienceGateway({ previewAudience, selectingAudience, onPreview, onClea
     <section
       className={[
         'lp-gateway',
+        previewAudience ? `lp-gateway--preview-${previewAudience}` : '',
         selectingAudience ? `lp-gateway--selecting-${selectingAudience}` : '',
       ].filter(Boolean).join(' ')}
       aria-labelledby="audience-selector-heading"
