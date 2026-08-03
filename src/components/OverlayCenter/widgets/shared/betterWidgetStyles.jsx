@@ -2504,7 +2504,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const totalPay = Number.isFinite(totalPayFromStats)
     ? totalPayFromStats
     : opened.reduce((sum, bonus) => sum + bonusPayout(bonus), 0);
-  const totalProfit = totalPay - Math.max(startValue - stopValue, 0);
   const totalBetOpened = opened.reduce(
     (sum, bonus) => sum + bonusBet(bonus),
     0,
@@ -2545,6 +2544,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     [c.stopLoss, c.stopMoney, c.stopBalance, stats?.stopLoss, stats?.stop],
     0,
   );
+  const totalProfit = totalPay - Math.max(startValue - stopValue, 0);
   const superCount = rows.filter(
     (bonus) => bonusTier(bonus) === "super",
   ).length;

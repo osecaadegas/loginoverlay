@@ -1001,7 +1001,11 @@ try {
       ) &&
       betterWidgetStylesSource.includes(
         '<span>{showProfit ? "Total Profit" : "Total Pay"}</span>',
-      ),
+      ) &&
+      betterWidgetStylesSource.indexOf("const totalProfit =") >
+        betterWidgetStylesSource.indexOf("const startValue =") &&
+      betterWidgetStylesSource.indexOf("const totalProfit =") >
+        betterWidgetStylesSource.indexOf("const stopValue ="),
     "Bonus Hunt hides payout during the hunt, shows it while opening, and shows total profit when ended",
   );
   assert.ok(
