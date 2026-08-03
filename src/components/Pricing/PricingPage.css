@@ -278,7 +278,7 @@
 }
 
 .premium-card-grid--player {
-  grid-template-columns: repeat(2, minmax(230px, 360px));
+  grid-template-columns: repeat(2, minmax(300px, 480px));
   justify-content: center;
 }
 
@@ -485,4 +485,14 @@
     height: min(39vh, 410px);
     max-height: calc(100dvh - 455px);
   }
+}
+
+.premium-card-grid--player .premium-image-card {
+  max-width: 480px;
+}
+
+.premium-card-grid--player .premium-card-frame {
+  height: min(50vh, 500px);
+  max-height: calc(100dvh - 380px);
+  min-height: 340px;
 }
