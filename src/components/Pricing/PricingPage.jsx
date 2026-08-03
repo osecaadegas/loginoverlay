@@ -19,27 +19,18 @@ const STREAMER_PLAN_CARDS = [
     id: 'streamer_monthly',
     image: '/25.png',
     title: 'Monthly',
-    price: 'EUR 25',
-    tax: '+ 23% VAT',
-    period: 'Billed monthly',
     accent: 'cyan',
   },
   {
     id: 'streamer_6_months',
     image: '/130.png',
     title: 'Half year',
-    price: 'EUR 130',
-    tax: '+ 23% VAT',
-    period: 'Billed every 6 months',
     accent: 'violet',
   },
   {
     id: 'streamer_annual',
     image: '/250.png',
     title: 'Full year',
-    price: 'EUR 250',
-    tax: '+ 23% VAT',
-    period: 'Billed every 12 months',
     accent: 'pink',
   },
 ];
@@ -258,13 +249,7 @@ export default function PricingPage() {
               >
                 <span className="premium-card-frame">
                   <img src={card.image} alt={`${card.title} premium plan`} />
-                </span>
-                <span className="premium-card-footer">
-                  <span>
-                    <strong>{card.title}</strong>
-                    <small>{card.price} {card.tax} - {card.period}</small>
-                  </span>
-                  <span className="premium-card-cta">
+                  <span className="premium-card-busy" aria-hidden={!busy}>
                     {busy ? <Loader2 className="premium-spin" size={17} /> : <ArrowRight size={18} />}
                   </span>
                 </span>
