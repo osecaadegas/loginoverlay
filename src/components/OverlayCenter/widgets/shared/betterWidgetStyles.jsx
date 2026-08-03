@@ -2299,7 +2299,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const carouselMode = ["3d", "imagestats", "stats"].includes(c.carouselMode)
     ? c.carouselMode
     : "3d";
-  const drawerMode = c.drawerMode === "expand" ? "expand" : "contain";
+  const drawerAlwaysVisible = c.drawerAlwaysVisible === true;
+  const configuredDrawerMode =
+    c.drawerMode === "expand" ? "expand" : "contain";
+  const drawerMode = drawerAlwaysVisible ? "expand" : configuredDrawerMode;
   const drawerRevealSeconds = clampNumber(
     c.drawerRevealSeconds ?? c.drawerTimingSeconds,
     10,
@@ -2452,6 +2455,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       return undefined;
     }
 
+    if (drawerAlwaysVisible) {
+      setResultPeekOpen(true);
+      return undefined;
+    }
+
     if (c.animations === false) {
       setResultPeekOpen(true);
       return undefined;
@@ -2474,7 +2482,13 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       window.clearTimeout(revealTimer);
       window.clearTimeout(hideTimer);
     };
-  }, [c.animations, drawerHoldMs, drawerRevealMs, resultDrawerReady]);
+  }, [
+    c.animations,
+    drawerAlwaysVisible,
+    drawerHoldMs,
+    drawerRevealMs,
+    resultDrawerReady,
+  ]);
   const listRows = rows;
   const scrollingRows =
     rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
@@ -3111,7 +3125,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const renderBonusFooter = () => {
     const drawerVisible =
       resultDrawerReady &&
-      (c.drawerOpen === true || c.drawerPreviewOpen === true || resultPeekOpen);
+      (drawerAlwaysVisible ||
+        c.drawerOpen === true ||
+        c.drawerPreviewOpen === true ||
+        resultPeekOpen);
     const drawerMounted = resultDrawerReady;
     return (
       <div className="better-hunt-footer">

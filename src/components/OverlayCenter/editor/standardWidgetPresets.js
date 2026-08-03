@@ -134,6 +134,7 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     carouselMode: "3d",
     listMode: "image",
     drawerMode: "expand",
+    drawerAlwaysVisible: false,
     drawerRevealSeconds: 60,
     drawerHoldSeconds: 30,
     statsLayout: "grid",

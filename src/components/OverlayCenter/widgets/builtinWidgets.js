@@ -111,6 +111,7 @@ registerWidget({
     showStatistics: true,
     animatedTracker: true,
     drawerMode: "contain",
+    drawerAlwaysVisible: false,
     drawerRevealSeconds: 30,
     drawerHoldSeconds: 15,
     colour: "ocean",

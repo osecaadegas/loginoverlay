@@ -673,6 +673,7 @@ const BASE_BETTER_CONFIG = {
     carouselMode: "3d",
     listMode: "compact",
     drawerMode: "contain",
+    drawerAlwaysVisible: false,
     drawerRevealSeconds: 30,
     drawerHoldSeconds: 15,
     statsLayout: "row",
@@ -4488,6 +4489,7 @@ function SimpleThemedControls({
   const liveRequestsVisible = renderedConfig.showSlotRequests !== false;
   const localRequestsVisible = c.showRequests !== false;
   const normalizedDrawerMode = c.drawerMode === "expand" ? "expand" : "contain";
+  const drawerAlwaysVisible = c.drawerAlwaysVisible === true;
   const drawerRevealSeconds = Math.max(
     10,
     Math.min(90, Number(c.drawerRevealSeconds) || 30),
@@ -4812,33 +4814,50 @@ function SimpleThemedControls({
       </HuntSection>
 
       <HuntSection title="Best / Worst Card" icon={<Layers size={13} />}>
-        <HuntChoiceGrid
-          value={normalizedDrawerMode}
-          options={[
-            { key: "contain", label: "Contain", hint: "Keep panel height" },
-            { key: "expand", label: "Expand", hint: "Grow from bottom" },
-          ]}
-          onChange={(drawerMode) => set({ drawerMode })}
+        <ToggleRow
+          label="Always visible"
+          checked={drawerAlwaysVisible}
+          onChange={(drawerAlwaysVisible) => set({ drawerAlwaysVisible })}
         />
-        <SliderRow
-          label="Reveal every"
-          value={drawerRevealSeconds}
-          min={10}
-          max={90}
-          step={5}
-          unit="s"
-          onChange={(drawerRevealSeconds) => set({ drawerRevealSeconds })}
-        />
-        <SliderRow
-          label="Stay visible"
-          value={drawerHoldSeconds}
-          min={12}
-          max={30}
-          step={1}
-          unit="s"
-          onChange={(drawerHoldSeconds) => set({ drawerHoldSeconds })}
-        />
-        <HuntHint>{drawerHint}</HuntHint>
+        {drawerAlwaysVisible ? (
+          <HuntHint>
+            Best and worst stay below the widget, matching Expand mode.
+          </HuntHint>
+        ) : (
+          <>
+            <HuntChoiceGrid
+              value={normalizedDrawerMode}
+              options={[
+                {
+                  key: "contain",
+                  label: "Contain",
+                  hint: "Keep panel height",
+                },
+                { key: "expand", label: "Expand", hint: "Grow from bottom" },
+              ]}
+              onChange={(drawerMode) => set({ drawerMode })}
+            />
+            <SliderRow
+              label="Reveal every"
+              value={drawerRevealSeconds}
+              min={10}
+              max={90}
+              step={5}
+              unit="s"
+              onChange={(drawerRevealSeconds) => set({ drawerRevealSeconds })}
+            />
+            <SliderRow
+              label="Stay visible"
+              value={drawerHoldSeconds}
+              min={12}
+              max={30}
+              step={1}
+              unit="s"
+              onChange={(drawerHoldSeconds) => set({ drawerHoldSeconds })}
+            />
+            <HuntHint>{drawerHint}</HuntHint>
+          </>
+        )}
       </HuntSection>
 
       <button

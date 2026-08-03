@@ -74,10 +74,9 @@ const {
   getBetterWidgetTypes,
   normalizeBetterInstance,
   renderBetterWidgetInstance,
-} =
-  await server.ssrLoadModule(
-    "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
-  );
+} = await server.ssrLoadModule(
+  "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
+);
 
 const {
   getBetterWidgetNudge,
@@ -216,7 +215,7 @@ try {
   );
   assert.ok(
     widgetEditorPageSource.includes(
-      'instance.locked ? <Unlock size={14} /> : <Lock size={14} />',
+      "instance.locked ? <Unlock size={14} /> : <Lock size={14} />",
     ) &&
       widgetEditorPageSource.includes(
         'instance.locked ? "Unlock widget" : "Lock widget"',
@@ -728,6 +727,20 @@ try {
     "Bonus Hunt best/worst cards remain visible long enough to read",
   );
   assert.ok(
+    betterWidgetPackagesSource.includes('label="Always visible"') &&
+      betterWidgetPackagesSource.includes("drawerAlwaysVisible: false"),
+    "Bonus Hunt exposes a persisted always-visible Best/Worst control",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      'const drawerMode = drawerAlwaysVisible ? "expand" : configuredDrawerMode',
+    ) &&
+      betterWidgetStylesSource.includes(
+        "drawerAlwaysVisible ||\n        c.drawerOpen === true",
+      ),
+    "always-visible Best/Worst bypasses timing and uses the expanded bottom layout",
+  );
+  assert.ok(
     betterWidgetStylesSource.includes('"--w-bg": c.bgColor || "#0a1734"'),
     "Better Giveaway routes its editable background color through the Bonus Hunt panel midpoint",
   );
@@ -736,14 +749,12 @@ try {
     "Better Giveaway uses the exact Bonus Hunt ocean panel highlight",
   );
   assert.ok(
-    betterWidgetStylesSource.includes(
-      'c.accentColor || "#45c8ff"',
-    ),
+    betterWidgetStylesSource.includes('c.accentColor || "#45c8ff"'),
     "Better Giveaway uses the exact Bonus Hunt ocean ice accent",
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      'linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)',
+      "linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)",
     ),
     "Better Bets uses the exact Bonus Hunt ocean panel gradient",
   );
@@ -817,7 +828,9 @@ try {
     "Mainstream Bonus Hunt shows Stop once, rounds Breakeven, and centers stat cards",
   );
   assert.ok(
-    betterWidgetStylesSource.includes("roleEffects[role.effectKey] !== false") &&
+    betterWidgetStylesSource.includes(
+      "roleEffects[role.effectKey] !== false",
+    ) &&
       betterWidgetStylesSource.includes(
         "roleEffects[role.movementKey] !== false",
       ) &&
