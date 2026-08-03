@@ -75,6 +75,11 @@ body.sidebar-open {
   padding-left: 0 !important;
 }
 
+.main-content.main-content--premium {
+  min-height: calc(100dvh - 72px);
+  overflow: hidden;
+}
+
 /* Sidebar Toggle Button — Mobile Only */
 .sidebar-toggle-btn {
   position: fixed;

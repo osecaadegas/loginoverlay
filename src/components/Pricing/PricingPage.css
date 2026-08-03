@@ -12,8 +12,11 @@
   --premium-violet: #8b5cf6;
   --premium-green: #21f6bf;
   --premium-red: #fb7185;
-  min-height: 100vh;
-  padding: 92px 24px 64px;
+  box-sizing: border-box;
+  height: calc(100dvh - 72px);
+  min-height: 620px;
+  overflow: hidden;
+  padding: clamp(14px, 2vh, 22px) 24px;
   color: var(--premium-text);
   background:
     linear-gradient(120deg, rgba(0, 217, 255, 0.14), transparent 32%),
@@ -31,16 +34,16 @@
 }
 
 .pricing-page > * {
-  width: min(1180px, 100%);
+  width: min(1200px, 100%);
   margin-inline: auto;
 }
 
 .premium-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
+  gap: 16px;
   align-items: center;
-  padding: 18px 22px;
+  padding: 14px 18px;
   border: 1px solid var(--premium-border);
   border-radius: 8px;
   background: linear-gradient(135deg, rgba(9, 15, 32, 0.94), rgba(5, 8, 18, 0.76));
@@ -66,7 +69,7 @@
 
 .premium-hero h1 {
   max-width: 760px;
-  font-size: clamp(2rem, 3.5vw, 3.45rem);
+  font-size: clamp(1.8rem, 3vw, 3rem);
   line-height: 1;
   text-shadow: 0 0 22px rgba(0, 217, 255, 0.22);
 }
@@ -80,15 +83,15 @@
 
 .premium-hero p {
   max-width: 650px;
-  margin: 10px 0 0;
-  line-height: 1.48;
+  margin: 8px 0 0;
+  line-height: 1.38;
 }
 
 .premium-trust-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .premium-trust-list span {
@@ -103,6 +106,47 @@
   color: #dff8ff;
   font-size: 0.8rem;
   font-weight: 800;
+}
+
+.premium-hero-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.premium-product-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(92px, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(0, 217, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(5, 8, 18, 0.72);
+}
+
+.premium-product-toggle button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--premium-muted);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.premium-product-toggle button.is-active {
+  color: #03111c;
+  background: linear-gradient(135deg, var(--premium-cyan), #7dd3fc 46%, var(--premium-pink));
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+}
+
+.premium-product-toggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .premium-action {
@@ -146,8 +190,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 18px;
-  padding: 13px 15px;
+  margin-top: 10px;
+  padding: 10px 13px;
   border: 1px solid var(--premium-border);
   border-radius: 8px;
   background: var(--premium-panel);
@@ -172,8 +216,8 @@
   grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
   gap: 14px;
   align-items: center;
-  margin-top: 18px;
-  padding: 16px;
+  margin-top: 10px;
+  padding: 12px;
   border: 1px solid rgba(33, 246, 191, 0.22);
   border-radius: 8px;
   background: rgba(4, 22, 26, 0.7);
@@ -196,36 +240,44 @@
 }
 
 .premium-plan-section {
-  margin-top: 22px;
+  margin-top: clamp(12px, 2vh, 18px);
 }
 
 .premium-section-head {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: clamp(10px, 1.6vh, 16px);
   text-align: center;
 }
 
 .premium-section-head h2 {
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-size: clamp(1.35rem, 2.2vw, 2.25rem);
 }
 
 .premium-section-head p {
   max-width: 520px;
-  margin: 8px 0 0;
+  margin: 5px 0 0;
 }
 
 .premium-card-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(18px, 2.4vw, 30px);
-  align-items: start;
+  gap: clamp(16px, 2vw, 26px);
+  align-items: center;
+  justify-items: center;
+}
+
+.premium-card-grid--player {
+  grid-template-columns: repeat(2, minmax(230px, 360px));
+  justify-content: center;
 }
 
 .premium-image-card {
   position: relative;
   display: block;
+  width: 100%;
+  max-width: 382px;
   min-width: 0;
   padding: 0;
   border: 0;
@@ -263,6 +315,9 @@
   position: relative;
   display: block;
   aspect-ratio: 4 / 5.05;
+  height: min(50vh, 470px);
+  max-height: calc(100dvh - 310px);
+  min-height: 300px;
   border-radius: 14px;
   transform: translateZ(0);
   transition: transform 0.2s ease;
@@ -305,8 +360,8 @@
 }
 
 .premium-footer-note {
-  margin-top: 20px;
-  padding: 14px 16px;
+  margin-top: 10px;
+  padding: 9px 13px;
   border: 1px solid rgba(0, 217, 255, 0.14);
   border-radius: 8px;
   background: rgba(5, 8, 18, 0.68);
@@ -326,12 +381,27 @@
     grid-template-columns: 1fr;
   }
 
-  .premium-hero > .premium-action {
+  .premium-hero-controls {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .premium-hero-controls .premium-action {
     width: fit-content;
   }
 
   .premium-card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 4px 4px 18px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .premium-image-card {
+    flex: 0 0 min(320px, 78vw);
+    scroll-snap-align: center;
   }
 
   .premium-status {
@@ -341,25 +411,52 @@
 
 @media (max-width: 700px) {
   .pricing-page {
-    padding: 80px 14px 42px;
+    height: calc(100dvh - 72px);
+    min-height: 560px;
+    padding: 10px 12px;
   }
 
   .premium-hero {
     grid-template-columns: 1fr;
     justify-items: start;
-    padding: 16px;
+    padding: 12px;
   }
 
-  .premium-card-grid {
-    grid-template-columns: 1fr;
+  .premium-hero h1 {
+    font-size: clamp(1.5rem, 8vw, 2.1rem);
+  }
+
+  .premium-hero p,
+  .premium-trust-list {
+    display: none;
+  }
+
+  .premium-hero-controls {
+    width: 100%;
+  }
+
+  .premium-product-toggle {
+    width: 100%;
+  }
+
+  .premium-section-head {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .premium-section-head p,
+  .premium-footer-note {
+    display: none;
   }
 
   .premium-card-frame {
-    aspect-ratio: 9 / 11;
+    height: min(54vh, 420px);
+    min-height: 260px;
+    max-height: calc(100dvh - 235px);
   }
 
   .premium-action,
-  .premium-hero > .premium-action {
+  .premium-hero-controls .premium-action {
     width: 100%;
   }
 }

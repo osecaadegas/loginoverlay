@@ -35,6 +35,40 @@ const STREAMER_PLAN_CARDS = [
   },
 ];
 
+const PLAYER_PLAN_CARDS = [
+  {
+    id: 'player_monthly',
+    image: '/player.png',
+    title: 'Player monthly',
+    accent: 'cyan',
+  },
+  {
+    id: 'player_annual',
+    image: '/player.png',
+    title: 'Player annual',
+    accent: 'pink',
+  },
+];
+
+const PRODUCT_COPY = {
+  streamer: {
+    kicker: 'Streamers Center Premium',
+    title: 'Choose your creator toolkit.',
+    description: 'Unlock premium overlay widgets, full customization tools, Bonus Hunt tracking, community tools, and regular updates.',
+    sectionTitle: 'Streamer plans',
+    sectionText: 'Click a card to open Stripe checkout for that billing period.',
+    cards: STREAMER_PLAN_CARDS,
+  },
+  player: {
+    kicker: 'Player access',
+    title: 'Choose your player toolkit.',
+    description: 'Get player-focused Bonus Hunt tools with secure Stripe billing and account-based access.',
+    sectionTitle: 'Player plans',
+    sectionText: 'Choose the player billing option that fits your play style.',
+    cards: PLAYER_PLAN_CARDS,
+  },
+};
+
 function formatStatus(value) {
   if (!value) return 'No active subscription';
   return String(value).replace(/_/g, ' ');
@@ -51,9 +85,12 @@ export default function PricingPage() {
   const [message, setMessage] = useState(null);
   const [checkoutPlanId, setCheckoutPlanId] = useState(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [productType, setProductType] = useState('streamer');
 
   const success = searchParams.get('success') === 'true';
   const canceled = searchParams.get('canceled') === 'true';
+  const activeCopy = PRODUCT_COPY[productType];
+  const productCards = activeCopy.cards;
 
   const getAccessToken = async () => {
     const { data, error: sessionError } = await supabase.auth.getSession();
@@ -84,21 +121,21 @@ export default function PricingPage() {
   }, [loadPage, user]);
 
   useEffect(() => {
-    trackEvent('premium_page_viewed', { product_type: 'streamer', route: '/premium' });
-  }, []);
+    trackEvent('premium_page_viewed', { product_type: productType, route: '/premium' });
+  }, [productType]);
 
   useEffect(() => {
     if (success) {
       setMessage({ type: 'success', text: 'Payment complete. Stripe is confirming your subscription now.' });
-      trackEvent('subscription_started', { route: '/premium', product_type: 'streamer' });
+      trackEvent('subscription_started', { route: '/premium', product_type: productType });
     } else if (canceled) {
       setMessage({ type: 'warning', text: 'Checkout was cancelled. No charge was made.' });
     }
-  }, [success, canceled]);
+  }, [success, canceled, productType]);
 
   const access = pageData?.access || null;
   const subscription = access?.currentSubscription || null;
-  const isPaid = access?.level === 'streamer_paid' || access?.level === 'player_paid';
+  const isPaid = productType === 'streamer' ? access?.hasStreamerAccess : access?.hasPlayerAccess;
 
   const loginForCheckout = () => {
     navigate('/login', { state: { from: location.pathname } });
@@ -115,7 +152,7 @@ export default function PricingPage() {
     try {
       const token = await getAccessToken();
       if (!token) throw new Error('Please sign in again before choosing a plan.');
-      trackEvent('pricing_plan_selected', { plan_id: card.id, product_type: 'streamer' });
+      trackEvent('pricing_plan_selected', { plan_id: card.id, product_type: productType });
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -126,11 +163,11 @@ export default function PricingPage() {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || 'Could not start checkout.');
-      trackEvent('checkout_started', { plan_id: card.id, product_type: 'streamer' });
+      trackEvent('checkout_started', { plan_id: card.id, product_type: productType });
       window.location.href = payload.url;
     } catch (checkoutError) {
       setMessage({ type: 'error', text: checkoutError.message });
-      trackEvent('checkout_failed', { plan_id: card.id, product_type: 'streamer', reason: checkoutError.message });
+      trackEvent('checkout_failed', { plan_id: card.id, product_type: productType, reason: checkoutError.message });
       setCheckoutPlanId(null);
     }
   };
@@ -154,7 +191,7 @@ export default function PricingPage() {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || 'Could not open billing.');
       if (!payload.url) throw new Error(payload.message || 'No hosted billing portal is available.');
-      trackEvent('billing_portal_opened', { product_type: 'streamer' });
+      trackEvent('billing_portal_opened', { product_type: productType });
       window.location.href = payload.url;
     } catch (portalError) {
       setMessage({ type: 'error', text: portalError.message });
@@ -187,21 +224,39 @@ export default function PricingPage() {
     <main className="pricing-page">
       <section className="premium-hero" aria-label="Streamers Center premium">
         <div className="premium-hero-copy">
-          <span className="premium-kicker"><Sparkles size={15} /> Streamers Center Premium</span>
-          <h1>Choose your creator toolkit.</h1>
-          <p>Unlock premium overlay widgets, full customization tools, Bonus Hunt tracking, community tools, and regular updates.</p>
+          <span className="premium-kicker"><Sparkles size={15} /> {activeCopy.kicker}</span>
+          <h1>{activeCopy.title}</h1>
+          <p>{activeCopy.description}</p>
           <div className="premium-trust-list">
             <span><ShieldCheck size={15} /> Secure Stripe checkout</span>
             <span><CreditCard size={15} /> VAT added at payment</span>
             <span><CheckCircle2 size={15} /> Cancel from billing portal</span>
           </div>
         </div>
-        {isPaid && (
-          <button type="button" className="premium-action premium-action--secondary" onClick={openBillingPortal} disabled={portalLoading}>
-            {portalLoading ? <Loader2 className="premium-spin" size={16} /> : <CreditCard size={16} />}
-            {portalLoading ? 'Opening...' : 'Manage billing'}
-          </button>
-        )}
+        <div className="premium-hero-controls">
+          <div className="premium-product-toggle" aria-label="Choose payment type">
+            {['streamer', 'player'].map((type) => (
+              <button
+                key={type}
+                type="button"
+                className={productType === type ? 'is-active' : ''}
+                onClick={() => {
+                  setProductType(type);
+                  setMessage(null);
+                }}
+                disabled={checkoutPlanId !== null}
+              >
+                {type === 'streamer' ? 'Streamers' : 'Players'}
+              </button>
+            ))}
+          </div>
+          {isPaid && (
+            <button type="button" className="premium-action premium-action--secondary" onClick={openBillingPortal} disabled={portalLoading}>
+              {portalLoading ? <Loader2 className="premium-spin" size={16} /> : <CreditCard size={16} />}
+              {portalLoading ? 'Opening...' : 'Manage billing'}
+            </button>
+          )}
+        </div>
       </section>
 
       {message && (
@@ -230,12 +285,12 @@ export default function PricingPage() {
       <section className="premium-plan-section" aria-label="Premium plans">
         <div className="premium-section-head">
           <span className="premium-kicker">Pick a plan</span>
-          <h2>Three simple options</h2>
-          <p>Click a card to open Stripe checkout for that billing period.</p>
+          <h2>{activeCopy.sectionTitle}</h2>
+          <p>{activeCopy.sectionText}</p>
         </div>
 
-        <div className="premium-card-grid">
-          {STREAMER_PLAN_CARDS.map((card) => {
+        <div className={`premium-card-grid premium-card-grid--${productType}`}>
+          {productCards.map((card) => {
             const busy = checkoutPlanId === card.id;
             return (
               <button

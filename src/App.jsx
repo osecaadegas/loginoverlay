@@ -112,6 +112,7 @@ function LayoutWrapper({ children }) {
   const isBetterOBSOverlay = location.pathname.startsWith("/obs/overlay/");
   const isOverlayCenter = location.pathname.startsWith("/overlay-center");
   const isEditorRoute = location.pathname === "/editor";
+  const isPremiumRoute = location.pathname === "/premium";
   const isLandingRoute =
     location.pathname === "/" ||
     location.pathname === "/player" ||
@@ -135,7 +136,11 @@ function LayoutWrapper({ children }) {
     <div className="app-layout">
       {!isOBSOverlay && !isBetterOBSOverlay && <AppRuntimeHooks />}
       {showTopNavigation && <TopNavigation />}
-      <div className="main-content main-content--no-sidebar">{children}</div>
+      <div
+        className={`main-content main-content--no-sidebar${isPremiumRoute ? " main-content--premium" : ""}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }
