@@ -4,6 +4,7 @@ import {
   ArrowRight,
   CircleDollarSign,
   Clapperboard,
+  Code2,
   Database,
   Gauge,
   Grid3X3,
@@ -22,6 +23,7 @@ import {
   Users,
   WalletCards,
 } from 'lucide-react';
+import { SiKick, SiObsstudio, SiTwitch, SiYoutube } from 'react-icons/si';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../config/supabaseClient';
 import { usePremium } from '../../hooks/usePremium';
@@ -99,6 +101,14 @@ const STREAMER_ANSWERS = [
     title: 'Who is it built for?',
     desc: 'Streamers Center is built for iGaming, casino and slot content creators on Twitch, Kick and YouTube Live.',
   },
+];
+
+const HOME_PLATFORM_BADGES = [
+  { label: 'OBS Ready', icon: SiObsstudio, tone: 'obs' },
+  { label: 'Twitch', icon: SiTwitch, tone: 'twitch' },
+  { label: 'Kick', icon: SiKick, tone: 'kick' },
+  { label: 'YouTube', icon: SiYoutube, tone: 'youtube' },
+  { label: 'No Coding', icon: Code2, tone: 'code' },
 ];
 
 const STREAMER_DEMOS = [
@@ -563,8 +573,11 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             </a>
           </div>
           <div className="lp-home-platforms" aria-label="Supported workflow">
-            {['OBS Ready', 'Twitch', 'Kick', 'YouTube', 'No Coding'].map((item) => (
-              <span key={item}>{item}</span>
+            {HOME_PLATFORM_BADGES.map(({ label, icon: Icon, tone }) => (
+              <span key={label} className={`lp-home-platforms__badge lp-home-platforms__badge--${tone}`}>
+                <Icon aria-hidden="true" />
+                {label}
+              </span>
             ))}
           </div>
         </div>

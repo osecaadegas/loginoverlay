@@ -1577,17 +1577,44 @@
   gap: 14px;
 }
 
-.lp-home-platforms span {
+.lp-home-platforms__badge {
   min-height: 32px;
   display: inline-flex;
   align-items: center;
-  padding: 0 10px;
+  gap: 8px;
+  padding: 0 12px;
   border-radius: 7px;
   color: #e0f2fe;
   background: rgba(15, 23, 42, 0.82);
   border: 1px solid rgba(59, 130, 246, 0.28);
   font-size: 0.78rem;
   font-weight: 880;
+}
+
+.lp-home-platforms__badge svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.lp-home-platforms__badge--obs svg {
+  color: #ffffff;
+}
+
+.lp-home-platforms__badge--twitch svg {
+  color: #a970ff;
+}
+
+.lp-home-platforms__badge--kick svg {
+  color: #53fc18;
+}
+
+.lp-home-platforms__badge--youtube svg {
+  color: #ff0033;
+}
+
+.lp-home-platforms__badge--code svg {
+  color: #38bdf8;
 }
 
 .lp-home-hero__media {
