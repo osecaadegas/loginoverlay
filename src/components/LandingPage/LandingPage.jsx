@@ -811,6 +811,10 @@ export default function LandingPage({ mode = 'selector' }) {
   };
 
   const navigateAudience = (audience) => {
+    if (!user) {
+      navigate(`/premium?type=${audience}`, { state: { fromAudienceSelector: true } });
+      return;
+    }
     const route = audience === 'player' ? '/player/bonus-hunt' : '/overlay-center';
     navigate(route, { state: { fromAudienceSelector: true } });
   };
@@ -841,16 +845,20 @@ export default function LandingPage({ mode = 'selector' }) {
   const startPlayerTrial = () => {
     trackEvent('player_cta_clicked', { route: location.pathname });
     rememberAudience(user, 'player');
+    if (!user) {
+      navigate('/premium?type=player');
+      return;
+    }
     navigate('/player/bonus-hunt');
   };
 
   const startStreamer = () => {
     trackEvent('streamer_cta_clicked', { route: location.pathname, premium: isPremium });
     if (!user) {
-      openAuth();
+      navigate('/premium?type=streamer');
       return;
     }
-    navigate(isPremium ? '/overlay-center' : '/premium');
+    navigate(isPremium ? '/overlay-center' : '/premium?type=streamer');
   };
 
   const handleOfferClick = (offer) => {

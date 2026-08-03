@@ -60,14 +60,18 @@ const PRODUCT_COPY = {
     cards: STREAMER_PLAN_CARDS,
   },
   player: {
-    kicker: 'Player access',
-    title: 'Choose your player toolkit.',
-    description: 'Get player-focused Bonus Hunt tools with secure Stripe billing and account-based access.',
-    sectionTitle: 'Player plans',
-    sectionText: 'Choose the player billing option that fits your play style.',
+    kicker: 'Gambler access',
+    title: 'Choose your gambler toolkit.',
+    description: 'Get gambler-focused Bonus Hunt tools with secure Stripe billing and account-based access.',
+    sectionTitle: 'Gambler plans',
+    sectionText: 'Choose the gambler billing option that fits your play style.',
     cards: PLAYER_PLAN_CARDS,
   },
 };
+
+function normalizeProductType(value) {
+  return value === 'player' || value === 'gambler' ? 'player' : 'streamer';
+}
 
 function formatStatus(value) {
   if (!value) return 'No active subscription';
@@ -85,10 +89,10 @@ export default function PricingPage() {
   const [message, setMessage] = useState(null);
   const [checkoutPlanId, setCheckoutPlanId] = useState(null);
   const [portalLoading, setPortalLoading] = useState(false);
-  const [productType, setProductType] = useState('streamer');
 
   const success = searchParams.get('success') === 'true';
   const canceled = searchParams.get('canceled') === 'true';
+  const productType = normalizeProductType(searchParams.get('type'));
   const activeCopy = PRODUCT_COPY[productType];
   const productCards = activeCopy.cards;
 
@@ -103,7 +107,7 @@ export default function PricingPage() {
     setError(null);
     try {
       const token = await getAccessToken();
-      const response = await fetch('/api/premium?action=page&type=streamer', {
+      const response = await fetch(`/api/premium?action=page&type=${productType}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const payload = await response.json().catch(() => ({}));
@@ -114,7 +118,7 @@ export default function PricingPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [productType]);
 
   useEffect(() => {
     loadPage();
@@ -138,7 +142,13 @@ export default function PricingPage() {
   const isPaid = productType === 'streamer' ? access?.hasStreamerAccess : access?.hasPlayerAccess;
 
   const loginForCheckout = () => {
-    navigate('/login', { state: { from: location.pathname } });
+    navigate('/login', { state: { from: `${location.pathname}${location.search}` } });
+  };
+
+  const selectProductType = (type) => {
+    const nextType = normalizeProductType(type);
+    setMessage(null);
+    navigate(`/premium?type=${nextType}`, { replace: true });
   };
 
   const subscribe = async (card) => {
@@ -235,18 +245,15 @@ export default function PricingPage() {
         </div>
         <div className="premium-hero-controls">
           <div className="premium-product-toggle" aria-label="Choose payment type">
-            {['streamer', 'player'].map((type) => (
+            {['player', 'streamer'].map((type) => (
               <button
                 key={type}
                 type="button"
                 className={productType === type ? 'is-active' : ''}
-                onClick={() => {
-                  setProductType(type);
-                  setMessage(null);
-                }}
+                onClick={() => selectProductType(type)}
                 disabled={checkoutPlanId !== null}
               >
-                {type === 'streamer' ? 'Streamers' : 'Players'}
+                {type === 'streamer' ? 'Streamers' : 'Gambler'}
               </button>
             ))}
           </div>
