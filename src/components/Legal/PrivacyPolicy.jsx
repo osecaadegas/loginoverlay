@@ -50,8 +50,7 @@ export default function PrivacyPolicy() {
 
           <h3>2.4 Billing Data</h3>
           <p>
-            Paid subscriptions are processed by third-party payment providers such as Mollie and,
-            where legacy records exist, Stripe. We do not store full card numbers on our servers.
+            Paid subscriptions are processed by Stripe. We do not store full card numbers on our servers.
             We store provider identifiers, subscription status, plan metadata, and related account
             information needed to manage premium access and billing support.
           </p>
@@ -140,8 +139,7 @@ export default function PrivacyPolicy() {
             <li><strong>Supabase</strong> - database, authentication records, and application storage</li>
             <li><strong>StreamElements</strong> - points, loyalty, and streamer integration features</li>
             <li><strong>Vercel</strong> - website hosting, serverless functions, and speed insights</li>
-            <li><strong>Mollie</strong> - payment processing and subscription management</li>
-            <li><strong>Stripe</strong> - legacy or applicable payment and subscription processing</li>
+            <li><strong>Stripe</strong> - payment processing and subscription management</li>
             <li><strong>Microsoft Store</strong> - app distribution, certification, analytics, and error reporting</li>
           </ul>
           <p>

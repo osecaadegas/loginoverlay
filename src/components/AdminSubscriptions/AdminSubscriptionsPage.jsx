@@ -103,7 +103,7 @@ export default function AdminSubscriptionsPage() {
           `Current website price: ${centsToMoney(error.payload.currentWebsitePriceCents)}`,
           `New website price: ${centsToMoney(error.payload.newWebsitePriceCents)}`,
           `Active subscribers on old price: ${error.payload.activeSubscriberCount}`,
-          'Mollie stores the amount per subscription, so this affects new subscribers only.',
+          'Stripe Prices are immutable, so create a new Stripe Price and update the provider price ID for new subscribers.',
         ].join('\n'));
         if (confirmPrice) {
           await saveEntity(entity, id, values, savingLabel, true);
@@ -247,7 +247,7 @@ export default function AdminSubscriptionsPage() {
                 <Field label="Sort order"><input type="number" value={plan.sortOrder || 0} onChange={(event) => updateCollection('plans', 'id', plan.id, 'sortOrder', Number(event.target.value))} /></Field>
               </div>
               <div className="as-plan-meta">
-                <span>Provider price: {plan.providerPriceId || 'Mollie amount per subscription'}</span>
+                <span>Provider price: {plan.providerPriceId || 'Stripe price ID not set'}</span>
                 <span>Matches website price: {plan.providerPriceMatches ? 'Yes' : 'Check provider'}</span>
                 <span>Active subscribers using this plan: {plan.activeSubscriberCount || 0}</span>
                 <span>Price changes affect new subscribers only.</span>

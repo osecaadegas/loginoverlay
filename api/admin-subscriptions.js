@@ -49,7 +49,7 @@ async function withSubscriberCounts(supabase, payload) {
     ...plan,
     providerPriceMatches: !plan.providerPriceId || plan.providerPriceId === plan.id,
     providerPriceEditable: false,
-    providerPriceMode: 'mollie_amount_per_subscription',
+    providerPriceMode: 'stripe_price',
     activeSubscriberCount: await countActiveSubscribersForPlan(supabase, plan),
     affectsNewSubscribersOnly: true,
   })));
@@ -141,10 +141,10 @@ async function handlePlanUpdate(req, res, supabase, user) {
       newWebsitePriceCents: values.price_cents,
       providerPriceId: existing.provider_price_id || null,
       providerAllowsModification: false,
-      providerPriceChangeRequired: false,
+      providerPriceChangeRequired: true,
       activeSubscriberCount,
       affectsNewSubscribersOnly: true,
-      note: 'Mollie subscriptions store the amount on each subscription. This change affects new checkout sessions only.',
+      note: 'Stripe Prices are immutable. Create a new Stripe Price, enter its price_ ID, and confirm the website price change for new checkout sessions.',
     });
   }
 
@@ -166,8 +166,8 @@ async function handlePlanUpdate(req, res, supabase, user) {
         new_price_cents: values.price_cents,
         old_provider_price_id: existing.provider_price_id || null,
         new_provider_price_id: values.provider_price_id || existing.provider_price_id || null,
-        provider: existing.provider || 'mollie',
-        provider_price_change_required: false,
+        provider: existing.provider || 'stripe',
+        provider_price_change_required: true,
         active_subscriber_count: activeSubscriberCount,
         affects_new_subscribers_only: true,
         old_payload: existing,

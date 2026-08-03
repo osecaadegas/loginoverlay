@@ -65,13 +65,16 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 	Adds overlay-scoped appearance persistence, bootstraps missing Overlay Center runtime tables for legacy databases that only have `overlays.settings`, backfills `overlay_id` for themes/widgets/state, creates the legacy-to-canonical appearance property mapping table, and tightens owner policies for overlay appearance mutations.
 
 21. `021_mollie_billing.sql`
-	Adds Mollie/provider-neutral billing identifiers while preserving legacy Stripe columns for existing subscription history.
+	Legacy provider-neutral billing transition from the retired Mollie implementation; superseded by `038_remove_mollie_billing.sql`.
 
 22. `022_analytics_schema_repair.sql`
 	Repairs older live analytics schemas by adding visitor/event/session v2 columns, backfilling visitor links, recreating reporting views, and bridging legacy fraud/geo tables.
 
 23. `023_analytics_rpc_security_hardening.sql`
 	Restricts analytics helper RPC execution to the service role and pins `search_path` for SECURITY DEFINER functions used by analytics maintenance paths.
+
+38. `038_remove_mollie_billing.sql`
+	Retires Mollie as a billing provider, resets billing defaults to Stripe, removes Mollie-specific columns/indexes, and updates premium page billing copy.
 
 ## Notes
 

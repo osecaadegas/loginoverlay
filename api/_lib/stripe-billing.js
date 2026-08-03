@@ -28,9 +28,50 @@ export const BILLING_PLANS = {
     monthlyPrice: '3.00',
     trialDays: 30,
   },
+  player_annual: {
+    label: 'Player Annual',
+    env: 'STRIPE_PRICE_PLAYER_ANNUAL',
+    productCode: 'player_bonus_hunt',
+  },
+  streamer_monthly: {
+    label: 'Streamer Monthly',
+    env: 'STRIPE_PRICE_STREAMER_MONTHLY',
+    fallbackEnv: 'STRIPE_PRICE_MONTHLY',
+    productCode: 'streamer_premium',
+  },
+  streamer_6_months: {
+    label: 'Streamer 6 Months',
+    env: 'STRIPE_PRICE_STREAMER_6_MONTHS',
+    fallbackEnv: 'STRIPE_PRICE_SEMIANNUAL',
+    productCode: 'streamer_premium',
+  },
+  streamer_annual: {
+    label: 'Streamer Annual',
+    env: 'STRIPE_PRICE_STREAMER_ANNUAL',
+    fallbackEnv: 'STRIPE_PRICE_ANNUAL',
+    productCode: 'streamer_premium',
+  },
 };
 
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing']);
+
+function isMissingTable(error) {
+  if (!error) return false;
+  const text = `${error.code || ''} ${error.message || ''}`.toLowerCase();
+  return text.includes('42p01') || text.includes('pgrst205') || text.includes('could not find the table');
+}
+
+function planFromDatabaseRow(row) {
+  if (!row) return null;
+  const fallback = BILLING_PLANS[row.id] || {};
+  return {
+    label: row.public_title || row.title || fallback.label || row.id,
+    env: fallback.env,
+    fallbackEnv: fallback.fallbackEnv,
+    productCode: row.product_code || fallback.productCode || 'streamer_premium',
+    priceId: row.provider_price_id || null,
+  };
+}
 
 function throwSupabaseError(result, message) {
   if (!result?.error) return;
@@ -51,22 +92,46 @@ export function getSiteUrl(req) {
   return 'https://streamerscenter.com';
 }
 
-export function getPlanPrice(planId) {
-  const plan = BILLING_PLANS[planId];
+function resolveStripePriceId(plan, planId) {
+  if (plan.priceId) return plan.priceId;
+  const priceId = process.env[plan.env] || (plan.fallbackEnv ? process.env[plan.fallbackEnv] : null);
+  if (priceId) return priceId;
+
+  const missingEnv = [plan.env, plan.fallbackEnv].filter(Boolean).join(' or ');
+  const err = new Error(`Missing Stripe price env var: ${missingEnv || `plan ${planId} provider_price_id`}`);
+  err.statusCode = 500;
+  throw err;
+}
+
+export async function getPlanPrice(supabase, planId, { requireActive = true } = {}) {
+  const id = String(planId || '').trim();
+  if (!id) {
+    const err = new Error('Missing subscription plan');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  let plan = null;
+  if (supabase) {
+    let query = supabase.from('subscription_plans').select('*').eq('id', id);
+    if (requireActive) query = query.eq('active', true);
+    const { data, error } = await query.maybeSingle();
+    if (error && !isMissingTable(error)) {
+      const err = new Error(`Failed to load subscription plan: ${error.message}`);
+      err.statusCode = 500;
+      throw err;
+    }
+    plan = planFromDatabaseRow(data);
+  }
+
+  plan = plan || BILLING_PLANS[id];
   if (!plan) {
     const err = new Error('Unknown subscription plan');
     err.statusCode = 400;
     throw err;
   }
 
-  const priceId = process.env[plan.env];
-  if (!priceId) {
-    const err = new Error(`Missing Stripe price env var: ${plan.env}`);
-    err.statusCode = 500;
-    throw err;
-  }
-
-  return { ...plan, id: planId, priceId };
+  return { ...plan, id, priceId: resolveStripePriceId(plan, id) };
 }
 
 function stripeSecretKey() {
@@ -132,6 +197,8 @@ export async function findOrCreateStripeCustomer(supabase, user) {
     .upsert({
       user_id: user.id,
       stripe_customer_id: customer.id,
+      provider: 'stripe',
+      provider_customer_id: customer.id,
       email: user.email || null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
@@ -149,7 +216,7 @@ export async function createCheckoutSession({
   cancelPath = '/premium',
   trialPeriodDays = 0,
 }) {
-  const plan = getPlanPrice(planId);
+  const plan = await getPlanPrice(supabase, planId);
   const siteUrl = getSiteUrl(req);
   const customerId = await findOrCreateStripeCustomer(supabase, user);
   const productCode = plan.productCode || 'streamer_premium';
@@ -297,13 +364,18 @@ export async function syncStripeSubscription(supabase, subscription, fallbackUse
   const trialEnd = stripeTimestampToIso(subscription.trial_end);
   const status = subscription.status || 'unknown';
   const planId = subscription.metadata?.plan_id || null;
-  const productCode = subscription.metadata?.product_code || (planId === 'player_monthly' ? 'player_bonus_hunt' : 'streamer_premium');
+  const productCode = subscription.metadata?.product_code
+    || (String(planId || '').startsWith('player_') ? 'player_bonus_hunt' : 'streamer_premium');
   const isPremiumActive = ACTIVE_SUBSCRIPTION_STATUSES.has(status);
 
   const subscriptionResult = await supabase
     .from('billing_subscriptions')
     .upsert({
       user_id: userId,
+      provider: 'stripe',
+      provider_subscription_id: subscription.id,
+      provider_customer_id: stripeCustomerId,
+      provider_price_id: idFromStripeRef(item.price),
       stripe_subscription_id: subscription.id,
       stripe_customer_id: stripeCustomerId,
       stripe_price_id: idFromStripeRef(item.price),

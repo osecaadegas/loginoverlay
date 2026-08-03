@@ -82,7 +82,7 @@ export default function ProductAnalyticsTab({ analytics, period }) {
         <Section title="Streamer Product">
           <div className="an-metric-list">
             <Metric label="Premium users" value={formatNumber(data.streamer?.activePremiumUsers)} />
-            <Metric label="Active subscriptions" value={formatNumber(activeStreamerSubscriptions)} note={`${formatNumber(data.streamer?.activeMollieSubscriptions)} Mollie`} />
+            <Metric label="Active subscriptions" value={formatNumber(activeStreamerSubscriptions)} note={`${formatNumber(data.streamer?.activeStripeSubscriptions)} Stripe`} />
             <Metric label="Streamer events" value={formatNumber(data.streamer?.events)} />
             <Metric label="Overlay sessions" value={formatNumber(data.streamer?.overlaySessions)} />
             <Metric label="Premium page views" value={formatNumber(data.streamer?.premiumViews)} />
