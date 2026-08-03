@@ -180,11 +180,11 @@ const HOME_STEPS = [
 ];
 
 const HOME_PRICING = [
-  { name: 'Gambler Monthly', image: '/player3eur.png', to: '/premium?type=player', tone: 'player' },
-  { name: 'Gambler Yearly', image: '/player25eur.png', to: '/premium?type=player', tone: 'player' },
-  { name: 'Streamer Monthly', image: '/25.png', to: '/premium?type=streamer', tone: 'streamer' },
-  { name: 'Streamer 6 Months', image: '/130.png', to: '/premium?type=streamer', tone: 'streamer' },
-  { name: 'Streamer Yearly', image: '/250.png', to: '/premium?type=streamer', tone: 'streamer', badge: 'Best Value' },
+  { name: 'Gambler Monthly', category: 'Gambler', image: '/player3eur.png', to: '/premium?type=player', tone: 'player' },
+  { name: 'Gambler Yearly', category: 'Gambler', image: '/player25eur.png', to: '/premium?type=player', tone: 'player', badge: 'Best Value', badgeTone: 'player' },
+  { name: 'Streamer Monthly', category: 'Streamer', image: '/25.png', to: '/premium?type=streamer', tone: 'streamer' },
+  { name: 'Streamer 6 Months', category: 'Streamer', image: '/130.png', to: '/premium?type=streamer', tone: 'streamer' },
+  { name: 'Streamer Yearly', category: 'Streamer', image: '/250.png', to: '/premium?type=streamer', tone: 'streamer', badge: 'Best Value', badgeTone: 'streamer' },
 ];
 
 const STREAMER_PRICING = [
@@ -644,17 +644,29 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
 
       <section className="lp-home-section lp-home-pricing" id="pricing">
         <h2>Simple, transparent pricing</h2>
-        <div className="lp-home-price-grid">
-          {HOME_PRICING.map((plan) => (
-            <Link
-              key={plan.name}
-              to={plan.to}
-              className={`lp-home-price lp-home-price--image lp-home-price--${plan.tone}${plan.badge ? ' lp-home-price--featured' : ''}`}
-              aria-label={`${plan.name} pricing`}
-            >
-              {plan.badge && <span className="lp-home-price__badge">{plan.badge}</span>}
-              <img src={plan.image} alt={`${plan.name} subscription card`} loading="lazy" decoding="async" />
-            </Link>
+        <div className="lp-home-price-groups">
+          {['Gambler', 'Streamer'].map((category, categoryIndex) => (
+            <div key={category} className={`lp-home-price-group lp-home-price-group--${category.toLowerCase()}`}>
+              <h3>{category}s</h3>
+              <div className="lp-home-price-grid">
+                {HOME_PRICING.filter((plan) => plan.category === category).map((plan) => (
+                  <Link
+                    key={plan.name}
+                    to={plan.to}
+                    className={`lp-home-price lp-home-price--image lp-home-price--${plan.tone}${plan.badge ? ' lp-home-price--featured' : ''}`}
+                    aria-label={`${plan.name} pricing`}
+                  >
+                    {plan.badge && (
+                      <span className={`lp-home-price__badge lp-home-price__badge--${plan.badgeTone || plan.tone}`}>
+                        {plan.badge}
+                      </span>
+                    )}
+                    <img src={plan.image} alt={`${plan.name} subscription card`} loading="lazy" decoding="async" />
+                  </Link>
+                ))}
+              </div>
+              {categoryIndex === 0 && <span className="lp-home-price-divider" aria-hidden="true" />}
+            </div>
           ))}
         </div>
       </section>

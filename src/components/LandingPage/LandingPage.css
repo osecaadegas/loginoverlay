@@ -1652,8 +1652,7 @@
 
 .lp-home-audience,
 .lp-home-widget-card,
-.lp-home-step,
-.lp-home-price {
+.lp-home-step {
   position: relative;
   border-radius: 8px;
   background: rgba(8, 15, 32, 0.76);
@@ -1774,32 +1773,78 @@
   flex: 0 0 auto;
 }
 
+.lp-home-price-groups {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) minmax(480px, 3fr);
+  gap: clamp(28px, 4vw, 54px);
+  align-items: start;
+}
+
+.lp-home-price-group {
+  position: relative;
+  display: grid;
+  gap: 16px;
+}
+
+.lp-home-price-group h3 {
+  margin: 0;
+  color: #f8fbff;
+  text-align: center;
+  font-size: clamp(1.2rem, 1.8vw, 1.65rem);
+  line-height: 1.1;
+}
+
 .lp-home-price-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(180px, 1fr));
-  gap: 14px;
+  gap: 18px;
   align-items: stretch;
 }
 
+.lp-home-price-group--gambler .lp-home-price-grid {
+  grid-template-columns: repeat(2, minmax(150px, 1fr));
+}
+
+.lp-home-price-group--streamer .lp-home-price-grid {
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+}
+
+.lp-home-price-divider {
+  position: absolute;
+  top: 42px;
+  right: calc(clamp(28px, 4vw, 54px) * -0.5);
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 255, 255, 0.72) 14%,
+    rgba(255, 255, 255, 0.72) 86%,
+    transparent
+  );
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.28);
+}
+
 .lp-home-price {
+  position: relative;
   display: block;
   padding: 0;
   color: #fff;
   text-decoration: none;
   overflow: visible;
-  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  transition: transform 220ms ease, filter 220ms ease;
 }
 
 .lp-home-price--featured {
-  border-color: rgba(139, 92, 246, 0.9);
-  box-shadow: 0 0 38px rgba(139, 92, 246, 0.28);
+  filter: drop-shadow(0 0 26px rgba(139, 92, 246, 0.3));
 }
 
 .lp-home-price:hover,
 .lp-home-price:focus-visible {
-  transform: translateY(-4px);
-  border-color: rgba(96, 165, 250, 0.78);
-  box-shadow: 0 24px 70px rgba(37, 99, 235, 0.22);
+  transform: translateY(-7px);
+  filter: drop-shadow(0 24px 38px rgba(37, 99, 235, 0.28));
 }
 
 .lp-home-price--image img {
@@ -1808,8 +1853,9 @@
   min-height: 340px;
   display: block;
   object-fit: contain;
-  border-radius: 8px;
-  background: rgba(2, 6, 23, 0.82);
+  border-radius: 0;
+  background: transparent;
+  filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.4));
 }
 
 .lp-home-price__badge {
@@ -1822,6 +1868,16 @@
   background: linear-gradient(135deg, #8b5cf6, #d946ef);
   font-size: 0.78rem;
   font-weight: 950;
+}
+
+.lp-home-price__badge--player {
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.36);
+}
+
+.lp-home-price__badge--streamer {
+  background: linear-gradient(135deg, #8b5cf6, #d946ef);
+  box-shadow: 0 0 24px rgba(217, 70, 239, 0.3);
 }
 
 .lp-home-price__amount {
@@ -2373,8 +2429,30 @@
 }
 
 @media (max-width: 1280px) {
-  .lp-home-price-grid {
-    grid-template-columns: repeat(3, minmax(220px, 1fr));
+  .lp-home-price-groups {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+
+  .lp-home-price-group--streamer .lp-home-price-grid {
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+  }
+
+  .lp-home-price-divider {
+    top: auto;
+    right: auto;
+    bottom: -22px;
+    left: 50%;
+    width: min(720px, 88%);
+    height: 1px;
+    transform: translateX(-50%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.72) 14%,
+      rgba(255, 255, 255, 0.72) 86%,
+      transparent
+    );
   }
 
   .lp-audience-panel {
@@ -2458,8 +2536,7 @@
   .lp-tool-faq__grid,
   .lp-home-audience-grid,
   .lp-home-widget-grid,
-  .lp-home-step-grid,
-  .lp-home-price-grid {
+  .lp-home-step-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2625,9 +2702,15 @@
   .lp-tool-faq__grid,
   .lp-home-audience-grid,
   .lp-home-widget-grid,
-  .lp-home-step-grid,
-  .lp-home-price-grid {
+  .lp-home-step-grid {
     grid-template-columns: 1fr;
+  }
+
+  .lp-home-price-group--gambler .lp-home-price-grid,
+  .lp-home-price-group--streamer .lp-home-price-grid {
+    grid-template-columns: 1fr;
+    max-width: 430px;
+    margin: 0 auto;
   }
 
   .lp-home-nav__links {
