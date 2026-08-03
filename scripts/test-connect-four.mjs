@@ -178,6 +178,14 @@ assert.match(listenerSource, /config\.chatCommand \|\| "!c4"/);
 assert.match(widgetSource, /Math\.max\(40, Number\(config\.boardScale\)/);
 assert.match(widgetSource, /Join with !c4 join/);
 assert.doesNotMatch(widgetSource, /!player2|!connect4/);
+assert.match(widgetSource, /const WINNER_DISPLAY_MS = 15_000/);
+assert.match(widgetSource, /const WIDGET_FADE_MS = 700/);
+assert.match(
+  widgetSource,
+  /winnerDeadlineRef\.current\?\.matchId !== state\.match_id/,
+);
+assert.match(widgetSource, /winnerVisibility === "hidden"/);
+assert.match(widgetSource, /winnerVisibility === "fading"/);
 assert.match(
   widgetSource,
   /const hasTwoPlayers = Boolean\(displayedState\.player_two_display_name\)/,
@@ -197,6 +205,10 @@ assert.match(
   /rowIndex === 0[\s\S]*?className="connect-four-hole-number"[\s\S]*?columnIndex \+ 1/,
 );
 assert.match(widgetStylesSource, /\.connect-four-info \{/);
+assert.match(
+  widgetStylesSource,
+  /\.connect-four-widget\.is-fading \{[\s\S]*?opacity: 0/,
+);
 assert.match(widgetStylesSource, /width: clamp\(210px, 34%, 300px\)/);
 assert.match(
   widgetStylesSource,

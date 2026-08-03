@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { supabase } from "../../../../config/supabaseClient";
 import {
   normalizeConnectFourBoard,
@@ -19,6 +19,7 @@ interface ConnectFourState {
   last_move: { row: number; column: number; player: 1 | 2 } | null;
   completion_reason: string | null;
   expires_at: string | null;
+  updated_at: string | null;
 }
 
 interface ConnectFourWidgetProps {
@@ -47,7 +48,11 @@ const CONNECT_FOUR_PREVIEW_STATE: ConnectFourState = {
   last_move: { row: 3, column: 3, player: 2 },
   completion_reason: null,
   expires_at: null,
+  updated_at: null,
 };
+
+const WINNER_DISPLAY_MS = 15_000;
+const WIDGET_FADE_MS = 700;
 
 function stringValue(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
@@ -76,6 +81,7 @@ function normalizeState(value: Record<string, unknown>): ConnectFourState {
         : null,
     completion_reason: stringValue(value.completion_reason) || null,
     expires_at: stringValue(value.expires_at) || null,
+    updated_at: stringValue(value.updated_at) || null,
   };
 }
 
@@ -100,6 +106,13 @@ export default function ConnectFourWidget({
   runtime = "editor",
 }: Readonly<ConnectFourWidgetProps>) {
   const [state, setState] = useState<ConnectFourState | null>(null);
+  const [winnerVisibility, setWinnerVisibility] = useState<
+    "visible" | "fading" | "hidden"
+  >("visible");
+  const winnerDeadlineRef = useRef<{
+    matchId: string;
+    deadline: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!userId) return undefined;
@@ -108,7 +121,7 @@ export default function ConnectFourWidget({
     supabase
       .from("connect_four_public_state")
       .select(
-        "match_id,status,wager,board,player_one_display_name,player_two_display_name,current_player,winner,move_count,last_move,completion_reason,expires_at",
+        "match_id,status,wager,board,player_one_display_name,player_two_display_name,current_player,winner,move_count,last_move,completion_reason,expires_at,updated_at",
       )
       .eq("streamer_id", userId)
       .maybeSingle()
@@ -173,9 +186,58 @@ export default function ConnectFourWidget({
     };
   }, [state?.expires_at, state?.match_id, state?.status]);
 
+  useEffect(() => {
+    if (!state?.winner) {
+      winnerDeadlineRef.current = null;
+      setWinnerVisibility("visible");
+      return undefined;
+    }
+
+    if (winnerDeadlineRef.current?.matchId !== state.match_id) {
+      const updatedAt = Date.parse(state.updated_at || "");
+      const winnerStartedAt = Number.isFinite(updatedAt)
+        ? Math.min(updatedAt, Date.now())
+        : Date.now();
+      winnerDeadlineRef.current = {
+        matchId: state.match_id,
+        deadline: winnerStartedAt + WINNER_DISPLAY_MS,
+      };
+    }
+
+    const deadline = winnerDeadlineRef.current.deadline;
+    const holdRemaining = deadline - Date.now();
+    const fadeRemaining = holdRemaining + WIDGET_FADE_MS;
+
+    if (fadeRemaining <= 0) {
+      setWinnerVisibility("hidden");
+      return undefined;
+    }
+
+    let fadeTimer: number | undefined;
+    let hideTimer: number | undefined;
+    if (holdRemaining <= 0) {
+      setWinnerVisibility("fading");
+    } else {
+      setWinnerVisibility("visible");
+      fadeTimer = window.setTimeout(
+        () => setWinnerVisibility("fading"),
+        holdRemaining,
+      );
+    }
+    hideTimer = window.setTimeout(
+      () => setWinnerVisibility("hidden"),
+      Math.max(0, fadeRemaining),
+    );
+
+    return () => {
+      if (fadeTimer !== undefined) window.clearTimeout(fadeTimer);
+      if (hideTimer !== undefined) window.clearTimeout(hideTimer);
+    };
+  }, [state?.match_id, state?.updated_at, state?.winner]);
+
   const displayedState =
     state || (runtime === "editor" ? CONNECT_FOUR_PREVIEW_STATE : null);
-  if (!displayedState) return null;
+  if (!displayedState || winnerVisibility === "hidden") return null;
 
   const board = displayedState.board;
   const playerOne = displayedState.player_one_display_name;
@@ -215,7 +277,7 @@ export default function ConnectFourWidget({
 
   return (
     <section
-      className="connect-four-widget"
+      className={`connect-four-widget${winnerVisibility === "fading" ? " is-fading" : ""}`}
       aria-label="Chat Connect 4"
       style={widgetStyle}
     >

@@ -9,7 +9,14 @@
   color: #f7fbff;
   font-family: "Nunito", "Trebuchet MS", sans-serif;
   background: transparent;
+  opacity: 1;
+  transition: opacity 700ms ease;
   container-type: size;
+}
+
+.connect-four-widget.is-fading {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .connect-four-game {
@@ -336,6 +343,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .connect-four-widget {
+    transition-duration: 1ms;
+  }
+
   .connect-four-coin.is-latest,
   .connect-four-win-overlay {
     animation: none;
