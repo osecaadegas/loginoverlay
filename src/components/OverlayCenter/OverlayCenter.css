@@ -6717,6 +6717,13 @@ body.wm-resizing {
   gap: 4px;
 }
 
+.bh-list-requester {
+  max-width: 108px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bh-list-provider--logo {
   width: 108px;
   height: 24px;

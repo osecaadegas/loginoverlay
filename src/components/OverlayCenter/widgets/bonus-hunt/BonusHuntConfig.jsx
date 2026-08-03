@@ -129,6 +129,13 @@ function getBonusHuntProvider(bonus) {
   );
 }
 
+function getBonusHuntRequester(bonus) {
+  const requester = String(
+    bonus?.requestedBy || bonus?.requested_by || "",
+  ).trim();
+  return requester && requester.toLowerCase() !== "anonymous" ? requester : "";
+}
+
 function findExistingProvider(provider, providers) {
   const candidate = String(provider || "")
     .trim()
@@ -3234,6 +3241,8 @@ function BonusHuntPanel({
               return sorted.map((bonus, i) => {
                 const realIdx = canDrag ? bonusList.indexOf(bonus) : i;
                 const needsInput = bonusOpening && bonus.id === firstUnopenedId;
+                const requester = getBonusHuntRequester(bonus);
+                const provider = getBonusHuntProvider(bonus);
                 const bonusType = bonus.isExtremeBonus
                   ? "extreme"
                   : bonus.isSuperBonus
@@ -3360,24 +3369,21 @@ function BonusHuntPanel({
                             <span className="bh-list-name">
                               {bonus.slotName || bonus.slot?.name}
                             </span>
-                            {getBonusHuntProvider(bonus) && (
+                            {requester && (
+                              <span
+                                className="bh-list-provider bh-list-requester"
+                                title={`Requested by ${requester}`}
+                              >
+                                {requester}
+                              </span>
+                            )}
+                            {!requester && provider && (
                               <BonusHuntProviderLogo
-                                provider={getBonusHuntProvider(bonus)}
+                                provider={provider}
                               />
                             )}
                           </div>
                         </div>
-
-                        {/* Requester */}
-                        {bonus.requestedBy &&
-                          bonus.requestedBy !== "anonymous" && (
-                            <div className="bh-list-field bh-list-field--requester">
-                              <span className="bh-list-field-label">By</span>
-                              <span className="bh-list-field-value bh-list-requester-val">
-                                {bonus.requestedBy}
-                              </span>
-                            </div>
-                          )}
 
                         <div className="bh-list-side">
                           <div

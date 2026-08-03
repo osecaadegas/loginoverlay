@@ -742,8 +742,19 @@ try {
   );
   assert.ok(
     bonusHuntConfigSource.includes("function getBonusHuntProvider(bonus)") &&
-      bonusHuntConfigSource.includes("provider={getBonusHuntProvider(bonus)}"),
+      bonusHuntConfigSource.includes(
+        "const provider = getBonusHuntProvider(bonus)",
+      ) &&
+      bonusHuntConfigSource.includes("provider={provider}"),
     "Bonus Hunt management rows resolve provider logos from every supported bonus shape",
+  );
+  assert.ok(
+    bonusHuntConfigSource.includes("function getBonusHuntRequester(bonus)") &&
+      bonusHuntConfigSource.includes("bonus?.requested_by") &&
+      bonusHuntConfigSource.includes("className=\"bh-list-provider bh-list-requester\"") &&
+      bonusHuntConfigSource.includes("{requester}") &&
+      !bonusHuntConfigSource.includes("bh-list-field--requester"),
+    "Bonus Hunt request names replace the provider without adding a separate row field",
   );
   assert.ok(
     overlayCenterStylesSource.includes("width: 108px") &&
