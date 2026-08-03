@@ -356,9 +356,7 @@
 }
 
 .lp-audience-panel--player::before {
-  background:
-    linear-gradient(135deg, rgba(45, 212, 191, 0.1), rgba(250, 204, 21, 0.04) 42%, rgba(7, 11, 18, 0.34)),
-    linear-gradient(180deg, rgba(7, 19, 27, 0.54), rgba(7, 16, 24, 0.74));
+  content: none;
 }
 
 .lp-audience-panel--streamer::before {
@@ -385,6 +383,7 @@
 
 .lp-audience-panel--player .lp-audience-panel__media img {
   object-position: 48% center;
+  filter: none;
 }
 
 .lp-audience-panel--streamer .lp-audience-panel__media img {
@@ -412,6 +411,13 @@
   display: none;
 }
 
+.lp-audience-panel--player .lp-audience-panel__shade {
+  display: none;
+}
+
+.lp-audience-panel--player.is-previewed .lp-audience-panel__media img,
+.lp-audience-panel--player.is-selecting .lp-audience-panel__media img,
+.lp-audience-panel--player:focus-visible .lp-audience-panel__media img,
 .lp-audience-panel--streamer.is-previewed .lp-audience-panel__media img,
 .lp-audience-panel--streamer.is-selecting .lp-audience-panel__media img,
 .lp-audience-panel--streamer:focus-visible .lp-audience-panel__media img {
