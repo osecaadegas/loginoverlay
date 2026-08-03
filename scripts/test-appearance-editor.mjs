@@ -719,7 +719,7 @@ try {
         "requestAnimationFrame(measureWinnerOffset)",
       ) &&
       betterWidgetStylesSource.includes(
-        'transform:translate3d(var(--gw-winner-offset),0,0)',
+        "transform:translate3d(var(--gw-winner-offset),0,0)",
       ),
     "Better Giveaway always lands the selected winner avatar at the measured viewport center",
   );
@@ -783,6 +783,18 @@ try {
     ),
     "Bonus Hunt best/worst cards remain visible long enough to read",
   );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      'const requestView = c.requestView === "carousel" ? "carousel" : "list"',
+    ) &&
+      betterWidgetStylesSource.includes("better-hunt-request-stage") &&
+      betterWidgetStylesSource.includes("distance * 88") &&
+      betterWidgetStylesSource.includes("-abs * 100") &&
+      betterWidgetStylesSource.includes("BETTER_HUNT_REQUEST_ROWS") &&
+      betterWidgetStylesSource.includes("better-hunt-request-group") &&
+      betterWidgetStylesSource.includes("prefers-reduced-motion:reduce"),
+    "Better Bonus Hunt exports matching list and 3D request feeds with stable animation guards",
+  );
   const bonusHuntConfigSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntConfig.jsx",
@@ -818,14 +830,18 @@ try {
   assert.ok(
     bonusHuntWidgetSource.includes("publicOverlayId,") &&
       bonusHuntWidgetSource.includes("runtime,") &&
-      slotRequestDataSource.includes("runtime === 'obs'") &&
+      slotRequestDataSource.includes(
+        'const usePublicOverlayApi = runtime === "obs" && !!publicOverlayId',
+      ) &&
       slotRequestDataSource.includes("/api/public-slot-requests?") &&
       slotRequestDataSource.includes("window.setInterval(fetchRequests, 5000)"),
     "Bonus Hunt OBS requests use the public overlay endpoint and refresh independently of authenticated canvas realtime",
   );
   assert.ok(
     publicSlotRequestsApiSource.includes("PUBLIC_OVERLAY_ID_PATTERN") &&
-      publicSlotRequestsApiSource.includes('from("better_overlay_publications")') &&
+      publicSlotRequestsApiSource.includes(
+        'from("better_overlay_publications")',
+      ) &&
       publicSlotRequestsApiSource.includes('is("revoked_at", null)') &&
       publicSlotRequestsApiSource.includes(
         '.eq("user_id", publication.owner_user_id)',
@@ -844,7 +860,9 @@ try {
   assert.ok(
     bonusHuntConfigSource.includes("function getBonusHuntRequester(bonus)") &&
       bonusHuntConfigSource.includes("bonus?.requested_by") &&
-      bonusHuntConfigSource.includes("className=\"bh-list-provider bh-list-requester\"") &&
+      bonusHuntConfigSource.includes(
+        'className="bh-list-provider bh-list-requester"',
+      ) &&
       bonusHuntConfigSource.includes("{requester}") &&
       !bonusHuntConfigSource.includes("bh-list-field--requester"),
     "Bonus Hunt request names replace the provider without adding a separate row field",
@@ -854,7 +872,7 @@ try {
       betterWidgetStylesSource.includes("bonus?.requestedBy") &&
       betterWidgetStylesSource.includes("bonus?.requested_by") &&
       betterWidgetStylesSource.includes(
-        'bonusRequester(bonus) ||\n              bonusProvider(bonus)',
+        "bonusRequester(bonus) ||\n              bonusProvider(bonus)",
       ),
     "Better Bonus Hunt Rows show a chat requester instead of the provider beneath the slot name",
   );
@@ -899,7 +917,9 @@ try {
     "utf8",
   );
   assert.ok(
-    betterOverlayServiceSource.includes('.eq("draft_version", baseDraftVersion)') &&
+    betterOverlayServiceSource.includes(
+      '.eq("draft_version", baseDraftVersion)',
+    ) &&
       betterOverlayServiceSource.includes("BETTER_OVERLAY_DRAFT_CONFLICT") &&
       multiWindowEditorSource.includes("overlayRecord?.draftVersion") &&
       multiWindowEditorSource.includes("streamers-center-better-editor") &&

@@ -672,6 +672,7 @@ const BASE_BETTER_CONFIG = {
     sessionState: "hunt",
     carouselMode: "3d",
     listMode: "compact",
+    requestView: "list",
     drawerMode: "contain",
     drawerAlwaysVisible: false,
     drawerRevealSeconds: 30,
@@ -4697,9 +4698,26 @@ function SimpleThemedControls({
           checked={localRequestsVisible}
           onChange={(showRequests) => set({ showRequests })}
         />
+        <HuntChoiceGrid
+          value={c.requestView || "list"}
+          columns={2}
+          options={[
+            {
+              key: "list",
+              label: "List",
+              hint: "Match the selected Rows, Cards, or Names style",
+            },
+            {
+              key: "carousel",
+              label: "3D",
+              hint: "Rotate pending requests as cover cards",
+            },
+          ]}
+          onChange={(requestView) => set({ requestView })}
+        />
         <HuntHint>
           {liveRequestsVisible
-            ? "Drifting feed of !sr commands from chat. Toggle it off here to hide the section on the Better widget."
+            ? "Live !sr requests use the same view in Streamers Center and OBS."
             : "Hidden because the requests handle is off on the Bonus Hunt page."}
         </HuntHint>
       </HuntSection>

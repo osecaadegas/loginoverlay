@@ -339,9 +339,8 @@ function BetterGiveawayRoulette({
     : [{ id: "waiting", name: "Waiting", hue: 208 }];
   const winnerKey = String(winnerName || "").toLowerCase();
   const winnerParticipant =
-    crowd.find(
-      (participant) => participant.name.toLowerCase() === winnerKey,
-    ) || crowd[0];
+    crowd.find((participant) => participant.name.toLowerCase() === winnerKey) ||
+    crowd[0];
   const leadRepeats = Math.max(5, Math.ceil(28 / crowd.length));
   const leadChips = Array.from({ length: leadRepeats }, () => crowd).flat();
   const winnerIndex = leadChips.length;
@@ -354,7 +353,9 @@ function BetterGiveawayRoulette({
 
     let animationFrame = 0;
     const measureWinnerOffset = () => {
-      const winnerChip = viewport.querySelector('[data-giveaway-winner="true"]');
+      const winnerChip = viewport.querySelector(
+        '[data-giveaway-winner="true"]',
+      );
       if (!winnerChip) return;
       const nextOffset =
         viewport.clientWidth / 2 -
@@ -554,12 +555,12 @@ const BETTER_BETS_THEME_VARS = {
     "--text-dim": "#6d8cc4",
     "--stage-bg": "transparent",
     "--frame-border": "color-mix(in srgb,#2f63c9 55%,transparent)",
-    "--frame-bg":
-      "linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)",
+    "--frame-bg": "linear-gradient(180deg,#0c1c40 0%,#0a1734 55%,#081228 100%)",
     "--frame-shadow":
       "0 0 0 1px rgba(0,0,0,0.55),inset 0 1px 0 color-mix(in srgb,#9dbdf2 12%,transparent)",
     "--bracket-color": "#2f63c9",
-    "--bracket-filter": "drop-shadow(0 0 3px color-mix(in srgb,#45c8ff 40%,transparent))",
+    "--bracket-filter":
+      "drop-shadow(0 0 3px color-mix(in srgb,#45c8ff 40%,transparent))",
     "--sheen-color": "color-mix(in srgb,#9dbdf2 8%,transparent)",
     "--title-glow": "0 1px 3px rgba(0,0,0,0.9)",
     "--meta-border": "color-mix(in srgb,#2f63c9 55%,transparent)",
@@ -1319,9 +1320,15 @@ const BETTER_HUNT_FONTS = {
 };
 
 const BETTER_HUNT_ROW_HEIGHT = {
-  compact: 52,
-  image: 88,
-  names: 34,
+  compact: 58,
+  image: 106,
+  names: 38,
+};
+
+const BETTER_HUNT_REQUEST_ROWS = {
+  compact: 3,
+  image: 2,
+  names: 4,
 };
 
 function useBetterHuntCarousel(count, intervalMs, enabled, seed = 0) {
@@ -1692,9 +1699,10 @@ function BetterStyleSheet() {
       .better-bets-stage[data-theme="matte"] .open-status{border-color:#6b5d24;color:#e8cf6a;background:#26221a;box-shadow:none}
       .better-bets-stage[data-anim="off"] .widget-sheen,.better-bets-stage[data-anim="off"] .bet-widget,.better-bets-stage[data-anim="off"] .bet-option,.better-bets-stage[data-anim="off"] .bet-bar,.better-bets-stage[data-anim="off"] .fill-core,.better-bets-stage[data-anim="off"] .pulse-ring,.better-bets-stage[data-anim="off"] .scan-sweep,.better-bets-stage[data-anim="off"] .plasma-blob,.better-bets-stage[data-anim="off"] .bf-sheen,.better-bets-stage[data-anim="off"] .bf-tip,.better-bets-stage[data-anim="off"] .bf-blob{animation:none!important;transition:none!important}
       @media (max-width:520px){.better-bets-stage{padding:8px}.better-bets-stage .bet-widget,.better-bets-stage .bet-widget.is-horizontal{width:100%;min-height:0}.better-bets-stage .bar-range{display:none}}
-      @keyframes better-hunt-marquee-up{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+      @keyframes better-hunt-marquee-up{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-50%,0)}}
       @keyframes better-hunt-marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       @keyframes better-hunt-marquee-right{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+      @keyframes better-hunt-live-blink{0%,100%{opacity:1;box-shadow:0 0 0 0 color-mix(in srgb,var(--bh-ice) 55%,transparent)}50%{opacity:.5;box-shadow:0 0 0 5px transparent}}
       @keyframes better-hunt-drawer-in{0%{max-height:0;opacity:0;transform:translateY(12px)}45%{opacity:0}100%{max-height:var(--bh-drawer-open-height,150px);opacity:1;transform:translateY(0)}}
       @keyframes better-hunt-stats-in{from{opacity:0;transform:translateX(34px) scale(.97);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
       @keyframes better-hunt-kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(1.5%,-1.5%)}}
@@ -1710,7 +1718,7 @@ function BetterStyleSheet() {
       @keyframes better-hunt-win-confetti{0%{transform:translate3d(0,0,0) rotate(0deg);opacity:0}6%{opacity:1}100%{transform:translate3d(var(--bh-win-sway),640px,0) rotate(680deg);opacity:.15}}
       @keyframes better-hunt-win-badge{0%{transform:perspective(1000px) rotateX(82deg) scale(.35) translateZ(-320px);opacity:0}55%{transform:perspective(1000px) rotateX(-12deg) scale(1.1) translateZ(50px);opacity:1}74%{transform:perspective(1000px) rotateX(6deg) scale(.97) translateZ(0)}100%{transform:perspective(1000px) rotateX(0deg) scale(1);opacity:1}}
       @keyframes better-hunt-win-float{0%,100%{transform:translateY(0) rotateX(0deg)}50%{transform:translateY(-9px) rotateX(2deg)}}
-      .better-hunt-root{position:relative;width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;background:transparent;color:#eef6ff;font-family:var(--bh-font);font-size:calc(13px * var(--bh-ui,1));box-sizing:border-box}
+      .better-hunt-root{position:relative;width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;background:transparent;color:#f4f8ff;font-family:var(--bh-font);font-size:calc(13.5px * var(--bh-ui,1));font-synthesis:none;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;box-sizing:border-box}
       .better-hunt-root *{box-sizing:border-box}
       .better-hunt-root::before,.better-hunt-root::after{content:none}
       .better-hunt-shell{position:relative;z-index:1;width:100%;height:100%;display:grid;place-items:center;padding:18px}
@@ -1828,22 +1836,23 @@ function BetterStyleSheet() {
       .better-hunt-fraction{display:flex;align-items:baseline;gap:3px;color:var(--bh-steel-hi);font-weight:900}
       .better-hunt-fraction strong{color:var(--bh-ice);font-size:1.08em;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 50%,transparent)}
       .better-hunt-list{min-height:0;overflow:hidden}
-      .better-hunt-list-inner{display:grid;gap:6px}
+      .better-hunt-list-inner{display:flex;flex-direction:column;will-change:transform;transform:translate3d(0,0,0);backface-visibility:hidden;contain:layout paint}
+      .better-hunt-list-group{display:flex;flex:0 0 auto;flex-direction:column;gap:6px;padding-bottom:6px}
       .better-hunt-list--scroll .better-hunt-list-inner{animation:better-hunt-marquee-up calc(var(--bh-list-duration,26s) / var(--anim-speed,1)) linear infinite}
       .better-hunt-row{min-width:0;display:grid;align-items:center;border:1px solid color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:9px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 85%,transparent),color-mix(in srgb,var(--bh-card-lo) 85%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 7%,transparent)}
-      .better-hunt-row--compact{grid-template-columns:24px auto minmax(0,1fr) auto;gap:7px;min-height:48px;padding:5px 7px}
-      .better-hunt-row--names{grid-template-columns:24px minmax(0,1fr) auto;gap:7px;min-height:30px;padding:5px 7px}
-      .better-hunt-row--image{position:relative;min-height:82px;overflow:hidden;padding:5px}
+      .better-hunt-row--compact{grid-template-columns:24px auto minmax(0,1fr) auto;gap:8px;min-height:52px;padding:5px 8px}
+      .better-hunt-row--names{grid-template-columns:24px minmax(0,1fr) auto;gap:8px;min-height:32px;padding:6px 8px}
+      .better-hunt-row--image{position:relative;min-height:100px;overflow:hidden;padding:6px}
       .better-hunt-row-bg{position:absolute;inset:0}.better-hunt-row-bg img{filter:saturate(1.08) contrast(1.02)}
       .better-hunt-row-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.38),transparent)}
       .better-hunt-row-content{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:7px;align-items:center}
       .better-hunt-row-id{height:20px;min-width:22px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:5px;background:rgba(0,0,0,.5);color:var(--bh-steel-hi);font-size:.72em;font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.8)}
-      .better-hunt-row-main{min-width:0}.better-hunt-row-main strong{display:block;overflow:hidden;color:#fff;font-size:.94em;font-weight:950;letter-spacing:.03em;line-height:1.08;text-overflow:ellipsis;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-row-main em{display:block;overflow:hidden;color:var(--bh-steel-hi);font-style:normal;font-size:.76em;font-weight:800;line-height:1.08;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.85);white-space:nowrap}
-      .better-hunt-mini-stats{display:grid;gap:2px;min-width:72px}.better-hunt-mini-stat{display:flex;align-items:center;justify-content:space-between;gap:7px;color:#f8fbff;font-size:.76em;font-weight:950;line-height:1.06;text-shadow:0 1px 3px rgba(0,0,0,.9)}.better-hunt-mini-label{color:var(--bh-steel-hi);font-size:.62em;letter-spacing:.1em;opacity:.86;text-shadow:0 1px 2px rgba(0,0,0,.75)}
+      .better-hunt-row-main{min-width:0}.better-hunt-row-main strong{display:block;overflow:hidden;color:#fff;font-size:1em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-row-main em{display:block;overflow:hidden;color:#c4d7f7;font-style:normal;font-size:.76em;font-weight:700;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}
+      .better-hunt-mini-stats{display:grid;gap:2px;min-width:76px}.better-hunt-mini-stat{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;font-size:.78em;font-weight:900;line-height:1.08;text-shadow:0 1px 3px rgba(0,0,0,.95)}.better-hunt-mini-label{color:#b9cbed;font-size:.64em;letter-spacing:.08em;opacity:1;text-shadow:0 1px 2px rgba(0,0,0,.85)}
       .better-hunt-empty{display:grid;place-items:center;min-height:80px;border:1px dashed color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:10px;background:rgba(0,0,0,.16);color:var(--bh-steel-dim);font-weight:800;text-align:center}
       .better-hunt-requests{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 38%,transparent);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 62%,transparent),color-mix(in srgb,var(--bh-card-lo) 70%,transparent));padding:8px}
       .better-hunt-requests-head{display:grid;min-width:74px;align-content:center;gap:4px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}.better-hunt-requests-head span{color:var(--bh-steel-dim);font-size:.62em;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.better-hunt-requests-head strong{color:var(--bh-ice);font-size:1.35em;font-weight:950;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 40%,transparent)}
-      .better-hunt-request-list{min-width:0;display:grid;gap:5px}.better-hunt-request{min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:9px;border-radius:7px;background:rgba(0,0,0,.22);padding:5px 7px}.better-hunt-request-image{width:42px;height:42px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);border-radius:6px;background:var(--bh-inset);box-shadow:0 3px 9px rgba(0,0,0,.42)}.better-hunt-request-image img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-image-fallback{width:100%;height:100%;display:grid;place-items:center;color:var(--bh-ice);font-size:.65em;font-weight:950;letter-spacing:.08em}.better-hunt-request-copy{min-width:0;display:grid;gap:3px}.better-hunt-request-copy strong{overflow:hidden;color:#fff;font-size:.78em;font-weight:900;line-height:1.1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-request-copy span{overflow:hidden;color:var(--bh-steel-hi);font-size:.68em;font-weight:800;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request-copy span b{color:var(--bh-ice);font-weight:950}.better-hunt-request--empty{display:flex;justify-content:center;color:var(--bh-steel-dim)}
+      .better-hunt-request-list{min-width:0;overflow:hidden}.better-hunt-request-track{display:flex;flex-direction:column;will-change:transform;transform:translate3d(0,0,0);backface-visibility:hidden;contain:layout paint}.better-hunt-request-list.is-scrolling .better-hunt-request-track{animation:better-hunt-marquee-up calc(var(--bh-request-duration,26s) / var(--anim-speed,1)) linear infinite}.better-hunt-request-group{display:flex;flex:0 0 auto;flex-direction:column;gap:6px;padding-bottom:6px}.better-hunt-request{position:relative;min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:9px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 22%,transparent);border-radius:7px;background:rgba(0,0,0,.24);padding:5px 7px}.better-hunt-request--compact{min-height:52px}.better-hunt-request--names{min-height:32px;grid-template-columns:7px minmax(0,1fr) auto;padding:6px 9px}.better-hunt-request--image{min-height:100px;grid-template-columns:minmax(0,1fr);padding:0}.better-hunt-request-bg{position:absolute;inset:0}.better-hunt-request-bg img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.92),rgba(0,0,0,.56),rgba(0,0,0,.28))}.better-hunt-request-body{position:relative;z-index:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}.better-hunt-request-image{width:42px;height:42px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);border-radius:6px;background:var(--bh-inset);box-shadow:0 3px 9px rgba(0,0,0,.42)}.better-hunt-request-image img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-image-fallback{width:100%;height:100%;display:grid;place-items:center;color:var(--bh-ice);font-size:.65em;font-weight:900;letter-spacing:.08em}.better-hunt-request-copy{min-width:0;display:grid;gap:3px}.better-hunt-request-copy strong{overflow:hidden;color:#fff;font-size:.92em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-request-copy span{overflow:hidden;color:#c4d7f7;font-size:.74em;font-weight:700;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-request-copy span b{color:var(--bh-tangerine);font-weight:900}.better-hunt-request-live{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:var(--bh-ice);animation:better-hunt-live-blink calc(1.6s / var(--anim-speed,1)) ease-in-out infinite}.better-hunt-request-user{overflow:hidden;color:var(--bh-tangerine);font-size:.74em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request-waiting{display:inline-flex;flex:0 0 auto;align-items:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 30%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bh-track) 70%,transparent);padding:4px 8px;color:#b9cbed;font-size:.62em;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.better-hunt-request--empty{display:flex;min-height:82px;align-items:center;justify-content:center;color:#9db4dc;font-weight:800}.better-hunt-request-stage{position:relative;height:218px;perspective:1100px}.better-hunt-request-ring{position:absolute;left:50%;top:106px;transform-style:preserve-3d}.better-hunt-request-card{position:absolute;width:86px;height:136px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:8px;background:var(--bh-inset);box-shadow:0 8px 20px rgba(0,0,0,.65);backface-visibility:hidden;transform-style:preserve-3d;will-change:transform,opacity,filter;transition:transform .7s cubic-bezier(.22,.9,.3,1),opacity .45s ease,filter .45s ease,box-shadow .45s ease}.better-hunt-request-card.is-center{border-color:var(--bh-ice);box-shadow:0 0 28px color-mix(in srgb,var(--bh-ice) 55%,transparent),0 10px 32px rgba(0,0,0,.72)}.better-hunt-request-card img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-card::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.08) 65%)}.better-hunt-request-card-copy{position:absolute;z-index:1;inset:auto 6px 8px;overflow:hidden;color:var(--bh-tangerine);font-size:.7em;font-weight:900;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
       .better-hunt-footer{display:grid;min-width:0}
       .better-hunt-total{display:grid;gap:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:10px;background:rgba(0,0,0,.18)}
       .better-hunt-total-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
@@ -1906,7 +1915,8 @@ function BetterStyleSheet() {
       .better-hunt-root[data-skin="cyberpunk"] .better-hunt-panel{background:linear-gradient(rgba(255,255,255,.025) 50%,rgba(0,0,0,.12) 50%),radial-gradient(120% 70% at 50% 0%,rgba(255,43,214,.18),transparent 44%),radial-gradient(100% 70% at 100% 100%,rgba(0,217,255,.14),transparent 45%),linear-gradient(180deg,#14001f 0%,#07112b 48%,#070014 100%);background-size:100% 3px,cover,cover,cover;border:1.5px solid rgba(255,43,214,.7);border-radius:var(--bh-radius);box-shadow:0 0 0 1px rgba(0,217,255,.35),0 0 30px rgba(255,43,214,.34),0 0 70px rgba(0,217,255,.18),inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 36px rgba(255,43,214,.1)}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-header--banner{background:linear-gradient(90deg,rgba(255,43,214,.18),rgba(0,217,255,.14)),linear-gradient(180deg,#1b0532 0%,#090821 100%);border-top-color:#ff2bd6;border-bottom-color:#00d9ff}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-main-title{color:#f7eaff;text-shadow:0 0 10px rgba(255,43,214,.75),0 0 18px rgba(0,217,255,.45)}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-stat{background:linear-gradient(180deg,rgba(23,16,46,.95),rgba(8,7,28,.95));border-color:rgba(0,217,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 12px rgba(0,217,255,.16),0 0 18px rgba(255,43,214,.1)}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-row,.better-hunt-root[data-skin="cyberpunk"] .better-hunt-total,.better-hunt-root[data-skin="cyberpunk"] .better-hunt-requests{background:linear-gradient(180deg,rgba(18,8,36,.9),rgba(6,5,20,.92));border-color:rgba(255,43,214,.32)}
       .better-hunt-root[data-skin="spartan"] .better-hunt-panel{background:repeating-linear-gradient(45deg,rgba(255,255,255,.015) 0 1px,transparent 1px 4px),repeating-linear-gradient(-45deg,rgba(255,255,255,.015) 0 1px,transparent 1px 4px),radial-gradient(110% 70% at 50% 0%,rgba(200,160,48,.14),transparent 48%),radial-gradient(100% 60% at 50% 100%,rgba(160,20,10,.22),transparent 50%),linear-gradient(180deg,#1a0c0a 0%,#120808 50%,#0a0505 100%);background-blend-mode:overlay,overlay,screen,screen,normal;background-size:4px 4px,4px 4px,cover,cover,cover;border:2px solid #c8a030;border-radius:10px;box-shadow:0 0 0 1px #080404,0 0 0 4px rgba(200,160,48,.35),0 0 36px rgba(140,20,10,.45),0 0 70px rgba(200,160,48,.15),0 24px 72px rgba(0,0,0,.9),inset 0 1px 0 rgba(240,210,120,.18),inset 0 0 60px rgba(140,20,10,.2)}.better-hunt-root[data-skin="spartan"] .better-hunt-panel::before{content:"";position:absolute;inset:0;border-radius:inherit;background:repeating-conic-gradient(from 0deg,#c8a030 0deg 3deg,transparent 3deg 12deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:3px;pointer-events:none;z-index:0;opacity:.7}.better-hunt-root[data-skin="spartan"] .better-hunt-panel>*{position:relative;z-index:1}.better-hunt-root[data-skin="spartan"] .better-hunt-header--banner{background:repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px),linear-gradient(180deg,#a01410 0%,#7a0c0a 50%,#901210 100%);border-color:#c8a030}.better-hunt-root[data-skin="spartan"] .better-hunt-main-title{color:#f0d8a0;text-shadow:0 0 12px rgba(200,160,48,.45),0 1px 2px rgba(0,0,0,.7)}.better-hunt-root[data-skin="spartan"] .better-hunt-stat{background:radial-gradient(90% 120% at 50% 0%,rgba(200,160,48,.12),transparent 60%),linear-gradient(180deg,#20100e 0%,#140a0a 100%);border-color:#8a5a10}.better-hunt-root[data-skin="spartan"] .better-hunt-row,.better-hunt-root[data-skin="spartan"] .better-hunt-total,.better-hunt-root[data-skin="spartan"] .better-hunt-requests{background:radial-gradient(100% 130% at 20% 0%,rgba(200,160,48,.08),transparent 50%),linear-gradient(180deg,#1a0c0a 0%,#100707 100%);border-color:#5a2a18}
       .better-hunt-root[data-skin="bloody"] .better-hunt-panel{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='%23800808' opacity='0.55'%3E%3Cpath d='M60 40 Q65 30 70 40 Q75 55 68 60 Q60 55 60 40z'/%3E%3Ccircle cx='72' cy='72' r='3'/%3E%3Ccircle cx='340' cy='90' r='6'/%3E%3Cpath d='M320 80 Q330 78 335 85 Q332 92 322 88 Z'/%3E%3Ccircle cx='352' cy='102' r='2.5'/%3E%3C/g%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Cg stroke='%23400808' stroke-width='1.5' fill='none' opacity='0.4'%3E%3Cpath d='M60 260 L260 60 M60 60 L260 260'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(180deg,#1a0404 0%,#100202 55%,#080101 100%);background-blend-mode:normal,multiply,normal;background-size:400px 400px,320px 320px,cover;border:3px solid #700808;border-radius:8px;box-shadow:0 0 0 1px #040101,0 0 0 4px rgba(160,20,20,.55),0 0 0 5px #040101,0 0 44px rgba(180,20,20,.45),0 24px 70px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,80,80,.15),inset 0 0 80px rgba(140,10,10,.3)}.better-hunt-root[data-skin="bloody"] .better-hunt-panel::after{content:"";position:absolute;inset:6px;border:1px dashed rgba(200,40,40,.25);border-radius:inherit;pointer-events:none;opacity:.7}.better-hunt-root[data-skin="bloody"] .better-hunt-header--banner{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40' viewBox='0 0 60 40'%3E%3Cg fill='none' stroke='%23ff4050' stroke-width='1.2' opacity='0.35'%3E%3Cpath d='M30 5 C20 5 14 12 14 20 L14 30 L20 30 L22 34 L24 30 L26 34 L28 30 L30 34 L32 30 L34 34 L36 30 L40 30 L46 30 L46 20 C46 12 40 5 30 5 Z'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(180deg,#b01818 0%,#800a0a 50%,#a01414 100%);background-repeat:no-repeat,no-repeat;background-position:center,center;background-size:55px 38px,cover;border-top-color:#ff2030;border-bottom-color:#700808}.better-hunt-root[data-skin="bloody"] .better-hunt-main-title{color:#ffe0c8;text-shadow:0 0 12px rgba(255,60,80,.75),0 1px 3px rgba(0,0,0,.85);letter-spacing:.14em}.better-hunt-root[data-skin="bloody"] .better-hunt-stat{background:linear-gradient(180deg,#1e0404 0%,#140202 100%);border-color:#8a1818}.better-hunt-root[data-skin="bloody"] .better-hunt-row,.better-hunt-root[data-skin="bloody"] .better-hunt-total,.better-hunt-root[data-skin="bloody"] .better-hunt-requests{background:radial-gradient(120% 130% at 100% 0%,rgba(200,30,30,.1),transparent 55%),linear-gradient(180deg,#180303 0%,#0e0202 100%);border-color:#5a1210}
-      .better-hunt-root[data-anim="off"]::before,.better-hunt-root[data-anim="off"]::after,.better-hunt-root[data-anim="off"] .better-hunt-list-inner,.better-hunt-root[data-anim="off"] .better-hunt-lane-track,.better-hunt-root[data-anim="off"] .better-hunt-card--center,.better-hunt-root[data-anim="off"] .better-hunt-card--super,.better-hunt-root[data-anim="off"] .better-hunt-card--extreme,.better-hunt-root[data-anim="off"] .better-hunt-stats-image img,.better-hunt-root[data-anim="off"] .better-hunt-image-stats-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active,.better-hunt-root[data-anim="off"] .better-hunt-main-active-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active-shroud,.better-hunt-root[data-anim="off"] .better-hunt-panel--shake,.better-hunt-root[data-anim="off"] .better-hunt-win,.better-hunt-root[data-anim="off"] .better-hunt-win *{animation:none!important}
+      .better-hunt-root[data-anim="off"]::before,.better-hunt-root[data-anim="off"]::after,.better-hunt-root[data-anim="off"] .better-hunt-list-inner,.better-hunt-root[data-anim="off"] .better-hunt-request-track,.better-hunt-root[data-anim="off"] .better-hunt-request-live,.better-hunt-root[data-anim="off"] .better-hunt-lane-track,.better-hunt-root[data-anim="off"] .better-hunt-card--center,.better-hunt-root[data-anim="off"] .better-hunt-card--super,.better-hunt-root[data-anim="off"] .better-hunt-card--extreme,.better-hunt-root[data-anim="off"] .better-hunt-stats-image img,.better-hunt-root[data-anim="off"] .better-hunt-image-stats-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active,.better-hunt-root[data-anim="off"] .better-hunt-main-active-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active-shroud,.better-hunt-root[data-anim="off"] .better-hunt-panel--shake,.better-hunt-root[data-anim="off"] .better-hunt-win,.better-hunt-root[data-anim="off"] .better-hunt-win *{animation:none!important}
+      @media (prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-list-inner,.better-hunt-root .better-hunt-request-track,.better-hunt-root .better-hunt-request-live,.better-hunt-root .better-hunt-lane-track,.better-hunt-root .better-hunt-card,.better-hunt-root .better-hunt-request-card,.better-hunt-root .better-hunt-drawer{animation:none!important;transition:none!important}}
       @media (max-width:640px){.better-hunt-shell{padding:10px}.better-hunt-horizontal{height:auto;grid-template-columns:1fr}.better-hunt-left{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}.better-hunt-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.better-hunt-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.better-hunt-stat-strip div{border-left:0;border-top:1px solid rgba(255,255,255,.12)}.better-hunt-requests{grid-template-columns:1fr}.better-hunt-requests-head{grid-template-columns:1fr auto;align-items:center;border-right:0;border-bottom:1px solid rgba(255,255,255,.1);padding:0 0 7px}}
     `}</style>
   );
@@ -2422,8 +2432,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     ? c.carouselMode
     : "3d";
   const drawerAlwaysVisible = c.drawerAlwaysVisible === true;
-  const configuredDrawerMode =
-    c.drawerMode === "expand" ? "expand" : "contain";
+  const configuredDrawerMode = c.drawerMode === "expand" ? "expand" : "contain";
   const drawerMode = drawerAlwaysVisible ? "expand" : configuredDrawerMode;
   const drawerRevealSeconds = clampNumber(
     c.drawerRevealSeconds ?? c.drawerTimingSeconds,
@@ -2489,6 +2498,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     (found, key) =>
       found.length ? found : normalizeBetterHuntRequests(c[key]),
     [],
+  );
+  const requestView = c.requestView === "carousel" ? "carousel" : "list";
+  const requestActiveIndex = useBetterHuntCarousel(
+    requestRows.length,
+    Number(c.carouselMs) || 3200,
+    c.animations !== false && requestView === "carousel",
   );
   const totalBetFromStats = firstMetric(
     [stats?.totalBetAll, stats?.totalBet, c.totalBet],
@@ -2613,8 +2628,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     resultDrawerReady,
   ]);
   const listRows = rows;
-  const scrollingRows =
-    rows.length > visibleRows ? [...listRows, ...listRows] : listRows;
   const listDuration = `${Math.max(26, rows.length * 1.35)}s`;
   const winAccents = {
     roman: { ember: "#c0281c", tangerine: "#a06820" },
@@ -2738,7 +2751,83 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     "";
   const renderRequests = () => {
     if (c.showRequests === false) return null;
-    const visibleRequests = requestRows.slice(0, 4);
+    const rowsShown = BETTER_HUNT_REQUEST_ROWS[listMode];
+    const requestHeight = rowsShown * rowHeight + 6;
+    const requestsScroll =
+      requestView === "list" &&
+      requestRows.length > rowsShown &&
+      c.animations !== false;
+    const renderRequest = (request, index, copy = 0) => {
+      const key =
+        request?.id || `${requestName(request)}-${requestSlot(request)}-${index}`;
+      if (listMode === "image") {
+        return (
+          <div
+            key={`${key}-${copy}`}
+            className="better-hunt-request better-hunt-request--image"
+          >
+            <span className="better-hunt-request-bg">
+              <SlotImage src={requestImage(request)} alt="" />
+            </span>
+            <span className="better-hunt-request-body">
+              <span className="better-hunt-request-copy">
+                <strong>{requestSlot(request)}</strong>
+                <span>
+                  Requested by <b>@{requestName(request)}</b>
+                </span>
+              </span>
+              <span className="better-hunt-request-waiting">
+                <i className="better-hunt-request-live" /> Waiting
+              </span>
+            </span>
+          </div>
+        );
+      }
+      if (listMode === "names") {
+        return (
+          <div
+            key={`${key}-${copy}`}
+            className="better-hunt-request better-hunt-request--names"
+          >
+            <i className="better-hunt-request-live" />
+            <span className="better-hunt-request-copy">
+              <strong>{requestSlot(request)}</strong>
+            </span>
+            <span className="better-hunt-request-user">
+              @{requestName(request)}
+            </span>
+          </div>
+        );
+      }
+      return (
+        <div
+          key={`${key}-${copy}`}
+          className="better-hunt-request better-hunt-request--compact"
+        >
+          <span className="better-hunt-request-image">
+            {requestImage(request) ? (
+              <SlotImage
+                src={requestImage(request)}
+                alt={requestSlot(request)}
+              />
+            ) : (
+              <span
+                className="better-hunt-request-image-fallback"
+                aria-hidden="true"
+              >
+                SLOT
+              </span>
+            )}
+          </span>
+          <span className="better-hunt-request-copy">
+            <strong>{requestSlot(request)}</strong>
+            <span>
+              Requested by <b>@{requestName(request)}</b>
+            </span>
+          </span>
+        </div>
+      );
+    };
     return (
       <div
         className="better-hunt-requests"
@@ -2748,42 +2837,77 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <h3>Chat Requests</h3>
           <strong>{requestRows.length}</strong>
         </div>
-        <div className="better-hunt-request-list">
-          {visibleRequests.length ? (
-            visibleRequests.map((request, index) => (
-              <div
-                key={request?.id || `${requestName(request)}-${requestSlot(request)}-${index}`}
-                className={`better-hunt-request better-hunt-request--${listMode}`}
-              >
-                <span className="better-hunt-request-image">
-                  {requestImage(request) ? (
-                    <SlotImage
-                      src={requestImage(request)}
-                      alt={requestSlot(request)}
-                    />
-                  ) : (
-                    <span
-                      className="better-hunt-request-image-fallback"
-                      aria-hidden="true"
+        {requestRows.length ? (
+          requestView === "carousel" ? (
+            <div className="better-hunt-request-stage">
+              <div className="better-hunt-request-ring">
+                {requestRows.map((request, index) => {
+                  let distance = index - requestActiveIndex;
+                  if (distance > requestRows.length / 2)
+                    distance -= requestRows.length;
+                  if (distance < -requestRows.length / 2)
+                    distance += requestRows.length;
+                  const abs = Math.abs(distance);
+                  const center = distance === 0;
+                  const hidden = abs > 2;
+                  return (
+                    <div
+                      key={
+                        request?.id ||
+                        `${requestName(request)}-${requestSlot(request)}-${index}`
+                      }
+                      className={`better-hunt-request-card${center ? " is-center" : ""}`}
+                      style={{
+                        opacity: hidden ? 0 : abs === 2 ? 0.25 : 1,
+                        pointerEvents: hidden ? "none" : undefined,
+                        zIndex: 20 - abs,
+                        filter: center
+                          ? "none"
+                          : "brightness(.52) saturate(.7)",
+                        transform: `translate3d(-50%, -50%, 0) translate3d(${distance * 88}px, 0, ${-abs * 100}px) rotateY(${distance * -32}deg) scale(${center ? 1.1 : 0.85})`,
+                      }}
                     >
-                      SLOT
-                    </span>
-                  )}
-                </span>
-                <span className="better-hunt-request-copy">
-                  <strong>{requestSlot(request)}</strong>
-                  <span>
-                    Requested by <b>{requestName(request)}</b>
-                  </span>
-                </span>
+                      <SlotImage
+                        src={requestImage(request)}
+                        alt={requestSlot(request)}
+                      />
+                      <span className="better-hunt-request-card-copy">
+                        @{requestName(request)}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-            ))
-          ) : (
-            <div className="better-hunt-request better-hunt-request--empty">
-              <span>No requests yet</span>
             </div>
-          )}
-        </div>
+          ) : (
+            <div
+              className={`better-hunt-request-list${requestsScroll ? " is-scrolling" : ""}`}
+              style={{
+                height: requestHeight,
+                "--bh-request-duration": `${Math.max(26, requestRows.length * 2)}s`,
+              }}
+            >
+              <div className="better-hunt-request-track">
+                <div className="better-hunt-request-group">
+                  {requestRows.map((request, index) =>
+                    renderRequest(request, index),
+                  )}
+                </div>
+                {requestsScroll ? (
+                  <div className="better-hunt-request-group" aria-hidden="true">
+                    {requestRows.map((request, index) =>
+                      renderRequest(request, index, 1),
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="better-hunt-request better-hunt-request--empty">
+            <span>No requests yet</span>
+          </div>
+        )}
       </div>
     );
   };
@@ -3222,14 +3346,18 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       >
         {rows.length ? (
           <div className="better-hunt-list-inner">
-            {scrollingRows.map((bonus, index) =>
-              renderListRow(
-                bonus,
-                index % Math.max(1, listRows.length),
-                listMode,
-                index,
-              ),
-            )}
+            <div className="better-hunt-list-group">
+              {listRows.map((bonus, index) =>
+                renderListRow(bonus, index, listMode, index),
+              )}
+            </div>
+            {rows.length > visibleRows && c.animations !== false ? (
+              <div className="better-hunt-list-group" aria-hidden="true">
+                {listRows.map((bonus, index) =>
+                  renderListRow(bonus, index, listMode, `copy-${index}`),
+                )}
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="better-hunt-empty">Waiting for hunt data</div>
@@ -3758,8 +3886,7 @@ export function BetterGiveawayStyle({ config }) {
     "--w-card-lo": c.cardLo || "#0a1836",
     "--w-line": c.lineColor || "#2f63c9",
     "--w-steel-hi": c.secondaryTextColor || "#9dbdf2",
-    "--w-accent":
-      c.accentColor || "#45c8ff",
+    "--w-accent": c.accentColor || "#45c8ff",
     "--w-accent-2": c.deepAccentColor || "#1e5ad6",
     "--w-accent-soft": `hsl(${accentHue} ${accentSat}% ${Math.min(86, accentLight + 20)}%)`,
   };
@@ -4071,10 +4198,9 @@ export function BetterChatMessage({
       ? `linear-gradient(135deg, ${alphaColor(rowAccent, 0.46)}, ${alphaColor(rowAccent, 0.16)} 52%, rgba(2,8,23,0.9))`
       : `linear-gradient(180deg, ${baseBg}, ${c.cardLo || "#0a1836"})`,
     border: `${Number(context.borderWidth) || 1}px solid ${emphasized ? alphaColor(rowAccent, 0.8) : context.borderColor || alphaColor(accent, 0.24)}`,
-    boxShadow:
-      emphasized
-        ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.5)}, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -12px 24px ${alphaColor(rowAccent, 0.12)}`
-        : `0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)`,
+    boxShadow: emphasized
+      ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.5)}, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -12px 24px ${alphaColor(rowAccent, 0.12)}`
+      : `0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)`,
     overflow: "hidden",
     opacity: animationName === "none" ? 1 : 0,
     animation:

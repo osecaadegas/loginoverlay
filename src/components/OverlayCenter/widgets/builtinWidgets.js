@@ -117,6 +117,7 @@ registerWidget({
     colour: "ocean",
     finish: "flat",
     skin: "modern",
+    requestView: "list",
     fontFamily: "'Rajdhani', sans-serif",
     edgeRadius: 14,
     statRadius: 7,
