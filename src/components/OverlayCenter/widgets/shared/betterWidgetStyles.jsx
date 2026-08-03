@@ -3878,6 +3878,7 @@ export function BetterChatMessage({
   const movementAccent = roleMovementOn && !roleColorOn ? "#ffffff" : rowAccent;
   const messageStyle = resolveRowStyle({
     position: "relative",
+    flex: "0 0 auto",
     display: "grid",
     gridTemplateColumns: "34px minmax(0,1fr)",
     gap: 9,
