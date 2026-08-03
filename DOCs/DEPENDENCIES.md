@@ -23,5 +23,5 @@ npm install
 
 ## Notes from the 2026-06-05 audit
 
-- Mollie recurring billing is implemented through the Mollie REST API from Vercel functions, so there is no Mollie npm package in the active dependency list.
+- Stripe recurring billing is implemented through Stripe REST calls from Vercel functions, so there is no Stripe npm package in the active dependency list.
 - Payment-related changes should keep the API handlers, migrations, environment variables, legal text, and documentation in the same change.

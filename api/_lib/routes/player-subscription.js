@@ -1,7 +1,7 @@
 import {
   createBillingPortalSession,
   createCheckoutSession,
-} from '../mollie-billing.js';
+} from '../stripe-billing.js';
 import {
   createSupabaseAdmin,
   parseBody,
@@ -67,8 +67,16 @@ async function handlePortal(req, res, supabase, user) {
     });
   }
 
+  const access = await getPlayerAccess(supabase, user.id);
+  const customerId = access.subscription?.stripe_customer_id
+    || (access.subscription?.provider === 'stripe' ? access.subscription.provider_customer_id : null);
+  if (!customerId) {
+    return res.status(404).json({ error: 'No Stripe subscription found for this account', access });
+  }
+
   const session = await createBillingPortalSession({
     req,
+    customerId,
     returnPath: '/player/subscription',
   });
   return res.status(200).json({ id: session.id, url: session.url, message: session.message });

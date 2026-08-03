@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createBillingPortalSession } from './_lib/mollie-billing.js';
+import { createBillingPortalSession } from './_lib/stripe-billing.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
@@ -50,14 +50,14 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from('billing_customers')
-      .select('provider,provider_customer_id,mollie_customer_id')
+      .select('stripe_customer_id,provider,provider_customer_id')
       .eq('user_id', user.id)
       .maybeSingle();
 
     if (error) throw error;
-    const customerId = data?.mollie_customer_id || (data?.provider === 'mollie' ? data.provider_customer_id : null);
+    const customerId = data?.stripe_customer_id || (data?.provider === 'stripe' ? data.provider_customer_id : null);
     if (!customerId) {
-      return res.status(404).json({ error: 'No Mollie subscription found for this account' });
+      return res.status(404).json({ error: 'No Stripe subscription found for this account' });
     }
 
     const session = await createBillingPortalSession({ req, customerId });

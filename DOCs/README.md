@@ -23,7 +23,6 @@ The docs were audited on 2026-06-05. Old Stripe payment guides, mines troublesho
 - [STORAGE_SETUP.md](./STORAGE_SETUP.md)
 - [GET_SERVICE_ROLE_KEY.md](./GET_SERVICE_ROLE_KEY.md)
 - [DEPENDENCIES.md](./DEPENDENCIES.md)
-- [MOLLIE_SETUP_GUIDE.md](./MOLLIE_SETUP_GUIDE.md)
 - [DOMAIN_UPDATE_CHECKLIST.md](./DOMAIN_UPDATE_CHECKLIST.md)
 - [ONE_COM_DNS_SETUP.md](./ONE_COM_DNS_SETUP.md)
 
@@ -55,7 +54,6 @@ The docs were audited on 2026-06-05. Old Stripe payment guides, mines troublesho
 
 ## Removed as stale
 
-- Stripe payment setup docs
 - Mines troubleshooting docs
 - Original SaaS overlay/subscription guides
 - The Life and Twitch extension guides

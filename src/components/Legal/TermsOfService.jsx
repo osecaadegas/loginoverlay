@@ -64,8 +64,7 @@ export default function TermsOfService() {
           <p>
             We may offer paid access to selected features. Prices, billing intervals, trial terms,
             cancellation rules, and included features are shown before purchase or activation.
-            Payment processing is handled by third-party providers such as Mollie and, where
-            applicable or legacy records exist, Stripe.
+            Payment processing is handled by Stripe.
           </p>
           <p>
             If a recurring paid plan is active, you may cancel it according to the cancellation

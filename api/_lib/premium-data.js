@@ -16,65 +16,6 @@ export const PRODUCT_TYPE_BY_PRODUCT_CODE = {
   streamer_premium: 'streamer',
 };
 
-export const LEGACY_MOLLIE_PLANS = {
-  monthly: {
-    id: 'monthly',
-    label: '1 Month',
-    amount: '15.00',
-    amountEnv: 'MOLLIE_AMOUNT_MONTHLY',
-    interval: '1 month',
-    intervalMonths: 1,
-    productCode: 'streamer_premium',
-    productType: 'streamer',
-    public: false,
-  },
-  quarterly: {
-    id: 'quarterly',
-    label: '3 Months',
-    amount: '40.00',
-    amountEnv: 'MOLLIE_AMOUNT_QUARTERLY',
-    interval: '3 months',
-    intervalMonths: 3,
-    productCode: 'streamer_premium',
-    productType: 'streamer',
-    public: false,
-  },
-  semiannual: {
-    id: 'semiannual',
-    label: '6 Months',
-    amount: '60.00',
-    amountEnv: 'MOLLIE_AMOUNT_SEMIANNUAL',
-    interval: '6 months',
-    intervalMonths: 6,
-    productCode: 'streamer_premium',
-    productType: 'streamer',
-    public: false,
-  },
-  annual: {
-    id: 'annual',
-    label: '12 Months',
-    amount: '120.00',
-    amountEnv: 'MOLLIE_AMOUNT_ANNUAL',
-    interval: '12 months',
-    intervalMonths: 12,
-    productCode: 'streamer_premium',
-    productType: 'streamer',
-    public: false,
-  },
-  player_monthly: {
-    id: 'player_monthly',
-    label: 'Player Monthly',
-    amount: '3.00',
-    amountEnv: 'MOLLIE_AMOUNT_PLAYER_MONTHLY',
-    interval: '1 month',
-    intervalMonths: 1,
-    productCode: 'player_bonus_hunt',
-    productType: 'player',
-    monthlyPrice: '3.00',
-    public: true,
-  },
-};
-
 const ACTIVE_PAID_STATUSES = new Set(['active', 'trialing']);
 const PAST_DUE_STATUSES = new Set(['past_due', 'unpaid', 'payment_pending', 'incomplete']);
 const ACCESS_ROLE_NAMES = ['admin', 'superadmin', 'moderator', 'slot_modder', 'premium', 'affiliate'];
@@ -85,18 +26,9 @@ function isMissingTable(error) {
   return text.includes('42p01') || text.includes('pgrst205') || text.includes('could not find the table');
 }
 
-function centsToAmount(cents) {
-  return (Number(cents || 0) / 100).toFixed(2);
-}
-
 function intervalMonths(row = {}) {
   const count = Number(row.interval_count || row.intervalCount || 1);
   return row.billing_interval === 'year' ? count * 12 : count;
-}
-
-function mollieInterval(row = {}) {
-  const months = intervalMonths(row);
-  return `${months} ${months === 1 ? 'month' : 'months'}`;
 }
 
 function normalizePlanRow(row) {
@@ -120,78 +52,11 @@ function normalizePlanRow(row) {
     recommended: !!row.recommended,
     sortOrder: Number(row.sort_order || 0),
     active: row.active !== false,
-    provider: row.provider || 'mollie',
+    provider: row.provider || 'stripe',
     providerProductId: row.provider_product_id || null,
     providerPriceId: row.provider_price_id || null,
     metadata: row.metadata || {},
   };
-}
-
-function legacyPlanToRow(planId, plan) {
-  const amount = Number(process.env[plan.amountEnv] || plan.amount);
-  return normalizePlanRow({
-    id: planId,
-    internal_name: planId,
-    public_title: plan.label,
-    product_type_code: plan.productType,
-    product_code: plan.productCode,
-    price_cents: Math.round(amount * 100),
-    currency: 'EUR',
-    billing_interval: plan.intervalMonths >= 12 ? 'year' : 'month',
-    interval_count: plan.intervalMonths >= 12 ? plan.intervalMonths / 12 : plan.intervalMonths,
-    monthly_equivalent_cents: plan.intervalMonths ? Math.round((amount * 100) / plan.intervalMonths) : Math.round(amount * 100),
-    inclusion_text: plan.productCode === 'player_bonus_hunt' ? 'Includes all Player features' : 'Includes all Streamer features',
-    active: !!plan.public,
-    provider: 'mollie',
-  });
-}
-
-export function planToBillingPlan(plan) {
-  const row = normalizePlanRow(plan);
-  if (!row) return null;
-  return {
-    id: row.id,
-    label: row.title,
-    amount: centsToAmount(row.priceCents),
-    currency: row.currency,
-    interval: mollieInterval({ billing_interval: row.billingInterval, interval_count: row.intervalCount }),
-    intervalMonths: row.intervalMonths,
-    productCode: row.productCode,
-    productType: row.productType,
-    priceCents: row.priceCents,
-    providerPriceId: row.providerPriceId,
-  };
-}
-
-export async function loadBillingPlan(supabase, planId, { requireActive = true } = {}) {
-  const id = String(planId || '').trim();
-  if (!id) {
-    const err = new Error('Missing subscription plan');
-    err.statusCode = 400;
-    throw err;
-  }
-
-  if (supabase) {
-    let query = supabase
-      .from('subscription_plans')
-      .select('*')
-      .eq('id', id);
-    if (requireActive) query = query.eq('active', true);
-    const { data, error } = await query.maybeSingle();
-    if (error && !isMissingTable(error)) {
-      const err = new Error(`Failed to load subscription plan: ${error.message}`);
-      err.statusCode = 500;
-      throw err;
-    }
-    if (data) return planToBillingPlan(data);
-  }
-
-  const legacy = LEGACY_MOLLIE_PLANS[id];
-  if (legacy) return planToBillingPlan(legacyPlanToRow(id, legacy));
-
-  const err = new Error('Unknown subscription plan');
-  err.statusCode = 400;
-  throw err;
 }
 
 export async function loadPremiumContent(supabase, { includeInactive = false } = {}) {
@@ -286,7 +151,7 @@ function normalizeSubscription(row, productType) {
     cancelAtPeriodEnd: !!row.cancel_at_period_end,
     canceledAt: row.canceled_at || null,
     endedAt: row.ended_at || null,
-    provider: row.provider || 'mollie',
+    provider: row.provider || 'stripe',
     providerSubscriptionId: row.provider_subscription_id || null,
   };
 }

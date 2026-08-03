@@ -2286,10 +2286,9 @@ async function handleProductOverview(req, res, supabase) {
     streamer: {
       activePremiumUsers: activeStreamerUsers.size,
       activeSubscriptions: activeStreamerSubs.length,
-      activeMollieSubscriptions: activeStreamerSubs.filter(
-        (sub) => sub.provider === "mollie",
+      activeStripeSubscriptions: activeStreamerSubs.filter(
+        (sub) => (sub.provider || "stripe") === "stripe",
       ).length,
-      activeStripeSubscriptions: activeStreamerSubs.length,
       sessions: streamerSessionIds.size,
       overlaySessions: overlaySessionIds.size,
       events: streamerEvents.length,
