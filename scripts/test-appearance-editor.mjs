@@ -756,6 +756,19 @@ try {
     "Bonus Hunt provider images fit without changing the fixed row layout",
   );
   assert.ok(
+    overlayCenterStylesSource.includes(
+      "grid-template-columns: 66px 48px 82px 48px 30px",
+    ) &&
+      overlayCenterStylesSource.includes("justify-self: end") &&
+      /\.bh-list-side\s+\.bh-list-payout-input\s*\{\s*width: 100%;\s*box-sizing: border-box;/.test(
+        overlayCenterStylesSource,
+      ) &&
+      !/\.bh-list-side\s+\.bh-list-payout-input\s*\{[^}]*width: 74px;/.test(
+        overlayCenterStylesSource,
+      ),
+    "Bonus Hunt row controls stay aligned to the right-side grid",
+  );
+  assert.ok(
     overlayCenterStylesSource.includes("flex: 0 0 50px") &&
       overlayCenterStylesSource.includes("width: 38px !important") &&
       overlayCenterStylesSource.includes("max-height: 38px !important"),

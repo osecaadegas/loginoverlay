@@ -29372,6 +29372,7 @@ body.wm-resizing {
   display: grid;
   grid-template-columns: 66px 48px 82px 48px 30px;
   align-items: center;
+  justify-self: end;
   gap: 5px;
   flex: 0 0 294px;
 }
@@ -29399,6 +29400,7 @@ body.wm-resizing {
 .oc2-detail--bonus-hunt:not(.oc-dedup-29192) .bh-list-side .bh-list-field {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -29428,7 +29430,8 @@ body.wm-resizing {
 .oc2-detail--bonus-hunt:not(.oc-dedup-29215)
   .bh-list-side
   .bh-list-payout-input {
-  width: 74px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 980px) {
