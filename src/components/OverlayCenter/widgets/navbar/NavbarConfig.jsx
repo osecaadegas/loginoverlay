@@ -134,35 +134,42 @@ export default function NavbarConfig({ config, onChange }) {
           )}
 
           {/* ─── Start ─── */}
-          {c.showStartBalance && (
-            <>
-              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
-                Start
-              </h4>
-              <label className="nb-field">
-                <span>Value</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={c.startBalance || ""}
-                  onChange={(e) => set("startBalance", e.target.value)}
-                  placeholder="1000"
-                />
-              </label>
-              <label className="nb-field">
-                <span>Currency</span>
-                <select
-                  value={c.balanceCurrency || "€"}
-                  onChange={(e) => set("balanceCurrency", e.target.value)}
-                >
-                  <option value="€">€ EUR</option>
-                  <option value="zł">zł PLN</option>
-                  <option value="$">$ USD</option>
-                </select>
-              </label>
-            </>
-          )}
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
+            Start
+          </h4>
+          <label className="nb-field">
+            <span>Value</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={c.startBalance ?? ""}
+              onChange={(e) =>
+                setMulti({
+                  startBalance: e.target.value,
+                  startValue: "",
+                  showStartBalance: true,
+                })
+              }
+              placeholder="1000"
+            />
+          </label>
+          <label className="nb-field">
+            <span>Currency</span>
+            <select
+              value={c.balanceCurrency || "€"}
+              onChange={(e) =>
+                setMulti({
+                  balanceCurrency: e.target.value,
+                  showStartBalance: true,
+                })
+              }
+            >
+              <option value="€">€ EUR</option>
+              <option value="zł">zł PLN</option>
+              <option value="$">$ USD</option>
+            </select>
+          </label>
 
           {/* ─── Casino ─── */}
           {c.showCasino && (

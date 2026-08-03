@@ -1854,7 +1854,12 @@ function NavbarWidget({
   };
 
   const renderBalanceSection = () => {
-    if (!c.showStartBalance || !c.startBalance) return null;
+    const hasStartBalance =
+      c.startBalance !== undefined &&
+      c.startBalance !== null &&
+      c.startBalance !== "" &&
+      Number.isFinite(Number(c.startBalance));
+    if (!c.showStartBalance || !hasStartBalance) return null;
     return (
       <div
         {...partAttrs("balance")}
@@ -2007,10 +2012,12 @@ function NavbarWidget({
       c.siteUrl ||
       c.motto ||
       (c.twitchUsername ? `twitch.tv/${c.twitchUsername}` : "");
-    const formattedStartBalance =
+    const hasStartBalance =
       c.startBalance !== undefined &&
       c.startBalance !== null &&
-      c.startBalance !== ""
+      c.startBalance !== "" &&
+      Number.isFinite(Number(c.startBalance));
+    const formattedStartBalance = hasStartBalance
         ? `${c.balanceCurrency || "€"}${Number(c.startBalance).toLocaleString(
             undefined,
             {
@@ -2018,10 +2025,10 @@ function NavbarWidget({
             },
           )}`
         : "";
-    const startValue = c.startValue || formattedStartBalance;
-    const showStart = Boolean(
-      c.startValue || (c.showStartBalance && startValue),
-    );
+    const startValue = hasStartBalance
+      ? formattedStartBalance
+      : c.startValue || "";
+    const showStart = Boolean(c.showStartBalance && startValue);
     const rawCasinoCommand = c.casinoCommand || "";
     const casinoCommand =
       (c[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
