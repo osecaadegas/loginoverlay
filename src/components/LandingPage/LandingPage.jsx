@@ -605,27 +605,9 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
         <div className="lp-selected-hero__media" aria-hidden="true">
           <img src={LANDING_IMAGES.streamer} alt="" loading="eager" decoding="async" />
         </div>
-        <div className="lp-selected-hero__copy">
-          <span className="lp-eyebrow">Streamer Center</span>
-          <h1 ref={headingRef} tabIndex="-1">
-            iGaming overlays and casino streamer tools.
-          </h1>
-          <p>
-            Professional iGaming overlays, casino overlays, browser-source overlay trackers, bonus hunt trackers,
-            slot requests, tournaments, giveaways, viewer games and chat-connected tools in one production dashboard.
-          </p>
-          <div className="lp-selected-hero__ctas">
-            <button type="button" className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>
-              Build My Stream <ArrowRight size={18} />
-            </button>
-            <Link className="lp-btn lp-btn--ghost" to="/offers">
-              View partners <Sparkles size={18} />
-            </Link>
-          </div>
-        </div>
-        <div className="lp-selected-hero__preview">
-          <StreamerPreview expanded />
-        </div>
+        <h1 ref={headingRef} tabIndex="-1" className="lp-sr-only">
+          iGaming overlays and casino streamer tools.
+        </h1>
       </section>
 
       <section className="lp-section">

@@ -424,7 +424,7 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
   },
   slideshow_frame: {
     displayStyle: "better_slideshow_frame",
-    mediaText: "",
+    mediaText: "/banner.png|image|Banner",
     frameStyle: "neon",
     frameColor: "#0e5391",
     accentColor: "#ffb020",

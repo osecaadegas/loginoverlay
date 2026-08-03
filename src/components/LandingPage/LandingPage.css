@@ -1062,6 +1062,20 @@
     linear-gradient(180deg, rgba(5, 7, 13, 0.48), rgba(5, 7, 13, 0.86));
 }
 
+.lp-selected--streamer .lp-selected-hero {
+  max-width: none;
+  min-height: min(100dvh, 980px);
+  padding: 0;
+}
+
+.lp-selected--streamer .lp-selected-hero__media {
+  z-index: 0;
+}
+
+.lp-selected--streamer .lp-selected-hero__media::after {
+  content: none;
+}
+
 .lp-selected-hero__media img {
   width: 100%;
   height: 100%;
@@ -1075,7 +1089,10 @@
 }
 
 .lp-selected--streamer .lp-selected-hero__media img {
+  object-fit: contain;
   object-position: center;
+  filter: none;
+  background: #050816;
 }
 
 .lp-selected-hero__copy {
