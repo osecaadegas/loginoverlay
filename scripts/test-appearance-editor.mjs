@@ -746,9 +746,10 @@ try {
     "Bonus Hunt management rows resolve provider logos from every supported bonus shape",
   );
   assert.ok(
-    overlayCenterStylesSource.includes("place-items: center start") &&
+    overlayCenterStylesSource.includes("flex: 0 0 108px") &&
+      overlayCenterStylesSource.includes("max-height: 100%") &&
       overlayCenterStylesSource.includes("object-position: left center"),
-    "Bonus Hunt row provider logos stay fully visible and left aligned",
+    "Bonus Hunt provider images fit without changing the fixed row layout",
   );
   const betterOverlayServiceSource = readFileSync(
     new URL("../src/services/betterOverlayService.js", import.meta.url),

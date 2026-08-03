@@ -6715,20 +6715,21 @@ body.wm-resizing {
 }
 
 .bh-list-provider--logo {
-  width: min(108px, 100%);
+  width: 108px;
   height: 24px;
   display: inline-grid;
   place-items: center start;
   overflow: hidden;
   background: transparent;
-  flex: 0 1 108px;
+  flex: 0 0 108px;
 }
 
 .bh-list-provider--logo img {
   display: block;
   width: auto;
-  height: 100%;
+  height: auto;
   max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   object-position: left center;
   background: transparent;
