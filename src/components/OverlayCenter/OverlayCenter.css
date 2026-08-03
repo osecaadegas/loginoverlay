@@ -5431,7 +5431,7 @@ body.wm-resizing {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  max-height: 240px;
+  max-height: 235px;
   overflow-y: auto;
   flex: 1;
 }
@@ -5447,8 +5447,9 @@ body.wm-resizing {
 .bh-sr-queue-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  min-height: 50px;
+  padding: 5px 8px;
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.04),
@@ -5462,7 +5463,7 @@ body.wm-resizing {
     border-color 0.16s ease,
     background 0.16s ease,
     box-shadow 0.16s ease;
-  min-height: 58px;
+  flex: 0 0 50px;
 }
 
 .bh-sr-queue-item:hover {
@@ -5477,11 +5478,13 @@ body.wm-resizing {
 }
 
 .bh-sr-queue-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 5px;
-  object-fit: contain;
-  flex-shrink: 0;
+  width: 38px !important;
+  height: 38px !important;
+  max-width: 38px !important;
+  max-height: 38px !important;
+  border-radius: 6px;
+  object-fit: cover !important;
+  flex: 0 0 38px;
   background: rgba(15, 23, 42, 0.75);
 }
 
@@ -22429,7 +22432,7 @@ body.wm-resizing {
   :is([data-tour="bonus-hunt-page"], [data-tour="widget-detail-page"])
   .bh-sr-queue-img:not(.oc-dedup-22316),
 .bh-config:not(.oc-dedup-22317) .bh-sr-queue-img {
-  object-fit: contain !important;
+  object-fit: cover !important;
 }
 
 .oc-page:not(.oc-dedup-22321)

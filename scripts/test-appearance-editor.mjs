@@ -751,6 +751,12 @@ try {
       overlayCenterStylesSource.includes("object-position: left center"),
     "Bonus Hunt provider images fit without changing the fixed row layout",
   );
+  assert.ok(
+    overlayCenterStylesSource.includes("flex: 0 0 50px") &&
+      overlayCenterStylesSource.includes("width: 38px !important") &&
+      overlayCenterStylesSource.includes("max-height: 38px !important"),
+    "Bonus Hunt request queue fits four compact thumbnail rows",
+  );
   const betterOverlayServiceSource = readFileSync(
     new URL("../src/services/betterOverlayService.js", import.meta.url),
     "utf8",
