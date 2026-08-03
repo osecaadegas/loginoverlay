@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
-import streamerDataHandler from './_lib/streamer-data.js';
-import imageSearchHandler from './_lib/image-search.js';
-import { processConnectFourCommand } from './_lib/connect-four-runtime.js';
+import { createClient } from "@supabase/supabase-js";
+import streamerDataHandler from "./_lib/streamer-data.js";
+import imageSearchHandler from "./_lib/image-search.js";
+import { processConnectFourCommand } from "./_lib/connect-four-runtime.js";
 
 /**
  * /api/chat-commands — Unified chat command handler
@@ -14,7 +14,8 @@ import { processConnectFourCommand } from './_lib/connect-four-runtime.js';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SPOTIFY_CLIENT_ID = process.env.VITE_SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID;
+const SPOTIFY_CLIENT_ID =
+  process.env.VITE_SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID;
 
 /** Join w1..w10 query params into a single string (SE fallback for ${querystring}) */
 function buildFromWords(query) {
@@ -23,60 +24,80 @@ function buildFromWords(query) {
     const v = query[`w${i}`];
     if (v && v.trim()) parts.push(v.trim());
   }
-  return parts.join(' ') || '';
+  return parts.join(" ") || "";
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === "OPTIONS") return res.status(200).end();
 
   // For POST requests the body carries the payload, but cmd/action may still
   // arrive as URL query params (e.g. ?cmd=sr-reject with JSON body).
   // Merge both so neither placement breaks.
-  const params = req.method === 'POST'
-    ? { ...(req.query || {}), ...(req.body || {}) }
-    : req.query;
+  const params =
+    req.method === "POST"
+      ? { ...(req.query || {}), ...(req.body || {}) }
+      : req.query;
   const { cmd } = params;
 
   switch (cmd) {
-    case 'sr':       return handleSlotRequest(req, res);
-    case 'sr-reject': return handleSlotReject(req, res);
-    case 'sr-clear-all': return handleSlotClearAll(req, res);
-    case 'song':     return handleSongRequest(req, res);
-    case 'award':    return handleAwardPoints(req, res);
-    case 'spotify-refresh': return handleSpotifyRefresh(req, res);
-    case 'pred-say': return handlePredSay(req, res);
-    case 'streamer-data': return streamerDataHandler(req, res);
-    case 'image-search': return imageSearchHandler(req, res);
-    case 'bet':      return handleBet(req, res);
-    case 'bet-payout': return handleBetPayout(req, res);
-    case 'connect-four': return handleConnectFour(req, res);
-    default:         return res.status(400).json({ error: 'Unknown cmd' });
+    case "sr":
+      return handleSlotRequest(req, res);
+    case "sr-reject":
+      return handleSlotReject(req, res);
+    case "sr-clear-all":
+      return handleSlotClearAll(req, res);
+    case "song":
+      return handleSongRequest(req, res);
+    case "award":
+      return handleAwardPoints(req, res);
+    case "spotify-refresh":
+      return handleSpotifyRefresh(req, res);
+    case "pred-say":
+      return handlePredSay(req, res);
+    case "streamer-data":
+      return streamerDataHandler(req, res);
+    case "image-search":
+      return imageSearchHandler(req, res);
+    case "bet":
+      return handleBet(req, res);
+    case "bet-payout":
+      return handleBetPayout(req, res);
+    case "connect-four":
+      return handleConnectFour(req, res);
+    default:
+      return res.status(400).json({ error: "Unknown cmd" });
   }
 }
 
 async function findTwitchUserId(login) {
-  const clientId = process.env.TWITCH_CLIENT_ID || process.env.VITE_TWITCH_CLIENT_ID;
+  const clientId =
+    process.env.TWITCH_CLIENT_ID || process.env.VITE_TWITCH_CLIENT_ID;
   const clientSecret = process.env.TWITCH_CLIENT_SECRET;
   if (!clientId || !clientSecret || !login) return null;
 
-  const tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  const tokenResponse = await fetch("https://id.twitch.tv/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
-      grant_type: 'client_credentials',
+      grant_type: "client_credentials",
     }),
   });
   if (!tokenResponse.ok) return null;
   const token = await tokenResponse.json();
   const userResponse = await fetch(
     `https://api.twitch.tv/helix/users?login=${encodeURIComponent(login)}`,
-    { headers: { 'Client-ID': clientId, Authorization: `Bearer ${token.access_token}` } },
+    {
+      headers: {
+        "Client-ID": clientId,
+        Authorization: `Bearer ${token.access_token}`,
+      },
+    },
   );
   if (!userResponse.ok) return null;
   const body = await userResponse.json();
@@ -84,35 +105,46 @@ async function findTwitchUserId(login) {
 }
 
 async function handleConnectFour(req, res) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(503).json({ error: 'Server config error' });
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(503).json({ error: "Server config error" });
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
   const params = { ...(req.query || {}), ...(req.body || {}) };
-  const userId = String(params.user_id || '');
-  const chatterLogin = String(params.requester || '').replace(/^@/, '').trim().toLowerCase();
-  const commandText = String(params.command_text || `!connect4 ${buildFromWords(params)}`).trim();
-  if (!userId || !chatterLogin) return res.status(400).json({ error: 'Missing Connect Four identity' });
+  const userId = String(params.user_id || "");
+  const chatterLogin = String(params.requester || "")
+    .replace(/^@/, "")
+    .trim()
+    .toLowerCase();
+  const commandText = String(
+    params.command_text || `!connect4 ${buildFromWords(params)}`,
+  ).trim();
+  if (!userId || !chatterLogin)
+    return res.status(400).json({ error: "Missing Connect Four identity" });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   const authenticatedUser = await verifyJwt(supabase, req);
-  if (authenticatedUser?.id !== userId) return res.status(401).json({ error: 'Unauthorized' });
+  if (authenticatedUser?.id !== userId)
+    return res.status(401).json({ error: "Unauthorized" });
 
   const { data: profile, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('twitch_id')
-    .eq('user_id', userId)
+    .from("user_profiles")
+    .select("twitch_id")
+    .eq("user_id", userId)
     .maybeSingle();
-  if (profileError || !profile?.twitch_id) return res.status(404).json({ error: 'Twitch broadcaster not connected' });
+  if (profileError || !profile?.twitch_id)
+    return res.status(404).json({ error: "Twitch broadcaster not connected" });
 
-  const suppliedChatterId = String(params.chatter_id || '');
+  const suppliedChatterId = String(params.chatter_id || "");
   const chatterTwitchId = await findTwitchUserId(chatterLogin);
-  if (!chatterTwitchId) return res.status(200).send(`@${chatterLogin} Twitch user not found`);
+  if (!chatterTwitchId)
+    return res.status(200).send(`@${chatterLogin} Twitch user not found`);
   if (!suppliedChatterId || suppliedChatterId !== chatterTwitchId) {
-    return res.status(403).json({ error: 'Twitch chatter identity mismatch' });
+    return res.status(403).json({ error: "Twitch chatter identity mismatch" });
   }
 
   try {
     const result = await processConnectFourCommand(supabase, {
-      messageId: String(params.message_id || ''),
+      messageId: String(params.message_id || ""),
       broadcasterTwitchId: profile.twitch_id,
       chatterTwitchId,
       chatterLogin,
@@ -121,8 +153,8 @@ async function handleConnectFour(req, res) {
     });
     return res.status(200).json(result || { ok: true });
   } catch (error) {
-    console.error('[ConnectFour] Chat command failed', error);
-    return res.status(500).json({ error: 'Connect Four command failed' });
+    console.error("[ConnectFour] Chat command failed", error);
+    return res.status(500).json({ error: "Connect Four command failed" });
   }
 }
 
@@ -130,51 +162,74 @@ async function handleConnectFour(req, res) {
 
 /** Verify a Supabase JWT and return the user, or null on failure. */
 async function verifyJwt(supabase, req) {
-  const auth = (req.headers && req.headers.authorization) || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
+  const auth = (req.headers && req.headers.authorization) || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : null;
   if (!token) return null;
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
   if (error || !user) return null;
+  return user;
+}
+
+async function requireAuthenticatedUser(res, supabase, req, expectedUserId = null) {
+  const user = await verifyJwt(supabase, req);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+  if (expectedUserId && user.id !== expectedUserId) {
+    res.status(403).json({ error: "Forbidden" });
+    return null;
+  }
   return user;
 }
 
 /** Send a message to Twitch chat via the StreamElements bot */
 async function seBotSay(seChannelId, seJwtToken, message) {
   try {
-    const resp = await fetch(`https://api.streamelements.com/kappa/v2/bot/${seChannelId}/say`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${seJwtToken}`,
-        'Content-Type': 'application/json',
+    const resp = await fetch(
+      `https://api.streamelements.com/kappa/v2/bot/${seChannelId}/say`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${seJwtToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message }),
       },
-      body: JSON.stringify({ message }),
-    });
+    );
     if (!resp.ok) {
-      const body = await resp.text().catch(() => '');
-      console.error('[seBotSay] SE API returned', resp.status, body);
+      const body = await resp.text().catch(() => "");
+      console.error("[seBotSay] SE API returned", resp.status, body);
     }
   } catch (err) {
-    console.error('[seBotSay] Failed to send chat message:', err.message);
+    console.error("[seBotSay] Failed to send chat message:", err.message);
   }
 }
 
 async function handleSlotRequest(req, res) {
-  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "GET" && req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
 
   // Support both GET (SE overlay) and POST (internal hook)
-  const params = req.method === 'POST' ? (req.body || {}) : req.query;
+  const params = req.method === "POST" ? req.body || {} : req.query;
   const { slot, user_id, requester } = params;
 
   // Support individual word params w1..w10 as fallback for SE (${querystring} doesn't resolve)
-  const slotParam = slot || buildFromWords(req.method === 'GET' ? req.query : {});
+  const slotParam =
+    slot || buildFromWords(req.method === "GET" ? req.query : {});
 
-  if (!slotParam || !slotParam.trim()) return res.status(200).send('Usage: !sr <slot name>');
-  if (!user_id) return res.status(200).send('Missing streamer user_id');
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(200).send('Server config error');
+  if (!slotParam || !slotParam.trim())
+    return res.status(200).send("Usage: !sr <slot name>");
+  if (!user_id) return res.status(200).send("Missing streamer user_id");
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(200).send("Server config error");
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   const rawName = slotParam.trim();
-  const viewer = (requester || 'anonymous').trim();
+  const viewer = (requester || "anonymous").trim();
 
   try {
     // Look up the slot in the DB first (case-insensitive) to resolve the canonical name
@@ -184,9 +239,9 @@ async function handleSlotRequest(req, res) {
 
     // 1) Exact case-insensitive match
     const { data: exactMatch } = await supabase
-      .from('slots')
-      .select('name, image')
-      .ilike('name', rawName)
+      .from("slots")
+      .select("name, image")
+      .ilike("name", rawName)
       .limit(1);
 
     if (exactMatch && exactMatch.length > 0) {
@@ -196,9 +251,9 @@ async function handleSlotRequest(req, res) {
     } else {
       // 2) Substring match
       const { data: partialMatch } = await supabase
-        .from('slots')
-        .select('name, image')
-        .ilike('name', `%${rawName}%`)
+        .from("slots")
+        .select("name, image")
+        .ilike("name", `%${rawName}%`)
         .limit(1);
 
       if (partialMatch && partialMatch.length > 0) {
@@ -208,20 +263,46 @@ async function handleSlotRequest(req, res) {
       } else {
         // 3) Word-by-word fuzzy match — e.g. "gates olympus" matches "Gates of Olympus"
         //    Fetches multiple candidates and picks the best (highest word-overlap ratio, then shortest name)
-        const stopWords = new Set(['of', 'the', 'a', 'an', 'and', 'in', 'on', 'at', 'to', 'for', 'by', 'or', 'is', 'it', 'vs']);
-        const words = rawName.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+        const stopWords = new Set([
+          "of",
+          "the",
+          "a",
+          "an",
+          "and",
+          "in",
+          "on",
+          "at",
+          "to",
+          "for",
+          "by",
+          "or",
+          "is",
+          "it",
+          "vs",
+        ]);
+        const words = rawName
+          .toLowerCase()
+          .split(/\s+/)
+          .filter((w) => w.length > 1 && !stopWords.has(w));
         if (words.length > 0) {
-          let q = supabase.from('slots').select('name, image');
+          let q = supabase.from("slots").select("name, image");
           for (const word of words) {
-            q = q.ilike('name', `%${word}%`);
+            q = q.ilike("name", `%${word}%`);
           }
           const { data: fuzzyMatches } = await q.limit(20);
           if (fuzzyMatches && fuzzyMatches.length > 0) {
             // Score each: ratio of matched keywords to total words in the slot name (higher = tighter match)
-            const scored = fuzzyMatches.map(s => {
-              const nameWords = s.name.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+            const scored = fuzzyMatches.map((s) => {
+              const nameWords = s.name
+                .toLowerCase()
+                .split(/\s+/)
+                .filter((w) => w.length > 1 && !stopWords.has(w));
               const totalWords = nameWords.length || 1;
-              return { ...s, score: words.length / totalWords, nameLen: s.name.length };
+              return {
+                ...s,
+                score: words.length / totalWords,
+                nameLen: s.name.length,
+              };
             });
             // Best = highest score (most overlap), then shortest name
             scored.sort((a, b) => b.score - a.score || a.nameLen - b.nameLen);
@@ -235,10 +316,10 @@ async function handleSlotRequest(req, res) {
 
     // ── Resolve SE creds from streamelements_connections (per-user) ──
     const { data: srWidgets } = await supabase
-      .from('overlay_widgets')
-      .select('config')
-      .eq('user_id', user_id)
-      .eq('widget_type', 'slot_requests')
+      .from("overlay_widgets")
+      .select("config")
+      .eq("user_id", user_id)
+      .eq("widget_type", "slot_requests")
       .limit(1);
 
     const wConfig = srWidgets?.[0]?.config;
@@ -247,23 +328,34 @@ async function handleSlotRequest(req, res) {
 
     // If the streamer has disabled the chat listener, reject new requests immediately
     if (wConfig?.srChatEnabled === false) {
-      return res.status(200).send('Slot requests are currently paused.');
+      return res.status(200).send("Slot requests are currently paused.");
     }
 
     // ── H2: Max queue size enforcement ──
     const maxQueueSize = parseInt(wConfig?.maxQueueSize, 10) || 50;
     const { count: queueCount } = await supabase
-      .from('slot_requests')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user_id)
-      .eq('status', 'pending');
+      .from("slot_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user_id)
+      .eq("status", "pending");
     if (queueCount !== null && queueCount >= maxQueueSize) {
-      const msgFull = wConfig?.srMsgQueueFull || '❌ {user}, the slot queue is full right now.';
+      const msgFull =
+        wConfig?.srMsgQueueFull ||
+        "❌ {user}, the slot queue is full right now.";
       const msg = msgFull.replace(/\{user\}/g, viewer);
       if (seEnabled && seCost > 0) {
         // load creds just for chat
-        const { data: seConnCheck } = await supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single();
-        if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token) await seBotSay(seConnCheck.se_channel_id, seConnCheck.se_jwt_token, msg);
+        const { data: seConnCheck } = await supabase
+          .from("streamelements_connections")
+          .select("se_channel_id, se_jwt_token")
+          .eq("user_id", user_id)
+          .single();
+        if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token)
+          await seBotSay(
+            seConnCheck.se_channel_id,
+            seConnCheck.se_jwt_token,
+            msg,
+          );
       }
       return res.status(200).send(msg);
     }
@@ -273,18 +365,29 @@ async function handleSlotRequest(req, res) {
     if (cooldownSecs > 0) {
       const cutoff = new Date(Date.now() - cooldownSecs * 1000).toISOString();
       const { data: recentReqs } = await supabase
-        .from('slot_requests')
-        .select('id')
-        .eq('user_id', user_id)
-        .ilike('requested_by', viewer)
-        .gt('created_at', cutoff)
+        .from("slot_requests")
+        .select("id")
+        .eq("user_id", user_id)
+        .ilike("requested_by", viewer)
+        .gt("created_at", cutoff)
         .limit(1);
       if (recentReqs && recentReqs.length > 0) {
-        const msgCool = wConfig?.srMsgCooldown || '⏳ {user}, please wait before requesting another slot.';
+        const msgCool =
+          wConfig?.srMsgCooldown ||
+          "⏳ {user}, please wait before requesting another slot.";
         const msg = msgCool.replace(/\{user\}/g, viewer);
         if (seEnabled && seCost > 0) {
-          const { data: seConnCheck } = await supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single();
-          if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token) await seBotSay(seConnCheck.se_channel_id, seConnCheck.se_jwt_token, msg);
+          const { data: seConnCheck } = await supabase
+            .from("streamelements_connections")
+            .select("se_channel_id, se_jwt_token")
+            .eq("user_id", user_id)
+            .single();
+          if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token)
+            await seBotSay(
+              seConnCheck.se_channel_id,
+              seConnCheck.se_jwt_token,
+              msg,
+            );
         }
         return res.status(200).send(msg);
       }
@@ -292,31 +395,53 @@ async function handleSlotRequest(req, res) {
 
     // ── H3: No-match rejection ──
     if (!dbMatchFound) {
-      const msgNoMatch = wConfig?.srMsgNoMatch || '❌ {user}, could not find that slot. Please try again.';
+      const msgNoMatch =
+        wConfig?.srMsgNoMatch ||
+        "❌ {user}, could not find that slot. Please try again.";
       const msg = msgNoMatch.replace(/\{user\}/g, viewer);
       // Load SE creds for chat notification
-      const { data: seConnCheck } = await supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single();
-      if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token) await seBotSay(seConnCheck.se_channel_id, seConnCheck.se_jwt_token, msg);
+      const { data: seConnCheck } = await supabase
+        .from("streamelements_connections")
+        .select("se_channel_id, se_jwt_token")
+        .eq("user_id", user_id)
+        .single();
+      if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token)
+        await seBotSay(
+          seConnCheck.se_channel_id,
+          seConnCheck.se_jwt_token,
+          msg,
+        );
       return res.status(200).send(msg);
     }
 
     // Custom message templates (user-configurable from widget settings)
     const msgTemplates = {
-      accepted: wConfig?.srMsgAccepted || '🎰 Added "{slot}" to the queue (requested by {user})',
-      acceptedCost: wConfig?.srMsgAcceptedCost || '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)',
-      notEnough: wConfig?.srMsgNotEnough || '❌ {user}, you need {cost} points to request a slot (you have {points}).',
-      duplicate: wConfig?.srMsgDuplicate || '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!',
-      noMatch: wConfig?.srMsgNoMatch || '❌ {user}, could not find that slot. Please try again.',
+      accepted:
+        wConfig?.srMsgAccepted ||
+        '🎰 Added "{slot}" to the queue (requested by {user})',
+      acceptedCost:
+        wConfig?.srMsgAcceptedCost ||
+        '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)',
+      notEnough:
+        wConfig?.srMsgNotEnough ||
+        "❌ {user}, you need {cost} points to request a slot (you have {points}).",
+      duplicate:
+        wConfig?.srMsgDuplicate ||
+        '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!',
+      noMatch:
+        wConfig?.srMsgNoMatch ||
+        "❌ {user}, could not find that slot. Please try again.",
     };
-    const fillTemplate = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+    const fillTemplate = (tpl, vars) =>
+      tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
 
     // Load SE credentials from the user's streamelements_connections row
     let seChannelId = null;
     let seJwtToken = null;
     const { data: seConn } = await supabase
-      .from('streamelements_connections')
-      .select('se_channel_id, se_jwt_token')
-      .eq('user_id', user_id)
+      .from("streamelements_connections")
+      .select("se_channel_id, se_jwt_token")
+      .eq("user_id", user_id)
       .single();
     if (seConn) {
       seChannelId = seConn.se_channel_id;
@@ -325,12 +450,21 @@ async function handleSlotRequest(req, res) {
 
     /** Send a single chat message via SE bot, then return HTTP response. */
     const chatAndReply = async (msg) => {
-      if (seChannelId && seJwtToken) await seBotSay(seChannelId, seJwtToken, msg);
+      if (seChannelId && seJwtToken)
+        await seBotSay(seChannelId, seJwtToken, msg);
       return res.status(200).send(msg);
     };
 
-    console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
-      'hasSeCreds:', !!(seChannelId && seJwtToken));
+    console.log(
+      "[SR] user_id:",
+      user_id,
+      "seEnabled:",
+      seEnabled,
+      "seCost:",
+      seCost,
+      "hasSeCreds:",
+      !!(seChannelId && seJwtToken),
+    );
 
     // ── Dedup: check for an existing pending row for this slot ──
     // We only check 'pending' here. 'denied' rows are intentionally ignored —
@@ -338,12 +472,12 @@ async function handleSlotRequest(req, res) {
     // from requesting the same slot, and it must NOT cause fall-through insertion
     // that resurrects the denied row as a new pending request.
     const { data: existing } = await supabase
-      .from('slot_requests')
-      .select('id, status, created_at, requested_by')
-      .eq('user_id', user_id)
-      .ilike('slot_name', resolvedName)
-      .eq('status', 'pending')   // ← only block on pending, not denied
-      .order('created_at', { ascending: false })
+      .from("slot_requests")
+      .select("id, status, created_at, requested_by")
+      .eq("user_id", user_id)
+      .ilike("slot_name", resolvedName)
+      .eq("status", "pending") // ← only block on pending, not denied
+      .order("created_at", { ascending: false })
       .limit(1);
 
     if (existing && existing.length > 0) {
@@ -351,11 +485,15 @@ async function handleSlotRequest(req, res) {
       const age = Date.now() - new Date(row.created_at).getTime();
 
       // Silent dedup for concurrent overlay instances (same viewer within 30s)
-      if (age < 30000) return res.status(200).send('ok');
+      if (age < 30000) return res.status(200).send("ok");
 
       // Genuine duplicate: viewer typed !sr again for an already-queued slot
       // Do NOT mutate created_at — preserves queue order
-      const msg = fillTemplate(msgTemplates.duplicate, { slot: resolvedName, user: viewer, by: row.requested_by || '?' });
+      const msg = fillTemplate(msgTemplates.duplicate, {
+        slot: resolvedName,
+        user: viewer,
+        by: row.requested_by || "?",
+      });
       return chatAndReply(msg);
     }
 
@@ -365,16 +503,17 @@ async function handleSlotRequest(req, res) {
     // source of the resurrection bug.
     if (seEnabled && seCost > 0) {
       if (!seChannelId || !seJwtToken) {
-        const msg = '⚠️ StreamElements not configured. Ask the streamer to connect SE.';
+        const msg =
+          "⚠️ StreamElements not configured. Ask the streamer to connect SE.";
         return chatAndReply(msg);
       }
 
-      const cleanViewer = viewer.replace(/^@/, '').trim().toLowerCase();
+      const cleanViewer = viewer.replace(/^@/, "").trim().toLowerCase();
 
       // 1) Check viewer's points
       const pointsRes = await fetch(
         `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}`,
-        { headers: { 'Authorization': `Bearer ${seJwtToken}` } }
+        { headers: { Authorization: `Bearer ${seJwtToken}` } },
       );
 
       if (!pointsRes.ok) {
@@ -386,7 +525,12 @@ async function handleSlotRequest(req, res) {
       const viewerPoints = pointsData.points || 0;
 
       if (viewerPoints < seCost) {
-        const msg = fillTemplate(msgTemplates.notEnough, { user: viewer, cost: seCost, points: viewerPoints, slot: resolvedName });
+        const msg = fillTemplate(msgTemplates.notEnough, {
+          user: viewer,
+          cost: seCost,
+          points: viewerPoints,
+          slot: resolvedName,
+        });
         return chatAndReply(msg);
       }
 
@@ -394,9 +538,12 @@ async function handleSlotRequest(req, res) {
       const deductRes = await fetch(
         `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${-seCost}`,
         {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' },
-        }
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${seJwtToken}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
 
       if (!deductRes.ok) {
@@ -406,90 +553,117 @@ async function handleSlotRequest(req, res) {
 
       // 3) Points successfully deducted — now insert the row with points_deducted recorded
       const { data: inserted, error: insertErr } = await supabase
-        .from('slot_requests')
+        .from("slot_requests")
         .insert({
           user_id,
           slot_name: resolvedName,
           slot_image: slotImage,
           requested_by: viewer,
-          status: 'pending',
+          status: "pending",
           points_deducted: seCost,
         })
-        .select('id')
+        .select("id")
         .single();
 
       if (insertErr) {
         // Unique index violation = concurrent call already inserted this slot.
         // Points were already deducted — refund immediately.
-        console.error('[SR] Insert after deduct failed (likely race):', insertErr.code);
-        if (insertErr.code === '23505') {
+        console.error(
+          "[SR] Insert after deduct failed (likely race):",
+          insertErr.code,
+        );
+        if (insertErr.code === "23505") {
           // Refund the deducted points since we won't own the row
           await fetch(
             `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${seCost}`,
-            { method: 'PUT', headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' } }
+            {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${seJwtToken}`,
+                "Content-Type": "application/json",
+              },
+            },
           ).catch(() => {});
-          console.warn('[SR] Refunded points for duplicate insert race:', viewer, resolvedName);
+          console.warn(
+            "[SR] Refunded points for duplicate insert race:",
+            viewer,
+            resolvedName,
+          );
         }
-        return res.status(200).send('ok');
+        return res.status(200).send("ok");
       }
 
-      console.log('[SR] Inserted with points_deducted:', seCost, 'id:', inserted?.id);
-      const msg = fillTemplate(msgTemplates.acceptedCost, { user: viewer, cost: seCost, slot: resolvedName });
+      console.log(
+        "[SR] Inserted with points_deducted:",
+        seCost,
+        "id:",
+        inserted?.id,
+      );
+      const msg = fillTemplate(msgTemplates.acceptedCost, {
+        user: viewer,
+        cost: seCost,
+        slot: resolvedName,
+      });
       return chatAndReply(msg);
     }
 
     // ── Free request (no SE cost) — insert directly ──
-    const { error: insertErr } = await supabase
-      .from('slot_requests')
-      .insert({
-        user_id,
-        slot_name: resolvedName,
-        slot_image: slotImage,
-        requested_by: viewer,
-        status: 'pending',
-        points_deducted: 0,
-      });
+    const { error: insertErr } = await supabase.from("slot_requests").insert({
+      user_id,
+      slot_name: resolvedName,
+      slot_image: slotImage,
+      requested_by: viewer,
+      status: "pending",
+      points_deducted: 0,
+    });
 
     if (insertErr) {
-      if (insertErr.code === '23505') return res.status(200).send('ok'); // concurrent duplicate
-      console.error('[SR] Free insert error:', insertErr);
-      return res.status(200).send('ok');
+      if (insertErr.code === "23505") return res.status(200).send("ok"); // concurrent duplicate
+      console.error("[SR] Free insert error:", insertErr);
+      return res.status(200).send("ok");
     }
 
-    const msg = fillTemplate(msgTemplates.accepted, { user: viewer, slot: resolvedName });
+    const msg = fillTemplate(msgTemplates.accepted, {
+      user: viewer,
+      slot: resolvedName,
+    });
     return chatAndReply(msg);
   } catch (err) {
-    console.error('Slot request error:', err);
-    return res.status(200).send('Something went wrong. Try again later.');
+    console.error("Slot request error:", err);
+    return res.status(200).send("Something went wrong. Try again later.");
   }
 }
 
 /* ─── Song Request (?cmd=song&song=...&user_id=...) ─── */
 
 async function handleSongRequest(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "GET")
+    return res.status(405).json({ error: "Method not allowed" });
 
   const { song, user_id } = req.query;
 
   // Support individual word params w1..w10 as fallback for SE
   const songParam = song || buildFromWords(req.query);
 
-  if (!songParam || !songParam.trim()) return res.status(200).send('Usage: !song <song name>');
-  if (!user_id) return res.status(200).send('Missing streamer user_id');
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(200).send('Server config error');
-  if (!SPOTIFY_CLIENT_ID) return res.status(200).send('Server config error — Spotify not configured');
+  if (!songParam || !songParam.trim())
+    return res.status(200).send("Usage: !song <song name>");
+  if (!user_id) return res.status(200).send("Missing streamer user_id");
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(200).send("Server config error");
+  if (!SPOTIFY_CLIENT_ID)
+    return res.status(200).send("Server config error — Spotify not configured");
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
   try {
     const { data: tokenRow, error: dbErr } = await supabase
-      .from('spotify_tokens')
-      .select('*')
-      .eq('user_id', user_id)
+      .from("spotify_tokens")
+      .select("*")
+      .eq("user_id", user_id)
       .single();
 
     if (dbErr || !tokenRow) {
-      return res.status(200).send('Streamer has not connected Spotify yet.');
+      return res.status(200).send("Streamer has not connected Spotify yet.");
     }
 
     let accessToken = tokenRow.access_token;
@@ -497,58 +671,76 @@ async function handleSongRequest(req, res) {
     // Refresh if expired
     if (Date.now() >= tokenRow.expires_at) {
       const refreshed = await refreshSpotifyToken(tokenRow.refresh_token);
-      if (!refreshed) return res.status(200).send('Spotify token expired — streamer needs to reconnect.');
+      if (!refreshed)
+        return res
+          .status(200)
+          .send("Spotify token expired — streamer needs to reconnect.");
       accessToken = refreshed.access_token;
 
-      await supabase.from('spotify_tokens').update({
-        access_token: refreshed.access_token,
-        refresh_token: refreshed.refresh_token,
-        expires_at: refreshed.expires_at,
-        updated_at: new Date().toISOString(),
-      }).eq('user_id', user_id);
+      await supabase
+        .from("spotify_tokens")
+        .update({
+          access_token: refreshed.access_token,
+          refresh_token: refreshed.refresh_token,
+          expires_at: refreshed.expires_at,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user_id);
     }
 
     // Search Spotify
     const query = encodeURIComponent(songParam.trim());
     const searchRes = await fetch(
       `https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
+      { headers: { Authorization: `Bearer ${accessToken}` } },
     );
 
-    if (!searchRes.ok) return res.status(200).send('Spotify search failed. Try again later.');
+    if (!searchRes.ok)
+      return res.status(200).send("Spotify search failed. Try again later.");
 
     const searchData = await searchRes.json();
     const track = searchData.tracks?.items?.[0];
-    if (!track) return res.status(200).send(`No results found for "${songParam.trim()}".`);
+    if (!track)
+      return res
+        .status(200)
+        .send(`No results found for "${songParam.trim()}".`);
 
     // Add to queue
     const queueRes = await fetch(
       `https://api.spotify.com/v1/me/player/queue?uri=${encodeURIComponent(track.uri)}`,
-      { method: 'POST', headers: { Authorization: `Bearer ${accessToken}` } }
+      { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } },
     );
 
     if (queueRes.status === 204 || queueRes.ok) {
-      const artists = track.artists.map(a => a.name).join(', ');
+      const artists = track.artists.map((a) => a.name).join(", ");
       return res.status(200).send(`🎵 Queued: ${track.name} by ${artists}`);
     }
-    if (queueRes.status === 404) return res.status(200).send('No active Spotify device found. Start playing something first!');
-    if (queueRes.status === 403) return res.status(200).send('Spotify Premium is required for song requests.');
+    if (queueRes.status === 404)
+      return res
+        .status(200)
+        .send("No active Spotify device found. Start playing something first!");
+    if (queueRes.status === 403)
+      return res
+        .status(200)
+        .send("Spotify Premium is required for song requests.");
 
-    return res.status(200).send('Could not add song to queue. Try again later.');
+    return res
+      .status(200)
+      .send("Could not add song to queue. Try again later.");
   } catch (err) {
-    console.error('Song request error:', err);
-    return res.status(200).send('Something went wrong. Try again later.');
+    console.error("Song request error:", err);
+    return res.status(200).send("Something went wrong. Try again later.");
   }
 }
 
 async function refreshSpotifyToken(refreshTokenVal) {
   try {
-    const res = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    const res = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         client_id: SPOTIFY_CLIENT_ID,
-        grant_type: 'refresh_token',
+        grant_type: "refresh_token",
         refresh_token: refreshTokenVal,
       }),
     });
@@ -559,7 +751,9 @@ async function refreshSpotifyToken(refreshTokenVal) {
       refresh_token: data.refresh_token || refreshTokenVal,
       expires_at: Date.now() + data.expires_in * 1000,
     };
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 /* ─── Award SE Points (?cmd=award) POST body: { username, points } ─── */
@@ -567,34 +761,43 @@ async function refreshSpotifyToken(refreshTokenVal) {
 /* ─── Slot Request Reject (?cmd=sr-reject) ─── */
 /* Called from the config panel to reject a request and refund SE points */
 async function handleSlotReject(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(500).json({ error: 'Server config error' });
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(500).json({ error: "Server config error" });
 
   const { request_id, user_id, message_template } = req.body || {};
-  if (!request_id || !user_id) return res.status(400).json({ error: 'Missing request_id or user_id' });
+  if (!request_id || !user_id)
+    return res.status(400).json({ error: "Missing request_id or user_id" });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
   // C1: Verify caller is authenticated as the correct user
   const caller = await verifyJwt(supabase, req);
-  if (!caller || caller.id !== user_id) return res.status(403).json({ error: 'Forbidden' });
+  if (!caller || caller.id !== user_id)
+    return res.status(403).json({ error: "Forbidden" });
 
   // 1) ATOMIC CLAIM — flip status from 'pending' → 'refunding' in a single UPDATE.
   //    If 0 rows come back, another call already claimed this row (double-click, double-tab).
   //    This is the only place we touch the row before side effects happen.
   const { data: claimed, error: claimErr } = await supabase
-    .from('slot_requests')
-    .update({ status: 'refunding' })
-    .eq('id', request_id)
-    .eq('user_id', user_id)
-    .eq('status', 'pending')   // ← only succeeds when row is still pending
-    .select('*')
+    .from("slot_requests")
+    .update({ status: "refunding" })
+    .eq("id", request_id)
+    .eq("user_id", user_id)
+    .eq("status", "pending") // ← only succeeds when row is still pending
+    .select("*")
     .single();
 
   if (claimErr || !claimed) {
     // Row not found, not pending, or another concurrent call already claimed it.
-    console.warn('[sr-reject] Row not claimable (already processed?):', request_id);
-    return res.status(409).json({ error: 'Request already processed or not found' });
+    console.warn(
+      "[sr-reject] Row not claimable (already processed?):",
+      request_id,
+    );
+    return res
+      .status(409)
+      .json({ error: "Request already processed or not found" });
   }
 
   const sr = claimed;
@@ -602,15 +805,15 @@ async function handleSlotReject(req, res) {
   // 2) Load widget config and SE credentials in parallel
   const [widgetRes, seConnRes] = await Promise.all([
     supabase
-      .from('overlay_widgets')
-      .select('config')
-      .eq('user_id', user_id)
-      .eq('widget_type', 'slot_requests')
+      .from("overlay_widgets")
+      .select("config")
+      .eq("user_id", user_id)
+      .eq("widget_type", "slot_requests")
       .single(),
     supabase
-      .from('streamelements_connections')
-      .select('se_channel_id, se_jwt_token')
-      .eq('user_id', user_id)
+      .from("streamelements_connections")
+      .select("se_channel_id, se_jwt_token")
+      .eq("user_id", user_id)
       .single(),
   ]);
 
@@ -622,9 +825,10 @@ async function handleSlotReject(req, res) {
   //    Prefer points_deducted stored on the row (recorded at request time).
   //    Fall back to current config cost if the column isn't populated yet
   //    (e.g. migration 1 hasn't been run, or request was created before this deploy).
-  const pointsToRefund = (sr.points_deducted > 0)
-    ? sr.points_deducted
-    : (parseInt(wConfig.srSeCost, 10) || 0);
+  const pointsToRefund =
+    sr.points_deducted > 0
+      ? sr.points_deducted
+      : parseInt(wConfig.srSeCost, 10) || 0;
 
   // 4) Refund points — we check SE creds and whether there are points to return.
   //    We do NOT gate on srSeEnabled: the streamer may have toggled SE off after
@@ -632,40 +836,48 @@ async function handleSlotReject(req, res) {
   let refunded = false;
   let refundFailed = false;
   if (pointsToRefund > 0 && seChannelId && seJwtToken && sr.requested_by) {
-    const cleanViewer = sr.requested_by.replace(/^@/, '').trim().toLowerCase();
+    const cleanViewer = sr.requested_by.replace(/^@/, "").trim().toLowerCase();
     try {
       const refundRes = await fetch(
         `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${pointsToRefund}`,
         {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' },
-        }
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${seJwtToken}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
       if (refundRes.ok) {
         refunded = true;
       } else {
         refundFailed = true;
-        console.error('[sr-reject] SE refund returned', refundRes.status, 'for', cleanViewer);
+        console.error(
+          "[sr-reject] SE refund returned",
+          refundRes.status,
+          "for",
+          cleanViewer,
+        );
       }
     } catch (err) {
       refundFailed = true;
-      console.error('[sr-reject] Refund network error:', err.message);
+      console.error("[sr-reject] Refund network error:", err.message);
     }
   }
 
   // 5) Transition to terminal status.
   //    On refund failure we keep the row as 'refund_failed' so the admin can retry
   //    manually — we never silently delete a row where the refund didn't go through.
-  const terminalStatus = refundFailed ? 'refund_failed' : 'refunded';
+  const terminalStatus = refundFailed ? "refund_failed" : "refunded";
   await supabase
-    .from('slot_requests')
+    .from("slot_requests")
     .update({
       status: terminalStatus,
       refunded_at: refunded ? new Date().toISOString() : null,
       refunded_points: refunded ? pointsToRefund : null,
-      rejection_reason: refundFailed ? 'SE API refund failed' : null,
+      rejection_reason: refundFailed ? "SE API refund failed" : null,
     })
-    .eq('id', request_id);
+    .eq("id", request_id);
 
   // 6) Send chat notification — always fires if SE creds are present.
   //    {refund} resolves to e.g. "500 points refunded!" or empty string if no points.
@@ -674,10 +886,10 @@ async function handleSlotReject(req, res) {
       ? '🚫 {user}, your request for "{slot}" was rejected. {refund}'
       : '🚫 {user}, your request for "{slot}" was rejected.';
     const tpl = message_template || wConfig.srMsgRejected || defaultMsg;
-    const refundText = refunded ? `${pointsToRefund} points refunded!` : '';
+    const refundText = refunded ? `${pointsToRefund} points refunded!` : "";
     const msg = tpl
-      .replace(/\{user\}/g, sr.requested_by || '?')
-      .replace(/\{slot\}/g, sr.slot_name || '?')
+      .replace(/\{user\}/g, sr.requested_by || "?")
+      .replace(/\{slot\}/g, sr.slot_name || "?")
       .replace(/\{cost\}/g, String(pointsToRefund))
       .replace(/\{refund\}/g, refundText)
       .trim();
@@ -688,34 +900,40 @@ async function handleSlotReject(req, res) {
     return res.status(200).json({
       success: false,
       refunded: false,
-      error: 'Points refund failed — request marked as refund_failed for manual retry.',
+      error:
+        "Points refund failed — request marked as refund_failed for manual retry.",
     });
   }
 
-  return res.status(200).json({ success: true, refunded, pointsRefunded: pointsToRefund });
+  return res
+    .status(200)
+    .json({ success: true, refunded, pointsRefunded: pointsToRefund });
 }
 
 /* ─── Slot Request Clear All (?cmd=sr-clear-all) ─── */
 /* Refunds SE points for ALL pending requests, then deletes them */
 async function handleSlotClearAll(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(500).json({ error: 'Server config error' });
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(500).json({ error: "Server config error" });
 
   const { user_id } = req.body || {};
-  if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
+  if (!user_id) return res.status(400).json({ error: "Missing user_id" });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
   // C1: Verify caller is authenticated as the correct user
   const caller = await verifyJwt(supabase, req);
-  if (!caller || caller.id !== user_id) return res.status(403).json({ error: 'Forbidden' });
+  if (!caller || caller.id !== user_id)
+    return res.status(403).json({ error: "Forbidden" });
 
   // 1) Fetch all pending requests — include points_deducted so we refund exactly what was taken
   const { data: requests, error: reqErr } = await supabase
-    .from('slot_requests')
-    .select('id, slot_name, requested_by, points_deducted')
-    .eq('user_id', user_id)
-    .eq('status', 'pending');
+    .from("slot_requests")
+    .select("id, slot_name, requested_by, points_deducted")
+    .eq("user_id", user_id)
+    .eq("status", "pending");
 
   if (reqErr || !requests || requests.length === 0) {
     return res.status(200).json({ success: true, refunded: 0, total: 0 });
@@ -723,8 +941,17 @@ async function handleSlotClearAll(req, res) {
 
   // 2) Load widget config and SE credentials in parallel
   const [widgetRes, seConnRes] = await Promise.all([
-    supabase.from('overlay_widgets').select('config').eq('user_id', user_id).eq('widget_type', 'slot_requests').single(),
-    supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single(),
+    supabase
+      .from("overlay_widgets")
+      .select("config")
+      .eq("user_id", user_id)
+      .eq("widget_type", "slot_requests")
+      .single(),
+    supabase
+      .from("streamelements_connections")
+      .select("se_channel_id, se_jwt_token")
+      .eq("user_id", user_id)
+      .single(),
   ]);
   const wConfig = widgetRes.data?.config || {};
   const fallbackCost = parseInt(wConfig.srSeCost, 10) || 0;
@@ -740,9 +967,9 @@ async function handleSlotClearAll(req, res) {
     // Fall back to fallbackCost (current config) for rows inserted before this deploy.
     const viewerTotals = {};
     for (const r of requests) {
-      if (!r.requested_by || r.requested_by === 'anonymous') continue;
-      const viewer = r.requested_by.replace(/^@/, '').trim().toLowerCase();
-      const pts = (r.points_deducted > 0) ? r.points_deducted : fallbackCost;
+      if (!r.requested_by || r.requested_by === "anonymous") continue;
+      const viewer = r.requested_by.replace(/^@/, "").trim().toLowerCase();
+      const pts = r.points_deducted > 0 ? r.points_deducted : fallbackCost;
       if (pts > 0) viewerTotals[viewer] = (viewerTotals[viewer] || 0) + pts;
     }
 
@@ -750,78 +977,121 @@ async function handleSlotClearAll(req, res) {
       try {
         const refundRes = await fetch(
           `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}/${totalRefund}`,
-          { method: 'PUT', headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' } }
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${seJwtToken}`,
+              "Content-Type": "application/json",
+            },
+          },
         );
         if (refundRes.ok) {
           refundedCount++;
-          console.log(`[sr-clear-all] Refunded ${totalRefund} pts to ${viewer}`);
+          console.log(
+            `[sr-clear-all] Refunded ${totalRefund} pts to ${viewer}`,
+          );
         } else {
-          console.error(`[sr-clear-all] SE refund failed for ${viewer}:`, refundRes.status);
+          console.error(
+            `[sr-clear-all] SE refund failed for ${viewer}:`,
+            refundRes.status,
+          );
         }
       } catch (err) {
-        console.error(`[sr-clear-all] Refund error for ${viewer}:`, err.message);
+        console.error(
+          `[sr-clear-all] Refund error for ${viewer}:`,
+          err.message,
+        );
       }
     }
   }
 
   // 4) Soft-delete: mark rows as 'cancelled' (never hard-delete — preserves audit trail
   //    and prevents unique index from allowing re-insertion of the same slot).
-  const ids = requests.map(r => r.id);
-  await supabase.from('slot_requests').update({ status: 'cancelled' }).in('id', ids);
+  const ids = requests.map((r) => r.id);
+  await supabase
+    .from("slot_requests")
+    .update({ status: "cancelled" })
+    .in("id", ids);
 
   // 5) Send a single chat announcement if configured
   if (seChannelId && seJwtToken) {
-    const defaultMsg = wConfig.srMsgClearAll || '🗑️ The slot request queue has been cleared. All points have been refunded!';
+    const defaultMsg =
+      wConfig.srMsgClearAll ||
+      "🗑️ The slot request queue has been cleared. All points have been refunded!";
     if (defaultMsg.trim()) {
       await seBotSay(seChannelId, seJwtToken, defaultMsg);
     }
   }
 
-  return res.status(200).json({ success: true, refunded: refundedCount, total: requests.length });
+  return res
+    .status(200)
+    .json({ success: true, refunded: refundedCount, total: requests.length });
 }
 
 /* ─── Award Points (?cmd=award) ─── */
 
 async function handleAwardPoints(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return res.status(500).json({ error: "Server config error" });
+  }
 
   try {
     const { username, points } = req.body;
 
     if (!username || points === undefined || points === null) {
-      return res.status(400).json({ error: 'Missing required fields: username and points' });
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: username and points" });
     }
 
     const pointsNum = parseInt(points, 10);
     if (isNaN(pointsNum) || pointsNum <= 0) {
-      return res.status(400).json({ error: 'Points must be a positive number' });
+      return res
+        .status(400)
+        .json({ error: "Points must be a positive number" });
     }
 
-    const SE_JWT_TOKEN = process.env.STREAMELEMENTS_JWT_TOKEN || process.env.VITE_SE_JWT_TOKEN;
-    const SE_CHANNEL_ID = process.env.STREAMELEMENTS_CHANNEL_ID || process.env.VITE_SE_CHANNEL_ID;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const caller = await requireAuthenticatedUser(res, supabase, req);
+    if (!caller) return;
+
+    const SE_JWT_TOKEN =
+      process.env.STREAMELEMENTS_JWT_TOKEN || process.env.VITE_SE_JWT_TOKEN;
+    const SE_CHANNEL_ID =
+      process.env.STREAMELEMENTS_CHANNEL_ID || process.env.VITE_SE_CHANNEL_ID;
 
     if (!SE_JWT_TOKEN || !SE_CHANNEL_ID) {
-      return res.status(500).json({ error: 'StreamElements integration not configured.' });
+      return res
+        .status(500)
+        .json({ error: "StreamElements integration not configured." });
     }
 
-    const cleanUsername = username.replace(/^@/, '').trim().toLowerCase();
+    const cleanUsername = username.replace(/^@/, "").trim().toLowerCase();
 
     const response = await fetch(
       `https://api.streamelements.com/kappa/v2/points/${SE_CHANNEL_ID}/${cleanUsername}/${pointsNum}`,
       {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${SE_JWT_TOKEN}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${SE_JWT_TOKEN}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
       const errorText = await response.text();
       let errorData;
-      try { errorData = JSON.parse(errorText); } catch { errorData = { message: errorText }; }
-      return res.status(response.status).json({ error: 'Failed to award points', details: errorData });
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      return res
+        .status(response.status)
+        .json({ error: "Failed to award points", details: errorData });
     }
 
     const data = await response.json();
@@ -831,32 +1101,39 @@ async function handleAwardPoints(req, res) {
       data,
     });
   } catch (error) {
-    console.error('Error awarding points:', error);
-    return res.status(500).json({ error: 'Internal server error', message: error.message });
+    console.error("Error awarding points:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error", message: error.message });
   }
 }
 
 /* ─── Spotify Token Refresh (?cmd=spotify-refresh) ─── */
 
 async function handleSpotifyRefresh(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !SPOTIFY_CLIENT_ID) {
-    return res.status(500).json({ error: 'Server config error' });
+    return res.status(500).json({ error: "Server config error" });
   }
 
   const { user_id } = req.body || {};
-  if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
+  if (!user_id) return res.status(400).json({ error: "Missing user_id" });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  const caller = await requireAuthenticatedUser(res, supabase, req, user_id);
+  if (!caller) return;
 
   const { data: tokenRow, error: readErr } = await supabase
-    .from('spotify_tokens')
-    .select('refresh_token, access_token, expires_at')
-    .eq('user_id', user_id)
+    .from("spotify_tokens")
+    .select("refresh_token, access_token, expires_at")
+    .eq("user_id", user_id)
     .single();
 
   if (readErr || !tokenRow?.refresh_token) {
-    return res.status(404).json({ error: 'No Spotify tokens found for this user' });
+    return res
+      .status(404)
+      .json({ error: "No Spotify tokens found for this user" });
   }
 
   if (tokenRow.expires_at && Date.now() < tokenRow.expires_at - 60000) {
@@ -868,36 +1145,41 @@ async function handleSpotifyRefresh(req, res) {
 
   let freshData;
   try {
-    const spotRes = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    const spotRes = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         client_id: SPOTIFY_CLIENT_ID,
-        grant_type: 'refresh_token',
+        grant_type: "refresh_token",
         refresh_token: tokenRow.refresh_token,
       }),
     });
 
     if (!spotRes.ok) {
       const err = await spotRes.json().catch(() => ({}));
-      return res.status(401).json({ error: err.error_description || 'Token refresh failed' });
+      return res
+        .status(401)
+        .json({ error: err.error_description || "Token refresh failed" });
     }
 
     freshData = await spotRes.json();
   } catch (err) {
-    return res.status(502).json({ error: 'Failed to contact Spotify' });
+    return res.status(502).json({ error: "Failed to contact Spotify" });
   }
 
   const newAccessToken = freshData.access_token;
   const newRefreshToken = freshData.refresh_token || tokenRow.refresh_token;
   const newExpiresAt = Date.now() + freshData.expires_in * 1000;
 
-  await supabase.from('spotify_tokens').update({
-    access_token: newAccessToken,
-    refresh_token: newRefreshToken,
-    expires_at: newExpiresAt,
-    updated_at: new Date().toISOString(),
-  }).eq('user_id', user_id);
+  await supabase
+    .from("spotify_tokens")
+    .update({
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken,
+      expires_at: newExpiresAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", user_id);
 
   const tokenPayload = {
     spotify_access_token: newAccessToken,
@@ -906,17 +1188,20 @@ async function handleSpotifyRefresh(req, res) {
   };
 
   const { data: widgets } = await supabase
-    .from('overlay_widgets')
-    .select('id, config, widget_type')
-    .eq('user_id', user_id)
-    .in('widget_type', ['navbar', 'spotify_now_playing']);
+    .from("overlay_widgets")
+    .select("id, config, widget_type")
+    .eq("user_id", user_id)
+    .in("widget_type", ["navbar", "spotify_now_playing"]);
 
   if (widgets?.length) {
     for (const w of widgets) {
-      await supabase.from('overlay_widgets').update({
-        config: { ...w.config, ...tokenPayload },
-        updated_at: new Date().toISOString(),
-      }).eq('id', w.id);
+      await supabase
+        .from("overlay_widgets")
+        .update({
+          config: { ...w.config, ...tokenPayload },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", w.id);
     }
   }
 
@@ -929,97 +1214,109 @@ async function handleSpotifyRefresh(req, res) {
 /* ─── Prediction SE Chat Announce (?cmd=pred-say&user_id=...&message=...) ─── */
 
 async function handlePredSay(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "GET")
+    return res.status(405).json({ error: "Method not allowed" });
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    return res.status(500).json({ error: 'Server config error' });
+    return res.status(500).json({ error: "Server config error" });
   }
 
   const { user_id, message } = req.query;
-  if (!user_id || !message) return res.status(400).json({ error: 'user_id and message required' });
+  if (!user_id || !message)
+    return res.status(400).json({ error: "user_id and message required" });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  const caller = await requireAuthenticatedUser(res, supabase, req, user_id);
+  if (!caller) return;
 
   // Get SE credentials
   const { data: seConn } = await supabase
-    .from('streamelements_connections')
-    .select('se_channel_id, se_jwt_token')
-    .eq('user_id', user_id)
+    .from("streamelements_connections")
+    .select("se_channel_id, se_jwt_token")
+    .eq("user_id", user_id)
     .maybeSingle();
 
   if (!seConn?.se_channel_id || !seConn?.se_jwt_token) {
-    return res.status(200).json({ ok: false, reason: 'No SE connection' });
+    return res.status(200).json({ ok: false, reason: "No SE connection" });
   }
 
   await seBotSay(seConn.se_channel_id, seConn.se_jwt_token, message);
   return res.status(200).json({ ok: true });
 }
 
-
-
 /* ─── Bet Payout — called by BetsConfig when SE points mode is on ──────────── */
 // Query: ?cmd=bet-payout&user_id=...&winner_idx=...  (requires valid session JWT)
 async function handleBetPayout(req, res) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
-    return res.status(500).json({ error: 'Server config error' });
+    return res.status(500).json({ error: "Server config error" });
 
-  const params = req.method === 'POST' ? (req.body || {}) : req.query;
+  const params = req.method === "POST" ? req.body || {} : req.query;
   const { user_id, winner_idx } = params;
 
-  if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
+  if (!user_id) return res.status(400).json({ error: "Missing user_id" });
 
   const winnerIdx = parseInt(winner_idx, 10);
   if (isNaN(winnerIdx) || winnerIdx < 0)
-    return res.status(400).json({ error: 'Invalid winner_idx' });
+    return res.status(400).json({ error: "Invalid winner_idx" });
 
   // Require a valid session JWT to prevent spoofing
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   const authedUser = await verifyJwt(supabase, req);
   if (!authedUser || authedUser.id !== user_id) {
-    return res.status(401).json({ error: 'Unauthorised' });
+    return res.status(401).json({ error: "Unauthorised" });
   }
 
   try {
     // Load widget config from DB
     const { data: widgetRow } = await supabase
-      .from('overlay_widgets')
-      .select('id, config, updated_at')
-      .eq('user_id', user_id)
-      .eq('widget_type', 'bets')
+      .from("overlay_widgets")
+      .select("id, config, updated_at")
+      .eq("user_id", user_id)
+      .eq("widget_type", "bets")
       .limit(1)
       .maybeSingle();
 
-    if (!widgetRow) return res.status(404).json({ error: 'No bets widget found' });
+    if (!widgetRow)
+      return res.status(404).json({ error: "No bets widget found" });
 
     const cfg = widgetRow.config || {};
 
     // Only run when SE points mode is enabled
     if (cfg.betSeEnabled === false) {
-      return res.status(200).json({ ok: true, paid: 0, message: 'SE points mode not enabled — no payout needed' });
+      return res.status(200).json({
+        ok: true,
+        paid: 0,
+        message: "SE points mode not enabled — no payout needed",
+      });
     }
 
     const { data: seConn } = await supabase
-      .from('streamelements_connections')
-      .select('se_channel_id, se_jwt_token')
-      .eq('user_id', user_id)
+      .from("streamelements_connections")
+      .select("se_channel_id, se_jwt_token")
+      .eq("user_id", user_id)
       .maybeSingle();
 
     if (!seConn?.se_channel_id || !seConn?.se_jwt_token)
-      return res.status(400).json({ error: 'SE not configured' });
+      return res.status(400).json({ error: "SE not configured" });
 
     const { se_channel_id: channelId, se_jwt_token: jwtToken } = seConn;
 
-    const options  = cfg.options  || [];
-    const bets     = cfg.bets     || {};
-    const betters  = cfg.betters  || {};
+    const options = cfg.options || [];
+    const bets = cfg.bets || {};
+    const betters = cfg.betters || {};
 
     // ── Pari-mutuel payout math ──
     // totalPool = sum of all bets across all options
-    const totalPool   = options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
+    const totalPool = options.reduce(
+      (sum, _, i) => sum + (bets[`opt_${i}`] || 0),
+      0,
+    );
     const winningPool = bets[`opt_${winnerIdx}`] || 0;
-    const losingPool  = totalPool - winningPool;
+    const losingPool = totalPool - winningPool;
 
     if (totalPool === 0) {
-      return res.status(200).json({ ok: true, paid: 0, message: 'No bets in pool' });
+      return res
+        .status(200)
+        .json({ ok: true, paid: 0, message: "No bets in pool" });
     }
 
     // Collect winners (bettors who picked the winning option), sorted by amount desc
@@ -1028,16 +1325,19 @@ async function handleBetPayout(req, res) {
       .sort(([, a], [, b]) => b.amount - a.amount);
 
     if (winnerEntries.length === 0) {
-      return res.status(200).json({ ok: true, paid: 0, message: 'No winners on that option' });
+      return res
+        .status(200)
+        .json({ ok: true, paid: 0, message: "No winners on that option" });
     }
 
     // Compute each winner's payout
     let totalPaid = 0;
     const payouts = winnerEntries.map(([username, b]) => {
       const userBet = b.amount;
-      const profit  = winningPool > 0 ? Math.floor((userBet / winningPool) * losingPool) : 0;
-      const payout  = userBet + profit;
-      totalPaid    += payout;
+      const profit =
+        winningPool > 0 ? Math.floor((userBet / winningPool) * losingPool) : 0;
+      const payout = userBet + profit;
+      totalPaid += payout;
       return { username, userBet, payout };
     });
 
@@ -1051,40 +1351,54 @@ async function handleBetPayout(req, res) {
         const r = await fetch(
           `https://api.streamelements.com/kappa/v2/points/${channelId}/${encodeURIComponent(username)}/${payout}`,
           {
-            method:  'PUT',
-            headers: { Authorization: `Bearer ${jwtToken}`, 'Content-Type': 'application/json' },
-          }
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+              "Content-Type": "application/json",
+            },
+          },
         );
-        if (!r.ok) throw new Error(`SE credit failed for ${username} (${r.status})`);
+        if (!r.ok)
+          throw new Error(`SE credit failed for ${username} (${r.status})`);
         return { username, payout };
-      })
+      }),
     );
 
-    const succeeded = results.filter(r => r.status === 'fulfilled').map(r => r.value);
-    const failed    = results.filter(r => r.status === 'rejected').map(r => r.reason?.message);
+    const succeeded = results
+      .filter((r) => r.status === "fulfilled")
+      .map((r) => r.value);
+    const failed = results
+      .filter((r) => r.status === "rejected")
+      .map((r) => r.reason?.message);
 
-    if (failed.length > 0) console.error('[bet-payout] some credits failed:', failed);
+    if (failed.length > 0)
+      console.error("[bet-payout] some credits failed:", failed);
 
     // Announce result in chat
-    const winLabel    = options[winnerIdx]?.label || `Option ${winnerIdx + 1}`;
+    const winLabel = options[winnerIdx]?.label || `Option ${winnerIdx + 1}`;
     const totalPayout = succeeded.reduce((s, w) => s + w.payout, 0);
-    const winnerMsg   = (cfg.betMsgWinner || '{option} wins. {winners} winner(s), {total} points paid out.')
-      .replace(/\{option\}/g,  winLabel)
+    const winnerMsg = (
+      cfg.betMsgWinner ||
+      "{option} wins. {winners} winner(s), {total} points paid out."
+    )
+      .replace(/\{option\}/g, winLabel)
       .replace(/\{winners\}/g, String(succeeded.length))
-      .replace(/\{total\}/g,   totalPayout.toLocaleString());
+      .replace(/\{total\}/g, totalPayout.toLocaleString());
     await seBotSay(channelId, jwtToken, winnerMsg).catch(() => {});
 
     return res.status(200).json({
-      ok:        true,
-      paid:      succeeded.length,
+      ok: true,
+      paid: succeeded.length,
       totalPool,
       winningPool,
       succeeded,
       failed,
     });
   } catch (err) {
-    console.error('[handleBetPayout]', err.message);
-    return res.status(500).json({ error: 'Server error', details: err.message });
+    console.error("[handleBetPayout]", err.message);
+    return res
+      .status(500)
+      .json({ error: "Server error", details: err.message });
   }
 }
 
@@ -1101,27 +1415,35 @@ async function handleBetPayout(req, res) {
  *   betMaxAmount  – maximum bet per viewer (0 = no limit)
  */
 async function handleBet(req, res) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(200).send('Server config error');
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(200).send("Server config error");
 
-  const params = req.method === 'POST' ? (req.body || {}) : req.query;
+  const params = req.method === "POST" ? req.body || {} : req.query;
 
   // Support both named params (option/amount) and positional SE words (w1/w2)
   const { user_id, requester } = params;
-  const optionRaw = params.option || params.w1 || '';
-  const amountRaw = params.amount || params.w2 || '';
+  const optionRaw = params.option || params.w1 || "";
+  const amountRaw = params.amount || params.w2 || "";
 
-  const viewer = ((requester || 'anonymous').replace(/^@/, '').trim().toLowerCase());
+  const viewer = (requester || "anonymous")
+    .replace(/^@/, "")
+    .trim()
+    .toLowerCase();
 
-  if (!user_id) return res.status(200).send('Missing user_id');
+  if (!user_id) return res.status(200).send("Missing user_id");
 
   const optionNum = parseInt(optionRaw, 10);
   const betAmount = parseInt(amountRaw, 10);
 
   if (isNaN(optionNum) || optionNum < 1) {
-    return res.status(200).send(`@${viewer} ❌ Usage: !bet <option number> <amount>`);
+    return res
+      .status(200)
+      .send(`@${viewer} ❌ Usage: !bet <option number> <amount>`);
   }
   if (isNaN(betAmount) || betAmount <= 0) {
-    return res.status(200).send(`@${viewer} ❌ Usage: !bet <option number> <amount>`);
+    return res
+      .status(200)
+      .send(`@${viewer} ❌ Usage: !bet <option number> <amount>`);
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -1129,39 +1451,49 @@ async function handleBet(req, res) {
   try {
     // Load the bets widget config for this streamer
     const { data: widgetRow } = await supabase
-      .from('overlay_widgets')
-      .select('id, config, updated_at')
-      .eq('user_id', user_id)
-      .eq('widget_type', 'bets')
+      .from("overlay_widgets")
+      .select("id, config, updated_at")
+      .eq("user_id", user_id)
+      .eq("widget_type", "bets")
       .limit(1)
       .maybeSingle();
 
-    if (!widgetRow) return res.status(200).send('No bets widget found');
+    if (!widgetRow) return res.status(200).send("No bets widget found");
 
     const cfg = widgetRow.config || {};
 
     // ── Configurable message templates ──
     const tpl = {
-      placed:     cfg.betMsgPlaced     || '@{user}, your {amount} point bet on {option} is in.',
-      placedSe:   cfg.betMsgPlacedSe   || '@{user}, your {amount} point bet on {option} is in. Points deducted.',
-      noPoints:   cfg.betMsgNoPoints   || '@{user}, you have {balance} points and tried to bet {amount}.',
-      alreadyBet: cfg.betMsgAlreadyBet || '@{user}, you already have a bet in this round.',
-      notOpen:    cfg.betMsgNotOpen    || '@{user}, bets are closed right now.',
+      placed:
+        cfg.betMsgPlaced ||
+        "@{user}, your {amount} point bet on {option} is in.",
+      placedSe:
+        cfg.betMsgPlacedSe ||
+        "@{user}, your {amount} point bet on {option} is in. Points deducted.",
+      noPoints:
+        cfg.betMsgNoPoints ||
+        "@{user}, you have {balance} points and tried to bet {amount}.",
+      alreadyBet:
+        cfg.betMsgAlreadyBet ||
+        "@{user}, you already have a bet in this round.",
+      notOpen: cfg.betMsgNotOpen || "@{user}, bets are closed right now.",
     };
-    const fill = (t, vars) => t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
+    const fill = (t, vars) =>
+      t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
     const { data: seConn } = await supabase
-      .from('streamelements_connections')
-      .select('se_channel_id, se_jwt_token')
-      .eq('user_id', user_id)
+      .from("streamelements_connections")
+      .select("se_channel_id, se_jwt_token")
+      .eq("user_id", user_id)
       .maybeSingle();
     const seChannelId = seConn?.se_channel_id || null;
     const seJwtToken = seConn?.se_jwt_token || null;
     const chatAndReply = async (msg) => {
-      if (seChannelId && seJwtToken) await seBotSay(seChannelId, seJwtToken, msg);
+      if (seChannelId && seJwtToken)
+        await seBotSay(seChannelId, seJwtToken, msg);
       return res.status(200).send(msg);
     };
 
-    if (cfg.gameStatus !== 'open') {
+    if (cfg.gameStatus !== "open") {
       return chatAndReply(fill(tpl.notOpen, { user: viewer }));
     }
 
@@ -1170,7 +1502,7 @@ async function handleBet(req, res) {
 
     if (optionIndex < 0 || optionIndex >= options.length) {
       return chatAndReply(
-        `@${viewer} ❌ Invalid option. Choose a number between 1 and ${options.length}.`
+        `@${viewer} ❌ Invalid option. Choose a number between 1 and ${options.length}.`,
       );
     }
 
@@ -1179,7 +1511,8 @@ async function handleBet(req, res) {
     const existingBetter = betters[viewer];
     if (existingBetter) {
       const placedAt = Number(existingBetter.placedAt || 0);
-      if (placedAt && Date.now() - placedAt < 15000) return res.status(200).send('ok');
+      if (placedAt && Date.now() - placedAt < 15000)
+        return res.status(200).send("ok");
       return chatAndReply(fill(tpl.alreadyBet, { user: viewer }));
     }
 
@@ -1198,25 +1531,25 @@ async function handleBet(req, res) {
     if (seEnabled) {
       if (!seChannelId || !seJwtToken) {
         return chatAndReply(
-          `@${viewer} ❌ SE not configured — ask the streamer to connect StreamElements.`
+          `@${viewer} ❌ SE not configured — ask the streamer to connect StreamElements.`,
         );
       }
 
       // Check viewer has enough points
       const pointsRes = await fetch(
         `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}`,
-        { headers: { Authorization: `Bearer ${seJwtToken}` } }
+        { headers: { Authorization: `Bearer ${seJwtToken}` } },
       );
       if (!pointsRes.ok) {
         return chatAndReply(
-          `@${viewer} ❌ Could not check points. Are you a follower?`
+          `@${viewer} ❌ Could not check points. Are you a follower?`,
         );
       }
       const pointsData = await pointsRes.json();
       const balance = pointsData.points ?? 0;
       if (balance < betAmount) {
         return chatAndReply(
-          fill(tpl.noPoints, { user: viewer, balance, amount: betAmount })
+          fill(tpl.noPoints, { user: viewer, balance, amount: betAmount }),
         );
       }
 
@@ -1224,16 +1557,16 @@ async function handleBet(req, res) {
       const deductRes = await fetch(
         `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}/${-betAmount}`,
         {
-          method: 'PUT',
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${seJwtToken}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        }
+        },
       );
       if (!deductRes.ok) {
         return chatAndReply(
-          `@${viewer} ❌ Failed to deduct points. Try again.`
+          `@${viewer} ❌ Failed to deduct points. Try again.`,
         );
       }
     }
@@ -1242,42 +1575,53 @@ async function handleBet(req, res) {
     const bets = { ...(cfg.bets || {}) };
     const key = `opt_${optionIndex}`;
     bets[key] = (bets[key] || 0) + betAmount;
-    betters[viewer] = { option: optionIndex, amount: betAmount, placedAt: Date.now() };
+    betters[viewer] = {
+      option: optionIndex,
+      amount: betAmount,
+      placedAt: Date.now(),
+    };
 
     let updateQuery = supabase
-      .from('overlay_widgets')
+      .from("overlay_widgets")
       .update({
         config: { ...cfg, bets, betters },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', widgetRow.id);
-    if (widgetRow.updated_at) updateQuery = updateQuery.eq('updated_at', widgetRow.updated_at);
-    const { data: updatedRows, error: updateErr } = await updateQuery.select('id');
-    const staleUpdate = !updateErr && widgetRow.updated_at && (!updatedRows || updatedRows.length === 0);
+      .eq("id", widgetRow.id);
+    if (widgetRow.updated_at)
+      updateQuery = updateQuery.eq("updated_at", widgetRow.updated_at);
+    const { data: updatedRows, error: updateErr } =
+      await updateQuery.select("id");
+    const staleUpdate =
+      !updateErr &&
+      widgetRow.updated_at &&
+      (!updatedRows || updatedRows.length === 0);
 
     if (updateErr || staleUpdate) {
-      if (updateErr) console.error('[handleBet] widget update error:', updateErr);
+      if (updateErr)
+        console.error("[handleBet] widget update error:", updateErr);
       // If SE points were deducted, refund them
       if (seEnabled && seChannelId && seJwtToken) {
         await fetch(
           `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}/${betAmount}`,
           {
-            method: 'PUT',
+            method: "PUT",
             headers: {
               Authorization: `Bearer ${seJwtToken}`,
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-          }
+          },
         ).catch(() => {});
       }
 
       if (staleUpdate) {
         const { data: currentRow } = await supabase
-          .from('overlay_widgets')
-          .select('config')
-          .eq('id', widgetRow.id)
+          .from("overlay_widgets")
+          .select("config")
+          .eq("id", widgetRow.id)
           .maybeSingle();
-        if (currentRow?.config?.betters?.[viewer]) return res.status(200).send('ok');
+        if (currentRow?.config?.betters?.[viewer])
+          return res.status(200).send("ok");
       }
 
       return chatAndReply(`@${viewer} ❌ Failed to register bet. Try again.`);
@@ -1285,12 +1629,14 @@ async function handleBet(req, res) {
 
     const optLabel = options[optionIndex]?.label || `Option ${optionNum}`;
     const msg = fill(seEnabled ? tpl.placedSe : tpl.placed, {
-      user: viewer, amount: betAmount, option: optLabel
+      user: viewer,
+      amount: betAmount,
+      option: optLabel,
     });
 
     return chatAndReply(msg);
   } catch (err) {
-    console.error('[handleBet]', err.message);
-    return res.status(200).send('Server error — try again');
+    console.error("[handleBet]", err.message);
+    return res.status(200).send("Server error — try again");
   }
 }

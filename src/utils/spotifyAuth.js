@@ -9,6 +9,8 @@
  *   4. The callback page will store tokens and close
  */
 
+import { supabase } from '../config/supabaseClient';
+
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
 const REDIRECT_URI = `${window.location.origin}/spotify-callback`;
 const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
@@ -164,7 +166,7 @@ export async function refreshSpotifyToken(refreshToken) {
   };
 }
 
-/* ─── Server-side refresh via API (works from unauthenticated overlay pages) ─── */
+/* ─── Server-side refresh via authenticated API route ─── */
 let _serverRefreshPromise = null;
 
 /**
@@ -178,9 +180,15 @@ export async function serverRefreshToken(userId) {
   if (_serverRefreshPromise) return _serverRefreshPromise;
 
   _serverRefreshPromise = (async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     const res = await fetch('/api/spotify-refresh', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      },
       body: JSON.stringify({ user_id: userId }),
     });
     if (!res.ok) {

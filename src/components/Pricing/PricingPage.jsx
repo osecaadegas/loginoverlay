@@ -186,7 +186,6 @@ export default function PricingPage() {
   return (
     <main className="pricing-page">
       <section className="premium-hero" aria-label="Streamers Center premium">
-        <img className="premium-logo" src="/newlogo.png" alt="Streamers Center" />
         <div className="premium-hero-copy">
           <span className="premium-kicker"><Sparkles size={15} /> Streamers Center Premium</span>
           <h1>Choose your creator toolkit.</h1>

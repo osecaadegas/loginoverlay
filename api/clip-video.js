@@ -119,13 +119,11 @@ export default async function handler(req) {
     }
   }
 
-  // If direct URL was given but not on CDN, try it anyway as last resort
-  if (directUrl && !urlsToTry.includes(directUrl)) {
-    urlsToTry.push(directUrl);
-  }
-
   if (urlsToTry.length === 0) {
-    return new Response(JSON.stringify({ error: 'Missing url or thumbnail param' }), {
+    const error = directUrl || thumbnail
+      ? 'No allowed Twitch CDN video URL found'
+      : 'Missing url or thumbnail param';
+    return new Response(JSON.stringify({ error }), {
       status: 400,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });

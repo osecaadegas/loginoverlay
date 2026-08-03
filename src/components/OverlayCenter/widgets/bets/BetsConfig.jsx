@@ -176,11 +176,24 @@ function createBracketMemory(options, question, history = [], usage = []) {
 }
 
 /** Fire-and-forget SE bot chat message */
-function seBotAnnounce(userId, message) {
+async function seBotAnnounce(userId, message) {
   if (!userId || !message) return;
-  fetch(
-    `${window.location.origin}/api/chat-commands?cmd=pred-say&user_id=${encodeURIComponent(userId)}&message=${encodeURIComponent(message)}`,
-  ).catch((err) => console.error("[BetsSay]", err));
+  try {
+    const { supabase } = await import("../../../../config/supabaseClient");
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    await fetch(
+      `${window.location.origin}/api/chat-commands?cmd=pred-say&user_id=${encodeURIComponent(userId)}&message=${encodeURIComponent(message)}`,
+      {
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : {},
+      },
+    );
+  } catch (err) {
+    console.error("[BetsSay]", err);
+  }
 }
 
 export default function BetsConfig({ config, onChange }) {
