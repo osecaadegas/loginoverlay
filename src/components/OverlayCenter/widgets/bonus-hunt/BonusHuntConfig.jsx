@@ -1913,6 +1913,21 @@ function BonusHuntPanel({
     setSlotRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
+  const handleAcceptRequest = async (id) => {
+    const { error } = await supabase
+      .from("slot_requests")
+      .update({ status: "played" })
+      .eq("id", id)
+      .eq("user_id", userId)
+      .eq("status", "pending");
+    if (error) {
+      console.error("[bh-accept] DB error:", error.message);
+      return false;
+    }
+    setSlotRequests((prev) => prev.filter((request) => request.id !== id));
+    return true;
+  };
+
   const srWidget = allWidgets?.find((w) => w.widget_type === "slot_requests");
   const srConfig = srWidget?.config || {};
 
@@ -1992,7 +2007,7 @@ function BonusHuntPanel({
     }
   };
 
-  const handleAddToBH = (req) => {
+  const handleAddToBH = async (req) => {
     const match = slots.find(
       (s) => s.name.toLowerCase() === req.slot_name.toLowerCase(),
     );
@@ -2004,7 +2019,7 @@ function BonusHuntPanel({
       setSlotSearch(req.slot_name);
     }
     setPendingRequester(req.requested_by || null);
-    handleDismissRequest(req.id);
+    await handleAcceptRequest(req.id);
   };
 
   const openedCount = bonusList.filter(
@@ -3378,9 +3393,7 @@ function BonusHuntPanel({
                               </span>
                             )}
                             {!requester && provider && (
-                              <BonusHuntProviderLogo
-                                provider={provider}
-                              />
+                              <BonusHuntProviderLogo provider={provider} />
                             )}
                           </div>
                         </div>

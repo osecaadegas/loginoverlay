@@ -441,16 +441,17 @@ function BonusHuntWidget({
     return () => clearInterval(id);
   }, [carouselAutoplay, isCompactBH, bonuses.length, carouselSpeedMs]);
 
-  const { requests: classicRequestRows } = useBonusHuntRequestsData({
-    config: sortedConfig,
-    userId,
-    publicOverlayId,
-    runtime,
-    enabled:
-      isBetterBH &&
-      sortedConfig.showRequests !== false &&
-      sortedConfig.showSlotRequests !== false,
-  });
+  const { requests: classicRequestRows, requestActions } =
+    useBonusHuntRequestsData({
+      config: sortedConfig,
+      userId,
+      publicOverlayId,
+      runtime,
+      enabled:
+        isBetterBH &&
+        sortedConfig.showRequests !== false &&
+        sortedConfig.showSlotRequests !== false,
+    });
 
   /* Better Editor renderer. */
   if (isBetterBH) {
@@ -475,6 +476,7 @@ function BonusHuntWidget({
             sortedConfig.slotRequests.length
               ? sortedConfig.slotRequests
               : classicRequestRows,
+          requestActions,
           showRequests: betterRequestsVisible,
         }}
         bonuses={bonuses}

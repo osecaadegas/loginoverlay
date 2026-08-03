@@ -1703,6 +1703,11 @@ function BetterStyleSheet() {
       @keyframes better-hunt-marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       @keyframes better-hunt-marquee-right{from{transform:translateX(-50%)}to{transform:translateX(0)}}
       @keyframes better-hunt-live-blink{0%,100%{opacity:1;box-shadow:0 0 0 0 color-mix(in srgb,var(--bh-ice) 55%,transparent)}50%{opacity:.5;box-shadow:0 0 0 5px transparent}}
+      @keyframes better-hunt-request-transfer{0%,18%{transform:translate3d(0,0,0) rotate(0) scale(1);opacity:1}4%{transform:translate3d(-4px,1px,0) rotate(-1.5deg) scale(1)}8%{transform:translate3d(4px,-1px,0) rotate(1.5deg) scale(1)}12%{transform:translate3d(-3px,0,0) rotate(-1deg) scale(1)}36%{transform:translate3d(0,0,0) rotate(0) scale(var(--bh-transfer-grow));opacity:1}82%{opacity:1}100%{transform:translate3d(var(--bh-transfer-x),var(--bh-transfer-y),0) rotateY(-16deg) scale(var(--bh-transfer-end));opacity:0}}
+      @keyframes better-hunt-request-charge{from{transform:translateX(-140%) skewX(-18deg);opacity:0}35%{opacity:1}to{transform:translateX(140%) skewX(-18deg);opacity:0}}
+      @keyframes better-hunt-request-landing{0%{transform:scale(1.28);opacity:0}22%{opacity:1}48%{transform:scale(.94)}72%{transform:scale(1.04)}to{transform:scale(1);opacity:0}}
+      @keyframes better-hunt-request-shatter{from{transform:translate3d(0,0,0) rotate(0) scale(1);opacity:1}to{transform:translate3d(var(--bh-shard-x),var(--bh-shard-y),0) rotate(var(--bh-shard-rotate)) scale(.35);opacity:0}}
+      @keyframes better-hunt-request-flash{from{transform:scale(.72);opacity:.9}to{transform:scale(1.45);opacity:0}}
       @keyframes better-hunt-drawer-in{0%{max-height:0;opacity:0;transform:translateY(12px)}45%{opacity:0}100%{max-height:var(--bh-drawer-open-height,150px);opacity:1;transform:translateY(0)}}
       @keyframes better-hunt-stats-in{from{opacity:0;transform:translateX(34px) scale(.97);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
       @keyframes better-hunt-kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(1.5%,-1.5%)}}
@@ -1853,6 +1858,7 @@ function BetterStyleSheet() {
       .better-hunt-requests{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 38%,transparent);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 62%,transparent),color-mix(in srgb,var(--bh-card-lo) 70%,transparent));padding:8px}
       .better-hunt-requests-head{display:grid;min-width:74px;align-content:center;gap:4px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}.better-hunt-requests-head span{color:var(--bh-steel-dim);font-size:.62em;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.better-hunt-requests-head strong{color:var(--bh-ice);font-size:1.35em;font-weight:950;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 40%,transparent)}
       .better-hunt-request-list{min-width:0;overflow:hidden}.better-hunt-request-track{display:flex;flex-direction:column;will-change:transform;transform:translate3d(0,0,0);backface-visibility:hidden;contain:layout paint}.better-hunt-request-list.is-scrolling .better-hunt-request-track{animation:better-hunt-marquee-up calc(var(--bh-request-duration,26s) / var(--anim-speed,1)) linear infinite}.better-hunt-request-group{display:flex;flex:0 0 auto;flex-direction:column;gap:6px;padding-bottom:6px}.better-hunt-request{position:relative;min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:9px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 22%,transparent);border-radius:7px;background:rgba(0,0,0,.24);padding:5px 7px}.better-hunt-request--compact{min-height:52px}.better-hunt-request--names{min-height:32px;grid-template-columns:7px minmax(0,1fr) auto;padding:6px 9px}.better-hunt-request--image{min-height:100px;grid-template-columns:minmax(0,1fr);padding:0}.better-hunt-request-bg{position:absolute;inset:0}.better-hunt-request-bg img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.92),rgba(0,0,0,.56),rgba(0,0,0,.28))}.better-hunt-request-body{position:relative;z-index:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}.better-hunt-request-image{width:42px;height:42px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);border-radius:6px;background:var(--bh-inset);box-shadow:0 3px 9px rgba(0,0,0,.42)}.better-hunt-request-image img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-image-fallback{width:100%;height:100%;display:grid;place-items:center;color:var(--bh-ice);font-size:.65em;font-weight:900;letter-spacing:.08em}.better-hunt-request-copy{min-width:0;display:grid;gap:3px}.better-hunt-request-copy strong{overflow:hidden;color:#fff;font-size:.92em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-request-copy span{overflow:hidden;color:#c4d7f7;font-size:.74em;font-weight:700;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-request-copy span b{color:var(--bh-tangerine);font-weight:900}.better-hunt-request-live{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:var(--bh-ice);animation:better-hunt-live-blink calc(1.6s / var(--anim-speed,1)) ease-in-out infinite}.better-hunt-request-user{overflow:hidden;color:var(--bh-tangerine);font-size:.74em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request-waiting{display:inline-flex;flex:0 0 auto;align-items:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 30%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bh-track) 70%,transparent);padding:4px 8px;color:#b9cbed;font-size:.62em;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.better-hunt-request--empty{display:flex;min-height:82px;align-items:center;justify-content:center;color:#9db4dc;font-weight:800}.better-hunt-request-stage{position:relative;height:218px;perspective:1100px}.better-hunt-request-ring{position:absolute;left:50%;top:106px;transform-style:preserve-3d}.better-hunt-request-card{position:absolute;width:86px;height:136px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:8px;background:var(--bh-inset);box-shadow:0 8px 20px rgba(0,0,0,.65);backface-visibility:hidden;transform-style:preserve-3d;will-change:transform,opacity,filter;transition:transform .7s cubic-bezier(.22,.9,.3,1),opacity .45s ease,filter .45s ease,box-shadow .45s ease}.better-hunt-request-card.is-center{border-color:var(--bh-ice);box-shadow:0 0 28px color-mix(in srgb,var(--bh-ice) 55%,transparent),0 10px 32px rgba(0,0,0,.72)}.better-hunt-request-card img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-card::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.08) 65%)}.better-hunt-request-card-copy{position:absolute;z-index:1;inset:auto 6px 8px;overflow:hidden;color:var(--bh-tangerine);font-size:.7em;font-weight:900;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
+      .better-hunt-request-fx{position:absolute;inset:0;z-index:120;overflow:hidden;pointer-events:none}.better-hunt-request-transfer{position:absolute;overflow:hidden;border:2px solid var(--bh-ice);border-radius:9px;background:var(--bh-inset);box-shadow:0 0 30px color-mix(in srgb,var(--bh-ice) 62%,transparent),0 14px 34px rgba(0,0,0,.75);transform-style:preserve-3d;will-change:transform,opacity;animation:better-hunt-request-transfer calc(1.35s / var(--anim-speed,1)) cubic-bezier(.22,.9,.3,1) both}.better-hunt-request-transfer img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-transfer::before{content:"";position:absolute;inset:-20%;z-index:2;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--bh-ice) 62%,transparent) 50%,transparent 70%);animation:better-hunt-request-charge calc(.8s / var(--anim-speed,1)) ease-in-out infinite}.better-hunt-request-transfer::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.72),transparent 55%)}.better-hunt-request-transfer span{position:absolute;z-index:3;inset:auto 7px 7px;overflow:hidden;color:var(--bh-tangerine);font-size:10px;font-weight:900;text-overflow:ellipsis;text-shadow:0 1px 3px #000;white-space:nowrap}.better-hunt-request-landing{position:absolute;border:3px solid var(--bh-tangerine);border-radius:11px;box-shadow:0 0 32px color-mix(in srgb,var(--bh-tangerine) 70%,transparent),0 0 68px color-mix(in srgb,var(--bh-ice) 42%,transparent),inset 0 0 24px color-mix(in srgb,var(--bh-tangerine) 30%,transparent);animation:better-hunt-request-landing calc(.95s / var(--anim-speed,1)) calc(.92s / var(--anim-speed,1)) cubic-bezier(.22,.9,.3,1) both}.better-hunt-request-flash{position:absolute;border-radius:9px;background:radial-gradient(60% 80% at 50% 50%,color-mix(in srgb,var(--bh-ice) 52%,transparent),transparent 75%);animation:better-hunt-request-flash .42s ease-out both}.better-hunt-request-shard{position:absolute;overflow:hidden;border-radius:1px;background-color:color-mix(in srgb,var(--bh-card-lo) 78%,var(--bh-line-hi));background-repeat:no-repeat;box-shadow:0 0 4px color-mix(in srgb,var(--bh-ice) 30%,transparent);will-change:transform,opacity;animation:better-hunt-request-shatter var(--bh-shard-duration) cubic-bezier(.3,.1,.75,.5) var(--bh-shard-delay) both}
       .better-hunt-footer{display:grid;min-width:0}
       .better-hunt-total{display:grid;gap:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:10px;background:rgba(0,0,0,.18)}
       .better-hunt-total-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
@@ -1915,8 +1921,8 @@ function BetterStyleSheet() {
       .better-hunt-root[data-skin="cyberpunk"] .better-hunt-panel{background:linear-gradient(rgba(255,255,255,.025) 50%,rgba(0,0,0,.12) 50%),radial-gradient(120% 70% at 50% 0%,rgba(255,43,214,.18),transparent 44%),radial-gradient(100% 70% at 100% 100%,rgba(0,217,255,.14),transparent 45%),linear-gradient(180deg,#14001f 0%,#07112b 48%,#070014 100%);background-size:100% 3px,cover,cover,cover;border:1.5px solid rgba(255,43,214,.7);border-radius:var(--bh-radius);box-shadow:0 0 0 1px rgba(0,217,255,.35),0 0 30px rgba(255,43,214,.34),0 0 70px rgba(0,217,255,.18),inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 36px rgba(255,43,214,.1)}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-header--banner{background:linear-gradient(90deg,rgba(255,43,214,.18),rgba(0,217,255,.14)),linear-gradient(180deg,#1b0532 0%,#090821 100%);border-top-color:#ff2bd6;border-bottom-color:#00d9ff}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-main-title{color:#f7eaff;text-shadow:0 0 10px rgba(255,43,214,.75),0 0 18px rgba(0,217,255,.45)}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-stat{background:linear-gradient(180deg,rgba(23,16,46,.95),rgba(8,7,28,.95));border-color:rgba(0,217,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 12px rgba(0,217,255,.16),0 0 18px rgba(255,43,214,.1)}.better-hunt-root[data-skin="cyberpunk"] .better-hunt-row,.better-hunt-root[data-skin="cyberpunk"] .better-hunt-total,.better-hunt-root[data-skin="cyberpunk"] .better-hunt-requests{background:linear-gradient(180deg,rgba(18,8,36,.9),rgba(6,5,20,.92));border-color:rgba(255,43,214,.32)}
       .better-hunt-root[data-skin="spartan"] .better-hunt-panel{background:repeating-linear-gradient(45deg,rgba(255,255,255,.015) 0 1px,transparent 1px 4px),repeating-linear-gradient(-45deg,rgba(255,255,255,.015) 0 1px,transparent 1px 4px),radial-gradient(110% 70% at 50% 0%,rgba(200,160,48,.14),transparent 48%),radial-gradient(100% 60% at 50% 100%,rgba(160,20,10,.22),transparent 50%),linear-gradient(180deg,#1a0c0a 0%,#120808 50%,#0a0505 100%);background-blend-mode:overlay,overlay,screen,screen,normal;background-size:4px 4px,4px 4px,cover,cover,cover;border:2px solid #c8a030;border-radius:10px;box-shadow:0 0 0 1px #080404,0 0 0 4px rgba(200,160,48,.35),0 0 36px rgba(140,20,10,.45),0 0 70px rgba(200,160,48,.15),0 24px 72px rgba(0,0,0,.9),inset 0 1px 0 rgba(240,210,120,.18),inset 0 0 60px rgba(140,20,10,.2)}.better-hunt-root[data-skin="spartan"] .better-hunt-panel::before{content:"";position:absolute;inset:0;border-radius:inherit;background:repeating-conic-gradient(from 0deg,#c8a030 0deg 3deg,transparent 3deg 12deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:3px;pointer-events:none;z-index:0;opacity:.7}.better-hunt-root[data-skin="spartan"] .better-hunt-panel>*{position:relative;z-index:1}.better-hunt-root[data-skin="spartan"] .better-hunt-header--banner{background:repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px),linear-gradient(180deg,#a01410 0%,#7a0c0a 50%,#901210 100%);border-color:#c8a030}.better-hunt-root[data-skin="spartan"] .better-hunt-main-title{color:#f0d8a0;text-shadow:0 0 12px rgba(200,160,48,.45),0 1px 2px rgba(0,0,0,.7)}.better-hunt-root[data-skin="spartan"] .better-hunt-stat{background:radial-gradient(90% 120% at 50% 0%,rgba(200,160,48,.12),transparent 60%),linear-gradient(180deg,#20100e 0%,#140a0a 100%);border-color:#8a5a10}.better-hunt-root[data-skin="spartan"] .better-hunt-row,.better-hunt-root[data-skin="spartan"] .better-hunt-total,.better-hunt-root[data-skin="spartan"] .better-hunt-requests{background:radial-gradient(100% 130% at 20% 0%,rgba(200,160,48,.08),transparent 50%),linear-gradient(180deg,#1a0c0a 0%,#100707 100%);border-color:#5a2a18}
       .better-hunt-root[data-skin="bloody"] .better-hunt-panel{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='%23800808' opacity='0.55'%3E%3Cpath d='M60 40 Q65 30 70 40 Q75 55 68 60 Q60 55 60 40z'/%3E%3Ccircle cx='72' cy='72' r='3'/%3E%3Ccircle cx='340' cy='90' r='6'/%3E%3Cpath d='M320 80 Q330 78 335 85 Q332 92 322 88 Z'/%3E%3Ccircle cx='352' cy='102' r='2.5'/%3E%3C/g%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Cg stroke='%23400808' stroke-width='1.5' fill='none' opacity='0.4'%3E%3Cpath d='M60 260 L260 60 M60 60 L260 260'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(180deg,#1a0404 0%,#100202 55%,#080101 100%);background-blend-mode:normal,multiply,normal;background-size:400px 400px,320px 320px,cover;border:3px solid #700808;border-radius:8px;box-shadow:0 0 0 1px #040101,0 0 0 4px rgba(160,20,20,.55),0 0 0 5px #040101,0 0 44px rgba(180,20,20,.45),0 24px 70px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,80,80,.15),inset 0 0 80px rgba(140,10,10,.3)}.better-hunt-root[data-skin="bloody"] .better-hunt-panel::after{content:"";position:absolute;inset:6px;border:1px dashed rgba(200,40,40,.25);border-radius:inherit;pointer-events:none;opacity:.7}.better-hunt-root[data-skin="bloody"] .better-hunt-header--banner{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40' viewBox='0 0 60 40'%3E%3Cg fill='none' stroke='%23ff4050' stroke-width='1.2' opacity='0.35'%3E%3Cpath d='M30 5 C20 5 14 12 14 20 L14 30 L20 30 L22 34 L24 30 L26 34 L28 30 L30 34 L32 30 L34 34 L36 30 L40 30 L46 30 L46 20 C46 12 40 5 30 5 Z'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(180deg,#b01818 0%,#800a0a 50%,#a01414 100%);background-repeat:no-repeat,no-repeat;background-position:center,center;background-size:55px 38px,cover;border-top-color:#ff2030;border-bottom-color:#700808}.better-hunt-root[data-skin="bloody"] .better-hunt-main-title{color:#ffe0c8;text-shadow:0 0 12px rgba(255,60,80,.75),0 1px 3px rgba(0,0,0,.85);letter-spacing:.14em}.better-hunt-root[data-skin="bloody"] .better-hunt-stat{background:linear-gradient(180deg,#1e0404 0%,#140202 100%);border-color:#8a1818}.better-hunt-root[data-skin="bloody"] .better-hunt-row,.better-hunt-root[data-skin="bloody"] .better-hunt-total,.better-hunt-root[data-skin="bloody"] .better-hunt-requests{background:radial-gradient(120% 130% at 100% 0%,rgba(200,30,30,.1),transparent 55%),linear-gradient(180deg,#180303 0%,#0e0202 100%);border-color:#5a1210}
-      .better-hunt-root[data-anim="off"]::before,.better-hunt-root[data-anim="off"]::after,.better-hunt-root[data-anim="off"] .better-hunt-list-inner,.better-hunt-root[data-anim="off"] .better-hunt-request-track,.better-hunt-root[data-anim="off"] .better-hunt-request-live,.better-hunt-root[data-anim="off"] .better-hunt-lane-track,.better-hunt-root[data-anim="off"] .better-hunt-card--center,.better-hunt-root[data-anim="off"] .better-hunt-card--super,.better-hunt-root[data-anim="off"] .better-hunt-card--extreme,.better-hunt-root[data-anim="off"] .better-hunt-stats-image img,.better-hunt-root[data-anim="off"] .better-hunt-image-stats-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active,.better-hunt-root[data-anim="off"] .better-hunt-main-active-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active-shroud,.better-hunt-root[data-anim="off"] .better-hunt-panel--shake,.better-hunt-root[data-anim="off"] .better-hunt-win,.better-hunt-root[data-anim="off"] .better-hunt-win *{animation:none!important}
-      @media (prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-list-inner,.better-hunt-root .better-hunt-request-track,.better-hunt-root .better-hunt-request-live,.better-hunt-root .better-hunt-lane-track,.better-hunt-root .better-hunt-card,.better-hunt-root .better-hunt-request-card,.better-hunt-root .better-hunt-drawer{animation:none!important;transition:none!important}}
+      .better-hunt-root[data-anim="off"]::before,.better-hunt-root[data-anim="off"]::after,.better-hunt-root[data-anim="off"] .better-hunt-list-inner,.better-hunt-root[data-anim="off"] .better-hunt-request-track,.better-hunt-root[data-anim="off"] .better-hunt-request-live,.better-hunt-root[data-anim="off"] .better-hunt-request-fx,.better-hunt-root[data-anim="off"] .better-hunt-lane-track,.better-hunt-root[data-anim="off"] .better-hunt-card--center,.better-hunt-root[data-anim="off"] .better-hunt-card--super,.better-hunt-root[data-anim="off"] .better-hunt-card--extreme,.better-hunt-root[data-anim="off"] .better-hunt-stats-image img,.better-hunt-root[data-anim="off"] .better-hunt-image-stats-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active,.better-hunt-root[data-anim="off"] .better-hunt-main-active-art img,.better-hunt-root[data-anim="off"] .better-hunt-main-active-shroud,.better-hunt-root[data-anim="off"] .better-hunt-panel--shake,.better-hunt-root[data-anim="off"] .better-hunt-win,.better-hunt-root[data-anim="off"] .better-hunt-win *{animation:none!important}
+      @media (prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-list-inner,.better-hunt-root .better-hunt-request-track,.better-hunt-root .better-hunt-request-live,.better-hunt-root .better-hunt-lane-track,.better-hunt-root .better-hunt-card,.better-hunt-root .better-hunt-request-card,.better-hunt-root .better-hunt-drawer{animation:none!important;transition:none!important}.better-hunt-root .better-hunt-request-fx{display:none!important}}
       @media (max-width:640px){.better-hunt-shell{padding:10px}.better-hunt-horizontal{height:auto;grid-template-columns:1fr}.better-hunt-left{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}.better-hunt-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.better-hunt-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.better-hunt-stat-strip div{border-left:0;border-top:1px solid rgba(255,255,255,.12)}.better-hunt-requests{grid-template-columns:1fr}.better-hunt-requests-head{grid-template-columns:1fr auto;align-items:center;border-right:0;border-bottom:1px solid rgba(255,255,255,.1);padding:0 0 7px}}
     `}</style>
   );
@@ -2749,6 +2755,205 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     request?.slot?.image ||
     request?.slot?.slot_image ||
     "";
+  const rootRef = useRef(null);
+  const requestRectsRef = useRef(new Map());
+  const seenRequestActionsRef = useRef(new Set());
+  const [requestActionQueue, setRequestActionQueue] = useState([]);
+  const [requestActionVisual, setRequestActionVisual] = useState(null);
+
+  const rememberRequestNode = (request, node) => {
+    if (!node || !rootRef.current || !request?.id) return;
+    const rootRect = rootRef.current.getBoundingClientRect();
+    const rowRect = node.getBoundingClientRect();
+    const artworkNode = node.querySelector("img") || node;
+    const artworkRect = artworkNode.getBoundingClientRect();
+    requestRectsRef.current.set(String(request.id), {
+      row: {
+        left: rowRect.left - rootRect.left,
+        top: rowRect.top - rootRect.top,
+        width: rowRect.width,
+        height: rowRect.height,
+      },
+      artwork: {
+        left: artworkRect.left - rootRect.left,
+        top: artworkRect.top - rootRect.top,
+        width: artworkRect.width,
+        height: artworkRect.height,
+      },
+    });
+  };
+
+  useEffect(() => {
+    const fresh = safeArray(c.requestActions).filter((action) => {
+      if (!action?.id || !action?.action) return false;
+      const key = `${action.id}:${action.action}:${action.action_at || action.updated_at || ""}`;
+      if (seenRequestActionsRef.current.has(key)) return false;
+      seenRequestActionsRef.current.add(key);
+      return true;
+    });
+    if (fresh.length) {
+      setRequestActionQueue((currentQueue) => [...currentQueue, ...fresh]);
+    }
+  }, [c.requestActions]);
+
+  useLayoutEffect(() => {
+    if (requestActionVisual || !requestActionQueue.length || !rootRef.current) {
+      return;
+    }
+    const [action, ...remaining] = requestActionQueue;
+    const rootRect = rootRef.current.getBoundingClientRect();
+    const cached = requestRectsRef.current.get(String(action.id));
+    const requestArea = rootRef.current.querySelector(".better-hunt-requests");
+    const fallbackRect = requestArea?.getBoundingClientRect();
+    const fallback = {
+      left: (fallbackRect?.left || rootRect.left) - rootRect.left + 12,
+      top: (fallbackRect?.top || rootRect.top) - rootRect.top + 12,
+      width: Math.max(72, Math.min(180, (fallbackRect?.width || 180) - 24)),
+      height: action.action === "accepted" ? 96 : 52,
+    };
+    const source =
+      action.action === "accepted"
+        ? cached?.artwork || cached?.row || fallback
+        : cached?.row || fallback;
+    const targetNode =
+      rootRef.current.querySelector(".better-hunt-card--center") ||
+      rootRef.current.querySelector(".better-hunt-stats-image") ||
+      rootRef.current.querySelector(".better-hunt-image-stats-art") ||
+      rootRef.current.querySelector(".better-hunt-carousel");
+    const targetRect = targetNode?.getBoundingClientRect();
+    const target = {
+      left:
+        (targetRect?.left || rootRect.left + rootRect.width / 2 - 48) -
+        rootRect.left,
+      top: (targetRect?.top || rootRect.top + 110) - rootRect.top,
+      width: targetRect?.width || 96,
+      height: targetRect?.height || 142,
+    };
+    setRequestActionVisual({
+      action,
+      source,
+      target,
+      artwork: cached?.artwork,
+    });
+    setRequestActionQueue(remaining);
+  }, [requestActionQueue, requestActionVisual]);
+
+  useEffect(() => {
+    if (!requestActionVisual) return undefined;
+    const duration =
+      requestActionVisual.action.action === "accepted" ? 1550 : 980;
+    const timeout = window.setTimeout(
+      () => setRequestActionVisual(null),
+      duration,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [requestActionVisual]);
+
+  const renderRequestAction = () => {
+    if (!requestActionVisual || c.animations === false) return null;
+    const { action, source, target, artwork } = requestActionVisual;
+    const image = requestImage(action);
+    if (action.action === "accepted") {
+      const sourceCenterX = source.left + source.width / 2;
+      const sourceCenterY = source.top + source.height / 2;
+      const targetCenterX = target.left + target.width / 2;
+      const targetCenterY = target.top + target.height / 2;
+      const growScale = Math.max(1, Math.min(2.1, 128 / source.width));
+      const endScale = Math.max(
+        0.7,
+        Math.min(
+          1.45,
+          Math.min(target.width / source.width, target.height / source.height),
+        ),
+      );
+      return (
+        <div className="better-hunt-request-fx" aria-hidden="true">
+          <div
+            className="better-hunt-request-transfer"
+            style={{
+              left: source.left,
+              top: source.top,
+              width: source.width,
+              height: source.height,
+              "--bh-transfer-x": `${targetCenterX - sourceCenterX}px`,
+              "--bh-transfer-y": `${targetCenterY - sourceCenterY}px`,
+              "--bh-transfer-grow": growScale,
+              "--bh-transfer-end": endScale,
+            }}
+          >
+            <SlotImage src={image} alt="" />
+            <span>@{requestName(action)}</span>
+          </div>
+          <div
+            className="better-hunt-request-landing"
+            style={{
+              left: target.left,
+              top: target.top,
+              width: target.width,
+              height: target.height,
+            }}
+          />
+        </div>
+      );
+    }
+
+    const columns = 8;
+    const shardRows = 4;
+    const shardWidth = source.width / columns;
+    const shardHeight = source.height / shardRows;
+    return (
+      <div className="better-hunt-request-fx" aria-hidden="true">
+        <div
+          className="better-hunt-request-flash"
+          style={{
+            left: source.left,
+            top: source.top,
+            width: source.width,
+            height: source.height,
+          }}
+        />
+        {Array.from({ length: columns * shardRows }, (_, index) => {
+          const column = index % columns;
+          const row = Math.floor(index / columns);
+          const left = source.left + column * shardWidth;
+          const top = source.top + row * shardHeight;
+          const centerX = left + shardWidth / 2;
+          const centerY = top + shardHeight / 2;
+          const hasArtwork =
+            image &&
+            artwork &&
+            centerX >= artwork.left &&
+            centerX <= artwork.left + artwork.width &&
+            centerY >= artwork.top &&
+            centerY <= artwork.top + artwork.height;
+          return (
+            <i
+              key={index}
+              className="better-hunt-request-shard"
+              style={{
+                left,
+                top,
+                width: shardWidth + 1,
+                height: shardHeight + 1,
+                "--bh-shard-x": `${(column / (columns - 1) - 0.5) * 190}px`,
+                "--bh-shard-y": `${65 + row * 28 + (index % 3) * 18}px`,
+                "--bh-shard-rotate": `${(index % 2 ? 1 : -1) * (120 + index * 13)}deg`,
+                "--bh-shard-delay": `${(index % 7) * 0.008}s`,
+                "--bh-shard-duration": `${0.58 + (index % 5) * 0.06}s`,
+                backgroundImage: hasArtwork ? `url(${image})` : undefined,
+                backgroundSize: hasArtwork
+                  ? `${artwork.width}px ${artwork.height}px`
+                  : undefined,
+                backgroundPosition: hasArtwork
+                  ? `${-(left - artwork.left)}px ${-(top - artwork.top)}px`
+                  : undefined,
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  };
   const renderRequests = () => {
     if (c.showRequests === false) return null;
     const rowsShown = BETTER_HUNT_REQUEST_ROWS[listMode];
@@ -2759,12 +2964,14 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       c.animations !== false;
     const renderRequest = (request, index, copy = 0) => {
       const key =
-        request?.id || `${requestName(request)}-${requestSlot(request)}-${index}`;
+        request?.id ||
+        `${requestName(request)}-${requestSlot(request)}-${index}`;
       if (listMode === "image") {
         return (
           <div
             key={`${key}-${copy}`}
             className="better-hunt-request better-hunt-request--image"
+            ref={(node) => rememberRequestNode(request, node)}
           >
             <span className="better-hunt-request-bg">
               <SlotImage src={requestImage(request)} alt="" />
@@ -2788,6 +2995,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <div
             key={`${key}-${copy}`}
             className="better-hunt-request better-hunt-request--names"
+            ref={(node) => rememberRequestNode(request, node)}
           >
             <i className="better-hunt-request-live" />
             <span className="better-hunt-request-copy">
@@ -2803,6 +3011,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         <div
           key={`${key}-${copy}`}
           className="better-hunt-request better-hunt-request--compact"
+          ref={(node) => rememberRequestNode(request, node)}
         >
           <span className="better-hunt-request-image">
             {requestImage(request) ? (
@@ -2857,6 +3066,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                         `${requestName(request)}-${requestSlot(request)}-${index}`
                       }
                       className={`better-hunt-request-card${center ? " is-center" : ""}`}
+                      ref={(node) => rememberRequestNode(request, node)}
                       style={{
                         opacity: hidden ? 0 : abs === 2 ? 0.25 : 1,
                         pointerEvents: hidden ? "none" : undefined,
@@ -3785,6 +3995,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
   return (
     <div
+      ref={rootRef}
       className="better-hunt-root"
       data-anim={c.animations === false ? "off" : "on"}
       data-finish={c.finish || "flat"}
@@ -3798,6 +4009,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     >
       <BetterStyleSheet />
       <div className="better-hunt-shell">{content}</div>
+      {renderRequestAction()}
     </div>
   );
 }

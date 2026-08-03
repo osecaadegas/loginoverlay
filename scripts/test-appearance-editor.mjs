@@ -850,6 +850,18 @@ try {
     "Public slot requests resolve a non-revoked publication owner server-side before returning pending display rows",
   );
   assert.ok(
+    bonusHuntConfigSource.includes('update({ status: "played" })') &&
+      slotRequestDataSource.includes("requestActions") &&
+      slotRequestDataSource.includes('status === "played"') &&
+      slotRequestDataSource.includes('status === "refunded"') &&
+      publicSlotRequestsApiSource.includes("actions:") &&
+      bonusHuntWidgetSource.includes("requestActions") &&
+      betterWidgetStylesSource.includes("better-hunt-request-transfer") &&
+      betterWidgetStylesSource.includes("better-hunt-request-landing") &&
+      betterWidgetStylesSource.includes("better-hunt-request-shard"),
+    "Better Bonus Hunt carries Add to BH and Points Back events into shared preview and OBS transfer/shatter animations",
+  );
+  assert.ok(
     bonusHuntConfigSource.includes("function getBonusHuntProvider(bonus)") &&
       bonusHuntConfigSource.includes(
         "const provider = getBonusHuntProvider(bonus)",

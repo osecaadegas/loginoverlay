@@ -35,16 +35,38 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Overlay not found" });
     }
 
-    const { data, error } = await supabase
-      .from("slot_requests")
-      .select("id,slot_name,slot_image,requested_by,created_at")
-      .eq("user_id", publication.owner_user_id)
-      .eq("status", "pending")
-      .order("created_at", { ascending: true })
-      .limit(limit);
+    const actionCutoff = new Date(Date.now() - 20000).toISOString();
+    const [requestsResult, actionsResult] = await Promise.all([
+      supabase
+        .from("slot_requests")
+        .select("id,slot_name,slot_image,requested_by,created_at")
+        .eq("user_id", publication.owner_user_id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true })
+        .limit(limit),
+      supabase
+        .from("slot_requests")
+        .select(
+          "id,slot_name,slot_image,requested_by,status,created_at,updated_at",
+        )
+        .eq("user_id", publication.owner_user_id)
+        .in("status", ["played", "refunded", "refund_failed"])
+        .gte("updated_at", actionCutoff)
+        .order("updated_at", { ascending: true })
+        .limit(20),
+    ]);
 
-    if (error) throw error;
-    return res.status(200).json({ requests: data || [] });
+    if (requestsResult.error) throw requestsResult.error;
+    if (actionsResult.error) throw actionsResult.error;
+    const actions = (actionsResult.data || []).map((row) => ({
+      ...row,
+      action: row.status === "played" ? "accepted" : "rejected",
+      action_at: row.updated_at,
+    }));
+    return res.status(200).json({
+      requests: requestsResult.data || [],
+      actions: actions,
+    });
   } catch (error) {
     console.error("[public-slot-requests] Failed to load requests:", error);
     return res.status(500).json({ error: "Failed to load slot requests" });
