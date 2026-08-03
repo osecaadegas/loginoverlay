@@ -51,7 +51,7 @@ const CONNECT_FOUR_PREVIEW_STATE: ConnectFourState = {
   updated_at: null,
 };
 
-const WINNER_DISPLAY_MS = 15_000;
+const WINNER_DISPLAY_MS = 10_000;
 const WIDGET_FADE_MS = 700;
 
 function stringValue(value: unknown, fallback = ""): string {

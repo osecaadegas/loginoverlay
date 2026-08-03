@@ -128,6 +128,13 @@ const registrySource = readFileSync(
   ),
   "utf8",
 );
+const obsOverlaySource = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/editor/BetterObsOverlay.jsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const listenerSource = readFileSync(
   new URL("../src/hooks/useConnectFourListener.js", import.meta.url),
   "utf8",
@@ -178,12 +185,14 @@ assert.match(listenerSource, /config\.chatCommand \|\| "!c4"/);
 assert.match(widgetSource, /Math\.max\(40, Number\(config\.boardScale\)/);
 assert.match(widgetSource, /Join with !c4 join/);
 assert.doesNotMatch(widgetSource, /!player2|!connect4/);
-assert.match(widgetSource, /const WINNER_DISPLAY_MS = 15_000/);
+assert.match(widgetSource, /const WINNER_DISPLAY_MS = 10_000/);
 assert.match(widgetSource, /const WIDGET_FADE_MS = 700/);
+assert.match(obsOverlaySource, /renderBetterWidgetInstance\(\{[\s\S]*?runtime: "obs"/);
 assert.match(
   widgetSource,
   /winnerDeadlineRef\.current\?\.matchId !== state\.match_id/,
 );
+assert.match(widgetSource, /deadline: winnerStartedAt \+ WINNER_DISPLAY_MS/);
 assert.match(widgetSource, /winnerVisibility === "hidden"/);
 assert.match(widgetSource, /winnerVisibility === "fading"/);
 assert.match(
