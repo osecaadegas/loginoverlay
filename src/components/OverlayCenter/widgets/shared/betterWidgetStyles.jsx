@@ -2824,6 +2824,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const seenRequestActionsRef = useRef(new Set());
   const [requestActionQueue, setRequestActionQueue] = useState([]);
   const [requestActionVisual, setRequestActionVisual] = useState(null);
+  const requestActionAnimationsEnabled = c.requestActionAnimations === true;
 
   const rememberRequestNode = (request, node) => {
     if (!node || !request?.id) return;
@@ -2857,10 +2858,16 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       seenRequestActionsRef.current.add(key);
       return true;
     });
-    if (fresh.length) {
+    if (requestActionAnimationsEnabled && fresh.length) {
       setRequestActionQueue((currentQueue) => [...currentQueue, ...fresh]);
     }
-  }, [c.requestActions]);
+  }, [c.requestActions, requestActionAnimationsEnabled]);
+
+  useEffect(() => {
+    if (requestActionAnimationsEnabled) return;
+    setRequestActionQueue([]);
+    setRequestActionVisual(null);
+  }, [requestActionAnimationsEnabled]);
 
   useLayoutEffect(() => {
     if (requestActionVisual || !requestActionQueue.length || !rootRef.current) {
@@ -2916,7 +2923,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   }, [requestActionVisual]);
 
   const renderRequestAction = () => {
-    if (!requestActionVisual || c.animations === false) return null;
+    if (!requestActionVisual || !requestActionAnimationsEnabled) return null;
     const { action, source, target } = requestActionVisual;
     if (action.action === "accepted") {
       const sourceCenterX = source.left + source.width / 2;

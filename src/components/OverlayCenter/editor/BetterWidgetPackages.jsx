@@ -680,6 +680,7 @@ const BASE_BETTER_CONFIG = {
     statsLayout: "row",
     showRequests: true,
     animations: false,
+    requestActionAnimations: false,
     animSpeed: 1,
     carouselMs: 3200,
     font: "rajdhani",
@@ -4697,6 +4698,13 @@ function SimpleThemedControls({
           label="Show requests feed"
           checked={localRequestsVisible}
           onChange={(showRequests) => set({ showRequests })}
+        />
+        <ToggleRow
+          label="Add and shatter animations"
+          checked={c.requestActionAnimations === true}
+          onChange={(requestActionAnimations) =>
+            set({ requestActionAnimations })
+          }
         />
         <HuntChoiceGrid
           value={c.requestView || "list"}

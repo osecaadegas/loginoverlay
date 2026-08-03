@@ -891,6 +891,21 @@ try {
         "Math.min(3, Math.round(source.height / 34))",
       ) &&
       betterWidgetStylesSource.includes(
+        "const requestActionAnimationsEnabled = c.requestActionAnimations === true;",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "if (requestActionAnimationsEnabled && fresh.length)",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "if (!requestActionVisual || !requestActionAnimationsEnabled)",
+      ) &&
+      betterWidgetPackagesSource.includes(
+        'label="Add and shatter animations"',
+      ) &&
+      betterWidgetPackagesSource.includes(
+        "checked={c.requestActionAnimations === true}",
+      ) &&
+      betterWidgetStylesSource.includes(
         "copy === 0 ? (node) => rememberRequestNode(request, node) : undefined",
       ) &&
       betterWidgetStylesSource.includes(
@@ -900,6 +915,12 @@ try {
         betterWidgetPackagesSource,
       ) &&
       /bonus_hunt:\s*\{[\s\S]*?showRequests: true,\s*animations: false,/.test(
+        standardWidgetPresetsSource,
+      ) &&
+      /bonus_hunt:\s*\{[\s\S]*?requestActionAnimations: false,/.test(
+        betterWidgetPackagesSource,
+      ) &&
+      /bonus_hunt:\s*\{[\s\S]*?requestActionAnimations: false,/.test(
         standardWidgetPresetsSource,
       ),
     "Better Bonus Hunt carries Add to BH and Points Back events into shared preview and OBS transfer/shatter animations",
