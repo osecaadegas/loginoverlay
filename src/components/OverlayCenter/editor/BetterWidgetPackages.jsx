@@ -965,7 +965,7 @@ const BASE_BETTER_CONFIG = {
   },
   slideshow_frame: {
     displayStyle: "better_slideshow_frame",
-    mediaText: "/banner.png|image|Banner",
+    mediaText: "",
     frameStyle: "neon",
     frameColor: "#2f63c9",
     accentColor: "#45c8ff",

@@ -813,16 +813,7 @@ function ChatWidget({
       : "bottom-to-top"
     : "bottom-to-top";
   const autoChannel = useTwitchChannel();
-  const navbarConfig =
-    allWidgets?.find?.((widget) => widget?.widget_type === "navbar")?.config ||
-    {};
-  const fallbackTwitchChannel = resolveBttvTwitchChannel(
-    navbarConfig,
-    autoChannel,
-  );
-  const resolvedTwitchChannel = normalizedUsername(
-    resolveBttvTwitchChannel(c, fallbackTwitchChannel),
-  );
+  const resolvedTwitchChannel = c.twitchChannel || autoChannel || "";
   const configuredBttvTwitchUserId = resolveBttvTwitchUserId(c);
   const bttvTwitchUserId =
     connectedTwitchChannelId || configuredBttvTwitchUserId;
