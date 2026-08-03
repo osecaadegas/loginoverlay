@@ -216,6 +216,7 @@ assert.match(widgetSource, /const WIDGET_FADE_MS = 700/);
 assert.match(widgetSource, /previewWhenIdle = true/);
 assert.match(widgetSource, /winnerDisplayMs = WINNER_DISPLAY_MS/);
 assert.match(widgetSource, /winnerHideAfterMs/);
+assert.match(widgetSource, /embedded = false/);
 assert.match(widgetSource, /onVisibilityChange\?\.\(isVisible\)/);
 assert.match(
   obsOverlaySource,
@@ -242,7 +243,7 @@ assert.match(
 );
 assert.match(
   slideshowSource,
-  /<ConnectFourWidget[\s\S]*?previewWhenIdle=\{false\}[\s\S]*?winnerHideAfterMs=\{5_000\}[\s\S]*?onVisibilityChange=\{handleConnectFourVisibility\}/,
+  /<ConnectFourWidget[\s\S]*?embedded[\s\S]*?previewWhenIdle=\{false\}[\s\S]*?winnerHideAfterMs=\{5_000\}[\s\S]*?onVisibilityChange=\{handleConnectFourVisibility\}/,
 );
 assert.match(
   slideshowSource,
@@ -258,6 +259,10 @@ assert.match(
 );
 assert.match(
   widgetSource,
+  /!embedded && !hasTwoPlayers && \([\s\S]*?<aside className="connect-four-info">/,
+);
+assert.match(
+  widgetSource,
   /connect-four-player-rail--p1[\s\S]*?connect-four-board-stack[\s\S]*?connect-four-player-rail--p2/,
 );
 assert.doesNotMatch(widgetSource, /showPlayers && hasTwoPlayers/);
@@ -267,6 +272,22 @@ assert.match(
   /rowIndex === 0[\s\S]*?className="connect-four-hole-number"[\s\S]*?columnIndex \+ 1/,
 );
 assert.match(widgetStylesSource, /\.connect-four-info \{/);
+assert.match(
+  widgetStylesSource,
+  /\.connect-four-widget--embedded \.connect-four-game,[\s\S]*?height: 100%/,
+);
+assert.match(
+  widgetStylesSource,
+  /\.connect-four-widget--embedded \.connect-four-board-stack[\s\S]*?height: 100%;[\s\S]*?aspect-ratio: 7 \/ 6/,
+);
+assert.match(
+  widgetStylesSource,
+  /\.connect-four-widget--embedded \.connect-four-player-rail \{[\s\S]*?height: 100%/,
+);
+assert.match(
+  widgetStylesSource,
+  /@container \(max-width: 430px\)[\s\S]*?\.connect-four-widget--embedded \.connect-four-play-area \{[\s\S]*?display: flex/,
+);
 assert.match(
   widgetStylesSource,
   /\.connect-four-widget\.is-fading \{[\s\S]*?opacity: 0/,

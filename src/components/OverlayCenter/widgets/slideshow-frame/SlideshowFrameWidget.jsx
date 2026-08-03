@@ -184,6 +184,7 @@ export default function SlideshowFrameWidget({
               config={{}}
               userId={userId}
               runtime={runtime}
+              embedded
               previewWhenIdle={false}
               winnerHideAfterMs={5_000}
               onVisibilityChange={handleConnectFourVisibility}

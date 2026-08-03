@@ -29,6 +29,7 @@ interface ConnectFourWidgetProps {
   previewWhenIdle?: boolean;
   winnerDisplayMs?: number;
   winnerHideAfterMs?: number;
+  embedded?: boolean;
   onVisibilityChange?: (visible: boolean) => void;
 }
 
@@ -111,6 +112,7 @@ export default function ConnectFourWidget({
   previewWhenIdle = true,
   winnerDisplayMs = WINNER_DISPLAY_MS,
   winnerHideAfterMs,
+  embedded = false,
   onVisibilityChange,
 }: Readonly<ConnectFourWidgetProps>) {
   const [state, setState] = useState<ConnectFourState | null>(null);
@@ -307,7 +309,7 @@ export default function ConnectFourWidget({
 
   return (
     <section
-      className={`connect-four-widget${winnerVisibility === "fading" ? " is-fading" : ""}`}
+      className={`connect-four-widget${embedded ? " connect-four-widget--embedded" : ""}${winnerVisibility === "fading" ? " is-fading" : ""}`}
       aria-label="Chat Connect 4"
       style={widgetStyle}
     >
@@ -322,8 +324,8 @@ export default function ConnectFourWidget({
             >
               <i className="connect-four-player-coin connect-four-player-coin--p1" />
               <strong>
-                {Array.from(playerOne).map((character, index) => (
-                  <span key={`${String(character)}-${index}`}>{character}</span>
+                {playerOne.split("").map((character, index) => (
+                  <span key={`${character}-${index}`}>{character}</span>
                 ))}
               </strong>
             </div>
@@ -394,14 +396,14 @@ export default function ConnectFourWidget({
             >
               <i className="connect-four-player-coin connect-four-player-coin--p2" />
               <strong>
-                {Array.from(playerTwoRailName).map((character, index) => (
-                  <span key={`${String(character)}-${index}`}>{character}</span>
+                {playerTwoRailName.split("").map((character, index) => (
+                  <span key={`${character}-${index}`}>{character}</span>
                 ))}
               </strong>
             </div>
           )}
 
-          {!hasTwoPlayers && (
+          {!embedded && !hasTwoPlayers && (
             <aside className="connect-four-info">
               <div className="connect-four-title" style={{ color: titleColor }}>
                 {title}
