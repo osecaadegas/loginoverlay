@@ -29,58 +29,76 @@ const MAX_OPACITY = 1;
 
 const MOCK_BONUSES = [
   {
-    id: "mock-wolf-gold",
-    slotName: "Wolf Gold",
+    id: "bdecf4b4-286a-46ac-b996-5a2fd8b0c45e",
+    slotName: "Gates Of Olympus 1000",
     imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/WolfGold.png",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0dAEPtED0iG7rSoXV5PZhSEuuc_9oKLWyGPa-CscWrg&s=10",
     betSize: 4,
     payout: 136,
     opened: true,
     slot: {
       provider: "Pragmatic Play",
-      image: "https://images-cdn.softswiss.net/i/s2/pragmaticplay/WolfGold.png",
+      image:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0dAEPtED0iG7rSoXV5PZhSEuuc_9oKLWyGPa-CscWrg&s=10",
+      rtp: 96.5,
+      volatility: "high",
+      max_win_multiplier: 15000,
     },
   },
   {
-    id: "mock-medusa",
-    slotName: "Medusas Madness",
+    id: "fd03f022-8afe-43ca-b804-b49113445aff",
+    slotName: "Le Bandit",
     imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png",
+      "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/hs/webp/hs-le-bandit.webp",
     betSize: 5,
-    payout: 0,
+    payout: 1840,
     opened: false,
     slot: {
-      provider: "Play'n GO",
-      image: "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png",
+      id: "fd03f022-8afe-43ca-b804-b49113445aff",
+      name: "Le Bandit",
+      provider: "Hacksaw Gaming",
+      image:
+        "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/hs/webp/hs-le-bandit.webp",
+      rtp: 96.34,
+      volatility: "medium",
+      max_win_multiplier: 10000,
     },
   },
   {
-    id: "mock-gates",
-    slotName: "Gates of Olympus",
+    id: "839997ff-344a-448c-876a-19c0c869ac49",
+    slotName: "Wanted Dead or a Wild",
     imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+      "https://mediumrare.imgix.net/2c04ff5694af0adf12b483a79567814407c1a4fc943b4d1980f84367a1910874?q=85",
     betSize: 6,
     payout: 312,
     opened: true,
     isSuperBonus: true,
     slot: {
-      provider: "Pragmatic Play",
+      provider: "Hacksaw Gaming",
       image:
-        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+        "https://mediumrare.imgix.net/2c04ff5694af0adf12b483a79567814407c1a4fc943b4d1980f84367a1910874?q=85",
+      rtp: 96.38,
+      volatility: "very_high",
+      max_win_multiplier: 12500,
     },
   },
   {
-    id: "mock-sugar",
-    slotName: "Sugar Rush 1000",
+    id: "033fb7ba-f0ed-4582-9bdf-cad4d242ed5d",
+    slotName: "Sweet Bonanza 1000",
     imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
+      "https://mediumrare.imgix.net/a77d914f12935f85ca574c3b52989b13cb48901ab8c55bdf326e1f2a177cbd97?&dpr=2&format=auto&auto=format&q=50",
     betSize: 3,
     payout: 0,
     opened: false,
     slot: {
+      id: "033fb7ba-f0ed-4582-9bdf-cad4d242ed5d",
+      name: "Sweet Bonanza 1000",
       provider: "Pragmatic Play",
       image:
-        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
+        "https://mediumrare.imgix.net/a77d914f12935f85ca574c3b52989b13cb48901ab8c55bdf326e1f2a177cbd97?&dpr=2&format=auto&auto=format&q=50",
+      rtp: 95.52,
+      volatility: "high",
+      max_win_multiplier: 25000,
     },
   },
 ];
@@ -147,9 +165,9 @@ const MOCK_WIDGET_CONFIGS = {
           player1: "Sofia",
           player2: "Rafa",
           slot1: {
-            name: "Sugar Rush 1000",
+            name: "Le Bandit",
             image:
-              "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
+              "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/hs/webp/hs-le-bandit.webp",
           },
           slot2: {
             name: "Wanted Dead or a Wild",
@@ -207,7 +225,7 @@ const MOCK_WIDGET_CONFIGS = {
     winner: "",
   },
   navbar: {
-    streamerName: "BRUTUSPOLUS",
+    streamerName: "STREAMER",
     motto: "streamerscenter.com",
     nowPlayingLabel: "Now Playing",
     showNowPlaying: true,
@@ -223,29 +241,43 @@ const MOCK_WIDGET_CONFIGS = {
     },
   },
   chat: {
+    live: true,
+    maxMessages: 10,
     twitchEnabled: false,
     youtubeEnabled: false,
     kickEnabled: false,
     __appearancePreviewMessages: [
-      { user: "miguel", text: "the hunt is live" },
-      { user: "arena", text: "!bet 2" },
-      { user: "secalive", text: "good luck everyone" },
-      { user: "chat", text: "that rtp bar is clean" },
+      { username: "STREAMER", message: "New bonus hunt is live." },
+      { username: "miguel", message: "good luck on Sweet Bonanza 1000" },
+      { username: "arena", message: "!bet 2" },
+      { username: "secalive", message: "that RTP bar looks clean" },
+      { username: "brutus", message: "open Gates next" },
+      { username: "modteam", message: "queue is full tonight" },
+      { username: "chat", message: "big multi incoming" },
+      { username: "viewer42", message: "Wanted paid already?" },
     ],
   },
   rtp_stats: {
     previewMode: true,
-    slotName: "Medusas Madness",
-    detectedSlotName: "Medusas Madness",
-    currentSlotName: "Medusas Madness",
-    provider: "Play'n GO",
-    providerName: "Play'n GO",
-    rtp: "96.20%",
-    rtpValue: "96.20%",
-    potential: "x5000",
-    maxWin: "x5000",
-    volatility: "High",
-    bestWin: "No personal best yet",
+    _cachedBestWin: {
+      slotId: "fd03f022-8afe-43ca-b804-b49113445aff",
+      slotName: "Le Bandit",
+      provider: "Hacksaw Gaming",
+      best_win: 1840,
+      best_multiplier: 368,
+    },
+    slotId: "fd03f022-8afe-43ca-b804-b49113445aff",
+    slotName: "Le Bandit",
+    detectedSlotName: "Le Bandit",
+    currentSlotName: "Le Bandit",
+    provider: "Hacksaw Gaming",
+    providerName: "Hacksaw Gaming",
+    rtp: 96.34,
+    rtpValue: "96.34%",
+    potential: "x10000",
+    maxWin: "x10000",
+    volatility: "Medium",
+    bestWin: "EUR 1,840",
   },
   background: {},
   slideshow_frame: {
@@ -864,9 +896,7 @@ function migrateLegacyShoutoutConfig(widgetType, rawConfig) {
     secondaryColor: "#1385e9",
     backgroundColor: "#081228",
     mutedColor:
-      rawConfig.mutedColor === "#a5b4c7"
-        ? "#8baacf"
-        : rawConfig.mutedColor,
+      rawConfig.mutedColor === "#a5b4c7" ? "#8baacf" : rawConfig.mutedColor,
     borderRadius: rawConfig.borderRadius === 16 ? 12 : rawConfig.borderRadius,
     borderWidth: rawConfig.borderWidth === 2 ? 1 : rawConfig.borderWidth,
     glowIntensity:

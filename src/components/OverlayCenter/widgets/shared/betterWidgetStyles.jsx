@@ -3880,6 +3880,7 @@ export function BetterChatMessage({
     position: "relative",
     display: "grid",
     gridTemplateColumns: "34px minmax(0,1fr)",
+    alignItems: "start",
     gap: 9,
     margin: `${Math.max(2, Number(context.msgSpacing) || 2)}px 8px`,
     padding: "8px 10px",
@@ -3892,7 +3893,7 @@ export function BetterChatMessage({
       emphasized
         ? `0 0 ${effectGlow} ${alphaColor(rowAccent, 0.5)}, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -12px 24px ${alphaColor(rowAccent, 0.12)}`
         : `0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)`,
-    overflow: "hidden",
+    overflow: "visible",
     opacity: animationName === "none" ? 1 : 0,
     animation:
       animationName === "none"
@@ -3903,7 +3904,19 @@ export function BetterChatMessage({
     <div
       ref={rootRef}
       aria-hidden={!visible}
-      style={{ ...messageStyle, visibility: visible ? "visible" : "hidden" }}
+      style={{
+        ...messageStyle,
+        ...(visible
+          ? null
+          : {
+              position: "absolute",
+              left: 8,
+              right: 8,
+              width: "calc(100% - 16px)",
+              visibility: "hidden",
+              pointerEvents: "none",
+            }),
+      }}
       {...attrs("chat", c, rowPart)}
     >
       {animatedEffect ? (
@@ -3984,7 +3997,7 @@ export function BetterChatMessage({
           initials(msg.username || msg.user)
         )}
       </span>
-      <span style={{ minWidth: 0 }}>
+      <span style={{ minWidth: 0, overflow: "visible" }}>
         <span
           style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}
         >
@@ -4027,8 +4040,9 @@ export function BetterChatMessage({
             display: "block",
             marginTop: 2,
             color: context.textColor,
-            lineHeight: context.msgLineHeight,
+            lineHeight: Math.max(1.25, Number(context.msgLineHeight) || 1.45),
             overflowWrap: "anywhere",
+            paddingBottom: 1,
           })}
           {...attrs("chat", c, "messageText")}
         >
