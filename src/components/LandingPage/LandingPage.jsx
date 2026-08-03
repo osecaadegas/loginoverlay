@@ -546,7 +546,10 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
 
       <section className="lp-home-hero" id="demo">
         <div className="lp-home-hero__copy">
-          <h1>Turn your stream into an <strong>interactive experience</strong></h1>
+          <h1>
+            Turn your stream <span className="lp-home-hero__nowrap">into an</span>{" "}
+            <strong>interactive experience</strong>
+          </h1>
           <p>
             Interactive iGaming overlays, bonus hunts, tournaments, giveaways, slot requests,
             bets, chat tools and games, all in one place.
