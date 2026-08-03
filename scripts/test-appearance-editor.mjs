@@ -771,12 +771,48 @@ try {
     ),
     "utf8",
   );
+  const bonusHuntWidgetSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntWidget.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const slotRequestDataSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/slot-requests/shared/useSlotRequestsData.js",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const publicSlotRequestsApiSource = readFileSync(
+    new URL("../api/public-slot-requests.js", import.meta.url),
+    "utf8",
+  );
   const overlayCenterStylesSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/OverlayCenter.css",
       import.meta.url,
     ),
     "utf8",
+  );
+  assert.ok(
+    bonusHuntWidgetSource.includes("publicOverlayId,") &&
+      bonusHuntWidgetSource.includes("runtime,") &&
+      slotRequestDataSource.includes("runtime === 'obs'") &&
+      slotRequestDataSource.includes("/api/public-slot-requests?") &&
+      slotRequestDataSource.includes("window.setInterval(fetchRequests, 5000)"),
+    "Bonus Hunt OBS requests use the public overlay endpoint and refresh independently of authenticated canvas realtime",
+  );
+  assert.ok(
+    publicSlotRequestsApiSource.includes("PUBLIC_OVERLAY_ID_PATTERN") &&
+      publicSlotRequestsApiSource.includes('from("better_overlay_publications")') &&
+      publicSlotRequestsApiSource.includes('is("revoked_at", null)') &&
+      publicSlotRequestsApiSource.includes(
+        '.eq("user_id", publication.owner_user_id)',
+      ) &&
+      publicSlotRequestsApiSource.includes('eq("status", "pending")'),
+    "Public slot requests resolve a non-revoked publication owner server-side before returning pending display rows",
   );
   assert.ok(
     bonusHuntConfigSource.includes("function getBonusHuntProvider(bonus)") &&

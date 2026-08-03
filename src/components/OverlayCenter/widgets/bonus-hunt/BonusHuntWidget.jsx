@@ -253,7 +253,15 @@ function resolveBonusHuntStreamerProfile(config = {}, allWidgets = []) {
   return { avatarUrl, streamerName };
 }
 
-function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
+function BonusHuntWidget({
+  config,
+  theme,
+  userId,
+  widgetId,
+  allWidgets = [],
+  publicOverlayId,
+  runtime,
+}) {
   const baseConfig = config || {};
   const rawBonuses = useMemo(
     () => (Array.isArray(baseConfig.bonuses) ? baseConfig.bonuses : []),
@@ -436,6 +444,8 @@ function BonusHuntWidget({ config, theme, userId, widgetId, allWidgets = [] }) {
   const { requests: classicRequestRows } = useBonusHuntRequestsData({
     config: sortedConfig,
     userId,
+    publicOverlayId,
+    runtime,
     enabled:
       isBetterBH &&
       sortedConfig.showRequests !== false &&

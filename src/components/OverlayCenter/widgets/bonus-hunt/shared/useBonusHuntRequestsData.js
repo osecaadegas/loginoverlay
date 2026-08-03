@@ -1,6 +1,6 @@
 import { useSlotRequestsData } from '../../slot-requests/shared/useSlotRequestsData.js';
 
-export function useBonusHuntRequestsData({ config = {}, userId, enabled = true } = {}) {
+export function useBonusHuntRequestsData({ config = {}, userId, enabled = true, publicOverlayId, runtime } = {}) {
   return useSlotRequestsData({
     config: {
       ...config,
@@ -9,6 +9,8 @@ export function useBonusHuntRequestsData({ config = {}, userId, enabled = true }
     userId,
     enabled,
     channelPrefix: 'bh-sr-widget',
+    publicOverlayId,
+    runtime,
   });
 }
 

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../../../../../config/supabaseClient';
 
-export function useSlotRequestsData({ config = {}, userId, enabled = true, channelPrefix = 'sr-widget' } = {}) {
+export function useSlotRequestsData({ config = {}, userId, enabled = true, channelPrefix = 'sr-widget', publicOverlayId, runtime } = {}) {
   const c = config || {};
   const maxDisplay = Number(c.maxDisplay) > 0 ? Number(c.maxDisplay) : 20;
+  const usePublicOverlayApi = runtime === 'obs' && !!publicOverlayId;
   const previewRequests = useMemo(() => (
     Array.isArray(c.__appearancePreviewRequests)
       ? c.__appearancePreviewRequests.slice(0, maxDisplay)
@@ -16,18 +17,37 @@ export function useSlotRequestsData({ config = {}, userId, enabled = true, chann
   const fetchRequests = useCallback(async () => {
     if (!enabled) return;
     if (previewRequests) return;
-    if (!userId) return;
+    if (!userId && !usePublicOverlayApi) return;
     const seq = ++fetchSeqRef.current;
-    const { data, error } = await supabase
-      .from('slot_requests')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true })
-      .limit(maxDisplay);
+    let data = null;
+    let error = null;
+    if (usePublicOverlayApi) {
+      try {
+        const params = new URLSearchParams({
+          publicOverlayId,
+          limit: String(maxDisplay),
+        });
+        const response = await fetch(`/api/public-slot-requests?${params}`, {
+          cache: 'no-store',
+        });
+        if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+        const payload = await response.json();
+        data = Array.isArray(payload.requests) ? payload.requests : [];
+      } catch (fetchError) {
+        error = fetchError;
+      }
+    } else {
+      ({ data, error } = await supabase
+        .from('slot_requests')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true })
+        .limit(maxDisplay));
+    }
     if (seq !== fetchSeqRef.current) return;
     if (!error && data && mountedRef.current) setRequests(data);
-  }, [enabled, userId, maxDisplay, previewRequests]);
+  }, [enabled, maxDisplay, previewRequests, publicOverlayId, usePublicOverlayApi, userId]);
 
   useEffect(() => {
     fetchRequests();
@@ -46,6 +66,7 @@ export function useSlotRequestsData({ config = {}, userId, enabled = true, chann
   useEffect(() => {
     if (!enabled) return undefined;
     if (previewRequests) return undefined;
+    if (usePublicOverlayApi) return undefined;
     if (!userId) return undefined;
     const channel = supabase
       .channel(`${channelPrefix}-${userId}`)
@@ -57,7 +78,13 @@ export function useSlotRequestsData({ config = {}, userId, enabled = true, chann
       }, () => { fetchRequests(); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [channelPrefix, enabled, fetchRequests, previewRequests, userId]);
+  }, [channelPrefix, enabled, fetchRequests, previewRequests, usePublicOverlayApi, userId]);
+
+  useEffect(() => {
+    if (!enabled || previewRequests || !usePublicOverlayApi) return undefined;
+    const interval = window.setInterval(fetchRequests, 5000);
+    return () => window.clearInterval(interval);
+  }, [enabled, fetchRequests, previewRequests, usePublicOverlayApi]);
 
   useEffect(() => (
     () => { mountedRef.current = false; }
