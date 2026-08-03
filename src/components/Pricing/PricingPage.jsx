@@ -38,13 +38,13 @@ const STREAMER_PLAN_CARDS = [
 const PLAYER_PLAN_CARDS = [
   {
     id: 'player_monthly',
-    image: '/player.png',
+    image: '/player3eur.png',
     title: 'Player monthly',
     accent: 'cyan',
   },
   {
     id: 'player_annual',
-    image: '/player.png',
+    image: '/player25eur.png',
     title: 'Player annual',
     accent: 'pink',
   },
