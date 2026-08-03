@@ -230,9 +230,9 @@ export default function BetterObsOverlay() {
     ? Number(targetInstance?.height || 0)
     : BETTER_CANVAS.height;
   const scale =
-    isSingleWidget || !targetWidth || !targetHeight
-      ? 1
-      : Math.min(viewport.width / targetWidth, viewport.height / targetHeight);
+    targetWidth && targetHeight
+      ? Math.min(viewport.width / targetWidth, viewport.height / targetHeight)
+      : 1;
 
   if (!loaded || !layout || (isSingleWidget && !targetInstance)) {
     return <main className="better-obs-overlay better-obs-overlay--empty" />;
