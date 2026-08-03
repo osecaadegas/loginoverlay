@@ -16,6 +16,48 @@ import {
   X,
 } from "lucide-react";
 
+function participantName(participant) {
+  return typeof participant === "string"
+    ? participant
+    : participant?.name ||
+        participant?.username ||
+        participant?.displayName ||
+        participant?.login ||
+        "Unknown viewer";
+}
+
+function participantKey(participant) {
+  const platform =
+    typeof participant === "object" ? participant?.platform || "twitch" : "twitch";
+  const login =
+    typeof participant === "object"
+      ? participant?.login || participant?.username || participantName(participant)
+      : participant;
+  return `${String(platform).toLowerCase()}:${String(login || "").trim().toLowerCase()}`;
+}
+
+function participantFromMessage(message) {
+  const name = message.username || message.displayName || message.login || "";
+  const platform = String(message.platform || "twitch").toLowerCase();
+  const login = message.login || name;
+  return {
+    id:
+      message.twitchUserId ||
+      message.userId ||
+      `${platform}:${String(login).toLowerCase()}`,
+    name,
+    username: name,
+    login,
+    platform,
+    avatarUrl:
+      message.avatarUrl ||
+      message.profileImageUrl ||
+      message.profile_image_url ||
+      message.userAvatar ||
+      "",
+  };
+}
+
 /* ─── Giveaway Config Panel ─── */
 export default function GiveawayConfig({ config, onChange }) {
   const c = config || {};
@@ -36,13 +78,15 @@ export default function GiveawayConfig({ config, onChange }) {
   configRef.current = c;
 
   const participants = c.participants || [];
-  const participantsRef = useRef(new Set(participants));
+  const participantsRef = useRef(new Set(participants.map(participantKey)));
   const pendingRef = useRef([]);
   const flushTimer = useRef(null);
 
   // Keep participantsRef in sync with config
   useEffect(() => {
-    participantsRef.current = new Set(c.participants || []);
+    participantsRef.current = new Set(
+      (c.participants || []).map(participantKey),
+    );
   }, [c.participants]);
 
   // Flush pending participants to config every 2 seconds
@@ -50,7 +94,15 @@ export default function GiveawayConfig({ config, onChange }) {
     flushTimer.current = setInterval(() => {
       if (pendingRef.current.length > 0) {
         const current = c.participants || [];
-        const merged = [...new Set([...current, ...pendingRef.current])];
+        const known = new Set(current.map(participantKey));
+        const merged = [...current];
+        pendingRef.current.forEach((participant) => {
+          const key = participantKey(participant);
+          if (!known.has(key)) {
+            known.add(key);
+            merged.push(participant);
+          }
+        });
         pendingRef.current = [];
         if (merged.length !== current.length) {
           onChange({ ...c, participants: merged });
@@ -77,10 +129,11 @@ export default function GiveawayConfig({ config, onChange }) {
       const text = (msg.message || "").trim().toLowerCase();
       // Match "!keyword" exactly (with optional trailing whitespace)
       if (text === `!${keyword}` || text.startsWith(`!${keyword} `)) {
-        const name = msg.username;
-        if (name && !participantsRef.current.has(name)) {
-          participantsRef.current.add(name);
-          pendingRef.current.push(name);
+        const participant = participantFromMessage(msg);
+        const key = participantKey(participant);
+        if (participant.name && !participantsRef.current.has(key)) {
+          participantsRef.current.add(key);
+          pendingRef.current.push(participant);
         }
       }
     },
@@ -113,7 +166,7 @@ export default function GiveawayConfig({ config, onChange }) {
     const list = c.participants || [];
     if (list.length === 0) return;
     const idx = Math.floor(Math.random() * list.length);
-    const winnerName = list[idx];
+    const winnerName = participantName(list[idx]);
     // Show spin reel first, then reveal winner after animation
     setMulti({ spinningWinner: winnerName, winner: "" });
     setTimeout(() => {
@@ -129,9 +182,13 @@ export default function GiveawayConfig({ config, onChange }) {
   };
 
   // Remove a single participant
-  const removeParticipant = (name) => {
-    const updated = (c.participants || []).filter((n) => n !== name);
-    participantsRef.current.delete(name);
+  const removeParticipant = (participant) => {
+    const key = participantKey(participant);
+    const name = participantName(participant);
+    const updated = (c.participants || []).filter(
+      (entry) => participantKey(entry) !== key,
+    );
+    participantsRef.current.delete(key);
     const patch = { participants: updated };
     if (c.winner === name) patch.winner = "";
     onChange({ ...c, ...patch });
@@ -301,7 +358,7 @@ export default function GiveawayConfig({ config, onChange }) {
             {c.winner ? (
               <div className="giveaway-winner">
                 <span>Winner</span>
-                <strong>{c.winner}</strong>
+                <strong>{participantName(c.winner)}</strong>
                 <button type="button" onClick={() => set("winner", "")}>
                   Clear winner
                 </button>
@@ -341,25 +398,29 @@ export default function GiveawayConfig({ config, onChange }) {
 
             {participants.length > 0 ? (
               <div className="giveaway-entries-list">
-                {participants.map((name, index) => (
-                  <div
-                    key={name}
-                    className={`giveaway-entry-row${name === c.winner ? " giveaway-entry-row--winner" : ""}`}
-                  >
-                    <span className="giveaway-entry-row__index">
-                      #{index + 1}
-                    </span>
-                    <span className="giveaway-entry-row__name">{name}</span>
-                    {name === c.winner && <Trophy size={14} />}
-                    <button
-                      type="button"
-                      onClick={() => removeParticipant(name)}
-                      title={`Remove ${name}`}
+                {participants.map((participant, index) => {
+                  const name = participantName(participant);
+                  const isWinner = name === participantName(c.winner);
+                  return (
+                    <div
+                      key={participantKey(participant)}
+                      className={`giveaway-entry-row${isWinner ? " giveaway-entry-row--winner" : ""}`}
                     >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
+                      <span className="giveaway-entry-row__index">
+                        #{index + 1}
+                      </span>
+                      <span className="giveaway-entry-row__name">{name}</span>
+                      {isWinner && <Trophy size={14} />}
+                      <button
+                        type="button"
+                        onClick={() => removeParticipant(participant)}
+                        title={`Remove ${name}`}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="giveaway-empty-state">

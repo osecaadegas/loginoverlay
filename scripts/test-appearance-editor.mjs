@@ -672,6 +672,44 @@ try {
     ),
     "utf8",
   ).replaceAll("\r\n", "\n");
+  const giveawayConfigSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/giveaway/GiveawayConfig.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  ).replaceAll("\r\n", "\n");
+  assert.ok(
+    giveawayConfigSource.includes("function participantFromMessage(message)") &&
+      giveawayConfigSource.includes("pendingRef.current.push(participant)") &&
+      giveawayConfigSource.includes("participants.map(participantKey)") &&
+      betterWidgetStylesSource.includes("function BetterGiveawayAvatar") &&
+      betterWidgetStylesSource.includes("twitchAvatarProxyUrl(login)"),
+    "Better Giveaway retains Twitch participant identity and renders profile avatars with fallback support",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      'data-giveaway-winner={isWinner ? "true" : undefined}',
+    ) &&
+      betterWidgetStylesSource.includes("viewport.clientWidth / 2") &&
+      betterWidgetStylesSource.includes(
+        "winnerChip.offsetLeft + winnerChip.offsetWidth / 2",
+      ) &&
+      betterWidgetStylesSource.includes("observer.observe(stage)") &&
+      betterWidgetStylesSource.includes(
+        "requestAnimationFrame(measureWinnerOffset)",
+      ) &&
+      betterWidgetStylesSource.includes(
+        'transform:translate3d(var(--gw-winner-offset),0,0)',
+      ),
+    "Better Giveaway always lands the selected winner avatar at the measured viewport center",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes("function BetterGiveawayConfetti()") &&
+      betterWidgetStylesSource.includes("better-gw-confetti-fall") &&
+      betterWidgetStylesSource.includes("better-gw-pointer-crossline"),
+    "Better Giveaway celebrates the centered winner with confetti and a two-axis crosshair",
+  );
   assert.ok(
     betterWidgetStylesSource.includes(
       '[data-drawer-mode="contain"] .better-hunt-drawer{height:auto;min-height:0;max-height:0;transform:translateY(100%)',

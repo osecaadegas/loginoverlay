@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Coins,
   DollarSign,
@@ -224,17 +230,78 @@ function giveawayParticipant(value, index) {
         value?.displayName ||
         value?.user ||
         `Entry ${index + 1}`;
+  const platform =
+    typeof value === "object"
+      ? String(value?.platform || "").toLowerCase()
+      : "twitch";
+  const login =
+    typeof value === "object"
+      ? value?.login || value?.username || value?.user || name
+      : name;
+  const explicitAvatar =
+    typeof value === "object"
+      ? value?.avatarUrl ||
+        value?.profileImageUrl ||
+        value?.profile_image_url ||
+        value?.userAvatar ||
+        ""
+      : "";
   return {
     id:
       typeof value === "object" && value?.id
         ? String(value.id)
         : `${name}-${index}`,
     name: String(name || `Entry ${index + 1}`),
+    avatarUrl:
+      explicitAvatar ||
+      (platform === "twitch" ? twitchAvatarProxyUrl(login) : ""),
     hue: normalizeHue(
       typeof value === "object" ? value?.hue : undefined,
       198 + index * 41,
     ),
   };
+}
+
+function BetterGiveawayAvatar({ participant }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [participant.avatarUrl]);
+
+  if (participant.avatarUrl && !failed) {
+    return (
+      <img
+        src={participant.avatarUrl}
+        alt={`${participant.name} Twitch avatar`}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return initials(participant.name);
+}
+
+function BetterGiveawayConfetti() {
+  return (
+    <div className="better-gw-confetti" aria-hidden="true">
+      {Array.from({ length: 36 }, (_, index) => (
+        <i
+          key={index}
+          style={{
+            "--gw-confetti-x": `${(index * 37) % 100}%`,
+            "--gw-confetti-delay": `${(index % 9) * -0.11}s`,
+            "--gw-confetti-drift": `${((index * 29) % 90) - 45}px`,
+            "--gw-confetti-rotation": `${180 + ((index * 47) % 540)}deg`,
+            "--gw-confetti-color": [
+              "#ffc51b",
+              "#5cd8ff",
+              "#ff5277",
+              "#8cff8c",
+              "#ffffff",
+            ][index % 5],
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 function BetterGiveawayGiftIcon() {
@@ -264,17 +331,65 @@ function BetterGiveawayRoulette({
   winnerName,
   durationSec,
 }) {
+  const stageRef = useRef(null);
+  const viewportRef = useRef(null);
+  const [winnerOffset, setWinnerOffset] = useState(0);
   const crowd = participants.length
     ? participants
     : [{ id: "waiting", name: "Waiting", hue: 208 }];
-  const repeats = Math.max(3, Math.ceil(14 / crowd.length));
-  const chips = Array.from({ length: repeats }, () => crowd).flat();
   const winnerKey = String(winnerName || "").toLowerCase();
+  const winnerParticipant =
+    crowd.find(
+      (participant) => participant.name.toLowerCase() === winnerKey,
+    ) || crowd[0];
+  const leadRepeats = Math.max(5, Math.ceil(28 / crowd.length));
+  const leadChips = Array.from({ length: leadRepeats }, () => crowd).flat();
+  const winnerIndex = leadChips.length;
+  const chips = [...leadChips, winnerParticipant, ...crowd.slice(0, 6)];
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const stage = stageRef.current;
+    if (!viewport) return undefined;
+
+    let animationFrame = 0;
+    const measureWinnerOffset = () => {
+      const winnerChip = viewport.querySelector('[data-giveaway-winner="true"]');
+      if (!winnerChip) return;
+      const nextOffset =
+        viewport.clientWidth / 2 -
+        (winnerChip.offsetLeft + winnerChip.offsetWidth / 2);
+      setWinnerOffset(nextOffset);
+    };
+    const updateWinnerOffset = () => {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(measureWinnerOffset);
+    };
+
+    measureWinnerOffset();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateWinnerOffset);
+      return () => {
+        cancelAnimationFrame(animationFrame);
+        window.removeEventListener("resize", updateWinnerOffset);
+      };
+    }
+
+    const observer = new ResizeObserver(updateWinnerOffset);
+    observer.observe(viewport);
+    if (stage) observer.observe(stage);
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      observer.disconnect();
+    };
+  }, [winnerIndex, winnerKey]);
 
   return (
     <div
       className={`better-gw-roulette-stage better-gw-roulette-stage--${phase}`}
+      ref={stageRef}
     >
+      {phase === "winner" ? <BetterGiveawayConfetti /> : null}
       <div
         className={`better-gw-winner-banner${phase === "winner" && winnerName ? " is-shown" : ""}`}
         role="status"
@@ -293,21 +408,21 @@ function BetterGiveawayRoulette({
         ) : null}
       </div>
 
-      <div className="better-gw-roulette-viewport">
+      <div className="better-gw-roulette-viewport" ref={viewportRef}>
         <div
           className="better-gw-roulette-track"
           style={{
             "--gw-spin-duration": `${clampNumber(durationSec, 1.2, 12, 5.2)}s`,
+            "--gw-winner-offset": `${winnerOffset}px`,
           }}
         >
           {chips.map((participant, index) => {
-            const isWinner =
-              winnerKey &&
-              String(participant.name || "").toLowerCase() === winnerKey;
+            const isWinner = Boolean(winnerKey) && index === winnerIndex;
             return (
               <div
                 key={`${participant.id}-${index}`}
                 className={`better-gw-avatar-chip${phase === "winner" && isWinner ? " is-winner" : ""}`}
+                data-giveaway-winner={isWinner ? "true" : undefined}
               >
                 <span
                   className="better-gw-avatar-bubble"
@@ -315,7 +430,7 @@ function BetterGiveawayRoulette({
                     background: `linear-gradient(140deg, hsl(${participant.hue} 88% 58%), hsl(${normalizeHue(participant.hue + 42)} 92% 42%))`,
                   }}
                 >
-                  {initials(participant.name)}
+                  <BetterGiveawayAvatar participant={participant} />
                 </span>
                 <span className="better-gw-avatar-name">
                   {participant.name}
@@ -332,6 +447,7 @@ function BetterGiveawayRoulette({
           <i className="better-gw-pointer-line" />
           <i className="better-gw-pointer-notch better-gw-pointer-bottom" />
         </div>
+        <i className="better-gw-pointer-crossline" aria-hidden="true" />
       </div>
 
       <div className="better-gw-roulette-status">
@@ -1435,7 +1551,8 @@ function BetterStyleSheet() {
       @keyframes better-gw-crown-sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
       @keyframes better-gw-status-blink{0%,100%{opacity:1}50%{opacity:.45}}
       @keyframes better-gw-flash-fade{0%{opacity:0}16%{opacity:1}100%{opacity:0}}
-      @keyframes better-gw-reel-spin{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-50%,0,0)}}
+      @keyframes better-gw-reel-spin{0%{transform:translate3d(0,0,0)}72%{transform:translate3d(calc(var(--gw-winner-offset) + 90px),0,0)}88%{transform:translate3d(calc(var(--gw-winner-offset) - 20px),0,0)}100%{transform:translate3d(var(--gw-winner-offset),0,0)}}
+      @keyframes better-gw-confetti-fall{0%{opacity:0;transform:translate3d(0,-18px,0) rotate(0deg)}10%{opacity:1}100%{opacity:0;transform:translate3d(var(--gw-confetti-drift),150px,0) rotate(var(--gw-confetti-rotation))}}
       .better-giveaway-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:clamp(8px,2vmin,28px);box-sizing:border-box;container-type:size;background:transparent;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif)}
       .better-giveaway-stage *{box-sizing:border-box}
       .better-giveaway-widget{--cyan:var(--w-accent,#45c8ff);--blue:var(--w-accent-2,#1e5ad6);--H:var(--w-hue,195);--H2:var(--w-hue2,205);--H3:var(--w-hue3,190);--S:var(--w-sat,88%);--L:var(--w-lum,7%);--G:var(--w-glow,.3);--IG:var(--w-inner-glow,.35);position:relative;display:flex;width:min(100%,var(--w-width,700px));height:min(100%,var(--w-height,270px));min-width:0;min-height:0;flex-direction:column;justify-content:center;overflow:hidden;padding:var(--w-pad-y,22px) var(--w-pad-x,31px);border:var(--w-border-w,1px) solid color-mix(in srgb,var(--w-line,#2f63c9) calc(var(--w-border-a,.9) * 55%),transparent);border-radius:var(--w-radius,12px);background:linear-gradient(180deg,var(--w-panel-hi,#0c1c40) 0%,var(--w-bg,#0a1734) 55%,var(--w-panel-lo,#081228) 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--w-steel-hi,#9dbdf2) 12%,transparent);color:#eef6ff;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif);isolation:isolate;transition:border-color 480ms ease,box-shadow 480ms ease,background 480ms ease,border-radius 320ms ease,width 260ms ease,height 260ms ease,padding 260ms ease,filter 320ms ease}
@@ -1478,15 +1595,16 @@ function BetterStyleSheet() {
       .better-gw-edge-light{z-index:2;width:47px;height:2px;opacity:var(--w-edgelight-op,1);background:linear-gradient(90deg,transparent,var(--w-accent,#43d9ff) 25%,var(--w-accent-2,#167bff) 85%,transparent);box-shadow:0 0 calc(7px * var(--G)) hsl(var(--H) 100% 50% / var(--G))}.better-gw-edge-light-top{top:-1px;left:46%;animation:better-gw-edge-pulse 2.8s ease-in-out infinite}.better-gw-edge-light-bottom{right:45%;bottom:-1px;transform:rotate(180deg);animation:better-gw-edge-pulse 2.8s ease-in-out 1.2s infinite}
       .better-gw-side-dash{z-index:2;width:1px;height:28px;background:repeating-linear-gradient(to bottom,var(--w-accent,#21a9ed) 0 1px,transparent 1px 4px);opacity:var(--w-dash-op,.76);box-shadow:0 0 calc(6px * var(--G)) hsl(var(--H) 100% 50% / calc(.8 * var(--G)));transition:opacity 240ms ease}.better-gw-side-dash-left{top:65px;left:5px}.better-gw-side-dash-right{right:5px;bottom:65px}
       .better-gw-sheen{right:-10%;bottom:-110%;left:-10%;height:170%;z-index:0;opacity:var(--w-sheen-op,1);background:linear-gradient(103deg,transparent 35%,hsl(var(--H) 100% 72% / .09) 47%,transparent 60%);transform:translateX(-120%);animation:better-gw-sheen-sweep 7s ease-in-out 1.4s infinite}.better-giveaway-widget[style*="--w-sheen-op: 0"] .better-gw-sheen{animation:none}
-      .better-gw-roulette-stage{position:relative;height:100%;padding-top:24px}
+      .better-gw-roulette-stage{position:relative;height:100%;padding-top:24px}.better-gw-confetti{position:absolute;inset:0;z-index:6;overflow:hidden;pointer-events:none}.better-gw-confetti i{position:absolute;top:-10px;left:var(--gw-confetti-x);width:7px;height:12px;border-radius:2px;background:var(--gw-confetti-color);box-shadow:0 0 7px color-mix(in srgb,var(--gw-confetti-color) 70%,transparent);animation:better-gw-confetti-fall 1.8s cubic-bezier(.2,.65,.35,1) var(--gw-confetti-delay) both}
       .better-gw-winner-banner{position:absolute;top:0;left:50%;z-index:4;display:flex;align-items:center;gap:8px;padding:5px 16px;border:1px solid rgba(255,197,27,.8);border-radius:999px;background:linear-gradient(180deg,rgba(64,42,0,.95),rgba(26,16,0,.96));box-shadow:0 0 18px rgba(255,176,0,.5),inset 0 1px 0 rgba(255,224,130,.35);opacity:0;transform:translate(-50%,-10px) scale(.8);filter:blur(4px);pointer-events:none;transition:opacity 320ms ease,transform 460ms cubic-bezier(.2,1.4,.35,1),filter 320ms ease}.better-gw-winner-banner.is-shown{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0)}
       .better-gw-winner-crown{color:#ffc51b;filter:drop-shadow(0 0 5px rgba(255,187,0,.8));animation:better-gw-crown-sway 2.4s ease-in-out infinite}.better-gw-winner-kicker{color:#ffd877;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase}.better-gw-winner-name{color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:13px;font-weight:800;letter-spacing:.05em;text-shadow:0 0 10px rgba(255,205,60,.75)}
       .better-gw-roulette-viewport{position:relative;height:122px;overflow:hidden;border:1px solid rgba(16,86,145,.55);border-radius:7px;background:rgba(1,8,20,.6);box-shadow:inset 0 0 16px rgba(0,68,138,.22);mask-image:linear-gradient(90deg,transparent,black 8%,black 92%,transparent)}
-      .better-gw-roulette-track{display:flex;align-items:center;gap:14px;height:100%;width:max-content;padding:0 6px;will-change:transform}.better-gw-roulette-stage--spinning .better-gw-roulette-track{animation:better-gw-reel-spin var(--gw-spin-duration,5.2s) linear infinite}
-      .better-gw-avatar-chip{position:relative;display:flex;width:66px;flex:none;flex-direction:column;align-items:center;gap:7px;transition:opacity 420ms ease,filter 420ms ease}.better-gw-avatar-bubble{display:grid;width:66px;height:66px;place-items:center;border:2px solid rgba(150,226,255,.6);border-radius:50%;color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:19px;font-weight:800;letter-spacing:.03em;text-shadow:0 1px 4px rgba(0,0,0,.6);box-shadow:inset 0 -7px 14px rgba(0,0,0,.35),0 0 10px rgba(0,110,200,.4);transition:transform 300ms cubic-bezier(.2,1.3,.4,1),box-shadow 300ms ease,border-color 300ms ease}.better-gw-avatar-name{max-width:100%;overflow:hidden;color:#9fd8f2;font-size:12px;font-weight:600;letter-spacing:.02em;text-overflow:ellipsis;white-space:nowrap}
+      .better-gw-roulette-track{display:flex;align-items:center;gap:14px;height:100%;width:max-content;padding:0 6px;transform:translate3d(var(--gw-winner-offset),0,0);will-change:transform}.better-gw-roulette-stage--spinning .better-gw-roulette-track{animation:better-gw-reel-spin var(--gw-spin-duration,5.2s) cubic-bezier(.12,.68,.18,1) both}
+      .better-gw-avatar-chip{position:relative;display:flex;width:66px;height:100%;flex:none;align-items:center;justify-content:center;transition:opacity 420ms ease,filter 420ms ease}.better-gw-avatar-bubble{display:grid;width:66px;height:66px;overflow:hidden;place-items:center;border:2px solid rgba(150,226,255,.6);border-radius:50%;color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:19px;font-weight:800;letter-spacing:.03em;text-shadow:0 1px 4px rgba(0,0,0,.6);box-shadow:inset 0 -7px 14px rgba(0,0,0,.35),0 0 10px rgba(0,110,200,.4);transition:transform 300ms cubic-bezier(.2,1.3,.4,1),box-shadow 300ms ease,border-color 300ms ease}.better-gw-avatar-bubble img{display:block;width:100%;height:100%;object-fit:cover}.better-gw-avatar-name{position:absolute;top:calc(50% + 40px);max-width:100%;overflow:hidden;color:#9fd8f2;font-size:12px;font-weight:600;letter-spacing:.02em;text-overflow:ellipsis;white-space:nowrap}
       .better-gw-roulette-stage--winner .better-gw-avatar-chip:not(.is-winner){opacity:.28;filter:saturate(.35) brightness(.7)}.better-gw-avatar-chip.is-winner .better-gw-avatar-bubble{border-color:#ffc51b;box-shadow:inset 0 -7px 14px rgba(0,0,0,.35),0 0 0 3px rgba(255,197,27,.4),0 0 26px rgba(255,178,0,.8);transform:scale(1.2);animation:better-gw-winner-pop 900ms cubic-bezier(.2,1.5,.4,1) both}.better-gw-avatar-chip.is-winner .better-gw-avatar-name{color:#ffe08a;font-weight:700;text-shadow:0 0 8px rgba(255,190,0,.55)}
-      .better-gw-chip-crown{position:absolute;top:-13px;z-index:2;padding:1px 4px;border:1px solid rgba(255,197,27,.72);border-radius:999px;background:rgba(32,20,0,.94);color:#ffd877;font-size:8px;font-weight:900;letter-spacing:.08em;line-height:1;filter:drop-shadow(0 2px 6px rgba(255,150,0,.85));animation:better-gw-crown-drop 560ms cubic-bezier(.2,1.6,.4,1) both}
+      .better-gw-chip-crown{position:absolute;top:calc(50% - 46px);z-index:2;padding:1px 4px;border:1px solid rgba(255,197,27,.72);border-radius:999px;background:rgba(32,20,0,.94);color:#ffd877;font-size:8px;font-weight:900;letter-spacing:.08em;line-height:1;filter:drop-shadow(0 2px 6px rgba(255,150,0,.85));animation:better-gw-crown-drop 560ms cubic-bezier(.2,1.6,.4,1) both}
       .better-gw-roulette-pointer{position:absolute;top:6px;bottom:6px;left:50%;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:14px;transform:translateX(-50%);pointer-events:none}.better-gw-pointer-line{flex:1;width:2px;margin:3px 0;background:linear-gradient(180deg,rgba(97,220,255,.9),rgba(8,126,255,.35) 50%,rgba(97,220,255,.9));box-shadow:0 0 8px rgba(0,162,255,.8)}.better-gw-pointer-notch{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;filter:drop-shadow(0 0 5px rgba(0,174,255,.9))}.better-gw-pointer-top{border-top:7px solid #5cd8ff}.better-gw-pointer-bottom{border-bottom:7px solid #5cd8ff}
+      .better-gw-pointer-crossline{position:absolute;top:50%;left:calc(50% - 39px);z-index:3;width:78px;height:1px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,#5cd8ff 34%,#5cd8ff 66%,transparent);box-shadow:0 0 7px rgba(0,162,255,.75);pointer-events:none}
       .better-gw-roulette-status{display:flex;justify-content:center;min-height:16px;margin-top:7px;color:#7fb2cf;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}.better-gw-status-spin{color:#6fdcff;text-shadow:0 0 8px rgba(0,180,255,.6);animation:better-gw-status-blink 900ms ease-in-out infinite}.better-gw-status-win{display:inline-flex;align-items:center;gap:6px;color:#ffd877;text-shadow:0 0 8px rgba(255,187,0,.5)}
       @container (max-width:520px){.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
       @media (max-width:520px){.better-giveaway-stage{padding:8px}.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
