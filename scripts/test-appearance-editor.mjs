@@ -876,6 +876,21 @@ try {
         "better-hunt-request-shard-surface",
       ) &&
       betterWidgetStylesSource.includes(
+        '"--bh-transfer-end-x": endScaleX',
+      ) &&
+      betterWidgetStylesSource.includes(
+        '"--bh-transfer-end-y": endScaleY',
+      ) &&
+      betterWidgetStylesSource.includes(
+        'className="better-hunt-request-transfer-ring"',
+      ) &&
+      betterWidgetStylesSource.includes(
+        "Math.min(8, Math.round(source.width / 44))",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "Math.min(3, Math.round(source.height / 34))",
+      ) &&
+      betterWidgetStylesSource.includes(
         "copy === 0 ? (node) => rememberRequestNode(request, node) : undefined",
       ) &&
       betterWidgetStylesSource.includes(
