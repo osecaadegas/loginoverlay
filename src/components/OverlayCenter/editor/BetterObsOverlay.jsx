@@ -18,11 +18,11 @@ import "./BetterObsOverlay.css";
 const FALLBACK_REFRESH_MS = 30000;
 const OBS_SCALE_MODES = new Set(["fit", "fill", "native"]);
 
-function getObsScaleMode(isSingleWidget) {
+function getObsScaleMode() {
   if (typeof window === "undefined") return "auto";
   const mode = new URLSearchParams(window.location.search).get("scale");
   if (OBS_SCALE_MODES.has(mode)) return mode;
-  return isSingleWidget ? "native" : "fit";
+  return "fit";
 }
 
 function normalizeScale(value) {
@@ -245,7 +245,7 @@ export default function BetterObsOverlay() {
     isSingleWidget || !targetWidth || !targetHeight
       ? 1
       : Math.min(viewport.width / targetWidth, viewport.height / targetHeight);
-  const scaleMode = getObsScaleMode(isSingleWidget);
+  const scaleMode = getObsScaleMode();
   const fitScale =
     !targetWidth || !targetHeight
       ? 1
