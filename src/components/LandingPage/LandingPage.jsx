@@ -2,13 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  BarChart3,
-  CalendarDays,
   CircleDollarSign,
   Clapperboard,
   Database,
   Gauge,
-  Gift,
   Grid3X3,
   LayoutDashboard,
   LibraryBig,
@@ -20,12 +17,10 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
-  Sparkles,
   Swords,
   Trophy,
   Users,
   WalletCards,
-  Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../config/supabaseClient';
@@ -43,12 +38,9 @@ const FEATURED_PARTNERS = [
 ];
 
 const STREAMER_FEATURES = [
-  { icon: MonitorPlay, title: 'iGaming overlays', desc: 'Professional casino overlays, overlay trackers, bonus hunt widgets and live stream panels ready for OBS.' },
-  { icon: Gift, title: 'Viewer engagement', desc: 'Slot requests, giveaways, tournaments, predictions, bets and chat-driven community moments.' },
-  { icon: Radio, title: 'Live integrations', desc: 'Tools designed around Twitch, Kick, YouTube and chat workflows where available.' },
-  { icon: LayoutDashboard, title: 'Control center', desc: 'Manage widgets, themes, requests, assets and stream utilities from one dashboard.' },
-  { icon: BarChart3, title: 'Stream analytics', desc: 'Track traffic, offers and stream performance with admin-friendly analytics.' },
-  { icon: Sparkles, title: 'Custom themes', desc: 'Build branded stream surfaces without rebuilding your overlay stack each time.' },
+  { icon: LayoutDashboard, title: 'Manage the stream', desc: 'Control bonus hunts, slot requests, RTP stats and session widgets from one focused dashboard.' },
+  { icon: Users, title: 'Engage your viewers', desc: 'Let chat request slots, join giveaways, play games, place predictions and compete in stream moments.' },
+  { icon: MonitorPlay, title: 'Show better visuals', desc: 'Use OBS-ready browser sources, branded widgets, live alerts and tournament displays.' },
 ];
 
 const PLAYER_FEATURES = [
@@ -63,18 +55,13 @@ const PLAYER_FEATURES = [
 const ROOT_ANSWERS = [
   {
     icon: MonitorPlay,
-    title: 'Software for livestream creators',
-    desc: 'Streamers Center is built for Twitch, Kick and YouTube iGaming creators who need iGaming overlays, casino overlays, browser-source widgets, slot requests, tournaments, giveaways and chat tools.',
+    title: 'For Streamers',
+    desc: 'Interactive OBS overlays, bonus hunts, tournaments, giveaways, chat games and stream controls for iGaming creators.',
   },
   {
     icon: Gauge,
-    title: 'Casino tracking for players',
-    desc: 'The player tools work as a bonus hunt tracker, slot tracker, financial tracker and profit/loss tracker for deposits, withdrawals, payouts, multipliers, break-even targets and providers.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Not an audio or party store',
-    desc: 'Streamers Center is a web app for streamer workflows and casino session tracking. It is not a Hi-Fi retailer, audio equipment shop or physical decoration supplier.',
+    title: 'For Gamblers',
+    desc: 'Track deposits, withdrawals, slot results, break-even progress and profit or loss in a private player dashboard.',
   },
 ];
 
@@ -100,7 +87,7 @@ const STREAMER_ANSWERS = [
   {
     icon: MonitorPlay,
     title: 'What streamer tools are included?',
-    desc: 'iGaming overlays, casino overlays, browser-source overlay trackers, bonus hunt widgets, slot request queues, tournaments, giveaways, chat-connected tools, viewer games, custom themes and partner discovery.',
+    desc: 'Browser-source overlays, bonus hunt widgets, slot request queues, tournaments, giveaways, chat-connected tools, viewer games, custom themes and partner discovery.',
   },
   {
     icon: Clapperboard,
@@ -112,6 +99,58 @@ const STREAMER_ANSWERS = [
     title: 'Who is it built for?',
     desc: 'Streamers Center is built for iGaming, casino and slot content creators on Twitch, Kick and YouTube Live.',
   },
+];
+
+const STREAMER_DEMOS = [
+  {
+    id: 'bonus',
+    label: 'Bonus Hunt',
+    title: 'Run bonus hunts without spreadsheet chaos.',
+    desc: 'Display opened bonuses, current payout, remaining slots, break-even progress and best results directly on stream.',
+    points: ['OBS browser source', 'Slot images and providers', 'Break-even progress'],
+  },
+  {
+    id: 'requests',
+    label: 'Slot Requests',
+    title: 'Turn chat suggestions into an organized queue.',
+    desc: 'Let viewers request slots, keep the queue readable and decide what gets played next from the dashboard.',
+    points: ['Viewer request queue', 'Streamer controls', 'Chat-friendly display'],
+  },
+  {
+    id: 'giveaways',
+    label: 'Giveaway',
+    title: 'Create moments viewers can join instantly.',
+    desc: 'Run giveaway panels and calls to action that are easy to read on stream and simple for chat to understand.',
+    points: ['Keyword entry display', 'Winner-ready layout', 'Stream-safe visuals'],
+  },
+  {
+    id: 'games',
+    label: 'Chat Games',
+    title: 'Give chat something to do between spins.',
+    desc: 'Add games, predictions and community interactions that keep viewers active during the whole session.',
+    points: ['Predictions and bets', 'Viewer games', 'Community commands'],
+  },
+  {
+    id: 'stats',
+    label: 'RTP Stats',
+    title: 'Show useful slot context at a glance.',
+    desc: 'Surface RTP, volatility and slot metadata in a clean overlay style that supports the stream instead of covering it.',
+    points: ['RTP display', 'Volatility notes', 'Slot metadata'],
+  },
+];
+
+const STREAMER_STEPS = [
+  'Connect your streaming or chat account where supported.',
+  'Configure the widgets and visual style you want on stream.',
+  'Add the browser-source URL to OBS or your production scene.',
+  'Run bonus hunts, requests, games and giveaways from one place.',
+];
+
+const TRUST_POINTS = [
+  { icon: ShieldCheck, title: 'Software only', desc: 'Streamers Center does not operate gambling services, accept deposits or process wagers.' },
+  { icon: Database, title: 'Clear data boundaries', desc: 'Streamer tools, player tracking and connected-account data stay separated by product area.' },
+  { icon: RefreshCw, title: 'Actively maintained', desc: 'Widgets, pricing, screenshots and integrations are updated as the product changes.' },
+  { icon: CircleDollarSign, title: 'Stripe billing', desc: 'Checkout and subscription management are handled through Stripe, with VAT shown before payment.' },
 ];
 
 const STREAMER_PRICING = [
@@ -441,15 +480,124 @@ function AnswerSection({ eyebrow, title, children, answers }) {
 function RootOverview() {
   return (
     <main className="lp-selected lp-selected--overview">
-      <AnswerSection
-        eyebrow="Streamers Center"
-        title="Streamer tools and casino tracking in one web app."
-        answers={ROOT_ANSWERS}
-      >
-        A clear home for iGaming content creators and casino players: iGaming overlays, casino overlays,
-        bonus hunt tracking, slot tracking, slot requests, tournaments, giveaways, chat tools and profit/loss records.
-      </AnswerSection>
+      <section className="lp-section lp-journey-overview">
+        <div>
+          <span className="lp-eyebrow">Choose your path</span>
+          <h2>Built for iGaming streamers first, with a private tracker for gamblers.</h2>
+          <p>
+            Streamers Center helps creators run interactive streams viewers can participate in.
+            The gambler tracker is kept separate for players who only want session records and profit or loss clarity.
+          </p>
+        </div>
+        <ProductFeatureGrid features={ROOT_ANSWERS} />
+      </section>
     </main>
+  );
+}
+
+function StreamerIntro({ onStreamerCta }) {
+  return (
+    <section className="lp-section lp-streamer-intro">
+      <div className="lp-streamer-intro__copy">
+        <span className="lp-eyebrow">Streamer tools</span>
+        <h2>Build a stream your viewers want to interact with.</h2>
+        <p>
+          Turn passive viewers into active participants with OBS-ready overlays, bonus hunts,
+          slot requests, tournaments, giveaways and chat games controlled from one place.
+        </p>
+        <div className="lp-selected-hero__ctas">
+          <button type="button" className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>
+            Explore Streamer Tools <ArrowRight size={18} />
+          </button>
+          <Link className="lp-btn lp-btn--ghost" to="/premium?type=player">
+            Open Gambler Tracker <Gauge size={18} />
+          </Link>
+        </div>
+      </div>
+      <div className="lp-platform-strip" aria-label="Supported streamer workflow">
+        {['OBS-ready', 'Twitch', 'Kick', 'YouTube', 'No coding required'].map((item) => (
+          <span key={item}>{item}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WidgetDemoSection() {
+  const [activeDemoId, setActiveDemoId] = useState(STREAMER_DEMOS[0].id);
+  const activeDemo = STREAMER_DEMOS.find((demo) => demo.id === activeDemoId) || STREAMER_DEMOS[0];
+
+  return (
+    <section className="lp-section lp-widget-demo" id="live-demo">
+      <div className="lp-widget-demo__header">
+        <SectionHeading eyebrow="Live demo" title="Show the tools instead of explaining them.">
+          Switch between the stream moments a viewer naturally understands: hunts, requests, giveaways, games and slot stats.
+        </SectionHeading>
+        <Link className="lp-btn lp-btn--ghost" to="/premium?type=streamer">
+          See Pricing <Play size={18} />
+        </Link>
+      </div>
+      <div className="lp-demo-tabs" role="tablist" aria-label="Streamer widget demos">
+        {STREAMER_DEMOS.map((demo) => (
+          <button
+            key={demo.id}
+            type="button"
+            role="tab"
+            aria-selected={activeDemo.id === demo.id}
+            className={activeDemo.id === demo.id ? 'is-active' : ''}
+            onClick={() => setActiveDemoId(demo.id)}
+          >
+            {demo.label}
+          </button>
+        ))}
+      </div>
+      <div className="lp-demo-stage">
+        <div className="lp-demo-stage__copy">
+          <h3>{activeDemo.title}</h3>
+          <p>{activeDemo.desc}</p>
+          <ul>
+            {activeDemo.points.map((point) => <li key={point}>{point}</li>)}
+          </ul>
+        </div>
+        <div className={`lp-demo-widget lp-demo-widget--${activeDemo.id}`} aria-hidden="true">
+          <span>{activeDemo.label}</span>
+          <strong>{activeDemo.points[0]}</strong>
+          <div className="lp-preview-progress"><span style={{ width: activeDemo.id === 'stats' ? '96%' : '72%' }} /></div>
+          <small>{activeDemo.points[1]}</small>
+          <small>{activeDemo.points[2]}</small>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorksSection() {
+  return (
+    <section className="lp-section lp-how-it-works">
+      <SectionHeading eyebrow="How it works" title="From dashboard to OBS in four steps.">
+        The setup path stays practical for small and growing iGaming streamers.
+      </SectionHeading>
+      <ol>
+        {STREAMER_STEPS.map((step, index) => (
+          <li key={step}>
+            <span>{index + 1}</span>
+            <p>{step}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function TrustComplianceSection() {
+  return (
+    <section className="lp-section lp-trust-section">
+      <SectionHeading eyebrow="Trust and compliance" title="Streaming software, not a gambling operator.">
+        Streamers Center provides tools for presentation, chat interaction and record keeping.
+        It does not accept wagers, operate casino games or process player deposits.
+      </SectionHeading>
+      <ProductFeatureGrid features={TRUST_POINTS} />
+    </section>
   );
 }
 
@@ -605,13 +753,17 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
           <img src={LANDING_IMAGES.streamer} alt="" loading="eager" decoding="async" />
         </div>
         <h1 ref={headingRef} tabIndex="-1" className="lp-sr-only">
-          iGaming overlays and casino streamer tools.
+          Build a stream your viewers want to interact with.
         </h1>
       </section>
 
+      <StreamerIntro onStreamerCta={onStreamerCta} />
+
+      <WidgetDemoSection />
+
       <section className="lp-section">
-        <SectionHeading eyebrow="Creator toolkit" title="Everything for a more interactive stream.">
-          Keep OBS overlays, casino overlays, chat interactions, bonus hunts, viewer commands and stream tools under one roof.
+        <SectionHeading eyebrow="Creator toolkit" title="Everything for a more interactive stream, grouped by workflow.">
+          Manage the stream, engage your viewers and show better visuals without spreading the production across disconnected tools.
         </SectionHeading>
         <ProductFeatureGrid features={STREAMER_FEATURES} />
       </section>
@@ -621,8 +773,10 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
         title="Built for iGaming creators and live production."
         answers={STREAMER_ANSWERS}
       >
-        Streamer Center focuses on Twitch, Kick and YouTube casino creator workflows, not audio retail or event supplies.
+        Streamers Center focuses on Twitch, Kick and YouTube creator workflows for casino and slot content.
       </AnswerSection>
+
+      <HowItWorksSection />
 
       <section className="lp-section lp-streamer-showcase">
         <div className="lp-showcase-card lp-showcase-card--wide">
@@ -649,7 +803,7 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
 
       <section className="lp-section">
         <SectionHeading eyebrow="Premium" title="Choose your streamer plan.">
-          Premium access unlocks Overlay Center and the streamer-focused tools.
+          Premium access unlocks Overlay Center and the streamer-focused tools. Prices are shown before 23% VAT and billing is handled through Stripe.
         </SectionHeading>
         <div className="lp-pricing-grid">
           {activePlans.map((plan) => {
@@ -676,6 +830,8 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
         </div>
       </section>
 
+      <TrustComplianceSection />
+
       <section className="lp-section">
         <SectionHeading eyebrow="Partners" title="Featured affiliate partners.">
           Keep the existing partner content visible while the streamer entrance gets a sharper first impression.
@@ -694,7 +850,10 @@ function StreamerLanding({ headingRef, pricingPlans, partners, onStreamerCta, on
 function Footer() {
   return (
     <footer className="lp-footer">
-      <span>Streamers Center</span>
+      <div>
+        <span>Streamers Center</span>
+        <p>Streaming and tracking software only. We do not operate gambling services, accept deposits or process wagers.</p>
+      </div>
       <nav aria-label="Footer">
         <Link to="/privacy">Privacy</Link>
         <Link to="/terms">Terms</Link>

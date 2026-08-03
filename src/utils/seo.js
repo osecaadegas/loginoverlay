@@ -1,6 +1,6 @@
 const SITE_URL = 'https://streamerscenter.com';
-const DEFAULT_TITLE = 'iGaming Overlays, Bonus Hunt Tracker & Casino Profit/Loss Tracker | Streamers Center';
-const DEFAULT_DESCRIPTION = 'iGaming and casino overlays, bonus hunt tracker, slot tracker, financial tracker and profit/loss tracker for Twitch, Kick and YouTube streamers and casino players.';
+const DEFAULT_TITLE = 'Interactive iGaming Overlays and Bonus Hunt Tools | Streamers Center';
+const DEFAULT_DESCRIPTION = 'Create interactive OBS overlays for bonus hunts, slot requests, tournaments, giveaways, bets and chat games. Streamers Center supports Twitch, Kick and YouTube creators.';
 const DEFAULT_IMAGE = `${SITE_URL}/social-preview.png`;
 const BRAND_LOGO = `${SITE_URL}/StreamerCenterLogo.png`;
 const BRAND_ICON = `${SITE_URL}/favicon-512x512.png`;
@@ -61,15 +61,15 @@ const FAQ_BY_PATH = {
   '/': [
     {
       question: 'What is Streamers Center?',
-      answer: 'Streamers Center is a web app for Twitch, Kick and YouTube iGaming content creators and casino players. It combines iGaming overlays, casino overlays, bonus hunt tracking, slot tracking, slot requests, tournaments, giveaways, chat tools and casino profit/loss tracking.',
+      answer: 'Streamers Center is software for Twitch, Kick and YouTube iGaming creators. It helps streamers run interactive overlays, bonus hunts, slot requests, tournaments, giveaways, chat tools and viewer games.',
     },
     {
       question: 'Who is Streamers Center for?',
-      answer: 'Streamers Center is built for casino and slot streamers who need live production tools, and for players who want a private bonus hunt tracker and casino session accounting dashboard.',
+      answer: 'The streamer tools are built for casino and slot creators who need live production tools. Streamers Center also includes a separate private tracker for gamblers who want session records.',
     },
     {
-      question: 'Is Streamers Center an audio or retail store?',
-      answer: 'No. Streamers Center is software for livestream creators and casino players. It is not an audio equipment shop, Hi-Fi retailer or physical party decoration store.',
+      question: 'Does Streamers Center operate gambling services?',
+      answer: 'No. Streamers Center provides streaming and tracking software. It does not operate gambling services, accept deposits or process wagers.',
     },
   ],
   '/player': [
@@ -237,14 +237,14 @@ function getStructuredData(pathname, route, canonical) {
       '@id': `${SITE_URL}/#organization`,
       name: 'Streamers Center',
       alternateName: ['Streamer Center', 'streamerscenter.com'],
-      description: 'Streamers Center creates software for iGaming streamers and casino players, including iGaming overlays, casino overlays, bonus hunt trackers, slot trackers, financial trackers, slot requests, tournaments, giveaways and casino profit/loss tools.',
+      description: 'Streamers Center creates software for iGaming streamers and casino players, including interactive overlays, bonus hunt tools, slot request widgets, tournaments, giveaways, chat games and private casino session tracking.',
       url: `${SITE_URL}/`,
       logo: BRAND_LOGO,
       image: BRAND_ICON,
       icon: BRAND_ICON,
       thumbnailUrl: BRAND_ICON,
       foundingDate: '2026',
-      slogan: 'iGaming overlays and casino tracking tools for streamers and players.',
+      slogan: 'Interactive iGaming overlays and tracking tools for streamers and players.',
       knowsAbout: CORE_TOPICS,
     },
     {
@@ -252,7 +252,7 @@ function getStructuredData(pathname, route, canonical) {
       '@id': `${SITE_URL}/#website`,
       url: `${SITE_URL}/`,
       name: 'Streamers Center',
-      description: 'iGaming overlays, casino overlays, bonus hunt tracker, slot tracker, financial tracker, profit/loss tracker and creator tools for players and streamers.',
+      description: 'Interactive iGaming overlays, bonus hunt tools, slot request widgets, tournaments, giveaways, chat games and private tracking tools for streamers and players.',
       inLanguage: 'en',
       keywords: CORE_TOPICS.join(', '),
       about: CORE_TOPICS.map((name) => ({ '@type': 'Thing', name })),
