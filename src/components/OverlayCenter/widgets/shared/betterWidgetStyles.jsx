@@ -491,6 +491,10 @@ function bonusProvider(bonus) {
   );
 }
 
+function bonusRequester(bonus) {
+  return bonus?.requestedBy || bonus?.requested_by || "";
+}
+
 function bonusImage(bonus) {
   return (
     bonus?.image ||
@@ -3114,7 +3118,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                 {bonusSlotName(bonus, index)}
               </strong>
               <em>
-                {bonusProvider(bonus) || (openedState ? "opened" : "queued")}
+                {bonusRequester(bonus) ||
+                  bonusProvider(bonus) ||
+                  (openedState ? "opened" : "queued")}
               </em>
             </span>
             <span className="better-hunt-mini-stats">
@@ -3176,7 +3182,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <strong {...attrs("bonus_hunt", c, "slotTitle")}>
             {bonusSlotName(bonus, index)}
           </strong>
-          <em>{bonusProvider(bonus) || (openedState ? "opened" : "queued")}</em>
+          <em>
+            {bonusRequester(bonus) ||
+              bonusProvider(bonus) ||
+              (openedState ? "opened" : "queued")}
+          </em>
         </span>
         <span className="better-hunt-mini-stats">
           <span className="better-hunt-mini-stat">

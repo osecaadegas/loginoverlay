@@ -831,6 +831,15 @@ try {
     "Bonus Hunt request names replace the provider without adding a separate row field",
   );
   assert.ok(
+    betterWidgetStylesSource.includes("function bonusRequester(bonus)") &&
+      betterWidgetStylesSource.includes("bonus?.requestedBy") &&
+      betterWidgetStylesSource.includes("bonus?.requested_by") &&
+      betterWidgetStylesSource.includes(
+        'bonusRequester(bonus) ||\n              bonusProvider(bonus)',
+      ),
+    "Better Bonus Hunt Rows show a chat requester instead of the provider beneath the slot name",
+  );
+  assert.ok(
     overlayCenterStylesSource.includes("width: 108px") &&
       overlayCenterStylesSource.includes("height: 24px") &&
       overlayCenterStylesSource.includes("padding: 1px 3px") &&
