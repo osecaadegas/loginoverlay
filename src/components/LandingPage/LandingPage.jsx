@@ -534,8 +534,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
     <main className="lp-home">
       <header className="lp-home-nav">
         <Link to="/" className="lp-home-brand" aria-label="Streamers Center home">
-          <span className="lp-home-brand__mark">S</span>
-          <span>Streamers <strong>Center</strong></span>
+          <img src="/StreamerCenterLogo.png" alt="" />
         </Link>
         <nav className="lp-home-nav__links" aria-label="Main navigation">
           <Link to="/streamer">Streamer Tools</Link>

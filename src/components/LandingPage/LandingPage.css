@@ -1465,31 +1465,15 @@
 .lp-home-brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: #fff;
   text-decoration: none;
-  font-size: 1.08rem;
-  font-weight: 950;
-  line-height: 1;
-  text-transform: uppercase;
 }
 
-.lp-home-brand strong {
-  display: block;
-  color: #38bdf8;
-}
-
-.lp-home-brand__mark {
-  width: 46px;
+.lp-home-brand img {
+  width: clamp(176px, 17vw, 224px);
   height: 46px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: #e0f2fe;
-  background: rgba(2, 6, 23, 0.92);
-  border: 3px solid #38bdf8;
-  box-shadow: 0 0 26px rgba(56, 189, 248, 0.3);
+  display: block;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .lp-home-nav__links,
