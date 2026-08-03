@@ -994,6 +994,18 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
+      'if (sessionState === "hunt") return null;',
+    ) &&
+      betterWidgetStylesSource.includes(
+        'const showProfit = sessionState === "ended";',
+      ) &&
+      betterWidgetStylesSource.includes(
+        '<span>{showProfit ? "Total Profit" : "Total Pay"}</span>',
+      ),
+    "Bonus Hunt hides payout during the hunt, shows it while opening, and shows total profit when ended",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
       '"Stop",\n          stopKnown ? formatMoney(stopValue, money) : "-"',
     ) &&
       !betterWidgetStylesSource.includes("          Shield,") &&

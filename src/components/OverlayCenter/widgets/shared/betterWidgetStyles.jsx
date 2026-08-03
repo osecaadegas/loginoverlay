@@ -2504,6 +2504,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const totalPay = Number.isFinite(totalPayFromStats)
     ? totalPayFromStats
     : opened.reduce((sum, bonus) => sum + bonusPayout(bonus), 0);
+  const totalProfit = totalPay - Math.max(startValue - stopValue, 0);
   const totalBetOpened = opened.reduce(
     (sum, bonus) => sum + bonusBet(bonus),
     0,
@@ -3280,6 +3281,13 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
 
   const renderBonusFooter = () => {
+    if (sessionState === "hunt") return null;
+
+    const showProfit = sessionState === "ended";
+    const profitSign = totalProfit >= 0 ? "+" : "-";
+    const footerValue = showProfit
+      ? `${profitSign}${formatMoney(Math.abs(totalProfit), money)}`
+      : formatMoney(totalPay, money);
     const drawerVisible =
       resultDrawerReady &&
       (drawerAlwaysVisible ||
@@ -3294,8 +3302,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           {...attrs("bonus_hunt", c, "footerContainer")}
         >
           <div className="better-hunt-total-head">
-            <span>Total Pay</span>
-            <strong>{formatMoney(totalPay, money)}</strong>
+            <span>{showProfit ? "Total Profit" : "Total Pay"}</span>
+            <strong>{footerValue}</strong>
           </div>
         </div>
         {drawerMounted && (
