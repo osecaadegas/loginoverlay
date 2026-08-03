@@ -727,6 +727,22 @@ try {
     "Bonus Hunt best/worst cards remain visible long enough to read",
   );
   assert.ok(
+    betterWidgetStylesSource.includes("request?.requested_by") &&
+      betterWidgetStylesSource.includes("request?.slot_name") &&
+      betterWidgetStylesSource.includes("request?.slot_image"),
+    "Bonus Hunt request rows consume the canonical slot request fields",
+  );
+  assert.ok(
+    betterWidgetStylesSource.includes(
+      'className="better-hunt-request-image"',
+    ) &&
+      betterWidgetStylesSource.includes(
+        'className="better-hunt-request-copy"',
+      ) &&
+      betterWidgetStylesSource.includes("Requested by <b>"),
+    "Bonus Hunt requests render as image-left rows with the viewer below the slot name",
+  );
+  assert.ok(
     betterWidgetPackagesSource.includes('label="Always visible"') &&
       betterWidgetPackagesSource.includes("drawerAlwaysVisible: false"),
     "Bonus Hunt exposes a persisted always-visible Best/Worst control",

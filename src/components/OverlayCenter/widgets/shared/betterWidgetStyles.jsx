@@ -1721,7 +1721,7 @@ function BetterStyleSheet() {
       .better-hunt-empty{display:grid;place-items:center;min-height:80px;border:1px dashed color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:10px;background:rgba(0,0,0,.16);color:var(--bh-steel-dim);font-weight:800;text-align:center}
       .better-hunt-requests{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 38%,transparent);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 62%,transparent),color-mix(in srgb,var(--bh-card-lo) 70%,transparent));padding:8px}
       .better-hunt-requests-head{display:grid;min-width:74px;align-content:center;gap:4px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}.better-hunt-requests-head span{color:var(--bh-steel-dim);font-size:.62em;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.better-hunt-requests-head strong{color:var(--bh-ice);font-size:1.35em;font-weight:950;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 40%,transparent)}
-      .better-hunt-request-list{min-width:0;display:grid;gap:5px}.better-hunt-request{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:7px;background:rgba(0,0,0,.22);padding:5px 7px}.better-hunt-request span{overflow:hidden;color:var(--bh-steel-hi);font-size:.72em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request strong{overflow:hidden;color:#fff;font-size:.76em;font-weight:900;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-request--empty{justify-content:center;color:var(--bh-steel-dim)}
+      .better-hunt-request-list{min-width:0;display:grid;gap:5px}.better-hunt-request{min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:9px;border-radius:7px;background:rgba(0,0,0,.22);padding:5px 7px}.better-hunt-request-image{width:42px;height:42px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);border-radius:6px;background:var(--bh-inset);box-shadow:0 3px 9px rgba(0,0,0,.42)}.better-hunt-request-image img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-image-fallback{width:100%;height:100%;display:grid;place-items:center;color:var(--bh-ice);font-size:.65em;font-weight:950;letter-spacing:.08em}.better-hunt-request-copy{min-width:0;display:grid;gap:3px}.better-hunt-request-copy strong{overflow:hidden;color:#fff;font-size:.78em;font-weight:900;line-height:1.1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-request-copy span{overflow:hidden;color:var(--bh-steel-hi);font-size:.68em;font-weight:800;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request-copy span b{color:var(--bh-ice);font-weight:950}.better-hunt-request--empty{display:flex;justify-content:center;color:var(--bh-steel-dim)}
       .better-hunt-footer{display:grid;min-width:0}
       .better-hunt-total{display:grid;gap:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:10px;background:rgba(0,0,0,.18)}
       .better-hunt-total-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
@@ -1777,7 +1777,7 @@ function BetterStyleSheet() {
       .better-hunt-track{position:relative}.better-hunt-track::before,.better-hunt-track::after{content:"";position:absolute;top:50%;width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;transform:translateY(-50%)}.better-hunt-track::before{left:-10px;border-right:10px solid var(--bh-line-hi)}.better-hunt-track::after{right:-10px;border-left:10px solid var(--bh-line-hi)}
       .better-hunt-rails{position:relative;padding-left:14px;padding-right:14px}.better-hunt-rails::before,.better-hunt-rails::after{content:"";position:absolute;top:0;bottom:0;width:8px;border-radius:999px;background:linear-gradient(180deg,var(--bh-line-hi),var(--bh-line-mid),var(--bh-line-hi));box-shadow:inset 1px 0 0 rgba(255,255,255,.18),inset -1px 0 0 rgba(0,0,0,.55),0 0 8px color-mix(in srgb,var(--bh-line-hi) 30%,transparent)}.better-hunt-rails::before{left:0}.better-hunt-rails::after{right:0}
       .better-hunt-requests{grid-template-columns:1fr;gap:7px}.better-hunt-requests-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;border-right:0;padding-right:0}.better-hunt-requests-head h3{margin:0;color:var(--bh-steel);font-size:.72em;font-weight:950;letter-spacing:.2em;line-height:1;text-transform:uppercase}.better-hunt-requests-head strong{display:inline-flex;align-items:center;justify-content:center;min-width:22px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bh-track) 70%,transparent);padding:1px 6px;color:var(--bh-steel-dim);font-size:.7em;line-height:1}
-      .better-hunt-request{border:1px solid color-mix(in srgb,var(--bh-line-hi) 20%,transparent);background:rgba(0,0,0,.2)}.better-hunt-request strong{text-align:right}
+      .better-hunt-request{border:1px solid color-mix(in srgb,var(--bh-line-hi) 20%,transparent);background:rgba(0,0,0,.2)}.better-hunt-request-copy strong{text-align:left}
       .better-hunt-win{position:absolute;inset:0;z-index:50;overflow:hidden;border-radius:inherit;pointer-events:none;animation:better-hunt-win-life var(--bh-win-duration,3s) ease both}.better-hunt-win-border{position:absolute;inset:0;border:2px solid var(--bh-win-color);border-radius:inherit;box-shadow:inset 0 0 40px var(--bh-win-glow);animation:better-hunt-win-border .9s ease-in-out infinite}.better-hunt-win-flash{position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 50%,var(--bh-win-glow),transparent 72%);animation:better-hunt-win-flash 1s ease-out both}.better-hunt-win-rays{position:absolute;left:50%;top:50%;height:150%;width:150%;background:repeating-conic-gradient(from 0deg,var(--bh-win-color) 0deg 5deg,transparent 5deg 13deg);opacity:.45;mask-image:radial-gradient(circle,#000 0%,transparent 62%);-webkit-mask-image:radial-gradient(circle,#000 0%,transparent 62%);transform:translate(-50%,-50%);animation:better-hunt-win-rays 9s linear infinite}.better-hunt-win-ring{position:absolute;left:50%;top:50%;width:160px;height:160px;border:2px solid var(--bh-win-color);border-radius:50%;box-shadow:0 0 30px var(--bh-win-color);animation:better-hunt-win-ring 1.3s cubic-bezier(.2,.8,.3,1) both}.better-hunt-win-confetti{position:absolute;top:-14px;border-radius:2px;will-change:transform;animation:better-hunt-win-confetti linear both}.better-hunt-win-cannon{position:absolute;bottom:0;width:10px;height:10px;border-radius:999px;background:radial-gradient(circle at 32% 30%,#fff3c4 0%,#ffd23d 40%,#b07a10 100%);box-shadow:0 0 18px var(--bh-win-color)}.better-hunt-win-cannon--left{left:14px}.better-hunt-win-cannon--right{right:14px}.better-hunt-win-cannon::before,.better-hunt-win-cannon::after{content:"";position:absolute;width:7px;height:7px;border-radius:999px;background:var(--bh-win-color);box-shadow:0 0 10px currentColor;animation:better-hunt-win-ring 1.1s ease-out both}.better-hunt-win-cannon::before{--bh-win-sway:80px;animation-delay:.12s}.better-hunt-win-cannon::after{--bh-win-sway:-70px;animation-delay:.28s}.better-hunt-win-badge{position:absolute;left:50%;top:50%;display:grid;gap:4px;min-width:190px;max-width:82%;transform:translate(-50%,-50%);border:2px solid var(--bh-win-color);border-radius:16px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-panel-hi) 95%,transparent),color-mix(in srgb,var(--bh-panel-lo) 95%,transparent));padding:18px 26px;text-align:center;box-shadow:0 0 50px var(--bh-win-glow),inset 0 0 26px var(--bh-win-glow);animation:better-hunt-win-badge .85s cubic-bezier(.2,.9,.25,1) both,better-hunt-win-float 2.4s ease-in-out .9s infinite}.better-hunt-win-label{color:var(--bh-win-color);font-size:14px;font-weight:950;letter-spacing:.32em;text-transform:uppercase;text-shadow:0 0 18px var(--bh-win-glow)}.better-hunt-win-badge strong{color:#fff;font-size:56px;font-weight:950;line-height:.95;text-shadow:0 0 28px var(--bh-win-glow),0 4px 0 rgba(0,0,0,.5)}.better-hunt-win-badge em{overflow:hidden;color:var(--bh-steel-hi);font-size:10px;font-style:normal;font-weight:900;letter-spacing:.2em;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-win-clip{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);border:2px solid var(--bh-win-color);border-radius:999px;background:rgba(0,0,0,.72);padding:5px 12px;color:var(--bh-win-color);font-size:11px;font-weight:950;letter-spacing:.2em;text-transform:uppercase}
       .better-hunt-root[data-skin="roman"] .better-hunt-panel{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"),linear-gradient(180deg,#1e1610 0%,#18120d 50%,#120e09 100%);background-blend-mode:overlay,normal;background-size:200px 200px,cover;border:2px solid #6a4028;border-radius:8px;box-shadow:0 0 0 1px #3a2010,0 0 0 3px #7a5030,0 0 0 4px #2a1808,0 22px 60px rgba(0,0,0,.9),inset 0 1px 0 rgba(180,120,60,.12),inset 0 0 80px rgba(80,30,10,.35)}.better-hunt-root[data-skin="roman"] .better-hunt-header--banner{background:linear-gradient(180deg,#7a1010 0%,#560c0c 55%,#6e1010 100%);border-color:#8a5030}.better-hunt-root[data-skin="roman"] .better-hunt-main-title{color:#e8c890}.better-hunt-root[data-skin="roman"] .better-hunt-stat{background:linear-gradient(180deg,#2a1e14 0%,#221a10 100%);border-color:#6a4028}.better-hunt-root[data-skin="roman"] .better-hunt-row,.better-hunt-root[data-skin="roman"] .better-hunt-total,.better-hunt-root[data-skin="roman"] .better-hunt-requests{background:linear-gradient(180deg,#221a10 0%,#1a1408 100%);border-color:#5a3818}.better-hunt-root[data-skin="roman"] .better-hunt-divider{background:linear-gradient(90deg,transparent,rgba(138,80,48,.55),transparent)}
       .better-hunt-root[data-skin="metal"] .better-hunt-panel{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' seed='4'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.4' intercept='0.08'/%3E%3CfeFuncG type='linear' slope='0.42' intercept='0.09'/%3E%3CfeFuncB type='linear' slope='0.46' intercept='0.11'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E"),url("/better-bonus-hunt/metal-bg.jpg"),linear-gradient(180deg,#222830 0%,#1a1e26 45%,#12151a 100%);background-blend-mode:soft-light,luminosity,normal;background-size:300px 300px,cover,cover;border:2px solid #505565;border-radius:8px;box-shadow:0 0 0 1px #0e1015,0 0 0 3px #686e7a,0 0 0 4px #0e1015,0 22px 60px rgba(0,0,0,.85),inset 0 1px 0 rgba(200,210,230,.15),inset 0 -1px 0 rgba(0,0,0,.5)}.better-hunt-root[data-skin="metal"] .better-hunt-panel::after{content:none}.better-hunt-root[data-skin="metal"] .better-hunt-header--banner{background:linear-gradient(180deg,#282e3a 0%,#1e222a 50%,#222832 100%);border-color:#5a6070}.better-hunt-root[data-skin="metal"] .better-hunt-stat{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' seed='7'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E"),linear-gradient(180deg,#242830 0%,#1c2028 100%);background-blend-mode:soft-light,normal;border-color:#505565}.better-hunt-root[data-skin="metal"] .better-hunt-row,.better-hunt-root[data-skin="metal"] .better-hunt-total,.better-hunt-root[data-skin="metal"] .better-hunt-requests{background:linear-gradient(180deg,#1e2230 0%,#161a22 100%);border-color:#3a4050}
@@ -2587,6 +2587,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   });
 
   const requestName = (request) =>
+    request?.requested_by ||
+    request?.requestedBy ||
     request?.displayName ||
     request?.username ||
     request?.user?.displayName ||
@@ -2596,6 +2598,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     request?.viewer ||
     "viewer";
   const requestSlot = (request) =>
+    request?.slot_name ||
     request?.slotName ||
     request?.slot?.slotName ||
     request?.slot?.name ||
@@ -2603,6 +2606,13 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     request?.game ||
     request?.title ||
     "Slot request";
+  const requestImage = (request) =>
+    request?.slot_image ||
+    request?.slotImage ||
+    request?.image ||
+    request?.slot?.image ||
+    request?.slot?.slot_image ||
+    "";
   const renderRequests = () => {
     if (c.showRequests === false) return null;
     const visibleRequests = requestRows.slice(0, 4);
@@ -2619,11 +2629,30 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           {visibleRequests.length ? (
             visibleRequests.map((request, index) => (
               <div
-                key={`${requestName(request)}-${requestSlot(request)}-${index}`}
+                key={request?.id || `${requestName(request)}-${requestSlot(request)}-${index}`}
                 className={`better-hunt-request better-hunt-request--${listMode}`}
               >
-                <span>{requestName(request)}</span>
-                <strong>{requestSlot(request)}</strong>
+                <span className="better-hunt-request-image">
+                  {requestImage(request) ? (
+                    <SlotImage
+                      src={requestImage(request)}
+                      alt={requestSlot(request)}
+                    />
+                  ) : (
+                    <span
+                      className="better-hunt-request-image-fallback"
+                      aria-hidden="true"
+                    >
+                      SLOT
+                    </span>
+                  )}
+                </span>
+                <span className="better-hunt-request-copy">
+                  <strong>{requestSlot(request)}</strong>
+                  <span>
+                    Requested by <b>{requestName(request)}</b>
+                  </span>
+                </span>
               </div>
             ))
           ) : (
