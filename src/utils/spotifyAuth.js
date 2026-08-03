@@ -205,6 +205,17 @@ export async function serverRefreshToken(userId) {
   }
 }
 
+export async function fetchPublicNowPlaying(publicOverlayId) {
+  if (!publicOverlayId) return null;
+  const params = new URLSearchParams({ publicOverlayId });
+  const res = await fetch(`/api/public-spotify-now-playing?${params}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.nowPlaying || null;
+}
+
 /**
  * Fetch currently playing track. Returns { artist, track, isPlaying, albumArt } or null.
  * Throws on 401 so callers can trigger a token refresh.

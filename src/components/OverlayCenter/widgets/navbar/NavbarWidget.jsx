@@ -9,6 +9,7 @@ import {
   SiYoutube,
 } from "react-icons/si";
 import {
+  fetchPublicNowPlaying,
   fetchNowPlaying,
   serverRefreshToken,
 } from "../../../../utils/spotifyAuth";
@@ -1005,7 +1006,14 @@ function useClock() {
 }
 
 /* ─── Main Navbar Widget (OBS Render) ─── */
-function NavbarWidget({ config, widgetId, userId, allWidgets }) {
+function NavbarWidget({
+  config,
+  widgetId,
+  userId,
+  allWidgets,
+  runtime,
+  publicOverlayId,
+}) {
   const c = config || {};
   const time = useClock();
   const [cryptoPrices, setCryptoPrices] = useState({});
@@ -1058,11 +1066,14 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     let stopped = false;
     const poll = async () => {
       if (stopped) return;
-      const nextNowPlaying = await resolveSpotifyNowPlaying(
-        userId,
-        spotifyTokenRef,
-        spotifyExpiresRef,
-      );
+      const nextNowPlaying =
+        runtime === "obs" && publicOverlayId
+          ? await fetchPublicNowPlaying(publicOverlayId)
+          : await resolveSpotifyNowPlaying(
+              userId,
+              spotifyTokenRef,
+              spotifyExpiresRef,
+            );
       if (!stopped) setNowPlaying(nextNowPlaying || null);
     };
 
@@ -1076,6 +1087,8 @@ function NavbarWidget({ config, widgetId, userId, allWidgets }) {
     c.musicSource,
     c.showNowPlaying,
     c.spotify_access_token,
+    publicOverlayId,
+    runtime,
     widgetId,
     userId,
   ]);

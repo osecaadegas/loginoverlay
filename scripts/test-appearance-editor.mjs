@@ -600,6 +600,14 @@ try {
     ),
     "utf8",
   );
+  const spotifyAuthSource = readFileSync(
+    new URL("../src/utils/spotifyAuth.js", import.meta.url),
+    "utf8",
+  );
+  const publicSpotifySource = readFileSync(
+    new URL("../api/public-spotify-now-playing.js", import.meta.url),
+    "utf8",
+  );
   assert.ok(
     navbarWidgetSource.includes("SiTwitch") &&
       navbarWidgetSource.includes("SiKick") &&
@@ -624,6 +632,17 @@ try {
       navbarWidgetSource.includes("borderRadius: 0") &&
       !navbarWidgetSource.includes("socialPillHeight"),
     "Better Navbar socials use larger unframed icons and handles",
+  );
+  assert.ok(
+    navbarWidgetSource.includes('runtime === "obs" && publicOverlayId') &&
+      navbarWidgetSource.includes("fetchPublicNowPlaying(publicOverlayId)") &&
+      spotifyAuthSource.includes("/api/public-spotify-now-playing") &&
+      spotifyAuthSource.includes("data.nowPlaying || null") &&
+      publicSpotifySource.includes('from("better_overlay_publications")') &&
+      publicSpotifySource.includes('.is("revoked_at", null)') &&
+      publicSpotifySource.includes("{ nowPlaying: result.nowPlaying }") &&
+      !publicSpotifySource.includes("spotify_refresh_token:"),
+    "Better Navbar fetches Spotify data securely in public OBS sources",
   );
   assert.ok(
     !betterWidgetPackagesSource.includes("NAVBAR_SOCIAL_DISPLAY_OPTIONS") &&
