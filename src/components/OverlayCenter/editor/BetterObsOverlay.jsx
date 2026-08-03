@@ -16,6 +16,18 @@ import {
 import "./BetterObsOverlay.css";
 
 const FALLBACK_REFRESH_MS = 30000;
+const OBS_SCALE_MODES = new Set(["fit", "fill", "native"]);
+
+function getObsScaleMode(isSingleWidget) {
+  if (typeof window === "undefined") return "auto";
+  const mode = new URLSearchParams(window.location.search).get("scale");
+  if (OBS_SCALE_MODES.has(mode)) return mode;
+  return isSingleWidget ? "native" : "fit";
+}
+
+function normalizeScale(value) {
+  return Number.isFinite(value) && value > 0 ? value : 1;
+}
 
 class BetterObsWidgetBoundary extends React.Component {
   constructor(props) {
@@ -233,6 +245,20 @@ export default function BetterObsOverlay() {
     isSingleWidget || !targetWidth || !targetHeight
       ? 1
       : Math.min(viewport.width / targetWidth, viewport.height / targetHeight);
+  const scaleMode = getObsScaleMode(isSingleWidget);
+  const fitScale =
+    !targetWidth || !targetHeight
+      ? 1
+      : Math.min(viewport.width / targetWidth, viewport.height / targetHeight);
+  const fillScale =
+    !targetWidth || !targetHeight
+      ? 1
+      : Math.max(viewport.width / targetWidth, viewport.height / targetHeight);
+  const obsScale = normalizeScale(
+    scaleMode === "fit" ? fitScale : scaleMode === "fill" ? fillScale : scale,
+  );
+  const scaledWidth = Math.max(1, targetWidth * obsScale);
+  const scaledHeight = Math.max(1, targetHeight * obsScale);
 
   if (!loaded || !layout || (isSingleWidget && !targetInstance)) {
     return <main className="better-obs-overlay better-obs-overlay--empty" />;
@@ -240,86 +266,102 @@ export default function BetterObsOverlay() {
 
   if (isSingleWidget) {
     return (
-      <main className="better-obs-overlay">
+      <main className="better-obs-overlay better-obs-overlay--single">
         <div
-          className="better-obs-canvas better-obs-canvas--single"
+          className="better-obs-frame"
           style={{
-            width: targetWidth,
-            height: targetHeight,
-            transform: `scale(${scale})`,
+            width: scaledWidth,
+            height: scaledHeight,
           }}
         >
-          {targetInstance.visible !== false && (
-            <div
-              className="better-obs-instance"
-              style={{
-                left: 0,
-                top: 0,
-                width: targetInstance.width,
-                height: targetInstance.height,
-                opacity: targetInstance.opacity,
-                zIndex: 1,
-              }}
-            >
-              <BetterObsWidgetBoundary instanceId={targetInstance.instanceId}>
-                {renderBetterWidgetInstance({
-                  instance: targetInstance,
-                  layout,
-                  mode: "live",
-                  runtime: "obs",
-                  userId: publication.ownerUserId,
-                  theme: liveSource.theme,
-                  liveWidgets: liveSource.widgets,
-                  publicOverlayId,
-                })}
-              </BetterObsWidgetBoundary>
-            </div>
-          )}
+          <div
+            className="better-obs-canvas better-obs-canvas--single"
+            style={{
+              width: targetWidth,
+              height: targetHeight,
+              transform: `translate3d(0, 0, 0) scale(${obsScale})`,
+            }}
+          >
+            {targetInstance.visible !== false && (
+              <div
+                className="better-obs-instance"
+                style={{
+                  left: 0,
+                  top: 0,
+                  width: targetInstance.width,
+                  height: targetInstance.height,
+                  opacity: targetInstance.opacity,
+                  zIndex: 1,
+                }}
+              >
+                <BetterObsWidgetBoundary instanceId={targetInstance.instanceId}>
+                  {renderBetterWidgetInstance({
+                    instance: targetInstance,
+                    layout,
+                    mode: "live",
+                    runtime: "obs",
+                    userId: publication.ownerUserId,
+                    theme: liveSource.theme,
+                    liveWidgets: liveSource.widgets,
+                    publicOverlayId,
+                  })}
+                </BetterObsWidgetBoundary>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="better-obs-overlay">
+    <main className="better-obs-overlay better-obs-overlay--full">
       <div
-        className="better-obs-canvas"
+        className="better-obs-frame"
         style={{
-          width: BETTER_CANVAS.width,
-          height: BETTER_CANVAS.height,
-          transform: `scale(${scale})`,
+          width: scaledWidth,
+          height: scaledHeight,
         }}
       >
-        {layout.instances
-          .filter((instance) => instance.visible !== false)
-          .sort((a, b) => Number(a.zIndex) - Number(b.zIndex))
-          .map((instance) => (
-            <div
-              key={instance.instanceId}
-              className="better-obs-instance"
-              style={{
-                left: instance.x,
-                top: instance.y,
-                width: instance.width,
-                height: instance.height,
-                opacity: instance.opacity,
-                zIndex: instance.zIndex,
-              }}
-            >
-              <BetterObsWidgetBoundary instanceId={instance.instanceId}>
-                {renderBetterWidgetInstance({
-                  instance,
-                  layout,
-                  mode: "live",
-                  runtime: "obs",
-                  userId: publication.ownerUserId,
-                  theme: liveSource.theme,
-                  liveWidgets: liveSource.widgets,
-                  publicOverlayId,
-                })}
-              </BetterObsWidgetBoundary>
-            </div>
-          ))}
+        <div
+          className="better-obs-canvas"
+          style={{
+            width: BETTER_CANVAS.width,
+            height: BETTER_CANVAS.height,
+            transform: `translate3d(0, 0, 0) scale(${obsScale})`,
+          }}
+        >
+          {layout.instances
+            .filter((instance) => instance.visible !== false)
+            .sort((a, b) => Number(a.zIndex) - Number(b.zIndex))
+            .map((instance) => (
+              <div
+                key={instance.instanceId}
+                className="better-obs-instance"
+                style={{
+                  left: instance.x,
+                  top: instance.y,
+                  width: instance.width,
+                  height: instance.height,
+                  opacity: instance.opacity,
+                  zIndex: instance.zIndex,
+                }}
+              >
+                <BetterObsWidgetBoundary instanceId={instance.instanceId}>
+                  {renderBetterWidgetInstance({
+                    instance,
+                    layout,
+                    mode: "live",
+                    runtime: "obs",
+                    userId: publication.ownerUserId,
+                    theme: liveSource.theme,
+                    liveWidgets: liveSource.widgets,
+                    publicOverlayId,
+                  })}
+                </BetterObsWidgetBoundary>
+              </div>
+            ))}
+        </div>
       </div>
     </main>
   );

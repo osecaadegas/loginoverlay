@@ -20,13 +20,22 @@
   pointer-events: none;
 }
 
+.better-obs-frame,
 .better-obs-canvas {
   position: absolute;
   left: 0;
   top: 0;
+  background: transparent;
+}
+
+.better-obs-frame {
+  overflow: visible;
+  pointer-events: none;
+}
+
+.better-obs-canvas {
   overflow: hidden;
   transform-origin: top left;
-  background: transparent;
 }
 
 .better-obs-instance {

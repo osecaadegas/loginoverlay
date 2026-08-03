@@ -195,6 +195,11 @@ function getInitials(label) {
     .toUpperCase();
 }
 
+function buildWidgetObsUrl(origin, publicOverlayId, instanceId) {
+  if (!origin || !publicOverlayId || !instanceId) return "";
+  return `${origin}/obs/overlay/${publicOverlayId}/widget/${instanceId}?scale=fit`;
+}
+
 function useCanvasScale(shellRef, zoom) {
   const [fitScale, setFitScale] = useState(0.5);
 
@@ -979,7 +984,11 @@ export default function WidgetEditorPage() {
                 key={instance.instanceId}
                 instance={instance}
                 selected={instance.instanceId === selectedInstanceId}
-                obsUrl={publicOverlayId ? `${origin}/obs/overlay/${publicOverlayId}/widget/${instance.instanceId}` : ""}
+                obsUrl={buildWidgetObsUrl(
+                  origin,
+                  publicOverlayId,
+                  instance.instanceId,
+                )}
                 onSelect={setSelectedInstanceId}
                 onCopyUrl={copyUrl}
                 onDownloadPreset={downloadWidgetControlsPreset}
