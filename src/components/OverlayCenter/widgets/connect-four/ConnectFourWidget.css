@@ -258,31 +258,161 @@
 .connect-four-win-overlay {
   position: absolute;
   inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    rgba(15, 23, 42, 0.5),
+    rgba(2, 6, 23, 0.18) 62%,
+    transparent 78%
+  );
+}
+
+.connect-four-winner-card {
+  position: relative;
+  z-index: 12;
+  width: min(82%, 440px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  border-radius: inherit;
-  background: rgba(2, 6, 23, 0.62);
-  animation: connect-four-pop 450ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  padding: clamp(12px, 2.4cqh, 22px) clamp(16px, 4cqh, 34px);
+  box-sizing: border-box;
+  border: 1px solid rgba(253, 230, 138, 0.72);
+  border-radius: clamp(12px, 2.2cqh, 20px);
+  color: #fff8d6;
+  text-align: center;
+  background: linear-gradient(
+    145deg,
+    rgba(69, 44, 5, 0.94),
+    rgba(15, 23, 42, 0.96) 62%,
+    rgba(88, 56, 4, 0.94)
+  );
+  box-shadow:
+    0 0 14px rgba(251, 191, 36, 0.92),
+    0 0 38px rgba(245, 158, 11, 0.72),
+    0 0 80px rgba(234, 179, 8, 0.38),
+    inset 0 0 24px rgba(253, 230, 138, 0.12);
+  text-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.85),
+    0 0 12px rgba(251, 191, 36, 0.78);
+  animation: connect-four-winner-pop 650ms
+    cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.connect-four-win-overlay strong {
-  color: #fbbf24;
+.connect-four-winner-label {
+  color: #fde68a;
+  font-size: clamp(10px, 1.8cqh, 15px);
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.connect-four-winner-card strong {
+  max-width: 100%;
+  margin-top: 0.7cqh;
+  overflow-wrap: anywhere;
+  color: #fffdf0;
   font-size: clamp(24px, 6cqh, 48px);
   font-weight: 900;
-  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.5);
+  line-height: 0.98;
+  text-transform: uppercase;
 }
 
-.connect-four-win-overlay span {
+.connect-four-winner-points {
   margin-top: 1cqh;
-  padding: 0.5cqh 1.5cqh;
-  border: 1px solid rgba(52, 211, 153, 0.4);
+  padding: 0.55cqh 1.8cqh;
+  border: 1px solid rgba(253, 230, 138, 0.68);
   border-radius: 999px;
-  color: #d1fae5;
-  background: rgba(6, 78, 59, 0.92);
-  font-size: clamp(11px, 2cqh, 16px);
-  font-weight: 800;
+  color: #fff7c2;
+  background: rgba(120, 74, 3, 0.72);
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.42);
+  font-size: clamp(13px, 2.4cqh, 19px);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.connect-four-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  overflow: hidden;
+}
+
+.connect-four-confetti i {
+  --confetti-x: 0cqw;
+  --confetti-y: 0cqh;
+  --confetti-rotate: 360deg;
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: clamp(5px, 1.1cqh, 9px);
+  height: clamp(10px, 2.2cqh, 18px);
+  border-radius: 2px;
+  background: #fbbf24;
+  opacity: 0;
+  animation: connect-four-confetti-splash 1.8s
+    cubic-bezier(0.12, 0.7, 0.2, 1) infinite;
+}
+
+.connect-four-confetti i:nth-child(4n + 2) {
+  background: #f43f5e;
+}
+
+.connect-four-confetti i:nth-child(4n + 3) {
+  background: #22d3ee;
+}
+
+.connect-four-confetti i:nth-child(4n) {
+  background: #f8fafc;
+}
+
+.connect-four-confetti i:nth-child(6n + 1) {
+  --confetti-x: -42cqw;
+  --confetti-y: -39cqh;
+  --confetti-rotate: -520deg;
+}
+
+.connect-four-confetti i:nth-child(6n + 2) {
+  --confetti-x: -24cqw;
+  --confetti-y: 46cqh;
+  --confetti-rotate: 430deg;
+}
+
+.connect-four-confetti i:nth-child(6n + 3) {
+  --confetti-x: -8cqw;
+  --confetti-y: -48cqh;
+  --confetti-rotate: -380deg;
+}
+
+.connect-four-confetti i:nth-child(6n + 4) {
+  --confetti-x: 14cqw;
+  --confetti-y: 48cqh;
+  --confetti-rotate: 560deg;
+}
+
+.connect-four-confetti i:nth-child(6n + 5) {
+  --confetti-x: 31cqw;
+  --confetti-y: -42cqh;
+  --confetti-rotate: -460deg;
+}
+
+.connect-four-confetti i:nth-child(6n) {
+  --confetti-x: 44cqw;
+  --confetti-y: 35cqh;
+  --confetti-rotate: 620deg;
+}
+
+.connect-four-confetti i:nth-child(3n + 1) {
+  animation-delay: -0.6s;
+}
+
+.connect-four-confetti i:nth-child(3n + 2) {
+  animation-delay: -1.2s;
 }
 
 @keyframes connect-four-drop {
@@ -310,17 +440,38 @@
   }
 }
 
-@keyframes connect-four-pop {
+@keyframes connect-four-winner-pop {
   0% {
     opacity: 0;
-    transform: scale(0.6);
+    transform: translateY(3cqh) scale(0.72);
   }
   60% {
-    transform: scale(1.08);
+    transform: translateY(0) scale(1.06);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes connect-four-confetti-splash {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + var(--confetti-x)),
+        calc(-50% + var(--confetti-y))
+      )
+      scale(1) rotate(var(--confetti-rotate));
   }
 }
 
@@ -348,7 +499,8 @@
   }
 
   .connect-four-coin.is-latest,
-  .connect-four-win-overlay {
+  .connect-four-winner-card,
+  .connect-four-confetti i {
     animation: none;
   }
 }

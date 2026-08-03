@@ -197,6 +197,14 @@ assert.match(widgetSource, /winnerVisibility === "hidden"/);
 assert.match(widgetSource, /winnerVisibility === "fading"/);
 assert.match(
   widgetSource,
+  /className="connect-four-confetti"[\s\S]*?Array\.from\(\{ length: 24 \}/,
+);
+assert.match(
+  widgetSource,
+  /className="connect-four-winner-card"[\s\S]*?connect-four-winner-label[\s\S]*?connect-four-winner-points/,
+);
+assert.match(
+  widgetSource,
   /const hasTwoPlayers = Boolean\(displayedState\.player_two_display_name\)/,
 );
 assert.match(
@@ -217,6 +225,18 @@ assert.match(widgetStylesSource, /\.connect-four-info \{/);
 assert.match(
   widgetStylesSource,
   /\.connect-four-widget\.is-fading \{[\s\S]*?opacity: 0/,
+);
+assert.match(
+  widgetStylesSource,
+  /\.connect-four-win-overlay \{[\s\S]*?z-index: 10;[\s\S]*?place-items: center/,
+);
+assert.match(
+  widgetStylesSource,
+  /\.connect-four-winner-card \{[\s\S]*?z-index: 12;[\s\S]*?text-align: center;[\s\S]*?0 0 38px rgba\(245, 158, 11, 0\.72\)/,
+);
+assert.match(
+  widgetStylesSource,
+  /\.connect-four-confetti \{[\s\S]*?z-index: 11;[\s\S]*?connect-four-confetti-splash/,
 );
 assert.match(widgetStylesSource, /width: clamp\(210px, 34%, 300px\)/);
 assert.match(

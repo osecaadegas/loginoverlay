@@ -7,8 +7,8 @@ import {
 import "./ConnectFourWidget.css";
 
 interface ConnectFourState {
-  match_id: string;
-  status: string;
+                {playerOne.split("").map((character, index) => (
+                  <span key={`${character}-${index}`}>{character}</span>
   wager: number;
   board: ConnectFourBoard;
   player_one_display_name: string;
@@ -22,8 +22,8 @@ interface ConnectFourState {
   updated_at: string | null;
 }
 
-interface ConnectFourWidgetProps {
-  userId?: string;
+                {playerTwoRailName.split("").map((character, index) => (
+                  <span key={`${character}-${index}`}>{character}</span>
   config?: Record<string, unknown>;
   runtime?: "editor" | "obs";
 }
@@ -293,7 +293,7 @@ export default function ConnectFourWidget({
               <i className="connect-four-player-coin connect-four-player-coin--p1" />
               <strong>
                 {Array.from(playerOne).map((character, index) => (
-                  <span key={`${character}-${index}`}>{character}</span>
+                  <span key={`${String(character)}-${index}`}>{character}</span>
                 ))}
               </strong>
             </div>
@@ -336,10 +336,22 @@ export default function ConnectFourWidget({
               )}
               {displayedState.winner && (
                 <div className="connect-four-win-overlay">
-                  <strong>
-                    {displayedState.winner === 1 ? playerOne : playerTwo} WINS!
-                  </strong>
-                  {pot > 0 && <span>+{pot.toLocaleString()} PTS</span>}
+                  <div className="connect-four-confetti" aria-hidden="true">
+                    {Array.from({ length: 24 }, (_, index) => (
+                      <i key={index} />
+                    ))}
+                  </div>
+                  <div className="connect-four-winner-card">
+                    <span className="connect-four-winner-label">Winner</span>
+                    <strong>
+                      {displayedState.winner === 1 ? playerOne : playerTwo}
+                    </strong>
+                    {pot > 0 && (
+                      <span className="connect-four-winner-points">
+                        +{pot.toLocaleString()} PTS
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -353,7 +365,7 @@ export default function ConnectFourWidget({
               <i className="connect-four-player-coin connect-four-player-coin--p2" />
               <strong>
                 {Array.from(playerTwoRailName).map((character, index) => (
-                  <span key={`${character}-${index}`}>{character}</span>
+                  <span key={`${String(character)}-${index}`}>{character}</span>
                 ))}
               </strong>
             </div>
