@@ -1195,8 +1195,10 @@ function ChatWidget({
         const row = betterChatRowRefs.current[index];
         if (!row) continue;
         const rowStyle = window.getComputedStyle(row);
+        const rowLayoutHeight =
+          row.offsetHeight || row.getBoundingClientRect().height;
         const rowHeight =
-          row.getBoundingClientRect().height +
+          rowLayoutHeight +
           (Number.parseFloat(rowStyle.marginTop) || 0) +
           (Number.parseFloat(rowStyle.marginBottom) || 0);
         if (nextCount > 0 && usedHeight + rowHeight > availableHeight + 0.5) {
