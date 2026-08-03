@@ -236,6 +236,13 @@ try {
     ),
     "utf8",
   ).replaceAll("\r\n", "\n");
+  const standardWidgetPresetsSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/standardWidgetPresets.js",
+      import.meta.url,
+    ),
+    "utf8",
+  ).replaceAll("\r\n", "\n");
   assert.ok(
     betterWidgetRegistrySource.includes(
       "giveaway: { minWidth: 240, minHeight: 180",
@@ -858,7 +865,28 @@ try {
       bonusHuntWidgetSource.includes("requestActions") &&
       betterWidgetStylesSource.includes("better-hunt-request-transfer") &&
       betterWidgetStylesSource.includes("better-hunt-request-landing") &&
-      betterWidgetStylesSource.includes("better-hunt-request-shard"),
+      betterWidgetStylesSource.includes("better-hunt-request-shard") &&
+      betterWidgetStylesSource.includes(
+        "const source = cached?.row || fallback;",
+      ) &&
+      betterWidgetStylesSource.includes(
+        'rootRef.current || node.closest(".better-hunt-root")',
+      ) &&
+      betterWidgetStylesSource.includes(
+        "better-hunt-request-shard-surface",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "copy === 0 ? (node) => rememberRequestNode(request, node) : undefined",
+      ) &&
+      betterWidgetStylesSource.includes(
+        "`${action.id}-shard-${row}-${column}`",
+      ) &&
+      /bonus_hunt:\s*\{[\s\S]*?showRequests: true,\s*animations: false,/.test(
+        betterWidgetPackagesSource,
+      ) &&
+      /bonus_hunt:\s*\{[\s\S]*?showRequests: true,\s*animations: false,/.test(
+        standardWidgetPresetsSource,
+      ),
     "Better Bonus Hunt carries Add to BH and Points Back events into shared preview and OBS transfer/shatter animations",
   );
   assert.ok(

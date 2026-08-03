@@ -140,7 +140,7 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     drawerHoldSeconds: 30,
     statsLayout: "grid",
     showRequests: true,
-    animations: true,
+    animations: false,
     animSpeed: 0.5,
     carouselMs: 6000,
     font: "orbitron",

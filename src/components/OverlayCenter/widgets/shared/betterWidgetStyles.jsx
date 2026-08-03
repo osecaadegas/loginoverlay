@@ -1859,6 +1859,7 @@ function BetterStyleSheet() {
       .better-hunt-requests-head{display:grid;min-width:74px;align-content:center;gap:4px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}.better-hunt-requests-head span{color:var(--bh-steel-dim);font-size:.62em;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.better-hunt-requests-head strong{color:var(--bh-ice);font-size:1.35em;font-weight:950;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 40%,transparent)}
       .better-hunt-request-list{min-width:0;overflow:hidden}.better-hunt-request-track{display:flex;flex-direction:column;will-change:transform;transform:translate3d(0,0,0);backface-visibility:hidden;contain:layout paint}.better-hunt-request-list.is-scrolling .better-hunt-request-track{animation:better-hunt-marquee-up calc(var(--bh-request-duration,26s) / var(--anim-speed,1)) linear infinite}.better-hunt-request-group{display:flex;flex:0 0 auto;flex-direction:column;gap:6px;padding-bottom:6px}.better-hunt-request{position:relative;min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:9px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 22%,transparent);border-radius:7px;background:rgba(0,0,0,.24);padding:5px 7px}.better-hunt-request--compact{min-height:52px}.better-hunt-request--names{min-height:32px;grid-template-columns:7px minmax(0,1fr) auto;padding:6px 9px}.better-hunt-request--image{min-height:100px;grid-template-columns:minmax(0,1fr);padding:0}.better-hunt-request-bg{position:absolute;inset:0}.better-hunt-request-bg img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.92),rgba(0,0,0,.56),rgba(0,0,0,.28))}.better-hunt-request-body{position:relative;z-index:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}.better-hunt-request-image{width:42px;height:42px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);border-radius:6px;background:var(--bh-inset);box-shadow:0 3px 9px rgba(0,0,0,.42)}.better-hunt-request-image img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-image-fallback{width:100%;height:100%;display:grid;place-items:center;color:var(--bh-ice);font-size:.65em;font-weight:900;letter-spacing:.08em}.better-hunt-request-copy{min-width:0;display:grid;gap:3px}.better-hunt-request-copy strong{overflow:hidden;color:#fff;font-size:.92em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-request-copy span{overflow:hidden;color:#c4d7f7;font-size:.74em;font-weight:700;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-request-copy span b{color:var(--bh-tangerine);font-weight:900}.better-hunt-request-live{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:var(--bh-ice);animation:better-hunt-live-blink calc(1.6s / var(--anim-speed,1)) ease-in-out infinite}.better-hunt-request-user{overflow:hidden;color:var(--bh-tangerine);font-size:.74em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request-waiting{display:inline-flex;flex:0 0 auto;align-items:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 30%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bh-track) 70%,transparent);padding:4px 8px;color:#b9cbed;font-size:.62em;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.better-hunt-request--empty{display:flex;min-height:82px;align-items:center;justify-content:center;color:#9db4dc;font-weight:800}.better-hunt-request-stage{position:relative;height:218px;perspective:1100px}.better-hunt-request-ring{position:absolute;left:50%;top:106px;transform-style:preserve-3d}.better-hunt-request-card{position:absolute;width:86px;height:136px;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 55%,transparent);border-radius:8px;background:var(--bh-inset);box-shadow:0 8px 20px rgba(0,0,0,.65);backface-visibility:hidden;transform-style:preserve-3d;will-change:transform,opacity,filter;transition:transform .7s cubic-bezier(.22,.9,.3,1),opacity .45s ease,filter .45s ease,box-shadow .45s ease}.better-hunt-request-card.is-center{border-color:var(--bh-ice);box-shadow:0 0 28px color-mix(in srgb,var(--bh-ice) 55%,transparent),0 10px 32px rgba(0,0,0,.72)}.better-hunt-request-card img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-card::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.08) 65%)}.better-hunt-request-card-copy{position:absolute;z-index:1;inset:auto 6px 8px;overflow:hidden;color:var(--bh-tangerine);font-size:.7em;font-weight:900;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
       .better-hunt-request-fx{position:absolute;inset:0;z-index:120;overflow:hidden;pointer-events:none}.better-hunt-request-transfer{position:absolute;overflow:hidden;border:2px solid var(--bh-ice);border-radius:9px;background:var(--bh-inset);box-shadow:0 0 30px color-mix(in srgb,var(--bh-ice) 62%,transparent),0 14px 34px rgba(0,0,0,.75);transform-style:preserve-3d;will-change:transform,opacity;animation:better-hunt-request-transfer calc(1.35s / var(--anim-speed,1)) cubic-bezier(.22,.9,.3,1) both}.better-hunt-request-transfer img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-request-transfer::before{content:"";position:absolute;inset:-20%;z-index:2;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--bh-ice) 62%,transparent) 50%,transparent 70%);animation:better-hunt-request-charge calc(.8s / var(--anim-speed,1)) ease-in-out infinite}.better-hunt-request-transfer::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.72),transparent 55%)}.better-hunt-request-transfer span{position:absolute;z-index:3;inset:auto 7px 7px;overflow:hidden;color:var(--bh-tangerine);font-size:10px;font-weight:900;text-overflow:ellipsis;text-shadow:0 1px 3px #000;white-space:nowrap}.better-hunt-request-landing{position:absolute;border:3px solid var(--bh-tangerine);border-radius:11px;box-shadow:0 0 32px color-mix(in srgb,var(--bh-tangerine) 70%,transparent),0 0 68px color-mix(in srgb,var(--bh-ice) 42%,transparent),inset 0 0 24px color-mix(in srgb,var(--bh-tangerine) 30%,transparent);animation:better-hunt-request-landing calc(.95s / var(--anim-speed,1)) calc(.92s / var(--anim-speed,1)) cubic-bezier(.22,.9,.3,1) both}.better-hunt-request-flash{position:absolute;border-radius:9px;background:radial-gradient(60% 80% at 50% 50%,color-mix(in srgb,var(--bh-ice) 52%,transparent),transparent 75%);animation:better-hunt-request-flash .42s ease-out both}.better-hunt-request-shard{position:absolute;overflow:hidden;border-radius:1px;background-color:color-mix(in srgb,var(--bh-card-lo) 78%,var(--bh-line-hi));background-repeat:no-repeat;box-shadow:0 0 4px color-mix(in srgb,var(--bh-ice) 30%,transparent);will-change:transform,opacity;animation:better-hunt-request-shatter var(--bh-shard-duration) cubic-bezier(.3,.1,.75,.5) var(--bh-shard-delay) both}
+      .better-hunt-request.is-action-source{visibility:hidden}.better-hunt-request-transfer{border:0;border-radius:7px;background:transparent}.better-hunt-request-transfer::before,.better-hunt-request-transfer::after{display:none}.better-hunt-request-transfer>.better-hunt-request-transfer-card{position:absolute;inset:0;z-index:1;width:100%;height:100%;min-height:0;box-sizing:border-box}.better-hunt-request-transfer .better-hunt-request-transfer-card span{position:static;z-index:auto;inset:auto;overflow:visible;color:inherit;font-size:inherit;font-weight:inherit;text-overflow:clip;text-shadow:none;white-space:normal}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-bg{position:absolute;inset:0}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-body{position:relative;z-index:1}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-copy{display:grid;min-width:0;gap:3px}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-copy>span{overflow:hidden;color:#c4d7f7;font-size:.74em;font-weight:700;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-image{width:42px;height:42px;overflow:hidden}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-image-fallback{display:grid;color:var(--bh-ice);font-size:.65em;font-weight:900;letter-spacing:.08em}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-user{overflow:hidden;color:var(--bh-tangerine);font-size:.74em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-request-transfer .better-hunt-request-transfer-card .better-hunt-request-waiting{display:inline-flex;overflow:visible;color:#b9cbed;font-size:.62em;font-weight:900;letter-spacing:.1em;white-space:nowrap}.better-hunt-request-transfer-charge{position:absolute;inset:-20%;z-index:2;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--bh-ice) 62%,transparent) 50%,transparent 70%);animation:better-hunt-request-charge calc(.8s / var(--anim-speed,1)) ease-in-out infinite}.better-hunt-request-shard{background:transparent;box-shadow:none}.better-hunt-request-shard-surface{position:absolute;min-width:0;max-width:none;box-sizing:border-box;transform:none}
       .better-hunt-footer{display:grid;min-width:0}
       .better-hunt-total{display:grid;gap:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:10px;background:rgba(0,0,0,.18)}
       .better-hunt-total-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
@@ -2755,6 +2756,66 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     request?.slot?.image ||
     request?.slot?.slot_image ||
     "";
+  const renderRequestContents = (request, mode) => {
+    if (mode === "image") {
+      return (
+        <>
+          <span className="better-hunt-request-bg">
+            <SlotImage src={requestImage(request)} alt="" />
+          </span>
+          <span className="better-hunt-request-body">
+            <span className="better-hunt-request-copy">
+              <strong>{requestSlot(request)}</strong>
+              <span>
+                Requested by <b>@{requestName(request)}</b>
+              </span>
+            </span>
+            <span className="better-hunt-request-waiting">
+              <i className="better-hunt-request-live" /> Waiting
+            </span>
+          </span>
+        </>
+      );
+    }
+    if (mode === "names") {
+      return (
+        <>
+          <i className="better-hunt-request-live" />
+          <span className="better-hunt-request-copy">
+            <strong>{requestSlot(request)}</strong>
+          </span>
+          <span className="better-hunt-request-user">
+            @{requestName(request)}
+          </span>
+        </>
+      );
+    }
+    return (
+      <>
+        <span className="better-hunt-request-image">
+          {requestImage(request) ? (
+            <SlotImage
+              src={requestImage(request)}
+              alt={requestSlot(request)}
+            />
+          ) : (
+            <span
+              className="better-hunt-request-image-fallback"
+              aria-hidden="true"
+            >
+              SLOT
+            </span>
+          )}
+        </span>
+        <span className="better-hunt-request-copy">
+          <strong>{requestSlot(request)}</strong>
+          <span>
+            Requested by <b>@{requestName(request)}</b>
+          </span>
+        </span>
+      </>
+    );
+  };
   const rootRef = useRef(null);
   const requestRectsRef = useRef(new Map());
   const seenRequestActionsRef = useRef(new Set());
@@ -2762,8 +2823,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const [requestActionVisual, setRequestActionVisual] = useState(null);
 
   const rememberRequestNode = (request, node) => {
-    if (!node || !rootRef.current || !request?.id) return;
-    const rootRect = rootRef.current.getBoundingClientRect();
+    if (!node || !request?.id) return;
+    const rootNode = rootRef.current || node.closest(".better-hunt-root");
+    if (!rootNode) return;
+    const rootRect = rootNode.getBoundingClientRect();
     const rowRect = node.getBoundingClientRect();
     const artworkNode = node.querySelector("img") || node;
     const artworkRect = artworkNode.getBoundingClientRect();
@@ -2804,17 +2867,18 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const rootRect = rootRef.current.getBoundingClientRect();
     const cached = requestRectsRef.current.get(String(action.id));
     const requestArea = rootRef.current.querySelector(".better-hunt-requests");
-    const fallbackRect = requestArea?.getBoundingClientRect();
+    const fallbackNode =
+      requestArea?.querySelector(".better-hunt-request-list") ||
+      requestArea?.querySelector(".better-hunt-request-stage") ||
+      requestArea;
+    const fallbackRect = fallbackNode?.getBoundingClientRect();
     const fallback = {
-      left: (fallbackRect?.left || rootRect.left) - rootRect.left + 12,
-      top: (fallbackRect?.top || rootRect.top) - rootRect.top + 12,
-      width: Math.max(72, Math.min(180, (fallbackRect?.width || 180) - 24)),
+      left: (fallbackRect?.left || rootRect.left) - rootRect.left,
+      top: (fallbackRect?.top || rootRect.top) - rootRect.top,
+      width: Math.max(72, fallbackRect?.width || 180),
       height: action.action === "accepted" ? 96 : 52,
     };
-    const source =
-      action.action === "accepted"
-        ? cached?.artwork || cached?.row || fallback
-        : cached?.row || fallback;
+    const source = cached?.row || fallback;
     const targetNode =
       rootRef.current.querySelector(".better-hunt-card--center") ||
       rootRef.current.querySelector(".better-hunt-stats-image") ||
@@ -2833,7 +2897,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       action,
       source,
       target,
-      artwork: cached?.artwork,
     });
     setRequestActionQueue(remaining);
   }, [requestActionQueue, requestActionVisual]);
@@ -2851,8 +2914,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
   const renderRequestAction = () => {
     if (!requestActionVisual || c.animations === false) return null;
-    const { action, source, target, artwork } = requestActionVisual;
-    const image = requestImage(action);
+    const { action, source, target } = requestActionVisual;
     if (action.action === "accepted") {
       const sourceCenterX = source.left + source.width / 2;
       const sourceCenterY = source.top + source.height / 2;
@@ -2881,8 +2943,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
               "--bh-transfer-end": endScale,
             }}
           >
-            <SlotImage src={image} alt="" />
-            <span>@{requestName(action)}</span>
+            <span
+              className={`better-hunt-request-transfer-card better-hunt-request better-hunt-request--${listMode}`}
+            >
+              {renderRequestContents(action, listMode)}
+            </span>
+            <i className="better-hunt-request-transfer-charge" />
           </div>
           <div
             className="better-hunt-request-landing"
@@ -2897,8 +2963,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       );
     }
 
-    const columns = 8;
-    const shardRows = 4;
+    const columns = Math.max(6, Math.round(source.width / 22));
+    const shardRows = Math.max(2, Math.round(source.height / 18));
     const shardWidth = source.width / columns;
     const shardHeight = source.height / shardRows;
     return (
@@ -2917,18 +2983,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           const row = Math.floor(index / columns);
           const left = source.left + column * shardWidth;
           const top = source.top + row * shardHeight;
-          const centerX = left + shardWidth / 2;
-          const centerY = top + shardHeight / 2;
-          const hasArtwork =
-            image &&
-            artwork &&
-            centerX >= artwork.left &&
-            centerX <= artwork.left + artwork.width &&
-            centerY >= artwork.top &&
-            centerY <= artwork.top + artwork.height;
           return (
             <i
-              key={index}
+              key={`${action.id}-shard-${row}-${column}`}
               className="better-hunt-request-shard"
               style={{
                 left,
@@ -2940,15 +2997,20 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                 "--bh-shard-rotate": `${(index % 2 ? 1 : -1) * (120 + index * 13)}deg`,
                 "--bh-shard-delay": `${(index % 7) * 0.008}s`,
                 "--bh-shard-duration": `${0.58 + (index % 5) * 0.06}s`,
-                backgroundImage: hasArtwork ? `url(${image})` : undefined,
-                backgroundSize: hasArtwork
-                  ? `${artwork.width}px ${artwork.height}px`
-                  : undefined,
-                backgroundPosition: hasArtwork
-                  ? `${-(left - artwork.left)}px ${-(top - artwork.top)}px`
-                  : undefined,
               }}
-            />
+            >
+              <span
+                className={`better-hunt-request-shard-surface better-hunt-request better-hunt-request--${listMode}`}
+                style={{
+                  left: -column * shardWidth,
+                  top: -row * shardHeight,
+                  width: source.width,
+                  height: source.height,
+                }}
+              >
+                {renderRequestContents(action, listMode)}
+              </span>
+            </i>
           );
         })}
       </div>
@@ -2966,27 +3028,16 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       const key =
         request?.id ||
         `${requestName(request)}-${requestSlot(request)}-${index}`;
+      const actionSource =
+        String(request?.id) === String(requestActionVisual?.action?.id);
       if (listMode === "image") {
         return (
           <div
             key={`${key}-${copy}`}
-            className="better-hunt-request better-hunt-request--image"
-            ref={(node) => rememberRequestNode(request, node)}
+            className={`better-hunt-request better-hunt-request--image${actionSource ? " is-action-source" : ""}`}
+            ref={copy === 0 ? (node) => rememberRequestNode(request, node) : undefined}
           >
-            <span className="better-hunt-request-bg">
-              <SlotImage src={requestImage(request)} alt="" />
-            </span>
-            <span className="better-hunt-request-body">
-              <span className="better-hunt-request-copy">
-                <strong>{requestSlot(request)}</strong>
-                <span>
-                  Requested by <b>@{requestName(request)}</b>
-                </span>
-              </span>
-              <span className="better-hunt-request-waiting">
-                <i className="better-hunt-request-live" /> Waiting
-              </span>
-            </span>
+            {renderRequestContents(request, listMode)}
           </div>
         );
       }
@@ -2994,46 +3045,20 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         return (
           <div
             key={`${key}-${copy}`}
-            className="better-hunt-request better-hunt-request--names"
-            ref={(node) => rememberRequestNode(request, node)}
+            className={`better-hunt-request better-hunt-request--names${actionSource ? " is-action-source" : ""}`}
+            ref={copy === 0 ? (node) => rememberRequestNode(request, node) : undefined}
           >
-            <i className="better-hunt-request-live" />
-            <span className="better-hunt-request-copy">
-              <strong>{requestSlot(request)}</strong>
-            </span>
-            <span className="better-hunt-request-user">
-              @{requestName(request)}
-            </span>
+            {renderRequestContents(request, listMode)}
           </div>
         );
       }
       return (
         <div
           key={`${key}-${copy}`}
-          className="better-hunt-request better-hunt-request--compact"
-          ref={(node) => rememberRequestNode(request, node)}
+          className={`better-hunt-request better-hunt-request--compact${actionSource ? " is-action-source" : ""}`}
+          ref={copy === 0 ? (node) => rememberRequestNode(request, node) : undefined}
         >
-          <span className="better-hunt-request-image">
-            {requestImage(request) ? (
-              <SlotImage
-                src={requestImage(request)}
-                alt={requestSlot(request)}
-              />
-            ) : (
-              <span
-                className="better-hunt-request-image-fallback"
-                aria-hidden="true"
-              >
-                SLOT
-              </span>
-            )}
-          </span>
-          <span className="better-hunt-request-copy">
-            <strong>{requestSlot(request)}</strong>
-            <span>
-              Requested by <b>@{requestName(request)}</b>
-            </span>
-          </span>
+          {renderRequestContents(request, listMode)}
         </div>
       );
     };

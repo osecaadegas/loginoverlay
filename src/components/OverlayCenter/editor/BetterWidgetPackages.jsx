@@ -679,7 +679,7 @@ const BASE_BETTER_CONFIG = {
     drawerHoldSeconds: 15,
     statsLayout: "row",
     showRequests: true,
-    animations: true,
+    animations: false,
     animSpeed: 1,
     carouselMs: 3200,
     font: "rajdhani",
