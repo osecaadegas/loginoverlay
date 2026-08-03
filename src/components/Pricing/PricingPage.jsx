@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AlertTriangle,
-  ArrowRight,
   CheckCircle2,
   CreditCard,
   Loader2,
@@ -298,7 +297,6 @@ export default function PricingPage() {
 
         <div className={`premium-card-grid premium-card-grid--${productType}`}>
           {productCards.map((card) => {
-            const busy = checkoutPlanId === card.id;
             return (
               <button
                 key={card.id}
@@ -310,9 +308,6 @@ export default function PricingPage() {
               >
                 <span className="premium-card-frame">
                   <img src={card.image} alt={`${card.title} premium plan`} />
-                  <span className="premium-card-busy" aria-hidden={!busy}>
-                    {busy ? <Loader2 className="premium-spin" size={17} /> : <ArrowRight size={18} />}
-                  </span>
                 </span>
               </button>
             );
