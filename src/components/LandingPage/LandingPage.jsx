@@ -314,9 +314,7 @@ function StreamerPreview({ expanded = false }) {
 
 function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPreview, onClearPreview, onSelect }) {
   const isPlayer = audience === 'player';
-  const title = isPlayer
-    ? 'Bonus Hunt Tracker'
-    : 'Streamer Overlay Tools';
+  const title = 'Bonus Hunt Tracker';
   const description = isPlayer
     ? (
       <>
@@ -354,9 +352,11 @@ function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPrevi
         <img src={LANDING_IMAGES[audience]} alt="" loading="eager" decoding="async" />
       </span>
       <span className="lp-audience-panel__shade" />
-      <span className="lp-audience-panel__content">
-        <span className="lp-audience-panel__title">{title}</span>
-      </span>
+      {isPlayer && (
+        <span className="lp-audience-panel__content">
+          <span className="lp-audience-panel__title">{title}</span>
+        </span>
+      )}
       {isPlayer && (
         <>
           <span className="lp-audience-panel__desc">{description}</span>
