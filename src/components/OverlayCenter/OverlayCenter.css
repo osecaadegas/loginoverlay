@@ -6724,7 +6724,6 @@ body.wm-resizing {
   place-items: center start;
   overflow: hidden;
   background: transparent;
-  flex: 0 0 108px;
 }
 
 .bh-list-provider--logo img {
