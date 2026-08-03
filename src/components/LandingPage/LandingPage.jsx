@@ -170,10 +170,11 @@ const HOME_STEPS = [
 ];
 
 const HOME_PRICING = [
-  { name: 'Gambler', desc: 'Perfect for players', price: '€3', period: '/mo', cta: 'Get Started', tone: 'player', to: '/premium?type=player', features: ['Player tracker', 'Session history', 'P/L tracking'] },
-  { name: 'Streamer Monthly', desc: 'All tools, month-to-month', price: '€25', period: '/mo', cta: 'Start Free Trial', tone: 'streamer', to: '/premium?type=streamer', features: ['All widgets included', 'OBS overlays', 'Priority support'] },
-  { name: 'Streamer 6 Months', desc: 'Save with 6 months', price: '€130', period: '€21.67 /mo', cta: 'Start Free Trial', tone: 'streamer', to: '/premium?type=streamer', features: ['All widgets included', 'OBS overlays', 'Priority support'] },
-  { name: 'Streamer Yearly', desc: 'Best value for streamers', price: '€250', period: '€20.83 /mo', cta: 'Start Free Trial', tone: 'streamer', to: '/premium?type=streamer', badge: 'Best Value', features: ['All widgets included', 'OBS overlays', 'Priority support'] },
+  { name: 'Gambler Monthly', image: '/player3eur.png', to: '/premium?type=player', tone: 'player' },
+  { name: 'Gambler Yearly', image: '/player25eur.png', to: '/premium?type=player', tone: 'player' },
+  { name: 'Streamer Monthly', image: '/25.png', to: '/premium?type=streamer', tone: 'streamer' },
+  { name: 'Streamer 6 Months', image: '/130.png', to: '/premium?type=streamer', tone: 'streamer' },
+  { name: 'Streamer Yearly', image: '/250.png', to: '/premium?type=streamer', tone: 'streamer', badge: 'Best Value' },
 ];
 
 const STREAMER_PRICING = [
@@ -629,19 +630,15 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
         <h2>Simple, transparent pricing</h2>
         <div className="lp-home-price-grid">
           {HOME_PRICING.map((plan) => (
-            <article key={plan.name} className={`lp-home-price lp-home-price--${plan.tone}${plan.badge ? ' lp-home-price--featured' : ''}`}>
+            <Link
+              key={plan.name}
+              to={plan.to}
+              className={`lp-home-price lp-home-price--image lp-home-price--${plan.tone}${plan.badge ? ' lp-home-price--featured' : ''}`}
+              aria-label={`${plan.name} pricing`}
+            >
               {plan.badge && <span className="lp-home-price__badge">{plan.badge}</span>}
-              <h3>{plan.name}</h3>
-              <p>{plan.desc}</p>
-              <div className="lp-home-price__amount">
-                <strong>{plan.price}</strong>
-                <span>{plan.period}</span>
-              </div>
-              <ul>
-                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
-              </ul>
-              <Link to={plan.to}>{plan.cta}</Link>
-            </article>
+              <img src={plan.image} alt={`${plan.name} subscription card`} loading="lazy" decoding="async" />
+            </Link>
           ))}
         </div>
       </section>
