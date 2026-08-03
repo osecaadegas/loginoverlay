@@ -198,7 +198,7 @@ function AudienceSwitcher({ activeAudience, onSwitch, onReset }) {
         aria-current={activeAudience === 'player' ? 'page' : undefined}
         onClick={() => onSwitch('player')}
       >
-        Player
+        Gambler
       </button>
       <button
         type="button"

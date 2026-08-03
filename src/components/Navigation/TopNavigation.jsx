@@ -26,7 +26,7 @@ export default function TopNavigation() {
             className={`topnav-audience-switch__option${activeAudience === 'player' ? ' topnav-audience-switch__option--active' : ''}`}
             aria-current={activeAudience === 'player' ? 'page' : undefined}
           >
-            Player
+            Gambler
           </NavLink>
           <NavLink
             to="/overlay-center"
