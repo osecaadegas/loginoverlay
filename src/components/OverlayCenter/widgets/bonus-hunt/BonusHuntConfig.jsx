@@ -96,6 +96,7 @@ const BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS = Object.freeze({
 
 function BonusHuntProviderLogo({ provider }) {
   const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [provider]);
   const logo = !failed ? getProviderImage(provider) : null;
 
   if (logo) {
@@ -114,6 +115,18 @@ function BonusHuntProviderLogo({ provider }) {
   }
 
   return <span className="bh-list-provider">{provider}</span>;
+}
+
+function getBonusHuntProvider(bonus) {
+  return (
+    bonus?.provider ||
+    bonus?.providerName ||
+    bonus?.provider_name ||
+    bonus?.slot?.provider ||
+    bonus?.slot?.providerName ||
+    bonus?.slot?.provider_name ||
+    ""
+  );
 }
 
 function findExistingProvider(provider, providers) {
@@ -3347,9 +3360,9 @@ function BonusHuntPanel({
                             <span className="bh-list-name">
                               {bonus.slotName || bonus.slot?.name}
                             </span>
-                            {bonus.slot?.provider && (
+                            {getBonusHuntProvider(bonus) && (
                               <BonusHuntProviderLogo
-                                provider={bonus.slot.provider}
+                                provider={getBonusHuntProvider(bonus)}
                               />
                             )}
                           </div>

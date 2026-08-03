@@ -726,6 +726,30 @@ try {
     ),
     "Bonus Hunt best/worst cards remain visible long enough to read",
   );
+  const bonusHuntConfigSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/bonus-hunt/BonusHuntConfig.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const overlayCenterStylesSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/OverlayCenter.css",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    bonusHuntConfigSource.includes("function getBonusHuntProvider(bonus)") &&
+      bonusHuntConfigSource.includes("provider={getBonusHuntProvider(bonus)}"),
+    "Bonus Hunt management rows resolve provider logos from every supported bonus shape",
+  );
+  assert.ok(
+    overlayCenterStylesSource.includes("place-items: center start") &&
+      overlayCenterStylesSource.includes("object-position: left center"),
+    "Bonus Hunt row provider logos stay fully visible and left aligned",
+  );
   assert.ok(
     betterWidgetStylesSource.includes("request?.requested_by") &&
       betterWidgetStylesSource.includes("request?.slot_name") &&
