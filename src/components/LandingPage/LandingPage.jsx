@@ -153,6 +153,29 @@ const TRUST_POINTS = [
   { icon: CircleDollarSign, title: 'Stripe billing', desc: 'Checkout and subscription management are handled through Stripe, with VAT shown before payment.' },
 ];
 
+const HOME_WIDGETS = [
+  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png' },
+  { title: 'Bonus Hunt Result', image: '/screenshoots/rtp-stats.png' },
+  { title: 'Connect 4 Game', image: '/screenshoots/connect-four.png' },
+  { title: 'Giveaway', image: '/screenshoots/giveaway.png' },
+  { title: 'Shoutout', image: '/screenshoots/raid-shoutout.png' },
+  { title: 'Tournament', image: '/screenshoots/tournament.png' },
+];
+
+const HOME_STEPS = [
+  { icon: Radio, title: 'Connect', desc: 'Link your streaming platform in a few clicks.' },
+  { icon: Grid3X3, title: 'Choose Widgets', desc: 'Pick interactive overlays and stream tools.' },
+  { icon: LayoutDashboard, title: 'Customize', desc: 'Adjust style, colors, triggers and behavior.' },
+  { icon: MonitorPlay, title: 'Add to OBS', desc: 'Add the browser source and go live.' },
+];
+
+const HOME_PRICING = [
+  { name: 'Gambler', desc: 'Perfect for players', price: '€3', period: '/mo', cta: 'Get Started', tone: 'player', to: '/premium?type=player', features: ['Player tracker', 'Session history', 'P/L tracking'] },
+  { name: 'Streamer Monthly', desc: 'All tools, month-to-month', price: '€25', period: '/mo', cta: 'Start Free Trial', tone: 'streamer', to: '/premium?type=streamer', features: ['All widgets included', 'OBS overlays', 'Priority support'] },
+  { name: 'Streamer 6 Months', desc: 'Save with 6 months', price: '€130', period: '€21.67 /mo', cta: 'Start Free Trial', tone: 'streamer', to: '/premium?type=streamer', features: ['All widgets included', 'OBS overlays', 'Priority support'] },
+  { name: 'Streamer Yearly', desc: 'Best value for streamers', price: '€250', period: '€20.83 /mo', cta: 'Start Free Trial', tone: 'streamer', to: '/premium?type=streamer', badge: 'Best Value', features: ['All widgets included', 'OBS overlays', 'Priority support'] },
+];
+
 const STREAMER_PRICING = [
   { id: 'starter', name: 'Starter', price: 'EUR 15', period: '/month', priceAnnual: 'EUR 144', periodAnnual: '/year', subPriceAnnual: 'EUR 12/month billed annually', badge: null, badgeType: null, desc: 'Perfect for new streamers', subPrice: null, features: ['Overlay Center access', 'Core widgets and themes', 'Email support', 'Regular updates'], cta: 'Get Started', highlight: false },
   { id: 'creator', name: 'Creator', price: 'EUR 60', period: '/6 months', priceAnnual: 'EUR 96', periodAnnual: '/year', subPriceAnnual: 'EUR 8/month billed annually', badge: 'MOST POPULAR', badgeType: 'popular', desc: 'For growing content creators', subPrice: 'EUR 10/month', features: ['Everything in Starter', 'Advanced widgets', 'Priority support', 'Early access to new features'], cta: 'Choose Plan', highlight: true },
@@ -490,6 +513,137 @@ function RootOverview() {
           </p>
         </div>
         <ProductFeatureGrid features={ROOT_ANSWERS} />
+      </section>
+    </main>
+  );
+}
+
+function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
+  return (
+    <main className="lp-home">
+      <header className="lp-home-nav">
+        <Link to="/" className="lp-home-brand" aria-label="Streamers Center home">
+          <span className="lp-home-brand__mark">S</span>
+          <span>Streamers <strong>Center</strong></span>
+        </Link>
+        <nav className="lp-home-nav__links" aria-label="Main navigation">
+          <Link to="/streamer">Streamer Tools</Link>
+          <Link to="/player">Gambler Tracker</Link>
+          <a href="#widgets">Widgets</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#demo">Demo</a>
+        </nav>
+        <div className="lp-home-nav__actions">
+          {user ? (
+            <Link to="/apps">Apps</Link>
+          ) : (
+            <button type="button" onClick={onLogin}>Login</button>
+          )}
+          <button type="button" className="lp-home-nav__primary" onClick={onStreamerCta}>Start Free Trial</button>
+        </div>
+      </header>
+
+      <section className="lp-home-hero" id="demo">
+        <div className="lp-home-hero__copy">
+          <h1>Turn your stream into an <strong>interactive experience</strong></h1>
+          <p>
+            Interactive iGaming overlays, bonus hunts, tournaments, giveaways, slot requests,
+            bets, chat tools and games, all in one place.
+          </p>
+          <div className="lp-home-hero__ctas">
+            <button type="button" className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>
+              Start Free Trial <ArrowRight size={18} />
+            </button>
+            <a className="lp-btn lp-btn--ghost" href="#widgets">
+              View Demo <Play size={18} />
+            </a>
+          </div>
+          <div className="lp-home-platforms" aria-label="Supported workflow">
+            {['OBS Ready', 'Twitch', 'Kick', 'YouTube', 'No Coding'].map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+        <div className="lp-home-hero__media">
+          <img src="/streamer.png" alt="Streamers Center overlay tools preview" loading="eager" decoding="async" />
+        </div>
+      </section>
+
+      <section className="lp-home-section lp-home-audiences">
+        <h2>Built for Streamers and Gamblers</h2>
+        <div className="lp-home-audience-grid">
+          <button type="button" className="lp-home-audience lp-home-audience--streamer" onClick={onStreamerCta}>
+            <span className="lp-home-audience__badge">Most Popular</span>
+            <MonitorPlay size={34} />
+            <h3>For Streamers</h3>
+            <p>Engage your audience and grow your channel.</p>
+            <ul>
+              <li>Bonus hunts, slot requests, giveaways</li>
+              <li>Tournaments, chat games, interactive polls</li>
+              <li>OBS-ready overlays and alerts</li>
+              <li>All-in-one dashboard, easy to customize</li>
+            </ul>
+          </button>
+          <button type="button" className="lp-home-audience lp-home-audience--player" onClick={onPlayerCta}>
+            <Users size={34} />
+            <h3>For Gamblers</h3>
+            <p>Track your activity and measure results.</p>
+            <ul>
+              <li>Track deposits, withdrawals and sessions</li>
+              <li>Best wins, biggest losses, profit/loss</li>
+              <li>Detailed history and stats over time</li>
+              <li>Personal dashboard and insights</li>
+            </ul>
+          </button>
+        </div>
+      </section>
+
+      <section className="lp-home-section lp-home-widgets" id="widgets">
+        <h2>See the widgets in action</h2>
+        <div className="lp-home-widget-grid">
+          {HOME_WIDGETS.map((widget) => (
+            <article key={widget.title} className="lp-home-widget-card">
+              <h3>{widget.title}</h3>
+              <img src={widget.image} alt={`${widget.title} widget screenshot`} loading="lazy" decoding="async" />
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="lp-home-section lp-home-steps">
+        <h2>How it works</h2>
+        <div className="lp-home-step-grid">
+          {HOME_STEPS.map(({ icon: Icon, title, desc }, index) => (
+            <article key={title} className="lp-home-step">
+              <Icon size={34} />
+              <div>
+                <h3>{index + 1}. {title}</h3>
+                <p>{desc}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="lp-home-section lp-home-pricing" id="pricing">
+        <h2>Simple, transparent pricing</h2>
+        <div className="lp-home-price-grid">
+          {HOME_PRICING.map((plan) => (
+            <article key={plan.name} className={`lp-home-price lp-home-price--${plan.tone}${plan.badge ? ' lp-home-price--featured' : ''}`}>
+              {plan.badge && <span className="lp-home-price__badge">{plan.badge}</span>}
+              <h3>{plan.name}</h3>
+              <p>{plan.desc}</p>
+              <div className="lp-home-price__amount">
+                <strong>{plan.price}</strong>
+                <span>{plan.period}</span>
+              </div>
+              <ul>
+                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
+              </ul>
+              <Link to={plan.to}>{plan.cta}</Link>
+            </article>
+          ))}
+        </div>
       </section>
     </main>
   );
@@ -1039,25 +1193,23 @@ export default function LandingPage({ mode = 'selector' }) {
       )}
 
       <div className={`lp-page${activeAudience ? ` lp-page--${activeAudience}` : ' lp-page--selector'}${switchingAudience ? ` lp-page--switching-${switchingAudience}` : ''}`}>
-        <LandingNav
-          activeAudience={activeAudience}
-          user={user}
-          onLogin={openAuth}
-          onSwitch={switchAudience}
-          onReset={resetSelector}
-        />
+        {mode !== 'selector' && (
+          <LandingNav
+            activeAudience={activeAudience}
+            user={user}
+            onLogin={openAuth}
+            onSwitch={switchAudience}
+            onReset={resetSelector}
+          />
+        )}
 
         {mode === 'selector' ? (
-          <>
-            <AudienceGateway
-              previewAudience={previewAudience}
-              selectingAudience={selectingAudience}
-              onPreview={handlePreview}
-              onClearPreview={clearPreview}
-              onSelect={selectAudience}
-            />
-            <RootOverview />
-          </>
+          <HomeLanding
+            user={user}
+            onLogin={openAuth}
+            onStreamerCta={startStreamer}
+            onPlayerCta={startPlayerTrial}
+          />
         ) : mode === 'player' ? (
           <PlayerLanding headingRef={headingRef} onPrimaryCta={startPlayerTrial} user={user} />
         ) : mode === 'streamer' ? (
