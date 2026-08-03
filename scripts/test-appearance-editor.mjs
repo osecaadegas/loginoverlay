@@ -748,6 +748,8 @@ try {
   assert.ok(
     overlayCenterStylesSource.includes("width: 108px") &&
       overlayCenterStylesSource.includes("height: 24px") &&
+      overlayCenterStylesSource.includes("padding: 1px 3px") &&
+      overlayCenterStylesSource.includes("box-sizing: border-box") &&
       overlayCenterStylesSource.includes("max-height: 100%") &&
       overlayCenterStylesSource.includes("object-position: left center") &&
       !overlayCenterStylesSource.includes("flex: 0 0 108px"),
