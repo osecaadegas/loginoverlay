@@ -98,22 +98,22 @@ const MOCK_WIDGET_CONFIGS = {
     },
   },
   tournament: {
-    bracketPhase: "active",
+    layout: "esports",
+    bracketPhase: "completed",
     data: {
-      currentMatchIdx: 1,
+      currentMatchIdx: 2,
       matches: [
         {
-          id: "mock-quarter-final-1",
-          player1: "Brutus",
-          player2: "NOVA",
+          id: "mock-semifinal-1",
+          player1: "PixelPioneerLive",
+          player2: "LuckySpinLegend",
           slot1: {
-            name: "Gates of Olympus 1000",
-            image:
-              "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+            name: "1 Million Fortunes Megaways",
+            image: "https://casinolandia.com/wp-content/uploads/2023/03/1-Million-Fortunes-Megaways.jpg",
           },
           slot2: {
-            name: "Le Digger",
-            image: "https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png",
+            name: "1 Reel Baba Yaga",
+            image: "https://www.livebet.com/images/casino/slots/spinomenal/1-reel-baba-yaga.webp",
           },
           type: "bonus_bo3",
           status: "completed",
@@ -143,22 +143,20 @@ const MOCK_WIDGET_CONFIGS = {
           ],
         },
         {
-          id: "mock-quarter-final-2",
-          player1: "Sofia",
-          player2: "Rafa",
+          id: "mock-semifinal-2",
+          player1: "NeonReelsTV",
+          player2: "JackpotVoyager",
           slot1: {
-            name: "Sugar Rush 1000",
-            image:
-              "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
+            name: "1 Reel Beauty",
+            image: "https://slotspeak.net/wp-content/uploads/2025/01/1-reel-beauty-slot-review.jpg",
           },
           slot2: {
-            name: "Wanted Dead or a Wild",
-            image:
-              "https://images-cdn.softswiss.net/i/s2/hacksaw/WantedDeadOrAWild.png",
+            name: "1 Reel Buffalo",
+            image: "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/sp/webp/sp-1-reel-buffalo.webp",
           },
           type: "bonus_bo3",
-          status: "in_progress",
-          winner: null,
+          status: "completed",
+          winner: "player2",
           rounds: [
             {
               roundNum: 1,
@@ -169,17 +167,56 @@ const MOCK_WIDGET_CONFIGS = {
             },
             {
               roundNum: 2,
-              player1: { bonusCost: null, bonusPayout: null },
-              player2: { bonusCost: null, bonusPayout: null },
-              winner: null,
-              status: "pending",
+              player1: { bonusCost: 100, bonusPayout: 72 },
+              player2: { bonusCost: 100, bonusPayout: 245 },
+              winner: "player2",
+              status: "completed",
             },
             {
               roundNum: 3,
-              player1: { bonusCost: null, bonusPayout: null },
-              player2: { bonusCost: null, bonusPayout: null },
-              winner: null,
-              status: "pending",
+              player1: { bonusCost: 100, bonusPayout: 98 },
+              player2: { bonusCost: 100, bonusPayout: 330 },
+              winner: "player2",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "mock-final",
+          player1: "PixelPioneerLive",
+          player2: "JackpotVoyager",
+          slot1: {
+            name: "1 Million Fortunes Megaways",
+            image: "https://casinolandia.com/wp-content/uploads/2023/03/1-Million-Fortunes-Megaways.jpg",
+          },
+          slot2: {
+            name: "1 Reel Buffalo",
+            image: "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/sp/webp/sp-1-reel-buffalo.webp",
+          },
+          type: "bonus_bo3",
+          status: "completed",
+          winner: "player1",
+          rounds: [
+            {
+              roundNum: 1,
+              player1: { bonusCost: 100, bonusPayout: 285 },
+              player2: { bonusCost: 100, bonusPayout: 140 },
+              winner: "player1",
+              status: "completed",
+            },
+            {
+              roundNum: 2,
+              player1: { bonusCost: 100, bonusPayout: 88 },
+              player2: { bonusCost: 100, bonusPayout: 210 },
+              winner: "player2",
+              status: "completed",
+            },
+            {
+              roundNum: 3,
+              player1: { bonusCost: 100, bonusPayout: 420 },
+              player2: { bonusCost: 100, bonusPayout: 175 },
+              winner: "player1",
+              status: "completed",
             },
           ],
         },

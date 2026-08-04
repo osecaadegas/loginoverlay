@@ -20,15 +20,15 @@ export const PREVIEW_SLOT_NAMES = Object.freeze([
 
 const SAMPLE_TOURNAMENT_MATCHES = [
   {
-    id: "preview-tournament-1",
-    player1: "Brutus",
-    player2: "NOVA",
+    id: "preview-tournament-semifinal-1",
+    player1: "PixelPioneerLive",
+    player2: "LuckySpinLegend",
     slot1: {
-      name: "Gates of Olympus 1000",
+      name: "1 Million Fortunes Megaways",
       image: "",
     },
     slot2: {
-      name: "Le Digger",
+      name: "1 Reel Baba Yaga",
       image: "",
     },
     type: "bonus_bo3",
@@ -59,14 +59,14 @@ const SAMPLE_TOURNAMENT_MATCHES = [
     ],
   },
   {
-    id: "preview-tournament-2",
-    player1: "Sofia",
-    player2: "Rafa",
-    slot1: { name: "Sugar Rush 1000", image: "" },
-    slot2: { name: "Wanted Dead or a Wild", image: "" },
+    id: "preview-tournament-semifinal-2",
+    player1: "NeonReelsTV",
+    player2: "JackpotVoyager",
+    slot1: { name: "1 Reel Beauty", image: "" },
+    slot2: { name: "1 Reel Buffalo", image: "" },
     type: "bonus_bo3",
-    status: "in_progress",
-    winner: null,
+    status: "completed",
+    winner: "player2",
     rounds: [
       {
         roundNum: 1,
@@ -77,17 +77,50 @@ const SAMPLE_TOURNAMENT_MATCHES = [
       },
       {
         roundNum: 2,
-        player1: { bonusCost: null, bonusPayout: null },
-        player2: { bonusCost: null, bonusPayout: null },
-        winner: null,
-        status: "pending",
+        player1: { bonusCost: 100, bonusPayout: 72 },
+        player2: { bonusCost: 100, bonusPayout: 245 },
+        winner: "player2",
+        status: "completed",
       },
       {
         roundNum: 3,
-        player1: { bonusCost: null, bonusPayout: null },
-        player2: { bonusCost: null, bonusPayout: null },
-        winner: null,
-        status: "pending",
+        player1: { bonusCost: 100, bonusPayout: 98 },
+        player2: { bonusCost: 100, bonusPayout: 330 },
+        winner: "player2",
+        status: "completed",
+      },
+    ],
+  },
+  {
+    id: "preview-tournament-final",
+    player1: "PixelPioneerLive",
+    player2: "JackpotVoyager",
+    slot1: { name: "1 Million Fortunes Megaways", image: "" },
+    slot2: { name: "1 Reel Buffalo", image: "" },
+    type: "bonus_bo3",
+    status: "completed",
+    winner: "player1",
+    rounds: [
+      {
+        roundNum: 1,
+        player1: { bonusCost: 100, bonusPayout: 285 },
+        player2: { bonusCost: 100, bonusPayout: 140 },
+        winner: "player1",
+        status: "completed",
+      },
+      {
+        roundNum: 2,
+        player1: { bonusCost: 100, bonusPayout: 88 },
+        player2: { bonusCost: 100, bonusPayout: 210 },
+        winner: "player2",
+        status: "completed",
+      },
+      {
+        roundNum: 3,
+        player1: { bonusCost: 100, bonusPayout: 420 },
+        player2: { bonusCost: 100, bonusPayout: 175 },
+        winner: "player1",
+        status: "completed",
       },
     ],
   },
@@ -510,11 +543,12 @@ function applyTournamentPreviewSample(config = {}, slotCatalog) {
   const existingMatches = config.data?.matches;
   return {
     ...config,
+    layout: "esports",
     bracketName: config.bracketName || "Friday Night Showdown",
-    bracketPhase: "active",
+    bracketPhase: "completed",
     data: {
       ...(config.data || {}),
-      currentMatchIdx: config.data?.currentMatchIdx ?? 1,
+      currentMatchIdx: config.data?.currentMatchIdx ?? 2,
       matches: nonEmptyArrayOr(
         existingMatches,
         hydratePreviewMatches(SAMPLE_TOURNAMENT_MATCHES, slotCatalog),
