@@ -171,20 +171,20 @@ const TRUST_POINTS = [
 const HOME_WIDGETS = [
   { title: 'RTP Stats', widgetType: 'rtp_stats', layout: 'wide', width: 1245, height: 57 },
   { title: 'Navbar', widgetType: 'navbar', layout: 'wide', width: 1915, height: 72 },
-  { title: 'Bets', widgetType: 'bets', width: 778, height: 300 },
-  { title: 'Connect 4 Game', widgetType: 'connect_four', width: 620, height: 790 },
-  { title: 'Giveaway', widgetType: 'giveaway', width: 420, height: 270 },
-  { title: 'Chat', widgetType: 'chat', layout: 'portrait', width: 218, height: 457 },
-  { title: 'Shoutout', widgetType: 'raid_shoutout', width: 640, height: 360 },
-  { title: 'Tournament', widgetType: 'tournament', layout: 'feature', width: 960, height: 720 },
-  { title: 'Slideshow Frame', widgetType: 'slideshow_frame', width: 336, height: 227 },
-  { title: 'Animated Background', widgetType: 'background', width: 1920, height: 1080 },
-  { title: 'Bonus Hunt', widgetType: 'bonus_hunt', layout: 'portrait', width: 369, height: 884 },
+  { title: 'Bets', widgetType: 'bets', layout: 'square', width: 778, height: 300 },
+  { title: 'Connect 4 Game', widgetType: 'connect_four', layout: 'square', width: 620, height: 790 },
+  { title: 'Giveaway', widgetType: 'giveaway', layout: 'square', width: 420, height: 270 },
+  { title: 'Chat', widgetType: 'chat', layout: 'square', width: 218, height: 457 },
+  { title: 'Shoutout', widgetType: 'raid_shoutout', layout: 'square', width: 640, height: 360 },
+  { title: 'Tournament', widgetType: 'tournament', layout: 'square', width: 960, height: 720 },
+  { title: 'Slideshow Frame', widgetType: 'slideshow_frame', layout: 'square', width: 336, height: 227 },
+  { title: 'Animated Background', widgetType: 'background', layout: 'square', width: 1920, height: 1080 },
+  { title: 'Bonus Hunt', widgetType: 'bonus_hunt', layout: 'square', width: 369, height: 884 },
 ];
 
 function LiveWidgetShowcase({ widget }) {
   const [previewCycle, setPreviewCycle] = useState(0);
-  const [frameScale, setFrameScale] = useState(1);
+  const [frameGeometry, setFrameGeometry] = useState({ scale: 1, left: 0, top: 0 });
   const runtimeRef = useRef(null);
 
   useEffect(() => {
@@ -199,14 +199,21 @@ function LiveWidgetShowcase({ widget }) {
     const runtime = runtimeRef.current;
     if (!runtime) return undefined;
     const updateScale = () => {
-      const width = runtime.getBoundingClientRect().width;
-      setFrameScale(width > 0 ? width / widget.width : 1);
+      const { width, height } = runtime.getBoundingClientRect();
+      const scale = width > 0 && height > 0
+        ? Math.min(width / widget.width, height / widget.height)
+        : 1;
+      setFrameGeometry({
+        scale,
+        left: (width - widget.width * scale) / 2,
+        top: (height - widget.height * scale) / 2,
+      });
     };
     updateScale();
     const observer = new ResizeObserver(updateScale);
     observer.observe(runtime);
     return () => observer.disconnect();
-  }, [widget.width]);
+  }, [widget.height, widget.width]);
 
   const preview = useMemo(() => {
     const instance = createBetterInstance(widget.widgetType, {
@@ -231,9 +238,11 @@ function LiveWidgetShowcase({ widget }) {
         key={`${widget.widgetType}-${previewCycle}`}
         className="lp-home-widget-runtime__frame"
         style={{
+          left: frameGeometry.left,
+          top: frameGeometry.top,
           width: widget.width,
           height: widget.height,
-          transform: `scale(${frameScale})`,
+          transform: `scale(${frameGeometry.scale})`,
         }}
       >
         {renderBetterWidgetInstance({
@@ -248,10 +257,14 @@ function LiveWidgetShowcase({ widget }) {
 }
 
 function HomeWidgetMedia({ widget, floating = false }) {
+  const previewRatio = !floating && widget.layout === 'square'
+    ? '1 / 1'
+    : `${widget.width} / ${widget.height}`;
+
   return (
     <div
       className={`lp-home-widget-media lp-home-widget-media--${widget.widgetType}${floating ? ' lp-home-widget-media--floating' : ''}`}
-      style={{ '--lp-widget-ratio': `${widget.width} / ${widget.height}` }}
+      style={{ '--lp-widget-ratio': previewRatio }}
     >
       <LiveWidgetShowcase widget={widget} />
     </div>

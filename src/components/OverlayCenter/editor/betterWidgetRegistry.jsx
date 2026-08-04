@@ -222,9 +222,8 @@ const MOCK_WIDGET_CONFIGS = {
   background: {},
   slideshow_frame: {
     mediaText: [
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png|image|Gates of Olympus",
-      "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png|image|Medusas Madness",
       "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4|video|Demo video",
+      "/placeholder.png|image|Placeholder",
     ].join("\n"),
     showCounter: true,
   },
