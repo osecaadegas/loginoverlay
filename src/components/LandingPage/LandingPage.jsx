@@ -533,13 +533,18 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
   return (
     <main className="lp-home">
       <header className="lp-home-nav">
-        <Link to="/" className="lp-home-brand" aria-label="Streamers Center home">
-          <img src="/StreamerCenterLogo.png" alt="" />
-        </Link>
+        <div className="lp-home-nav__left">
+          <Link to="/" className="lp-home-brand" aria-label="Streamers Center home">
+            <img src="/StreamerCenterLogo.png" alt="" />
+          </Link>
+          <div className="lp-home-audience-toggle" aria-label="Choose your experience">
+            <Link to="/player">Gamblers</Link>
+            <Link to="/streamer" aria-current="page">Streamers</Link>
+          </div>
+        </div>
         <nav className="lp-home-nav__links" aria-label="Main navigation">
-          <Link to="/streamer">Streamer Tools</Link>
-          <Link to="/player">Gambler Tracker</Link>
           <a href="#widgets">Widgets</a>
+          <Link to="/offers">Deals</Link>
           <a href="#pricing">Pricing</a>
           <a href="#demo">Demo</a>
         </nav>
