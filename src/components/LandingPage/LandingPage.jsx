@@ -30,7 +30,10 @@ import { usePremium } from '../../hooks/usePremium';
 import { trackEvent } from '../../utils/analytics';
 import trackOfferClick from '../../utils/trackOfferClick';
 import { AudienceToggle } from '../Navigation/TopNavigation';
-import GiveawayWidget from '../OverlayCenter/widgets/giveaway/GiveawayWidget';
+import {
+  createBetterInstance,
+  renderBetterWidgetInstance,
+} from '../OverlayCenter/editor/betterWidgetRegistry';
 import './LandingPage.css';
 
 const FEATURED_PARTNERS = [
@@ -166,64 +169,91 @@ const TRUST_POINTS = [
 ];
 
 const HOME_WIDGETS = [
-  { title: 'RTP Stats', image: '/screenshoots/rtp-stats.png', layout: 'wide', ratio: '1277 / 89' },
-  { title: 'Navbar', image: '/screenshoots/navbar.png', layout: 'wide', ratio: '1947 / 104' },
-  { title: 'Bets', image: '/screenshoots/bets.png', ratio: '810 / 332' },
-  { title: 'Connect 4 Game', image: '/screenshoots/connect-four.png', ratio: '652 / 822' },
-  { title: 'Giveaway', media: 'giveaway', ratio: '700 / 360' },
-  { title: 'Chat', image: '/screenshoots/chat.png', layout: 'portrait', ratio: '250 / 489' },
-  { title: 'Shoutout', image: '/screenshoots/raid-shoutout.png', ratio: '672 / 392' },
-  { title: 'Tournament', image: '/screenshoots/tournament.png', layout: 'feature', ratio: '1312 / 752' },
-  { title: 'Slideshow Frame', image: '/screenshoots/slideshow-frame.png', ratio: '368 / 259' },
-  { title: 'Animated Background', image: '/screenshoots/background.png', ratio: '16 / 9' },
-  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png', layout: 'portrait', ratio: '430 / 1162' },
+  { title: 'RTP Stats', widgetType: 'rtp_stats', layout: 'wide', width: 1245, height: 57 },
+  { title: 'Navbar', widgetType: 'navbar', layout: 'wide', width: 1915, height: 72 },
+  { title: 'Bets', widgetType: 'bets', width: 778, height: 300 },
+  { title: 'Connect 4 Game', widgetType: 'connect_four', width: 620, height: 790 },
+  { title: 'Giveaway', widgetType: 'giveaway', width: 420, height: 270 },
+  { title: 'Chat', widgetType: 'chat', layout: 'portrait', width: 218, height: 457 },
+  { title: 'Shoutout', widgetType: 'raid_shoutout', width: 640, height: 360 },
+  { title: 'Tournament', widgetType: 'tournament', layout: 'feature', width: 960, height: 720 },
+  { title: 'Slideshow Frame', widgetType: 'slideshow_frame', width: 336, height: 227 },
+  { title: 'Animated Background', widgetType: 'background', width: 1920, height: 1080 },
+  { title: 'Bonus Hunt', widgetType: 'bonus_hunt', layout: 'portrait', width: 369, height: 884 },
 ];
 
-const HOME_GIVEAWAY_PARTICIPANTS = ['streamfan', 'nightowl', 'arena', 'luckyspin'];
-
-function GiveawayShowcase() {
-  const [draw, setDraw] = useState(0);
+function LiveWidgetShowcase({ widget }) {
+  const [previewCycle, setPreviewCycle] = useState(0);
+  const [frameScale, setFrameScale] = useState(1);
+  const runtimeRef = useRef(null);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setDraw((value) => value + 1), 6500);
+    if (widget.widgetType !== 'giveaway') return undefined;
+    const timer = window.setInterval(() => {
+      setPreviewCycle((value) => value + 1);
+    }, 6500);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [widget.widgetType]);
+
+  useEffect(() => {
+    const runtime = runtimeRef.current;
+    if (!runtime) return undefined;
+    const updateScale = () => {
+      const width = runtime.getBoundingClientRect().width;
+      setFrameScale(width > 0 ? width / widget.width : 1);
+    };
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(runtime);
+    return () => observer.disconnect();
+  }, [widget.width]);
+
+  const preview = useMemo(() => {
+    const instance = createBetterInstance(widget.widgetType, {
+      instanceId: `landing-${widget.widgetType}`,
+      width: widget.width,
+      height: widget.height,
+    });
+    return {
+      instance,
+      layout: {
+        canvas: { width: widget.width, height: widget.height },
+        instances: instance ? [instance] : [],
+      },
+    };
+  }, [widget.height, widget.widgetType, widget.width]);
+
+  if (!preview.instance) return null;
 
   return (
-    <GiveawayWidget
-      key={draw}
-      config={{
-        displayStyle: 'better_giveaway',
-        title: 'Giveaway #1',
-        prize: '10 EUR',
-        subtitle: '42 players entered',
-        keyword: 'join',
-        participants: HOME_GIVEAWAY_PARTICIPANTS,
-        entries: 42,
-        winner: '',
-        spinningWinner: HOME_GIVEAWAY_PARTICIPANTS[draw % HOME_GIVEAWAY_PARTICIPANTS.length],
-        isActive: false,
-        width: 700,
-        height: 360,
-      }}
-    />
+    <div ref={runtimeRef} className="lp-home-widget-runtime" aria-hidden="true">
+      <div
+        key={`${widget.widgetType}-${previewCycle}`}
+        className="lp-home-widget-runtime__frame"
+        style={{
+          width: widget.width,
+          height: widget.height,
+          transform: `scale(${frameScale})`,
+        }}
+      >
+        {renderBetterWidgetInstance({
+          instance: preview.instance,
+          layout: preview.layout,
+          mode: 'mock',
+          runtime: 'editor',
+        })}
+      </div>
+    </div>
   );
 }
 
 function HomeWidgetMedia({ widget, floating = false }) {
-  const mediaClass = `lp-home-widget-media${widget.media === 'giveaway' ? ' lp-home-widget-media--giveaway' : ''}${floating ? ' lp-home-widget-media--floating' : ''}`;
   return (
-    <div className={mediaClass} style={{ '--lp-widget-ratio': widget.ratio }}>
-      {widget.media === 'giveaway' ? (
-        <GiveawayShowcase />
-      ) : (
-        <img
-          src={widget.image}
-          alt={`${widget.title} widget ${floating ? 'pinned preview' : 'screenshot'}`}
-          loading={floating ? undefined : 'lazy'}
-          decoding="async"
-        />
-      )}
+    <div
+      className={`lp-home-widget-media lp-home-widget-media--${widget.widgetType}${floating ? ' lp-home-widget-media--floating' : ''}`}
+      style={{ '--lp-widget-ratio': `${widget.width} / ${widget.height}` }}
+    >
+      <LiveWidgetShowcase widget={widget} />
     </div>
   );
 }

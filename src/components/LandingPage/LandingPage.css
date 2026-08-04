@@ -1766,25 +1766,24 @@
   overflow: visible;
 }
 
-.lp-home-widget-media > img {
-  display: block;
+.lp-home-widget-runtime {
+  position: relative;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  border-radius: 6px;
-}
-
-.lp-home-widget-card--portrait .lp-home-widget-media > img {
-  object-position: center top;
-}
-
-.lp-home-widget-media > .better-giveaway-stage {
-  width: 100%;
-  height: 100%;
-}
-
-.lp-home-widget-media--giveaway {
   overflow: hidden;
+  pointer-events: none;
+}
+
+.lp-home-widget-runtime__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+
+.lp-home-widget-runtime__frame > * {
+  width: 100%;
+  height: 100%;
 }
 
 .lp-home-widget-float {
@@ -1811,8 +1810,7 @@
   aspect-ratio: var(--lp-widget-ratio, 16 / 9);
 }
 
-.lp-home-widget-media--floating > img,
-.lp-home-widget-media--floating > .better-giveaway-stage {
+.lp-home-widget-media--floating .lp-home-widget-runtime__frame {
   filter: drop-shadow(0 28px 42px rgba(0, 0, 0, 0.72));
 }
 
