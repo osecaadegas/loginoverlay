@@ -620,10 +620,8 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
           ))}
         </div>
         {pinnedWidget && (
-          <aside className="lp-home-widget-float" aria-live="polite">
-            <span>{pinnedWidget.title}</span>
+          <aside className="lp-home-widget-float" aria-live="polite" aria-label={`${pinnedWidget.title} pinned widget preview`}>
             <img src={pinnedWidget.image} alt={`${pinnedWidget.title} pinned widget preview`} />
-            <small>Click the tile again to close</small>
           </aside>
         )}
       </section>
