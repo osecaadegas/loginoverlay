@@ -165,7 +165,6 @@ const TRUST_POINTS = [
 ];
 
 const HOME_WIDGETS = [
-  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png', layout: 'portrait' },
   { title: 'RTP Stats', image: '/screenshoots/rtp-stats.png', layout: 'wide' },
   { title: 'Navbar', image: '/screenshoots/navbar.png', layout: 'wide' },
   { title: 'Bets', image: '/screenshoots/bets.png' },
@@ -176,6 +175,7 @@ const HOME_WIDGETS = [
   { title: 'Tournament', image: '/screenshoots/tournament.png' },
   { title: 'Slideshow Frame', image: '/screenshoots/slideshow-frame.png' },
   { title: 'Animated Background', image: '/screenshoots/background.png' },
+  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png', layout: 'portrait' },
 ];
 
 const HOME_STEPS = [
