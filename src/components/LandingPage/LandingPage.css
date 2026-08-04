@@ -135,7 +135,7 @@
   right: 0;
   z-index: 40;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 18px;
   padding: 18px clamp(18px, 4vw, 44px);
@@ -144,9 +144,15 @@
   backdrop-filter: blur(18px);
 }
 
+.lp-site-nav__brand-zone {
+  grid-column: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .lp-brand {
-  grid-column: 2;
-  justify-self: center;
   display: inline-flex;
   align-items: center;
   color: var(--lp-text);
@@ -176,7 +182,7 @@
 }
 
 .lp-site-nav__links {
-  grid-column: 3;
+  grid-column: 2;
   justify-self: end;
   display: flex;
   align-items: center;
@@ -185,14 +191,7 @@
   min-width: 0;
 }
 
-.lp-site-nav__tagline {
-  color: var(--lp-muted);
-  font-size: 0.88rem;
-  white-space: nowrap;
-}
-
 .lp-nav-btn,
-.lp-audience-switcher button,
 .lp-btn,
 .lp-panel-cta,
 .lp-partner-card button,
@@ -201,7 +200,7 @@
 }
 
 .lp-nav-btn,
-.lp-audience-switcher button {
+.lp-nav-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -217,42 +216,9 @@
   cursor: pointer;
 }
 
-.lp-nav-btn:hover,
-.lp-audience-switcher button:hover {
+.lp-nav-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.22);
-}
-
-.lp-audience-switcher {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.lp-audience-switcher button {
-  min-height: 34px;
-  border-radius: 10px;
-  padding: 0 12px;
-  background: transparent;
-  border-color: transparent;
-}
-
-.lp-audience-switcher button.is-active {
-  color: #061018;
-  background: linear-gradient(135deg, var(--lp-player), #d9f99d);
-}
-
-.lp-page--streamer .lp-audience-switcher button.is-active {
-  color: #fff;
-  background: linear-gradient(135deg, var(--lp-streamer), #ec4899);
-}
-
-.lp-audience-switcher__reset {
-  color: var(--lp-muted) !important;
 }
 
 .lp-gateway {
@@ -1485,37 +1451,6 @@
   gap: 14px;
 }
 
-.lp-home-audience-toggle {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto;
-  padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.lp-home-audience-toggle a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 5px;
-  color: #cbd5e1;
-  font-size: 0.78rem;
-}
-
-.lp-home-audience-toggle a:first-child:hover {
-  color: #061018;
-  background: linear-gradient(135deg, var(--lp-player), #d9f99d);
-}
-
-.lp-home-audience-toggle a:last-child {
-  color: #fff;
-  background: linear-gradient(135deg, var(--lp-streamer), #ec4899);
-}
-
 .lp-home-nav__links,
 .lp-home-nav__actions {
   display: flex;
@@ -1527,15 +1462,16 @@
   justify-content: center;
 }
 
-.lp-home-nav a,
-.lp-home-nav button {
+.lp-home-nav__links a,
+.lp-home-nav__actions a,
+.lp-home-nav__actions button {
   color: #e5edf8;
   font: inherit;
   font-weight: 820;
   text-decoration: none;
 }
 
-.lp-home-nav button {
+.lp-home-nav__actions button {
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -1950,8 +1886,14 @@
 }
 
 .lp-tool-nav .lp-brand {
-  grid-column: auto;
-  justify-self: start;
+  flex: 0 0 auto;
+}
+
+.lp-tool-nav__brand-zone {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .lp-tool-nav nav {
@@ -2436,7 +2378,6 @@
 
 .lp-audience-panel:focus-visible,
 .lp-nav-btn:focus-visible,
-.lp-audience-switcher button:focus-visible,
 .lp-btn:focus-visible,
 .lp-price-card button:focus-visible,
 .lp-partner-card button:focus-visible,
@@ -2447,8 +2388,7 @@
   outline-offset: 3px;
 }
 
-.lp-page--streamer .lp-btn:focus-visible,
-.lp-page--streamer .lp-audience-switcher button:focus-visible {
+.lp-page--streamer .lp-btn:focus-visible {
   outline-color: rgba(196, 181, 253, 0.92);
 }
 
@@ -2585,15 +2525,6 @@
 
   .lp-site-nav__tagline {
     display: none;
-  }
-
-  .lp-audience-switcher {
-    order: 2;
-    width: 100%;
-  }
-
-  .lp-audience-switcher button {
-    flex: 1;
   }
 
   .lp-gateway {
@@ -2745,6 +2676,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
     padding-inline: 20px;
+    justify-items: stretch;
   }
 
   .lp-home-nav__left {
@@ -2757,14 +2689,9 @@
     height: 48px;
   }
 
-  .lp-home-audience-toggle a {
-    min-height: 32px;
-    padding-inline: 8px;
-    font-size: 0.7rem;
-  }
-
   .lp-home-nav__actions {
     gap: 12px;
+    justify-self: end;
   }
 
   .lp-home-nav__primary {
@@ -2794,18 +2721,35 @@
 }
 
 @media (max-width: 760px) {
-  .lp-home-nav {
+  .lp-home-nav,
+  .lp-site-nav,
+  .lp-tool-nav {
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: auto auto;
+    padding-inline: 18px;
   }
 
-  .lp-home-nav__left {
+  .lp-home-nav__left,
+  .lp-site-nav__brand-zone,
+  .lp-tool-nav__brand-zone {
     display: contents;
   }
 
-  .lp-home-audience-toggle {
+  .lp-home-nav__left .audience-toggle,
+  .lp-site-nav__brand-zone .audience-toggle,
+  .lp-tool-nav__brand-zone .audience-toggle {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-self: start;
+  }
+
+  .lp-tool-nav {
+    display: grid;
+  }
+
+  .lp-tool-nav nav {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .lp-home-hero {
@@ -2840,7 +2784,12 @@
 
   .lp-site-nav {
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .lp-site-nav__brand-zone,
+  .lp-tool-nav__brand-zone {
+    gap: 8px;
   }
 
   .lp-brand__mark {

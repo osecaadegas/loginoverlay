@@ -29,6 +29,7 @@ import { supabase } from '../../config/supabaseClient';
 import { usePremium } from '../../hooks/usePremium';
 import { trackEvent } from '../../utils/analytics';
 import trackOfferClick from '../../utils/trackOfferClick';
+import { AudienceToggle } from '../Navigation/TopNavigation';
 import './LandingPage.css';
 
 const FEATURED_PARTNERS = [
@@ -262,42 +263,14 @@ function BrandMark() {
   );
 }
 
-function AudienceSwitcher({ activeAudience, onSwitch, onReset }) {
-  return (
-    <div className="lp-audience-switcher" aria-label="Audience switcher">
-      <button
-        type="button"
-        className={activeAudience === 'player' ? 'is-active' : ''}
-        aria-current={activeAudience === 'player' ? 'page' : undefined}
-        onClick={() => onSwitch('player')}
-      >
-        Gambler
-      </button>
-      <button
-        type="button"
-        className={activeAudience === 'streamer' ? 'is-active' : ''}
-        aria-current={activeAudience === 'streamer' ? 'page' : undefined}
-        onClick={() => onSwitch('streamer')}
-      >
-        Streamer
-      </button>
-      <button type="button" className="lp-audience-switcher__reset" onClick={onReset}>
-        Selector
-      </button>
-    </div>
-  );
-}
-
-function LandingNav({ activeAudience, user, onLogin, onSwitch, onReset }) {
+function LandingNav({ activeAudience, user, onLogin, onSwitch }) {
   return (
     <header className="lp-site-nav">
-      <BrandMark />
+      <div className="lp-site-nav__brand-zone">
+        <BrandMark />
+        <AudienceToggle activeAudience={activeAudience} onSelect={onSwitch} />
+      </div>
       <nav className="lp-site-nav__links" aria-label="Main navigation">
-        {activeAudience ? (
-          <AudienceSwitcher activeAudience={activeAudience} onSwitch={onSwitch} onReset={onReset} />
-        ) : (
-          <span className="lp-site-nav__tagline">Tools for players and streamers</span>
-        )}
         {user ? (
           <Link className="lp-nav-btn lp-nav-btn--ghost" to="/apps">
             <Grid3X3 size={16} /> Apps
@@ -537,10 +510,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
           <Link to="/" className="lp-home-brand" aria-label="Streamers Center home">
             <img src="/StreamerCenterLogo.png" alt="" />
           </Link>
-          <div className="lp-home-audience-toggle" aria-label="Choose your experience">
-            <Link to="/player">Gamblers</Link>
-            <Link to="/streamer" aria-current="page">Streamers</Link>
-          </div>
+          <AudienceToggle activeAudience="streamer" />
         </div>
         <nav className="lp-home-nav__links" aria-label="Main navigation">
           <a href="#widgets">Widgets</a>
@@ -1160,11 +1130,6 @@ export default function LandingPage({ mode = 'selector' }) {
     navigateAudience(audience);
   };
 
-  const resetSelector = () => {
-    trackEvent('audience_switched', { from: activeAudience, to: 'selector' });
-    navigate('/');
-  };
-
   const startPlayerTrial = () => {
     trackEvent('player_cta_clicked', { route: location.pathname });
     rememberAudience(user, 'player');
@@ -1228,7 +1193,6 @@ export default function LandingPage({ mode = 'selector' }) {
             user={user}
             onLogin={openAuth}
             onSwitch={switchAudience}
-            onReset={resetSelector}
           />
         )}
 

@@ -1,6 +1,53 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Grid3X3 } from 'lucide-react';
 import './TopNavigation.css';
+
+const AUDIENCE_OPTIONS = [
+  { audience: 'player', label: 'Gamblers', defaultTo: '/player' },
+  { audience: 'streamer', label: 'Streamers', defaultTo: '/streamer' },
+];
+
+export function AudienceToggle({
+  activeAudience,
+  onSelect,
+  playerTo = '/player',
+  streamerTo = '/streamer',
+}) {
+  const destinations = { player: playerTo, streamer: streamerTo };
+
+  return (
+    <div className="audience-toggle" aria-label="Choose your experience">
+      {AUDIENCE_OPTIONS.map(({ audience, label, defaultTo }) => {
+        const className = `audience-toggle__option${activeAudience === audience ? ` audience-toggle__option--active audience-toggle__option--${audience}` : ''}`;
+
+        if (onSelect) {
+          return (
+            <button
+              key={audience}
+              type="button"
+              className={className}
+              aria-current={activeAudience === audience ? 'page' : undefined}
+              onClick={() => onSelect(audience)}
+            >
+              {label}
+            </button>
+          );
+        }
+
+        return (
+          <Link
+            key={audience}
+            to={destinations[audience] || defaultTo}
+            className={className}
+            aria-current={activeAudience === audience ? 'page' : undefined}
+          >
+            {label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
 
 function Brand() {
   return (
@@ -20,22 +67,11 @@ export default function TopNavigation() {
     <header className="topnav-shell">
       <div className="topnav-brand-zone">
         <Brand />
-        <div className="topnav-audience-switch" aria-label="Switch experience">
-          <NavLink
-            to="/player/bonus-hunt"
-            className={`topnav-audience-switch__option${activeAudience === 'player' ? ' topnav-audience-switch__option--active' : ''}`}
-            aria-current={activeAudience === 'player' ? 'page' : undefined}
-          >
-            Gambler
-          </NavLink>
-          <NavLink
-            to="/overlay-center"
-            className={`topnav-audience-switch__option${activeAudience === 'streamer' ? ' topnav-audience-switch__option--active' : ''}`}
-            aria-current={activeAudience === 'streamer' ? 'page' : undefined}
-          >
-            Streamer
-          </NavLink>
-        </div>
+        <AudienceToggle
+          activeAudience={activeAudience}
+          playerTo="/player/bonus-hunt"
+          streamerTo="/overlay-center"
+        />
       </div>
 
       <div className="topnav-actions">

@@ -10,6 +10,7 @@ import {
   Swords,
   Trophy,
 } from 'lucide-react';
+import { AudienceToggle } from '../Navigation/TopNavigation';
 import './LandingPage.css';
 
 const TOOL_PAGES = {
@@ -127,18 +128,20 @@ export default function ToolLandingPage() {
   const slug = pathname.replace(/^\/+/, '');
   const page = TOOL_PAGES[slug] || TOOL_PAGES['streamer-overlays'];
   const Icon = page.icon;
+  const activeAudience = slug === 'casino-profit-loss-tracker' ? 'player' : 'streamer';
 
   return (
     <main className="lp-page lp-tool-page">
       <header className="lp-tool-nav">
-        <Link to="/" className="lp-brand" aria-label="Streamers Center home">
-          <span className="lp-brand__mark">
-            <img src="/StreamerCenterLogo.png" alt="" />
-          </span>
-        </Link>
+        <div className="lp-tool-nav__brand-zone">
+          <Link to="/" className="lp-brand" aria-label="Streamers Center home">
+            <span className="lp-brand__mark">
+              <img src="/StreamerCenterLogo.png" alt="" />
+            </span>
+          </Link>
+          <AudienceToggle activeAudience={activeAudience} />
+        </div>
         <nav aria-label="Tool landing navigation">
-          <Link to="/streamer">Streamer Tools</Link>
-          <Link to="/player">Gambler Tracker</Link>
           <Link to="/premium">Pricing</Link>
         </nav>
       </header>
