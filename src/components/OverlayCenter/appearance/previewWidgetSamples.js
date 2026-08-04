@@ -22,7 +22,7 @@ const SAMPLE_TOURNAMENT_MATCHES = [
   {
     id: "preview-tournament-1",
     player1: "Brutus",
-    player2: "Miguel",
+    player2: "NOVA",
     slot1: {
       name: "Gates of Olympus 1000",
       image: "",
@@ -99,7 +99,7 @@ const SAMPLE_GIVEAWAY_PARTICIPANTS = [
   "Carolina",
   "Duarte",
   "Ines",
-  "Miguel",
+  "NOVA",
   "Rafa",
   "Sofia",
 ];
@@ -116,7 +116,7 @@ const SAMPLE_SLOT_REQUESTS = [
     id: "preview-sr-2",
     slot_name: "Le Digger",
     slot_image: "",
-    requested_by: "miguel",
+    requested_by: "streamfan",
     created_at: "2026-07-16T10:01:00.000Z",
   },
   {
@@ -148,7 +148,7 @@ const SAMPLE_CHAT_MESSAGES = [
   {
     id: "preview-chat-2",
     platform: "kick",
-    username: "miguel",
+    username: "nightowl",
     message: "Edit header, message row, name, badges and text separately.",
     color: "#22c55e",
     timestamp: Date.now() - 9000,
@@ -423,14 +423,14 @@ function applyGiveawayPreviewSample(config = {}) {
     if (previewState === "drawing") {
       return {
         ...base,
-        spinningWinner: "Miguel",
+        spinningWinner: "NOVA",
         isActive: false,
       };
     }
     if (previewState === "winner") {
       return {
         ...base,
-        winner: "Miguel",
+        winner: "NOVA",
         isActive: false,
       };
     }

@@ -105,7 +105,7 @@ const MOCK_WIDGET_CONFIGS = {
         {
           id: "mock-quarter-final-1",
           player1: "Brutus",
-          player2: "Miguel",
+          player2: "NOVA",
           slot1: {
             name: "Gates of Olympus 1000",
             image:
@@ -192,17 +192,17 @@ const MOCK_WIDGET_CONFIGS = {
     stopLoss: 700,
     currency: "EUR ",
     requests: [
-      { username: "miguel", slotName: "Sweet Bonanza 1000" },
+      { username: "streamfan", slotName: "Sweet Bonanza 1000" },
       { username: "arena", slotName: "Gates of Olympus" },
-      { username: "seca", slotName: "Wanted Dead or a Wild" },
+      { username: "slotviewer", slotName: "Wanted Dead or a Wild" },
     ],
   },
   giveaway: {
     title: "Giveaway #1",
     prize: "10 EUR",
     subtitle: "42 players entered",
-    keyword: "iseca",
-    participants: ["brutus", "osecaadegas", "arena", "secalive"],
+    keyword: "join",
+    participants: ["streamfan", "nightowl", "arena", "luckyspin"],
     entriesCount: 42,
     winner: "",
   },
@@ -214,7 +214,7 @@ const MOCK_WIDGET_CONFIGS = {
     showCasino: true,
     showStartBalance: true,
     startValue: "EUR 2000",
-    casinoName: "SecaHub",
+    casinoName: "Demo Casino",
     casinoCommand: "!Casino",
     __mockNowPlaying: {
       artist: "Streamers Center",
@@ -227,9 +227,9 @@ const MOCK_WIDGET_CONFIGS = {
     youtubeEnabled: false,
     kickEnabled: false,
     __appearancePreviewMessages: [
-      { user: "miguel", text: "the hunt is live" },
+      { user: "streamfan", text: "the hunt is live" },
       { user: "arena", text: "!bet 2" },
-      { user: "secalive", text: "good luck everyone" },
+      { user: "nightowl", text: "good luck everyone" },
       { user: "chat", text: "that rtp bar is clean" },
     ],
   },
@@ -271,9 +271,9 @@ const MOCK_WIDGET_CONFIGS = {
       opt_4: 215,
     },
     betters: {
-      miguel: { option: 1, amount: 300 },
+      streamfan: { option: 1, amount: 300 },
       arena: { option: 2, amount: 180 },
-      seca: { option: 1, amount: 220 },
+      nightowl: { option: 1, amount: 220 },
       chat: { option: 0, amount: 80 },
     },
   },

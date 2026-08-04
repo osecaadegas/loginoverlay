@@ -263,7 +263,7 @@ export default function ConnectServicesStep({
             <Field label="Connected Twitch account" help="Filled from your authenticated Twitch profile when available.">
               <input value={twitchLogin || 'Not connected'} readOnly />
             </Field>
-            <Field label="Twitch channel/login" help="The channel where viewers type commands." example="osecaadegas">
+            <Field label="Twitch channel/login" help="The channel where viewers type commands." example="demo_channel">
               <input value={normalized.twitchChannel} onChange={event => patch({ twitchChannel: event.target.value })} placeholder="yourchannel" />
             </Field>
             <Field label="Display name" help="Shown only to help you confirm the right account.">

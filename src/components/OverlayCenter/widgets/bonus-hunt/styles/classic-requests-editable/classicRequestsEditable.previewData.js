@@ -12,7 +12,7 @@ export const classicRequestsEditablePreviewData = Object.freeze({
       id: 'bh-v12-request-2',
       slot_name: 'Le Digger',
       slot_image: 'https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png',
-      requested_by: 'miguel',
+      requested_by: 'streamfan',
     }),
     Object.freeze({
       id: 'bh-v12-request-3',

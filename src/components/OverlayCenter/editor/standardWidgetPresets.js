@@ -170,7 +170,7 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     title: "Giveaway #1",
     prize: "10$ MBway",
     subtitle: "(min 30 Participants)",
-    keyword: "iseca",
+    keyword: "join",
     surface: "matte",
     hue: 210,
     hueShift: 24,

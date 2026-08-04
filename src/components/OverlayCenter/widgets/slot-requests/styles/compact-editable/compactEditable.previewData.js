@@ -12,7 +12,7 @@ export const compactEditablePreviewData = Object.freeze({
       id: 'editable-preview-sr-2',
       slot_name: 'Le Digger',
       slot_image: 'https://images-cdn.softswiss.net/i/s2/hacksaw/LeDigger.png',
-      requested_by: 'miguel',
+      requested_by: 'streamfan',
     }),
     Object.freeze({
       id: 'editable-preview-sr-3',

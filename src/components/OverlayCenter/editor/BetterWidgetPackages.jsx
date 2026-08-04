@@ -709,7 +709,7 @@ const BASE_BETTER_CONFIG = {
     title: "Giveaway #1",
     prize: "10$ MBway",
     subtitle: "(min 30 Participants)",
-    keyword: "iseca",
+    keyword: "join",
     surface: "matte",
     hue: 195,
     hueShift: 10,

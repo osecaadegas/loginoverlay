@@ -165,12 +165,17 @@ const TRUST_POINTS = [
 ];
 
 const HOME_WIDGETS = [
-  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png' },
-  { title: 'Bonus Hunt Result', image: '/screenshoots/rtp-stats.png' },
+  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png', layout: 'portrait' },
+  { title: 'RTP Stats', image: '/screenshoots/rtp-stats.png', layout: 'wide' },
+  { title: 'Navbar', image: '/screenshoots/navbar.png', layout: 'wide' },
+  { title: 'Bets', image: '/screenshoots/bets.png' },
   { title: 'Connect 4 Game', image: '/screenshoots/connect-four.png' },
   { title: 'Giveaway', image: '/screenshoots/giveaway.png' },
+  { title: 'Chat', image: '/screenshoots/chat.png', layout: 'portrait' },
   { title: 'Shoutout', image: '/screenshoots/raid-shoutout.png' },
   { title: 'Tournament', image: '/screenshoots/tournament.png' },
+  { title: 'Slideshow Frame', image: '/screenshoots/slideshow-frame.png' },
+  { title: 'Animated Background', image: '/screenshoots/background.png' },
 ];
 
 const HOME_STEPS = [
@@ -609,7 +614,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             <button
               key={widget.title}
               type="button"
-              className={`lp-home-widget-card${pinnedWidget?.title === widget.title ? ' is-pinned' : ''}`}
+              className={`lp-home-widget-card lp-home-widget-card--${widget.layout || 'standard'}${pinnedWidget?.title === widget.title ? ' is-pinned' : ''}`}
               aria-pressed={pinnedWidget?.title === widget.title}
               aria-label={`${pinnedWidget?.title === widget.title ? 'Unpin' : 'Pin'} ${widget.title} widget preview`}
               onClick={() => setPinnedWidget((current) => current?.title === widget.title ? null : widget)}
@@ -620,7 +625,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
           ))}
         </div>
         {pinnedWidget && (
-          <aside className="lp-home-widget-float" aria-live="polite" aria-label={`${pinnedWidget.title} pinned widget preview`}>
+          <aside className={`lp-home-widget-float lp-home-widget-float--${pinnedWidget.layout || 'standard'}`} aria-live="polite" aria-label={`${pinnedWidget.title} pinned widget preview`}>
             <img src={pinnedWidget.image} alt={`${pinnedWidget.title} pinned widget preview`} />
           </aside>
         )}
