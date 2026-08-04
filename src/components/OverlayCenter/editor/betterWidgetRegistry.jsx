@@ -31,57 +31,31 @@ const MOCK_BONUSES = [
   {
     id: "mock-wolf-gold",
     slotName: "Wolf Gold",
-    imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/WolfGold.png",
     betSize: 4,
     payout: 136,
     opened: true,
-    slot: {
-      provider: "Pragmatic Play",
-      image: "https://images-cdn.softswiss.net/i/s2/pragmaticplay/WolfGold.png",
-    },
   },
   {
     id: "mock-medusa",
     slotName: "Medusas Madness",
-    imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png",
     betSize: 5,
     payout: 0,
     opened: false,
-    slot: {
-      provider: "Play'n GO",
-      image: "https://images-cdn.softswiss.net/i/s2/playngo/MedusasMadness.png",
-    },
   },
   {
     id: "mock-gates",
-    slotName: "Gates of Olympus",
-    imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+    slotName: "Gates of Olympus 1000",
     betSize: 6,
     payout: 312,
     opened: true,
     isSuperBonus: true,
-    slot: {
-      provider: "Pragmatic Play",
-      image:
-        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
-    },
   },
   {
     id: "mock-sugar",
     slotName: "Sugar Rush 1000",
-    imageUrl:
-      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
     betSize: 3,
     payout: 0,
     opened: false,
-    slot: {
-      provider: "Pragmatic Play",
-      image:
-        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/SugarRush1000.png",
-    },
   },
 ];
 
@@ -161,11 +135,10 @@ const MOCK_WIDGET_CONFIGS = {
     startMoney: 2000,
     stopLoss: 700,
     currency: "EUR ",
-    requests: [
-      { username: "streamfan", slotName: "Sweet Bonanza 1000" },
-      { username: "arena", slotName: "Gates of Olympus" },
-      { username: "slotviewer", slotName: "Wanted Dead or a Wild" },
-    ],
+    showRequests: false,
+    showSlotRequests: false,
+    requests: [],
+    slotRequests: [],
   },
   giveaway: {
     title: "Giveaway #1",

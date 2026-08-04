@@ -156,7 +156,12 @@ function hydrateBonusImagesFromSlots(bonuses, slots) {
   return bonuses.map((bonus) => {
     if (bonusImageCandidate(bonus)) return bonus;
     const slot = findCatalogSlotForBonus(bonus, slots);
-    return slot ? hydrateBonusWithCatalogSlot(bonus, slot) : bonus;
+    return slot
+      ? {
+          ...hydrateBonusWithCatalogSlot(bonus, slot),
+          __catalogHydrationKey: bonusImageMergeKey(bonus),
+        }
+      : bonus;
   });
 }
 
@@ -189,7 +194,7 @@ function mergeHydratedBonusImages(bonuses, hydratedBonuses) {
   const hydratedByKey = new Map();
   hydratedBonuses.forEach((bonus) => {
     const image = bonusImageCandidate(bonus);
-    const key = bonusImageMergeKey(bonus);
+    const key = bonus.__catalogHydrationKey || bonusImageMergeKey(bonus);
     if (image && key) {
       hydratedByKey.set(key, { image, slot: bonus.slot || {} });
     }
