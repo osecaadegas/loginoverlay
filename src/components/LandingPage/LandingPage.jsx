@@ -30,6 +30,7 @@ import { usePremium } from '../../hooks/usePremium';
 import { trackEvent } from '../../utils/analytics';
 import trackOfferClick from '../../utils/trackOfferClick';
 import { AudienceToggle } from '../Navigation/TopNavigation';
+import GiveawayWidget from '../OverlayCenter/widgets/giveaway/GiveawayWidget';
 import './LandingPage.css';
 
 const FEATURED_PARTNERS = [
@@ -165,18 +166,67 @@ const TRUST_POINTS = [
 ];
 
 const HOME_WIDGETS = [
-  { title: 'RTP Stats', image: '/screenshoots/rtp-stats.png', layout: 'wide' },
-  { title: 'Navbar', image: '/screenshoots/navbar.png', layout: 'wide' },
-  { title: 'Bets', image: '/screenshoots/bets.png' },
-  { title: 'Connect 4 Game', image: '/screenshoots/connect-four.png' },
-  { title: 'Giveaway', image: '/screenshoots/giveaway.png' },
-  { title: 'Chat', image: '/screenshoots/chat.png', layout: 'portrait' },
-  { title: 'Shoutout', image: '/screenshoots/raid-shoutout.png' },
-  { title: 'Tournament', image: '/screenshoots/tournament.png' },
-  { title: 'Slideshow Frame', image: '/screenshoots/slideshow-frame.png' },
-  { title: 'Animated Background', image: '/screenshoots/background.png' },
-  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png', layout: 'portrait' },
+  { title: 'RTP Stats', image: '/screenshoots/rtp-stats.png', layout: 'wide', ratio: '1277 / 89' },
+  { title: 'Navbar', image: '/screenshoots/navbar.png', layout: 'wide', ratio: '1947 / 104' },
+  { title: 'Bets', image: '/screenshoots/bets.png', ratio: '810 / 332' },
+  { title: 'Connect 4 Game', image: '/screenshoots/connect-four.png', ratio: '652 / 822' },
+  { title: 'Giveaway', media: 'giveaway', ratio: '700 / 360' },
+  { title: 'Chat', image: '/screenshoots/chat.png', layout: 'portrait', ratio: '250 / 489' },
+  { title: 'Shoutout', image: '/screenshoots/raid-shoutout.png', ratio: '672 / 392' },
+  { title: 'Tournament', image: '/screenshoots/tournament.png', layout: 'feature', ratio: '1312 / 752' },
+  { title: 'Slideshow Frame', image: '/screenshoots/slideshow-frame.png', ratio: '368 / 259' },
+  { title: 'Animated Background', image: '/screenshoots/background.png', ratio: '16 / 9' },
+  { title: 'Bonus Hunt', image: '/screenshoots/bonus-hunt.png', layout: 'portrait', ratio: '430 / 1162' },
 ];
+
+const HOME_GIVEAWAY_PARTICIPANTS = ['streamfan', 'nightowl', 'arena', 'luckyspin'];
+
+function GiveawayShowcase() {
+  const [draw, setDraw] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setDraw((value) => value + 1), 6500);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <GiveawayWidget
+      key={draw}
+      config={{
+        displayStyle: 'better_giveaway',
+        title: 'Giveaway #1',
+        prize: '10 EUR',
+        subtitle: '42 players entered',
+        keyword: 'join',
+        participants: HOME_GIVEAWAY_PARTICIPANTS,
+        entries: 42,
+        winner: '',
+        spinningWinner: HOME_GIVEAWAY_PARTICIPANTS[draw % HOME_GIVEAWAY_PARTICIPANTS.length],
+        isActive: false,
+        width: 700,
+        height: 360,
+      }}
+    />
+  );
+}
+
+function HomeWidgetMedia({ widget, floating = false }) {
+  const mediaClass = `lp-home-widget-media${widget.media === 'giveaway' ? ' lp-home-widget-media--giveaway' : ''}${floating ? ' lp-home-widget-media--floating' : ''}`;
+  return (
+    <div className={mediaClass} style={{ '--lp-widget-ratio': widget.ratio }}>
+      {widget.media === 'giveaway' ? (
+        <GiveawayShowcase />
+      ) : (
+        <img
+          src={widget.image}
+          alt={`${widget.title} widget ${floating ? 'pinned preview' : 'screenshot'}`}
+          loading={floating ? undefined : 'lazy'}
+          decoding="async"
+        />
+      )}
+    </div>
+  );
+}
 
 const HOME_STEPS = [
   { icon: Radio, title: 'Connect', desc: 'Link your streaming platform in a few clicks.' },
@@ -620,13 +670,13 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
               onClick={() => setPinnedWidget((current) => current?.title === widget.title ? null : widget)}
             >
               <h3>{widget.title}</h3>
-              <img src={widget.image} alt={`${widget.title} widget screenshot`} loading="lazy" decoding="async" />
+              <HomeWidgetMedia widget={widget} />
             </button>
           ))}
         </div>
         {pinnedWidget && (
           <aside className={`lp-home-widget-float lp-home-widget-float--${pinnedWidget.layout || 'standard'}`} aria-live="polite" aria-label={`${pinnedWidget.title} pinned widget preview`}>
-            <img src={pinnedWidget.image} alt={`${pinnedWidget.title} pinned widget preview`} />
+            <HomeWidgetMedia widget={pinnedWidget} floating />
           </aside>
         )}
       </section>

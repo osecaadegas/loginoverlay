@@ -18,112 +18,40 @@ export const PREVIEW_SLOT_NAMES = Object.freeze([
   "Banana Town",
 ]);
 
+function sampleTournamentMatch({ id, player1, player2, slot1, slot2, payout1, payout2, winner }) {
+  return {
+    id,
+    player1,
+    player2,
+    slot1: { name: slot1, image: "" },
+    slot2: { name: slot2, image: "" },
+    type: "bonus",
+    status: "completed",
+    winner,
+    rounds: [{
+      roundNum: 1,
+      player1: { bonusCost: 100, bonusPayout: payout1 },
+      player2: { bonusCost: 100, bonusPayout: payout2 },
+      winner,
+      status: "completed",
+    }],
+  };
+}
+
 const SAMPLE_TOURNAMENT_MATCHES = [
-  {
-    id: "preview-tournament-semifinal-1",
-    player1: "PixelPioneerLive",
-    player2: "LuckySpinLegend",
-    slot1: {
-      name: "1 Million Fortunes Megaways",
-      image: "",
-    },
-    slot2: {
-      name: "1 Reel Baba Yaga",
-      image: "",
-    },
-    type: "bonus_bo3",
-    status: "completed",
-    winner: "player1",
-    rounds: [
-      {
-        roundNum: 1,
-        player1: { bonusCost: 100, bonusPayout: 240 },
-        player2: { bonusCost: 100, bonusPayout: 80 },
-        winner: "player1",
-        status: "completed",
-      },
-      {
-        roundNum: 2,
-        player1: { bonusCost: 100, bonusPayout: 70 },
-        player2: { bonusCost: 100, bonusPayout: 165 },
-        winner: "player2",
-        status: "completed",
-      },
-      {
-        roundNum: 3,
-        player1: { bonusCost: 100, bonusPayout: 310 },
-        player2: { bonusCost: 100, bonusPayout: 125 },
-        winner: "player1",
-        status: "completed",
-      },
-    ],
-  },
-  {
-    id: "preview-tournament-semifinal-2",
-    player1: "NeonReelsTV",
-    player2: "JackpotVoyager",
-    slot1: { name: "1 Reel Beauty", image: "" },
-    slot2: { name: "1 Reel Buffalo", image: "" },
-    type: "bonus_bo3",
-    status: "completed",
-    winner: "player2",
-    rounds: [
-      {
-        roundNum: 1,
-        player1: { bonusCost: 100, bonusPayout: 190 },
-        player2: { bonusCost: 100, bonusPayout: 115 },
-        winner: "player1",
-        status: "completed",
-      },
-      {
-        roundNum: 2,
-        player1: { bonusCost: 100, bonusPayout: 72 },
-        player2: { bonusCost: 100, bonusPayout: 245 },
-        winner: "player2",
-        status: "completed",
-      },
-      {
-        roundNum: 3,
-        player1: { bonusCost: 100, bonusPayout: 98 },
-        player2: { bonusCost: 100, bonusPayout: 330 },
-        winner: "player2",
-        status: "completed",
-      },
-    ],
-  },
-  {
-    id: "preview-tournament-final",
-    player1: "PixelPioneerLive",
-    player2: "JackpotVoyager",
-    slot1: { name: "1 Million Fortunes Megaways", image: "" },
-    slot2: { name: "1 Reel Buffalo", image: "" },
-    type: "bonus_bo3",
-    status: "completed",
-    winner: "player1",
-    rounds: [
-      {
-        roundNum: 1,
-        player1: { bonusCost: 100, bonusPayout: 285 },
-        player2: { bonusCost: 100, bonusPayout: 140 },
-        winner: "player1",
-        status: "completed",
-      },
-      {
-        roundNum: 2,
-        player1: { bonusCost: 100, bonusPayout: 88 },
-        player2: { bonusCost: 100, bonusPayout: 210 },
-        winner: "player2",
-        status: "completed",
-      },
-      {
-        roundNum: 3,
-        player1: { bonusCost: 100, bonusPayout: 420 },
-        player2: { bonusCost: 100, bonusPayout: 175 },
-        winner: "player1",
-        status: "completed",
-      },
-    ],
-  },
+  sampleTournamentMatch({ id: "preview-quarterfinal-1", player1: "PixelPioneerLive", player2: "LuckySpinLegend", slot1: "1 Million Fortunes Megaways", slot2: "1 Reel Baba Yaga", payout1: 340, payout2: 125, winner: "player1" }),
+  sampleTournamentMatch({ id: "preview-quarterfinal-2", player1: "NeonReelsTV", player2: "JackpotVoyager", slot1: "1 Reel Beauty", slot2: "1 Reel Buffalo", payout1: 95, payout2: 280, winner: "player2" }),
+  sampleTournamentMatch({ id: "preview-quarterfinal-3", player1: "WildMultiplierPro", player2: "BonusRoundCaptain", slot1: "1 Reel Majestic Wild Buffalo", slot2: "1001 Mystery Genie Fortunes", payout1: 180, payout2: 315, winner: "player2" }),
+  sampleTournamentMatch({ id: "preview-quarterfinal-4", player1: "CasinoQuestOnline", player2: "ReelRushChampion", slot1: "3 Christmas Fortunes", slot2: "5 Wild Buffalo", payout1: 145, payout2: 390, winner: "player2" }),
+  sampleTournamentMatch({ id: "preview-semifinal-1", player1: "PixelPioneerLive", player2: "JackpotVoyager", slot1: "1 Million Fortunes Megaways", slot2: "1 Reel Buffalo", payout1: 420, payout2: 205, winner: "player1" }),
+  sampleTournamentMatch({ id: "preview-semifinal-2", player1: "BonusRoundCaptain", player2: "ReelRushChampion", slot1: "1001 Mystery Genie Fortunes", slot2: "5 Wild Buffalo", payout1: 230, payout2: 475, winner: "player2" }),
+  sampleTournamentMatch({ id: "preview-final", player1: "PixelPioneerLive", player2: "ReelRushChampion", slot1: "1 Million Fortunes Megaways", slot2: "5 Wild Buffalo", payout1: 615, payout2: 360, winner: "player1" }),
+];
+
+const SAMPLE_TOURNAMENT_BRACKET = [
+  { label: "Quarterfinals", matches: SAMPLE_TOURNAMENT_MATCHES.slice(0, 4) },
+  { label: "Semifinals", matches: SAMPLE_TOURNAMENT_MATCHES.slice(4, 6) },
+  { label: "Grand Final", matches: SAMPLE_TOURNAMENT_MATCHES.slice(6) },
 ];
 
 const SAMPLE_GIVEAWAY_PARTICIPANTS = [
@@ -482,8 +410,9 @@ function applyGiveawayPreviewSample(config = {}) {
     title: config.title || "Giveaway",
     prize: config.prize || "1000 points",
     keyword: config.keyword || "join",
-    isActive: true,
+    isActive: false,
     participants: SAMPLE_GIVEAWAY_PARTICIPANTS,
+    spinningWinner: "NOVA",
     __appearancePreviewSample: true,
   };
 }
@@ -546,9 +475,16 @@ function applyTournamentPreviewSample(config = {}, slotCatalog) {
     layout: "esports",
     bracketName: config.bracketName || "Friday Night Showdown",
     bracketPhase: "completed",
+    bracketPlayerCount: 8,
+    bracketData: SAMPLE_TOURNAMENT_BRACKET.map((round) => ({
+      ...round,
+      matches: hydratePreviewMatches(round.matches, slotCatalog),
+    })),
+    bracketActiveRound: 2,
+    bracketActiveMatch: 0,
     data: {
       ...(config.data || {}),
-      currentMatchIdx: config.data?.currentMatchIdx ?? 2,
+      currentMatchIdx: config.data?.currentMatchIdx ?? 6,
       matches: nonEmptyArrayOr(
         existingMatches,
         hydratePreviewMatches(SAMPLE_TOURNAMENT_MATCHES, slotCatalog),
