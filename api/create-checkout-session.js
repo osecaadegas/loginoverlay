@@ -3,6 +3,39 @@ import { createCheckoutSession } from './_lib/stripe-billing.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+const STRIPE_TRIAL_DAYS = 7;
+const STRIPE_TRIAL_PLAN_IDS = new Set(['player_monthly', 'streamer_monthly']);
+
+async function trialDaysForAccount(supabase, userId, planId) {
+  if (!STRIPE_TRIAL_PLAN_IDS.has(planId)) return 0;
+
+  const isPlayerPlan = planId === 'player_monthly';
+  const subscriptionQuery = isPlayerPlan
+    ? supabase
+      .from('user_product_subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('product_code', 'player_bonus_hunt')
+      .limit(1)
+    : supabase
+      .from('billing_subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('product_code', 'streamer_premium')
+      .limit(1);
+
+  const [trialResult, subscriptionResult] = await Promise.all([
+    supabase.from('user_trials').select('id').eq('user_id', userId).limit(1),
+    subscriptionQuery,
+  ]);
+
+  if (trialResult.error) throw trialResult.error;
+  if (subscriptionResult.error) throw subscriptionResult.error;
+
+  const hasUsedTrial = (trialResult.data || []).length > 0;
+  const hasSubscribed = (subscriptionResult.data || []).length > 0;
+  return hasUsedTrial || hasSubscribed ? 0 : STRIPE_TRIAL_DAYS;
+}
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -55,7 +88,8 @@ export default async function handler(req, res) {
     const user = await requireUser(req, supabase);
     const { planId } = parseBody(req);
 
-    const session = await createCheckoutSession({ req, supabase, user, planId });
+    const trialPeriodDays = await trialDaysForAccount(supabase, user.id, planId);
+    const session = await createCheckoutSession({ req, supabase, user, planId, trialPeriodDays });
     return res.status(200).json({ id: session.id, url: session.url });
   } catch (err) {
     console.error('[create-checkout-session]', err);

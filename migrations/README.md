@@ -76,6 +76,9 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 38. `038_remove_mollie_billing.sql`
 	Retires Mollie as a billing provider, resets billing defaults to Stripe, removes Mollie-specific columns/indexes, and updates premium page billing copy.
 
+39. `039_stripe_seven_day_trials.sql`
+	Replaces retired internal no-card trial messaging with the seven-day, card-required Stripe monthly trial terms.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.

@@ -55,7 +55,7 @@ const PRODUCT_COPY = {
     title: 'Choose your creator toolkit.',
     description: 'Unlock premium overlay widgets, full customization tools, Bonus Hunt tracking, community tools, and regular updates.',
     sectionTitle: 'Streamer plans',
-    sectionText: 'Click a card to open Stripe checkout for that billing period.',
+    sectionText: 'Eligible new customers get 7 days free on the monthly plan. A payment method is required and billing starts automatically after the trial.',
     cards: STREAMER_PLAN_CARDS,
   },
   player: {
@@ -63,7 +63,7 @@ const PRODUCT_COPY = {
     title: 'Choose your gambler toolkit.',
     description: 'Get gambler-focused Bonus Hunt tools with secure Stripe billing and account-based access.',
     sectionTitle: 'Gambler plans',
-    sectionText: 'Choose the gambler billing option that fits your play style.',
+    sectionText: 'Eligible new customers get 7 days free on the monthly plan. A payment method is required and billing starts automatically after the trial.',
     cards: PLAYER_PLAN_CARDS,
   },
 };
@@ -129,7 +129,7 @@ export default function PricingPage() {
 
   useEffect(() => {
     if (success) {
-      setMessage({ type: 'success', text: 'Payment complete. Stripe is confirming your subscription now.' });
+      setMessage({ type: 'success', text: 'Checkout complete. Stripe is confirming your subscription or trial now.' });
       trackEvent('subscription_started', { route: '/premium', product_type: productType });
     } else if (canceled) {
       setMessage({ type: 'warning', text: 'Checkout was cancelled. No charge was made.' });
@@ -316,7 +316,7 @@ export default function PricingPage() {
       </section>
 
       <footer className="premium-footer-note">
-        Stripe handles the checkout and subscription billing. Prices shown are before 23% VAT.
+        Stripe handles checkout and recurring billing. Monthly trials convert automatically after 7 days unless canceled. Prices shown are before 23% VAT.
       </footer>
     </main>
   );

@@ -14,7 +14,8 @@
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",
     "test:slot-detector": "node scripts/test-slot-detector.mjs",
     "test:analytics": "node scripts/test-analytics.mjs",
-    "test:affiliate": "node scripts/test-affiliate-system.mjs"
+    "test:affiliate": "node scripts/test-affiliate-system.mjs",
+    "test:stripe-trials": "node scripts/test-stripe-trials.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
