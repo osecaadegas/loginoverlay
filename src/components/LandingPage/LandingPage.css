@@ -1465,15 +1465,18 @@
 .lp-home-brand {
   display: inline-flex;
   align-items: center;
+  width: clamp(240px, 22vw, 320px);
+  height: 64px;
+  overflow: hidden;
   text-decoration: none;
 }
 
 .lp-home-brand img {
-  width: clamp(176px, 17vw, 224px);
-  height: 46px;
+  width: 100%;
+  height: 100%;
   display: block;
-  object-fit: contain;
-  object-position: left center;
+  object-fit: cover;
+  object-position: center;
 }
 
 .lp-home-nav__links,
@@ -2726,6 +2729,11 @@
 @media (max-width: 760px) {
   .lp-home-hero {
     grid-template-columns: 1fr;
+  }
+
+  .lp-home-brand {
+    width: min(270px, 76vw);
+    height: 58px;
   }
 
   .lp-home-hero h1 {
