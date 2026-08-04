@@ -503,6 +503,19 @@ function RootOverview() {
 }
 
 function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
+  const [pinnedWidget, setPinnedWidget] = useState(null);
+
+  useEffect(() => {
+    if (!pinnedWidget) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setPinnedWidget(null);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pinnedWidget]);
+
   return (
     <main className="lp-home">
       <header className="lp-home-nav">
@@ -593,12 +606,26 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
         <h2>See the widgets in action</h2>
         <div className="lp-home-widget-grid">
           {HOME_WIDGETS.map((widget) => (
-            <article key={widget.title} className="lp-home-widget-card">
+            <button
+              key={widget.title}
+              type="button"
+              className={`lp-home-widget-card${pinnedWidget?.title === widget.title ? ' is-pinned' : ''}`}
+              aria-pressed={pinnedWidget?.title === widget.title}
+              aria-label={`${pinnedWidget?.title === widget.title ? 'Unpin' : 'Pin'} ${widget.title} widget preview`}
+              onClick={() => setPinnedWidget((current) => current?.title === widget.title ? null : widget)}
+            >
               <h3>{widget.title}</h3>
               <img src={widget.image} alt={`${widget.title} widget screenshot`} loading="lazy" decoding="async" />
-            </article>
+            </button>
           ))}
         </div>
+        {pinnedWidget && (
+          <aside className="lp-home-widget-float" aria-live="polite">
+            <span>{pinnedWidget.title}</span>
+            <img src={pinnedWidget.image} alt={`${pinnedWidget.title} pinned widget preview`} />
+            <small>Click the tile again to close</small>
+          </aside>
+        )}
       </section>
 
       <section className="lp-home-section lp-home-steps">
