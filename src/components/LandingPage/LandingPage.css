@@ -1577,6 +1577,10 @@
   color: #38bdf8;
 }
 
+.lp-home-platforms__badge--database svg {
+  color: #34d399;
+}
+
 .lp-home-hero__media {
   align-self: stretch;
   min-height: 500px;

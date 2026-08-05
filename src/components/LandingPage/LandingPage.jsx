@@ -1029,6 +1029,43 @@ function RootOverview() {
 
 function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
   const [pinnedWidget, setPinnedWidget] = useState(null);
+  const [slotCount, setSlotCount] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadSlotCount = async () => {
+      try {
+        const response = await fetch("/api/public-slot-count", {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("Failed to load slot count");
+
+        const payload = await response.json();
+        if (Number.isSafeInteger(payload.count) && payload.count >= 0) {
+          setSlotCount(payload.count);
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Failed to load public slot count:", error);
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") loadSlotCount();
+    };
+
+    loadSlotCount();
+    const refreshInterval = window.setInterval(loadSlotCount, 300000);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      controller.abort();
+      window.clearInterval(refreshInterval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!pinnedWidget) return undefined;
@@ -1111,6 +1148,13 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
                 {label}
               </span>
             ))}
+            {slotCount !== null && (
+              <span className="lp-home-platforms__badge lp-home-platforms__badge--database">
+                <Database aria-hidden="true" />
+                {slotCount.toLocaleString()} {slotCount === 1 ? "slot" : "slots"}
+                {" in database"}
+              </span>
+            )}
           </div>
         </div>
         <div className="lp-home-hero__media">
