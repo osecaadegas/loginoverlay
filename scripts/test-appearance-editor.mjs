@@ -1443,6 +1443,10 @@ try {
   const horizontalBonusConfig = {
     orientation: "horizontal",
     showRequests: true,
+    startMoney: 100,
+    stopMoney: 50,
+    liveBE: 4,
+    avgMulti: 2,
     slotRequests: [
       {
         id: "horizontal-request",
@@ -1466,6 +1470,32 @@ try {
       horizontalBonusMarkup.includes(">Chat Requests<") &&
       !horizontalBonusMarkup.includes(">Queue<"),
     "horizontal Bonus Hunt reveals Chat Requests instead of the legacy queue",
+  );
+  const horizontalHeaderMarkup = horizontalBonusMarkup.match(
+    /<div class="better-hunt-hstrip-head">.*?<\/div><div class="better-hunt-carousel"/,
+  )?.[0];
+  assert.ok(
+    horizontalHeaderMarkup &&
+      horizontalHeaderMarkup.indexOf(">Bonus<") <
+        horizontalHeaderMarkup.indexOf(">Hunt<") &&
+      horizontalHeaderMarkup.indexOf("Start <strong>") <
+        horizontalHeaderMarkup.indexOf("Stop <strong>") &&
+      horizontalHeaderMarkup.indexOf("Stop <strong>") <
+        horizontalHeaderMarkup.indexOf("BE <strong>") &&
+      horizontalHeaderMarkup.indexOf("BE <strong>") <
+        horizontalHeaderMarkup.indexOf("AVG <strong>") &&
+      !horizontalHeaderMarkup.includes("Bonus Hunt") &&
+      !horizontalHeaderMarkup.includes("opened"),
+    "horizontal Bonus Hunt orders Bonus, state, Start, Stop, BE, and AVG",
+  );
+  assert.ok(
+    horizontalBonusMarkup.includes(
+      '<div class="better-hunt-hstrip-active-top"><span>#1</span></div>',
+    ) &&
+      horizontalBonusMarkup.includes(
+        '<div class="better-hunt-hstrip-active-bottom"><strong>Bet EUR1</strong><span>-</span></div>',
+      ),
+    "horizontal active image hides the slot name and places the bet at the bottom",
   );
   const horizontalBonusWithoutRequests = renderToStaticMarkup(
     createElement(BetterBonusHuntStyle, {
