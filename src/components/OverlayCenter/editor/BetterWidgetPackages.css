@@ -1529,6 +1529,39 @@
   line-height: 1.35;
 }
 
+.bp-hunt-type-group {
+  display: grid;
+  gap: 10px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(69, 200, 255, 0.12);
+}
+
+.bp-hunt-type-group > .bp-hunt-control-hint {
+  color: #dff8ff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.bp-hunt-type-element {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  padding: 3px 0 10px;
+  border-bottom: 1px solid rgba(69, 200, 255, 0.08);
+}
+
+.bp-hunt-type-element > strong {
+  color: #9dbdf2;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.bp-hunt-type-element .bp-hunt-choice-grid button {
+  min-height: 34px;
+}
+
 .bp-hunt-reset {
   margin: 14px;
   width: calc(100% - 28px);

@@ -514,6 +514,40 @@ const BONUS_FONTS = [
   { key: "orbitron", name: "Orbitron", family: "'Orbitron', sans-serif" },
   { key: "chakra", name: "Chakra", family: "'Chakra Petch', sans-serif" },
 ];
+const BONUS_TYPOGRAPHY_GROUPS = [
+  {
+    label: "Header",
+    elements: [{ id: "headerTitle", label: "Title", size: 14 }],
+  },
+  {
+    label: "Stats bar",
+    elements: [
+      { id: "statLabel", label: "Labels", size: 8 },
+      { id: "statValue", label: "Values", size: 13 },
+    ],
+  },
+  {
+    label: "Chat requests",
+    elements: [
+      { id: "requestsHeader", label: "Title", size: 12 },
+      { id: "requestsDescription", label: "Helper text", size: 9 },
+      { id: "requestsEmpty", label: "Empty state", size: 11 },
+    ],
+  },
+  {
+    label: "Bonus list",
+    elements: [
+      { id: "slotTitle", label: "Slot title", size: 12 },
+      { id: "slotPositionNumber", label: "Position number", size: 9 },
+      { id: "multiplierLabel", label: "Multiplier label", size: 8 },
+      { id: "multiplierValue", label: "Multiplier value", size: 11 },
+      { id: "betLabel", label: "Bet label", size: 8 },
+      { id: "betValue", label: "Bet value", size: 11 },
+      { id: "winLabel", label: "Win label", size: 8 },
+      { id: "winValue", label: "Win value", size: 11 },
+    ],
+  },
+];
 const BONUS_SKINS = [
   {
     key: "modern",
@@ -1440,6 +1474,27 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   return merged;
 }
 
+export function updateBetterBonusTypography(config, elementId, patch) {
+  const sourceConfig = config || {};
+  const sourceKey = Object.hasOwn(
+    sourceConfig,
+    "__appearanceExplicitSubElements",
+  )
+    ? "__appearanceExplicitSubElements"
+    : "subElements";
+  const subElements = sourceConfig[sourceKey] || {};
+  return {
+    ...sourceConfig,
+    [sourceKey]: {
+      ...subElements,
+      [elementId]: {
+        ...subElements[elementId],
+        ...patch,
+      },
+    },
+  };
+}
+
 export function buildBetterWidgetUpdate(widget) {
   const meta = getBetterWidgetMeta(widget?.widget_type);
   if (!widget || !meta) return widget;
@@ -1674,6 +1729,59 @@ function HuntChoiceGrid({
 
 function HuntHint({ children }) {
   return <p className="bp-hunt-control-hint">{children}</p>;
+}
+
+function BonusTypographyControls({ config, onChange }) {
+  const typographySource = Object.hasOwn(
+    config,
+    "__appearanceExplicitSubElements",
+  )
+    ? config.__appearanceExplicitSubElements || {}
+    : config.subElements || {};
+  const setTypography = (elementId, patch) =>
+    onChange(updateBetterBonusTypography(config, elementId, patch));
+
+  return BONUS_TYPOGRAPHY_GROUPS.map((group) => (
+    <div className="bp-hunt-type-group" key={group.label}>
+      <HuntHint>{group.label}</HuntHint>
+      {group.elements.map((element) => {
+        const typography = typographySource[element.id] || {};
+        const selectedFont =
+          BONUS_FONTS.find((font) => font.family === typography.fontFamily)
+            ?.key || config.font;
+        return (
+          <div className="bp-hunt-type-element" key={element.id}>
+            <strong>{element.label}</strong>
+            <HuntChoiceGrid
+              value={selectedFont}
+              columns={3}
+              options={BONUS_FONTS.map((font) => ({
+                key: font.key,
+                label: font.name,
+              }))}
+              onChange={(fontKey) =>
+                setTypography(element.id, {
+                  fontFamily:
+                    BONUS_FONTS.find((font) => font.key === fontKey)?.family ||
+                    config.fontFamily,
+                })
+              }
+            />
+            <SliderRow
+              label="Font size"
+              value={Number(typography.fontSize) || element.size}
+              min={7}
+              max={48}
+              unit="px"
+              onChange={(fontSize) =>
+                setTypography(element.id, { fontSize })
+              }
+            />
+          </div>
+        );
+      })}
+    </div>
+  ));
 }
 
 function HuntSection({ title, icon, children }) {
@@ -4756,6 +4864,7 @@ function SimpleThemedControls({
           format={(value) => `${Math.round(value * 100)}%`}
           onChange={(uiScale) => set({ uiScale })}
         />
+        <BonusTypographyControls config={c} onChange={onChange} />
       </HuntSection>
 
       <HuntSection

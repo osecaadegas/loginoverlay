@@ -56,6 +56,10 @@ const { BetterBonusHuntStyle } = await server.ssrLoadModule(
   "/src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx",
 );
 
+const { updateBetterBonusTypography } = await server.ssrLoadModule(
+  "/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
+);
+
 const { getWidgetAppearanceCapability, getWidgetAppearanceV2Elements } =
   await server.ssrLoadModule(
     "/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js",
@@ -1439,6 +1443,54 @@ try {
       );
     }
   }
+
+  const updatedBonusTypography = updateBetterBonusTypography(
+    {
+      subElements: {
+        slotTitle: { fontFamily: "slot-font", fontSize: 12 },
+        statLabel: { fontWeight: 700 },
+      },
+    },
+    "statLabel",
+    { fontFamily: "stats-font", fontSize: 15 },
+  );
+  assert.deepEqual(
+    updatedBonusTypography.subElements,
+    {
+      slotTitle: { fontFamily: "slot-font", fontSize: 12 },
+      statLabel: {
+        fontWeight: 700,
+        fontFamily: "stats-font",
+        fontSize: 15,
+      },
+    },
+    "Widget Controls update one Bonus Hunt text element without changing siblings",
+  );
+  const updatedExplicitBonusTypography = updateBetterBonusTypography(
+    {
+      subElements: { headerTitle: { fontSize: 11 } },
+      __appearanceExplicitSubElements: {
+        requestsHeader: { fontWeight: 900 },
+      },
+    },
+    "requestsHeader",
+    { fontFamily: "requests-font", fontSize: 17 },
+  );
+  assert.deepEqual(
+    updatedExplicitBonusTypography.__appearanceExplicitSubElements
+      .requestsHeader,
+    { fontWeight: 900, fontFamily: "requests-font", fontSize: 17 },
+    "Widget Controls update the active Advanced Appearance typography store",
+  );
+  assert.ok(
+    betterWidgetPackagesSource.includes('label: "Stats bar"') &&
+      betterWidgetPackagesSource.includes('label: "Chat requests"') &&
+      betterWidgetPackagesSource.includes('label: "Bonus list"') &&
+      betterWidgetPackagesSource.includes(
+        "<BonusTypographyControls config={c} onChange={onChange} />",
+      ),
+    "Bonus Hunt Widget Controls expose independent typography groups",
+  );
 
   const horizontalBonusConfig = {
     orientation: "horizontal",
