@@ -82,6 +82,8 @@ import "./widgets/builtinWidgets";
 
 const SETUP_VERSION = 1;
 const BETTER_PREVIEW_REFRESH_MS = 30000;
+const TOOLS_PREVIEW_STORAGE_KEY =
+  "streamers-center:overlay-center:tools-preview-expanded:v1";
 const BONUS_HUNT_CURRENCY_OPTIONS = [
   { value: "\u20ac", label: "\u20ac EUR" },
   { value: "$", label: "$ USD" },
@@ -258,6 +260,15 @@ function toSlug(type) {
 
 function fromSlug(slug) {
   return String(slug || "").replace(/-/g, "_");
+}
+
+function getStoredToolsPreviewExpanded() {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(TOOLS_PREVIEW_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
 }
 
 function getToolEditorRoute(type) {
@@ -2388,7 +2399,24 @@ export default function OverlayControlCenter() {
   const [copyMsg, setCopyMsg] = useState("");
   const [copiedWidgetId, setCopiedWidgetId] = useState("");
   const [guidedTutorialActive, setGuidedTutorialActive] = useState(false);
-  const [toolsPreviewExpanded, setToolsPreviewExpanded] = useState(false);
+  const [toolsPreviewExpanded, setToolsPreviewExpanded] = useState(
+    getStoredToolsPreviewExpanded,
+  );
+
+  const toggleToolsPreview = useCallback(() => {
+    setToolsPreviewExpanded((expanded) => {
+      const nextExpanded = !expanded;
+      try {
+        window.localStorage.setItem(
+          TOOLS_PREVIEW_STORAGE_KEY,
+          String(nextExpanded),
+        );
+      } catch {
+        // The preview still works when client storage is unavailable.
+      }
+      return nextExpanded;
+    });
+  }, []);
 
   const overlayUrl = useMemo(() => getOverlayUrl(instance), [instance]);
   const previewUrl = useMemo(
@@ -2556,12 +2584,6 @@ export default function OverlayControlCenter() {
       navigate("/overlay-center", { replace: true });
     }
   }, [location.pathname, navigate]);
-
-  useEffect(() => {
-    if (currentPanel !== "home" && toolsPreviewExpanded) {
-      setToolsPreviewExpanded(false);
-    }
-  }, [currentPanel, toolsPreviewExpanded]);
 
   useEffect(() => {
     if (currentPanel === "tutorial") setGuidedTutorialActive(true);
@@ -2854,7 +2876,7 @@ export default function OverlayControlCenter() {
             previewStatus={previewStatus}
             userId={user?.id}
             previewActive={toolsPreviewExpanded}
-            onPreviewToggle={() => setToolsPreviewExpanded((active) => !active)}
+            onPreviewToggle={toggleToolsPreview}
             onPreviewStatusChange={setPreviewStatus}
             onOpenTool={(type) => {
               trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, {

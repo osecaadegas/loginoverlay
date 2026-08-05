@@ -947,6 +947,27 @@ try {
     "utf8",
   );
   assert.ok(
+    overlayControlCenterSource.includes(
+      '"streamers-center:overlay-center:tools-preview-expanded:v1"',
+    ) &&
+      /window\.localStorage\.getItem\(TOOLS_PREVIEW_STORAGE_KEY\)/.test(
+        overlayControlCenterSource,
+      ) &&
+      /window\.localStorage\.setItem\([\s\S]*?TOOLS_PREVIEW_STORAGE_KEY/.test(
+        overlayControlCenterSource,
+      ) &&
+      !overlayControlCenterSource.includes(
+        'currentPanel !== "home" && toolsPreviewExpanded',
+      ) &&
+      /\.oc2-better-preview-shell\s*\{[\s\S]*?aspect-ratio:\s*16\s*\/\s*9;/.test(
+        overlayCenterStylesSource,
+      ) &&
+      !overlayCenterStylesSource.includes(
+        "min-height: clamp(560px, 72vh, 820px)",
+      ),
+    "Overlay Center live preview fills its 16:9 stage and preserves the expanded state in client storage",
+  );
+  assert.ok(
     bonusHuntWidgetSource.includes("publicOverlayId,") &&
       bonusHuntWidgetSource.includes("runtime,") &&
       slotRequestDataSource.includes(
