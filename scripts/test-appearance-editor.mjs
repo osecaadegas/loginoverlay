@@ -235,6 +235,33 @@ try {
       landingPageSource.includes('message: `!so @${previewShoutout.login}`'),
     "Landing Chat uses the exported appearance, slow message feed, and randomized embedded shoutouts",
   );
+  assert.ok(
+    landingPageSource.includes("dropConnectFourCoin(") &&
+      landingPageSource.includes("findConnectFourWin(") &&
+      landingPageSource.includes("setConnectFourPreview(") &&
+      landingPageSource.includes("__previewState: connectFourPreview") &&
+      landingPageSource.includes(
+        '["bets", "chat", "connect_four"].includes(widget.widgetType)',
+      ) &&
+      landingPageSource.includes("bets: 3400") &&
+      landingPageSource.includes('"liquid",') &&
+      landingPageSource.includes('"scanline",') &&
+      landingPageSource.includes('layoutMode: "bars"') &&
+      landingPageSource.includes("landingRandomInt(920)"),
+    "Landing Connect 4 and Bets previews use live changing game, layout, fill, and pool state",
+  );
+  const connectFourWidgetSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/connect-four/ConnectFourWidget.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    connectFourWidgetSource.includes("config.__previewState") &&
+      connectFourWidgetSource.includes("normalizeState("),
+    "Connect 4 normalizes an editor-only preview-state override",
+  );
   const widgetEditorPageCssSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/editor/WidgetEditorPage.css",

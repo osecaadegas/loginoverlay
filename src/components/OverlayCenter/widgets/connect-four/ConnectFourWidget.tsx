@@ -255,14 +255,15 @@ export default function ConnectFourWidget({
     winnerHideAfterMs,
   ]);
 
+  let idlePreviewState = CONNECT_FOUR_PREVIEW_STATE;
+  if (config.__previewState && typeof config.__previewState === "object") {
+    idlePreviewState = normalizeState(
+      config.__previewState as Record<string, unknown>,
+    );
+  }
   const displayedState =
-    state ||
-    (runtime === "editor" && previewWhenIdle
-      ? CONNECT_FOUR_PREVIEW_STATE
-      : null);
-  const isVisible = Boolean(
-    displayedState && winnerVisibility !== "hidden",
-  );
+    state || (runtime === "editor" && previewWhenIdle ? idlePreviewState : null);
+  const isVisible = Boolean(displayedState && winnerVisibility !== "hidden");
 
   useEffect(() => {
     onVisibilityChange?.(isVisible);

@@ -29,6 +29,11 @@ import { supabase } from "../../config/supabaseClient";
 import { usePremium } from "../../hooks/usePremium";
 import { trackEvent } from "../../utils/analytics";
 import trackOfferClick from "../../utils/trackOfferClick";
+import {
+  createConnectFourBoard,
+  dropConnectFourCoin,
+  findConnectFourWin,
+} from "../../features/connectFour/engine";
 import { AudienceToggle } from "../Navigation/TopNavigation";
 import {
   createBetterInstance,
@@ -550,6 +555,127 @@ function getLandingChatConfig(previewCycle, previewShoutout) {
   };
 }
 
+const LANDING_CONNECT_FOUR_PLAYERS = [
+  ["PixelPioneer", "NeonReels"],
+  ["BonusCaptain", "LuckyVoyager"],
+  ["ReelRush", "StreamHost"],
+];
+
+function createLandingConnectFourState(matchSequence = 0) {
+  const players =
+    LANDING_CONNECT_FOUR_PLAYERS[
+      matchSequence % LANDING_CONNECT_FOUR_PLAYERS.length
+    ];
+  let board = createConnectFourBoard();
+  let lastMove = null;
+  [3, 2, 4, 3, 2].forEach((column, index) => {
+    const move = dropConnectFourCoin(board, column, index % 2 === 0 ? 1 : 2);
+    if (!move) return;
+    board = move.board;
+    lastMove = { row: move.row, column: move.column, player: move.player };
+  });
+  return {
+    match_id: `landing-connect-four-${matchSequence}`,
+    status: "active",
+    wager: [100, 250, 500][matchSequence % 3],
+    board,
+    player_one_display_name: players[0],
+    player_two_display_name: players[1],
+    current_player: 2,
+    winner: null,
+    move_count: 5,
+    last_move: lastMove,
+    completion_reason: null,
+    expires_at: null,
+    updated_at: new Date().toISOString(),
+    matchSequence,
+  };
+}
+
+function advanceLandingConnectFourState(current) {
+  if (!current || current.move_count >= 20) {
+    return createLandingConnectFourState((current?.matchSequence || 0) + 1);
+  }
+  const player = current.current_player === 1 ? 1 : 2;
+  const firstColumn = landingRandomInt(7);
+  for (let offset = 0; offset < 7; offset += 1) {
+    const column = (firstColumn + offset) % 7;
+    const move = dropConnectFourCoin(current.board, column, player);
+    if (!move || findConnectFourWin(move.board, move.row, move.column)) continue;
+    return {
+      ...current,
+      board: move.board,
+      current_player: player === 1 ? 2 : 1,
+      move_count: current.move_count + 1,
+      last_move: { row: move.row, column: move.column, player },
+      updated_at: new Date().toISOString(),
+    };
+  }
+  return createLandingConnectFourState((current.matchSequence || 0) + 1);
+}
+
+const LANDING_BETS_LAYOUTS = [
+  { layoutMode: "cards", orientation: "vertical", columns: 2 },
+  { layoutMode: "bars", orientation: "vertical", columns: 1 },
+  { layoutMode: "cards", orientation: "horizontal", columns: 3 },
+];
+const LANDING_BETS_FILL_STYLES = [
+  "liquid",
+  "pulse",
+  "scanline",
+  "plasma",
+  "solid",
+];
+
+function getLandingBetsConfig(previewCycle) {
+  const layout = LANDING_BETS_LAYOUTS[previewCycle % LANDING_BETS_LAYOUTS.length];
+  const bets = Object.fromEntries(
+    Array.from({ length: 6 }, (_, index) => [
+      `opt_${index}`,
+      80 + landingRandomInt(920),
+    ]),
+  );
+  const betterCount = 8 + landingRandomInt(18);
+  const betters = Object.fromEntries(
+    Array.from({ length: betterCount }, (_, index) => [
+      `landing-viewer-${index}`,
+      { option: landingRandomInt(6), amount: 10 + landingRandomInt(240) },
+    ]),
+  );
+  return {
+    displayStyle: "better_bets",
+    gameStatus: "open",
+    question: "Where will the next win land?",
+    timerSeconds: 90,
+    _openedAt: Date.now(),
+    chatCommand: "!bet",
+    options: [
+      { label: "0 - 99x" },
+      { label: "100 - 199x" },
+      { label: "200 - 299x" },
+      { label: "300 - 399x" },
+      { label: "400 - 499x" },
+      { label: "500x+" },
+    ],
+    bets,
+    betters,
+    fillStyle:
+      LANDING_BETS_FILL_STYLES[
+        previewCycle % LANDING_BETS_FILL_STYLES.length
+      ],
+    fillSpeed: 80 + landingRandomInt(81),
+    theme: ["neon", "cyber", "ember"][previewCycle % 3],
+    font: "cyber",
+    fontScale: 100,
+    borderRadius: 8,
+    glowIntensity: 62,
+    opacity: 100,
+    showBrackets: true,
+    showSheen: true,
+    ...layout,
+  };
+}
+
 const BONUS_HUNT_PREVIEW_OPTIONS = Object.freeze({
   orientation: ["vertical", "horizontal", "mainstream"],
   skin: ["modern", "roman", "metal", "cyberpunk", "spartan", "bloody"],
@@ -589,6 +715,9 @@ function getBonusHuntPreviewState(cycle) {
 function LiveWidgetShowcase({ widget }) {
   const [previewCycle, setPreviewCycle] = useState(0);
   const [previewShoutout, setPreviewShoutout] = useState(null);
+  const [connectFourPreview, setConnectFourPreview] = useState(() =>
+    createLandingConnectFourState(),
+  );
   const [frameGeometry, setFrameGeometry] = useState({
     scale: 1,
     left: 0,
@@ -597,13 +726,26 @@ function LiveWidgetShowcase({ widget }) {
   const runtimeRef = useRef(null);
 
   useEffect(() => {
-    const intervalMs = { bonus_hunt: 5200, giveaway: 6500, chat: 4200 }[
+    const intervalMs = {
+      bonus_hunt: 5200,
+      giveaway: 6500,
+      chat: 4200,
+      bets: 3400,
+    }[
       widget.widgetType
     ];
     if (!intervalMs) return undefined;
     const timer = window.setInterval(() => {
       setPreviewCycle((value) => value + 1);
     }, intervalMs);
+    return () => window.clearInterval(timer);
+  }, [widget.widgetType]);
+
+  useEffect(() => {
+    if (widget.widgetType !== "connect_four") return undefined;
+    const timer = window.setInterval(() => {
+      setConnectFourPreview(advanceLandingConnectFourState);
+    }, 1700);
     return () => window.clearInterval(timer);
   }, [widget.widgetType]);
 
@@ -670,11 +812,23 @@ function LiveWidgetShowcase({ widget }) {
       widget.widgetType === "chat"
         ? getLandingChatConfig(previewCycle, previewShoutout)
         : undefined;
+    const betsConfig =
+      widget.widgetType === "bets"
+        ? getLandingBetsConfig(previewCycle)
+        : undefined;
+    const connectFourConfig =
+      widget.widgetType === "connect_four"
+        ? { __previewState: connectFourPreview }
+        : undefined;
     const instance = createBetterInstance(widget.widgetType, {
       instanceId: `landing-${widget.widgetType}`,
       width: previewWidth,
       height: previewHeight,
-      config: bonusHuntPreview?.config || chatConfig,
+      config:
+        bonusHuntPreview?.config ||
+        chatConfig ||
+        betsConfig ||
+        connectFourConfig,
     });
     return {
       instance,
@@ -685,6 +839,7 @@ function LiveWidgetShowcase({ widget }) {
     };
   }, [
     bonusHuntPreview,
+    connectFourPreview,
     previewCycle,
     previewHeight,
     previewShoutout,
@@ -710,7 +865,9 @@ function LiveWidgetShowcase({ widget }) {
         {renderBetterWidgetInstance({
           instance: preview.instance,
           layout: preview.layout,
-          mode: widget.widgetType === "chat" ? "live" : "mock",
+          mode: ["bets", "chat", "connect_four"].includes(widget.widgetType)
+            ? "live"
+            : "mock",
           runtime: "editor",
         })}
       </div>
