@@ -88,6 +88,7 @@ const {
   getBetterWidgetTypes,
   normalizeBetterInstance,
   renderBetterWidgetInstance,
+  resolveBetterWidgetConfig,
 } = await server.ssrLoadModule(
   "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
 );
@@ -210,6 +211,16 @@ try {
   assert.ok(
     widgetEditorPageSource.includes("getBetterWidgetNudge(event.key)"),
     "Better Editor routes arrow key presses through the tested pixel nudge map",
+  );
+  assert.ok(
+    widgetEditorPageSource.includes("Download complete Chat JSON") &&
+      widgetEditorPageSource.includes("resolveBetterWidgetConfig(") &&
+      widgetEditorPageSource.includes('"chat",') &&
+      widgetEditorPageSource.includes("liveWidgetContext,") &&
+      widgetEditorPageSource.includes(
+        "onDownloadPreset={handleDownloadPreset}",
+      ),
+    "Chat downloads route the complete resolved configuration into JSON",
   );
   const widgetEditorPageCssSource = readFileSync(
     new URL(
@@ -564,6 +575,7 @@ try {
       kind: WIDGET_CONTROLS_PRESET_KIND,
       schemaVersion: WIDGET_CONTROLS_PRESET_VERSION,
       exportedAt: presetExportedAt,
+      instanceId: null,
       widgetType: "bonus_hunt",
       widgetLabel: "Better Hunt",
       position: { x: -37, y: 1124 },
@@ -592,6 +604,50 @@ try {
       `${widgetType} exports all instance-level controls`,
     );
   }
+  const chatInstance = createBetterInstance("chat", {
+    instanceId: "chat-complete-export",
+    config: {
+      roleEffects: { ownerColor: "#123456" },
+      celebrations: { raid: false },
+      subElements: { message: { textColor: "#abcdef" } },
+    },
+  });
+  const completeChatConfig = resolveBetterWidgetConfig(
+    "chat",
+    chatInstance.config,
+    "live",
+    {
+      liveWidgets: [
+        {
+          widget_type: "chat",
+          config: {
+            twitchEnabled: true,
+            twitchChannel: "completechannel",
+            youtubeEnabled: true,
+            youtubeVideoId: "youtube-video-id",
+            youtubeApiKey: "youtube-api-key",
+            kickEnabled: true,
+            kickChannelId: "kick-channel-id",
+          },
+        },
+      ],
+    },
+  );
+  const completeChatPreset = createWidgetControlsPreset(
+    { ...chatInstance, config: completeChatConfig },
+    presetExportedAt,
+  );
+  assert.equal(completeChatPreset.instanceId, "chat-complete-export");
+  assert.equal(completeChatPreset.controls.twitchChannel, "completechannel");
+  assert.equal(completeChatPreset.controls.youtubeVideoId, "youtube-video-id");
+  assert.equal(completeChatPreset.controls.youtubeApiKey, "youtube-api-key");
+  assert.equal(completeChatPreset.controls.kickChannelId, "kick-channel-id");
+  assert.equal(completeChatPreset.controls.roleEffects.ownerColor, "#123456");
+  assert.equal(completeChatPreset.controls.celebrations.raid, false);
+  assert.equal(
+    completeChatPreset.controls.subElements.message.textColor,
+    "#abcdef",
+  );
   assert.equal(
     getWidgetControlsPresetFilename(
       { widgetType: "bonus_hunt" },

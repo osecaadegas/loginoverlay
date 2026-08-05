@@ -49,6 +49,7 @@ import {
   duplicateBetterInstance,
   normalizeBetterLayout,
   renderBetterWidgetInstance,
+  resolveBetterWidgetConfig,
   validateBetterWidgetConfig,
   betterInstanceToLegacyWidget,
 } from "./betterWidgetRegistry";
@@ -359,7 +360,11 @@ function WidgetListItem({
             }
           >
             <Download size={14} />
-            <span>Download controls preset</span>
+            <span>
+              {instance.widgetType === "chat"
+                ? "Download complete Chat JSON"
+                : "Download controls preset"}
+            </span>
           </button>
           <button
             type="button"
@@ -578,6 +583,24 @@ export default function WidgetEditorPage() {
   const liveWidgetContext = useMemo(
     () => ({ liveWidgets: liveSource.widgets }),
     [liveSource.widgets],
+  );
+  const handleDownloadPreset = useCallback(
+    (instance) => {
+      const exportInstance =
+        instance?.widgetType === "chat"
+          ? {
+              ...instance,
+              config: resolveBetterWidgetConfig(
+                "chat",
+                instance.config,
+                "live",
+                liveWidgetContext,
+              ),
+            }
+          : instance;
+      downloadWidgetControlsPreset(exportInstance);
+    },
+    [liveWidgetContext],
   );
   const legacyWidgets = useMemo(
     () => layout.instances.map((instance) =>
@@ -1086,7 +1109,7 @@ export default function WidgetEditorPage() {
                 )}
                 onSelect={setSelectedInstanceId}
                 onCopyUrl={copyUrl}
-                onDownloadPreset={downloadWidgetControlsPreset}
+                onDownloadPreset={handleDownloadPreset}
                 onToggleVisible={handleToggleVisible}
                 onToggleLock={handleToggleLock}
                 onDuplicate={handleDuplicate}
