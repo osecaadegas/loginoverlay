@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   LibraryBig,
   LineChart,
-  LogIn,
   MonitorPlay,
   Play,
   Radio,
@@ -34,7 +33,6 @@ import {
   dropConnectFourCoin,
   findConnectFourWin,
 } from "../../features/connectFour/engine";
-import { AudienceToggle } from "../Navigation/TopNavigation";
 import {
   createBetterInstance,
   renderBetterWidgetInstance,
@@ -307,7 +305,7 @@ const HOME_WIDGETS = [
     widgetType: "bets",
     layout: "square",
     width: 778,
-    height: 300,
+    height: 520,
   },
   {
     title: "Connect 4 Game",
@@ -627,6 +625,90 @@ const LANDING_BETS_FILL_STYLES = [
   "solid",
 ];
 
+const LANDING_TOURNAMENT_MATCHES = [
+  ["Afonso", "Beatriz", "Gates of Olympus 1000", "Sugar Rush 1000", 340, 125, "player1", 0],
+  ["Carolina", "Duarte", "Wanted Dead or a Wild", "Le Digger", 95, 280, "player2", 0],
+  ["Ines", "NOVA", "Big Bass Secrets", "Cyber Runner", 180, 315, "player2", 0],
+  ["Rafa", "Sofia", "Banana Town", "5 Wild Buffalo", 145, 390, "player2", 0],
+  ["Afonso", "Duarte", "Gates of Olympus 1000", "Le Digger", 420, 205, "player1", 2],
+  ["NOVA", "Sofia", "Cyber Runner", "5 Wild Buffalo", 230, 475, "player2", 4],
+  ["Afonso", "Sofia", "Gates of Olympus 1000", "5 Wild Buffalo", 615, 360, "player1", 6],
+];
+
+function getLandingTournamentMatchState(index, completedCount) {
+  if (index < completedCount) {
+    return { status: "completed", isCompleted: true, previewPayout: null };
+  }
+  if (index === completedCount && completedCount < 7) {
+    return { status: "in_progress", isCompleted: false, previewPayout: 100 };
+  }
+  return { status: "pending", isCompleted: false, previewPayout: 0 };
+}
+
+function getLandingTournamentPosition(completedCount) {
+  if (completedCount < 4) {
+    return { activeRound: 0, activeMatch: completedCount };
+  }
+  if (completedCount < 6) {
+    return { activeRound: 1, activeMatch: completedCount - 4 };
+  }
+  return { activeRound: 2, activeMatch: 0 };
+}
+
+function getLandingTournamentConfig(previewCycle) {
+  const completedCount = Math.min(previewCycle % 9, 7);
+  const matches = LANDING_TOURNAMENT_MATCHES.map((definition, index) => {
+    const [player1, player2, slot1, slot2, payout1, payout2, winner, unlockAt] =
+      definition;
+    const isAvailable = completedCount >= unlockAt;
+    const matchState = getLandingTournamentMatchState(index, completedCount);
+    return {
+      id: `landing-tournament-match-${index + 1}`,
+      player1: isAvailable ? player1 : "TBD",
+      player2: isAvailable ? player2 : "TBD",
+      slot1: { name: slot1, image: "" },
+      slot2: { name: slot2, image: "" },
+      type: "bonus",
+      status: matchState.status,
+      winner: matchState.isCompleted ? winner : null,
+      rounds: [
+        {
+          roundNum: 1,
+          player1: {
+            bonusCost: 100,
+            bonusPayout: matchState.isCompleted ? payout1 : matchState.previewPayout,
+          },
+          player2: {
+            bonusCost: 100,
+            bonusPayout: matchState.isCompleted ? payout2 : matchState.previewPayout,
+          },
+          winner: matchState.isCompleted ? winner : null,
+          status: matchState.status,
+        },
+      ],
+    };
+  });
+  const position = getLandingTournamentPosition(completedCount);
+
+  return {
+    layout: "grid",
+    bracketName: "Streamers Center Showdown",
+    bracketPhase: completedCount === 7 ? "completed" : "running",
+    bracketPlayerCount: 8,
+    bracketData: [
+      { label: "Quarterfinals", matches: matches.slice(0, 4) },
+      { label: "Semifinals", matches: matches.slice(4, 6) },
+      { label: "Grand Final", matches: matches.slice(6) },
+    ],
+    bracketActiveRound: position.activeRound,
+    bracketActiveMatch: position.activeMatch,
+    data: {
+      currentMatchIdx: Math.min(completedCount, 6),
+      matches,
+    },
+  };
+}
+
 function getLandingBetsConfig(previewCycle) {
   const layout = LANDING_BETS_LAYOUTS[previewCycle % LANDING_BETS_LAYOUTS.length];
   const bets = Object.fromEntries(
@@ -731,6 +813,7 @@ function LiveWidgetShowcase({ widget }) {
       giveaway: 6500,
       chat: 4200,
       bets: 3400,
+      tournament: 2800,
     }[
       widget.widgetType
     ];
@@ -820,6 +903,10 @@ function LiveWidgetShowcase({ widget }) {
       widget.widgetType === "connect_four"
         ? { __previewState: connectFourPreview }
         : undefined;
+    const tournamentConfig =
+      widget.widgetType === "tournament"
+        ? getLandingTournamentConfig(previewCycle)
+        : undefined;
     const instance = createBetterInstance(widget.widgetType, {
       instanceId: `landing-${widget.widgetType}`,
       width: previewWidth,
@@ -828,7 +915,8 @@ function LiveWidgetShowcase({ widget }) {
         bonusHuntPreview?.config ||
         chatConfig ||
         betsConfig ||
-        connectFourConfig,
+        connectFourConfig ||
+        tournamentConfig,
     });
     return {
       instance,
@@ -865,7 +953,7 @@ function LiveWidgetShowcase({ widget }) {
         {renderBetterWidgetInstance({
           instance: preview.instance,
           layout: preview.layout,
-          mode: ["bets", "chat", "connect_four"].includes(widget.widgetType)
+          mode: ["bets", "chat", "connect_four", "tournament"].includes(widget.widgetType)
             ? "live"
             : "mock",
           runtime: "editor",
@@ -1036,9 +1124,6 @@ const LANDING_IMAGES = {
   streamer: "/streamer.png",
 };
 
-const AUDIENCE_TRANSITION_MS = 1280;
-const REDUCED_MOTION_TRANSITION_MS = 120;
-
 const AUDIENCE_STORAGE_KEY = "streamerscenter:selectedAudience";
 function rememberAudience(user, audience) {
   localStorage.setItem(AUDIENCE_STORAGE_KEY, audience);
@@ -1062,75 +1147,6 @@ function rememberAudience(user, audience) {
         error,
       );
     });
-}
-
-function launchAudienceTransition(audience) {
-  const existing = document.querySelector(".lp-route-transition");
-  if (existing) existing.remove();
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
-  const duration = prefersReducedMotion
-    ? REDUCED_MOTION_TRANSITION_MS
-    : AUDIENCE_TRANSITION_MS;
-
-  const transition = document.createElement("div");
-  transition.className = `lp-route-transition lp-route-transition--${audience}`;
-  transition.setAttribute("aria-hidden", "true");
-  transition.innerHTML = `
-    <img src="${LANDING_IMAGES[audience]}" alt="" />
-    <span class="lp-route-transition__veil"></span>
-    <span class="lp-route-transition__label">${audience === "player" ? "Opening Player Center" : "Opening Streamer Center"}</span>
-  `;
-  document.body.appendChild(transition);
-  window.requestAnimationFrame(() => transition.classList.add("is-running"));
-
-  window.setTimeout(() => {
-    transition.classList.add("is-leaving");
-    window.setTimeout(() => transition.remove(), 520);
-  }, duration + 520);
-
-  return duration;
-}
-
-function BrandMark() {
-  return (
-    <a
-      href="https://streamerscenter.com/"
-      className="lp-brand"
-      aria-label="Streamers Center home"
-    >
-      <span className="lp-brand__mark">
-        <img src="/StreamerCenterLogo.png" alt="" />
-      </span>
-    </a>
-  );
-}
-
-function LandingNav({ activeAudience, user, onLogin, onSwitch }) {
-  return (
-    <header className="lp-site-nav">
-      <div className="lp-site-nav__brand-zone">
-        <BrandMark />
-        <AudienceToggle activeAudience={activeAudience} onSelect={onSwitch} />
-      </div>
-      <nav className="lp-site-nav__links" aria-label="Main navigation">
-        {user ? (
-          <Link className="lp-nav-btn lp-nav-btn--ghost" to="/apps">
-            <Grid3X3 size={16} /> Apps
-          </Link>
-        ) : (
-          <button
-            type="button"
-            className="lp-nav-btn lp-nav-btn--ghost"
-            onClick={onLogin}
-          >
-            <LogIn size={16} /> Login
-          </button>
-        )}
-      </nav>
-    </header>
-  );
 }
 
 function PlayerPreview({ expanded = false }) {
@@ -1464,17 +1480,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
 
   return (
     <main className="lp-home">
-      <header className="lp-home-nav">
-        <div className="lp-home-nav__left">
-          <Link
-            to="/"
-            className="lp-home-brand"
-            aria-label="Streamers Center home"
-          >
-            <img src="/StreamerCenterLogo.png" alt="" />
-          </Link>
-          <AudienceToggle activeAudience="streamer" />
-        </div>
+      <header className="lp-home-nav lp-home-nav--secondary">
         <nav className="lp-home-nav__links" aria-label="Main navigation">
           <a href="#widgets">Widgets</a>
           <Link to="/offers">Deals</Link>
@@ -1482,9 +1488,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
           <a href="#demo">Demo</a>
         </nav>
         <div className="lp-home-nav__actions">
-          {user ? (
-            <Link to="/apps">Apps</Link>
-          ) : (
+          {!user && (
             <button type="button" onClick={onLogin}>
               Login
             </button>
@@ -2186,15 +2190,11 @@ export default function LandingPage({ mode = "selector" }) {
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [pricingPlans, setPricingPlans] = useState([]);
-  const [previewAudience, setPreviewAudience] = useState(null);
-  const [selectingAudience, setSelectingAudience] = useState(null);
-  const [switchingAudience, setSwitchingAudience] = useState(null);
   const { user } = useAuth();
   const { isPremium } = usePremium();
   const navigate = useNavigate();
   const location = useLocation();
   const headingRef = useRef(null);
-  const previewTrackedRef = useRef(null);
   const activeAudience = mode === "player" || mode === "streamer" ? mode : null;
 
   useEffect(() => {
@@ -2236,13 +2236,6 @@ export default function LandingPage({ mode = "selector" }) {
     };
   }, [activeAudience, location.pathname]);
 
-  useEffect(() => {
-    return () => {
-      setSelectingAudience(null);
-      setSwitchingAudience(null);
-    };
-  }, [location.pathname]);
-
   const partners = useMemo(() => {
     if (casinoOffers.length) {
       return casinoOffers.slice(0, 5).map((offer, index) => ({
@@ -2257,51 +2250,6 @@ export default function LandingPage({ mode = "selector" }) {
     navigate("/login", {
       state: { from: `${location.pathname}${location.search}` },
     });
-  };
-
-  const handlePreview = (audience) => {
-    if (selectingAudience) return;
-    setPreviewAudience(audience);
-    if (previewTrackedRef.current !== audience) {
-      previewTrackedRef.current = audience;
-      trackEvent(`audience_${audience}_previewed`, {
-        route: location.pathname,
-      });
-    }
-  };
-
-  const clearPreview = () => {
-    if (!selectingAudience) setPreviewAudience(null);
-  };
-
-  const navigateAudience = (audience) => {
-    if (!user) {
-      navigate(`/premium?type=${audience}`, {
-        state: { fromAudienceSelector: true },
-      });
-      return;
-    }
-    const route =
-      audience === "player" ? "/player/bonus-hunt" : "/overlay-center";
-    navigate(route, { state: { fromAudienceSelector: true } });
-  };
-
-  const selectAudience = (audience) => {
-    if (selectingAudience) return;
-    setSelectingAudience(audience);
-    setPreviewAudience(null);
-    rememberAudience(user, audience);
-    trackEvent(`audience_${audience}_selected`, { route: location.pathname });
-    const transitionDuration = launchAudienceTransition(audience);
-    window.setTimeout(() => navigateAudience(audience), transitionDuration);
-  };
-
-  const switchAudience = (audience) => {
-    if (audience === activeAudience || switchingAudience) return;
-    setSwitchingAudience(audience);
-    rememberAudience(user, audience);
-    trackEvent("audience_switched", { from: activeAudience, to: audience });
-    navigateAudience(audience);
   };
 
   const startPlayerTrial = () => {
@@ -2388,17 +2336,8 @@ export default function LandingPage({ mode = "selector" }) {
       )}
 
       <div
-        className={`lp-page${activeAudience ? ` lp-page--${activeAudience}` : " lp-page--selector"}${switchingAudience ? ` lp-page--switching-${switchingAudience}` : ""}`}
+        className={`lp-page${activeAudience ? ` lp-page--${activeAudience}` : " lp-page--selector"}`}
       >
-        {mode !== "selector" && (
-          <LandingNav
-            activeAudience={activeAudience}
-            user={user}
-            onLogin={openAuth}
-            onSwitch={switchAudience}
-          />
-        )}
-
         {mode === "selector" ? (
           <HomeLanding
             user={user}

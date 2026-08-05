@@ -23772,6 +23772,11 @@ body.wm-resizing {
   backdrop-filter: blur(16px);
 }
 
+.oc2-topbar.oc2-topbar--section {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .oc2-brand:not(.oc-dedup-23646),
 .oc2-nav-link:not(.oc-dedup-23647),
 .oc2-btn:not(.oc-dedup-23648),

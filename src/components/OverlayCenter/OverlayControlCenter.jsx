@@ -653,29 +653,7 @@ function OverlayTopNavigation({ active, setupComplete }) {
   ];
 
   return (
-    <header className="oc2-topbar">
-      <div className="oc2-brand-zone">
-        <a
-          href="https://streamerscenter.com/"
-          className="oc2-brand"
-          aria-label="Streamers Center home"
-        >
-          <img src="/StreamerCenterLogo.png" alt="" />
-        </a>
-        <div className="oc2-audience-switch" aria-label="Switch experience">
-          <Link to="/player/bonus-hunt" className="oc2-audience-switch__option">
-            Player
-          </Link>
-          <Link
-            to="/overlay-center"
-            className="oc2-audience-switch__option oc2-audience-switch__option--active"
-            aria-current="page"
-          >
-            Streamer
-          </Link>
-        </div>
-      </div>
-
+    <header className="oc2-topbar oc2-topbar--section">
       <nav className="oc2-nav" aria-label="Overlay Center navigation">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -699,10 +677,6 @@ function OverlayTopNavigation({ active, setupComplete }) {
             Finish setup
           </Link>
         )}
-        <Link to="/apps" className="oc2-btn">
-          <Grid3X3 size={16} />
-          Apps
-        </Link>
       </div>
     </header>
   );

@@ -108,36 +108,16 @@ function RouteBoundServices() {
 // Layout wrapper to show sidebar on all pages except overlay and widget display routes
 function LayoutWrapper({ children }) {
   const location = useLocation();
-  const marketingLandingRoutes = new Set([
-    "/streamer-overlays",
-    "/bonus-hunt-tracker",
-    "/casino-profit-loss-tracker",
-    "/slot-request-widget",
-    "/tournament-overlay",
-    "/giveaway-widget",
-    "/chat-games",
-  ]);
   const isWidgetRoute = location.pathname.startsWith("/widgets/");
   const isOBSOverlay = location.pathname.startsWith("/overlay/");
   const isBetterOBSOverlay = location.pathname.startsWith("/obs/overlay/");
-  const isOverlayCenter = location.pathname.startsWith("/overlay-center");
-  const isEditorRoute = location.pathname === "/editor";
   const isPremiumRoute = location.pathname === "/premium";
-  const isLandingRoute =
-    location.pathname === "/" ||
-    location.pathname === "/player" ||
-    location.pathname === "/streamer" ||
-    marketingLandingRoutes.has(location.pathname);
-  const isUtilityRoute =
-    location.pathname === "/login" || location.pathname === "/spotify-callback";
+  const isSystemRoute = location.pathname === "/spotify-callback";
   const showTopNavigation =
-    !isLandingRoute &&
     !isWidgetRoute &&
     !isOBSOverlay &&
     !isBetterOBSOverlay &&
-    !isOverlayCenter &&
-    !isEditorRoute &&
-    !isUtilityRoute;
+    !isSystemRoute;
 
   useEffect(() => {
     applyRouteSeo(location.pathname);

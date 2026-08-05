@@ -241,14 +241,19 @@ try {
       landingPageSource.includes("setConnectFourPreview(") &&
       landingPageSource.includes("__previewState: connectFourPreview") &&
       landingPageSource.includes(
-        '["bets", "chat", "connect_four"].includes(widget.widgetType)',
+        '["bets", "chat", "connect_four", "tournament"].includes(widget.widgetType)',
       ) &&
       landingPageSource.includes("bets: 3400") &&
+      landingPageSource.includes("tournament: 2800") &&
+      landingPageSource.includes("getLandingTournamentConfig(previewCycle)") &&
+      landingPageSource.includes("LANDING_TOURNAMENT_MATCHES.map") &&
+      landingPageSource.includes('bracketPlayerCount: 8') &&
+      landingPageSource.includes('height: 520') &&
       landingPageSource.includes('"liquid",') &&
       landingPageSource.includes('"scanline",') &&
       landingPageSource.includes('layoutMode: "bars"') &&
       landingPageSource.includes("landingRandomInt(920)"),
-    "Landing Connect 4 and Bets previews use live changing game, layout, fill, and pool state",
+    "Landing Connect 4, Bets, and Tournament previews use complete live demo states without clipping",
   );
   const connectFourWidgetSource = readFileSync(
     new URL(

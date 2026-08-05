@@ -8,6 +8,7 @@
     "build": "npx vite build",
     "validate:widgets": "node scripts/validate-widgets.mjs",
     "test:appearance-editor": "node scripts/test-appearance-editor.mjs",
+    "test:global-navigation": "node scripts/test-global-navigation.mjs",
     "test:connect-four": "node scripts/test-connect-four.mjs",
     "preview": "vite preview",
     "test:service-setup": "node scripts/test-service-setup.mjs",
