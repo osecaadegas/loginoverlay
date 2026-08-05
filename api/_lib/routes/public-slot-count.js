@@ -1,4 +1,4 @@
-import { createSupabaseAdmin, setCors } from "./_lib/api-auth.js";
+import { createSupabaseAdmin, setCors } from "../api-auth.js";
 
 export default async function handler(req, res) {
   setCors(res, "GET, OPTIONS");
