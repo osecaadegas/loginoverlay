@@ -322,7 +322,7 @@ const HOME_WIDGETS = [
     title: "Chat",
     widgetType: "chat",
     layout: "square",
-    width: 218,
+    width: 330,
     height: 457,
   },
   {
@@ -424,21 +424,129 @@ const LANDING_CHAT_MESSAGES = [
   },
 ];
 
-function getLandingChatConfig(previewCycle) {
-  const messages = Array.from({ length: 5 }, (_, offset) => {
-    const index = (previewCycle + offset) % LANDING_CHAT_MESSAGES.length;
-    return LANDING_CHAT_MESSAGES[index];
+const LANDING_CHAT_SHOUTOUTS = [
+  {
+    login: "pixelpioneer",
+    displayName: "PixelPioneer",
+    avatarUrl: "https://unavatar.io/twitch/pokimane",
+    game: "Slots",
+    clipTitle: "The bonus that woke up the whole chat",
+    clipViews: 18400,
+  },
+  {
+    login: "neonreels",
+    displayName: "NeonReels",
+    avatarUrl: "https://unavatar.io/twitch/shroud",
+    game: "Just Chatting",
+    clipTitle: "One spin, one very loud reaction",
+    clipViews: 9320,
+  },
+  {
+    login: "luckyvoyager",
+    displayName: "LuckyVoyager",
+    avatarUrl: "https://unavatar.io/twitch/ninja",
+    game: "Slots",
+    clipTitle: "Chat called the multiplier before it landed",
+    clipViews: 27100,
+  },
+];
+
+function landingRandomInt(maxExclusive) {
+  const upperBound = Math.max(1, Math.floor(maxExclusive));
+  const values = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(values);
+  return values[0] % upperBound;
+}
+
+function getLandingChatConfig(previewCycle, previewShoutout) {
+  const messageCount = Math.min(6, previewCycle + 2);
+  const firstSequence = Math.max(0, previewCycle - messageCount + 1);
+  const messages = Array.from({ length: messageCount }, (_, offset) => {
+    const sequence = firstSequence + offset;
+    const message = LANDING_CHAT_MESSAGES[sequence % LANDING_CHAT_MESSAGES.length];
+    return { ...message, id: `${message.id}-${sequence}` };
   });
+  if (previewShoutout) {
+    messages.push({
+      id: `landing-chat-so-${previewShoutout.id}`,
+      platform: "twitch",
+      username: "StreamHost",
+      message: `!so @${previewShoutout.login}`,
+      color: "#fb7185",
+      avatarUrl: "https://unavatar.io/twitch/twitch",
+      isBroadcaster: true,
+    });
+  }
   return {
+    chatStyle: "better_chat",
+    width: 330,
+    height: 457,
+    font: "Arial, Helvetica, sans-serif",
+    fontSize: 13,
+    usernameSize: 13,
+    glow: "#0e5997",
+    username: "#ffb020",
+    text: "#f4f7ff",
+    bubble: "#0a1a33",
+    panel: "#061126",
+    panelHi: "#0c1c40",
+    panelLo: "#081228",
+    cardLo: "#0a1836",
+    borderColor: "#2f63c9",
+    animation: "slide-up",
+    flow: "bottom-to-top",
+    stagger: 80,
+    entry: "bottom",
+    autoFade: false,
+    lifespan: "persistent",
+    fadeAfter: 2,
+    maxMessages: 6,
     live: true,
+    showHeaderName: false,
+    showLiveLabel: true,
+    showViewerCount: false,
+    viewerCount: 1250,
+    bttvEnabled: true,
+    bttvGlobal: true,
+    bttvChannel: true,
+    bttvSize: 2,
+    bg: "beam",
+    texture: "none",
+    textureStrength: 30,
+    celebrations: { raid: true, sub: true, gift: true, intensity: 1 },
+    showRoleBadges: true,
+    roleEffects: {
+      enabled: true,
+      ownerEnabled: true,
+      ownerMovementEnabled: true,
+      moderatorEnabled: true,
+      moderatorMovementEnabled: false,
+      vipEnabled: true,
+      vipMovementEnabled: true,
+      subscriberEnabled: true,
+      subscriberMovementEnabled: true,
+      intensity: 8,
+      ownerColor: "#cf0202",
+      moderatorColor: "#025517",
+      vipColor: "#8a1df7",
+      subscriberColor: "#019896",
+      raidColor: "#6a6868",
+    },
+    shoutoutInChat: true,
+    shoutoutPosition: "top",
+    shoutoutHeight: 180,
+    shoutoutDuration: 10,
+    shoutoutDismissOnClipEnd: true,
+    showEmptyState: false,
+    emptyMessage: "Hey you dont you think this chat its too quiet ?",
     useNativeColors: true,
-    maxMessages: 5,
     replayNonce: previewCycle,
     twitchEnabled: false,
     youtubeEnabled: false,
     kickEnabled: false,
     __appearancePreviewBttvEmotes: LANDING_CHAT_EMOTES,
-    __appearancePreviewMessages: messages,
+    __appearancePreviewMessages: messages.slice(-6),
+    __previewShoutoutAlert: previewShoutout,
   };
 }
 
@@ -480,6 +588,7 @@ function getBonusHuntPreviewState(cycle) {
 
 function LiveWidgetShowcase({ widget }) {
   const [previewCycle, setPreviewCycle] = useState(0);
+  const [previewShoutout, setPreviewShoutout] = useState(null);
   const [frameGeometry, setFrameGeometry] = useState({
     scale: 1,
     left: 0,
@@ -488,7 +597,7 @@ function LiveWidgetShowcase({ widget }) {
   const runtimeRef = useRef(null);
 
   useEffect(() => {
-    const intervalMs = { bonus_hunt: 5200, giveaway: 6500, chat: 2600 }[
+    const intervalMs = { bonus_hunt: 5200, giveaway: 6500, chat: 4200 }[
       widget.widgetType
     ];
     if (!intervalMs) return undefined;
@@ -496,6 +605,33 @@ function LiveWidgetShowcase({ widget }) {
       setPreviewCycle((value) => value + 1);
     }, intervalMs);
     return () => window.clearInterval(timer);
+  }, [widget.widgetType]);
+
+  useEffect(() => {
+    if (widget.widgetType !== "chat") return undefined;
+    let active = true;
+    let showTimer;
+    let hideTimer;
+    const scheduleShoutout = () => {
+      const delay = 24000 + landingRandomInt(18001);
+      showTimer = window.setTimeout(() => {
+        if (!active) return;
+        const sample =
+          LANDING_CHAT_SHOUTOUTS[landingRandomInt(LANDING_CHAT_SHOUTOUTS.length)];
+        setPreviewShoutout({ ...sample, id: `${sample.login}-${Date.now()}` });
+        hideTimer = window.setTimeout(() => {
+          if (!active) return;
+          setPreviewShoutout(null);
+          scheduleShoutout();
+        }, 10000);
+      }, delay);
+    };
+    scheduleShoutout();
+    return () => {
+      active = false;
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+    };
   }, [widget.widgetType]);
 
   const bonusHuntPreview = useMemo(
@@ -532,7 +668,7 @@ function LiveWidgetShowcase({ widget }) {
   const preview = useMemo(() => {
     const chatConfig =
       widget.widgetType === "chat"
-        ? getLandingChatConfig(previewCycle)
+        ? getLandingChatConfig(previewCycle, previewShoutout)
         : undefined;
     const instance = createBetterInstance(widget.widgetType, {
       instanceId: `landing-${widget.widgetType}`,
@@ -551,6 +687,7 @@ function LiveWidgetShowcase({ widget }) {
     bonusHuntPreview,
     previewCycle,
     previewHeight,
+    previewShoutout,
     previewWidth,
     widget.widgetType,
   ]);

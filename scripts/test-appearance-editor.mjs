@@ -222,6 +222,19 @@ try {
       ),
     "Chat downloads route the complete resolved configuration into JSON",
   );
+  const landingPageSource = readFileSync(
+    new URL("../src/components/LandingPage/LandingPage.jsx", import.meta.url),
+    "utf8",
+  );
+  assert.ok(
+    landingPageSource.includes('glow: "#0e5997"') &&
+      landingPageSource.includes('ownerColor: "#cf0202"') &&
+      landingPageSource.includes("chat: 4200") &&
+      landingPageSource.includes("landingRandomInt(18001)") &&
+      landingPageSource.includes("__previewShoutoutAlert: previewShoutout") &&
+      landingPageSource.includes('message: `!so @${previewShoutout.login}`'),
+    "Landing Chat uses the exported appearance, slow message feed, and randomized embedded shoutouts",
+  );
   const widgetEditorPageCssSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/editor/WidgetEditorPage.css",
