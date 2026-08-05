@@ -248,6 +248,9 @@ try {
       landingPageSource.includes("getLandingTournamentConfig(previewCycle)") &&
       landingPageSource.includes("LANDING_TOURNAMENT_MATCHES.map") &&
       landingPageSource.includes('bracketPlayerCount: 8') &&
+      /title: "Tournament",[\s\S]*?widgetType: "tournament",[\s\S]*?layout: "feature",[\s\S]*?width: 960,[\s\S]*?height: 720,/.test(
+        landingPageSource,
+      ) &&
       landingPageSource.includes('height: 520') &&
       landingPageSource.includes('"liquid",') &&
       landingPageSource.includes('"scanline",') &&
