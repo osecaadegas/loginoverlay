@@ -1492,6 +1492,17 @@ try {
     "Bonus Hunt Widget Controls expose independent typography groups",
   );
 
+  assert.ok(
+    betterWidgetStylesSource.includes("function BetterHuntSlotMarquee") &&
+      betterWidgetStylesSource.includes(
+        'className={`better-hunt-slot-marquee${shouldScroll ? " is-scrolling" : ""}`}',
+      ) &&
+      betterWidgetStylesSource.includes(
+        '<BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>',
+      ),
+    "Bonus Hunt list slot names use the overflow-aware visible-row marquee",
+  );
+
   const horizontalBonusConfig = {
     orientation: "horizontal",
     showRequests: true,

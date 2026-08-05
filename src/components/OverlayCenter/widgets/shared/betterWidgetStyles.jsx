@@ -28,6 +28,74 @@ function attrs(widgetType, config, elementId, stateId) {
   };
 }
 
+function BetterHuntSlotMarquee({ children, config, enabled = true }) {
+  const containerRef = useRef(null);
+  const textRef = useRef(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [duration, setDuration] = useState(8);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const text = textRef.current;
+    if (!container || !text) return undefined;
+
+    const measure = () => {
+      const overflow = text.scrollWidth > container.clientWidth + 1;
+      setIsOverflowing(overflow);
+      if (overflow) {
+        setDuration(Math.min(18, Math.max(6, text.scrollWidth / 28)));
+      }
+    };
+
+    measure();
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(measure);
+    resizeObserver?.observe(container);
+    resizeObserver?.observe(text);
+    document.fonts?.ready.then(measure).catch(() => {});
+    window.addEventListener("resize", measure);
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [children]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof IntersectionObserver === "undefined") {
+      setIsVisible(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsVisible(entry.isIntersecting);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  const shouldScroll = enabled && isOverflowing && isVisible;
+  const titleAttrs = attrs("bonus_hunt", config, "slotTitle");
+  return (
+    <strong
+      ref={containerRef}
+      className={`better-hunt-slot-marquee${shouldScroll ? " is-scrolling" : ""}`}
+      {...titleAttrs}
+      style={{
+        ...titleAttrs.style,
+        "--bh-slot-marquee-duration": `${duration}s`,
+      }}
+    >
+      <span className="better-hunt-slot-marquee-track">
+        <span ref={textRef}>{children}</span>
+        {isOverflowing ? <span aria-hidden="true">{children}</span> : null}
+      </span>
+    </strong>
+  );
+}
+
 function numberValue(value, fallback = 0) {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -1704,6 +1772,7 @@ function BetterStyleSheet() {
       @keyframes better-hunt-marquee-up{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-50%,0)}}
       @keyframes better-hunt-marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       @keyframes better-hunt-marquee-right{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+      @keyframes better-hunt-slot-marquee{from{transform:translateX(0)}to{transform:translateX(calc(-50% - 14px))}}
       @keyframes better-hunt-live-blink{0%,100%{opacity:1;box-shadow:0 0 0 0 color-mix(in srgb,var(--bh-ice) 55%,transparent)}50%{opacity:.5;box-shadow:0 0 0 5px transparent}}
       @keyframes better-hunt-request-transfer{0%,18%{transform:translate3d(0,0,0) rotate(0) scale3d(1,1,1);opacity:1}4%{transform:translate3d(-4px,1px,0) rotate(-1.5deg) scale3d(1,1,1)}8%{transform:translate3d(4px,-1px,0) rotate(1.5deg) scale3d(1,1,1)}12%{transform:translate3d(-3px,0,0) rotate(-1deg) scale3d(1,1,1)}36%{transform:translate3d(0,0,0) rotate(0) scale3d(var(--bh-transfer-grow),var(--bh-transfer-grow),1);opacity:1}82%{opacity:1}100%{transform:translate3d(var(--bh-transfer-x),var(--bh-transfer-y),0) rotateY(-16deg) scale3d(var(--bh-transfer-end-x),var(--bh-transfer-end-y),1);opacity:0}}
       @keyframes better-hunt-request-source-fade{0%,30%{opacity:1}52%,100%{opacity:0}}
@@ -1874,7 +1943,7 @@ function BetterStyleSheet() {
       .better-hunt-row-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.38),transparent)}
       .better-hunt-row-content{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;padding-left:20px}
       .better-hunt-row-id{position:absolute;left:3px;top:50%;z-index:3;width:18px;height:20px;min-width:18px;display:grid;place-items:center;transform:translateY(-50%);border:1px solid rgba(255,255,255,.16);border-radius:5px;background:rgba(0,0,0,.5);color:var(--bh-steel-hi);font-size:.68em;font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.8)}
-      .better-hunt-row-main{min-width:0}.better-hunt-row-main strong{display:block;overflow:hidden;color:#fff;font-size:1em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-row-main em{display:block;overflow:hidden;color:#c4d7f7;font-style:normal;font-size:.76em;font-weight:700;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}
+      .better-hunt-row-main{min-width:0}.better-hunt-row-main .better-hunt-slot-marquee{display:block;overflow:hidden;color:#fff;font-size:1em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-slot-marquee-track{display:inline-flex;width:max-content;gap:28px;will-change:transform}.better-hunt-slot-marquee-track>span{display:block;flex:0 0 auto}.better-hunt-slot-marquee.is-scrolling{text-overflow:clip}.better-hunt-slot-marquee.is-scrolling .better-hunt-slot-marquee-track{animation:better-hunt-slot-marquee var(--bh-slot-marquee-duration,8s) linear infinite}.better-hunt-row-main em{display:block;overflow:hidden;color:#c4d7f7;font-style:normal;font-size:.76em;font-weight:700;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}
       .better-hunt-mini-stats{display:grid;gap:2px;min-width:76px}.better-hunt-mini-stat{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;font-size:.78em;font-weight:900;line-height:1.08;text-shadow:0 1px 3px rgba(0,0,0,.95)}.better-hunt-mini-label{color:#b9cbed;font-size:.64em;letter-spacing:.08em;opacity:1;text-shadow:0 1px 2px rgba(0,0,0,.85)}
       .better-hunt-empty{display:grid;place-items:center;min-height:80px;border:1px dashed color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:10px;background:rgba(0,0,0,.16);color:var(--bh-steel-dim);font-weight:800;text-align:center}
       .better-hunt-requests{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 38%,transparent);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 62%,transparent),color-mix(in srgb,var(--bh-card-lo) 70%,transparent));padding:8px}
@@ -3523,9 +3592,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
               {index + 1}
             </span>
             <span className="better-hunt-row-main">
-              <strong {...attrs("bonus_hunt", c, "slotTitle")}>
+              <BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>
                 {bonusSlotName(bonus, index)}
-              </strong>
+              </BetterHuntSlotMarquee>
               <em>
                 {bonusRequester(bonus) ||
                   bonusProvider(bonus) ||
@@ -3590,9 +3659,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             {index + 1}
           </span>
           <span className="better-hunt-row-main">
-            <strong {...attrs("bonus_hunt", c, "slotTitle")}>
+            <BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>
               {bonusSlotName(bonus, index)}
-            </strong>
+            </BetterHuntSlotMarquee>
           </span>
           <span
             className="better-hunt-mini-stat"
@@ -3622,9 +3691,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         </span>
         <BetterHuntThumb bonus={bonus} size={38} />
         <span className="better-hunt-row-main">
-          <strong {...attrs("bonus_hunt", c, "slotTitle")}>
+          <BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>
             {bonusSlotName(bonus, index)}
-          </strong>
+          </BetterHuntSlotMarquee>
           <em>
             {bonusRequester(bonus) ||
               bonusProvider(bonus) ||
