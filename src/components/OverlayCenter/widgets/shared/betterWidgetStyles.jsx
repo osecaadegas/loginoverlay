@@ -1783,7 +1783,8 @@ function BetterStyleSheet() {
       .better-hunt-main-active-row span{display:flex;align-items:center;gap:7px;min-width:0;color:rgba(255,255,255,.68);font-size:.7em;font-weight:950;letter-spacing:.2em;text-transform:uppercase}.better-hunt-main-active-row strong{overflow:hidden;color:#fff;font-size:1.5em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)}
       .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-footer{margin:8px 12px 12px}
       .better-hunt-root[data-orientation="horizontal"] .better-hunt-shell{padding:8px}
-      .better-hunt-horizontal{max-width:1180px;height:min(100%,286px);display:grid;grid-template-columns:178px minmax(0,1fr) 220px;gap:0}
+      .better-hunt-horizontal{max-width:1180px;height:min(100%,286px);display:grid;grid-template-columns:178px minmax(0,1fr) 0;gap:0;transition:grid-template-columns .55s cubic-bezier(.22,.9,.3,1)}
+      .better-hunt-horizontal.is-requests-visible{grid-template-columns:178px minmax(0,1fr) 220px}
       .better-hunt-hstrip-active{position:relative;min-width:0;overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);background:var(--bh-inset)}
       .better-hunt-hstrip-active>img{width:100%;height:100%;display:block;object-fit:cover;animation:better-hunt-kenburns calc(8s / var(--anim-speed,1)) ease-out both}
       .better-hunt-hstrip-active::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.72),transparent 24%,transparent 58%,rgba(0,0,0,.94));pointer-events:none}
@@ -1795,8 +1796,11 @@ function BetterStyleSheet() {
       .better-hunt-hstrip-head{min-width:0;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08);padding:0 2px 7px}.better-hunt-hstrip-head>div:first-child{min-width:0;flex:1}.better-hunt-hstrip-head>div:first-child>strong{display:block;overflow:hidden;color:#fff;font-size:1.05em;font-weight:950;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-hstrip-head>div:first-child>span{color:var(--bh-steel-dim);font-size:.64em;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
       .better-hunt-hstrip-stats{display:flex;align-items:center;gap:6px}.better-hunt-hstrip-stats>span{display:grid;gap:2px;min-width:76px;border-left:1px solid rgba(255,255,255,.1);padding-left:9px;color:var(--bh-steel-dim);font-size:.58em;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.better-hunt-hstrip-stats strong{color:#fff;font-size:1.35em;letter-spacing:0}
       .better-hunt-hstrip-main .better-hunt-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto}.better-hunt-hstrip-main .better-hunt-ring,.better-hunt-hstrip-main .better-hunt-stats-panel,.better-hunt-hstrip-main .better-hunt-image-stats-panel{height:184px}.better-hunt-hstrip-main .better-hunt-progress{padding:4px 2px 0}.better-hunt-hstrip-main .better-hunt-card{width:104px;height:146px}
-      .better-hunt-hstrip-queue{min-width:0;display:grid;grid-template-rows:38px minmax(0,1fr);overflow:hidden;padding:8px}.better-hunt-hstrip-queue-head{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,.1);padding:0 3px 7px}.better-hunt-hstrip-queue-head strong{color:#fff;font-size:.8em;font-weight:950;letter-spacing:.14em;text-transform:uppercase}.better-hunt-hstrip-queue-head span{display:grid;min-width:24px;height:20px;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--bh-ice) 14%,transparent);color:var(--bh-ice);font-size:.72em;font-weight:950}
-      .better-hunt-hstrip-queue .better-hunt-list{height:100%!important;max-height:none!important;padding:5px 0 0}.better-hunt-hstrip-queue .better-hunt-list--image .better-hunt-row{min-height:92px}.better-hunt-hstrip-queue .better-hunt-list--compact .better-hunt-mini-stats{display:none}.better-hunt-hstrip-queue .better-hunt-list--compact .better-hunt-row{grid-template-columns:22px 34px minmax(0,1fr);padding:4px}.better-hunt-hstrip-queue .better-hunt-thumb{width:34px!important;height:34px!important}.better-hunt-hstrip-queue .better-hunt-row-main em{display:none}
+      .better-hunt-hstrip-requests{min-width:0;overflow:hidden;border-left:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);opacity:0;transform:translateX(-18px);visibility:hidden;transition:opacity .32s ease .12s,transform .55s cubic-bezier(.22,.9,.3,1),visibility 0s linear .55s}
+      .better-hunt-horizontal.is-requests-visible .better-hunt-hstrip-requests{opacity:1;transform:translateX(0);visibility:visible;transition:opacity .32s ease .12s,transform .55s cubic-bezier(.22,.9,.3,1),visibility 0s}
+      .better-hunt-hstrip-requests .better-hunt-requests{height:100%;display:grid;grid-template-rows:38px minmax(0,1fr);margin:0!important;border:0;border-radius:0;background:transparent;padding:8px}
+      .better-hunt-hstrip-requests .better-hunt-requests-head{padding:0 3px 7px}
+      .better-hunt-hstrip-requests .better-hunt-request-list,.better-hunt-hstrip-requests .better-hunt-request-stage{min-height:0;height:100%}
       .better-hunt-left{display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:10px;padding:12px;border-right:1px solid rgba(255,255,255,.08);min-width:0}
       .better-hunt-right{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0}
       .better-hunt-header{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
@@ -4022,7 +4026,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
     return (
       <section
-        className={`better-hunt-panel better-hunt-horizontal${panelShakeClass}`}
+        className={`better-hunt-panel better-hunt-horizontal${c.showRequests === false ? "" : " is-requests-visible"}${panelShakeClass}`}
       >
         <div
           className={`better-hunt-hstrip-active better-hunt-hstrip-active--${currentTier}`}
@@ -4078,12 +4082,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           {renderCarousel()}
         </div>
 
-        <aside className="better-hunt-hstrip-queue">
-          <div className="better-hunt-hstrip-queue-head">
-            <strong>Queue</strong>
-            <span>{rows.length}</span>
-          </div>
-          {renderList()}
+        <aside
+          className="better-hunt-hstrip-requests"
+          aria-hidden={c.showRequests === false}
+        >
+          {renderRequests()}
         </aside>
 
         {previewWin ? (

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
@@ -49,6 +50,10 @@ const {
 
 const { subElementStyle } = await server.ssrLoadModule(
   "/src/components/OverlayCenter/widgets/shared/appearanceStyles.js",
+);
+
+const { BetterBonusHuntStyle } = await server.ssrLoadModule(
+  "/src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx",
 );
 
 const { getWidgetAppearanceCapability, getWidgetAppearanceV2Elements } =
@@ -1434,6 +1439,48 @@ try {
       );
     }
   }
+
+  const horizontalBonusConfig = {
+    orientation: "horizontal",
+    showRequests: true,
+    slotRequests: [
+      {
+        id: "horizontal-request",
+        slot_name: "Wanted Dead or a Wild",
+        requested_by: "viewer_one",
+      },
+    ],
+  };
+  const horizontalBonusMarkup = renderToStaticMarkup(
+    createElement(BetterBonusHuntStyle, {
+      config: horizontalBonusConfig,
+      bonuses: [{ id: "bonus-one", slot_name: "Bear Crazy", bet: 1 }],
+      stats: {},
+      currency: "EUR",
+    }),
+  );
+  assert.ok(
+    horizontalBonusMarkup.includes(
+      'class="better-hunt-panel better-hunt-horizontal is-requests-visible"',
+    ) &&
+      horizontalBonusMarkup.includes(">Chat Requests<") &&
+      !horizontalBonusMarkup.includes(">Queue<"),
+    "horizontal Bonus Hunt reveals Chat Requests instead of the legacy queue",
+  );
+  const horizontalBonusWithoutRequests = renderToStaticMarkup(
+    createElement(BetterBonusHuntStyle, {
+      config: { ...horizontalBonusConfig, showRequests: false },
+      bonuses: [{ id: "bonus-one", slot_name: "Bear Crazy", bet: 1 }],
+      stats: {},
+      currency: "EUR",
+    }),
+  );
+  assert.ok(
+    horizontalBonusWithoutRequests.includes(
+      'class="better-hunt-panel better-hunt-horizontal"',
+    ) && !horizontalBonusWithoutRequests.includes(">Chat Requests<"),
+    "horizontal Bonus Hunt fully hides Chat Requests when disabled",
+  );
 
   const surface =
     bonusElements.find((element) => /container|card|row/i.test(element.id)) ||
