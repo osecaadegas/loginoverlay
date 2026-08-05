@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import useTwitchChat from "../../../../hooks/useTwitchChat";
 import useKickChat from "../../../../hooks/useKickChat";
 import useTwitchChannel from "../../../../hooks/useTwitchChannel";
@@ -834,9 +840,22 @@ function ChatWidget({
     twitchUserId: bttvTwitchUserId,
     twitchChannel: bttvTwitchChannel,
   });
+  const previewBttvEmotes = useMemo(
+    () =>
+      buildBttvMap(
+        Array.isArray(c.__appearancePreviewBttvEmotes)
+          ? c.__appearancePreviewBttvEmotes
+          : [],
+      ),
+    [c.__appearancePreviewBttvEmotes],
+  );
+  const renderBttvEmotes = useMemo(
+    () => new Map([...bttvEmotes, ...previewBttvEmotes]),
+    [bttvEmotes, previewBttvEmotes],
+  );
   const renderBetterChatMessage = useCallback(
-    (msg) => renderBetterChatMessageContent(msg, bttvEmotes, c.bttvSize),
-    [bttvEmotes, c.bttvSize],
+    (msg) => renderBetterChatMessageContent(msg, renderBttvEmotes, c.bttvSize),
+    [c.bttvSize, renderBttvEmotes],
   );
   const handleTwitchRoomState = useCallback(({ channelId }) => {
     setConnectedTwitchChannelId(String(channelId || ""));

@@ -362,6 +362,86 @@ const HOME_WIDGETS = [
   },
 ];
 
+const LANDING_CHAT_EMOTES = [
+  { id: "5e9c6c187e090362f8b0b9e8", code: "KEKW" },
+  { id: "583089f4737a8e61abb0186b", code: "OMEGALUL" },
+  { id: "59ca6551b27c823d5b1fd872", code: "monkaW" },
+];
+
+const LANDING_CHAT_MESSAGES = [
+  {
+    id: "landing-chat-1",
+    platform: "twitch",
+    username: "PixelPioneer",
+    message: "That bonus was wild KEKW",
+    color: "#f472b6",
+    avatarUrl: "https://unavatar.io/twitch/pokimane",
+    isVip: true,
+  },
+  {
+    id: "landing-chat-2",
+    platform: "twitch",
+    username: "NeonReels",
+    message: "One more spin monkaW",
+    color: "#22d3ee",
+    avatarUrl: "https://unavatar.io/twitch/shroud",
+    isMod: true,
+  },
+  {
+    id: "landing-chat-3",
+    platform: "twitch",
+    username: "LuckyVoyager",
+    message: "The overlay looks so clean OMEGALUL",
+    color: "#facc15",
+    avatarUrl: "https://unavatar.io/twitch/ninja",
+    isSub: true,
+  },
+  {
+    id: "landing-chat-4",
+    platform: "twitch",
+    username: "BonusCaptain",
+    message: "Good luck everyone KEKW",
+    color: "#a78bfa",
+    avatarUrl: "https://unavatar.io/twitch/xqc",
+  },
+  {
+    id: "landing-chat-5",
+    platform: "twitch",
+    username: "ReelRush",
+    message: "Chat called it! monkaW",
+    color: "#4ade80",
+    avatarUrl: "https://unavatar.io/twitch/sodapoppin",
+    isVip: true,
+  },
+  {
+    id: "landing-chat-6",
+    platform: "twitch",
+    username: "StreamHost",
+    message: "Welcome in, grab a seat KEKW",
+    color: "#fb7185",
+    avatarUrl: "https://unavatar.io/twitch/twitch",
+    isBroadcaster: true,
+  },
+];
+
+function getLandingChatConfig(previewCycle) {
+  const messages = Array.from({ length: 5 }, (_, offset) => {
+    const index = (previewCycle + offset) % LANDING_CHAT_MESSAGES.length;
+    return LANDING_CHAT_MESSAGES[index];
+  });
+  return {
+    live: true,
+    useNativeColors: true,
+    maxMessages: 5,
+    replayNonce: previewCycle,
+    twitchEnabled: false,
+    youtubeEnabled: false,
+    kickEnabled: false,
+    __appearancePreviewBttvEmotes: LANDING_CHAT_EMOTES,
+    __appearancePreviewMessages: messages,
+  };
+}
+
 const BONUS_HUNT_PREVIEW_OPTIONS = Object.freeze({
   orientation: ["vertical", "horizontal", "mainstream"],
   skin: ["modern", "roman", "metal", "cyberpunk", "spartan", "bloody"],
@@ -408,7 +488,7 @@ function LiveWidgetShowcase({ widget }) {
   const runtimeRef = useRef(null);
 
   useEffect(() => {
-    const intervalMs = { bonus_hunt: 5200, giveaway: 6500 }[
+    const intervalMs = { bonus_hunt: 5200, giveaway: 6500, chat: 2600 }[
       widget.widgetType
     ];
     if (!intervalMs) return undefined;
@@ -450,11 +530,15 @@ function LiveWidgetShowcase({ widget }) {
   }, [previewHeight, previewWidth]);
 
   const preview = useMemo(() => {
+    const chatConfig =
+      widget.widgetType === "chat"
+        ? getLandingChatConfig(previewCycle)
+        : undefined;
     const instance = createBetterInstance(widget.widgetType, {
       instanceId: `landing-${widget.widgetType}`,
       width: previewWidth,
       height: previewHeight,
-      config: bonusHuntPreview?.config,
+      config: bonusHuntPreview?.config || chatConfig,
     });
     return {
       instance,
@@ -463,7 +547,13 @@ function LiveWidgetShowcase({ widget }) {
         instances: instance ? [instance] : [],
       },
     };
-  }, [bonusHuntPreview, previewHeight, previewWidth, widget.widgetType]);
+  }, [
+    bonusHuntPreview,
+    previewCycle,
+    previewHeight,
+    previewWidth,
+    widget.widgetType,
+  ]);
 
   if (!preview.instance) return null;
 
@@ -483,7 +573,7 @@ function LiveWidgetShowcase({ widget }) {
         {renderBetterWidgetInstance({
           instance: preview.instance,
           layout: preview.layout,
-          mode: "mock",
+          mode: widget.widgetType === "chat" ? "live" : "mock",
           runtime: "editor",
         })}
       </div>
