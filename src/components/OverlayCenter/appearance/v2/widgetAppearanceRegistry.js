@@ -472,6 +472,27 @@ const BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS = [
   "footerTotalValue",
 ];
 
+const BONUS_HUNT_TYPOGRAPHY_ELEMENT_IDS = [
+  "headerTitle",
+  "statLabel",
+  "statValue",
+  "tagText",
+  "progressCount",
+  "slotPositionNumber",
+  "slotTitle",
+  "winLabel",
+  "winValue",
+  "multiplierLabel",
+  "multiplierValue",
+  "betLabel",
+  "betValue",
+  "requestsHeader",
+  "requestsDescription",
+  "requestsEmpty",
+  "footerLabel",
+  "footerTotalValue",
+];
+
 function freezeStyle(style) {
   return Object.freeze({
     ...style,
@@ -3169,9 +3190,9 @@ export const widgetAppearanceRegistry = Object.freeze({
           "statCell",
           "slotCarouselContainer",
           "slotImage",
-          "slotTitle",
           "progressBar",
           "footerContainer",
+          ...BONUS_HUNT_TYPOGRAPHY_ELEMENT_IDS,
         ],
       }),
       freezeStyle({
@@ -3197,9 +3218,9 @@ export const widgetAppearanceRegistry = Object.freeze({
           "slotListContainer",
           "slotRow",
           "slotImage",
-          "slotTitle",
           "progressBar",
           "footerContainer",
+          ...BONUS_HUNT_TYPOGRAPHY_ELEMENT_IDS,
         ],
       }),
       freezeStyle({
@@ -3218,12 +3239,11 @@ export const widgetAppearanceRegistry = Object.freeze({
         },
         elementIds: [
           "container",
-          "headerTitle",
           "slotCarouselContainer",
           "slotImage",
-          "slotTitle",
           "progressBar",
           "footerContainer",
+          ...BONUS_HUNT_TYPOGRAPHY_ELEMENT_IDS,
         ],
       }),
     ]),

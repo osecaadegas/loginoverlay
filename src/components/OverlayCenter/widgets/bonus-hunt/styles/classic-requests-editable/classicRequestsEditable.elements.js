@@ -67,6 +67,41 @@ export const classicRequestsEditableElements = Object.freeze({
     kind: 'text',
     capabilities: ['typography'],
   }),
+  slotPositionNumber: Object.freeze({
+    label: 'Slot position number',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
+  winLabel: Object.freeze({
+    label: 'Win labels',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
+  winValue: Object.freeze({
+    label: 'Win values',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
+  multiplierLabel: Object.freeze({
+    label: 'Multiplier labels',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
+  multiplierValue: Object.freeze({
+    label: 'Multiplier values',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
+  betLabel: Object.freeze({
+    label: 'Bet labels',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
+  betValue: Object.freeze({
+    label: 'Bet values',
+    kind: 'text',
+    capabilities: ['typography'],
+  }),
   progressBar: Object.freeze({
     label: 'Progress bar',
     kind: 'progress',

@@ -16,6 +16,10 @@ export const classicRequestsEditableAdvancedSchema = Object.freeze([
     controls: ['background', 'borderColor', 'borderWidth', 'radius'],
   }),
   Object.freeze({
+    elementId: 'statLabel',
+    controls: ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'],
+  }),
+  Object.freeze({
     elementId: 'statValue',
     controls: ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'],
   }),
@@ -43,6 +47,10 @@ export const classicRequestsEditableAdvancedSchema = Object.freeze([
     elementId: 'slotTitle',
     controls: ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'],
   }),
+  ...['slotPositionNumber', 'winLabel', 'winValue', 'multiplierLabel', 'multiplierValue', 'betLabel', 'betValue'].map((elementId) => Object.freeze({
+    elementId,
+    controls: ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'],
+  })),
   Object.freeze({
     elementId: 'progressBar',
     controls: ['background', 'borderColor', 'borderWidth', 'radius'],
@@ -69,6 +77,10 @@ export const classicRequestsEditableAdvancedSchema = Object.freeze([
   }),
   Object.freeze({
     elementId: 'requestsDescription',
+    controls: ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'],
+  }),
+  Object.freeze({
+    elementId: 'requestsEmpty',
     controls: ['fontFamily', 'fontSize', 'fontWeight', 'textColor', 'lineHeight'],
   }),
   Object.freeze({

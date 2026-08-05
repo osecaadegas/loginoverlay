@@ -20,9 +20,11 @@ import SlotImage from "../SlotImage";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
 
 function attrs(widgetType, config, elementId, stateId) {
+  const style = subElementStyle(config, elementId, undefined, stateId);
   return {
     "data-appearance-part": elementId,
     ...appearanceAttrs({ config, widgetType, elementId, stateId }),
+    ...(Object.keys(style).length > 0 ? { style } : {}),
   };
 }
 
@@ -2781,7 +2783,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             <SlotImage src={requestImage(request)} alt="" />
           </span>
           <span className="better-hunt-request-body">
-            <span className="better-hunt-request-copy">
+            <span
+              className="better-hunt-request-copy"
+              {...attrs("bonus_hunt", c, "requestsDescription")}
+            >
               <strong>{requestSlot(request)}</strong>
               <span>
                 Requested by <b>@{requestName(request)}</b>
@@ -2798,7 +2803,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       return (
         <>
           <i className="better-hunt-request-live" />
-          <span className="better-hunt-request-copy">
+          <span
+            className="better-hunt-request-copy"
+            {...attrs("bonus_hunt", c, "requestsDescription")}
+          >
             <strong>{requestSlot(request)}</strong>
           </span>
           <span className="better-hunt-request-user">
@@ -2824,7 +2832,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             </span>
           )}
         </span>
-        <span className="better-hunt-request-copy">
+        <span
+          className="better-hunt-request-copy"
+          {...attrs("bonus_hunt", c, "requestsDescription")}
+        >
           <strong>{requestSlot(request)}</strong>
           <span>
             Requested by <b>@{requestName(request)}</b>
@@ -3093,8 +3104,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         {...attrs("bonus_hunt", c, "requestContainer")}
       >
         <div className="better-hunt-requests-head">
-          <h3>Chat Requests</h3>
-          <strong>{requestRows.length}</strong>
+          <h3 {...attrs("bonus_hunt", c, "requestsHeader")}>Chat Requests</h3>
+          <strong {...attrs("bonus_hunt", c, "requestsHeader")}>
+            {requestRows.length}
+          </strong>
         </div>
         {requestRows.length ? (
           requestView === "carousel" ? (
@@ -3163,7 +3176,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             </div>
           )
         ) : (
-          <div className="better-hunt-request better-hunt-request--empty">
+          <div
+            className="better-hunt-request better-hunt-request--empty"
+            {...attrs("bonus_hunt", c, "requestsEmpty")}
+          >
             <span>No requests yet</span>
           </div>
         )}
@@ -3496,7 +3512,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             <SlotImage src={bonusImage(bonus)} alt="" />
           </div>
           <div className="better-hunt-row-content">
-            <span className="better-hunt-row-id">{index + 1}</span>
+            <span
+              className="better-hunt-row-id"
+              {...attrs("bonus_hunt", c, "slotPositionNumber")}
+            >
+              {index + 1}
+            </span>
             <span className="better-hunt-row-main">
               <strong {...attrs("bonus_hunt", c, "slotTitle")}>
                 {bonusSlotName(bonus, index)}
@@ -3509,16 +3530,37 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             </span>
             <span className="better-hunt-mini-stats">
               <span className="better-hunt-mini-stat">
-                <span className="better-hunt-mini-label">Win</span>
-                {openedState ? formatMoney(payout, money) : "-"}
+                <span
+                  className="better-hunt-mini-label"
+                  {...attrs("bonus_hunt", c, "winLabel")}
+                >
+                  Win
+                </span>
+                <span {...attrs("bonus_hunt", c, "winValue")}>
+                  {openedState ? formatMoney(payout, money) : "-"}
+                </span>
               </span>
               <span className="better-hunt-mini-stat">
-                <span className="better-hunt-mini-label">Multi</span>
-                {multi > 0 ? formatMultiplier(multi) : "-"}
+                <span
+                  className="better-hunt-mini-label"
+                  {...attrs("bonus_hunt", c, "multiplierLabel")}
+                >
+                  Multi
+                </span>
+                <span {...attrs("bonus_hunt", c, "multiplierValue")}>
+                  {multi > 0 ? formatMultiplier(multi) : "-"}
+                </span>
               </span>
               <span className="better-hunt-mini-stat">
-                <span className="better-hunt-mini-label">Bet</span>
-                {bet > 0 ? formatMoney(bet, money) : "-"}
+                <span
+                  className="better-hunt-mini-label"
+                  {...attrs("bonus_hunt", c, "betLabel")}
+                >
+                  Bet
+                </span>
+                <span {...attrs("bonus_hunt", c, "betValue")}>
+                  {bet > 0 ? formatMoney(bet, money) : "-"}
+                </span>
               </span>
             </span>
           </div>
@@ -3537,13 +3579,21 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             openedState ? "opened" : "unopened",
           )}
         >
-          <span className="better-hunt-row-id">{index + 1}</span>
+          <span
+            className="better-hunt-row-id"
+            {...attrs("bonus_hunt", c, "slotPositionNumber")}
+          >
+            {index + 1}
+          </span>
           <span className="better-hunt-row-main">
             <strong {...attrs("bonus_hunt", c, "slotTitle")}>
               {bonusSlotName(bonus, index)}
             </strong>
           </span>
-          <span className="better-hunt-mini-stat">
+          <span
+            className="better-hunt-mini-stat"
+            {...attrs("bonus_hunt", c, "betValue")}
+          >
             {bet > 0 ? formatMoney(bet, money) : "-"}
           </span>
         </div>
@@ -3560,7 +3610,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           openedState ? "opened" : "unopened",
         )}
       >
-        <span className="better-hunt-row-id">{index + 1}</span>
+        <span
+          className="better-hunt-row-id"
+          {...attrs("bonus_hunt", c, "slotPositionNumber")}
+        >
+          {index + 1}
+        </span>
         <BetterHuntThumb bonus={bonus} size={38} />
         <span className="better-hunt-row-main">
           <strong {...attrs("bonus_hunt", c, "slotTitle")}>
@@ -3574,16 +3629,37 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         </span>
         <span className="better-hunt-mini-stats">
           <span className="better-hunt-mini-stat">
-            <span className="better-hunt-mini-label">Win</span>
-            {openedState ? formatMoney(payout, money) : "-"}
+            <span
+              className="better-hunt-mini-label"
+              {...attrs("bonus_hunt", c, "winLabel")}
+            >
+              Win
+            </span>
+            <span {...attrs("bonus_hunt", c, "winValue")}>
+              {openedState ? formatMoney(payout, money) : "-"}
+            </span>
           </span>
           <span className="better-hunt-mini-stat">
-            <span className="better-hunt-mini-label">Multi</span>
-            {multi > 0 ? formatMultiplier(multi) : "-"}
+            <span
+              className="better-hunt-mini-label"
+              {...attrs("bonus_hunt", c, "multiplierLabel")}
+            >
+              Multi
+            </span>
+            <span {...attrs("bonus_hunt", c, "multiplierValue")}>
+              {multi > 0 ? formatMultiplier(multi) : "-"}
+            </span>
           </span>
           <span className="better-hunt-mini-stat">
-            <span className="better-hunt-mini-label">Bet</span>
-            {bet > 0 ? formatMoney(bet, money) : "-"}
+            <span
+              className="better-hunt-mini-label"
+              {...attrs("bonus_hunt", c, "betLabel")}
+            >
+              Bet
+            </span>
+            <span {...attrs("bonus_hunt", c, "betValue")}>
+              {bet > 0 ? formatMoney(bet, money) : "-"}
+            </span>
           </span>
         </span>
       </div>

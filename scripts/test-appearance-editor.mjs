@@ -51,6 +51,11 @@ const { subElementStyle } = await server.ssrLoadModule(
   "/src/components/OverlayCenter/widgets/shared/appearanceStyles.js",
 );
 
+const { getWidgetAppearanceCapability, getWidgetAppearanceV2Elements } =
+  await server.ssrLoadModule(
+    "/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js",
+  );
+
 const {
   WIDGET_CONTROLS_PRESET_KIND,
   WIDGET_CONTROLS_PRESET_VERSION,
@@ -1387,6 +1392,48 @@ try {
     !elementSupportsControl(header, "background"),
     "title text does not show unrelated background control",
   );
+
+  const bonusCapability = getWidgetAppearanceCapability("bonus_hunt");
+  const requiredBonusTypographyElements = [
+    "headerTitle",
+    "statLabel",
+    "statValue",
+    "requestsHeader",
+    "requestsDescription",
+    "requestsEmpty",
+    "slotTitle",
+    "slotPositionNumber",
+    "winLabel",
+    "winValue",
+    "multiplierLabel",
+    "multiplierValue",
+    "betLabel",
+    "betValue",
+  ];
+  for (const style of bonusCapability.styles) {
+    for (const elementId of requiredBonusTypographyElements) {
+      assert.ok(
+        style.elementIds.includes(elementId),
+        `${style.id} exposes independent ${elementId} typography`,
+      );
+    }
+    const styleElements = getWidgetAppearanceV2Elements(
+      "bonus_hunt",
+      style.id,
+    );
+    for (const elementId of requiredBonusTypographyElements) {
+      const element = styleElements.find((entry) => entry.id === elementId);
+      assert.ok(element, `${style.id} resolves ${elementId}`);
+      assert.ok(
+        element.controls.includes("fontFamily"),
+        `${style.id} ${elementId} exposes font family`,
+      );
+      assert.ok(
+        element.controls.includes("fontSize"),
+        `${style.id} ${elementId} exposes font size`,
+      );
+    }
+  }
 
   const surface =
     bonusElements.find((element) => /container|card|row/i.test(element.id)) ||
