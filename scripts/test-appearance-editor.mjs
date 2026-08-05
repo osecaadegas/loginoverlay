@@ -651,8 +651,10 @@ try {
       navbarWidgetSource.includes("const socialHandleSize = Math.max(") &&
       navbarWidgetSource.includes('background: "transparent"') &&
       navbarWidgetSource.includes("borderRadius: 0") &&
+      navbarWidgetSource.includes('textShadow: "0 1px 2px rgba(0,0,0,0.9)"') &&
+      !navbarWidgetSource.includes("drop-shadow(0 0 5px") &&
       !navbarWidgetSource.includes("socialPillHeight"),
-    "Better Navbar socials use larger unframed icons and handles",
+    "Better Navbar socials use clear, unframed official icons without neon glow",
   );
   assert.ok(
     navbarWidgetSource.includes('runtime === "obs" && publicOverlayId') &&

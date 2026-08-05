@@ -161,7 +161,7 @@ const SOCIAL_PLATFORM_META = [
     id: "tiktok",
     label: "TikTok",
     icon: SiTiktok,
-    color: "#22d3ee",
+    color: "#ffffff",
     keys: ["tiktokUsername"],
     toUrl: (value) => `https://tiktok.com/@${value}`,
   },
@@ -1786,11 +1786,10 @@ function NavbarWidget({
               <SocialIcon
                 aria-hidden="true"
                 size={socialIconSize}
-                strokeWidth={2.6}
                 style={{
                   color: item.color,
+                  display: "block",
                   flex: "0 0 auto",
-                  filter: `drop-shadow(0 0 5px ${alphaColor(item.color, 0.72)})`,
                 }}
               />
               <span
@@ -1799,7 +1798,7 @@ function NavbarWidget({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   color: textColor,
-                  textShadow: `0 0 8px ${alphaColor(item.color, 0.5)}, 0 1px 2px rgba(0,0,0,0.9)`,
+                  textShadow: "0 1px 2px rgba(0,0,0,0.9)",
                 }}
               >
                 {handle}
