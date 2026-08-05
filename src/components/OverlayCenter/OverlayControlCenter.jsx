@@ -277,6 +277,12 @@ function getOverlayUrl(instance, { preview = false, widgetId = null } = {}) {
   return url.toString();
 }
 
+function getBetterWidgetObsUrl(publicOverlayId, instanceId) {
+  if (!publicOverlayId || !instanceId || typeof window === "undefined")
+    return "";
+  return `${window.location.origin}/obs/overlay/${publicOverlayId}/widget/${instanceId}?scale=fit`;
+}
+
 function defaultSetupState(widgets = [], theme = null, instance = null) {
   const completed = widgets.length > 0;
   const configFor = (type) =>
@@ -2581,19 +2587,40 @@ export default function OverlayControlCenter() {
   }, [overlayUrl]);
 
   const copyToolObsUrl = useCallback(
-    (widget) => {
-      const widgetUrl = getOverlayUrl(instance, { widgetId: widget?.id });
-      if (!widgetUrl || !widget?.id) return;
-      navigator.clipboard.writeText(widgetUrl).then(() => {
+    async (widget) => {
+      if (!user?.id || !widget?.id || !widget?.widget_type) return;
+      try {
+        const record = await getOrCreateBetterEditorOverlay(user.id);
+        const layout = normalizeBetterLayout(record.draftLayout);
+        const editorInstance = layout.instances.find(
+          (item) => item.widgetType === widget.widget_type,
+        );
+        const widgetUrl = getBetterWidgetObsUrl(
+          record.publicOverlayId,
+          editorInstance?.instanceId,
+        );
+        if (!widgetUrl) {
+          window.alert(
+            "Add this widget to Better Editor before copying its OBS URL.",
+          );
+          return;
+        }
+        await navigator.clipboard.writeText(widgetUrl);
         setCopiedWidgetId(widget.id);
         trackEvent(ANALYTICS_EVENTS.OBS_URL_COPIED, {
           widget_type: widget.widget_type,
           widget_id: widget.id,
+          editor_instance_id: editorInstance.instanceId,
         });
         setTimeout(() => setCopiedWidgetId(""), 1800);
-      });
+      } catch (copyError) {
+        console.error(
+          "[OverlayCenter] Failed to copy Better widget OBS URL:",
+          copyError,
+        );
+      }
     },
-    [instance],
+    [user?.id],
   );
 
   const openPreview = useCallback(() => {
