@@ -338,9 +338,9 @@ const HOME_WIDGETS = [
   {
     title: "Tournament",
     widgetType: "tournament",
-    layout: "square",
+    layout: "standard",
     width: 960,
-    height: 720,
+    height: 480,
   },
   {
     title: "Slideshow Frame",
