@@ -9,31 +9,33 @@
  *   4. The callback page will store tokens and close
  */
 
-import { supabase } from '../config/supabaseClient';
+import { supabase } from "../config/supabaseClient";
 
-const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
+const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
 const REDIRECT_URI = `${window.location.origin}/spotify-callback`;
-const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
+const SCOPES =
+  "user-read-currently-playing user-read-playback-state user-modify-playback-state";
 
 /* ─── PKCE helpers ─── */
 function generateRandomString(length) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
   const arr = new Uint8Array(length);
   crypto.getRandomValues(arr);
-  return Array.from(arr, b => chars[b % chars.length]).join('');
+  return Array.from(arr, (b) => chars[b % chars.length]).join("");
 }
 
 async function sha256(plain) {
   const encoder = new TextEncoder();
   const data = encoder.encode(plain);
-  return crypto.subtle.digest('SHA-256', data);
+  return crypto.subtle.digest("SHA-256", data);
 }
 
 function base64urlEncode(buffer) {
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 /* ─── Public API ─── */
@@ -45,7 +47,9 @@ function base64urlEncode(buffer) {
  */
 export async function startSpotifyAuth() {
   if (!CLIENT_ID) {
-    throw new Error('VITE_SPOTIFY_CLIENT_ID is not set. Add it to your .env file.');
+    throw new Error(
+      "VITE_SPOTIFY_CLIENT_ID is not set. Add it to your .env file.",
+    );
   }
 
   const codeVerifier = generateRandomString(64);
@@ -53,32 +57,32 @@ export async function startSpotifyAuth() {
   const codeChallenge = base64urlEncode(hashed);
 
   // Store verifier for the callback
-  sessionStorage.setItem('spotify_code_verifier', codeVerifier);
+  sessionStorage.setItem("spotify_code_verifier", codeVerifier);
 
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
-    response_type: 'code',
+    response_type: "code",
     redirect_uri: REDIRECT_URI,
     scope: SCOPES,
-    code_challenge_method: 'S256',
+    code_challenge_method: "S256",
     code_challenge: codeChallenge,
   });
 
   const authUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
 
   return new Promise((resolve, reject) => {
-    const popup = window.open(authUrl, 'spotify-auth', 'width=500,height=700');
+    const popup = window.open(authUrl, "spotify-auth", "width=500,height=700");
     if (!popup) {
-      reject(new Error('Popup blocked. Please allow popups for this site.'));
+      reject(new Error("Popup blocked. Please allow popups for this site."));
       return;
     }
 
     // Listen for message from callback page
     const handler = async (event) => {
       if (event.origin !== window.location.origin) return;
-      if (event.data?.type !== 'spotify-callback') return;
+      if (event.data?.type !== "spotify-callback") return;
 
-      window.removeEventListener('message', handler);
+      window.removeEventListener("message", handler);
 
       if (event.data.error) {
         reject(new Error(event.data.error));
@@ -93,14 +97,14 @@ export async function startSpotifyAuth() {
       }
     };
 
-    window.addEventListener('message', handler);
+    window.addEventListener("message", handler);
 
     // Detect popup close
     const checkClosed = setInterval(() => {
       if (popup.closed) {
         clearInterval(checkClosed);
-        window.removeEventListener('message', handler);
-        reject(new Error('Auth popup was closed'));
+        window.removeEventListener("message", handler);
+        reject(new Error("Auth popup was closed"));
       }
     }, 500);
   });
@@ -110,15 +114,15 @@ export async function startSpotifyAuth() {
  * Exchange auth code for tokens using PKCE (no secret needed).
  */
 async function exchangeCode(code) {
-  const codeVerifier = sessionStorage.getItem('spotify_code_verifier');
-  if (!codeVerifier) throw new Error('Missing code verifier');
+  const codeVerifier = sessionStorage.getItem("spotify_code_verifier");
+  if (!codeVerifier) throw new Error("Missing code verifier");
 
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: CLIENT_ID,
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       code,
       redirect_uri: REDIRECT_URI,
       code_verifier: codeVerifier,
@@ -127,11 +131,11 @@ async function exchangeCode(code) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error_description || 'Token exchange failed');
+    throw new Error(err.error_description || "Token exchange failed");
   }
 
   const data = await res.json();
-  sessionStorage.removeItem('spotify_code_verifier');
+  sessionStorage.removeItem("spotify_code_verifier");
 
   return {
     access_token: data.access_token,
@@ -144,19 +148,19 @@ async function exchangeCode(code) {
  * Refresh an expired access token.
  */
 export async function refreshSpotifyToken(refreshToken) {
-  if (!CLIENT_ID) throw new Error('VITE_SPOTIFY_CLIENT_ID not set');
+  if (!CLIENT_ID) throw new Error("VITE_SPOTIFY_CLIENT_ID not set");
 
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: CLIENT_ID,
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
       refresh_token: refreshToken,
     }),
   });
 
-  if (!res.ok) throw new Error('Token refresh failed');
+  if (!res.ok) throw new Error("Token refresh failed");
 
   const data = await res.json();
   return {
@@ -175,7 +179,7 @@ let _serverRefreshPromise = null;
  * Returns { access_token, expires_at } or throws.
  */
 export async function serverRefreshToken(userId) {
-  if (!userId) throw new Error('No userId for server refresh');
+  if (!userId) throw new Error("No userId for server refresh");
 
   if (_serverRefreshPromise) return _serverRefreshPromise;
 
@@ -183,17 +187,19 @@ export async function serverRefreshToken(userId) {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    const res = await fetch('/api/spotify-refresh', {
-      method: 'POST',
+    const res = await fetch("/api/spotify-refresh", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        "Content-Type": "application/json",
+        ...(session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : {}),
       },
       body: JSON.stringify({ user_id: userId }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Server token refresh failed');
+      throw new Error(err.error || "Server token refresh failed");
     }
     return res.json();
   })();
@@ -209,7 +215,7 @@ export async function fetchPublicNowPlaying(publicOverlayId) {
   if (!publicOverlayId) return null;
   const params = new URLSearchParams({ publicOverlayId });
   const res = await fetch(`/api/public-spotify-now-playing?${params}`, {
-    cache: 'no-store',
+    cache: "no-store",
   });
   if (!res.ok) return null;
   const data = await res.json();
@@ -221,13 +227,16 @@ export async function fetchPublicNowPlaying(publicOverlayId) {
  * Throws on 401 so callers can trigger a token refresh.
  */
 export async function fetchNowPlaying(accessToken) {
-  const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const res = await fetch(
+    "https://api.spotify.com/v1/me/player/currently-playing",
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 
-  if (res.status === 204) return null;          // nothing playing
+  if (res.status === 204) return null; // nothing playing
   if (res.status === 401) {
-    const err = new Error('Spotify token expired');
+    const err = new Error("Spotify token expired");
     err.status = 401;
     throw err;
   }
@@ -237,10 +246,10 @@ export async function fetchNowPlaying(accessToken) {
   if (!data.item) return null;
 
   return {
-    artist: data.item.artists?.map(a => a.name).join(', ') || 'Unknown',
-    track: data.item.name || 'Unknown',
+    artist: data.item.artists?.map((a) => a.name).join(", ") || "Unknown",
+    track: data.item.name || "Unknown",
     isPlaying: data.is_playing,
-    albumArt: data.item.album?.images?.[0]?.url || '',
+    albumArt: data.item.album?.images?.[0]?.url || "",
     progressMs: data.progress_ms || 0,
     durationMs: data.item.duration_ms || 0,
   };

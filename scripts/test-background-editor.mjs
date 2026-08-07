@@ -33,7 +33,9 @@ assert.ok(
   "Background controls only show fields relevant to the selected source",
 );
 assert.ok(
-  controlsSource.includes('const texture = c.textureType || c.texture || "aurora";') &&
+  controlsSource.includes(
+    'const texture = c.textureType || c.texture || "aurora";',
+  ) &&
     controlsSource.includes("onChange={(textureType) => set({ textureType })}"),
   "Background controls write the canonical textureType key with a legacy fallback",
 );

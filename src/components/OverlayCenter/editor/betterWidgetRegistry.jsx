@@ -59,18 +59,59 @@ const MOCK_BONUSES = [
   },
 ];
 
-const MOCK_TOURNAMENT_SLOTS = {
-  fortunes: { name: "1 Million Fortunes Megaways", image: "https://casinolandia.com/wp-content/uploads/2023/03/1-Million-Fortunes-Megaways.jpg" },
-  baba: { name: "1 Reel Baba Yaga", image: "https://www.livebet.com/images/casino/slots/spinomenal/1-reel-baba-yaga.webp" },
-  beauty: { name: "1 Reel Beauty", image: "https://slotspeak.net/wp-content/uploads/2025/01/1-reel-beauty-slot-review.jpg" },
-  buffalo: { name: "1 Reel Buffalo", image: "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/sp/webp/sp-1-reel-buffalo.webp" },
-  majestic: { name: "1 Reel Majestic Wild Buffalo", image: "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/sp/webp/sp-1-reel-majestic-wild-buffalo.webp" },
-  genie: { name: "1001 Mystery Genie Fortunes", image: "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/pg/webp/pg-1001-mystery-genie-fortunes.webp" },
-  christmas: { name: "3 Christmas Fortunes", image: "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/id/webp/id-3-christmas-fortunes.webp" },
-  wildBuffalo: { name: "5 Wild Buffalo", image: "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/qr/webp/qr-5-wild-buffalo.webp" },
-};
+const MOCK_TOURNAMENT_SLOTS = Object.freeze({
+  fortunes: {
+    name: "1 Million Fortunes Megaways",
+    image:
+      "https://casinolandia.com/wp-content/uploads/2023/03/1-Million-Fortunes-Megaways.jpg",
+  },
+  baba: {
+    name: "1 Reel Baba Yaga",
+    image:
+      "https://www.livebet.com/images/casino/slots/spinomenal/1-reel-baba-yaga.webp",
+  },
+  beauty: {
+    name: "1 Reel Beauty",
+    image:
+      "https://slotspeak.net/wp-content/uploads/2025/01/1-reel-beauty-slot-review.jpg",
+  },
+  buffalo: {
+    name: "1 Reel Buffalo",
+    image:
+      "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/sp/webp/sp-1-reel-buffalo.webp",
+  },
+  majestic: {
+    name: "1 Reel Majestic Wild Buffalo",
+    image:
+      "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/sp/webp/sp-1-reel-majestic-wild-buffalo.webp",
+  },
+  genie: {
+    name: "1001 Mystery Genie Fortunes",
+    image:
+      "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/pg/webp/pg-1001-mystery-genie-fortunes.webp",
+  },
+  christmas: {
+    name: "3 Christmas Fortunes",
+    image:
+      "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/id/webp/id-3-christmas-fortunes.webp",
+  },
+  wildBuffalo: {
+    name: "5 Wild Buffalo",
+    image:
+      "https://d1i1wfn7hj3mva.cloudfront.net/media/images/slots/portrait/qr/webp/qr-5-wild-buffalo.webp",
+  },
+});
 
-function mockTournamentMatch({ id, player1, player2, slot1, slot2, payout1, payout2, winner }) {
+function mockTournamentMatch({
+  id,
+  player1,
+  player2,
+  slot1,
+  slot2,
+  payout1,
+  payout2,
+  winner,
+}) {
   return {
     id,
     player1,
@@ -80,24 +121,89 @@ function mockTournamentMatch({ id, player1, player2, slot1, slot2, payout1, payo
     type: "bonus",
     status: "completed",
     winner,
-    rounds: [{
-      roundNum: 1,
-      player1: { bonusCost: 100, bonusPayout: payout1 },
-      player2: { bonusCost: 100, bonusPayout: payout2 },
-      winner,
-      status: "completed",
-    }],
+    rounds: [
+      {
+        roundNum: 1,
+        player1: { bonusCost: 100, bonusPayout: payout1 },
+        player2: { bonusCost: 100, bonusPayout: payout2 },
+        winner,
+        status: "completed",
+      },
+    ],
   };
 }
 
 const MOCK_TOURNAMENT_MATCHES = [
-  mockTournamentMatch({ id: "mock-quarterfinal-1", player1: "PixelPioneerLive", player2: "LuckySpinLegend", slot1: MOCK_TOURNAMENT_SLOTS.fortunes, slot2: MOCK_TOURNAMENT_SLOTS.baba, payout1: 340, payout2: 125, winner: "player1" }),
-  mockTournamentMatch({ id: "mock-quarterfinal-2", player1: "NeonReelsTV", player2: "JackpotVoyager", slot1: MOCK_TOURNAMENT_SLOTS.beauty, slot2: MOCK_TOURNAMENT_SLOTS.buffalo, payout1: 95, payout2: 280, winner: "player2" }),
-  mockTournamentMatch({ id: "mock-quarterfinal-3", player1: "WildMultiplierPro", player2: "BonusRoundCaptain", slot1: MOCK_TOURNAMENT_SLOTS.majestic, slot2: MOCK_TOURNAMENT_SLOTS.genie, payout1: 180, payout2: 315, winner: "player2" }),
-  mockTournamentMatch({ id: "mock-quarterfinal-4", player1: "CasinoQuestOnline", player2: "ReelRushChampion", slot1: MOCK_TOURNAMENT_SLOTS.christmas, slot2: MOCK_TOURNAMENT_SLOTS.wildBuffalo, payout1: 145, payout2: 390, winner: "player2" }),
-  mockTournamentMatch({ id: "mock-semifinal-1", player1: "PixelPioneerLive", player2: "JackpotVoyager", slot1: MOCK_TOURNAMENT_SLOTS.fortunes, slot2: MOCK_TOURNAMENT_SLOTS.buffalo, payout1: 420, payout2: 205, winner: "player1" }),
-  mockTournamentMatch({ id: "mock-semifinal-2", player1: "BonusRoundCaptain", player2: "ReelRushChampion", slot1: MOCK_TOURNAMENT_SLOTS.genie, slot2: MOCK_TOURNAMENT_SLOTS.wildBuffalo, payout1: 230, payout2: 475, winner: "player2" }),
-  mockTournamentMatch({ id: "mock-final", player1: "PixelPioneerLive", player2: "ReelRushChampion", slot1: MOCK_TOURNAMENT_SLOTS.fortunes, slot2: MOCK_TOURNAMENT_SLOTS.wildBuffalo, payout1: 615, payout2: 360, winner: "player1" }),
+  mockTournamentMatch({
+    id: "mock-quarterfinal-1",
+    player1: "PixelPioneerLive",
+    player2: "LuckySpinLegend",
+    slot1: MOCK_TOURNAMENT_SLOTS.fortunes,
+    slot2: MOCK_TOURNAMENT_SLOTS.baba,
+    payout1: 340,
+    payout2: 125,
+    winner: "player1",
+  }),
+  mockTournamentMatch({
+    id: "mock-quarterfinal-2",
+    player1: "NeonReelsTV",
+    player2: "JackpotVoyager",
+    slot1: MOCK_TOURNAMENT_SLOTS.beauty,
+    slot2: MOCK_TOURNAMENT_SLOTS.buffalo,
+    payout1: 95,
+    payout2: 280,
+    winner: "player2",
+  }),
+  mockTournamentMatch({
+    id: "mock-quarterfinal-3",
+    player1: "WildMultiplierPro",
+    player2: "BonusRoundCaptain",
+    slot1: MOCK_TOURNAMENT_SLOTS.majestic,
+    slot2: MOCK_TOURNAMENT_SLOTS.genie,
+    payout1: 180,
+    payout2: 315,
+    winner: "player2",
+  }),
+  mockTournamentMatch({
+    id: "mock-quarterfinal-4",
+    player1: "CasinoQuestOnline",
+    player2: "ReelRushChampion",
+    slot1: MOCK_TOURNAMENT_SLOTS.christmas,
+    slot2: MOCK_TOURNAMENT_SLOTS.wildBuffalo,
+    payout1: 145,
+    payout2: 390,
+    winner: "player2",
+  }),
+  mockTournamentMatch({
+    id: "mock-semifinal-1",
+    player1: "PixelPioneerLive",
+    player2: "JackpotVoyager",
+    slot1: MOCK_TOURNAMENT_SLOTS.fortunes,
+    slot2: MOCK_TOURNAMENT_SLOTS.buffalo,
+    payout1: 420,
+    payout2: 205,
+    winner: "player1",
+  }),
+  mockTournamentMatch({
+    id: "mock-semifinal-2",
+    player1: "BonusRoundCaptain",
+    player2: "ReelRushChampion",
+    slot1: MOCK_TOURNAMENT_SLOTS.genie,
+    slot2: MOCK_TOURNAMENT_SLOTS.wildBuffalo,
+    payout1: 230,
+    payout2: 475,
+    winner: "player2",
+  }),
+  mockTournamentMatch({
+    id: "mock-final",
+    player1: "PixelPioneerLive",
+    player2: "ReelRushChampion",
+    slot1: MOCK_TOURNAMENT_SLOTS.fortunes,
+    slot2: MOCK_TOURNAMENT_SLOTS.wildBuffalo,
+    payout1: 615,
+    payout2: 360,
+    winner: "player1",
+  }),
 ];
 
 const MOCK_TOURNAMENT_BRACKET = [
@@ -853,9 +959,7 @@ function migrateLegacyShoutoutConfig(widgetType, rawConfig) {
     secondaryColor: "#1385e9",
     backgroundColor: "#081228",
     mutedColor:
-      rawConfig.mutedColor === "#a5b4c7"
-        ? "#8baacf"
-        : rawConfig.mutedColor,
+      rawConfig.mutedColor === "#a5b4c7" ? "#8baacf" : rawConfig.mutedColor,
     borderRadius: rawConfig.borderRadius === 16 ? 12 : rawConfig.borderRadius,
     borderWidth: rawConfig.borderWidth === 2 ? 1 : rawConfig.borderWidth,
     glowIntensity:

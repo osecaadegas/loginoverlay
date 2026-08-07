@@ -18,7 +18,16 @@ export const PREVIEW_SLOT_NAMES = Object.freeze([
   "Banana Town",
 ]);
 
-function sampleTournamentMatch({ id, player1, player2, slot1, slot2, payout1, payout2, winner }) {
+function sampleTournamentMatch({
+  id,
+  player1,
+  player2,
+  slot1,
+  slot2,
+  payout1,
+  payout2,
+  winner,
+}) {
   return {
     id,
     player1,
@@ -28,24 +37,89 @@ function sampleTournamentMatch({ id, player1, player2, slot1, slot2, payout1, pa
     type: "bonus",
     status: "completed",
     winner,
-    rounds: [{
-      roundNum: 1,
-      player1: { bonusCost: 100, bonusPayout: payout1 },
-      player2: { bonusCost: 100, bonusPayout: payout2 },
-      winner,
-      status: "completed",
-    }],
+    rounds: [
+      {
+        roundNum: 1,
+        player1: { bonusCost: 100, bonusPayout: payout1 },
+        player2: { bonusCost: 100, bonusPayout: payout2 },
+        winner,
+        status: "completed",
+      },
+    ],
   };
 }
 
 const SAMPLE_TOURNAMENT_MATCHES = [
-  sampleTournamentMatch({ id: "preview-quarterfinal-1", player1: "PixelPioneerLive", player2: "LuckySpinLegend", slot1: "1 Million Fortunes Megaways", slot2: "1 Reel Baba Yaga", payout1: 340, payout2: 125, winner: "player1" }),
-  sampleTournamentMatch({ id: "preview-quarterfinal-2", player1: "NeonReelsTV", player2: "JackpotVoyager", slot1: "1 Reel Beauty", slot2: "1 Reel Buffalo", payout1: 95, payout2: 280, winner: "player2" }),
-  sampleTournamentMatch({ id: "preview-quarterfinal-3", player1: "WildMultiplierPro", player2: "BonusRoundCaptain", slot1: "1 Reel Majestic Wild Buffalo", slot2: "1001 Mystery Genie Fortunes", payout1: 180, payout2: 315, winner: "player2" }),
-  sampleTournamentMatch({ id: "preview-quarterfinal-4", player1: "CasinoQuestOnline", player2: "ReelRushChampion", slot1: "3 Christmas Fortunes", slot2: "5 Wild Buffalo", payout1: 145, payout2: 390, winner: "player2" }),
-  sampleTournamentMatch({ id: "preview-semifinal-1", player1: "PixelPioneerLive", player2: "JackpotVoyager", slot1: "1 Million Fortunes Megaways", slot2: "1 Reel Buffalo", payout1: 420, payout2: 205, winner: "player1" }),
-  sampleTournamentMatch({ id: "preview-semifinal-2", player1: "BonusRoundCaptain", player2: "ReelRushChampion", slot1: "1001 Mystery Genie Fortunes", slot2: "5 Wild Buffalo", payout1: 230, payout2: 475, winner: "player2" }),
-  sampleTournamentMatch({ id: "preview-final", player1: "PixelPioneerLive", player2: "ReelRushChampion", slot1: "1 Million Fortunes Megaways", slot2: "5 Wild Buffalo", payout1: 615, payout2: 360, winner: "player1" }),
+  sampleTournamentMatch({
+    id: "preview-quarterfinal-1",
+    player1: "PixelPioneerLive",
+    player2: "LuckySpinLegend",
+    slot1: "1 Million Fortunes Megaways",
+    slot2: "1 Reel Baba Yaga",
+    payout1: 340,
+    payout2: 125,
+    winner: "player1",
+  }),
+  sampleTournamentMatch({
+    id: "preview-quarterfinal-2",
+    player1: "NeonReelsTV",
+    player2: "JackpotVoyager",
+    slot1: "1 Reel Beauty",
+    slot2: "1 Reel Buffalo",
+    payout1: 95,
+    payout2: 280,
+    winner: "player2",
+  }),
+  sampleTournamentMatch({
+    id: "preview-quarterfinal-3",
+    player1: "WildMultiplierPro",
+    player2: "BonusRoundCaptain",
+    slot1: "1 Reel Majestic Wild Buffalo",
+    slot2: "1001 Mystery Genie Fortunes",
+    payout1: 180,
+    payout2: 315,
+    winner: "player2",
+  }),
+  sampleTournamentMatch({
+    id: "preview-quarterfinal-4",
+    player1: "CasinoQuestOnline",
+    player2: "ReelRushChampion",
+    slot1: "3 Christmas Fortunes",
+    slot2: "5 Wild Buffalo",
+    payout1: 145,
+    payout2: 390,
+    winner: "player2",
+  }),
+  sampleTournamentMatch({
+    id: "preview-semifinal-1",
+    player1: "PixelPioneerLive",
+    player2: "JackpotVoyager",
+    slot1: "1 Million Fortunes Megaways",
+    slot2: "1 Reel Buffalo",
+    payout1: 420,
+    payout2: 205,
+    winner: "player1",
+  }),
+  sampleTournamentMatch({
+    id: "preview-semifinal-2",
+    player1: "BonusRoundCaptain",
+    player2: "ReelRushChampion",
+    slot1: "1001 Mystery Genie Fortunes",
+    slot2: "5 Wild Buffalo",
+    payout1: 230,
+    payout2: 475,
+    winner: "player2",
+  }),
+  sampleTournamentMatch({
+    id: "preview-final",
+    player1: "PixelPioneerLive",
+    player2: "ReelRushChampion",
+    slot1: "1 Million Fortunes Megaways",
+    slot2: "5 Wild Buffalo",
+    payout1: 615,
+    payout2: 360,
+    winner: "player1",
+  }),
 ];
 
 const SAMPLE_TOURNAMENT_BRACKET = [
@@ -241,7 +315,9 @@ function nonEmptyArrayOr(value, fallback) {
 }
 
 function normalizeSlotName(value) {
-  return String(value || "").trim().toLocaleLowerCase();
+  return String(value || "")
+    .trim()
+    .toLocaleLowerCase();
 }
 
 function buildPreviewSlotCatalog(records = []) {

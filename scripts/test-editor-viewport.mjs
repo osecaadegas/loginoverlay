@@ -29,8 +29,12 @@ assert.ok(
   "Canvas fitting starts after loading and uses the complete shell area",
 );
 assert.ok(
-  editorSource.includes('document.documentElement.classList.add("better-editor-document")') &&
-    editorSource.includes('document.body.classList.add("better-editor-document")'),
+  editorSource.includes(
+    'document.documentElement.classList.add("better-editor-document")',
+  ) &&
+    editorSource.includes(
+      'document.body.classList.add("better-editor-document")',
+    ),
   "The editor locks document scrolling while mounted",
 );
 assert.ok(

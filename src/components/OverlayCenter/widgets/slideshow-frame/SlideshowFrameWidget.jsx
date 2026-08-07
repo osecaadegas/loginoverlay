@@ -16,7 +16,10 @@ function mediaTypeFromUrl(url = "") {
 
 function normalizeMediaItem(item, index) {
   if (typeof item === "string") {
-    const parts = item.split("|").map((part) => part.trim()).filter(Boolean);
+    const parts = item
+      .split("|")
+      .map((part) => part.trim())
+      .filter(Boolean);
     const url = parts[0] || "";
     const explicitType = ["image", "video"].includes(parts[1]) ? parts[1] : "";
     return {
@@ -27,13 +30,10 @@ function normalizeMediaItem(item, index) {
     };
   }
 
-  const url =
-    item?.url ||
-    item?.src ||
-    item?.imageUrl ||
-    item?.videoUrl ||
-    "";
-  const type = ["image", "video"].includes(item?.type) ? item.type : mediaTypeFromUrl(url);
+  const url = item?.url || item?.src || item?.imageUrl || item?.videoUrl || "";
+  const type = ["image", "video"].includes(item?.type)
+    ? item.type
+    : mediaTypeFromUrl(url);
   return {
     id: item?.id || `media-${index}`,
     url,
@@ -53,14 +53,10 @@ function parseMediaText(value = "") {
 
 function getMediaItems(config = {}) {
   if (Array.isArray(config.mediaItems) && config.mediaItems.length) {
-    return config.mediaItems
-      .map(normalizeMediaItem)
-      .filter((item) => item.url);
+    return config.mediaItems.map(normalizeMediaItem).filter((item) => item.url);
   }
   if (Array.isArray(config.mediaUrls) && config.mediaUrls.length) {
-    return config.mediaUrls
-      .map(normalizeMediaItem)
-      .filter((item) => item.url);
+    return config.mediaUrls.map(normalizeMediaItem).filter((item) => item.url);
   }
   return parseMediaText(config.mediaText);
 }
@@ -71,17 +67,36 @@ export default function SlideshowFrameWidget({
   runtime = "editor",
 }) {
   const c = config || {};
-  const mediaItems = useMemo(() => getMediaItems(c), [c.mediaItems, c.mediaText, c.mediaUrls]);
+  const mediaItems = useMemo(
+    () => getMediaItems(c),
+    [c.mediaItems, c.mediaText, c.mediaUrls],
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   const [connectFourActive, setConnectFourActive] = useState(false);
   const connectFourEnabled = c.showConnectFour === true;
   const slideMs = clampNumber(c.slideMs, 1000, 60000, 5000);
-  const transitionMs = clampNumber(c.transitionMs, 0, Math.min(2500, slideMs - 100), 650);
-  const frameStyle = ["neon", "glass", "metal", "minimal", "film", "none"].includes(c.frameStyle)
+  const transitionMs = clampNumber(
+    c.transitionMs,
+    0,
+    Math.min(2500, slideMs - 100),
+    650,
+  );
+  const frameStyle = [
+    "neon",
+    "glass",
+    "metal",
+    "minimal",
+    "film",
+    "none",
+  ].includes(c.frameStyle)
     ? c.frameStyle
     : "neon";
-  const fit = ["cover", "contain", "fill", "scale-down"].includes(c.fit) ? c.fit : "cover";
-  const transition = ["fade", "slide", "zoom", "cut"].includes(c.transition) ? c.transition : "fade";
+  const fit = ["cover", "contain", "fill", "scale-down"].includes(c.fit)
+    ? c.fit
+    : "cover";
+  const transition = ["fade", "slide", "zoom", "cut"].includes(c.transition)
+    ? c.transition
+    : "fade";
   const active = mediaItems[activeIndex % Math.max(mediaItems.length, 1)];
 
   useEffect(() => {
@@ -89,11 +104,7 @@ export default function SlideshowFrameWidget({
   }, [mediaItems.length]);
 
   useEffect(() => {
-    if (
-      connectFourActive ||
-      c.autoplay === false ||
-      mediaItems.length <= 1
-    ) {
+    if (connectFourActive || c.autoplay === false || mediaItems.length <= 1) {
       return undefined;
     }
     const timer = window.setInterval(() => {
@@ -154,9 +165,7 @@ export default function SlideshowFrameWidget({
                     c.videoLoop === false &&
                     mediaItems.length > 1
                   ) {
-                    setActiveIndex((index) =>
-                      (index + 1) % mediaItems.length,
-                    );
+                    setActiveIndex((index) => (index + 1) % mediaItems.length);
                   }
                 }}
               />

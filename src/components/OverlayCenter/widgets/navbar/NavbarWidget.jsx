@@ -2204,13 +2204,13 @@ function NavbarWidget({
       c.startBalance !== "" &&
       Number.isFinite(Number(c.startBalance));
     const formattedStartBalance = hasStartBalance
-        ? `${c.balanceCurrency || "€"}${Number(c.startBalance).toLocaleString(
-            undefined,
-            {
-              maximumFractionDigits: 2,
-            },
-          )}`
-        : "";
+      ? `${c.balanceCurrency || "€"}${Number(c.startBalance).toLocaleString(
+          undefined,
+          {
+            maximumFractionDigits: 2,
+          },
+        )}`
+      : "";
     const startValue = hasStartBalance
       ? formattedStartBalance
       : c.startValue || "";

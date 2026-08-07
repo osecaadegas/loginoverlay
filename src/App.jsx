@@ -115,10 +115,7 @@ function LayoutWrapper({ children }) {
   const isPremiumRoute = location.pathname === "/premium";
   const isSystemRoute = location.pathname === "/spotify-callback";
   const showTopNavigation =
-    !isWidgetRoute &&
-    !isOBSOverlay &&
-    !isBetterOBSOverlay &&
-    !isSystemRoute;
+    !isWidgetRoute && !isOBSOverlay && !isBetterOBSOverlay && !isSystemRoute;
 
   useEffect(() => {
     applyRouteSeo(location.pathname);
@@ -158,12 +155,30 @@ function App() {
                       path="/streamer"
                       element={<LandingPage mode="streamer" />}
                     />
-                    <Route path="/streamer-overlays" element={<ToolLandingPage />} />
-                    <Route path="/bonus-hunt-tracker" element={<ToolLandingPage />} />
-                    <Route path="/casino-profit-loss-tracker" element={<ToolLandingPage />} />
-                    <Route path="/slot-request-widget" element={<ToolLandingPage />} />
-                    <Route path="/tournament-overlay" element={<ToolLandingPage />} />
-                    <Route path="/giveaway-widget" element={<ToolLandingPage />} />
+                    <Route
+                      path="/streamer-overlays"
+                      element={<ToolLandingPage />}
+                    />
+                    <Route
+                      path="/bonus-hunt-tracker"
+                      element={<ToolLandingPage />}
+                    />
+                    <Route
+                      path="/casino-profit-loss-tracker"
+                      element={<ToolLandingPage />}
+                    />
+                    <Route
+                      path="/slot-request-widget"
+                      element={<ToolLandingPage />}
+                    />
+                    <Route
+                      path="/tournament-overlay"
+                      element={<ToolLandingPage />}
+                    />
+                    <Route
+                      path="/giveaway-widget"
+                      element={<ToolLandingPage />}
+                    />
                     <Route path="/chat-games" element={<ToolLandingPage />} />
                     <Route path="/offers" element={<OffersPage />} />
                     <Route path="/apps" element={<AppsPage />} />

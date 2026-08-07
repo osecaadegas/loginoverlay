@@ -301,11 +301,12 @@ body.better-editor-document #root {
   border: 1px solid rgba(45, 212, 191, 0.28);
   border-radius: 8px;
   background: rgba(3, 10, 28, 0.98);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(15, 23, 42, 0.72);
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(15, 23, 42, 0.72);
 }
 
-.better-editor-widget-row__menu.opens-up
-  .better-editor-widget-row__menu-panel {
+.better-editor-widget-row__menu.opens-up .better-editor-widget-row__menu-panel {
   top: auto;
   bottom: calc(100% + 6px);
 }
@@ -520,8 +521,7 @@ body.better-editor-document #root {
   padding: 0;
   background:
     linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-    #050914;
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px), #050914;
   background-size: 34px 34px;
 }
 
@@ -827,5 +827,4 @@ body.better-editor-document #root {
     height: 100%;
     min-height: 0;
   }
-
 }

@@ -5,79 +5,79 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 ## Ordered baseline
 
 1. `001_core_auth_profiles.sql`
-	Core profiles, public avatar storage bucket, user roles, Twitch profile sync, and auth helper RPCs.
+   Core profiles, public avatar storage bucket, user roles, Twitch profile sync, and auth helper RPCs.
 
 2. `002_overlay_runtime.sql`
-	Overlay instances, themes, widgets, runtime state, user overlay state, giveaways, tournaments, and shared presets.
+   Overlay instances, themes, widgets, runtime state, user overlay state, giveaways, tournaments, and shared presets.
 
 3. `003_slots_ingestion_and_requests.sql`
-	Slots catalog, providers, pending slots, slot requests, ingestion cache/logs, user slot records, and slot modder access.
+   Slots catalog, providers, pending slots, slot requests, ingestion cache/logs, user slot records, and slot modder access.
 
 4. `004_streamelements_inventory_and_api_access.sql`
-	Inventory, StreamElements connections, redemption items/history, points helpers, streamer API keys, and Spotify tokens.
+   Inventory, StreamElements connections, redemption items/history, points helpers, streamer API keys, and Spotify tokens.
 
 5. `005_offers_landing_and_stream_features.sql`
-	Casino offers, offer click tracking, landing page pricing/configuration, stream highlights, clip support, and shoutout alerts.
+   Casino offers, offer click tracking, landing page pricing/configuration, stream highlights, clip support, and shoutout alerts.
 
 6. `006_giveaways_and_daily_wheel.sql`
-	Public giveaways, profile backfill for giveaway users, giveaway visibility policy, daily wheel prizes, and daily wheel spins.
+   Public giveaways, profile backfill for giveaway users, giveaway visibility policy, daily wheel prizes, and daily wheel spins.
 
 7. `007_guess_balance_and_bonus_hunt.sql`
-	Guess-the-balance sessions, guesses, slot votes, transfer passwords, moderator policy fixes, and bonus hunt history.
+   Guess-the-balance sessions, guesses, slot votes, transfer passwords, moderator policy fixes, and bonus hunt history.
 
 8. `008_betting.sql`
-	Betting contests, StreamElements betting mode/finalization RPCs, payouts, and outcomes.
+   Betting contests, StreamElements betting mode/finalization RPCs, payouts, and outcomes.
 
 9. `009_analytics.sql`
-	Analytics tables, views, RPC helpers, and the compatibility `increment_field` RPC still used by the analytics API.
+   Analytics tables, views, RPC helpers, and the compatibility `increment_field` RPC still used by the analytics API.
 
 10. `010_translation_and_localization.sql`
-	 Translation tables, supported languages, and profile language preference support.
+    Translation tables, supported languages, and profile language preference support.
 
 11. `011_cleanup_legacy_dead_schema.sql`
-	 Drops verified dead Stripe/subscription, old overlay/widget, and retired game schema from older databases.
+    Drops verified dead Stripe/subscription, old overlay/widget, and retired game schema from older databases.
 
 12. `012_cleanup_retired_thelife_and_extension.sql`
-	 Drops retired The Life, season pass, and Twitch extension schema from older databases.
+    Drops retired The Life, season pass, and Twitch extension schema from older databases.
 
 13. `013_pending_slot_submission_repair.sql`
-	 Repairs pending slot submissions by allowing incomplete scraped metadata and aligning approval queue policies with admin/superadmin roles.
+    Repairs pending slot submissions by allowing incomplete scraped metadata and aligning approval queue policies with admin/superadmin roles.
 
 14. `014_cleanup_penalty_king.sql`
-	 Drops retired mini-game tables from older databases.
+    Drops retired mini-game tables from older databases.
 
 15. `015_stripe_subscriptions.sql`
-	Adds Stripe customer/subscription tracking, webhook idempotency, and source-aware premium role rows for recurring billing.
+    Adds Stripe customer/subscription tracking, webhook idempotency, and source-aware premium role rows for recurring billing.
 
 16. `016_player_bonus_hunt.sql`
-	Adds the player-facing Bonus Hunt tables, subscription product tables, access policies, and player slot result view.
+    Adds the player-facing Bonus Hunt tables, subscription product tables, access policies, and player slot result view.
 
 17. `017_player_bonus_hunt_slot_metadata.sql`
-	Adds database-backed slot metadata snapshots to player hunt bonuses for RTP, max win, volatility, theme, and features.
+    Adds database-backed slot metadata snapshots to player hunt bonuses for RTP, max win, volatility, theme, and features.
 
 18. `018_player_hunt_bonus_type.sql`
-	Ensures player hunt bonus type metadata and result view fields stay aligned after the two-step hunt/opening flow.
+    Ensures player hunt bonus type metadata and result view fields stay aligned after the two-step hunt/opening flow.
 
 19. `019_analytics_product_foundation.sql`
-	Adds analytics v2 event context, product reporting views, indexes, idempotency support, and stricter analytics RLS policies.
+    Adds analytics v2 event context, product reporting views, indexes, idempotency support, and stricter analytics RLS policies.
 
 20. `020_overlay_appearance_system.sql`
-	Adds overlay-scoped appearance persistence, bootstraps missing Overlay Center runtime tables for legacy databases that only have `overlays.settings`, backfills `overlay_id` for themes/widgets/state, creates the legacy-to-canonical appearance property mapping table, and tightens owner policies for overlay appearance mutations.
+    Adds overlay-scoped appearance persistence, bootstraps missing Overlay Center runtime tables for legacy databases that only have `overlays.settings`, backfills `overlay_id` for themes/widgets/state, creates the legacy-to-canonical appearance property mapping table, and tightens owner policies for overlay appearance mutations.
 
 21. `021_mollie_billing.sql`
-	Legacy provider-neutral billing transition from the retired Mollie implementation; superseded by `038_remove_mollie_billing.sql`.
+    Legacy provider-neutral billing transition from the retired Mollie implementation; superseded by `038_remove_mollie_billing.sql`.
 
 22. `022_analytics_schema_repair.sql`
-	Repairs older live analytics schemas by adding visitor/event/session v2 columns, backfilling visitor links, recreating reporting views, and bridging legacy fraud/geo tables.
+    Repairs older live analytics schemas by adding visitor/event/session v2 columns, backfilling visitor links, recreating reporting views, and bridging legacy fraud/geo tables.
 
 23. `023_analytics_rpc_security_hardening.sql`
-	Restricts analytics helper RPC execution to the service role and pins `search_path` for SECURITY DEFINER functions used by analytics maintenance paths.
+    Restricts analytics helper RPC execution to the service role and pins `search_path` for SECURITY DEFINER functions used by analytics maintenance paths.
 
-38. `038_remove_mollie_billing.sql`
-	Retires Mollie as a billing provider, resets billing defaults to Stripe, removes Mollie-specific columns/indexes, and updates premium page billing copy.
+24. `038_remove_mollie_billing.sql`
+    Retires Mollie as a billing provider, resets billing defaults to Stripe, removes Mollie-specific columns/indexes, and updates premium page billing copy.
 
-39. `039_stripe_seven_day_trials.sql`
-	Replaces retired internal no-card trial messaging with the seven-day, card-required Stripe monthly trial terms.
+25. `039_stripe_seven_day_trials.sql`
+    Replaces retired internal no-card trial messaging with the seven-day, card-required Stripe monthly trial terms.
 
 ## Notes
 

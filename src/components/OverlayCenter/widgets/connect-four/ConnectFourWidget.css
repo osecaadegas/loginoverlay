@@ -459,7 +459,9 @@
   border-radius: max(2px, 0.8cqh);
 }
 
-.connect-four-widget--embedded .connect-four-player-rail .connect-four-player-coin {
+.connect-four-widget--embedded
+  .connect-four-player-rail
+  .connect-four-player-coin {
   width: clamp(10px, 4.5cqh, 24px);
   border-width: 1px;
 }

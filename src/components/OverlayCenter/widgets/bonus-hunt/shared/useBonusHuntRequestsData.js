@@ -1,14 +1,21 @@
-import { useSlotRequestsData } from '../../slot-requests/shared/useSlotRequestsData.js';
+import { useSlotRequestsData } from "../../slot-requests/shared/useSlotRequestsData.js";
 
-export function useBonusHuntRequestsData({ config = {}, userId, enabled = true, publicOverlayId, runtime } = {}) {
+export function useBonusHuntRequestsData({
+  config = {},
+  userId,
+  enabled = true,
+  publicOverlayId,
+  runtime,
+} = {}) {
   return useSlotRequestsData({
     config: {
       ...config,
-      maxDisplay: Number(config.maxDisplay) > 0 ? Number(config.maxDisplay) : 20,
+      maxDisplay:
+        Number(config.maxDisplay) > 0 ? Number(config.maxDisplay) : 20,
     },
     userId,
     enabled,
-    channelPrefix: 'bh-sr-widget',
+    channelPrefix: "bh-sr-widget",
     publicOverlayId,
     runtime,
   });

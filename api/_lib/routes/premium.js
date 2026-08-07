@@ -9,7 +9,11 @@ import { loadPremiumContent, resolvePremiumAccess } from "../premium-data.js";
 const CARDLESS_TRIAL_DAYS = 7;
 
 function trialEligibility(access) {
-  return !access.trial && access.subscriptions.length === 0 && !access.paidProductType;
+  return (
+    !access.trial &&
+    access.subscriptions.length === 0 &&
+    !access.paidProductType
+  );
 }
 
 async function handleStartTrial(req, res, supabase, body) {
@@ -47,7 +51,9 @@ async function handleStartTrial(req, res, supabase, body) {
 
   if (error) {
     if (error.code === "23505") {
-      const conflict = new Error("This account has already used its free trial.");
+      const conflict = new Error(
+        "This account has already used its free trial.",
+      );
       conflict.statusCode = 409;
       conflict.code = "trial_already_used";
       throw conflict;

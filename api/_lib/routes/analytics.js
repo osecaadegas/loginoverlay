@@ -1751,14 +1751,12 @@ async function handleVisitorDetail(req, res, supabase) {
     total_events: events.length,
   };
 
-  return res
-    .status(200)
-    .json({
-      visitor,
-      sessions: sessions || [],
-      events: events || [],
-      fraudLogs: [],
-    });
+  return res.status(200).json({
+    visitor,
+    sessions: sessions || [],
+    events: events || [],
+    fraudLogs: [],
+  });
 }
 
 async function handleSessions(req, res, supabase) {
@@ -1784,12 +1782,10 @@ async function handleSessions(req, res, supabase) {
       String(b.started_at || "").localeCompare(String(a.started_at || "")),
     );
 
-  return res
-    .status(200)
-    .json({
-      sessions: sessions.slice(offset, offset + limitNumber),
-      total: sessions.length,
-    });
+  return res.status(200).json({
+    sessions: sessions.slice(offset, offset + limitNumber),
+    total: sessions.length,
+  });
 }
 
 async function handleEvents(req, res, supabase) {
@@ -1816,12 +1812,10 @@ async function handleEvents(req, res, supabase) {
       String(b.created_at || "").localeCompare(String(a.created_at || "")),
     );
 
-  return res
-    .status(200)
-    .json({
-      events: events.slice(offset, offset + limitNumber),
-      total: events.length,
-    });
+  return res.status(200).json({
+    events: events.slice(offset, offset + limitNumber),
+    total: events.length,
+  });
 }
 
 async function handleOffers(req, res, supabase) {
@@ -2757,11 +2751,9 @@ async function handleDeleteData(req, res, supabase, user) {
 
   const { visitor_id, ip_address, email, fingerprint } = parseJsonBody(req);
   if (!visitor_id && !ip_address && !email && !fingerprint)
-    return res
-      .status(400)
-      .json({
-        error: "visitor_id, ip_address, email, or fingerprint required",
-      });
+    return res.status(400).json({
+      error: "visitor_id, ip_address, email, or fingerprint required",
+    });
 
   const counts = { sessions: 0, events: 0, fraud_logs: 0 };
   const targetVisitorIds = new Set(visitor_id ? [visitor_id] : []);

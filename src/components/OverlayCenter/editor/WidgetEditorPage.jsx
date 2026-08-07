@@ -71,16 +71,7 @@ const AUTOSAVE_MS = 800;
 const LIVE_SOURCE_FALLBACK_MS = 30000;
 const EDITOR_SYNC_CHANNEL = "streamers-center-better-editor";
 
-const RESIZE_HANDLES = [
-  "nw",
-  "n",
-  "ne",
-  "e",
-  "se",
-  "s",
-  "sw",
-  "w",
-];
+const RESIZE_HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
 function clampNumber(value, min, max, fallback) {
   const number = Number(value);
@@ -94,7 +85,12 @@ function roundNumber(value) {
 
 function getEditorInstanceBorderRadius(instance) {
   if (instance?.widgetType !== "rtp_stats") return undefined;
-  return clampNumber(instance.config?.radius ?? instance.config?.borderRadius, 0, 120, 14);
+  return clampNumber(
+    instance.config?.radius ?? instance.config?.borderRadius,
+    0,
+    120,
+    14,
+  );
 }
 
 function getMaxZ(layout) {
@@ -149,28 +145,51 @@ function buildSnapCandidates(layout, instanceId, geometry) {
   ];
 
   layout.instances.forEach((instance) => {
-    if (instance.instanceId === instanceId || instance.visible === false) return;
+    if (instance.instanceId === instanceId || instance.visible === false)
+      return;
     const left = Number(instance.x) || 0;
     const top = Number(instance.y) || 0;
     const right = left + (Number(instance.width) || 0);
     const bottom = top + (Number(instance.height) || 0);
     const centerX = left + (Number(instance.width) || 0) / 2;
     const centerY = top + (Number(instance.height) || 0) / 2;
-    xCandidates.push(left, right, left - geometry.width, right - geometry.width, centerX - geometry.width / 2);
-    yCandidates.push(top, bottom, top - geometry.height, bottom - geometry.height, centerY - geometry.height / 2);
+    xCandidates.push(
+      left,
+      right,
+      left - geometry.width,
+      right - geometry.width,
+      centerX - geometry.width / 2,
+    );
+    yCandidates.push(
+      top,
+      bottom,
+      top - geometry.height,
+      bottom - geometry.height,
+      centerY - geometry.height / 2,
+    );
   });
 
   return { xCandidates, yCandidates };
 }
 
 function snapGeometry(layout, instanceId, geometry) {
-  const { xCandidates, yCandidates } = buildSnapCandidates(layout, instanceId, geometry);
+  const { xCandidates, yCandidates } = buildSnapCandidates(
+    layout,
+    instanceId,
+    geometry,
+  );
   const snapped = {
     ...geometry,
     x: snapValue(geometry.x, xCandidates),
     y: snapValue(geometry.y, yCandidates),
   };
-  return clampGeometry(snapped, BETTER_WIDGET_REGISTRY[layout.instances.find((item) => item.instanceId === instanceId)?.widgetType]?.constraints);
+  return clampGeometry(
+    snapped,
+    BETTER_WIDGET_REGISTRY[
+      layout.instances.find((item) => item.instanceId === instanceId)
+        ?.widgetType
+    ]?.constraints,
+  );
 }
 
 function applyResize(start, handle, dx, dy) {
@@ -293,7 +312,9 @@ function WidgetListItem({
 
     const panel = menu.querySelector(".better-editor-widget-row__menu-panel");
     const boundary = menu.closest(".better-editor-widget-list");
-    const trigger = menu.querySelector(".better-editor-widget-row__menu-trigger");
+    const trigger = menu.querySelector(
+      ".better-editor-widget-row__menu-trigger",
+    );
     if (!panel || !boundary || !trigger) return;
 
     const boundaryRect = boundary.getBoundingClientRect();
@@ -302,7 +323,8 @@ function WidgetListItem({
     const availableAbove = triggerRect.top - boundaryRect.top;
     menu.classList.toggle(
       "opens-up",
-      availableBelow < panel.offsetHeight + 6 && availableAbove > availableBelow,
+      availableBelow < panel.offsetHeight + 6 &&
+        availableAbove > availableBelow,
     );
   };
   const menuAction = (event, action) => {
@@ -324,12 +346,17 @@ function WidgetListItem({
         className="better-editor-widget-row__drag-handle"
         aria-label={`Reorder ${instance.label || definition?.label || "widget"} layer`}
         disabled={!canEditInstance}
-        title={canEditInstance ? "Drag to change OBS layer" : "Background layer is fixed"}
+        title={
+          canEditInstance
+            ? "Drag to change OBS layer"
+            : "Background layer is fixed"
+        }
         draggable={canEditInstance}
         onDragStart={(event) => onLayerDragStart(event, instance.instanceId)}
         onDragEnd={onLayerDragEnd}
         onKeyDown={(event) => {
-          if (!canEditInstance || !["ArrowUp", "ArrowDown"].includes(event.key)) return;
+          if (!canEditInstance || !["ArrowUp", "ArrowDown"].includes(event.key))
+            return;
           event.preventDefault();
           onLayerMove(instance.instanceId, event.key === "ArrowUp" ? -1 : 1);
         }}
@@ -390,15 +417,25 @@ function WidgetListItem({
           </button>
           <button
             type="button"
-            onClick={(event) => menuAction(event, () => onToggleVisible(instance.instanceId))}
+            onClick={(event) =>
+              menuAction(event, () => onToggleVisible(instance.instanceId))
+            }
           >
-            {instance.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}
-            <span>{instance.visible === false ? "Show widget" : "Hide widget"}</span>
+            {instance.visible === false ? (
+              <EyeOff size={14} />
+            ) : (
+              <Eye size={14} />
+            )}
+            <span>
+              {instance.visible === false ? "Show widget" : "Hide widget"}
+            </span>
           </button>
           <button
             type="button"
             disabled={!canEditInstance}
-            onClick={(event) => menuAction(event, () => onToggleLock(instance.instanceId))}
+            onClick={(event) =>
+              menuAction(event, () => onToggleLock(instance.instanceId))
+            }
           >
             {instance.locked ? <Unlock size={14} /> : <Lock size={14} />}
             <span>{instance.locked ? "Unlock widget" : "Lock widget"}</span>
@@ -406,7 +443,9 @@ function WidgetListItem({
           <button
             type="button"
             disabled={!canEditInstance}
-            onClick={(event) => menuAction(event, () => onDuplicate(instance.instanceId))}
+            onClick={(event) =>
+              menuAction(event, () => onDuplicate(instance.instanceId))
+            }
           >
             <Plus size={14} />
             <span>Add copy</span>
@@ -415,7 +454,9 @@ function WidgetListItem({
             type="button"
             className="is-danger"
             disabled={!canEditInstance}
-            onClick={(event) => menuAction(event, () => onDelete(instance.instanceId))}
+            onClick={(event) =>
+              menuAction(event, () => onDelete(instance.instanceId))
+            }
           >
             <Trash2 size={14} />
             <span>Delete widget</span>
@@ -492,7 +533,12 @@ export default function WidgetEditorPage() {
         setOverlayRecord(record);
         setLayout(nextLayout);
         layoutRef.current = nextLayout;
-        setSelectedInstanceId(nextLayout.instances.find((item) => item.widgetType !== "background")?.instanceId || nextLayout.instances[0]?.instanceId || "");
+        setSelectedInstanceId(
+          nextLayout.instances.find((item) => item.widgetType !== "background")
+            ?.instanceId ||
+            nextLayout.instances[0]?.instanceId ||
+            "",
+        );
         setHistory([nextLayout]);
         setHistoryIndex(0);
         setDirty(false);
@@ -524,7 +570,8 @@ export default function WidgetEditorPage() {
       }
       try {
         const record = await getOrCreateBetterEditorOverlay(user.id);
-        if (Number(record?.draftVersion || 0) <= draftVersionRef.current) return;
+        if (Number(record?.draftVersion || 0) <= draftVersionRef.current)
+          return;
         const nextLayout = normalizeBetterLayout(record.draftLayout);
         setOverlayRecord(record);
         setLayout(nextLayout);
@@ -533,7 +580,10 @@ export default function WidgetEditorPage() {
         setHistoryIndex(0);
         setSavingState("saved");
       } catch (syncError) {
-        console.error("[BetterEditor] Failed to sync another window:", syncError);
+        console.error(
+          "[BetterEditor] Failed to sync another window:",
+          syncError,
+        );
       }
     };
     return () => {
@@ -569,28 +619,41 @@ export default function WidgetEditorPage() {
       .then((source) => {
         if (!mounted || !source?.overlayId) return;
         channel = subscribeToBetterLiveSource(user.id, source.overlayId, {
-          onWidgets: () => refreshLiveSource().catch((liveError) => {
-            console.error("[BetterEditor] Failed to refresh live widget data:", liveError);
-          }),
+          onWidgets: () =>
+            refreshLiveSource().catch((liveError) => {
+              console.error(
+                "[BetterEditor] Failed to refresh live widget data:",
+                liveError,
+              );
+            }),
           onTheme: (theme) => {
             setLiveSource((current) => ({ ...current, theme }));
           },
         });
       })
       .catch((liveError) => {
-        console.error("[BetterEditor] Failed to load live widget data:", liveError);
+        console.error(
+          "[BetterEditor] Failed to load live widget data:",
+          liveError,
+        );
       });
 
     const fallbackInterval = window.setInterval(() => {
       refreshLiveSource().catch((liveError) => {
-        console.error("[BetterEditor] Failed to refresh live widget data:", liveError);
+        console.error(
+          "[BetterEditor] Failed to refresh live widget data:",
+          liveError,
+        );
       });
     }, LIVE_SOURCE_FALLBACK_MS);
 
     const refreshOnVisible = () => {
       if (document.visibilityState === "visible") {
         refreshLiveSource().catch((liveError) => {
-          console.error("[BetterEditor] Failed to refresh live widget data:", liveError);
+          console.error(
+            "[BetterEditor] Failed to refresh live widget data:",
+            liveError,
+          );
         });
       }
     };
@@ -606,7 +669,10 @@ export default function WidgetEditorPage() {
   }, [user?.id]);
 
   const selectedInstance = useMemo(
-    () => layout.instances.find((instance) => instance.instanceId === selectedInstanceId) || null,
+    () =>
+      layout.instances.find(
+        (instance) => instance.instanceId === selectedInstanceId,
+      ) || null,
     [layout.instances, selectedInstanceId],
   );
   const liveWidgetContext = useMemo(
@@ -632,15 +698,21 @@ export default function WidgetEditorPage() {
     [liveWidgetContext],
   );
   const legacyWidgets = useMemo(
-    () => layout.instances.map((instance) =>
-      betterInstanceToLegacyWidget(instance, dataMode, liveWidgetContext),
-    ),
+    () =>
+      layout.instances.map((instance) =>
+        betterInstanceToLegacyWidget(instance, dataMode, liveWidgetContext),
+      ),
     [dataMode, layout.instances, liveWidgetContext],
   );
   const addableDefinitions = useMemo(() => {
-    const presentTypes = new Set(layout.instances.map((instance) => instance.widgetType));
-    return Object.values(BETTER_WIDGET_REGISTRY)
-      .filter((definition) => definition.widgetType !== "background" && !presentTypes.has(definition.widgetType));
+    const presentTypes = new Set(
+      layout.instances.map((instance) => instance.widgetType),
+    );
+    return Object.values(BETTER_WIDGET_REGISTRY).filter(
+      (definition) =>
+        definition.widgetType !== "background" &&
+        !presentTypes.has(definition.widgetType),
+    );
   }, [layout.instances]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -651,7 +723,8 @@ export default function WidgetEditorPage() {
 
   const setLayoutDraft = useCallback((updater) => {
     setLayout((current) => {
-      const nextValue = typeof updater === "function" ? updater(current) : updater;
+      const nextValue =
+        typeof updater === "function" ? updater(current) : updater;
       const nextLayout = normalizeBetterLayout({
         ...nextValue,
         updatedAt: new Date().toISOString(),
@@ -662,20 +735,24 @@ export default function WidgetEditorPage() {
     });
   }, []);
 
-  const pushHistory = useCallback((nextLayout) => {
-    const normalized = normalizeBetterLayout(nextLayout);
-    setHistory((current) => {
-      const base = current.slice(0, historyIndex + 1);
-      const next = [...base, normalized].slice(-HISTORY_LIMIT);
-      setHistoryIndex(next.length - 1);
-      return next;
-    });
-  }, [historyIndex]);
+  const pushHistory = useCallback(
+    (nextLayout) => {
+      const normalized = normalizeBetterLayout(nextLayout);
+      setHistory((current) => {
+        const base = current.slice(0, historyIndex + 1);
+        const next = [...base, normalized].slice(-HISTORY_LIMIT);
+        setHistoryIndex(next.length - 1);
+        return next;
+      });
+    },
+    [historyIndex],
+  );
 
   const commitLayout = useCallback(
     (updater) => {
       const current = layoutRef.current;
-      const nextValue = typeof updater === "function" ? updater(current) : updater;
+      const nextValue =
+        typeof updater === "function" ? updater(current) : updater;
       const nextLayout = normalizeBetterLayout({
         ...nextValue,
         updatedAt: new Date().toISOString(),
@@ -713,7 +790,8 @@ export default function WidgetEditorPage() {
               zIndex: 0,
             };
           }
-          const constraints = BETTER_WIDGET_REGISTRY[next.widgetType]?.constraints;
+          const constraints =
+            BETTER_WIDGET_REGISTRY[next.widgetType]?.constraints;
           return {
             ...next,
             ...clampGeometry(next, constraints),
@@ -776,7 +854,13 @@ export default function WidgetEditorPage() {
       }
     }, AUTOSAVE_MS);
     return () => window.clearTimeout(timeout);
-  }, [announceEditorRecord, dirty, layout, overlayRecord?.draftVersion, user?.id]);
+  }, [
+    announceEditorRecord,
+    dirty,
+    layout,
+    overlayRecord?.draftVersion,
+    user?.id,
+  ]);
 
   useEffect(() => {
     if (!interaction) return undefined;
@@ -788,18 +872,22 @@ export default function WidgetEditorPage() {
       const dx = (event.clientX - active.startClientX) / active.scale;
       const dy = (event.clientY - active.startClientY) / active.scale;
       const currentLayout = layoutRef.current;
-      const instance = currentLayout.instances.find((item) => item.instanceId === active.instanceId);
+      const instance = currentLayout.instances.find(
+        (item) => item.instanceId === active.instanceId,
+      );
       if (!instance || instance.locked) return;
 
-      const rawGeometry = active.mode === "drag"
-        ? {
-            ...active.start,
-            x: active.start.x + dx,
-            y: active.start.y + dy,
-          }
-        : applyResize(active.start, active.handle, dx, dy);
+      const rawGeometry =
+        active.mode === "drag"
+          ? {
+              ...active.start,
+              x: active.start.x + dx,
+              y: active.start.y + dy,
+            }
+          : applyResize(active.start, active.handle, dx, dy);
 
-      const constraints = BETTER_WIDGET_REGISTRY[instance.widgetType]?.constraints;
+      const constraints =
+        BETTER_WIDGET_REGISTRY[instance.widgetType]?.constraints;
       const clamped = clampGeometry(rawGeometry, constraints);
       const snapped = snapGeometry(currentLayout, active.instanceId, clamped);
       updateInstance(active.instanceId, snapped, { commit: false });
@@ -821,83 +909,123 @@ export default function WidgetEditorPage() {
     };
   }, [interaction, pushHistory, updateInstance]);
 
-  const beginInteraction = useCallback((event, instance, mode, handle = "") => {
-    if (event.button !== 0) return;
-    event.preventDefault();
-    event.stopPropagation();
-    setSelectedInstanceId(instance.instanceId);
-    if (instance.locked || instance.visible === false || instance.widgetType === "background") return;
-    interactionRef.current = {
-      mode,
-      handle,
-      instanceId: instance.instanceId,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      scale,
-      start: {
-        x: Number(instance.x) || 0,
-        y: Number(instance.y) || 0,
-        width: Number(instance.width) || 0,
-        height: Number(instance.height) || 0,
-      },
-    };
-    setInteraction(interactionRef.current);
-  }, [scale]);
+  const beginInteraction = useCallback(
+    (event, instance, mode, handle = "") => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setSelectedInstanceId(instance.instanceId);
+      if (
+        instance.locked ||
+        instance.visible === false ||
+        instance.widgetType === "background"
+      )
+        return;
+      interactionRef.current = {
+        mode,
+        handle,
+        instanceId: instance.instanceId,
+        startClientX: event.clientX,
+        startClientY: event.clientY,
+        scale,
+        start: {
+          x: Number(instance.x) || 0,
+          y: Number(instance.y) || 0,
+          width: Number(instance.width) || 0,
+          height: Number(instance.height) || 0,
+        },
+      };
+      setInteraction(interactionRef.current);
+    },
+    [scale],
+  );
 
-  const handleToggleVisible = useCallback((instanceId) => {
-    const instance = layoutRef.current.instances.find((item) => item.instanceId === instanceId);
-    if (!instance) return;
-    updateInstance(instanceId, { visible: instance.visible === false });
-  }, [updateInstance]);
-
-  const handleToggleLock = useCallback((instanceId) => {
-    const instance = layoutRef.current.instances.find((item) => item.instanceId === instanceId);
-    if (!instance || instance.widgetType === "background") return;
-    updateInstance(instanceId, { locked: !instance.locked });
-  }, [updateInstance]);
-
-  const handleDuplicate = useCallback((instanceId) => {
-    const instance = layoutRef.current.instances.find((item) => item.instanceId === instanceId);
-    const duplicated = duplicateBetterInstance(instance, { zIndex: getMaxZ(layoutRef.current) + 1 });
-    if (!duplicated) return;
-    const nextLayout = commitLayout((current) => ({
-      ...current,
-      instances: [...current.instances, duplicated],
-    }));
-    setSelectedInstanceId(duplicated.instanceId);
-    return nextLayout;
-  }, [commitLayout]);
-
-  const handleAddWidget = useCallback((widgetType) => {
-    const created = createBetterInstance(widgetType, { zIndex: getMaxZ(layoutRef.current) + 1 });
-    if (!created) return null;
-    const nextLayout = commitLayout((current) => ({
-      ...current,
-      instances: [...current.instances, created],
-    }));
-    setSelectedInstanceId(created.instanceId);
-    return nextLayout;
-  }, [commitLayout]);
-
-  const handleDeleteInstance = useCallback((instanceId) => {
-    const current = layoutRef.current;
-    const instance = current.instances.find((item) => item.instanceId === instanceId);
-    if (!instance || instance.widgetType === "background") return null;
-    const foregroundCount = current.instances.filter((item) => item.widgetType !== "background").length;
-    if (foregroundCount <= 1) return null;
-    const nextLayout = commitLayout((layoutToUpdate) => ({
-      ...layoutToUpdate,
-      instances: layoutToUpdate.instances.filter((item) => item.instanceId !== instanceId),
-    }));
-    if (selectedInstanceId === instanceId) {
-      setSelectedInstanceId(
-        nextLayout.instances.find((item) => item.widgetType !== "background")?.instanceId ||
-          nextLayout.instances[0]?.instanceId ||
-          "",
+  const handleToggleVisible = useCallback(
+    (instanceId) => {
+      const instance = layoutRef.current.instances.find(
+        (item) => item.instanceId === instanceId,
       );
-    }
-    return nextLayout;
-  }, [commitLayout, selectedInstanceId]);
+      if (!instance) return;
+      updateInstance(instanceId, { visible: instance.visible === false });
+    },
+    [updateInstance],
+  );
+
+  const handleToggleLock = useCallback(
+    (instanceId) => {
+      const instance = layoutRef.current.instances.find(
+        (item) => item.instanceId === instanceId,
+      );
+      if (!instance || instance.widgetType === "background") return;
+      updateInstance(instanceId, { locked: !instance.locked });
+    },
+    [updateInstance],
+  );
+
+  const handleDuplicate = useCallback(
+    (instanceId) => {
+      const instance = layoutRef.current.instances.find(
+        (item) => item.instanceId === instanceId,
+      );
+      const duplicated = duplicateBetterInstance(instance, {
+        zIndex: getMaxZ(layoutRef.current) + 1,
+      });
+      if (!duplicated) return;
+      const nextLayout = commitLayout((current) => ({
+        ...current,
+        instances: [...current.instances, duplicated],
+      }));
+      setSelectedInstanceId(duplicated.instanceId);
+      return nextLayout;
+    },
+    [commitLayout],
+  );
+
+  const handleAddWidget = useCallback(
+    (widgetType) => {
+      const created = createBetterInstance(widgetType, {
+        zIndex: getMaxZ(layoutRef.current) + 1,
+      });
+      if (!created) return null;
+      const nextLayout = commitLayout((current) => ({
+        ...current,
+        instances: [...current.instances, created],
+      }));
+      setSelectedInstanceId(created.instanceId);
+      return nextLayout;
+    },
+    [commitLayout],
+  );
+
+  const handleDeleteInstance = useCallback(
+    (instanceId) => {
+      const current = layoutRef.current;
+      const instance = current.instances.find(
+        (item) => item.instanceId === instanceId,
+      );
+      if (!instance || instance.widgetType === "background") return null;
+      const foregroundCount = current.instances.filter(
+        (item) => item.widgetType !== "background",
+      ).length;
+      if (foregroundCount <= 1) return null;
+      const nextLayout = commitLayout((layoutToUpdate) => ({
+        ...layoutToUpdate,
+        instances: layoutToUpdate.instances.filter(
+          (item) => item.instanceId !== instanceId,
+        ),
+      }));
+      if (selectedInstanceId === instanceId) {
+        setSelectedInstanceId(
+          nextLayout.instances.find((item) => item.widgetType !== "background")
+            ?.instanceId ||
+            nextLayout.instances[0]?.instanceId ||
+            "",
+        );
+      }
+      return nextLayout;
+    },
+    [commitLayout, selectedInstanceId],
+  );
 
   const clearLayerDrag = useCallback(() => {
     setDraggedLayerId("");
@@ -924,33 +1052,39 @@ export default function WidgetEditorPage() {
     setDragOverLayerId(targetId);
   }, []);
 
-  const handleLayerDrop = useCallback((event, targetId) => {
-    event.preventDefault();
-    const sourceId =
-      event.dataTransfer.getData("text/plain") || draggedLayerId;
-    if (sourceId && sourceId !== targetId) {
+  const handleLayerDrop = useCallback(
+    (event, targetId) => {
+      event.preventDefault();
+      const sourceId =
+        event.dataTransfer.getData("text/plain") || draggedLayerId;
+      if (sourceId && sourceId !== targetId) {
+        commitLayout((current) => ({
+          ...current,
+          instances: reorderBetterWidgetLayers(
+            current.instances,
+            sourceId,
+            targetId,
+          ),
+        }));
+      }
+      clearLayerDrag();
+    },
+    [clearLayerDrag, commitLayout, draggedLayerId],
+  );
+
+  const handleLayerMove = useCallback(
+    (instanceId, direction) => {
       commitLayout((current) => ({
         ...current,
-        instances: reorderBetterWidgetLayers(
+        instances: moveBetterWidgetLayer(
           current.instances,
-          sourceId,
-          targetId,
+          instanceId,
+          direction,
         ),
       }));
-    }
-    clearLayerDrag();
-  }, [clearLayerDrag, commitLayout, draggedLayerId]);
-
-  const handleLayerMove = useCallback((instanceId, direction) => {
-    commitLayout((current) => ({
-      ...current,
-      instances: moveBetterWidgetLayer(
-        current.instances,
-        instanceId,
-        direction,
-      ),
-    }));
-  }, [commitLayout]);
+    },
+    [commitLayout],
+  );
 
   const handleUndo = useCallback(() => {
     if (historyIndex <= 0) return;
@@ -1053,7 +1187,10 @@ export default function WidgetEditorPage() {
       layoutRef.current = nextLayout;
       setHistory([nextLayout]);
       setHistoryIndex(0);
-      setSelectedInstanceId(nextLayout.instances.find((item) => item.widgetType !== "background")?.instanceId || "");
+      setSelectedInstanceId(
+        nextLayout.instances.find((item) => item.widgetType !== "background")
+          ?.instanceId || "",
+      );
       setDirty(false);
       setSavingState("saved");
     } catch (resetError) {
@@ -1076,28 +1213,42 @@ export default function WidgetEditorPage() {
   }, []);
 
   const selectedLegacyWidget = selectedInstance
-    ? betterInstanceToLegacyWidget(selectedInstance, dataMode, liveWidgetContext)
+    ? betterInstanceToLegacyWidget(
+        selectedInstance,
+        dataMode,
+        liveWidgetContext,
+      )
     : null;
 
-  const handleConfigChange = useCallback((nextConfig) => {
-    if (!selectedInstance) return;
-    updateInstance(selectedInstance.instanceId, {
-      config: validateBetterWidgetConfig(selectedInstance.widgetType, nextConfig),
-    });
-  }, [selectedInstance, updateInstance]);
+  const handleConfigChange = useCallback(
+    (nextConfig) => {
+      if (!selectedInstance) return;
+      updateInstance(selectedInstance.instanceId, {
+        config: validateBetterWidgetConfig(
+          selectedInstance.widgetType,
+          nextConfig,
+        ),
+      });
+    },
+    [selectedInstance, updateInstance],
+  );
 
-  const handleWidgetChange = useCallback((patch = {}) => {
-    if (!selectedInstance) return;
-    const { config: patchConfig, ...layoutPatch } = patch;
-    updateInstance(selectedInstance.instanceId, {
-      ...layoutPatch,
-      config: patchConfig
-        ? validateBetterWidgetConfig(selectedInstance.widgetType, patchConfig)
-        : selectedInstance.config,
-    });
-  }, [selectedInstance, updateInstance]);
+  const handleWidgetChange = useCallback(
+    (patch = {}) => {
+      if (!selectedInstance) return;
+      const { config: patchConfig, ...layoutPatch } = patch;
+      updateInstance(selectedInstance.instanceId, {
+        ...layoutPatch,
+        config: patchConfig
+          ? validateBetterWidgetConfig(selectedInstance.widgetType, patchConfig)
+          : selectedInstance.config,
+      });
+    },
+    [selectedInstance, updateInstance],
+  );
 
-  if (loading) return <LoadingSpinner text="Loading Better Editor..." fullPage />;
+  if (loading)
+    return <LoadingSpinner text="Loading Better Editor..." fullPage />;
 
   if (error) {
     return (
@@ -1105,7 +1256,9 @@ export default function WidgetEditorPage() {
         <section className="better-editor-empty">
           <SlidersHorizontal size={24} />
           <h1>Better Editor unavailable</h1>
-          <p>{error.message || "The Better overlay layout could not be loaded."}</p>
+          <p>
+            {error.message || "The Better overlay layout could not be loaded."}
+          </p>
         </section>
       </main>
     );
@@ -1206,27 +1359,53 @@ export default function WidgetEditorPage() {
               <Grid3X3 size={15} />
               Apps
             </button>
-            <button type="button" onClick={handleUndo} disabled={historyIndex <= 0}>
+            <button
+              type="button"
+              onClick={handleUndo}
+              disabled={historyIndex <= 0}
+            >
               <Undo2 size={15} />
               Undo
             </button>
-            <button type="button" onClick={handleRedo} disabled={historyIndex >= history.length - 1}>
+            <button
+              type="button"
+              onClick={handleRedo}
+              disabled={historyIndex >= history.length - 1}
+            >
               <Redo2 size={15} />
               Redo
             </button>
-            <button type="button" onClick={saveDraftNow} disabled={savingState === "saving"}>
+            <button
+              type="button"
+              onClick={saveDraftNow}
+              disabled={savingState === "saving"}
+            >
               <Save size={15} />
               Save Draft
             </button>
-            <button type="button" className="is-primary" onClick={publishNow} disabled={savingState === "publishing"}>
+            <button
+              type="button"
+              className="is-primary"
+              onClick={publishNow}
+              disabled={savingState === "publishing"}
+            >
               <Send size={15} />
               Publish to OBS
             </button>
-            <button type="button" className="is-copy" onClick={() => copyUrl(fullOverlayUrl)} disabled={!fullOverlayUrl}>
+            <button
+              type="button"
+              className="is-copy"
+              onClick={() => copyUrl(fullOverlayUrl)}
+              disabled={!fullOverlayUrl}
+            >
               <Copy size={15} />
               Copy Overlay URL
             </button>
-            <button type="button" onClick={regenerateLinkNow} disabled={savingState === "saving"}>
+            <button
+              type="button"
+              onClick={regenerateLinkNow}
+              disabled={savingState === "saving"}
+            >
               <RefreshCw size={15} />
               Regenerate Link
             </button>
@@ -1281,7 +1460,9 @@ export default function WidgetEditorPage() {
                         pointerEvents: isBackground ? "none" : "auto",
                         borderRadius: getEditorInstanceBorderRadius(instance),
                       }}
-                      onPointerDown={(event) => beginInteraction(event, instance, "drag")}
+                      onPointerDown={(event) =>
+                        beginInteraction(event, instance, "drag")
+                      }
                     >
                       {!isBackground && (
                         <span className="better-editor-canvas-instance__tag">
@@ -1290,7 +1471,9 @@ export default function WidgetEditorPage() {
                         </span>
                       )}
                       <div className="better-editor-canvas-instance__content">
-                        <BetterEditorWidgetBoundary instanceId={instance.instanceId}>
+                        <BetterEditorWidgetBoundary
+                          instanceId={instance.instanceId}
+                        >
                           {renderBetterWidgetInstance({
                             instance,
                             layout,
@@ -1309,7 +1492,14 @@ export default function WidgetEditorPage() {
                               type="button"
                               className={`better-editor-resize-handle better-editor-resize-handle--${handle}`}
                               aria-label={`Resize ${handle}`}
-                              onPointerDown={(event) => beginInteraction(event, instance, "resize", handle)}
+                              onPointerDown={(event) =>
+                                beginInteraction(
+                                  event,
+                                  instance,
+                                  "resize",
+                                  handle,
+                                )
+                              }
                             />
                           ))}
                         </div>

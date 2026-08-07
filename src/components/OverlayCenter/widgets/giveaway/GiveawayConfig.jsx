@@ -28,12 +28,18 @@ function participantName(participant) {
 
 function participantKey(participant) {
   const platform =
-    typeof participant === "object" ? participant?.platform || "twitch" : "twitch";
+    typeof participant === "object"
+      ? participant?.platform || "twitch"
+      : "twitch";
   const login =
     typeof participant === "object"
-      ? participant?.login || participant?.username || participantName(participant)
+      ? participant?.login ||
+        participant?.username ||
+        participantName(participant)
       : participant;
-  return `${String(platform).toLowerCase()}:${String(login || "").trim().toLowerCase()}`;
+  return `${String(platform).toLowerCase()}:${String(login || "")
+    .trim()
+    .toLowerCase()}`;
 }
 
 function participantFromMessage(message) {

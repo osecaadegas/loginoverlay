@@ -28,7 +28,10 @@ function nowIso() {
 
 export function generatePublicOverlayId() {
   const bytes = new Uint8Array(24);
-  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.getRandomValues === "function"
+  ) {
     crypto.getRandomValues(bytes);
     return `bo_${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
   }
@@ -37,8 +40,12 @@ export function generatePublicOverlayId() {
 
 function normalizeEditorRow(row) {
   if (!row) return null;
-  const draftLayout = normalizeBetterLayout(row.draft_layout || row.published_layout || createDefaultBetterLayout());
-  const publishedLayout = row.published_layout ? normalizeBetterLayout(row.published_layout) : null;
+  const draftLayout = normalizeBetterLayout(
+    row.draft_layout || row.published_layout || createDefaultBetterLayout(),
+  );
+  const publishedLayout = row.published_layout
+    ? normalizeBetterLayout(row.published_layout)
+    : null;
   return {
     id: row.id,
     userId: row.user_id,
@@ -47,7 +54,8 @@ function normalizeEditorRow(row) {
     publishedLayout,
     draftVersion: Number(row.draft_version || 1),
     publishedVersion: Number(row.published_version || 0),
-    hasUnpublishedChanges: Number(row.draft_version || 1) !== Number(row.published_version || 0),
+    hasUnpublishedChanges:
+      Number(row.draft_version || 1) !== Number(row.published_version || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     publishedAt: row.published_at,
@@ -59,13 +67,20 @@ function normalizePublicRow(row) {
   return {
     publicOverlayId: row.public_overlay_id,
     ownerUserId: row.owner_user_id,
-    publishedLayout: normalizeBetterLayout(row.published_layout || createDefaultBetterLayout()),
+    publishedLayout: normalizeBetterLayout(
+      row.published_layout || createDefaultBetterLayout(),
+    ),
     publishedVersion: Number(row.published_version || 0),
     updatedAt: row.updated_at,
   };
 }
 
-function normalizeLiveSource({ ownerUserId = null, instance = null, widgets = [], theme = null } = {}) {
+function normalizeLiveSource({
+  ownerUserId = null,
+  instance = null,
+  widgets = [],
+  theme = null,
+} = {}) {
   return {
     overlayId: instance?.id || null,
     ownerUserId: ownerUserId || instance?.user_id || null,
@@ -122,7 +137,8 @@ async function createOwnedBetterOverlayRow(userId) {
 }
 
 async function getOrCreateOwnedBetterOverlayRow(userId) {
-  if (!userId) throw new Error("A signed-in user is required to edit Better overlays.");
+  if (!userId)
+    throw new Error("A signed-in user is required to edit Better overlays.");
   const existing = await fetchOwnedBetterOverlayRow(userId);
   if (existing) return existing;
   return createOwnedBetterOverlayRow(userId);
@@ -166,7 +182,11 @@ export async function getPublishedBetterLiveSource(ownerUserId) {
   });
 }
 
-export function subscribeToBetterLiveSource(ownerUserId, overlayId, callbacks = {}) {
+export function subscribeToBetterLiveSource(
+  ownerUserId,
+  overlayId,
+  callbacks = {},
+) {
   if (!ownerUserId || !overlayId) return null;
   return subscribeToOverlay(ownerUserId, callbacks, overlayId);
 }
@@ -175,13 +195,19 @@ export function unsubscribeBetterLiveSource(channel) {
   unsubscribeOverlay(channel);
 }
 
-export async function saveBetterDraft(userId, layout, expectedDraftVersion = null) {
+export async function saveBetterDraft(
+  userId,
+  layout,
+  expectedDraftVersion = null,
+) {
   const row = await getOrCreateOwnedBetterOverlayRow(userId);
   const currentDraftVersion = Number(row.draft_version || 0);
-  const baseDraftVersion = expectedDraftVersion == null
-    ? currentDraftVersion
-    : Number(expectedDraftVersion);
-  if (baseDraftVersion !== currentDraftVersion) throw createDraftConflictError();
+  const baseDraftVersion =
+    expectedDraftVersion == null
+      ? currentDraftVersion
+      : Number(expectedDraftVersion);
+  if (baseDraftVersion !== currentDraftVersion)
+    throw createDraftConflictError();
   const draftLayout = normalizeBetterLayout({
     ...layout,
     updatedAt: nowIso(),
@@ -204,13 +230,19 @@ export async function saveBetterDraft(userId, layout, expectedDraftVersion = nul
   return normalizeEditorRow(data);
 }
 
-export async function publishBetterOverlay(userId, layout, expectedDraftVersion = null) {
+export async function publishBetterOverlay(
+  userId,
+  layout,
+  expectedDraftVersion = null,
+) {
   const row = await getOrCreateOwnedBetterOverlayRow(userId);
   const currentDraftVersion = Number(row.draft_version || 0);
-  const baseDraftVersion = expectedDraftVersion == null
-    ? currentDraftVersion
-    : Number(expectedDraftVersion);
-  if (baseDraftVersion !== currentDraftVersion) throw createDraftConflictError();
+  const baseDraftVersion =
+    expectedDraftVersion == null
+      ? currentDraftVersion
+      : Number(expectedDraftVersion);
+  if (baseDraftVersion !== currentDraftVersion)
+    throw createDraftConflictError();
   const publishedLayout = normalizeBetterLayout({
     ...(layout || row.draft_layout),
     updatedAt: nowIso(),
@@ -239,30 +271,33 @@ export async function publishBetterOverlay(userId, layout, expectedDraftVersion 
   if (error) throw error;
   if (!data) throw createDraftConflictError();
 
-  const { error: publicError } = await supabase
-    .from(PUBLIC_TABLE)
-    .upsert(
-      {
-        public_overlay_id: row.public_overlay_id,
-        owner_user_id: userId,
-        published_layout: publishedLayout,
-        published_version: nextPublishedVersion,
-        updated_at: timestamp,
-        revoked_at: null,
-      },
-      { onConflict: "public_overlay_id" },
-    );
+  const { error: publicError } = await supabase.from(PUBLIC_TABLE).upsert(
+    {
+      public_overlay_id: row.public_overlay_id,
+      owner_user_id: userId,
+      published_layout: publishedLayout,
+      published_version: nextPublishedVersion,
+      updated_at: timestamp,
+      revoked_at: null,
+    },
+    { onConflict: "public_overlay_id" },
+  );
   if (publicError) throw publicError;
   return normalizeEditorRow(data);
 }
 
-export async function revertBetterDraftToPublished(userId, expectedDraftVersion = null) {
+export async function revertBetterDraftToPublished(
+  userId,
+  expectedDraftVersion = null,
+) {
   const row = await getOrCreateOwnedBetterOverlayRow(userId);
   const currentDraftVersion = Number(row.draft_version || 0);
-  const baseDraftVersion = expectedDraftVersion == null
-    ? currentDraftVersion
-    : Number(expectedDraftVersion);
-  if (baseDraftVersion !== currentDraftVersion) throw createDraftConflictError();
+  const baseDraftVersion =
+    expectedDraftVersion == null
+      ? currentDraftVersion
+      : Number(expectedDraftVersion);
+  if (baseDraftVersion !== currentDraftVersion)
+    throw createDraftConflictError();
   const publishedLayout = row.published_layout
     ? normalizeBetterLayout(row.published_layout)
     : createDefaultBetterLayout();
@@ -284,8 +319,15 @@ export async function revertBetterDraftToPublished(userId, expectedDraftVersion 
   return normalizeEditorRow(data);
 }
 
-export async function resetBetterDraftLayout(userId, expectedDraftVersion = null) {
-  return saveBetterDraft(userId, createDefaultBetterLayout(), expectedDraftVersion);
+export async function resetBetterDraftLayout(
+  userId,
+  expectedDraftVersion = null,
+) {
+  return saveBetterDraft(
+    userId,
+    createDefaultBetterLayout(),
+    expectedDraftVersion,
+  );
 }
 
 export async function regenerateBetterPublicOverlayId(userId) {
@@ -317,19 +359,17 @@ export async function regenerateBetterPublicOverlayId(userId) {
   if (error) throw error;
 
   if (publishedLayout) {
-    const { error: publicError } = await supabase
-      .from(PUBLIC_TABLE)
-      .upsert(
-        {
-          public_overlay_id: newPublicOverlayId,
-          owner_user_id: userId,
-          published_layout: publishedLayout,
-          published_version: Number(row.published_version || 0),
-          updated_at: timestamp,
-          revoked_at: null,
-        },
-        { onConflict: "public_overlay_id" },
-      );
+    const { error: publicError } = await supabase.from(PUBLIC_TABLE).upsert(
+      {
+        public_overlay_id: newPublicOverlayId,
+        owner_user_id: userId,
+        published_layout: publishedLayout,
+        published_version: Number(row.published_version || 0),
+        updated_at: timestamp,
+        revoked_at: null,
+      },
+      { onConflict: "public_overlay_id" },
+    );
     if (publicError) throw publicError;
   }
 
@@ -340,7 +380,9 @@ export async function getPublishedBetterOverlay(publicOverlayId) {
   if (!publicOverlayId) return null;
   const { data, error } = await supabase
     .from(PUBLIC_TABLE)
-    .select("public_overlay_id,owner_user_id,published_layout,published_version,updated_at,revoked_at")
+    .select(
+      "public_overlay_id,owner_user_id,published_layout,published_version,updated_at,revoked_at",
+    )
     .eq("public_overlay_id", publicOverlayId)
     .is("revoked_at", null)
     .maybeSingle();

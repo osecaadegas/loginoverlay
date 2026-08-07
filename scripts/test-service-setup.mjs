@@ -37,12 +37,18 @@ test('OAuth return progress has an explicit save callback', () => {
 });
 
 test('Focus and visibility return rechecks are registered', () => {
-  assert.match(componentSource, /window\.addEventListener\('focus'/);
-  assert.match(componentSource, /document\.addEventListener\('visibilitychange'/);
+  assert.match(componentSource, /window\.addEventListener\(["']focus["']/);
+  assert.match(
+    componentSource,
+    /document\.addEventListener\(["']visibilitychange["']/,
+  );
 });
 
 test('Focus return readiness recheck is debounced', () => {
-  assert.match(componentSource, /setTimeout\(\(\) => runChecks\('focus'\), 900\)/);
+  assert.match(
+    componentSource,
+    /setTimeout\(\(\) => runChecks\(["']focus["']\), 900\)/,
+  );
 });
 
 test('Readiness API uses bearer auth rather than query tokens', () => {

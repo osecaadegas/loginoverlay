@@ -466,7 +466,8 @@ function getLandingChatConfig(previewCycle, previewShoutout) {
   const firstSequence = Math.max(0, previewCycle - messageCount + 1);
   const messages = Array.from({ length: messageCount }, (_, offset) => {
     const sequence = firstSequence + offset;
-    const message = LANDING_CHAT_MESSAGES[sequence % LANDING_CHAT_MESSAGES.length];
+    const message =
+      LANDING_CHAT_MESSAGES[sequence % LANDING_CHAT_MESSAGES.length];
     return { ...message, id: `${message.id}-${sequence}` };
   });
   if (previewShoutout) {
@@ -599,7 +600,8 @@ function advanceLandingConnectFourState(current) {
   for (let offset = 0; offset < 7; offset += 1) {
     const column = (firstColumn + offset) % 7;
     const move = dropConnectFourCoin(current.board, column, player);
-    if (!move || findConnectFourWin(move.board, move.row, move.column)) continue;
+    if (!move || findConnectFourWin(move.board, move.row, move.column))
+      continue;
     return {
       ...current,
       board: move.board,
@@ -626,13 +628,49 @@ const LANDING_BETS_FILL_STYLES = [
 ];
 
 const LANDING_TOURNAMENT_MATCHES = [
-  ["Afonso", "Beatriz", "Gates of Olympus 1000", "Sugar Rush 1000", 340, 125, "player1", 0],
-  ["Carolina", "Duarte", "Wanted Dead or a Wild", "Le Digger", 95, 280, "player2", 0],
+  [
+    "Afonso",
+    "Beatriz",
+    "Gates of Olympus 1000",
+    "Sugar Rush 1000",
+    340,
+    125,
+    "player1",
+    0,
+  ],
+  [
+    "Carolina",
+    "Duarte",
+    "Wanted Dead or a Wild",
+    "Le Digger",
+    95,
+    280,
+    "player2",
+    0,
+  ],
   ["Ines", "NOVA", "Big Bass Secrets", "Cyber Runner", 180, 315, "player2", 0],
   ["Rafa", "Sofia", "Banana Town", "5 Wild Buffalo", 145, 390, "player2", 0],
-  ["Afonso", "Duarte", "Gates of Olympus 1000", "Le Digger", 420, 205, "player1", 2],
+  [
+    "Afonso",
+    "Duarte",
+    "Gates of Olympus 1000",
+    "Le Digger",
+    420,
+    205,
+    "player1",
+    2,
+  ],
   ["NOVA", "Sofia", "Cyber Runner", "5 Wild Buffalo", 230, 475, "player2", 4],
-  ["Afonso", "Sofia", "Gates of Olympus 1000", "5 Wild Buffalo", 615, 360, "player1", 6],
+  [
+    "Afonso",
+    "Sofia",
+    "Gates of Olympus 1000",
+    "5 Wild Buffalo",
+    615,
+    360,
+    "player1",
+    6,
+  ],
 ];
 
 const LANDING_TOURNAMENT_SLOT_NAMES = [
@@ -694,11 +732,15 @@ function getLandingTournamentConfig(previewCycle, catalogSlots = []) {
           roundNum: 1,
           player1: {
             bonusCost: 100,
-            bonusPayout: matchState.isCompleted ? payout1 : matchState.previewPayout,
+            bonusPayout: matchState.isCompleted
+              ? payout1
+              : matchState.previewPayout,
           },
           player2: {
             bonusCost: 100,
-            bonusPayout: matchState.isCompleted ? payout2 : matchState.previewPayout,
+            bonusPayout: matchState.isCompleted
+              ? payout2
+              : matchState.previewPayout,
           },
           winner: matchState.isCompleted ? winner : null,
           status: matchState.status,
@@ -728,7 +770,8 @@ function getLandingTournamentConfig(previewCycle, catalogSlots = []) {
 }
 
 function getLandingBetsConfig(previewCycle) {
-  const layout = LANDING_BETS_LAYOUTS[previewCycle % LANDING_BETS_LAYOUTS.length];
+  const layout =
+    LANDING_BETS_LAYOUTS[previewCycle % LANDING_BETS_LAYOUTS.length];
   const bets = Object.fromEntries(
     Array.from({ length: 6 }, (_, index) => [
       `opt_${index}`,
@@ -760,9 +803,7 @@ function getLandingBetsConfig(previewCycle) {
     bets,
     betters,
     fillStyle:
-      LANDING_BETS_FILL_STYLES[
-        previewCycle % LANDING_BETS_FILL_STYLES.length
-      ],
+      LANDING_BETS_FILL_STYLES[previewCycle % LANDING_BETS_FILL_STYLES.length],
     fillSpeed: 80 + landingRandomInt(81),
     theme: ["neon", "cyber", "ember"][previewCycle % 3],
     font: "cyber",
@@ -809,8 +850,12 @@ function getBonusHuntPreviewState(cycle) {
       carouselMs: 1800,
       showRequests: false,
       showSlotRequests: false,
-      widgetWidth: isHorizontal ? 1080 : 420,
-      widgetHeight: 0,
+      drawerAlwaysVisible: isHorizontal,
+      statsLayout: "row",
+      widgetWidth: width,
+      widgetHeight: height,
+      panelWidth: width,
+      panelHeight: height,
     },
   };
 }
@@ -836,9 +881,7 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1 }) {
       chat: 4200,
       bets: 3400,
       tournament: 2800,
-    }[
-      widget.widgetType
-    ];
+    }[widget.widgetType];
     if (!intervalMs) return undefined;
     const timer = window.setInterval(() => {
       setPreviewCycle((value) => value + 1);
@@ -883,7 +926,9 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1 }) {
       showTimer = window.setTimeout(() => {
         if (!active) return;
         const sample =
-          LANDING_CHAT_SHOUTOUTS[landingRandomInt(LANDING_CHAT_SHOUTOUTS.length)];
+          LANDING_CHAT_SHOUTOUTS[
+            landingRandomInt(LANDING_CHAT_SHOUTOUTS.length)
+          ];
         setPreviewShoutout({ ...sample, id: `${sample.login}-${Date.now()}` });
         hideTimer = window.setTimeout(() => {
           if (!active) return;
@@ -983,7 +1028,9 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1 }) {
   return (
     <div ref={runtimeRef} className="lp-home-widget-runtime" aria-hidden="true">
       <div
-        key={widget.widgetType === "giveaway" ? previewCycle : widget.widgetType}
+        key={
+          widget.widgetType === "giveaway" ? previewCycle : widget.widgetType
+        }
         className="lp-home-widget-runtime__frame"
         style={{
           left: frameGeometry.left,
@@ -996,7 +1043,9 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1 }) {
         {renderBetterWidgetInstance({
           instance: preview.instance,
           layout: preview.layout,
-          mode: ["bets", "chat", "connect_four", "tournament"].includes(widget.widgetType)
+          mode: ["bets", "chat", "connect_four", "tournament"].includes(
+            widget.widgetType,
+          )
             ? "live"
             : "mock",
           runtime: "editor",
@@ -1587,7 +1636,8 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             {slotCount !== null && (
               <span className="lp-home-platforms__badge lp-home-platforms__badge--database">
                 <Database aria-hidden="true" />
-                {slotCount.toLocaleString()} {slotCount === 1 ? "slot" : "slots"}
+                {slotCount.toLocaleString()}{" "}
+                {slotCount === 1 ? "slot" : "slots"}
                 {" in database"}
               </span>
             )}

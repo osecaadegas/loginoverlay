@@ -6,7 +6,7 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', Arial, sans-serif;
+  font-family: "Inter", Arial, sans-serif;
   background: #0d1117;
   color: #f3f4f6;
   min-height: 100vh;
@@ -37,7 +37,7 @@ body.sidebar-open {
 .main-content {
   flex: 1;
   min-height: 100vh;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -55,7 +55,7 @@ body.sidebar-open {
     margin-left: 0 !important;
     width: 100vw;
   }
-  
+
   body.sidebar-open .main-content {
     pointer-events: none;
   }
@@ -143,7 +143,9 @@ body.sidebar-open {
   z-index: 9998;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.25s, visibility 0.25s;
+  transition:
+    opacity 0.25s,
+    visibility 0.25s;
   pointer-events: none;
 }
 .sidebar-backdrop.visible {
@@ -152,7 +154,9 @@ body.sidebar-open {
   pointer-events: auto;
 }
 @media (min-width: 769px) {
-  .sidebar-backdrop { display: none !important; }
+  .sidebar-backdrop {
+    display: none !important;
+  }
 }
 
 /* Responsive Main Content */
@@ -163,16 +167,15 @@ body.sidebar-open {
   }
 }
 
-
 /* Stars layer 1 - small stars (only for animated-stars background) */
 body.animated-stars::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
+  background-image:
     radial-gradient(1px 1px at 20px 30px, #fff, transparent),
     radial-gradient(1px 1px at 40px 70px, #fff, transparent),
     radial-gradient(1px 1px at 90px 40px, #fff, transparent),
@@ -192,16 +195,28 @@ body.animated-stars::before {
 
 /* Stars layer 2 - larger stars (only for animated-stars background) */
 body.animated-stars::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
-    radial-gradient(2px 2px at 100px 50px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(2px 2px at 250px 150px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(2px 2px at 350px 80px, rgba(255,255,255,0.8), transparent);
+  background-image:
+    radial-gradient(
+      2px 2px at 100px 50px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 250px 150px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 350px 80px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    );
   background-repeat: repeat;
   background-size: 500px 400px;
   animation: stars-twinkle 6s ease-in-out infinite alternate-reverse;
@@ -210,8 +225,12 @@ body.animated-stars::after {
 }
 
 @keyframes stars-twinkle {
-  0% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .overlay-container {
@@ -236,7 +255,9 @@ body.animated-stars::after {
   width: 440px;
   max-height: 90vh;
   z-index: 100;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 
 .middle-panel:not(.active) {
@@ -268,7 +289,9 @@ body.animated-stars::after {
   transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
-  transition: transform 0.4s cubic-bezier(.4,1.4,.6,1), opacity 0.2s;
+  transition:
+    transform 0.4s cubic-bezier(0.4, 1.4, 0.6, 1),
+    opacity 0.2s;
 }
 
 .info-panel::-webkit-scrollbar {
@@ -300,7 +323,9 @@ body.animated-stars::after {
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  box-shadow: 0 8px 32px 0 rgba(0,225,255,0.13), 0 1.5px 0 0 #00e1ff inset;
+  box-shadow:
+    0 8px 32px 0 rgba(0, 225, 255, 0.13),
+    0 1.5px 0 0 #00e1ff inset;
 }
 
 .layout-btn {
@@ -322,7 +347,11 @@ body.animated-stars::after {
 }
 
 .layout-btn.active {
-  background: linear-gradient(135deg, rgba(0, 225, 255, 0.3), rgba(147, 70, 255, 0.3));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 225, 255, 0.3),
+    rgba(147, 70, 255, 0.3)
+  );
   border-color: rgba(0, 225, 255, 0.8);
   box-shadow: 0 4px 16px rgba(0, 225, 255, 0.4);
   transform: scale(1.05);
@@ -385,7 +414,10 @@ select,
 textarea,
 .sidebar,
 .main-content {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 /* ===== GLOBAL RESPONSIVE UTILITIES ===== */

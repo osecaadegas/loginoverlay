@@ -240,16 +240,21 @@ try {
       landingPageSource.includes("findConnectFourWin(") &&
       landingPageSource.includes("setConnectFourPreview(") &&
       landingPageSource.includes("__previewState: connectFourPreview") &&
-      landingPageSource.includes(
-        '["bets", "chat", "connect_four", "tournament"].includes(widget.widgetType)',
+      /\["bets",\s*"chat",\s*"connect_four",\s*"tournament"\]\.includes\(\s*widget\.widgetType,?\s*\)/.test(
+        landingPageSource,
       ) &&
       landingPageSource.includes("bets: 3400") &&
       landingPageSource.includes("tournament: 2800") &&
-      landingPageSource.includes("getLandingTournamentConfig(previewCycle)") &&
+      landingPageSource.includes(
+        "getLandingTournamentConfig(previewCycle, tournamentCatalogSlots)",
+      ) &&
       landingPageSource.includes("LANDING_TOURNAMENT_MATCHES.map") &&
       landingPageSource.includes("bracketPlayerCount: 8") &&
-      /title: "Tournament",[\s\S]*?widgetType: "tournament",[\s\S]*?layout: "feature",[\s\S]*?width: 960,[\s\S]*?height: 720,/.test(
+      /title: "Tournament",[\s\S]*?widgetType: "tournament",[\s\S]*?layout: "square",[\s\S]*?width: 960,[\s\S]*?height: 480,/.test(
         landingPageSource,
+      ) &&
+      landingPageSource.includes(
+        'widget.widgetType === "tournament" && !floating ? 0.84 : 1',
       ) &&
       landingPageSource.includes("height: 520") &&
       landingPageSource.includes('"liquid",') &&
@@ -1102,10 +1107,10 @@ try {
       betterWidgetStylesSource.includes(
         "`${action.id}-shard-${row}-${column}`",
       ) &&
-      /bonus_hunt:\s*\{[\s\S]*?showRequests: true,\s*animations: false,/.test(
+      /bonus_hunt:\s*\{[\s\S]*?showRequests: true,[\s\S]*?animations: false,/.test(
         betterWidgetPackagesSource,
       ) &&
-      /bonus_hunt:\s*\{[\s\S]*?showRequests: true,\s*animations: false,/.test(
+      /bonus_hunt:\s*\{[\s\S]*?showRequests: true,[\s\S]*?animations: false,/.test(
         standardWidgetPresetsSource,
       ) &&
       /bonus_hunt:\s*\{[\s\S]*?requestActionAnimations: false,/.test(
