@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { getWidgetAppearanceV2Elements } from "../src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js";
 import { STANDARD_BETTER_WIDGET_CONTROLS } from "../src/components/OverlayCenter/editor/standardWidgetPresets.js";
 
@@ -13,6 +13,13 @@ const controlsSource = readFileSync(
 const rendererSource = readFileSync(
   new URL(
     "../src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const smokeRendererSource = readFileSync(
+  new URL(
+    "../src/components/OverlayCenter/widgets/background/ChromaKeySmoke.jsx",
     import.meta.url,
   ),
   "utf8",
@@ -54,6 +61,10 @@ for (const control of [
   "fxGlimpseSpeed",
   "fxScanlines",
   "fxVignette",
+  "fxSmoke",
+  "fxSmokeOpacity",
+  "fxSmokeTolerance",
+  "fxSmokeSoftness",
 ]) {
   assert.ok(
     controlsSource.includes(control),
@@ -94,6 +105,10 @@ for (const control of [
   "fxGlimpseSpeed",
   "fxScanlines",
   "fxVignette",
+  "fxSmoke",
+  "fxSmokeOpacity",
+  "fxSmokeTolerance",
+  "fxSmokeSoftness",
 ]) {
   assert.ok(
     elements.effects.controls.includes(control),
@@ -113,6 +128,17 @@ assert.ok(
 assert.ok(
   rendererSource.includes('if (value === true) return "bokeh";'),
   "Shared Background renderer preserves legacy boolean particle saves",
+);
+assert.ok(
+  existsSync(new URL("../public/smoke_effect.mp4", import.meta.url)),
+  "Bundled smoke effect video exists",
+);
+assert.ok(
+  rendererSource.includes("<ChromaKeySmoke") &&
+    smokeRendererSource.includes('src="/smoke_effect.mp4"') &&
+    smokeRendererSource.includes("getImageData") &&
+    smokeRendererSource.includes("putImageData"),
+  "Shared Background renderer chroma-keys the bundled smoke video",
 );
 
 console.log("Background editor controls and shared renderer checks passed.");

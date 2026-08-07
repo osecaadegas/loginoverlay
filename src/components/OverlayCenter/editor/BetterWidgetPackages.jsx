@@ -1008,6 +1008,10 @@ const BASE_BETTER_CONFIG = {
     fxGlimpse: "none",
     fxGlimpseColor: "#ffffff",
     fxGlimpseSpeed: 50,
+    fxSmoke: false,
+    fxSmokeOpacity: 65,
+    fxSmokeTolerance: 55,
+    fxSmokeSoftness: 35,
     fxScanlines: true,
     fxVignette: true,
   },
@@ -4325,6 +4329,39 @@ function SimpleThemedControls({
               )}
             </Section>
             <Section title="Atmosphere" icon={<Waves size={13} />}>
+              <ToggleRow
+                label="Green-screen smoke"
+                checked={c.fxSmoke === true}
+                onChange={(fxSmoke) => set({ fxSmoke })}
+              />
+              {c.fxSmoke === true && (
+                <>
+                  <SliderRow
+                    label="Smoke opacity"
+                    value={c.fxSmokeOpacity ?? 65}
+                    min={0}
+                    max={100}
+                    unit="%"
+                    onChange={(fxSmokeOpacity) => set({ fxSmokeOpacity })}
+                  />
+                  <SliderRow
+                    label="Green removal"
+                    value={c.fxSmokeTolerance ?? 55}
+                    min={0}
+                    max={100}
+                    unit="%"
+                    onChange={(fxSmokeTolerance) => set({ fxSmokeTolerance })}
+                  />
+                  <SliderRow
+                    label="Edge softness"
+                    value={c.fxSmokeSoftness ?? 35}
+                    min={0}
+                    max={100}
+                    unit="%"
+                    onChange={(fxSmokeSoftness) => set({ fxSmokeSoftness })}
+                  />
+                </>
+              )}
               <Segmented
                 value={fogEffect}
                 columns={4}

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import SlotImage from "../SlotImage";
 import "../background/BackgroundWidget.css";
+import ChromaKeySmoke from "../background/ChromaKeySmoke";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
 
 function attrs(widgetType, config, elementId, stateId) {
@@ -5419,6 +5420,10 @@ function BetterBackgroundEffects({
   glimpseEffect,
   glimpseColor,
   glimpseSpeed,
+  showSmoke,
+  smokeOpacity,
+  smokeTolerance,
+  smokeSoftness,
 }) {
   const fogOpacity =
     { light: 0.15, medium: 0.3, heavy: 0.5 }[fogEffect] || 0.15;
@@ -5431,6 +5436,13 @@ function BetterBackgroundEffects({
 
   return (
     <>
+      {showSmoke ? (
+        <ChromaKeySmoke
+          opacity={smokeOpacity}
+          tolerance={smokeTolerance}
+          softness={smokeSoftness}
+        />
+      ) : null}
       {particleType !== "none"
         ? particles.map((particle, index) => (
             <span
@@ -5747,6 +5759,29 @@ export function BetterBackgroundStyle({ config }) {
     100,
     50,
   );
+  const showSmoke = backgroundControlEnabled(
+    subValue(c, "effects", "fxSmoke", c.fxSmoke),
+    false,
+  );
+  const smokeOpacity =
+    clampNumber(
+      subValue(c, "effects", "fxSmokeOpacity", c.fxSmokeOpacity ?? 65),
+      0,
+      100,
+      65,
+    ) / 100;
+  const smokeTolerance = clampNumber(
+    subValue(c, "effects", "fxSmokeTolerance", c.fxSmokeTolerance ?? 55),
+    0,
+    100,
+    55,
+  );
+  const smokeSoftness = clampNumber(
+    subValue(c, "effects", "fxSmokeSoftness", c.fxSmokeSoftness ?? 35),
+    0,
+    100,
+    35,
+  );
   const showScanlines = backgroundControlEnabled(
     subValue(c, "effects", "fxScanlines", c.fxScanlines),
     true,
@@ -5883,6 +5918,10 @@ export function BetterBackgroundStyle({ config }) {
           glimpseEffect={glimpseEffect}
           glimpseColor={glimpseColor}
           glimpseSpeed={glimpseSpeed}
+          showSmoke={showSmoke}
+          smokeOpacity={smokeOpacity}
+          smokeTolerance={smokeTolerance}
+          smokeSoftness={smokeSoftness}
         />
       </div>
       {showScanlines ? (
