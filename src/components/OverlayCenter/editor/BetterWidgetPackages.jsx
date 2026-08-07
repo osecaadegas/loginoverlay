@@ -608,7 +608,7 @@ const BACKGROUND_PRESETS = [
       color1: "#020611",
       color2: "#0a84ff",
       color3: "#f97316",
-      texture: "aurora",
+      textureType: "aurora",
       animSpeed: 10,
     },
   },
@@ -619,7 +619,7 @@ const BACKGROUND_PRESETS = [
       color1: "#03120c",
       color2: "#10b981",
       color3: "#d9f99d",
-      texture: "nebula",
+      textureType: "nebula",
       animSpeed: 13,
     },
   },
@@ -630,7 +630,7 @@ const BACKGROUND_PRESETS = [
       color1: "#0b0418",
       color2: "#8b5cf6",
       color3: "#22d3ee",
-      texture: "diagonal",
+      textureType: "diagonal",
       animSpeed: 9,
     },
   },
@@ -641,7 +641,7 @@ const BACKGROUND_PRESETS = [
       color1: "#0d0a03",
       color2: "#b7791f",
       color3: "#fbbf24",
-      texture: "grid",
+      textureType: "grid",
       animSpeed: 14,
     },
   },
@@ -975,11 +975,13 @@ const BASE_BETTER_CONFIG = {
   background: {
     displayStyle: "better_background",
     bgMode: "texture",
-    texture: "aurora",
+    textureType: "aurora",
     color1: "#020611",
     color2: "#1385e9",
     color3: "#20d8ff",
     intensity: 70,
+    gradientAngle: 135,
+    patternSize: 32,
     animSpeed: 10,
     opacity: 100,
     overlayColor: "#020611",
@@ -996,7 +998,16 @@ const BASE_BETTER_CONFIG = {
     hueRotate: 0,
     grayscale: 0,
     sepia: 0,
-    fxParticles: true,
+    fxParticles: "bokeh",
+    fxParticleColor: "#20d8ff",
+    fxParticleCount: 22,
+    fxParticleSpeed: 50,
+    fxParticleSize: 50,
+    fxFog: "none",
+    fxFogColor: "#000000",
+    fxGlimpse: "none",
+    fxGlimpseColor: "#ffffff",
+    fxGlimpseSpeed: 50,
     fxScanlines: true,
     fxVignette: true,
   },
@@ -3948,12 +3959,22 @@ function SimpleThemedControls({
   }
 
   if (type === "background") {
+    const sourceMode = c.bgMode || "texture";
+    const isTextureSource = sourceMode === "texture";
+    const isMediaSource = sourceMode === "image" || sourceMode === "video";
+    const texture = c.textureType || c.texture || "aurora";
+    const particleEffect =
+      c.fxParticles === true ? "bokeh" : c.fxParticles || "none";
+    const fogEffect = c.fxFog || "none";
+    const glimpseEffect = c.fxGlimpse || "none";
     const tabs = [
-      ["presets", <Sparkles size={12} />, "Presets"],
-      ["colors", <Palette size={12} />, "Colors"],
-      ["source", <ImagePlus size={12} />, "Source"],
-      ["textures", <Layers size={12} />, "Texture"],
-      ["effects", <Zap size={12} />, "Effects"],
+      ["presets", <Sparkles key="presets" size={12} />, "Presets"],
+      ["colors", <Palette key="colors" size={12} />, "Colors"],
+      ["source", <ImagePlus key="source" size={12} />, "Source"],
+      ...(isTextureSource
+        ? [["textures", <Layers key="textures" size={12} />, "Texture"]]
+        : []),
+      ["effects", <Zap key="effects" size={12} />, "Effects"],
     ];
     const current = activeTab(tabs);
     return (
@@ -3987,87 +4008,182 @@ function SimpleThemedControls({
           </Section>
         )}
         {current === "colors" && (
-          <Section title="Palette Configuration" icon={<Palette size={13} />}>
-            {[
-              ["color1", "Base Backdrop"],
-              ["color2", "Primary Hue"],
-              ["color3", "Accent Tone"],
-              ["overlayColor", "Tint"],
-            ].map(([key, label]) => (
+          <>
+            {isTextureSource && (
+              <Section title="Texture palette" icon={<Palette size={13} />}>
+                {[
+                  ["color1", "Base backdrop", "#020611"],
+                  ["color2", "Primary hue", "#1385e9"],
+                  ["color3", "Accent tone", "#20d8ff"],
+                ].map(([key, label, fallback]) => (
+                  <ColorRow
+                    key={key}
+                    label={label}
+                    value={c[key] || fallback}
+                    onChange={(value) => set({ [key]: value })}
+                  />
+                ))}
+                <SliderRow
+                  label="Texture intensity"
+                  value={c.intensity ?? 70}
+                  min={0}
+                  max={100}
+                  unit="%"
+                  onChange={(intensity) => set({ intensity })}
+                />
+              </Section>
+            )}
+            <Section title="Scene finish" icon={<Layers size={13} />}>
               <ColorRow
-                key={key}
-                label={label}
-                value={c[key]}
-                onChange={(value) => set({ [key]: value })}
+                label="Tint color"
+                value={c.overlayColor || "#020611"}
+                onChange={(overlayColor) => set({ overlayColor })}
               />
-            ))}
-            <SliderRow
-              label="Color Saturation & Intensity"
-              value={c.intensity}
-              min={20}
-              max={100}
-              unit="%"
-              onChange={(intensity) => set({ intensity })}
-            />
-            <SliderRow
-              label="Tint opacity"
-              value={c.overlayOpacity}
-              min={0}
-              max={80}
-              unit="%"
-              onChange={(overlayOpacity) => set({ overlayOpacity })}
-            />
-          </Section>
+              <SliderRow
+                label="Tint opacity"
+                value={c.overlayOpacity ?? 18}
+                min={0}
+                max={100}
+                unit="%"
+                onChange={(overlayOpacity) => set({ overlayOpacity })}
+              />
+              <SliderRow
+                label="Scene opacity"
+                value={c.opacity ?? 100}
+                min={0}
+                max={100}
+                unit="%"
+                onChange={(opacity) => set({ opacity })}
+              />
+            </Section>
+          </>
         )}
         {current === "source" && (
-          <Section title="Source" icon={<ImagePlus size={13} />}>
-            <Segmented
-              value={c.bgMode}
-              columns={3}
-              options={["texture", "image", "video"].map((key) => ({
-                key,
-                name: key,
-              }))}
-              onChange={(bgMode) => set({ bgMode })}
-            />
-            <TextRow
-              label="Image URL"
-              value={c.imageUrl}
-              onChange={(imageUrl) => set({ imageUrl })}
-            />
-            <TextRow
-              label="Video URL"
-              value={c.videoUrl}
-              onChange={(videoUrl) => set({ videoUrl })}
-            />
-            <Segmented
-              value={c.imageFit}
-              columns={3}
-              options={["cover", "contain", "fill"].map((key) => ({
-                key,
-                name: key,
-              }))}
-              onChange={(imageFit) => set({ imageFit })}
-            />
-            <TextRow
-              label="Image position"
-              value={c.imagePosition}
-              onChange={(imagePosition) => set({ imagePosition })}
-            />
-            <SliderRow
-              label="Media opacity"
-              value={c.mediaOpacity}
-              min={0}
-              max={100}
-              unit="%"
-              onChange={(mediaOpacity) => set({ mediaOpacity })}
-            />
-          </Section>
+          <>
+            <Section title="Background source" icon={<ImagePlus size={13} />}>
+              <Segmented
+                value={sourceMode}
+                columns={3}
+                options={["texture", "image", "video"].map((key) => ({
+                  key,
+                  name: key,
+                }))}
+                onChange={(bgMode) => set({ bgMode })}
+              />
+              {sourceMode === "image" && (
+                <TextRow
+                  label="Image URL"
+                  value={c.imageUrl}
+                  onChange={(imageUrl) => set({ imageUrl })}
+                />
+              )}
+              {sourceMode === "video" && (
+                <TextRow
+                  label="Video URL"
+                  value={c.videoUrl}
+                  onChange={(videoUrl) => set({ videoUrl })}
+                />
+              )}
+              {isMediaSource && (
+                <>
+                  <Segmented
+                    value={c.imageFit || "cover"}
+                    columns={3}
+                    options={["cover", "contain", "fill"].map((key) => ({
+                      key,
+                      name: key,
+                    }))}
+                    onChange={(imageFit) => set({ imageFit })}
+                  />
+                  <SelectRow
+                    label="Media position"
+                    value={c.imagePosition || "center"}
+                    options={[
+                      { value: "center", label: "Center" },
+                      { value: "top", label: "Top" },
+                      { value: "bottom", label: "Bottom" },
+                      { value: "left", label: "Left" },
+                      { value: "right", label: "Right" },
+                    ]}
+                    onChange={(imagePosition) => set({ imagePosition })}
+                  />
+                  <SliderRow
+                    label="Media opacity"
+                    value={c.mediaOpacity ?? 88}
+                    min={0}
+                    max={100}
+                    unit="%"
+                    onChange={(mediaOpacity) => set({ mediaOpacity })}
+                  />
+                </>
+              )}
+            </Section>
+            {isMediaSource && (
+              <Section title="Media treatment" icon={<Sliders size={13} />}>
+                <SliderRow
+                  label="Brightness"
+                  value={c.brightness ?? 100}
+                  min={40}
+                  max={180}
+                  unit="%"
+                  onChange={(brightness) => set({ brightness })}
+                />
+                <SliderRow
+                  label="Contrast"
+                  value={c.contrast ?? 100}
+                  min={40}
+                  max={180}
+                  unit="%"
+                  onChange={(contrast) => set({ contrast })}
+                />
+                <SliderRow
+                  label="Saturation"
+                  value={c.saturation ?? 100}
+                  min={0}
+                  max={200}
+                  unit="%"
+                  onChange={(saturation) => set({ saturation })}
+                />
+                <SliderRow
+                  label="Blur"
+                  value={c.blur ?? 0}
+                  min={0}
+                  max={18}
+                  unit="px"
+                  onChange={(blur) => set({ blur })}
+                />
+                <SliderRow
+                  label="Hue rotate"
+                  value={c.hueRotate ?? 0}
+                  min={-180}
+                  max={180}
+                  unit="deg"
+                  onChange={(hueRotate) => set({ hueRotate })}
+                />
+                <SliderRow
+                  label="Grayscale"
+                  value={c.grayscale ?? 0}
+                  min={0}
+                  max={100}
+                  unit="%"
+                  onChange={(grayscale) => set({ grayscale })}
+                />
+                <SliderRow
+                  label="Sepia"
+                  value={c.sepia ?? 0}
+                  min={0}
+                  max={100}
+                  unit="%"
+                  onChange={(sepia) => set({ sepia })}
+                />
+              </Section>
+            )}
+          </>
         )}
-        {current === "textures" && (
+        {current === "textures" && isTextureSource && (
           <Section title="Tactile Texture Layers" icon={<Waves size={13} />}>
             <Segmented
-              value={c.texture}
+              value={texture}
               columns={3}
               options={[
                 "aurora",
@@ -4077,27 +4193,39 @@ function SimpleThemedControls({
                 "nebula",
                 "noise",
               ].map((key) => ({ key, name: key }))}
-              onChange={(texture) => set({ texture })}
+              onChange={(textureType) => set({ textureType })}
             />
+            {["aurora", "diagonal", "nebula"].includes(texture) && (
+              <SliderRow
+                label="Flow angle"
+                value={c.gradientAngle ?? 135}
+                min={0}
+                max={360}
+                unit="deg"
+                onChange={(gradientAngle) => set({ gradientAngle })}
+              />
+            )}
+            {["grid", "dots", "diagonal", "noise"].includes(texture) && (
+              <SliderRow
+                label="Pattern scale"
+                value={c.patternSize ?? 32}
+                min={8}
+                max={120}
+                unit="px"
+                onChange={(patternSize) => set({ patternSize })}
+              />
+            )}
             <SliderRow
-              label="Flow Animation Speed"
-              value={c.animSpeed}
+              label="Motion duration"
+              value={c.animSpeed ?? 10}
               min={4}
               max={30}
               unit="s"
               onChange={(animSpeed) => set({ animSpeed })}
             />
             <SliderRow
-              label="Opacity"
-              value={c.opacity}
-              min={0}
-              max={100}
-              unit="%"
-              onChange={(opacity) => set({ opacity })}
-            />
-            <SliderRow
               label="Brightness"
-              value={c.brightness}
+              value={c.brightness ?? 100}
               min={40}
               max={180}
               unit="%"
@@ -4105,7 +4233,7 @@ function SimpleThemedControls({
             />
             <SliderRow
               label="Contrast"
-              value={c.contrast}
+              value={c.contrast ?? 100}
               min={40}
               max={180}
               unit="%"
@@ -4113,64 +4241,128 @@ function SimpleThemedControls({
             />
             <SliderRow
               label="Saturation"
-              value={c.saturation}
+              value={c.saturation ?? 100}
               min={0}
               max={200}
               unit="%"
               onChange={(saturation) => set({ saturation })}
             />
-          </Section>
-        )}
-        {current === "effects" && (
-          <Section title="Particle & Fluid FX" icon={<Sparkles size={13} />}>
-            <ToggleRow
-              label="Particles"
-              checked={c.fxParticles}
-              onChange={(fxParticles) => set({ fxParticles })}
-            />
-            <ToggleRow
-              label="Scanlines"
-              checked={c.fxScanlines}
-              onChange={(fxScanlines) => set({ fxScanlines })}
-            />
-            <ToggleRow
-              label="Vignette"
-              checked={c.fxVignette}
-              onChange={(fxVignette) => set({ fxVignette })}
-            />
             <SliderRow
               label="Blur"
-              value={c.blur}
+              value={c.blur ?? 0}
               min={0}
               max={18}
               unit="px"
               onChange={(blur) => set({ blur })}
             />
-            <SliderRow
-              label="Hue rotate"
-              value={c.hueRotate}
-              min={-180}
-              max={180}
-              unit="deg"
-              onChange={(hueRotate) => set({ hueRotate })}
-            />
-            <SliderRow
-              label="Grayscale"
-              value={c.grayscale}
-              min={0}
-              max={100}
-              unit="%"
-              onChange={(grayscale) => set({ grayscale })}
-            />
-            <SliderRow
-              label="Sepia"
-              value={c.sepia}
-              min={0}
-              max={100}
-              unit="%"
-              onChange={(sepia) => set({ sepia })}
-            />
           </Section>
+        )}
+        {current === "effects" && (
+          <>
+            <Section title="Particles" icon={<Sparkles size={13} />}>
+              <Segmented
+                value={particleEffect}
+                columns={3}
+                options={[
+                  "none",
+                  "bokeh",
+                  "orbs",
+                  "fireflies",
+                  "snow",
+                  "rain",
+                ].map((key) => ({ key, name: key }))}
+                onChange={(fxParticles) => set({ fxParticles })}
+              />
+              {particleEffect !== "none" && (
+                <>
+                  <ColorRow
+                    label="Particle color"
+                    value={c.fxParticleColor || c.color3 || "#ffffff"}
+                    onChange={(fxParticleColor) => set({ fxParticleColor })}
+                  />
+                  <SliderRow
+                    label="Particle count"
+                    value={c.fxParticleCount ?? 22}
+                    min={5}
+                    max={80}
+                    onChange={(fxParticleCount) => set({ fxParticleCount })}
+                  />
+                  <SliderRow
+                    label="Particle speed"
+                    value={c.fxParticleSpeed ?? 50}
+                    min={0}
+                    max={100}
+                    unit="%"
+                    onChange={(fxParticleSpeed) => set({ fxParticleSpeed })}
+                  />
+                  <SliderRow
+                    label="Particle size"
+                    value={c.fxParticleSize ?? 50}
+                    min={10}
+                    max={100}
+                    unit="%"
+                    onChange={(fxParticleSize) => set({ fxParticleSize })}
+                  />
+                </>
+              )}
+            </Section>
+            <Section title="Atmosphere" icon={<Waves size={13} />}>
+              <Segmented
+                value={fogEffect}
+                columns={4}
+                options={["none", "light", "medium", "heavy"].map((key) => ({
+                  key,
+                  name: key,
+                }))}
+                onChange={(fxFog) => set({ fxFog })}
+              />
+              {fogEffect !== "none" && (
+                <ColorRow
+                  label="Fog color"
+                  value={c.fxFogColor || "#000000"}
+                  onChange={(fxFogColor) => set({ fxFogColor })}
+                />
+              )}
+              <Segmented
+                value={glimpseEffect}
+                columns={4}
+                options={["none", "sweep", "pulse", "flicker"].map((key) => ({
+                  key,
+                  name: key,
+                }))}
+                onChange={(fxGlimpse) => set({ fxGlimpse })}
+              />
+              {glimpseEffect !== "none" && (
+                <>
+                  <ColorRow
+                    label="Light color"
+                    value={c.fxGlimpseColor || "#ffffff"}
+                    onChange={(fxGlimpseColor) => set({ fxGlimpseColor })}
+                  />
+                  <SliderRow
+                    label="Light speed"
+                    value={c.fxGlimpseSpeed ?? 50}
+                    min={0}
+                    max={100}
+                    unit="%"
+                    onChange={(fxGlimpseSpeed) => set({ fxGlimpseSpeed })}
+                  />
+                </>
+              )}
+            </Section>
+            <Section title="Finishing layers" icon={<Layers size={13} />}>
+              <ToggleRow
+                label="Scanlines"
+                checked={c.fxScanlines !== false}
+                onChange={(fxScanlines) => set({ fxScanlines })}
+              />
+              <ToggleRow
+                label="Vignette"
+                checked={c.fxVignette !== false}
+                onChange={(fxVignette) => set({ fxVignette })}
+              />
+            </Section>
+          </>
         )}
       </div>
     );

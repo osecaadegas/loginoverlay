@@ -297,6 +297,8 @@ export const BACKGROUND_STYLE_KEYS = [
   "fxGlimpse",
   "fxGlimpseColor",
   "fxGlimpseSpeed",
+  "fxScanlines",
+  "fxVignette",
   "custom_css",
 ];
 

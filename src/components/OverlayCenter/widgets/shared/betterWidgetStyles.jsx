@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import SlotImage from "../SlotImage";
+import "../background/BackgroundWidget.css";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
 
 function attrs(widgetType, config, elementId, stateId) {
@@ -5361,6 +5362,117 @@ function backgroundControlEnabled(value, fallback = true) {
   );
 }
 
+const BETTER_BACKGROUND_PARTICLE_TYPES = new Set([
+  "bokeh",
+  "orbs",
+  "fireflies",
+  "snow",
+  "rain",
+]);
+
+function normalizeBetterBackgroundParticleType(value) {
+  if (value === true) return "bokeh";
+  const normalized = String(value || "").toLowerCase();
+  return BETTER_BACKGROUND_PARTICLE_TYPES.has(normalized) ? normalized : "none";
+}
+
+function betterBackgroundParticleStyle(particle, index, type, color) {
+  const falling = type === "rain" || type === "snow";
+  const glowing = type === "fireflies" || type === "orbs";
+  const opacity = 0.3 + ((index * 17) % 50) / 100;
+  let background = color;
+  let filter;
+  let boxShadow;
+
+  if (type === "bokeh") {
+    background = `radial-gradient(circle, ${alphaColor(color, 0.22)}, ${alphaColor(color, 0.06)} 60%, transparent 72%)`;
+    filter = `blur(${Math.max(2, particle.size * 0.3)}px)`;
+  } else if (glowing) {
+    background = `radial-gradient(circle, ${color}, transparent 70%)`;
+    boxShadow = `0 0 ${particle.size * 2}px ${alphaColor(color, 0.72)}`;
+    if (type === "fireflies") filter = "blur(1px)";
+  }
+
+  return {
+    position: "absolute",
+    left: particle.left,
+    top: falling ? "-5%" : particle.top,
+    width: particle.size,
+    height: type === "rain" ? particle.size * 6 : particle.size,
+    borderRadius: type === "rain" ? 1 : "50%",
+    background,
+    filter,
+    boxShadow,
+    opacity,
+    animation: `oc-fx-${type === "orbs" ? "orb" : type} ${particle.duration} ${particle.delay} ${type === "rain" ? "linear" : "ease-in-out"} infinite`,
+    "--fx-drift": particle.drift,
+    "--fx-opacity": opacity,
+  };
+}
+
+function BetterBackgroundEffects({
+  particles,
+  particleType,
+  particleColor,
+  fogEffect,
+  fogColor,
+  glimpseEffect,
+  glimpseColor,
+  glimpseSpeed,
+}) {
+  const fogOpacity =
+    { light: 0.15, medium: 0.3, heavy: 0.5 }[fogEffect] || 0.15;
+  const fogLayers = fogEffect === "heavy" ? [1, 2, 3] : [1, 2];
+  const showFog = ["light", "medium", "heavy"].includes(fogEffect);
+  const showGlimpse = ["sweep", "pulse", "flicker"].includes(glimpseEffect);
+  const glimpseDuration =
+    ((100 - glimpseSpeed) / 10 + 2) *
+    (glimpseEffect === "flicker" ? 0.3 : 1);
+
+  return (
+    <>
+      {particleType !== "none"
+        ? particles.map((particle, index) => (
+            <span
+              key={`${particleType}-${particle.left}-${particle.top}`}
+              className={`oc-fx-particle oc-fx-particle--${particleType}`}
+              style={betterBackgroundParticleStyle(
+                particle,
+                index,
+                particleType,
+                particleColor,
+              )}
+            />
+          ))
+        : null}
+      {showFog ? (
+        <div className="oc-fx-fog" style={{ position: "absolute", inset: 0 }}>
+          {fogLayers.map((layer) => (
+            <div
+              key={`fog-${layer}`}
+              className={`oc-fx-fog-layer oc-fx-fog-${layer}`}
+              style={{
+                "--fog-color": fogColor,
+                "--fog-opacity":
+                  fogOpacity * ({ 1: 1, 2: 0.7, 3: 0.5 }[layer] || 1),
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
+      {showGlimpse ? (
+        <div
+          className={`oc-fx-glimpse oc-fx-glimpse--${glimpseEffect}`}
+          style={{
+            "--glimpse-color": glimpseColor,
+            "--glimpse-dur": `${glimpseDuration}s`,
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+
 function betterBackgroundTextureStyle({
   texture,
   color1,
@@ -5368,9 +5480,13 @@ function betterBackgroundTextureStyle({
   color3,
   intensity,
   speed,
+  gradientAngle,
+  patternSize,
 }) {
   const strength = clampNumber(intensity, 0, 100, 70) / 100;
   const duration = `${Math.max(4, numberValue(speed, 10))}s`;
+  const angle = clampNumber(gradientAngle, 0, 360, 135);
+  const scale = clampNumber(patternSize, 8, 120, 32);
   const softA = alphaColor(color2, 0.16 * strength);
   const softB = alphaColor(color3, 0.2 * strength);
   const strongA = alphaColor(color2, 0.34 * strength);
@@ -5387,7 +5503,7 @@ function betterBackgroundTextureStyle({
           `linear-gradient(${line} 1px, transparent 1px)`,
           `linear-gradient(90deg, ${line} 1px, transparent 1px)`,
         ].join(", "),
-        backgroundSize: "120% 120%, 52px 52px, 52px 52px",
+        backgroundSize: `120% 120%, ${scale}px ${scale}px, ${scale}px ${scale}px`,
         animation: `better-bg-pan ${duration} linear infinite`,
       };
     case "dots":
@@ -5397,7 +5513,7 @@ function betterBackgroundTextureStyle({
           `radial-gradient(circle at 72% 28%, ${strongA}, transparent 31%)`,
           `radial-gradient(circle, ${line} 1.4px, transparent 2px)`,
         ].join(", "),
-        backgroundSize: "125% 125%, 28px 28px",
+        backgroundSize: `125% 125%, ${scale}px ${scale}px`,
         animation: `better-bg-pan ${duration} ease-in-out infinite`,
       };
     case "diagonal":
@@ -5405,10 +5521,10 @@ function betterBackgroundTextureStyle({
         backgroundColor: color1,
         backgroundImage: [
           `radial-gradient(circle at 82% 24%, ${strongB}, transparent 30%)`,
-          `repeating-linear-gradient(135deg, ${faintLine} 0 2px, transparent 2px 18px)`,
-          `linear-gradient(135deg, ${color1}, ${alphaColor(color2, 0.34 * strength)} 54%, ${color1})`,
+          `repeating-linear-gradient(${angle}deg, ${faintLine} 0 2px, transparent 2px ${scale}px)`,
+          `linear-gradient(${angle}deg, ${color1}, ${alphaColor(color2, 0.34 * strength)} 54%, ${color1})`,
         ].join(", "),
-        backgroundSize: "120% 120%, 36px 36px, 140% 140%",
+        backgroundSize: `120% 120%, ${scale * 2}px ${scale * 2}px, 140% 140%`,
         animation: `better-bg-pan ${duration} ease-in-out infinite`,
       };
     case "nebula":
@@ -5417,7 +5533,7 @@ function betterBackgroundTextureStyle({
           `radial-gradient(circle at 20% 18%, ${strongB}, transparent 30%)`,
           `radial-gradient(circle at 72% 34%, ${strongA}, transparent 34%)`,
           `radial-gradient(circle at 48% 86%, ${alphaColor(color3, 0.18 * strength)}, transparent 36%)`,
-          `linear-gradient(145deg, ${color1}, ${alphaColor(color2, 0.22 * strength)} 52%, ${color1})`,
+          `linear-gradient(${angle}deg, ${color1}, ${alphaColor(color2, 0.22 * strength)} 52%, ${color1})`,
         ].join(", "),
         backgroundSize: "130% 130%, 126% 126%, 142% 142%, cover",
         animation: `better-bg-pan ${duration} ease-in-out infinite`,
@@ -5431,7 +5547,7 @@ function betterBackgroundTextureStyle({
           `linear-gradient(135deg, ${color1}, ${softA} 55%, ${color1})`,
         ].join(", "),
         backgroundBlendMode: "overlay, screen, normal",
-        backgroundSize: "256px 256px, 124% 124%, cover",
+        backgroundSize: `${Math.max(64, scale * 8)}px ${Math.max(64, scale * 8)}px, 124% 124%, cover`,
         animation: `better-bg-pan ${duration} linear infinite`,
       };
     case "aurora":
@@ -5440,7 +5556,7 @@ function betterBackgroundTextureStyle({
         backgroundImage: [
           `radial-gradient(circle at 20% 20%, ${strongB}, transparent 30%)`,
           `radial-gradient(circle at 82% 35%, ${strongA}, transparent 34%)`,
-          `linear-gradient(135deg, ${color1}, ${alphaColor(color2, 0.48 * strength)} 52%, ${color1})`,
+          `linear-gradient(${angle}deg, ${color1}, ${alphaColor(color2, 0.48 * strength)} 52%, ${color1})`,
         ].join(", "),
         backgroundSize: "130% 130%, 125% 125%, cover",
         animation: `better-bg-pan ${duration} ease-in-out infinite`,
@@ -5453,7 +5569,12 @@ export function BetterBackgroundStyle({ config }) {
   const color1 = subValue(c, "texture", "background", c.color1 || "#030712");
   const color2 = subValue(c, "texture", "accentColor", c.color2 || "#1d4ed8");
   const color3 = subValue(c, "texture", "fillColor", c.color3 || "#f59e0b");
-  const texture = subValue(c, "texture", "texture", c.texture || "aurora");
+  const texture = subValue(
+    c,
+    "texture",
+    "textureType",
+    c.textureType || c.texture || "aurora",
+  );
   const imageUrl = subValue(c, "media", "imageUrl", c.imageUrl || "");
   const videoUrl = subValue(c, "media", "videoUrl", c.videoUrl || "");
   const imageFit = subValue(c, "media", "imageFit", c.imageFit || "cover");
@@ -5475,6 +5596,18 @@ export function BetterBackgroundStyle({ config }) {
     0,
     100,
     70,
+  );
+  const gradientAngle = clampNumber(
+    subValue(c, "texture", "gradientAngle", c.gradientAngle ?? 135),
+    0,
+    360,
+    135,
+  );
+  const patternSize = clampNumber(
+    subValue(c, "texture", "patternSize", c.patternSize ?? 32),
+    8,
+    120,
+    32,
   );
   const mediaOpacityRaw = numberValue(
     subValue(c, "media", "opacity", c.mediaOpacity ?? 88),
@@ -5531,9 +5664,56 @@ export function BetterBackgroundStyle({ config }) {
   );
   const tintOpacity =
     tintOpacityRaw > 1 ? tintOpacityRaw / 100 : tintOpacityRaw;
-  const showParticles = backgroundControlEnabled(
-    subValue(c, "effects", "fxParticles", c.fxParticles),
-    true,
+  const particleValue = subValue(c, "effects", "fxParticles", c.fxParticles);
+  const particleType = normalizeBetterBackgroundParticleType(particleValue);
+  const showParticles = particleType !== "none";
+  const particleColor = subValue(
+    c,
+    "effects",
+    "fxParticleColor",
+    c.fxParticleColor || color3,
+  );
+  const particleCount = clampNumber(
+    subValue(c, "effects", "fxParticleCount", c.fxParticleCount ?? 22),
+    5,
+    80,
+    22,
+  );
+  const particleSpeed = clampNumber(
+    subValue(c, "effects", "fxParticleSpeed", c.fxParticleSpeed ?? 50),
+    0,
+    100,
+    50,
+  );
+  const particleSize = clampNumber(
+    subValue(c, "effects", "fxParticleSize", c.fxParticleSize ?? 50),
+    10,
+    100,
+    50,
+  );
+  const fogEffect = String(
+    subValue(c, "effects", "fxFog", c.fxFog || "none"),
+  ).toLowerCase();
+  const fogColor = subValue(
+    c,
+    "effects",
+    "fxFogColor",
+    c.fxFogColor || "#000000",
+  );
+  const glimpseEffect = String(
+    subValue(c, "effects", "fxGlimpse", c.fxGlimpse || "none"),
+  ).toLowerCase();
+  const glimpseColor = subValue(
+    c,
+    "effects",
+    "fxGlimpseColor",
+    c.fxGlimpseColor || "#ffffff",
+  );
+  const glimpseSpeed = clampNumber(
+    subValue(c, "effects", "fxGlimpseSpeed", c.fxGlimpseSpeed ?? 50),
+    0,
+    100,
+    50,
   );
   const showScanlines = backgroundControlEnabled(
     subValue(c, "effects", "fxScanlines", c.fxScanlines),
@@ -5545,15 +5725,19 @@ export function BetterBackgroundStyle({ config }) {
   );
   const particles = useMemo(
     () =>
-      Array.from({ length: 22 }, (_, index) => ({
+      Array.from({ length: particleCount }, (_, index) => ({
         left: `${(index * 37) % 100}%`,
         top: `${(index * 53) % 100}%`,
-        size: 60 + ((index * 19) % 90),
-        delay: `${(index % 8) * -0.8}s`,
-        duration: `${speed + (index % 5)}s`,
-        color: index % 3 === 0 ? color3 : color2,
+        size:
+          ({ rain: 2, snow: 6, fireflies: 4, bokeh: 30, orbs: 9 }[
+            particleType
+          ] || 8) *
+          (0.5 + (((index * 19) % 60) / 100) * (particleSize / 50)),
+        delay: `${(index % 10) * -0.7}s`,
+        duration: `${(4 + (index % 7)) * ((100 - particleSpeed) / 50 + 0.5)}s`,
+        drift: `${((index * 23) % 61) - 30}px`,
       })),
-    [color2, color3, speed],
+    [particleCount, particleSize, particleSpeed, particleType],
   );
   const textureStyle = useMemo(
     () =>
@@ -5564,8 +5748,19 @@ export function BetterBackgroundStyle({ config }) {
         color3,
         intensity,
         speed,
+        gradientAngle,
+        patternSize,
       }),
-    [texture, color1, color2, color3, intensity, speed],
+    [
+      texture,
+      color1,
+      color2,
+      color3,
+      intensity,
+      speed,
+      gradientAngle,
+      patternSize,
+    ],
   );
 
   const layerBase = {
@@ -5647,26 +5842,16 @@ export function BetterBackgroundStyle({ config }) {
         })}
         {...attrs("background", c, "effects")}
       >
-        {showParticles
-          ? particles.map((particle, index) => (
-              <span
-                key={index}
-                style={{
-                  position: "absolute",
-                  left: particle.left,
-                  top: particle.top,
-                  width: particle.size,
-                  height: particle.size,
-                  borderRadius: "50%",
-                  background: `radial-gradient(circle, ${alphaColor(particle.color, 0.26)}, transparent 68%)`,
-                  filter: "blur(14px)",
-                  animation: `better-float ${particle.duration} ease-in-out ${particle.delay} infinite`,
-                  "--float-x": `${index % 2 ? -26 : 22}px`,
-                  "--float-y": `${index % 3 ? -18 : 20}px`,
-                }}
-              />
-            ))
-          : null}
+        <BetterBackgroundEffects
+          particles={showParticles ? particles : []}
+          particleType={particleType}
+          particleColor={particleColor}
+          fogEffect={fogEffect}
+          fogColor={fogColor}
+          glimpseEffect={glimpseEffect}
+          glimpseColor={glimpseColor}
+          glimpseSpeed={glimpseSpeed}
+        />
       </div>
       {showScanlines ? (
         <div

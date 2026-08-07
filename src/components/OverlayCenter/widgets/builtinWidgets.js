@@ -352,6 +352,18 @@ registerWidget({
     opacity: 100,
     overlayColor: "#000000",
     overlayOpacity: 0,
+    fxParticles: "none",
+    fxParticleColor: "#20d8ff",
+    fxParticleCount: 22,
+    fxParticleSpeed: 50,
+    fxParticleSize: 50,
+    fxFog: "none",
+    fxFogColor: "#000000",
+    fxGlimpse: "none",
+    fxGlimpseColor: "#ffffff",
+    fxGlimpseSpeed: 50,
+    fxScanlines: false,
+    fxVignette: false,
   },
 });
 

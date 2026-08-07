@@ -1115,6 +1115,8 @@ function buildBackgroundPatch(tokens, styleId) {
     fxGlimpse: "none",
     fxGlimpseColor: accent,
     fxGlimpseSpeed: 50,
+    fxScanlines: false,
+    fxVignette: false,
     subElements: {
       canvas: {
         background: primary,
@@ -1162,6 +1164,8 @@ function buildBackgroundPatch(tokens, styleId) {
         fxGlimpse: "none",
         fxGlimpseColor: accent,
         fxGlimpseSpeed: 50,
+        fxScanlines: false,
+        fxVignette: false,
       },
     },
   };

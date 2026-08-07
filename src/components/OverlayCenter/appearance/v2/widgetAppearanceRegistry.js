@@ -4008,6 +4008,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           "fxGlimpse",
           "fxGlimpseColor",
           "fxGlimpseSpeed",
+          "fxScanlines",
+          "fxVignette",
         ],
       }),
     }),
