@@ -1921,7 +1921,10 @@ function BetterStyleSheet() {
       .better-hunt-root[data-orientation="horizontal"] .better-hunt-shell{padding:8px}
       .better-hunt-horizontal{max-width:min(100%,var(--bh-panel-width,1080px));height:var(--bh-panel-height,auto);max-height:100%;display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) 0;grid-template-rows:minmax(0,1fr) auto;gap:0;transition:grid-template-columns .55s cubic-bezier(.22,.9,.3,1)}
       .better-hunt-horizontal.is-requests-visible{grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) minmax(200px,.7fr)}
-      .better-hunt-hstrip-list{min-width:0;min-height:0;display:grid;grid-template-rows:48px minmax(0,1fr);overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);padding:8px}.better-hunt-hstrip-list .better-hunt-list{height:100%;max-height:var(--bh-list-height)}
+      .better-hunt-hstrip-list{min-width:0;min-height:0;display:grid;grid-template-rows:48px minmax(0,1fr);overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);padding:8px}
+      .better-hunt-hstrip-slot-stats{min-height:0;display:grid;grid-template-rows:150px auto;align-content:start;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 52%,transparent);border-radius:9px;background:var(--bh-inset)}
+      .better-hunt-hstrip-slot-art{position:relative;min-height:0;overflow:hidden}.better-hunt-hstrip-slot-art img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-hstrip-slot-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.92));pointer-events:none}.better-hunt-hstrip-slot-art strong{position:absolute;left:10px;right:10px;bottom:8px;z-index:1;overflow:hidden;color:#fff;font-size:1em;font-weight:950;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;text-shadow:0 2px 5px #000}
+      .better-hunt-hstrip-slot-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.08)}.better-hunt-hstrip-slot-row{min-width:0;display:grid;gap:3px;border-right:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);padding:7px 9px}.better-hunt-hstrip-slot-row:nth-child(even){border-right:0}.better-hunt-hstrip-slot-row:last-child{grid-column:1/-1;border-bottom:0}.better-hunt-hstrip-slot-row strong{overflow:hidden;color:#fff;font-size:.94em;font-weight:950;text-overflow:ellipsis;white-space:nowrap}
       .better-hunt-hstrip-active{position:relative;min-width:0;overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);background:var(--bh-inset)}
       .better-hunt-hstrip-active>img{width:100%;height:100%;display:block;object-fit:cover;animation:better-hunt-kenburns calc(8s / var(--anim-speed,1)) ease-out both}
       .better-hunt-hstrip-active::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.72),transparent 24%,transparent 58%,rgba(0,0,0,.94));pointer-events:none}
@@ -1932,7 +1935,7 @@ function BetterStyleSheet() {
       .better-hunt-hstrip-main{min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden;padding:8px 10px;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent)}
       .better-hunt-hstrip-head{min-width:0;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding:0 2px 7px}.better-hunt-hstrip-title{min-width:0;flex:0 1 auto}.better-hunt-hstrip-title>strong{display:block;overflow:hidden;color:#fff;font-size:1.05em;font-weight:950;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
       .better-hunt-hstrip-list .better-hunt-hstrip-head{justify-content:space-between}
-      .better-hunt-hstrip-main .better-hunt-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto}.better-hunt-hstrip-main .better-hunt-ring,.better-hunt-hstrip-main .better-hunt-stats-panel,.better-hunt-hstrip-main .better-hunt-image-stats-panel{height:184px}.better-hunt-hstrip-main .better-hunt-progress{padding:4px 2px 0}.better-hunt-hstrip-main .better-hunt-card{width:104px;height:146px}
+      .better-hunt-hstrip-main .better-hunt-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto}.better-hunt-hstrip-main .better-hunt-stats-panel,.better-hunt-hstrip-main .better-hunt-image-stats-panel{height:184px}.better-hunt-hstrip-main .better-hunt-progress{padding:4px 2px 0}.better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring{height:250px;min-height:0}.better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-card{width:118px;height:166px}.better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring-floor{inset:auto 70px 10px;height:34px}
       .better-hunt-hstrip-requests{min-width:0;overflow:hidden;border-left:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);opacity:0;transform:translateX(-18px);visibility:hidden;transition:opacity .32s ease .12s,transform .55s cubic-bezier(.22,.9,.3,1),visibility 0s linear .55s}
       .better-hunt-horizontal.is-requests-visible .better-hunt-hstrip-requests{opacity:1;transform:translateX(0);visibility:visible;transition:opacity .32s ease .12s,transform .55s cubic-bezier(.22,.9,.3,1),visibility 0s}
       .better-hunt-hstrip-requests .better-hunt-requests{height:100%;display:grid;grid-template-rows:38px minmax(0,1fr);margin:0!important;border:0;border-radius:0;background:transparent;padding:8px}
@@ -3580,9 +3583,14 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
   };
 
-  const renderRingCarousel = () => (
-    <div
-      className="better-hunt-carousel"
+  const renderRingCarousel = () => {
+    const ringSpacing = orientation === "horizontal" ? 138 : 116;
+    const ringDepth = orientation === "horizontal" ? 150 : 130;
+    const ringAngle = orientation === "horizontal" ? -29 : -32;
+    const ringCenterScale = orientation === "horizontal" ? 1.18 : 1.14;
+    return (
+      <div
+      className="better-hunt-carousel better-hunt-carousel--ring"
       {...attrs("bonus_hunt", c, "slotCarouselContainer")}
     >
       <div
@@ -3615,7 +3623,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                         centered || tier === "extreme"
                           ? undefined
                           : "brightness(.62) saturate(.85)",
-                      transform: `translate3d(-50%, -50%, 0) translate3d(${delta * 116}px, 0, ${-abs * 130}px) rotateY(${delta * -32}deg) scale(${centered ? 1.14 : 0.9})`,
+                      transform: `translate3d(-50%, -50%, 0) translate3d(${delta * ringSpacing}px, 0, ${-abs * ringDepth}px) rotateY(${delta * ringAngle}deg) scale(${centered ? ringCenterScale : 0.9})`,
                     }}
                     {...attrs(
                       "bonus_hunt",
@@ -3640,8 +3648,9 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         )}
       </div>
       {renderProgress()}
-    </div>
-  );
+      </div>
+    );
+  };
 
   const renderCarousel = () =>
     carouselMode === "3d" ? renderRingCarousel() : renderStatsCarousel();
@@ -4145,6 +4154,32 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     if (sessionState === "opening") sessionLabel = "Opening";
     if (sessionState === "ended") sessionLabel = "Ended";
 
+    const currentSlotStats = current
+      ? [
+          [
+            "Bet",
+            bonusBet(current) > 0
+              ? formatMoney(bonusBet(current), money)
+              : "-",
+          ],
+          ["RTP", bonusRtp(current)],
+          [
+            "Volatility",
+            <BetterHuntVolatilityBars
+              key="horizontal-volatility"
+              value={bonusVolatility(current)}
+            />,
+          ],
+          ["Max Win", bonusMaxWin(current)],
+          [
+            "Best",
+            bonusMultiplierValue(current) > 0
+              ? formatMultiplier(bonusMultiplierValue(current))
+              : "-",
+          ],
+        ]
+      : [];
+
     return (
       <section
         className={`better-hunt-panel better-hunt-horizontal${c.showRequests === false ? "" : " is-requests-visible"}${panelShakeClass}`}
@@ -4160,7 +4195,40 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
               {sessionLabel}
             </span>
           </div>
-          {renderList()}
+          {current ? (
+            <div
+              className="better-hunt-hstrip-slot-stats"
+              {...attrs("bonus_hunt", c, "slotCarouselContainer")}
+            >
+              <div className="better-hunt-hstrip-slot-art">
+                <SlotImage
+                  src={bonusImage(current)}
+                  alt={bonusSlotName(current, activeIndex)}
+                  {...attrs("bonus_hunt", c, "slotImage")}
+                />
+                <strong {...attrs("bonus_hunt", c, "slotTitle")}>
+                  {bonusSlotName(current, activeIndex)}
+                </strong>
+              </div>
+              <div className="better-hunt-hstrip-slot-rows">
+                {currentSlotStats.map(([label, value]) => (
+                  <div className="better-hunt-hstrip-slot-row" key={label}>
+                    <span
+                      className="better-hunt-stat-label"
+                      {...attrs("bonus_hunt", c, "statLabel")}
+                    >
+                      {label}
+                    </span>
+                    <strong {...attrs("bonus_hunt", c, "statValue")}>
+                      {value}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="better-hunt-empty">Waiting for hunt data</div>
+          )}
         </div>
 
         <div className="better-hunt-hstrip-main">

@@ -128,11 +128,16 @@ try {
       }),
     );
 
+    const expectedOrientationBody =
+      orientation === "horizontal"
+        ? markup.includes("better-hunt-hstrip-slot-stats") &&
+          !markup.includes("better-hunt-list better-hunt-list--image")
+        : markup.includes("better-hunt-list--image");
     assert.ok(
       markup.includes(`data-orientation="${orientation}"`) &&
         markup.includes("better-hunt-image-stats-panel") &&
         markup.includes("better-hunt-stat-grid--grid") &&
-        markup.includes("better-hunt-list--image") &&
+        expectedOrientationBody &&
         markup.includes("better-hunt-drawer is-open") &&
         markup.includes(">Chat Requests<"),
       `${orientation} honors carousel, stats, list, drawer, and request controls`,
@@ -145,16 +150,46 @@ try {
         "horizontal renders one full stats section",
       );
       assert.ok(
-        markup.indexOf("better-hunt-hstrip-head") <
-          markup.indexOf("better-hunt-list better-hunt-list--image"),
-        "horizontal places the Bonus and state header above the left list",
+        markup.indexOf('<div class="better-hunt-hstrip-head"') <
+          markup.indexOf('<div class="better-hunt-hstrip-slot-stats"'),
+        "horizontal places the Bonus and state header above slot stats",
       );
       assert.ok(
-        !markup.includes("better-hunt-hstrip-stats"),
-        "horizontal removes the duplicate compact stats row",
+        markup.includes("better-hunt-hstrip-slot-rows") &&
+          !markup.includes("better-hunt-list better-hunt-list--image"),
+        "horizontal replaces the slot list with current slot stats",
       );
     }
   }
+
+  const horizontalRingMarkup = renderToStaticMarkup(
+    createElement(BetterBonusHuntStyle, {
+      config: {
+        orientation: "horizontal",
+        carouselMode: "3d",
+        showRequests: false,
+        startMoney: 100,
+      },
+      bonuses: [
+        {
+          id: "horizontal-ring",
+          slot_name: "Mad Blast",
+          bet: 1,
+          rtp: 96.2,
+          volatility: "high",
+          max_win_multiplier: 10000,
+        },
+      ],
+      stats: {},
+      currency: "EUR",
+    }),
+  );
+  assert.ok(
+    horizontalRingMarkup.includes(
+      "better-hunt-carousel better-hunt-carousel--ring",
+    ) && horizontalRingMarkup.includes("scale(1.18)"),
+    "horizontal 3D mode uses the expanded ring layout",
+  );
 
   console.log("Bonus Hunt orientation control checks passed.");
 } finally {
