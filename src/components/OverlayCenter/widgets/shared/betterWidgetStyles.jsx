@@ -5495,6 +5495,38 @@ function betterBackgroundTextureStyle({
   const faintLine = alphaColor(color3, 0.12 * strength);
 
   switch (texture) {
+    case "gradient":
+      return {
+        backgroundColor: color1,
+        backgroundImage: `linear-gradient(${angle}deg, ${color1} 0%, ${color2} 52%, ${color3} 100%)`,
+        backgroundSize: "180% 180%",
+        animation: `better-bg-pan ${duration} ease-in-out infinite`,
+      };
+    case "matte":
+      return {
+        backgroundColor: color1,
+        backgroundImage: [
+          `url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.2'/%3E%3C/svg%3E")`,
+          `radial-gradient(circle at 24% 18%, ${alphaColor(color2, 0.12 * strength)}, transparent 46%)`,
+          `linear-gradient(145deg, ${color1}, ${alphaColor(color3, 0.1 * strength)})`,
+        ].join(", "),
+        backgroundBlendMode: "soft-light, normal, normal",
+        backgroundSize: `${Math.max(48, scale * 5)}px ${Math.max(48, scale * 5)}px, cover, cover`,
+      };
+    case "metallic": {
+      const sheenAngle = (angle + 90) % 360;
+      return {
+        backgroundColor: color1,
+        backgroundImage: [
+          `linear-gradient(${sheenAngle}deg, transparent 18%, ${alphaColor("#ffffff", 0.28 * strength)} 42%, transparent 58%)`,
+          `repeating-linear-gradient(${angle}deg, ${alphaColor("#ffffff", 0.06)} 0 1px, ${alphaColor("#000000", 0.08)} 1px 2px, transparent 2px ${Math.max(4, scale / 2)}px)`,
+          `linear-gradient(${angle}deg, ${color1} 0%, ${color2} 42%, ${color3} 50%, ${color2} 58%, ${color1} 100%)`,
+        ].join(", "),
+        backgroundBlendMode: "screen, overlay, normal",
+        backgroundSize: `180% 180%, ${scale}px ${scale}px, 160% 160%`,
+        animation: `better-bg-pan ${duration} ease-in-out infinite`,
+      };
+    }
     case "grid":
       return {
         backgroundColor: color1,

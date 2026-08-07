@@ -30,6 +30,16 @@ assert.ok(
     controlsSource.includes("onChange={(textureType) => set({ textureType })}"),
   "Background controls write the canonical textureType key with a legacy fallback",
 );
+for (const texture of ["gradient", "matte", "metallic"]) {
+  assert.ok(
+    controlsSource.includes(`"${texture}"`),
+    `Background editor offers the ${texture} texture`,
+  );
+  assert.ok(
+    rendererSource.includes(`case "${texture}":`),
+    `Shared Background renderer implements the ${texture} texture`,
+  );
+}
 for (const control of [
   "gradientAngle",
   "patternSize",

@@ -4187,6 +4187,9 @@ function SimpleThemedControls({
               columns={3}
               options={[
                 "aurora",
+                "gradient",
+                "matte",
+                "metallic",
                 "grid",
                 "dots",
                 "diagonal",
@@ -4195,7 +4198,13 @@ function SimpleThemedControls({
               ].map((key) => ({ key, name: key }))}
               onChange={(textureType) => set({ textureType })}
             />
-            {["aurora", "diagonal", "nebula"].includes(texture) && (
+            {[
+              "aurora",
+              "gradient",
+              "metallic",
+              "diagonal",
+              "nebula",
+            ].includes(texture) && (
               <SliderRow
                 label="Flow angle"
                 value={c.gradientAngle ?? 135}
@@ -4205,7 +4214,14 @@ function SimpleThemedControls({
                 onChange={(gradientAngle) => set({ gradientAngle })}
               />
             )}
-            {["grid", "dots", "diagonal", "noise"].includes(texture) && (
+            {[
+              "matte",
+              "metallic",
+              "grid",
+              "dots",
+              "diagonal",
+              "noise",
+            ].includes(texture) && (
               <SliderRow
                 label="Pattern scale"
                 value={c.patternSize ?? 32}
@@ -4215,14 +4231,16 @@ function SimpleThemedControls({
                 onChange={(patternSize) => set({ patternSize })}
               />
             )}
-            <SliderRow
-              label="Motion duration"
-              value={c.animSpeed ?? 10}
-              min={4}
-              max={30}
-              unit="s"
-              onChange={(animSpeed) => set({ animSpeed })}
-            />
+            {texture !== "matte" && (
+              <SliderRow
+                label="Motion duration"
+                value={c.animSpeed ?? 10}
+                min={4}
+                max={30}
+                unit="s"
+                onChange={(animSpeed) => set({ animSpeed })}
+              />
+            )}
             <SliderRow
               label="Brightness"
               value={c.brightness ?? 100}
