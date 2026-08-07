@@ -218,6 +218,54 @@ export default function NavbarConfig({ config, onChange }) {
                 Socials
               </h4>
               <label className="nb-field">
+                <span>Display mode</span>
+                <select
+                  value={c.socialDisplayStyle || "handles"}
+                  onChange={(e) => set("socialDisplayStyle", e.target.value)}
+                >
+                  <option value="handles">All handles</option>
+                  <option value="marquee">Marquee</option>
+                  <option value="slide">Slideshow</option>
+                  <option value="fade">Fade</option>
+                </select>
+              </label>
+              {c.socialDisplayStyle === "marquee" && (
+                <label className="nb-slider-field">
+                  <span className="nb-slider-label">Loop duration</span>
+                  <input
+                    type="range"
+                    min={6}
+                    max={40}
+                    step={1}
+                    value={c.socialMarqueeDuration || 14}
+                    onChange={(e) =>
+                      set("socialMarqueeDuration", Number(e.target.value))
+                    }
+                  />
+                  <span className="nb-slider-value">
+                    {c.socialMarqueeDuration || 14}s
+                  </span>
+                </label>
+              )}
+              {["slide", "fade"].includes(c.socialDisplayStyle) && (
+                <label className="nb-slider-field">
+                  <span className="nb-slider-label">Time per social</span>
+                  <input
+                    type="range"
+                    min={2}
+                    max={15}
+                    step={0.5}
+                    value={(c.socialIntervalMs || 4500) / 1000}
+                    onChange={(e) =>
+                      set("socialIntervalMs", Number(e.target.value) * 1000)
+                    }
+                  />
+                  <span className="nb-slider-value">
+                    {(c.socialIntervalMs || 4500) / 1000}s
+                  </span>
+                </label>
+              )}
+              <label className="nb-field">
                 <span>Twitch</span>
                 <input
                   value={c.twitchUsername || ""}

@@ -830,6 +830,8 @@ const BASE_BETTER_CONFIG = {
     spotifyWidth: 420,
     cryptoDisplayMode: "horizontal",
     socialDisplayStyle: "handles",
+    socialIntervalMs: 4500,
+    socialMarqueeDuration: 14,
     sectionLayout: [
       { id: "identity", zone: "left" },
       { id: "badge", zone: "left" },
@@ -1328,6 +1330,23 @@ function normalizeBetterNavbarConfig(config = {}, merged = {}) {
     next.startBalance = defaults.startBalance;
   }
   if (!next.balanceCurrency) next.balanceCurrency = defaults.balanceCurrency;
+  if (
+    !["handles", "marquee", "slide", "fade"].includes(next.socialDisplayStyle)
+  ) {
+    next.socialDisplayStyle = defaults.socialDisplayStyle;
+  }
+  next.socialIntervalMs = clampNumber(
+    next.socialIntervalMs,
+    2000,
+    15000,
+    defaults.socialIntervalMs,
+  );
+  next.socialMarqueeDuration = clampNumber(
+    next.socialMarqueeDuration,
+    6,
+    40,
+    defaults.socialMarqueeDuration,
+  );
   return next;
 }
 
@@ -2210,6 +2229,13 @@ const NAVBAR_CRYPTO_DISPLAY_OPTIONS = [
   { key: "fade", name: "Fade" },
 ];
 
+const NAVBAR_SOCIAL_DISPLAY_OPTIONS = [
+  { key: "handles", name: "Static" },
+  { key: "marquee", name: "Marquee" },
+  { key: "slide", name: "Slideshow" },
+  { key: "fade", name: "Fade" },
+];
+
 const NAVBAR_CURRENCY_OPTIONS = [
   { value: "€", label: "EUR €" },
   { value: "EUR ", label: "EUR" },
@@ -2560,6 +2586,36 @@ function BetterNavbarControls({
             checked={!!c.showSocials}
             onChange={(showSocials) => set({ showSocials })}
           />
+          <SelectRow
+            label="Display"
+            value={c.socialDisplayStyle || "handles"}
+            options={NAVBAR_SOCIAL_DISPLAY_OPTIONS}
+            onChange={(socialDisplayStyle) => set({ socialDisplayStyle })}
+          />
+          {c.socialDisplayStyle === "marquee" && (
+            <SliderRow
+              label="Loop duration"
+              value={c.socialMarqueeDuration || 14}
+              min={6}
+              max={40}
+              step={1}
+              unit="s"
+              onChange={(socialMarqueeDuration) =>
+                set({ socialMarqueeDuration })
+              }
+            />
+          )}
+          {["slide", "fade"].includes(c.socialDisplayStyle) && (
+            <SliderRow
+              label="Time per social"
+              value={(c.socialIntervalMs || 4500) / 1000}
+              min={2}
+              max={15}
+              step={0.5}
+              unit="s"
+              onChange={(seconds) => set({ socialIntervalMs: seconds * 1000 })}
+            />
+          )}
           <p className="bp-hint">
             Social handles and URLs come from the Navbar widget page.
           </p>

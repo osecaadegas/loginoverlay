@@ -50,6 +50,8 @@ const CRYPTO_IDS = {
 
 /* All coins that auto-cycle when crypto is enabled */
 const ALL_CRYPTO_COINS = Object.keys(CRYPTO_IDS);
+const CRYPTO_PRICE_CACHE_KEY = "streamers-center:navbar-crypto-prices";
+const CRYPTO_PRICE_CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 const BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER =
   "betterNavbarOptionalCasinoCommandInitialized";
 const BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER =
@@ -959,8 +961,60 @@ function withElementOffset(config, partId, style = {}) {
   };
 }
 
+function normalizeCryptoPrices(data, coins) {
+  const result = {};
+  for (const coin of coins) {
+    const price = Number(data?.[coin]?.price);
+    if (!Number.isFinite(price)) continue;
+    result[coin] = {
+      price,
+      change: Number(data[coin]?.change) || 0,
+    };
+  }
+  return result;
+}
+
+function readCachedCryptoPrices() {
+  if (typeof window === "undefined") return {};
+  try {
+    const cached = JSON.parse(localStorage.getItem(CRYPTO_PRICE_CACHE_KEY));
+    if (
+      !cached?.savedAt ||
+      Date.now() - Number(cached.savedAt) > CRYPTO_PRICE_CACHE_MAX_AGE_MS
+    ) {
+      return {};
+    }
+    return normalizeCryptoPrices(cached.prices, ALL_CRYPTO_COINS);
+  } catch {
+    return {};
+  }
+}
+
+function cacheCryptoPrices(prices) {
+  if (typeof window === "undefined" || Object.keys(prices).length === 0) return;
+  try {
+    localStorage.setItem(
+      CRYPTO_PRICE_CACHE_KEY,
+      JSON.stringify({ prices, savedAt: Date.now() }),
+    );
+  } catch {
+    // OBS browser sources may disable persistent storage.
+  }
+}
+
 async function fetchCryptoPrices(coins) {
   if (!coins || coins.length === 0) return {};
+  try {
+    const response = await fetch("/api/crypto-prices", { cache: "no-store" });
+    if (response.ok) {
+      const payload = await response.json();
+      const prices = normalizeCryptoPrices(payload.prices, coins);
+      if (Object.keys(prices).length > 0) return prices;
+    }
+  } catch {
+    // Local Vite development has no API runtime, so try CoinGecko directly.
+  }
+
   const ids = coins
     .map((c) => CRYPTO_IDS[c])
     .filter(Boolean)
@@ -1016,10 +1070,15 @@ function NavbarWidget({
 }) {
   const c = config || {};
   const time = useClock();
-  const [cryptoPrices, setCryptoPrices] = useState({});
+  const [cryptoPrices, setCryptoPrices] = useState(readCachedCryptoPrices);
+  const [cryptoStatus, setCryptoStatus] = useState(() =>
+    Object.keys(readCachedCryptoPrices()).length > 0 ? "ready" : "loading",
+  );
   const [nowPlaying, setNowPlaying] = useState(null);
   const [cryptoIndex, setCryptoIndex] = useState(0);
   const [cryptoFading, setCryptoFading] = useState(false);
+  const [socialIndex, setSocialIndex] = useState(0);
+  const [socialFading, setSocialFading] = useState(false);
   const spotifyTokenRef = useRef(c.spotify_access_token);
   const spotifyExpiresRef = useRef(c.spotify_expires_at);
 
@@ -1031,12 +1090,27 @@ function NavbarWidget({
 
   // Crypto price polling — always fetch all coins
   useEffect(() => {
-    if (!c.showCrypto) return;
-    const poll = () =>
-      fetchCryptoPrices(ALL_CRYPTO_COINS).then(setCryptoPrices);
+    if (!c.showCrypto) return undefined;
+    let cancelled = false;
+    const poll = async () => {
+      const prices = await fetchCryptoPrices(ALL_CRYPTO_COINS);
+      if (cancelled) return;
+      if (Object.keys(prices).length > 0) {
+        setCryptoPrices(prices);
+        setCryptoStatus("ready");
+        cacheCryptoPrices(prices);
+      } else {
+        setCryptoStatus((current) =>
+          current === "ready" ? "ready" : "unavailable",
+        );
+      }
+    };
     poll();
     const id = setInterval(poll, 60000);
-    return () => clearInterval(id);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, [c.showCrypto]);
 
   // Crypto cycling — all modes show one coin at a time
@@ -1458,6 +1532,38 @@ function NavbarWidget({
   const layout = normalizeNavbarSectionLayout(c.sectionLayout);
   const getZoneSections = (zone) => layout.filter((s) => s.zone === zone);
   const socialItems = resolveNavbarSocialItems(c);
+  const socialMode = ["marquee", "slide", "fade"].includes(c.socialDisplayStyle)
+    ? c.socialDisplayStyle
+    : "handles";
+
+  useEffect(() => {
+    setSocialIndex(0);
+    setSocialFading(false);
+    if (
+      !c.showSocials ||
+      socialItems.length <= 1 ||
+      !["slide", "fade"].includes(socialMode)
+    ) {
+      return undefined;
+    }
+
+    let finishTimer;
+    const interval = Math.max(
+      2000,
+      Math.min(15000, Number(c.socialIntervalMs) || 4500),
+    );
+    const cycleTimer = setInterval(() => {
+      setSocialFading(true);
+      finishTimer = setTimeout(() => {
+        setSocialIndex((current) => (current + 1) % socialItems.length);
+        setSocialFading(false);
+      }, 350);
+    }, interval);
+    return () => {
+      clearInterval(cycleTimer);
+      clearTimeout(finishTimer);
+    };
+  }, [c.showSocials, c.socialIntervalMs, socialItems.length, socialMode]);
 
   const renderAvatar = () => {
     if (c.showAvatar === false) return null;
@@ -1696,7 +1802,7 @@ function NavbarWidget({
   };
 
   const renderCryptoSection = () => {
-    if (!c.showCrypto || activeCoins.length === 0) return null;
+    if (!c.showCrypto) return null;
     return (
       <div
         {...partAttrs("crypto")}
@@ -1707,21 +1813,37 @@ function NavbarWidget({
           flexShrink: 0,
         })}
       >
-        <CryptoTicker
-          coins={activeCoins}
-          prices={cryptoPrices}
-          mode={cryptoMode}
-          index={cryptoIndex}
-          fading={cryptoFading}
-          fontSize={cryptoFontSize}
-          bgColor={bgColor}
-          textColor={cryptoTextColor}
-          fontFamily={cryptoFontFamily}
-          fontWeight={cryptoFontWeight}
-          cryptoUpColor={cryptoUpColor}
-          cryptoDownColor={cryptoDownColor}
-          metallic={isMetalSurface || isGlass || isRetro}
-        />
+        {activeCoins.length > 0 ? (
+          <CryptoTicker
+            coins={activeCoins}
+            prices={cryptoPrices}
+            mode={cryptoMode}
+            index={cryptoIndex}
+            fading={cryptoFading}
+            fontSize={cryptoFontSize}
+            bgColor={bgColor}
+            textColor={cryptoTextColor}
+            fontFamily={cryptoFontFamily}
+            fontWeight={cryptoFontWeight}
+            cryptoUpColor={cryptoUpColor}
+            cryptoDownColor={cryptoDownColor}
+            metallic={isMetalSurface || isGlass || isRetro}
+          />
+        ) : (
+          <span
+            style={{
+              color: cryptoTextColor,
+              fontFamily: cryptoFontFamily,
+              fontSize: cryptoFontSize * 0.82,
+              fontWeight: cryptoFontWeight,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {cryptoStatus === "unavailable"
+              ? "Markets unavailable"
+              : "Loading markets..."}
+          </span>
+        )}
       </div>
     );
   };
@@ -1736,76 +1858,141 @@ function NavbarWidget({
       compact ? 12 : 13,
       Math.min(compact ? 16 : 17, fontSize * (compact ? 1 : 1.05)),
     );
+    const gap = compact ? 12 : 16;
+    const renderSocialLink = (item, keyPrefix = "", duplicate = false) => {
+      const SocialIcon = item.icon;
+      const handle = formatSocialHandle(item.value);
+      return (
+        <a
+          key={`${keyPrefix}${item.id}`}
+          href={item.url}
+          target="_blank"
+          rel="noreferrer"
+          tabIndex={duplicate ? -1 : undefined}
+          aria-hidden={duplicate || undefined}
+          title={`${item.label}: ${item.value}`}
+          style={{
+            minWidth: 0,
+            maxWidth: 210,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: compact ? 7 : 9,
+            boxSizing: "border-box",
+            border: 0,
+            borderRadius: 0,
+            padding: compact ? "3px 2px" : "4px 3px",
+            color: textColor,
+            background: "transparent",
+            boxShadow: "none",
+            fontFamily,
+            fontSize: socialHandleSize,
+            fontWeight: 950,
+            letterSpacing: "0.02em",
+            lineHeight: 1,
+            textDecoration: "none",
+            textTransform: "uppercase",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
+          <SocialIcon
+            aria-hidden="true"
+            size={socialIconSize}
+            style={{
+              color: item.color,
+              display: "block",
+              flex: "0 0 auto",
+            }}
+          />
+          <span
+            style={{
+              minWidth: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              color: textColor,
+              textShadow: "0 1px 2px rgba(0,0,0,0.9)",
+            }}
+          >
+            {handle}
+          </span>
+        </a>
+      );
+    };
+    let sectionContent;
+    if (socialMode === "marquee") {
+      const duration = Math.max(
+        6,
+        Math.min(40, Number(c.socialMarqueeDuration) || 14),
+      );
+      sectionContent = (
+        <div
+          style={{
+            display: "flex",
+            width: "max-content",
+            animation: `nbSocialMarquee ${duration}s linear infinite`,
+            willChange: "transform",
+          }}
+        >
+          {["first-", "repeat-"].map((prefix, groupIndex) => (
+            <div
+              key={prefix}
+              aria-hidden={groupIndex === 1 || undefined}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap,
+                paddingRight: gap,
+              }}
+            >
+              {socialItems.map((item) =>
+                renderSocialLink(item, prefix, groupIndex === 1),
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (socialMode === "slide" || socialMode === "fade") {
+      sectionContent = (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            opacity: socialFading ? 0 : 1,
+            transform:
+              socialMode === "slide" && socialFading
+                ? "translate3d(-14px,0,0)"
+                : "translate3d(0,0,0)",
+            transition: "opacity 0.35s ease, transform 0.35s ease",
+            willChange: "opacity, transform",
+          }}
+        >
+          {renderSocialLink(
+            socialItems[socialIndex % socialItems.length],
+            "active-",
+          )}
+        </div>
+      );
+    } else {
+      sectionContent = socialItems.map((item) => renderSocialLink(item));
+    }
+
     return (
       <div
         {...partAttrs("socials")}
         style={withElementOffset(c, "socials", {
           display: "flex",
           alignItems: "center",
-          gap: compact ? 12 : 16,
+          gap,
           minWidth: 0,
           flexShrink: 0,
+          maxWidth:
+            socialMode === "marquee" ? (compact ? 300 : 460) : undefined,
+          overflow: socialMode === "marquee" ? "hidden" : "visible",
         })}
       >
-        {socialItems.map((item) => {
-          const SocialIcon = item.icon;
-          const handle = formatSocialHandle(item.value);
-          return (
-            <a
-              key={item.id}
-              href={item.url}
-              target="_blank"
-              rel="noreferrer"
-              title={`${item.label}: ${item.value}`}
-              style={{
-                minWidth: 0,
-                maxWidth: 210,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: compact ? 7 : 9,
-                boxSizing: "border-box",
-                border: 0,
-                borderRadius: 0,
-                padding: compact ? "3px 2px" : "4px 3px",
-                color: textColor,
-                background: "transparent",
-                boxShadow: "none",
-                fontFamily,
-                fontSize: socialHandleSize,
-                fontWeight: 950,
-                letterSpacing: "0.02em",
-                lineHeight: 1,
-                textDecoration: "none",
-                textTransform: "uppercase",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              <SocialIcon
-                aria-hidden="true"
-                size={socialIconSize}
-                style={{
-                  color: item.color,
-                  display: "block",
-                  flex: "0 0 auto",
-                }}
-              />
-              <span
-                style={{
-                  minWidth: 0,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  color: textColor,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.9)",
-                }}
-              >
-                {handle}
-              </span>
-            </a>
-          );
-        })}
+        {sectionContent}
       </div>
     );
   };
@@ -2450,6 +2637,7 @@ function NavbarWidget({
           @keyframes nbVinylSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
           @keyframes nbWaveBar{0%{height:5px}100%{height:25px}}
           @keyframes nbMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+          @keyframes nbSocialMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
           @keyframes nbTextScroll{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(calc(-50% - 24px))}}
         `}</style>
         <div

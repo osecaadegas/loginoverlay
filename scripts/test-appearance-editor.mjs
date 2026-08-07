@@ -742,6 +742,10 @@ try {
     new URL("../api/public-spotify-now-playing.js", import.meta.url),
     "utf8",
   );
+  const cryptoPricesSource = readFileSync(
+    new URL("../api/crypto-prices.js", import.meta.url),
+    "utf8",
+  );
   assert.ok(
     navbarWidgetSource.includes("SiTwitch") &&
       navbarWidgetSource.includes("SiKick") &&
@@ -781,9 +785,30 @@ try {
     "Better Navbar fetches Spotify data securely in public OBS sources",
   );
   assert.ok(
-    !betterWidgetPackagesSource.includes("NAVBAR_SOCIAL_DISPLAY_OPTIONS") &&
-      !navbarConfigSource.includes("<span>Display</span>"),
-    "Navbar controls expose one consistent social handle format",
+    betterWidgetPackagesSource.includes("NAVBAR_SOCIAL_DISPLAY_OPTIONS") &&
+      betterWidgetPackagesSource.includes(
+        '{ key: "marquee", name: "Marquee" }',
+      ) &&
+      betterWidgetPackagesSource.includes(
+        '{ key: "slide", name: "Slideshow" }',
+      ) &&
+      betterWidgetPackagesSource.includes("socialMarqueeDuration") &&
+      betterWidgetPackagesSource.includes("socialIntervalMs") &&
+      navbarConfigSource.includes("Display mode") &&
+      navbarConfigSource.includes("socialMarqueeDuration") &&
+      navbarConfigSource.includes("socialIntervalMs") &&
+      navbarWidgetSource.includes("nbSocialMarquee") &&
+      navbarWidgetSource.includes('socialMode === "slide"') &&
+      navbarWidgetSource.includes('socialMode === "fade"'),
+    "Navbar controls support static, marquee, slideshow, and fade display modes",
+  );
+  assert.ok(
+    navbarWidgetSource.includes('fetch("/api/crypto-prices"') &&
+      navbarWidgetSource.includes("readCachedCryptoPrices") &&
+      navbarWidgetSource.includes('"Loading markets..."') &&
+      cryptoPricesSource.includes("api.coingecko.com/api/v3/simple/price") &&
+      cryptoPricesSource.includes("stale-while-revalidate=300"),
+    "Better Navbar loads crypto through a cached same-origin endpoint and keeps a visible fallback",
   );
   assert.ok(
     !betterWidgetPackagesSource.includes("import TournamentConfig"),

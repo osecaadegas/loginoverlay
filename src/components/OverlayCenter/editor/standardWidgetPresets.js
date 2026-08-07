@@ -257,6 +257,8 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     spotifyWidth: 260,
     cryptoDisplayMode: "horizontal",
     socialDisplayStyle: "handles",
+    socialIntervalMs: 4500,
+    socialMarqueeDuration: 14,
     sectionLayout: [
       { id: "identity", zone: "left" },
       { id: "badge", zone: "left" },

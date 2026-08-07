@@ -200,6 +200,8 @@ registerWidget({
     ctaText: "Be Gamble Aware!",
     cryptoCoins: [],
     socialDisplayStyle: "handles",
+    socialIntervalMs: 4500,
+    socialMarqueeDuration: 14,
     kickChannelId: "",
     youtubeChannel: "",
     xUsername: "",
