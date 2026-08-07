@@ -73,12 +73,20 @@ for (const control of [
 }
 
 const defaults = STANDARD_BETTER_WIDGET_CONTROLS.background;
-assert.equal(defaults.textureType, "aurora");
-assert.equal(defaults.gradientAngle, 135);
+assert.equal(defaults.textureType, "gradient");
+assert.equal(defaults.gradientAngle, 29);
 assert.equal(defaults.patternSize, 32);
-assert.equal(defaults.fxParticles, "bokeh");
+assert.equal(defaults.animSpeed, 30);
+assert.equal(defaults.brightness, 121);
+assert.equal(defaults.contrast, 136);
+assert.equal(defaults.saturation, 69);
+assert.equal(defaults.fxParticles, "none");
 assert.equal(defaults.fxFog, "none");
 assert.equal(defaults.fxGlimpse, "none");
+assert.equal(defaults.fxSmoke, true);
+assert.equal(defaults.fxSmokeOpacity, 70);
+assert.equal(defaults.fxSmokeTolerance, 70);
+assert.equal(defaults.fxSmokeSoftness, 85);
 
 const elements = Object.fromEntries(
   getWidgetAppearanceV2Elements("background").map((element) => [
