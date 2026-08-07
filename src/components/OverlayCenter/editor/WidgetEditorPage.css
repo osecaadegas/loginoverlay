@@ -1,5 +1,20 @@
+.better-editor-document,
+.better-editor-document body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.better-editor-document #root {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .better-editor-page {
-  min-height: 100vh;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
   display: grid;
   grid-template-columns: 264px minmax(0, 1fr) minmax(390px, 450px);
   background: #060b14;
@@ -29,7 +44,7 @@
 .better-editor-sidebar,
 .better-editor-settings {
   min-width: 0;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -390,7 +405,7 @@
 .better-editor-stage {
   min-width: 0;
   min-height: 0;
-  height: 100vh;
+  height: 100%;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   background: #0a0f19;
@@ -498,8 +513,8 @@
   min-height: 0;
   display: grid;
   place-items: center;
-  overflow: auto;
-  padding: 28px;
+  overflow: hidden;
+  padding: 0;
   background:
     linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
     linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
@@ -695,6 +710,10 @@
   overscroll-behavior: contain;
 }
 
+.better-editor-settings-scroll > * {
+  flex: 0 0 auto;
+}
+
 .better-editor-control-section,
 .better-editor-empty {
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -787,45 +806,30 @@
 
 @media (max-width: 1280px) {
   .better-editor-page {
-    grid-template-columns: 236px minmax(0, 1fr);
+    grid-template-columns: 220px minmax(0, 1fr) minmax(320px, 340px);
   }
 
   .better-editor-settings {
-    grid-column: 1 / -1;
-    height: 48vh;
-    border-top: 1px solid rgba(148, 163, 184, 0.18);
-    border-left: 0;
+    height: 100%;
+    border-left: 1px solid rgba(148, 163, 184, 0.18);
   }
 
   .better-editor-sidebar,
   .better-editor-stage {
-    height: 52vh;
+    height: 100%;
   }
 }
 
 @media (max-width: 780px) {
   .better-editor-page {
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
+    grid-template-columns: 140px minmax(0, 1fr) 220px;
   }
 
   .better-editor-sidebar,
   .better-editor-stage,
   .better-editor-settings {
-    height: auto;
-    min-height: 360px;
-  }
-
-  .better-editor-toolbar,
-  .better-editor-canvas-tools {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .better-editor-toolbar__group,
-  .better-editor-canvas-tools {
-    width: 100%;
+    height: 100%;
+    min-height: 0;
   }
 
 }

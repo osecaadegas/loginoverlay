@@ -202,17 +202,17 @@ function buildWidgetObsUrl(origin, publicOverlayId, instanceId) {
   return `${origin}/obs/overlay/${publicOverlayId}/widget/${instanceId}?scale=fit`;
 }
 
-function useCanvasScale(shellRef, zoom) {
+function useCanvasScale(shellRef, zoom, ready) {
   const [fitScale, setFitScale] = useState(0.5);
 
   useLayoutEffect(() => {
     const shell = shellRef.current;
-    if (!shell) return undefined;
+    if (!ready || !shell) return undefined;
 
     const measure = () => {
       const rect = shell.getBoundingClientRect();
-      const availableWidth = Math.max(320, rect.width - 56);
-      const availableHeight = Math.max(240, rect.height - 56);
+      const availableWidth = Math.max(1, rect.width);
+      const availableHeight = Math.max(1, rect.height);
       setFitScale(
         Math.min(
           availableWidth / BETTER_CANVAS.width,
@@ -230,7 +230,7 @@ function useCanvasScale(shellRef, zoom) {
       observer.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [shellRef]);
+  }, [ready, shellRef]);
 
   return fitScale * zoom;
 }
@@ -436,7 +436,16 @@ export default function WidgetEditorPage() {
   const [draggedLayerId, setDraggedLayerId] = useState("");
   const [dragOverLayerId, setDragOverLayerId] = useState("");
 
-  const scale = useCanvasScale(shellRef, zoom);
+  const scale = useCanvasScale(shellRef, zoom, !loading && !error);
+
+  useEffect(() => {
+    document.documentElement.classList.add("better-editor-document");
+    document.body.classList.add("better-editor-document");
+    return () => {
+      document.documentElement.classList.remove("better-editor-document");
+      document.body.classList.remove("better-editor-document");
+    };
+  }, []);
 
   useEffect(() => {
     layoutRef.current = layout;
