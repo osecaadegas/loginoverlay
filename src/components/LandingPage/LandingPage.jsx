@@ -812,7 +812,7 @@ function getBonusHuntPreviewState(cycle) {
   };
 }
 
-function LiveWidgetShowcase({ widget }) {
+function LiveWidgetShowcase({ widget, scaleMultiplier = 1 }) {
   const [previewCycle, setPreviewCycle] = useState(0);
   const [previewShoutout, setPreviewShoutout] = useState(null);
   const [tournamentCatalogSlots, setTournamentCatalogSlots] = useState([]);
@@ -911,10 +911,11 @@ function LiveWidgetShowcase({ widget }) {
     const runtime = runtimeRef.current;
     if (!runtime) return undefined;
     const updateScale = () => {
-      const { width, height } = runtime.getBoundingClientRect();
+      const { clientWidth: width, clientHeight: height } = runtime;
       const scale =
         width > 0 && height > 0
-          ? Math.min(width / previewWidth, height / previewHeight)
+          ? Math.min(width / previewWidth, height / previewHeight) *
+            scaleMultiplier
           : 1;
       setFrameGeometry({
         scale,
@@ -926,7 +927,7 @@ function LiveWidgetShowcase({ widget }) {
     const observer = new ResizeObserver(updateScale);
     observer.observe(runtime);
     return () => observer.disconnect();
-  }, [previewHeight, previewWidth]);
+  }, [previewHeight, previewWidth, scaleMultiplier]);
 
   const preview = useMemo(() => {
     const chatConfig =
@@ -1013,7 +1014,12 @@ function HomeWidgetMedia({ widget, floating = false }) {
       className={`lp-home-widget-media lp-home-widget-media--${widget.widgetType}${floating ? " lp-home-widget-media--floating" : ""}`}
       style={{ "--lp-widget-ratio": previewRatio }}
     >
-      <LiveWidgetShowcase widget={widget} />
+      <LiveWidgetShowcase
+        widget={widget}
+        scaleMultiplier={
+          widget.widgetType === "tournament" && !floating ? 0.84 : 1
+        }
+      />
     </div>
   );
 }
