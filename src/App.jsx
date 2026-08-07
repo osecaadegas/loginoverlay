@@ -111,6 +111,7 @@ function LayoutWrapper({ children }) {
   const isWidgetRoute = location.pathname.startsWith("/widgets/");
   const isOBSOverlay = location.pathname.startsWith("/overlay/");
   const isBetterOBSOverlay = location.pathname.startsWith("/obs/overlay/");
+  const isEditorRoute = location.pathname === "/editor";
   const isPremiumRoute = location.pathname === "/premium";
   const isSystemRoute = location.pathname === "/spotify-callback";
   const showTopNavigation =
@@ -124,11 +125,11 @@ function LayoutWrapper({ children }) {
   }, [location.pathname]);
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout${isEditorRoute ? " app-layout--editor" : ""}`}>
       {!isOBSOverlay && !isBetterOBSOverlay && <AppRuntimeHooks />}
       {showTopNavigation && <TopNavigation />}
       <div
-        className={`main-content main-content--no-sidebar${isPremiumRoute ? " main-content--premium" : ""}`}
+        className={`main-content main-content--no-sidebar${isPremiumRoute ? " main-content--premium" : ""}${isEditorRoute ? " main-content--editor" : ""}`}
       >
         {children}
       </div>

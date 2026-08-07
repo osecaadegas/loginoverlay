@@ -202,7 +202,7 @@ function buildWidgetObsUrl(origin, publicOverlayId, instanceId) {
   return `${origin}/obs/overlay/${publicOverlayId}/widget/${instanceId}?scale=fit`;
 }
 
-function useCanvasScale(shellRef, zoom, ready) {
+function useCanvasScale(shellRef, ready) {
   const [fitScale, setFitScale] = useState(0.5);
 
   useLayoutEffect(() => {
@@ -232,7 +232,7 @@ function useCanvasScale(shellRef, zoom, ready) {
     };
   }, [ready, shellRef]);
 
-  return fitScale * zoom;
+  return fitScale;
 }
 
 class BetterEditorWidgetBoundary extends React.Component {
@@ -424,19 +424,17 @@ export default function WidgetEditorPage() {
   }));
   const [selectedInstanceId, setSelectedInstanceId] = useState("");
   const [dataMode, setDataMode] = useState("live");
-  const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [savingState, setSavingState] = useState("idle");
   const [dirty, setDirty] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [copyState, setCopyState] = useState("");
   const [interaction, setInteraction] = useState(null);
   const [draggedLayerId, setDraggedLayerId] = useState("");
   const [dragOverLayerId, setDragOverLayerId] = useState("");
 
-  const scale = useCanvasScale(shellRef, zoom, !loading && !error);
+  const scale = useCanvasScale(shellRef, !loading && !error);
 
   useEffect(() => {
     document.documentElement.classList.add("better-editor-document");
@@ -623,7 +621,6 @@ export default function WidgetEditorPage() {
       .filter((definition) => definition.widgetType !== "background" && !presentTypes.has(definition.widgetType));
   }, [layout.instances]);
 
-  const hasUnpublishedChanges = dirty || Boolean(overlayRecord?.hasUnpublishedChanges);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const publicOverlayId = overlayRecord?.publicOverlayId || "";
   const fullOverlayUrl = publicOverlayId
@@ -1054,8 +1051,6 @@ export default function WidgetEditorPage() {
   const copyUrl = useCallback(async (url) => {
     if (!url) return;
     await navigator.clipboard.writeText(url);
-    setCopyState(url);
-    window.setTimeout(() => setCopyState(""), 1500);
   }, []);
 
   const selectedLegacyWidget = selectedInstance
@@ -1222,43 +1217,6 @@ export default function WidgetEditorPage() {
               Reset Layout
             </button>
           </div>
-        </div>
-
-        <div className="better-editor-canvas-tools">
-          <span className={`better-editor-save-state better-editor-save-state--${savingState}`}>
-            {savingState === "saving"
-              ? "Saving draft..."
-              : savingState === "publishing"
-                ? "Publishing..."
-                : savingState === "published"
-                  ? "Published"
-                  : dirty
-                    ? "Unsaved draft changes"
-                    : hasUnpublishedChanges
-                      ? "Draft differs from OBS"
-                      : "Draft saved"}
-          </span>
-          {copyState && (
-            <small className="better-editor-copy-state">
-              {copyState === fullOverlayUrl ? "Overlay URL copied." : "Widget URL copied."}
-            </small>
-          )}
-          <label>
-            Zoom
-            <input
-              type="range"
-              min="0.35"
-              max="1.25"
-              step="0.05"
-              value={zoom}
-              onChange={(event) => setZoom(Number(event.target.value))}
-            />
-            <strong>{Math.round(zoom * 100)}%</strong>
-          </label>
-          <span>
-            <Grid3X3 size={14} />
-            Snap {SNAP_GRID}px
-          </span>
         </div>
 
         <div className="better-editor-canvas-shell" ref={shellRef}>

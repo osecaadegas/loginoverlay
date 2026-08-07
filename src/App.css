@@ -27,6 +27,12 @@ body.sidebar-open {
   background: transparent;
 }
 
+.app-layout--editor {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* Main content - responsive margins */
 .main-content {
   flex: 1;
@@ -77,6 +83,12 @@ body.sidebar-open {
 
 .main-content.main-content--premium {
   min-height: calc(100dvh - 72px);
+  overflow: hidden;
+}
+
+.main-content.main-content--editor {
+  flex: 1 1 0;
+  min-height: 0;
   overflow: hidden;
 }
 

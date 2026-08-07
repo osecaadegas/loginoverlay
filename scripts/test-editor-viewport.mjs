@@ -15,9 +15,14 @@ const editorCss = readFileSync(
   ),
   "utf8",
 );
+const appSource = readFileSync(
+  new URL("../src/App.jsx", import.meta.url),
+  "utf8",
+);
+const appCss = readFileSync(new URL("../src/App.css", import.meta.url), "utf8");
 
 assert.ok(
-  editorSource.includes("useCanvasScale(shellRef, zoom, !loading && !error)") &&
+  editorSource.includes("useCanvasScale(shellRef, !loading && !error)") &&
     editorSource.includes("if (!ready || !shell) return undefined;") &&
     editorSource.includes("availableWidth / BETTER_CANVAS.width") &&
     editorSource.includes("availableHeight / BETTER_CANVAS.height"),
@@ -28,10 +33,28 @@ assert.ok(
     editorSource.includes('document.body.classList.add("better-editor-document")'),
   "The editor locks document scrolling while mounted",
 );
+assert.ok(
+  appSource.includes('isEditorRoute ? " app-layout--editor" : ""') &&
+    appSource.includes('isEditorRoute ? " main-content--editor" : ""') &&
+    /\.app-layout--editor\s*\{[\s\S]*?height:\s*100dvh;[\s\S]*?overflow:\s*hidden;/.test(
+      appCss,
+    ) &&
+    /\.main-content\.main-content--editor\s*\{[\s\S]*?flex:\s*1 1 0;[\s\S]*?min-height:\s*0;[\s\S]*?overflow:\s*hidden;/.test(
+      appCss,
+    ),
+  "The editor route fills only the viewport space below global navigation",
+);
 assert.match(
   editorCss,
-  /\.better-editor-page\s*\{[\s\S]*?height:\s*100dvh;[\s\S]*?overflow:\s*hidden;/,
-  "The editor workspace is fixed to the dynamic viewport",
+  /\.better-editor-page\s*\{[\s\S]*?height:\s*100%;[\s\S]*?overflow:\s*hidden;/,
+  "The editor workspace fills its viewport-bounded application shell",
+);
+assert.ok(
+  !editorSource.includes('className="better-editor-canvas-tools"') &&
+    /\.better-editor-stage\s*\{[\s\S]*?grid-template-rows:\s*auto minmax\(0, 1fr\);/.test(
+      editorCss,
+    ),
+  "The canvas begins immediately below the primary editor toolbar",
 );
 assert.ok(
   editorSource.includes('<footer className="better-editor-footer">') &&

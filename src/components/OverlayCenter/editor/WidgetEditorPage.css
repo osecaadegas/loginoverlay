@@ -13,7 +13,7 @@ body.better-editor-document #root {
 
 .better-editor-page {
   width: 100%;
-  height: 100dvh;
+  height: 100%;
   min-height: 0;
   display: grid;
   grid-template-columns: 264px minmax(0, 1fr) minmax(390px, 450px);
@@ -440,7 +440,7 @@ body.better-editor-document #root {
   min-height: 0;
   height: 100%;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   background: #0a0f19;
 }
 
@@ -494,51 +494,6 @@ body.better-editor-document #root {
   border-color: rgba(20, 216, 216, 0.48);
   background: rgba(20, 216, 216, 0.14);
   color: #c7f9ff;
-}
-
-.better-editor-canvas-tools {
-  min-width: 0;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 18px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-  background: #07101d;
-  color: #cbd5e1;
-}
-
-.better-editor-canvas-tools label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #94a3b8;
-  font-size: 0.76rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.better-editor-canvas-tools input {
-  width: 120px;
-}
-
-.better-editor-canvas-tools strong {
-  min-width: 40px;
-  color: #e2e8f0;
-}
-
-.better-editor-save-state {
-  min-width: 150px;
-  text-transform: none;
-}
-
-.better-editor-save-state--error {
-  color: #fca5a5;
-}
-
-.better-editor-save-state--published,
-.better-editor-save-state--saved {
-  color: #86efac;
 }
 
 .better-editor-canvas-shell {
@@ -779,13 +734,6 @@ body.better-editor-document #root {
 .better-editor-control-section--settings .bp-controls {
   border: 0;
   border-radius: 0;
-}
-
-.better-editor-copy-state {
-  color: #fbbf24;
-  font-size: 0.72rem;
-  font-weight: 800;
-  white-space: nowrap;
 }
 
 .better-editor-empty {
