@@ -36,10 +36,13 @@ assert.match(
 assert.ok(
   editorSource.includes('<footer className="better-editor-footer">') &&
     /grid-template-rows:\s*minmax\(0, 1fr\) 26px;/.test(editorCss) &&
-    /\.better-editor-footer\s*\{[\s\S]*?grid-column:\s*1 \/ -1;/.test(
+    /\.better-editor-footer\s*\{[\s\S]*?grid-column:\s*1 \/ -1;[\s\S]*?grid-row:\s*2;[\s\S]*?z-index:\s*100;/.test(
+      editorCss,
+    ) &&
+    /\.better-editor-stage\s*\{[\s\S]*?grid-column:\s*2;[\s\S]*?grid-row:\s*1;/.test(
       editorCss,
     ),
-  "A thin footer spans the fixed editor workspace",
+  "A thin footer owns the visible second row above the editor panels",
 );
 assert.match(
   editorCss,

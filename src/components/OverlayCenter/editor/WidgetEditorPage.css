@@ -54,15 +54,22 @@ body.better-editor-document #root {
 }
 
 .better-editor-sidebar {
+  grid-column: 1;
+  grid-row: 1;
   border-right: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .better-editor-settings {
+  grid-column: 3;
+  grid-row: 1;
   border-left: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .better-editor-footer {
   grid-column: 1 / -1;
+  grid-row: 2;
+  position: relative;
+  z-index: 100;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -427,6 +434,8 @@ body.better-editor-document #root {
 }
 
 .better-editor-stage {
+  grid-column: 2;
+  grid-row: 1;
   min-width: 0;
   min-height: 0;
   height: 100%;
