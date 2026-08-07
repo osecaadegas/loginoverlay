@@ -1541,57 +1541,6 @@
   background: rgba(69, 200, 255, 0.78);
 }
 
-.bp-hunt-deck-head {
-  position: sticky;
-  top: 0;
-  z-index: 6;
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 11px;
-  align-items: center;
-  padding: 14px;
-  border-bottom: 1px solid rgba(69, 200, 255, 0.15);
-  background:
-    radial-gradient(
-      circle at 10% 0%,
-      rgba(69, 200, 255, 0.16),
-      transparent 34%
-    ),
-    #071022;
-}
-
-.bp-hunt-deck-head > svg {
-  width: 34px;
-  height: 34px;
-  padding: 8px;
-  border: 1px solid rgba(69, 200, 255, 0.45);
-  border-radius: 8px;
-  background: rgba(69, 200, 255, 0.12);
-  color: #45c8ff;
-  box-shadow: 0 0 14px rgba(69, 200, 255, 0.22);
-}
-
-.bp-hunt-deck-head h3,
-.bp-hunt-deck-head p {
-  margin: 0;
-}
-
-.bp-hunt-deck-head h3 {
-  color: #f8fbff;
-  font-family: "Rajdhani", "Inter", sans-serif;
-  font-size: 0.86rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.bp-hunt-deck-head p {
-  margin-top: 3px;
-  color: #5f7ea8;
-  font-size: 0.68rem;
-}
-
 .bp-hunt-section {
   padding: 13px 14px 14px;
   border-bottom: 1px solid rgba(69, 200, 255, 0.12);

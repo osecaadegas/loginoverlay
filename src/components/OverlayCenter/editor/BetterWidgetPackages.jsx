@@ -5207,14 +5207,6 @@ function SimpleThemedControls({
   const statRadius = Number(c.statRadius ?? 7);
   return (
     <div className="bp-controls bp-controls--hunt">
-      <header className="bp-hunt-deck-head">
-        <SlidersHorizontal size={17} />
-        <div>
-          <h3>Control Deck</h3>
-          <p>bonus hunt tracker settings</p>
-        </div>
-      </header>
-
       <CategorizedControls
         tabs={STANDARD_CONTROL_CATEGORIES}
         defaultCategory="layout"
