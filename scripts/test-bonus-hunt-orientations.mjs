@@ -241,7 +241,7 @@ try {
         "grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr)",
       ) &&
       horizontalRingMarkup.includes(
-        "object-fit:contain;object-position:center",
+        "max-width:126px;max-height:154px;display:block;object-fit:contain;object-position:center",
       ) &&
       horizontalRingMarkup.includes("height:210px;min-height:0") &&
       horizontalRingMarkup.includes("width:122px;height:172px"),
@@ -279,7 +279,7 @@ try {
           `better-hunt-card better-hunt-card--${tier} better-hunt-card--center`,
         ) &&
         tierMarkup.includes(
-          ".better-hunt-hstrip-slot-art img{width:100%;height:100%;display:block;object-fit:contain;object-position:center}",
+          ".better-hunt-hstrip-slot-art img{width:100%;height:100%;max-width:126px;max-height:154px;display:block;object-fit:contain;object-position:center}",
         ) &&
         tierMarkup.includes(
           ".better-hunt-image-stats-panel--super,.better-hunt-hstrip-slot-stats--super{animation:better-hunt-gold",
