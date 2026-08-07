@@ -281,10 +281,19 @@ try {
     widgetEditorPageCssSource.includes(
       ".better-editor-widget-row:has(.better-editor-widget-row__menu[open]) {",
     ) &&
+      widgetEditorPageCssSource.includes(
+        ".better-editor-widget-list:has(.better-editor-widget-row__menu[open]) {",
+      ) &&
+      /\.better-editor-widget-list:has\([^)]+\)\s*\{[\s\S]*?z-index:\s*200;[\s\S]*?overflow:\s*visible;/.test(
+        widgetEditorPageCssSource,
+      ) &&
+      /\.better-editor-widget-row__menu-panel\s*\{[\s\S]*?z-index:\s*320;/.test(
+        widgetEditorPageCssSource,
+      ) &&
       !widgetEditorPageCssSource.includes(
         ".better-editor-widget-row.is-hidden {\n  opacity:",
       ),
-    "hidden widget menus remain opaque and stack above adjacent widget rows",
+    "open widget menus escape list clipping and stack above unused widgets",
   );
   assert.ok(
     widgetEditorPageSource.includes(

@@ -132,10 +132,17 @@ body.better-editor-document #root {
 }
 
 .better-editor-widget-list {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 12px;
+}
+
+.better-editor-widget-list:has(.better-editor-widget-row__menu[open]) {
+  z-index: 200;
+  overflow: visible;
 }
 
 .better-editor-widget-row {
@@ -163,7 +170,7 @@ body.better-editor-document #root {
 }
 
 .better-editor-widget-row:has(.better-editor-widget-row__menu[open]) {
-  z-index: 30;
+  z-index: 300;
 }
 
 .better-editor-widget-row.is-dragging {
@@ -261,7 +268,7 @@ body.better-editor-document #root {
 }
 
 .better-editor-widget-row__menu[open] {
-  z-index: 20;
+  z-index: 310;
 }
 
 .better-editor-widget-row__menu-trigger {
@@ -287,6 +294,7 @@ body.better-editor-document #root {
 
 .better-editor-widget-row__menu-panel {
   position: absolute;
+  z-index: 320;
   top: calc(100% + 6px);
   right: 7px;
   width: 174px;
@@ -350,6 +358,8 @@ body.better-editor-document #root {
 }
 
 .better-editor-add-widget-section {
+  position: relative;
+  z-index: 1;
   margin: 0 12px 12px;
 }
 
