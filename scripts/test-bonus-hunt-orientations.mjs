@@ -16,9 +16,10 @@ try {
     await server.ssrLoadModule(
       "/src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx",
     );
-  const { getBetterBonusOrientationWidth } = await server.ssrLoadModule(
-    "/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
-  );
+  const { getBetterBonusOrientationHeight, getBetterBonusOrientationWidth } =
+    await server.ssrLoadModule(
+      "/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
+    );
 
   assert.deepEqual(
     ["vertical", "horizontal", "mainstream"].map((orientation) =>
@@ -27,11 +28,22 @@ try {
     [402, 1080, 372],
     "orientation changes use the intended widget geometry",
   );
+  assert.deepEqual(
+    ["vertical", "horizontal", "mainstream"].map((orientation) =>
+      getBetterBonusOrientationHeight(orientation),
+    ),
+    [884, 280, 884],
+    "horizontal orientation uses a thin frame without shrinking tall layouts",
+  );
 
   const baseline = getAutomaticBetterHuntWin(null, [
     { id: "win", slot_name: "Big Bass", bet: 1, payout: 0 },
   ]);
-  assert.equal(baseline.win, null, "initial payout data does not replay Win FX");
+  assert.equal(
+    baseline.win,
+    null,
+    "initial payout data does not replay Win FX",
+  );
 
   const automaticWin = getAutomaticBetterHuntWin(baseline.snapshot, [
     {
@@ -62,7 +74,11 @@ try {
       slot: { max_win_multiplier: 1500 },
     },
   ]);
-  assert.equal(maxWin.win?.max, true, "database slot potential classifies Max Win");
+  assert.equal(
+    maxWin.win?.max,
+    true,
+    "database slot potential classifies Max Win",
+  );
 
   const unknownPotentialWin = getAutomaticBetterHuntWin(baseline.snapshot, [
     { id: "win", slot_name: "Big Bass", bet: 1, payout: 5000 },
@@ -83,7 +99,11 @@ try {
     [{ id: "win", slot_name: "Big Bass", bet: 1, payout: 1500 }],
     false,
   );
-  assert.equal(disabledWin.win, null, "the widget Win FX toggle disables automation");
+  assert.equal(
+    disabledWin.win,
+    null,
+    "the widget Win FX toggle disables automation",
+  );
 
   for (const orientation of ["vertical", "horizontal", "mainstream"]) {
     const markup = renderToStaticMarkup(
@@ -144,8 +164,10 @@ try {
     );
     if (orientation === "horizontal") {
       assert.equal(
-        (markup.match(/better-hunt-stat-grid better-hunt-stat-grid--grid/g) || [])
-          .length,
+        (
+          markup.match(/better-hunt-stat-grid better-hunt-stat-grid--grid/g) ||
+          []
+        ).length,
         1,
         "horizontal renders one full stats section",
       );
@@ -187,8 +209,13 @@ try {
   assert.ok(
     horizontalRingMarkup.includes(
       "better-hunt-carousel better-hunt-carousel--ring",
-    ) && horizontalRingMarkup.includes("scale(1.18)"),
-    "horizontal 3D mode uses the expanded ring layout",
+    ) &&
+      horizontalRingMarkup.includes("scale(1.18)") &&
+      horizontalRingMarkup.includes(
+        "grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr)",
+      ) &&
+      horizontalRingMarkup.includes("height:190px;min-height:0"),
+    "horizontal 3D mode uses the thin ring and full-height side artwork layout",
   );
 
   console.log("Bonus Hunt orientation control checks passed.");

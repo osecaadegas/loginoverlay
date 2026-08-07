@@ -13,18 +13,21 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
-  gap: 1px;
+  display: flex;
+  gap: 4px;
   margin: -14px -14px 14px;
   padding: 10px;
   border-bottom: 1px solid rgba(34, 211, 238, 0.14);
   background: rgba(2, 11, 30, 0.96);
   backdrop-filter: blur(12px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
 }
 
 .bp-panel-tabs button {
   min-width: 0;
+  flex: 1 0 68px;
   min-height: 40px;
   display: flex;
   flex-direction: column;
@@ -187,7 +190,9 @@
   border-radius: 50%;
   background: #94a3b8;
   content: "";
-  transition: transform 180ms ease, background 180ms ease;
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
 }
 
 .bp-toggle.is-on i {
@@ -475,7 +480,13 @@
 
 /* Bets package surface */
 .bp-bets-stage {
-  --stage-bg: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.18), transparent 46%), #010818;
+  --stage-bg:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(37, 99, 235, 0.18),
+      transparent 46%
+    ),
+    #010818;
   width: 100%;
   min-height: 100%;
   display: grid;
@@ -512,17 +523,25 @@
 .bp-bets-stage[data-theme="neon"] {
   --frame-bg: linear-gradient(180deg, #071a44, #020713);
   --frame-border: rgba(89, 214, 255, 0.65);
-  --frame-shadow: 0 0 calc(24px * var(--glow-mult)) rgba(10, 132, 255, 0.42), inset 0 0 18px rgba(89, 214, 255, 0.1);
+  --frame-shadow:
+    0 0 calc(24px * var(--glow-mult)) rgba(10, 132, 255, 0.42),
+    inset 0 0 18px rgba(89, 214, 255, 0.1);
   --ui-accent: #59d6ff;
   --text-bright: #f2fbff;
   --text-dim: #88b7dd;
   --meta-bg: rgba(4, 15, 42, 0.9);
   --meta-border: rgba(89, 214, 255, 0.28);
   --meta-divider: rgba(89, 214, 255, 0.16);
-  --card-bg: linear-gradient(180deg, rgba(7, 26, 68, 0.82), rgba(2, 7, 19, 0.92));
+  --card-bg: linear-gradient(
+    180deg,
+    rgba(7, 26, 68, 0.82),
+    rgba(2, 7, 19, 0.92)
+  );
   --card-frame-mix: #071a44;
-  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 7px 18px rgba(0, 0, 0, 0.32);
-  --card-hover-shadow: 0 0 20px color-mix(in srgb, var(--accent) 40%, transparent);
+  --card-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 7px 18px rgba(0, 0, 0, 0.32);
+  --card-hover-shadow: 0 0 20px
+    color-mix(in srgb, var(--accent) 40%, transparent);
   --card-full-shadow: inset 0 0 20px rgba(0, 0, 0, 0.35);
   --card-topline: rgba(255, 255, 255, 0.42);
   --soft-glow: 0 0 8px rgba(89, 214, 255, 0.38);
@@ -589,7 +608,12 @@
   width: 30%;
   height: 230%;
   transform: rotate(22deg);
-  background: linear-gradient(90deg, transparent, rgba(166, 226, 255, 0.075), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(166, 226, 255, 0.075),
+    transparent
+  );
   animation: bp-sheen 7s ease-in-out infinite 1.3s;
 }
 
@@ -631,7 +655,9 @@
   border-top: 1px solid var(--ui-accent);
   border-bottom: 1px solid var(--ui-accent);
   border-left: 2px solid var(--ui-accent);
-  box-shadow: 2px 0 0 -1px var(--ui-accent), 0 0 7px var(--ui-accent);
+  box-shadow:
+    2px 0 0 -1px var(--ui-accent),
+    0 0 7px var(--ui-accent);
 }
 
 .bp-bets-stage .open-status {
@@ -644,7 +670,9 @@
   padding: 0 6px;
   color: #ffe887;
   background: linear-gradient(#3c3514, #1d190a);
-  box-shadow: 0 0 5px rgba(255, 194, 21, 0.42), inset 0 0 4px rgba(255, 232, 106, 0.15);
+  box-shadow:
+    0 0 5px rgba(255, 194, 21, 0.42),
+    inset 0 0 4px rgba(255, 232, 106, 0.15);
   font-size: calc(9.5px * var(--fs));
   font-weight: 700;
 }
@@ -713,7 +741,8 @@
   height: 98px;
   overflow: hidden;
   flex-direction: column;
-  border: 1px solid color-mix(in srgb, var(--accent) 65%, var(--card-frame-mix) 35%);
+  border: 1px solid
+    color-mix(in srgb, var(--accent) 65%, var(--card-frame-mix) 35%);
   border-radius: var(--card-radius);
   padding: 10px 9px 7px;
   color: var(--text-bright);
@@ -729,7 +758,12 @@
   left: 0;
   height: 1px;
   content: "";
-  background: linear-gradient(90deg, transparent, var(--card-topline), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--card-topline),
+    transparent
+  );
 }
 
 .bp-bets-stage .fill-wrap {
@@ -746,7 +780,11 @@
   bottom: 0;
   left: 0;
   height: var(--fill);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 28%, transparent), color-mix(in srgb, var(--accent-2) 85%, transparent));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 28%, transparent),
+    color-mix(in srgb, var(--accent-2) 85%, transparent)
+  );
 }
 
 .bp-bets-stage .fill-liquid .solid-bar::before,
@@ -785,8 +823,16 @@
 
 .bp-bets-stage .fill-scanline .solid-bar {
   background:
-    repeating-linear-gradient(0deg, color-mix(in srgb, var(--accent) 18%, transparent) 0 2px, color-mix(in srgb, var(--accent) 52%, transparent) 2px 4px),
-    linear-gradient(180deg, color-mix(in srgb, var(--accent) 32%, transparent), color-mix(in srgb, var(--accent-2) 80%, transparent));
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--accent) 18%, transparent) 0 2px,
+      color-mix(in srgb, var(--accent) 52%, transparent) 2px 4px
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent) 32%, transparent),
+      color-mix(in srgb, var(--accent-2) 80%, transparent)
+    );
 }
 
 .bp-bets-stage .scan-sweep {
@@ -795,8 +841,14 @@
   bottom: 0;
   left: 0;
   height: 20px;
-  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 62%, transparent), transparent);
-  animation: bp-bets-scan-sweep calc(var(--fill-dur, 3.2s) * 0.8) linear infinite;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 62%, transparent),
+    transparent
+  );
+  animation: bp-bets-scan-sweep calc(var(--fill-dur, 3.2s) * 0.8) linear
+    infinite;
   opacity: 0.7;
 }
 
@@ -821,14 +873,16 @@
   right: 15%;
   bottom: 20%;
   background: var(--accent);
-  animation: bp-bets-plasma-2 calc(var(--fill-dur, 3.2s) * 1.3) ease-in-out infinite;
+  animation: bp-bets-plasma-2 calc(var(--fill-dur, 3.2s) * 1.3) ease-in-out
+    infinite;
 }
 
 .bp-bets-stage .plasma-blob-3 {
   bottom: 40%;
   left: 40%;
   background: var(--accent-2);
-  animation: bp-bets-plasma-3 calc(var(--fill-dur, 3.2s) * 0.9) ease-in-out infinite;
+  animation: bp-bets-plasma-3 calc(var(--fill-dur, 3.2s) * 0.9) ease-in-out
+    infinite;
 }
 
 .bp-bets-stage .fill-bloom {
@@ -934,7 +988,8 @@
   grid-template-columns: 22px auto 1fr auto;
   align-items: center;
   gap: 8px;
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--card-frame-mix) 45%);
+  border: 1px solid
+    color-mix(in srgb, var(--accent) 55%, var(--card-frame-mix) 45%);
   border-radius: calc(var(--card-radius) * 0.8);
   padding: 0 10px 0 6px;
   color: var(--text-bright);
@@ -996,8 +1051,14 @@
   bottom: 0;
   width: 34px;
   transform: skewX(-18deg);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
-  animation: bp-bets-bar-sheen calc(var(--fill-dur, 3.2s) * 1.4) ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.45),
+    transparent
+  );
+  animation: bp-bets-bar-sheen calc(var(--fill-dur, 3.2s) * 1.4) ease-in-out
+    infinite;
 }
 
 .bp-bets-stage .bf-pulse .bf-tip {
@@ -1015,7 +1076,11 @@
 
 .bp-bets-stage .bf-scanline .bf-core {
   background:
-    repeating-linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 0 2px, color-mix(in srgb, var(--accent) 58%, transparent) 2px 4px),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent) 22%, transparent) 0 2px,
+      color-mix(in srgb, var(--accent) 58%, transparent) 2px 4px
+    ),
     linear-gradient(90deg, var(--accent), var(--accent-2));
 }
 
@@ -1024,7 +1089,12 @@
   top: 0;
   bottom: 0;
   width: 18px;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 68%, transparent), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 68%, transparent),
+    transparent
+  );
   animation: bp-bets-bar-sheen calc(var(--fill-dur, 3.2s) * 0.9) linear infinite;
 }
 
@@ -1042,7 +1112,8 @@
 .bp-bets-stage .bf-plasma .bf-blob-1 {
   left: 4%;
   background: var(--accent-2);
-  animation: bp-bets-plasma-1 calc(var(--fill-dur, 3.2s) * 1.2) ease-in-out infinite;
+  animation: bp-bets-plasma-1 calc(var(--fill-dur, 3.2s) * 1.2) ease-in-out
+    infinite;
 }
 
 .bp-bets-stage .bf-plasma .bf-blob-2 {
@@ -1057,7 +1128,13 @@
   min-height: 100%;
   display: grid;
   place-items: center;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 112, 255, 0.16), transparent 32rem), #01060f;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(0, 112, 255, 0.16),
+      transparent 32rem
+    ),
+    #01060f;
 }
 
 .bp-chat-stage .chat-widget {
@@ -1082,27 +1159,76 @@
   left: 17px;
   height: 2px;
   border-radius: 99px;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--glow) 75%, #fff), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--glow) 75%, #fff),
+    transparent
+  );
   box-shadow: 0 0 7px var(--glow);
   content: "";
 }
 
 .bp-chat-stage .wb-solid {
-  background: radial-gradient(120% 55% at 50% 108%, color-mix(in srgb, var(--glow) 16%, transparent), transparent 62%), linear-gradient(180deg, color-mix(in srgb, var(--panel) 74%, #000) 0%, var(--panel) 100%);
+  background:
+    radial-gradient(
+      120% 55% at 50% 108%,
+      color-mix(in srgb, var(--glow) 16%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 74%, #000) 0%,
+      var(--panel) 100%
+    );
 }
 
 .bp-chat-stage .wb-horizon {
-  background: linear-gradient(0deg, color-mix(in srgb, var(--glow) 28%, transparent), transparent 32%), linear-gradient(180deg, color-mix(in srgb, var(--panel) 62%, #000) 0%, var(--panel) 100%);
+  background:
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--glow) 28%, transparent),
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 62%, #000) 0%,
+      var(--panel) 100%
+    );
 }
 
 .bp-chat-stage .wb-beam {
-  background: linear-gradient(118deg, transparent 0 44%, color-mix(in srgb, var(--glow) 14%, transparent) 44.4% 47%, transparent 47.4% 63%, color-mix(in srgb, var(--glow) 8%, transparent) 63.3% 66%, transparent 66.4%), linear-gradient(180deg, color-mix(in srgb, var(--panel) 70%, #000), var(--panel));
+  background:
+    linear-gradient(
+      118deg,
+      transparent 0 44%,
+      color-mix(in srgb, var(--glow) 14%, transparent) 44.4% 47%,
+      transparent 47.4% 63%,
+      color-mix(in srgb, var(--glow) 8%, transparent) 63.3% 66%,
+      transparent 66.4%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 70%, #000),
+      var(--panel)
+    );
 }
 
 .bp-chat-stage .wb-nebula,
 .bp-chat-stage .wb-vignette,
 .bp-chat-stage .wb-split {
-  background: radial-gradient(90% 52% at 8% -6%, color-mix(in srgb, var(--glow) 26%, transparent), transparent 60%), radial-gradient(85% 58% at 106% 106%, color-mix(in srgb, var(--glow) 20%, transparent), transparent 62%), linear-gradient(180deg, #02060f 0%, var(--panel) 100%);
+  background:
+    radial-gradient(
+      90% 52% at 8% -6%,
+      color-mix(in srgb, var(--glow) 26%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      85% 58% at 106% 106%,
+      color-mix(in srgb, var(--glow) 20%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(180deg, #02060f 0%, var(--panel) 100%);
 }
 
 .bp-chat-stage .chat-texture {
@@ -1114,20 +1240,41 @@
 }
 
 .bp-chat-stage .tex-scanlines {
-  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 7%) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(
+    0deg,
+    rgb(255 255 255 / 7%) 0 1px,
+    transparent 1px 3px
+  );
 }
 
 .bp-chat-stage .tex-grid {
-  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--glow) 12%, transparent) 0 1px, transparent 1px 14px), repeating-linear-gradient(90deg, color-mix(in srgb, var(--glow) 12%, transparent) 0 1px, transparent 1px 14px);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--glow) 12%, transparent) 0 1px,
+      transparent 1px 14px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--glow) 12%, transparent) 0 1px,
+      transparent 1px 14px
+    );
 }
 
 .bp-chat-stage .tex-dots {
-  background: radial-gradient(color-mix(in srgb, var(--glow) 30%, #fff) 0.8px, transparent 1.1px);
+  background: radial-gradient(
+    color-mix(in srgb, var(--glow) 30%, #fff) 0.8px,
+    transparent 1.1px
+  );
   background-size: 9px 9px;
 }
 
 .bp-chat-stage .tex-diagonal {
-  background: repeating-linear-gradient(45deg, rgb(255 255 255 / 6%) 0 1px, transparent 1px 8px);
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(255 255 255 / 6%) 0 1px,
+    transparent 1px 8px
+  );
 }
 
 .bp-chat-stage .tex-noise {
@@ -1161,8 +1308,15 @@
   padding: 12px 8px 10px;
   border: 1px solid color-mix(in srgb, var(--glow) 14%, transparent);
   border-radius: 9px;
-  background: linear-gradient(110deg, color-mix(in srgb, var(--bubble) 86%, #000) 0%, var(--bubble) 55%, color-mix(in srgb, var(--bubble) 90%, #000) 100%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%), 0 2px 5px rgb(0 0 0 / 24%);
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--bubble) 86%, #000) 0%,
+    var(--bubble) 55%,
+    color-mix(in srgb, var(--bubble) 90%, #000) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 5%),
+    0 2px 5px rgb(0 0 0 / 24%);
 }
 
 .bp-chat-stage .avatar {
@@ -1344,7 +1498,11 @@
   padding: 14px;
   border-bottom: 1px solid rgba(69, 200, 255, 0.15);
   background:
-    radial-gradient(circle at 10% 0%, rgba(69, 200, 255, 0.16), transparent 34%),
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(69, 200, 255, 0.16),
+      transparent 34%
+    ),
     #071022;
 }
 
@@ -1383,7 +1541,11 @@
 .bp-hunt-section {
   padding: 13px 14px 14px;
   border-bottom: 1px solid rgba(69, 200, 255, 0.12);
-  background: linear-gradient(180deg, rgba(12, 28, 64, 0.18), rgba(7, 16, 34, 0));
+  background: linear-gradient(
+    180deg,
+    rgba(12, 28, 64, 0.18),
+    rgba(7, 16, 34, 0)
+  );
 }
 
 .bp-hunt-section h4 {
@@ -1514,12 +1676,16 @@
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 4px 10px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 4px 10px rgba(0, 0, 0, 0.24);
 }
 
 .bp-hunt-swatch-row button.is-active {
   border-color: #effcff;
-  box-shadow: 0 0 0 2px rgba(69, 200, 255, 0.28), 0 0 18px rgba(69, 200, 255, 0.22);
+  box-shadow:
+    0 0 0 2px rgba(69, 200, 255, 0.28),
+    0 0 18px rgba(69, 200, 255, 0.22);
 }
 
 .bp-hunt-control-hint {
@@ -1807,8 +1973,17 @@
   overflow: hidden;
   border: var(--b-width, 1px) solid var(--c-rim);
   border-radius: var(--b-radius, 10px);
-  background: linear-gradient(180deg, var(--c-bar-top), var(--c-bar-mid) 46%, var(--c-bar-bot));
-  box-shadow: 0 0 0 1px rgba(3, 12, 32, 0.9), 0 0 18px color-mix(in srgb, var(--c-rim) 42%, transparent), 0 0 44px color-mix(in srgb, var(--c-rim) 20%, transparent), inset 0 1px 0 color-mix(in srgb, var(--c-rim) 30%, transparent);
+  background: linear-gradient(
+    180deg,
+    var(--c-bar-top),
+    var(--c-bar-mid) 46%,
+    var(--c-bar-bot)
+  );
+  box-shadow:
+    0 0 0 1px rgba(3, 12, 32, 0.9),
+    0 0 18px color-mix(in srgb, var(--c-rim) 42%, transparent),
+    0 0 44px color-mix(in srgb, var(--c-rim) 20%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--c-rim) 30%, transparent);
 }
 
 .bp-rtp-provider,
@@ -1876,7 +2051,12 @@
 .bp-rtp-divider {
   width: 1px;
   align-self: stretch;
-  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--c-rim) 55%, transparent), transparent);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--c-rim) 55%, transparent),
+    transparent
+  );
 }
 
 .bp-rtp-best {
@@ -1885,7 +2065,11 @@
   border: 1px solid color-mix(in srgb, var(--c-rim) 55%, transparent);
   border-radius: 6px;
   padding: 7px 14px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--c-bar-top) 85%, transparent), color-mix(in srgb, var(--c-bar-bot) 90%, transparent));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--c-bar-top) 85%, transparent),
+    color-mix(in srgb, var(--c-bar-bot) 90%, transparent)
+  );
 }
 
 .bp-rtp-best em,
@@ -1924,9 +2108,22 @@
   overflow: hidden;
   opacity: var(--bg-opacity);
   background:
-    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--bg-c) 28%, transparent), transparent 30%),
-    radial-gradient(circle at 82% 35%, color-mix(in srgb, var(--bg-b) 32%, transparent), transparent 34%),
-    linear-gradient(135deg, var(--bg-a), color-mix(in srgb, var(--bg-b) 48%, var(--bg-a)) 52%, var(--bg-a));
+    radial-gradient(
+      circle at 20% 20%,
+      color-mix(in srgb, var(--bg-c) 28%, transparent),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 82% 35%,
+      color-mix(in srgb, var(--bg-b) 32%, transparent),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      var(--bg-a),
+      color-mix(in srgb, var(--bg-b) 48%, var(--bg-a)) 52%,
+      var(--bg-a)
+    );
 }
 
 .bp-background img {
@@ -1939,7 +2136,11 @@
 .bp-bg-particle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--bg-c) 65%, transparent), transparent 66%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--bg-c) 65%, transparent),
+    transparent 66%
+  );
   filter: blur(10px);
   opacity: 0.5;
   animation: bp-bg-float var(--bg-speed) ease-in-out infinite;
@@ -1954,12 +2155,20 @@
 }
 
 .bp-bg-scanlines {
-  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 4px);
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.055) 0 1px,
+    transparent 1px 4px
+  );
   mix-blend-mode: overlay;
 }
 
 .bp-bg-vignette {
-  background: radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.58));
+  background: radial-gradient(
+    circle at center,
+    transparent 42%,
+    rgba(0, 0, 0, 0.58)
+  );
 }
 
 /* Giveaway */
@@ -1969,7 +2178,13 @@
   display: grid;
   place-items: center;
   padding: 28px;
-  background: radial-gradient(circle at 50% 50%, hsl(var(--gw-hue) var(--gw-sat) 18% / 0.42), transparent 36rem), #020611;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      hsl(var(--gw-hue) var(--gw-sat) 18% / 0.42),
+      transparent 36rem
+    ),
+    #020611;
 }
 
 .bp-giveaway-widget {
@@ -1980,9 +2195,16 @@
   padding: var(--gw-pad-y) var(--gw-pad-x);
   border: 1px solid color-mix(in srgb, var(--gw-accent) 55%, transparent);
   border-radius: var(--gw-radius);
-  background: linear-gradient(145deg, hsl(var(--gw-hue) var(--gw-sat) var(--gw-light) / 0.96), rgba(2, 8, 23, 0.92));
+  background: linear-gradient(
+    145deg,
+    hsl(var(--gw-hue) var(--gw-sat) var(--gw-light) / 0.96),
+    rgba(2, 8, 23, 0.92)
+  );
   color: #eff6ff;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 calc(36px * var(--gw-glow) / 100) color-mix(in srgb, var(--gw-accent) 34%, transparent);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.45),
+    0 0 calc(36px * var(--gw-glow) / 100)
+      color-mix(in srgb, var(--gw-accent) 34%, transparent);
 }
 
 .bp-giveaway-widget .edge {
@@ -1993,21 +2215,50 @@
   filter: drop-shadow(0 0 6px var(--gw-accent));
 }
 
-.edge-top-left { top: 7px; left: 7px; border-top: 2px solid; border-left: 2px solid; }
-.edge-top-right { top: 7px; right: 7px; border-top: 2px solid; border-right: 2px solid; }
-.edge-bottom-left { bottom: 7px; left: 7px; border-bottom: 2px solid; border-left: 2px solid; }
-.edge-bottom-right { right: 7px; bottom: 7px; border-right: 2px solid; border-bottom: 2px solid; }
+.edge-top-left {
+  top: 7px;
+  left: 7px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.edge-top-right {
+  top: 7px;
+  right: 7px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+.edge-bottom-left {
+  bottom: 7px;
+  left: 7px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+.edge-bottom-right {
+  right: 7px;
+  bottom: 7px;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
 
 .edge-light {
   position: absolute;
   right: 64px;
   left: 64px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gw-accent), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gw-accent),
+    transparent
+  );
 }
 
-.edge-light-top { top: 0; }
-.edge-light-bottom { bottom: 0; }
+.edge-light-top {
+  top: 0;
+}
+.edge-light-bottom {
+  bottom: 0;
+}
 
 .bp-gw-header,
 .bp-gw-name,
@@ -2158,9 +2409,16 @@
   padding: 14px;
   border: 1px solid color-mix(in srgb, var(--hunt-accent) 38%, transparent);
   border-radius: var(--hunt-radius);
-  background: linear-gradient(145deg, #061126, color-mix(in srgb, var(--hunt-blue) 17%, #061126));
+  background: linear-gradient(
+    145deg,
+    #061126,
+    color-mix(in srgb, var(--hunt-blue) 17%, #061126)
+  );
   color: #eef6ff;
-  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.38), 0 0 calc(28px * var(--hunt-glow)) color-mix(in srgb, var(--hunt-accent) 24%, transparent);
+  box-shadow:
+    0 20px 46px rgba(0, 0, 0, 0.38),
+    0 0 calc(28px * var(--hunt-glow))
+      color-mix(in srgb, var(--hunt-accent) 24%, transparent);
 }
 
 .bp-hunt-header {
@@ -2214,7 +2472,11 @@
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--hunt-accent) 32%, transparent);
   border-radius: 16px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--hunt-accent) 16%, transparent), rgba(15, 23, 42, 0.64));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--hunt-accent) 16%, transparent),
+    rgba(15, 23, 42, 0.64)
+  );
 }
 
 .bp-hunt-feature img,
@@ -2284,7 +2546,11 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--hunt-accent), color-mix(in srgb, var(--hunt-accent) 48%, transparent));
+  background: linear-gradient(
+    90deg,
+    var(--hunt-accent),
+    color-mix(in srgb, var(--hunt-accent) 48%, transparent)
+  );
 }
 
 .bp-hunt-list {
@@ -2304,69 +2570,144 @@
 }
 
 @keyframes bp-sheen {
-  0% { transform: translateX(-120%) rotate(22deg); }
-  55% { transform: translateX(240%) rotate(22deg); }
-  100% { transform: translateX(240%) rotate(22deg); }
+  0% {
+    transform: translateX(-120%) rotate(22deg);
+  }
+  55% {
+    transform: translateX(240%) rotate(22deg);
+  }
+  100% {
+    transform: translateX(240%) rotate(22deg);
+  }
 }
 
 @keyframes bp-open-pulse {
-  0%, 100% { opacity: 0.68; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.68;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes bp-bets-liquid-wave {
-  0% { transform: translateX(0) scaleY(1); }
-  25% { transform: translateX(-8px) scaleY(1.18); }
-  50% { transform: translateX(0) scaleY(0.85); }
-  75% { transform: translateX(8px) scaleY(1.14); }
-  100% { transform: translateX(0) scaleY(1); }
+  0% {
+    transform: translateX(0) scaleY(1);
+  }
+  25% {
+    transform: translateX(-8px) scaleY(1.18);
+  }
+  50% {
+    transform: translateX(0) scaleY(0.85);
+  }
+  75% {
+    transform: translateX(8px) scaleY(1.14);
+  }
+  100% {
+    transform: translateX(0) scaleY(1);
+  }
 }
 
 @keyframes bp-bets-pulse-glow {
-  0%, 100% { filter: brightness(1); opacity: 0.86; }
-  50% { filter: brightness(1.3); opacity: 1; }
+  0%,
+  100% {
+    filter: brightness(1);
+    opacity: 0.86;
+  }
+  50% {
+    filter: brightness(1.3);
+    opacity: 1;
+  }
 }
 
 @keyframes bp-bets-pulse-ring {
-  0%, 100% { opacity: 0.35; transform: scaleX(0.7); }
-  50% { opacity: 0.9; transform: scaleX(1.08); }
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleX(0.7);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scaleX(1.08);
+  }
 }
 
 @keyframes bp-bets-scan-sweep {
-  0% { transform: translateY(120%); }
-  100% { transform: translateY(-120%); }
+  0% {
+    transform: translateY(120%);
+  }
+  100% {
+    transform: translateY(-120%);
+  }
 }
 
 @keyframes bp-bets-bar-sheen {
-  0% { left: -20%; opacity: 0; }
-  15% { opacity: 1; }
-  60% { left: 105%; opacity: 0; }
-  100% { left: 105%; opacity: 0; }
+  0% {
+    left: -20%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  60% {
+    left: 105%;
+    opacity: 0;
+  }
+  100% {
+    left: 105%;
+    opacity: 0;
+  }
 }
 
 @keyframes bp-bets-plasma-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(36px, -18px) scale(1.2); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(36px, -18px) scale(1.2);
+  }
 }
 
 @keyframes bp-bets-plasma-2 {
-  0%, 100% { transform: translate(0, 0) scale(0.9); }
-  50% { transform: translate(-42px, 12px) scale(1.15); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(0.9);
+  }
+  50% {
+    transform: translate(-42px, 12px) scale(1.15);
+  }
 }
 
 @keyframes bp-bets-plasma-3 {
-  0%, 100% { transform: translate(0, 0) scale(1.1); }
-  50% { transform: translate(16px, 22px) scale(0.82); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate(16px, 22px) scale(0.82);
+  }
 }
 
 @keyframes bp-rim {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes bp-bg-float {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(20px, -14px, 0) scale(1.08); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(20px, -14px, 0) scale(1.08);
+  }
 }
 
 @media (max-width: 1280px) {

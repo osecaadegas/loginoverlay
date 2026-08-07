@@ -1571,8 +1571,28 @@ function clampNumber(value, min, max, fallback) {
   return Math.min(Math.max(number, min), max);
 }
 
-function Section({ title, icon, children, defaultOpen = true }) {
+const ControlCategoryContext = React.createContext(null);
+
+function CategorizedControls({ tabs, defaultCategory, children }) {
+  const [category, setCategory] = useTab(defaultCategory || tabs[0]?.[0]);
+  const activeCategory = tabs.some(([key]) => key === category)
+    ? category
+    : tabs[0]?.[0];
+
+  return (
+    <ControlCategoryContext.Provider value={activeCategory}>
+      <PanelTabs active={activeCategory} onChange={setCategory} tabs={tabs} />
+      <div className="bp-control-category" role="tabpanel">
+        {children}
+      </div>
+    </ControlCategoryContext.Provider>
+  );
+}
+
+function Section({ title, icon, children, defaultOpen = true, category }) {
+  const activeCategory = React.useContext(ControlCategoryContext);
   const [open, setOpen] = useState(defaultOpen);
+  if (category && activeCategory && category !== activeCategory) return null;
   return (
     <section className="bp-section">
       <button
@@ -1817,7 +1837,9 @@ function BonusTypographyControls({ config, onChange }) {
   ));
 }
 
-function HuntSection({ title, icon, children }) {
+function HuntSection({ title, icon, children, category }) {
+  const activeCategory = React.useContext(ControlCategoryContext);
+  if (category && activeCategory && category !== activeCategory) return null;
   return (
     <section className="bp-hunt-section">
       <h4>
@@ -3035,11 +3057,18 @@ function BetterBetsControls({ config, onChange }) {
 
 function PanelTabs({ tabs, active, onChange }) {
   return (
-    <nav className="bp-panel-tabs">
+    <nav
+      className="bp-panel-tabs"
+      role="tablist"
+      aria-label="Widget control categories"
+    >
       {tabs.map(([key, icon, label]) => (
         <button
           key={key}
           type="button"
+          role="tab"
+          aria-selected={active === key}
+          title={label}
           className={active === key ? "is-active" : ""}
           onClick={() => onChange(key)}
         >
@@ -3054,6 +3083,12 @@ function PanelTabs({ tabs, active, onChange }) {
 function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   const c = ensureBetterWidgetConfig("chat", config);
   const set = (patch) => onChange({ ...c, ...patch });
+  const categories = [
+    ["layout", <Maximize2 key="layout" size={12} />, "Layout"],
+    ["appearance", <Palette key="appearance" size={12} />, "Appearance"],
+    ["content", <MessageSquare key="content" size={12} />, "Content"],
+    ["behavior", <Wand2 key="behavior" size={12} />, "Behavior"],
+  ];
   const commitSize = (patch) => {
     const next = ensureBetterWidgetConfig("chat", { ...c, ...patch });
     const width = clampNumber(
@@ -3100,413 +3135,461 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
           {c.live ? "Live" : "Idle"}
         </span>
       </header>
-      <Section title="Chat Box Size" icon={<Maximize2 size={13} />}>
-        <SliderRow
-          label="Width"
-          value={clampNumber(
-            c.width ?? widget?.width,
-            150,
-            900,
-            BETTER_CHAT_DEFAULT_SIZE.width,
-          )}
-          min={150}
-          max={900}
-          step={10}
-          unit="px"
-          onChange={(width) => commitSize({ width })}
-        />
-        <SliderRow
-          label="Height"
-          value={clampNumber(
-            c.height ?? widget?.height,
-            150,
-            900,
-            BETTER_CHAT_DEFAULT_SIZE.height,
-          )}
-          min={150}
-          max={900}
-          step={10}
-          unit="px"
-          onChange={(height) => commitSize({ height })}
-        />
-        <div className="bp-preset-row">
-          <button
-            type="button"
-            onClick={() => commitSize(BETTER_CHAT_DEFAULT_SIZE)}
-          >
-            Default
-          </button>
-          <button
-            type="button"
-            onClick={() => commitSize({ width: 360, height: 520 })}
-          >
-            Wide
-          </button>
-          <button
-            type="button"
-            onClick={() => commitSize({ width: 260, height: 720 })}
-          >
-            Tall
-          </button>
-          <button
-            type="button"
-            onClick={() => commitSize({ width: 420, height: 360 })}
-          >
-            Compact
-          </button>
-        </div>
-      </Section>
-      <Section title="Typography" icon={<Type size={13} />}>
-        <SelectRow
-          label="Message font"
-          value={c.font}
-          options={CHAT_FONTS}
-          onChange={(font) => set({ font })}
-        />
-        <SliderRow
-          label="Message size"
-          value={c.fontSize}
-          min={9}
-          max={20}
-          unit="px"
-          onChange={(fontSize) => set({ fontSize })}
-        />
-        <SliderRow
-          label="Username size"
-          value={c.usernameSize}
-          min={9}
-          max={20}
-          unit="px"
-          onChange={(usernameSize) => set({ usernameSize })}
-        />
-      </Section>
-      <Section title="Colours" icon={<Palette size={13} />}>
-        <div className="bp-color-grid">
-          {["glow", "username", "text", "bubble", "panel"].map((key) => (
-            <ColorRow
-              key={key}
-              label={key[0].toUpperCase() + key.slice(1)}
-              value={c[key]}
-              onChange={(value) => set({ [key]: value })}
-            />
-          ))}
-        </div>
-        <div className="bp-chat-presets">
-          {CHAT_PRESETS.map((preset) => (
-            <button key={preset.name} type="button" onClick={() => set(preset)}>
-              <span>
-                <i style={{ background: preset.glow }} />
-                <i style={{ background: preset.username }} />
-                <i style={{ background: preset.bubble }} />
-              </span>
-              {preset.name}
+      <CategorizedControls tabs={categories} defaultCategory="layout">
+        <Section
+          title="Chat Box Size"
+          icon={<Maximize2 size={13} />}
+          category="layout"
+        >
+          <SliderRow
+            label="Width"
+            value={clampNumber(
+              c.width ?? widget?.width,
+              150,
+              900,
+              BETTER_CHAT_DEFAULT_SIZE.width,
+            )}
+            min={150}
+            max={900}
+            step={10}
+            unit="px"
+            onChange={(width) => commitSize({ width })}
+          />
+          <SliderRow
+            label="Height"
+            value={clampNumber(
+              c.height ?? widget?.height,
+              150,
+              900,
+              BETTER_CHAT_DEFAULT_SIZE.height,
+            )}
+            min={150}
+            max={900}
+            step={10}
+            unit="px"
+            onChange={(height) => commitSize({ height })}
+          />
+          <div className="bp-preset-row">
+            <button
+              type="button"
+              onClick={() => commitSize(BETTER_CHAT_DEFAULT_SIZE)}
+            >
+              Default
             </button>
-          ))}
-        </div>
-      </Section>
-      <Section title="Display" icon={<Eye size={13} />}>
-        <ToggleRow
-          label="Show name text"
-          checked={c.showHeaderName !== false}
-          onChange={(showHeaderName) => set({ showHeaderName })}
-        />
-        <ToggleRow
-          label="Show live text"
-          checked={c.showLiveLabel !== false}
-          onChange={(showLiveLabel) => set({ showLiveLabel })}
-        />
-        <ToggleRow
-          label="Show viewer count"
-          checked={!!c.showViewerCount}
-          onChange={(showViewerCount) => set({ showViewerCount })}
-        />
-        <SliderRow
-          label="Viewer count"
-          value={c.viewerCount}
-          min={0}
-          max={100000}
-          step={10}
-          disabled={!c.showViewerCount}
-          onChange={(viewerCount) => set({ viewerCount })}
-        />
-      </Section>
-      <Section title="Emotes" icon={<Sparkles size={13} />}>
-        <ToggleRow
-          label="BetterTTV emotes"
-          checked={c.bttvEnabled !== false}
-          onChange={(bttvEnabled) => set({ bttvEnabled })}
-        />
-        <ToggleRow
-          label="Global BTTV emotes"
-          checked={c.bttvGlobal !== false}
-          onChange={(bttvGlobal) => set({ bttvGlobal })}
-        />
-        <ToggleRow
-          label="Channel BTTV emotes"
-          checked={c.bttvChannel !== false}
-          onChange={(bttvChannel) => set({ bttvChannel })}
-        />
-        <SliderRow
-          label="Emote image size"
-          value={c.bttvSize}
-          min={1}
-          max={3}
-          step={1}
-          unit="x"
-          onChange={(bttvSize) => set({ bttvSize })}
-        />
-      </Section>
-      <Section title="Celebrations" icon={<Sparkles size={13} />}>
-        <ToggleRow
-          label="Raid celebration"
-          checked={c.celebrations?.raid !== false}
-          onChange={(raid) =>
-            set({ celebrations: { ...c.celebrations, raid } })
-          }
-        />
-        <ToggleRow
-          label="Sub highlight"
-          checked={c.celebrations?.sub !== false}
-          onChange={(sub) => set({ celebrations: { ...c.celebrations, sub } })}
-        />
-        <ToggleRow
-          label="Gift effect"
-          checked={c.celebrations?.gift !== false}
-          onChange={(gift) =>
-            set({ celebrations: { ...c.celebrations, gift } })
-          }
-        />
-        <SliderRow
-          label="Effect intensity"
-          value={c.celebrations?.intensity ?? 5}
-          min={1}
-          max={10}
-          onChange={(intensity) =>
-            set({ celebrations: { ...c.celebrations, intensity } })
-          }
-        />
-      </Section>
-      <Section title="Roles & Message Glaze" icon={<Sparkles size={13} />}>
-        <ToggleRow
-          label="Show role badges"
-          checked={c.showRoleBadges !== false}
-          onChange={(showRoleBadges) => set({ showRoleBadges })}
-        />
-        <ToggleRow
-          label="Role message effects"
-          checked={c.roleEffects?.enabled !== false}
-          onChange={(enabled) =>
-            set({ roleEffects: { ...c.roleEffects, enabled } })
-          }
-        />
-        {[
-          ["ownerEnabled", "Owner colour"],
-          ["ownerMovementEnabled", "Owner movement"],
-          ["moderatorEnabled", "Moderator colour"],
-          ["moderatorMovementEnabled", "Moderator movement"],
-          ["vipEnabled", "VIP colour"],
-          ["vipMovementEnabled", "VIP movement"],
-          ["subscriberEnabled", "Subscriber colour"],
-          ["subscriberMovementEnabled", "Subscriber movement"],
-        ].map(([key, label]) => (
+            <button
+              type="button"
+              onClick={() => commitSize({ width: 360, height: 520 })}
+            >
+              Wide
+            </button>
+            <button
+              type="button"
+              onClick={() => commitSize({ width: 260, height: 720 })}
+            >
+              Tall
+            </button>
+            <button
+              type="button"
+              onClick={() => commitSize({ width: 420, height: 360 })}
+            >
+              Compact
+            </button>
+          </div>
+        </Section>
+        <Section
+          title="Typography"
+          icon={<Type size={13} />}
+          category="appearance"
+        >
+          <SelectRow
+            label="Message font"
+            value={c.font}
+            options={CHAT_FONTS}
+            onChange={(font) => set({ font })}
+          />
+          <SliderRow
+            label="Message size"
+            value={c.fontSize}
+            min={9}
+            max={20}
+            unit="px"
+            onChange={(fontSize) => set({ fontSize })}
+          />
+          <SliderRow
+            label="Username size"
+            value={c.usernameSize}
+            min={9}
+            max={20}
+            unit="px"
+            onChange={(usernameSize) => set({ usernameSize })}
+          />
+        </Section>
+        <Section
+          title="Colours"
+          icon={<Palette size={13} />}
+          category="appearance"
+        >
+          <div className="bp-color-grid">
+            {["glow", "username", "text", "bubble", "panel"].map((key) => (
+              <ColorRow
+                key={key}
+                label={key[0].toUpperCase() + key.slice(1)}
+                value={c[key]}
+                onChange={(value) => set({ [key]: value })}
+              />
+            ))}
+          </div>
+          <div className="bp-chat-presets">
+            {CHAT_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => set(preset)}
+              >
+                <span>
+                  <i style={{ background: preset.glow }} />
+                  <i style={{ background: preset.username }} />
+                  <i style={{ background: preset.bubble }} />
+                </span>
+                {preset.name}
+              </button>
+            ))}
+          </div>
+        </Section>
+        <Section title="Display" icon={<Eye size={13} />} category="layout">
           <ToggleRow
-            key={key}
-            label={label}
-            checked={c.roleEffects?.[key] !== false}
-            disabled={c.roleEffects?.enabled === false}
-            onChange={(enabled) =>
-              set({ roleEffects: { ...c.roleEffects, [key]: enabled } })
+            label="Show name text"
+            checked={c.showHeaderName !== false}
+            onChange={(showHeaderName) => set({ showHeaderName })}
+          />
+          <ToggleRow
+            label="Show live text"
+            checked={c.showLiveLabel !== false}
+            onChange={(showLiveLabel) => set({ showLiveLabel })}
+          />
+          <ToggleRow
+            label="Show viewer count"
+            checked={!!c.showViewerCount}
+            onChange={(showViewerCount) => set({ showViewerCount })}
+          />
+          <SliderRow
+            label="Viewer count"
+            value={c.viewerCount}
+            min={0}
+            max={100000}
+            step={10}
+            disabled={!c.showViewerCount}
+            onChange={(viewerCount) => set({ viewerCount })}
+          />
+        </Section>
+        <Section
+          title="Emotes"
+          icon={<Sparkles size={13} />}
+          category="content"
+        >
+          <ToggleRow
+            label="BetterTTV emotes"
+            checked={c.bttvEnabled !== false}
+            onChange={(bttvEnabled) => set({ bttvEnabled })}
+          />
+          <ToggleRow
+            label="Global BTTV emotes"
+            checked={c.bttvGlobal !== false}
+            onChange={(bttvGlobal) => set({ bttvGlobal })}
+          />
+          <ToggleRow
+            label="Channel BTTV emotes"
+            checked={c.bttvChannel !== false}
+            onChange={(bttvChannel) => set({ bttvChannel })}
+          />
+          <SliderRow
+            label="Emote image size"
+            value={c.bttvSize}
+            min={1}
+            max={3}
+            step={1}
+            unit="x"
+            onChange={(bttvSize) => set({ bttvSize })}
+          />
+        </Section>
+        <Section
+          title="Celebrations"
+          icon={<Sparkles size={13} />}
+          category="behavior"
+        >
+          <ToggleRow
+            label="Raid celebration"
+            checked={c.celebrations?.raid !== false}
+            onChange={(raid) =>
+              set({ celebrations: { ...c.celebrations, raid } })
             }
           />
-        ))}
-        <SliderRow
-          label="Glaze intensity"
-          value={c.roleEffects?.intensity ?? 8}
-          min={1}
-          max={10}
-          disabled={c.roleEffects?.enabled === false}
-          onChange={(intensity) =>
-            set({ roleEffects: { ...c.roleEffects, intensity } })
-          }
-        />
-        <div className="bp-color-grid">
+          <ToggleRow
+            label="Sub highlight"
+            checked={c.celebrations?.sub !== false}
+            onChange={(sub) =>
+              set({ celebrations: { ...c.celebrations, sub } })
+            }
+          />
+          <ToggleRow
+            label="Gift effect"
+            checked={c.celebrations?.gift !== false}
+            onChange={(gift) =>
+              set({ celebrations: { ...c.celebrations, gift } })
+            }
+          />
+          <SliderRow
+            label="Effect intensity"
+            value={c.celebrations?.intensity ?? 5}
+            min={1}
+            max={10}
+            onChange={(intensity) =>
+              set({ celebrations: { ...c.celebrations, intensity } })
+            }
+          />
+        </Section>
+        <Section
+          title="Roles & Message Glaze"
+          icon={<Sparkles size={13} />}
+          category="content"
+        >
+          <ToggleRow
+            label="Show role badges"
+            checked={c.showRoleBadges !== false}
+            onChange={(showRoleBadges) => set({ showRoleBadges })}
+          />
+          <ToggleRow
+            label="Role message effects"
+            checked={c.roleEffects?.enabled !== false}
+            onChange={(enabled) =>
+              set({ roleEffects: { ...c.roleEffects, enabled } })
+            }
+          />
           {[
-            ["ownerColor", "Owner"],
-            ["moderatorColor", "Moderator"],
-            ["vipColor", "VIP"],
-            ["subscriberColor", "Subscriber"],
-            ["raidColor", "Raid"],
+            ["ownerEnabled", "Owner colour"],
+            ["ownerMovementEnabled", "Owner movement"],
+            ["moderatorEnabled", "Moderator colour"],
+            ["moderatorMovementEnabled", "Moderator movement"],
+            ["vipEnabled", "VIP colour"],
+            ["vipMovementEnabled", "VIP movement"],
+            ["subscriberEnabled", "Subscriber colour"],
+            ["subscriberMovementEnabled", "Subscriber movement"],
           ].map(([key, label]) => (
-            <ColorRow
+            <ToggleRow
               key={key}
               label={label}
-              value={c.roleEffects?.[key]}
-              onChange={(value) =>
-                set({ roleEffects: { ...c.roleEffects, [key]: value } })
+              checked={c.roleEffects?.[key] !== false}
+              disabled={c.roleEffects?.enabled === false}
+              onChange={(enabled) =>
+                set({ roleEffects: { ...c.roleEffects, [key]: enabled } })
               }
             />
           ))}
-        </div>
-      </Section>
-      <Section title="In-Chat Shoutout" icon={<MessageSquare size={13} />}>
-        <ToggleRow
-          label="Play !so inside chat"
-          checked={c.shoutoutInChat === true}
-          onChange={(shoutoutInChat) => set({ shoutoutInChat })}
-        />
-        <Segmented
-          value={c.shoutoutPosition}
-          options={[
-            { key: "top", name: "Top" },
-            { key: "bottom", name: "Bottom" },
-          ]}
-          onChange={(shoutoutPosition) => set({ shoutoutPosition })}
-        />
-        <SliderRow
-          label="Clip height"
-          value={c.shoutoutHeight}
-          min={120}
-          max={360}
-          step={10}
-          unit="px"
-          disabled={!c.shoutoutInChat}
-          onChange={(shoutoutHeight) => set({ shoutoutHeight })}
-        />
-        <SliderRow
-          label="Display duration"
-          value={c.shoutoutDuration}
-          min={10}
-          max={120}
-          unit="s"
-          disabled={!c.shoutoutInChat}
-          onChange={(shoutoutDuration) => set({ shoutoutDuration })}
-        />
-        <ToggleRow
-          label="Dismiss when clip ends"
-          checked={c.shoutoutDismissOnClipEnd === true}
-          disabled={!c.shoutoutInChat}
-          onChange={(shoutoutDismissOnClipEnd) =>
-            set({ shoutoutDismissOnClipEnd })
-          }
-        />
-      </Section>
-      <Section title="Backdrop" icon={<Layers size={13} />}>
-        <Segmented
-          value={c.bg}
-          columns={3}
-          options={[
-            "solid",
-            "horizon",
-            "beam",
-            "nebula",
-            "vignette",
-            "split",
-          ].map((key) => ({ key, name: key }))}
-          onChange={(bg) => set({ bg })}
-        />
-        <Segmented
-          value={c.texture}
-          columns={3}
-          options={[
-            "none",
-            "scanlines",
-            "grid",
-            "dots",
-            "diagonal",
-            "noise",
-          ].map((key) => ({ key, name: key }))}
-          onChange={(texture) => set({ texture })}
-        />
-        <SliderRow
-          label="Texture strength"
-          value={c.textureStrength}
-          min={5}
-          max={80}
-          step={5}
-          unit="%"
-          disabled={c.texture === "none"}
-          onChange={(textureStrength) => set({ textureStrength })}
-        />
-      </Section>
-      <Section title="Message Behaviour" icon={<Waves size={13} />}>
-        <Segmented
-          value={c.animation}
-          columns={3}
-          options={[
-            "slide-up",
-            "slide-down",
-            "slide-left",
-            "slide-right",
-            "fade",
-            "none",
-          ].map((key) => ({
-            key,
-            name: key === "none" ? "Instant" : key.replace("slide-", ""),
-          }))}
-          onChange={(animation) => set({ animation })}
-        />
-        <Segmented
-          value={c.flow}
-          options={[
-            { key: "bottom-to-top", name: "Bottom up" },
-            { key: "top-to-bottom", name: "Top down" },
-          ]}
-          onChange={(flow) =>
-            set({ flow, entry: flow === "top-to-bottom" ? "top" : "bottom" })
-          }
-        />
-        <SliderRow
-          label="Stagger"
-          value={c.stagger}
-          min={0}
-          max={400}
-          step={20}
-          unit="ms"
-          onChange={(stagger) => set({ stagger })}
-        />
-        <ToggleRow
-          label="Auto-fade"
-          checked={!!c.autoFade}
-          onChange={(autoFade) =>
-            set({ autoFade, lifespan: autoFade ? "timed" : "persistent" })
-          }
-        />
-        <SliderRow
-          label="Fade after"
-          value={c.fadeAfter}
-          min={2}
-          max={15}
-          unit="s"
-          disabled={!c.autoFade}
-          onChange={(fadeAfter) => set({ fadeAfter })}
-        />
-        <SliderRow
-          label="Max messages"
-          value={c.maxMessages}
-          min={2}
-          max={40}
-          onChange={(maxMessages) => set({ maxMessages })}
-        />
-        <ToggleRow
-          label="Simulate live chat"
-          checked={!!c.live}
-          onChange={(live) => set({ live })}
-        />
-      </Section>
-      <Section title="Empty State" icon={<MessageSquare size={13} />}>
-        <ToggleRow
-          label="Show empty state"
-          checked={c.showEmptyState !== false}
-          onChange={(showEmptyState) => set({ showEmptyState })}
-        />
-        {c.showEmptyState !== false && (
-          <TextRow
-            label="No-message text"
-            value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}
-            onChange={(emptyMessage) => set({ emptyMessage })}
+          <SliderRow
+            label="Glaze intensity"
+            value={c.roleEffects?.intensity ?? 8}
+            min={1}
+            max={10}
+            disabled={c.roleEffects?.enabled === false}
+            onChange={(intensity) =>
+              set({ roleEffects: { ...c.roleEffects, intensity } })
+            }
           />
-        )}
-      </Section>
+          <div className="bp-color-grid">
+            {[
+              ["ownerColor", "Owner"],
+              ["moderatorColor", "Moderator"],
+              ["vipColor", "VIP"],
+              ["subscriberColor", "Subscriber"],
+              ["raidColor", "Raid"],
+            ].map(([key, label]) => (
+              <ColorRow
+                key={key}
+                label={label}
+                value={c.roleEffects?.[key]}
+                onChange={(value) =>
+                  set({ roleEffects: { ...c.roleEffects, [key]: value } })
+                }
+              />
+            ))}
+          </div>
+        </Section>
+        <Section
+          title="In-Chat Shoutout"
+          icon={<MessageSquare size={13} />}
+          category="behavior"
+        >
+          <ToggleRow
+            label="Play !so inside chat"
+            checked={c.shoutoutInChat === true}
+            onChange={(shoutoutInChat) => set({ shoutoutInChat })}
+          />
+          <Segmented
+            value={c.shoutoutPosition}
+            options={[
+              { key: "top", name: "Top" },
+              { key: "bottom", name: "Bottom" },
+            ]}
+            onChange={(shoutoutPosition) => set({ shoutoutPosition })}
+          />
+          <SliderRow
+            label="Clip height"
+            value={c.shoutoutHeight}
+            min={120}
+            max={360}
+            step={10}
+            unit="px"
+            disabled={!c.shoutoutInChat}
+            onChange={(shoutoutHeight) => set({ shoutoutHeight })}
+          />
+          <SliderRow
+            label="Display duration"
+            value={c.shoutoutDuration}
+            min={10}
+            max={120}
+            unit="s"
+            disabled={!c.shoutoutInChat}
+            onChange={(shoutoutDuration) => set({ shoutoutDuration })}
+          />
+          <ToggleRow
+            label="Dismiss when clip ends"
+            checked={c.shoutoutDismissOnClipEnd === true}
+            disabled={!c.shoutoutInChat}
+            onChange={(shoutoutDismissOnClipEnd) =>
+              set({ shoutoutDismissOnClipEnd })
+            }
+          />
+        </Section>
+        <Section
+          title="Backdrop"
+          icon={<Layers size={13} />}
+          category="appearance"
+        >
+          <Segmented
+            value={c.bg}
+            columns={3}
+            options={[
+              "solid",
+              "horizon",
+              "beam",
+              "nebula",
+              "vignette",
+              "split",
+            ].map((key) => ({ key, name: key }))}
+            onChange={(bg) => set({ bg })}
+          />
+          <Segmented
+            value={c.texture}
+            columns={3}
+            options={[
+              "none",
+              "scanlines",
+              "grid",
+              "dots",
+              "diagonal",
+              "noise",
+            ].map((key) => ({ key, name: key }))}
+            onChange={(texture) => set({ texture })}
+          />
+          <SliderRow
+            label="Texture strength"
+            value={c.textureStrength}
+            min={5}
+            max={80}
+            step={5}
+            unit="%"
+            disabled={c.texture === "none"}
+            onChange={(textureStrength) => set({ textureStrength })}
+          />
+        </Section>
+        <Section
+          title="Message Behaviour"
+          icon={<Waves size={13} />}
+          category="behavior"
+        >
+          <Segmented
+            value={c.animation}
+            columns={3}
+            options={[
+              "slide-up",
+              "slide-down",
+              "slide-left",
+              "slide-right",
+              "fade",
+              "none",
+            ].map((key) => ({
+              key,
+              name: key === "none" ? "Instant" : key.replace("slide-", ""),
+            }))}
+            onChange={(animation) => set({ animation })}
+          />
+          <Segmented
+            value={c.flow}
+            options={[
+              { key: "bottom-to-top", name: "Bottom up" },
+              { key: "top-to-bottom", name: "Top down" },
+            ]}
+            onChange={(flow) =>
+              set({ flow, entry: flow === "top-to-bottom" ? "top" : "bottom" })
+            }
+          />
+          <SliderRow
+            label="Stagger"
+            value={c.stagger}
+            min={0}
+            max={400}
+            step={20}
+            unit="ms"
+            onChange={(stagger) => set({ stagger })}
+          />
+          <ToggleRow
+            label="Auto-fade"
+            checked={!!c.autoFade}
+            onChange={(autoFade) =>
+              set({ autoFade, lifespan: autoFade ? "timed" : "persistent" })
+            }
+          />
+          <SliderRow
+            label="Fade after"
+            value={c.fadeAfter}
+            min={2}
+            max={15}
+            unit="s"
+            disabled={!c.autoFade}
+            onChange={(fadeAfter) => set({ fadeAfter })}
+          />
+          <SliderRow
+            label="Max messages"
+            value={c.maxMessages}
+            min={2}
+            max={40}
+            onChange={(maxMessages) => set({ maxMessages })}
+          />
+          <ToggleRow
+            label="Simulate live chat"
+            checked={!!c.live}
+            onChange={(live) => set({ live })}
+          />
+        </Section>
+        <Section
+          title="Empty State"
+          icon={<MessageSquare size={13} />}
+          category="content"
+        >
+          <ToggleRow
+            label="Show empty state"
+            checked={c.showEmptyState !== false}
+            onChange={(showEmptyState) => set({ showEmptyState })}
+          />
+          {c.showEmptyState !== false && (
+            <TextRow
+              label="No-message text"
+              value={c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}
+              onChange={(emptyMessage) => set({ emptyMessage })}
+            />
+          )}
+        </Section>
+      </CategorizedControls>
       <div className="bp-action-row">
         <button
           type="button"
@@ -3526,6 +3609,10 @@ export function getBetterBonusOrientationWidth(orientation) {
   if (orientation === "horizontal") return 1080;
   if (orientation === "mainstream") return 372;
   return 402;
+}
+
+export function getBetterBonusOrientationHeight(orientation) {
+  return orientation === "horizontal" ? 280 : 884;
 }
 
 function SimpleThemedControls({
@@ -3571,12 +3658,18 @@ function SimpleThemedControls({
       getBetterBonusOrientationWidth(next.orientation);
     const nextHeight = Number(next.widgetHeight ?? next.panelHeight ?? 0) || 0;
     if (typeof onWidgetChange === "function") {
+      const minimumHeight = next.orientation === "horizontal" ? 240 : 320;
       const widgetPatch = {
         width: clampNumber(nextWidth, 320, 1280, nextWidth),
         config: next,
       };
       if (nextHeight > 0) {
-        widgetPatch.height = clampNumber(nextHeight, 320, 1080, nextHeight);
+        widgetPatch.height = clampNumber(
+          nextHeight,
+          minimumHeight,
+          1080,
+          nextHeight,
+        );
       }
       onWidgetChange(widgetPatch);
       return;
@@ -4934,6 +5027,12 @@ function SimpleThemedControls({
   const widgetHeight = Number(c.widgetHeight ?? c.panelHeight ?? 0) || 0;
   const edgeRadius = Number(c.edgeRadius ?? c.radius ?? c.cardRadius ?? 14);
   const statRadius = Number(c.statRadius ?? 7);
+  const bonusCategories = [
+    ["layout", <SlidersHorizontal key="layout" size={12} />, "Layout"],
+    ["appearance", <Palette key="appearance" size={12} />, "Appearance"],
+    ["content", <MessageSquare key="content" size={12} />, "Content"],
+    ["behavior", <Wand2 key="behavior" size={12} />, "Behavior"],
+  ];
 
   return (
     <div className="bp-controls bp-controls--hunt">
@@ -4945,365 +5044,429 @@ function SimpleThemedControls({
         </div>
       </header>
 
-      <HuntSection title="Widget Style" icon={<Sparkles size={13} />}>
-        <HuntChoiceGrid
-          value={c.skin || "modern"}
-          options={BONUS_SKINS}
-          onChange={(skin) => set({ skin })}
-        />
-      </HuntSection>
+      <CategorizedControls tabs={bonusCategories} defaultCategory="layout">
+        <HuntSection
+          title="Widget Style"
+          icon={<Sparkles size={13} />}
+          category="appearance"
+        >
+          <HuntChoiceGrid
+            value={c.skin || "modern"}
+            options={BONUS_SKINS}
+            onChange={(skin) => set({ skin })}
+          />
+        </HuntSection>
 
-      <HuntSection title="Orientation" icon={<MonitorPlay size={13} />}>
-        <HuntChoiceGrid
-          value={c.orientation}
-          columns={3}
-          options={[
-            {
-              key: "vertical",
-              label: "Vertical",
-              hint: "Classic tall tracker",
-            },
-            {
-              key: "horizontal",
-              label: "Horizontal",
-              hint: "Wide two-column layout",
-            },
-            {
-              key: "mainstream",
-              label: "Mainstream",
-              hint: "Streamer opening layout",
-            },
-          ]}
-          onChange={(orientation) => {
-            const width = getBetterBonusOrientationWidth(orientation);
-            setBonusSize({
-              orientation,
-              widgetWidth: width,
-              panelWidth: width,
-            });
-          }}
-        />
-        <HuntHint>{orientationHint}</HuntHint>
-      </HuntSection>
+        <HuntSection
+          title="Orientation"
+          icon={<MonitorPlay size={13} />}
+          category="layout"
+        >
+          <HuntChoiceGrid
+            value={c.orientation}
+            columns={3}
+            options={[
+              {
+                key: "vertical",
+                label: "Vertical",
+                hint: "Classic tall tracker",
+              },
+              {
+                key: "horizontal",
+                label: "Horizontal",
+                hint: "Wide two-column layout",
+              },
+              {
+                key: "mainstream",
+                label: "Mainstream",
+                hint: "Streamer opening layout",
+              },
+            ]}
+            onChange={(orientation) => {
+              const width = getBetterBonusOrientationWidth(orientation);
+              const height = getBetterBonusOrientationHeight(orientation);
+              setBonusSize({
+                orientation,
+                widgetWidth: width,
+                widgetHeight: height,
+                panelWidth: width,
+                panelHeight: height,
+              });
+            }}
+          />
+          <HuntHint>{orientationHint}</HuntHint>
+        </HuntSection>
 
-      <HuntSection title="Win FX" icon={<Sparkles size={13} />}>
-        <ToggleRow
-          label="Automatic payout effects"
-          checked={c.winEffects !== false}
-          onChange={(winEffects) => set({ winEffects })}
-        />
-        <div className="bp-hunt-fx-grid">
-          {[
-            { mult: 100, label: "100x", icon: Sparkles },
-            { mult: 250, label: "250x", icon: Zap },
-            { mult: 500, label: "500x", icon: Flame },
-            { mult: 1000, label: "1K", icon: Flame },
-            { mult: 5000, label: "Max", icon: Crown, max: true },
-          ].map(({ mult, label, icon: Icon, max }) => (
-            <button
-              key={label}
-              type="button"
-              aria-label={`Preview ${label} win`}
-              onClick={() => previewWin(mult, max ? { max: true } : undefined)}
-            >
-              <Icon size={14} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-        <HuntHint>
-          Payouts at 1000x or higher celebrate automatically. Preview buttons
-          remain available even when automatic effects are off.
-        </HuntHint>
-      </HuntSection>
-
-      <HuntSection title="Session State" icon={<Timer size={13} />}>
-        <HuntChoiceGrid
-          value={normalizedSessionState}
-          columns={3}
-          options={BONUS_SESSION_STATES}
-          disabled
-        />
-        <HuntHint>
-          {sessionHint}. Synced from Bonus Hunt: {liveBonusCount} slot
-          {liveBonusCount === 1 ? "" : "s"}, opening{" "}
-          {renderedConfig.bonusOpening ? "on" : "off"}.
-        </HuntHint>
-      </HuntSection>
-
-      <HuntSection title="Texture" icon={<Layers size={13} />}>
-        <HuntChoiceGrid
-          value={c.finish}
-          columns={5}
-          options={BONUS_FINISHES.map((key) => ({ key, label: key }))}
-          onChange={(finish) => set({ finish })}
-        />
-      </HuntSection>
-
-      <HuntSection title="Colour" icon={<Palette size={13} />}>
-        <div className="bp-hunt-swatch-row">
-          {BONUS_COLOURS.map((colour) => (
-            <button
-              key={colour.key}
-              type="button"
-              className={c.colour === colour.key ? "is-active" : ""}
-              style={{ background: colour.accent }}
-              title={colour.name}
-              onClick={() => applyBonusColour(colour.key)}
-            />
-          ))}
-        </div>
-        <HuntHint>{currentColour.name}</HuntHint>
-      </HuntSection>
-
-      <HuntSection title="Animations" icon={<Wand2 size={13} />}>
-        <ToggleRow
-          label="Enable motion"
-          checked={c.animations}
-          onChange={(animations) => set({ animations })}
-        />
-        <SliderRow
-          label="Speed"
-          value={c.animSpeed}
-          min={0.5}
-          max={2}
-          step={0.1}
-          format={(value) => `${value.toFixed(1)}x`}
-          onChange={(animSpeed) => set({ animSpeed })}
-        />
-      </HuntSection>
-
-      <HuntSection title="Carousel Style" icon={<Layers size={13} />}>
-        <HuntChoiceGrid
-          value={c.carouselMode}
-          columns={3}
-          options={[
-            { key: "3d", label: "3D Ring" },
-            { key: "imagestats", label: "Image Stats" },
-            { key: "stats", label: "Slot Stats" },
-          ]}
-          onChange={(carouselMode) => set({ carouselMode })}
-        />
-      </HuntSection>
-
-      <HuntSection title="Carousel Timing" icon={<Timer size={13} />}>
-        <SliderRow
-          label="Rotate every"
-          value={c.carouselMs}
-          min={1500}
-          max={6000}
-          step={100}
-          format={(value) => `${(value / 1000).toFixed(1)}s`}
-          onChange={(carouselMs) => set({ carouselMs })}
-        />
-      </HuntSection>
-
-      <HuntSection title="Stats Layout" icon={<SlidersHorizontal size={13} />}>
-        <HuntChoiceGrid
-          value={c.statsLayout || "row"}
-          options={[
-            { key: "row", label: "4 across", hint: "Single row of stats" },
-            { key: "grid", label: "2 x 2", hint: "Two columns and two rows" },
-          ]}
-          onChange={(statsLayout) => set({ statsLayout })}
-        />
-      </HuntSection>
-
-      <HuntSection title="Chat Requests" icon={<MessageSquare size={13} />}>
-        <ToggleRow
-          label="Show requests feed"
-          checked={localRequestsVisible}
-          onChange={(showRequests) => set({ showRequests })}
-        />
-        <ToggleRow
-          label="Add and shatter animations"
-          checked={c.requestActionAnimations === true}
-          onChange={(requestActionAnimations) =>
-            set({ requestActionAnimations })
-          }
-        />
-        <HuntChoiceGrid
-          value={c.requestView || "list"}
-          columns={2}
-          options={[
-            {
-              key: "list",
-              label: "List",
-              hint: "Match the selected Rows, Cards, or Names style",
-            },
-            {
-              key: "carousel",
-              label: "3D",
-              hint: "Rotate pending requests as cover cards",
-            },
-          ]}
-          onChange={(requestView) => set({ requestView })}
-        />
-        <HuntHint>
-          {liveRequestsVisible
-            ? "Live !sr requests use the same view in Streamers Center and OBS."
-            : "Hidden because the requests handle is off on the Bonus Hunt page."}
-        </HuntHint>
-      </HuntSection>
-
-      <HuntSection title="Typography" icon={<Type size={13} />}>
-        <HuntChoiceGrid
-          value={c.font}
-          columns={3}
-          options={BONUS_FONTS.map((font) => ({
-            key: font.key,
-            label: font.name,
-          }))}
-          onChange={(font) =>
-            set({
-              font,
-              fontFamily:
-                BONUS_FONTS.find((item) => item.key === font)?.family ||
-                c.fontFamily,
-            })
-          }
-        />
-        <SliderRow
-          label="UI scale"
-          value={c.uiScale}
-          min={0.85}
-          max={1.2}
-          step={0.05}
-          format={(value) => `${Math.round(value * 100)}%`}
-          onChange={(uiScale) => set({ uiScale })}
-        />
-        <BonusTypographyControls config={c} onChange={onChange} />
-      </HuntSection>
-
-      <HuntSection
-        title="Sizes & Layout"
-        icon={<SlidersHorizontal size={13} />}
-      >
-        <SliderRow
-          label="Widget width"
-          value={widgetWidth}
-          min={320}
-          max={1280}
-          step={10}
-          unit="px"
-          onChange={(value) =>
-            setBonusSize({ widgetWidth: value, panelWidth: value })
-          }
-        />
-        <SliderRow
-          label="Widget height"
-          value={widgetHeight}
-          min={0}
-          max={980}
-          step={10}
-          format={(value) => (value === 0 ? "Auto" : `${value}px`)}
-          onChange={(value) =>
-            setBonusSize({ widgetHeight: value, panelHeight: value })
-          }
-        />
-        <SliderRow
-          label="Rounded edges"
-          value={edgeRadius}
-          min={0}
-          max={36}
-          unit="px"
-          onChange={(value) =>
-            set({ edgeRadius: value, radius: value, cardRadius: value })
-          }
-        />
-        <SliderRow
-          label="Stat box corners"
-          value={statRadius}
-          min={0}
-          max={22}
-          unit="px"
-          onChange={(statRadius) => set({ statRadius })}
-        />
-        <SliderRow
-          label="Progress bar"
-          value={c.barHeight}
-          min={3}
-          max={10}
-          unit="px"
-          onChange={(barHeight) => set({ barHeight })}
-        />
-        <SliderRow
-          label="Avatar"
-          value={c.avatarSize}
-          min={20}
-          max={44}
-          step={2}
-          unit="px"
-          onChange={(avatarSize) => set({ avatarSize })}
-        />
-        <SliderRow
-          label="Visible rows"
-          value={c.visibleRows}
-          min={3}
-          max={8}
-          onChange={(visibleRows) => set({ visibleRows })}
-        />
-      </HuntSection>
-
-      <HuntSection title="List Style" icon={<List size={13} />}>
-        <HuntChoiceGrid
-          value={c.listMode}
-          columns={3}
-          options={[
-            { key: "compact", label: "Rows" },
-            { key: "image", label: "Cards" },
-            { key: "names", label: "Names" },
-          ]}
-          onChange={(listMode) => set({ listMode })}
-        />
-      </HuntSection>
-
-      <HuntSection title="Best / Worst Card" icon={<Layers size={13} />}>
-        <ToggleRow
-          label="Always visible"
-          checked={drawerAlwaysVisible}
-          onChange={(drawerAlwaysVisible) => set({ drawerAlwaysVisible })}
-        />
-        {drawerAlwaysVisible ? (
+        <HuntSection
+          title="Win FX"
+          icon={<Sparkles size={13} />}
+          category="behavior"
+        >
+          <ToggleRow
+            label="Automatic payout effects"
+            checked={c.winEffects !== false}
+            onChange={(winEffects) => set({ winEffects })}
+          />
+          <div className="bp-hunt-fx-grid">
+            {[
+              { mult: 100, label: "100x", icon: Sparkles },
+              { mult: 250, label: "250x", icon: Zap },
+              { mult: 500, label: "500x", icon: Flame },
+              { mult: 1000, label: "1K", icon: Flame },
+              { mult: 5000, label: "Max", icon: Crown, max: true },
+            ].map(({ mult, label, icon: Icon, max }) => (
+              <button
+                key={label}
+                type="button"
+                aria-label={`Preview ${label} win`}
+                onClick={() =>
+                  previewWin(mult, max ? { max: true } : undefined)
+                }
+              >
+                <Icon size={14} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
           <HuntHint>
-            Best and worst stay below the widget, matching Expand mode.
+            Payouts at 1000x or higher celebrate automatically. Preview buttons
+            remain available even when automatic effects are off.
           </HuntHint>
-        ) : (
-          <>
-            <HuntChoiceGrid
-              value={normalizedDrawerMode}
-              options={[
-                {
-                  key: "contain",
-                  label: "Contain",
-                  hint: "Keep panel height",
-                },
-                { key: "expand", label: "Expand", hint: "Grow from bottom" },
-              ]}
-              onChange={(drawerMode) => set({ drawerMode })}
-            />
-            <SliderRow
-              label="Reveal every"
-              value={drawerRevealSeconds}
-              min={10}
-              max={90}
-              step={5}
-              unit="s"
-              onChange={(drawerRevealSeconds) => set({ drawerRevealSeconds })}
-            />
-            <SliderRow
-              label="Stay visible"
-              value={drawerHoldSeconds}
-              min={12}
-              max={30}
-              step={1}
-              unit="s"
-              onChange={(drawerHoldSeconds) => set({ drawerHoldSeconds })}
-            />
-            <HuntHint>{drawerHint}</HuntHint>
-          </>
-        )}
-      </HuntSection>
+        </HuntSection>
+
+        <HuntSection
+          title="Session State"
+          icon={<Timer size={13} />}
+          category="content"
+        >
+          <HuntChoiceGrid
+            value={normalizedSessionState}
+            columns={3}
+            options={BONUS_SESSION_STATES}
+            disabled
+          />
+          <HuntHint>
+            {sessionHint}. Synced from Bonus Hunt: {liveBonusCount} slot
+            {liveBonusCount === 1 ? "" : "s"}, opening{" "}
+            {renderedConfig.bonusOpening ? "on" : "off"}.
+          </HuntHint>
+        </HuntSection>
+
+        <HuntSection
+          title="Texture"
+          icon={<Layers size={13} />}
+          category="appearance"
+        >
+          <HuntChoiceGrid
+            value={c.finish}
+            columns={5}
+            options={BONUS_FINISHES.map((key) => ({ key, label: key }))}
+            onChange={(finish) => set({ finish })}
+          />
+        </HuntSection>
+
+        <HuntSection
+          title="Colour"
+          icon={<Palette size={13} />}
+          category="appearance"
+        >
+          <div className="bp-hunt-swatch-row">
+            {BONUS_COLOURS.map((colour) => (
+              <button
+                key={colour.key}
+                type="button"
+                className={c.colour === colour.key ? "is-active" : ""}
+                style={{ background: colour.accent }}
+                title={colour.name}
+                onClick={() => applyBonusColour(colour.key)}
+              />
+            ))}
+          </div>
+          <HuntHint>{currentColour.name}</HuntHint>
+        </HuntSection>
+
+        <HuntSection
+          title="Animations"
+          icon={<Wand2 size={13} />}
+          category="behavior"
+        >
+          <ToggleRow
+            label="Enable motion"
+            checked={c.animations}
+            onChange={(animations) => set({ animations })}
+          />
+          <SliderRow
+            label="Speed"
+            value={c.animSpeed}
+            min={0.5}
+            max={2}
+            step={0.1}
+            format={(value) => `${value.toFixed(1)}x`}
+            onChange={(animSpeed) => set({ animSpeed })}
+          />
+        </HuntSection>
+
+        <HuntSection
+          title="Carousel Style"
+          icon={<Layers size={13} />}
+          category="layout"
+        >
+          <HuntChoiceGrid
+            value={c.carouselMode}
+            columns={3}
+            options={[
+              { key: "3d", label: "3D Ring" },
+              { key: "imagestats", label: "Image Stats" },
+              { key: "stats", label: "Slot Stats" },
+            ]}
+            onChange={(carouselMode) => set({ carouselMode })}
+          />
+        </HuntSection>
+
+        <HuntSection
+          title="Carousel Timing"
+          icon={<Timer size={13} />}
+          category="behavior"
+        >
+          <SliderRow
+            label="Rotate every"
+            value={c.carouselMs}
+            min={1500}
+            max={6000}
+            step={100}
+            format={(value) => `${(value / 1000).toFixed(1)}s`}
+            onChange={(carouselMs) => set({ carouselMs })}
+          />
+        </HuntSection>
+
+        <HuntSection
+          title="Stats Layout"
+          icon={<SlidersHorizontal size={13} />}
+          category="layout"
+        >
+          <HuntChoiceGrid
+            value={c.statsLayout || "row"}
+            options={[
+              { key: "row", label: "4 across", hint: "Single row of stats" },
+              { key: "grid", label: "2 x 2", hint: "Two columns and two rows" },
+            ]}
+            onChange={(statsLayout) => set({ statsLayout })}
+          />
+        </HuntSection>
+
+        <HuntSection
+          title="Chat Requests"
+          icon={<MessageSquare size={13} />}
+          category="content"
+        >
+          <ToggleRow
+            label="Show requests feed"
+            checked={localRequestsVisible}
+            onChange={(showRequests) => set({ showRequests })}
+          />
+          <ToggleRow
+            label="Add and shatter animations"
+            checked={c.requestActionAnimations === true}
+            onChange={(requestActionAnimations) =>
+              set({ requestActionAnimations })
+            }
+          />
+          <HuntChoiceGrid
+            value={c.requestView || "list"}
+            columns={2}
+            options={[
+              {
+                key: "list",
+                label: "List",
+                hint: "Match the selected Rows, Cards, or Names style",
+              },
+              {
+                key: "carousel",
+                label: "3D",
+                hint: "Rotate pending requests as cover cards",
+              },
+            ]}
+            onChange={(requestView) => set({ requestView })}
+          />
+          <HuntHint>
+            {liveRequestsVisible
+              ? "Live !sr requests use the same view in Streamers Center and OBS."
+              : "Hidden because the requests handle is off on the Bonus Hunt page."}
+          </HuntHint>
+        </HuntSection>
+
+        <HuntSection
+          title="Typography"
+          icon={<Type size={13} />}
+          category="appearance"
+        >
+          <HuntChoiceGrid
+            value={c.font}
+            columns={3}
+            options={BONUS_FONTS.map((font) => ({
+              key: font.key,
+              label: font.name,
+            }))}
+            onChange={(font) =>
+              set({
+                font,
+                fontFamily:
+                  BONUS_FONTS.find((item) => item.key === font)?.family ||
+                  c.fontFamily,
+              })
+            }
+          />
+          <SliderRow
+            label="UI scale"
+            value={c.uiScale}
+            min={0.85}
+            max={1.2}
+            step={0.05}
+            format={(value) => `${Math.round(value * 100)}%`}
+            onChange={(uiScale) => set({ uiScale })}
+          />
+          <BonusTypographyControls config={c} onChange={onChange} />
+        </HuntSection>
+
+        <HuntSection
+          title="Sizes & Layout"
+          icon={<SlidersHorizontal size={13} />}
+          category="layout"
+        >
+          <SliderRow
+            label="Widget width"
+            value={widgetWidth}
+            min={320}
+            max={1280}
+            step={10}
+            unit="px"
+            onChange={(value) =>
+              setBonusSize({ widgetWidth: value, panelWidth: value })
+            }
+          />
+          <SliderRow
+            label="Widget height"
+            value={widgetHeight}
+            min={0}
+            max={980}
+            step={10}
+            format={(value) => (value === 0 ? "Auto" : `${value}px`)}
+            onChange={(value) =>
+              setBonusSize({ widgetHeight: value, panelHeight: value })
+            }
+          />
+          <SliderRow
+            label="Rounded edges"
+            value={edgeRadius}
+            min={0}
+            max={36}
+            unit="px"
+            onChange={(value) =>
+              set({ edgeRadius: value, radius: value, cardRadius: value })
+            }
+          />
+          <SliderRow
+            label="Stat box corners"
+            value={statRadius}
+            min={0}
+            max={22}
+            unit="px"
+            onChange={(statRadius) => set({ statRadius })}
+          />
+          <SliderRow
+            label="Progress bar"
+            value={c.barHeight}
+            min={3}
+            max={10}
+            unit="px"
+            onChange={(barHeight) => set({ barHeight })}
+          />
+          <SliderRow
+            label="Avatar"
+            value={c.avatarSize}
+            min={20}
+            max={44}
+            step={2}
+            unit="px"
+            onChange={(avatarSize) => set({ avatarSize })}
+          />
+          <SliderRow
+            label="Visible rows"
+            value={c.visibleRows}
+            min={3}
+            max={8}
+            onChange={(visibleRows) => set({ visibleRows })}
+          />
+        </HuntSection>
+
+        <HuntSection
+          title="List Style"
+          icon={<List size={13} />}
+          category="layout"
+        >
+          <HuntChoiceGrid
+            value={c.listMode}
+            columns={3}
+            options={[
+              { key: "compact", label: "Rows" },
+              { key: "image", label: "Cards" },
+              { key: "names", label: "Names" },
+            ]}
+            onChange={(listMode) => set({ listMode })}
+          />
+        </HuntSection>
+
+        <HuntSection
+          title="Best / Worst Card"
+          icon={<Layers size={13} />}
+          category="content"
+        >
+          <ToggleRow
+            label="Always visible"
+            checked={drawerAlwaysVisible}
+            onChange={(drawerAlwaysVisible) => set({ drawerAlwaysVisible })}
+          />
+          {drawerAlwaysVisible ? (
+            <HuntHint>
+              Best and worst stay below the widget, matching Expand mode.
+            </HuntHint>
+          ) : (
+            <>
+              <HuntChoiceGrid
+                value={normalizedDrawerMode}
+                options={[
+                  {
+                    key: "contain",
+                    label: "Contain",
+                    hint: "Keep panel height",
+                  },
+                  { key: "expand", label: "Expand", hint: "Grow from bottom" },
+                ]}
+                onChange={(drawerMode) => set({ drawerMode })}
+              />
+              <SliderRow
+                label="Reveal every"
+                value={drawerRevealSeconds}
+                min={10}
+                max={90}
+                step={5}
+                unit="s"
+                onChange={(drawerRevealSeconds) => set({ drawerRevealSeconds })}
+              />
+              <SliderRow
+                label="Stay visible"
+                value={drawerHoldSeconds}
+                min={12}
+                max={30}
+                step={1}
+                unit="s"
+                onChange={(drawerHoldSeconds) => set({ drawerHoldSeconds })}
+              />
+              <HuntHint>{drawerHint}</HuntHint>
+            </>
+          )}
+        </HuntSection>
+      </CategorizedControls>
 
       <button
         className="bp-reset bp-hunt-reset"
