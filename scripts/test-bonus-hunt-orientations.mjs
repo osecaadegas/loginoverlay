@@ -137,6 +137,23 @@ try {
         markup.includes(">Chat Requests<"),
       `${orientation} honors carousel, stats, list, drawer, and request controls`,
     );
+    if (orientation === "horizontal") {
+      assert.equal(
+        (markup.match(/better-hunt-stat-grid better-hunt-stat-grid--grid/g) || [])
+          .length,
+        1,
+        "horizontal renders one full stats section",
+      );
+      assert.ok(
+        markup.indexOf("better-hunt-hstrip-head") <
+          markup.indexOf("better-hunt-list better-hunt-list--image"),
+        "horizontal places the Bonus and state header above the left list",
+      );
+      assert.ok(
+        !markup.includes("better-hunt-hstrip-stats"),
+        "horizontal removes the duplicate compact stats row",
+      );
+    }
   }
 
   console.log("Bonus Hunt orientation control checks passed.");
