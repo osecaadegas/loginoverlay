@@ -178,7 +178,7 @@ try {
       );
       assert.ok(
         markup.indexOf('<div class="better-hunt-hstrip-head"') <
-          markup.indexOf('<div class="better-hunt-hstrip-slot-stats"'),
+          markup.indexOf('<div class="better-hunt-hstrip-slot-stats '),
         "horizontal places the Bonus and state header above slot stats",
       );
       assert.ok(
@@ -247,6 +247,40 @@ try {
       horizontalRingMarkup.includes("width:122px;height:172px"),
     "horizontal 3D mode uses consistent side artwork and the available ring height",
   );
+
+  for (const tier of ["super", "extreme"]) {
+    const tierMarkup = renderToStaticMarkup(
+      createElement(BetterBonusHuntStyle, {
+        config: {
+          orientation: "horizontal",
+          carouselMode: "imagestats",
+          showRequests: false,
+          startMoney: 100,
+        },
+        bonuses: [
+          {
+            id: `horizontal-${tier}`,
+            slot_name: `${tier} bonus`,
+            bet: 1,
+            isSuperBonus: tier === "super",
+            isExtremeBonus: tier === "extreme",
+          },
+        ],
+        stats: {},
+        currency: "EUR",
+      }),
+    );
+    assert.ok(
+      tierMarkup.includes(`better-hunt-hstrip-slot-stats--${tier}`) &&
+        tierMarkup.includes(
+          ".better-hunt-image-stats-panel--super,.better-hunt-hstrip-slot-stats--super{animation:better-hunt-gold",
+        ) &&
+        tierMarkup.includes(
+          ".better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art img,.better-hunt-hstrip-slot-stats--extreme .better-hunt-hstrip-slot-art img{animation:better-hunt-cloak",
+        ),
+      `horizontal ${tier} bonuses reuse the vertical tier effects`,
+    );
+  }
 
   console.log("Bonus Hunt orientation control checks passed.");
 } finally {
