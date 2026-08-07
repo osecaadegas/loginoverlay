@@ -240,8 +240,12 @@ try {
       horizontalRingMarkup.includes(
         "grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr)",
       ) &&
-      horizontalRingMarkup.includes("height:190px;min-height:0"),
-    "horizontal 3D mode uses the thin ring and full-height side artwork layout",
+      horizontalRingMarkup.includes(
+        "object-fit:contain;object-position:center",
+      ) &&
+      horizontalRingMarkup.includes("height:210px;min-height:0") &&
+      horizontalRingMarkup.includes("width:122px;height:172px"),
+    "horizontal 3D mode uses consistent side artwork and the available ring height",
   );
 
   console.log("Bonus Hunt orientation control checks passed.");
