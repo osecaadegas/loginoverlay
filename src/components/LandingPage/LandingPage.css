@@ -1896,11 +1896,6 @@
   overflow: visible;
 }
 
-.lp-home-widget-media--tournament:not(.lp-home-widget-media--floating) {
-  width: 88%;
-  margin-inline: auto;
-}
-
 .lp-home-widget-runtime {
   position: relative;
   width: 100%;

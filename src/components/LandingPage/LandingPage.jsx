@@ -338,7 +338,7 @@ const HOME_WIDGETS = [
   {
     title: "Tournament",
     widgetType: "tournament",
-    layout: "standard",
+    layout: "square",
     width: 960,
     height: 480,
   },
