@@ -138,15 +138,17 @@ assert.ok(
   "Shared Background renderer preserves legacy boolean particle saves",
 );
 assert.ok(
-  existsSync(new URL("../public/smoke_effect.mp4", import.meta.url)),
+  existsSync(new URL("../public/smoke_effect2.mp4", import.meta.url)),
   "Bundled smoke effect video exists",
 );
 assert.ok(
   rendererSource.includes("<ChromaKeySmoke") &&
-    smokeRendererSource.includes('src="/smoke_effect.mp4"') &&
+    smokeRendererSource.includes('src="/smoke_effect2.mp4"') &&
+    smokeRendererSource.includes("const luminance =") &&
+    smokeRendererSource.includes("luminance <= blackPoint") &&
     smokeRendererSource.includes("getImageData") &&
     smokeRendererSource.includes("putImageData"),
-  "Shared Background renderer chroma-keys the bundled smoke video",
+  "Shared Background renderer removes black from the bundled smoke video",
 );
 
 console.log("Background editor controls and shared renderer checks passed.");

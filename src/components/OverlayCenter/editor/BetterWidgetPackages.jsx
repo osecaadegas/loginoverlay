@@ -4386,7 +4386,7 @@ function SimpleThemedControls({
             </Section>
             <Section title="Atmosphere" icon={<Waves size={13} />}>
               <ToggleRow
-                label="Green-screen smoke"
+                label="Smoke"
                 checked={c.fxSmoke === true}
                 onChange={(fxSmoke) => set({ fxSmoke })}
               />
@@ -4401,7 +4401,7 @@ function SimpleThemedControls({
                     onChange={(fxSmokeOpacity) => set({ fxSmokeOpacity })}
                   />
                   <SliderRow
-                    label="Green removal"
+                    label="Black removal"
                     value={c.fxSmokeTolerance ?? 55}
                     min={0}
                     max={100}

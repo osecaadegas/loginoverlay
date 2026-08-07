@@ -72,25 +72,21 @@ export default function ChromaKeySmoke({ opacity, tolerance, softness }) {
 
         const frame = context.getImageData(0, 0, canvas.width, canvas.height);
         const pixels = frame.data;
-        const cutoff = 180 - clamp(tolerance, 0, 100, 55) * 0.9;
-        const feather = 8 + clamp(softness, 0, 100, 35) * 0.72;
-        const featherStart = cutoff - feather;
+        const blackPoint = 8 + clamp(tolerance, 0, 100, 55) * 0.12;
+        const feather = 8 + clamp(softness, 0, 100, 35) * 0.38;
+        const featherEnd = blackPoint + feather;
 
         for (let index = 0; index < pixels.length; index += 4) {
           const red = pixels[index];
           const green = pixels[index + 1];
           const blue = pixels[index + 2];
-          const dominance = green - Math.max(red, blue);
+          const luminance = red * 0.2126 + green * 0.7152 + blue * 0.0722;
           let alpha = 255;
-
-          if (green > 60 && dominance >= cutoff) {
+          if (luminance <= blackPoint) {
             alpha = 0;
-          } else if (green > 60 && dominance > featherStart) {
-            alpha =
-              255 * (1 - (dominance - featherStart) / Math.max(1, feather));
+          } else if (luminance < featherEnd) {
+            alpha = (255 * (luminance - blackPoint)) / feather;
           }
-
-          if (dominance > 0) pixels[index + 1] = Math.max(red, blue);
           pixels[index + 3] = Math.round((pixels[index + 3] * alpha) / 255);
         }
 
@@ -129,7 +125,7 @@ export default function ChromaKeySmoke({ opacity, tolerance, softness }) {
     >
       <video
         ref={videoRef}
-        src="/smoke_effect.mp4"
+        src="/smoke_effect2.mp4"
         autoPlay
         loop
         muted

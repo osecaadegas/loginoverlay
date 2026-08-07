@@ -1584,7 +1584,7 @@ export const CONTROL_DEFINITIONS = {
   },
   fxSmoke: {
     id: "fxSmoke",
-    label: "Green-screen smoke",
+    label: "Smoke",
     type: "boolean",
     simple: true,
     group: "Effects",
@@ -1601,7 +1601,7 @@ export const CONTROL_DEFINITIONS = {
   },
   fxSmokeTolerance: {
     id: "fxSmokeTolerance",
-    label: "Green removal",
+    label: "Black removal",
     type: "range",
     min: 0,
     max: 100,
