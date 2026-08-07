@@ -52,6 +52,27 @@
   box-shadow: 0 0 14px rgba(34, 211, 238, 0.18);
 }
 
+.bp-panel-tabs button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.bp-panel-tabs--secondary {
+  position: static;
+  gap: 6px;
+  margin: -6px 0 12px;
+  padding: 0 0 10px;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.bp-panel-tabs--secondary button {
+  min-height: 32px;
+  flex-basis: auto;
+  flex-direction: row;
+  padding: 5px 8px;
+}
+
 .bp-section {
   border-bottom: 1px solid rgba(34, 211, 238, 0.11);
 }

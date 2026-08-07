@@ -37,10 +37,31 @@ try {
     assert.ok(
       markup.includes('role="tablist"') &&
         markup.includes('aria-label="Widget control categories"') &&
-        markup.includes('role="tab"'),
-      `${widgetDefinition.type} exposes consistent categorized navigation`,
+        ["Layout", "Appearance", "Content", "Behavior"].every((label) =>
+          markup.includes(`>${label}</span>`),
+        ),
+      `${widgetDefinition.type} exposes the standard control categories`,
     );
   }
+
+  const navbarMarkup = renderToStaticMarkup(
+    createElement(BetterWidgetControls, {
+      type: "navbar",
+      config: {},
+      onChange: () => {},
+      onWidgetChange: () => {},
+      widget: { width: 1200, height: 72 },
+    }),
+  );
+  assert.ok(
+    ["Layout", "Appearance", "Content", "Behavior"].every((label) =>
+      navbarMarkup.includes(`>${label}</span>`),
+    ) &&
+      navbarMarkup.includes(">Sections</span>") &&
+      navbarMarkup.includes(">Visible sections<") &&
+      !navbarMarkup.includes(">Arrange</span>"),
+    "Navbar uses standard categories and retains its active content controls",
+  );
 
   const chatMarkup = renderToStaticMarkup(
     createElement(BetterWidgetControls, {

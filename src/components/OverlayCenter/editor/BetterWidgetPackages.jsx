@@ -3055,19 +3055,66 @@ function BetterBetsControls({ config, onChange }) {
   );
 }
 
-function PanelTabs({ tabs, active, onChange }) {
+const STANDARD_CONTROL_CATEGORIES = [
+  ["layout", <Maximize2 key="layout" size={12} />, "Layout"],
+  ["appearance", <Palette key="appearance" size={12} />, "Appearance"],
+  ["content", <MessageSquare key="content" size={12} />, "Content"],
+  ["behavior", <Wand2 key="behavior" size={12} />, "Behavior"],
+];
+
+const CONTROL_TAB_CATEGORIES = {
+  arrange: "layout",
+  bar: "layout",
+  layout: "layout",
+  size: "layout",
+  board: "appearance",
+  cards: "appearance",
+  colors: "appearance",
+  colours: "appearance",
+  edges: "appearance",
+  emblem: "appearance",
+  frame: "appearance",
+  palette: "appearance",
+  presets: "appearance",
+  style: "appearance",
+  surface: "appearance",
+  text: "appearance",
+  textures: "appearance",
+  theme: "appearance",
+  type: "appearance",
+  casino: "content",
+  content: "content",
+  crypto: "content",
+  cta: "content",
+  display: "content",
+  media: "content",
+  music: "content",
+  players: "content",
+  provider: "content",
+  sections: "content",
+  socials: "content",
+  source: "content",
+  behavior: "behavior",
+  effects: "behavior",
+  motion: "behavior",
+  playback: "behavior",
+  timing: "behavior",
+};
+
+function RawPanelTabs({ tabs, active, onChange, className = "" }) {
   return (
     <nav
-      className="bp-panel-tabs"
+      className={`bp-panel-tabs ${className}`.trim()}
       role="tablist"
       aria-label="Widget control categories"
     >
-      {tabs.map(([key, icon, label]) => (
+      {tabs.map(([key, icon, label, disabled]) => (
         <button
           key={key}
           type="button"
           role="tab"
           aria-selected={active === key}
+          disabled={disabled}
           title={label}
           className={active === key ? "is-active" : ""}
           onClick={() => onChange(key)}
@@ -3080,15 +3127,54 @@ function PanelTabs({ tabs, active, onChange }) {
   );
 }
 
+function PanelTabs({ tabs, active, onChange }) {
+  const isCanonical =
+    tabs.length === STANDARD_CONTROL_CATEGORIES.length &&
+    tabs.every(([key], index) => key === STANDARD_CONTROL_CATEGORIES[index][0]);
+  if (isCanonical) {
+    return <RawPanelTabs active={active} onChange={onChange} tabs={tabs} />;
+  }
+
+  const tabsByCategory = Object.fromEntries(
+    STANDARD_CONTROL_CATEGORIES.map(([category]) => [
+      category,
+      tabs.filter(([key]) => CONTROL_TAB_CATEGORIES[key] === category),
+    ]),
+  );
+  const activeCategory = CONTROL_TAB_CATEGORIES[active] || "layout";
+  const categoryTabs = STANDARD_CONTROL_CATEGORIES.map(([key, icon, label]) => [
+    key,
+    icon,
+    label,
+    tabsByCategory[key].length === 0,
+  ]);
+  const activeTabs = tabsByCategory[activeCategory];
+
+  return (
+    <>
+      <RawPanelTabs
+        active={activeCategory}
+        tabs={categoryTabs}
+        onChange={(category) => {
+          const nextTab = tabsByCategory[category][0];
+          if (nextTab) onChange(nextTab[0]);
+        }}
+      />
+      {activeTabs.length > 1 && (
+        <RawPanelTabs
+          active={active}
+          tabs={activeTabs}
+          onChange={onChange}
+          className="bp-panel-tabs--secondary"
+        />
+      )}
+    </>
+  );
+}
+
 function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   const c = ensureBetterWidgetConfig("chat", config);
   const set = (patch) => onChange({ ...c, ...patch });
-  const categories = [
-    ["layout", <Maximize2 key="layout" size={12} />, "Layout"],
-    ["appearance", <Palette key="appearance" size={12} />, "Appearance"],
-    ["content", <MessageSquare key="content" size={12} />, "Content"],
-    ["behavior", <Wand2 key="behavior" size={12} />, "Behavior"],
-  ];
   const commitSize = (patch) => {
     const next = ensureBetterWidgetConfig("chat", { ...c, ...patch });
     const width = clampNumber(
@@ -3135,7 +3221,10 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
           {c.live ? "Live" : "Idle"}
         </span>
       </header>
-      <CategorizedControls tabs={categories} defaultCategory="layout">
+      <CategorizedControls
+        tabs={STANDARD_CONTROL_CATEGORIES}
+        defaultCategory="layout"
+      >
         <Section
           title="Chat Box Size"
           icon={<Maximize2 size={13} />}
@@ -5027,13 +5116,6 @@ function SimpleThemedControls({
   const widgetHeight = Number(c.widgetHeight ?? c.panelHeight ?? 0) || 0;
   const edgeRadius = Number(c.edgeRadius ?? c.radius ?? c.cardRadius ?? 14);
   const statRadius = Number(c.statRadius ?? 7);
-  const bonusCategories = [
-    ["layout", <SlidersHorizontal key="layout" size={12} />, "Layout"],
-    ["appearance", <Palette key="appearance" size={12} />, "Appearance"],
-    ["content", <MessageSquare key="content" size={12} />, "Content"],
-    ["behavior", <Wand2 key="behavior" size={12} />, "Behavior"],
-  ];
-
   return (
     <div className="bp-controls bp-controls--hunt">
       <header className="bp-hunt-deck-head">
@@ -5044,7 +5126,10 @@ function SimpleThemedControls({
         </div>
       </header>
 
-      <CategorizedControls tabs={bonusCategories} defaultCategory="layout">
+      <CategorizedControls
+        tabs={STANDARD_CONTROL_CATEGORIES}
+        defaultCategory="layout"
+      >
         <HuntSection
           title="Widget Style"
           icon={<Sparkles size={13} />}
