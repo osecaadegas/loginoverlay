@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createElement } from "react";
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
@@ -153,12 +154,16 @@ try {
         ? markup.includes("better-hunt-hstrip-slot-stats") &&
           !markup.includes("better-hunt-list better-hunt-list--image")
         : markup.includes("better-hunt-list--image");
+    const expectedDrawer =
+      orientation === "horizontal"
+        ? markup.includes("better-hunt-drawer--horizontal is-open")
+        : markup.includes("better-hunt-drawer is-open");
     assert.ok(
       markup.includes(`data-orientation="${orientation}"`) &&
         markup.includes("better-hunt-image-stats-panel") &&
         markup.includes("better-hunt-stat-grid--grid") &&
         expectedOrientationBody &&
-        markup.includes("better-hunt-drawer is-open") &&
+        expectedDrawer &&
         markup.includes(">Chat Requests<"),
       `${orientation} honors carousel, stats, list, drawer, and request controls`,
     );
@@ -181,8 +186,29 @@ try {
           !markup.includes("better-hunt-list better-hunt-list--image"),
         "horizontal replaces the slot list with current slot stats",
       );
+      assert.ok(
+        markup.includes("better-hunt-horizontal") &&
+          markup.includes("has-results") &&
+          markup.includes("better-hunt-hstrip-results") &&
+          markup.includes("better-hunt-drawer--horizontal is-open") &&
+          markup.indexOf('aria-label="Best:') <
+            markup.indexOf('aria-label="Worst:'),
+        "horizontal stacks Best and Worst in the right result rail",
+      );
     }
   }
+
+  const landingSource = readFileSync(
+    new URL("../src/components/LandingPage/LandingPage.jsx", import.meta.url),
+    "utf8",
+  );
+  assert.ok(
+    landingSource.includes("const height = isHorizontal ? 280 : 884") &&
+      landingSource.includes("drawerAlwaysVisible: isHorizontal") &&
+      landingSource.includes("panelWidth: width") &&
+      landingSource.includes("panelHeight: height"),
+    "landing uses the current thin horizontal geometry and visible result rail",
+  );
 
   const horizontalRingMarkup = renderToStaticMarkup(
     createElement(BetterBonusHuntStyle, {

@@ -1919,8 +1919,10 @@ function BetterStyleSheet() {
       .better-hunt-main-active-row span{display:flex;align-items:center;gap:7px;min-width:0;color:rgba(255,255,255,.68);font-size:.7em;font-weight:950;letter-spacing:.2em;text-transform:uppercase}.better-hunt-main-active-row strong{overflow:hidden;color:#fff;font-size:1.5em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)}
       .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-footer{margin:8px 12px 12px}
       .better-hunt-root[data-orientation="horizontal"] .better-hunt-shell{padding:8px}
-      .better-hunt-horizontal{max-width:min(100%,var(--bh-panel-width,1080px));height:var(--bh-panel-height,auto);max-height:100%;display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) 0;grid-template-rows:minmax(0,1fr) auto;gap:0;transition:grid-template-columns .55s cubic-bezier(.22,.9,.3,1)}
-      .better-hunt-horizontal.is-requests-visible{grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) minmax(200px,.7fr)}
+      .better-hunt-horizontal{max-width:min(100%,var(--bh-panel-width,1080px));height:var(--bh-panel-height,auto);max-height:100%;display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) 0 0;grid-template-rows:minmax(0,1fr) auto;gap:0;transition:grid-template-columns .55s cubic-bezier(.22,.9,.3,1)}
+      .better-hunt-horizontal.is-requests-visible{grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) minmax(180px,.65fr) 0}
+      .better-hunt-horizontal.has-results{grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) 0 minmax(190px,.68fr)}
+      .better-hunt-horizontal.is-requests-visible.has-results{grid-template-columns:minmax(210px,.7fr) minmax(0,1.35fr) minmax(170px,.55fr) minmax(190px,.68fr)}
       .better-hunt-hstrip-list{min-width:0;min-height:0;display:grid;grid-template-rows:48px minmax(0,1fr);overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);padding:8px}
       .better-hunt-hstrip-slot-stats{min-height:0;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr);overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 52%,transparent);border-radius:9px;background:var(--bh-inset)}
       .better-hunt-hstrip-slot-art{position:relative;min-height:0;overflow:hidden}.better-hunt-hstrip-slot-art img{width:100%;height:100%;display:block;object-fit:cover}.better-hunt-hstrip-slot-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.92));pointer-events:none}.better-hunt-hstrip-slot-art strong{position:absolute;left:10px;right:10px;bottom:8px;z-index:1;overflow:hidden;color:#fff;font-size:1em;font-weight:950;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;text-shadow:0 2px 5px #000}
@@ -1941,6 +1943,7 @@ function BetterStyleSheet() {
       .better-hunt-hstrip-requests .better-hunt-requests{height:100%;display:grid;grid-template-rows:38px minmax(0,1fr);margin:0!important;border:0;border-radius:0;background:transparent;padding:8px}
       .better-hunt-hstrip-requests .better-hunt-requests-head{padding:0 3px 7px}
       .better-hunt-hstrip-requests .better-hunt-request-list,.better-hunt-hstrip-requests .better-hunt-request-stage{min-height:0;height:100%}
+      .better-hunt-hstrip-results{min-width:0;min-height:0;overflow:hidden;border-left:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);padding:7px}
       .better-hunt-horizontal>.better-hunt-footer{grid-column:1/-1;margin:0 8px 8px}
       .better-hunt-left{display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:10px;padding:12px;border-right:1px solid rgba(255,255,255,.08);min-width:0}
       .better-hunt-right{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0}
@@ -2067,6 +2070,13 @@ function BetterStyleSheet() {
       .better-hunt-result--worst .better-hunt-result-stats,.better-hunt-result--worst .better-hunt-result-row{width:100%;justify-content:start;justify-items:start;text-align:left}
       .better-hunt-result--best .better-hunt-result-body{grid-template-columns:minmax(0,1fr) 82px}
       .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:82px minmax(0,1fr)}
+      .better-hunt-hstrip-results .better-hunt-footer--horizontal{height:100%;grid-template-rows:auto minmax(0,1fr);gap:5px}
+      .better-hunt-hstrip-results .better-hunt-total-head{padding:6px 7px}.better-hunt-hstrip-results .better-hunt-total-head span{font-size:.58em}.better-hunt-hstrip-results .better-hunt-total-head strong{font-size:1em}
+      .better-hunt-hstrip-results .better-hunt-drawer--horizontal{--bh-drawer-open-height:none;min-height:0;grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:5px;margin:0;padding:0;transform:translateX(12px)}
+      .better-hunt-hstrip-results .better-hunt-drawer--horizontal.is-open{height:100%;max-height:none;margin:0;transform:translateX(0)}
+      .better-hunt-hstrip-results .better-hunt-result{min-height:0;padding:3px}.better-hunt-hstrip-results .better-hunt-result-body{grid-template-columns:minmax(0,1fr) 58px;gap:3px}.better-hunt-hstrip-results .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:58px minmax(0,1fr)}
+      .better-hunt-hstrip-results .better-hunt-result-art>img,.better-hunt-hstrip-results .better-hunt-result-art .better-hunt-thumb{width:58px!important;height:66px!important}
+      .better-hunt-hstrip-results .better-hunt-result-row span{font-size:.5em}.better-hunt-hstrip-results .better-hunt-result-row strong{font-size:.76em}
       .better-hunt-header{position:relative;justify-content:center;gap:10px;min-height:calc(var(--bh-avatar) + 6px)}
       .better-hunt-header--banner{margin:-12px -12px 0;padding:14px 48px 13px;border-top:2px solid var(--bh-line-hi);border-bottom:2px solid var(--bh-line-hi);background:linear-gradient(180deg,color-mix(in srgb,var(--bh-line-hi) 38%,var(--bh-panel-hi)),color-mix(in srgb,var(--bh-line) 38%,var(--bh-panel-mid)));box-shadow:inset 0 2px 8px rgba(0,0,0,.55),inset 0 -2px 8px rgba(0,0,0,.35)}
       .better-hunt-header--banner::before,.better-hunt-header--banner::after{content:"";position:absolute;left:8px;right:8px;height:1px;background:linear-gradient(90deg,transparent,var(--bh-line-hi),transparent);opacity:.6}.better-hunt-header--banner::before{top:5px}.better-hunt-header--banner::after{bottom:5px}
@@ -2807,6 +2817,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     drawerRevealMs,
     resultDrawerReady,
   ]);
+  const drawerVisible =
+    resultDrawerReady &&
+    (drawerAlwaysVisible ||
+      c.drawerOpen === true ||
+      c.drawerPreviewOpen === true ||
+      resultPeekOpen);
   const listRows = rows;
   const listDuration = `${Math.max(26, rows.length * 1.35)}s`;
   const winAccents = {
@@ -3919,7 +3935,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
   };
 
-  const renderBonusFooter = () => {
+  const renderBonusFooter = ({ horizontal = false } = {}) => {
     if (sessionState === "hunt") return null;
 
     const showProfit = sessionState === "ended";
@@ -3927,15 +3943,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const footerValue = showProfit
       ? `${profitSign}${formatMoney(Math.abs(totalProfit), money)}`
       : formatMoney(totalPay, money);
-    const drawerVisible =
-      resultDrawerReady &&
-      (drawerAlwaysVisible ||
-        c.drawerOpen === true ||
-        c.drawerPreviewOpen === true ||
-        resultPeekOpen);
     const drawerMounted = resultDrawerReady;
     return (
-      <div className="better-hunt-footer">
+      <div
+        className={`better-hunt-footer${horizontal ? " better-hunt-footer--horizontal" : ""}`}
+      >
         <div
           className={`better-hunt-total better-hunt-total--${drawerMode}`}
           {...attrs("bonus_hunt", c, "footerContainer")}
@@ -3947,7 +3959,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         </div>
         {drawerMounted && (
           <div
-            className={`better-hunt-drawer${drawerVisible ? " is-open" : ""}`}
+            className={`better-hunt-drawer${horizontal ? " better-hunt-drawer--horizontal" : ""}${drawerVisible ? " is-open" : ""}`}
             aria-hidden={!drawerVisible}
           >
             {renderResultCard("Best", bestSlot, "best")}
@@ -4186,10 +4198,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           ],
         ]
       : [];
+    const horizontalResultsReady =
+      sessionState !== "hunt" && resultDrawerReady;
 
     return (
       <section
-        className={`better-hunt-panel better-hunt-horizontal${c.showRequests === false ? "" : " is-requests-visible"}${panelShakeClass}`}
+        className={`better-hunt-panel better-hunt-horizontal${c.showRequests === false ? "" : " is-requests-visible"}${horizontalResultsReady ? " has-results" : ""}${panelShakeClass}`}
       >
         <div className="better-hunt-hstrip-list">
           <div className="better-hunt-hstrip-head">
@@ -4250,7 +4264,13 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           {renderRequests()}
         </aside>
 
-        {renderBonusFooter()}
+        {horizontalResultsReady ? (
+          <aside className="better-hunt-hstrip-results">
+            {renderBonusFooter({ horizontal: true })}
+          </aside>
+        ) : null}
+
+        {!horizontalResultsReady ? renderBonusFooter() : null}
 
         {previewWin ? (
           <BetterHuntWinOverlay

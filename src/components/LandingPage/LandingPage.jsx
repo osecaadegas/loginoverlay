@@ -791,10 +791,13 @@ function getBonusHuntPreviewState(cycle) {
   };
   const orientation = pick("orientation");
   const isHorizontal = orientation === "horizontal";
+  const isMainstream = orientation === "mainstream";
+  const width = isHorizontal ? 1080 : isMainstream ? 372 : 402;
+  const height = isHorizontal ? 280 : 884;
 
   return {
-    width: isHorizontal ? 1080 : 420,
-    height: 884,
+    width,
+    height,
     config: {
       orientation,
       skin: pick("skin"),
