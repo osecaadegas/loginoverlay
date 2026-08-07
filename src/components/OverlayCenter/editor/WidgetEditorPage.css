@@ -17,6 +17,7 @@ body.better-editor-document #root {
   min-height: 0;
   display: grid;
   grid-template-columns: 264px minmax(0, 1fr) minmax(390px, 450px);
+  grid-template-rows: minmax(0, 1fr) 26px;
   background: #060b14;
   color: #e8eef7;
   overflow: hidden;
@@ -58,6 +59,29 @@ body.better-editor-document #root {
 
 .better-editor-settings {
   border-left: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.better-editor-footer {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 12px;
+  overflow: hidden;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  background: #050b14;
+  color: #718096;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.better-editor-footer span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .better-editor-panel-header,

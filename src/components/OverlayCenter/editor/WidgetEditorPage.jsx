@@ -1373,6 +1373,11 @@ export default function WidgetEditorPage() {
           )}
         </div>
       </aside>
+
+      <footer className="better-editor-footer">
+        <span>Streamers Center</span>
+        <span>Overlay Editor &middot; 1920 x 1080</span>
+      </footer>
     </main>
   );
 }

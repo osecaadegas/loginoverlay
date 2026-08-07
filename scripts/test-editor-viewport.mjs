@@ -33,6 +33,14 @@ assert.match(
   /\.better-editor-page\s*\{[\s\S]*?height:\s*100dvh;[\s\S]*?overflow:\s*hidden;/,
   "The editor workspace is fixed to the dynamic viewport",
 );
+assert.ok(
+  editorSource.includes('<footer className="better-editor-footer">') &&
+    /grid-template-rows:\s*minmax\(0, 1fr\) 26px;/.test(editorCss) &&
+    /\.better-editor-footer\s*\{[\s\S]*?grid-column:\s*1 \/ -1;/.test(
+      editorCss,
+    ),
+  "A thin footer spans the fixed editor workspace",
+);
 assert.match(
   editorCss,
   /\.better-editor-canvas-shell\s*\{[\s\S]*?overflow:\s*hidden;[\s\S]*?padding:\s*0;/,
