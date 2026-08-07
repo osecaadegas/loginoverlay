@@ -13,30 +13,28 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   margin: -14px -14px 14px;
   padding: 10px;
   border-bottom: 1px solid rgba(34, 211, 238, 0.14);
   background: rgba(2, 11, 30, 0.96);
   backdrop-filter: blur(12px);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
 }
 
 .bp-panel-tabs button {
+  --bp-tab-accent: #38bdf8;
   min-width: 0;
-  flex: 1 0 68px;
   min-height: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border: 1px solid rgba(34, 211, 238, 0.1);
+  border: 1px solid color-mix(in srgb, var(--bp-tab-accent) 20%, transparent);
   border-radius: 8px;
-  background: rgba(4, 18, 44, 0.62);
+  background: color-mix(in srgb, var(--bp-tab-accent) 5%, rgba(4, 18, 44, 0.82));
   color: #94a3b8;
   cursor: pointer;
   font-size: 0.66rem;
@@ -45,32 +43,67 @@
   text-overflow: ellipsis;
 }
 
+.bp-panel-tabs button[data-category="layout"],
+.bp-panel-tabs[data-category="layout"] {
+  --bp-tab-accent: #38bdf8;
+}
+
+.bp-panel-tabs button[data-category="appearance"],
+.bp-panel-tabs[data-category="appearance"] {
+  --bp-tab-accent: #fbbf24;
+}
+
+.bp-panel-tabs button[data-category="content"],
+.bp-panel-tabs[data-category="content"] {
+  --bp-tab-accent: #34d399;
+}
+
+.bp-panel-tabs button[data-category="behavior"],
+.bp-panel-tabs[data-category="behavior"] {
+  --bp-tab-accent: #fb7185;
+}
+
 .bp-panel-tabs button.is-active {
-  border-color: rgba(34, 211, 238, 0.62);
-  background: rgba(34, 211, 238, 0.14);
-  color: #e0fbff;
-  box-shadow: 0 0 14px rgba(34, 211, 238, 0.18);
+  border-color: color-mix(in srgb, var(--bp-tab-accent) 75%, white 8%);
+  background: color-mix(in srgb, var(--bp-tab-accent) 18%, rgba(4, 18, 44, 0.88));
+  color: #f8fbff;
+  box-shadow:
+    inset 0 2px 0 var(--bp-tab-accent),
+    0 0 14px color-mix(in srgb, var(--bp-tab-accent) 22%, transparent);
+}
+
+.bp-panel-tabs button.is-active svg {
+  color: var(--bp-tab-accent);
 }
 
 .bp-panel-tabs button:disabled {
-  opacity: 0.38;
+  opacity: 0.3;
+  filter: grayscale(0.8);
   cursor: not-allowed;
 }
 
-.bp-panel-tabs--secondary {
+.bp-panel-tabs[data-level="secondary"] {
   position: static;
-  gap: 6px;
-  margin: -6px 0 12px;
-  padding: 0 0 10px;
-  background: transparent;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 5px;
+  margin: -6px 0 14px;
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, var(--bp-tab-accent) 25%, transparent);
+  border-left: 3px solid var(--bp-tab-accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bp-tab-accent) 7%, rgba(2, 11, 30, 0.72));
   backdrop-filter: none;
 }
 
-.bp-panel-tabs--secondary button {
-  min-height: 32px;
-  flex-basis: auto;
+.bp-panel-tabs[data-level="secondary"] button {
+  min-height: 34px;
   flex-direction: row;
-  padding: 5px 8px;
+  padding: 6px 8px;
+  font-size: 0.68rem;
+}
+
+.bp-panel-tabs[data-level="secondary"] button.is-active {
+  box-shadow: inset 3px 0 0 var(--bp-tab-accent);
 }
 
 .bp-section {

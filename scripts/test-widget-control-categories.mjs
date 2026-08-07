@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
@@ -37,6 +38,7 @@ try {
     assert.ok(
       markup.includes('role="tablist"') &&
         markup.includes('aria-label="Widget control categories"') &&
+        markup.includes('data-level="primary"') &&
         ["Layout", "Appearance", "Content", "Behavior"].every((label) =>
           markup.includes(`>${label}</span>`),
         ),
@@ -57,10 +59,29 @@ try {
     ["Layout", "Appearance", "Content", "Behavior"].every((label) =>
       navbarMarkup.includes(`>${label}</span>`),
     ) &&
+      navbarMarkup.includes('aria-label="Content control subcategories"') &&
+      navbarMarkup.includes('data-level="secondary" data-category="content"') &&
       navbarMarkup.includes(">Sections</span>") &&
       navbarMarkup.includes(">Visible sections<") &&
       !navbarMarkup.includes(">Arrange</span>"),
     "Navbar uses standard categories and retains its active content controls",
+  );
+
+  const betsMarkup = renderToStaticMarkup(
+    createElement(BetterWidgetControls, {
+      type: "bets",
+      config: {},
+      onChange: () => {},
+    }),
+  );
+  assert.ok(
+    betsMarkup.includes('aria-label="Appearance control subcategories"') &&
+      ["Theme", "Colors", "Typography"].every((label) =>
+        betsMarkup.includes(`>${label}</span>`),
+      ) &&
+      !betsMarkup.includes(">Text</span>") &&
+      !betsMarkup.includes(">FX</span>"),
+    "Generic subcategories use consistent names inside Appearance",
   );
 
   const chatMarkup = renderToStaticMarkup(
@@ -98,6 +119,24 @@ try {
       bonusMarkup.includes(">Sizes &amp; Layout<") &&
       !bonusMarkup.includes(">Win FX<"),
     "Bonus Hunt opens on Layout and categorizes behavior controls separately",
+  );
+
+  const controlsCss = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/BetterWidgetPackages.css",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    controlsCss.includes('grid-template-columns: repeat(4, minmax(0, 1fr))') &&
+      controlsCss.includes(
+        'grid-template-columns: repeat(auto-fit, minmax(88px, 1fr))',
+      ) &&
+      ["layout", "appearance", "content", "behavior"].every((category) =>
+        controlsCss.includes(`data-category="${category}"`),
+      ),
+    "Primary categories use stable columns and colored wrapping subcategories",
   );
 
   console.log("Widget control category checks passed.");

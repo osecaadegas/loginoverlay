@@ -3101,12 +3101,86 @@ const CONTROL_TAB_CATEGORIES = {
   timing: "behavior",
 };
 
-function RawPanelTabs({ tabs, active, onChange, className = "" }) {
+const CONTROL_TAB_LABELS = {
+  colors: "Colors",
+  colours: "Colors",
+  effects: "Effects",
+  palette: "Colors",
+  surface: "Surface",
+  text: "Typography",
+  type: "Typography",
+};
+
+const CONTROL_TAB_ORDER = {
+  layout: ["layout", "size", "arrange", "bar"],
+  appearance: [
+    "presets",
+    "theme",
+    "style",
+    "surface",
+    "frame",
+    "cards",
+    "edges",
+    "board",
+    "colors",
+    "colours",
+    "palette",
+    "type",
+    "text",
+    "emblem",
+    "textures",
+  ],
+  content: [
+    "content",
+    "sections",
+    "media",
+    "source",
+    "provider",
+    "display",
+    "players",
+    "music",
+    "crypto",
+    "socials",
+    "casino",
+    "cta",
+  ],
+  behavior: ["behavior", "timing", "playback", "motion", "effects"],
+};
+
+function normalizeControlTabs(tabs, category) {
+  const order = CONTROL_TAB_ORDER[category] || [];
+  return tabs
+    .map(([key, icon, label, disabled]) => [
+      key,
+      icon,
+      CONTROL_TAB_LABELS[key] || label,
+      disabled,
+    ])
+    .sort((left, right) => {
+      const leftIndex = order.indexOf(left[0]);
+      const rightIndex = order.indexOf(right[0]);
+      return (
+        (leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex) -
+        (rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex)
+      );
+    });
+}
+
+function RawPanelTabs({
+  tabs,
+  active,
+  onChange,
+  level = "primary",
+  category,
+  ariaLabel = "Widget control categories",
+}) {
   return (
     <nav
-      className={`bp-panel-tabs ${className}`.trim()}
+      className="bp-panel-tabs"
+      data-level={level}
+      data-category={category}
       role="tablist"
-      aria-label="Widget control categories"
+      aria-label={ariaLabel}
     >
       {tabs.map(([key, icon, label, disabled]) => (
         <button
@@ -3115,7 +3189,10 @@ function RawPanelTabs({ tabs, active, onChange, className = "" }) {
           role="tab"
           aria-selected={active === key}
           disabled={disabled}
-          title={label}
+          data-category={level === "primary" ? key : category}
+          title={
+            disabled ? `${label} controls are not available for this widget` : label
+          }
           className={active === key ? "is-active" : ""}
           onClick={() => onChange(key)}
         >
@@ -3132,13 +3209,23 @@ function PanelTabs({ tabs, active, onChange }) {
     tabs.length === STANDARD_CONTROL_CATEGORIES.length &&
     tabs.every(([key], index) => key === STANDARD_CONTROL_CATEGORIES[index][0]);
   if (isCanonical) {
-    return <RawPanelTabs active={active} onChange={onChange} tabs={tabs} />;
+    return (
+      <RawPanelTabs
+        active={active}
+        category={active}
+        onChange={onChange}
+        tabs={tabs}
+      />
+    );
   }
 
   const tabsByCategory = Object.fromEntries(
     STANDARD_CONTROL_CATEGORIES.map(([category]) => [
       category,
-      tabs.filter(([key]) => CONTROL_TAB_CATEGORIES[key] === category),
+      normalizeControlTabs(
+        tabs.filter(([key]) => CONTROL_TAB_CATEGORIES[key] === category),
+        category,
+      ),
     ]),
   );
   const activeCategory = CONTROL_TAB_CATEGORIES[active] || "layout";
@@ -3163,9 +3250,11 @@ function PanelTabs({ tabs, active, onChange }) {
       {activeTabs.length > 1 && (
         <RawPanelTabs
           active={active}
+          ariaLabel={`${STANDARD_CONTROL_CATEGORIES.find(([key]) => key === activeCategory)?.[2] || activeCategory} control subcategories`}
+          category={activeCategory}
+          level="secondary"
           tabs={activeTabs}
           onChange={onChange}
-          className="bp-panel-tabs--secondary"
         />
       )}
     </>

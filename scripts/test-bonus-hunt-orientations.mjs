@@ -249,18 +249,20 @@ try {
   );
 
   for (const tier of ["super", "extreme"]) {
+    const slotName = tier === "super" ? "Starlight Princess" : "Wanted Dead";
     const tierMarkup = renderToStaticMarkup(
       createElement(BetterBonusHuntStyle, {
         config: {
           orientation: "horizontal",
-          carouselMode: "imagestats",
+          carouselMode: "3d",
           showRequests: false,
           startMoney: 100,
         },
         bonuses: [
           {
             id: `horizontal-${tier}`,
-            slot_name: `${tier} bonus`,
+            slot_name: slotName,
+            image_url: `https://example.com/${tier}.webp`,
             bet: 1,
             isSuperBonus: tier === "super",
             isExtremeBonus: tier === "extreme",
@@ -272,13 +274,26 @@ try {
     );
     assert.ok(
       tierMarkup.includes(`better-hunt-hstrip-slot-stats--${tier}`) &&
+        tierMarkup.includes(`alt="${slotName}"`) &&
+        tierMarkup.includes(
+          `better-hunt-card better-hunt-card--${tier} better-hunt-card--center`,
+        ) &&
+        tierMarkup.includes(
+          ".better-hunt-hstrip-slot-art img{width:100%;height:100%;display:block;object-fit:contain;object-position:center}",
+        ) &&
         tierMarkup.includes(
           ".better-hunt-image-stats-panel--super,.better-hunt-hstrip-slot-stats--super{animation:better-hunt-gold",
         ) &&
         tierMarkup.includes(
           ".better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art img,.better-hunt-hstrip-slot-stats--extreme .better-hunt-hstrip-slot-art img{animation:better-hunt-cloak",
+        ) &&
+        tierMarkup.includes(
+          ".better-hunt-ring .better-hunt-card--center.better-hunt-card--super{animation:better-hunt-gold",
+        ) &&
+        tierMarkup.includes(
+          ".better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{animation:better-hunt-cloak",
         ),
-      `horizontal ${tier} bonuses reuse the vertical tier effects`,
+      `horizontal ${tier} bonuses keep the left image sizing and animate the centered carousel card`,
     );
   }
 
