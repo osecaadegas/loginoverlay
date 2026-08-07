@@ -1157,6 +1157,28 @@ function bonusMaxWin(bonus) {
     : text;
 }
 
+function bonusMaxWinValue(bonus) {
+  return firstMetric(
+    [
+      bonus?.maxWin,
+      bonus?.max_win,
+      bonus?.maxWinMultiplier,
+      bonus?.max_win_multiplier,
+      bonus?.slotMaxWin,
+      bonus?.slot_max_win,
+      bonus?.slotMaxWinMultiplier,
+      bonus?.slot_max_win_multiplier,
+      bonus?.slot?.maxWin,
+      bonus?.slot?.max_win,
+      bonus?.slot?.maxWinMultiplier,
+      bonus?.slot?.max_win_multiplier,
+      bonus?.slot?.potential,
+      bonus?.potential,
+    ],
+    0,
+  );
+}
+
 function bonusMultiplierValue(bonus) {
   const explicit = firstMetric(
     [
@@ -1171,6 +1193,49 @@ function bonusMultiplierValue(bonus) {
   if (Number.isFinite(explicit)) return explicit;
   const bet = bonusBet(bonus);
   return bet > 0 ? bonusPayout(bonus) / bet : 0;
+}
+
+function automaticWinBonusKey(bonus, index) {
+  return String(
+    bonus?.id ||
+      bonus?.bonus_id ||
+      bonus?.uuid ||
+      `${bonusSlotName(bonus, index)}:${index}`,
+  );
+}
+
+export function getAutomaticBetterHuntWin(
+  previousSnapshot,
+  bonuses,
+  enabled = true,
+) {
+  const snapshot = {};
+  let win = null;
+
+  safeArray(bonuses).forEach((bonus, index) => {
+    const key = automaticWinBonusKey(bonus, index);
+    const mult = bonusMultiplierValue(bonus);
+    const maxWin = bonusMaxWinValue(bonus);
+    snapshot[key] = mult;
+    const previousMult = Number(previousSnapshot?.[key]) || 0;
+    if (
+      previousSnapshot &&
+      enabled &&
+      mult >= 1000 &&
+      previousMult < 1000 &&
+      (!win || mult > win.mult)
+    ) {
+      win = {
+        key,
+        mult,
+        max: maxWin > 0 && mult >= maxWin,
+        maxWin,
+        slot: bonusSlotName(bonus, index),
+      };
+    }
+  });
+
+  return { snapshot, win };
 }
 
 const BETTER_HUNT_THEMES = {
@@ -1854,8 +1919,9 @@ function BetterStyleSheet() {
       .better-hunt-main-active-row span{display:flex;align-items:center;gap:7px;min-width:0;color:rgba(255,255,255,.68);font-size:.7em;font-weight:950;letter-spacing:.2em;text-transform:uppercase}.better-hunt-main-active-row strong{overflow:hidden;color:#fff;font-size:1.5em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)}
       .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-footer{margin:8px 12px 12px}
       .better-hunt-root[data-orientation="horizontal"] .better-hunt-shell{padding:8px}
-      .better-hunt-horizontal{max-width:1180px;height:min(100%,286px);display:grid;grid-template-columns:178px minmax(0,1fr) 0;gap:0;transition:grid-template-columns .55s cubic-bezier(.22,.9,.3,1)}
-      .better-hunt-horizontal.is-requests-visible{grid-template-columns:178px minmax(0,1fr) 220px}
+      .better-hunt-horizontal{max-width:min(100%,var(--bh-panel-width,1080px));height:var(--bh-panel-height,auto);max-height:100%;display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) 0;grid-template-rows:minmax(0,1fr) auto;gap:0;transition:grid-template-columns .55s cubic-bezier(.22,.9,.3,1)}
+      .better-hunt-horizontal.is-requests-visible{grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) minmax(200px,.7fr)}
+      .better-hunt-hstrip-list{min-width:0;min-height:0;overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);padding:8px}.better-hunt-hstrip-list .better-hunt-list{height:100%;max-height:var(--bh-list-height)}
       .better-hunt-hstrip-active{position:relative;min-width:0;overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);background:var(--bh-inset)}
       .better-hunt-hstrip-active>img{width:100%;height:100%;display:block;object-fit:cover;animation:better-hunt-kenburns calc(8s / var(--anim-speed,1)) ease-out both}
       .better-hunt-hstrip-active::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.72),transparent 24%,transparent 58%,rgba(0,0,0,.94));pointer-events:none}
@@ -1863,7 +1929,7 @@ function BetterStyleSheet() {
       .better-hunt-hstrip-active-top,.better-hunt-hstrip-active-bottom{position:absolute;left:0;right:0;z-index:2;display:flex;gap:7px;padding:9px 10px}.better-hunt-hstrip-active-top{top:0;align-items:center}.better-hunt-hstrip-active-bottom{bottom:0;flex-direction:column;align-items:flex-start}
       .better-hunt-hstrip-active-top span{display:grid;min-width:30px;height:22px;place-items:center;border:1px solid var(--bh-line-hi);border-radius:5px;background:rgba(0,0,0,.72);color:var(--bh-ice);font-size:.7em;font-weight:950}
       .better-hunt-hstrip-active-bottom strong{width:100%;overflow:hidden;color:#fff;font-size:1.25em;font-weight:950;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;text-shadow:0 2px 4px #000}.better-hunt-hstrip-active-bottom span{color:var(--bh-tangerine);font-size:.82em;font-weight:950}
-      .better-hunt-hstrip-main{min-width:0;display:grid;grid-template-rows:48px minmax(0,1fr);overflow:hidden;padding:8px 10px;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent)}
+      .better-hunt-hstrip-main{min-width:0;min-height:0;display:grid;grid-template-rows:48px auto minmax(0,1fr);overflow:hidden;padding:8px 10px;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent)}
       .better-hunt-hstrip-head{min-width:0;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding:0 2px 7px}.better-hunt-hstrip-title{min-width:0;flex:0 1 auto}.better-hunt-hstrip-title>strong{display:block;overflow:hidden;color:#fff;font-size:1.05em;font-weight:950;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
       .better-hunt-hstrip-stats{min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:1}.better-hunt-hstrip-stats>span{min-width:52px;display:grid;gap:2px;border-left:1px solid rgba(255,255,255,.1);padding-left:6px;color:var(--bh-steel-dim);font-size:.56em;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.better-hunt-hstrip-stats strong{overflow:hidden;color:#fff;font-size:1.3em;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}
       .better-hunt-hstrip-main .better-hunt-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto}.better-hunt-hstrip-main .better-hunt-ring,.better-hunt-hstrip-main .better-hunt-stats-panel,.better-hunt-hstrip-main .better-hunt-image-stats-panel{height:184px}.better-hunt-hstrip-main .better-hunt-progress{padding:4px 2px 0}.better-hunt-hstrip-main .better-hunt-card{width:104px;height:146px}
@@ -1872,6 +1938,7 @@ function BetterStyleSheet() {
       .better-hunt-hstrip-requests .better-hunt-requests{height:100%;display:grid;grid-template-rows:38px minmax(0,1fr);margin:0!important;border:0;border-radius:0;background:transparent;padding:8px}
       .better-hunt-hstrip-requests .better-hunt-requests-head{padding:0 3px 7px}
       .better-hunt-hstrip-requests .better-hunt-request-list,.better-hunt-hstrip-requests .better-hunt-request-stage{min-height:0;height:100%}
+      .better-hunt-horizontal>.better-hunt-footer{grid-column:1/-1;margin:0 8px 8px}
       .better-hunt-left{display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:10px;padding:12px;border-right:1px solid rgba(255,255,255,.08);min-width:0}
       .better-hunt-right{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0}
       .better-hunt-header{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
@@ -2738,6 +2805,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     bloody: { ember: "#d01818", tangerine: "#cc6820" },
   }[skin] || { ember: "#ff6a4d", tangerine: "#ffc93d" };
   const [previewWin, setPreviewWin] = useState(null);
+  const automaticWinSnapshotRef = useRef(null);
   const activeSlotLabel = current ? bonusSlotName(current, activeIndex) : "";
   const mainstreamTitle =
     c.mainstreamTitle ||
@@ -2784,6 +2852,21 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     return () =>
       window.removeEventListener("better-bonus-hunt-preview-win", handler);
   }, [activeSlotLabel, c.__betterInstanceId]);
+  useEffect(() => {
+    const { snapshot, win } = getAutomaticBetterHuntWin(
+      automaticWinSnapshotRef.current,
+      rows,
+      c.winEffects !== false,
+    );
+    automaticWinSnapshotRef.current = snapshot;
+    if (!win) return;
+    setPreviewWin({
+      id: `${win.key}:${Date.now()}`,
+      mult: win.mult,
+      tier: betterHuntWinTier(win.mult, win.max),
+      slot: win.slot,
+    });
+  }, [c.winEffects, rows]);
   const panelShakeClass =
     previewWin && ["epic", "insane", "max"].includes(previewWin.tier)
       ? " better-hunt-panel--shake"
@@ -2894,10 +2977,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       <>
         <span className="better-hunt-request-image">
           {requestImage(request) ? (
-            <SlotImage
-              src={requestImage(request)}
-              alt={requestSlot(request)}
-            />
+            <SlotImage src={requestImage(request)} alt={requestSlot(request)} />
           ) : (
             <span
               className="better-hunt-request-image-fallback"
@@ -3594,7 +3674,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
               {index + 1}
             </span>
             <span className="better-hunt-row-main">
-              <BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>
+              <BetterHuntSlotMarquee
+                config={c}
+                enabled={c.animations !== false}
+              >
                 {bonusSlotName(bonus, index)}
               </BetterHuntSlotMarquee>
               <em>
@@ -4007,18 +4090,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       className={`better-hunt-panel better-hunt-mainstream${panelShakeClass}`}
     >
       {renderMainstreamHeader()}
-      <div className="better-hunt-main-stat-pair">
-        {renderMainstreamStat(
-          "Start",
-          startKnown ? formatMoney(startValue, money) : "-",
-          Wallet,
-        )}
-        {renderMainstreamStat(
-          "Stop",
-          stopKnown ? formatMoney(stopValue, money) : "-",
-          DollarSign,
-        )}
-      </div>
+      {renderStatBoxes()}
       <div className="better-hunt-main-count">
         <span>
           <Coins size={12} strokeWidth={2.4} />
@@ -4040,8 +4112,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         extremeOpened,
         extremeCount,
       )}
-      {renderMainstreamProgress()}
-      {renderMainstreamActive()}
+      {renderCarousel()}
       {renderRequests()}
       <div className="better-hunt-main-list-wrap">{renderList()}</div>
       <div className="better-hunt-main-bottom">
@@ -4061,6 +4132,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       {renderBonusFooter()}
       {previewWin ? (
         <BetterHuntWinOverlay
+          key={previewWin.id}
           win={previewWin}
           onDone={() => setPreviewWin(null)}
         />
@@ -4069,68 +4141,26 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   );
 
   const renderHorizontalStrip = () => {
-    let currentTier = "normal";
-    let currentBet = 0;
-    let currentPayout = 0;
-    let currentMulti = 0;
     let sessionLabel = "Hunt";
-    if (current) {
-      currentTier = bonusTier(current);
-      currentBet = bonusBet(current);
-      currentPayout = bonusPayout(current);
-      currentMulti = bonusMultiplierValue(current);
-    }
     if (sessionState === "opening") sessionLabel = "Opening";
     if (sessionState === "ended") sessionLabel = "Ended";
 
-    const currentBetLabel =
-      currentBet > 0 ? formatMoney(currentBet, money) : "-";
-    const currentPayoutLabel =
-      currentPayout > 0 ? formatMoney(currentPayout, money) : "-";
-    const currentMultiLabel =
-      currentMulti > 0 ? ` (${formatMultiplier(currentMulti)})` : "";
     const startLabel = startKnown ? formatMoney(startValue, money) : "-";
     const stopLabel = stopKnown ? formatMoney(stopValue, money) : "-";
     const breakEvenLabel =
-      displayBreakEven > 0
-        ? formatMultiplier(displayBreakEven, 0)
-        : "-";
+      displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-";
     const averageLabel = avgMulti > 0 ? formatMultiplier(avgMulti, 0) : "-";
 
     return (
       <section
         className={`better-hunt-panel better-hunt-horizontal${c.showRequests === false ? "" : " is-requests-visible"}${panelShakeClass}`}
       >
-        <div
-          className={`better-hunt-hstrip-active better-hunt-hstrip-active--${currentTier}`}
-          {...attrs("bonus_hunt", c, "slotRow", "active")}
-        >
-          {current ? (
-            <>
-              <SlotImage
-                src={bonusImage(current)}
-                alt={bonusSlotName(current, activeIndex)}
-                {...attrs("bonus_hunt", c, "slotImage")}
-              />
-              <div className="better-hunt-hstrip-active-top">
-                <span>#{activeIndex + 1}</span>
-              </div>
-              <div className="better-hunt-hstrip-active-bottom">
-                <strong>{`Bet ${currentBetLabel}`}</strong>
-                <span>{`${currentPayoutLabel}${currentMultiLabel}`}</span>
-              </div>
-            </>
-          ) : (
-            <div className="better-hunt-empty">Waiting for hunt data</div>
-          )}
-        </div>
+        <div className="better-hunt-hstrip-list">{renderList()}</div>
 
         <div className="better-hunt-hstrip-main">
           <div className="better-hunt-hstrip-head">
             <div className="better-hunt-hstrip-title">
-              <strong {...attrs("bonus_hunt", c, "headerTitle")}>
-                Bonus
-              </strong>
+              <strong {...attrs("bonus_hunt", c, "headerTitle")}>Bonus</strong>
             </div>
             <span
               className={`better-hunt-pill better-hunt-pill--${sessionState}`}
@@ -4152,6 +4182,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
               </span>
             </div>
           </div>
+          {renderStatBoxes()}
           {renderCarousel()}
         </div>
 
@@ -4162,8 +4193,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           {renderRequests()}
         </aside>
 
+        {renderBonusFooter()}
+
         {previewWin ? (
           <BetterHuntWinOverlay
+            key={previewWin.id}
             win={previewWin}
             onDone={() => setPreviewWin(null)}
           />
@@ -4192,6 +4226,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         {renderBonusFooter()}
         {previewWin ? (
           <BetterHuntWinOverlay
+            key={previewWin.id}
             win={previewWin}
             onDone={() => setPreviewWin(null)}
           />
@@ -5431,8 +5466,7 @@ function BetterBackgroundEffects({
   const showFog = ["light", "medium", "heavy"].includes(fogEffect);
   const showGlimpse = ["sweep", "pulse", "flicker"].includes(glimpseEffect);
   const glimpseDuration =
-    ((100 - glimpseSpeed) / 10 + 2) *
-    (glimpseEffect === "flicker" ? 0.3 : 1);
+    ((100 - glimpseSpeed) / 10 + 2) * (glimpseEffect === "flicker" ? 0.3 : 1);
 
   return (
     <>

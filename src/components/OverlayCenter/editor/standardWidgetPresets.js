@@ -140,6 +140,7 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     drawerHoldSeconds: 30,
     statsLayout: "grid",
     showRequests: true,
+    winEffects: true,
     animations: false,
     requestActionAnimations: false,
     animSpeed: 0.5,

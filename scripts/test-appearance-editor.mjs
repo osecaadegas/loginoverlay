@@ -232,7 +232,7 @@ try {
       landingPageSource.includes("chat: 4200") &&
       landingPageSource.includes("landingRandomInt(18001)") &&
       landingPageSource.includes("__previewShoutoutAlert: previewShoutout") &&
-      landingPageSource.includes('message: `!so @${previewShoutout.login}`'),
+      landingPageSource.includes("message: `!so @${previewShoutout.login}`"),
     "Landing Chat uses the exported appearance, slow message feed, and randomized embedded shoutouts",
   );
   assert.ok(
@@ -247,11 +247,11 @@ try {
       landingPageSource.includes("tournament: 2800") &&
       landingPageSource.includes("getLandingTournamentConfig(previewCycle)") &&
       landingPageSource.includes("LANDING_TOURNAMENT_MATCHES.map") &&
-      landingPageSource.includes('bracketPlayerCount: 8') &&
+      landingPageSource.includes("bracketPlayerCount: 8") &&
       /title: "Tournament",[\s\S]*?widgetType: "tournament",[\s\S]*?layout: "feature",[\s\S]*?width: 960,[\s\S]*?height: 720,/.test(
         landingPageSource,
       ) &&
-      landingPageSource.includes('height: 520') &&
+      landingPageSource.includes("height: 520") &&
       landingPageSource.includes('"liquid",') &&
       landingPageSource.includes('"scanline",') &&
       landingPageSource.includes('layoutMode: "bars"') &&
@@ -1041,21 +1041,13 @@ try {
       betterWidgetStylesSource.includes("better-hunt-request-transfer") &&
       betterWidgetStylesSource.includes("better-hunt-request-landing") &&
       betterWidgetStylesSource.includes("better-hunt-request-shard") &&
-      betterWidgetStylesSource.includes(
-        "const sourceAnchorNode =",
-      ) &&
+      betterWidgetStylesSource.includes("const sourceAnchorNode =") &&
       betterWidgetStylesSource.includes(
         '".better-hunt-request-list, .better-hunt-request--empty"',
       ) &&
-      betterWidgetStylesSource.includes(
-        "better-hunt-request-shard-surface",
-      ) &&
-      betterWidgetStylesSource.includes(
-        '"--bh-transfer-end-x": endScaleX',
-      ) &&
-      betterWidgetStylesSource.includes(
-        '"--bh-transfer-end-y": endScaleY',
-      ) &&
+      betterWidgetStylesSource.includes("better-hunt-request-shard-surface") &&
+      betterWidgetStylesSource.includes('"--bh-transfer-end-x": endScaleX') &&
+      betterWidgetStylesSource.includes('"--bh-transfer-end-y": endScaleY') &&
       betterWidgetStylesSource.includes(
         'className="better-hunt-request-transfer-ring"',
       ) &&
@@ -1587,10 +1579,7 @@ try {
         `${style.id} exposes independent ${elementId} typography`,
       );
     }
-    const styleElements = getWidgetAppearanceV2Elements(
-      "bonus_hunt",
-      style.id,
-    );
+    const styleElements = getWidgetAppearanceV2Elements("bonus_hunt", style.id);
     for (const elementId of requiredBonusTypographyElements) {
       const element = styleElements.find((entry) => entry.id === elementId);
       assert.ok(element, `${style.id} resolves ${elementId}`);
@@ -1659,7 +1648,7 @@ try {
         'className={`better-hunt-slot-marquee${shouldScroll ? " is-scrolling" : ""}`}',
       ) &&
       betterWidgetStylesSource.includes(
-        '<BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>',
+        "<BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>",
       ),
     "Bonus Hunt list slot names use the overflow-aware visible-row marquee",
   );
@@ -1713,13 +1702,10 @@ try {
     "horizontal Bonus Hunt orders Bonus, state, Start, Stop, BE, and AVG",
   );
   assert.ok(
-    horizontalBonusMarkup.includes(
-      '<div class="better-hunt-hstrip-active-top"><span>#1</span></div>',
-    ) &&
-      horizontalBonusMarkup.includes(
-        '<div class="better-hunt-hstrip-active-bottom"><strong>Bet EUR1</strong><span>-</span></div>',
-      ),
-    "horizontal active image hides the slot name and places the bet at the bottom",
+    horizontalBonusMarkup.includes("better-hunt-hstrip-list") &&
+      horizontalBonusMarkup.includes("better-hunt-list--compact") &&
+      horizontalBonusMarkup.includes("better-hunt-stat-grid--row"),
+    "horizontal Bonus Hunt renders the configurable list and stats layout",
   );
   const horizontalBonusWithoutRequests = renderToStaticMarkup(
     createElement(BetterBonusHuntStyle, {
@@ -1735,6 +1721,50 @@ try {
     ) && !horizontalBonusWithoutRequests.includes(">Chat Requests<"),
     "horizontal Bonus Hunt fully hides Chat Requests when disabled",
   );
+
+  for (const orientation of ["vertical", "horizontal", "mainstream"]) {
+    const configurableBonusMarkup = renderToStaticMarkup(
+      createElement(BetterBonusHuntStyle, {
+        config: {
+          ...horizontalBonusConfig,
+          orientation,
+          sessionState: "ended",
+          carouselMode: "imagestats",
+          statsLayout: "grid",
+          listMode: "image",
+          visibleRows: 3,
+          drawerAlwaysVisible: true,
+        },
+        bonuses: [
+          {
+            id: `${orientation}-bonus-best`,
+            slot_name: "Bear Crazy",
+            bet: 1,
+            payout: 5,
+            opened: true,
+          },
+          {
+            id: `${orientation}-bonus-worst`,
+            slot_name: "Sugar Rush",
+            bet: 1,
+            payout: 2,
+            opened: true,
+          },
+        ],
+        stats: {},
+        currency: "EUR",
+      }),
+    );
+    assert.ok(
+      configurableBonusMarkup.includes(`data-orientation="${orientation}"`) &&
+        configurableBonusMarkup.includes("better-hunt-image-stats-panel") &&
+        configurableBonusMarkup.includes("better-hunt-stat-grid--grid") &&
+        configurableBonusMarkup.includes("better-hunt-list--image") &&
+        configurableBonusMarkup.includes("better-hunt-drawer is-open") &&
+        configurableBonusMarkup.includes(">Chat Requests<"),
+      `${orientation} Bonus Hunt honors carousel, stats, list, drawer, and request controls`,
+    );
+  }
 
   const surface =
     bonusElements.find((element) => /container|card|row/i.test(element.id)) ||

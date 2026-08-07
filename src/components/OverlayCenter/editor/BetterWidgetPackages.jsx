@@ -713,6 +713,7 @@ const BASE_BETTER_CONFIG = {
     drawerHoldSeconds: 15,
     statsLayout: "row",
     showRequests: true,
+    winEffects: true,
     animations: false,
     requestActionAnimations: false,
     animSpeed: 1,
@@ -1807,9 +1808,7 @@ function BonusTypographyControls({ config, onChange }) {
               min={7}
               max={48}
               unit="px"
-              onChange={(fontSize) =>
-                setTypography(element.id, { fontSize })
-              }
+              onChange={(fontSize) => setTypography(element.id, { fontSize })}
             />
           </div>
         );
@@ -3523,6 +3522,12 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   );
 }
 
+export function getBetterBonusOrientationWidth(orientation) {
+  if (orientation === "horizontal") return 1080;
+  if (orientation === "mainstream") return 372;
+  return 402;
+}
+
 function SimpleThemedControls({
   type,
   config,
@@ -3563,11 +3568,7 @@ function SimpleThemedControls({
     const next = { ...c, ...patch };
     const nextWidth =
       Number(next.widgetWidth || next.panelWidth) ||
-      (next.orientation === "horizontal"
-        ? 1080
-        : next.orientation === "mainstream"
-          ? 372
-          : 402);
+      getBetterBonusOrientationWidth(next.orientation);
     const nextHeight = Number(next.widgetHeight ?? next.panelHeight ?? 0) || 0;
     if (typeof onWidgetChange === "function") {
       const widgetPatch = {
@@ -4258,13 +4259,9 @@ function SimpleThemedControls({
               ].map((key) => ({ key, name: key }))}
               onChange={(textureType) => set({ textureType })}
             />
-            {[
-              "aurora",
-              "gradient",
-              "metallic",
-              "diagonal",
-              "nebula",
-            ].includes(texture) && (
+            {["aurora", "gradient", "metallic", "diagonal", "nebula"].includes(
+              texture,
+            ) && (
               <SliderRow
                 label="Flow angle"
                 value={c.gradientAngle ?? 135}
@@ -4933,11 +4930,7 @@ function SimpleThemedControls({
   };
   const widgetWidth =
     Number(c.widgetWidth || c.panelWidth) ||
-    (c.orientation === "horizontal"
-      ? 1080
-      : c.orientation === "mainstream"
-        ? 372
-        : 402);
+    getBetterBonusOrientationWidth(c.orientation);
   const widgetHeight = Number(c.widgetHeight ?? c.panelHeight ?? 0) || 0;
   const edgeRadius = Number(c.edgeRadius ?? c.radius ?? c.cardRadius ?? 14);
   const statRadius = Number(c.statRadius ?? 7);
@@ -4981,12 +4974,24 @@ function SimpleThemedControls({
               hint: "Streamer opening layout",
             },
           ]}
-          onChange={(orientation) => set({ orientation })}
+          onChange={(orientation) => {
+            const width = getBetterBonusOrientationWidth(orientation);
+            setBonusSize({
+              orientation,
+              widgetWidth: width,
+              panelWidth: width,
+            });
+          }}
         />
         <HuntHint>{orientationHint}</HuntHint>
       </HuntSection>
 
       <HuntSection title="Win FX" icon={<Sparkles size={13} />}>
+        <ToggleRow
+          label="Automatic payout effects"
+          checked={c.winEffects !== false}
+          onChange={(winEffects) => set({ winEffects })}
+        />
         <div className="bp-hunt-fx-grid">
           {[
             { mult: 100, label: "100x", icon: Sparkles },
@@ -5007,8 +5012,8 @@ function SimpleThemedControls({
           ))}
         </div>
         <HuntHint>
-          Preview celebrations. Overlay code can trigger the same effect with
-          window.__boTriggerWin(multiplier).
+          Payouts at 1000x or higher celebrate automatically. Preview buttons
+          remain available even when automatic effects are off.
         </HuntHint>
       </HuntSection>
 
