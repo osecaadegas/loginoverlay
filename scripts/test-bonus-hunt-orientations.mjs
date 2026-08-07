@@ -241,7 +241,7 @@ try {
         "grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr)",
       ) &&
       horizontalRingMarkup.includes(
-        "height:190px;max-height:100%;align-self:center",
+        "height:100%;min-height:190px;align-self:stretch",
       ) &&
       horizontalRingMarkup.includes(
         "width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;display:block;object-fit:cover!important;object-position:center!important",
