@@ -338,7 +338,7 @@ const HOME_WIDGETS = [
   {
     title: "Tournament",
     widgetType: "tournament",
-    layout: "feature",
+    layout: "square",
     width: 960,
     height: 720,
   },
@@ -635,6 +635,12 @@ const LANDING_TOURNAMENT_MATCHES = [
   ["Afonso", "Sofia", "Gates of Olympus 1000", "5 Wild Buffalo", 615, 360, "player1", 6],
 ];
 
+const LANDING_TOURNAMENT_SLOT_NAMES = [
+  ...new Set(
+    LANDING_TOURNAMENT_MATCHES.flatMap(([, , slot1, slot2]) => [slot1, slot2]),
+  ),
+];
+
 function getLandingTournamentMatchState(index, completedCount) {
   if (index < completedCount) {
     return { status: "completed", isCompleted: true, previewPayout: null };
@@ -655,7 +661,19 @@ function getLandingTournamentPosition(completedCount) {
   return { activeRound: 2, activeMatch: 0 };
 }
 
-function getLandingTournamentConfig(previewCycle) {
+function getLandingTournamentSlot(slotName, catalogSlots) {
+  const catalogIndex = LANDING_TOURNAMENT_SLOT_NAMES.indexOf(slotName);
+  const catalogSlot =
+    catalogIndex >= 0 && catalogSlots.length > 0
+      ? catalogSlots[catalogIndex % catalogSlots.length]
+      : null;
+  return {
+    name: catalogSlot?.name || slotName,
+    image: catalogSlot?.image || "",
+  };
+}
+
+function getLandingTournamentConfig(previewCycle, catalogSlots = []) {
   const completedCount = Math.min(previewCycle % 9, 7);
   const matches = LANDING_TOURNAMENT_MATCHES.map((definition, index) => {
     const [player1, player2, slot1, slot2, payout1, payout2, winner, unlockAt] =
@@ -666,8 +684,8 @@ function getLandingTournamentConfig(previewCycle) {
       id: `landing-tournament-match-${index + 1}`,
       player1: isAvailable ? player1 : "TBD",
       player2: isAvailable ? player2 : "TBD",
-      slot1: { name: slot1, image: "" },
-      slot2: { name: slot2, image: "" },
+      slot1: getLandingTournamentSlot(slot1, catalogSlots),
+      slot2: getLandingTournamentSlot(slot2, catalogSlots),
       type: "bonus",
       status: matchState.status,
       winner: matchState.isCompleted ? winner : null,
@@ -797,6 +815,7 @@ function getBonusHuntPreviewState(cycle) {
 function LiveWidgetShowcase({ widget }) {
   const [previewCycle, setPreviewCycle] = useState(0);
   const [previewShoutout, setPreviewShoutout] = useState(null);
+  const [tournamentCatalogSlots, setTournamentCatalogSlots] = useState([]);
   const [connectFourPreview, setConnectFourPreview] = useState(() =>
     createLandingConnectFourState(),
   );
@@ -830,6 +849,25 @@ function LiveWidgetShowcase({ widget }) {
       setConnectFourPreview(advanceLandingConnectFourState);
     }, 1700);
     return () => window.clearInterval(timer);
+  }, [widget.widgetType]);
+
+  useEffect(() => {
+    if (widget.widgetType !== "tournament") return undefined;
+    let active = true;
+    supabase
+      .from("slots")
+      .select("name,image")
+      .not("image", "is", null)
+      .neq("image", "")
+      .order("name", { ascending: true })
+      .limit(LANDING_TOURNAMENT_SLOT_NAMES.length)
+      .then(({ data, error }) => {
+        if (!active || error) return;
+        setTournamentCatalogSlots(data || []);
+      });
+    return () => {
+      active = false;
+    };
   }, [widget.widgetType]);
 
   useEffect(() => {
@@ -905,7 +943,7 @@ function LiveWidgetShowcase({ widget }) {
         : undefined;
     const tournamentConfig =
       widget.widgetType === "tournament"
-        ? getLandingTournamentConfig(previewCycle)
+        ? getLandingTournamentConfig(previewCycle, tournamentCatalogSlots)
         : undefined;
     const instance = createBetterInstance(widget.widgetType, {
       instanceId: `landing-${widget.widgetType}`,
@@ -932,6 +970,7 @@ function LiveWidgetShowcase({ widget }) {
     previewHeight,
     previewShoutout,
     previewWidth,
+    tournamentCatalogSlots,
     widget.widgetType,
   ]);
 
