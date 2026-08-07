@@ -284,6 +284,27 @@ function WidgetListItem({
   onLayerMove,
 }) {
   const definition = BETTER_WIDGET_REGISTRY[instance.widgetType];
+  const handleMenuToggle = (event) => {
+    const menu = event.currentTarget;
+    if (!menu.open) {
+      menu.classList.remove("opens-up");
+      return;
+    }
+
+    const panel = menu.querySelector(".better-editor-widget-row__menu-panel");
+    const boundary = menu.closest(".better-editor-widget-list");
+    const trigger = menu.querySelector(".better-editor-widget-row__menu-trigger");
+    if (!panel || !boundary || !trigger) return;
+
+    const boundaryRect = boundary.getBoundingClientRect();
+    const triggerRect = trigger.getBoundingClientRect();
+    const availableBelow = boundaryRect.bottom - triggerRect.bottom;
+    const availableAbove = triggerRect.top - boundaryRect.top;
+    menu.classList.toggle(
+      "opens-up",
+      availableBelow < panel.offsetHeight + 6 && availableAbove > availableBelow,
+    );
+  };
   const menuAction = (event, action) => {
     event.preventDefault();
     event.stopPropagation();
@@ -337,6 +358,7 @@ function WidgetListItem({
       <details
         className="better-editor-widget-row__menu"
         onClick={(event) => event.stopPropagation()}
+        onToggle={handleMenuToggle}
       >
         <summary
           className="better-editor-widget-row__menu-trigger"
