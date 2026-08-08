@@ -46,12 +46,43 @@ try {
   );
   assert.ok(
     betterStylesSource.includes(
-      '.better-hunt-vertical--no-requests{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}',
+      ".better-hunt-vertical--no-requests{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}",
     ) &&
       betterStylesSource.includes(
         'c.showRequests === false ? " better-hunt-vertical--no-requests" : ""',
       ),
     "vertical layout removes the reserved requests row when requests are hidden",
+  );
+  assert.ok(
+    betterStylesSource.includes(
+      'data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream{height:var(--bh-panel-height,auto);max-height:100%}',
+    ),
+    "vertical layouts shrink to their visible-row content when height is automatic",
+  );
+
+  const renderVisibleRows = (visibleRows) =>
+    renderToStaticMarkup(
+      createElement(BetterBonusHuntStyle, {
+        config: {
+          orientation: "vertical",
+          listMode: "compact",
+          visibleRows,
+          animations: false,
+          showRequests: false,
+        },
+        bonuses: Array.from({ length: 8 }, (_, index) => ({
+          id: `visible-row-${index}`,
+          slot_name: `Slot ${index + 1}`,
+          bet: 1,
+        })),
+        stats: {},
+        currency: "EUR",
+      }),
+    );
+  assert.ok(
+    renderVisibleRows(3).includes("--bh-list-height:180px") &&
+      renderVisibleRows(6).includes("--bh-list-height:354px"),
+    "visible row count drives the vertical list and panel content height",
   );
 
   const baseline = getAutomaticBetterHuntWin(null, [

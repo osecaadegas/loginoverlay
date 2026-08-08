@@ -1870,7 +1870,7 @@ function BetterStyleSheet() {
       .better-hunt-root[data-orientation="vertical"] .better-hunt-shell,.better-hunt-root[data-orientation="mainstream"] .better-hunt-shell{align-items:center}
       .better-hunt-root[data-drawer-mode="expand"] .better-hunt-shell{place-items:start center;align-items:start}
       .better-hunt-root[data-drawer-mode="expand"] .better-hunt-panel{align-self:start;transform-origin:top center}
-      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream{height:var(--bh-panel-height,100%);max-height:100%}
+      .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream{height:var(--bh-panel-height,auto);max-height:100%}
       .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-left{display:flex;flex-direction:column}
       .better-hunt-root[data-drawer-mode="contain"] .better-hunt-left{height:100%;min-height:0;overflow:hidden}
       .better-hunt-root[data-drawer-mode="contain"] .better-hunt-vertical > *,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream > *,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-left > *{flex:0 0 auto}
