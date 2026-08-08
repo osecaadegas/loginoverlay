@@ -37,6 +37,23 @@ try {
     "horizontal orientation uses a thin frame without shrinking tall layouts",
   );
 
+  const betterStylesSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(
+    betterStylesSource.includes(
+      '.better-hunt-vertical--no-requests{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}',
+    ) &&
+      betterStylesSource.includes(
+        'c.showRequests === false ? " better-hunt-vertical--no-requests" : ""',
+      ),
+    "vertical layout removes the reserved requests row when requests are hidden",
+  );
+
   const baseline = getAutomaticBetterHuntWin(null, [
     { id: "win", slot_name: "Big Bass", bet: 1, payout: 0 },
   ]);

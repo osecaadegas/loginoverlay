@@ -1884,7 +1884,8 @@ function BetterStyleSheet() {
       .better-hunt-root[data-finish="gloss"] .better-hunt-panel::after{background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.035) 26%,transparent 52%)}
       .better-hunt-root[data-finish="matte"] .better-hunt-panel::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");opacity:.05;mix-blend-mode:overlay}
       .better-hunt-root[data-finish="gradient"] .better-hunt-panel::after{background:linear-gradient(140deg,color-mix(in srgb,var(--bh-ice) 7%,transparent) 0%,transparent 38%,color-mix(in srgb,var(--bh-ice-deep) 10%,transparent) 92%)}
-      .better-hunt-vertical{max-width:min(100%,var(--bh-panel-width,402px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto;gap:10px;padding:12px}
+      .better-hunt-vertical{max-width:min(100%,var(--bh-panel-width,402px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto auto minmax(0,1fr) auto auto;gap:10px;padding:12px}
+      .better-hunt-vertical--no-requests{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}
       .better-hunt-mainstream{max-width:min(100%,var(--bh-panel-width,372px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto auto auto minmax(0,1fr) auto auto;gap:0;padding:0}
       .better-hunt-main-head{display:flex;align-items:center;gap:12px;min-width:0;padding:14px 16px 12px}
       .better-hunt-main-avatar-wrap{position:relative;display:grid;place-items:center;flex:0 0 auto;width:calc(var(--bh-avatar) + 10px);height:calc(var(--bh-avatar) + 10px);overflow:hidden;border:2px solid var(--bh-line-hi);border-radius:50%;background:var(--bh-inset);box-shadow:0 0 14px color-mix(in srgb,var(--bh-line-hi) 40%,transparent)}
@@ -4293,7 +4294,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       renderMainstreamPanel()
     ) : (
       <section
-        className={`better-hunt-panel better-hunt-vertical${panelShakeClass}`}
+        className={`better-hunt-panel better-hunt-vertical${c.showRequests === false ? " better-hunt-vertical--no-requests" : ""}${panelShakeClass}`}
       >
         {renderHeader()}
         <div className="better-hunt-divider" />
