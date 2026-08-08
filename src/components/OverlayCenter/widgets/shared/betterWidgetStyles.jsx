@@ -1861,8 +1861,8 @@ function BetterStyleSheet() {
       @keyframes better-hunt-win-rays{to{transform:translate(-50%,-50%) rotate(360deg)}}
       @keyframes better-hunt-win-ring{0%{transform:translate(-50%,-50%) scale(.15);opacity:.95}100%{transform:translate(-50%,-50%) scale(4.2);opacity:0}}
       @keyframes better-hunt-win-confetti{0%{transform:translate3d(0,0,0) rotate(0deg);opacity:0}6%{opacity:1}100%{transform:translate3d(var(--bh-win-sway),640px,0) rotate(680deg);opacity:.15}}
-      @keyframes better-hunt-win-badge{0%{transform:perspective(1000px) rotateX(82deg) scale(.35) translateZ(-320px);opacity:0}55%{transform:perspective(1000px) rotateX(-12deg) scale(1.1) translateZ(50px);opacity:1}74%{transform:perspective(1000px) rotateX(6deg) scale(.97) translateZ(0)}100%{transform:perspective(1000px) rotateX(0deg) scale(1);opacity:1}}
-      @keyframes better-hunt-win-float{0%,100%{transform:translateY(0) rotateX(0deg)}50%{transform:translateY(-9px) rotateX(2deg)}}
+      @keyframes better-hunt-win-badge{0%{transform:translate(-50%,-50%) perspective(1000px) rotateX(82deg) scale(.35) translateZ(-320px);opacity:0}55%{transform:translate(-50%,-50%) perspective(1000px) rotateX(-12deg) scale(1.1) translateZ(50px);opacity:1}74%{transform:translate(-50%,-50%) perspective(1000px) rotateX(6deg) scale(.97) translateZ(0)}100%{transform:translate(-50%,-50%) perspective(1000px) rotateX(0deg) scale(1);opacity:1}}
+      @keyframes better-hunt-win-float{0%,100%{transform:translate(-50%,-50%) translateY(0) rotateX(0deg)}50%{transform:translate(-50%,-50%) translateY(-9px) rotateX(2deg)}}
       .better-hunt-root{position:relative;width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;background:transparent;color:#f4f8ff;font-family:var(--bh-font);font-size:calc(13.5px * var(--bh-ui,1));font-synthesis:none;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;box-sizing:border-box}
       .better-hunt-root *{box-sizing:border-box}
       .better-hunt-root::before,.better-hunt-root::after{content:none}
