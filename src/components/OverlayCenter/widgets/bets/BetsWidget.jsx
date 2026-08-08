@@ -23,6 +23,12 @@ import { BetterBetsStyle } from "../shared/betterWidgetStyles";
 const STYLE_SECA_BETS_DESIGN_WIDTH = 400;
 const STYLE_SECA_BETS_DESIGN_HEIGHT = 510;
 const STYLE_SECA_BETS_MIN_SCALE = 0.1;
+const BETS_VICTORY_SHARDS = Array.from({ length: 18 }, (_, index) => ({
+  id: `victory-shard-${index + 1}`,
+  angle: `${index * 20 + (index % 3) * 4}deg`,
+  delay: `${80 + (index % 6) * 45}ms`,
+  hue: index % 3,
+}));
 
 function getGridCols(count, layout) {
   if (layout === "StyleSecaBets") return 2;
@@ -439,6 +445,38 @@ function betsCardClasses({ isWin, isLose, isLead }) {
     .join(" ");
 }
 
+function BetsVictoryBroadcast({ winnerLabel, winnerNumber, accentColor }) {
+  return (
+    <div
+      className="bets-victory"
+      style={{ "--victory-accent": accentColor }}
+      role="status"
+      aria-live="polite"
+    >
+      <span className="bets-victory__flash" aria-hidden="true" />
+      <span className="bets-victory__orbit" aria-hidden="true" />
+      <span className="bets-victory__shards" aria-hidden="true">
+        {BETS_VICTORY_SHARDS.map((shard, index) => (
+          <i
+            key={shard.id}
+            style={{
+              "--shard-angle": shard.angle,
+              "--shard-delay": shard.delay,
+              "--shard-hue": shard.hue,
+            }}
+          />
+        ))}
+      </span>
+      <div className="bets-victory__plate">
+        <span className="bets-victory__eyebrow">Result confirmed</span>
+        <span className="bets-victory__number">0{winnerNumber}</span>
+        <strong className="bets-victory__label">{winnerLabel}</strong>
+        <span className="bets-victory__stamp">Winner</span>
+      </div>
+    </div>
+  );
+}
+
 function BetsGridOptionCard({ option, index, context }) {
   const amount = context.bets[`opt_${index}`] || 0;
   const pct = context.pcts[index];
@@ -733,6 +771,11 @@ function BetsWidget({ config, allWidgets }) {
     resolveBetsStyleSecaValue(isStyleSeca, value, fallback);
   const styleSecaText = "#f8fbff";
   const visibleOptions = resolveVisibleBetOptions(options, isStyleSeca);
+  const winnerLabel =
+    winnerIdx !== null && options[winnerIdx]
+      ? betOptionLabel(options[winnerIdx], winnerIdx)
+      : "";
+  const showVictory = status === "result" && winnerLabel;
 
   const preset = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
   const bgColor =
@@ -1158,11 +1201,20 @@ function BetsWidget({ config, allWidgets }) {
 
   if (layout === "better_bets") {
     return (
-      <BetterBetsStyle
-        config={c}
-        countdown={countdown}
-        statusLabel={statusLabel}
-      />
+      <div className="bets-victory-host">
+        <BetterBetsStyle
+          config={c}
+          countdown={countdown}
+          statusLabel={statusLabel}
+        />
+        {showVictory && (
+          <BetsVictoryBroadcast
+            winnerLabel={winnerLabel}
+            winnerNumber={winnerIdx + 1}
+            accentColor={barFill}
+          />
+        )}
+      </div>
     );
   }
 
@@ -1544,6 +1596,13 @@ function BetsWidget({ config, allWidgets }) {
         >
           Type <strong>{cmd} &lt;number&gt;</strong> to bet
         </div>
+      )}
+      {showVictory && (
+        <BetsVictoryBroadcast
+          winnerLabel={winnerLabel}
+          winnerNumber={winnerIdx + 1}
+          accentColor={getOptColor(winnerIdx)}
+        />
       )}
     </div>
   );

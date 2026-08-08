@@ -4967,10 +4967,96 @@
     transform: translateX(300%);
   }
 }
+@keyframes bets-victory-scene {
+  0% {
+    opacity: 0;
+    visibility: visible;
+  }
+  5%,
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes bets-victory-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.15);
+  }
+  12% {
+    opacity: 0.95;
+  }
+  48%,
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+@keyframes bets-victory-orbit {
+  0% {
+    opacity: 0;
+    transform: rotate(-35deg) scale(0.45);
+  }
+  18% {
+    opacity: 0.8;
+  }
+  74%,
+  100% {
+    opacity: 0;
+    transform: rotate(155deg) scale(1.18);
+  }
+}
+@keyframes bets-victory-shard {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--shard-angle)) translateY(0) scaleY(0.2);
+  }
+  12% {
+    opacity: 1;
+  }
+  72%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--shard-angle)) translateY(clamp(-280px, -38cqw, -90px)) scaleY(1.3);
+  }
+}
+@keyframes bets-victory-plate {
+  0% {
+    opacity: 0;
+    transform: perspective(500px) rotateX(-78deg) scale(0.7);
+  }
+  13% {
+    opacity: 1;
+    transform: perspective(500px) rotateX(8deg) scale(1.06);
+  }
+  20%,
+  72% {
+    opacity: 1;
+    transform: perspective(500px) rotateX(0) scale(1);
+  }
+  88%,
+  100% {
+    opacity: 0;
+    transform: perspective(500px) rotateX(0) scale(1.04);
+  }
+}
+@keyframes bets-victory-scan {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  45%,
+  100% {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
 
 /* ── Root ── */
 /* border-radius / box-shadow removed — slot clipPath + drop-shadow handle these */
 .bets-ov {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -4984,6 +5070,165 @@
   animation: bets-open 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   -webkit-font-smoothing: subpixel-antialiased;
   text-rendering: optimizeLegibility;
+}
+
+.bets-victory-host {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.bets-victory-host > .better-bets-stage {
+  width: 100%;
+  height: 100%;
+}
+.bets-victory {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  animation: bets-victory-scene 4.8s ease-out both;
+}
+.bets-victory__flash {
+  position: absolute;
+  width: min(72cqw, 420px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--victory-accent, #f5c451) 72%, white 28%) 0%, color-mix(in srgb, var(--victory-accent, #f5c451) 42%, transparent) 30%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: bets-victory-flash 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.bets-victory__orbit {
+  position: absolute;
+  width: min(64cqw, 360px);
+  aspect-ratio: 1;
+  border: clamp(1px, 0.5cqw, 3px) solid color-mix(in srgb, var(--victory-accent, #f5c451) 72%, white 28%);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--victory-accent, #f5c451) 60%, transparent), inset 0 0 22px color-mix(in srgb, var(--victory-accent, #f5c451) 38%, transparent);
+  animation: bets-victory-orbit 2.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.bets-victory__shards {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1px;
+  height: 1px;
+}
+.bets-victory__shards i {
+  position: absolute;
+  left: -2px;
+  top: -9px;
+  width: clamp(3px, 0.8cqw, 7px);
+  height: clamp(12px, 3cqw, 25px);
+  border-radius: 1px;
+  background: var(--victory-accent, #f5c451);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--victory-accent, #f5c451) 72%, transparent);
+  animation: bets-victory-shard 1.9s cubic-bezier(0.1, 0.75, 0.2, 1) var(--shard-delay) both;
+}
+.bets-victory__shards i:nth-child(3n + 2) {
+  background: #f8fafc;
+  height: clamp(8px, 2cqw, 17px);
+}
+.bets-victory__shards i:nth-child(3n) {
+  background: color-mix(in srgb, var(--victory-accent, #f5c451) 55%, #22d3ee 45%);
+  width: clamp(2px, 0.55cqw, 5px);
+}
+.bets-victory__plate {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  width: min(82%, 520px);
+  min-height: clamp(78px, 23cqh, 132px);
+  padding: clamp(12px, 3cqh, 22px) clamp(15px, 4cqw, 28px);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--victory-accent, #f5c451) 76%, white 24%);
+  border-left-width: clamp(4px, 1cqw, 8px);
+  background: linear-gradient(105deg, rgba(5, 8, 14, 0.97), color-mix(in srgb, var(--victory-accent, #f5c451) 17%, rgba(8, 12, 20, 0.96)) 62%, rgba(5, 8, 14, 0.98));
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.68), 0 0 34px color-mix(in srgb, var(--victory-accent, #f5c451) 46%, transparent), inset 0 0 28px color-mix(in srgb, var(--victory-accent, #f5c451) 10%, transparent);
+  color: #f8fafc;
+  animation: bets-victory-plate 4.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.bets-victory__plate::after {
+  position: absolute;
+  inset: -30% auto -30% -20%;
+  width: 18%;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  filter: blur(2px);
+  animation: bets-victory-scan 2.2s ease-out 0.45s both;
+}
+.bets-victory__eyebrow {
+  grid-column: 2;
+  align-self: end;
+  color: color-mix(in srgb, var(--victory-accent, #f5c451) 76%, white 24%);
+  font-size: clamp(7px, 2cqh, 11px);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.bets-victory__number {
+  grid-row: 1 / 3;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  margin-right: clamp(10px, 3cqw, 20px);
+  padding-right: clamp(10px, 3cqw, 20px);
+  border-right: 1px solid color-mix(in srgb, var(--victory-accent, #f5c451) 45%, transparent);
+  color: var(--victory-accent, #f5c451);
+  font-family: "Arial Black", sans-serif;
+  font-size: clamp(28px, 10cqh, 62px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.8;
+  text-shadow: 0 0 20px color-mix(in srgb, var(--victory-accent, #f5c451) 65%, transparent);
+}
+.bets-victory__label {
+  grid-column: 2;
+  min-width: 0;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: clamp(15px, 5cqh, 30px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.bets-victory__stamp {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  margin-left: clamp(8px, 2.5cqw, 18px);
+  padding: 5px 7px;
+  border: 1px solid var(--victory-accent, #f5c451);
+  color: var(--victory-accent, #f5c451);
+  font-size: clamp(7px, 2cqh, 10px);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-5deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bets-victory {
+    animation-duration: 2.6s;
+  }
+  .bets-victory__flash,
+  .bets-victory__orbit,
+  .bets-victory__shards {
+    display: none;
+  }
+  .bets-victory__plate {
+    animation: bets-victory-scene 2.6s ease-out both;
+  }
 }
 
 .or-canvas,
