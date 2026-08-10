@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import streamerDataHandler from "./_lib/streamer-data.js";
 import imageSearchHandler from "./_lib/image-search.js";
 import { processConnectFourCommand } from "./_lib/connect-four-runtime.js";
+import chatHandler from "./_lib/routes/chat.js";
 
 /**
  * /api/chat-commands — Unified chat command handler
@@ -62,6 +63,9 @@ export default async function handler(req, res) {
       return streamerDataHandler(req, res);
     case "image-search":
       return imageSearchHandler(req, res);
+    case "bttv-emotes":
+      req.query = { ...(req.query || {}), path: ["chat", "emotes", "bttv"] };
+      return chatHandler(req, res);
     case "bet":
       return handleBet(req, res);
     case "bet-payout":

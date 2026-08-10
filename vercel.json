@@ -168,6 +168,10 @@
       "destination": "/api/chat-commands?cmd=image-search"
     },
     {
+      "source": "/api/chat/emotes/bttv",
+      "destination": "/api/chat-commands?cmd=bttv-emotes"
+    },
+    {
       "source": "/go/:brandSlug/:shortCode",
       "destination": "/api/affiliate?action=redirect&brandSlug=:brandSlug&shortCode=:shortCode"
     },
