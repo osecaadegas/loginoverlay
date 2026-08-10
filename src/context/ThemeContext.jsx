@@ -96,9 +96,13 @@ export function ThemeProvider({ children }) {
       .from('overlay_themes')
       .select('style_preset, metal_color')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
       .then(({ data }) => {
-        if (cancelled || !data) return;
+        if (cancelled) return;
+        if (!data) {
+          setDbLoaded(true);
+          return;
+        }
         const themeId = data.style_preset;
         if (themeId && themeMap[themeId]) {
           setCurrentTheme(themeId);

@@ -250,13 +250,8 @@ export function trackExternalLink(url, linkText) {
     element_text: linkText,
   });
 
-  if (navigator.sendBeacon) {
-    const body = new Blob([JSON.stringify(event)], { type: 'application/json' });
-    navigator.sendBeacon(`${API_BASE}?action=track`, body);
-  } else {
-    queueEvent(event);
-    flushBatch({ keepalive: true });
-  }
+  queueEvent(event);
+  flushBatch({ keepalive: true });
 }
 
 export async function identifyUser({ user_id, twitch_id, twitch_username, twitch_avatar }) {

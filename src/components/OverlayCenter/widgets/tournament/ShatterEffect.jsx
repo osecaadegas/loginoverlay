@@ -178,7 +178,6 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
       : { x: cw - cardW, y: 0, w: cardW, h: ch };
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
 
     const run = (srcImg) => {
       const shards = tessellate(cr.x, cr.y, cr.w, cr.h, 90);
