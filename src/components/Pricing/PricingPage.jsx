@@ -342,13 +342,13 @@ export default function PricingPage() {
           <p>{activeCopy.description}</p>
           <div className="premium-trust-list">
             <span>
-              <ShieldCheck size={15} /> Secure Stripe checkout
+              <Sparkles size={15} /> No card for the free trial
             </span>
             <span>
-              <CreditCard size={15} /> VAT added at payment
+              <CheckCircle2 size={15} /> No automatic renewal
             </span>
             <span>
-              <CheckCircle2 size={15} /> Cancel from billing portal
+              <ShieldCheck size={15} /> Stripe only for paid plans
             </span>
           </div>
         </div>
@@ -452,6 +452,7 @@ export default function PricingPage() {
           <span className="premium-kicker">Pick a plan</span>
           <h2>{activeCopy.sectionTitle}</h2>
           <p>{activeCopy.sectionText}</p>
+          <p>Plan cards below open paid Stripe checkout and are separate from the free trial.</p>
         </div>
 
         <div className={`premium-card-grid premium-card-grid--${productType}`}>

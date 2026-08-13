@@ -79,6 +79,9 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 25. `039_stripe_seven_day_trials.sql`
     Replaces retired internal no-card trial messaging with the seven-day, card-required Stripe monthly trial terms.
 
+26. `040_restore_cardless_trial_content.sql`
+    Aligns stored premium-page content with the account-bound seven-day trial, which requires no payment method and does not renew automatically.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.

@@ -17,6 +17,10 @@ const pricingSource = readFileSync(
   new URL("../src/components/Pricing/PricingPage.jsx", import.meta.url),
   "utf8",
 );
+const cardlessContentMigration = readFileSync(
+  new URL("../migrations/040_restore_cardless_trial_content.sql", import.meta.url),
+  "utf8",
+);
 
 assert.doesNotMatch(checkoutSource, /trialPeriodDays/);
 assert.match(billingSource, /payment_method_collection = 'always'/);
@@ -27,8 +31,13 @@ assert.match(premiumSource, /from\("user_trials"\)/);
 assert.match(premiumSource, /error\.code === "23505"/);
 assert.match(premiumSource, /trialRequiresPaymentMethod: false/);
 assert.match(pricingSource, /Start 7-day free trial/);
+assert.match(pricingSource, /No card for the free trial/);
+assert.match(pricingSource, /Plan cards below open paid Stripe checkout/);
 assert.match(pricingSource, /you will not be charged automatically/);
 assert.match(pricingSource, /never converts automatically/);
 assert.doesNotMatch(pricingSource, /subscription or trial/);
+assert.match(cardlessContentMigration, /without adding payment information/);
+assert.match(cardlessContentMigration, /does not convert to a paid subscription/);
+assert.match(cardlessContentMigration, /Stripe Checkout/);
 
 console.log("Cardless seven-day trial checks passed.");
