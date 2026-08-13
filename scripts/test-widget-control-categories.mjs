@@ -129,9 +129,9 @@ try {
     "utf8",
   );
   assert.ok(
-    controlsCss.includes('grid-template-columns: repeat(4, minmax(0, 1fr))') &&
+    controlsCss.includes("grid-template-columns: repeat(4, minmax(0, 1fr))") &&
       controlsCss.includes(
-        'grid-template-columns: repeat(auto-fit, minmax(88px, 1fr))',
+        "grid-template-columns: repeat(auto-fit, minmax(88px, 1fr))",
       ) &&
       ["layout", "appearance", "content", "behavior"].every((category) =>
         controlsCss.includes(`data-category="${category}"`),

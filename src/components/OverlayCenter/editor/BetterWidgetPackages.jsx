@@ -3191,7 +3191,9 @@ function RawPanelTabs({
           disabled={disabled}
           data-category={level === "primary" ? key : category}
           title={
-            disabled ? `${label} controls are not available for this widget` : label
+            disabled
+              ? `${label} controls are not available for this widget`
+              : label
           }
           className={active === key ? "is-active" : ""}
           onClick={() => onChange(key)}
