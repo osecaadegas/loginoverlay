@@ -91,7 +91,7 @@ async function submitMessage(req, res, supabase) {
       { statusCode: 400 },
     );
 
-    enforceRateLimit(req);
+  enforceRateLimit(req);
   const { error } = await supabase.from("contact_messages").insert({
     name,
     email,
