@@ -153,9 +153,9 @@ export default async function handler(req, res) {
 
   try {
     const supabase = createSupabaseAdmin();
-    if (req.method === "POST") return submitMessage(req, res, supabase);
-    if (req.method === "GET") return listMessages(req, res, supabase);
-    if (req.method === "PATCH") return updateMessage(req, res, supabase);
+    if (req.method === "POST") return await submitMessage(req, res, supabase);
+    if (req.method === "GET") return await listMessages(req, res, supabase);
+    if (req.method === "PATCH") return await updateMessage(req, res, supabase);
     return res.status(405).json({ error: "Method not allowed" });
   } catch (err) {
     console.error("[contact-messages]", err);

@@ -28,6 +28,9 @@ assert.match(routerSource, /"contact-messages": contactMessagesHandler/);
 assert.match(apiSource, /if \(req\.method === "POST"\)/);
 assert.match(apiSource, /if \(req\.method === "GET"\)/);
 assert.match(apiSource, /if \(req\.method === "PATCH"\)/);
+assert.match(apiSource, /return await submitMessage\(req, res, supabase\)/);
+assert.match(apiSource, /return await listMessages\(req, res, supabase\)/);
+assert.match(apiSource, /return await updateMessage\(req, res, supabase\)/);
 assert.match(apiSource, /await requireAdmin\(req, supabase\)/);
 assert.match(apiSource, /EMAIL_PATTERN\.test\(email\)/);
 
