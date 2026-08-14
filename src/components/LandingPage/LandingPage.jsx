@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   CircleDollarSign,
   Clapperboard,
   Code2,
@@ -1055,15 +1057,14 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1 }) {
   );
 }
 
-function HomeWidgetMedia({ widget, floating = false }) {
-  const previewRatio =
-    !floating && widget.layout === "square"
-      ? "1 / 1"
-      : `${widget.width} / ${widget.height}`;
+function HomeWidgetMedia({ widget, floating = false, carousel = false }) {
+  let previewRatio = `${widget.width} / ${widget.height}`;
+  if (carousel) previewRatio = "16 / 10";
+  else if (!floating && widget.layout === "square") previewRatio = "1 / 1";
 
   return (
     <div
-      className={`lp-home-widget-media lp-home-widget-media--${widget.widgetType}${floating ? " lp-home-widget-media--floating" : ""}`}
+      className={`lp-home-widget-media lp-home-widget-media--${widget.widgetType}${floating ? " lp-home-widget-media--floating" : ""}${carousel ? " lp-home-widget-media--carousel" : ""}`}
       style={{ "--lp-widget-ratio": previewRatio }}
     >
       <LiveWidgetShowcase
@@ -1525,8 +1526,24 @@ function RootOverview() {
 }
 
 function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
-  const [pinnedWidget, setPinnedWidget] = useState(null);
+  const [widgetStartIndex, setWidgetStartIndex] = useState(0);
   const [slotCount, setSlotCount] = useState(null);
+  const visibleWidgets = useMemo(
+    () =>
+      Array.from(
+        { length: Math.min(3, HOME_WIDGETS.length) },
+        (_, offset) =>
+          HOME_WIDGETS[(widgetStartIndex + offset) % HOME_WIDGETS.length],
+      ),
+    [widgetStartIndex],
+  );
+
+  const moveWidgetCarousel = (direction) => {
+    setWidgetStartIndex(
+      (current) =>
+        (current + direction + HOME_WIDGETS.length) % HOME_WIDGETS.length,
+    );
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1563,17 +1580,6 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-
-  useEffect(() => {
-    if (!pinnedWidget) return undefined;
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") setPinnedWidget(null);
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [pinnedWidget]);
 
   return (
     <main className="lp-home">
@@ -1691,35 +1697,44 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
       </section>
 
       <section className="lp-home-section lp-home-widgets" id="widgets">
-        <h2>See the widgets in action</h2>
-        <div className="lp-home-widget-grid">
-          {HOME_WIDGETS.map((widget) => (
-            <button
-              key={widget.title}
-              type="button"
-              className={`lp-home-widget-card lp-home-widget-card--${widget.layout || "standard"}${pinnedWidget?.title === widget.title ? " is-pinned" : ""}`}
-              aria-pressed={pinnedWidget?.title === widget.title}
-              aria-label={`${pinnedWidget?.title === widget.title ? "Unpin" : "Pin"} ${widget.title} widget preview`}
-              onClick={() =>
-                setPinnedWidget((current) =>
-                  current?.title === widget.title ? null : widget,
-                )
-              }
-            >
-              <h3>{widget.title}</h3>
-              <HomeWidgetMedia widget={widget} />
-            </button>
-          ))}
+        <div className="lp-home-widgets__heading">
+          <div>
+            <span className="lp-eyebrow">Live previews</span>
+            <h2>See the widgets in action</h2>
+          </div>
+          <span className="lp-home-widget-counter" aria-live="polite">
+            {widgetStartIndex + 1} / {HOME_WIDGETS.length}
+          </span>
         </div>
-        {pinnedWidget && (
-          <aside
-            className={`lp-home-widget-float lp-home-widget-float--${pinnedWidget.layout || "standard"}`}
-            aria-live="polite"
-            aria-label={`${pinnedWidget.title} pinned widget preview`}
+        <div className="lp-home-widget-carousel">
+          <button
+            type="button"
+            className="lp-home-widget-arrow lp-home-widget-arrow--previous"
+            onClick={() => moveWidgetCarousel(-1)}
+            aria-label="Show previous widgets"
           >
-            <HomeWidgetMedia widget={pinnedWidget} floating />
-          </aside>
-        )}
+            <ChevronLeft aria-hidden="true" />
+          </button>
+          <div className="lp-home-widget-grid">
+            {visibleWidgets.map((widget) => (
+              <article
+                key={widget.title}
+                className={`lp-home-widget-card lp-home-widget-card--${widget.layout || "standard"}`}
+              >
+                <h3>{widget.title}</h3>
+                <HomeWidgetMedia widget={widget} carousel />
+              </article>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="lp-home-widget-arrow lp-home-widget-arrow--next"
+            onClick={() => moveWidgetCarousel(1)}
+            aria-label="Show next widgets"
+          >
+            <ChevronRight aria-hidden="true" />
+          </button>
+        </div>
       </section>
 
       <section className="lp-home-section lp-home-steps">

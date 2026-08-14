@@ -16,6 +16,7 @@
     "test:service-setup": "node scripts/test-service-setup.mjs",
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",
     "test:bonus-hunt-orientations": "node scripts/test-bonus-hunt-orientations.mjs",
+    "test:landing-widget-carousel": "node scripts/test-landing-widget-carousel.mjs",
     "test:slot-detector": "node scripts/test-slot-detector.mjs",
     "test:analytics": "node scripts/test-analytics.mjs",
     "test:affiliate": "node scripts/test-affiliate-system.mjs",
