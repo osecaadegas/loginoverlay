@@ -67,101 +67,101 @@ export default function ContactFooter() {
       </div>
 
       {contactOpen && (
-      <form
-        id="footer-contact-form"
-        className="lp-footer-contact"
-        onSubmit={submitContact}
-      >
-        <div className="lp-footer-contact__heading">
-          <Mail aria-hidden="true" />
-          <div>
-            <strong>Contact us</strong>
-            <p>Send a message directly to the Streamers Center admin team.</p>
+        <form
+          id="footer-contact-form"
+          className="lp-footer-contact"
+          onSubmit={submitContact}
+        >
+          <div className="lp-footer-contact__heading">
+            <Mail aria-hidden="true" />
+            <div>
+              <strong>Contact us</strong>
+              <p>Send a message directly to the Streamers Center admin team.</p>
+            </div>
           </div>
-        </div>
-        <div className="lp-footer-contact__fields">
-          <label>
-            <span>Name</span>
-            <input
-              name="name"
-              value={form.name}
-              onChange={updateField}
-              minLength={2}
-              maxLength={100}
-              required
-              autoComplete="name"
-            />
-          </label>
-          <label>
-            <span>Email</span>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={updateField}
-              maxLength={254}
-              required
-              autoComplete="email"
-            />
-          </label>
-          <label className="lp-footer-contact__subject">
-            <span>Subject</span>
-            <input
-              name="subject"
-              value={form.subject}
-              onChange={updateField}
-              minLength={3}
-              maxLength={160}
-              required
-            />
-          </label>
-          <label className="lp-footer-contact__message">
-            <span>Message</span>
-            <textarea
-              name="message"
-              value={form.message}
-              onChange={updateField}
-              minLength={10}
-              maxLength={5000}
-              rows={4}
-              required
-            />
-          </label>
-          <label className="lp-footer-contact__website" aria-hidden="true">
-            <span>Website</span>
-            <input
-              name="website"
-              value={form.website}
-              onChange={updateField}
-              tabIndex={-1}
-              autoComplete="off"
-            />
-          </label>
-        </div>
-        <div className="lp-footer-contact__actions">
-          {feedback && (
-            <output
-              className={`lp-footer-contact__feedback lp-footer-contact__feedback--${feedback.type}`}
-            >
-              {feedback.type === "success" && (
-                <CheckCircle2 aria-hidden="true" />
-              )}
-              {feedback.text}
-            </output>
-          )}
-          <button type="submit" disabled={submitting}>
-            {submitting ? (
-              <Loader2
-                className="lp-footer-contact__spinner"
-                aria-hidden="true"
+          <div className="lp-footer-contact__fields">
+            <label>
+              <span>Name</span>
+              <input
+                name="name"
+                value={form.name}
+                onChange={updateField}
+                minLength={2}
+                maxLength={100}
+                required
+                autoComplete="name"
               />
-            ) : (
-              <Send aria-hidden="true" />
+            </label>
+            <label>
+              <span>Email</span>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={updateField}
+                maxLength={254}
+                required
+                autoComplete="email"
+              />
+            </label>
+            <label className="lp-footer-contact__subject">
+              <span>Subject</span>
+              <input
+                name="subject"
+                value={form.subject}
+                onChange={updateField}
+                minLength={3}
+                maxLength={160}
+                required
+              />
+            </label>
+            <label className="lp-footer-contact__message">
+              <span>Message</span>
+              <textarea
+                name="message"
+                value={form.message}
+                onChange={updateField}
+                minLength={10}
+                maxLength={5000}
+                rows={4}
+                required
+              />
+            </label>
+            <label className="lp-footer-contact__website" aria-hidden="true">
+              <span>Website</span>
+              <input
+                name="website"
+                value={form.website}
+                onChange={updateField}
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </label>
+          </div>
+          <div className="lp-footer-contact__actions">
+            {feedback && (
+              <output
+                className={`lp-footer-contact__feedback lp-footer-contact__feedback--${feedback.type}`}
+              >
+                {feedback.type === "success" && (
+                  <CheckCircle2 aria-hidden="true" />
+                )}
+                {feedback.text}
+              </output>
             )}
-            {submitting ? "Sending..." : "Send message"}
-          </button>
-        </div>
-      </form>
+            <button type="submit" disabled={submitting}>
+              {submitting ? (
+                <Loader2
+                  className="lp-footer-contact__spinner"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Send aria-hidden="true" />
+              )}
+              {submitting ? "Sending..." : "Send message"}
+            </button>
+          </div>
+        </form>
       )}
     </footer>
   );
