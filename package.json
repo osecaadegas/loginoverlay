@@ -12,6 +12,7 @@
     "test:background-editor": "node scripts/test-background-editor.mjs",
     "test:global-navigation": "node scripts/test-global-navigation.mjs",
     "test:connect-four": "node scripts/test-connect-four.mjs",
+    "test:contact-messages": "node scripts/test-contact-messages.mjs",
     "preview": "vite preview",
     "test:service-setup": "node scripts/test-service-setup.mjs",
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",

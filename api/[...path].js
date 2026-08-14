@@ -5,6 +5,7 @@ import bettingHandler from "./_lib/routes/betting.js";
 import chatHandler from "./_lib/routes/chat.js";
 import connectFourHandler from "./_lib/routes/connect-four.js";
 import connectFourTurnHandler from "./_lib/routes/connect-four-turn.js";
+import contactMessagesHandler from "./_lib/routes/contact-messages.js";
 import createBillingPortalSessionHandler from "./_lib/routes/create-billing-portal-session.js";
 import playerSubscriptionHandler from "./_lib/routes/player-subscription.js";
 import premiumHandler from "./_lib/routes/premium.js";
@@ -20,6 +21,7 @@ const ROUTES = {
   chat: chatHandler,
   "connect-four": connectFourHandler,
   "connect-four-turn": connectFourTurnHandler,
+  "contact-messages": contactMessagesHandler,
   "create-billing-portal-session": createBillingPortalSessionHandler,
   "player-subscription": playerSubscriptionHandler,
   premium: premiumHandler,

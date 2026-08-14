@@ -2656,13 +2656,14 @@
 .lp-footer {
   position: relative;
   z-index: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
+  display: block;
   padding: 24px clamp(18px, 4vw, 54px);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--lp-muted);
+}
+
+.lp-footer__about {
+  width: 100%;
 }
 
 .lp-footer span {
@@ -2681,11 +2682,169 @@
 .lp-footer nav {
   display: flex;
   gap: 14px;
+  margin-top: 20px;
 }
 
-.lp-footer a {
+.lp-footer a,
+.lp-footer__contact-toggle {
   color: var(--lp-muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.lp-footer a:hover,
+.lp-footer__contact-toggle:hover,
+.lp-footer__contact-toggle[aria-expanded="true"] {
+  color: #f8fafc;
+}
+
+.lp-footer-contact {
+  width: min(720px, 100%);
+  max-width: 720px;
+  margin-top: 20px;
+  padding: 22px;
+  background: rgba(8, 15, 32, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 8px;
+}
+
+.lp-footer-contact__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.lp-footer-contact__heading > svg {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: #38bdf8;
+}
+
+.lp-footer-contact__heading strong {
+  color: #f8fafc;
+  font-size: 1.05rem;
+}
+
+.lp-footer-contact__heading p {
+  margin-top: 3px;
+  font-size: 0.82rem;
+}
+
+.lp-footer-contact__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lp-footer-contact label {
+  display: grid;
+  gap: 6px;
+}
+
+.lp-footer-contact label > span {
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.lp-footer-contact input,
+.lp-footer-contact textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.lp-footer-contact textarea {
+  resize: vertical;
+}
+
+.lp-footer-contact input:focus,
+.lp-footer-contact textarea:focus {
+  border-color: #38bdf8;
+  outline: 2px solid rgba(56, 189, 248, 0.22);
+  outline-offset: 1px;
+}
+
+.lp-footer-contact__subject,
+.lp-footer-contact__message {
+  grid-column: 1 / -1;
+}
+
+.lp-footer-contact__website {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+.lp-footer-contact__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.lp-footer-contact__actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 16px;
+  color: #fff;
+  background: #0369a1;
+  border: 1px solid #38bdf8;
+  border-radius: 6px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.lp-footer-contact__actions button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.lp-footer-contact__feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.lp-footer-contact__feedback svg {
+  width: 17px;
+  height: 17px;
+}
+
+.lp-footer-contact__feedback--success {
+  color: #86efac;
+}
+
+.lp-footer-contact__feedback--error {
+  color: #fca5a5;
+}
+
+.lp-footer-contact__spinner {
+  animation: lp-contact-spin 800ms linear infinite;
+}
+
+@keyframes lp-contact-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .lp-page--switching-player .lp-selected,
@@ -3245,8 +3404,36 @@
   }
 
   .lp-footer {
+    display: block;
+  }
+
+  .lp-footer__about,
+  .lp-footer-contact {
+    width: 100%;
+    max-width: none;
+  }
+
+  .lp-footer-contact {
+    padding: 18px;
+  }
+
+  .lp-footer-contact__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-footer-contact__subject,
+  .lp-footer-contact__message {
+    grid-column: auto;
+  }
+
+  .lp-footer-contact__actions {
+    align-items: stretch;
     flex-direction: column;
-    align-items: flex-start;
+  }
+
+  .lp-footer-contact__actions button {
+    justify-content: center;
+    width: 100%;
   }
 }
 

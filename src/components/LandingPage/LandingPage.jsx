@@ -39,6 +39,7 @@ import {
   createBetterInstance,
   renderBetterWidgetInstance,
 } from "../OverlayCenter/editor/betterWidgetRegistry";
+import ContactFooter from "./ContactFooter";
 import "./LandingPage.css";
 
 const FEATURED_PARTNERS = [
@@ -2281,24 +2282,6 @@ function StreamerLanding({
   );
 }
 
-function Footer() {
-  return (
-    <footer className="lp-footer">
-      <div>
-        <span>Streamers Center</span>
-        <p>
-          Streaming and tracking software only. We do not operate gambling
-          services, accept deposits or process wagers.
-        </p>
-      </div>
-      <nav aria-label="Footer">
-        <Link to="/privacy">Privacy</Link>
-        <Link to="/terms">Terms</Link>
-      </nav>
-    </footer>
-  );
-}
-
 export default function LandingPage({ mode = "selector" }) {
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [casinoOffers, setCasinoOffers] = useState([]);
@@ -2475,7 +2458,7 @@ export default function LandingPage({ mode = "selector" }) {
         ) : null}
 
         {(mode === "selector" || mode === "player" || mode === "streamer") && (
-          <Footer />
+          <ContactFooter />
         )}
       </div>
     </>

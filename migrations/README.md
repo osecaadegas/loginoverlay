@@ -82,6 +82,9 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 26. `040_restore_cardless_trial_content.sql`
     Aligns stored premium-page content with the account-bound seven-day trial, which requires no payment method and does not renew automatically.
 
+27. `041_contact_messages.sql`
+    Adds the public contact-message inbox with server-only submission and admin-only read/update access.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.

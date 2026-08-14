@@ -13,12 +13,13 @@ import { supabase } from "../../config/supabaseClient";
 import "./AdminPanel.css";
 import "./AdminPanel.new.css";
 import ApiKeysAdmin from "./ApiKeysAdmin";
+import ContactMessagesAdmin from "./ContactMessagesAdmin";
 import { CasinoOfferModal } from "./modals";
 import { SidePanel, StatsCard, StatsGrid, ConfirmButton } from "./components";
 
 // Valid tab IDs for URL deep linking
 const DEFAULT_ADMIN_TAB = "users";
-const VALID_TABS = new Set(["users", "offers", "apikeys"]);
+const VALID_TABS = new Set(["users", "offers", "messages", "apikeys"]);
 const getValidAdminTab = (tab) =>
   VALID_TABS.has(tab) ? tab : DEFAULT_ADMIN_TAB;
 const SLOT_CATALOG_SELECT =
@@ -273,7 +274,8 @@ async function fetchSessionVotes(sessionId) {
   }));
 }
 
-export default function AdminPanel() { //NOSONAR - legacy admin screen split should be handled as a dedicated refactor
+export default function AdminPanel() {
+  //NOSONAR - legacy admin screen split should be handled as a dedicated refactor
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1326,6 +1328,13 @@ export default function AdminPanel() { //NOSONAR - legacy admin screen split sho
       description: "Streamer deals and click analytics",
     },
     {
+      id: "messages",
+      label: "Contact Messages",
+      shortLabel: "Messages",
+      kicker: "Inbox",
+      description: "Website enquiries and support messages",
+    },
+    {
       id: "apikeys",
       label: "API Keys",
       shortLabel: "API Keys",
@@ -1417,6 +1426,7 @@ export default function AdminPanel() { //NOSONAR - legacy admin screen split sho
             {[
               { id: "users", label: "User Management", icon: "👥" },
               { id: "offers", label: "Partnerships", icon: "🤝" },
+              { id: "messages", label: "Contact Messages", icon: "✉️" },
               { id: "apikeys", label: "API Keys", icon: "🔑" },
             ].map((tab) => (
               <option key={tab.id} value={tab.id}>
@@ -4998,6 +5008,10 @@ export default function AdminPanel() { //NOSONAR - legacy admin screen split sho
       {/* API Keys Tab */}
       <Show when={activeTab === "apikeys"}>
         <ApiKeysAdmin />
+      </Show>
+
+      <Show when={activeTab === "messages"}>
+        <ContactMessagesAdmin />
       </Show>
     </div>
   );

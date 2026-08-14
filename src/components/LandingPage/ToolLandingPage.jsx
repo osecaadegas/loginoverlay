@@ -10,6 +10,7 @@ import {
   Swords,
   Trophy,
 } from "lucide-react";
+import ContactFooter from "./ContactFooter";
 import "./LandingPage.css";
 
 const TOOL_PAGES = {
@@ -288,19 +289,7 @@ export default function ToolLandingPage() {
         </div>
       </section>
 
-      <footer className="lp-footer">
-        <div>
-          <span>Streamers Center</span>
-          <p>
-            Streaming and tracking software only. We do not operate gambling
-            services, accept deposits or process wagers.
-          </p>
-        </div>
-        <nav aria-label="Footer">
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/terms">Terms</Link>
-        </nav>
-      </footer>
+      <ContactFooter />
     </main>
   );
 }
