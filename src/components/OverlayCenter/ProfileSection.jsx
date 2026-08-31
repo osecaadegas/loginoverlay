@@ -216,6 +216,7 @@ function ApiKeyCard({ user }) {
   const [hasAccess, setHasAccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -264,6 +265,12 @@ function ApiKeyCard({ user }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const copyUrl = () => {
+    navigator.clipboard.writeText(window.location.origin);
+    setCopiedUrl(true);
+    setTimeout(() => setCopiedUrl(false), 2000);
   };
 
   if (loading) return null;
@@ -372,7 +379,46 @@ function ApiKeyCard({ user }) {
               lineHeight: 1.5,
             }}
           >
-            Or call the REST API from your own backend — API URL:{" "}
+            Or call the REST API from your own backend:
+          </p>
+          <div
+            style={{
+              background: "rgba(8,11,16,0.86)",
+              borderRadius: 16,
+              padding: "8px 10px",
+              fontFamily: "monospace",
+              fontSize: "0.75rem",
+              color: "#f4f7fb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <span>{window.location.origin}</span>
+            <button
+              onClick={copyUrl}
+              style={{
+                background: "rgba(17,24,39,0.58)",
+                border: "1px solid rgba(148,163,184,0.34)",
+                color: "#d0dbe6",
+                fontSize: "0.7rem",
+                padding: "2px 8px",
+                borderRadius: 999,
+                cursor: "pointer",
+              }}
+            >
+              {copiedUrl ? "✓" : "📋"}
+            </button>
+          </div>
+          <p
+            style={{
+              fontSize: "0.72rem",
+              color: "#aab6c8",
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            Endpoint:{" "}
             <code
               style={{
                 background: "rgba(17,24,39,0.72)",
@@ -383,20 +429,8 @@ function ApiKeyCard({ user }) {
                 border: "1px solid rgba(148,163,184,0.28)",
               }}
             >
-              {window.location.origin}
-            </code>{" "}
-            (endpoint: <code
-              style={{
-                background: "rgba(17,24,39,0.72)",
-                padding: "1px 6px",
-                borderRadius: 999,
-                fontSize: "0.68rem",
-                color: "#f4f7fb",
-                border: "1px solid rgba(148,163,184,0.28)",
-              }}
-            >
               /api/streamer-data?action=bonus_hunt
-            </code>)
+            </code>
           </p>
           <div
             style={{
