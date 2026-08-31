@@ -350,7 +350,7 @@ function ApiKeyCard({ user }) {
               lineHeight: 1.5,
             }}
           >
-            Add to your website:{" "}
+            Embed widget:{" "}
             <code
               style={{
                 background: "rgba(17,24,39,0.72)",
@@ -363,6 +363,40 @@ function ApiKeyCard({ user }) {
             >
               &lt;script src="{window.location.origin}/bonus-hunt-embed.js"&gt;
             </code>
+          </p>
+          <p
+            style={{
+              fontSize: "0.72rem",
+              color: "#aab6c8",
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            Or call the REST API from your own backend — API URL:{" "}
+            <code
+              style={{
+                background: "rgba(17,24,39,0.72)",
+                padding: "1px 6px",
+                borderRadius: 999,
+                fontSize: "0.68rem",
+                color: "#f4f7fb",
+                border: "1px solid rgba(148,163,184,0.28)",
+              }}
+            >
+              {window.location.origin}
+            </code>{" "}
+            (endpoint: <code
+              style={{
+                background: "rgba(17,24,39,0.72)",
+                padding: "1px 6px",
+                borderRadius: 999,
+                fontSize: "0.68rem",
+                color: "#f4f7fb",
+                border: "1px solid rgba(148,163,184,0.28)",
+              }}
+            >
+              /api/streamer-data?action=bonus_hunt
+            </code>)
           </p>
           <div
             style={{
