@@ -217,6 +217,7 @@ function ApiKeyCard({ user }) {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [copiedFull, setCopiedFull] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -271,6 +272,15 @@ function ApiKeyCard({ user }) {
     navigator.clipboard.writeText(window.location.origin);
     setCopiedUrl(true);
     setTimeout(() => setCopiedUrl(false), 2000);
+  };
+
+  const copyFullUrl = () => {
+    if (!apiKey?.api_key) return;
+    navigator.clipboard.writeText(
+      `${window.location.origin}/api/streamer-data?action=bonus_hunt&key=${apiKey.api_key}`,
+    );
+    setCopiedFull(true);
+    setTimeout(() => setCopiedFull(false), 2000);
   };
 
   if (loading) return null;
@@ -418,20 +428,41 @@ function ApiKeyCard({ user }) {
               lineHeight: 1.5,
             }}
           >
-            Endpoint:{" "}
-            <code
+            Full test URL (already includes your key — paste directly in a browser or curl):
+          </p>
+          <div
+            style={{
+              background: "rgba(8,11,16,0.86)",
+              borderRadius: 16,
+              padding: "8px 10px",
+              fontFamily: "monospace",
+              fontSize: "0.68rem",
+              color: "#f4f7fb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+            }}
+          >
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {window.location.origin}/api/streamer-data?action=bonus_hunt&key=...{apiKey.api_key.slice(-8)}
+            </span>
+            <button
+              onClick={copyFullUrl}
               style={{
-                background: "rgba(17,24,39,0.72)",
-                padding: "1px 6px",
+                background: "rgba(17,24,39,0.58)",
+                border: "1px solid rgba(148,163,184,0.34)",
+                color: "#d0dbe6",
+                fontSize: "0.7rem",
+                padding: "2px 8px",
                 borderRadius: 999,
-                fontSize: "0.68rem",
-                color: "#f4f7fb",
-                border: "1px solid rgba(148,163,184,0.28)",
+                cursor: "pointer",
+                flexShrink: 0,
               }}
             >
-              /api/streamer-data?action=bonus_hunt
-            </code>
-          </p>
+              {copiedFull ? "✓" : "📋"}
+            </button>
+          </div>
           <div
             style={{
               display: "flex",
