@@ -318,7 +318,7 @@ async function handleBonusHunt(res, userId) {
     best_multi: Math.round(bestMulti * 100) / 100,
     break_even: Math.round(breakEven * 100) / 100,
     live_be: Math.round(liveBE * 100) / 100,
-    best_slot_name: bestBonus?.slot || bestBonus?.name || null,
+    best_slot_name: bestBonus?.slotName || bestBonus?.slot?.name || bestBonus?.name || null,
     bonuses: bonuses.map((b) => {
       const betSize = Number.parseFloat(b.bet) || 0;
       const result =
@@ -329,7 +329,7 @@ async function handleBonusHunt(res, userId) {
       const multi = betSize && result ? result / betSize : null;
 
       return {
-        slotName: b.slot || b.name || "Unknown",
+        slotName: b.slotName || b.slot?.name || b.name || "Unknown",
         betSize: Math.round(betSize * 100) / 100,
         opened: result !== null,
         result,
@@ -339,12 +339,12 @@ async function handleBonusHunt(res, userId) {
         isExtremeBonus:
           b.isExtreme || b.is_extreme || b.isExtremeBonus || false,
         slot: {
-          name: b.slot || b.name || "Unknown",
-          image: b.image || b.img || null,
-          provider: b.provider || null,
-          rtp: b.rtp ? Number.parseFloat(b.rtp) : null,
-          volatility: b.volatility || null,
-          max_win_multiplier: b.max_win || b.maxWin || null,
+          name: b.slot?.name || b.slotName || b.name || "Unknown",
+          image: b.slot?.image || b.image || b.img || null,
+          provider: b.slot?.provider || b.provider || null,
+          rtp: b.slot?.rtp ?? (b.rtp ? Number.parseFloat(b.rtp) : null),
+          volatility: b.slot?.volatility || b.volatility || null,
+          max_win_multiplier: b.slot?.max_win_multiplier || b.slot?.maxWin || b.max_win || b.maxWin || null,
         },
       };
     }),
