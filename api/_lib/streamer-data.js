@@ -185,6 +185,11 @@ function mapHistoryBonus(b) {
 
 function historyToCurrentResponse(hunt) {
   const bonuses = hunt.bonuses || [];
+  const totalBet =
+    hunt.total_bet ??
+    bonuses.reduce((s, b) => s + (Number.parseFloat(b.betSize ?? b.bet ?? b.buy) || 0), 0);
+  const target = Math.max((hunt.start_money || 0) - (hunt.stop_loss || 0), 0);
+  const breakEven = totalBet > 0 ? target / totalBet : 0;
   return {
     active: true,
     hunt_name: hunt.hunt_name,
@@ -201,6 +206,8 @@ function historyToCurrentResponse(hunt) {
       bonuses.filter((b) => b.opened || b.isOpened || b.result != null).length,
     avg_multi: hunt.avg_multi || 0,
     best_multi: hunt.best_multi || 0,
+    break_even: Math.round(breakEven * 100) / 100,
+    live_be: 0,
     best_slot_name: hunt.best_slot_name || null,
     bonuses: bonuses.map(mapHistoryBonus),
     updated_at: hunt.created_at,
@@ -283,6 +290,18 @@ async function handleBonusHunt(res, userId) {
       ? Number.parseFloat(bestBonus.result) / Number.parseFloat(bestBonus.bet)
       : 0;
 
+  // B.E. = multiplier needed on ALL bonuses to hit the target (start - stop loss).
+  // live_be = multiplier needed on the REMAINING (unopened) bonuses only — updates as bonuses open.
+  const target = Math.max(startAmount - stopLoss, 0);
+  const breakEven = totalBet > 0 ? target / totalBet : 0;
+  const remainingBonuses = bonuses.filter((b) => b.result == null || b.result === "");
+  const remainingBet = remainingBonuses.reduce(
+    (sum, b) => sum + (Number.parseFloat(b.bet) || 0),
+    0,
+  );
+  const remainingTarget = Math.max(target - totalWin, 0);
+  const liveBE = remainingBet > 0 ? remainingTarget / remainingBet : 0;
+
   return res.json({
     active: widget.is_visible,
     hunt_name: config.huntName || config.hunt_name || "Bonus Hunt",
@@ -297,6 +316,8 @@ async function handleBonusHunt(res, userId) {
     bonuses_opened: openedCount,
     avg_multi: totalBet > 0 ? Math.round((totalWin / totalBet) * 100) / 100 : 0,
     best_multi: Math.round(bestMulti * 100) / 100,
+    break_even: Math.round(breakEven * 100) / 100,
+    live_be: Math.round(liveBE * 100) / 100,
     best_slot_name: bestBonus?.slot || bestBonus?.name || null,
     bonuses: bonuses.map((b) => {
       const betSize = Number.parseFloat(b.bet) || 0;
