@@ -238,15 +238,17 @@ async function handleBonusHunt(res, userId) {
   }
 
   const widget = widgets[0];
-  if (
-    latestHistory &&
-    new Date(latestHistory.created_at) > new Date(widget.updated_at || 0)
-  ) {
-    return res.json(historyToCurrentResponse(latestHistory));
-  }
-
   const config = widget.config || {};
   const bonuses = config.bonuses || [];
+
+  // Prioritize the live widget's own bonus list whenever it actually has one —
+  // comparing timestamps against bonus_hunt_history was unreliable (a history
+  // row saved around the same time as the widget could win the race and mask
+  // a hunt that was already live/in-progress with stale, completed data).
+  if (bonuses.length === 0) {
+    if (latestHistory) return res.json(historyToCurrentResponse(latestHistory));
+    return res.json({ active: false, message: "No bonus hunt configured." });
+  }
 
   // Bonus objects use betSize/payout/opened (see BonusHuntConfig.jsx) — bet/result
   // are kept only as legacy fallbacks in case older saved configs used them.
