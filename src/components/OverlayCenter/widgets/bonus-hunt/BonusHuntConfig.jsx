@@ -4023,7 +4023,9 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
       startMoney: record.start_money,
       stopLoss: record.stop_loss,
       bonuses: record.bonuses || [],
-      huntActive: true,
+      // Loading a past hunt is for review/editing -- it must NOT silently
+      // start serving it as live again. Use the "Hunt Ativa" toggle for that.
+      huntActive: false,
     });
     setMessage(`✅ Loaded "${record.hunt_name}" onto overlay`);
     setTimeout(() => setMessage(""), 3000);
