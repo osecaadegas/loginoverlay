@@ -14,6 +14,7 @@
  *   profile          — Streamer public profile info
  */
 import { createClient } from "@supabase/supabase-js";
+import { buildBonusHuntName } from "../../src/utils/bonusHuntName.js";
 
 let supabase;
 
@@ -215,14 +216,33 @@ function historyToCurrentResponse(hunt) {
   };
 }
 
+function getBonusHuntBonuses(config = {}) {
+  return Array.isArray(config.bonuses) ? config.bonuses : [];
+}
+
+function selectBonusHuntWidget(widgets = []) {
+  return (
+    widgets.find((widget) => {
+      const config = widget?.config || {};
+      return config.huntActive === true && getBonusHuntBonuses(config).length > 0;
+    }) ||
+    widgets.find((widget) => widget?.config?.huntActive === true) ||
+    widgets[0] ||
+    null
+  );
+}
+
 async function handleBonusHunt(res, userId) {
-  // Get the bonus_hunt widget config — this is the LIVE hunt data
+  // Get the bonus_hunt widget config — this is the LIVE hunt data.
+  // The config page edits the first z-index ordered row, while huntActive marks
+  // the row that external sites should treat as live when duplicates exist.
   const { data: widgets } = await supabase
     .from("overlay_widgets")
-    .select("config, is_visible, updated_at")
+    .select("config, is_visible, updated_at, z_index")
     .eq("user_id", userId)
     .eq("widget_type", "bonus_hunt")
-    .limit(1);
+    .order("z_index", { ascending: true })
+    .order("updated_at", { ascending: false });
 
   const { data: latestHistory } = await supabase
     .from("bonus_hunt_history")
@@ -237,9 +257,9 @@ async function handleBonusHunt(res, userId) {
     return res.json({ active: false, message: "No bonus hunt configured." });
   }
 
-  const widget = widgets[0];
+  const widget = selectBonusHuntWidget(widgets);
   const config = widget.config || {};
-  const bonuses = config.bonuses || [];
+  const bonuses = getBonusHuntBonuses(config);
 
   // The "Hunt Ativa" toggle in BonusHuntConfig.jsx marks which widget state is
   // the hunt actually being worked on right now — without it, a hunt left open
@@ -310,7 +330,9 @@ async function handleBonusHunt(res, userId) {
 
   return res.json({
     active: widget.is_visible,
-    hunt_name: config.huntName || config.hunt_name || "Bonus Hunt",
+    hunt_name: buildBonusHuntName(config, { fallback: "Bonus Hunt" }),
+    hunt_number: config.huntNumber || config.hunt_number || null,
+    casino_name: config.casinoName || config.casino_name || null,
     phase,
     currency: config.currency || "€",
     hunt_date: config.hunt_date || new Date().toISOString().split("T")[0],

@@ -10,6 +10,7 @@ import { subValue } from "../shared/appearanceStyles";
 import { useBonusHuntRequestsData } from "./shared/useBonusHuntRequestsData";
 import { BetterBonusHuntStyle } from "../shared/betterWidgetStyles";
 import { getAllSlots } from "../../../../utils/slotUtils";
+import { buildBonusHuntName } from "../../../../utils/bonusHuntName";
 
 function cssPx(value) {
   if (value === undefined || value === null || value === "") return undefined;
@@ -356,6 +357,7 @@ function BonusHuntWidget({
   const currency = c.currency || "€";
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
+  const huntDisplayName = buildBonusHuntName(c, { fallback: "" });
 
   /* ─── Derived stats ─── */
   const stats = useMemo(() => {
@@ -816,7 +818,7 @@ function BonusHuntWidget({
             <div>
               <div className="bhtc-title">{huntTitle}</div>
               <div className="bhtc-hunt-id">
-                Hunt {c.huntName || `#${bonuses.length}`}
+                {huntDisplayName || `Hunt #${bonuses.length}`}
               </div>
             </div>
           </div>
