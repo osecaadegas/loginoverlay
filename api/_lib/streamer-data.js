@@ -241,11 +241,17 @@ async function handleBonusHunt(res, userId) {
   const config = widget.config || {};
   const bonuses = config.bonuses || [];
 
-  // Prioritize the live widget's own bonus list whenever it actually has one —
-  // comparing timestamps against bonus_hunt_history was unreliable (a history
-  // row saved around the same time as the widget could win the race and mask
-  // a hunt that was already live/in-progress with stale, completed data).
-  if (bonuses.length === 0) {
+  // The "Hunt Ativa" toggle in BonusHuntConfig.jsx marks which widget state is
+  // the hunt actually being worked on right now — without it, a hunt left open
+  // in the editor (finished, or not yet started) could get served as "live".
+  const isActiveHunt = config.huntActive === true;
+
+  // Prioritize the live widget's own bonus list whenever it actually has one
+  // AND is marked active — comparing timestamps against bonus_hunt_history was
+  // unreliable (a history row saved around the same time as the widget could
+  // win the race and mask a hunt that was already live/in-progress with stale,
+  // completed data).
+  if (bonuses.length === 0 || !isActiveHunt) {
     if (latestHistory) return res.json(historyToCurrentResponse(latestHistory));
     return res.json({ active: false, message: "No bonus hunt configured." });
   }
@@ -266,7 +272,9 @@ async function handleBonusHunt(res, userId) {
   const totalCount = bonuses.length;
   const openedCount = openedBonuses.length;
   const startAmount =
-    Number.parseFloat(config.startAmount || config.start_amount) || 0;
+    Number.parseFloat(
+      config.startMoney ?? config.startAmount ?? config.start_amount,
+    ) || 0;
   const stopLoss = Number.parseFloat(config.stopLoss || config.stop_loss) || 0;
   const profit = totalWin - totalBet;
 

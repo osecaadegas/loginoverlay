@@ -1157,6 +1157,8 @@ function BonusHuntPanel({
   const [showStatistics, setShowStatistics] = useState(
     c.showStatistics ?? true,
   );
+  // Marks this widget's bonuses as the hunt the public Streamer Data API should serve.
+  const [huntActive, setHuntActive] = useState(c.huntActive ?? false);
   const [animatedTracker, setAnimatedTracker] = useState(
     c.animatedTracker ?? true,
   );
@@ -1513,7 +1515,7 @@ function BonusHuntPanel({
         sortBy,
         sortDir,
         bonuses: list,
-        huntActive: config?.huntActive ?? false,
+        huntActive,
         ...extras,
       });
     },
@@ -1528,6 +1530,7 @@ function BonusHuntPanel({
       showStatistics,
       animatedTracker,
       bonusOpening,
+      huntActive,
       sortBy,
       sortDir,
       bonusList,
@@ -1837,6 +1840,7 @@ function BonusHuntPanel({
     setBonusOpening(false);
     setSaveHuntName("");
     setShowSaveConfirm(false);
+    setHuntActive(false);
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     autoSaveTimerRef.current = null;
     autoSaveFiredRef.current = false;
@@ -3180,6 +3184,23 @@ function BonusHuntPanel({
             <span className="bh-opening-switch" />
             <span className="bh-compact-text">
               {showStatistics ? "📊 Stats Bar" : "🚫 Stats Bar"}
+            </span>
+          </label>
+          <label
+            className={`bh-compact-toggle ${huntActive ? "bh-compact-toggle--active" : ""}`}
+            title="Marks this the hunt your external site/API should fetch as live"
+          >
+            <input
+              type="checkbox"
+              checked={huntActive}
+              onChange={(e) => {
+                setHuntActive(e.target.checked);
+                save(bonusList, { huntActive: e.target.checked });
+              }}
+            />
+            <span className="bh-opening-switch" />
+            <span className="bh-compact-text">
+              {huntActive ? "✅ Hunt Ativa" : "⏸️ Hunt Inativa"}
             </span>
           </label>
         </div>
