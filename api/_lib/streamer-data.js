@@ -84,12 +84,10 @@ export default async function handler(req, res) {
   // ─── Extract API key ───────────────────────────────────
   const apiKey = req.query.key || req.headers["x-api-key"];
   if (!apiKey || typeof apiKey !== "string" || apiKey.length < 16) {
-    return res
-      .status(401)
-      .json({
-        error:
-          "Missing or invalid API key. Pass ?key=YOUR_KEY or x-api-key header.",
-      });
+    return res.status(401).json({
+      error:
+        "Missing or invalid API key. Pass ?key=YOUR_KEY or x-api-key header.",
+    });
   }
 
   // ─── Validate key ─────────────────────────────────────
@@ -187,7 +185,10 @@ function historyToCurrentResponse(hunt) {
   const bonuses = hunt.bonuses || [];
   const totalBet =
     hunt.total_bet ??
-    bonuses.reduce((s, b) => s + (Number.parseFloat(b.betSize ?? b.bet ?? b.buy) || 0), 0);
+    bonuses.reduce(
+      (s, b) => s + (Number.parseFloat(b.betSize ?? b.bet ?? b.buy) || 0),
+      0,
+    );
   const target = Math.max((hunt.start_money || 0) - (hunt.stop_loss || 0), 0);
   const breakEven = totalBet > 0 ? target / totalBet : 0;
   return {
@@ -247,18 +248,19 @@ async function handleBonusHunt(res, userId) {
   const config = widget.config || {};
   const bonuses = config.bonuses || [];
 
+  // Bonus objects use betSize/payout/opened (see BonusHuntConfig.jsx) — bet/result
+  // are kept only as legacy fallbacks in case older saved configs used them.
+  const getBetSize = (b) => Number.parseFloat(b.betSize ?? b.bet) || 0;
+  const isOpened = (b) =>
+    Boolean(b.opened) ||
+    (b.payout != null && b.payout !== "") ||
+    (b.result != null && b.result !== "");
+  const getPayout = (b) => Number.parseFloat(b.payout ?? b.result) || 0;
+
   // Calculate stats
-  const totalBet = bonuses.reduce(
-    (sum, b) => sum + (Number.parseFloat(b.bet) || 0),
-    0,
-  );
-  const openedBonuses = bonuses.filter(
-    (b) => b.result != null && b.result !== "",
-  );
-  const totalWin = openedBonuses.reduce(
-    (sum, b) => sum + (Number.parseFloat(b.result) || 0),
-    0,
-  );
+  const totalBet = bonuses.reduce((sum, b) => sum + getBetSize(b), 0);
+  const openedBonuses = bonuses.filter(isOpened);
+  const totalWin = openedBonuses.reduce((sum, b) => sum + getPayout(b), 0);
   const totalCount = bonuses.length;
   const openedCount = openedBonuses.length;
   const startAmount =
@@ -274,29 +276,23 @@ async function handleBonusHunt(res, userId) {
 
   // Find best bonus
   const bestBonus = openedBonuses.reduce((best, b) => {
-    const multi =
-      b.bet && b.result
-        ? Number.parseFloat(b.result) / Number.parseFloat(b.bet)
-        : 0;
-    const bestMulti =
-      best.bet && best.result
-        ? Number.parseFloat(best.result) / Number.parseFloat(best.bet)
-        : 0;
+    const bet = getBetSize(b);
+    const multi = bet ? getPayout(b) / bet : 0;
+    const bestBet = getBetSize(best);
+    const bestMulti = bestBet ? getPayout(best) / bestBet : 0;
     return multi > bestMulti ? b : best;
   }, openedBonuses[0] || {});
 
-  const bestMulti =
-    bestBonus?.bet && bestBonus?.result
-      ? Number.parseFloat(bestBonus.result) / Number.parseFloat(bestBonus.bet)
-      : 0;
+  const bestBonusBet = getBetSize(bestBonus);
+  const bestMulti = bestBonusBet ? getPayout(bestBonus) / bestBonusBet : 0;
 
   // B.E. = multiplier needed on ALL bonuses to hit the target (start - stop loss).
   // live_be = multiplier needed on the REMAINING (unopened) bonuses only — updates as bonuses open.
   const target = Math.max(startAmount - stopLoss, 0);
   const breakEven = totalBet > 0 ? target / totalBet : 0;
-  const remainingBonuses = bonuses.filter((b) => b.result == null || b.result === "");
+  const remainingBonuses = bonuses.filter((b) => !isOpened(b));
   const remainingBet = remainingBonuses.reduce(
-    (sum, b) => sum + (Number.parseFloat(b.bet) || 0),
+    (sum, b) => sum + getBetSize(b),
     0,
   );
   const remainingTarget = Math.max(target - totalWin, 0);
@@ -318,20 +314,19 @@ async function handleBonusHunt(res, userId) {
     best_multi: Math.round(bestMulti * 100) / 100,
     break_even: Math.round(breakEven * 100) / 100,
     live_be: Math.round(liveBE * 100) / 100,
-    best_slot_name: bestBonus?.slotName || bestBonus?.slot?.name || bestBonus?.name || null,
+    best_slot_name:
+      bestBonus?.slotName || bestBonus?.slot?.name || bestBonus?.name || null,
     bonuses: bonuses.map((b) => {
-      const betSize = Number.parseFloat(b.bet) || 0;
-      const result =
-        b.result != null && b.result !== ""
-          ? Number.parseFloat(b.result)
-          : null;
+      const betSize = getBetSize(b);
+      const opened = isOpened(b);
+      const result = opened ? getPayout(b) : null;
       const payout = result;
-      const multi = betSize && result ? result / betSize : null;
+      const multi = betSize && result != null ? result / betSize : null;
 
       return {
         slotName: b.slotName || b.slot?.name || b.name || "Unknown",
         betSize: Math.round(betSize * 100) / 100,
-        opened: result !== null,
+        opened,
         result,
         payout,
         multi: multi ? Math.round(multi * 100) / 100 : null,
@@ -344,7 +339,12 @@ async function handleBonusHunt(res, userId) {
           provider: b.slot?.provider || b.provider || null,
           rtp: b.slot?.rtp ?? (b.rtp ? Number.parseFloat(b.rtp) : null),
           volatility: b.slot?.volatility || b.volatility || null,
-          max_win_multiplier: b.slot?.max_win_multiplier || b.slot?.maxWin || b.max_win || b.maxWin || null,
+          max_win_multiplier:
+            b.slot?.max_win_multiplier ||
+            b.slot?.maxWin ||
+            b.max_win ||
+            b.maxWin ||
+            null,
         },
       };
     }),
