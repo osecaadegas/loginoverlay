@@ -428,7 +428,8 @@ function ApiKeyCard({ user }) {
               lineHeight: 1.5,
             }}
           >
-            Full test URL (already includes your key — paste directly in a browser or curl):
+            Full test URL (already includes your key — paste directly in a
+            browser or curl):
           </p>
           <div
             style={{
@@ -444,8 +445,16 @@ function ApiKeyCard({ user }) {
               gap: 8,
             }}
           >
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {window.location.origin}/api/streamer-data?action=bonus_hunt&key=...{apiKey.api_key.slice(-8)}
+            <span
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {window.location.origin}
+              /api/streamer-data?action=bonus_hunt&key=...
+              {apiKey.api_key.slice(-8)}
             </span>
             <button
               onClick={copyFullUrl}
