@@ -21,8 +21,6 @@ try {
     await server.ssrLoadModule(
       "/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
     );
-  const { buildBonusHuntName, buildBonusHuntSaveName } =
-    await server.ssrLoadModule("/src/utils/bonusHuntName.js");
 
   assert.deepEqual(
     ["vertical", "horizontal", "mainstream"].map((orientation) =>
@@ -37,28 +35,6 @@ try {
     ),
     [884, 280, 884],
     "horizontal orientation uses a thin frame without shrinking tall layouts",
-  );
-
-  assert.equal(
-    buildBonusHuntName({
-      huntName: "Hunt #127 / 21/08/2026",
-      huntNumber: "42",
-    }),
-    "Hunt #42",
-    "current Hunt Settings number wins over stale legacy huntName",
-  );
-  assert.equal(
-    buildBonusHuntName({ casinoName: "Stake", huntNumber: "#42" }),
-    "Stake / Hunt #42",
-    "casino and Hunt Settings number form the public hunt name",
-  );
-  assert.equal(
-    buildBonusHuntSaveName(
-      { huntName: "Hunt #127 / 21/08/2026", huntNumber: "42" },
-      { date: "01/09/2026" },
-    ),
-    "Hunt #42 / 01/09/2026",
-    "history save defaults are built from the current Hunt Settings",
   );
 
   const betterStylesSource = readFileSync(
@@ -82,16 +58,6 @@ try {
       'data-drawer-mode="contain"] .better-hunt-vertical,.better-hunt-root[data-drawer-mode="contain"] .better-hunt-mainstream{height:var(--bh-panel-height,auto);max-height:100%}',
     ),
     "vertical layouts shrink to their visible-row content when height is automatic",
-  );
-  const streamerDataSource = readFileSync(
-    new URL("../api/_lib/streamer-data.js", import.meta.url),
-    "utf8",
-  );
-  assert.ok(
-    streamerDataSource.includes("selectBonusHuntWidget") &&
-      streamerDataSource.includes("buildBonusHuntName(config") &&
-      streamerDataSource.includes(".order(\"z_index\""),
-    "Streamer Data API reads the current Bonus Hunt widget settings for hunt_name",
   );
 
   const renderVisibleRows = (visibleRows) =>

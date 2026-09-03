@@ -38,10 +38,6 @@ import {
   getErrorMessage,
   isDuplicateError,
 } from "../../../../utils/errorUtils";
-import {
-  buildBonusHuntName,
-  buildBonusHuntSaveName,
-} from "../../../../utils/bonusHuntName";
 import { getProviderImage } from "../../../../utils/gameProviders";
 import SlotImage from "../SlotImage";
 
@@ -1505,21 +1501,13 @@ function BonusHuntPanel({
 
   const save = useCallback(
     (list = bonusList, extras = {}) => {
-      const currentHuntName = buildBonusHuntName(
-        { casinoName, huntNumber },
-        { fallback: "" },
-      );
       onChange({
         ...config,
         startMoney: Number(startMoney) || 0,
         targetMoney: Number(targetMoney) || 0,
         stopLoss: Number(stopLoss) || 0,
         huntNumber: huntNumber,
-        hunt_number: huntNumber,
-        huntName: currentHuntName,
-        hunt_name: currentHuntName,
         casinoName: casinoName,
-        casino_name: casinoName,
         showStatistics,
         animatedTracker,
         bonusOpening,
@@ -1716,10 +1704,10 @@ function BonusHuntPanel({
     if (userId && updatedBonus && payout > 0) {
       const huntName =
         saveHuntName.trim() ||
-        buildBonusHuntName(
-          { casinoName, huntNumber },
-          { fallback: "Live bonus hunt" },
-        );
+        [casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : ""]
+          .filter(Boolean)
+          .join(" / ") ||
+        "Live bonus hunt";
       saveSlotPersonalBestFromBonus(userId, updatedBonus, huntName)
         .then((record) => cacheRtpStatsBestWin(record))
         .catch((e) =>
@@ -1764,9 +1752,15 @@ function BonusHuntPanel({
       setSaveHuntMsg("⚠️ No bonuses to save");
       return;
     }
+    const parts = [
+      casinoName.trim(),
+      huntNumber ? `Hunt #${huntNumber}` : "",
+      new Date().toLocaleDateString(),
+    ].filter(Boolean);
     const name =
       saveHuntName.trim() ||
-      buildBonusHuntSaveName({ casinoName, huntNumber });
+      parts.join(" / ") ||
+      `Hunt ${new Date().toLocaleDateString()}`;
     setSavingHunt(true);
     setSaveHuntMsg("");
     try {
@@ -1857,11 +1851,7 @@ function BonusHuntPanel({
       targetMoney: 0,
       stopLoss: 0,
       casinoName: "",
-      casino_name: "",
       huntNumber: "",
-      hunt_number: "",
-      huntName: "",
-      hunt_name: "",
       bonusOpening: false,
       huntActive: false,
     });
@@ -3653,7 +3643,13 @@ function BonusHuntPanel({
                   value={saveHuntName}
                   onChange={(e) => setSaveHuntName(e.target.value)}
                   placeholder={
-                    buildBonusHuntSaveName({ casinoName, huntNumber })
+                    [
+                      casinoName.trim(),
+                      huntNumber ? `Hunt #${huntNumber}` : "",
+                      new Date().toLocaleDateString(),
+                    ]
+                      .filter(Boolean)
+                      .join(" / ") || `Hunt ${new Date().toLocaleDateString()}`
                   }
                   maxLength={60}
                   onKeyDown={(e) => e.key === "Enter" && handleSaveAndClose()}
@@ -3899,24 +3895,8 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [expandedId, setExpandedId] = useState(null);
-  const defaultSaveName = useMemo(
-    () => buildBonusHuntSaveName(c),
-    [
-      c.casinoName,
-      c.casino_name,
-      c.huntNumber,
-      c.hunt_number,
-      c.huntName,
-      c.hunt_name,
-    ],
-  );
-  const [saveNameOverride, setSaveNameOverride] = useState(null);
+  const [saveName, setSaveName] = useState(c.huntName || "");
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const saveName = saveNameOverride ?? defaultSaveName;
-
-  useEffect(() => {
-    setSaveNameOverride(null);
-  }, [defaultSaveName]);
 
   // Load history on mount
   useEffect(() => {
@@ -4018,7 +3998,7 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
       }
       setHistory((prev) => [saved, ...prev]);
       setMessage("✅ Hunt saved to history!");
-      setSaveNameOverride(null);
+      setSaveName("");
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
       const msg = err?.message || "";
@@ -4039,11 +4019,6 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
     onChange({
       ...c,
       huntName: record.hunt_name,
-      hunt_name: record.hunt_name,
-      casinoName: "",
-      casino_name: "",
-      huntNumber: "",
-      hunt_number: "",
       currency: record.currency || currency,
       startMoney: record.start_money,
       stopLoss: record.stop_loss,
@@ -4181,7 +4156,7 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
         <input
           className="nb-preset-input"
           value={saveName}
-          onChange={(e) => setSaveNameOverride(e.target.value)}
+          onChange={(e) => setSaveName(e.target.value)}
           placeholder="Hunt name (e.g. Bonus Hunt #42)"
           maxLength={60}
           onKeyDown={(e) => e.key === "Enter" && handleSave()}
