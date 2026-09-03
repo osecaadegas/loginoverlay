@@ -200,10 +200,12 @@ export function useOverlay() {
             /* don't block slot detection if records lookup fails */
           }
 
-          // Determine which widget(s) to target
+          // Bonus Hunt target events are appended by the server-side API bridge.
+          // Keeping this client listener out of that widget avoids overwriting
+          // the saved bonus list with a stale shallow merge while the app is open.
           const detectedTarget = detected.target || "single_slot";
           const targetTypes =
-            detectedTarget === "bonus_hunt" ? ["bonus_hunt"] : [detectedTarget]; // 'single_slot' or 'current_slot'
+            detectedTarget === "bonus_hunt" ? [] : [detectedTarget]; // 'single_slot' or 'current_slot'
 
           // Update only the targeted widget type(s) + always update rtp_stats with bestWin
           setWidgets((prev) => {
