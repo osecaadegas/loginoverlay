@@ -27,10 +27,6 @@ import {
   normalizeText,
   sanitizeDetectionPayload,
 } from './sanitize.js';
-import { getPlayerAccess } from '../player-access.js';
-
-const SLOT_SELECT = 'id, name, provider, image, rtp, volatility, max_win_multiplier, theme, features';
-const DETECTOR_HUNT_SYNC_SOURCE = 'slot_detector_api';
 
 function statusError(message, statusCode = 400) {
   const err = new Error(message);
@@ -108,7 +104,7 @@ async function loadSlotsByIds(supabase, slotIds) {
   if (!ids.length) return [];
   const { data, error } = await supabase
     .from('slots')
-    .select(SLOT_SELECT)
+    .select('id, name, provider, image, rtp, volatility, max_win_multiplier')
     .in('id', ids);
   if (error) throw error;
   return data || [];
@@ -125,7 +121,7 @@ async function searchSlotsForEvidence(supabase, evidence) {
   const primary = terms[0] || q;
   const { data, error } = await supabase
     .from('slots')
-    .select(SLOT_SELECT)
+    .select('id, name, provider, image, rtp, volatility, max_win_multiplier')
     .ilike('name', `%${escapeIlike(primary)}%`)
     .limit(80);
   if (error) throw error;
@@ -173,387 +169,6 @@ async function loadMatchContext(supabase, userId, evidence) {
     gameCodes,
     slots: [...byId.values()],
   };
-}
-
-function toIsoString(value) {
-  const date = new Date(value || Date.now());
-  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
-}
-
-function dateKey(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
-}
-
-function normalizeCompare(value) {
-  return String(value || '').trim().toLowerCase();
-}
-
-function normalizePositiveNumber(value) {
-  const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : null;
-}
-
-function normalizeSlotVolatility(value) {
-  const normalized = normalizeCompare(value).replace(/[\s-]+/g, '_');
-  if (!normalized) return null;
-  if (normalized === 'med') return 'medium';
-  if (normalized === 'med_high' || normalized === 'medium_high') return 'high';
-  if (['low', 'medium', 'high', 'very_high'].includes(normalized)) return normalized;
-  return null;
-}
-
-function isMissingColumnError(error, column) {
-  if (!error || !column) return false;
-  const text = `${error.code || ''} ${error.message || ''} ${error.details || ''} ${error.hint || ''}`.toLowerCase();
-  const normalizedColumn = String(column).toLowerCase();
-  return text.includes(normalizedColumn)
-    && (text.includes('column') || text.includes('could not find') || error.code === 'PGRST204' || error.code === '42703');
-}
-
-function isMissingSyncSourceError(error) {
-  return isMissingColumnError(error, 'source_event_id') || isMissingColumnError(error, 'source');
-}
-
-function isDuplicateSyncError(error) {
-  return error?.code === '23505' || String(error?.message || '').toLowerCase().includes('duplicate key');
-}
-
-function sameSourceEvent(row, eventId) {
-  return Boolean(eventId) && (
-    row?.source_event_id === eventId ||
-    row?.sourceEventId === eventId
-  );
-}
-
-function sameDetectedSlot(row, slot, providerKey = 'provider') {
-  if (!row || !slot?.name) return false;
-  const rowSlotId = row.slot_id || row.slotId || row.slot?.id || null;
-  if (rowSlotId && slot.id) return rowSlotId === slot.id;
-  const rowSlotName = row.slot_name || row.slotName || row.slot?.name || row.name || '';
-  const rowProvider = row[providerKey] || row.provider_name || row.providerName || row.slot?.provider || row.provider || '';
-  return normalizeCompare(rowSlotName) === normalizeCompare(slot.name)
-    && normalizeCompare(rowProvider) === normalizeCompare(slot.provider || '');
-}
-
-function isUnresolvedBonus(row) {
-  if (!row) return false;
-  if (row.status && row.status !== 'unopened') return false;
-  if (row.opened === true) return false;
-  const payout = Number(row.payout ?? row.result ?? row.bonus_win ?? 0);
-  return !Number.isFinite(payout) || payout === 0;
-}
-
-export function shouldAppendDetectedBonus(rows = [], slot, eventId) {
-  if (!slot?.name) return false;
-  if (eventId && rows.some((row) => sameSourceEvent(row, eventId))) return false;
-  const last = rows[rows.length - 1];
-  if (!last || !sameDetectedSlot(last, slot) || !isUnresolvedBonus(last)) return true;
-  return !(last.source === DETECTOR_HUNT_SYNC_SOURCE || last.sourceEventId || last.source_event_id);
-}
-
-export function buildDetectedBonusForOverlay({ slot, eventId, detectedAt }) {
-  const id = eventId ? `slot_detector_${eventId}` : `slot_detector_${slot.id || 'slot'}_${Date.now()}`;
-  return {
-    id,
-    slotId: slot.id || null,
-    slotName: slot.name,
-    provider: slot.provider || '',
-    image: slot.image || '',
-    rtp: slot.rtp ?? null,
-    volatility: slot.volatility || null,
-    max_win_multiplier: slot.max_win_multiplier ?? null,
-    slot: {
-      id: slot.id || null,
-      name: slot.name,
-      provider: slot.provider || '',
-      image: slot.image || '',
-      rtp: slot.rtp ?? null,
-      volatility: slot.volatility || null,
-      max_win_multiplier: slot.max_win_multiplier ?? null,
-      theme: slot.theme || '',
-      features: Array.isArray(slot.features) ? slot.features : [],
-    },
-    betSize: 0,
-    opened: false,
-    result: 0,
-    payout: 0,
-    isSuperBonus: false,
-    isExtremeBonus: false,
-    requestedBy: null,
-    source: DETECTOR_HUNT_SYNC_SOURCE,
-    sourceEventId: eventId || null,
-    detectedAt: toIsoString(detectedAt),
-  };
-}
-
-function selectBonusHuntWidget(widgets = []) {
-  return widgets.find((widget) => widget?.config?.huntActive === true)
-    || widgets[0]
-    || null;
-}
-
-async function syncOverlayBonusHuntWidget({ supabase, userId, eventId, detectedAt, slot }) {
-  const { data: widgets, error } = await supabase
-    .from('overlay_widgets')
-    .select('id, config, updated_at, z_index')
-    .eq('user_id', userId)
-    .eq('widget_type', 'bonus_hunt')
-    .order('z_index', { ascending: true })
-    .order('updated_at', { ascending: false })
-    .limit(20);
-  if (error) throw error;
-  const widget = selectBonusHuntWidget(widgets || []);
-  if (!widget) return { status: 'skipped', reason: 'no_bonus_hunt_widget' };
-
-  const config = widget.config || {};
-  const bonuses = Array.isArray(config.bonuses) ? config.bonuses : [];
-  if (!shouldAppendDetectedBonus(bonuses, slot, eventId)) {
-    return { status: 'skipped', reason: 'duplicate_bonus_hunt_widget_bonus' };
-  }
-
-  const nextBonus = buildDetectedBonusForOverlay({ slot, eventId, detectedAt });
-  const nextConfig = {
-    ...config,
-    slotName: slot.name,
-    provider: slot.provider || '',
-    imageUrl: slot.image || '',
-    slotId: slot.id || null,
-    rtp: slot.rtp ?? null,
-    volatility: slot.volatility || null,
-    max_win_multiplier: slot.max_win_multiplier ?? null,
-    bonuses: [...bonuses, nextBonus],
-    huntActive: true,
-  };
-
-  const { error: updateError } = await supabase
-    .from('overlay_widgets')
-    .update({ config: nextConfig, updated_at: new Date().toISOString() })
-    .eq('id', widget.id)
-    .eq('user_id', userId);
-  if (updateError) throw updateError;
-  return { status: 'synced', widgetId: widget.id };
-}
-
-async function findTodayGuessBalanceSession(supabase, userId, detectedAt) {
-  const { data, error } = await supabase
-    .from('guess_balance_sessions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(20);
-  if (error) throw error;
-  const sessions = data || [];
-  if (!sessions.length) return null;
-  const detectedDate = dateKey(detectedAt);
-  return sessions.find((session) => dateKey(session.stream_date || session.started_at || session.created_at) === detectedDate) || null;
-}
-
-async function loadGuessBalanceSlotsForSync(supabase, sessionId) {
-  let result = await supabase
-    .from('guess_balance_slots')
-    .select('id, slot_name, provider, bet_value, bonus_win, display_order, source_event_id, source')
-    .eq('session_id', sessionId)
-    .order('display_order', { ascending: true })
-    .order('created_at', { ascending: true });
-
-  if (result.error && isMissingSyncSourceError(result.error)) {
-    result = await supabase
-      .from('guess_balance_slots')
-      .select('id, slot_name, provider, bet_value, bonus_win, display_order')
-      .eq('session_id', sessionId)
-      .order('display_order', { ascending: true })
-      .order('created_at', { ascending: true });
-  }
-
-  if (result.error) throw result.error;
-  return result.data || [];
-}
-
-async function insertWithSyncSourceFallback(supabase, table, payload) {
-  let result = await supabase
-    .from(table)
-    .insert(payload)
-    .select('*')
-    .single();
-
-  if (result.error && isMissingSyncSourceError(result.error)) {
-    const fallbackPayload = { ...payload };
-    delete fallbackPayload.source_event_id;
-    delete fallbackPayload.source;
-    result = await supabase
-      .from(table)
-      .insert(fallbackPayload)
-      .select('*')
-      .single();
-  }
-
-  return result;
-}
-
-async function syncGuessBalanceSession({ supabase, userId, eventId, detectedAt, slot }) {
-  const session = await findTodayGuessBalanceSession(supabase, userId, detectedAt);
-  if (!session) return { status: 'skipped', reason: 'no_today_guess_balance_session' };
-
-  const slots = await loadGuessBalanceSlotsForSync(supabase, session.id);
-  if (!shouldAppendDetectedBonus(slots, slot, eventId)) {
-    return { status: 'skipped', reason: 'duplicate_guess_balance_slot' };
-  }
-
-  const nextDisplayOrder = slots.reduce((max, row) => Math.max(max, Number(row.display_order) || 0), -1) + 1;
-  const payload = {
-    session_id: session.id,
-    slot_name: slot.name,
-    slot_image_url: slot.image || null,
-    provider: slot.provider || null,
-    bet_value: 0,
-    is_super: false,
-    bonus_win: null,
-    multiplier: null,
-    display_order: nextDisplayOrder,
-    source_event_id: eventId || null,
-    source: DETECTOR_HUNT_SYNC_SOURCE,
-  };
-
-  const inserted = await insertWithSyncSourceFallback(supabase, 'guess_balance_slots', payload);
-  if (inserted.error) {
-    if (isDuplicateSyncError(inserted.error)) return { status: 'skipped', reason: 'duplicate_guess_balance_slot' };
-    throw inserted.error;
-  }
-
-  const totalBets = slots.reduce((sum, row) => sum + (Number(row.bet_value) || 0), 0) + payload.bet_value;
-  const sessionUpdate = await supabase
-    .from('guess_balance_sessions')
-    .update({ amount_expended: totalBets, updated_at: new Date().toISOString() })
-    .eq('id', session.id)
-    .eq('user_id', userId);
-  if (sessionUpdate.error) throw sessionUpdate.error;
-
-  const statsUpdate = await supabase.rpc('update_session_slot_stats', { p_session_id: session.id });
-  const statsErrorMessage = String(statsUpdate.error?.message || '').toLowerCase();
-  if (statsUpdate.error && statsUpdate.error.code !== 'PGRST202' && !statsErrorMessage.includes('could not find the function')) {
-    throw statsUpdate.error;
-  }
-
-  return { status: 'synced', sessionId: session.id, slotId: inserted.data?.id || null };
-}
-
-async function findActivePlayerHunt(supabase, userId, detectedAt) {
-  const { data, error } = await supabase
-    .from('player_hunts')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .order('hunt_date', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(20);
-  if (error) throw error;
-  const hunts = data || [];
-  if (!hunts.length) return null;
-  const detectedDate = dateKey(detectedAt);
-  return hunts.find((hunt) => dateKey(hunt.hunt_date || hunt.created_at) === detectedDate) || hunts[0];
-}
-
-async function loadPlayerHuntBonusesForSync(supabase, userId, huntId) {
-  let result = await supabase
-    .from('player_hunt_bonuses')
-    .select('id, slot_id, slot_name, provider_name, status, payout, position, source_event_id, source')
-    .eq('user_id', userId)
-    .eq('hunt_id', huntId)
-    .is('deleted_at', null)
-    .order('position', { ascending: true })
-    .order('created_at', { ascending: true });
-
-  if (result.error && isMissingSyncSourceError(result.error)) {
-    result = await supabase
-      .from('player_hunt_bonuses')
-      .select('id, slot_id, slot_name, provider_name, status, payout, position')
-      .eq('user_id', userId)
-      .eq('hunt_id', huntId)
-      .is('deleted_at', null)
-      .order('position', { ascending: true })
-      .order('created_at', { ascending: true });
-  }
-
-  if (result.error) throw result.error;
-  return result.data || [];
-}
-
-async function syncPlayerBonusHuntPage({ supabase, userId, eventId, detectedAt, slot }) {
-  const access = await getPlayerAccess(supabase, userId);
-  if (!access.entitled) return { status: 'skipped', reason: 'player_bonus_hunt_access_required' };
-
-  const hunt = await findActivePlayerHunt(supabase, userId, detectedAt);
-  if (!hunt) return { status: 'skipped', reason: 'no_active_player_hunt' };
-
-  const bonuses = await loadPlayerHuntBonusesForSync(supabase, userId, hunt.id);
-  if (!shouldAppendDetectedBonus(bonuses, slot, eventId)) {
-    return { status: 'skipped', reason: 'duplicate_player_hunt_bonus' };
-  }
-
-  const nextPosition = bonuses.reduce((max, row) => Math.max(max, Number(row.position) || 0), -1) + 1;
-  const payload = {
-    hunt_id: hunt.id,
-    user_id: userId,
-    slot_id: slot.id || null,
-    slot_name: slot.name,
-    provider_name: slot.provider || null,
-    slot_image_url: slot.image || null,
-    slot_rtp: normalizePositiveNumber(slot.rtp),
-    slot_volatility: normalizeSlotVolatility(slot.volatility),
-    slot_max_win_multiplier: normalizePositiveNumber(slot.max_win_multiplier),
-    slot_theme: slot.theme || '',
-    slot_features: Array.isArray(slot.features) ? slot.features.slice(0, 12) : [],
-    bonus_type: 'normal',
-    bonus_cost: 0,
-    bet_size: 0,
-    payout: 0,
-    multiplier: null,
-    profit_loss: 0,
-    status: 'unopened',
-    position: nextPosition,
-    source_event_id: eventId || null,
-    source: DETECTOR_HUNT_SYNC_SOURCE,
-  };
-
-  const inserted = await insertWithSyncSourceFallback(supabase, 'player_hunt_bonuses', payload);
-  if (inserted.error) {
-    if (isDuplicateSyncError(inserted.error)) return { status: 'skipped', reason: 'duplicate_player_hunt_bonus' };
-    throw inserted.error;
-  }
-
-  const huntUpdate = await supabase
-    .from('player_hunts')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('id', hunt.id)
-    .eq('user_id', userId);
-  if (huntUpdate.error) throw huntUpdate.error;
-
-  return { status: 'synced', huntId: hunt.id, bonusId: inserted.data?.id || null };
-}
-
-async function syncBonusHuntTargets({ supabase, userId, eventId, detectedAt, match }) {
-  const slot = match?.slot;
-  if (!slot?.name) return;
-
-  const syncs = [
-    ['overlay bonus hunt widget', syncOverlayBonusHuntWidget],
-    ['today guess balance session', syncGuessBalanceSession],
-    ['player bonus hunt page', syncPlayerBonusHuntPage],
-  ];
-
-  const results = await Promise.allSettled(
-    syncs.map(([, sync]) => sync({ supabase, userId, eventId, detectedAt, slot })),
-  );
-
-  results.forEach((result, index) => {
-    if (result.status === 'rejected') {
-      console.warn(`[slot-detector] ${syncs[index][0]} sync skipped:`, result.reason?.message || result.reason);
-    }
-  });
 }
 
 async function bridgeConfirmedSlot({
@@ -620,15 +235,6 @@ async function bridgeConfirmedSlot({
     .select('*')
     .single();
   if (detected.error) throw detected.error;
-  if (safeTarget === 'bonus_hunt') {
-    await syncBonusHuntTargets({
-      supabase,
-      userId,
-      eventId,
-      detectedAt: activePayload.detected_at,
-      match,
-    });
-  }
   return true;
 }
 
@@ -970,7 +576,7 @@ export async function handleConfirmMatch(req, res, supabase, user, body) {
 
   const slotResult = await supabase
     .from('slots')
-    .select(SLOT_SELECT)
+    .select('id, name, provider, image, rtp, volatility, max_win_multiplier')
     .eq('id', slotId)
     .maybeSingle();
   if (slotResult.error) throw slotResult.error;

@@ -1,9 +1,5 @@
 import assert from 'node:assert/strict';
 import {
-  buildDetectedBonusForOverlay,
-  shouldAppendDetectedBonus,
-} from '../api/_lib/slot-detector/actions.js';
-import {
   assertOwnedRecord,
   canUpdateActiveSlot,
   requireClientEventId,
@@ -95,41 +91,6 @@ const slots = [
   { id: 'slot-2', name: 'Wanted Dead or a Wild', provider: 'Hacksaw Gaming' },
   { id: 'slot-3', name: 'Deal With Death', provider: 'Hacksaw Gaming' },
 ];
-
-const syncedBonusSlot = {
-  id: 'slot-42',
-  name: 'Deadwood',
-  provider: 'Nolimit City',
-  image: '/deadwood.png',
-  rtp: 96.03,
-  volatility: 'very high',
-  max_win_multiplier: 11111,
-  theme: 'Western',
-  features: ['Buy Bonus'],
-};
-const syncedOverlayBonus = buildDetectedBonusForOverlay({
-  slot: syncedBonusSlot,
-  eventId: 'event-42',
-  detectedAt: '2026-07-15T12:02:00.000Z',
-});
-assert.equal(syncedOverlayBonus.slotName, 'Deadwood');
-assert.equal(syncedOverlayBonus.betSize, 0);
-assert.equal(syncedOverlayBonus.opened, false);
-assert.equal(syncedOverlayBonus.sourceEventId, 'event-42');
-assert.deepEqual(syncedOverlayBonus.slot.features, ['Buy Bonus']);
-assert.equal(shouldAppendDetectedBonus([], syncedBonusSlot, 'event-42'), true);
-assert.equal(
-  shouldAppendDetectedBonus([{ sourceEventId: 'event-42', slotId: 'slot-42', opened: false }], syncedBonusSlot, 'event-42'),
-  false,
-);
-assert.equal(
-  shouldAppendDetectedBonus([{ source: 'slot_detector_api', slotId: 'slot-42', opened: false, payout: 0 }], syncedBonusSlot, 'event-43'),
-  false,
-);
-assert.equal(
-  shouldAppendDetectedBonus([{ slotId: 'slot-42', opened: false, payout: 0 }], syncedBonusSlot, 'event-43'),
-  true,
-);
 
 const gameCodeMatch = matchSlotFromEvidence({
   evidence: { safeGameId: 'vs20olympgate', providerHint: 'Pragmatic Play', domain: 'pragmaticplay.net' },
