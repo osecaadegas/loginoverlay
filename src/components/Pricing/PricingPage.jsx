@@ -16,19 +16,19 @@ import "./PricingPage.css";
 const STREAMER_PLAN_CARDS = [
   {
     id: "streamer_monthly",
-    image: "/25.png",
+    image: "/25.webp",
     title: "Monthly",
     accent: "cyan",
   },
   {
     id: "streamer_6_months",
-    image: "/130.png",
+    image: "/130.webp",
     title: "Half year",
     accent: "violet",
   },
   {
     id: "streamer_annual",
-    image: "/250.png",
+    image: "/250.webp",
     title: "Full year",
     accent: "pink",
   },
@@ -37,13 +37,13 @@ const STREAMER_PLAN_CARDS = [
 const PLAYER_PLAN_CARDS = [
   {
     id: "player_monthly",
-    image: "/player3eur.png",
+    image: "/player3eur.webp",
     title: "Player monthly",
     accent: "cyan",
   },
   {
     id: "player_annual",
-    image: "/player25eur.png",
+    image: "/player25eur.webp",
     title: "Player annual",
     accent: "pink",
   },

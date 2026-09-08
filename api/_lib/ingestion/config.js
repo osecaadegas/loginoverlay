@@ -28,7 +28,7 @@ export const MAX_WIN_CEILING = 1_000_000;
 export const INGESTION_VERSION = '2.0.0';
 
 /** Safe placeholder used when no verified cover image is found. */
-export const DEFAULT_INGESTION_SLOT_IMAGE = '/placeholder.png';
+export const DEFAULT_INGESTION_SLOT_IMAGE = '/placeholder.webp';
 
 // ─── Rate Limiting ──────────────────────────────────────────────────
 

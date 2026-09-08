@@ -1105,14 +1105,14 @@ const HOME_PRICING = [
   {
     name: "Gambler Monthly",
     category: "Gambler",
-    image: "/player3eur.png",
+    image: "/player3eur.webp",
     to: "/premium?type=player",
     tone: "player",
   },
   {
     name: "Gambler Yearly",
     category: "Gambler",
-    image: "/player25eur.png",
+    image: "/player25eur.webp",
     to: "/premium?type=player",
     tone: "player",
     badge: "Best Value",
@@ -1121,21 +1121,21 @@ const HOME_PRICING = [
   {
     name: "Streamer Monthly",
     category: "Streamer",
-    image: "/25.png",
+    image: "/25.webp",
     to: "/premium?type=streamer",
     tone: "streamer",
   },
   {
     name: "Streamer 6 Months",
     category: "Streamer",
-    image: "/130.png",
+    image: "/130.webp",
     to: "/premium?type=streamer",
     tone: "streamer",
   },
   {
     name: "Streamer Yearly",
     category: "Streamer",
-    image: "/250.png",
+    image: "/250.webp",
     to: "/premium?type=streamer",
     tone: "streamer",
     badge: "Best Value",
@@ -1219,8 +1219,8 @@ const PLAYER_STATS = [
 ];
 
 const LANDING_IMAGES = {
-  player: "/player.png",
-  streamer: "/streamer.png",
+  player: "/player.webp",
+  streamer: "/streamer.webp",
 };
 
 const AUDIENCE_STORAGE_KEY = "streamerscenter:selectedAudience";
@@ -1652,7 +1652,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
         </div>
         <div className="lp-home-hero__media">
           <img
-            src="/streamer.png"
+            src="/streamer.webp"
             alt="Streamers Center overlay tools preview"
             loading="eager"
             decoding="async"

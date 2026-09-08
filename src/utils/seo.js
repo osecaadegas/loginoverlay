@@ -223,47 +223,47 @@ const SEO_BY_PATH = {
   '/player': {
     title: 'Bonus Hunt Tracker, Slot Tracker & Profit/Loss Tracker | Streamers Center',
     description: 'Track bonus hunts, slots, casino deposits, withdrawals, wins, losses, providers, brands, break-even targets, payouts and profit/loss records from a private financial tracker.',
-    image: `${SITE_URL}/player.png`,
+    image: DEFAULT_IMAGE,
   },
   '/streamer': {
     title: 'iGaming Overlays & Casino Streamer Tools | Streamers Center',
     description: 'Run iGaming streams with casino overlays, browser-source overlay trackers, bonus hunt trackers, slot requests, tournaments, giveaways, chat tools and viewer games.',
-    image: `${SITE_URL}/streamer.png`,
+    image: DEFAULT_IMAGE,
   },
   '/streamer-overlays': {
     title: 'Interactive iGaming Overlays for OBS | Streamers Center',
     description: 'Create OBS-ready iGaming overlays for bonus hunts, slot requests, tournaments, giveaways and chat moments with Streamers Center.',
-    image: `${SITE_URL}/streamer.png`,
+    image: DEFAULT_IMAGE,
   },
   '/bonus-hunt-tracker': {
     title: 'Bonus Hunt Tracker for Streamers and Gamblers | Streamers Center',
     description: 'Track opened bonuses, payouts, multipliers, slot images, providers and break-even progress for stream overlays or private sessions.',
-    image: `${SITE_URL}/player.png`,
+    image: DEFAULT_IMAGE,
   },
   '/casino-profit-loss-tracker': {
     title: 'Casino Profit and Loss Tracker | Streamers Center',
     description: 'Track casino deposits, withdrawals, slot results and profit or loss by day, week, month or session in a private gambler dashboard.',
-    image: `${SITE_URL}/player.png`,
+    image: DEFAULT_IMAGE,
   },
   '/slot-request-widget': {
     title: 'Slot Request Widget for Casino Streams | Streamers Center',
     description: 'Let viewers request slots and keep chat suggestions organized with a streamer-controlled slot request widget and overlay workflow.',
-    image: `${SITE_URL}/streamer.png`,
+    image: DEFAULT_IMAGE,
   },
   '/tournament-overlay': {
     title: 'Tournament Overlay for iGaming Streams | Streamers Center',
     description: 'Create tournament-style stream moments with round, bracket and viewer event displays built for iGaming creators.',
-    image: `${SITE_URL}/streamer.png`,
+    image: DEFAULT_IMAGE,
   },
   '/giveaway-widget': {
     title: 'Giveaway Widget for Streamers | Streamers Center',
     description: 'Run stream-friendly giveaway displays with clear entry, status and winner-ready layouts for iGaming communities.',
-    image: `${SITE_URL}/streamer.png`,
+    image: DEFAULT_IMAGE,
   },
   '/chat-games': {
     title: 'Chat Games for iGaming Streamers | Streamers Center',
     description: 'Add chat games, predictions and viewer interactions that keep iGaming stream communities active between spins.',
-    image: `${SITE_URL}/streamer.png`,
+    image: DEFAULT_IMAGE,
   },
   '/offers': {
     title: 'Streamer Partnerships Marketplace | Streamers Center',

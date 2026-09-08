@@ -7,12 +7,12 @@ const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
 
 const LOGIN_AUDIENCES = {
   player: {
-    image: '/player.png',
+    image: '/player.webp',
     title: 'Player Center',
     subtitle: 'Bonus hunts, deposits, wins and session history.',
   },
   streamer: {
-    image: '/streamer.png',
+    image: '/streamer.webp',
     title: 'Streamer Center',
     subtitle: 'Overlay tools, widgets and live stream controls.',
   },
@@ -76,8 +76,8 @@ export default function LoginPage() {
           <img className="login-route__background-image" src={backdrop.image} alt="" />
         ) : (
           <>
-            <img className="login-route__background-image login-route__background-image--player" src="/player.png" alt="" />
-            <img className="login-route__background-image login-route__background-image--streamer" src="/streamer.png" alt="" />
+            <img className="login-route__background-image login-route__background-image--player" src="/player.webp" alt="" />
+            <img className="login-route__background-image login-route__background-image--streamer" src="/streamer.webp" alt="" />
           </>
         )}
         <span className="login-route__background-shade" />

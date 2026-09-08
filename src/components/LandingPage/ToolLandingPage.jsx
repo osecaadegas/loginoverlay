@@ -20,7 +20,7 @@ const TOOL_PAGES = {
     summary:
       "Build stream overlays for bonus hunts, slot requests, tournaments, giveaways and chat moments without coding a custom scene from scratch.",
     audience: "Twitch, Kick and YouTube iGaming creators",
-    image: "/streamer.png",
+    image: "/streamer.webp",
     cta: "Explore Streamer Tools",
     ctaTo: "/premium?type=streamer",
     icon: MonitorPlay,
@@ -47,7 +47,7 @@ const TOOL_PAGES = {
     summary:
       "Follow opened bonuses, slot images, payouts, multipliers, break-even progress and best results in a clear dashboard.",
     audience: "Streamers and gamblers who need organized hunt records",
-    image: "/player.png",
+    image: "/player.webp",
     cta: "Open Pricing",
     ctaTo: "/premium",
     icon: Trophy,
@@ -74,7 +74,7 @@ const TOOL_PAGES = {
     summary:
       "Keep a private record of starting deposits, extra deposits, withdrawals, slot results and profit or loss by period.",
     audience: "Gamblers who want private session accounting",
-    image: "/player.png",
+    image: "/player.webp",
     cta: "Open Gambler Tracker",
     ctaTo: "/premium?type=player",
     icon: LayoutDashboard,
@@ -101,7 +101,7 @@ const TOOL_PAGES = {
     summary:
       "Collect and manage slot requests so chat suggestions become an organized stream workflow instead of scattered messages.",
     audience: "Casino and slot streamers",
-    image: "/streamer.png",
+    image: "/streamer.webp",
     cta: "Explore Streamer Tools",
     ctaTo: "/premium?type=streamer",
     icon: MessageSquare,
@@ -128,7 +128,7 @@ const TOOL_PAGES = {
     summary:
       "Create tournament-style moments for viewers with visual brackets, rounds and stream-ready displays.",
     audience: "Streamers who want competitive chat moments",
-    image: "/streamer.png",
+    image: "/streamer.webp",
     cta: "See Streamer Pricing",
     ctaTo: "/premium?type=streamer",
     icon: Swords,
@@ -155,7 +155,7 @@ const TOOL_PAGES = {
     summary:
       "Show giveaway instructions, entries and winner-ready layouts in a stream-friendly widget.",
     audience: "Creators running community giveaways",
-    image: "/streamer.png",
+    image: "/streamer.webp",
     cta: "Explore Giveaway Tools",
     ctaTo: "/premium?type=streamer",
     icon: Gift,
@@ -182,7 +182,7 @@ const TOOL_PAGES = {
     summary:
       "Add viewer games, predictions and chat interactions that keep your community active during the whole stream.",
     audience: "iGaming streamers building viewer interaction",
-    image: "/streamer.png",
+    image: "/streamer.webp",
     cta: "Try Streamer Tools",
     ctaTo: "/premium?type=streamer",
     icon: MessageSquare,

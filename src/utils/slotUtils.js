@@ -1,12 +1,15 @@
 import { supabase } from "../config/supabaseClient";
 
 // Default slot image for missing or broken catalog artwork.
-export const DEFAULT_SLOT_IMAGE = "/placeholder.png";
-const LEGACY_DEFAULT_SLOT_IMAGE = "https://i.imgur.com/8E3ucNx.png";
+export const DEFAULT_SLOT_IMAGE = "/placeholder.webp";
+const LEGACY_DEFAULT_SLOT_IMAGES = new Set([
+  "/placeholder.png",
+  "https://i.imgur.com/8E3ucNx.png",
+]);
 
 export function resolveSlotImage(src) {
   const normalized = String(src || "").trim();
-  return normalized && normalized !== LEGACY_DEFAULT_SLOT_IMAGE
+  return normalized && !LEGACY_DEFAULT_SLOT_IMAGES.has(normalized)
     ? normalized
     : DEFAULT_SLOT_IMAGE;
 }

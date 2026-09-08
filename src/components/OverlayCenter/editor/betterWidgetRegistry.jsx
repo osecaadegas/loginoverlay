@@ -302,7 +302,7 @@ const MOCK_WIDGET_CONFIGS = {
   slideshow_frame: {
     mediaText: [
       "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4|video|Demo video",
-      "/placeholder.png|image|Placeholder",
+      "/placeholder.webp|image|Placeholder",
     ].join("\n"),
     showCounter: true,
   },
