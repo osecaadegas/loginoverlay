@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../config/supabaseClient";
+import { invalidateAccountQueries } from "../../config/queryClient";
 import { trackEvent } from "../../utils/analytics";
 import "./PricingPage.css";
 
@@ -148,6 +149,7 @@ export default function PricingPage() {
 
   useEffect(() => {
     if (success) {
+      if (user?.id) invalidateAccountQueries(user.id);
       setMessage({
         type: "success",
         text: "Checkout complete. Stripe is confirming your subscription now.",
@@ -162,7 +164,7 @@ export default function PricingPage() {
         text: "Checkout was cancelled. No charge was made.",
       });
     }
-  }, [success, canceled, productType]);
+  }, [success, canceled, productType, user?.id]);
 
   const access = pageData?.access || null;
   const subscription = access?.currentSubscription || null;
@@ -210,6 +212,7 @@ export default function PricingPage() {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok)
         throw new Error(payload.error || "Could not start your free trial.");
+      invalidateAccountQueries(user.id);
       setPageData((current) => ({
         ...current,
         access: payload.access,

@@ -11,6 +11,7 @@
     "test:widget-control-categories": "node scripts/test-widget-control-categories.mjs",
     "test:background-editor": "node scripts/test-background-editor.mjs",
     "test:global-navigation": "node scripts/test-global-navigation.mjs",
+    "test:page-cache": "node scripts/test-page-cache.mjs",
     "test:connect-four": "node scripts/test-connect-four.mjs",
     "test:contact-messages": "node scripts/test-contact-messages.mjs",
     "preview": "vite preview",

@@ -1,35 +1,14 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
+import { accountQueryOptions } from "../config/queryClient";
 import { getUserRoles } from "../utils/adminUtils";
 import { getAccessTokenWithFallback } from "../utils/authSession";
 import { fetchWithTimeout, withTimeout } from "../utils/asyncTimeout";
 
-function resetAccessState({
-  setIsAdmin,
-  setIsAffiliate,
-  setIsModerator,
-  setIsPremium,
-  setIsSlotModder,
-  setUserRoles,
-}) {
-  setIsAdmin(false);
-  setIsModerator(false);
-  setIsSlotModder(false);
-  setIsPremium(false);
-  setIsAffiliate(false);
-  setUserRoles([]);
-}
-
-function applyAccessState({
+function buildAccessState({
   hasStreamerEntitlement,
   roles,
   serverRoleNames,
-  setIsAdmin,
-  setIsAffiliate,
-  setIsModerator,
-  setIsPremium,
-  setIsSlotModder,
-  setUserRoles,
 }) {
   const roleNames = new Set([
     ...roles.map((role) => role.role),
@@ -37,15 +16,21 @@ function applyAccessState({
   ]);
   const hasAdminAccess = roleNames.has("admin") || roleNames.has("superadmin");
 
-  setUserRoles(roles);
-  setIsAdmin(hasAdminAccess);
-  setIsModerator(roleNames.has("moderator") || hasAdminAccess);
-  setIsSlotModder(roleNames.has("slot_modder") || hasAdminAccess);
-  setIsPremium(
-    hasStreamerEntitlement || roleNames.has("premium") || hasAdminAccess,
-  );
-  setIsAffiliate(roleNames.has("affiliate") || hasAdminAccess);
+  return {
+    userRoles: roles,
+    isAdmin: hasAdminAccess,
+    isModerator: roleNames.has("moderator") || hasAdminAccess,
+    isSlotModder: roleNames.has("slot_modder") || hasAdminAccess,
+    isPremium: hasStreamerEntitlement || roleNames.has("premium") || hasAdminAccess,
+    isAffiliate: roleNames.has("affiliate") || hasAdminAccess,
+  };
 }
+
+const NO_ACCESS = buildAccessState({
+  hasStreamerEntitlement: false,
+  roles: [],
+  serverRoleNames: [],
+});
 
 async function loadRoleAccess(userId) {
   try {
@@ -107,84 +92,21 @@ async function loadPremiumAccess(roles) {
 }
 
 export const useAdmin = () => {
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isModerator, setIsModerator] = useState(false);
-  const [isSlotModder, setIsSlotModder] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
-  const [isAffiliate, setIsAffiliate] = useState(false);
-  const [userRoles, setUserRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user) {
-        resetAccessState({
-          setIsAdmin,
-          setIsAffiliate,
-          setIsModerator,
-          setIsPremium,
-          setIsSlotModder,
-          setUserRoles,
-        });
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-
-      try {
-        const { roles, rolesError } = await loadRoleAccess(user.id);
-        const premiumAccess = await loadPremiumAccess(roles);
-
-        if (rolesError && !premiumAccess.hasStreamerEntitlement) {
-          console.error("Error checking admin status:", rolesError);
-          resetAccessState({
-            setIsAdmin,
-            setIsAffiliate,
-            setIsModerator,
-            setIsPremium,
-            setIsSlotModder,
-            setUserRoles,
-          });
-        } else {
-          applyAccessState({
-            hasStreamerEntitlement: premiumAccess.hasStreamerEntitlement,
-            roles: premiumAccess.roles,
-            serverRoleNames: premiumAccess.serverRoleNames,
-            setIsAdmin,
-            setIsAffiliate,
-            setIsModerator,
-            setIsPremium,
-            setIsSlotModder,
-            setUserRoles,
-          });
-        }
-      } catch (error) {
-        console.error("Error in useAdmin:", error);
-        resetAccessState({
-          setIsAdmin,
-          setIsAffiliate,
-          setIsModerator,
-          setIsPremium,
-          setIsSlotModder,
-          setUserRoles,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, [user]);
+  const { user, loading: authLoading } = useAuth();
+  const access = useQuery({
+    ...accountQueryOptions,
+    queryKey: ['account', user?.id, 'roles'],
+    enabled: !!user?.id && !authLoading,
+    queryFn: async () => {
+      const { roles, rolesError } = await loadRoleAccess(user.id);
+      const premiumAccess = await loadPremiumAccess(roles);
+      if (rolesError && !premiumAccess.hasStreamerEntitlement) throw rolesError;
+      return buildAccessState(premiumAccess);
+    },
+  });
 
   return {
-    isAdmin,
-    isModerator,
-    isSlotModder,
-    isPremium,
-    isAffiliate,
-    userRoles,
-    loading,
+    ...(user && !access.isError ? access.data || NO_ACCESS : NO_ACCESS),
+    loading: authLoading || (!!user && access.isPending),
   };
 };

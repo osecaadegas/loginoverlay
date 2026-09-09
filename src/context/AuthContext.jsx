@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { replaceEqualDeep } from '@tanstack/react-query';
 import { supabase } from '../config/supabaseClient';
+import { queryClient } from '../config/queryClient';
 import { withTimeout } from '../utils/asyncTimeout';
 import { getSessionWithFallback } from '../utils/authSession';
 
@@ -21,6 +23,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    let currentUser = null;
+    let sessionRevision = 0;
+    let preferenceTimer;
+
     const syncExperiencePreference = async (authUser) => {
       if (!authUser) return;
       try {
@@ -51,39 +58,49 @@ export const AuthProvider = ({ children }) => {
       });
     };
 
-    let mounted = true;
+    const applySession = (session) => {
+      if (!mounted) return;
+      const nextUser = session?.user ?? null;
+      const accountChanged = currentUser?.id !== nextUser?.id;
+      if (accountChanged) queryClient.clear();
+
+      // Supabase re-emits SIGNED_IN on tab focus. Keep the same object when
+      // the account data is unchanged so page effects and drafts stay mounted.
+      currentUser = replaceEqualDeep(currentUser, nextUser);
+      setUser(currentUser);
+      setLoading(false);
+
+      if (accountChanged) {
+        clearTimeout(preferenceTimer);
+        // Auth callbacks run under Supabase's session lock; defer auth writes.
+        preferenceTimer = setTimeout(() => {
+          if (mounted) syncExperiencePreferenceInBackground(currentUser);
+        }, 0);
+      }
+    };
 
     const initializeSession = async () => {
+      const revision = sessionRevision;
       try {
         const session = await getSessionWithFallback({ timeoutMs: 12000, label: 'Auth session check' });
-        syncExperiencePreferenceInBackground(session?.user);
-        if (mounted) setUser(session?.user ?? null);
+        if (sessionRevision === revision) applySession(session);
       } catch (error) {
         console.warn('[Auth] Session unavailable:', error);
-        if (mounted) setUser(null);
-      } finally {
-        if (mounted) setLoading(false);
+        if (sessionRevision === revision) applySession(null);
       }
     };
 
     initializeSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (_event === 'SIGNED_IN' && session?.user) {
-        syncExperiencePreferenceInBackground(session.user);
-      }
-      setUser(session?.user ?? null);
-      
-      if (_event === 'SIGNED_IN' && session?.user) {
-        // User logged in
-      } else if (_event === 'SIGNED_OUT') {
-        // User logged out
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      sessionRevision += 1;
+      applySession(session);
     });
 
     return () => {
       mounted = false;
+      clearTimeout(preferenceTimer);
       subscription.unsubscribe();
     };
   }, []);
@@ -156,7 +173,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider key={user?.id || 'anonymous'} value={value}>
       {children}
     </AuthContext.Provider>
   );
