@@ -152,6 +152,144 @@ function BetterHuntFitValue({ children, style, ...props }) {
   );
 }
 
+function BetterHuntAutoscroll({ config, bonuses, currency }) {
+  const viewportRef = useRef(null);
+  const groupRef = useRef(null);
+  const [repeats, setRepeats] = useState(1);
+  const [cycleWidth, setCycleWidth] = useState(0);
+  const speed = clampNumber(config.autoscrollSpeed, 12, 100, 40);
+
+  useBrowserLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const group = groupRef.current;
+    if (!viewport || !group || !bonuses.length) return undefined;
+    const measure = () => {
+      // Each half must fill the viewport, including one-card hunts and editor zoom.
+      const baseWidth = group.scrollWidth / repeats;
+      if (!baseWidth) return;
+      setRepeats(Math.max(1, Math.ceil(viewport.clientWidth / baseWidth)));
+      setCycleWidth(group.scrollWidth);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    observer.observe(group);
+    return () => observer.disconnect();
+  }, [bonuses.length, repeats]);
+
+  return (
+    <div
+      className="better-hunt-autoscroll"
+      ref={viewportRef}
+      {...attrs("bonus_hunt", config, "carouselBackdrop")}
+    >
+      {bonuses.length ? (
+        <div
+          className="better-hunt-autoscroll-track"
+          data-ready={cycleWidth > 0}
+          style={{
+            "--bh-scroll-duration": `${Math.max(1, cycleWidth / speed)}s`,
+          }}
+        >
+          {[0, 1].map((group) => (
+            <div
+              className="better-hunt-autoscroll-group"
+              key={group}
+              ref={group === 0 ? groupRef : undefined}
+              aria-hidden={group === 1 ? true : undefined}
+            >
+              {Array.from({ length: repeats }, (_, repeat) =>
+                bonuses.map((bonus, index) => {
+                  const opened = bonusOpened(bonus);
+                  const multi = bonusMultiplierValue(bonus);
+                  const name = bonusSlotName(bonus, index);
+                  return (
+                    <article
+                      className={`better-hunt-autoscroll-card better-hunt-autoscroll-card--${bonusTier(bonus)}`}
+                      key={`${repeat}-${bonus.id || index}`}
+                      aria-label={name}
+                      aria-hidden={repeat > 0 ? true : undefined}
+                      data-slot-index={index}
+                      {...attrs(
+                        "bonus_hunt",
+                        config,
+                        "autoscrollCard",
+                        opened ? "opened" : "unopened",
+                      )}
+                    >
+                      <SlotImage
+                        className="better-hunt-autoscroll-image"
+                        src={bonusImage(bonus)}
+                        alt={name}
+                        fit="contain"
+                        {...attrs("bonus_hunt", config, "autoscrollImage")}
+                      />
+                      <div className="better-hunt-autoscroll-copy">
+                        <strong
+                          className="better-hunt-autoscroll-title"
+                          title={name}
+                          {...attrs("bonus_hunt", config, "autoscrollTitle")}
+                        >
+                          {name}
+                        </strong>
+                        {[
+                          [
+                            "Bet",
+                            formatMoney(bonusBet(bonus), currency),
+                            "autoscrollBet",
+                          ],
+                          [
+                            "Payout",
+                            opened
+                              ? formatMoney(bonusPayout(bonus), currency)
+                              : "-",
+                            "autoscrollPayout",
+                          ],
+                          [
+                            "Multi",
+                            opened
+                              ? multi === 0
+                                ? "0x"
+                                : formatMultiplier(multi, 2)
+                              : "-",
+                            "autoscrollMultiplier",
+                          ],
+                        ].map(([label, value, elementId]) => (
+                          <div
+                            className={`better-hunt-autoscroll-stat better-hunt-autoscroll-stat--${elementId}`}
+                            key={label}
+                          >
+                            <span
+                              {...attrs(
+                                "bonus_hunt",
+                                config,
+                                "autoscrollStatLabel",
+                              )}
+                            >
+                              {label}
+                            </span>
+                            <BetterHuntFitValue
+                              {...attrs("bonus_hunt", config, elementId)}
+                            >
+                              {value}
+                            </BetterHuntFitValue>
+                          </div>
+                        ))}
+                      </div>
+                    </article>
+                  );
+                }),
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="better-hunt-empty">No bonuses yet</div>
+      )}
+    </div>
+  );
+}
+
 function numberValue(value, fallback = 0) {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -2022,7 +2160,7 @@ function BetterStyleSheet() {
       .better-hunt-hstrip-main .better-hunt-image-stats-art{min-height:0;overflow:hidden}
       .better-hunt-hstrip-main .better-hunt-progress{margin:0;gap:3px 6px}
       .better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring{height:100%;min-height:0;container-type:size}
-      .better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-card{width:auto;height:min(172px,calc((100cqh - 16px) / 1.18));aspect-ratio:122/172}
+      .better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-card{--bh-ring-card-height:min(172px,calc((100cqh - 16px) / 1.18));--bh-ring-step:calc(var(--bh-ring-card-height) * 122 / 172 * 1.2);width:auto;height:var(--bh-ring-card-height);aspect-ratio:122/172}
       .better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring-floor{inset:auto 70px 6px;height:28px}
       .better-hunt-hstrip-main .better-hunt-image-stats-copy{padding:4px 6px;gap:2px;line-height:1.1}
       .better-hunt-hstrip-main .better-hunt-image-stats-title h3{font-size:.95em;line-height:1.1}
@@ -2077,6 +2215,25 @@ function BetterStyleSheet() {
       .better-hunt-ring{position:relative;height:210px;overflow:hidden;perspective:1100px}
       .better-hunt-ring-floor{position:absolute;inset:auto 40px 4px;height:28px;border-radius:50%;background:color-mix(in srgb,var(--bh-line-hi) 20%,transparent);filter:blur(14px)}
       .better-hunt-ring-track{position:absolute;left:50%;top:50%;transform-style:preserve-3d;transform:translateZ(0);will-change:transform}
+      .better-hunt-autoscroll{position:relative;min-width:0;min-height:0;overflow:hidden;container-type:size}
+      .better-hunt-autoscroll-track{display:flex;width:max-content;height:100%;animation:better-hunt-marquee-left calc(var(--bh-scroll-duration,30s) / var(--anim-speed,1)) linear infinite;will-change:transform}
+      .better-hunt-autoscroll-track[data-ready="false"]{animation-play-state:paused}
+      .better-hunt-autoscroll-group{display:flex;flex:none;gap:8px;padding:2px 8px 2px 0;height:100%}
+      .better-hunt-autoscroll-card{position:relative;flex:0 0 auto;width:clamp(124px,calc((100cqh - 4px) * 122 / 172),184px);height:100%;min-height:0;overflow:hidden;border:1px solid var(--bh-line-hi);border-radius:8px;background:var(--bh-inset)}
+      .better-hunt-autoscroll-card--super{border-color:var(--bh-tangerine)}.better-hunt-autoscroll-card--extreme{border-color:var(--bh-ember)}
+      .better-hunt-autoscroll-image{display:block;width:100%;height:100%;min-height:0;object-fit:contain}
+      .better-hunt-autoscroll-copy{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto minmax(0,1fr) auto;align-items:start;gap:4px;min-width:0;padding:4px;line-height:1.1}
+      .better-hunt-autoscroll-title,.better-hunt-autoscroll-stat{min-width:0;padding:3px 4px;border-radius:4px;background:color-mix(in srgb,var(--bh-inset) 88%,transparent);text-shadow:0 1px 2px #000;letter-spacing:0}
+      .better-hunt-autoscroll-title{grid-column:1;grid-row:3;align-self:end;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:.7em;line-height:1.2;color:#fff}
+      .better-hunt-autoscroll-stat{display:grid;gap:2px;font-variant-numeric:tabular-nums}
+      .better-hunt-autoscroll-stat--autoscrollBet{grid-column:1;grid-row:1}
+      .better-hunt-autoscroll-stat--autoscrollPayout{grid-column:2;grid-row:3;align-self:end;text-align:right}
+      .better-hunt-autoscroll-stat--autoscrollMultiplier{grid-column:2;grid-row:1;text-align:right}
+      .better-hunt-autoscroll-stat>span{color:var(--bh-steel-hi);font-size:.56em;text-transform:uppercase}
+      .better-hunt-autoscroll-stat>strong{min-width:0;overflow:hidden;color:#fff;font-size:.8em}
+      .better-hunt-autoscroll-stat--autoscrollMultiplier>strong{color:var(--bh-tangerine)}
+      .better-hunt-root[data-anim="off"] .better-hunt-autoscroll-track{animation-play-state:paused}
+      @media(prefers-reduced-motion:reduce){.better-hunt-autoscroll-track{animation:none!important;transform:none!important}.better-hunt-autoscroll{overflow-x:auto;scrollbar-width:none}}
       .better-hunt-card{position:absolute;overflow:hidden;width:112px;height:158px;border:1.5px solid color-mix(in srgb,var(--bh-line-hi) 65%,transparent);border-radius:10px;background:var(--bh-inset);box-shadow:0 6px 18px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.55);backface-visibility:hidden;contain:paint;transform-style:preserve-3d;will-change:transform,opacity;transition:transform .65s cubic-bezier(.22,.9,.3,1),opacity .45s ease,filter .45s ease}
       .better-hunt-card--center{border:2px solid var(--bh-line-hi);box-shadow:0 4px 14px rgba(0,0,0,.6)}
       .better-hunt-card--super.better-hunt-card--center{animation:better-hunt-gold calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}
@@ -2837,7 +2994,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const listMode = ["compact", "image", "names"].includes(c.listMode)
     ? c.listMode
     : "compact";
-  const carouselMode = ["3d", "imagestats", "stats"].includes(c.carouselMode)
+  const carouselModes = orientation === "horizontal"
+    ? ["3d", "imagestats", "stats", "autoscroll"]
+    : ["3d", "imagestats", "stats"];
+  const carouselMode = carouselModes.includes(c.carouselMode)
     ? c.carouselMode
     : "3d";
   const drawerAlwaysVisible = c.drawerAlwaysVisible === true;
@@ -3881,7 +4041,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
 
   const renderRingCarousel = () => {
-    const ringSpacing = orientation === "horizontal" ? 138 : 116;
+    const ringSpacing =
+      orientation === "horizontal" ? "var(--bh-ring-step)" : "116px";
     const ringDepth = orientation === "horizontal" ? 150 : 130;
     const ringAngle = orientation === "horizontal" ? -29 : -32;
     const ringCenterScale = orientation === "horizontal" ? 1.18 : 1.14;
@@ -3935,7 +4096,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                           centered || tier === "extreme"
                             ? undefined
                             : "brightness(.62) saturate(.85)",
-                        transform: `translate3d(-50%, -50%, 0) translate3d(${delta * ringSpacing}px, 0, ${-abs * ringDepth}px) rotateY(${delta * ringAngle}deg) scale(${centered ? ringCenterScale : 0.9})`,
+                        transform: `translate3d(-50%, -50%, 0) translate3d(calc(${delta} * ${ringSpacing}), 0, ${-abs * ringDepth}px) rotateY(${delta * ringAngle}deg) scale(${centered ? ringCenterScale : 0.9})`,
                       }}
                     >
                       <BetterHuntThumb
@@ -3958,8 +4119,20 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
   };
 
-  const renderCarousel = () =>
-    carouselMode === "3d" ? renderRingCarousel() : renderStatsCarousel();
+  const renderCarousel = () => {
+    if (carouselMode === "autoscroll") {
+      return (
+        <div
+          className="better-hunt-carousel"
+          {...attrs("bonus_hunt", c, "slotCarouselContainer")}
+        >
+          <BetterHuntAutoscroll config={c} bonuses={rows} currency={money} />
+          {renderProgress()}
+        </div>
+      );
+    }
+    return carouselMode === "3d" ? renderRingCarousel() : renderStatsCarousel();
+  };
 
   const renderListRow = (bonus, index, mode = listMode, keySuffix = "") => {
     const openedState = bonusOpened(bonus);

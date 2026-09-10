@@ -43,9 +43,9 @@ try {
     window.huntTest = {
       normalize: normalizeBetterInstance,
       constraints: getBetterInstanceConstraints,
-      scopedConfig() {
+      scopedConfig(changes) {
         let config = { displayStyle: 'better_bonus_hunt' };
-        for (const [elementId, propertyId, value] of [
+        for (const [elementId, propertyId, value] of changes || [
           ['progressBarFill', 'background', '#f4c442'], ['progressCount', 'textColor', '#f4c442'],
           ['resultPayout', 'textColor', '#f4c442'], ['resultTitle', 'fontSize', 12],
           ['slotRow', 'borderColor', '#f4c442'], ['container', 'borderColor', '#f4c442'],
@@ -64,6 +64,7 @@ try {
             image_url: i % 2 ? '/player.webp' : '/streamer.webp', betSize: 1, payout: i < (item.opened ?? 3) ? (i === 0 ? 0 : i === 1 ? 1234.56 : 2) : null,
             opened: i < (item.opened ?? 3), isSuperBonus: i === 1, isExtremeBonus: i === 2,
             rtp: 96.34, volatility: 'high', max_win_multiplier: 10000,
+            ...item.bonusOverrides?.[i],
           }));
           const config = {
             orientation: 'horizontal', widgetWidth: item.width, panelWidth: item.width,
@@ -84,7 +85,7 @@ try {
           if (!item.controls) return frame;
           return React.createElement(React.Fragment, { key: index }, frame,
             React.createElement('aside', { style: { width: 320 } },
-              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: '__all', simpleSections: ['Orientation', 'Carousel Style', 'Stats Layout', 'Chat Requests', 'Sizes & Layout'], sections: { Orientation: true, 'Carousel Style': true, 'Stats Layout': true, 'Chat Requests': true, 'Sizes & Layout': true } } },
+              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: '__all', simpleSections: ['Orientation', 'Carousel Style', 'Carousel Timing', 'Stats Layout', 'Chat Requests', 'Sizes & Layout'], sections: { Orientation: true, 'Carousel Style': true, 'Carousel Timing': true, 'Stats Layout': true, 'Chat Requests': true, 'Sizes & Layout': true } } },
                 React.createElement(BetterWidgetControls, { type: 'bonus_hunt', config: instance.config, onWidgetChange(patch) {
                   window.huntTest.mount(cases.map((current, i) => i === index ? { ...current, ...patch } : current));
                 }, onChange(nextConfig) {
@@ -102,6 +103,9 @@ try {
     await settle();
   };
   const checkGeometry = async label => {
+    await page.evaluate(() => Promise.all(document.getAnimations()
+      .filter(animation => animation.effect?.getTiming().iterations !== Infinity)
+      .map(animation => animation.finished.catch(() => {}))));
     const failures = await page.evaluate(() => [...document.querySelectorAll('[data-case]')].flatMap(host => {
       const result = [], panel = host.querySelector('.better-hunt-panel');
       if (!panel) return ['Missing panel'];
@@ -127,6 +131,32 @@ try {
       for (const row of panel.querySelectorAll('.better-hunt-hstrip-slot-row')) {
         for (const child of row.children) if (!contains(rect(row), rect(child))) report(`Current slot stat clipped: ${row.textContent}`);
       }
+      for (const card of panel.querySelectorAll('.better-hunt-autoscroll-card')) {
+        const artwork = rect(card.querySelector('img')), bounds = rect(card);
+        if (!contains(bounds, artwork) || artwork.width < bounds.width - 4 || artwork.height < bounds.height - 4) report('Autoscroll artwork does not fill the card');
+        for (const child of card.querySelectorAll('.better-hunt-autoscroll-copy, .better-hunt-autoscroll-title, .better-hunt-autoscroll-stat')) {
+          if (!contains(rect(card), rect(child))) report(`Autoscroll content clipped: ${child.className}`);
+        }
+        const corners = [...card.querySelectorAll('.better-hunt-autoscroll-title, .better-hunt-autoscroll-stat')];
+        for (let i = 0; i < corners.length; i++) for (let j = i + 1; j < corners.length; j++) {
+          const a = rect(corners[i]), b = rect(corners[j]);
+          if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1) report('Autoscroll corner overlays overlap each other');
+        }
+        for (const [selector, right, bottom] of [
+          ['.better-hunt-autoscroll-title', false, true],
+          ['.better-hunt-autoscroll-stat--autoscrollBet', false, false],
+          ['.better-hunt-autoscroll-stat--autoscrollPayout', true, true],
+          ['.better-hunt-autoscroll-stat--autoscrollMultiplier', true, false],
+        ]) {
+          const corner = rect(card.querySelector(selector));
+          if (Math.abs((right ? bounds.right - corner.right : corner.left - bounds.left) - 5) > 1 ||
+              Math.abs((bottom ? bounds.bottom - corner.bottom : corner.top - bounds.top) - 5) > 1) report(`Autoscroll overlay not anchored to its image corner: ${selector}`);
+        }
+        for (const value of card.querySelectorAll('.better-hunt-autoscroll-stat strong')) {
+          if (value.scrollWidth > value.clientWidth + 2) report(`Autoscroll value clipped: ${value.textContent}`);
+        }
+        if (rect(card.querySelector('img')).height < 12) report('Autoscroll artwork has no visible area');
+      }
       for (const e of panel.querySelectorAll('.better-hunt-result-head, .better-hunt-result-body, .better-hunt-result-stats, .better-hunt-image-stats-copy, .better-hunt-image-row, .better-hunt-stats-title, .better-hunt-stat-strip')) {
         if (getComputedStyle(e).display === 'contents') continue;
         if (!contains(p, rect(e))) report(`Clipped ${e.className}`);
@@ -150,7 +180,7 @@ try {
   };
   let checked = 0;
   for (const orientation of ['horizontal', 'vertical', 'mainstream']) {
-    for (const carouselMode of ['3d', 'imagestats', 'stats']) {
+    for (const carouselMode of orientation === 'horizontal' ? ['3d', 'imagestats', 'stats', 'autoscroll'] : ['3d', 'imagestats', 'stats']) {
       for (const width of orientation === 'horizontal' ? [800, 1080, 1280] : [320, 402]) {
         const cases = [0.75, 1, 1.35].flatMap(uiScale => [false, true].map(showRequests => ({
           width, height: orientation === 'horizontal' ? 280 : 884,
@@ -169,6 +199,81 @@ try {
     checked += cases.length;
   }
   const base = { width: 1080, height: 340, config: { carouselMode: '3d' } };
+  for (const height of [220, 280, 360]) {
+    await mount([{ ...base, config: { horizontalHeight: height } }]);
+    const gap = await page.$eval('.better-hunt-ring', ring => {
+      const center = ring.querySelector('.better-hunt-card--center').getBoundingClientRect();
+      return Math.min(...[...ring.querySelectorAll('.better-hunt-card:not(.better-hunt-card--center)')]
+        .filter(card => Number(getComputedStyle(card).opacity) > 0)
+        .map(card => card.getBoundingClientRect()).filter(card => card.left > center.left)
+        .map(card => card.left - center.right));
+    });
+    assert.ok(gap >= -5 && gap <= 20, `3D ring spacing follows card size at height ${height}: gap ${gap}`);
+  }
+  const auto = { ...base, config: { carouselMode: 'autoscroll', animations: true, animSpeed: 1, autoscrollSpeed: 40 } };
+  for (const count of [0, 1, 2, 6]) {
+    await mount([{ ...auto, count }]);
+    await checkGeometry(`Autoscroll ${count} slots`);
+    if (!count) {
+      assert.match(await page.$eval('.better-hunt-autoscroll', e => e.textContent), /No bonuses yet/);
+      continue;
+    }
+    assert.ok(await page.$$eval('.better-hunt-autoscroll-image', images => images.every(img =>
+      img.naturalWidth > 0 && img.naturalHeight > 0 && getComputedStyle(img).objectFit === 'contain'
+    )), 'Autoscroll displays the whole loaded slot image without cropping by default');
+    const loop = await page.$eval('.better-hunt-autoscroll', viewport => {
+      const track = viewport.querySelector('.better-hunt-autoscroll-track');
+      const [first, second] = track.children;
+      const animation = track.getAnimations()[0];
+      animation.pause();
+      animation.currentTime = 0;
+      const start = new DOMMatrixReadOnly(getComputedStyle(track).transform).m41;
+      animation.currentTime = animation.effect.getComputedTiming().duration;
+      const end = new DOMMatrixReadOnly(getComputedStyle(track).transform).m41;
+      return { first: first.offsetWidth, second: second.offsetWidth, viewport: viewport.clientWidth, start, end,
+        identical: first.textContent === second.textContent, infinite: animation.effect.getTiming().iterations === Infinity };
+    });
+    assert.ok(loop.first >= loop.viewport && loop.first === loop.second && loop.identical && loop.infinite, 'Two complete identical groups cover the loop, even for a single slot');
+    assert.ok(Math.abs(loop.start - loop.end) < 0.1, 'The infinite loop has no position jump at its boundary');
+  }
+  // Discard the animation manually scrubbed above before testing CSS pause/resume.
+  await mount([base]);
+  await mount([{ ...auto, bonusOverrides: { 0: { payout: 0, opened: true }, 1: { betSize: 2, payout: 200, opened: true } } }]);
+  const scrollX = () => page.$eval('.better-hunt-autoscroll-track', track => new DOMMatrixReadOnly(getComputedStyle(track).transform).m41);
+  const startX = await scrollX();
+  await page.waitForFunction(start => new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.better-hunt-autoscroll-track')).transform).m41 < start - 5, {}, startX);
+  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="0"]', e => e.textContent), /Bet.*1.*Payout.*0.*Multi.*0x/);
+  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="1"]', e => e.textContent), /Bet.*2.*Payout.*200.*Multi.*100x/);
+  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="5"]', e => e.textContent), /Payout-.*Multi-/);
+  await mount([{ ...auto, bonusOverrides: { 1: { betSize: 2, payout: 500, opened: true } } }]);
+  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="1"]', e => e.textContent), /Payout.*500.*Multi.*250x/);
+  await mount([{ ...auto, config: { ...auto.config, animations: false } }]);
+  const pausedX = await scrollX();
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 120)));
+  assert.equal(await scrollX(), pausedX, 'Enable motion pauses the scrolling strip');
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await mount([auto]);
+  assert.equal(await page.$eval('.better-hunt-autoscroll-track', track => getComputedStyle(track).animationName), 'none');
+  await page.emulateMediaFeatures([]);
+  const autoAppearance = await page.evaluate(() => window.huntTest.scopedConfig([
+    ['autoscrollCard', 'background', '#26332d'], ['autoscrollPayout', 'textColor', '#f4c442'],
+    ['autoscrollImage', 'imageFit', 'cover'],
+  ]));
+  for (const runtime of ['editor', 'obs', 'preview']) {
+    await mount([{ ...auto, runtime, config: { ...auto.config, ...autoAppearance, animations: false } }]);
+    await checkGeometry(`Autoscroll ${runtime} saved appearance`);
+    const values = await page.$eval('.better-hunt-autoscroll-card', card => ({
+      background: getComputedStyle(card).backgroundColor,
+      payout: getComputedStyle(card.querySelector('[data-appearance-part="autoscrollPayout"]')).color,
+      fit: getComputedStyle(card.querySelector('img')).objectFit,
+    }));
+    assert.deepEqual(values, { background: 'rgb(38, 51, 45)', payout: 'rgb(244, 196, 66)', fit: 'cover' });
+  }
+  if (process.env.AUTOSCROLL_SCREENSHOT) {
+    await mount([{ ...auto, config: { ...auto.config, animations: false, uiScale: 1.2, showRequests: true, requestView: 'carousel' } }]);
+    await checkGeometry('Autoscroll with all horizontal features');
+    await (await page.$('[data-case]')).screenshot({ path: process.env.AUTOSCROLL_SCREENSHOT });
+  }
   const sizing = await page.evaluate(() => {
     const original = { widgetType: 'bonus_hunt', instanceId: 'saved-hunt', x: 80, y: 100, width: 1080, height: 360,
       config: { orientation: 'horizontal', widgetHeight: 360, panelHeight: 360, listMode: 'compact', showRequests: true } };
@@ -230,7 +335,7 @@ try {
     assert.equal(fill, count ? Math.round(opened / count * 100) : 0);
     await checkGeometry(`opened ${opened}/${count}`);
   }
-  for (const carouselMode of ['3d', 'imagestats', 'stats']) {
+  for (const carouselMode of ['3d', 'imagestats', 'stats', 'autoscroll']) {
     for (const sessionState of ['hunt', 'opening', 'ended']) {
       await mount([{ ...base, count: 6, opened: sessionState === 'ended' ? 6 : 1, requests: 12,
         config: { carouselMode, sessionState, showRequests: true, requestView: 'carousel', uiScale: 1.35 } }]);
@@ -262,6 +367,19 @@ try {
       await page.click(`[data-control-section="Carousel Style"] .bp-hunt-choice-grid button:nth-child(${button})`);
       await page.waitForSelector(selector);
     }
+    await page.click('[data-control-section="Carousel Style"] .bp-hunt-choice-grid button:nth-child(4)');
+    await page.waitForSelector('.better-hunt-autoscroll');
+    assert.equal(await page.$eval('.better-hunt-root', e => e.dataset.anim), 'on', 'Selecting Autoscroll starts it immediately');
+    assert.match(await page.$eval('[data-control-section="Carousel Timing"]', e => e.textContent), /Scroll speed/);
+    const durationBefore = await page.$eval('.better-hunt-autoscroll-track', track => parseFloat(getComputedStyle(track).animationDuration));
+    await page.$eval('[data-control-section="Carousel Timing"] input[type="range"]', input => input.focus());
+    await page.keyboard.press('End');
+    await settle();
+    const durationAfter = await page.$eval('.better-hunt-autoscroll-track', track => parseFloat(getComputedStyle(track).animationDuration));
+    assert.ok(Math.abs(durationAfter / durationBefore - 0.4) < 0.01, 'The saved speed control changes continuous scrolling speed');
+    await page.click('[data-control-section="Orientation"] .bp-hunt-choice-grid button:nth-child(1)');
+    assert.equal(await page.$('.better-hunt-autoscroll'), null, 'Autoscroll is not rendered vertically');
+    assert.equal(await page.$$eval('[data-control-section="Carousel Style"] .bp-hunt-choice-grid button', buttons => buttons.length), 3, 'Autoscroll is only offered horizontally');
     await mount([{ ...base, controls, requests: 12, config: { showRequests: true, listMode: 'compact' } }]);
     const changeSlider = async (label, value) => {
       await page.evaluate(({ label, value }) => {
@@ -319,7 +437,7 @@ try {
   assert.ok(colors > 100, 'Rendered 3D carousel contains nonblank artwork');
   if (process.env.HUNT_SCREENSHOT) await (await page.$('[data-case]')).screenshot({ path: process.env.HUNT_SCREENSHOT });
   assert.deepEqual(errors, []);
-  console.log(`Bonus Hunt readability passed: ${checked} layouts, live/OBS/preview parity, progress states, saved appearance and editor controls.`);
+  console.log(`Bonus Hunt readability passed: ${checked} layouts, responsive ring spacing, autoscroll loop/data/motion controls, live/OBS/preview parity, progress states, saved appearance and editor controls.`);
 } finally {
   await browser.close();
 }

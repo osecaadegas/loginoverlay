@@ -712,6 +712,7 @@ const BASE_BETTER_CONFIG = {
     orientation: "vertical",
     sessionState: "hunt",
     carouselMode: "3d",
+    autoscrollSpeed: 40,
     listMode: "compact",
     requestView: "list",
     drawerMode: "contain",
@@ -1513,6 +1514,13 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
   if (type === "chat") return normalizeBetterChatConfig(merged);
   if (type === "slideshow_frame") return normalizeBetterSlideshowConfig(merged);
+  if (
+    type === "bonus_hunt" &&
+    merged.orientation !== "horizontal" &&
+    merged.carouselMode === "autoscroll"
+  ) {
+    merged.carouselMode = "3d";
+  }
   return merged;
 }
 
@@ -5238,13 +5246,21 @@ function SimpleThemedControls({
         >
           <HuntChoiceGrid
             value={c.carouselMode}
-            columns={3}
+            columns={c.orientation === "horizontal" ? 2 : 3}
             options={[
               { key: "3d", label: "3D Ring" },
               { key: "imagestats", label: "Image Stats" },
               { key: "stats", label: "Slot Stats" },
+              ...(c.orientation === "horizontal"
+                ? [{ key: "autoscroll", label: "Autoscroll Carousel" }]
+                : []),
             ]}
-            onChange={(carouselMode) => set({ carouselMode })}
+            onChange={(carouselMode) =>
+              set({
+                carouselMode,
+                ...(carouselMode === "autoscroll" ? { animations: true } : {}),
+              })
+            }
           />
         </HuntSection>
 
@@ -5253,15 +5269,27 @@ function SimpleThemedControls({
           icon={<Timer size={13} />}
           category="behavior"
         >
-          <SliderRow
-            label="Rotate every"
-            value={c.carouselMs}
-            min={1500}
-            max={6000}
-            step={100}
-            format={(value) => `${(value / 1000).toFixed(1)}s`}
-            onChange={(carouselMs) => set({ carouselMs })}
-          />
+          {c.carouselMode === "autoscroll" ? (
+            <SliderRow
+              label="Scroll speed"
+              value={c.autoscrollSpeed ?? 40}
+              min={12}
+              max={100}
+              step={2}
+              format={(value) => `${value}px/s`}
+              onChange={(autoscrollSpeed) => set({ autoscrollSpeed })}
+            />
+          ) : (
+            <SliderRow
+              label="Rotate every"
+              value={c.carouselMs}
+              min={1500}
+              max={6000}
+              step={100}
+              format={(value) => `${(value / 1000).toFixed(1)}s`}
+              onChange={(carouselMs) => set({ carouselMs })}
+            />
+          )}
         </HuntSection>
 
         {c.orientation !== "horizontal" && (

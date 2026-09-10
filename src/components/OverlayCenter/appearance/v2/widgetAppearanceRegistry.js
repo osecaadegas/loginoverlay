@@ -3180,6 +3180,13 @@ export const widgetAppearanceRegistry = Object.freeze({
           "resultPayout",
           "resultStatLabel",
           "resultStatValue",
+          "autoscrollCard",
+          "autoscrollImage",
+          "autoscrollTitle",
+          "autoscrollStatLabel",
+          "autoscrollBet",
+          "autoscrollPayout",
+          "autoscrollMultiplier",
         ],
       }),
       freezeStyle({
@@ -3510,6 +3517,35 @@ export const widgetAppearanceRegistry = Object.freeze({
         capabilities: ["typography", "stateColor"],
         controls: [...BONUS_HUNT_TEXT_CONTROLS, "accentColor"],
       }),
+      autoscrollCard: Object.freeze({
+        label: "Autoscroll cards",
+        kind: "surface",
+        capabilities: ["surface", "border", "shape"],
+        controls: ["background", "borderColor", "borderWidth", "radius"],
+      }),
+      autoscrollImage: Object.freeze({
+        label: "Autoscroll artwork",
+        kind: "image",
+        capabilities: ["image", "shape"],
+        controls: ["imageFit", "opacity", "radius"],
+      }),
+      ...Object.fromEntries(
+        [
+          ["autoscrollTitle", "Autoscroll slot names"],
+          ["autoscrollStatLabel", "Autoscroll stat labels"],
+          ["autoscrollBet", "Autoscroll bets"],
+          ["autoscrollPayout", "Autoscroll payouts"],
+          ["autoscrollMultiplier", "Autoscroll multipliers"],
+        ].map(([id, label]) => [
+          id,
+          Object.freeze({
+            label,
+            kind: "text",
+            capabilities: ["typography"],
+            controls: ["textColor", "fontFamily", "fontSize", "fontWeight"],
+          }),
+        ]),
+      ),
       resultCard: Object.freeze({
         label: "Best / Worst cards",
         kind: "surface",

@@ -295,7 +295,8 @@ try {
         "width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;display:block;object-fit:cover!important;object-position:center!important",
       ) &&
       horizontalRingMarkup.includes("height:100%;min-height:0;container-type:size") &&
-      horizontalRingMarkup.includes("height:min(172px,calc((100cqh - 16px) / 1.18))"),
+      horizontalRingMarkup.includes("height:var(--bh-ring-card-height)") &&
+      horizontalRingMarkup.includes("--bh-ring-step:calc(var(--bh-ring-card-height) * 122 / 172 * 1.2)"),
     "horizontal 3D mode uses consistent side artwork and the available ring height",
   );
 
