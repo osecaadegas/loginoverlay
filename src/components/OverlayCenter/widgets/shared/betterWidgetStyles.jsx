@@ -1760,7 +1760,7 @@ function BetterStyleSheet() {
       @media (max-width:520px){.better-giveaway-stage{padding:8px}.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
       .better-bets-stage{width:100%;height:100%;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;box-sizing:border-box;background:transparent;font-family:var(--font-body,"Rajdhani",Arial,sans-serif)}
       .better-bets-stage *{box-sizing:border-box}
-      .better-bets-fit{width:100%;max-width:var(--bets-width,100%);min-width:0;flex-shrink:0;transform:scale(var(--bets-fit,1));transform-origin:center;container:better-bets / inline-size}
+      .better-bets-fit{width:var(--bets-width,100%);min-width:0;flex-shrink:0;transform:scale(var(--bets-fit,1));transform-origin:center;container:better-bets / inline-size}
       .better-bets-stage[data-font="cyber"]{--font-display:"Orbitron",sans-serif;--font-body:"Rajdhani",sans-serif;--title-tracking:.1em}
       .better-bets-stage[data-font="sport"]{--font-display:"Oswald",sans-serif;--font-body:"Barlow",sans-serif;--title-tracking:.05em}
       .better-bets-stage[data-font="tech"]{--font-display:"Chakra Petch",sans-serif;--font-body:"Chakra Petch",sans-serif;--title-tracking:.08em}
@@ -2347,7 +2347,9 @@ export function BetterBetsStyle({ config, countdown }) {
     "--widget-opacity": opacity,
     "--fill-dur": `${3.2 * (100 / fillSpeed)}s`,
     "--cols": columns,
-    "--bets-width": orientation === "horizontal" ? "100%" : "360px",
+    // Lay out horizontal content before fitting it; a narrow frame must not turn it vertical.
+    "--bets-width":
+      orientation === "horizontal" ? "max(640px, 100%)" : "min(360px, 100%)",
     ...(fontFamily
       ? { "--font-body": fontFamily, "--font-display": fontFamily }
       : {}),

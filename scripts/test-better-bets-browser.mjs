@@ -29,7 +29,11 @@ try {
     const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
     const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
     const { createBetterInstance, renderBetterWidgetInstance } = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
-    const { BetterWidgetPreview } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
+    const { BetterWidgetPreview, BetterWidgetControls } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
+    // Reuse the controls' HMR-versioned context instead of creating a second provider module.
+    const scopeUrl = performance.getEntriesByType('resource').find((entry) => new URL(entry.name).pathname === '/src/components/OverlayCenter/editor/EditorControlScope.jsx')?.name;
+    if (!scopeUrl) throw new Error('Editor control context was not loaded');
+    const { EditorControlContext } = await import(scopeUrl);
     const { default: BetsWidget } = await import('/src/components/OverlayCenter/widgets/bets/BetsWidget.jsx');
     const { getWidgetStyleElements } = await import('/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js');
     const routing = await import('/src/components/OverlayCenter/appearance/v2/appearanceRouting.js');
@@ -69,7 +73,15 @@ try {
           } else {
             widget = renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime: item.runtime || 'editor', liveWidgets: [{ id: 'bets-fixture', widget_type: 'bets', config: live }] });
           }
-          return React.createElement('div', { key: index, 'data-case': index, style: { width: item.width, height: item.height, flexShrink: 0 } }, widget);
+          const frame = React.createElement('div', { 'data-case': index, style: { width: item.width, height: item.height, flexShrink: 0 } }, widget);
+          if (!item.controls) return React.cloneElement(frame, { key: index });
+          return React.createElement(React.Fragment, { key: index }, frame,
+            React.createElement('aside', { style: { width: 300 } },
+              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: 'layout', simpleSections: ['Orientation'], sections: { Orientation: true } } },
+                React.createElement(BetterWidgetControls, { type: 'bets', config: instance.config, onChange(nextConfig) {
+                  window.betsTest.updatedCases = cases.map((current, i) => i === index ? { ...current, config: nextConfig } : current);
+                  window.betsTest.mount(window.betsTest.updatedCases);
+                } }))));
         })));
       },
     };
@@ -123,8 +135,46 @@ try {
   await checkGeometry();
   await page.setViewport({ width: 390, height: 844 });
   await checkGeometry();
+  for (const width of [280, 320, 360]) {
+    for (const runtime of ['editor', 'obs', 'preview']) {
+      for (const layoutMode of ['cards', 'bars']) {
+        for (const columns of [1, 2, 3]) {
+          await mount(['vertical', 'horizontal'].map((orientation) => ({ width, height: 540, runtime, config: { orientation, layoutMode, columns } })));
+          const ratios = await page.$$eval('.bet-widget', (els) => els.map((el) => {
+            const { width, height } = el.getBoundingClientRect();
+            return width / height;
+          }));
+          assert.ok(ratios[1] > ratios[0] * 1.25, `${runtime} ${layoutMode} ${columns} columns at ${width}px: horizontal must not collapse to vertical (${ratios})`);
+          await checkGeometry();
+        }
+      }
+    }
+  }
   const base = { width: 778, height: 330, config: { layoutMode: 'bars', columns: 2 } };
   await page.setViewport({ width: 1600, height: 1000 });
+  const panelRatio = () => page.$eval('.bet-widget', (el) => { const box = el.getBoundingClientRect(); return box.width / box.height; });
+  for (const controls of ['simple', 'advanced']) {
+    await mount([{ width: 320, height: 540, controls, config: { layoutMode: 'bars', columns: 2, orientation: 'vertical', fontScale: 115, fillStyle: 'solid' } }]);
+    const before = await panelRatio();
+    assert.ok(await page.$('[data-control-section="Orientation"] .bp-segmented'), `${controls}: orientation controls render; ${await page.$eval('aside', (el) => el.textContent)}`);
+    await page.click('[data-control-section="Orientation"] .bp-segmented button:nth-child(2)');
+    await page.waitForSelector('.bet-widget.is-horizontal');
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.ok(await panelRatio() > before * 1.25, `${controls}: clicking Horizontal changes a narrow widget`);
+    const savedCases = await page.evaluate(() => JSON.parse(JSON.stringify(window.betsTest.updatedCases)));
+    assert.equal(savedCases[0].config.orientation, 'horizontal');
+    assert.equal(savedCases[0].config.columns, 2);
+    assert.equal(savedCases[0].config.fontScale, 115);
+    assert.equal(savedCases[0].config.fillStyle, 'solid');
+    assert.equal(savedCases[0].width, 320, 'Orientation does not overwrite the saved frame');
+    await mount(savedCases.map((item) => ({ ...item, runtime: 'obs' })));
+    assert.ok(await panelRatio() > before * 1.25, `${controls}: saved orientation renders in OBS after reload`);
+    await page.click('[data-control-section="Orientation"] .bp-segmented button:first-child');
+    await page.waitForFunction(() => !document.querySelector('.bet-widget.is-horizontal'));
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.ok(Math.abs(await panelRatio() - before) < 0.02, `${controls}: clicking Vertical restores the layout`);
+    await checkGeometry();
+  }
   await mount([{ ...base, height: 650, config: { ...base.config, orientation: 'vertical' } }, { ...base, height: 650, config: { ...base.config, orientation: 'horizontal' } }]);
   const orientationWidths = await page.$$eval('.bet-widget', (els) => els.map((el) => el.getBoundingClientRect().width));
   assert.ok(orientationWidths[1] > orientationWidths[0] * 1.5, 'Orientation still changes the board layout');
@@ -195,8 +245,14 @@ try {
   await mount([{ width: 360, height: 510, config: { layoutMode: 'cards', columns: 2 } }, base, { ...base, live: { gameStatus: 'result', winnerOption: 2 } }]);
   await checkGeometry();
   if (process.env.BETS_SCREENSHOT) await page.screenshot({ path: process.env.BETS_SCREENSHOT, fullPage: true });
+  if (process.env.BETS_ORIENTATION_SCREENSHOT) {
+    await page.setViewport({ width: 680, height: 560 });
+    await mount(['vertical', 'horizontal'].map((orientation) => ({ width: 320, height: 540, runtime: 'obs', config: { layoutMode: 'bars', columns: 2, orientation } })));
+    await checkGeometry();
+    await page.screenshot({ path: process.env.BETS_ORIENTATION_SCREENSHOT, fullPage: true });
+  }
   assert.deepEqual(errors, [], 'No browser runtime errors');
-  console.log(`Better Bets passed ${cases.length} responsive configurations on desktop/mobile, shared preview/OBS, live countdown/states, appearance isolation, reduced motion and legacy layouts.`);
+  console.log(`Better Bets passed ${cases.length} responsive configurations, 54 narrow-frame orientation comparisons, Simple/Advanced orientation clicks and reload, shared preview/OBS, live countdown/states, appearance isolation, reduced motion and legacy layouts.`);
 } finally {
   await browser.close();
 }
