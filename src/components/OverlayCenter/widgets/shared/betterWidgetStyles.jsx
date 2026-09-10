@@ -158,6 +158,7 @@ function BetterHuntAutoscroll({ config, bonuses, currency }) {
   const [repeats, setRepeats] = useState(1);
   const [cycleWidth, setCycleWidth] = useState(0);
   const speed = clampNumber(config.autoscrollSpeed, 12, 100, 40);
+  const imageAttrs = attrs("bonus_hunt", config, "autoscrollImage");
 
   useBrowserLayoutEffect(() => {
     const viewport = viewportRef.current;
@@ -221,17 +222,10 @@ function BetterHuntAutoscroll({ config, bonuses, currency }) {
                         className="better-hunt-autoscroll-image"
                         src={bonusImage(bonus)}
                         alt={name}
-                        fit="contain"
-                        {...attrs("bonus_hunt", config, "autoscrollImage")}
+                        {...imageAttrs}
+                        style={{ ...imageAttrs.style, objectFit: "cover" }}
                       />
                       <div className="better-hunt-autoscroll-copy">
-                        <strong
-                          className="better-hunt-autoscroll-title"
-                          title={name}
-                          {...attrs("bonus_hunt", config, "autoscrollTitle")}
-                        >
-                          {name}
-                        </strong>
                         {[
                           [
                             "Bet",
@@ -259,17 +253,9 @@ function BetterHuntAutoscroll({ config, bonuses, currency }) {
                             className={`better-hunt-autoscroll-stat better-hunt-autoscroll-stat--${elementId}`}
                             key={label}
                           >
-                            <span
-                              {...attrs(
-                                "bonus_hunt",
-                                config,
-                                "autoscrollStatLabel",
-                              )}
-                            >
-                              {label}
-                            </span>
                             <BetterHuntFitValue
                               {...attrs("bonus_hunt", config, elementId)}
+                              aria-label={`${label}: ${value}`}
                             >
                               {value}
                             </BetterHuntFitValue>
@@ -2221,15 +2207,12 @@ function BetterStyleSheet() {
       .better-hunt-autoscroll-group{display:flex;flex:none;gap:8px;padding:2px 8px 2px 0;height:100%}
       .better-hunt-autoscroll-card{position:relative;flex:0 0 auto;width:clamp(124px,calc((100cqh - 4px) * 122 / 172),184px);height:100%;min-height:0;overflow:hidden;border:1px solid var(--bh-line-hi);border-radius:8px;background:var(--bh-inset)}
       .better-hunt-autoscroll-card--super{border-color:var(--bh-tangerine)}.better-hunt-autoscroll-card--extreme{border-color:var(--bh-ember)}
-      .better-hunt-autoscroll-image{display:block;width:100%;height:100%;min-height:0;object-fit:contain}
+      .better-hunt-autoscroll-image{display:block;width:100%;height:100%;min-height:0;object-fit:cover}
       .better-hunt-autoscroll-copy{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto minmax(0,1fr) auto;align-items:start;gap:4px;min-width:0;padding:4px;line-height:1.1}
-      .better-hunt-autoscroll-title,.better-hunt-autoscroll-stat{min-width:0;padding:3px 4px;border-radius:4px;background:color-mix(in srgb,var(--bh-inset) 88%,transparent);text-shadow:0 1px 2px #000;letter-spacing:0}
-      .better-hunt-autoscroll-title{grid-column:1;grid-row:3;align-self:end;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:.7em;line-height:1.2;color:#fff}
-      .better-hunt-autoscroll-stat{display:grid;gap:2px;font-variant-numeric:tabular-nums}
+      .better-hunt-autoscroll-stat{display:grid;min-width:0;width:max-content;max-width:100%;padding:3px 4px;border-radius:4px;background:color-mix(in srgb,var(--bh-inset) 88%,transparent);text-shadow:0 1px 2px #000;letter-spacing:0;font-variant-numeric:tabular-nums}
       .better-hunt-autoscroll-stat--autoscrollBet{grid-column:1;grid-row:1}
-      .better-hunt-autoscroll-stat--autoscrollPayout{grid-column:2;grid-row:3;align-self:end;text-align:right}
-      .better-hunt-autoscroll-stat--autoscrollMultiplier{grid-column:2;grid-row:1;text-align:right}
-      .better-hunt-autoscroll-stat>span{color:var(--bh-steel-hi);font-size:.56em;text-transform:uppercase}
+      .better-hunt-autoscroll-stat--autoscrollPayout{grid-column:2;grid-row:3;align-self:end;justify-self:end;text-align:right}
+      .better-hunt-autoscroll-stat--autoscrollMultiplier{grid-column:2;grid-row:1;justify-self:end;text-align:right}
       .better-hunt-autoscroll-stat>strong{min-width:0;overflow:hidden;color:#fff;font-size:.8em}
       .better-hunt-autoscroll-stat--autoscrollMultiplier>strong{color:var(--bh-tangerine)}
       .better-hunt-root[data-anim="off"] .better-hunt-autoscroll-track{animation-play-state:paused}

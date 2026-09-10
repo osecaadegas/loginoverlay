@@ -3182,8 +3182,6 @@ export const widgetAppearanceRegistry = Object.freeze({
           "resultStatValue",
           "autoscrollCard",
           "autoscrollImage",
-          "autoscrollTitle",
-          "autoscrollStatLabel",
           "autoscrollBet",
           "autoscrollPayout",
           "autoscrollMultiplier",
@@ -3527,12 +3525,10 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: "Autoscroll artwork",
         kind: "image",
         capabilities: ["image", "shape"],
-        controls: ["imageFit", "opacity", "radius"],
+        controls: ["opacity", "radius"],
       }),
       ...Object.fromEntries(
         [
-          ["autoscrollTitle", "Autoscroll slot names"],
-          ["autoscrollStatLabel", "Autoscroll stat labels"],
           ["autoscrollBet", "Autoscroll bets"],
           ["autoscrollPayout", "Autoscroll payouts"],
           ["autoscrollMultiplier", "Autoscroll multipliers"],

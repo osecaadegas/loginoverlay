@@ -55,6 +55,7 @@ try {
       schema: {
         better: getWidgetStyleElements('bonus_hunt', 'better_bonus_hunt').map(e => e.id),
         legacy: getWidgetStyleElements('bonus_hunt', 'v12_classic_sr').map(e => e.id),
+        autoscrollImage: getWidgetStyleElements('bonus_hunt', 'better_bonus_hunt').find(e => e.id === 'autoscrollImage').controls,
       },
       mount(cases) {
         this.cases = cases;
@@ -134,16 +135,18 @@ try {
       for (const card of panel.querySelectorAll('.better-hunt-autoscroll-card')) {
         const artwork = rect(card.querySelector('img')), bounds = rect(card);
         if (!contains(bounds, artwork) || artwork.width < bounds.width - 4 || artwork.height < bounds.height - 4) report('Autoscroll artwork does not fill the card');
-        for (const child of card.querySelectorAll('.better-hunt-autoscroll-copy, .better-hunt-autoscroll-title, .better-hunt-autoscroll-stat')) {
+        for (const child of card.querySelectorAll('.better-hunt-autoscroll-copy, .better-hunt-autoscroll-stat')) {
           if (!contains(rect(card), rect(child))) report(`Autoscroll content clipped: ${child.className}`);
         }
-        const corners = [...card.querySelectorAll('.better-hunt-autoscroll-title, .better-hunt-autoscroll-stat')];
+        const corners = [...card.querySelectorAll('.better-hunt-autoscroll-stat')];
+        if (corners.length !== 3 || card.textContent !== corners.map(corner => corner.querySelector('strong').textContent).join('')) report('Autoscroll should only display the three numeric values');
+        if (card.querySelector('[data-appearance-part="autoscrollTitle"], [data-appearance-part="autoscrollStatLabel"]')) report('Autoscroll still displays a name or stat label');
+        if (getComputedStyle(card.querySelector('img')).objectFit !== 'cover') report('Autoscroll image does not cover the card');
         for (let i = 0; i < corners.length; i++) for (let j = i + 1; j < corners.length; j++) {
           const a = rect(corners[i]), b = rect(corners[j]);
           if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1) report('Autoscroll corner overlays overlap each other');
         }
         for (const [selector, right, bottom] of [
-          ['.better-hunt-autoscroll-title', false, true],
           ['.better-hunt-autoscroll-stat--autoscrollBet', false, false],
           ['.better-hunt-autoscroll-stat--autoscrollPayout', true, true],
           ['.better-hunt-autoscroll-stat--autoscrollMultiplier', true, false],
@@ -219,8 +222,8 @@ try {
       continue;
     }
     assert.ok(await page.$$eval('.better-hunt-autoscroll-image', images => images.every(img =>
-      img.naturalWidth > 0 && img.naturalHeight > 0 && getComputedStyle(img).objectFit === 'contain'
-    )), 'Autoscroll displays the whole loaded slot image without cropping by default');
+      img.naturalWidth > 0 && img.naturalHeight > 0 && getComputedStyle(img).objectFit === 'cover'
+    )), 'Autoscroll artwork covers the entire card without letterboxing');
     const loop = await page.$eval('.better-hunt-autoscroll', viewport => {
       const track = viewport.querySelector('.better-hunt-autoscroll-track');
       const [first, second] = track.children;
@@ -242,11 +245,15 @@ try {
   const scrollX = () => page.$eval('.better-hunt-autoscroll-track', track => new DOMMatrixReadOnly(getComputedStyle(track).transform).m41);
   const startX = await scrollX();
   await page.waitForFunction(start => new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.better-hunt-autoscroll-track')).transform).m41 < start - 5, {}, startX);
-  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="0"]', e => e.textContent), /Bet.*1.*Payout.*0.*Multi.*0x/);
-  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="1"]', e => e.textContent), /Bet.*2.*Payout.*200.*Multi.*100x/);
-  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="5"]', e => e.textContent), /Payout-.*Multi-/);
+  const autoValues = index => page.$eval(`.better-hunt-autoscroll-card[data-slot-index="${index}"]`, card =>
+    [...card.querySelectorAll('.better-hunt-autoscroll-stat strong')].map(value => ({ text: value.textContent, label: value.getAttribute('aria-label') })));
+  assert.deepEqual(await autoValues(0), [
+    { text: '\u20ac1', label: 'Bet: \u20ac1' }, { text: '\u20ac0', label: 'Payout: \u20ac0' }, { text: '0x', label: 'Multi: 0x' },
+  ]);
+  assert.deepEqual((await autoValues(1)).map(value => value.text), ['\u20ac2', '\u20ac200', '100x']);
+  assert.deepEqual((await autoValues(5)).map(value => value.text), ['\u20ac1', '-', '-']);
   await mount([{ ...auto, bonusOverrides: { 1: { betSize: 2, payout: 500, opened: true } } }]);
-  assert.match(await page.$eval('.better-hunt-autoscroll-card[data-slot-index="1"]', e => e.textContent), /Payout.*500.*Multi.*250x/);
+  assert.deepEqual((await autoValues(1)).map(value => value.text), ['\u20ac2', '\u20ac500', '250x']);
   await mount([{ ...auto, config: { ...auto.config, animations: false } }]);
   const pausedX = await scrollX();
   await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 120)));
@@ -257,17 +264,21 @@ try {
   await page.emulateMediaFeatures([]);
   const autoAppearance = await page.evaluate(() => window.huntTest.scopedConfig([
     ['autoscrollCard', 'background', '#26332d'], ['autoscrollPayout', 'textColor', '#f4c442'],
-    ['autoscrollImage', 'imageFit', 'cover'],
+    ['autoscrollImage', 'opacity', 0.8],
   ]));
-  for (const runtime of ['editor', 'obs', 'preview']) {
+  // Old fit/title settings must not restore letterboxing or visible names.
+  autoAppearance.__appearanceExplicitSubElements.autoscrollImage.imageFit = 'contain';
+  autoAppearance.__appearanceExplicitSubElements.autoscrollTitle = { fontSize: 40 };
+  for (const runtime of [undefined, 'editor', 'obs', 'preview']) {
     await mount([{ ...auto, runtime, config: { ...auto.config, ...autoAppearance, animations: false } }]);
     await checkGeometry(`Autoscroll ${runtime} saved appearance`);
     const values = await page.$eval('.better-hunt-autoscroll-card', card => ({
       background: getComputedStyle(card).backgroundColor,
       payout: getComputedStyle(card.querySelector('[data-appearance-part="autoscrollPayout"]')).color,
       fit: getComputedStyle(card.querySelector('img')).objectFit,
+      opacity: getComputedStyle(card.querySelector('img')).opacity,
     }));
-    assert.deepEqual(values, { background: 'rgb(38, 51, 45)', payout: 'rgb(244, 196, 66)', fit: 'cover' });
+    assert.deepEqual(values, { background: 'rgb(38, 51, 45)', payout: 'rgb(244, 196, 66)', fit: 'cover', opacity: '0.8' });
   }
   if (process.env.AUTOSCROLL_SCREENSHOT) {
     await mount([{ ...auto, config: { ...auto.config, animations: false, uiScale: 1.2, showRequests: true, requestView: 'carousel' } }]);
@@ -354,6 +365,8 @@ try {
   assert.deepEqual(appearance[0], appearance[1]);
   assert.deepEqual(appearance[0], { fill: 'rgb(244, 196, 66)', width: '50%', height: 10, payout: 'rgb(244, 196, 66)' });
   const schema = await page.evaluate(() => window.huntTest.schema);
+  assert.ok(!schema.better.includes('autoscrollTitle') && !schema.better.includes('autoscrollStatLabel'), 'Removed text has no leftover appearance controls');
+  assert.ok(!schema.autoscrollImage.includes('imageFit'), 'Autoscroll does not offer a fit option that could add empty bars');
   assert.ok(schema.better.includes('resultPayout') && !schema.legacy.includes('resultPayout'), 'Result controls belong only to Better Hunt');
   for (const controls of ['simple', 'advanced']) {
     await mount([{ ...base, controls }]);
