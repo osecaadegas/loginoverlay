@@ -33,7 +33,7 @@ try {
     ["vertical", "horizontal", "mainstream"].map((orientation) =>
       getBetterBonusOrientationHeight(orientation),
     ),
-    [884, 280, 884],
+    [884, 220, 884],
     "horizontal orientation uses a thin frame without shrinking tall layouts",
   );
 

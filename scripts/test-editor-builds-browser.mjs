@@ -153,7 +153,10 @@ try {
   assert.equal(await rowControl(), false, 'Vertical widgets do not expose a request row control');
   await searchSettings('Orientation');
   await choose('Horizontal');
+  await clearSettingsSearch();
+  assert.equal(await page.$eval('[aria-label="Frame Height"]', input => input.value), '220', 'Horizontal selection frame uses compact geometry');
   await searchSettings('Chat Requests');
+  await clickText('Show requests feed');
   assert.equal(await rowControl(), true, 'Horizontal request lists expose a row control');
   await page.evaluate(() => {
     const input = [...document.querySelectorAll('.bp-slider')].find((label) => label.querySelector('em')?.textContent === 'Visible request rows').querySelector('input');
@@ -164,7 +167,7 @@ try {
   await page.waitForSelector('[aria-label="Second Hunt actions"]');
   const requestConfig = await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.find((row) => row.id === 'build-a').draft_layout.instances.find((item) => item.widgetType === 'bonus_hunt').config);
   assert.equal(requestConfig.requestVisibleRows, 8);
-  assert.ok(requestConfig.widgetHeight >= 8 * 58 + 112, 'Increasing row count also makes room in the widget frame');
+  assert.equal(requestConfig.widgetHeight, 8 * ({ compact: 44, image: 56, names: 30 }[requestConfig.listMode]) + 88, 'Increasing row count makes only the required room in the widget frame');
   await clickText('My Daytime Build', '.better-editor-builds__list');
   await page.waitForSelector('[aria-label="My Live Hunt actions"]');
   await page.click('.better-editor-widget-row__main:has([title="My Live Hunt"])');
@@ -180,7 +183,7 @@ try {
   await choose('Horizontal');
   await saveDraft();
   await page.waitForFunction(() => window.buildTest.state.tables.better_editor_overlays.find((row) => row.id === 'build-a').draft_layout.instances.find((item) => item.widgetType === 'bonus_hunt').config.listMode === 'image');
-  assert.ok(await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.find((row) => row.id === 'build-a').draft_layout.instances.find((item) => item.widgetType === 'bonus_hunt').config.widgetHeight >= 8 * 106 + 112), 'List style and orientation changes preserve room for all requested rows');
+  assert.equal(await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.find((row) => row.id === 'build-a').draft_layout.instances.find((item) => item.widgetType === 'bonus_hunt').height), 8 * 56 + 88, 'List style and orientation changes preserve room for all compact request cards');
   await clearSettingsSearch();
 
   // UI preferences are local and must not write widget data or trigger a source reload.
@@ -245,6 +248,9 @@ try {
   await page.mouse.move(handle.left + handle.width / 2 + 40 * canvasScale, handle.top + handle.height / 2 + 30 * canvasScale, { steps: 5 });
   await page.mouse.up();
   assert.ok(Math.abs(Number(await page.$eval('[aria-label="Frame Width"]', (input) => input.value)) - 640) <= 1, 'Resize handles respect zoomed coordinates');
+  assert.ok(Math.abs(Number(await page.$eval('[aria-label="Frame Height"]', input => input.value)) - 730) <= 1, 'Horizontal resize handles retain the requested height');
+  await saveDraft();
+  assert.ok(Math.abs(await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.find(row => row.id === 'build-a').draft_layout.instances.find(item => item.widgetType === 'bonus_hunt').config.horizontalHeight) - 730) <= 1, 'Manual horizontal height survives draft normalization');
   await page.click('[aria-label="Undo"]');
   await page.click('[aria-label="Undo"]');
   assert.equal(await page.$eval('[aria-label="Frame X"]', (input) => input.value), '0', 'Each drag or resize is one undo step');

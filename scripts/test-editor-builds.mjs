@@ -48,6 +48,7 @@ try {
   console.log('Overlay build service checks passed: owner/build isolation, rename, copy, save, publish, reset, revert and URL rotation.');
 
   const { BetterBonusHuntStyle } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx');
+  const { getHorizontalHuntHeight } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/bonus-hunt/shared/betterHuntSizing.js');
   const art = `data:image/webp;base64,${readFileSync(new URL('../public/player.webp', import.meta.url)).toString('base64')}`;
   const requests = Array.from({ length: 10 }, (_, index) => ({ id: String(index), slot_name: `Requested slot ${index}`, requested_by: `Viewer ${index}`, slot_image: art }));
   const cases = [];
@@ -58,7 +59,7 @@ try {
     cases.push({ orientation, requestView: 'carousel' });
   }
   const html = cases.map((config, index) => {
-    const widgetHeight = config.orientation === 'horizontal' ? Math.max(280, (config.requestVisibleRows || 1) * ({ compact: 58, image: 106, names: 38 }[config.listMode] || 58) + 112) : 1000;
+    const widgetHeight = config.orientation === 'horizontal' ? getHorizontalHuntHeight(config) : 1000;
     return `<section data-case="${index}" style="width:${config.orientation === 'horizontal' ? 1080 : 372}px;height:${widgetHeight + 80}px">${renderToStaticMarkup(createElement(BetterBonusHuntStyle, {
       config: { ...config, requests, widgetHeight, animations: false, carouselMode: 'imagestats', showRequests: true }, bonuses: [], stats: {},
     }))}</section>`;
@@ -87,7 +88,8 @@ try {
       if (item.stage) {
         assert.ok(Math.abs(item.container.width - item.availableWidth) < 2, `${config.orientation} carousel fills the available panel width`);
         assert.ok(item.container.height < 230, `${config.orientation} carousel container has no unused vertical track`);
-        assert.ok(item.stage.height <= 167 && item.stage.height >= 165, `${config.orientation} compact carousel stage`);
+        const stageHeight = config.orientation === 'horizontal' ? 140 : 166;
+        assert.ok(Math.abs(item.stage.height - stageHeight) < 1, `${config.orientation} compact carousel stage`);
         assert.ok(item.card.top >= item.stage.top && item.card.bottom <= item.stage.bottom, 'Full 3D card remains in the stage');
       } else if (config.orientation === 'horizontal') {
         const fullyVisible = item.rows.filter((row) => row.top >= item.list.top - 1 && row.bottom <= item.list.bottom + 1).length;

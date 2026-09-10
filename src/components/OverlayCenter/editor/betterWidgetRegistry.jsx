@@ -19,6 +19,10 @@ import {
 import { normalizeBetterCoordinate } from "./betterWidgetGeometry";
 import { STANDARD_BETTER_WIDGET_GEOMETRY } from "./standardWidgetPresets";
 import { EDITOR_WIDGET_METADATA } from "./editorWidgetMetadata";
+import {
+  getHorizontalHuntHeight,
+  getHorizontalHuntMinHeight,
+} from "../widgets/bonus-hunt/shared/betterHuntSizing";
 
 export const BETTER_CANVAS = Object.freeze({ width: 1920, height: 1080 });
 export const BETTER_LAYOUT_SCHEMA_VERSION = 1;
@@ -810,10 +814,18 @@ function normalizeZIndexes(instances) {
   ].sort((a, b) => Number(a.zIndex) - Number(b.zIndex));
 }
 
+export function getBetterInstanceConstraints(instance = {}) {
+  const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
+  return instance.widgetType === "bonus_hunt" &&
+    instance.config?.orientation === "horizontal"
+    ? { ...constraints, minHeight: getHorizontalHuntMinHeight(instance.config), maxHeight: 980 }
+    : constraints;
+}
+
 function normalizeInstanceGeometry(widgetType, geometry = {}) {
   const meta = getBetterWidgetMeta(widgetType);
   const defaultPos = DEFAULT_POSITIONS[widgetType] || {};
-  const constraints = SIZE_CONSTRAINTS[widgetType] || {};
+  const constraints = getBetterInstanceConstraints({ ...geometry, widgetType });
   const minWidth = constraints.minWidth || 80;
   const minHeight = constraints.minHeight || 80;
   const maxWidth = constraints.maxWidth || BETTER_CANVAS.width;
@@ -825,7 +837,9 @@ function normalizeInstanceGeometry(widgetType, geometry = {}) {
     defaultPos.width || meta?.defaultSize?.width || 320,
   );
   const height = clampNumber(
-    geometry.height,
+    widgetType === "bonus_hunt" && geometry.config?.orientation === "horizontal"
+      ? getHorizontalHuntHeight(geometry.config)
+      : geometry.height,
     minHeight,
     maxHeight,
     defaultPos.height || meta?.defaultSize?.height || 240,
@@ -907,18 +921,20 @@ export function createBetterInstance(widgetType, overrides = {}) {
   const definition = getBetterWidgetDefinition(widgetType);
   if (!definition) return null;
   const defaultPos = DEFAULT_POSITIONS[widgetType] || {};
+  const config = validateBetterWidgetConfig(
+    widgetType,
+    overrides.config || definition.defaultConfig,
+  );
   const geometry = normalizeInstanceGeometry(widgetType, {
     ...defaultPos,
     ...overrides,
+    config,
   });
   return {
     instanceId: overrides.instanceId || makeInstanceId(widgetType),
     widgetType,
     label: overrides.label || definition.label,
-    config: validateBetterWidgetConfig(
-      widgetType,
-      overrides.config || definition.defaultConfig,
-    ),
+    config,
     visible: overrides.visible !== false,
     locked: widgetType === BACKGROUND_TYPE ? true : overrides.locked === true,
     opacity: clampNumber(overrides.opacity, MIN_OPACITY, MAX_OPACITY, 1),
@@ -993,6 +1009,14 @@ export function normalizeBetterInstance(rawInstance = {}) {
     widgetType === "raid_shoutout" &&
     Number(rawInstance.width) === 560 &&
     Number(rawInstance.height) === 420;
+  const rawConfig = rawInstance.config || definition.defaultConfig;
+  const config = validateBetterWidgetConfig(
+    widgetType,
+    migrateLegacyConnectFourConfig(
+      widgetType,
+      migrateLegacyShoutoutConfig(widgetType, rawConfig),
+    ),
+  );
   const geometry = normalizeInstanceGeometry(
     widgetType,
     usesLegacyShoutoutGeometry
@@ -1003,19 +1027,14 @@ export function normalizeBetterInstance(rawInstance = {}) {
           width: 640,
           height: 360,
         }
-      : rawInstance,
-  );
-  const rawConfig = rawInstance.config || definition.defaultConfig;
-  const config = migrateLegacyConnectFourConfig(
-    widgetType,
-    migrateLegacyShoutoutConfig(widgetType, rawConfig),
+      : { ...rawInstance, config },
   );
   return {
     instanceId:
       rawInstance.instanceId || rawInstance.id || makeInstanceId(widgetType),
     widgetType,
     label: rawInstance.label || definition.label,
-    config: validateBetterWidgetConfig(widgetType, config),
+    config,
     visible: rawInstance.visible !== false && rawInstance.is_visible !== false,
     locked: widgetType === BACKGROUND_TYPE ? true : rawInstance.locked === true,
     opacity: clampNumber(rawInstance.opacity, MIN_OPACITY, MAX_OPACITY, 1),
@@ -1103,6 +1122,9 @@ export function betterInstanceToLegacyWidget(
   );
   const instanceConfig = {
     ...config,
+    ...(instance.widgetType === "bonus_hunt" && config.orientation === "horizontal"
+      ? { horizontalHeight: instance.height }
+      : {}),
     __betterInstanceId: instance.instanceId,
   };
   return {

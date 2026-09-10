@@ -31,7 +31,7 @@ try {
     const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
     const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
     const { BetterBonusHuntStyle } = await import('/src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx');
-    const { createBetterInstance, renderBetterWidgetInstance } = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
+    const { createBetterInstance, normalizeBetterInstance, renderBetterWidgetInstance, getBetterInstanceConstraints } = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
     const { BetterWidgetPreview, BetterWidgetControls } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
     const scopeUrl = performance.getEntriesByType('resource').find(entry => new URL(entry.name).pathname === '/src/components/OverlayCenter/editor/EditorControlScope.jsx')?.name;
     const { EditorControlContext } = await import(scopeUrl);
@@ -41,6 +41,8 @@ try {
     await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.css');
     const root = ReactDOM.createRoot(document.getElementById('root'));
     window.huntTest = {
+      normalize: normalizeBetterInstance,
+      constraints: getBetterInstanceConstraints,
       scopedConfig() {
         let config = { displayStyle: 'better_bonus_hunt' };
         for (const [elementId, propertyId, value] of [
@@ -71,19 +73,21 @@ try {
             fontFamily: 'Arial, sans-serif', uiScale: 1, ...item.config,
           };
           const live = { bonuses, bonusOpening: config.sessionState === 'opening', sessionState: config.sessionState, startMoney: 1000, showRequests: config.showRequests, showSlotRequests: config.showRequests };
-          const requests = [{ id: 'request', slot_name: 'Requested slot', image_url: '/player.webp', requested_by: 'viewer' }];
+          const requests = Array.from({ length: item.requests ?? 1 }, (_, i) => ({ id: `request-${i}`, slot_name: `Requested slot ${i + 1}`, slot_image: '/player.webp', requested_by: `viewer${i + 1}` }));
           config.slotRequests = requests;
           let widget;
-          const instance = JSON.parse(JSON.stringify(createBetterInstance('bonus_hunt', { width: item.width, height: item.height, config })));
+          const instance = normalizeBetterInstance(JSON.parse(JSON.stringify(createBetterInstance('bonus_hunt', { width: item.width, height: item.height, config }))));
           if (item.runtime === 'preview') widget = React.createElement(BetterWidgetPreview, { type: 'bonus_hunt', config: { ...instance.config, ...live } });
           else if (item.runtime) widget = renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime: item.runtime, liveWidgets: [{ id: 'hunt-fixture', widget_type: 'bonus_hunt', config: live }] });
           else widget = React.createElement(BetterBonusHuntStyle, { config, bonuses, stats: {}, currency: '\u20ac' });
-          const frame = React.createElement('div', { key: index, 'data-case': index, style: { width: item.width, height: item.height, flexShrink: 0 } }, widget);
+          const frame = React.createElement('div', { key: index, 'data-case': index, style: { width: item.width, height: config.orientation === 'horizontal' ? instance.height : item.height, flexShrink: 0 } }, widget);
           if (!item.controls) return frame;
           return React.createElement(React.Fragment, { key: index }, frame,
             React.createElement('aside', { style: { width: 320 } },
-              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: 'layout', simpleSections: ['Orientation', 'Carousel Style', 'Stats Layout'], sections: { Orientation: true, 'Carousel Style': true, 'Stats Layout': true } } },
-                React.createElement(BetterWidgetControls, { type: 'bonus_hunt', config: instance.config, onChange(nextConfig) {
+              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: '__all', simpleSections: ['Orientation', 'Carousel Style', 'Stats Layout', 'Chat Requests', 'Sizes & Layout'], sections: { Orientation: true, 'Carousel Style': true, 'Stats Layout': true, 'Chat Requests': true, 'Sizes & Layout': true } } },
+                React.createElement(BetterWidgetControls, { type: 'bonus_hunt', config: instance.config, onWidgetChange(patch) {
+                  window.huntTest.mount(cases.map((current, i) => i === index ? { ...current, ...patch } : current));
+                }, onChange(nextConfig) {
                   window.huntTest.mount(cases.map((current, i) => i === index ? { ...current, config: nextConfig } : current));
                 } }))));
         })));
@@ -118,12 +122,18 @@ try {
       if (backdrop && rect(backdrop).bottom > rect(progress).top + 1) report('Carousel overlaps progress');
       const center = panel.querySelector('.better-hunt-card--center');
       if (center && !contains(rect(backdrop), rect(center))) report('Center 3D card clipped');
+      const requests = panel.querySelector('.better-hunt-hstrip-requests .better-hunt-requests');
+      if (requests && !contains(rect(requests.parentElement), rect(requests))) report('Horizontal requests clipped');
+      for (const row of panel.querySelectorAll('.better-hunt-hstrip-slot-row')) {
+        for (const child of row.children) if (!contains(rect(row), rect(child))) report(`Current slot stat clipped: ${row.textContent}`);
+      }
       for (const e of panel.querySelectorAll('.better-hunt-result-head, .better-hunt-result-body, .better-hunt-result-stats, .better-hunt-image-stats-copy, .better-hunt-image-row, .better-hunt-stats-title, .better-hunt-stat-strip')) {
         if (getComputedStyle(e).display === 'contents') continue;
         if (!contains(p, rect(e))) report(`Clipped ${e.className}`);
         if (e.closest('.better-hunt-result') && !contains(rect(e.closest('.better-hunt-result')), rect(e))) report(`Result content outside card: ${e.className} ${JSON.stringify({ content: rect(e).toJSON(), card: rect(e.closest('.better-hunt-result')).toJSON() })}`);
       }
       for (const card of panel.querySelectorAll('.better-hunt-result')) {
+        if (panel.classList.contains('better-hunt-horizontal') && !contains(p, rect(card))) report('Result card clipped');
         const leaves = [...card.querySelectorAll('em, .better-hunt-result-slot, .better-hunt-result-art, .better-hunt-result-payout, .better-hunt-result-row')];
         for (let i = 0; i < leaves.length; i++) for (let j = i + 1; j < leaves.length; j++) {
           const a = rect(leaves[i]), b = rect(leaves[j]);
@@ -159,6 +169,54 @@ try {
     checked += cases.length;
   }
   const base = { width: 1080, height: 340, config: { carouselMode: '3d' } };
+  const sizing = await page.evaluate(() => {
+    const original = { widgetType: 'bonus_hunt', instanceId: 'saved-hunt', x: 80, y: 100, width: 1080, height: 360,
+      config: { orientation: 'horizontal', widgetHeight: 360, panelHeight: 360, listMode: 'compact', showRequests: true } };
+    const compact = window.huntTest.normalize(original);
+    const many = window.huntTest.normalize({ ...compact, config: { ...compact.config, requestVisibleRows: 8 } });
+    const fewer = window.huntTest.normalize({ ...many, config: { ...many.config, requestVisibleRows: 2 } });
+    const hidden = window.huntTest.normalize({ ...many, config: { ...many.config, showRequests: false } });
+    const manual = window.huntTest.normalize({ ...compact, height: 300, config: { ...compact.config, horizontalHeight: 300 } });
+    const reloaded = window.huntTest.normalize(JSON.parse(JSON.stringify(manual)));
+    const tall = window.huntTest.normalize({ ...original, height: 884, config: { orientation: 'vertical' } });
+    return { compact: compact.height, many: many.height, fewer: fewer.height, hidden: hidden.height, manual: manual.height,
+      reloaded: reloaded.height, tall: tall.height, min: window.huntTest.constraints(compact).minHeight,
+      position: [compact.x, compact.y, compact.width], id: compact.instanceId };
+  });
+  assert.deepEqual(sizing, { compact: 220, many: 440, fewer: 220, hidden: 220, manual: 300, reloaded: 300, tall: 884, min: 220, position: [80, 100, 1080], id: 'saved-hunt' });
+  for (const viewport of [1440, 390]) {
+    await page.setViewport({ width: viewport, height: 900 });
+    for (const listMode of ['compact', 'image', 'names']) {
+      for (const requestVisibleRows of [1, 3, 8]) {
+        await mount([{ ...base, requests: 12, config: { showRequests: true, requestView: 'list', listMode, requestVisibleRows, uiScale: 1.2 } }]);
+        await checkGeometry(`Compact ${listMode}, ${requestVisibleRows} rows, viewport ${viewport}`);
+        const queue = await page.$eval('.better-hunt-request-list', list => {
+          const bounds = list.getBoundingClientRect();
+          const visible = [...list.querySelectorAll('.better-hunt-request')].filter(row => {
+            const r = row.getBoundingClientRect(); return r.top >= bounds.top - 1 && r.bottom <= bounds.bottom + 1;
+          });
+          return { count: visible.length, fits: visible.every(row => [...row.querySelectorAll('.better-hunt-request-copy, .better-hunt-request-user')].every(copy => {
+            const r = copy.getBoundingClientRect(), parent = row.getBoundingClientRect();
+            return r.top >= parent.top && r.bottom <= parent.bottom;
+          })) };
+        });
+        assert.equal(queue.count, requestVisibleRows);
+        assert.ok(queue.fits, 'Request slot and viewer fit each compact row');
+      }
+    }
+    await mount([{ ...base, requests: 12, config: { showRequests: true, requestView: 'carousel', uiScale: 1.2 } }]);
+    await checkGeometry(`Both 3D carousels and results, viewport ${viewport}`);
+    const features = await page.$eval('[data-case]', host => {
+      const stage = host.querySelector('.better-hunt-request-stage').getBoundingClientRect();
+      const card = host.querySelector('.better-hunt-request-card.is-center').getBoundingClientRect();
+      return { height: host.getBoundingClientRect().height, stats: host.querySelectorAll('.better-hunt-stat-grid .better-hunt-stat').length,
+        current: host.querySelectorAll('.better-hunt-hstrip-slot-row').length, results: host.querySelectorAll('.better-hunt-result').length,
+        cardFits: card.top >= stage.top && card.bottom <= stage.bottom,
+        requestArt: [...host.querySelectorAll('.better-hunt-request-card img')].every(img => img.naturalWidth > 0) };
+    });
+    assert.deepEqual(features, { height: 220, stats: 4, current: 5, results: 2, cardFits: true, requestArt: true });
+  }
+  await page.setViewport({ width: 1600, height: 1000 });
   for (const runtime of ['editor', 'obs', 'preview']) {
     await mount([{ ...base, runtime }]);
     await checkGeometry(runtime);
@@ -171,6 +229,13 @@ try {
     const fill = await page.$eval('.better-hunt-track>span', e => parseFloat(e.style.width));
     assert.equal(fill, count ? Math.round(opened / count * 100) : 0);
     await checkGeometry(`opened ${opened}/${count}`);
+  }
+  for (const carouselMode of ['3d', 'imagestats', 'stats']) {
+    for (const sessionState of ['hunt', 'opening', 'ended']) {
+      await mount([{ ...base, count: 6, opened: sessionState === 'ended' ? 6 : 1, requests: 12,
+        config: { carouselMode, sessionState, showRequests: true, requestView: 'carousel', uiScale: 1.35 } }]);
+      await checkGeometry(`Compact ${carouselMode} / ${sessionState}`);
+    }
   }
   const scopedConfig = await page.evaluate(() => window.huntTest.scopedConfig());
   await mount(['editor', 'obs'].map(runtime => ({ ...base, runtime, config: { ...base.config, ...scopedConfig, barHeight: 10 } })));
@@ -197,6 +262,25 @@ try {
       await page.click(`[data-control-section="Carousel Style"] .bp-hunt-choice-grid button:nth-child(${button})`);
       await page.waitForSelector(selector);
     }
+    await mount([{ ...base, controls, requests: 12, config: { showRequests: true, listMode: 'compact' } }]);
+    const changeSlider = async (label, value) => {
+      await page.evaluate(({ label, value }) => {
+        const input = [...document.querySelectorAll('.bp-slider')].find(row => row.textContent.includes(label))?.querySelector('input[type="range"]');
+        if (!input) throw new Error(`Missing slider ${label}`);
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, String(value));
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }, { label, value });
+      await settle();
+    };
+    await changeSlider('Visible request rows', 8);
+    assert.equal(await page.$eval('[data-case]', e => e.getBoundingClientRect().height), 440);
+    await changeSlider('Visible request rows', 2);
+    assert.equal(await page.$eval('[data-case]', e => e.getBoundingClientRect().height), 220);
+    await changeSlider('Widget height', 300);
+    assert.equal(await page.$eval('[data-case]', e => e.getBoundingClientRect().height), 300);
+    await changeSlider('Widget height', 0);
+    assert.equal(await page.$eval('[data-case]', e => e.getBoundingClientRect().height), 220);
   }
   await mount([{ ...base, config: { sessionState: 'hunt', animations: true, carouselMs: 1500 } }]);
   const before = await page.$eval('.better-hunt-card--center img', img => img.alt);
@@ -218,7 +302,7 @@ try {
   await page.waitForFunction(() => [...document.querySelectorAll('.better-hunt-drawer')].every(e => e.getAttribute('aria-hidden') === 'false'));
   assert.deepEqual(await page.$$eval('.better-hunt-panel', panels => panels.map(e => e.getBoundingClientRect().top)), tops, 'Revealing drawers preserves the top anchor');
   await page.evaluate(() => { window.setTimeout = window.huntOriginalTimeout; });
-  await mount([base]);
+  await mount([{ ...base, requests: 12, config: { showRequests: true, requestView: 'carousel', uiScale: 1.2 } }]);
   await page.setViewport({ width: 390, height: 844 });
   await checkGeometry('Mobile viewport preserves horizontal layout');
   await page.setViewport({ width: 1600, height: 1000 });

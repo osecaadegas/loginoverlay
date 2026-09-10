@@ -36,6 +36,11 @@ import {
 import NavbarWidget from "../widgets/navbar/NavbarWidget";
 import RtpStatsWidget from "../widgets/rtp-stats/RtpStatsWidget";
 import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
+import {
+  BETTER_HUNT_HORIZONTAL_HEIGHT,
+  getHorizontalHuntHeight,
+  getHorizontalHuntMinHeight,
+} from "../widgets/bonus-hunt/shared/betterHuntSizing";
 import ChatWidget from "../widgets/chat/ChatWidget";
 import BetsWidget from "../widgets/bets/BetsWidget";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
@@ -3634,7 +3639,7 @@ export function getBetterBonusOrientationWidth(orientation) {
 }
 
 export function getBetterBonusOrientationHeight(orientation) {
-  return orientation === "horizontal" ? 280 : 884;
+  return orientation === "horizontal" ? BETTER_HUNT_HORIZONTAL_HEIGHT : 884;
 }
 
 function SimpleThemedControls({
@@ -3679,15 +3684,14 @@ function SimpleThemedControls({
       Number(next.widgetWidth || next.panelWidth) ||
       getBetterBonusOrientationWidth(next.orientation);
     let nextHeight = Number(next.widgetHeight ?? next.panelHeight ?? 0) || 0;
-    if (next.orientation === "horizontal" && next.requestView !== "carousel" && next.requestVisibleRows != null) {
-      const rowHeight = { compact: 58, image: 106, names: 38 }[next.listMode] || 58;
-      const rows = Math.round(clampNumber(next.requestVisibleRows, 1, 8, 3));
-      nextHeight = Math.max(nextHeight, rows * rowHeight + 112);
+    if (next.orientation === "horizontal") {
+      nextHeight = getHorizontalHuntHeight(next);
       next.widgetHeight = nextHeight;
       next.panelHeight = nextHeight;
     }
     if (typeof onWidgetChange === "function") {
-      const minimumHeight = next.orientation === "horizontal" ? 240 : 320;
+      const minimumHeight =
+        next.orientation === "horizontal" ? getHorizontalHuntMinHeight(next) : 320;
       const widgetPatch = {
         width: clampNumber(nextWidth, 320, 1280, nextWidth),
         config: next,
@@ -5053,7 +5057,10 @@ function SimpleThemedControls({
   const widgetWidth =
     Number(c.widgetWidth || c.panelWidth) ||
     getBetterBonusOrientationWidth(c.orientation);
-  const widgetHeight = Number(c.widgetHeight ?? c.panelHeight ?? 0) || 0;
+  const widgetHeight =
+    Number(c.orientation === "horizontal"
+      ? c.horizontalHeight
+      : c.widgetHeight ?? c.panelHeight) || 0;
   const edgeRadius = Number(c.edgeRadius ?? c.radius ?? c.cardRadius ?? 14);
   const statRadius = Number(c.statRadius ?? 7);
   return (
@@ -5104,6 +5111,7 @@ function SimpleThemedControls({
               const height = getBetterBonusOrientationHeight(orientation);
               setBonusSize({
                 orientation,
+                ...(orientation === "horizontal" ? { horizontalHeight: 0 } : {}),
                 widgetWidth: width,
                 widgetHeight: height,
                 panelWidth: width,
@@ -5285,7 +5293,8 @@ function SimpleThemedControls({
           <ToggleRow
             label="Show requests feed"
             checked={localRequestsVisible}
-            onChange={(showRequests) => set({ showRequests })}
+            onChange={(showRequests) => c.orientation === "horizontal"
+              ? setBonusSize({ showRequests }) : set({ showRequests })}
           />
           <ToggleRow
             label="Add and shatter animations"
@@ -5309,7 +5318,7 @@ function SimpleThemedControls({
                 hint: "Rotate pending requests as cover cards",
               },
             ]}
-            onChange={(requestView) => c.orientation === "horizontal" && c.requestVisibleRows != null
+            onChange={(requestView) => c.orientation === "horizontal"
               ? setBonusSize({ requestView }) : set({ requestView })}
           />
           {c.orientation === "horizontal" && c.requestView !== "carousel" && (
@@ -5357,7 +5366,8 @@ function SimpleThemedControls({
             max={1.2}
             step={0.05}
             format={(value) => `${Math.round(value * 100)}%`}
-            onChange={(uiScale) => set({ uiScale })}
+            onChange={(uiScale) => c.orientation === "horizontal"
+              ? setBonusSize({ uiScale }) : set({ uiScale })}
           />
           <BonusTypographyControls config={c} onChange={onChange} />
         </HuntSection>
@@ -5386,7 +5396,11 @@ function SimpleThemedControls({
             step={10}
             format={(value) => (value === 0 ? "Auto" : `${value}px`)}
             onChange={(value) =>
-              setBonusSize({ widgetHeight: value, panelHeight: value })
+              setBonusSize({
+                widgetHeight: value,
+                panelHeight: value,
+                ...(c.orientation === "horizontal" ? { horizontalHeight: value } : {}),
+              })
             }
           />
           <SliderRow
@@ -5446,7 +5460,7 @@ function SimpleThemedControls({
               { key: "image", label: "Cards" },
               { key: "names", label: "Names" },
             ]}
-            onChange={(listMode) => c.orientation === "horizontal" && c.requestVisibleRows != null
+            onChange={(listMode) => c.orientation === "horizontal"
               ? setBonusSize({ listMode }) : set({ listMode })}
           />
         </HuntSection>

@@ -66,6 +66,7 @@ import {
   resolveBetterWidgetConfig,
   validateBetterWidgetConfig,
   betterInstanceToLegacyWidget,
+  getBetterInstanceConstraints,
 } from "./betterWidgetRegistry";
 import EditorInspector from "./EditorInspector";
 import EditorWidgetPicker from "./EditorWidgetPicker";
@@ -203,10 +204,9 @@ function snapGeometry(layout, instanceId, geometry) {
   };
   return clampGeometry(
     snapped,
-    BETTER_WIDGET_REGISTRY[
-      layout.instances.find((item) => item.instanceId === instanceId)
-        ?.widgetType
-    ]?.constraints,
+    getBetterInstanceConstraints(
+      layout.instances.find((item) => item.instanceId === instanceId),
+    ),
   );
 }
 
@@ -936,9 +936,17 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
               ? validateBetterWidgetConfig(instance.widgetType, patch.config)
               : instance.config,
           };
+          if (
+            next.widgetType === "bonus_hunt" &&
+            next.config.orientation === "horizontal" &&
+            !patch.config &&
+            patch.height != null &&
+            patch.height !== instance.height
+          ) {
+            next.config = { ...next.config, horizontalHeight: patch.height };
+          }
           if (next.config.fitContentToFrame === true) {
-            const constraints =
-              BETTER_WIDGET_REGISTRY[next.widgetType]?.constraints;
+            const constraints = getBetterInstanceConstraints(next);
             Object.assign(
               next,
               clampGeometry(
@@ -974,8 +982,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
               zIndex: 0,
             };
           }
-          const constraints =
-            BETTER_WIDGET_REGISTRY[next.widgetType]?.constraints;
+          const constraints = getBetterInstanceConstraints(next);
           return {
             ...next,
             ...clampGeometry(next, constraints),
@@ -1098,8 +1105,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
             }
           : applyResize(active.start, active.handle, dx, dy);
 
-      const constraints =
-        BETTER_WIDGET_REGISTRY[instance.widgetType]?.constraints;
+      const constraints = getBetterInstanceConstraints(instance);
       const clamped = clampGeometry(rawGeometry, constraints);
       const snapped =
         snapping && !event.altKey
