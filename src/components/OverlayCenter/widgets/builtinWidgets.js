@@ -235,7 +235,10 @@ registerWidget({
   component: ChatWidget,
   configPanel: ChatConfig,
   styleConfigKey: "chatStyle",
-  styles: [{ id: "better_chat", icon: "💬", label: "Better Chat" }],
+  styles: [
+    { id: "better_chat", icon: "💬", label: "Better Chat" },
+    { id: "broadcast_chat", icon: "💬", label: "Broadcast" },
+  ],
   defaults: {
     chatStyle: "better_chat",
     twitchEnabled: true,

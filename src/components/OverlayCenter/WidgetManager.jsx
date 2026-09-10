@@ -15,6 +15,7 @@ import {
   getWidgetsByCategory,
 } from "./widgets/widgetRegistry";
 import { swapStyleConfig } from "./widgets/shared/perStyleConfig";
+import { switchChatStyle } from "./widgets/chat/chatStyles";
 import { getStyleKeysForWidget } from "./widgets/styleKeysRegistry";
 import { useAuth } from "../../context/AuthContext";
 import buildThemeVars from "./themeVarsBuilder";
@@ -28,7 +29,9 @@ function buildWidgetStyleUpdate(widget, nextStyleId, currentStyleId) {
   const currentStyle =
     currentStyleId || widget.config?.[key] || def?.styles?.[0]?.id;
   const styleKeys = getStyleKeysForWidget(widget.widget_type);
-  const config = styleKeys
+  const config = widget.widget_type === "chat"
+    ? switchChatStyle(widget.config || {}, nextStyleId)
+    : styleKeys
     ? swapStyleConfig(
         widget.config || {},
         currentStyle,

@@ -3,6 +3,7 @@ import TabBar from "../shared/TabBar";
 import { makePerStyleSetters } from "../shared/perStyleConfig";
 import { CHAT_STYLE_KEYS } from "../styleKeysRegistry";
 import useTwitchChannel from "../../../../hooks/useTwitchChannel";
+import { BROADCAST_CHAT_DEFAULTS, switchChatStyle } from "./chatStyles";
 
 export default function ChatConfig({ config, onChange }) {
   const c = config || {};
@@ -29,6 +30,10 @@ export default function ChatConfig({ config, onChange }) {
   // ─── Preset system ───
   const [presetName, setPresetName] = useState("");
   const PRESET_KEYS = [
+    ...Object.keys(BROADCAST_CHAT_DEFAULTS),
+    "__appearanceExplicitSubElements",
+    "subElements",
+    "colourTheme",
     "chatStyle",
     "bonusHuntColorSync",
     "bgColor",
@@ -86,7 +91,10 @@ export default function ChatConfig({ config, onChange }) {
     setPresetName("");
   };
 
-  const loadPreset = (preset) => setMulti(preset.values);
+  const loadPreset = (preset) => onChange({
+    ...switchChatStyle(c, preset.values.chatStyle || currentStyle),
+    ...preset.values,
+  });
   const deletePreset = (name) =>
     set(
       "chatPresets",
@@ -98,6 +106,7 @@ export default function ChatConfig({ config, onChange }) {
     { id: "presets", label: "💾 Presets" },
   ];
   const styleOptions = [
+    { id: "broadcast_chat", icon: "", label: "Broadcast" },
     { id: "better_chat", icon: "B", label: "Better" },
     { id: "classic", icon: "📺", label: "Classic" },
     { id: "glow_panel", icon: "💠", label: "Glow Panel" },
@@ -132,7 +141,7 @@ export default function ChatConfig({ config, onChange }) {
                 key={option.id}
                 type="button"
                 className={`nb-style-btn${currentStyle === option.id ? " nb-style-btn--active" : ""}`}
-                onClick={() => set("chatStyle", option.id)}
+                onClick={() => onChange(switchChatStyle(c, option.id))}
               >
                 {option.icon} {option.label}
               </button>

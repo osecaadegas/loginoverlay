@@ -31,6 +31,11 @@ import {
 } from "../shared/betterWidgetStyles";
 import RaidShoutoutWidget from "../raid-shoutout/RaidShoutoutWidget";
 import {
+  BROADCAST_CHAT_DEFAULTS,
+  BROADCAST_CHAT_STYLE,
+  isBetterChatStyle,
+} from "./chatStyles";
+import {
   parseShoutoutChatCommand,
   triggerShoutoutChatCommand,
 } from "../../../../services/shoutoutCommandService";
@@ -67,6 +72,7 @@ const HEADER_CHAT_STYLES = new Set([
   "StyleSecaChat",
   "bh_stats",
   "better_chat",
+  "broadcast_chat",
 ]);
 const BADGE_CHAT_STYLES = new Set([
   "classic",
@@ -75,6 +81,7 @@ const BADGE_CHAT_STYLES = new Set([
   "StyleSecaChat",
   "bh_stats",
   "better_chat",
+  "broadcast_chat",
 ]);
 const CHAT_PLATFORMS = ["twitch", "youtube", "kick"];
 const bttvEmoteCache = new Map();
@@ -620,6 +627,7 @@ function resolveBetterChatBackground(config = {}) {
   const panel = config.panel || "#0a1734";
   const panelLo = config.panelLo || "#081228";
   const mode = config.bg || "solid";
+  if (config.chatStyle === BROADCAST_CHAT_STYLE && mode === "solid") return panel;
   if (mode === "horizon") {
     return `linear-gradient(0deg, color-mix(in srgb, ${glow} 28%, transparent), transparent 32%), linear-gradient(180deg, color-mix(in srgb, ${panel} 62%, #000) 0%, ${panel} 100%)`;
   }
@@ -799,7 +807,20 @@ function ChatWidget({
   runtime = "editor",
   publicOverlayId,
 }) {
-  const c = config || {};
+  const c = useMemo(
+    () => config?.chatStyle === BROADCAST_CHAT_STYLE
+      ? { ...BROADCAST_CHAT_DEFAULTS, ...config } : config || {},
+    [config],
+  );
+  const partAttrs = (elementId) => ({
+    "data-appearance-part": elementId,
+    ...appearanceAttrs({
+      config: c,
+      widgetType: "chat",
+      widgetId: c.__betterInstanceId,
+      elementId,
+    }),
+  });
   const [messages, setMessages] = useState([]);
   const [shoutoutActive, setShoutoutActive] = useState(false);
   const [visibleBetterChatCount, setVisibleBetterChatCount] = useState(1);
@@ -812,7 +833,8 @@ function ChatWidget({
   const isGlowPanel = chatStyle === "glow_panel";
   const isBH = chatStyle === "bh_stats";
   const isStyleSeca = chatStyle === "StyleSecaChat";
-  const isBetterChat = chatStyle === "better_chat";
+  const isBetterChat = isBetterChatStyle(chatStyle);
+  const isBroadcast = chatStyle === BROADCAST_CHAT_STYLE;
   const betterChatFlow = isBetterChat
     ? c.flow === "top-to-bottom" || c.entry === "top"
       ? "top-to-bottom"
@@ -850,8 +872,9 @@ function ChatWidget({
     [c.__appearancePreviewBttvEmotes],
   );
   const renderBttvEmotes = useMemo(
-    () => new Map([...bttvEmotes, ...previewBttvEmotes]),
-    [bttvEmotes, previewBttvEmotes],
+    () => c.bttvEnabled !== false && (c.bttvGlobal !== false || c.bttvChannel !== false)
+      ? new Map([...bttvEmotes, ...previewBttvEmotes]) : new Map(),
+    [bttvEmotes, previewBttvEmotes, c.bttvEnabled, c.bttvGlobal, c.bttvChannel],
   );
   const renderBetterChatMessage = useCallback(
     (msg) => renderBetterChatMessageContent(msg, renderBttvEmotes, c.bttvSize),
@@ -1082,6 +1105,7 @@ function ChatWidget({
     StyleSecaChat: styleSecaSurfaceGradient(),
     bh_stats: "rgba(15, 23, 42, 0.9)",
     better_chat: resolveBetterChatBackground(c),
+    broadcast_chat: resolveBetterChatBackground(c),
   };
   const bgColor =
     syncedSecondaryColor ||
@@ -1200,6 +1224,9 @@ function ChatWidget({
           (Number.parseFloat(containerStyle.paddingTop) || 0) -
           (Number.parseFloat(containerStyle.paddingBottom) || 0),
       );
+      if (isBroadcast) {
+        container.style.setProperty("--chat-available-height", `${availableHeight}px`);
+      }
       const indices = Array.from(
         { length: renderMessages.length },
         (_, index) =>
@@ -1259,6 +1286,7 @@ function ChatWidget({
     betterChatFlow,
     betterChatMeasurementKey,
     isBetterChat,
+    isBroadcast,
     renderMessages.length,
     shoutoutActive,
   ]);
@@ -1337,7 +1365,7 @@ function ChatWidget({
     width: "100%",
     height: "100%",
     background: bgColor,
-    border: isBetterChat
+    border: isBetterChat && !isBroadcast
       ? `1px solid ${c.glow || containerBorderColor}`
       : containerBorder,
     borderRadius: isTransparent ? 0 : `${containerRadius}px`,
@@ -1364,6 +1392,15 @@ function ChatWidget({
       isolation: "isolate",
       boxShadow:
         "0 0 0 1px rgba(0,0,0,0.55), inset 0 1px 0 color-mix(in srgb, #9dbdf2 12%, transparent)",
+    }),
+    ...(isBroadcast && {
+      boxSizing: "border-box",
+      minWidth: 0,
+      minHeight: 0,
+      containerType: "inline-size",
+      containerName: "broadcast-chat",
+      letterSpacing: 0,
+      boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
     }),
     /* Cards CSS vars — synced from config */
     "--chat-card-bg": messageBg || c.cardBg || "rgba(20,15,40,0.85)",
@@ -1505,6 +1542,17 @@ function ChatWidget({
         @keyframes better-chat-lantern{0%{left:-100%}100%{left:100%}}
         .ov-chat-widget--better_chat .ov-chat-bttv-emote,.ov-chat-widget--better_chat .ov-chat-twitch-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:4em;line-height:1;user-select:none;filter:drop-shadow(0 0 5px rgba(0,195,255,.22))}
         .ov-chat-widget--better_chat .ov-chat-messages::-webkit-scrollbar{display:none}
+        .ov-chat-widget--broadcast_chat .ov-chat-messages::-webkit-scrollbar{display:none}
+        .ov-chat-widget--broadcast_chat .ov-chat-bttv-emote,.ov-chat-widget--broadcast_chat .ov-chat-twitch-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:100%;line-height:1;user-select:none}
+        .ov-chat-widget--broadcast_chat *{box-sizing:border-box}
+        .ov-chat-widget--broadcast_chat .broadcast-chat-row{--chat-avatar-size:28px;--chat-row-gap:8px;--chat-row-padding:10px}
+        @container broadcast-chat (max-width:240px){
+          .ov-chat-widget--broadcast_chat .broadcast-chat-row{--chat-avatar-size:22px;--chat-row-gap:6px;--chat-row-padding:7px}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .ov-chat-widget--broadcast_chat *{animation:none!important;transition:none!important}
+          .ov-chat-widget--broadcast_chat .broadcast-chat-row{opacity:1!important}
+        }
       `}</style>
 
       {isBetterChat && c.texture && c.texture !== "none" ? (
@@ -1741,7 +1789,7 @@ function ChatWidget({
         </div>
       )}
 
-      {showHeader && chatStyle === "better_chat" && (
+      {showHeader && isBetterChat && (
         <BetterChatHeader
           config={c}
           chatHeaderName={chatHeaderName}
@@ -1756,7 +1804,7 @@ function ChatWidget({
         chatStyle !== "glow_panel" &&
         chatStyle !== "StyleSecaChat" &&
         chatStyle !== "bh_stats" &&
-        chatStyle !== "better_chat" && (
+        !isBetterChat && (
           <div
             className="ov-chat-header"
             {...partAttrs("header")}
@@ -1804,13 +1852,13 @@ function ChatWidget({
             justifyContent:
               betterChatFlow === "bottom-to-top" ? "flex-end" : "flex-start",
             overflowY: "hidden",
-            padding: "7px 9px 10px",
+            padding: isBroadcast ? "4px 6px 6px" : "7px 9px 10px",
             scrollbarWidth: "none",
           }),
         })}
       >
         {renderMessages.length === 0 &&
-          chatStyle === "better_chat" &&
+          isBetterChat &&
           showBetterChatEmptyState && (
             <div
               className="ov-chat-empty ov-chat-empty--better"
@@ -1838,7 +1886,7 @@ function ChatWidget({
           const followerMessage = isFollowerMessage(msg);
 
           /* ── Raid message ── */
-          if (msg.isRaid && chatStyle !== "better_chat") {
+          if (msg.isRaid && !isBetterChat) {
             return (
               <RaidMessage
                 key={msg.id}
@@ -1851,8 +1899,8 @@ function ChatWidget({
             );
           }
 
-          /* ── Style: StyleSeca Chat — two-colour metallic hunt chat ── */
-          if (chatStyle === "better_chat") {
+          /* Shared live chat features, with style-specific presentation. */
+          if (isBetterChat) {
             const visible =
               betterChatFlow === "top-to-bottom"
                 ? msgIdx < visibleBetterChatCount

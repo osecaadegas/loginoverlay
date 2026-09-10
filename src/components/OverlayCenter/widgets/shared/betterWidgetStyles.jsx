@@ -23,6 +23,7 @@ import SlotImage from "../SlotImage";
 import "../background/BackgroundWidget.css";
 import ChromaKeySmoke from "../background/ChromaKeySmoke";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
+import { getHuntColourTheme } from "./colourThemePalettes";
 import {
   getHorizontalHuntHeight,
   getHorizontalRequestPitch,
@@ -2981,10 +2982,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const current = rows[activeIndex] || rows[initialIndex] || rows[0] || null;
   const money = currency || c.currency || "€";
   const skin = normalizeBetterHuntSkin(c.skin);
-  const theme =
+  const theme = getHuntColourTheme(c.colour) || (
     skin !== "modern"
       ? BETTER_HUNT_THEMES[skin]
-      : BETTER_HUNT_THEMES[c.colour] || BETTER_HUNT_THEMES.ocean;
+      : BETTER_HUNT_THEMES[c.colour] || BETTER_HUNT_THEMES.ocean);
   const orientation = ["horizontal", "mainstream"].includes(c.orientation)
     ? c.orientation
     : "vertical";
@@ -5043,6 +5044,7 @@ export function BetterChatHeader({
   accentColor,
 }) {
   const c = config || {};
+  const broadcast = c.chatStyle === "broadcast_chat";
   const viewerCount = Number(c.viewerCount) || 0;
   const isLive = Boolean(
     c.live || c.twitchEnabled || c.youtubeEnabled || c.kickEnabled,
@@ -5052,6 +5054,7 @@ export function BetterChatHeader({
   const showRightText = Boolean(c.showViewerCount || showLiveLabel);
   return (
     <div
+      {...attrs("chat", c, "header")}
       style={subElementStyle(c, "header", {
         position: "relative",
         zIndex: 2,
@@ -5062,35 +5065,46 @@ export function BetterChatHeader({
         padding: "10px 12px",
         borderBottom: `1px solid ${alphaColor(c.borderColor || "#2f63c9", 0.55)}`,
         background: `linear-gradient(180deg, ${c.bubble || "#0d2049"}, ${c.cardLo || "#0a1836"})`,
+        ...(broadcast && {
+          flex: "0 0 auto",
+          minWidth: 0,
+          padding: "9px 12px",
+          gap: 8,
+          color: headerText,
+          background: c.panel,
+          borderBottom: `1px solid ${c.borderColor}`,
+          fontSize: "0.875em",
+          letterSpacing: 0,
+        }),
       })}
-      {...attrs("chat", c, "header")}
     >
       <span
-        style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}
+        style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, ...(broadcast && { flex: 1 }) }}
       >
         <span
           style={{
+            flexShrink: 0,
             width: 8,
             height: 8,
             borderRadius: "50%",
             background: accentColor,
-            boxShadow: `0 0 12px ${accentColor}`,
+            boxShadow: broadcast ? "none" : `0 0 12px ${accentColor}`,
             opacity: isLive ? 1 : 0.45,
-            animation: isLive
+            animation: isLive && !broadcast
               ? "better-soft-pulse 1.8s ease-in-out infinite"
               : "none",
           }}
-          {...attrs("chat", c, "badge")}
+          {...(broadcast ? { "aria-hidden": true } : attrs("chat", c, "badge"))}
         />
         {showHeaderName ? (
           <strong
             style={{
-              color: headerText,
+              color: broadcast ? "inherit" : headerText,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
+              textTransform: broadcast ? "none" : "uppercase",
+              letterSpacing: broadcast ? 0 : "0.12em",
             }}
           >
             {chatHeaderName}
@@ -5107,8 +5121,9 @@ export function BetterChatHeader({
             fontWeight: 900,
             fontSize: "0.72em",
             textTransform: "uppercase",
-            letterSpacing: "0.16em",
+            letterSpacing: broadcast ? 0 : "0.16em",
             whiteSpace: "nowrap",
+            ...(broadcast && { flexShrink: 0, fontSize: "0.8em", fontWeight: 700 }),
           }}
         >
           {c.showViewerCount ? (
@@ -5132,6 +5147,7 @@ export function BetterChatMessage({
   visible = true,
 }) {
   const c = context.config || {};
+  const broadcast = c.chatStyle === "broadcast_chat";
   const accent = context.badgeBg || context.usernameColor || "#45c8ff";
   const baseBg = context.messageBg || "#0d2049";
   const messageType = betterChatMessageType(msg);
@@ -5214,21 +5230,42 @@ export function BetterChatMessage({
       animationName === "none"
         ? "none"
         : `${animationName} 460ms cubic-bezier(0.2,0.75,0.25,1) ${enterDelay}ms both${animatedEffect ? `, better-soft-pulse ${effectSpeed} ease-in-out ${enterDelay + 460}ms infinite` : ""}`,
+    ...(broadcast && {
+      gridTemplateColumns: "auto minmax(0,1fr)",
+      gap: "var(--chat-row-gap)",
+      minWidth: 0,
+      maxHeight: `calc(var(--chat-available-height, 100%) - ${(Number(context.msgSpacing) || 0) * 2}px)`,
+      overflowX: "hidden",
+      overflowY: "auto",
+      scrollbarWidth: "thin",
+      margin: `${Number(context.msgSpacing) || 0}px 0`,
+      padding: "8px var(--chat-row-padding)",
+      borderRadius: Number(context.borderRadius) || 0,
+      background: baseBg,
+      border: `${Number(context.borderWidth) || 0}px solid ${context.borderColor}`,
+      borderLeft: `3px solid ${emphasized ? rowAccent : alphaColor(accent, 0.55)}`,
+      boxShadow: emphasized ? `inset 0 0 0 1px ${alphaColor(rowAccent, 0.15)}` : "none",
+      opacity: 1,
+      animation: animationName === "none" ? "none"
+        : `${animationName} 260ms ease-out ${enterDelay}ms both`,
+    }),
   });
   return (
     <div
       ref={rootRef}
+      className={broadcast ? "broadcast-chat-row" : undefined}
       aria-hidden={!visible}
-      style={{ ...messageStyle, visibility: visible ? "visible" : "hidden" }}
       {...attrs("chat", c, rowPart)}
+      style={{ ...messageStyle, visibility: visible ? "visible" : "hidden" }}
     >
+      <span aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: broadcast ? "hidden" : "visible", pointerEvents: "none", borderRadius: "inherit" }}>
       {animatedEffect ? (
         <span
           aria-hidden="true"
           style={{
             position: "absolute",
             inset: 0,
-            background: `linear-gradient(112deg, transparent 18%, ${alphaColor(movementAccent, 0.34)} 46%, transparent 68%)`,
+            background: `linear-gradient(112deg, transparent 18%, ${alphaColor(movementAccent, broadcast ? 0.08 : 0.34)} 46%, transparent 68%)`,
             transform: "translateX(-115%)",
             animation: `better-chat-lantern ${effectSpeed} ease-in-out infinite`,
             pointerEvents: "none",
@@ -5264,7 +5301,9 @@ export function BetterChatMessage({
           }}
         />
       ) : null}
+      </span>
       <span
+        {...attrs("chat", c, "avatar")}
         style={context.avatarStyle({
           width: 34,
           height: 34,
@@ -5278,8 +5317,15 @@ export function BetterChatMessage({
           fontWeight: 950,
           fontSize: 12,
           boxShadow: `0 0 8px ${alphaColor(nameColor || accent, 0.28)}`,
+          ...(broadcast && {
+            width: "var(--chat-avatar-size)",
+            height: "var(--chat-avatar-size)",
+            borderRadius: 6,
+            boxShadow: "none",
+            fontSize: 10,
+            position: "relative",
+          }),
         })}
-        {...attrs("chat", c, "avatar")}
       >
         {avatarUrl ? (
           <img
@@ -5293,18 +5339,19 @@ export function BetterChatMessage({
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              borderRadius: "50%",
+              borderRadius: broadcast ? "inherit" : "50%",
             }}
           />
         ) : (
           initials(msg.username || msg.user)
         )}
       </span>
-      <span style={{ minWidth: 0 }}>
+      <span style={{ minWidth: 0, ...(broadcast && { position: "relative" }) }}>
         <span
-          style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}
+          style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, ...(broadcast && { flexWrap: "wrap", rowGap: 3 }) }}
         >
           <strong
+            {...attrs("chat", c, "username")}
             style={context.usernameStyle({
               color: nameColor,
               fontSize: cssPx(context.usernameSize),
@@ -5312,13 +5359,14 @@ export function BetterChatMessage({
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
+              ...(broadcast && { minWidth: 0, maxWidth: "100%", fontWeight: context.nameBold ? 700 : 400, letterSpacing: 0 }),
             })}
-            {...attrs("chat", c, "username")}
           >
             {msg.username || msg.user || "viewer"}
           </strong>
           {roleBadgeOn ? (
             <span
+              {...attrs("chat", c, "badge")}
               style={context.badgeStyle({
                 flexShrink: 0,
                 borderRadius: 4,
@@ -5331,22 +5379,35 @@ export function BetterChatMessage({
                 padding: "2px 6px",
                 boxShadow: `0 0 ${Math.max(6, roleIntensity * 1.5)}px ${alphaColor(role.color, 0.72)}, inset 0 1px 0 rgba(255,255,255,0.3)`,
                 textShadow: "0 1px 2px rgba(0,0,0,0.9)",
+                ...(broadcast && {
+                  maxWidth: "100%",
+                  whiteSpace: "normal",
+                  overflowWrap: "anywhere",
+                  flexShrink: 1,
+                  fontSize: "0.65em",
+                  letterSpacing: 0,
+                  fontWeight: 700,
+                  padding: "1px 4px",
+                  background: alphaColor(role.color, 0.16),
+                  border: `1px solid ${alphaColor(role.color, 0.4)}`,
+                  boxShadow: "none",
+                }),
               })}
-              {...attrs("chat", c, "badge")}
             >
               {role.label}
             </span>
           ) : null}
         </span>
         <span
+          {...attrs("chat", c, "messageText")}
           style={context.messageTextStyle({
             display: "block",
             marginTop: 2,
             color: context.textColor,
             lineHeight: context.msgLineHeight,
             overflowWrap: "anywhere",
+            ...(broadcast && { whiteSpace: "pre-wrap", letterSpacing: 0 }),
           })}
-          {...attrs("chat", c, "messageText")}
         >
           {typeof context.renderMessageContent === "function"
             ? context.renderMessageContent(msg)

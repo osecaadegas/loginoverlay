@@ -513,6 +513,7 @@ function makeRuntimeStyle(id, label, description, overrides = {}) {
       ...overrides.capabilities,
     },
     elementIds: overrides.elementIds || ["container"],
+    ...(overrides.elements ? { elements: overrides.elements } : {}),
     previewStateIds: overrides.previewStateIds || ["default"],
     recommended: !!overrides.recommended,
   });
@@ -1191,6 +1192,21 @@ export const widgetAppearanceRegistry = Object.freeze({
       accentColor: "#22d3ee",
     },
     styles: [
+      makeRuntimeStyle("better_chat", "Better Chat", "Live chat with role and event highlights.", {
+        capabilities: { rows: true, images: true, animations: true },
+        elementIds: ["container", "header", "messageList", "message", "username", "messageText", "avatar", "badge", "highlightedMessage", "emptyState"],
+      }),
+      makeRuntimeStyle("broadcast_chat", "Broadcast", "Compact broadcast chat with readable message rows and restrained highlights.", {
+        capabilities: { rows: true, images: true, animations: true },
+        elementIds: ["container", "header", "messageList", "message", "username", "messageText", "avatar", "badge", "highlightedMessage", "emptyState"],
+        elements: {
+          header: { controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS.filter((id) => id !== "textAlign")] },
+          username: { controls: CHAT_TEXT_CONTROLS.filter((id) => id !== "textAlign") },
+          avatar: { controls: CHAT_BADGE_CONTROLS.filter((id) => id !== "accentColor") },
+          badge: { label: "Role badge", controls: CHAT_BADGE_CONTROLS.filter((id) => id !== "accentColor") },
+          highlightedMessage: { controls: CHAT_BOX_CONTROLS },
+        },
+      }),
       makeRuntimeStyle(
         "classic",
         "Classic",
@@ -1469,6 +1485,12 @@ export const widgetAppearanceRegistry = Object.freeze({
         kind: "surface",
         capabilities: ["surface", "border", "shape", "spacing", "typography"],
         controls: [...CHAT_SURFACE_CONTROLS, ...CHAT_TEXT_CONTROLS],
+      }),
+      emptyState: Object.freeze({
+        label: "Empty chat message",
+        kind: "text",
+        capabilities: ["typography", "spacing"],
+        controls: [...CHAT_TEXT_CONTROLS.filter((id) => id !== "textAlign"), "padding"],
       }),
     },
   }),
@@ -4486,6 +4508,7 @@ function getEditorReadyControlMap(style) {
 export function getWidgetAppearanceV2Elements(widgetType, styleId = null) {
   const capability = getWidgetAppearanceCapability(widgetType);
   if (!capability) return [];
+  const styleElements = capability.styles?.find((style) => style.id === styleId)?.elements || {};
   const editorReadyStyle = styleId
     ? getEditorReadyWidgetStyle(widgetType, styleId)
     : null;
@@ -4494,9 +4517,11 @@ export function getWidgetAppearanceV2Elements(widgetType, styleId = null) {
   return Object.entries(capability.elements || {}).map(([id, element]) => ({
     id,
     ...element,
+    ...styleElements[id],
     ...editorReadyElements[id],
     controls:
       editorReadyControls.get(id) ||
+      styleElements[id]?.controls ||
       element.controls ||
       editorReadyElements[id]?.controls ||
       controlsForCapabilities(

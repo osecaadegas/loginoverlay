@@ -1,5 +1,5 @@
 // Navigation metadata only. The existing widget controls own validation and updates.
-export const EDITOR_WIDGET_METADATA = Object.freeze({
+const WIDGET_METADATA = {
   bonus_hunt: {
     category: "Hunt",
     keywords: "bonus slots requests carousel tracker",
@@ -39,7 +39,7 @@ export const EDITOR_WIDGET_METADATA = Object.freeze({
     keywords: "twitch messages emotes",
     source: "Chat",
     route: "/overlay-center/widgets/chat",
-    simpleSections: ["Typography", "Colours", "Display", "Emotes"],
+    simpleSections: ["Chat Style", "Typography", "Colours", "Display", "Emotes"],
   },
   navbar: {
     category: "Stream",
@@ -82,4 +82,11 @@ export const EDITOR_WIDGET_METADATA = Object.freeze({
     keywords: "connect four game board",
     simpleSections: ["Game details", "Players", "Board"],
   },
-});
+};
+
+export const EDITOR_WIDGET_METADATA = Object.freeze(Object.fromEntries(
+  Object.entries(WIDGET_METADATA).map(([type, metadata]) => [type, {
+    ...metadata,
+    simpleSections: [...new Set(["Colour Theme", ...metadata.simpleSections])],
+  }]),
+));

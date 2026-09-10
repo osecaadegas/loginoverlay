@@ -42,7 +42,16 @@ import {
   getHorizontalHuntMinHeight,
 } from "../widgets/bonus-hunt/shared/betterHuntSizing";
 import ChatWidget from "../widgets/chat/ChatWidget";
+import {
+  BETTER_CHAT_STYLES,
+  BROADCAST_CHAT_DEFAULTS,
+  BROADCAST_CHAT_STYLE,
+  isBetterChatStyle,
+  switchChatStyle,
+} from "../widgets/chat/chatStyles";
 import BetsWidget from "../widgets/bets/BetsWidget";
+import { WIDGET_COLOUR_THEMES, getWidgetColourTheme } from "../widgets/shared/colourThemePalettes";
+import { applyWidgetColourTheme, getSelectedWidgetColourTheme } from "./widgetColourThemes";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import {
   BetterBackgroundStyle,
@@ -126,44 +135,7 @@ const QUICK_COLORS = [
   "#1e293b",
 ];
 
-const BET_THEMES = [
-  {
-    key: "neon",
-    name: "Neon",
-    icon: <Zap size={11} />,
-    swatches: ["#071a44", "#0a84ff", "#59d6ff"],
-  },
-  {
-    key: "metallic",
-    name: "Metallic",
-    icon: <Layers size={11} />,
-    swatches: ["#1b232e", "#8fa1b8", "#e8eef6"],
-  },
-  {
-    key: "gradient",
-    name: "Gradient",
-    icon: <Sparkles size={11} />,
-    swatches: ["#171f5e", "#5b7cfa", "#22d3ee"],
-  },
-  {
-    key: "matte",
-    name: "Matte",
-    icon: <Settings size={11} />,
-    swatches: ["#171b22", "#39424f", "#aab4c2"],
-  },
-  {
-    key: "crimson",
-    name: "Crimson",
-    icon: <Flame size={11} />,
-    swatches: ["#1a0610", "#c0192e", "#ff6b81"],
-  },
-  {
-    key: "emerald",
-    name: "Emerald",
-    icon: <Waves size={11} />,
-    swatches: ["#041a12", "#059669", "#34d399"],
-  },
-];
+const COLOUR_THEME_ICONS = { neon: Zap, metallic: Layers, gradient: Sparkles, matte: Settings, crimson: Flame, emerald: Waves };
 
 const FILL_STYLES = [
   { key: "liquid", name: "Liquid", icon: <Waves size={11} /> },
@@ -1507,8 +1479,12 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   const defaults = DEFAULT_BETTER_CONFIG[type] || {};
   const merged = {
     ...defaults,
+    ...(type === "chat" && config.chatStyle === BROADCAST_CHAT_STYLE
+      ? BROADCAST_CHAT_DEFAULTS : {}),
     ...config,
-    ...(meta && type !== "tournament" ? { [meta.styleKey]: meta.styleId } : {}),
+    ...(meta && type !== "tournament" &&
+      !(type === "chat" && isBetterChatStyle(config.chatStyle))
+      ? { [meta.styleKey]: meta.styleId } : {}),
   };
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
@@ -2684,28 +2660,6 @@ function BetterBetsControls({ config, onChange }) {
       />
       {matchesControlTab(tab, "theme") && (
         <>
-          <Section title="Colour Theme" icon={<Palette size={12} />}>
-            <div className="bp-theme-grid">
-              {BET_THEMES.map((theme) => (
-                <button
-                  key={theme.key}
-                  type="button"
-                  className={c.theme === theme.key ? "is-active" : ""}
-                  onClick={() => set({ theme: theme.key })}
-                >
-                  <span>
-                    {theme.swatches.map((color) => (
-                      <i key={color} style={{ background: color }} />
-                    ))}
-                  </span>
-                  <strong>
-                    {theme.icon}
-                    {theme.name}
-                  </strong>
-                </button>
-              ))}
-            </div>
-          </Section>
           <Section title="Widget Opacity" icon={<Eye size={12} />}>
             <SliderRow
               label="Opacity"
@@ -3143,7 +3097,11 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
     onChange(sizedConfig);
   };
   const resetChat = () => {
-    const next = ensureBetterWidgetConfig("chat", DEFAULT_BETTER_CONFIG.chat);
+    const next = ensureBetterWidgetConfig("chat", {
+      ...DEFAULT_BETTER_CONFIG.chat,
+      ...(c.chatStyle === BROADCAST_CHAT_STYLE ? BROADCAST_CHAT_DEFAULTS : {}),
+      chatStyle: c.chatStyle,
+    });
     if (typeof onWidgetChange === "function") {
       onWidgetChange({
         width: BETTER_CHAT_DEFAULT_SIZE.width,
@@ -3171,6 +3129,14 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
         tabs={STANDARD_CONTROL_CATEGORIES}
         defaultCategory="layout"
       >
+        <Section title="Chat Style" icon={<MessageSquare size={13} />} category="appearance">
+          <SelectRow
+            label="Style"
+            value={c.chatStyle}
+            options={BETTER_CHAT_STYLES.map(({ id, label }) => ({ value: id, label }))}
+            onChange={(styleId) => onChange(switchChatStyle(c, styleId))}
+          />
+        </Section>
         <Section
           title="Chat Box Size"
           icon={<Maximize2 size={13} />}
@@ -5049,7 +5015,9 @@ function SimpleThemedControls({
       ? "The best / worst card expands only the bottom of the panel on the configured timer."
       : "The best / worst card stays inside the panel and temporarily reduces the list area on the configured timer.";
   const currentColour =
-    BONUS_COLOURS.find((colour) => colour.key === c.colour) || BONUS_COLOURS[0];
+    BONUS_COLOURS.find((colour) => colour.key === c.colour) ||
+    (String(c.colour).startsWith("theme_") && getWidgetColourTheme(c.colour.slice(6))) ||
+    BONUS_COLOURS[0];
   const previewWin = (mult, extra = {}) => {
     if (typeof window === "undefined") return;
     window.dispatchEvent(
@@ -6752,6 +6720,44 @@ function BetterConnectFourControls({ config, onChange }) {
 }
 
 export function BetterWidgetControls({
+  type,
+  config,
+  onChange,
+  ...props
+}) {
+  const c = ensureBetterWidgetConfig(type, config);
+  const selected = getSelectedWidgetColourTheme(type, c);
+  return (
+    <>
+      <div className="bp-controls bp-controls--colour-theme">
+        <Section title="Colour Theme" icon={<Palette size={12} />}>
+          <div className="bp-theme-grid" role="group" aria-label="Colour theme">
+            {WIDGET_COLOUR_THEMES.map((theme) => {
+              const Icon = COLOUR_THEME_ICONS[theme.icon];
+              return (
+                <button
+                  key={theme.key}
+                  type="button"
+                  className={selected === theme.key ? "is-active" : ""}
+                  aria-pressed={selected === theme.key}
+                  onClick={() => onChange(applyWidgetColourTheme(type, c, theme.key))}
+                >
+                  <span aria-hidden="true">
+                    {theme.swatches.map((color) => <i key={color} style={{ background: color }} />)}
+                  </span>
+                  <strong><Icon size={11} />{theme.name}</strong>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+      </div>
+      <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />
+    </>
+  );
+}
+
+function WidgetSpecificControls({
   type,
   config,
   onChange,
