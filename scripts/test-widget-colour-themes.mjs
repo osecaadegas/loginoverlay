@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
-import { WIDGET_COLOUR_THEMES } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
+import { WIDGET_COLOUR_THEMES, getWidgetColourTheme, getHuntColourTheme } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime'];
-assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['neon', 'metallic', 'gradient', 'matte', 'crimson', 'emerald', ...newThemes]);
+assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
+for (const [key, surface] of [['gradient', '#131a4a'], ['matte', '#181d24']]) {
+  assert.equal(getWidgetColourTheme(key).surface, surface, `${key}: retain saved palette`);
+  assert.equal(getHuntColourTheme(`theme_${key}`).panelMid, surface, `${key}: retain saved Hunt appearance`);
+}
 const luminance = color => color.slice(1).match(/../g).map(hex => {
   const channel = parseInt(hex, 16) / 255;
   return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
-for (const theme of WIDGET_COLOUR_THEMES.filter(theme => newThemes.includes(theme.key))) {
+for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'sunset', 'cyberpunk'].includes(theme.key))) {
   for (const token of ['text', 'muted', 'accent']) {
     for (const surface of ['background', 'surface', 'raised']) {
       const values = [luminance(theme[token]), luminance(theme[surface])].sort((a, b) => b - a);
@@ -115,7 +119,7 @@ try {
     for (const type of t.types) {
       const original = freeze(t.base(type));
       const before = JSON.stringify(original);
-      for (const theme of t.themes) {
+      for (const theme of [...t.themes, 'gradient', 'matte']) {
         const patch = t.buildWidgetColourThemePatch(type, original, theme);
         if (!patch || !Object.keys(patch).length) failures.push(`${type}: missing palette mapping`);
         const applied = t.applyWidgetColourTheme(type, original, theme);
@@ -175,10 +179,16 @@ try {
     assert.equal(await page.$eval('.bp-theme-grid', grid => grid.scrollWidth <= grid.clientWidth + 1 && [...grid.querySelectorAll('button')].every(button => button.scrollWidth <= button.clientWidth + 1)), true, `${type}: narrow controls fit`);
     console.log(`${type}: all ${themes.length} themes, reload and available runtime rendering passed`);
   }
+  for (const theme of ['gradient', 'matte']) {
+    const legacy = await page.evaluate(theme => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), theme), theme);
+    await mount('bets', legacy, { runtime: 'obs' });
+    assert.equal(await page.$eval('.better-bets-stage', stage => stage.dataset.theme), theme, `${theme}: legacy Bets rendering`);
+    assert.equal(await page.$('.bp-theme-grid [aria-pressed="true"]'), null, `${theme}: retired palette must not select a replacement`);
+  }
   await mount('chat', { ...(await page.evaluate(() => window.themeTest.base('chat'))), chatStyle: 'broadcast_chat' }, { search: 'emerald' });
   assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), themes.length, 'Theme search');
   if (process.env.TEST_SCREENSHOT_PATH) {
-    await mount('bets', await page.evaluate(() => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), 'gold')));
+    await mount('bets', await page.evaluate(() => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), 'cyberpunk')));
     await page.screenshot({ path: process.env.TEST_SCREENSHOT_PATH });
   }
   assert.deepEqual(errors, []);

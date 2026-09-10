@@ -29,6 +29,7 @@ import {
   SlidersHorizontal,
   Snowflake,
   Sparkles,
+  Sunset,
   Timer,
   Type,
   Wand2,
@@ -139,7 +140,7 @@ const QUICK_COLORS = [
 ];
 
 const COLOUR_THEME_ICONS = {
-  neon: Zap, metallic: Layers, gradient: Sparkles, matte: Settings, crimson: Flame, emerald: Waves,
+  neon: Zap, metallic: Layers, sunset: Sunset, cyberpunk: Zap, crimson: Flame, emerald: Waves,
   gold: Coins, violet: Sparkles, rose: Heart, arctic: Snowflake, lime: Leaf,
 };
 

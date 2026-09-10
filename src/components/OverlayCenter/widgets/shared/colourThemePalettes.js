@@ -11,14 +11,14 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
     accent: "#d7e2f0", secondary: "#9fb0c6", text: "#eef4fb", muted: "#a7b6c9", hue: 210,
   },
   {
-    key: "gradient", name: "Gradient", icon: "gradient", swatches: ["#171f5e", "#5b7cfa", "#22d3ee"],
-    background: "#081226", surface: "#131a4a", raised: "#1b2566", border: "#4f6cf0",
-    accent: "#9db4ff", secondary: "#22d3ee", text: "#f4f7ff", muted: "#aebdf2", hue: 230,
+    key: "sunset", name: "Sunset", icon: "sunset", swatches: ["#301910", "#fb7185", "#ffb477"],
+    background: "#1a0d09", surface: "#301910", raised: "#48251b", border: "#b96542",
+    accent: "#ffb477", secondary: "#fb7185", text: "#fff4e9", muted: "#edc3a4", hue: 25,
   },
   {
-    key: "matte", name: "Matte", icon: "matte", swatches: ["#171b22", "#39424f", "#aab4c2"],
-    background: "#181d24", surface: "#181d24", raised: "#232932", border: "#39424f",
-    accent: "#aab4c2", secondary: "#8b98a9", text: "#e8ecf1", muted: "#b6bec9", hue: 215,
+    key: "cyberpunk", name: "Cyberpunk", icon: "cyberpunk", swatches: ["#111616", "#ff65d6", "#d1f65a"],
+    background: "#090b0b", surface: "#111616", raised: "#202622", border: "#bd4ca0",
+    accent: "#d1f65a", secondary: "#ff65d6", text: "#f8ffe8", muted: "#c4d7b5", hue: 95,
   },
   {
     key: "crimson", name: "Crimson", icon: "crimson", swatches: ["#1a0610", "#c0192e", "#ff6b81"],
@@ -57,8 +57,23 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
   },
 ].map((theme) => Object.freeze({ ...theme, swatches: Object.freeze(theme.swatches) })));
 
+// Retired selector choices still render saved overlay builds without recolouring them.
+const LEGACY_WIDGET_COLOUR_THEMES = Object.freeze([
+  {
+    key: "gradient", name: "Gradient", icon: "gradient", swatches: ["#171f5e", "#5b7cfa", "#22d3ee"],
+    background: "#081226", surface: "#131a4a", raised: "#1b2566", border: "#4f6cf0",
+    accent: "#9db4ff", secondary: "#22d3ee", text: "#f4f7ff", muted: "#aebdf2", hue: 230,
+  },
+  {
+    key: "matte", name: "Matte", icon: "matte", swatches: ["#171b22", "#39424f", "#aab4c2"],
+    background: "#181d24", surface: "#181d24", raised: "#232932", border: "#39424f",
+    accent: "#aab4c2", secondary: "#8b98a9", text: "#e8ecf1", muted: "#b6bec9", hue: 215,
+  },
+].map((theme) => Object.freeze({ ...theme, swatches: Object.freeze(theme.swatches) })));
+
 export function getWidgetColourTheme(key) {
-  return WIDGET_COLOUR_THEMES.find((theme) => theme.key === key) || null;
+  return WIDGET_COLOUR_THEMES.find((theme) => theme.key === key)
+    || LEGACY_WIDGET_COLOUR_THEMES.find((theme) => theme.key === key) || null;
 }
 
 export function getHuntColourTheme(colour) {
