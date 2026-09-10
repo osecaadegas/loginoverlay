@@ -1042,6 +1042,7 @@ export function normalizeBetterLayout(layout = {}) {
     : createDefaultBetterLayout().instances;
   return {
     schemaVersion: BETTER_LAYOUT_SCHEMA_VERSION,
+    name: String(layout.name || "My Overlay").trim().slice(0, 80) || "My Overlay",
     canvas: {
       width: BETTER_CANVAS.width,
       height: BETTER_CANVAS.height,
@@ -1069,6 +1070,7 @@ export function createDefaultBetterLayout() {
     .filter(Boolean);
   return {
     schemaVersion: BETTER_LAYOUT_SCHEMA_VERSION,
+    name: "My Overlay",
     canvas: {
       width: BETTER_CANVAS.width,
       height: BETTER_CANVAS.height,

@@ -3836,7 +3836,14 @@ function SimpleThemedControls({
     const nextWidth =
       Number(next.widgetWidth || next.panelWidth) ||
       getBetterBonusOrientationWidth(next.orientation);
-    const nextHeight = Number(next.widgetHeight ?? next.panelHeight ?? 0) || 0;
+    let nextHeight = Number(next.widgetHeight ?? next.panelHeight ?? 0) || 0;
+    if (next.orientation === "horizontal" && next.requestView !== "carousel" && next.requestVisibleRows != null) {
+      const rowHeight = { compact: 58, image: 106, names: 38 }[next.listMode] || 58;
+      const rows = Math.round(clampNumber(next.requestVisibleRows, 1, 8, 3));
+      nextHeight = Math.max(nextHeight, rows * rowHeight + 112);
+      next.widgetHeight = nextHeight;
+      next.panelHeight = nextHeight;
+    }
     if (typeof onWidgetChange === "function") {
       const minimumHeight = next.orientation === "horizontal" ? 240 : 320;
       const widgetPatch = {
@@ -5454,8 +5461,19 @@ function SimpleThemedControls({
                 hint: "Rotate pending requests as cover cards",
               },
             ]}
-            onChange={(requestView) => set({ requestView })}
+            onChange={(requestView) => c.orientation === "horizontal" && c.requestVisibleRows != null
+              ? setBonusSize({ requestView }) : set({ requestView })}
           />
+          {c.orientation === "horizontal" && c.requestView !== "carousel" && (
+            <SliderRow
+              label="Visible request rows"
+              value={c.requestVisibleRows ?? ({ compact: 3, image: 2, names: 4 }[c.listMode] || 3)}
+              min={1}
+              max={8}
+              step={1}
+              onChange={(requestVisibleRows) => setBonusSize({ requestVisibleRows })}
+            />
+          )}
           <HuntHint>
             {liveRequestsVisible
               ? "Live !sr requests use the same view in Streamers Center and OBS."
@@ -5580,7 +5598,8 @@ function SimpleThemedControls({
               { key: "image", label: "Cards" },
               { key: "names", label: "Names" },
             ]}
-            onChange={(listMode) => set({ listMode })}
+            onChange={(listMode) => c.orientation === "horizontal" && c.requestVisibleRows != null
+              ? setBonusSize({ listMode }) : set({ listMode })}
           />
         </HuntSection>
 

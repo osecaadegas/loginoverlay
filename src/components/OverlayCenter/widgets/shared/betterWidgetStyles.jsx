@@ -1965,6 +1965,16 @@ function BetterStyleSheet() {
       .better-hunt-stat{min-width:0;min-height:66px;display:grid;align-content:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 60%,transparent);border-radius:7px;background:linear-gradient(180deg,var(--bh-card-hi) 0%,var(--bh-card-lo) 100%);padding:8px 6px;text-align:center;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 2px 6px rgba(0,0,0,.55)}
       .better-hunt-stat strong{overflow:hidden;color:#fff;font-size:1em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap}
       .better-hunt-carousel{min-width:0}
+      .better-hunt-main-carousel{min-width:0;max-width:100%;padding:10px 12px 0;overflow:hidden}
+      .better-hunt-main-carousel>.better-hunt-carousel{width:100%;min-width:0;max-width:100%}
+      .better-hunt-main-carousel .better-hunt-image-stats-panel,.better-hunt-main-carousel .better-hunt-stats-panel{min-width:0;max-width:100%;height:auto;min-height:210px}
+      .better-hunt-main-carousel .better-hunt-image-stats-panel{grid-template-columns:minmax(0,41%) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+      .better-hunt-main-carousel .better-hunt-image-stats-art{min-height:0;overflow:hidden}
+      .better-hunt-main-carousel .better-hunt-image-stats-img{position:absolute;inset:0;max-width:100%;max-height:100%}
+      .better-hunt-main-carousel .better-hunt-stats-content{height:auto;min-height:210px;gap:12px}
+      .better-hunt-main-carousel .better-hunt-stats-title>div{min-width:0;flex:1}
+      .better-hunt-main-carousel .better-hunt-tier{min-width:0;max-width:45%;overflow-wrap:anywhere}
+      .better-hunt-main-carousel .better-hunt-stat-strip .better-hunt-stat-label{display:block;overflow-wrap:anywhere;letter-spacing:0}
       .better-hunt-ring{position:relative;height:210px;overflow:hidden;perspective:1100px}
       .better-hunt-ring-floor{position:absolute;inset:auto 40px 4px;height:28px;border-radius:50%;background:color-mix(in srgb,var(--bh-line-hi) 20%,transparent);filter:blur(14px)}
       .better-hunt-ring-track{position:absolute;left:50%;top:50%;transform-style:preserve-3d;transform:translateZ(0);will-change:transform}
@@ -2092,6 +2102,11 @@ function BetterStyleSheet() {
       .better-hunt-track{position:relative}.better-hunt-track::before,.better-hunt-track::after{content:"";position:absolute;top:50%;width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;transform:translateY(-50%)}.better-hunt-track::before{left:-10px;border-right:10px solid var(--bh-line-hi)}.better-hunt-track::after{right:-10px;border-left:10px solid var(--bh-line-hi)}
       .better-hunt-rails{position:relative;padding-left:14px;padding-right:14px}.better-hunt-rails::before,.better-hunt-rails::after{content:"";position:absolute;top:0;bottom:0;width:8px;border-radius:999px;background:linear-gradient(180deg,var(--bh-line-hi),var(--bh-line-mid),var(--bh-line-hi));box-shadow:inset 1px 0 0 rgba(255,255,255,.18),inset -1px 0 0 rgba(0,0,0,.55),0 0 8px color-mix(in srgb,var(--bh-line-hi) 30%,transparent)}.better-hunt-rails::before{left:0}.better-hunt-rails::after{right:0}
       .better-hunt-requests{grid-template-columns:1fr;gap:7px}.better-hunt-requests-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;border-right:0;padding-right:0}.better-hunt-requests-head h3{margin:0;color:var(--bh-steel);font-size:.72em;font-weight:950;letter-spacing:.2em;line-height:1;text-transform:uppercase}.better-hunt-requests-head strong{display:inline-flex;align-items:center;justify-content:center;min-width:22px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bh-track) 70%,transparent);padding:1px 6px;color:var(--bh-steel-dim);font-size:.7em;line-height:1}
+      .better-hunt-requests--carousel{height:fit-content;align-content:start}
+      .better-hunt-requests--carousel .better-hunt-request-stage{height:166px;min-height:166px}
+      .better-hunt-request-ring{top:50%}
+      .better-hunt-hstrip-requests .better-hunt-requests{height:auto;grid-template-rows:auto auto;align-content:start}
+      .better-hunt-hstrip-requests .better-hunt-request-list .better-hunt-request{height:var(--bh-request-row-height);min-height:0;flex-shrink:0;box-sizing:border-box}
       .better-hunt-request{border:1px solid color-mix(in srgb,var(--bh-line-hi) 20%,transparent);background:rgba(0,0,0,.2)}.better-hunt-request-copy strong{text-align:left}
       .better-hunt-win{position:absolute;inset:0;z-index:50;overflow:hidden;border-radius:inherit;pointer-events:none;animation:better-hunt-win-life var(--bh-win-duration,3s) ease both}.better-hunt-win-border{position:absolute;inset:0;border:2px solid var(--bh-win-color);border-radius:inherit;box-shadow:inset 0 0 40px var(--bh-win-glow);animation:better-hunt-win-border .9s ease-in-out infinite}.better-hunt-win-flash{position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 50%,var(--bh-win-glow),transparent 72%);animation:better-hunt-win-flash 1s ease-out both}.better-hunt-win-rays{position:absolute;left:50%;top:50%;height:150%;width:150%;background:repeating-conic-gradient(from 0deg,var(--bh-win-color) 0deg 5deg,transparent 5deg 13deg);opacity:.45;mask-image:radial-gradient(circle,#000 0%,transparent 62%);-webkit-mask-image:radial-gradient(circle,#000 0%,transparent 62%);transform:translate(-50%,-50%);animation:better-hunt-win-rays 9s linear infinite}.better-hunt-win-ring{position:absolute;left:50%;top:50%;width:160px;height:160px;border:2px solid var(--bh-win-color);border-radius:50%;box-shadow:0 0 30px var(--bh-win-color);animation:better-hunt-win-ring 1.3s cubic-bezier(.2,.8,.3,1) both}.better-hunt-win-confetti{position:absolute;top:-14px;border-radius:2px;will-change:transform;animation:better-hunt-win-confetti linear both}.better-hunt-win-cannon{position:absolute;bottom:0;width:10px;height:10px;border-radius:999px;background:radial-gradient(circle at 32% 30%,#fff3c4 0%,#ffd23d 40%,#b07a10 100%);box-shadow:0 0 18px var(--bh-win-color)}.better-hunt-win-cannon--left{left:14px}.better-hunt-win-cannon--right{right:14px}.better-hunt-win-cannon::before,.better-hunt-win-cannon::after{content:"";position:absolute;width:7px;height:7px;border-radius:999px;background:var(--bh-win-color);box-shadow:0 0 10px currentColor;animation:better-hunt-win-ring 1.1s ease-out both}.better-hunt-win-cannon::before{--bh-win-sway:80px;animation-delay:.12s}.better-hunt-win-cannon::after{--bh-win-sway:-70px;animation-delay:.28s}.better-hunt-win-badge{position:absolute;left:50%;top:50%;display:grid;gap:4px;min-width:190px;max-width:82%;transform:translate(-50%,-50%);border:2px solid var(--bh-win-color);border-radius:16px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-panel-hi) 95%,transparent),color-mix(in srgb,var(--bh-panel-lo) 95%,transparent));padding:18px 26px;text-align:center;box-shadow:0 0 50px var(--bh-win-glow),inset 0 0 26px var(--bh-win-glow);animation:better-hunt-win-badge .85s cubic-bezier(.2,.9,.25,1) both,better-hunt-win-float 2.4s ease-in-out .9s infinite}.better-hunt-win-label{color:var(--bh-win-color);font-size:14px;font-weight:950;letter-spacing:.32em;text-transform:uppercase;text-shadow:0 0 18px var(--bh-win-glow)}.better-hunt-win-badge strong{color:#fff;font-size:56px;font-weight:950;line-height:.95;text-shadow:0 0 28px var(--bh-win-glow),0 4px 0 rgba(0,0,0,.5)}.better-hunt-win-badge em{overflow:hidden;color:var(--bh-steel-hi);font-size:10px;font-style:normal;font-weight:900;letter-spacing:.2em;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-win-clip{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);border:2px solid var(--bh-win-color);border-radius:999px;background:rgba(0,0,0,.72);padding:5px 12px;color:var(--bh-win-color);font-size:11px;font-weight:950;letter-spacing:.2em;text-transform:uppercase}
       .better-hunt-win-rays{width:230%;height:230%;background:repeating-conic-gradient(from 0deg,#ff3158 0deg 3deg,#ffb82e 3deg 6deg,transparent 6deg 12deg,#53f28f 12deg 15deg,#26d9ff 15deg 18deg,transparent 18deg 25deg,#7657ff 25deg 28deg,#ff45d4 28deg 31deg,transparent 31deg 39deg);mix-blend-mode:screen;mask-image:radial-gradient(circle,#000 0 58%,rgba(0,0,0,.82) 72%,rgba(0,0,0,.3) 88%,transparent 100%);-webkit-mask-image:radial-gradient(circle,#000 0 58%,rgba(0,0,0,.82) 72%,rgba(0,0,0,.3) 88%,transparent 100%);will-change:transform,filter,opacity;animation-duration:5.6s}
@@ -3244,8 +3259,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
   const renderRequests = () => {
     if (c.showRequests === false) return null;
-    const rowsShown = BETTER_HUNT_REQUEST_ROWS[listMode];
-    const requestHeight = rowsShown * rowHeight + 6;
+    const rowsShown = orientation === "horizontal"
+      ? Math.round(clampNumber(c.requestVisibleRows, 1, 8, BETTER_HUNT_REQUEST_ROWS[listMode]))
+      : BETTER_HUNT_REQUEST_ROWS[listMode];
+    const requestHeight = orientation === "horizontal"
+      ? rowsShown * rowHeight - 6
+      : rowsShown * rowHeight + 6;
     const requestsScroll =
       requestView === "list" &&
       requestRows.length > rowsShown &&
@@ -3287,7 +3306,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     };
     return (
       <div
-        className="better-hunt-requests"
+        className={`better-hunt-requests better-hunt-requests--${requestView}`}
         {...attrs("bonus_hunt", c, "requestContainer")}
       >
         <div className="better-hunt-requests-head">
@@ -3343,6 +3362,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
               className={`better-hunt-request-list${requestsScroll ? " is-scrolling" : ""}`}
               style={{
                 height: requestHeight,
+                "--bh-request-row-height": `${rowHeight - 6}px`,
                 "--bh-request-duration": `${Math.max(26, requestRows.length * 2)}s`,
               }}
             >
@@ -4146,7 +4166,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         extremeOpened,
         extremeCount,
       )}
-      {renderCarousel()}
+      <div className="better-hunt-main-carousel">{renderCarousel()}</div>
       {renderRequests()}
       <div className="better-hunt-main-list-wrap">{renderList()}</div>
       <div className="better-hunt-main-bottom">

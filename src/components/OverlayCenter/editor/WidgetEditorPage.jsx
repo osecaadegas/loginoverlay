@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import {
   Copy,
+  Check,
   Download,
   Eye,
   EyeOff,
@@ -16,6 +17,7 @@ import {
   Lock,
   MoreVertical,
   MousePointer2,
+  Pencil,
   Plus,
   Redo2,
   RefreshCw,
@@ -26,6 +28,7 @@ import {
   Trash2,
   Undo2,
   Unlock,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
@@ -38,6 +41,7 @@ import {
   resetBetterDraftLayout,
   revertBetterDraftToPublished,
   saveBetterDraft,
+  selectBetterEditorOverlay,
   subscribeToBetterLiveSource,
   unsubscribeBetterLiveSource,
 } from "../../../services/betterOverlayService";
@@ -54,6 +58,7 @@ import {
   betterInstanceToLegacyWidget,
 } from "./betterWidgetRegistry";
 import { BetterWidgetControls } from "./BetterWidgetPackages";
+import OverlayBuildFolders from "./OverlayBuildFolders";
 import {
   getBetterWidgetNudge,
   moveBetterWidgetLayer,
@@ -294,6 +299,7 @@ function WidgetListItem({
   onToggleLock,
   onDuplicate,
   onDelete,
+  onRename,
   dragging,
   dragOver,
   onLayerDragStart,
@@ -303,6 +309,14 @@ function WidgetListItem({
   onLayerMove,
 }) {
   const definition = BETTER_WIDGET_REGISTRY[instance.widgetType];
+  const [renaming, setRenaming] = useState(false);
+  const [name, setName] = useState(instance.label || definition?.label || "");
+  const finishRename = (event) => {
+    event.preventDefault();
+    if (!name.trim()) return;
+    onRename(instance.instanceId, name.trim());
+    setRenaming(false);
+  };
   const handleMenuToggle = (event) => {
     const menu = event.currentTarget;
     if (!menu.open) {
@@ -363,7 +377,16 @@ function WidgetListItem({
       >
         <GripVertical size={16} />
       </button>
-      <button
+      {renaming ? (
+        <form className="better-editor-widget-row__rename" onSubmit={finishRename} onKeyDown={(event) => {
+          event.stopPropagation();
+          if (event.key === "Escape") { event.preventDefault(); setRenaming(false); }
+        }}>
+          <input autoFocus aria-label="Widget name" required maxLength={80} value={name} onChange={(event) => setName(event.target.value)} />
+          <button type="submit" title="Save name" aria-label="Save widget name"><Check size={14} /></button>
+          <button type="button" title="Cancel rename" aria-label="Cancel rename" onClick={() => setRenaming(false)}><X size={14} /></button>
+        </form>
+      ) : <button
         type="button"
         className="better-editor-widget-row__main"
         onClick={() => onSelect(instance.instanceId)}
@@ -372,7 +395,7 @@ function WidgetListItem({
           {definition?.icon || getInitials(instance.label)}
         </span>
         <span>
-          <strong>{instance.label || definition?.label}</strong>
+          <strong title={instance.label || definition?.label}>{instance.label || definition?.label}</strong>
           <small>
             {instance.visible === false
               ? "Hidden"
@@ -381,7 +404,7 @@ function WidgetListItem({
                 : `${roundNumber(instance.width)} x ${roundNumber(instance.height)}`}
           </small>
         </span>
-      </button>
+      </button>}
       <details
         className="better-editor-widget-row__menu"
         onClick={(event) => event.stopPropagation()}
@@ -394,6 +417,10 @@ function WidgetListItem({
           <MoreVertical size={15} />
         </summary>
         <div className="better-editor-widget-row__menu-panel">
+          <button type="button" onClick={(event) => menuAction(event, () => {
+            setName(instance.label || definition?.label || "");
+            setRenaming(true);
+          })}><Pencil size={14} /><span>Rename widget</span></button>
           <button
             type="button"
             disabled={!obsUrl}
@@ -468,6 +495,20 @@ function WidgetListItem({
 }
 
 export default function WidgetEditorPage() {
+  const { user } = useAuth();
+  return <BetterEditorWorkspace key={user?.id || "guest"} userId={user?.id} />;
+}
+
+function BetterEditorWorkspace({ userId }) {
+  const [overlayId, setOverlayId] = useState(null);
+  const selectBuild = (id) => {
+    selectBetterEditorOverlay(userId, id);
+    setOverlayId(id);
+  };
+  return <BetterOverlayEditor key={overlayId || "selected"} overlayId={overlayId} onSelectBuild={selectBuild} />;
+}
+
+function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const shellRef = useRef(null);
@@ -477,6 +518,8 @@ export default function WidgetEditorPage() {
   const dirtyRef = useRef(false);
   const draftVersionRef = useRef(0);
   const editorSyncChannelRef = useRef(null);
+  const savePromiseRef = useRef(null);
+  const overlayRecordRef = useRef(null);
 
   const [layout, setLayout] = useState(createDefaultBetterLayout);
   const [overlayRecord, setOverlayRecord] = useState(null);
@@ -518,7 +561,8 @@ export default function WidgetEditorPage() {
 
   useEffect(() => {
     draftVersionRef.current = Number(overlayRecord?.draftVersion || 0);
-  }, [overlayRecord?.draftVersion]);
+    overlayRecordRef.current = overlayRecord;
+  }, [overlayRecord]);
 
   useEffect(() => {
     let mounted = true;
@@ -527,10 +571,12 @@ export default function WidgetEditorPage() {
       setLoading(true);
       setError(null);
       try {
-        const record = await getOrCreateBetterEditorOverlay(user.id);
+        const record = await getOrCreateBetterEditorOverlay(user.id, overlayId);
         if (!mounted) return;
         const nextLayout = normalizeBetterLayout(record.draftLayout);
         setOverlayRecord(record);
+        overlayRecordRef.current = record;
+        selectBetterEditorOverlay(user.id, record.id);
         setLayout(nextLayout);
         layoutRef.current = nextLayout;
         setSelectedInstanceId(
@@ -553,7 +599,7 @@ export default function WidgetEditorPage() {
     return () => {
       mounted = false;
     };
-  }, [user?.id]);
+  }, [user?.id, overlayId]);
 
   useEffect(() => {
     if (!user?.id || typeof BroadcastChannel === "undefined") return undefined;
@@ -563,17 +609,19 @@ export default function WidgetEditorPage() {
       const nextVersion = Number(event.data?.draftVersion || 0);
       if (
         event.data?.type !== "better-editor-draft-saved" ||
+        event.data?.overlayId !== overlayRecordRef.current?.id ||
         nextVersion <= draftVersionRef.current ||
         dirtyRef.current
       ) {
         return;
       }
       try {
-        const record = await getOrCreateBetterEditorOverlay(user.id);
+        const record = await getOrCreateBetterEditorOverlay(user.id, overlayRecordRef.current?.id);
         if (Number(record?.draftVersion || 0) <= draftVersionRef.current)
           return;
         const nextLayout = normalizeBetterLayout(record.draftLayout);
         setOverlayRecord(record);
+        overlayRecordRef.current = record;
         setLayout(nextLayout);
         layoutRef.current = nextLayout;
         setHistory([nextLayout]);
@@ -596,6 +644,7 @@ export default function WidgetEditorPage() {
     editorSyncChannelRef.current?.postMessage({
       type: "better-editor-draft-saved",
       draftVersion: record?.draftVersion,
+      overlayId: record?.id,
     });
   }, []);
 
@@ -730,6 +779,7 @@ export default function WidgetEditorPage() {
         updatedAt: new Date().toISOString(),
       });
       layoutRef.current = nextLayout;
+      dirtyRef.current = true;
       setDirty(true);
       return nextLayout;
     });
@@ -759,6 +809,7 @@ export default function WidgetEditorPage() {
       });
       layoutRef.current = nextLayout;
       setLayout(nextLayout);
+      dirtyRef.current = true;
       setDirty(true);
       pushHistory(nextLayout);
       return nextLayout;
@@ -834,20 +885,40 @@ export default function WidgetEditorPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedInstanceId, updateInstance]);
 
+  const flushDraft = useCallback(async () => {
+    if (!user?.id || !overlayRecordRef.current) return null;
+    // Serialize autosave and folder changes, including edits made while a save is in flight.
+    for (;;) {
+      while (savePromiseRef.current) await savePromiseRef.current;
+      if (!dirtyRef.current) return overlayRecordRef.current;
+      const snapshot = layoutRef.current;
+      const current = overlayRecordRef.current;
+      setSavingState("saving");
+      const pending = saveBetterDraft(user.id, snapshot, current.draftVersion, current.id);
+      savePromiseRef.current = pending;
+      try {
+        const record = await pending;
+        overlayRecordRef.current = record;
+        draftVersionRef.current = record.draftVersion;
+        setOverlayRecord(record);
+        announceEditorRecord(record);
+        dirtyRef.current = layoutRef.current !== snapshot;
+        setDirty(dirtyRef.current);
+        setSavingState("saved");
+      } catch (failure) {
+        setSavingState("error");
+        throw failure;
+      } finally {
+        if (savePromiseRef.current === pending) savePromiseRef.current = null;
+      }
+    }
+  }, [announceEditorRecord, user?.id]);
+
   useEffect(() => {
     if (!loadedRef.current || !dirty || !user?.id) return undefined;
     const timeout = window.setTimeout(async () => {
       try {
-        setSavingState("saving");
-        const record = await saveBetterDraft(
-          user.id,
-          layoutRef.current,
-          overlayRecord?.draftVersion,
-        );
-        setOverlayRecord(record);
-        announceEditorRecord(record);
-        setSavingState("saved");
-        setDirty(false);
+        await flushDraft();
       } catch (saveError) {
         setSavingState("error");
         setError(saveError);
@@ -855,7 +926,7 @@ export default function WidgetEditorPage() {
     }, AUTOSAVE_MS);
     return () => window.clearTimeout(timeout);
   }, [
-    announceEditorRecord,
+    flushDraft,
     dirty,
     layout,
     overlayRecord?.draftVersion,
@@ -1110,29 +1181,24 @@ export default function WidgetEditorPage() {
     if (!user?.id) return;
     setSavingState("saving");
     try {
-      const record = await saveBetterDraft(
-        user.id,
-        layoutRef.current,
-        overlayRecord?.draftVersion,
-      );
-      setOverlayRecord(record);
-      announceEditorRecord(record);
+      await flushDraft();
       setSavingState("saved");
-      setDirty(false);
     } catch (saveError) {
       setSavingState("error");
       setError(saveError);
     }
-  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
+  }, [flushDraft, user?.id]);
 
   const publishNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("publishing");
     try {
+      const saved = await flushDraft();
       const record = await publishBetterOverlay(
         user.id,
         layoutRef.current,
-        overlayRecord?.draftVersion,
+        saved.draftVersion,
+        saved.id,
       );
       setOverlayRecord(record);
       announceEditorRecord(record);
@@ -1147,15 +1213,17 @@ export default function WidgetEditorPage() {
       setSavingState("error");
       setError(publishError);
     }
-  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
+  }, [announceEditorRecord, flushDraft, user?.id]);
 
   const revertNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("saving");
     try {
+      const saved = await flushDraft();
       const record = await revertBetterDraftToPublished(
         user.id,
-        overlayRecord?.draftVersion,
+        saved.draftVersion,
+        saved.id,
       );
       const nextLayout = normalizeBetterLayout(record.draftLayout);
       setOverlayRecord(record);
@@ -1170,15 +1238,17 @@ export default function WidgetEditorPage() {
       setSavingState("error");
       setError(revertError);
     }
-  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
+  }, [announceEditorRecord, flushDraft, user?.id]);
 
   const resetLayoutNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("saving");
     try {
+      const saved = await flushDraft();
       const record = await resetBetterDraftLayout(
         user.id,
-        overlayRecord?.draftVersion,
+        saved.draftVersion,
+        saved.id,
       );
       const nextLayout = normalizeBetterLayout(record.draftLayout);
       setOverlayRecord(record);
@@ -1197,15 +1267,18 @@ export default function WidgetEditorPage() {
       setSavingState("error");
       setError(resetError);
     }
-  }, [announceEditorRecord, overlayRecord?.draftVersion, user?.id]);
+  }, [announceEditorRecord, flushDraft, user?.id]);
 
   const regenerateLinkNow = useCallback(async () => {
     if (!user?.id) return;
     setSavingState("saving");
-    const record = await regenerateBetterPublicOverlayId(user.id);
-    setOverlayRecord(record);
-    setSavingState("saved");
-  }, [user?.id]);
+    try {
+      const saved = await flushDraft();
+      const record = await regenerateBetterPublicOverlayId(user.id, saved.id);
+      setOverlayRecord(record);
+      setSavingState("saved");
+    } catch (failure) { setSavingState("error"); setError(failure); }
+  }, [flushDraft, user?.id]);
 
   const copyUrl = useCallback(async (url) => {
     if (!url) return;
@@ -1272,6 +1345,15 @@ export default function WidgetEditorPage() {
           <h1>Better Editor</h1>
         </header>
 
+        {overlayRecord && <OverlayBuildFolders
+          userId={user.id}
+          record={overlayRecord}
+          layout={layout}
+          onSave={flushDraft}
+          onSelect={onSelectBuild}
+          onRename={(name) => commitLayout((current) => ({ ...current, name }))}
+        />}
+
         <div className="better-editor-widget-list">
           {layout.instances
             .slice()
@@ -1293,6 +1375,7 @@ export default function WidgetEditorPage() {
                 onToggleLock={handleToggleLock}
                 onDuplicate={handleDuplicate}
                 onDelete={handleDeleteInstance}
+                onRename={(instanceId, label) => updateInstance(instanceId, { label })}
                 dragging={instance.instanceId === draggedLayerId}
                 dragOver={instance.instanceId === dragOverLayerId}
                 onLayerDragStart={handleLayerDragStart}

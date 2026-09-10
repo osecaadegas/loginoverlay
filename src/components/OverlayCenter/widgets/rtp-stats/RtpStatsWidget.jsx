@@ -1,11 +1,10 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "../../../../config/supabaseClient";
 import {
-  findUserSlotRecord,
   getSlotIdentity,
-  hydrateSlotPersonalBestFromHistory,
   recordMatchesSlot,
 } from "../../../../services/slotRecordService";
+import useSlotPersonalBest from "../../../../hooks/useSlotPersonalBest";
 import { getProviderImage } from "../../../../utils/gameProviders";
 import { subElementStyle, subValue } from "../shared/appearanceStyles";
 import {
@@ -692,7 +691,7 @@ function cachedBestWinMatchesUser(cached, userId) {
 }
 
 function normalizeBestWinRecord(record) {
-  if (!record?.best_win) return null;
+  if (!record || !(Number(record.best_win || record.bestWin) > 0)) return null;
   return {
     slot_id: record.slot_id || record.slotId || null,
     slot_name: record.slot_name || record.slotName || "",
@@ -982,28 +981,18 @@ function useRtpSlotInfo({ activeSlot, localSlotInfo, slotKey, slotName }) {
   return slotInfo;
 }
 
-function missingPreciseSlotFields(activeSlot, record) {
-  return Boolean(
-    activeSlot.id &&
-    !record.slot_id &&
-    activeSlot.provider &&
-    !record.slot_provider,
-  );
-}
-
 function cachedBestWinRecord(cached, userId, activeSlot) {
   const cachedRecord = cached
     ? {
         slot_id: cached.slotId || cached.slot_id || null,
-        slot_name: cached.slotName,
+        slot_name: cached.slotName || cached.slot_name,
         slot_provider: cached.provider || cached.slot_provider || null,
       }
     : null;
   const isExactEnough =
     cachedRecord &&
     cachedBestWinMatchesUser(cached, userId) &&
-    recordMatchesSlot(cachedRecord, activeSlot) &&
-    !missingPreciseSlotFields(activeSlot, cachedRecord);
+    recordMatchesSlot(cachedRecord, activeSlot);
   if (!cached?.best_win || !isExactEnough) return null;
   return {
     ...cachedRecord,
@@ -1018,9 +1007,7 @@ function widgetBestWinRecord(widget, activeSlot) {
     slot_name: widget.config.slotName,
     slot_provider: widget.config.provider || null,
   };
-  const matches =
-    recordMatchesSlot(widgetRecord, activeSlot) &&
-    !missingPreciseSlotFields(activeSlot, widgetRecord);
+  const matches = recordMatchesSlot(widgetRecord, activeSlot);
   if (!matches) return null;
   return {
     slot_id: widget.config.slotId || null,
@@ -1064,13 +1051,15 @@ function usePersistRtpBestWin({
   slotName,
   userId,
   widgetId,
+  readOnly,
 }) {
   const persistRef = useRef("");
   const configRef = useRef(config);
   configRef.current = config;
 
   useEffect(() => {
-    if (!bestWinData || !widgetId || !slotName || !userId) return;
+    if (readOnly || !bestWinData || !widgetId || !slotName || !userId ||
+        !recordMatchesSlot(bestWinData, activeSlot)) return;
     const key = `${userId}:${slotKey}:${bestWinData.best_win}:${bestWinData.best_multiplier}`;
     if (persistRef.current === key) return;
     persistRef.current = key;
@@ -1094,76 +1083,7 @@ function usePersistRtpBestWin({
       .eq("id", widgetId)
       .eq("user_id", userId)
       .then();
-  }, [activeSlot, bestWinData, slotKey, userId, widgetId, slotName]);
-}
-
-async function fetchRtpBestWin(userId, activeSlot) {
-  const data = await findUserSlotRecord(
-    userId,
-    activeSlot,
-    "slot_id, slot_name, slot_provider, best_win, best_multiplier",
-  );
-  if (data && recordMatchesSlot(data, activeSlot)) return data;
-  return hydrateSlotPersonalBestFromHistory(userId, activeSlot);
-}
-
-function useRtpBestWinData({ activeSlot, slotKey, slotName, userId }) {
-  const [bestWinData, setBestWinData] = useState(null);
-
-  useEffect(() => {
-    if (!slotName || !userId) {
-      setBestWinData(null);
-      return undefined;
-    }
-    let cancelled = false;
-    setBestWinData(null);
-
-    async function fetchBestWin() {
-      try {
-        const record = await fetchRtpBestWin(userId, activeSlot);
-        if (!cancelled) {
-          setBestWinData(
-            record && recordMatchesSlot(record, activeSlot)
-              ? normalizeBestWinRecord(record)
-              : null,
-          );
-        }
-      } catch {
-        if (!cancelled) setBestWinData(null);
-      }
-    }
-
-    fetchBestWin();
-
-    const channel = supabase
-      .channel(`bestwin_${userId}_${slotKey}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "user_slot_records",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const rec = payload.new || payload.old;
-          if (!recordMatchesSlot(rec, activeSlot)) return;
-          if (payload.eventType === "DELETE" || !payload.new?.best_win) {
-            setBestWinData(null);
-            return;
-          }
-          setBestWinData(normalizeBestWinRecord(payload.new));
-        },
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
-    };
-  }, [activeSlot, slotKey, slotName, userId]);
-
-  return bestWinData;
+  }, [activeSlot, bestWinData, slotKey, userId, widgetId, slotName, readOnly]);
 }
 
 function resolveCurrentHuntBestWin({ activeSlot, bonuses, isLive }) {
@@ -1447,7 +1367,7 @@ function RtpStatsBestWinSection({
   );
 }
 
-function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
+function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId, publicOverlayId, overlayToken }) {
   const c = config || {};
 
   /* ── Find bonus hunt widget ── */
@@ -1510,14 +1430,14 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   });
 
   /* ── Best win for this slot (from user_slot_records) ── */
-  const bestWinData = useRtpBestWinData({
-    activeSlot,
-    slotKey,
-    slotName,
+  const bestWinData = useSlotPersonalBest({
+    slot: activeSlot,
     userId,
+    publicOverlayId,
+    overlayToken,
   });
 
-  // Fallback: read bestWin cached in widget config (works in OBS where DB is blocked by RLS)
+  // Keep saved bests visible while the owner-scoped lookup loads or retries.
   const configBestWin = useMemo(
     () =>
       resolveConfigBestWin({
@@ -1530,7 +1450,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     [activeSlot, allWidgets, c._cachedBestWin, slotName, userId],
   );
 
-  // Persist bestWin to widget config so OBS can read it (OBS has no auth -> can't query DB)
+  // Retain the legacy config cache from the editor; browser sources are read-only.
   usePersistRtpBestWin({
     activeSlot,
     bestWinData,
@@ -1539,6 +1459,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
     slotName,
     userId,
     widgetId,
+    readOnly: Boolean(publicOverlayId || overlayToken),
   });
 
   /* ── Style config ── */

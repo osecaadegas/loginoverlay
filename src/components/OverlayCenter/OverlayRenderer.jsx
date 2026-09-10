@@ -76,6 +76,7 @@ const WidgetSlot = memo(function WidgetSlot({
   canvasHeight,
   exiting,
   userId,
+  overlayToken,
   suppressAnimations = false,
 }) {
   const def = getWidgetDef(widget.widget_type);
@@ -201,6 +202,7 @@ const WidgetSlot = memo(function WidgetSlot({
             allWidgets={allWidgets}
             widgetId={widget.id}
             userId={userId}
+            overlayToken={overlayToken}
           />
         </div>
       ) : (
@@ -210,6 +212,7 @@ const WidgetSlot = memo(function WidgetSlot({
           allWidgets={allWidgets}
           widgetId={widget.id}
           userId={userId}
+          overlayToken={overlayToken}
         />
       )}
     </div>
@@ -562,6 +565,7 @@ export default function OverlayRenderer() {
           exiting={false}
           userId={userId}
           suppressAnimations={isPreviewMode}
+          overlayToken={token}
         />
       ))}
 
@@ -578,6 +582,7 @@ export default function OverlayRenderer() {
           exiting={true}
           userId={userId}
           suppressAnimations={isPreviewMode}
+          overlayToken={token}
         />
       ))}
     </div>

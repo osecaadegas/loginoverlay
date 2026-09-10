@@ -3,103 +3,17 @@
  * Called when a bonus hunt is saved to update individual slot stats.
  */
 import { supabase } from '../config/supabaseClient';
-
-function cleanText(value) {
-  return (value ?? '').toString().trim();
-}
-
-function normaliseText(value) {
-  return cleanText(value).replace(/\s+/g, ' ').toLowerCase();
-}
-
-function normalizeUuid(value) {
-  const text = cleanText(value);
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
-    ? text
-    : null;
-}
-
-function escapeIlikePattern(value) {
-  return cleanText(value).replace(/[\\%_]/g, '\\$&');
-}
-
-export function getSlotIdentity(slotLike = {}) {
-  const nested = slotLike.slot || {};
-  return {
-    id: cleanText(slotLike.slotId || slotLike.slot_id || slotLike.id || nested.id || nested.slot_id),
-    name: cleanText(slotLike.slotName || slotLike.slot_name || slotLike.name || nested.name || nested.slotName),
-    provider: cleanText(slotLike.provider || slotLike.slot_provider || nested.provider || nested.slot_provider),
-    image: cleanText(slotLike.imageUrl || slotLike.slot_image || slotLike.image || nested.image || nested.imageUrl || nested.slot_image),
-  };
-}
-
-export function recordMatchesSlot(record, slotLike = {}) {
-  const slot = getSlotIdentity(slotLike);
-  if (!record || (!slot.id && !slot.name)) return false;
-  if (slot.id && record.slot_id) return record.slot_id === slot.id;
-  if (slot.name && normaliseText(record.slot_name) !== normaliseText(slot.name)) return false;
-  if (slot.provider && record.slot_provider) {
-    return normaliseText(record.slot_provider) === normaliseText(slot.provider);
-  }
-  return true;
-}
+import {
+  buildResultFromBonus,
+  getSlotIdentity,
+  normalizeUuid,
+  queryUserSlotRecord,
+  recordMatchesSlot,
+} from '../../shared/slotPersonalBest.js';
+export { getSlotIdentity, recordMatchesSlot } from '../../shared/slotPersonalBest.js';
 
 export async function findUserSlotRecord(userId, slotLike = {}, columns = '*') {
-  const slot = getSlotIdentity(slotLike);
-  const slotId = normalizeUuid(slot.id);
-  if (!userId || (!slot.id && !slot.name)) return null;
-
-  const base = () => supabase
-    .from('user_slot_records')
-    .select(columns)
-    .eq('user_id', userId);
-
-  if (slotId) {
-    const { data, error } = await base()
-      .eq('slot_id', slotId)
-      .limit(1)
-      .maybeSingle();
-    if (!error && data) return data;
-  }
-
-  if (slot.name && slot.provider) {
-    const { data, error } = await base()
-      .ilike('slot_name', escapeIlikePattern(slot.name))
-      .ilike('slot_provider', escapeIlikePattern(slot.provider))
-      .limit(1)
-      .maybeSingle();
-    if (!error && data) return data;
-  }
-
-  if (slot.name) {
-    const { data, error } = await base()
-      .ilike('slot_name', escapeIlikePattern(slot.name))
-      .order('updated_at', { ascending: false })
-      .limit(2);
-    if (!error && data?.length === 1) return data[0];
-  }
-
-  return null;
-}
-
-function buildResultFromBonus(bonus = {}, huntName = null) {
-  const slotIdentity = getSlotIdentity(bonus);
-  const payout = Number(bonus.payout) || Number(bonus.result) || 0;
-  const bet = Number(bonus.betSize) || Number(bonus.bet_size) || 0;
-  const multiplier = bet > 0 ? Math.round((payout / bet) * 100) / 100 : 0;
-
-  if (!slotIdentity.name || payout <= 0) return null;
-
-  return {
-    slot_id: normalizeUuid(slotIdentity.id),
-    slot_name: slotIdentity.name,
-    slot_provider: slotIdentity.provider || null,
-    slot_image: slotIdentity.image || null,
-    bet_size: bet,
-    payout,
-    multiplier,
-    hunt_name: huntName || null,
-  };
+  return queryUserSlotRecord(supabase, userId, slotLike, columns);
 }
 
 function shapeBestWinRecord(result, existing = {}) {

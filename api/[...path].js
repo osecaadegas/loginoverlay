@@ -12,6 +12,7 @@ import premiumHandler from "./_lib/routes/premium.js";
 import publicSlotCountHandler from "./_lib/routes/public-slot-count.js";
 import serviceReadinessHandler from "./_lib/routes/service-readiness.js";
 import streamerDataHandler from "./_lib/streamer-data.js";
+import slotPersonalBestHandler from "./_lib/routes/slot-personal-best.js";
 
 const ROUTES = {
   affiliate: affiliateHandler,
@@ -28,6 +29,7 @@ const ROUTES = {
   "public-slot-count": publicSlotCountHandler,
   "service-readiness": serviceReadinessHandler,
   "streamer-data": streamerDataHandler,
+  "slot-personal-best": slotPersonalBestHandler,
 };
 
 function getRouteName(req) {

@@ -14,6 +14,14 @@ import {
 const EDITOR_TABLE = "better_editor_overlays";
 const PUBLIC_TABLE = "better_overlay_publications";
 
+export function selectBetterEditorOverlay(userId, overlayId) {
+  try { localStorage.setItem(`better-editor-build:${userId}`, overlayId); } catch { /* Storage can be disabled in browser sources. */ }
+}
+
+function selectedBetterOverlayId(userId) {
+  try { return localStorage.getItem(`better-editor-build:${userId}`); } catch { return null; }
+}
+
 function createDraftConflictError() {
   const error = new Error(
     "This overlay was changed in another window. Refresh this page to load the latest version.",
@@ -103,11 +111,13 @@ async function getActiveLegacyOverlayInstance(ownerUserId) {
   return data || null;
 }
 
-async function fetchOwnedBetterOverlayRow(userId) {
-  const { data, error } = await supabase
+async function fetchOwnedBetterOverlayRow(userId, overlayId = null) {
+  let query = supabase
     .from(EDITOR_TABLE)
     .select("*")
-    .eq("user_id", userId)
+    .eq("user_id", userId);
+  if (overlayId) query = query.eq("id", overlayId);
+  const { data, error } = await query
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -115,8 +125,7 @@ async function fetchOwnedBetterOverlayRow(userId) {
   return data || null;
 }
 
-async function createOwnedBetterOverlayRow(userId) {
-  const layout = createDefaultBetterLayout();
+async function createOwnedBetterOverlayRow(userId, layout = createDefaultBetterLayout()) {
   const publicOverlayId = generatePublicOverlayId();
   const timestamp = nowIso();
   const { data, error } = await supabase
@@ -136,17 +145,47 @@ async function createOwnedBetterOverlayRow(userId) {
   return data;
 }
 
-async function getOrCreateOwnedBetterOverlayRow(userId) {
+async function getOrCreateOwnedBetterOverlayRow(userId, overlayId = null) {
   if (!userId)
     throw new Error("A signed-in user is required to edit Better overlays.");
+  if (overlayId) {
+    const row = await fetchOwnedBetterOverlayRow(userId, overlayId);
+    if (!row) throw new Error("This overlay build is unavailable.");
+    return row;
+  }
+  const selectedId = selectedBetterOverlayId(userId);
+  if (selectedId) {
+    const selected = await fetchOwnedBetterOverlayRow(userId, selectedId);
+    if (selected) return selected;
+  }
   const existing = await fetchOwnedBetterOverlayRow(userId);
   if (existing) return existing;
   return createOwnedBetterOverlayRow(userId);
 }
 
-export async function getOrCreateBetterEditorOverlay(userId) {
-  const row = await getOrCreateOwnedBetterOverlayRow(userId);
+export async function getOrCreateBetterEditorOverlay(userId, overlayId = null) {
+  const row = await getOrCreateOwnedBetterOverlayRow(userId, overlayId);
   return normalizeEditorRow(row);
+}
+
+export async function listBetterEditorOverlays(userId) {
+  if (!userId) return [];
+  const { data, error } = await supabase.from(EDITOR_TABLE)
+    .select("id,public_overlay_id,name:draft_layout->>name,created_at")
+    .eq("user_id", userId).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data || []).map((row, index) => ({
+    id: row.id, name: row.name || (index === 0 ? "My Overlay" : `Overlay ${index + 1}`),
+    publicOverlayId: row.public_overlay_id,
+  }));
+}
+
+export async function createBetterEditorOverlay(userId, name, sourceLayout = null) {
+  if (!userId) throw new Error("A signed-in user is required to create overlays.");
+  const trimmedName = String(name || "").trim();
+  if (!trimmedName || trimmedName.length > 80) throw new Error("Use a build name between 1 and 80 characters.");
+  const layout = normalizeBetterLayout({ ...(sourceLayout || createDefaultBetterLayout()), name: trimmedName });
+  return normalizeEditorRow(await createOwnedBetterOverlayRow(userId, layout));
 }
 
 export async function getBetterEditorLiveSource(userId) {
@@ -199,8 +238,9 @@ export async function saveBetterDraft(
   userId,
   layout,
   expectedDraftVersion = null,
+  overlayId = null,
 ) {
-  const row = await getOrCreateOwnedBetterOverlayRow(userId);
+  const row = await getOrCreateOwnedBetterOverlayRow(userId, overlayId);
   const currentDraftVersion = Number(row.draft_version || 0);
   const baseDraftVersion =
     expectedDraftVersion == null
@@ -234,8 +274,9 @@ export async function publishBetterOverlay(
   userId,
   layout,
   expectedDraftVersion = null,
+  overlayId = null,
 ) {
-  const row = await getOrCreateOwnedBetterOverlayRow(userId);
+  const row = await getOrCreateOwnedBetterOverlayRow(userId, overlayId);
   const currentDraftVersion = Number(row.draft_version || 0);
   const baseDraftVersion =
     expectedDraftVersion == null
@@ -289,8 +330,9 @@ export async function publishBetterOverlay(
 export async function revertBetterDraftToPublished(
   userId,
   expectedDraftVersion = null,
+  overlayId = null,
 ) {
-  const row = await getOrCreateOwnedBetterOverlayRow(userId);
+  const row = await getOrCreateOwnedBetterOverlayRow(userId, overlayId);
   const currentDraftVersion = Number(row.draft_version || 0);
   const baseDraftVersion =
     expectedDraftVersion == null
@@ -301,6 +343,7 @@ export async function revertBetterDraftToPublished(
   const publishedLayout = row.published_layout
     ? normalizeBetterLayout(row.published_layout)
     : createDefaultBetterLayout();
+  publishedLayout.name = normalizeBetterLayout(row.draft_layout).name;
   const timestamp = nowIso();
   const { data, error } = await supabase
     .from(EDITOR_TABLE)
@@ -322,16 +365,19 @@ export async function revertBetterDraftToPublished(
 export async function resetBetterDraftLayout(
   userId,
   expectedDraftVersion = null,
+  overlayId = null,
 ) {
+  const row = await getOrCreateOwnedBetterOverlayRow(userId, overlayId);
   return saveBetterDraft(
     userId,
-    createDefaultBetterLayout(),
+    { ...createDefaultBetterLayout(), name: normalizeBetterLayout(row.draft_layout).name },
     expectedDraftVersion,
+    row.id,
   );
 }
 
-export async function regenerateBetterPublicOverlayId(userId) {
-  const row = await getOrCreateOwnedBetterOverlayRow(userId);
+export async function regenerateBetterPublicOverlayId(userId, overlayId = null) {
+  const row = await getOrCreateOwnedBetterOverlayRow(userId, overlayId);
   const oldPublicOverlayId = row.public_overlay_id;
   const newPublicOverlayId = generatePublicOverlayId();
   const publishedLayout = row.published_layout
