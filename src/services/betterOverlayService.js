@@ -171,12 +171,15 @@ export async function getOrCreateBetterEditorOverlay(userId, overlayId = null) {
 export async function listBetterEditorOverlays(userId) {
   if (!userId) return [];
   const { data, error } = await supabase.from(EDITOR_TABLE)
-    .select("id,public_overlay_id,name:draft_layout->>name,created_at")
+    .select("id,public_overlay_id,name:draft_layout->>name,preview:draft_layout->preview,created_at,updated_at,draft_version,published_version")
     .eq("user_id", userId).order("created_at", { ascending: true });
   if (error) throw error;
   return (data || []).map((row, index) => ({
     id: row.id, name: row.name || (index === 0 ? "My Overlay" : `Overlay ${index + 1}`),
     publicOverlayId: row.public_overlay_id,
+    preview: Array.isArray(row.preview) ? row.preview : [],
+    updatedAt: row.updated_at || row.created_at,
+    published: row.published_version > 0 && row.draft_version === row.published_version,
   }));
 }
 
@@ -323,7 +326,15 @@ export async function publishBetterOverlay(
     },
     { onConflict: "public_overlay_id" },
   );
-  if (publicError) throw publicError;
+  if (publicError) {
+    // The owner row already committed. Preserve its version so a retry does not
+    // mistake our own successful draft write for another window's edit.
+    throw Object.assign(new Error(publicError.message || "The OBS publication could not be updated."), {
+      code: publicError.code,
+      committedEditorRecord: normalizeEditorRow(data),
+      publicationIncomplete: true,
+    });
+  }
   return normalizeEditorRow(data);
 }
 

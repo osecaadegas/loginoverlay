@@ -18,6 +18,7 @@ import {
 } from "./BetterWidgetPackages";
 import { normalizeBetterCoordinate } from "./betterWidgetGeometry";
 import { STANDARD_BETTER_WIDGET_GEOMETRY } from "./standardWidgetPresets";
+import { EDITOR_WIDGET_METADATA } from "./editorWidgetMetadata";
 
 export const BETTER_CANVAS = Object.freeze({ width: 1920, height: 1080 });
 export const BETTER_LAYOUT_SCHEMA_VERSION = 1;
@@ -845,6 +846,7 @@ function buildDefinition(meta) {
     defaultSize: cloneJson(meta.defaultSize),
     constraints: SIZE_CONSTRAINTS[meta.type],
     controlSchema: CONTROL_SCHEMAS[meta.type] || [],
+    editor: EDITOR_WIDGET_METADATA[meta.type] || { category: "Other", simpleSections: [] },
     component: COMPONENTS[meta.type],
     validateConfig: (config) =>
       ensureBetterWidgetConfig(meta.type, config || {}),
@@ -1043,6 +1045,7 @@ export function normalizeBetterLayout(layout = {}) {
   return {
     schemaVersion: BETTER_LAYOUT_SCHEMA_VERSION,
     name: String(layout.name || "My Overlay").trim().slice(0, 80) || "My Overlay",
+    preview: instances.filter((item) => item.visible !== false && item.widgetType !== "background").slice(0, 16).map(({ x, y, width, height }) => ({ x, y, width, height })),
     canvas: {
       width: BETTER_CANVAS.width,
       height: BETTER_CANVAS.height,

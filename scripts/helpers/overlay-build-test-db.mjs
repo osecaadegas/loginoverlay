@@ -1,7 +1,7 @@
 export function createOverlayTestDatabase(initial = {}) {
   const tables = structuredClone(initial);
   const calls = [];
-  const state = { tables, calls, delay: 0, failSave: false };
+  const state = { tables, calls, delay: 0, failSave: false, failPublication: false };
   const client = {
     from(table) {
       const filters = [];
@@ -24,6 +24,7 @@ export function createOverlayTestDatabase(initial = {}) {
             calls.push({ table, action, filters: structuredClone(filters), payload: structuredClone(payload) });
             if (action === 'update' && state.delay) await new Promise((done) => setTimeout(done, state.delay));
             if (action === 'update' && state.failSave) return resolve({ data: null, error: new Error('Test save failed') });
+            if (table === 'better_overlay_publications' && action === 'upsert' && state.failPublication) return resolve({ data: null, error: new Error('Test publication failed') });
             tables[table] ||= [];
             let rows = tables[table].filter((row) => filters.every(([key, value, operator]) => operator === 'gte' ? row[key] >= value : Array.isArray(value) ? value.includes(row[key]) : row[key] === value)).slice(0, limit);
             if (action === 'insert' || action === 'upsert') {
@@ -39,6 +40,7 @@ export function createOverlayTestDatabase(initial = {}) {
             }
             const project = (row) => columns === '*' ? structuredClone(row) : Object.fromEntries(columns.split(',').map((key) => {
               if (key === 'name:draft_layout->>name') return ['name', row.draft_layout?.name];
+              if (key === 'preview:draft_layout->preview') return ['preview', row.draft_layout?.preview];
               return [key.trim(), structuredClone(row[key.trim()])];
             }));
             return resolve({ data: single ? (rows[0] ? project(rows[0]) : null) : rows.map(project), error: null });

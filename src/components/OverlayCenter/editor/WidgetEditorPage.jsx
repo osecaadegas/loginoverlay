@@ -12,7 +12,6 @@ import {
   Download,
   Eye,
   EyeOff,
-  Grid3X3,
   GripVertical,
   Lock,
   MoreVertical,
@@ -24,11 +23,22 @@ import {
   RotateCcw,
   Save,
   Send,
-  SlidersHorizontal,
   Trash2,
   Undo2,
   Unlock,
   X,
+  Layers,
+  PanelRight,
+  PanelLeftClose,
+  Search,
+  ZoomIn,
+  ZoomOut,
+  Scan,
+  Focus,
+  Magnet,
+  MoreHorizontal,
+  ArrowLeft,
+  AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
@@ -57,7 +67,9 @@ import {
   validateBetterWidgetConfig,
   betterInstanceToLegacyWidget,
 } from "./betterWidgetRegistry";
-import { BetterWidgetControls } from "./BetterWidgetPackages";
+import EditorInspector from "./EditorInspector";
+import EditorWidgetPicker from "./EditorWidgetPicker";
+import { readEditorPreferences, useEditorPreferences } from "./editorPreferences";
 import OverlayBuildFolders from "./OverlayBuildFolders";
 import {
   getBetterWidgetNudge,
@@ -68,6 +80,7 @@ import {
 import { downloadWidgetControlsPreset } from "./widgetControlsPreset";
 import "./BetterWidgetPackages.css";
 import "./WidgetEditorPage.css";
+import "./EditorWorkspace.css";
 
 const SNAP_TOLERANCE = 10;
 const SNAP_GRID = 20;
@@ -235,8 +248,8 @@ function useCanvasScale(shellRef, ready) {
 
     const measure = () => {
       const rect = shell.getBoundingClientRect();
-      const availableWidth = Math.max(1, rect.width);
-      const availableHeight = Math.max(1, rect.height);
+      const availableWidth = Math.max(1, rect.width - 32);
+      const availableHeight = Math.max(1, rect.height - 32);
       setFitScale(
         Math.min(
           availableWidth / BETTER_CANVAS.width,
@@ -405,6 +418,10 @@ function WidgetListItem({
           </small>
         </span>
       </button>}
+      <div className="editor-layer-quick-actions">
+        <button type="button" title={instance.visible === false ? "Show widget" : "Hide widget"} aria-label={`${instance.visible === false ? "Show" : "Hide"} ${instance.label}`} aria-pressed={instance.visible !== false} onClick={() => onToggleVisible(instance.instanceId)}>{instance.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+        <button type="button" disabled={!canEditInstance} title={instance.locked ? "Unlock widget" : "Lock widget"} aria-label={`${instance.locked ? "Unlock" : "Lock"} ${instance.label}`} aria-pressed={instance.locked} onClick={() => onToggleLock(instance.instanceId)}>{instance.locked ? <Lock size={14} /> : <Unlock size={14} />}</button>
+      </div>
       <details
         className="better-editor-widget-row__menu"
         onClick={(event) => event.stopPropagation()}
@@ -520,6 +537,10 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const editorSyncChannelRef = useRef(null);
   const savePromiseRef = useRef(null);
   const overlayRecordRef = useRef(null);
+  const operationRef = useRef(false);
+  const retryActionRef = useRef(null);
+  const pendingViewportRef = useRef(null);
+  const confirmDialogRef = useRef(null);
 
   const [layout, setLayout] = useState(createDefaultBetterLayout);
   const [overlayRecord, setOverlayRecord] = useState(null);
@@ -539,8 +560,82 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const [interaction, setInteraction] = useState(null);
   const [draggedLayerId, setDraggedLayerId] = useState("");
   const [dragOverLayerId, setDragOverLayerId] = useState("");
+  const [operation, setOperation] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
+  const [widgetPickerOpen, setWidgetPickerOpen] = useState(false);
+  const [layerSearch, setLayerSearch] = useState("");
+  const [previewing, setPreviewing] = useState(false);
+  const [viewportRevision, setViewportRevision] = useState(0);
+  const [layersOpen, setLayersOpen] = useState(() => window.innerWidth > 1100);
+  const [settingsOpen, setSettingsOpen] = useState(
+    () => window.innerWidth > 1100,
+  );
+  const [preferences, setPreferences] = useEditorPreferences(
+    user?.id,
+    overlayRecord?.id,
+  );
+  const fitScale = useCanvasScale(shellRef, !loading && Boolean(overlayRecord));
+  const zoom = Number(preferences.zoom);
+  const scale = !previewing && zoom >= 0.1 && zoom <= 2 ? zoom : fitScale;
+  const snapping = preferences.snapping !== false;
 
-  const scale = useCanvasScale(shellRef, !loading && !error);
+  useEffect(() => {
+    if (confirmation) confirmDialogRef.current?.showModal();
+    else confirmDialogRef.current?.close();
+  }, [confirmation]);
+
+  useLayoutEffect(() => {
+    const target = pendingViewportRef.current;
+    const shell = shellRef.current;
+    if (!target || !shell) return;
+    const offsetX = Math.max(
+      16,
+      (shell.clientWidth - BETTER_CANVAS.width * scale) / 2,
+    );
+    const offsetY = Math.max(
+      16,
+      (shell.clientHeight - BETTER_CANVAS.height * scale) / 2,
+    );
+    shell.scrollLeft = target.x * scale + offsetX - shell.clientWidth / 2;
+    shell.scrollTop = target.y * scale + offsetY - shell.clientHeight / 2;
+    pendingViewportRef.current = null;
+  }, [scale, viewportRevision]);
+
+  useEffect(() => {
+    const warnUnsaved = (event) => {
+      if (!dirtyRef.current && !savePromiseRef.current && !operationRef.current)
+        return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnUnsaved);
+    return () => window.removeEventListener("beforeunload", warnUnsaved);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 1100px)");
+    const resizePanels = () => {
+      const saved = readEditorPreferences(user.id, overlayRecord?.id);
+      setLayersOpen(!media.matches && saved.layersOpen !== false);
+      setSettingsOpen(!media.matches && saved.settingsOpen !== false);
+    };
+    media.addEventListener("change", resizePanels);
+    return () => media.removeEventListener("change", resizePanels);
+  }, [user?.id, overlayRecord?.id]);
+
+  useEffect(() => {
+    if (!overlayRecord) return;
+    const saved = readEditorPreferences(user.id, overlayRecord.id);
+    if (window.innerWidth > 1100) {
+      setLayersOpen(saved.layersOpen !== false);
+      setSettingsOpen(saved.settingsOpen !== false);
+    }
+  }, [overlayRecord?.id, user?.id]);
+
+  useEffect(() => {
+    if (loadedRef.current && selectedInstanceId)
+      setPreferences({ selectedInstanceId });
+  }, [selectedInstanceId, setPreferences]);
 
   useEffect(() => {
     document.documentElement.classList.add("better-editor-document");
@@ -579,9 +674,17 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
         selectBetterEditorOverlay(user.id, record.id);
         setLayout(nextLayout);
         layoutRef.current = nextLayout;
+        const savedSelection = readEditorPreferences(
+          user.id,
+          record.id,
+        ).selectedInstanceId;
         setSelectedInstanceId(
-          nextLayout.instances.find((item) => item.widgetType !== "background")
-            ?.instanceId ||
+          nextLayout.instances.find(
+            (item) => item.instanceId === savedSelection,
+          )?.instanceId ||
+            nextLayout.instances.find(
+              (item) => item.widgetType !== "background",
+            )?.instanceId ||
             nextLayout.instances[0]?.instanceId ||
             "",
         );
@@ -611,13 +714,21 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
         event.data?.type !== "better-editor-draft-saved" ||
         event.data?.overlayId !== overlayRecordRef.current?.id ||
         nextVersion <= draftVersionRef.current ||
-        dirtyRef.current
+        dirtyRef.current ||
+        operationRef.current
       ) {
         return;
       }
       try {
-        const record = await getOrCreateBetterEditorOverlay(user.id, overlayRecordRef.current?.id);
-        if (Number(record?.draftVersion || 0) <= draftVersionRef.current)
+        const record = await getOrCreateBetterEditorOverlay(
+          user.id,
+          overlayRecordRef.current?.id,
+        );
+        if (
+          dirtyRef.current ||
+          operationRef.current ||
+          Number(record?.draftVersion || 0) <= draftVersionRef.current
+        )
           return;
         const nextLayout = normalizeBetterLayout(record.draftLayout);
         setOverlayRecord(record);
@@ -754,13 +865,8 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     [dataMode, layout.instances, liveWidgetContext],
   );
   const addableDefinitions = useMemo(() => {
-    const presentTypes = new Set(
-      layout.instances.map((instance) => instance.widgetType),
-    );
     return Object.values(BETTER_WIDGET_REGISTRY).filter(
-      (definition) =>
-        definition.widgetType !== "background" &&
-        !presentTypes.has(definition.widgetType),
+      (definition) => definition.widgetType !== "background",
     );
   }, [layout.instances]);
 
@@ -830,6 +936,33 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
               ? validateBetterWidgetConfig(instance.widgetType, patch.config)
               : instance.config,
           };
+          if (next.config.fitContentToFrame === true) {
+            const constraints =
+              BETTER_WIDGET_REGISTRY[next.widgetType]?.constraints;
+            Object.assign(
+              next,
+              clampGeometry(
+                next,
+                next.widgetType === "bonus_hunt"
+                  ? { ...constraints, maxHeight: 980 }
+                  : constraints,
+              ),
+            );
+            if (next.widgetType === "bonus_hunt")
+              next.config = {
+                ...next.config,
+                widgetWidth: next.width,
+                panelWidth: next.width,
+                widgetHeight: next.height,
+                panelHeight: next.height,
+              };
+            else if (["chat", "giveaway"].includes(next.widgetType))
+              next.config = {
+                ...next.config,
+                width: next.width,
+                height: next.height,
+              };
+          }
           if (next.widgetType === "background") {
             return {
               ...next,
@@ -857,6 +990,12 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
 
   useEffect(() => {
     const onKeyDown = (event) => {
+      if (
+        operationRef.current ||
+        previewing ||
+        document.querySelector("dialog[open]")
+      )
+        return;
       const nudge = getBetterWidgetNudge(event.key);
       if (!nudge || event.ctrlKey || event.metaKey || event.altKey) return;
       if (
@@ -883,7 +1022,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedInstanceId, updateInstance]);
+  }, [selectedInstanceId, updateInstance, previewing]);
 
   const flushDraft = useCallback(async () => {
     if (!user?.id || !overlayRecordRef.current) return null;
@@ -894,7 +1033,12 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       const snapshot = layoutRef.current;
       const current = overlayRecordRef.current;
       setSavingState("saving");
-      const pending = saveBetterDraft(user.id, snapshot, current.draftVersion, current.id);
+      const pending = saveBetterDraft(
+        user.id,
+        snapshot,
+        current.draftVersion,
+        current.id,
+      );
       savePromiseRef.current = pending;
       try {
         const record = await pending;
@@ -905,6 +1049,8 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
         dirtyRef.current = layoutRef.current !== snapshot;
         setDirty(dirtyRef.current);
         setSavingState("saved");
+        setError(null);
+        retryActionRef.current = null;
       } catch (failure) {
         setSavingState("error");
         throw failure;
@@ -920,18 +1066,13 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       try {
         await flushDraft();
       } catch (saveError) {
+        retryActionRef.current = null;
         setSavingState("error");
         setError(saveError);
       }
     }, AUTOSAVE_MS);
     return () => window.clearTimeout(timeout);
-  }, [
-    flushDraft,
-    dirty,
-    layout,
-    overlayRecord?.draftVersion,
-    user?.id,
-  ]);
+  }, [flushDraft, dirty, layout, overlayRecord?.draftVersion, user?.id]);
 
   useEffect(() => {
     if (!interaction) return undefined;
@@ -960,7 +1101,10 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       const constraints =
         BETTER_WIDGET_REGISTRY[instance.widgetType]?.constraints;
       const clamped = clampGeometry(rawGeometry, constraints);
-      const snapped = snapGeometry(currentLayout, active.instanceId, clamped);
+      const snapped =
+        snapping && !event.altKey
+          ? snapGeometry(currentLayout, active.instanceId, clamped)
+          : clamped;
       updateInstance(active.instanceId, snapped, { commit: false });
     };
 
@@ -978,11 +1122,12 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
     };
-  }, [interaction, pushHistory, updateInstance]);
+  }, [interaction, pushHistory, updateInstance, snapping]);
 
   const beginInteraction = useCallback(
     (event, instance, mode, handle = "") => {
       if (event.button !== 0) return;
+      if (previewing || operationRef.current) return;
       event.preventDefault();
       event.stopPropagation();
       setSelectedInstanceId(instance.instanceId);
@@ -1008,7 +1153,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       };
       setInteraction(interactionRef.current);
     },
-    [scale],
+    [scale, previewing],
   );
 
   const handleToggleVisible = useCallback(
@@ -1063,6 +1208,10 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
         instances: [...current.instances, created],
       }));
       setSelectedInstanceId(created.instanceId);
+      if (window.innerWidth <= 1100) {
+        setLayersOpen(false);
+        setSettingsOpen(true);
+      }
       return nextLayout;
     },
     [commitLayout],
@@ -1164,6 +1313,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     setHistoryIndex(nextIndex);
     setLayout(nextLayout);
     layoutRef.current = nextLayout;
+    dirtyRef.current = true;
     setDirty(true);
   }, [history, historyIndex]);
 
@@ -1174,6 +1324,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     setHistoryIndex(nextIndex);
     setLayout(nextLayout);
     layoutRef.current = nextLayout;
+    dirtyRef.current = true;
     setDirty(true);
   }, [history, historyIndex]);
 
@@ -1183,106 +1334,121 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     try {
       await flushDraft();
       setSavingState("saved");
+      setError(null);
+      retryActionRef.current = null;
     } catch (saveError) {
+      retryActionRef.current = null;
       setSavingState("error");
       setError(saveError);
     }
   }, [flushDraft, user?.id]);
 
-  const publishNow = useCallback(async () => {
-    if (!user?.id) return;
-    setSavingState("publishing");
-    try {
-      const saved = await flushDraft();
-      const record = await publishBetterOverlay(
-        user.id,
-        layoutRef.current,
-        saved.draftVersion,
-        saved.id,
-      );
-      setOverlayRecord(record);
-      announceEditorRecord(record);
-      const publishedLayout = normalizeBetterLayout(record.draftLayout);
-      setLayout(publishedLayout);
-      layoutRef.current = publishedLayout;
-      setHistory([publishedLayout]);
-      setHistoryIndex(0);
-      setDirty(false);
-      setSavingState("published");
-    } catch (publishError) {
-      setSavingState("error");
-      setError(publishError);
-    }
-  }, [announceEditorRecord, flushDraft, user?.id]);
+  const runEditorOperation = useCallback(
+    async (name, action, replaceLayout = false) => {
+      if (!user?.id || operationRef.current) return;
+      operationRef.current = true;
+      setOperation(name);
+      setError(null);
+      try {
+        const saved = await flushDraft();
+        const record = await action(saved);
+        overlayRecordRef.current = record;
+        draftVersionRef.current = record.draftVersion;
+        setOverlayRecord(record);
+        announceEditorRecord(record);
+        if (replaceLayout) {
+          const nextLayout = normalizeBetterLayout(record.draftLayout);
+          setLayout(nextLayout);
+          layoutRef.current = nextLayout;
+          setHistory([nextLayout]);
+          setHistoryIndex(0);
+          dirtyRef.current = false;
+          setDirty(false);
+          setSelectedInstanceId((id) =>
+            nextLayout.instances.some((item) => item.instanceId === id)
+              ? id
+              : nextLayout.instances.find(
+                  (item) => item.widgetType !== "background",
+                )?.instanceId || "",
+          );
+        }
+        setSavingState(name === "Publishing" ? "published" : "saved");
+      } catch (failure) {
+        if (failure.committedEditorRecord) {
+          overlayRecordRef.current = failure.committedEditorRecord;
+          draftVersionRef.current = failure.committedEditorRecord.draftVersion;
+          setOverlayRecord(failure.committedEditorRecord);
+        }
+        retryActionRef.current = () =>
+          runEditorOperation(name, action, replaceLayout);
+        setSavingState("error");
+        setError(failure);
+      } finally {
+        operationRef.current = false;
+        setOperation(null);
+      }
+    },
+    [user?.id, flushDraft, announceEditorRecord],
+  );
 
-  const revertNow = useCallback(async () => {
-    if (!user?.id) return;
-    setSavingState("saving");
-    try {
-      const saved = await flushDraft();
-      const record = await revertBetterDraftToPublished(
-        user.id,
-        saved.draftVersion,
-        saved.id,
-      );
-      const nextLayout = normalizeBetterLayout(record.draftLayout);
-      setOverlayRecord(record);
-      announceEditorRecord(record);
-      setLayout(nextLayout);
-      layoutRef.current = nextLayout;
-      setHistory([nextLayout]);
-      setHistoryIndex(0);
-      setDirty(false);
-      setSavingState("saved");
-    } catch (revertError) {
-      setSavingState("error");
-      setError(revertError);
-    }
-  }, [announceEditorRecord, flushDraft, user?.id]);
-
-  const resetLayoutNow = useCallback(async () => {
-    if (!user?.id) return;
-    setSavingState("saving");
-    try {
-      const saved = await flushDraft();
-      const record = await resetBetterDraftLayout(
-        user.id,
-        saved.draftVersion,
-        saved.id,
-      );
-      const nextLayout = normalizeBetterLayout(record.draftLayout);
-      setOverlayRecord(record);
-      announceEditorRecord(record);
-      setLayout(nextLayout);
-      layoutRef.current = nextLayout;
-      setHistory([nextLayout]);
-      setHistoryIndex(0);
-      setSelectedInstanceId(
-        nextLayout.instances.find((item) => item.widgetType !== "background")
-          ?.instanceId || "",
-      );
-      setDirty(false);
-      setSavingState("saved");
-    } catch (resetError) {
-      setSavingState("error");
-      setError(resetError);
-    }
-  }, [announceEditorRecord, flushDraft, user?.id]);
-
-  const regenerateLinkNow = useCallback(async () => {
-    if (!user?.id) return;
-    setSavingState("saving");
-    try {
-      const saved = await flushDraft();
-      const record = await regenerateBetterPublicOverlayId(user.id, saved.id);
-      setOverlayRecord(record);
-      setSavingState("saved");
-    } catch (failure) { setSavingState("error"); setError(failure); }
-  }, [flushDraft, user?.id]);
+  const publishNow = useCallback(
+    () =>
+      runEditorOperation(
+        "Publishing",
+        (saved) =>
+          publishBetterOverlay(
+            user.id,
+            saved.draftLayout,
+            saved.draftVersion,
+            saved.id,
+          ),
+        true,
+      ),
+    [runEditorOperation, user?.id],
+  );
+  const revertNow = useCallback(
+    () =>
+      runEditorOperation(
+        "Reverting",
+        (saved) =>
+          revertBetterDraftToPublished(user.id, saved.draftVersion, saved.id),
+        true,
+      ),
+    [runEditorOperation, user?.id],
+  );
+  const resetLayoutNow = useCallback(
+    () =>
+      runEditorOperation(
+        "Resetting",
+        (saved) =>
+          resetBetterDraftLayout(user.id, saved.draftVersion, saved.id),
+        true,
+      ),
+    [runEditorOperation, user?.id],
+  );
+  const regenerateLinkNow = useCallback(
+    () =>
+      runEditorOperation("Regenerating link", (saved) =>
+        regenerateBetterPublicOverlayId(user.id, saved.id),
+      ),
+    [runEditorOperation, user?.id],
+  );
 
   const copyUrl = useCallback(async (url) => {
     if (!url) return;
-    await navigator.clipboard.writeText(url);
+    try {
+      await navigator.clipboard.writeText(url);
+      setSavingState("copied");
+      setError(null);
+      retryActionRef.current = null;
+    } catch (failure) {
+      retryActionRef.current = () => copyUrl(url);
+      setError(
+        new Error(
+          "Could not copy the OBS URL. Check clipboard permissions and try again.",
+        ),
+      );
+    }
   }, []);
 
   const selectedLegacyWidget = selectedInstance
@@ -1320,317 +1486,732 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     [selectedInstance, updateInstance],
   );
 
-  if (loading)
-    return <LoadingSpinner text="Loading Better Editor..." fullPage />;
+  const selectInstance = (id) => {
+    setSelectedInstanceId(id);
+    if (window.innerWidth <= 1100) {
+      setLayersOpen(false);
+      setSettingsOpen(true);
+    }
+  };
+  const togglePanel = (panel) => {
+    if (panel === "layers") {
+      const open = !layersOpen;
+      setLayersOpen(open);
+      if (open && window.innerWidth <= 1100) setSettingsOpen(false);
+      if (window.innerWidth > 1100) setPreferences({ layersOpen: open });
+    } else {
+      const open = !settingsOpen;
+      setSettingsOpen(open);
+      if (open && window.innerWidth <= 1100) setLayersOpen(false);
+      if (window.innerWidth > 1100) setPreferences({ settingsOpen: open });
+    }
+  };
+  const changeZoom = (value, target) => {
+    const shell = shellRef.current;
+    if (shell)
+      pendingViewportRef.current = target || {
+        x:
+          (shell.scrollLeft +
+            shell.clientWidth / 2 -
+            Math.max(
+              16,
+              (shell.clientWidth - BETTER_CANVAS.width * scale) / 2,
+            )) /
+          scale,
+        y:
+          (shell.scrollTop +
+            shell.clientHeight / 2 -
+            Math.max(
+              16,
+              (shell.clientHeight - BETTER_CANVAS.height * scale) / 2,
+            )) /
+          scale,
+      };
+    setPreferences({
+      zoom: value === "fit" ? "fit" : clampNumber(value, 0.1, 2, fitScale),
+    });
+    setViewportRevision((revision) => revision + 1);
+  };
+  const focusSelection = () => {
+    if (!selectedInstance || !shellRef.current) return;
+    const shell = shellRef.current;
+    changeZoom(
+      Math.min(
+        (shell.clientWidth - 80) / selectedInstance.width,
+        (shell.clientHeight - 80) / selectedInstance.height,
+        2,
+      ),
+      {
+        x: selectedInstance.x + selectedInstance.width / 2,
+        y: selectedInstance.y + selectedInstance.height / 2,
+      },
+    );
+  };
+  const confirmAction = (title, message, action) =>
+    setConfirmation({ title, message, action });
+  const navigateSource = async (route) => {
+    if (operationRef.current) return;
+    try {
+      await flushDraft();
+      navigate(route);
+    } catch (failure) {
+      retryActionRef.current = () => navigateSource(route);
+      setSavingState("error");
+      setError(failure);
+    }
+  };
+  const closeActions = (event, action) => {
+    event.currentTarget.closest("details").open = false;
+    action();
+  };
+  const status = operation
+    ? operation + "..."
+    : error
+      ? "Save needs attention"
+      : savingState === "saving"
+        ? "Saving..."
+        : dirty
+          ? "Unsaved changes"
+          : savingState === "copied"
+            ? "URL copied"
+            : "Saved";
+  const publicationStatus = error?.publicationIncomplete
+    ? "Publication incomplete"
+    : dirty || overlayRecord?.hasUnpublishedChanges
+      ? "Unpublished changes"
+      : overlayRecord?.publishedVersion > 0
+        ? "Published"
+        : "Not published";
+  const inspectorPreferences = preferences.widgets?.[selectedInstanceId] || {};
+  const visibleLayers = layout.instances
+    .slice()
+    .sort((a, b) => Number(b.zIndex) - Number(a.zIndex))
+    .filter((instance) =>
+      `${instance.label} ${instance.widgetType}`
+        .toLowerCase()
+        .includes(layerSearch.toLowerCase().trim()),
+    );
 
-  if (error) {
+  if (loading) return <LoadingSpinner text="Loading editor..." fullPage />;
+  if (!overlayRecord)
     return (
       <main className="better-editor-page better-editor-page--error">
         <section className="better-editor-empty">
-          <SlidersHorizontal size={24} />
-          <h1>Better Editor unavailable</h1>
-          <p>
-            {error.message || "The Better overlay layout could not be loaded."}
-          </p>
+          <AlertCircle size={24} />
+          <h1>Editor unavailable</h1>
+          <p>{error?.message || "The overlay could not be loaded."}</p>
+          <button type="button" onClick={() => window.location.reload()}>
+            Retry
+          </button>
         </section>
       </main>
     );
-  }
 
   return (
-    <main className="better-editor-page">
-      <aside className="better-editor-sidebar">
-        <header className="better-editor-panel-header">
-          <span>Overlay</span>
-          <h1>Better Editor</h1>
-        </header>
-
-        {overlayRecord && <OverlayBuildFolders
+    <main
+      className="better-editor-page editor-workspace"
+      data-layers-open={!previewing && layersOpen}
+      data-settings-open={!previewing && settingsOpen}
+      data-preview={previewing}
+      data-busy={Boolean(operation)}
+    >
+      <header className="better-editor-toolbar editor-topbar">
+        <button
+          type="button"
+          className="editor-icon-button"
+          title="Back to apps"
+          aria-label="Back to apps"
+          disabled={Boolean(operation)}
+          onClick={() => navigateSource("/apps")}
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <OverlayBuildFolders
           userId={user.id}
           record={overlayRecord}
           layout={layout}
           onSave={flushDraft}
           onSelect={onSelectBuild}
           onRename={(name) => commitLayout((current) => ({ ...current, name }))}
-        />}
-
-        <div className="better-editor-widget-list">
-          {layout.instances
-            .slice()
-            .sort((a, b) => Number(b.zIndex) - Number(a.zIndex))
-            .map((instance) => (
-              <WidgetListItem
-                key={instance.instanceId}
-                instance={instance}
-                selected={instance.instanceId === selectedInstanceId}
-                obsUrl={buildWidgetObsUrl(
-                  origin,
-                  publicOverlayId,
-                  instance.instanceId,
-                )}
-                onSelect={setSelectedInstanceId}
-                onCopyUrl={copyUrl}
-                onDownloadPreset={handleDownloadPreset}
-                onToggleVisible={handleToggleVisible}
-                onToggleLock={handleToggleLock}
-                onDuplicate={handleDuplicate}
-                onDelete={handleDeleteInstance}
-                onRename={(instanceId, label) => updateInstance(instanceId, { label })}
-                dragging={instance.instanceId === draggedLayerId}
-                dragOver={instance.instanceId === dragOverLayerId}
-                onLayerDragStart={handleLayerDragStart}
-                onLayerDragOver={handleLayerDragOver}
-                onLayerDrop={handleLayerDrop}
-                onLayerDragEnd={clearLayerDrag}
-                onLayerMove={handleLayerMove}
-              />
-            ))}
+          disabled={Boolean(operation)}
+        />
+        <div className="editor-history-actions">
+          <button
+            type="button"
+            className="editor-icon-button"
+            title="Undo"
+            aria-label="Undo"
+            disabled={historyIndex <= 0 || Boolean(operation) || previewing}
+            onClick={handleUndo}
+          >
+            <Undo2 size={17} />
+          </button>
+          <button
+            type="button"
+            className="editor-icon-button"
+            title="Redo"
+            aria-label="Redo"
+            disabled={
+              historyIndex >= history.length - 1 ||
+              Boolean(operation) ||
+              previewing
+            }
+            onClick={handleRedo}
+          >
+            <Redo2 size={17} />
+          </button>
         </div>
-
-        {addableDefinitions.length > 0 && (
-          <section className="better-editor-sidebar-section better-editor-add-widget-section">
-            <span className="better-editor-sidebar-kicker">Add widget</span>
-            <div className="better-editor-add-widget-list">
-              {addableDefinitions.map((definition) => (
-                <button
-                  key={definition.widgetType}
-                  type="button"
-                  onClick={() => handleAddWidget(definition.widgetType)}
-                >
-                  <span>{definition.icon}</span>
-                  <strong>{definition.label}</strong>
-                </button>
-              ))}
+        <div
+          className="editor-save-status"
+          role="status"
+          aria-live="polite"
+          data-error={Boolean(error)}
+        >
+          <span>{status}</span>
+          <small>{publicationStatus}</small>
+        </div>
+        <div className="editor-publish-actions">
+          <button
+            type="button"
+            aria-pressed={previewing}
+            onClick={() => setPreviewing(!previewing)}
+          >
+            <Eye size={16} />
+            <span>{previewing ? "Edit" : "Preview"}</span>
+          </button>
+          <button
+            type="button"
+            className="is-primary"
+            disabled={Boolean(operation)}
+            onClick={publishNow}
+          >
+            <Send size={16} />
+            <span>
+              {operation === "Publishing" ? "Publishing..." : "Publish to OBS"}
+            </span>
+          </button>
+          <details className="editor-actions-menu">
+            <summary title="More actions" aria-label="More editor actions">
+              <MoreHorizontal size={19} />
+            </summary>
+            <div className="editor-actions-menu-panel">
+              <button
+                type="button"
+                disabled={Boolean(operation)}
+                onClick={(event) => closeActions(event, saveDraftNow)}
+              >
+                <Save size={16} />
+                Save Draft
+              </button>
+              <button
+                type="button"
+                onClick={(event) =>
+                  closeActions(event, () => copyUrl(fullOverlayUrl))
+                }
+              >
+                <Copy size={16} />
+                Copy Overlay URL
+              </button>
+              <button
+                type="button"
+                disabled={Boolean(operation)}
+                onClick={(event) =>
+                  closeActions(event, () =>
+                    confirmAction(
+                      "Regenerate OBS link?",
+                      "The current OBS URL will stop working. Your layout will stay unchanged.",
+                      regenerateLinkNow,
+                    ),
+                  )
+                }
+              >
+                <RefreshCw size={16} />
+                Regenerate Link
+              </button>
+              <button
+                type="button"
+                disabled={Boolean(operation) || !overlayRecord.publishedLayout}
+                onClick={(event) =>
+                  closeActions(event, () =>
+                    confirmAction(
+                      "Revert to published layout?",
+                      "Unpublished layout changes in this build will be replaced.",
+                      revertNow,
+                    ),
+                  )
+                }
+              >
+                <RotateCcw size={16} />
+                Revert
+              </button>
+              <button
+                type="button"
+                disabled={Boolean(operation)}
+                onClick={(event) =>
+                  closeActions(event, () =>
+                    confirmAction(
+                      "Reset this build?",
+                      "The draft will return to the default widgets. The published overlay will not change until you publish again.",
+                      resetLayoutNow,
+                    ),
+                  )
+                }
+              >
+                <RefreshCw size={16} />
+                Reset Layout
+              </button>
             </div>
-          </section>
-        )}
+          </details>
+        </div>
+      </header>
 
-        <section className="better-editor-sidebar-section">
-          <div className="better-editor-mode-toggle">
+      <aside
+        className="better-editor-sidebar"
+        aria-label="Layers panel"
+        inert={previewing || !layersOpen ? "" : undefined}
+      >
+        <header className="editor-panel-heading">
+          <h2>
+            Layers <small>{layout.instances.length}</small>
+          </h2>
+          <button
+            type="button"
+            title="Close layers"
+            aria-label="Close layers"
+            onClick={() => togglePanel("layers")}
+          >
+            <PanelLeftClose size={17} />
+          </button>
+        </header>
+        <div className="editor-layer-tools">
+          <label className="editor-search">
+            <Search size={14} />
+            <input
+              type="search"
+              aria-label="Search layers"
+              placeholder="Search layers"
+              value={layerSearch}
+              onChange={(event) => setLayerSearch(event.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className="editor-add-widget"
+            disabled={Boolean(operation)}
+            onClick={() => setWidgetPickerOpen(true)}
+          >
+            <Plus size={16} />
+            Add widget
+          </button>
+        </div>
+        <fieldset
+          className="better-editor-widget-list"
+          disabled={Boolean(operation)}
+        >
+          {visibleLayers.map((instance) => (
+            <WidgetListItem
+              key={instance.instanceId}
+              instance={instance}
+              selected={instance.instanceId === selectedInstanceId}
+              obsUrl={buildWidgetObsUrl(
+                origin,
+                publicOverlayId,
+                instance.instanceId,
+              )}
+              onSelect={selectInstance}
+              onCopyUrl={copyUrl}
+              onDownloadPreset={handleDownloadPreset}
+              onToggleVisible={handleToggleVisible}
+              onToggleLock={handleToggleLock}
+              onDuplicate={handleDuplicate}
+              onDelete={(id) =>
+                confirmAction(
+                  "Delete widget?",
+                  "This widget will be removed from the draft. You can undo this change before leaving the build.",
+                  () => handleDeleteInstance(id),
+                )
+              }
+              onRename={(id, label) => updateInstance(id, { label })}
+              dragging={instance.instanceId === draggedLayerId}
+              dragOver={instance.instanceId === dragOverLayerId}
+              onLayerDragStart={handleLayerDragStart}
+              onLayerDragOver={handleLayerDragOver}
+              onLayerDrop={handleLayerDrop}
+              onLayerDragEnd={clearLayerDrag}
+              onLayerMove={handleLayerMove}
+            />
+          ))}
+          {!visibleLayers.length && (
+            <p className="editor-empty-result">No matching layers</p>
+          )}
+        </fieldset>
+      </aside>
+
+      <section className="better-editor-stage">
+        <div className="editor-canvas-tools">
+          <div>
             <button
               type="button"
-              className={dataMode === "mock" ? "is-active" : ""}
-              onClick={() => setDataMode("mock")}
+              title="Layers"
+              aria-label="Toggle layers"
+              aria-pressed={layersOpen && !previewing}
+              disabled={previewing}
+              onClick={() => togglePanel("layers")}
             >
-              Mock
+              <Layers size={17} />
             </button>
             <button
               type="button"
-              className={dataMode === "live" ? "is-active" : ""}
+              title="Settings"
+              aria-label="Toggle settings"
+              aria-pressed={settingsOpen && !previewing}
+              disabled={previewing}
+              onClick={() => togglePanel("settings")}
+            >
+              <PanelRight size={17} />
+            </button>
+          </div>
+          <div
+            className="editor-segmented"
+            role="group"
+            aria-label="Preview data"
+          >
+            <button
+              type="button"
+              aria-pressed={dataMode === "mock"}
+              onClick={() => setDataMode("mock")}
+            >
+              Sample data
+            </button>
+            <button
+              type="button"
+              aria-pressed={dataMode === "live"}
               onClick={() => setDataMode("live")}
             >
               Live
             </button>
           </div>
-          <small>
-            {dataMode === "mock"
-              ? "Predictable preview data is active."
-              : "Widgets use the same live data adapters as OBS."}
-          </small>
-        </section>
-      </aside>
-
-      <section className="better-editor-stage">
-        <div className="better-editor-toolbar">
-          <div>
-            <span>Live overlay canvas</span>
-            <h2>1920 x 1080</h2>
-          </div>
-
-          <div className="better-editor-toolbar__group">
-            <button type="button" onClick={() => navigate("/apps")}>
-              <Grid3X3 size={15} />
-              Apps
+          <div className="editor-zoom-tools">
+            <button
+              type="button"
+              title="Zoom out"
+              aria-label="Zoom out"
+              disabled={previewing || scale <= 0.1}
+              onClick={() => changeZoom(scale - 0.1)}
+            >
+              <ZoomOut size={17} />
+            </button>
+            <select
+              aria-label="Canvas zoom"
+              value={
+                preferences.zoom === "fit" || !Number.isFinite(zoom)
+                  ? "fit"
+                  : String(scale)
+              }
+              disabled={previewing}
+              onChange={(event) => changeZoom(event.target.value)}
+            >
+              <option value="fit">Fit</option>
+              {[
+                0.1,
+                0.25,
+                0.5,
+                0.75,
+                1,
+                1.5,
+                2,
+                ...(![0.1, 0.25, 0.5, 0.75, 1, 1.5, 2].includes(scale)
+                  ? [scale]
+                  : []),
+              ]
+                .sort((a, b) => a - b)
+                .map((value) => (
+                  <option key={value} value={String(value)}>
+                    {Math.round(value * 100)}%
+                  </option>
+                ))}
+            </select>
+            <button
+              type="button"
+              title="Zoom in"
+              aria-label="Zoom in"
+              disabled={previewing || scale >= 2}
+              onClick={() => changeZoom(scale + 0.1)}
+            >
+              <ZoomIn size={17} />
             </button>
             <button
               type="button"
-              onClick={handleUndo}
-              disabled={historyIndex <= 0}
+              title="Fit canvas"
+              aria-label="Fit canvas"
+              onClick={() =>
+                changeZoom("fit", {
+                  x: BETTER_CANVAS.width / 2,
+                  y: BETTER_CANVAS.height / 2,
+                })
+              }
             >
-              <Undo2 size={15} />
-              Undo
+              <Scan size={17} />
             </button>
             <button
               type="button"
-              onClick={handleRedo}
-              disabled={historyIndex >= history.length - 1}
+              title="Zoom to selection"
+              aria-label="Zoom to selection"
+              disabled={!selectedInstance || previewing}
+              onClick={focusSelection}
             >
-              <Redo2 size={15} />
-              Redo
+              <Focus size={17} />
             </button>
             <button
               type="button"
-              onClick={saveDraftNow}
-              disabled={savingState === "saving"}
+              title="Snap to grid and widgets"
+              aria-label="Snapping"
+              aria-pressed={snapping}
+              disabled={previewing}
+              onClick={() => setPreferences({ snapping: !snapping })}
             >
-              <Save size={15} />
-              Save Draft
-            </button>
-            <button
-              type="button"
-              className="is-primary"
-              onClick={publishNow}
-              disabled={savingState === "publishing"}
-            >
-              <Send size={15} />
-              Publish to OBS
-            </button>
-            <button
-              type="button"
-              className="is-copy"
-              onClick={() => copyUrl(fullOverlayUrl)}
-              disabled={!fullOverlayUrl}
-            >
-              <Copy size={15} />
-              Copy Overlay URL
-            </button>
-            <button
-              type="button"
-              onClick={regenerateLinkNow}
-              disabled={savingState === "saving"}
-            >
-              <RefreshCw size={15} />
-              Regenerate Link
-            </button>
-            <button type="button" onClick={revertNow}>
-              <RotateCcw size={15} />
-              Revert
-            </button>
-            <button type="button" onClick={resetLayoutNow}>
-              <RefreshCw size={15} />
-              Reset Layout
+              <Magnet size={17} />
             </button>
           </div>
         </div>
-
+        {error && (
+          <div className="editor-save-error" role="alert">
+            <AlertCircle size={16} />
+            <span>{error.message}</span>
+            <button
+              type="button"
+              disabled={Boolean(operation)}
+              onClick={() => (retryActionRef.current || saveDraftNow)()}
+            >
+              {retryActionRef.current ? "Retry" : "Retry save"}
+            </button>
+            <button
+              type="button"
+              aria-label="Dismiss error"
+              onClick={() => setError(null)}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
         <div className="better-editor-canvas-shell" ref={shellRef}>
           <div
-            className="better-editor-canvas-viewport"
+            className="editor-canvas-pan-area"
             style={{
-              width: BETTER_CANVAS.width * scale,
-              height: BETTER_CANVAS.height * scale,
+              width: Math.max(0, BETTER_CANVAS.width * scale + 32),
+              height: Math.max(0, BETTER_CANVAS.height * scale + 32),
             }}
           >
             <div
-              className="better-editor-canvas"
+              className="better-editor-canvas-viewport"
               style={{
-                width: BETTER_CANVAS.width,
-                height: BETTER_CANVAS.height,
-                transform: `scale(${scale})`,
+                width: BETTER_CANVAS.width * scale,
+                height: BETTER_CANVAS.height * scale,
               }}
-              onPointerDown={() => setSelectedInstanceId("")}
             >
-              <span className="better-editor-canvas-line better-editor-canvas-line--x" />
-              <span className="better-editor-canvas-line better-editor-canvas-line--y" />
-              {layout.instances
-                .slice()
-                .sort((a, b) => Number(a.zIndex) - Number(b.zIndex))
-                .map((instance) => {
-                  if (instance.visible === false) return null;
-                  const selected = instance.instanceId === selectedInstanceId;
-                  const isBackground = instance.widgetType === "background";
-                  return (
-                    <div
-                      key={instance.instanceId}
-                      className={`better-editor-canvas-instance${selected ? " is-selected" : ""}${instance.locked ? " is-locked" : ""}${isBackground ? " is-background" : ""}`}
-                      style={{
-                        left: instance.x,
-                        top: instance.y,
-                        width: instance.width,
-                        height: instance.height,
-                        opacity: instance.opacity,
-                        zIndex: instance.zIndex,
-                        pointerEvents: isBackground ? "none" : "auto",
-                        borderRadius: getEditorInstanceBorderRadius(instance),
-                      }}
-                      onPointerDown={(event) =>
-                        beginInteraction(event, instance, "drag")
-                      }
-                    >
-                      {!isBackground && (
-                        <span className="better-editor-canvas-instance__tag">
-                          <MousePointer2 size={12} />
-                          {instance.label}
-                        </span>
-                      )}
-                      <div className="better-editor-canvas-instance__content">
-                        <BetterEditorWidgetBoundary
-                          instanceId={instance.instanceId}
-                        >
-                          {renderBetterWidgetInstance({
-                            instance,
-                            layout,
-                            mode: dataMode,
-                            userId: user?.id,
-                            theme: liveSource.theme,
-                            liveWidgets: liveSource.widgets,
-                          })}
-                        </BetterEditorWidgetBoundary>
-                      </div>
-                      {selected && !instance.locked && !isBackground && (
-                        <div className="better-editor-resize-handles">
-                          {RESIZE_HANDLES.map((handle) => (
-                            <button
-                              key={handle}
-                              type="button"
-                              className={`better-editor-resize-handle better-editor-resize-handle--${handle}`}
-                              aria-label={`Resize ${handle}`}
-                              onPointerDown={(event) =>
-                                beginInteraction(
-                                  event,
-                                  instance,
-                                  "resize",
-                                  handle,
-                                )
-                              }
-                            />
-                          ))}
+              <div
+                className="better-editor-canvas"
+                data-preview={previewing}
+                style={{
+                  width: BETTER_CANVAS.width,
+                  height: BETTER_CANVAS.height,
+                  transform: `scale(${scale})`,
+                }}
+                onPointerDown={() => setSelectedInstanceId("")}
+              >
+                {!previewing && (
+                  <>
+                    <span className="better-editor-canvas-line better-editor-canvas-line--x" />
+                    <span className="better-editor-canvas-line better-editor-canvas-line--y" />
+                  </>
+                )}
+                {layout.instances
+                  .slice()
+                  .sort((a, b) => Number(a.zIndex) - Number(b.zIndex))
+                  .map((instance) => {
+                    if (instance.visible === false) return null;
+                    const selected =
+                      !previewing && instance.instanceId === selectedInstanceId;
+                    const isBackground = instance.widgetType === "background";
+                    return (
+                      <div
+                        key={instance.instanceId}
+                        className={`better-editor-canvas-instance${selected ? " is-selected" : ""}${instance.locked ? " is-locked" : ""}${isBackground ? " is-background" : ""}`}
+                        style={{
+                          left: instance.x,
+                          top: instance.y,
+                          width: instance.width,
+                          height: instance.height,
+                          opacity: instance.opacity,
+                          zIndex: instance.zIndex,
+                          pointerEvents:
+                            isBackground || previewing || operation
+                              ? "none"
+                              : "auto",
+                          borderRadius: getEditorInstanceBorderRadius(instance),
+                        }}
+                        onPointerDown={(event) =>
+                          beginInteraction(event, instance, "drag")
+                        }
+                      >
+                        {!isBackground && !previewing && (
+                          <span className="better-editor-canvas-instance__tag">
+                            <MousePointer2 size={12} />
+                            {instance.label}
+                          </span>
+                        )}
+                        <div className="better-editor-canvas-instance__content">
+                          <BetterEditorWidgetBoundary
+                            instanceId={instance.instanceId}
+                          >
+                            {renderBetterWidgetInstance({
+                              instance,
+                              layout,
+                              mode: dataMode,
+                              userId: user?.id,
+                              theme: liveSource.theme,
+                              liveWidgets: liveSource.widgets,
+                            })}
+                          </BetterEditorWidgetBoundary>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        {selected &&
+                          !instance.locked &&
+                          !isBackground &&
+                          !operation && (
+                            <div className="better-editor-resize-handles">
+                              {RESIZE_HANDLES.map((handle) => (
+                                <button
+                                  key={handle}
+                                  type="button"
+                                  className={`better-editor-resize-handle better-editor-resize-handle--${handle}`}
+                                  aria-label={`Resize ${handle}`}
+                                  onPointerDown={(event) =>
+                                    beginInteraction(
+                                      event,
+                                      instance,
+                                      "resize",
+                                      handle,
+                                    )
+                                  }
+                                />
+                              ))}
+                            </div>
+                          )}
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <aside className="better-editor-settings">
-        <header className="better-editor-panel-header">
-          <span>Widget controls</span>
-          <h2>{selectedInstance?.label || "Select a widget"}</h2>
+      <aside
+        className="better-editor-settings"
+        aria-label="Widget settings"
+        inert={previewing || !settingsOpen ? "" : undefined}
+      >
+        <header className="editor-panel-heading">
+          <h2 title={selectedInstance?.label}>
+            {selectedInstance?.label || "Widget settings"}
+          </h2>
+          <button
+            type="button"
+            title="Close settings"
+            aria-label="Close settings"
+            onClick={() => togglePanel("settings")}
+          >
+            <X size={17} />
+          </button>
         </header>
-
-        <div className="better-editor-settings-scroll">
-          {!selectedInstance && (
+        <fieldset
+          className="better-editor-settings-scroll"
+          disabled={Boolean(operation)}
+        >
+          {!selectedInstance ? (
             <section className="better-editor-empty">
-              <MousePointer2 size={22} />
+              <MousePointer2 size={24} />
               <h3>Select a widget</h3>
-              <p>Click a widget in the canvas or list to edit its settings.</p>
             </section>
+          ) : (
+            <EditorInspector
+              key={selectedInstance.instanceId}
+              instance={selectedInstance}
+              preferences={inspectorPreferences}
+              onPreferences={(patch) =>
+                setPreferences((current) => ({
+                  widgets: {
+                    ...current.widgets,
+                    [selectedInstanceId]: {
+                      ...current.widgets?.[selectedInstanceId],
+                      ...patch,
+                    },
+                  },
+                }))
+              }
+              onUpdate={(patch) => updateInstance(selectedInstanceId, patch)}
+              onConfigChange={handleConfigChange}
+              onWidgetChange={handleWidgetChange}
+              onNavigateSource={navigateSource}
+              widget={selectedLegacyWidget}
+              allWidgets={legacyWidgets}
+              user={user}
+              dataMode={dataMode}
+            />
           )}
-
-          {selectedInstance && (
-            <section className="better-editor-control-section better-editor-control-section--settings">
-              <BetterWidgetControls
-                type={selectedInstance.widgetType}
-                config={selectedInstance.config}
-                onChange={handleConfigChange}
-                onWidgetChange={handleWidgetChange}
-                user={user}
-                userId={user?.id}
-                widget={selectedLegacyWidget}
-                allWidgets={legacyWidgets}
-              />
-            </section>
-          )}
-        </div>
+        </fieldset>
       </aside>
-
+      {!previewing && (layersOpen || settingsOpen) && (
+        <button
+          type="button"
+          className="editor-panel-backdrop"
+          aria-label="Close editor panel"
+          onClick={() => {
+            setLayersOpen(false);
+            setSettingsOpen(false);
+          }}
+        />
+      )}
       <footer className="better-editor-footer">
-        <span>Streamers Center</span>
-        <span>Overlay Editor &middot; 1920 x 1080</span>
+        <span>
+          {previewing ? "Preview" : "Editor"} / {layout.name}
+        </span>
+        <span>
+          {BETTER_CANVAS.width} x {BETTER_CANVAS.height} /{" "}
+          {Math.round(scale * 100)}%
+        </span>
       </footer>
+      <EditorWidgetPicker
+        open={widgetPickerOpen}
+        onClose={() => setWidgetPickerOpen(false)}
+        definitions={addableDefinitions}
+        onAdd={handleAddWidget}
+      />
+      <dialog
+        className="editor-dialog editor-confirm-dialog"
+        aria-labelledby="editor-confirm-title"
+        ref={confirmDialogRef}
+        onClose={() => setConfirmation(null)}
+      >
+        <h2 id="editor-confirm-title">{confirmation?.title}</h2>
+        <p>{confirmation?.message}</p>
+        <footer>
+          <button type="button" onClick={() => setConfirmation(null)}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="is-primary"
+            onClick={() => {
+              const action = confirmation.action;
+              setConfirmation(null);
+              action();
+            }}
+          >
+            Confirm
+          </button>
+        </footer>
+      </dialog>
     </main>
   );
 }

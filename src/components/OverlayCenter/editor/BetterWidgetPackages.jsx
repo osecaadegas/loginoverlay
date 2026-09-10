@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
 import {
   ArrowDown,
   ArrowUp,
@@ -1562,7 +1563,12 @@ function betLabel(option, index) {
 }
 
 function useTab(defaultTab) {
-  return useState(defaultTab);
+  const scope = useEditorControlScope();
+  const [tab, setTab] = useState(scope?.tab || defaultTab);
+  return [scope && (scope.mode === "simple" || scope.search) ? "__all" : tab, (value) => {
+    setTab(value);
+    scope?.onTab(value);
+  }];
 }
 
 function clampNumber(value, min, max, fallback) {
@@ -1575,7 +1581,7 @@ const ControlCategoryContext = React.createContext(null);
 
 function CategorizedControls({ tabs, defaultCategory, children }) {
   const [category, setCategory] = useTab(defaultCategory || tabs[0]?.[0]);
-  const activeCategory = tabs.some(([key]) => key === category)
+  const activeCategory = category === "__all" ? null : tabs.some(([key]) => key === category)
     ? category
     : tabs[0]?.[0];
 
@@ -1591,14 +1597,18 @@ function CategorizedControls({ tabs, defaultCategory, children }) {
 
 function Section({ title, icon, children, defaultOpen = true, category }) {
   const activeCategory = React.useContext(ControlCategoryContext);
-  const [open, setOpen] = useState(defaultOpen);
+  const editorSection = useEditorControlSection(title, children, defaultOpen);
+  const [localOpen, setOpen] = useState(defaultOpen);
+  const open = editorSection.scope ? editorSection.open : localOpen;
+  if (!editorSection.visible) return null;
   if (category && activeCategory && category !== activeCategory) return null;
   return (
-    <section className="bp-section">
+    <section className="bp-section" data-control-section={title}>
       <button
         className="bp-section__head"
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        onClick={() => editorSection.scope ? editorSection.toggle() : setOpen((value) => !value)}
       >
         <span>
           {icon}
@@ -1839,7 +1849,17 @@ function BonusTypographyControls({ config, onChange }) {
 
 function HuntSection({ title, icon, children, category }) {
   const activeCategory = React.useContext(ControlCategoryContext);
+  const editorSection = useEditorControlSection(title, children);
+  if (!editorSection.visible) return null;
   if (category && activeCategory && category !== activeCategory) return null;
+  if (editorSection.scope) return (
+    <section className="bp-section bp-hunt-section" data-control-section={title}>
+      <button type="button" className="bp-section__head" aria-expanded={editorSection.open} onClick={editorSection.toggle}>
+        <span>{icon}{title}</span><ChevronDown size={14} className={editorSection.open ? "is-open" : ""} />
+      </button>
+      {editorSection.open && <div className="bp-hunt-section__body">{children}</div>}
+    </section>
+  );
   return (
     <section className="bp-hunt-section">
       <h4>
@@ -2430,13 +2450,13 @@ function BetterNavbarControls({
     ["size", <Maximize2 size={12} />, "Size"],
     ["style", <Palette size={12} />, "Style"],
   ];
-  const current = tabs.some(([key]) => key === tab) ? tab : "sections";
+  const current = tab === "__all" || tabs.some(([key]) => key === tab) ? tab : "sections";
 
   return (
     <div className="bp-controls bp-controls--navbar">
       <PanelTabs active={current} onChange={setTab} tabs={tabs} />
 
-      {current === "sections" && (
+      {matchesControlTab(current, "sections") && (
         <>
           <Section title="Visible sections" icon={<Layers size={13} />}>
             <ToggleRow
@@ -2490,7 +2510,7 @@ function BetterNavbarControls({
         </>
       )}
 
-      {current === "arrange" && (
+      {matchesControlTab(current, "arrange") && (
         <Section title="Bar order" icon={<SlidersHorizontal size={13} />}>
           <div className="bp-navbar-arrange">
             {sectionLayout.map((section) => (
@@ -2536,7 +2556,7 @@ function BetterNavbarControls({
         </Section>
       )}
 
-      {current === "music" && (
+      {matchesControlTab(current, "music") && (
         <>
           <Section title="Spotify" icon={<Music size={13} />}>
             <ToggleRow
@@ -2570,7 +2590,7 @@ function BetterNavbarControls({
         </>
       )}
 
-      {current === "crypto" && (
+      {matchesControlTab(current, "crypto") && (
         <Section title="Crypto ticker" icon={<Coins size={13} />}>
           <ToggleRow
             label="Show crypto ticker"
@@ -2600,7 +2620,7 @@ function BetterNavbarControls({
         </Section>
       )}
 
-      {current === "socials" && (
+      {matchesControlTab(current, "socials") && (
         <Section title="Socials" icon={<Users size={13} />}>
           <ToggleRow
             label="Show socials"
@@ -2643,7 +2663,7 @@ function BetterNavbarControls({
         </Section>
       )}
 
-      {current === "casino" && (
+      {matchesControlTab(current, "casino") && (
         <>
           <Section title="Casino" icon={<Coins size={13} />}>
             <ToggleRow
@@ -2666,7 +2686,7 @@ function BetterNavbarControls({
         </>
       )}
 
-      {current === "cta" && (
+      {matchesControlTab(current, "cta") && (
         <Section title="CTA badge" icon={<Zap size={13} />}>
           <ToggleRow
             label="Show CTA badge"
@@ -2682,7 +2702,7 @@ function BetterNavbarControls({
         </Section>
       )}
 
-      {current === "size" && (
+      {matchesControlTab(current, "size") && (
         <>
           <Section title="Editor size" icon={<Maximize2 size={13} />}>
             <SliderRow
@@ -2759,7 +2779,7 @@ function BetterNavbarControls({
         </>
       )}
 
-      {current === "style" && (
+      {matchesControlTab(current, "style") && (
         <>
           <Section title="Colours" icon={<Palette size={13} />}>
             <div className="bp-color-grid">
@@ -2829,7 +2849,7 @@ function BetterBetsControls({ config, onChange }) {
           ["layout", <Sliders size={12} />, "Layout"],
         ]}
       />
-      {tab === "theme" && (
+      {matchesControlTab(tab, "theme") && (
         <>
           <Section title="Colour Theme" icon={<Palette size={12} />}>
             <div className="bp-theme-grid">
@@ -2866,7 +2886,7 @@ function BetterBetsControls({ config, onChange }) {
           </Section>
         </>
       )}
-      {tab === "colors" && (
+      {matchesControlTab(tab, "colors") && (
         <>
           <Section title="Colour Presets" icon={<Palette size={12} />}>
             <div className="bp-preset-row">
@@ -2921,7 +2941,7 @@ function BetterBetsControls({ config, onChange }) {
           </Section>
         </>
       )}
-      {tab === "text" && (
+      {matchesControlTab(tab, "text") && (
         <>
           <Section title="Font Family" icon={<Type size={12} />}>
             <div className="bp-font-grid">
@@ -2951,7 +2971,7 @@ function BetterBetsControls({ config, onChange }) {
           </Section>
         </>
       )}
-      {tab === "effects" && (
+      {matchesControlTab(tab, "effects") && (
         <>
           <Section title="Fill Style" icon={<Waves size={12} />}>
             <Segmented
@@ -2997,7 +3017,7 @@ function BetterBetsControls({ config, onChange }) {
           </Section>
         </>
       )}
-      {tab === "layout" && (
+      {matchesControlTab(tab, "layout") && (
         <>
           <Section title="Display Mode" icon={<Layers size={12} />}>
             <Segmented
@@ -3207,6 +3227,8 @@ function RawPanelTabs({
 }
 
 function PanelTabs({ tabs, active, onChange }) {
+  const scope = useEditorControlScope();
+  if (scope && (scope.mode === "simple" || scope.search)) return null;
   const isCanonical =
     tabs.length === STANDARD_CONTROL_CATEGORIES.length &&
     tabs.every(([key], index) => key === STANDARD_CONTROL_CATEGORIES[index][0]);
@@ -3879,7 +3901,7 @@ function SimpleThemedControls({
   };
   const [tab, setTab] = useTab("theme");
   const activeTab = (tabs) =>
-    tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0];
+    tab === "__all" || tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0];
 
   if (type === "navbar") {
     return (
@@ -3989,7 +4011,7 @@ function SimpleThemedControls({
     return (
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
-        {current === "presets" && (
+        {matchesControlTab(current, "presets") && (
           <Section title="Presets" icon={<Palette size={13} />}>
             <div className="bp-preset-row">
               {RTP_PRESETS.map((preset) => (
@@ -4011,7 +4033,7 @@ function SimpleThemedControls({
             </button>
           </Section>
         )}
-        {current === "provider" && (
+        {matchesControlTab(current, "provider") && (
           <Section title="Provider" icon={<ImagePlus size={13} />}>
             <Segmented
               value={c.providerMode}
@@ -4085,7 +4107,7 @@ function SimpleThemedControls({
             )}
           </Section>
         )}
-        {current === "display" && (
+        {matchesControlTab(current, "display") && (
           <Section title="Display" icon={<Eye size={13} />}>
             <ToggleRow
               label="Show RTP"
@@ -4114,7 +4136,7 @@ function SimpleThemedControls({
             />
           </Section>
         )}
-        {current === "emblem" && (
+        {matchesControlTab(current, "emblem") && (
           <>
             <Section title="Emblem" icon={<Sparkles size={13} />}>
               <ToggleRow
@@ -4179,7 +4201,7 @@ function SimpleThemedControls({
             </Section>
           </>
         )}
-        {current === "colours" && (
+        {matchesControlTab(current, "colours") && (
           <Section title="Colours" icon={<Palette size={13} />}>
             {[
               ["cRim", "Border / glow"],
@@ -4201,7 +4223,7 @@ function SimpleThemedControls({
             ))}
           </Section>
         )}
-        {current === "type" && (
+        {matchesControlTab(current, "type") && (
           <Section title="Typography" icon={<Type size={13} />}>
             <SelectRow
               label="Title font"
@@ -4250,7 +4272,7 @@ function SimpleThemedControls({
             />
           </Section>
         )}
-        {current === "bar" && (
+        {matchesControlTab(current, "bar") && (
           <Section title="Bar size" icon={<Maximize2 size={13} />}>
             <SliderRow
               label="Total height"
@@ -4321,7 +4343,7 @@ function SimpleThemedControls({
     return (
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
-        {current === "presets" && (
+        {matchesControlTab(current, "presets") && (
           <Section title="Curated Atmospheres" icon={<Sparkles size={13} />}>
             <div className="bp-preset-row">
               {BACKGROUND_PRESETS.map((preset) => (
@@ -4348,7 +4370,7 @@ function SimpleThemedControls({
             </button>
           </Section>
         )}
-        {current === "colors" && (
+        {matchesControlTab(current, "colors") && (
           <>
             {isTextureSource && (
               <Section title="Texture palette" icon={<Palette size={13} />}>
@@ -4399,7 +4421,7 @@ function SimpleThemedControls({
             </Section>
           </>
         )}
-        {current === "source" && (
+        {matchesControlTab(current, "source") && (
           <>
             <Section title="Background source" icon={<ImagePlus size={13} />}>
               <Segmented
@@ -4521,7 +4543,7 @@ function SimpleThemedControls({
             )}
           </>
         )}
-        {current === "textures" && isTextureSource && (
+        {matchesControlTab(current, "textures") && isTextureSource && (
           <Section title="Tactile Texture Layers" icon={<Waves size={13} />}>
             <Segmented
               value={texture}
@@ -4612,7 +4634,7 @@ function SimpleThemedControls({
             />
           </Section>
         )}
-        {current === "effects" && (
+        {matchesControlTab(current, "effects") && (
           <>
             <Section title="Particles" icon={<Sparkles size={13} />}>
               <Segmented
@@ -4768,7 +4790,7 @@ function SimpleThemedControls({
     return (
       <div className="bp-controls">
         <PanelTabs active={current} onChange={setTab} tabs={tabs} />
-        {current === "theme" && (
+        {matchesControlTab(current, "theme") && (
           <>
             <Section title="Presets" icon={<Palette size={13} />}>
               <div className="bp-preset-row">
@@ -4854,7 +4876,7 @@ function SimpleThemedControls({
             </Section>
           </>
         )}
-        {current === "size" && (
+        {matchesControlTab(current, "size") && (
           <Section title="Card dimensions" icon={<Maximize2 size={13} />}>
             <SliderRow
               label="Width"
@@ -4924,7 +4946,7 @@ function SimpleThemedControls({
             />
           </Section>
         )}
-        {current === "edges" && (
+        {matchesControlTab(current, "edges") && (
           <>
             <Section title="Border" icon={<Layers size={13} />}>
               <SliderRow
@@ -5034,7 +5056,7 @@ function SimpleThemedControls({
             </Section>
           </>
         )}
-        {current === "type" && (
+        {matchesControlTab(current, "type") && (
           <Section title="Typography" icon={<Type size={13} />}>
             <SelectRow
               label="Display font"
@@ -5124,7 +5146,7 @@ function SimpleThemedControls({
             />
           </Section>
         )}
-        {current === "content" && (
+        {matchesControlTab(current, "content") && (
           <Section title="Card copy" icon={<Type size={13} />}>
             {["title", "prize", "subtitle", "keyword"].map((key) => (
               <TextRow
@@ -5680,7 +5702,7 @@ function BetterSlideshowFrameControls({
     ["timing", <Timer size={12} />, "Timing"],
     ["size", <Maximize2 size={12} />, "Size"],
   ];
-  const current = tabs.some(([key]) => key === tab) ? tab : "media";
+  const current = tab === "__all" || tabs.some(([key]) => key === tab) ? tab : "media";
   const widgetWidth = clampNumber(widget?.width, 240, 1920, 960);
   const widgetHeight = clampNumber(widget?.height, 120, 1080, 360);
 
@@ -5715,7 +5737,7 @@ function BetterSlideshowFrameControls({
     <div className="bp-controls">
       <PanelTabs active={current} onChange={setTab} tabs={tabs} />
 
-      {current === "media" && (
+      {matchesControlTab(current, "media") && (
         <>
           <Section title="Media links" icon={<ImagePlus size={13} />}>
             <TextAreaRow
@@ -5761,7 +5783,7 @@ function BetterSlideshowFrameControls({
         </>
       )}
 
-      {current === "frame" && (
+      {matchesControlTab(current, "frame") && (
         <>
           <Section title="Frame style" icon={<Frame size={13} />}>
             <Segmented
@@ -5843,7 +5865,7 @@ function BetterSlideshowFrameControls({
         </>
       )}
 
-      {current === "timing" && (
+      {matchesControlTab(current, "timing") && (
         <>
           <Section title="Slideshow timing" icon={<Timer size={13} />}>
             <ToggleRow
@@ -5900,7 +5922,7 @@ function BetterSlideshowFrameControls({
         </>
       )}
 
-      {current === "size" && (
+      {matchesControlTab(current, "size") && (
         <>
           <Section title="Aspect ratios" icon={<Maximize2 size={13} />}>
             <div className="bp-preset-row">
@@ -6085,7 +6107,7 @@ function BetterTournamentControls({
     <div className="bp-controls">
       <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
 
-      {tab === "surface" && (
+      {matchesControlTab(tab, "surface") && (
         <>
           <Section title="Main card" icon={<Frame size={13} />}>
             <ToggleRow
@@ -6177,7 +6199,7 @@ function BetterTournamentControls({
         </>
       )}
 
-      {tab === "layout" && (
+      {matchesControlTab(tab, "layout") && (
         <>
           <Section title="Visual layout" icon={<MonitorPlay size={13} />}>
             <Segmented
@@ -6226,7 +6248,7 @@ function BetterTournamentControls({
         </>
       )}
 
-      {tab === "cards" && (
+      {matchesControlTab(tab, "cards") && (
         <>
           <Section title="Match cards" icon={<Layers size={13} />}>
             <ColorRow
@@ -6282,7 +6304,7 @@ function BetterTournamentControls({
         </>
       )}
 
-      {tab === "type" && (
+      {matchesControlTab(tab, "type") && (
         <>
           <Section title="Typography" icon={<Type size={13} />}>
             <SelectRow
@@ -6370,7 +6392,7 @@ function BetterTournamentControls({
         </>
       )}
 
-      {tab === "palette" && (
+      {matchesControlTab(tab, "palette") && (
         <Section title={`${c.layout} palette`} icon={<Palette size={13} />}>
           {c.layout === "arena" ? (
             <>
@@ -6515,7 +6537,7 @@ function BetterRaidShoutoutControls({
     <div className="bp-controls">
       <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
 
-      {tab === "content" && (
+      {matchesControlTab(tab, "content") && (
         <Section title="Headline" icon={<MessageSquare size={13} />}>
           <TextRow
             label="Heading text"
@@ -6550,7 +6572,7 @@ function BetterRaidShoutoutControls({
         </Section>
       )}
 
-      {tab === "playback" && (
+      {matchesControlTab(tab, "playback") && (
         <Section title="Alert playback" icon={<MonitorPlay size={13} />}>
           <SliderRow
             label="Display duration"
@@ -6568,7 +6590,7 @@ function BetterRaidShoutoutControls({
         </Section>
       )}
 
-      {tab === "frame" && (
+      {matchesControlTab(tab, "frame") && (
         <>
           <Section title="Frame style" icon={<Frame size={13} />}>
             <Segmented
@@ -6635,7 +6657,7 @@ function BetterRaidShoutoutControls({
         </>
       )}
 
-      {tab === "motion" && (
+      {matchesControlTab(tab, "motion") && (
         <Section title="Entrance animation" icon={<Wand2 size={13} />}>
           <Segmented
             value={c.animation}
@@ -6646,7 +6668,7 @@ function BetterRaidShoutoutControls({
         </Section>
       )}
 
-      {tab === "type" && (
+      {matchesControlTab(tab, "type") && (
         <Section title="Typography" icon={<Type size={13} />}>
           <SelectRow
             label="Font"
@@ -6681,7 +6703,7 @@ function BetterRaidShoutoutControls({
         </Section>
       )}
 
-      {tab === "colours" && (
+      {matchesControlTab(tab, "colours") && (
         <Section title="Palette" icon={<Palette size={13} />}>
           <ColorRow
             label="Accent"
@@ -6746,7 +6768,7 @@ function BetterConnectFourControls({ config, onChange }) {
     <div className="bp-controls">
       <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
 
-      {tab === "content" && (
+      {matchesControlTab(tab, "content") && (
         <Section title="Game details" icon={<Gamepad2 size={13} />}>
           <TextRow
             label="Header title"
@@ -6771,7 +6793,7 @@ function BetterConnectFourControls({ config, onChange }) {
         </Section>
       )}
 
-      {tab === "players" && (
+      {matchesControlTab(tab, "players") && (
         <Section title="Players" icon={<Users size={13} />}>
           <ToggleRow
             label="Show player names"
@@ -6791,7 +6813,7 @@ function BetterConnectFourControls({ config, onChange }) {
         </Section>
       )}
 
-      {tab === "board" && (
+      {matchesControlTab(tab, "board") && (
         <Section title="Board" icon={<Palette size={13} />}>
           <SliderRow
             label="Board size"
@@ -6814,7 +6836,7 @@ function BetterConnectFourControls({ config, onChange }) {
         </Section>
       )}
 
-      {tab === "type" && (
+      {matchesControlTab(tab, "type") && (
         <Section title="Typography" icon={<Type size={13} />}>
           <SelectRow
             label="Font"
@@ -6840,7 +6862,7 @@ function BetterConnectFourControls({ config, onChange }) {
         </Section>
       )}
 
-      {tab === "motion" && (
+      {matchesControlTab(tab, "motion") && (
         <Section title="Move animation" icon={<Wand2 size={13} />}>
           <ToggleRow
             label="Animate coin drops"
