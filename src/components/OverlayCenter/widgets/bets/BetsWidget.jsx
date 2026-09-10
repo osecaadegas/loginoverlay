@@ -1201,13 +1201,13 @@ function BetsWidget({ config, allWidgets }) {
 
   if (layout === "better_bets") {
     return (
-      <div className="bets-victory-host">
+      <div className="bets-victory-host bets-victory-host--better">
         <BetterBetsStyle
           config={c}
           countdown={countdown}
           statusLabel={statusLabel}
         />
-        {showVictory && (
+        {showVictory && c.animations !== false && (
           <BetsVictoryBroadcast
             winnerLabel={winnerLabel}
             winnerNumber={winnerIdx + 1}

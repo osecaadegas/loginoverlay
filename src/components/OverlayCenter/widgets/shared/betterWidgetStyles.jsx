@@ -9,6 +9,8 @@ import {
   Coins,
   DollarSign,
   Flame,
+  LockKeyhole,
+  MessageSquare,
   Scale,
   Star,
   TrendingUp,
@@ -1756,37 +1758,38 @@ function BetterStyleSheet() {
       .better-gw-roulette-status{display:flex;justify-content:center;min-height:16px;margin-top:7px;color:#7fb2cf;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}.better-gw-status-spin{color:#6fdcff;text-shadow:0 0 8px rgba(0,180,255,.6);animation:better-gw-status-blink 900ms ease-in-out infinite}.better-gw-status-win{display:inline-flex;align-items:center;gap:6px;color:#ffd877;text-shadow:0 0 8px rgba(255,187,0,.5)}
       @container (max-width:520px){.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
       @media (max-width:520px){.better-giveaway-stage{padding:8px}.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
-      .better-bets-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:16px;box-sizing:border-box;background:transparent;font-family:var(--font-body,"Rajdhani",Arial,sans-serif)}
+      .better-bets-stage{width:100%;height:100%;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;box-sizing:border-box;background:transparent;font-family:var(--font-body,"Rajdhani",Arial,sans-serif)}
       .better-bets-stage *{box-sizing:border-box}
+      .better-bets-fit{width:100%;max-width:var(--bets-width,100%);min-width:0;flex-shrink:0;transform:scale(var(--bets-fit,1));transform-origin:center;container:better-bets / inline-size}
       .better-bets-stage[data-font="cyber"]{--font-display:"Orbitron",sans-serif;--font-body:"Rajdhani",sans-serif;--title-tracking:.1em}
       .better-bets-stage[data-font="sport"]{--font-display:"Oswald",sans-serif;--font-body:"Barlow",sans-serif;--title-tracking:.05em}
       .better-bets-stage[data-font="tech"]{--font-display:"Chakra Petch",sans-serif;--font-body:"Chakra Petch",sans-serif;--title-tracking:.08em}
       .better-bets-stage[data-font="classic"]{--font-display:"Russo One",sans-serif;--font-body:"Titillium Web",sans-serif;--title-tracking:.03em}
-      .better-bets-stage .bet-widget{position:relative;width:var(--base-w,360px);min-height:var(--base-h,412px);overflow:hidden;border:1px solid var(--frame-border);border-radius:var(--card-radius);padding:8px 10px 7px;background:var(--frame-bg);box-shadow:var(--frame-shadow);opacity:var(--widget-opacity);isolation:isolate;animation:better-bets-widget-enter 650ms cubic-bezier(.2,.8,.2,1) both;color:var(--text-bright)}
-      .better-bets-stage .bet-widget.is-horizontal{width:var(--base-w,640px);min-height:var(--base-h,240px)}
+      .better-bets-stage .bet-widget{position:relative;width:100%;min-width:0;overflow:hidden;border:1px solid var(--frame-border);border-radius:var(--card-radius);padding:10px;background:var(--frame-bg);box-shadow:var(--frame-shadow);opacity:var(--widget-opacity);isolation:isolate;color:var(--text-bright);letter-spacing:0;font-variant-numeric:tabular-nums}
       .better-bets-stage .bet-widget::before,.better-bets-stage .bet-widget::after{position:absolute;z-index:-1;width:16px;height:16px;content:"";border-color:var(--bracket-color,#6fb8ff);filter:var(--bracket-filter,drop-shadow(0 0 3px #0a89ff));transition:opacity 250ms}
       .better-bets-stage .bet-widget::before{top:3px;left:3px;border-top:1px solid;border-left:1px solid}
       .better-bets-stage .bet-widget::after{right:3px;bottom:3px;border-right:1px solid;border-bottom:1px solid}
       .better-bets-stage .bet-widget.hide-brackets::before,.better-bets-stage .bet-widget.hide-brackets::after{opacity:0}
-      .better-bets-stage .widget-sheen{position:absolute;z-index:-1;top:-80%;left:-55%;width:30%;height:230%;transform:rotate(22deg);background:linear-gradient(90deg,transparent,var(--sheen-color,rgba(166,226,255,.075)),transparent);animation:better-bets-sheen 7s ease-in-out infinite 1.3s;transition:opacity 250ms}
+      .better-bets-stage .widget-sheen{position:absolute;z-index:-1;top:-80%;left:-55%;width:30%;height:230%;transform:rotate(22deg);background:linear-gradient(90deg,transparent,var(--sheen-color,rgba(166,226,255,.075)),transparent);animation:better-bets-sheen 4s ease-in-out 1;transition:opacity 250ms}
       .better-bets-stage .bet-widget.hide-sheen .widget-sheen{opacity:0;animation:none}
-      .better-bets-stage .widget-header{display:flex;height:24px;align-items:center;justify-content:space-between;gap:8px;padding:0 7px 0 4px}
-      .better-bets-stage .title-lockup{display:flex;min-width:0;align-items:center;gap:6px;color:var(--text-bright);font-family:var(--font-display);font-size:calc(12.5px * var(--fs));font-weight:700;letter-spacing:var(--title-tracking,.1em);text-transform:uppercase;text-shadow:var(--title-glow)}
-      .better-bets-stage .title-lockup h1{min-width:0;overflow:hidden;margin:0;font:inherit;text-overflow:ellipsis;white-space:nowrap}
+      .better-bets-stage .widget-header{display:flex;min-height:28px;align-items:center;justify-content:space-between;gap:10px;padding:0 0 6px;font-family:var(--font-display);font-size:calc(17px * var(--fs));font-weight:700;color:var(--text-bright)}
+      .better-bets-stage .title-lockup{display:flex;min-width:0;align-items:center;gap:8px;font:inherit;letter-spacing:0}
+      .better-bets-stage .title-lockup h1{min-width:0;margin:0;font:inherit;line-height:1.3;overflow-wrap:anywhere;color:inherit}
       .better-bets-stage .title-mark{display:block;width:5px;height:13px;flex:0 0 auto;transform:skewX(-23deg);border-top:1px solid var(--ui-accent);border-bottom:1px solid var(--ui-accent);border-left:2px solid var(--ui-accent);box-shadow:2px 0 0 -1px var(--ui-accent),0 0 7px var(--ui-accent)}
-      .better-bets-stage .open-status{display:inline-flex;height:18px;flex:0 0 auto;align-items:center;gap:4px;border:1px solid var(--status-border,#d7a519);border-radius:4px;padding:0 6px;color:var(--status-text,#ffe887);background:var(--status-bg,linear-gradient(#3c3514,#1d190a));box-shadow:var(--status-shadow,0 0 5px rgba(255,194,21,.42),inset 0 0 4px rgba(255,232,106,.15));font-size:calc(9.5px * var(--fs));font-weight:700;letter-spacing:.3px;text-transform:uppercase}
-      .better-bets-stage .open-status i{width:5px;height:5px;border-radius:50%;background:currentColor;box-shadow:0 0 4px currentColor;animation:better-bets-open-pulse 1.7s ease-in-out infinite}
-      .better-bets-stage .event-meta{display:grid;height:40px;grid-template-columns:repeat(3,1fr);margin-top:2px;overflow:hidden;border:1px solid var(--meta-border);border-radius:calc(var(--card-radius) - 2px);background:var(--meta-bg);box-shadow:var(--meta-shadow)}
-      .better-bets-stage .meta-item{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center}
+      .better-bets-stage .open-status{display:inline-flex;min-height:23px;flex:0 0 auto;align-items:center;gap:5px;border:1px solid var(--status-border,#d7a519);border-radius:4px;padding:3px 6px;color:var(--status-text,#ffe887);background:var(--status-bg,linear-gradient(#3c3514,#1d190a));font-family:var(--font-body);font-size:calc(11px * var(--fs));font-weight:700;letter-spacing:0;line-height:1.2;text-transform:uppercase}
+      .better-bets-stage .open-status i{width:5px;height:5px;border-radius:50%;background:currentColor}
+      .better-bets-stage .event-meta{display:grid;min-height:46px;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:2px;border-bottom:1px solid var(--meta-border);background:var(--meta-bg)}
+      .better-bets-stage .meta-item{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;padding:5px 4px;color:var(--text-bright);font-family:var(--font-display);font-size:calc(17px * var(--fs))}
       .better-bets-stage .meta-item+.meta-item{border-left:1px solid var(--meta-divider)}
-      .better-bets-stage .meta-item strong{max-width:100%;overflow:hidden;color:var(--text-bright);font-family:var(--font-display);font-size:calc(12px * var(--fs));font-weight:700;line-height:14px;text-overflow:ellipsis;text-shadow:var(--soft-glow);white-space:nowrap}
-      .better-bets-stage .meta-item span{display:flex;align-items:center;gap:3px;color:var(--text-dim);font-size:calc(9.5px * var(--fs));font-weight:600;line-height:12px}
+      .better-bets-stage .meta-item strong{max-width:100%;font:inherit;font-weight:700;line-height:1.25;overflow-wrap:anywhere;text-align:center}
+      .better-bets-stage .meta-item span{display:flex;align-items:center;gap:4px;color:color-mix(in srgb,var(--text-bright) 80%,var(--text-dim));font-family:var(--font-body);font-size:calc(11px * var(--fs));font-weight:600;line-height:1.25;text-align:center}
       .better-bets-stage .meta-item svg{width:10px;height:10px;color:var(--ui-accent);stroke:currentColor}
       .better-bets-stage .bets-grid,.better-bets-stage .bars-grid{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:6px;margin-top:6px}
-      .better-bets-stage .bet-option{position:relative;display:flex;height:98px;overflow:hidden;flex-direction:column;border:1px solid color-mix(in srgb,var(--accent) 65%,var(--card-frame-mix) 35%);border-radius:var(--card-radius);padding:10px 9px 7px;color:var(--text-bright);text-align:left;background:var(--card-bg);box-shadow:var(--card-shadow);transition:transform 180ms,border-color 180ms,box-shadow 180ms,background 300ms,border-radius 200ms;animation:better-bets-option-enter 480ms cubic-bezier(.2,.8,.2,1) both}
+      .better-bets-stage .bets-grid-heading{margin-top:6px;color:var(--text-bright);font-size:calc(11px * var(--fs));line-height:1.2;font-weight:600}
+      .better-bets-stage .bet-option{position:relative;display:grid;min-height:112px;overflow:hidden;grid-template-columns:24px minmax(0,1fr);grid-template-rows:auto 1fr auto;gap:6px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--card-frame-mix) 55%);border-radius:var(--card-radius);padding:9px;color:var(--text-bright);text-align:left;background:var(--card-bg);transition:border-color 180ms,box-shadow 180ms;animation:better-bets-option-enter 350ms ease-out both}
       .better-bets-stage .bet-option::before{position:absolute;top:0;right:0;left:0;height:1px;content:"";background:linear-gradient(90deg,transparent,var(--card-topline),transparent)}
       .better-bets-stage .bet-option.is-selected{border-color:color-mix(in srgb,var(--accent) 90%,white 10%);box-shadow:var(--card-hover-shadow)}
-      .better-bets-stage .bet-option.is-loser{opacity:.58;filter:saturate(.65)}
+      .better-bets-stage .bet-option.is-loser{box-shadow:none}
       .better-bets-stage .bet-option.is-winner{border-color:color-mix(in srgb,var(--accent) 88%,white 12%);box-shadow:var(--card-hover-shadow)}
       .better-bets-stage .bet-option.is-full{box-shadow:var(--card-full-shadow)}
       .better-bets-stage .fill-wrap{position:absolute;z-index:0;inset:0;overflow:hidden;pointer-events:none}
@@ -1803,25 +1806,29 @@ function BetterStyleSheet() {
       .better-bets-stage .fill-plasma .plasma-blob-2{right:15%;bottom:20%;background:var(--accent);animation:better-bets-plasma-2 calc(var(--fill-dur,3.2s) * 1.3) ease-in-out infinite}
       .better-bets-stage .fill-plasma .plasma-blob-3{bottom:40%;left:40%;background:var(--accent-2);animation:better-bets-plasma-3 calc(var(--fill-dur,3.2s) * .9) ease-in-out infinite}
       .better-bets-stage .option-scrim{position:absolute;z-index:1;inset:0;background:var(--scrim-bg);pointer-events:none}
-      .better-bets-stage .option-number,.better-bets-stage .option-range,.better-bets-stage .option-details,.better-bets-stage .option-glint{position:relative;z-index:2}
+      .better-bets-stage .option-number,.better-bets-stage .option-range,.better-bets-stage .option-details,.better-bets-stage .option-command,.better-bets-stage .option-glint{position:relative;z-index:2}
       .better-bets-stage .option-number{display:grid;width:22px;height:22px;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 80%,white 20%);border-radius:50%;color:#fff;background:var(--badge-bg);box-shadow:var(--badge-shadow);font-family:var(--font-display);font-size:calc(11.5px * var(--fs));font-weight:700;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-      .better-bets-stage .option-range{min-width:0;overflow:hidden;margin-top:7px;color:#fff;font-size:calc(11.5px * var(--fs));font-weight:700;letter-spacing:.02em;text-overflow:ellipsis;text-shadow:var(--hard-shadow);white-space:nowrap}
-      .better-bets-stage .option-details{display:flex;margin-top:auto;flex-direction:column;align-items:center;text-align:center;text-shadow:var(--detail-glow),var(--hard-shadow)}
-      .better-bets-stage .option-details strong{color:#fff;font-family:var(--font-display);font-size:calc(21px * var(--fs));font-weight:700;letter-spacing:.01em;line-height:calc(20px * var(--fs))}
-      .better-bets-stage .option-details small{max-width:100%;overflow:hidden;color:#eaf4ff;font-size:calc(10px * var(--fs));font-weight:700;letter-spacing:.1em;line-height:calc(14px * var(--fs));text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
+      .better-bets-stage .option-range{min-width:0;align-self:center;color:var(--text-bright);font-size:calc(15px * var(--fs));font-weight:700;letter-spacing:0;line-height:1.25;overflow-wrap:anywhere;text-shadow:var(--hard-shadow)}
+      .better-bets-stage .option-details{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:baseline;justify-content:space-between;align-self:end;text-shadow:var(--hard-shadow)}
+      .better-bets-stage .option-details strong{color:var(--text-bright);font-family:var(--font-display);font-size:calc(25px * var(--fs));font-weight:700;letter-spacing:0;line-height:1.2;overflow-wrap:anywhere;min-width:0;max-width:100%}
+      .better-bets-stage .option-amount,.better-bets-stage .bar-amount{font-size:calc(11px * var(--fs));font-weight:600;line-height:1.3;color:var(--text-bright);overflow-wrap:anywhere;min-width:0}
+      .better-bets-stage .option-command,.better-bets-stage .bar-detail{display:flex;align-items:center;gap:4px;min-width:0;color:var(--text-bright);font-family:var(--font-body);font-size:calc(11px * var(--fs));font-weight:600;letter-spacing:0;line-height:1.3;overflow-wrap:anywhere}
+      .better-bets-stage .option-command{grid-column:1/-1}
+      .better-bets-stage .option-command svg,.better-bets-stage .bar-detail svg{flex-shrink:0;color:var(--accent)}
       .better-bets-stage .option-glint{position:absolute;bottom:3px;left:50%;width:70%;height:2px;transform:translateX(-50%);background:var(--glint-bg);box-shadow:var(--glint-glow);opacity:var(--glint-opacity,.85)}
-      .better-bets-stage .bet-entry{display:flex;height:24px;align-items:center;justify-content:center;gap:5px;margin-top:6px;border-top:1px solid var(--footer-rule);color:var(--text-dim);font-size:calc(10px * var(--fs))}
-      .better-bets-stage .bet-entry>span{color:var(--ui-accent,#3d8cd4);letter-spacing:1px}
-      .better-bets-stage .bet-entry input{width:min(170px,52%);border:0;outline:0;color:var(--text-bright);background:transparent;font-size:calc(10px * var(--fs));font-weight:600;text-align:center}
-      .better-bets-stage .bet-entry input::placeholder{color:var(--text-dim);opacity:1}
-      .better-bets-stage .bet-entry kbd{padding:1px 4px;border:1px solid var(--meta-divider);border-radius:2px;color:var(--text-dim);background:rgba(6,34,80,.35);font-size:calc(8px * var(--fs))}
-      .better-bets-stage .bet-bar{position:relative;display:grid;height:40px;overflow:hidden;grid-template-columns:22px minmax(52px,auto) 1fr auto;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--accent) 55%,var(--card-frame-mix) 45%);border-radius:calc(var(--card-radius) * .8);padding:0 10px 0 6px;color:var(--text-bright);text-align:left;background:var(--card-bg);box-shadow:var(--card-shadow);animation:better-bets-option-enter 480ms cubic-bezier(.2,.8,.2,1) both}
+      .better-bets-stage .bet-entry{display:flex;min-height:30px;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 7px;margin-top:8px;padding-top:7px;border-top:1px solid var(--footer-rule);color:var(--text-bright);font-size:calc(13px * var(--fs));line-height:1.3;text-align:center}
+      .better-bets-stage .bet-entry>svg{flex-shrink:0;color:var(--ui-accent)}
+      .better-bets-stage .bet-entry>strong{min-width:0;overflow-wrap:anywhere;font-weight:700}
+      .better-bets-stage .bet-bar{position:relative;display:grid;min-height:52px;overflow:hidden;grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"number label percent" "number detail amount" "track track track";align-items:center;gap:2px 8px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--card-frame-mix) 60%);border-radius:calc(var(--card-radius) * .8);padding:6px 8px;color:var(--text-bright);text-align:left;background:var(--card-bg);animation:better-bets-option-enter 350ms ease-out both}
       .better-bets-stage .bet-bar.is-selected,.better-bets-stage .bet-bar.is-winner{border-color:color-mix(in srgb,var(--accent) 90%,white 10%);box-shadow:var(--card-hover-shadow)}
-      .better-bets-stage .bet-bar.is-loser{opacity:.58;filter:saturate(.65)}
+      .better-bets-stage .bet-bar.is-loser{box-shadow:none}
       .better-bets-stage .bar-num{display:grid;width:20px;height:20px;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 80%,white 20%);border-radius:50%;color:#fff;background:var(--badge-bg);box-shadow:var(--badge-shadow);font-family:var(--font-display);font-size:calc(10px * var(--fs));font-weight:700;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-      .better-bets-stage .bar-range{min-width:0;overflow:hidden;color:#fff;font-size:calc(10.5px * var(--fs));font-weight:700;letter-spacing:.02em;text-overflow:ellipsis;text-shadow:var(--hard-shadow);white-space:nowrap}
-      .better-bets-stage .bar-track{position:relative;height:12px;overflow:hidden;border-radius:6px;background:color-mix(in srgb,var(--accent) 12%,rgba(0,0,0,.45));box-shadow:inset 0 1px 3px rgba(0,0,0,.6),inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
-      .better-bets-stage .bar-pct{min-width:38px;color:#fff;font-family:var(--font-display);font-size:calc(11px * var(--fs));font-weight:700;text-align:right;text-shadow:var(--detail-glow),var(--hard-shadow)}
+      .better-bets-stage .bar-num{grid-area:number}
+      .better-bets-stage .bar-range{grid-area:label;min-width:0;color:var(--text-bright);font-size:calc(15px * var(--fs));font-weight:700;letter-spacing:0;line-height:1.25;overflow-wrap:anywhere}
+      .better-bets-stage .bar-detail{grid-area:detail}
+      .better-bets-stage .bar-amount{grid-area:amount;text-align:right}
+      .better-bets-stage .bar-track{grid-area:track;position:relative;height:5px;margin-top:3px;overflow:hidden;border-radius:3px;background:color-mix(in srgb,var(--accent) 12%,rgba(0,0,0,.45))}
+      .better-bets-stage .bar-pct{grid-area:percent;min-width:0;color:var(--text-bright);font-family:var(--font-display);font-size:calc(18px * var(--fs));line-height:1.2;font-weight:700;text-align:right;overflow-wrap:anywhere}
       .better-bets-stage .bf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
       .better-bets-stage .bf-core{position:absolute;top:0;bottom:0;left:0;width:var(--pct);border-radius:6px 2px 2px 6px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 52%,transparent),var(--accent),var(--accent-2));transition:width 700ms cubic-bezier(.22,1,.36,1)}
       .better-bets-stage .bf-core::after{content:"";position:absolute;top:0;right:0;left:0;height:45%;border-radius:6px 0 0 0;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent)}
@@ -1835,7 +1842,12 @@ function BetterStyleSheet() {
       .better-bets-stage[data-theme="metallic"] .option-number,.better-bets-stage[data-theme="metallic"] .bar-num{color:#1a2129;border-color:#e8eef6;text-shadow:0 1px 0 rgba(255,255,255,.5)}
       .better-bets-stage[data-theme="matte"] .open-status{border-color:#6b5d24;color:#e8cf6a;background:#26221a;box-shadow:none}
       .better-bets-stage[data-anim="off"] .widget-sheen,.better-bets-stage[data-anim="off"] .bet-widget,.better-bets-stage[data-anim="off"] .bet-option,.better-bets-stage[data-anim="off"] .bet-bar,.better-bets-stage[data-anim="off"] .fill-core,.better-bets-stage[data-anim="off"] .pulse-ring,.better-bets-stage[data-anim="off"] .scan-sweep,.better-bets-stage[data-anim="off"] .plasma-blob,.better-bets-stage[data-anim="off"] .bf-sheen,.better-bets-stage[data-anim="off"] .bf-tip,.better-bets-stage[data-anim="off"] .bf-blob{animation:none!important;transition:none!important}
-      @media (max-width:520px){.better-bets-stage{padding:8px}.better-bets-stage .bet-widget,.better-bets-stage .bet-widget.is-horizontal{width:100%;min-height:0}.better-bets-stage .bar-range{display:none}}
+      .better-bets-stage:not([data-status="open"]) .fill-wrap *,.better-bets-stage:not([data-status="open"]) .fill-wrap *::before,.better-bets-stage:not([data-status="open"]) .fill-wrap *::after,.better-bets-stage:not([data-status="open"]) .bf *{animation-play-state:paused}
+      .better-bets-stage .is-loser .fill-wrap,.better-bets-stage .is-loser .bf{opacity:.4}
+      .better-bets-stage[data-anim="off"] *,.better-bets-stage[data-anim="off"] *::before,.better-bets-stage[data-anim="off"] *::after{animation:none!important;transition:none!important}
+      @container better-bets (max-width:560px){.better-bets-stage .bars-grid,.better-bets-stage .bets-grid{grid-template-columns:repeat(min(var(--cols),2),minmax(0,1fr))}}
+      @container better-bets (max-width:400px){.better-bets-stage .bars-grid{grid-template-columns:minmax(0,1fr)}}
+      @media (prefers-reduced-motion:reduce){.better-bets-stage *,.better-bets-stage *::before,.better-bets-stage *::after{animation:none!important;transition:none!important}.bets-victory-host--better>.bets-victory{display:none}}
       @keyframes better-hunt-marquee-up{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-50%,0)}}
       @keyframes better-hunt-marquee-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       @keyframes better-hunt-marquee-right{from{transform:translateX(-50%)}to{transform:translateX(0)}}
@@ -2155,6 +2167,7 @@ function BetterBetsCardFill({ config, fillStyle, pct, stateId }) {
   return (
     <span
       className={`fill-wrap fill-${fillStyle}`}
+      {...attrs("bets", config, "progressBar", stateId)}
       style={subElementStyle(
         config,
         "progressBar",
@@ -2163,7 +2176,6 @@ function BetterBetsCardFill({ config, fillStyle, pct, stateId }) {
         },
         stateId,
       )}
-      {...attrs("bets", config, "progressBar", stateId)}
       aria-hidden="true"
     >
       <span className="fill-core" />
@@ -2185,6 +2197,7 @@ function BetterBetsBarFill({ config, fillStyle, pct, stateId }) {
   return (
     <span
       className={`bf bf-${fillStyle}`}
+      {...attrs("bets", config, "progressBar", stateId)}
       style={subElementStyle(
         config,
         "progressBar",
@@ -2193,7 +2206,6 @@ function BetterBetsBarFill({ config, fillStyle, pct, stateId }) {
         },
         stateId,
       )}
-      {...attrs("bets", config, "progressBar", stateId)}
       aria-hidden="true"
     >
       <span className="bf-core" />
@@ -2210,19 +2222,44 @@ function BetterBetsBarFill({ config, fillStyle, pct, stateId }) {
   );
 }
 
-export function BetterBetsStyle({ config, countdown, statusLabel }) {
+function useBetterBetsFit() {
+  const stageRef = useRef(null);
+  const frameRef = useRef(null);
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const frame = frameRef.current;
+    if (!stage || !frame) return undefined;
+    // Measure the untransformed frame so fitting never feeds back into its layout.
+    const measure = () => {
+      const css = getComputedStyle(stage);
+      const height =
+        stage.clientHeight -
+        parseFloat(css.paddingTop) -
+        parseFloat(css.paddingBottom);
+      const width =
+        stage.clientWidth -
+        parseFloat(css.paddingLeft) -
+        parseFloat(css.paddingRight);
+      const scale = Math.min(
+        1,
+        height / Math.max(1, frame.offsetHeight),
+        width / Math.max(1, frame.scrollWidth),
+      );
+      stage.style.setProperty("--bets-fit", String(Math.max(0, scale)));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(stage);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+  return { stageRef, frameRef };
+}
+
+export function BetterBetsStyle({ config, countdown }) {
   const c = config || {};
-  const fallbackOptions = [
-    { label: "0 - 99" },
-    { label: "100 - 199" },
-    { label: "200 - 299" },
-    { label: "300 - 399" },
-    { label: "400 - 499" },
-    { label: "500 - 599" },
-  ];
-  const options = safeArray(c.options).length
-    ? safeArray(c.options)
-    : fallbackOptions;
+  const { stageRef, frameRef } = useBetterBetsFit();
+  const options = safeArray(c.options);
   const bets = c.bets || {};
   const betters = c.betters || {};
   const visibleLimit = Math.max(
@@ -2230,7 +2267,7 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
     Math.min(6, numberValue(c.betterVisibleOptions, 6)),
   );
   const visibleOptions = options.slice(0, visibleLimit);
-  const totalPool = visibleOptions.reduce(
+  const totalPool = options.reduce(
     (sum, _, index) => sum + (Number(bets[`opt_${index}`]) || 0),
     0,
   );
@@ -2263,13 +2300,6 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
       numberValue(c.columns ?? c.betterColumns, layoutMode === "bars" ? 1 : 2),
     ),
   );
-  const rows = Math.max(1, Math.ceil(visibleOptions.length / columns));
-  const itemHeight = layoutMode === "cards" ? 98 : 40;
-  const baseWidth = orientation === "horizontal" ? 640 : 360;
-  const baseHeight = Math.max(
-    orientation === "horizontal" ? 220 : 240,
-    26 + 42 + 30 + 16 + rows * itemHeight + Math.max(0, rows - 1) * 6,
-  );
   const fontScale = Math.max(
     0.75,
     Math.min(1.4, numberValue(c.fontScale, 100) / 100),
@@ -2290,9 +2320,12 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
       ? safeArray(c.cardColors)
       : BETTER_BETS_CARD_COLORS;
   const command = c.chatCommand || "!bet";
+  const hasTimer = Number(c.timerSeconds) > 0 && Boolean(c._openedAt);
   const timeText =
     status === "open"
-      ? statusLabel || formatBetterBetsDuration(countdown)
+      ? hasTimer
+        ? formatBetterBetsDuration(Math.max(0, Number(countdown) || 0))
+        : "No limit"
       : status === "locked"
         ? "LOCKED"
         : status === "result"
@@ -2314,8 +2347,7 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
     "--widget-opacity": opacity,
     "--fill-dur": `${3.2 * (100 / fillSpeed)}s`,
     "--cols": columns,
-    "--base-w": `${baseWidth}px`,
-    "--base-h": `${baseHeight}px`,
+    "--bets-width": orientation === "horizontal" ? "100%" : "360px",
     ...(fontFamily
       ? { "--font-body": fontFamily, "--font-display": fontFamily }
       : {}),
@@ -2325,135 +2357,245 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
     status === "open"
       ? {}
       : {
-          "--status-border": "rgba(148,163,184,0.38)",
-          "--status-text": "var(--text-dim)",
-          "--status-bg": "rgba(15,23,42,0.68)",
+          "--status-border":
+            status === "result" ? "var(--ui-accent)" : "var(--meta-divider)",
+          "--status-text": "var(--text-bright)",
+          "--status-bg": "var(--meta-bg)",
           "--status-shadow": "none",
         };
 
   return (
     <div
+      ref={stageRef}
       className="better-bets-stage"
       data-theme={theme}
       data-font={c.font || "cyber"}
       data-fill={fillStyle}
       data-anim={c.animations === false ? "off" : "on"}
+      data-status={status}
+      data-layout={layoutMode}
       style={stageStyle}
     >
       <BetterStyleSheet />
-      <section
-        className={[
-          "bet-widget",
-          c.showBrackets === false && "hide-brackets",
-          c.showSheen === false && "hide-sheen",
-          orientation === "horizontal" && "is-horizontal",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        data-cols={columns}
-        style={widgetStyle}
-        {...attrs("bets", c, "widgetBackground")}
-      >
-        <div className="widget-sheen" aria-hidden="true" />
-        <header
-          className="widget-header"
-          style={subElementStyle(c, "header", {})}
-          {...attrs("bets", c, "header")}
+      <div className="better-bets-fit" ref={frameRef}>
+        <section
+          className={[
+            "bet-widget",
+            c.showBrackets === false && "hide-brackets",
+            c.showSheen === false && "hide-sheen",
+            orientation === "horizontal" && "is-horizontal",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          data-cols={columns}
+          {...attrs("bets", c, "widgetBackground")}
+          style={widgetStyle}
         >
-          <div className="title-lockup">
-            <span className="title-mark" aria-hidden="true" />
-            <h1>{c.question || "Place Your Bets"}</h1>
-          </div>
-          <span
-            className="open-status"
-            style={subElementStyle(c, "status", statusTone, status)}
-            {...attrs("bets", c, "status", status)}
+          <div className="widget-sheen" aria-hidden="true" />
+          <header
+            className="widget-header"
+            {...attrs("bets", c, "header")}
+            style={subElementStyle(c, "header", {})}
           >
-            <i aria-hidden="true" />
-            {statusText}
-          </span>
-        </header>
-
-        <div className="event-meta">
-          {[
-            ["poolStat", "pool", formatCompactNumber(totalPool), "Pool"],
-            [
-              "timerStat",
-              "timer",
-              timeText,
-              status === "open" ? "Timer" : "State",
-            ],
-            ["betsStat", "users", formatCompactNumber(totalBetters), "Bets"],
-          ].map(([part, icon, value, label]) => (
-            <div
-              key={part}
-              className="meta-item"
-              style={subElementStyle(c, part, {})}
-              {...attrs("bets", c, part)}
-            >
-              <strong>{value}</strong>
-              <span>
-                <BetterBetsMetaIcon type={icon} />
-                {label}
-              </span>
+            <div className="title-lockup">
+              <span className="title-mark" aria-hidden="true" />
+              <h1>{c.question || "Place Your Bets"}</h1>
             </div>
-          ))}
-        </div>
+            <span
+              className="open-status"
+              {...attrs("bets", c, "status", status)}
+              style={subElementStyle(c, "status", statusTone, status)}
+            >
+              {status === "result" ? (
+                <Trophy size={12} aria-hidden="true" />
+              ) : status === "locked" ? (
+                <LockKeyhole size={12} aria-hidden="true" />
+              ) : (
+                <i aria-hidden="true" />
+              )}
+              {statusText}
+            </span>
+          </header>
 
-        <div
-          className={layoutMode === "bars" ? "bars-grid" : "bets-grid"}
-          style={subElementStyle(c, "betCards", {})}
-          {...attrs("bets", c, "betCards")}
-        >
-          {visibleOptions.map((option, index) => {
-            const amount = Number(bets[`opt_${index}`]) || 0;
-            const pct = pcts[index] || 0;
-            const fillPct = totalPool > 0 ? pct : 0;
-            const isWinner = winnerIdx === index;
-            const isLoser = winnerIdx !== null && winnerIdx !== index;
-            const isLeading = leadingIdx === index;
-            const stateId = isWinner
-              ? "winner"
-              : isLoser
-                ? "loser"
-                : isLeading
-                  ? "leading"
-                  : status === "locked"
-                    ? "closed"
-                    : "default";
-            const baseColor =
-              colors[index % colors.length] ||
-              BETTER_BETS_CARD_COLORS[index % BETTER_BETS_CARD_COLORS.length];
-            const accent = subValue(
-              c,
-              "progressBar",
-              "fillColor",
-              baseColor.accent,
-              stateId,
-            );
-            const accent2 = baseColor.accent2 || accent;
-            const optionLabel = betOptionLabel(option, index);
-            const detailLabel = isWinner
-              ? "Winner"
-              : isLoser
-                ? "Closed"
-                : amount > 0
-                  ? `${formatCompactNumber(amount)} pts`
-                  : `${command} ${index + 1}`;
-            const optionVars = {
-              "--fill": `${fillPct}%`,
-              "--pct": `${fillPct}%`,
-              "--accent": accent,
-              "--accent-2": accent2,
-              animationDelay: `${index * 50}ms`,
-            };
+          <div className="event-meta">
+            {[
+              [
+                "poolStat",
+                "pool",
+                formatCompactNumber(totalPool),
+                "Pool points",
+              ],
+              [
+                "timerStat",
+                "timer",
+                timeText,
+                status === "open" ? "Time left" : "State",
+              ],
+              [
+                "betsStat",
+                "users",
+                formatCompactNumber(totalBetters),
+                "Viewers",
+              ],
+            ].map(([part, icon, value, label]) => (
+              <div
+                key={part}
+                className="meta-item"
+                style={subElementStyle(c, part, {})}
+                {...attrs("bets", c, part)}
+              >
+                <strong>{value}</strong>
+                <span>
+                  <BetterBetsMetaIcon type={icon} />
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
 
-            if (layoutMode === "bars") {
+          <div
+            className="bets-grid-heading"
+            {...attrs("bets", c, "poolShareLabel")}
+          >
+            Pool share
+          </div>
+          <div
+            className={layoutMode === "bars" ? "bars-grid" : "bets-grid"}
+            style={subElementStyle(c, "betCards", {})}
+            {...attrs("bets", c, "betCards")}
+          >
+            {visibleOptions.map((option, index) => {
+              const amount = Number(bets[`opt_${index}`]) || 0;
+              const pct = pcts[index] || 0;
+              const fillPct = totalPool > 0 ? pct : 0;
+              const isWinner = status === "result" && winnerIdx === index;
+              const isLoser =
+                status === "result" &&
+                winnerIdx !== null &&
+                winnerIdx !== index;
+              const isLeading = leadingIdx === index;
+              const stateId = isWinner
+                ? "winner"
+                : isLoser
+                  ? "loser"
+                  : isLeading
+                    ? "leading"
+                    : status === "locked"
+                      ? "closed"
+                      : "default";
+              const baseColor =
+                colors[index % colors.length] ||
+                BETTER_BETS_CARD_COLORS[index % BETTER_BETS_CARD_COLORS.length];
+              const accent = subValue(
+                c,
+                "progressBar",
+                "fillColor",
+                baseColor.accent,
+                stateId,
+              );
+              const accent2 = baseColor.accent2 || accent;
+              const optionLabel = betOptionLabel(option, index);
+              const detailLabel = isWinner
+                ? "Winner"
+                : isLoser
+                  ? "Not selected"
+                  : status === "open"
+                    ? `${command} ${index + 1} <amount>`
+                    : "Bets closed";
+              const optionVars = {
+                "--fill": `${fillPct}%`,
+                "--pct": `${fillPct}%`,
+                "--accent": accent,
+                "--accent-2": accent2,
+                animationDelay: `${index * 50}ms`,
+              };
+
+              if (layoutMode === "bars") {
+                return (
+                  <div
+                    key={`${index}-${optionLabel}`}
+                    className={[
+                      "bet-bar",
+                      isWinner && "is-winner",
+                      isLoser && "is-loser",
+                      isLeading && "is-selected",
+                      fillPct >= 100 && totalPool > 0 && "is-full",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    {...attrs("bets", c, "individualBetCard", stateId)}
+                    style={subElementStyle(
+                      c,
+                      "individualBetCard",
+                      optionVars,
+                      stateId,
+                    )}
+                    data-appearance-index={index}
+                  >
+                    <span
+                      className="bar-num"
+                      style={subElementStyle(c, "cardNumberBadge", {}, stateId)}
+                      {...attrs("bets", c, "cardNumberBadge", stateId)}
+                    >
+                      {index + 1}
+                    </span>
+                    <span
+                      className="bar-range"
+                      style={subElementStyle(c, "cardRangeText", {}, stateId)}
+                      {...attrs("bets", c, "cardRangeText", stateId)}
+                    >
+                      {optionLabel}
+                    </span>
+                    <span
+                      className="bar-detail"
+                      {...attrs("bets", c, "cardLabel", stateId)}
+                    >
+                      {isWinner && <Trophy size={12} aria-hidden="true" />}
+                      {detailLabel}
+                    </span>
+                    <span
+                      className="bar-amount"
+                      {...attrs("bets", c, "cardAmountText", stateId)}
+                    >
+                      {formatCompactNumber(amount)} pts
+                    </span>
+                    <span
+                      className="bar-track"
+                      style={{
+                        height: cssPx(
+                          subValue(c, "progressBar", "height", 5, stateId),
+                          "5px",
+                        ),
+                      }}
+                    >
+                      <BetterBetsBarFill
+                        config={c}
+                        fillStyle={fillStyle}
+                        pct={fillPct}
+                        stateId={stateId}
+                      />
+                    </span>
+                    <span
+                      className="bar-pct"
+                      style={subElementStyle(
+                        c,
+                        "cardPercentageText",
+                        {},
+                        stateId,
+                      )}
+                      {...attrs("bets", c, "cardPercentageText", stateId)}
+                    >
+                      {pct}%
+                    </span>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   key={`${index}-${optionLabel}`}
                   className={[
-                    "bet-bar",
+                    "bet-option",
                     isWinner && "is-winner",
                     isLoser && "is-loser",
                     isLeading && "is-selected",
@@ -2461,135 +2603,101 @@ export function BetterBetsStyle({ config, countdown, statusLabel }) {
                   ]
                     .filter(Boolean)
                     .join(" ")}
+                  {...attrs("bets", c, "individualBetCard", stateId)}
                   style={subElementStyle(
                     c,
                     "individualBetCard",
                     optionVars,
                     stateId,
                   )}
-                  {...attrs("bets", c, "individualBetCard", stateId)}
                   data-appearance-index={index}
                 >
+                  <BetterBetsCardFill
+                    config={c}
+                    fillStyle={fillStyle}
+                    pct={fillPct}
+                    stateId={stateId}
+                  />
+                  <span className="option-scrim" aria-hidden="true" />
                   <span
-                    className="bar-num"
+                    className="option-number"
                     style={subElementStyle(c, "cardNumberBadge", {}, stateId)}
                     {...attrs("bets", c, "cardNumberBadge", stateId)}
                   >
                     {index + 1}
                   </span>
                   <span
-                    className="bar-range"
+                    className="option-range"
                     style={subElementStyle(c, "cardRangeText", {}, stateId)}
                     {...attrs("bets", c, "cardRangeText", stateId)}
                   >
                     {optionLabel}
                   </span>
-                  <span className="bar-track">
-                    <BetterBetsBarFill
-                      config={c}
-                      fillStyle={fillStyle}
-                      pct={fillPct}
-                      stateId={stateId}
-                    />
+                  <span className="option-details">
+                    <strong
+                      style={subElementStyle(
+                        c,
+                        "cardPercentageText",
+                        {},
+                        stateId,
+                      )}
+                      {...attrs("bets", c, "cardPercentageText", stateId)}
+                    >
+                      {pct}%
+                    </strong>
+                    <span
+                      className="option-amount"
+                      {...attrs("bets", c, "cardAmountText", stateId)}
+                    >
+                      {formatCompactNumber(amount)} pts
+                    </span>
                   </span>
-                  <span
-                    className="bar-pct"
-                    style={subElementStyle(
-                      c,
-                      "cardPercentageText",
-                      {},
-                      stateId,
-                    )}
-                    {...attrs("bets", c, "cardPercentageText", stateId)}
-                  >
-                    {pct}%
-                  </span>
-                </div>
-              );
-            }
-
-            return (
-              <div
-                key={`${index}-${optionLabel}`}
-                className={[
-                  "bet-option",
-                  isWinner && "is-winner",
-                  isLoser && "is-loser",
-                  isLeading && "is-selected",
-                  fillPct >= 100 && totalPool > 0 && "is-full",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                style={subElementStyle(
-                  c,
-                  "individualBetCard",
-                  optionVars,
-                  stateId,
-                )}
-                {...attrs("bets", c, "individualBetCard", stateId)}
-                data-appearance-index={index}
-              >
-                <BetterBetsCardFill
-                  config={c}
-                  fillStyle={fillStyle}
-                  pct={fillPct}
-                  stateId={stateId}
-                />
-                <span className="option-scrim" aria-hidden="true" />
-                <span
-                  className="option-number"
-                  style={subElementStyle(c, "cardNumberBadge", {}, stateId)}
-                  {...attrs("bets", c, "cardNumberBadge", stateId)}
-                >
-                  {index + 1}
-                </span>
-                <span
-                  className="option-range"
-                  style={subElementStyle(c, "cardRangeText", {}, stateId)}
-                  {...attrs("bets", c, "cardRangeText", stateId)}
-                >
-                  {optionLabel}
-                </span>
-                <span className="option-details">
-                  <strong
-                    style={subElementStyle(
-                      c,
-                      "cardPercentageText",
-                      {},
-                      stateId,
-                    )}
-                    {...attrs("bets", c, "cardPercentageText", stateId)}
-                  >
-                    {pct}%
-                  </strong>
                   <small
+                    className="option-command"
                     style={subElementStyle(c, "cardLabel", {}, stateId)}
                     {...attrs("bets", c, "cardLabel", stateId)}
                   >
+                    {isWinner && <Trophy size={12} aria-hidden="true" />}
                     {detailLabel}
                   </small>
-                </span>
-                <span className="option-glint" aria-hidden="true" />
-              </div>
-            );
-          })}
-        </div>
+                  <span className="option-glint" aria-hidden="true" />
+                </div>
+              );
+            })}
+          </div>
 
-        <div
-          className="bet-entry"
-          style={subElementStyle(c, "footerInstruction", {})}
-          {...attrs("bets", c, "footerInstruction")}
-        >
-          <span>&gt;&gt;&gt;</span>
-          <input
-            readOnly
-            value=""
-            placeholder={`Type ${command} <number> <amount>`}
-            aria-label="Bet command hint"
-          />
-          <kbd>Enter</kbd>
-        </div>
-      </section>
+          <div
+            className="bet-entry"
+            style={subElementStyle(c, "footerInstruction", {})}
+            {...attrs("bets", c, "footerInstruction")}
+          >
+            {visibleOptions.length === 0 ? (
+              <strong>Waiting for options</strong>
+            ) : status === "open" ? (
+              <>
+                <MessageSquare size={15} aria-hidden="true" />
+                <span>In chat</span>
+                <strong>{command} &lt;number&gt; &lt;amount&gt;</strong>
+              </>
+            ) : status === "result" &&
+              winnerIdx !== null &&
+              options[winnerIdx] ? (
+              <>
+                <Trophy size={15} aria-hidden="true" />
+                <span>Winner #{winnerIdx + 1}</span>
+                <strong>{betOptionLabel(options[winnerIdx], winnerIdx)}</strong>
+              </>
+            ) : (
+              <>
+                <LockKeyhole size={15} aria-hidden="true" />
+                <strong>
+                  {status === "locked" ? "Bets closed" : "Waiting for result"}
+                </strong>
+              </>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

@@ -642,6 +642,8 @@ const WIDGET_SUB_ELEMENT_DEFINITIONS = {
     { id: 'cardRangeText', label: 'Card range text', properties: ['textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'cardPercentageText', label: 'Card percentage text', properties: ['textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'cardLabel', label: 'Card command label', properties: ['textColor', 'accentColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'cardAmountText', label: 'Option pool points', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
+    { id: 'poolShareLabel', label: 'Pool share heading', properties: ['textColor', ...COMMON_TEXT_PROPERTIES] },
     { id: 'footerInstruction', label: 'Footer hint', properties: ['background', 'textColor', ...COMMON_TEXT_PROPERTIES, 'padding', 'radius', 'borderColor', 'borderWidth'] },
     { id: 'progressBar', label: 'Progress bars', properties: ['background', 'fillColor', 'radius', 'height'] },
   ],

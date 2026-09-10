@@ -37,6 +37,7 @@ import NavbarWidget from "../widgets/navbar/NavbarWidget";
 import RtpStatsWidget from "../widgets/rtp-stats/RtpStatsWidget";
 import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
 import ChatWidget from "../widgets/chat/ChatWidget";
+import BetsWidget from "../widgets/bets/BetsWidget";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import {
   BetterBackgroundStyle,
@@ -1556,12 +1557,6 @@ function formatMoney(value, currency = "EUR ") {
   })}`;
 }
 
-function betLabel(option, index) {
-  return typeof option === "string"
-    ? option
-    : option?.label || `Set ${index + 1}`;
-}
-
 function useTab(defaultTab) {
   const scope = useEditorControlScope();
   const [tab, setTab] = useState(scope?.tab || defaultTab);
@@ -1871,184 +1866,9 @@ function HuntSection({ title, icon, children, category }) {
   );
 }
 
-function normalizeBetFillStyle(fillStyle) {
-  return ["liquid", "solid", "pulse", "scanline", "plasma"].includes(fillStyle)
-    ? fillStyle
-    : "liquid";
-}
-
-function BetterBetsPreviewFill({ fillStyle }) {
-  return (
-    <span className={`fill-wrap fill-${fillStyle}`}>
-      <span className="solid-bar" />
-      {fillStyle === "pulse" && <span className="pulse-ring" />}
-      {fillStyle === "scanline" && <span className="scan-sweep" />}
-      {fillStyle === "plasma" && (
-        <>
-          <span className="plasma-blob plasma-blob-1" />
-          <span className="plasma-blob plasma-blob-2" />
-          <span className="plasma-blob plasma-blob-3" />
-        </>
-      )}
-      <span className="fill-bloom" />
-    </span>
-  );
-}
-
-function BetterBetsPreviewBarFill({ fillStyle }) {
-  return (
-    <span className={`bf bf-${fillStyle}`}>
-      <span className="bf-core" />
-      {fillStyle === "liquid" && <span className="bf-sheen" />}
-      {fillStyle === "pulse" && <span className="bf-tip" />}
-      {fillStyle === "scanline" && <span className="bf-sweep" />}
-      {fillStyle === "plasma" && (
-        <>
-          <span className="bf-blob bf-blob-1" />
-          <span className="bf-blob bf-blob-2" />
-        </>
-      )}
-    </span>
-  );
-}
-
 function BetterBetsPreview({ config }) {
   const c = ensureBetterWidgetConfig("bets", config);
-  const fillStyle = normalizeBetFillStyle(c.fillStyle);
-  const options =
-    Array.isArray(c.options) && c.options.length
-      ? c.options.slice(0, 6)
-      : [
-          "0 - 99",
-          "100 - 199",
-          "200 - 299",
-          "300 - 399",
-          "400 - 499",
-          "500 - 599",
-        ];
-  const bets = c.bets || {};
-  const totalPool = options.reduce(
-    (sum, _, index) => sum + (Number(bets[`opt_${index}`]) || 0),
-    0,
-  );
-  const totalBets = Object.keys(c.betters || {}).length;
-  const colors =
-    Array.isArray(c.cardColors) && c.cardColors.length >= 6
-      ? c.cardColors
-      : DEFAULT_CARD_COLORS;
-  const values = options.map((_, index) => {
-    const realAmount = Number(bets[`opt_${index}`]) || 0;
-    if (totalPool > 0) return Math.round((realAmount / totalPool) * 100);
-    return 0;
-  });
-  const cssVars = {
-    "--fs": (Number(c.fontScale) || 100) / 100,
-    "--card-radius": `${Number(c.borderRadius) || 8}px`,
-    "--glow-mult": (Number(c.glowIntensity) || 100) / 100,
-    "--widget-opacity": (Number(c.opacity) || 100) / 100,
-    "--fill-dur": `${3.2 * (100 / Math.max(Number(c.fillSpeed) || 100, 10))}s`,
-    "--cols": Number(c.columns) || 2,
-  };
-
-  return (
-    <div
-      className="bp-bets-stage"
-      data-theme={c.theme}
-      data-font={c.font}
-      data-fill={fillStyle}
-      style={cssVars}
-    >
-      <section
-        className={`bet-widget${!c.showBrackets ? " hide-brackets" : ""}${!c.showSheen ? " hide-sheen" : ""}${c.orientation === "horizontal" ? " is-horizontal" : ""}`}
-        data-cols={Number(c.columns) || 2}
-      >
-        <div className="widget-sheen" />
-        <header className="widget-header">
-          <div className="title-lockup">
-            <span className="title-mark" />
-            <h1>{c.question || "Place Your Bets"}</h1>
-          </div>
-          <span className="open-status">
-            <i /> {String(c.gameStatus || "OPEN").toUpperCase()}
-          </span>
-        </header>
-        <div className="event-meta">
-          <div className="meta-item">
-            <strong>{formatMoney(totalPool, "")}</strong>
-            <span>
-              <Coins size={10} /> Pool
-            </span>
-          </div>
-          <div className="meta-item">
-            <strong>{c.countdown ? `${c.countdown}s` : "0:00"}</strong>
-            <span>
-              <Timer size={10} /> Timer
-            </span>
-          </div>
-          <div className="meta-item">
-            <strong>{totalBets}</strong>
-            <span>
-              <Users size={10} /> Bets
-            </span>
-          </div>
-        </div>
-        <div className={c.layoutMode === "bars" ? "bars-grid" : "bets-grid"}>
-          {options.map((option, index) => {
-            const pct = values[index];
-            const cc = colors[index % colors.length];
-            return c.layoutMode === "bars" ? (
-              <button
-                key={index}
-                className="bet-bar"
-                type="button"
-                style={{
-                  "--fill": `${pct}%`,
-                  "--accent": cc.accent,
-                  "--accent-2": cc.accent2,
-                }}
-              >
-                <span className="bar-num">{index + 1}</span>
-                <span className="bar-range">{betLabel(option, index)}</span>
-                <span className="bar-track">
-                  <BetterBetsPreviewBarFill fillStyle={fillStyle} />
-                </span>
-                <span className="bar-pct">{pct}%</span>
-              </button>
-            ) : (
-              <button
-                key={index}
-                className="bet-option"
-                type="button"
-                style={{
-                  "--fill": `${pct}%`,
-                  "--accent": cc.accent,
-                  "--accent-2": cc.accent2,
-                }}
-              >
-                <BetterBetsPreviewFill fillStyle={fillStyle} />
-                <span className="option-scrim" />
-                <span className="option-number">{index + 1}</span>
-                <span className="option-range">{betLabel(option, index)}</span>
-                <span className="option-details">
-                  <strong>{pct}%</strong>
-                  <small>Set {index + 1}</small>
-                </span>
-                <span className="option-glint" />
-              </button>
-            );
-          })}
-        </div>
-        <div className="bet-entry">
-          <span>&gt;&gt;&gt;</span>
-          <input
-            readOnly
-            placeholder={`Type ${c.chatCommand || "!bet"} number to bet`}
-          />
-          <kbd>Enter</kbd>
-        </div>
-      </section>
-    </div>
-  );
+  return <BetsWidget config={c} />;
 }
 
 function BetterChatPreview({ config, widget }) {

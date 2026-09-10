@@ -19,6 +19,7 @@
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",
     "test:bonus-hunt-orientations": "node scripts/test-bonus-hunt-orientations.mjs",
     "test:mainstream-carousel": "node scripts/test-mainstream-carousel.mjs",
+    "test:better-bets": "node scripts/test-better-bets-browser.mjs",
     "test:slot-personal-best": "node scripts/test-slot-personal-best.mjs",
     "test:editor-builds": "node scripts/test-editor-builds.mjs",
     "test:landing-widget-carousel": "node scripts/test-landing-widget-carousel.mjs",

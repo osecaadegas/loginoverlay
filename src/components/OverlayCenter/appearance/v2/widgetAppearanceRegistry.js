@@ -1946,6 +1946,8 @@ export const widgetAppearanceRegistry = Object.freeze({
           "cardRangeText",
           "cardPercentageText",
           "cardLabel",
+          "cardAmountText",
+          "poolShareLabel",
           "progressBar",
           "footerInstruction",
         ],
@@ -2125,6 +2127,16 @@ export const widgetAppearanceRegistry = Object.freeze({
         kind: "text",
         capabilities: ["typography", "stateColor"],
         cssVariables: ["--bets-card-label-text"],
+      }),
+      cardAmountText: Object.freeze({
+        label: "Option pool points",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+      poolShareLabel: Object.freeze({
+        label: "Pool share heading",
+        kind: "text",
+        capabilities: ["typography"],
       }),
       progressBar: Object.freeze({
         label: "Card progress bar",
