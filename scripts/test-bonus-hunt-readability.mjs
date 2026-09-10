@@ -151,9 +151,12 @@ try {
           ['.better-hunt-autoscroll-stat--autoscrollPayout', true, true],
           ['.better-hunt-autoscroll-stat--autoscrollMultiplier', true, false],
         ]) {
-          const corner = rect(card.querySelector(selector));
-          if (Math.abs((right ? bounds.right - corner.right : corner.left - bounds.left) - 5) > 1 ||
-              Math.abs((bottom ? bounds.bottom - corner.bottom : corner.top - bounds.top) - 5) > 1) report(`Autoscroll overlay not anchored to its image corner: ${selector}`);
+          const overlay = card.querySelector(selector), corner = rect(overlay);
+          const value = rect(overlay.querySelector('strong'));
+          if (Math.abs(right ? artwork.right - corner.right : corner.left - artwork.left) > 0.5 ||
+              Math.abs(bottom ? artwork.bottom - corner.bottom : corner.top - artwork.top) > 0.5) report(`Autoscroll overlay not flush with its image corner: ${selector}`);
+          if (Math.abs((right ? artwork.right - value.right : value.left - artwork.left) - 2) > 0.5 ||
+              Math.abs((bottom ? artwork.bottom - value.bottom : value.top - artwork.top) - 1) > 0.5) report(`Autoscroll value too far from its image edges: ${selector}`);
         }
         for (const value of card.querySelectorAll('.better-hunt-autoscroll-stat strong')) {
           if (value.scrollWidth > value.clientWidth + 2) report(`Autoscroll value clipped: ${value.textContent}`);
@@ -201,9 +204,46 @@ try {
     await checkGeometry(skin);
     checked += cases.length;
   }
+  for (const orientation of ['vertical', 'mainstream']) {
+    for (const viewport of [390, 1440]) {
+      await page.setViewport({ width: viewport, height: 1100 });
+      for (const drawerMode of ['contain', 'expand']) {
+        await mount([320, 402].flatMap(width => [0.75, 1, 1.35].map(uiScale => ({
+          width, height: 980, config: { orientation, drawerMode, uiScale, showRequests: true, drawerAlwaysVisible: true },
+        }))));
+        await checkGeometry(`Compact results ${orientation}/${drawerMode}, viewport ${viewport}`);
+        const sizes = await page.$$eval('.better-hunt-result', cards => cards.map(card => {
+          const bounds = card.getBoundingClientRect(), art = card.querySelector('.better-hunt-result-art').getBoundingClientRect();
+          const payout = card.querySelector('.better-hunt-result-payout').getBoundingClientRect();
+          return { compact: card.classList.contains('better-hunt-result--compact'), height: bounds.height,
+            artWidth: art.width, artHeight: art.height, artLoaded: card.querySelector('img')?.naturalWidth > 0,
+            mirrored: card.classList.contains('better-hunt-result--best') ? art.left >= payout.right : art.right <= payout.left };
+        }));
+        assert.equal(sizes.length, 12, 'Both Best/Worst cards remain available in every narrow layout');
+        assert.ok(sizes.every(size => size.compact && size.height <= 134 && size.artWidth >= 54 && size.artHeight >= 88 && size.artLoaded && size.mirrored), JSON.stringify(sizes));
+      }
+    }
+    for (const runtime of ['editor', 'obs', 'preview']) {
+      const resultAppearance = await page.evaluate(() => window.huntTest.scopedConfig([
+        ['resultPayout', 'textColor', '#f4c442'], ['resultTitle', 'fontSize', 12],
+      ]));
+      await mount([{ width: 402, height: 980, runtime, config: { ...resultAppearance, orientation, drawerAlwaysVisible: true } }]);
+      await checkGeometry(`Compact results saved appearance: ${orientation}/${runtime}`);
+      assert.equal(await page.$eval('.better-hunt-result-payout strong', e => getComputedStyle(e).color), 'rgb(244, 196, 66)');
+      assert.equal(await page.$eval('.better-hunt-result-slot', e => getComputedStyle(e).fontSize), '12px');
+    }
+  }
+  if (process.env.RESULTS_SCREENSHOT) {
+    await mount([{ width: 402, height: 980, config: { orientation: 'mainstream', uiScale: 1.2, drawerAlwaysVisible: true } }]);
+    await checkGeometry('Compact Best/Worst screenshot');
+    await (await page.$('.better-hunt-drawer')).screenshot({ path: process.env.RESULTS_SCREENSHOT });
+  }
+  await page.setViewport({ width: 1600, height: 1000 });
   const base = { width: 1080, height: 340, config: { carouselMode: '3d' } };
   for (const height of [220, 280, 360]) {
     await mount([{ ...base, config: { horizontalHeight: height } }]);
+    assert.equal(await page.$('.better-hunt-result--compact'), null, 'Horizontal Best/Worst keeps its existing layout');
+    assert.equal(await page.$eval('.better-hunt-result-art', art => art.getBoundingClientRect().width), 34, 'Horizontal artwork sizing is unchanged');
     const gap = await page.$eval('.better-hunt-ring', ring => {
       const center = ring.querySelector('.better-hunt-card--center').getBoundingClientRect();
       return Math.min(...[...ring.querySelectorAll('.better-hunt-card:not(.better-hunt-card--center)')]

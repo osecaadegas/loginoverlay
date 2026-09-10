@@ -2208,8 +2208,8 @@ function BetterStyleSheet() {
       .better-hunt-autoscroll-card{position:relative;flex:0 0 auto;width:clamp(124px,calc((100cqh - 4px) * 122 / 172),184px);height:100%;min-height:0;overflow:hidden;border:1px solid var(--bh-line-hi);border-radius:8px;background:var(--bh-inset)}
       .better-hunt-autoscroll-card--super{border-color:var(--bh-tangerine)}.better-hunt-autoscroll-card--extreme{border-color:var(--bh-ember)}
       .better-hunt-autoscroll-image{display:block;width:100%;height:100%;min-height:0;object-fit:cover}
-      .better-hunt-autoscroll-copy{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto minmax(0,1fr) auto;align-items:start;gap:4px;min-width:0;padding:4px;line-height:1.1}
-      .better-hunt-autoscroll-stat{display:grid;min-width:0;width:max-content;max-width:100%;padding:3px 4px;border-radius:4px;background:color-mix(in srgb,var(--bh-inset) 88%,transparent);text-shadow:0 1px 2px #000;letter-spacing:0;font-variant-numeric:tabular-nums}
+      .better-hunt-autoscroll-copy{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto minmax(0,1fr) auto;align-items:start;gap:4px;min-width:0;padding:0;line-height:1.1}
+      .better-hunt-autoscroll-stat{display:grid;min-width:0;width:max-content;max-width:100%;padding:1px 2px;border-radius:0;background:color-mix(in srgb,var(--bh-inset) 88%,transparent);text-shadow:0 1px 2px #000;letter-spacing:0;font-variant-numeric:tabular-nums}
       .better-hunt-autoscroll-stat--autoscrollBet{grid-column:1;grid-row:1}
       .better-hunt-autoscroll-stat--autoscrollPayout{grid-column:2;grid-row:3;align-self:end;justify-self:end;text-align:right}
       .better-hunt-autoscroll-stat--autoscrollMultiplier{grid-column:2;grid-row:1;justify-self:end;text-align:right}
@@ -2311,6 +2311,20 @@ function BetterStyleSheet() {
       .better-hunt-result-row{display:grid;gap:2px;min-width:0}
       .better-hunt-result-row>strong{display:block;min-width:0;color:#fff;font-size:.8em;font-weight:800;line-height:1.15}
       .better-hunt-result-row:first-child>strong{color:var(--bh-tangerine)}
+      .better-hunt-result--compact{--bh-result-art-col:2;--bh-result-copy-col:1;grid-template-columns:minmax(0,1fr) minmax(54px,42%);grid-template-rows:auto auto minmax(0,1fr);gap:4px;padding:4px}
+      .better-hunt-result--compact.better-hunt-result--worst{--bh-result-art-col:1;--bh-result-copy-col:2;grid-template-columns:minmax(54px,42%) minmax(0,1fr)}
+      .better-hunt-result--compact .better-hunt-result-head{grid-column:1/-1;grid-row:1;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:4px}
+      .better-hunt-result--compact .better-hunt-result-head em{font-size:.6em}
+      .better-hunt-result--compact .better-hunt-result-slot{font-size:.74em}
+      .better-hunt-result--compact .better-hunt-result-body{display:contents}
+      .better-hunt-result--compact .better-hunt-result-art{grid-column:var(--bh-result-art-col);grid-row:2/4;height:100%;min-height:88px}
+      .better-hunt-result--compact .better-hunt-result-payout{grid-column:var(--bh-result-copy-col);grid-row:2;gap:2px}
+      .better-hunt-result--compact .better-hunt-result-payout>span,.better-hunt-result--compact .better-hunt-result-row>span{font-size:.56em}
+      .better-hunt-result--compact .better-hunt-result-payout>strong{font-size:.94em}
+      .better-hunt-result--compact .better-hunt-result-stats{grid-column:var(--bh-result-copy-col);grid-row:3;grid-template-columns:minmax(0,1fr);align-content:start;gap:4px;border:0;padding-top:0}
+      .better-hunt-result--compact .better-hunt-result-row{gap:1px}
+      .better-hunt-result--compact .better-hunt-result-row>strong{font-size:.84em}
+      .better-hunt-result--compact.better-hunt-result--best .better-hunt-result-payout,.better-hunt-result--compact.better-hunt-result--best .better-hunt-result-stats{text-align:right}
       .better-hunt-hstrip-results .better-hunt-footer--horizontal{height:100%;grid-template-rows:auto minmax(0,1fr);gap:4px}
       .better-hunt-hstrip-results .better-hunt-total-head{padding:4px 6px;gap:5px}.better-hunt-hstrip-results .better-hunt-total-head span{font-size:.6em;letter-spacing:0}.better-hunt-hstrip-results .better-hunt-total-head strong{font-size:1em;white-space:nowrap;min-width:0}
       .better-hunt-hstrip-results .better-hunt-drawer--horizontal{--bh-drawer-open-height:none;min-height:0;grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:4px;margin:0;padding:0;transform:translateX(12px)}
@@ -4355,7 +4369,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     );
     return (
       <div
-        className={`better-hunt-result better-hunt-result--${variant}`}
+        className={`better-hunt-result better-hunt-result--${variant}${orientation !== "horizontal" ? " better-hunt-result--compact" : ""}`}
         aria-label={`${label}: ${bonusSlotName(bonus, 0)}`}
         {...attrs("bonus_hunt", c, "resultCard")}
       >
