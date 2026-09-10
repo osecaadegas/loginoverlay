@@ -30,6 +30,31 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
     background: "#04120d", surface: "#062719", raised: "#0b3b25", border: "#15845b",
     accent: "#6ee7b7", secondary: "#059669", text: "#edfff7", muted: "#9edabe", hue: 155,
   },
+  {
+    key: "gold", name: "Gold", icon: "gold", swatches: ["#212015", "#bd8f2c", "#f5d36a"],
+    background: "#11110b", surface: "#212015", raised: "#302d19", border: "#8c7730",
+    accent: "#f5d36a", secondary: "#bd8f2c", text: "#fff8df", muted: "#d6c693", hue: 45,
+  },
+  {
+    key: "violet", name: "Violet", icon: "violet", swatches: ["#211a30", "#9d65d4", "#d0a4ff"],
+    background: "#130f1c", surface: "#211a30", raised: "#302442", border: "#76559e",
+    accent: "#d0a4ff", secondary: "#9d65d4", text: "#f7f0ff", muted: "#cdb7e4", hue: 275,
+  },
+  {
+    key: "rose", name: "Rose", icon: "rose", swatches: ["#2b1925", "#d66b9d", "#ffacd1"],
+    background: "#1a1017", surface: "#2b1925", raised: "#402437", border: "#995978",
+    accent: "#ffacd1", secondary: "#d66b9d", text: "#fff1f7", muted: "#dfb5ca", hue: 330,
+  },
+  {
+    key: "arctic", name: "Arctic", icon: "arctic", swatches: ["#192b30", "#49a7bb", "#b1f1ff"],
+    background: "#101b1e", surface: "#192b30", raised: "#234047", border: "#507c89",
+    accent: "#b1f1ff", secondary: "#49a7bb", text: "#f0fcff", muted: "#afd1dc", hue: 192,
+  },
+  {
+    key: "lime", name: "Lime", icon: "lime", swatches: ["#202914", "#98bf42", "#d5f68a"],
+    background: "#13170c", surface: "#202914", raised: "#303c1d", border: "#728b3a",
+    accent: "#d5f68a", secondary: "#98bf42", text: "#f6ffe7", muted: "#c4d5a6", hue: 82,
+  },
 ].map((theme) => Object.freeze({ ...theme, swatches: Object.freeze(theme.swatches) })));
 
 export function getWidgetColourTheme(key) {

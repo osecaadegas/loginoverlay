@@ -23,7 +23,7 @@ import SlotImage from "../SlotImage";
 import "../background/BackgroundWidget.css";
 import ChromaKeySmoke from "../background/ChromaKeySmoke";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
-import { getHuntColourTheme } from "./colourThemePalettes";
+import { getHuntColourTheme, WIDGET_COLOUR_THEMES } from "./colourThemePalettes";
 import {
   getHorizontalHuntHeight,
   getHorizontalRequestPitch,
@@ -1145,8 +1145,39 @@ const BETTER_BETS_THEME_VARS = {
   },
 };
 
+// Keep legacy finishes unchanged; derive new palettes without duplicating their effects or layout.
+const BETTER_BETS_SHARED_THEME_VARS = Object.fromEntries(
+  WIDGET_COLOUR_THEMES.filter((theme) => !Object.hasOwn(BETTER_BETS_THEME_VARS, theme.key))
+    .map((theme) => [theme.key, {
+      ...BETTER_BETS_THEME_VARS.neon,
+      "--ui-accent": theme.accent,
+      "--text-bright": theme.text,
+      "--text-dim": theme.muted,
+      "--frame-border": theme.border,
+      "--frame-bg": `linear-gradient(180deg,${theme.raised},${theme.surface} 55%,${theme.background})`,
+      "--frame-shadow": `0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,${theme.text} 12%,transparent)`,
+      "--bracket-color": theme.accent,
+      "--bracket-filter": `drop-shadow(0 0 3px color-mix(in srgb,${theme.accent} 40%,transparent))`,
+      "--sheen-color": `color-mix(in srgb,${theme.text} 8%,transparent)`,
+      "--meta-border": theme.border,
+      "--meta-bg": `linear-gradient(180deg,${theme.raised},${theme.surface})`,
+      "--meta-shadow": `inset 0 1px 0 color-mix(in srgb,${theme.text} 10%,transparent),0 2px 8px rgba(0,0,0,.5)`,
+      "--meta-divider": `color-mix(in srgb,${theme.border} 55%,transparent)`,
+      "--card-frame-mix": theme.border,
+      "--card-bg": `linear-gradient(180deg,${theme.raised},${theme.surface})`,
+      "--card-shadow": `inset 0 1px 0 color-mix(in srgb,${theme.text} 10%,transparent),0 2px 8px rgba(0,0,0,.5)`,
+      "--card-hover-shadow": `inset 0 1px 0 color-mix(in srgb,${theme.text} 14%,transparent),0 0 calc(10px * var(--glow-mult)) color-mix(in srgb,${theme.accent} 35%,transparent)`,
+      "--card-topline": `color-mix(in srgb,${theme.muted} 45%,transparent)`,
+      "--badge-bg": `linear-gradient(140deg,${theme.accent},${theme.secondary})`,
+      "--badge-shadow": "0 0 0 2px rgba(0,0,0,.6),0 0 calc(8px * var(--glow-mult)) var(--accent),inset 0 0 5px rgba(255,255,255,.55)",
+      "--scrim-bg": "linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.3) 55%,rgba(0,0,0,.55))",
+      "--footer-rule": `color-mix(in srgb,${theme.border} 45%,transparent)`,
+    }]),
+);
+
 function normalizeBetterBetsTheme(theme) {
-  return Object.hasOwn(BETTER_BETS_THEME_VARS, theme) ? theme : "neon";
+  return Object.hasOwn(BETTER_BETS_THEME_VARS, theme) || Object.hasOwn(BETTER_BETS_SHARED_THEME_VARS, theme)
+    ? theme : "neon";
 }
 
 function normalizeBetterBetsFillStyle(fillStyle) {
@@ -2594,7 +2625,7 @@ export function BetterBetsStyle({ config, countdown }) {
           ? "RESULT"
           : "IDLE";
   const stageStyle = {
-    ...BETTER_BETS_THEME_VARS[theme],
+    ...(BETTER_BETS_THEME_VARS[theme] || BETTER_BETS_SHARED_THEME_VARS[theme]),
     "--fs": fontScale,
     "--card-radius": cardRadius,
     "--glow-mult": glowIntensity,

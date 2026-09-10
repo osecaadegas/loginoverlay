@@ -1,6 +1,22 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
+import { WIDGET_COLOUR_THEMES } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
+
+const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime'];
+assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['neon', 'metallic', 'gradient', 'matte', 'crimson', 'emerald', ...newThemes]);
+const luminance = color => color.slice(1).match(/../g).map(hex => {
+  const channel = parseInt(hex, 16) / 255;
+  return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+}).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+for (const theme of WIDGET_COLOUR_THEMES.filter(theme => newThemes.includes(theme.key))) {
+  for (const token of ['text', 'muted', 'accent']) {
+    for (const surface of ['background', 'surface', 'raised']) {
+      const values = [luminance(theme[token]), luminance(theme[surface])].sort((a, b) => b - a);
+      assert((values[0] + 0.05) / (values[1] + 0.05) >= 4.5, `${theme.key}: ${token} contrast on ${surface}`);
+    }
+  }
+}
 
 const baseUrl = process.env.TEST_BASE_URL || 'http://127.0.0.1:3010';
 const browser = await puppeteer.launch({ headless: true });
@@ -138,12 +154,13 @@ try {
     const appearances = new Set();
     for (const theme of themes) {
       await mount(type);
-      assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), 6, `${type}: six themes`);
+      assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), themes.length, `${type}: all themes`);
       await page.evaluate(theme => [...document.querySelectorAll('.bp-theme-grid button')].find(button => button.textContent.trim().toLowerCase() === theme).click(), theme);
       await settle();
       const result = await page.evaluate(() => ({ config: window.themeTest.lastConfig, style: window.themeTest.appearance(), selected: document.querySelector('.bp-theme-grid [aria-pressed="true"]')?.textContent.trim().toLowerCase() }));
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
+      if (type === 'bets') assert.equal(await page.$eval('.better-bets-stage', stage => stage.dataset.theme), theme, `${theme}: Bets must not fall back to Neon`);
       appearances.add(JSON.stringify(result.style));
       await mount(type, result.config);
       assert.deepEqual(await page.evaluate(() => window.themeTest.appearance()), result.style, `${type}/${theme}: reload matches preview`);
@@ -152,20 +169,20 @@ try {
         assert.deepEqual(await page.evaluate(() => window.themeTest.appearance()), result.style, `${type}/${theme}: OBS matches editor`);
       }
     }
-    assert.equal(appearances.size, 6, `${type}: each theme visibly changes the renderer`);
+    assert.equal(appearances.size, themes.length, `${type}: each theme visibly changes the renderer`);
     await mount(type, undefined, { controls: 'advanced', width: 220 });
-    assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), 6, `${type}: advanced controls`);
+    assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), themes.length, `${type}: advanced controls`);
     assert.equal(await page.$eval('.bp-theme-grid', grid => grid.scrollWidth <= grid.clientWidth + 1 && [...grid.querySelectorAll('button')].every(button => button.scrollWidth <= button.clientWidth + 1)), true, `${type}: narrow controls fit`);
-    console.log(`${type}: all six themes, reload and available runtime rendering passed`);
+    console.log(`${type}: all ${themes.length} themes, reload and available runtime rendering passed`);
   }
   await mount('chat', { ...(await page.evaluate(() => window.themeTest.base('chat'))), chatStyle: 'broadcast_chat' }, { search: 'emerald' });
-  assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), 6, 'Theme search');
+  assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), themes.length, 'Theme search');
   if (process.env.TEST_SCREENSHOT_PATH) {
-    await mount('bonus_hunt', await page.evaluate(() => window.themeTest.applyWidgetColourTheme('bonus_hunt', window.themeTest.base('bonus_hunt'), 'emerald')));
+    await mount('bets', await page.evaluate(() => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), 'gold')));
     await page.screenshot({ path: process.env.TEST_SCREENSHOT_PATH });
   }
   assert.deepEqual(errors, []);
-  console.log('All widget colour themes passed: 66 palette combinations, isolated configuration, responsive controls, reload and editor/OBS parity.');
+  console.log(`All widget colour themes passed: ${types.length * themes.length} palette combinations, readable new palettes, isolated configuration, responsive controls, reload and editor/OBS parity.`);
 } finally {
   await browser.close();
 }

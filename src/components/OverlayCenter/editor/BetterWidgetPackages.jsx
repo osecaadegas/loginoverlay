@@ -12,8 +12,10 @@ import {
   Frame,
   Gamepad2,
   Gauge,
+  Heart,
   ImagePlus,
   Layers,
+  Leaf,
   List,
   Maximize2,
   MessageSquare,
@@ -25,6 +27,7 @@ import {
   Settings,
   Sliders,
   SlidersHorizontal,
+  Snowflake,
   Sparkles,
   Timer,
   Type,
@@ -135,7 +138,10 @@ const QUICK_COLORS = [
   "#1e293b",
 ];
 
-const COLOUR_THEME_ICONS = { neon: Zap, metallic: Layers, gradient: Sparkles, matte: Settings, crimson: Flame, emerald: Waves };
+const COLOUR_THEME_ICONS = {
+  neon: Zap, metallic: Layers, gradient: Sparkles, matte: Settings, crimson: Flame, emerald: Waves,
+  gold: Coins, violet: Sparkles, rose: Heart, arctic: Snowflake, lime: Leaf,
+};
 
 const FILL_STYLES = [
   { key: "liquid", name: "Liquid", icon: <Waves size={11} /> },
