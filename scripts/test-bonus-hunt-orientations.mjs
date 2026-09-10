@@ -209,7 +209,7 @@ try {
     assert.ok(
       markup.includes(`data-orientation="${orientation}"`) &&
         markup.includes("better-hunt-image-stats-panel") &&
-        markup.includes("better-hunt-stat-grid--grid") &&
+        markup.includes(`better-hunt-stat-grid--${orientation === "horizontal" ? "row" : "grid"}`) &&
         expectedOrientationBody &&
         expectedDrawer &&
         markup.includes(">Chat Requests<"),
@@ -218,7 +218,7 @@ try {
     if (orientation === "horizontal") {
       assert.equal(
         (
-          markup.match(/better-hunt-stat-grid better-hunt-stat-grid--grid/g) ||
+          markup.match(/better-hunt-stat-grid better-hunt-stat-grid--row/g) ||
           []
         ).length,
         1,
@@ -289,13 +289,13 @@ try {
         "grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr)",
       ) &&
       horizontalRingMarkup.includes(
-        "height:100%;min-height:210px;align-self:stretch",
+        "height:100%;min-height:0;align-self:stretch",
       ) &&
       horizontalRingMarkup.includes(
         "width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;display:block;object-fit:cover!important;object-position:center!important",
       ) &&
-      horizontalRingMarkup.includes("height:210px;min-height:0") &&
-      horizontalRingMarkup.includes("width:122px;height:172px"),
+      horizontalRingMarkup.includes("height:100%;min-height:0;container-type:size") &&
+      horizontalRingMarkup.includes("height:min(172px,calc((100cqh - 16px) / 1.18))"),
     "horizontal 3D mode uses consistent side artwork and the available ring height",
   );
 

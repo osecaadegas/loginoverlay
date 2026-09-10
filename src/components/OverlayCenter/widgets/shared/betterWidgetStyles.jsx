@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Scale,
   Star,
+  TrendingDown,
   TrendingUp,
   Trophy,
   Wallet,
@@ -95,6 +96,52 @@ function BetterHuntSlotMarquee({ children, config, enabled = true }) {
       <span className="better-hunt-slot-marquee-track">
         <span ref={textRef}>{children}</span>
         {isOverflowing ? <span aria-hidden="true">{children}</span> : null}
+      </span>
+    </strong>
+  );
+}
+
+const useBrowserLayoutEffect =
+  typeof document === "undefined" ? useEffect : useLayoutEffect;
+
+function BetterHuntFitValue({ children, style, ...props }) {
+  const boxRef = useRef(null);
+  const textRef = useRef(null);
+  useBrowserLayoutEffect(() => {
+    const box = boxRef.current;
+    const text = textRef.current;
+    if (!box || !text) return undefined;
+    let disposed = false;
+    const measure = () => {
+      if (disposed) return;
+      // Measure at the configured size before fitting the number to its own cell.
+      text.style.fontSize = "1em";
+      const available = Math.max(0, box.clientWidth - 1);
+      const natural = text.scrollWidth;
+      if (available > 0 && natural > available) {
+        text.style.fontSize = `${available / natural}em`;
+      }
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    document.fonts?.ready.then(measure).catch(() => {});
+    return () => {
+      disposed = true;
+      observer.disconnect();
+    };
+  }, [children, style]);
+  return (
+    <strong {...props} ref={boxRef} style={style} title={String(children)}>
+      <span
+        ref={textRef}
+        style={{
+          display: "inline-block",
+          whiteSpace: "nowrap",
+          maxWidth: "none",
+        }}
+      >
+        {children}
       </span>
     </strong>
   );
@@ -1878,7 +1925,7 @@ function BetterStyleSheet() {
       .better-hunt-root{position:relative;width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;background:transparent;color:#f4f8ff;font-family:var(--bh-font);font-size:calc(13.5px * var(--bh-ui,1));font-synthesis:none;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;box-sizing:border-box}
       .better-hunt-root *{box-sizing:border-box}
       .better-hunt-root::before,.better-hunt-root::after{content:none}
-      .better-hunt-shell{position:relative;z-index:1;width:100%;height:100%;display:grid;place-items:center;padding:18px}
+      .better-hunt-shell{position:relative;z-index:1;width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;padding:18px}
       .better-hunt-root[data-orientation="vertical"] .better-hunt-shell,.better-hunt-root[data-orientation="mainstream"] .better-hunt-shell{align-items:center}
       .better-hunt-root[data-drawer-mode="expand"] .better-hunt-shell{place-items:start center;align-items:start}
       .better-hunt-root[data-drawer-mode="expand"] .better-hunt-panel{align-self:start;transform-origin:top center}
@@ -1898,7 +1945,8 @@ function BetterStyleSheet() {
       .better-hunt-root[data-finish="gradient"] .better-hunt-panel::after{background:linear-gradient(140deg,color-mix(in srgb,var(--bh-ice) 7%,transparent) 0%,transparent 38%,color-mix(in srgb,var(--bh-ice-deep) 10%,transparent) 92%)}
       .better-hunt-vertical{max-width:min(100%,var(--bh-panel-width,402px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto auto minmax(0,1fr) auto auto;gap:10px;padding:12px}
       .better-hunt-vertical--no-requests{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}
-      .better-hunt-mainstream{max-width:min(100%,var(--bh-panel-width,372px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto auto auto minmax(0,1fr) auto auto;gap:0;padding:0}
+      .better-hunt-mainstream{max-width:min(100%,var(--bh-panel-width,372px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto;gap:0;padding:0}
+      .better-hunt-mainstream--no-requests{grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto}
       .better-hunt-main-head{display:flex;align-items:center;gap:12px;min-width:0;padding:14px 16px 12px}
       .better-hunt-main-avatar-wrap{position:relative;display:grid;place-items:center;flex:0 0 auto;width:calc(var(--bh-avatar) + 10px);height:calc(var(--bh-avatar) + 10px);overflow:hidden;border:2px solid var(--bh-line-hi);border-radius:50%;background:var(--bh-inset);box-shadow:0 0 14px color-mix(in srgb,var(--bh-line-hi) 40%,transparent)}
       .better-hunt-main-avatar-wrap img{width:var(--bh-avatar);height:var(--bh-avatar);display:block;border-radius:50%;object-fit:cover}
@@ -1931,13 +1979,23 @@ function BetterStyleSheet() {
       .better-hunt-main-active-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;flex:1;border-top:1px solid rgba(255,255,255,.18);padding:10px 14px}.better-hunt-main-active-row:first-child{border-top:0}
       .better-hunt-main-active-row span{display:flex;align-items:center;gap:7px;min-width:0;color:rgba(255,255,255,.68);font-size:.7em;font-weight:950;letter-spacing:.2em;text-transform:uppercase}.better-hunt-main-active-row strong{overflow:hidden;color:#fff;font-size:1.5em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)}
       .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-footer{margin:8px 12px 12px}
+      .better-hunt-main-tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:8px 12px 0;min-width:0}
+      .better-hunt-main-tiers>.better-hunt-main-count,.better-hunt-main-tiers>.better-hunt-main-tier{display:grid;justify-content:stretch;align-content:center;gap:4px;min-width:0;margin:0;padding:5px 6px;box-shadow:none}
+      .better-hunt-main-tiers span{font-size:.6em;letter-spacing:0;gap:3px;min-width:0}
+      .better-hunt-main-tiers strong{font-size:.9em;line-height:1.1}
+      .better-hunt-main-tiers svg{width:10px;flex-shrink:0}
+      .better-hunt-mainstream>.better-hunt-stat-grid{margin:0 12px}
+      .better-hunt-mainstream .better-hunt-image-stats-copy{padding:10px;line-height:1.2}
+      .better-hunt-mainstream .better-hunt-image-row{padding:4px 0}
+      .better-hunt-main-bottom .better-hunt-main-stat{min-height:48px;padding:6px;gap:3px}
+      .better-hunt-main-bottom .better-hunt-main-stat-label{font-size:.65em;letter-spacing:0}
       .better-hunt-root[data-orientation="horizontal"] .better-hunt-shell{padding:8px}
       .better-hunt-horizontal{max-width:min(100%,var(--bh-panel-width,1080px));height:var(--bh-panel-height,auto);max-height:100%;display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) 0 0;grid-template-rows:minmax(0,1fr) auto;gap:0;transition:grid-template-columns .55s cubic-bezier(.22,.9,.3,1)}
       .better-hunt-horizontal.is-requests-visible{grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) minmax(180px,.65fr) 0}
       .better-hunt-horizontal.has-results{grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr) 0 minmax(190px,.68fr)}
       .better-hunt-horizontal.is-requests-visible.has-results{grid-template-columns:minmax(210px,.7fr) minmax(0,1.35fr) minmax(170px,.55fr) minmax(190px,.68fr)}
       .better-hunt-hstrip-list{min-width:0;min-height:0;display:grid;grid-template-rows:48px minmax(0,1fr);overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);padding:8px}
-      .better-hunt-hstrip-slot-stats{height:100%;min-height:210px;align-self:stretch;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr);overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 52%,transparent);border-radius:9px;background:var(--bh-inset)}
+      .better-hunt-hstrip-slot-stats{height:100%;min-height:0;align-self:stretch;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(92px,.8fr);overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 52%,transparent);border-radius:8px;background:var(--bh-inset)}
       .better-hunt-hstrip-slot-art{position:relative;min-height:0;overflow:hidden;background:var(--bh-inset)}.better-hunt-hstrip-slot-art img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;display:block;object-fit:cover!important;object-position:center!important}.better-hunt-hstrip-slot-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.92));pointer-events:none}.better-hunt-hstrip-slot-art strong{position:absolute;left:10px;right:10px;bottom:8px;z-index:1;overflow:hidden;color:#fff;font-size:1em;font-weight:950;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;text-shadow:0 2px 5px #000}
       .better-hunt-hstrip-slot-rows{min-width:0;display:grid;grid-template-rows:repeat(5,minmax(0,1fr));border-left:1px solid rgba(255,255,255,.08)}.better-hunt-hstrip-slot-row{min-width:0;display:grid;align-content:center;gap:2px;border-bottom:1px solid rgba(255,255,255,.07);padding:3px 7px}.better-hunt-hstrip-slot-row:last-child{border-bottom:0}.better-hunt-hstrip-slot-row .better-hunt-stat-label{font-size:.56em;letter-spacing:.08em}.better-hunt-hstrip-slot-row strong{overflow:hidden;color:#fff;font-size:.86em;font-weight:950;text-overflow:ellipsis;white-space:nowrap}
       .better-hunt-hstrip-active{position:relative;min-width:0;overflow:hidden;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);background:var(--bh-inset)}
@@ -1950,7 +2008,23 @@ function BetterStyleSheet() {
       .better-hunt-hstrip-main{min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden;padding:8px 10px;border-right:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent)}
       .better-hunt-hstrip-head{min-width:0;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding:0 2px 7px}.better-hunt-hstrip-title{min-width:0;flex:0 1 auto}.better-hunt-hstrip-title>strong{display:block;overflow:hidden;color:#fff;font-size:1.05em;font-weight:950;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
       .better-hunt-hstrip-list .better-hunt-hstrip-head{justify-content:space-between}
-      .better-hunt-hstrip-main>.better-hunt-stat-grid .better-hunt-stat{min-height:48px;gap:2px;padding:5px 6px}.better-hunt-hstrip-main .better-hunt-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto}.better-hunt-hstrip-main .better-hunt-stats-panel,.better-hunt-hstrip-main .better-hunt-image-stats-panel{height:154px}.better-hunt-hstrip-main .better-hunt-progress{padding:3px 2px 0}.better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring{height:210px;min-height:0}.better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-card{width:122px;height:172px}.better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring-floor{inset:auto 70px 6px;height:28px}
+      .better-hunt-hstrip-main>.better-hunt-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-bottom:8px}
+      .better-hunt-hstrip-main>.better-hunt-stat-grid .better-hunt-stat{min-height:44px;gap:4px;padding:5px 4px;box-shadow:none}
+      .better-hunt-hstrip-main>.better-hunt-stat-grid .better-hunt-stat-label{letter-spacing:0;color:var(--bh-steel-hi)}
+      .better-hunt-hstrip-main .better-hunt-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px}
+      .better-hunt-hstrip-main .better-hunt-stats-panel,.better-hunt-hstrip-main .better-hunt-image-stats-panel{height:100%;min-height:0}
+      .better-hunt-hstrip-main .better-hunt-progress{margin:0}
+      .better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring{height:100%;min-height:0;container-type:size}
+      .better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-card{width:auto;height:min(172px,calc((100cqh - 16px) / 1.18));aspect-ratio:122/172}
+      .better-hunt-hstrip-main .better-hunt-carousel--ring .better-hunt-ring-floor{inset:auto 70px 6px;height:28px}
+      .better-hunt-hstrip-main .better-hunt-image-stats-copy{padding:8px;gap:4px}
+      .better-hunt-hstrip-main .better-hunt-image-row{padding:2px 0;gap:5px}
+      .better-hunt-hstrip-main .better-hunt-stats-content{padding:8px;gap:6px}
+      .better-hunt-stats-title>div{min-width:0;flex:1}
+      .better-hunt-hstrip-main .better-hunt-stats-title h3{font-size:1.15em;line-height:1.2}
+      .better-hunt-hstrip-main .better-hunt-tier{max-width:40%;font-size:.62em;padding:3px 5px;letter-spacing:0;overflow-wrap:anywhere}
+      .better-hunt-hstrip-main .better-hunt-stat-strip{grid-template-columns:repeat(5,minmax(0,1fr))}
+      .better-hunt-hstrip-main .better-hunt-stat-strip .better-hunt-stat-label{display:block;font-size:.58em;letter-spacing:0;overflow-wrap:anywhere}
       .better-hunt-hstrip-requests{min-width:0;overflow:hidden;border-left:1px solid color-mix(in srgb,var(--bh-line-hi) 35%,transparent);opacity:0;transform:translateX(-18px);visibility:hidden;transition:opacity .32s ease .12s,transform .55s cubic-bezier(.22,.9,.3,1),visibility 0s linear .55s}
       .better-hunt-horizontal.is-requests-visible .better-hunt-hstrip-requests{opacity:1;transform:translateX(0);visibility:visible;transition:opacity .32s ease .12s,transform .55s cubic-bezier(.22,.9,.3,1),visibility 0s}
       .better-hunt-hstrip-requests .better-hunt-requests{height:100%;display:grid;grid-template-rows:38px minmax(0,1fr);margin:0!important;border:0;border-radius:0;background:transparent;padding:8px}
@@ -1972,6 +2046,7 @@ function BetterStyleSheet() {
       .better-hunt-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent)}
       .better-hunt-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
       .better-hunt-stat-grid--grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .better-hunt-panel .better-hunt-stat-grid--row{grid-template-columns:repeat(4,minmax(0,1fr))}
       .better-hunt-stat-grid--grid .better-hunt-stat{min-height:34px;grid-template-columns:minmax(0,1fr) auto;align-items:center;align-content:center;gap:4px;text-align:left;padding:3px 7px}
       .better-hunt-stat-grid--grid .better-hunt-stat strong{text-align:right}
       .better-hunt-stat{min-width:0;min-height:66px;display:grid;align-content:center;gap:5px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 60%,transparent);border-radius:7px;background:linear-gradient(180deg,var(--bh-card-hi) 0%,var(--bh-card-lo) 100%);padding:8px 6px;text-align:center;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 2px 6px rgba(0,0,0,.55)}
@@ -2020,12 +2095,15 @@ function BetterStyleSheet() {
       .better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art img,.better-hunt-hstrip-slot-stats--extreme .better-hunt-hstrip-slot-art img{animation:better-hunt-cloak calc(4s / var(--anim-speed,1)) ease-in-out infinite}
       .better-hunt-image-stats-art{position:relative;z-index:0;min-width:0;overflow:visible;background:var(--bh-inset)}.better-hunt-image-stats-art img{animation:better-hunt-kenburns calc(8s / var(--anim-speed,1)) ease-out both}.better-hunt-image-stats-art .better-hunt-image-stats-img{position:relative;z-index:0;width:100%;height:100%;object-fit:contain;object-position:center}.better-hunt-image-stats-art::after{content:"";position:absolute;inset:0 -22px 0 0;z-index:1;background:linear-gradient(90deg,transparent 0%,rgba(2,8,23,.05) 58%,var(--bh-inset) 100%),linear-gradient(0deg,rgba(0,0,0,.35),transparent 58%);pointer-events:none}
       .better-hunt-image-stats-copy{position:relative;z-index:3;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px;padding:12px}.better-hunt-image-stats-title{position:relative;z-index:4;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}.better-hunt-image-stats-title h3{position:relative;z-index:4;min-width:0;overflow:hidden;margin:0;color:#fff;font-size:1.22em;font-weight:950;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.better-hunt-image-row{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding:5px 0}.better-hunt-image-row:last-child{border-bottom:0}.better-hunt-image-row strong{overflow:hidden;color:#fff;font-size:.94em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
-      .better-hunt-progress{display:flex;align-items:center;gap:10px;margin-top:10px;padding:0 4px}
-      .better-hunt-track{height:var(--bh-bar-height);flex:1;overflow:hidden;border-radius:999px;background:var(--bh-track);box-shadow:inset 0 1px 2px rgba(0,0,0,.7)}
-      .better-hunt-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--bh-ice-deep),var(--bh-ice-mid),var(--bh-ice-deep));box-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 55%,transparent);transition:width .45s ease}
-      .better-hunt-counts{display:flex;align-items:center;gap:7px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}
+      .better-hunt-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 10px;margin-top:8px;padding:0 2px;font-variant-numeric:tabular-nums}
+      .better-hunt-progress-summary{display:flex;align-items:baseline;gap:7px;min-width:0;color:var(--bh-steel-hi);font-size:.82em;line-height:1.2}
+      .better-hunt-progress-summary>span{text-transform:uppercase;font-size:.85em;letter-spacing:0}
+      .better-hunt-progress-summary strong{color:#fff;font-weight:900}.better-hunt-progress-summary strong span{font-weight:600;color:inherit;opacity:.75}
+      .better-hunt-track{grid-column:1/-1;grid-row:2;min-width:0;height:var(--bh-bar-height);overflow:hidden;border-radius:3px;background:color-mix(in srgb,var(--bh-steel-hi) 16%,var(--bh-inset))}
+      .better-hunt-track>span{display:block;height:100%;max-height:100%;border-radius:inherit;background:var(--bh-ice);transition:width .45s ease}
+      .better-hunt-counts{display:flex;align-items:center;gap:8px;grid-column:2;grid-row:1}
       .better-hunt-counts span{display:inline-flex;align-items:center;gap:4px;color:var(--bh-ice);font-weight:900;font-size:.82em}
-      .better-hunt-counts span svg{width:12px;height:12px;filter:drop-shadow(0 0 5px currentColor)}
+      .better-hunt-counts span svg{width:12px;height:12px}
       .better-hunt-counts .is-extreme{color:#ff6a4d}.better-hunt-counts .is-super{color:#ffc93d}
       .better-hunt-fraction{display:flex;align-items:baseline;gap:3px;color:var(--bh-steel-hi);font-weight:900}
       .better-hunt-fraction strong{color:var(--bh-ice);font-size:1.08em;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 50%,transparent)}
@@ -2054,7 +2132,6 @@ function BetterStyleSheet() {
       .better-hunt-total{display:grid;gap:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:10px;background:rgba(0,0,0,.18)}
       .better-hunt-total-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
       .better-hunt-total-head span{color:var(--bh-steel-dim);font-size:.72em;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.better-hunt-total-head strong{color:var(--bh-ice);font-size:1.28em;font-weight:950;line-height:1}
-      .better-hunt-drawer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch;padding:0 8px 9px}.better-hunt-result{min-width:0;display:grid;grid-template-rows:auto minmax(58px,auto);gap:6px;border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:7px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.18));box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}.better-hunt-result-head{display:grid;gap:2px;min-width:0}.better-hunt-result-head em{display:inline-flex;width:max-content;border-radius:999px;padding:2px 6px;background:rgba(69,200,255,.13);color:var(--bh-ice);font-size:.58em;font-style:normal;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}.better-hunt-result--worst .better-hunt-result-head em{background:rgba(255,84,112,.13);color:#ff6a4d}.better-hunt-result-slot{display:block;overflow:hidden;color:#fff;font-size:.76em;font-weight:950;letter-spacing:.03em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.85);white-space:nowrap}.better-hunt-result-body{display:grid;grid-template-columns:minmax(52px,64px) minmax(0,1fr);gap:8px;align-items:center;min-width:0}.better-hunt-result-art{display:grid;place-items:center;min-width:0}.better-hunt-result-art img,.better-hunt-result-art .better-hunt-thumb{box-shadow:0 4px 12px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.08)}.better-hunt-result-stats{display:grid;gap:3px;min-width:0}.better-hunt-result-row{display:flex;align-items:center;justify-content:space-between;gap:7px;min-width:0;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:2px}.better-hunt-result-row:last-child{border-bottom:0;padding-bottom:0}.better-hunt-result-row span{color:var(--bh-steel-hi);font-size:.58em;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}.better-hunt-result-row strong{overflow:hidden;color:#fff;font-size:.72em;font-weight:950;line-height:1;text-align:right;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}.better-hunt-result--best .better-hunt-result-row:last-child strong{color:#ffc93d}.better-hunt-result--worst .better-hunt-result-row:last-child strong{color:#ff8a74}
       .better-hunt-log-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}.better-hunt-log-head h3{margin:0;color:#fff;font-size:1.1em;font-weight:950;text-transform:uppercase}.better-hunt-log-head span{color:var(--bh-steel-dim);font-size:.74em;font-weight:800}
       .better-hunt-lanes{min-height:0;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:0 12px 12px;overflow:hidden}.better-hunt-lane{overflow:hidden;mask-image:linear-gradient(to right,transparent 0%,#000 5%,#000 95%,transparent 100%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 5%,#000 95%,transparent 100%)}.better-hunt-lane-track{display:flex;width:max-content;gap:10px}.better-hunt-lane-track--left{animation:better-hunt-marquee-left calc(48s / var(--anim-speed,1)) linear infinite}.better-hunt-lane-track--right{animation:better-hunt-marquee-right calc(54s / var(--anim-speed,1)) linear infinite}
       .better-hunt-hcard{position:relative;flex:0 0 auto;overflow:hidden;width:122px;height:172px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 50%,transparent);border-radius:10px;background:var(--bh-inset);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bh-steel-hi) 10%,transparent),0 4px 12px rgba(0,0,0,.55)}.better-hunt-hcard.is-large{width:144px;height:202px}.better-hunt-hcard img{width:100%;height:100%;object-fit:cover}.better-hunt-hcard::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.95),rgba(0,0,0,.35),transparent)}.better-hunt-hcard-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:8px}.better-hunt-hcard-top{display:flex;align-items:center;justify-content:space-between;gap:6px}.better-hunt-hcard-bet{max-width:58px;overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(0,0,0,.55);padding:2px 6px;color:var(--bh-ice);font-size:.68em;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.better-hunt-hcard-title{overflow:hidden;color:#fff;font-size:.88em;font-weight:950;line-height:1.05;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
@@ -2066,40 +2143,37 @@ function BetterStyleSheet() {
       .better-hunt-root[data-drawer-mode="expand"][data-anim="on"] .better-hunt-drawer.is-open{animation:better-hunt-drawer-in .95s cubic-bezier(.22,.9,.3,1) both}
       .better-hunt-root[data-drawer-mode="contain"] .better-hunt-drawer{height:auto;min-height:0;max-height:0;transform:translateY(100%);margin-top:0;visibility:hidden;transition:max-height .95s cubic-bezier(.22,.9,.3,1),opacity .35s ease,transform .9s cubic-bezier(.22,.9,.3,1),margin .9s cubic-bezier(.22,.9,.3,1),visibility 0s linear .95s}
       .better-hunt-root[data-drawer-mode="contain"] .better-hunt-drawer.is-open{max-height:var(--bh-drawer-open-height);opacity:1;transform:translateY(0);margin-top:8px;visibility:visible;transition-delay:0s}
-      .better-hunt-result{display:grid;grid-template-rows:auto minmax(68px,auto);gap:5px;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 14px rgba(0,0,0,.35)}
-      .better-hunt-result-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px;min-width:0}
-      .better-hunt-result-head em{display:inline-flex;width:max-content;border-radius:4px;padding:2px 4px;background:rgba(69,200,255,.13);color:var(--bh-ice);font-size:.52em;font-style:normal;font-weight:950;letter-spacing:.1em;line-height:1;text-transform:uppercase}
-      .better-hunt-result--worst .better-hunt-result-head em{background:rgba(255,84,112,.13);color:#ff6a4d}
-      .better-hunt-result-slot{display:block;overflow:hidden;color:#fff;font-size:.68em;font-weight:950;letter-spacing:.03em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.85);white-space:nowrap}
-      .better-hunt-result-body{display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:7px;align-items:center;min-width:0}
-      .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:68px minmax(0,1fr)}
-      .better-hunt-result-art{display:grid;place-items:center;min-width:0}
-      .better-hunt-result-art > img,.better-hunt-result-art .better-hunt-thumb{width:82px!important;height:94px!important;border-radius:7px!important;object-fit:cover;object-position:center;box-shadow:0 4px 12px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.12)}
-      .better-hunt-result-stats{display:grid;gap:3px;min-width:0}
-      .better-hunt-result-row{display:grid;gap:1px;min-width:0;border-bottom:0;padding:0}
-      .better-hunt-result-row span{color:var(--bh-steel-hi);font-size:.58em;font-weight:950;letter-spacing:.12em;line-height:1;text-transform:uppercase}
-      .better-hunt-result-row strong{overflow:hidden;color:#fff;font-size:.88em;font-weight:950;line-height:1;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap}
-      .better-hunt-result--best .better-hunt-result-row span,.better-hunt-result--best .better-hunt-result-row strong{text-align:right}
-      .better-hunt-result--worst .better-hunt-result-row span,.better-hunt-result--worst .better-hunt-result-row strong{text-align:left}
-      .better-hunt-result--best .better-hunt-result-row:nth-child(2) strong{color:#ffc93d}.better-hunt-result--worst .better-hunt-result-row:nth-child(2) strong{color:#ff8a74}
-      .better-hunt-drawer{gap:4px;background:transparent}
-      .better-hunt-result{grid-template-rows:minmax(94px,auto);border:1px solid transparent;padding:3px;box-shadow:none}
-      .better-hunt-result--best{border-color:rgba(52,211,153,.18);background:linear-gradient(90deg,rgba(16,185,129,.13),rgba(5,46,35,.2))}
-      .better-hunt-result--worst{border-color:rgba(248,113,113,.2);background:linear-gradient(90deg,rgba(69,10,10,.2),rgba(239,68,68,.13))}
-      .better-hunt-result-head{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-      .better-hunt-result-body{gap:2px;align-items:stretch}
-      .better-hunt-result-stats{align-content:center}
-      .better-hunt-result--best .better-hunt-result-stats,.better-hunt-result--best .better-hunt-result-row{width:100%;justify-content:end;justify-items:end;text-align:right}
-      .better-hunt-result--worst .better-hunt-result-stats,.better-hunt-result--worst .better-hunt-result-row{width:100%;justify-content:start;justify-items:start;text-align:left}
-      .better-hunt-result--best .better-hunt-result-body{grid-template-columns:minmax(0,1fr) 82px}
-      .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:82px minmax(0,1fr)}
-      .better-hunt-hstrip-results .better-hunt-footer--horizontal{height:100%;grid-template-rows:auto minmax(0,1fr);gap:5px}
-      .better-hunt-hstrip-results .better-hunt-total-head{padding:6px 7px}.better-hunt-hstrip-results .better-hunt-total-head span{font-size:.58em}.better-hunt-hstrip-results .better-hunt-total-head strong{font-size:1em}
-      .better-hunt-hstrip-results .better-hunt-drawer--horizontal{--bh-drawer-open-height:none;min-height:0;grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:5px;margin:0;padding:0;transform:translateX(12px)}
+      .better-hunt-result{min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;align-content:start;gap:5px;border:1px solid color-mix(in srgb,var(--bh-ice) 26%,transparent);border-radius:var(--bh-stat-radius,7px);padding:7px;background:color-mix(in srgb,var(--bh-ice) 6%,var(--bh-inset));font-variant-numeric:tabular-nums}
+      .better-hunt-result--worst{border-color:color-mix(in srgb,var(--bh-ember) 28%,transparent);background:color-mix(in srgb,var(--bh-ember) 6%,var(--bh-inset))}
+      .better-hunt-result-head{display:grid;gap:4px;min-width:0}
+      .better-hunt-result-head em{display:flex;align-items:center;gap:4px;color:var(--bh-ice);font-size:.7em;font-style:normal;font-weight:900;letter-spacing:0;line-height:1;text-transform:uppercase}
+      .better-hunt-result--worst .better-hunt-result-head em{color:var(--bh-ember)}
+      .better-hunt-result-slot{display:block;min-width:0;overflow:hidden;color:#fff;font-size:.84em;font-weight:800;letter-spacing:0;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}
+      .better-hunt-result-body{display:grid;grid-template-columns:38px minmax(0,1fr);gap:7px;align-items:center;min-width:0;min-height:0}
+      .better-hunt-result-art{display:block;min-width:0;min-height:0;height:44px;overflow:hidden;border-radius:4px}
+      .better-hunt-result-art>img,.better-hunt-result-art .better-hunt-thumb{display:block;width:100%!important;height:100%!important;object-fit:cover;object-position:center;border-radius:inherit!important}
+      .better-hunt-result-payout{display:grid;gap:3px;min-width:0}
+      .better-hunt-result-payout>span,.better-hunt-result-row>span{color:var(--bh-steel-hi);font-size:.63em;font-weight:700;line-height:1.1;letter-spacing:0;text-transform:uppercase}
+      .better-hunt-result-payout>strong{color:#fff;font-size:1.12em;font-weight:950;line-height:1.15;overflow-wrap:anywhere}
+      .better-hunt-result-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-top:1px solid color-mix(in srgb,var(--bh-steel-hi) 14%,transparent);padding-top:5px;min-width:0}
+      .better-hunt-result-row{display:grid;gap:2px;min-width:0}
+      .better-hunt-result-row>strong{display:block;min-width:0;color:#fff;font-size:.8em;font-weight:800;line-height:1.15}
+      .better-hunt-result-row:first-child>strong{color:var(--bh-tangerine)}
+      .better-hunt-hstrip-results .better-hunt-footer--horizontal{height:100%;grid-template-rows:auto minmax(0,1fr);gap:6px}
+      .better-hunt-hstrip-results .better-hunt-total-head{padding:6px 7px;gap:5px}.better-hunt-hstrip-results .better-hunt-total-head span{font-size:.6em;letter-spacing:0}.better-hunt-hstrip-results .better-hunt-total-head strong{font-size:1em;white-space:nowrap;min-width:0}
+      .better-hunt-hstrip-results .better-hunt-drawer--horizontal{--bh-drawer-open-height:none;min-height:0;grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;margin:0;padding:0;transform:translateX(12px)}
       .better-hunt-hstrip-results .better-hunt-drawer--horizontal.is-open{height:100%;max-height:none;margin:0;transform:translateX(0)}
-      .better-hunt-hstrip-results .better-hunt-result{min-height:0;padding:3px}.better-hunt-hstrip-results .better-hunt-result-body{grid-template-columns:minmax(0,1fr) 58px;gap:3px}.better-hunt-hstrip-results .better-hunt-result--worst .better-hunt-result-body{grid-template-columns:58px minmax(0,1fr)}
-      .better-hunt-hstrip-results .better-hunt-result-art>img,.better-hunt-hstrip-results .better-hunt-result-art .better-hunt-thumb{width:58px!important;height:66px!important}
-      .better-hunt-hstrip-results .better-hunt-result-row span{font-size:.5em}.better-hunt-hstrip-results .better-hunt-result-row strong{font-size:.76em}
+      .better-hunt-hstrip-results .better-hunt-result{grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto auto;align-content:center;gap:5px 7px;padding:7px}
+      .better-hunt-hstrip-results .better-hunt-result-head{grid-column:1/-1;grid-row:1;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:center}
+      .better-hunt-hstrip-results .better-hunt-result-body{display:contents}
+      .better-hunt-hstrip-results .better-hunt-result-art{height:100%;max-height:70px;grid-column:1;grid-row:2/4}
+      .better-hunt-hstrip-results .better-hunt-result-payout{grid-column:2;grid-row:2}
+      .better-hunt-hstrip-results .better-hunt-result-payout>span{display:none}
+      .better-hunt-hstrip-results .better-hunt-result-stats{grid-column:2;grid-row:3;grid-template-columns:minmax(0,1fr);gap:2px;padding-top:0;border:0}
+      .better-hunt-hstrip-results .better-hunt-result-row{display:flex;align-items:baseline;justify-content:space-between;gap:4px}
+      .better-hunt-hstrip-results .better-hunt-result-payout>strong{font-size:1.05em}
+      .better-hunt-hstrip-results .better-hunt-result-row>span{font-size:.6em}
+      .better-hunt-hstrip-results .better-hunt-result-row>strong{flex:1;font-size:.72em;white-space:nowrap;text-align:right}
       .better-hunt-header{position:relative;justify-content:center;gap:10px;min-height:calc(var(--bh-avatar) + 6px)}
       .better-hunt-header--banner{margin:-12px -12px 0;padding:14px 48px 13px;border-top:2px solid var(--bh-line-hi);border-bottom:2px solid var(--bh-line-hi);background:linear-gradient(180deg,color-mix(in srgb,var(--bh-line-hi) 38%,var(--bh-panel-hi)),color-mix(in srgb,var(--bh-line) 38%,var(--bh-panel-mid)));box-shadow:inset 0 2px 8px rgba(0,0,0,.55),inset 0 -2px 8px rgba(0,0,0,.35)}
       .better-hunt-header--banner::before,.better-hunt-header--banner::after{content:"";position:absolute;left:8px;right:8px;height:1px;background:linear-gradient(90deg,transparent,var(--bh-line-hi),transparent);opacity:.6}.better-hunt-header--banner::before{top:5px}.better-hunt-header--banner::after{bottom:5px}
@@ -2111,7 +2185,8 @@ function BetterStyleSheet() {
       .better-hunt-ring .better-hunt-card{animation:none}
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--super{animation:better-hunt-gold calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{animation:better-hunt-cloak calc(4s / var(--anim-speed,1)) ease-in-out infinite;border-style:dashed}
-      .better-hunt-track{position:relative}.better-hunt-track::before,.better-hunt-track::after{content:"";position:absolute;top:50%;width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;transform:translateY(-50%)}.better-hunt-track::before{left:-10px;border-right:10px solid var(--bh-line-hi)}.better-hunt-track::after{right:-10px;border-left:10px solid var(--bh-line-hi)}
+      .better-hunt-root[data-anim="off"] .better-hunt-track>span,.better-hunt-root[data-anim="off"] .better-hunt-drawer,.better-hunt-root[data-anim="off"] .better-hunt-card,.better-hunt-root[data-anim="off"] .better-hunt-horizontal{transition:none}
+      @media(prefers-reduced-motion:reduce){.better-hunt-track>span{transition:none}}
       .better-hunt-rails{position:relative;padding-left:14px;padding-right:14px}.better-hunt-rails::before,.better-hunt-rails::after{content:"";position:absolute;top:0;bottom:0;width:8px;border-radius:999px;background:linear-gradient(180deg,var(--bh-line-hi),var(--bh-line-mid),var(--bh-line-hi));box-shadow:inset 1px 0 0 rgba(255,255,255,.18),inset -1px 0 0 rgba(0,0,0,.55),0 0 8px color-mix(in srgb,var(--bh-line-hi) 30%,transparent)}.better-hunt-rails::before{left:0}.better-hunt-rails::after{right:0}
       .better-hunt-requests{grid-template-columns:1fr;gap:7px}.better-hunt-requests-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;border-right:0;padding-right:0}.better-hunt-requests-head h3{margin:0;color:var(--bh-steel);font-size:.72em;font-weight:950;letter-spacing:.2em;line-height:1;text-transform:uppercase}.better-hunt-requests-head strong{display:inline-flex;align-items:center;justify-content:center;min-width:22px;border:1px solid color-mix(in srgb,var(--bh-line-hi) 42%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bh-track) 70%,transparent);padding:1px 6px;color:var(--bh-steel-dim);font-size:.7em;line-height:1}
       .better-hunt-requests--carousel{height:fit-content;align-content:start}
@@ -2753,7 +2828,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const drawerRevealMs = drawerRevealSeconds * 1000;
   const drawerHoldMs = clampNumber(c.drawerHoldSeconds, 12, 30, 15) * 1000;
   const statsLayout =
-    c.statsLayout === "grid" || c.statsLayout === "2x2" ? "grid" : "row";
+    orientation !== "horizontal" &&
+    (c.statsLayout === "grid" || c.statsLayout === "2x2")
+      ? "grid"
+      : "row";
   const visibleRows = Math.max(3, Math.min(8, Number(c.visibleRows) || 5));
   const rowHeight =
     BETTER_HUNT_ROW_HEIGHT[listMode] || BETTER_HUNT_ROW_HEIGHT.compact;
@@ -2787,8 +2865,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     0,
   );
   const panelHeight =
-    orientation === "horizontal" && configuredPanelHeight > 0
-      ? Math.max(0, configuredPanelHeight - 16)
+    configuredPanelHeight > 0
+      ? Math.max(
+          0,
+          configuredPanelHeight - (orientation === "horizontal" ? 16 : 36),
+        )
       : configuredPanelHeight;
   const font =
     c.fontFamily || BETTER_HUNT_FONTS[c.font] || BETTER_HUNT_FONTS.rajdhani;
@@ -2802,11 +2883,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     "";
   const progress = rows.length
     ? Math.round((opened.length / rows.length) * 100)
-    : 0;
-  const activeStep = rows.length
-    ? sessionState === "ended"
-      ? rows.length
-      : Math.min(rows.length, Math.max(1, opened.length + 1))
     : 0;
   const requestRows = [
     "requests",
@@ -3369,12 +3445,21 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   };
   const renderRequests = () => {
     if (c.showRequests === false) return null;
-    const rowsShown = orientation === "horizontal"
-      ? Math.round(clampNumber(c.requestVisibleRows, 1, 8, BETTER_HUNT_REQUEST_ROWS[listMode]))
-      : BETTER_HUNT_REQUEST_ROWS[listMode];
-    const requestHeight = orientation === "horizontal"
-      ? rowsShown * rowHeight - 6
-      : rowsShown * rowHeight + 6;
+    const rowsShown =
+      orientation === "horizontal"
+        ? Math.round(
+            clampNumber(
+              c.requestVisibleRows,
+              1,
+              8,
+              BETTER_HUNT_REQUEST_ROWS[listMode],
+            ),
+          )
+        : BETTER_HUNT_REQUEST_ROWS[listMode];
+    const requestHeight =
+      orientation === "horizontal"
+        ? rowsShown * rowHeight - 6
+        : Math.min(rowsShown, Math.max(1, requestRows.length)) * rowHeight + 6;
     const requestsScroll =
       requestView === "list" &&
       requestRows.length > rowsShown &&
@@ -3417,7 +3502,11 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     return (
       <div
         className={`better-hunt-requests better-hunt-requests--${requestView}`}
-        {...attrs("bonus_hunt", c, "requestContainer")}
+        {...attrs("bonus_hunt", c, "requestsSectionContainer")}
+        style={{
+          ...subElementStyle(c, "requestContainer"),
+          ...subElementStyle(c, "requestsSectionContainer"),
+        }}
       >
         <div className="better-hunt-requests-head">
           <h3 {...attrs("bonus_hunt", c, "requestsHeader")}>Chat Requests</h3>
@@ -3570,21 +3659,54 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           >
             {label}
           </span>
-          <strong {...attrs("bonus_hunt", c, "statValue")}>{value}</strong>
+          <BetterHuntFitValue {...attrs("bonus_hunt", c, "statValue")}>
+            {value}
+          </BetterHuntFitValue>
         </div>
       ))}
     </div>
   );
 
   const renderProgress = () => (
-    <div
-      className="better-hunt-progress"
-      {...attrs("bonus_hunt", c, "progressBar")}
-    >
-      <div className="better-hunt-track">
+    <div className="better-hunt-progress">
+      <div className="better-hunt-progress-summary">
+        <span>Opened</span>
+        <strong {...attrs("bonus_hunt", c, "progressCount")}>
+          {opened.length}
+          <span> / {rows.length}</span>
+        </strong>
+      </div>
+      <div
+        className="better-hunt-track"
+        role="progressbar"
+        aria-label="Bonuses opened"
+        aria-valuemin={0}
+        aria-valuemax={rows.length || 1}
+        aria-valuenow={opened.length}
+        aria-valuetext={`${opened.length} of ${rows.length} bonuses opened`}
+        {...attrs(
+          "bonus_hunt",
+          c,
+          "progressBar",
+          progress === 100 ? "complete" : "default",
+        )}
+      >
         <span
-          style={{ width: `${progress}%` }}
-          {...attrs("bonus_hunt", c, "progressBarFill")}
+          {...attrs(
+            "bonus_hunt",
+            c,
+            "progressBarFill",
+            progress === 100 ? "complete" : "default",
+          )}
+          style={{
+            ...subElementStyle(
+              c,
+              "progressBarFill",
+              undefined,
+              progress === 100 ? "complete" : "default",
+            ),
+            width: `${progress}%`,
+          }}
         />
       </div>
       <div className="better-hunt-counts" aria-label="Bonus tiers">
@@ -3599,11 +3721,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <Star size={12} fill="currentColor" strokeWidth={2.5} />
           {superCount}
         </span>
-      </div>
-      <div className="better-hunt-fraction">
-        <strong>{activeStep}</strong>
-        <span>/</span>
-        <span>{rows.length}</span>
       </div>
     </div>
   );
@@ -3768,13 +3885,28 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                   const hidden = abs >= 3;
                   const tier = bonusTier(bonus);
                   const centered = delta === 0;
+                  const rowAppearance = subElementStyle(
+                    c,
+                    "slotRow",
+                    undefined,
+                    bonusOpened(bonus) ? "opened" : "unopened",
+                  );
                   return (
                     <div
                       key={`${bonusSlotName(bonus, index)}-${index}`}
                       className={`better-hunt-card better-hunt-card--${tier}${centered ? " better-hunt-card--center" : ""}`}
+                      {...attrs(
+                        "bonus_hunt",
+                        c,
+                        "slotRow",
+                        bonusOpened(bonus) ? "opened" : "unopened",
+                      )}
                       style={{
+                        ...rowAppearance,
                         backfaceVisibility: "hidden",
-                        opacity: hidden ? 0 : abs === 2 ? 0.4 : 1,
+                        opacity: hidden
+                          ? 0
+                          : (abs === 2 ? 0.4 : 1) * clampNumber(rowAppearance.opacity, 0, 1, 1),
                         pointerEvents: hidden ? "none" : undefined,
                         transformOrigin: "center center",
                         zIndex: 30 - abs * 10,
@@ -3784,12 +3916,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
                             : "brightness(.62) saturate(.85)",
                         transform: `translate3d(-50%, -50%, 0) translate3d(${delta * ringSpacing}px, 0, ${-abs * ringDepth}px) rotateY(${delta * ringAngle}deg) scale(${centered ? ringCenterScale : 0.9})`,
                       }}
-                      {...attrs(
-                        "bonus_hunt",
-                        c,
-                        "slotRow",
-                        bonusOpened(bonus) ? "opened" : "unopened",
-                      )}
                     >
                       <BetterHuntThumb
                         bonus={bonus}
@@ -4033,16 +4159,19 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
     const payout = bonusPayout(bonus);
     const multi = bonusMultiplierValue(bonus);
     const statRows = [
-      ["Payout", payout > 0 ? formatMoney(payout, money) : "-"],
-      ["Multi", multi > 0 ? formatMultiplier(multi, 2) : "-"],
+      ["Multi", multi === 0 ? "0x" : formatMultiplier(multi, 2)],
       ["Bet", bet > 0 ? formatMoney(bet, money) : "-"],
     ];
     const statsMarkup = (
       <span className="better-hunt-result-stats">
         {statRows.map(([statLabel, value]) => (
           <span key={statLabel} className="better-hunt-result-row">
-            <span>{statLabel}</span>
-            <strong>{value}</strong>
+            <span {...attrs("bonus_hunt", c, "resultStatLabel")}>
+              {statLabel}
+            </span>
+            <BetterHuntFitValue {...attrs("bonus_hunt", c, "resultStatValue")}>
+              {value}
+            </BetterHuntFitValue>
           </span>
         ))}
       </span>
@@ -4051,20 +4180,37 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       <div
         className={`better-hunt-result better-hunt-result--${variant}`}
         aria-label={`${label}: ${bonusSlotName(bonus, 0)}`}
+        {...attrs("bonus_hunt", c, "resultCard")}
       >
         <div className="better-hunt-result-head">
-          <em>{label}</em>
-          <strong className="better-hunt-result-slot">
+          <em {...attrs("bonus_hunt", c, "resultLabel")}>
+            {label === "Best" ? (
+              <Trophy size={10} />
+            ) : (
+              <TrendingDown size={10} />
+            )}
+            {label}
+          </em>
+          <strong
+            className="better-hunt-result-slot"
+            title={bonusSlotName(bonus, 0)}
+            {...attrs("bonus_hunt", c, "resultTitle")}
+          >
             {bonusSlotName(bonus, 0)}
           </strong>
         </div>
         <div className="better-hunt-result-body">
-          {variant === "best" ? statsMarkup : null}
           <span className="better-hunt-result-art">
             <BetterHuntThumb bonus={bonus} size={66} />
           </span>
-          {variant === "worst" ? statsMarkup : null}
+          <span className="better-hunt-result-payout">
+            <span {...attrs("bonus_hunt", c, "resultStatLabel")}>Payout</span>
+            <BetterHuntFitValue {...attrs("bonus_hunt", c, "resultPayout")}>
+              {formatMoney(payout, money)}
+            </BetterHuntFitValue>
+          </span>
         </div>
+        {statsMarkup}
       </div>
     );
   };
@@ -4087,8 +4233,12 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           {...attrs("bonus_hunt", c, "footerContainer")}
         >
           <div className="better-hunt-total-head">
-            <span>{showProfit ? "Total Profit" : "Total Pay"}</span>
-            <strong>{footerValue}</strong>
+            <span {...attrs("bonus_hunt", c, "footerLabel")}>
+              {showProfit ? "Total Profit" : "Total Pay"}
+            </span>
+            <strong {...attrs("bonus_hunt", c, "footerTotalValue")}>
+              {footerValue}
+            </strong>
           </div>
         </div>
         {drawerMounted && (
@@ -4251,31 +4401,33 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
 
   const renderMainstreamPanel = () => (
     <section
-      className={`better-hunt-panel better-hunt-mainstream${panelShakeClass}`}
+      className={`better-hunt-panel better-hunt-mainstream${c.showRequests === false ? " better-hunt-mainstream--no-requests" : ""}${panelShakeClass}`}
     >
       {renderMainstreamHeader()}
       {renderStatBoxes()}
-      <div className="better-hunt-main-count">
-        <span>
-          <Coins size={12} strokeWidth={2.4} />
-          Bonuses
-        </span>
-        <strong>{rows.length}</strong>
+      <div className="better-hunt-main-tiers">
+        <div className="better-hunt-main-count">
+          <span>
+            <Coins size={12} strokeWidth={2.4} />
+            Bonuses
+          </span>
+          <strong>{rows.length}</strong>
+        </div>
+        {renderMainstreamTierTracker(
+          "super",
+          "Super",
+          Star,
+          superOpened,
+          superCount,
+        )}
+        {renderMainstreamTierTracker(
+          "extreme",
+          "Hidden",
+          Flame,
+          extremeOpened,
+          extremeCount,
+        )}
       </div>
-      {renderMainstreamTierTracker(
-        "super",
-        "Super",
-        Star,
-        superOpened,
-        superCount,
-      )}
-      {renderMainstreamTierTracker(
-        "extreme",
-        "Hidden",
-        Flame,
-        extremeOpened,
-        extremeCount,
-      )}
       <div className="better-hunt-main-carousel">{renderCarousel()}</div>
       {renderRequests()}
       <div className="better-hunt-main-list-wrap">{renderList()}</div>
@@ -4456,8 +4608,8 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       data-session={sessionState}
       data-skin={skin}
       data-stats-layout={statsLayout}
-      style={rootStyle}
       {...attrs("bonus_hunt", c, "container")}
+      style={rootStyle}
     >
       <BetterStyleSheet />
       <div className="better-hunt-shell">{content}</div>

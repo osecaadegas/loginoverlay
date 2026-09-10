@@ -388,9 +388,9 @@ function BonusHuntWidget({
       const bet = Number(b.betSize) || 0;
       const pay = Number(b.payout) || 0;
       const multi = bet > 0 ? pay / bet : 0;
-      if (!bestSlot || multi > (bestSlot._multi || 0))
+      if (!bestSlot || multi > bestSlot._multi)
         bestSlot = { ...b, _multi: multi, _payout: pay };
-      if (!worstSlot || multi < (worstSlot._multi || Infinity))
+      if (!worstSlot || multi < worstSlot._multi)
         worstSlot = { ...b, _multi: multi, _payout: pay };
     });
 

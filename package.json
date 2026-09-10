@@ -18,6 +18,7 @@
     "test:service-setup": "node scripts/test-service-setup.mjs",
     "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",
     "test:bonus-hunt-orientations": "node scripts/test-bonus-hunt-orientations.mjs",
+    "test:bonus-hunt-readability": "node scripts/test-bonus-hunt-readability.mjs",
     "test:mainstream-carousel": "node scripts/test-mainstream-carousel.mjs",
     "test:better-bets": "node scripts/test-better-bets-browser.mjs",
     "test:slot-personal-best": "node scripts/test-slot-personal-best.mjs",

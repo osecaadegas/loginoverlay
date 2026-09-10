@@ -5256,20 +5256,26 @@ function SimpleThemedControls({
           />
         </HuntSection>
 
-        <HuntSection
-          title="Stats Layout"
-          icon={<SlidersHorizontal size={13} />}
-          category="layout"
-        >
-          <HuntChoiceGrid
-            value={c.statsLayout || "row"}
-            options={[
-              { key: "row", label: "4 across", hint: "Single row of stats" },
-              { key: "grid", label: "2 x 2", hint: "Two columns and two rows" },
-            ]}
-            onChange={(statsLayout) => set({ statsLayout })}
-          />
-        </HuntSection>
+        {c.orientation !== "horizontal" && (
+          <HuntSection
+            title="Stats Layout"
+            icon={<SlidersHorizontal size={13} />}
+            category="layout"
+          >
+            <HuntChoiceGrid
+              value={c.statsLayout || "row"}
+              options={[
+                { key: "row", label: "4 across", hint: "Single row of stats" },
+                {
+                  key: "grid",
+                  label: "2 x 2",
+                  hint: "Two columns and two rows",
+                },
+              ]}
+              onChange={(statsLayout) => set({ statsLayout })}
+            />
+          </HuntSection>
+        )}
 
         <HuntSection
           title="Chat Requests"
