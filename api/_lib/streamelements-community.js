@@ -17,8 +17,11 @@ export async function verifyStreamElementsCommunity(user, connection, fetcher = 
   if (String(channel._id) !== channelId || channel.provider !== 'twitch' || String(channel.providerId) !== twitchId) {
     throw new Error('These credentials belong to a different community than your signed-in Twitch account.');
   }
-  const points = await fetcher(`${SE_BASE}/points/${channelId}`, { headers, signal: AbortSignal.timeout(8000) });
-  if (!points.ok) throw new Error('StreamElements points access is unavailable. Check the JWT and Loyalty settings.');
+  const points = await fetcher(`${SE_BASE}/points/${channelId}/${encodeURIComponent(channel.username)}`, { headers, signal: AbortSignal.timeout(8000) });
+  if (!points.ok) {
+    const pointsBody = await points.text().catch(() => '');
+    throw new Error(`StreamElements points access is unavailable (HTTP ${points.status}). Enable Loyalty in SE Dashboard → Loyalty → Enable. SE: ${pointsBody.slice(0, 200)}`);
+  }
   return { se_channel_id: channelId, se_jwt_token: token, se_username: channel.username, verified_twitch_id: twitchId, verified_at: new Date().toISOString() };
 }
 
