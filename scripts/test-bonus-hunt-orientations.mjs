@@ -343,7 +343,7 @@ try {
           ".better-hunt-ring .better-hunt-card--center.better-hunt-card--super{animation:better-hunt-gold",
         ) &&
         tierMarkup.includes(
-          ".better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{animation:better-hunt-cloak",
+          ".better-hunt-card--extreme .better-hunt-card-img{animation:better-hunt-cloak",
         ),
       `horizontal ${tier} bonuses keep the left image sizing and animate the centered carousel card`,
     );

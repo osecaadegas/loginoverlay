@@ -39,6 +39,8 @@ try {
     const routing = await import('/src/components/OverlayCenter/appearance/v2/appearanceRouting.js');
     await import('/src/components/OverlayCenter/OverlayRenderer.css');
     await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.css');
+    await import('/src/components/OverlayCenter/editor/WidgetEditorPage.css');
+    await import('/src/components/OverlayCenter/editor/BetterObsOverlay.css');
     const root = ReactDOM.createRoot(document.getElementById('root'));
     window.huntTest = {
       normalize: normalizeBetterInstance,
@@ -82,6 +84,11 @@ try {
           if (item.runtime === 'preview') widget = React.createElement(BetterWidgetPreview, { type: 'bonus_hunt', config: { ...instance.config, ...live } });
           else if (item.runtime) widget = renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime: item.runtime, liveWidgets: [{ id: 'hunt-fixture', widget_type: 'bonus_hunt', config: live }] });
           else widget = React.createElement(BetterBonusHuntStyle, { config, bonuses, stats: {}, currency: '\u20ac' });
+          if (item.surface) {
+            const className = item.runtime === 'obs' ? 'better-obs-instance' : 'better-editor-canvas-instance__content';
+            widget = React.createElement('div', { className, 'data-surface': true, style: { position: 'relative', width: '100%', height: '100%' } }, widget);
+            if (item.surface === 'single') widget = React.createElement('div', { className: 'better-obs-canvas better-obs-canvas--single', style: { position: 'relative', width: '100%', height: '100%' } }, widget);
+          }
           const frame = React.createElement('div', { key: index, 'data-case': index, style: { width: item.width, height: config.orientation === 'horizontal' ? instance.height : item.height, flexShrink: 0 } }, widget);
           if (!item.controls) return frame;
           return React.createElement(React.Fragment, { key: index }, frame,
@@ -114,7 +121,11 @@ try {
       const contains = (a, b) => b.left >= a.left - 1 && b.right <= a.right + 1 && b.top >= a.top - 1 && b.bottom <= a.bottom + 1;
       const p = rect(panel);
       const report = message => result.push(`${host.dataset.case}: ${message}`);
-      if (!contains(rect(host), p)) report(`Panel outside frame ${JSON.stringify({ panel: p.toJSON(), host: rect(host).toJSON() })}`);
+      const root = host.querySelector('.better-hunt-root');
+      const expansion = root.dataset.drawerMode === 'expand' && root.dataset.orientation !== 'horizontal'
+        ? parseFloat(getComputedStyle(root).getPropertyValue('--bh-drawer-height')) || 0 : 0;
+      const bounds = { ...rect(host).toJSON(), bottom: rect(host).bottom + expansion };
+      if (!contains(bounds, p)) report(`Panel outside frame and downward expansion ${JSON.stringify({ panel: p.toJSON(), host: bounds })}`);
       const stats = [...panel.querySelectorAll('.better-hunt-stat-grid .better-hunt-stat')];
       if (panel.classList.contains('better-hunt-horizontal') && new Set(stats.map(e => Math.round(rect(e).top))).size !== 1) report('Horizontal stats not all in one row');
       for (const cell of stats) {
@@ -457,22 +468,174 @@ try {
   const before = await page.$eval('.better-hunt-card--center img', img => img.alt);
   await page.waitForFunction(before => document.querySelector('.better-hunt-card--center img')?.alt !== before, { timeout: 5000 }, before);
   await page.waitForFunction(() => [...document.querySelectorAll('.better-hunt-ring img')].every(img => img.complete && img.naturalWidth > 0));
-  // Accelerate only the two configured drawer timers, without bypassing the production state machine.
+  const extremeCases = ['vertical', 'horizontal', 'mainstream'].flatMap(orientation =>
+    ['editor', 'obs', 'preview'].map(runtime => ({
+      width: orientation === 'horizontal' ? 1080 : 402,
+      height: orientation === 'horizontal' ? 220 : 980,
+      runtime, count: 8, opened: 2,
+      bonusOverrides: { 5: { isExtremeBonus: true } },
+      config: {
+        orientation, carouselMode: '3d', sessionState: 'opening',
+        animations: true, animSpeed: 1, subElements: { slotRow: { opacity: 0.6 } },
+      },
+    })));
+  await mount(extremeCases);
+  const cloakTargets = await page.evaluate(() => document.getAnimations()
+    .filter(animation => animation.animationName === 'better-hunt-cloak')
+    .map(animation => ({ duration: animation.effect.getTiming().duration, target: animation.effect.target.className })));
+  assert.ok(cloakTargets.length >= extremeCases.length, 'Every renderer includes the Extreme fade');
+  assert.ok(cloakTargets.every(({ duration }) => duration === 8000), 'Extreme bonuses use a slow eight-second cycle');
+  for (const [phase, expectedOpacity] of [[0.05, 1], [0.3, null], [0.5, 0.12], [0.95, 1]]) {
+    await page.evaluate(phase => {
+      for (const animation of document.getAnimations()) {
+        if (animation.animationName !== 'better-hunt-cloak') continue;
+        animation.pause();
+        animation.currentTime = animation.effect.getTiming().duration * phase;
+      }
+    }, phase);
+    await settle();
+    const frames = await page.$$eval('[data-case]', hosts => hosts.map(host => {
+      const card = host.querySelector('.better-hunt-card--center.better-hunt-card--extreme');
+      const art = card.querySelector('.better-hunt-card-img');
+      const hidden = host.querySelector('.better-hunt-ring-track').children[5];
+      return {
+        opacity: Number(getComputedStyle(art).opacity), filter: getComputedStyle(art).filter,
+        cardOpacity: Number(getComputedStyle(card).opacity),
+        hiddenOpacity: Number(getComputedStyle(hidden).opacity),
+        parentAnimated: card.getAnimations().some(animation => animation.animationName === 'better-hunt-cloak'),
+        normalAnimated: [...host.querySelectorAll('.better-hunt-card--normal .better-hunt-card-img')].some(art => art.getAnimations().length > 0),
+      };
+    }));
+    for (const frame of frames) {
+      if (expectedOpacity === null) assert.ok(frame.opacity > 0.12 && frame.opacity < 1, 'Extreme artwork fades gradually');
+      else assert.ok(Math.abs(frame.opacity - expectedOpacity) < 0.01, `Extreme fade reaches ${expectedOpacity}`);
+      assert.equal(frame.filter, 'none', 'Extreme artwork is not blurred or desaturated');
+      assert.equal(frame.cardOpacity, 0.6, 'The fade preserves saved card opacity');
+      assert.equal(frame.hiddenOpacity, 0, 'Off-screen Extreme cards stay hidden throughout the fade');
+      assert.equal(frame.parentAnimated, false, 'Only the art fades, not ring positioning or visibility');
+      assert.equal(frame.normalAnimated, false, 'Normal bonus artwork is unchanged');
+    }
+  }
+  if (process.env.EXTREME_SCREENSHOT) await (await page.$('[data-case]')).screenshot({ path: process.env.EXTREME_SCREENSHOT });
+  // Replace the manually paused timelines before checking normal CSS motion preferences.
+  await mount([]);
+  await mount(extremeCases);
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await settle();
+  assert.equal(await page.evaluate(() => document.getAnimations().some(animation => animation.animationName === 'better-hunt-cloak')), false, 'Reduced motion disables the fade');
+  assert.ok(await page.$$eval('.better-hunt-card--extreme .better-hunt-card-img', images => images.every(image => getComputedStyle(image).opacity === '1')), 'Reduced motion leaves full-colour artwork visible');
+  await page.emulateMediaFeatures([]);
+  await mount(extremeCases.map(item => ({ ...item, config: { ...item.config, animations: false } })));
+  assert.equal(await page.evaluate(() => document.getAnimations().some(animation => animation.animationName === 'better-hunt-cloak')), false, 'The existing animation switch disables the fade');
+  // Step the real drawer timers deterministically, including complete CSS transitions.
+  await mount([]);
   await page.evaluate(() => {
     window.huntOriginalTimeout = window.setTimeout;
-    window.setTimeout = (callback, delay, ...args) => window.huntOriginalTimeout(callback, delay === 12000 || delay === 10000 ? 250 : delay, ...args);
+    window.huntOriginalClearTimeout = window.clearTimeout;
+    const timers = new Map();
+    let nextId = -1;
+    window.setTimeout = (callback, delay, ...args) => {
+      if (delay !== 12000 && delay !== 10000) return window.huntOriginalTimeout(callback, delay, ...args);
+      const id = nextId--;
+      timers.set(id, { callback: () => callback(...args), delay });
+      return id;
+    };
+    window.clearTimeout = id => timers.delete(id) || window.huntOriginalClearTimeout(id);
+    window.huntStepDrawerTimers = delay => {
+      for (const [id, timer] of [...timers]) if (timer.delay === delay) {
+        timers.delete(id);
+        timer.callback();
+      }
+    };
   });
-  await mount(['contain', 'expand'].map(drawerMode => ({ width: 402, height: 980, config: {
-    orientation: 'vertical', drawerMode, drawerAlwaysVisible: false, animations: true,
-    drawerHoldSeconds: 12, drawerRevealSeconds: 10, visibleRows: 3,
-    widgetHeight: drawerMode === 'expand' ? 0 : 980, panelHeight: drawerMode === 'expand' ? 0 : 980,
-  } })));
-  const tops = await page.$$eval('.better-hunt-panel', panels => panels.map(e => e.getBoundingClientRect().top));
-  await page.waitForFunction(() => [...document.querySelectorAll('.better-hunt-drawer')].every(e => e.getAttribute('aria-hidden') === 'true'));
-  assert.deepEqual(await page.$$eval('.better-hunt-panel', panels => panels.map(e => e.getBoundingClientRect().top)), tops, 'Closing drawers preserves the top anchor');
-  await page.waitForFunction(() => [...document.querySelectorAll('.better-hunt-drawer')].every(e => e.getAttribute('aria-hidden') === 'false'));
-  assert.deepEqual(await page.$$eval('.better-hunt-panel', panels => panels.map(e => e.getBoundingClientRect().top)), tops, 'Revealing drawers preserves the top anchor');
-  await page.evaluate(() => { window.setTimeout = window.huntOriginalTimeout; });
+  const settleDrawer = async () => {
+    await settle();
+    await page.evaluate(() => Promise.all(document.getAnimations()
+      .filter(animation => animation.effect?.getTiming().iterations !== Infinity && animation.effect?.target?.closest('.better-hunt-drawer'))
+      .map(animation => animation.finished.catch(() => {}))));
+    await settle();
+  };
+  const drawerGeometry = () => page.$$eval('[data-case]', hosts => hosts.map(host => {
+    const rect = selector => host.querySelector(selector)?.getBoundingClientRect().toJSON();
+    return {
+      panel: rect('.better-hunt-panel'), total: rect('.better-hunt-total'),
+      list: rect('.better-hunt-list'), carousel: rect('.better-hunt-carousel'),
+      requests: rect('.better-hunt-requests'), drawer: rect('.better-hunt-drawer'),
+    };
+  }));
+  const captureDrawer = async state => {
+    await page.$$eval('[data-case]', hosts => hosts.forEach(host => {
+      host.style.visibility = host.dataset.case === '3' ? 'visible' : 'hidden';
+    }));
+    const host = await page.$('[data-case="3"]');
+    const { x, y, width } = await host.boundingBox();
+    await page.screenshot({ path: `${process.env.DRAWER_SCREENSHOT}-${state}.png`, clip: { x, y, width, height: 1080 } });
+    await page.$$eval('[data-case]', hosts => hosts.forEach(host => { host.style.visibility = ''; }));
+  };
+  for (const viewport of [390, 1440]) {
+    await page.setViewport({ width: viewport, height: 1200 });
+    for (const orientation of ['vertical', 'mainstream']) {
+      const drawerCases = ['editor', 'obs', 'preview'].flatMap(runtime => [0, 880].flatMap(height => ['contain', 'expand'].map(drawerMode => ({
+        width: 360, height: 880, runtime, surface: runtime === 'obs' ? 'single' : runtime === 'editor',
+        config: { orientation, drawerMode, drawerAlwaysVisible: false, animations: true,
+          drawerHoldSeconds: 12, drawerRevealSeconds: 10, visibleRows: 3, showRequests: true,
+          widgetHeight: height, panelHeight: height },
+      }))));
+      await mount([]);
+      await mount(drawerCases);
+      await settleDrawer();
+      await page.evaluate(() => window.huntStepDrawerTimers(12000));
+      await settleDrawer();
+      const closed = await drawerGeometry();
+      if (process.env.DRAWER_SCREENSHOT && viewport === 1440 && orientation === 'vertical') await captureDrawer('closed');
+      assert.ok(await page.$$eval('.better-hunt-drawer', drawers => drawers.every(e => e.getAttribute('aria-hidden') === 'true')));
+      await page.evaluate(() => window.huntStepDrawerTimers(10000));
+      await settleDrawer();
+      const opened = await drawerGeometry();
+      if (process.env.DRAWER_SCREENSHOT && viewport === 1440 && orientation === 'vertical') await captureDrawer('open');
+      for (let i = 0; i < drawerCases.length; i++) {
+        const item = drawerCases[i], before = closed[i], after = opened[i];
+        const label = `${viewport}/${orientation}/${item.runtime}/${item.config.widgetHeight}/${item.config.drawerMode}`;
+        assert.ok(Math.abs(after.panel.top - before.panel.top) < 1, `${label}: top stays pinned`);
+        if (item.config.drawerMode === 'contain') {
+          if (item.config.widgetHeight) assert.ok(Math.abs(after.panel.height - before.panel.height) < 1, `${label}: Contain keeps its saved height`);
+          continue;
+        }
+        assert.ok(after.panel.bottom > before.panel.bottom + 80, `${label}: Expand grows downward`);
+        assert.ok(Math.abs(after.panel.height - before.panel.height - after.drawer.height - 8) < 1, `${label}: expansion equals drawer plus gap`);
+        for (const part of ['total', 'list', 'carousel', 'requests']) {
+          assert.ok(before[part] && after[part], `${label}: ${part} remains available`);
+          for (const edge of ['top', 'left', 'width', 'height']) assert.ok(Math.abs(after[part][edge] - before[part][edge]) < 1, `${label}: ${part}.${edge} must not shift or shrink (${before[part][edge]} -> ${after[part][edge]})`);
+        }
+        assert.ok(before.list.bottom <= before.total.top && after.list.bottom <= after.total.top, `${label}: list never overflows behind Total Pay`);
+        assert.ok(after.drawer.top >= after.total.bottom && after.drawer.bottom <= after.panel.bottom, `${label}: results sit below Total Pay inside the growing panel`);
+      }
+      const clipping = await page.$$eval('[data-surface]', surfaces => surfaces.map(surface => {
+        const root = surface.querySelector('.better-hunt-root');
+        return { mode: root.dataset.drawerMode, overflow: getComputedStyle(surface).overflow,
+          rootOverflow: getComputedStyle(root).overflow,
+          singleOverflow: surface.parentElement.matches('.better-obs-canvas--single') ? getComputedStyle(surface.parentElement).overflow : null };
+      }));
+      for (const surface of clipping) {
+        assert.equal(surface.overflow, surface.mode === 'expand' ? 'visible' : 'hidden', 'Editor/OBS clipping follows the selected drawer mode');
+        if (surface.mode === 'expand') {
+          assert.equal(surface.rootOverflow, 'visible');
+          if (surface.singleOverflow) assert.equal(surface.singleOverflow, 'visible', 'Single-widget OBS canvas allows downward growth');
+        }
+      }
+      await page.evaluate(() => window.huntStepDrawerTimers(12000));
+      await settleDrawer();
+      const reclosed = await drawerGeometry();
+      for (let i = 0; i < closed.length; i++) for (const edge of ['top', 'height']) {
+        assert.ok(Math.abs(reclosed[i].panel[edge] - closed[i].panel[edge]) < 1, 'Repeated closing restores the original geometry');
+      }
+    }
+  }
+  await mount([]);
+  await page.evaluate(() => {
+    window.setTimeout = window.huntOriginalTimeout;
+    window.clearTimeout = window.huntOriginalClearTimeout;
+  });
   await mount([{ ...base, requests: 12, config: { showRequests: true, requestView: 'carousel', uiScale: 1.2 } }]);
   await page.setViewport({ width: 390, height: 844 });
   await checkGeometry('Mobile viewport preserves horizontal layout');
@@ -490,7 +653,7 @@ try {
   assert.ok(colors > 100, 'Rendered 3D carousel contains nonblank artwork');
   if (process.env.HUNT_SCREENSHOT) await (await page.$('[data-case]')).screenshot({ path: process.env.HUNT_SCREENSHOT });
   assert.deepEqual(errors, []);
-  console.log(`Bonus Hunt readability passed: ${checked} layouts, responsive ring spacing, autoscroll loop/data/motion controls, live/OBS/preview parity, progress states, saved appearance and editor controls.`);
+  console.log(`Bonus Hunt readability passed: ${checked} layouts, downward drawer expansion in 48 saved editor/OBS/preview cases, Extreme full-colour fade and motion preferences, responsive ring spacing, autoscroll loop/data/motion controls, live/OBS/preview parity, progress states, saved appearance and editor controls.`);
 } finally {
   await browser.close();
 }

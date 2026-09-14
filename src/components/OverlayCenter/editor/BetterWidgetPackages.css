@@ -362,6 +362,48 @@
   color: #ecfeff;
 }
 
+.bp-background-library {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.bp-background-library button {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid #34444f;
+  border-radius: 6px;
+  background: #10181e;
+  color: #dce8ed;
+  cursor: pointer;
+}
+
+.bp-background-library button:hover,
+.bp-background-library button[aria-pressed="true"] {
+  border-color: #58dbc5;
+}
+
+.bp-background-library button:focus-visible {
+  outline: 2px solid #f2f7fa;
+  outline-offset: 2px;
+}
+
+.bp-background-library img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
+.bp-background-library span {
+  display: block;
+  padding: 5px;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 .bp-theme-grid,
 .bp-font-grid {
   display: grid;

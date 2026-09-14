@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import BackgroundLibraryPicker from "./BackgroundLibraryPicker";
 import { matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
 import {
   ArrowDown,
@@ -4239,11 +4240,17 @@ function SimpleThemedControls({
                 onChange={(bgMode) => set({ bgMode })}
               />
               {sourceMode === "image" && (
-                <TextRow
-                  label="Image URL"
-                  value={c.imageUrl}
-                  onChange={(imageUrl) => set({ imageUrl })}
-                />
+                <>
+                  <BackgroundLibraryPicker
+                    value={c.imageUrl}
+                    onChange={(imageUrl) => set({ imageUrl })}
+                  />
+                  <TextRow
+                    label="Image URL"
+                    value={c.imageUrl}
+                    onChange={(imageUrl) => set({ imageUrl })}
+                  />
+                </>
               )}
               {sourceMode === "video" && (
                 <TextRow

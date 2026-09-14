@@ -85,6 +85,9 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 27. `041_contact_messages.sql`
     Adds the public contact-message inbox with server-only submission and admin-only read/update access.
 
+28. `042_restore_stripe_webhook_events.sql`
+    Repairs missing Stripe webhook event tracking with explicit server grants, admin-only reads, and a PostgREST schema refresh. See `DOCs/STRIPE_WEBHOOK_RECOVERY.md` for production recovery and verification steps.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.

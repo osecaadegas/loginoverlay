@@ -13,6 +13,7 @@ import React, {
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../config/supabaseClient";
 import { startSpotifyAuth } from "../../utils/spotifyAuth";
+import { manageStreamElementsConnection } from '../../services/streamElementsConnectionService';
 
 /* ── Which config keys to push to each widget type ── */
 const SYNC_MAP = {
@@ -528,6 +529,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
   });
   const [seTestMsg, setSeTestMsg] = useState("");
   const [seSaving, setSeSaving] = useState(false);
+  const [seVerified, setSeVerified] = useState(false);
   const [spotifyLoading, setSpotifyLoading] = useState(false);
   const [spotifyError, setSpotifyError] = useState("");
   const [songIrcStatus, setSongIrcStatus] = useState("off");
@@ -556,15 +558,17 @@ export default function ProfileSection({ widgets, saveWidget }) {
     (async () => {
       let seChannel = "";
       let seJwt = "";
+      setSeVerified(false);
       try {
         const { data } = await supabase
           .from("streamelements_connections")
-          .select("se_channel_id, se_jwt_token")
+          .select("se_channel_id, se_jwt_token, verified_at, verified_twitch_id")
           .eq("user_id", user.id)
           .single();
         if (data) {
           seChannel = data.se_channel_id || "";
           seJwt = data.se_jwt_token || "";
+          setSeVerified(Boolean(data.verified_at) && data.verified_twitch_id === user.identities?.find(i => i.provider === 'twitch')?.identity_data?.sub);
         }
       } catch {
         /* no row yet — starts empty */
@@ -600,7 +604,10 @@ export default function ProfileSection({ widgets, saveWidget }) {
     })();
   }, [user, widgets]);
 
-  const set = (key, val) => setProfile((prev) => ({ ...prev, [key]: val }));
+  const set = (key, val) => {
+    if (key === 'seChannelId' || key === 'seJwtToken') setSeVerified(false);
+    setProfile((prev) => ({ ...prev, [key]: val }));
+  };
 
   /* ── Twitch IRC listener for !song and !sr commands ── */
   useEffect(() => {
@@ -706,14 +713,14 @@ export default function ProfileSection({ widgets, saveWidget }) {
       });
     if (profile.spotify_access_token)
       list.push({ name: "Spotify", user: "Connected", color: "#d0dbe6" });
-    if (profile.seChannelId && profile.seJwtToken)
+    if (seVerified)
       list.push({
         name: "StreamElements",
         user: "Connected",
         color: "#b8c8d8",
       });
     return list;
-  }, [profile]);
+  }, [profile, seVerified]);
 
   /* ── Push Spotify tokens to all relevant widgets immediately ── */
   const pushSpotifyTokens = useCallback(
@@ -926,21 +933,14 @@ export default function ProfileSection({ widgets, saveWidget }) {
     await syncToWidgets();
     await saveProfileToDb();
 
-    /* Persist SE credentials to streamelements_connections (per-user) */
     if (user && profile.seChannelId && profile.seJwtToken) {
       try {
-        await supabase.from("streamelements_connections").upsert(
-          {
-            user_id: user.id,
-            se_channel_id: profile.seChannelId,
-            se_jwt_token: profile.seJwtToken,
-            se_username: profile.twitchUsername || null,
-            connected_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" },
-        );
+        await manageStreamElementsConnection({ se_channel_id: profile.seChannelId, se_jwt_token: profile.seJwtToken });
+        setSeVerified(true);
       } catch (err) {
-        console.error("[ProfileSection] SE connection save error:", err);
+        setSeVerified(false);
+        setSyncMsg(`StreamElements: ${err.message}`);
+        setSeTestMsg(err.message);
       }
     }
 
@@ -1486,7 +1486,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <h3 style={S.cardTitle}>🎮 StreamElements</h3>
             <div style={S.platRow}>
               <div
-                style={S.dot(!!(profile.seChannelId && profile.seJwtToken))}
+                style={S.dot(seVerified)}
               />
               <span
                 style={{
@@ -1499,9 +1499,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
                   flex: 1,
                 }}
               >
-                {profile.seChannelId && profile.seJwtToken
-                  ? "Connected"
-                  : "Not connected"}
+                {seVerified ? "Verified community" : profile.seChannelId ? "Verification required" : "Not connected"}
               </span>
               {profile.seChannelId && profile.seJwtToken && (
                 <button
@@ -1513,18 +1511,13 @@ export default function ProfileSection({ widgets, saveWidget }) {
                     padding: "6px 12px",
                   }}
                   onClick={async () => {
-                    set("seChannelId", "");
-                    set("seJwtToken", "");
-                    setSeTestMsg("");
                     try {
-                      await supabase
-                        .from("streamelements_connections")
-                        .delete()
-                        .eq("user_id", user.id);
-                    } catch {
-                      /* ignore */
-                    }
-                    setSeTestMsg("✅ Credentials cleared");
+                      await manageStreamElementsConnection({}, 'DELETE');
+                      set("seChannelId", "");
+                      set("seJwtToken", "");
+                      setSeVerified(false);
+                      setSeTestMsg("Credentials cleared");
+                    } catch (err) { setSeTestMsg(err.message); }
                     setTimeout(() => setSeTestMsg(""), 3000);
                   }}
                 >
@@ -1569,20 +1562,13 @@ export default function ProfileSection({ widgets, saveWidget }) {
                   setSeSaving(true);
                   setSeTestMsg("");
                   try {
-                    await supabase.from("streamelements_connections").upsert(
-                      {
-                        user_id: user.id,
-                        se_channel_id: profile.seChannelId,
-                        se_jwt_token: profile.seJwtToken,
-                        se_username: profile.twitchUsername || null,
-                        connected_at: new Date().toISOString(),
-                      },
-                      { onConflict: "user_id" },
-                    );
-                    setSeTestMsg("✅ Saved!");
+                    await manageStreamElementsConnection({ se_channel_id: profile.seChannelId, se_jwt_token: profile.seJwtToken });
+                    setSeVerified(true);
+                    setSeTestMsg("Verified and saved");
                   } catch (err) {
                     console.error("[ProfileSection] SE save error:", err);
-                    setSeTestMsg("❌ Failed to save");
+                    setSeVerified(false);
+                    setSeTestMsg(err.message || "Failed to save");
                   }
                   setSeSaving(false);
                   setTimeout(() => setSeTestMsg(""), 4000);
@@ -1602,25 +1588,8 @@ export default function ProfileSection({ widgets, saveWidget }) {
                   onClick={async () => {
                     setSeTestMsg("⏳ Testing...");
                     try {
-                      const res = await fetch(
-                        `https://api.streamelements.com/kappa/v2/channels/${profile.seChannelId}`,
-                        {
-                          headers: {
-                            Authorization: `Bearer ${profile.seJwtToken}`,
-                            Accept: "application/json",
-                          },
-                        },
-                      );
-                      if (res.ok) {
-                        const data = await res.json();
-                        setSeTestMsg(
-                          `✅ Connected to ${data.displayName || data.username || "channel"}`,
-                        );
-                      } else {
-                        setSeTestMsg(
-                          `❌ Error ${res.status} — check your credentials`,
-                        );
-                      }
+                      const result = await manageStreamElementsConnection({ se_channel_id: profile.seChannelId, se_jwt_token: profile.seJwtToken, test_only: true });
+                      setSeTestMsg(`Verified as ${result.username}. Save credentials to enable points.`);
                     } catch {
                       setSeTestMsg("❌ Connection failed");
                     }

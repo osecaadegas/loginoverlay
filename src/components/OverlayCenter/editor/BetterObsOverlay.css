@@ -49,3 +49,8 @@
   width: 100%;
   height: 100%;
 }
+
+.better-obs-instance:has(> .better-hunt-root[data-drawer-mode="expand"]:not([data-orientation="horizontal"])),
+.better-obs-canvas--single:has(> .better-obs-instance > .better-hunt-root[data-drawer-mode="expand"]:not([data-orientation="horizontal"])) {
+  overflow: visible;
+}

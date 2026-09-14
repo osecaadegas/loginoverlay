@@ -299,7 +299,7 @@ function defaultSetupState(widgets = [], theme = null, instance = null) {
   const configFor = (type) =>
     widgets.find((widget) => widget.widget_type === type)?.config || {};
   const chatConfig = configFor("chat");
-  const slotRequestsConfig = configFor("slot_requests");
+  const slotRequestsConfig = { ...configFor("slot_requests"), ...configFor("bonus_hunt") };
   const betsConfig = configFor("bets");
   const bonusHuntConfig = configFor("bonus_hunt");
   const currentSlotConfig = configFor("current_slot");
@@ -492,7 +492,9 @@ function serviceSetupPatch(type, details = {}, integrations = {}) {
         entryCost: normalized.giveawayEntryCost,
       };
     case "slot_requests":
+    case "bonus_hunt":
       return {
+        ...(type === 'bonus_hunt' ? { currencyCode, currency: currencySymbol } : {}),
         twitchChannel,
         commandPrefix,
         commandTrigger: normalizeCommand(
@@ -552,7 +554,6 @@ function serviceSetupPatch(type, details = {}, integrations = {}) {
         musicFallbackMessage: normalized.musicFallbackMessage,
         hideMusicWhenEmpty: normalized.hideMusicWhenEmpty,
       };
-    case "bonus_hunt":
     case "rtp_stats":
       return { currencyCode, currency: currencySymbol };
     case "current_slot":

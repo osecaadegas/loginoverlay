@@ -36,6 +36,7 @@ import {
   Scan,
   Focus,
   Magnet,
+  Grid2X2,
   MoreHorizontal,
   ArrowLeft,
   AlertCircle,
@@ -578,6 +579,8 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const zoom = Number(preferences.zoom);
   const scale = !previewing && zoom >= 0.1 && zoom <= 2 ? zoom : fitScale;
   const snapping = preferences.snapping !== false;
+  const showGrid = preferences.showGrid !== false;
+  const gridVisible = showGrid && !previewing;
 
   useEffect(() => {
     if (confirmation) confirmDialogRef.current?.showModal();
@@ -1970,6 +1973,16 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
             </button>
             <button
               type="button"
+              title={showGrid ? "Hide grid and center guides" : "Show grid and center guides"}
+              aria-label="Show editor grid"
+              aria-pressed={showGrid}
+              disabled={previewing}
+              onClick={() => setPreferences({ showGrid: !showGrid })}
+            >
+              <Grid2X2 size={17} />
+            </button>
+            <button
+              type="button"
               title="Snap to grid and widgets"
               aria-label="Snapping"
               aria-pressed={snapping}
@@ -2000,7 +2013,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
             </button>
           </div>
         )}
-        <div className="better-editor-canvas-shell" ref={shellRef}>
+        <div className="better-editor-canvas-shell" data-grid={gridVisible} ref={shellRef}>
           <div
             className="editor-canvas-pan-area"
             style={{
@@ -2018,6 +2031,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
               <div
                 className="better-editor-canvas"
                 data-preview={previewing}
+                data-grid={gridVisible}
                 style={{
                   width: BETTER_CANVAS.width,
                   height: BETTER_CANVAS.height,
@@ -2025,7 +2039,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
                 }}
                 onPointerDown={() => setSelectedInstanceId("")}
               >
-                {!previewing && (
+                {gridVisible && (
                   <>
                     <span className="better-editor-canvas-line better-editor-canvas-line--x" />
                     <span className="better-editor-canvas-line better-editor-canvas-line--y" />

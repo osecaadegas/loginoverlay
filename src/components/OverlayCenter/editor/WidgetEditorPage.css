@@ -556,6 +556,10 @@ body.better-editor-document #root {
   flex: 0 0 auto;
 }
 
+.better-editor-canvas-shell[data-grid="false"] {
+  background-image: none;
+}
+
 .better-editor-canvas {
   position: absolute;
   inset: 0 auto auto 0;
@@ -577,6 +581,10 @@ body.better-editor-document #root {
     linear-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
   background-size: 20px 20px;
   opacity: 0.16;
+}
+
+.better-editor-canvas[data-grid="false"]::before {
+  display: none;
 }
 
 .better-editor-canvas-line {
@@ -635,6 +643,10 @@ body.better-editor-document #root {
 .better-editor-canvas-instance__content > * {
   width: 100%;
   height: 100%;
+}
+
+.better-editor-canvas-instance__content:has(> .better-hunt-root[data-drawer-mode="expand"]:not([data-orientation="horizontal"])) {
+  overflow: visible;
 }
 
 .better-editor-canvas-instance__tag {

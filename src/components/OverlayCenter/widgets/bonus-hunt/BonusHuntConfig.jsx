@@ -1872,11 +1872,14 @@ function BonusHuntPanel({
     const load = async () => {
       const { data } = await supabase
         .from("slot_requests")
-        .select("id, slot_name, slot_image, requested_by, created_at")
+        .select("id, slot_name, slot_image, requested_by, created_at, status, points_cost, points_deducted, rejection_reason")
         .eq("user_id", userId)
-        .eq("status", "pending")
+        .in('status', ['pending','charging','charge_unknown','refunding','refund_failed','refund_unknown'])
         .order("created_at", { ascending: true });
-      if (data) setSlotRequests(data);
+      if (data) {
+        setSlotRequests(data.filter(row => row.status === 'pending'));
+        setPointReviews(data.filter(row => row.status !== 'pending'));
+      }
     };
     load();
     const chan = supabase
@@ -1915,8 +1918,8 @@ function BonusHuntPanel({
     const { error } = await supabase
       .from("slot_requests")
       .update({ status: "cancelled" })
-      .eq("id", id);
-    if (error) console.error("[bh-dismiss] DB error:", error.message);
+      .eq("id", id).eq('user_id', userId).eq('status', 'pending');
+    if (error) { setRequestError(error.message); return; }
     setSlotRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
@@ -1935,84 +1938,49 @@ function BonusHuntPanel({
     return true;
   };
 
-  const srWidget = allWidgets?.find((w) => w.widget_type === "slot_requests");
-  const srConfig = srWidget?.config || {};
+  const srConfig = { ...(allWidgets?.find(w => w.widget_type === 'slot_requests')?.config || {}), ...config };
+  const [requestError, setRequestError] = useState('');
+  const [requestsBusy, setRequestsBusy] = useState(false);
+  const [pointReviews, setPointReviews] = useState([]);
 
-  const handleRejectRequest = async (id) => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      const resp = await fetch(
-        `${window.location.origin}/api/chat-commands?cmd=sr-reject`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            request_id: id,
-            user_id: userId,
-            message_template: srConfig.srMsgRejected || undefined,
-          }),
-        },
-      );
-      if (!resp.ok && resp.status !== 409) {
-        console.error("[bh-reject] API error:", resp.status);
-      }
-      // Always re-fetch from DB — never trust optimistic local state
-      const { data } = await supabase
-        .from("slot_requests")
-        .select("id, slot_name, slot_image, requested_by, created_at")
-        .eq("user_id", userId)
-        .eq("status", "pending")
-        .order("created_at", { ascending: true });
-      if (data) setSlotRequests(data);
-    } catch (err) {
-      console.error("[bh-reject] error:", err);
-    }
+  const refreshRequests = async () => {
+    const { data, error } = await supabase.from('slot_requests')
+      .select('id,slot_name,slot_image,requested_by,created_at,status,points_cost,points_deducted,rejection_reason')
+      .eq('user_id', userId).in('status', ['pending','charging','charge_unknown','refunding','refund_failed','refund_unknown'])
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    setSlotRequests((data || []).filter(row => row.status === 'pending'));
+    setPointReviews((data || []).filter(row => row.status !== 'pending'));
   };
 
-  const handleClearAllRequests = async () => {
-    if (!userId || slotRequests.length === 0) return;
+  const runRequestAction = async (cmd, requestId) => {
+    if (requestsBusy) return;
+    setRequestsBusy(true);
+    setRequestError('');
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      const resp = await fetch(
-        `${window.location.origin}/api/chat-commands?cmd=sr-clear-all`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ user_id: userId }),
-        },
-      );
-      if (!resp.ok) console.error("[bh-clear-all] API error:", resp.status);
-    } catch (err) {
-      console.error("[bh-clear-all] error:", err);
-      // API failed — cancel all locally without refund so they at least leave the list
-      const ids = slotRequests.map((r) => r.id);
-      await supabase
-        .from("slot_requests")
-        .update({ status: "cancelled" })
-        .in("id", ids);
-    } finally {
-      // Always sync from DB truth
-      const { data } = await supabase
-        .from("slot_requests")
-        .select("id, slot_name, slot_image, requested_by, created_at")
-        .eq("user_id", userId)
-        .eq("status", "pending")
-        .order("created_at", { ascending: true });
-      setSlotRequests(data || []);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Sign in again before changing requests.');
+      let remaining;
+      do {
+        const response = await fetch(`/api/chat-commands?cmd=${cmd}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ user_id: userId, request_id: requestId }),
+        });
+        const result = await response.json();
+        if (!response.ok || result.failed || (!result.success && !result.remaining)) {
+          throw new Error(result.error || 'Some points operations need review. No uncertain refund will be retried automatically.');
+        }
+        remaining = result.remaining || 0;
+      } while (cmd === 'sr-clear-all' && remaining > 0);
+    } catch (error) { setRequestError(error.message); }
+    finally {
+      try { await refreshRequests(); } catch { setRequestError('Could not refresh requests. Reload to check their status.'); }
+      setRequestsBusy(false);
     }
   };
+  const handleRejectRequest = id => runRequestAction('sr-reject', id);
+  const handleClearAllRequests = () => runRequestAction('sr-clear-all');
 
   const handleAddToBH = async (req) => {
     const match = slots.find(
@@ -2521,6 +2489,7 @@ function BonusHuntPanel({
                 <button
                   className="bh-sr-queue-btn bh-sr-queue-btn--clear"
                   onClick={handleClearAllRequests}
+                  disabled={requestsBusy}
                   title="Refund SE points to all pending users and remove from queue"
                 >
                   ↩ Refund All
@@ -2599,13 +2568,6 @@ function BonusHuntPanel({
                 onClick={async () => {
                   const next = !(c.srChatEnabled !== false);
                   onChange({ ...config, srChatEnabled: next });
-                  // Also propagate to the slot_requests widget so the API respects the toggle
-                  if (srWidget?.id) {
-                    await supabase
-                      .from("overlay_widgets")
-                      .update({ config: { ...srConfig, srChatEnabled: next } })
-                      .eq("id", srWidget.id);
-                  }
                 }}
                 title={
                   c.srChatEnabled !== false
@@ -2662,6 +2624,19 @@ function BonusHuntPanel({
               </button>
             </div>
 
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, margin: '12px 0' }}>
+              <label><input type="checkbox" checked={Boolean(srConfig.srSeEnabled)} onChange={e => onChange({ ...config, srSeEnabled: e.target.checked, pointBalanceBehavior: e.target.checked ? 'charge_immediately' : 'do_not_charge' })} /> Charge StreamElements points</label>
+              <label>Cost <input aria-label="Request point cost" type="number" min="0" max="1000000000" step="1" value={srConfig.srSeCost ?? 0} style={{ width: 100 }} onChange={e => onChange({ ...config, srSeCost: Math.max(0, Math.trunc(Number(e.target.value) || 0)) })} /></label>
+            </div>
+            {requestError && <p role="alert">{requestError}</p>}
+            {pointReviews.length > 0 && <section aria-label="Points review">
+              <h4>Points review</h4>
+              {pointReviews.map(request => <div key={request.id} style={{ margin: '8px 0', overflowWrap: 'anywhere' }}>
+                <strong>{request.slot_name}</strong> · {request.requested_by} · {request.points_deducted || request.points_cost} points
+                <div>{request.rejection_reason || 'Processing. If this persists, check the StreamElements points history before taking further action.'}</div>
+                {request.status === 'refund_failed' && <button type="button" disabled={requestsBusy} onClick={() => handleRejectRequest(request.id)}>Retry refund</button>}
+              </div>)}
+            </section>}
             {slotRequests.length > 0 ? (
               <div className="bh-sr-queue-list">
                 {slotRequests.map((req) => (
@@ -2714,6 +2689,7 @@ function BonusHuntPanel({
                           e.stopPropagation();
                           handleRejectRequest(req.id);
                         }}
+                        disabled={requestsBusy}
                         title="Reject &amp; refund points"
                         style={{ fontSize: 10, whiteSpace: "nowrap" }}
                       >

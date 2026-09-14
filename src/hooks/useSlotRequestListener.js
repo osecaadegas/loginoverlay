@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
 import useTwitchChat from './useTwitchChat';
 import useTwitchChannel from './useTwitchChannel';
+import { resolveSlotRequestSettings } from '../../shared/slotRequestSettings.js';
 
 export default function useSlotRequestListener() {
   const { user } = useAuth();
@@ -19,25 +20,25 @@ export default function useSlotRequestListener() {
 
   // ── Load slot_requests widget config ──
   useEffect(() => {
+    setSrConfig(null);
+    dedupRef.current.clear();
     if (!user) return;
     let cancelled = false;
 
     async function load() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('overlay_widgets')
-        .select('id, config')
+        .select('id, widget_type, config, updated_at')
         .eq('user_id', user.id)
-        .eq('widget_type', 'slot_requests')
-        .limit(1)
-        .maybeSingle();
+        .in('widget_type', ['bonus_hunt', 'slot_requests']);
 
       if (cancelled) return;
 
-      if (data?.config?.srChatEnabled !== false) {
+      const settings = !error && resolveSlotRequestSettings(data || []);
+      if (settings && settings.config.srChatEnabled !== false) {
         setSrConfig({
-          widgetId: data?.id,
-          twitchChannel: (data?.config?.twitchChannel || '').trim().toLowerCase().replace(/^#/, ''),
-          commandTrigger: (data?.config?.commandTrigger || '!sr').trim().toLowerCase(),
+          widgetId: settings.widgetId,
+          commandTrigger: (settings.config.commandTrigger || '!sr').trim().toLowerCase(),
         });
       } else {
         setSrConfig(null);
@@ -55,18 +56,7 @@ export default function useSlotRequestListener() {
         table: 'overlay_widgets',
         filter: `user_id=eq.${user.id}`,
       }, (payload) => {
-        const row = payload.new;
-        if (!row || row.widget_type !== 'slot_requests') return;
-
-        if (row.config?.srChatEnabled !== false) {
-          setSrConfig({
-            widgetId: row.id,
-            twitchChannel: (row.config?.twitchChannel || '').trim().toLowerCase().replace(/^#/, ''),
-            commandTrigger: (row.config?.commandTrigger || '!sr').trim().toLowerCase(),
-          });
-        } else {
-          setSrConfig(null);
-        }
+        if (payload.eventType === 'DELETE' || ['bonus_hunt', 'slot_requests'].includes(payload.new?.widget_type)) load();
       })
       .subscribe();
 
@@ -74,7 +64,7 @@ export default function useSlotRequestListener() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]);
 
   // ── Chat message handler ──
   const srConfigRef = useRef(srConfig);
@@ -82,7 +72,7 @@ export default function useSlotRequestListener() {
   const userRef = useRef(user);
   userRef.current = user;
 
-  const handleMessage = useCallback((msg) => {
+  const handleMessage = useCallback(async (msg) => {
     const cfg = srConfigRef.current;
     const u = userRef.current;
     if (!cfg || !u) return;
@@ -96,7 +86,7 @@ export default function useSlotRequestListener() {
     const slotName = text.slice(trigger.length).trim();
     if (!slotName) return;
 
-    const requester = msg.username;
+    const requester = msg.login || msg.username;
     if (!requester) return;
 
     // Dedup: skip if same viewer+slot within 15s
@@ -110,13 +100,22 @@ export default function useSlotRequestListener() {
       for (const [k, t] of dedupRef.current) { if (now - t > 30000) dedupRef.current.delete(k); }
     }
 
-    // Fire to the API via GET — cmd is a query param, handler reads req.query for GET
-    fetch(
-      `${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(u.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`
-    ).catch(err => console.error('[SR-Listener]', err));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token || session.user.id !== u.id) return;
+      const response = await fetch('/api/chat-commands?cmd=sr', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: u.id, requester, slot: slotName, message_id: msg.id,
+          chatter_id: msg.twitchUserId, broadcaster_id: msg.broadcasterId }),
+      });
+      const result = await response.json();
+      if (!response.ok) console.error('[SR-Listener]', result.error || 'Request failed');
+    } catch (err) { console.error('[SR-Listener]', err); }
   }, []);
 
   // ── Connect to Twitch chat ──
-  const channel = srConfig?.twitchChannel || autoChannel || '';
+  const identity = user?.identities?.find(item => item.provider === 'twitch')?.identity_data;
+  const channel = identity?.preferred_username || identity?.nickname || identity?.slug || autoChannel || '';
   useTwitchChat(srConfig ? channel : '', handleMessage);
 }

@@ -455,7 +455,10 @@ export default function PricingPage() {
           <span className="premium-kicker">Pick a plan</span>
           <h2>{activeCopy.sectionTitle}</h2>
           <p>{activeCopy.sectionText}</p>
-          <p>Plan cards below open paid Stripe checkout and are separate from the free trial.</p>
+          <p>
+            Plan cards below open paid Stripe checkout and are separate from the
+            free trial.
+          </p>
         </div>
 
         <div className={`premium-card-grid premium-card-grid--${productType}`}>
