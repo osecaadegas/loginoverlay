@@ -18,6 +18,7 @@
 
 /* ── Toast ─────────────────────────────────────────────────────────────── */
 .slot-manager-v2 .sm-toast {
+  pointer-events: none;
   position: fixed;
   top: 16px;
   right: 16px;
@@ -2520,4 +2521,48 @@
     background: rgba(139, 169, 208, 0.08);
   }
 }
+
+.slot-manager-v2 .sm-editor--providers .sm-prov-toolbar,
+.slot-manager-v2 .sm-prov-form-actions,
+.slot-manager-v2 .sm-provider-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.slot-manager-v2 .sm-editor--providers .sm-prov-toolbar > input {
+  min-width: 120px;
+}
+
+.slot-manager-v2 .sm-provider-preview {
+  margin: 12px 0;
+}
+
+.slot-manager-v2 .sm-provider-removed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.slot-manager-v2 .sm-provider-removed input[type="checkbox"] {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+}
+
+.slot-manager-v2 .sm-provider-error,
+.slot-manager-v2 .sm-provider-notice {
+  margin: 10px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.slot-manager-v2 .sm-provider-error { color: #fca5a5; }
+.slot-manager-v2 .sm-provider-notice { color: #a8bac9; }
+.slot-manager-v2 .sm-editor--providers button svg { flex: 0 0 auto; }
+.slot-manager-v2 .sm-editor--providers .sm-prov-card { border-radius: 8px; }
 

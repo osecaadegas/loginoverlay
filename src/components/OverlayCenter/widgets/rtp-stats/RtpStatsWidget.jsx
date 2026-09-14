@@ -5,7 +5,7 @@ import {
   recordMatchesSlot,
 } from "../../../../services/slotRecordService";
 import useSlotPersonalBest from "../../../../hooks/useSlotPersonalBest";
-import { getProviderImage } from "../../../../utils/gameProviders";
+import { useProviderLogo } from "../../../../hooks/useProviderLogo";
 import { subElementStyle, subValue } from "../shared/appearanceStyles";
 import {
   brushedMetalBackground,
@@ -1808,9 +1808,8 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId, publicOve
     "imageUrl",
     c.providerLogoUrl || c.providerImageUrl || "",
   );
-  const displayProviderLogo =
-    configuredProviderLogo ||
-    (displayProvider ? getProviderImage(displayProvider) : null);
+  const managedProviderLogo = useProviderLogo(displayProvider);
+  const displayProviderLogo = configuredProviderLogo || managedProviderLogo;
   const providerExplicitWidth = subValue(c, "provider", "width", null);
   const providerExplicitHeight = subValue(c, "provider", "height", null);
   const displayInfo = resolveLivePreviewValue({

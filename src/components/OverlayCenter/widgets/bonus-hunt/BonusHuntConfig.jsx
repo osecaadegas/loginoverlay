@@ -38,7 +38,7 @@ import {
   getErrorMessage,
   isDuplicateError,
 } from "../../../../utils/errorUtils";
-import { getProviderImage } from "../../../../utils/gameProviders";
+import { useProviderLogo } from "../../../../hooks/useProviderLogo";
 import SlotImage from "../SlotImage";
 
 const FONT_OPTIONS = Object.freeze([
@@ -96,8 +96,9 @@ const BONUS_HUNT_V12_ORIGINAL_CONFIG_DEFAULTS = Object.freeze({
 
 function BonusHuntProviderLogo({ provider }) {
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [provider]);
-  const logo = !failed ? getProviderImage(provider) : null;
+  const resolvedLogo = useProviderLogo(provider);
+  useEffect(() => setFailed(false), [provider, resolvedLogo]);
+  const logo = !failed ? resolvedLogo : null;
 
   if (logo) {
     return (
@@ -160,7 +161,9 @@ function getSavedBonusHuntProfit(record) {
 
 function BonusHuntSubmitProviderLogo({ provider }) {
   const [failed, setFailed] = useState(false);
-  const logo = !failed ? getProviderImage(provider) : null;
+  const resolvedLogo = useProviderLogo(provider);
+  useEffect(() => setFailed(false), [provider, resolvedLogo]);
+  const logo = !failed ? resolvedLogo : null;
 
   if (logo) {
     return (

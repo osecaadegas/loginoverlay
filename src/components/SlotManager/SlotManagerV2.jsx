@@ -3,8 +3,11 @@ import { supabase } from '../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE, resolveSlotImage } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
 import { getErrorMessage } from '../../utils/errorUtils';
-import { getLocalProviderNames, getProviderIdentityKey, getProviderImage } from '../../utils/gameProviders';
-import { BarChart3, Building2, Database, Plus, RefreshCw, Search, SlidersHorizontal } from 'lucide-react';
+import { getProviderIdentityKey, getProviderImage } from '../../utils/gameProviders';
+import { useProviderLogo } from '../../hooks/useProviderLogo';
+import { fetchSlotProviderCatalog, saveSlotProvider, ensureManagedProvider, moveSlotProviderSlots, removeSlotProvider } from '../../services/slotProviderService';
+import { findCatalogProvider, normalizeProviderName } from '../../utils/slotProviderCatalog';
+import { ArrowRightLeft, BarChart3, Building2, Database, ImageOff, Plus, RefreshCw, RotateCcw, Save, Search, SlidersHorizontal, Trash2, X } from 'lucide-react';
 import './SlotManagerV2.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -61,12 +64,12 @@ const VolBadge = memo(({ v }) => {
   return <span className="sm-vol" style={{ '--c': o?.color || '#6b7280' }}>{o?.label || v}</span>;
 });
 
-const ProviderLogo = memo(({ provider, logoUrl = '', className = '', fallbackMode = 'text' }) => {
-  const resolvedLogo = useMemo(() => getProviderImage(provider), [provider]);
+const ProviderLogo = memo(({ provider, logoUrl, className = '', fallbackMode = 'text' }) => {
+  const resolvedLogo = useProviderLogo(provider);
   const logoCandidates = useMemo(() => {
-    const candidates = [logoUrl, resolvedLogo].filter(Boolean);
+    const candidates = (logoUrl === null ? [getProviderImage(provider)] : logoUrl !== undefined ? [logoUrl] : [resolvedLogo]).filter(Boolean);
     return candidates.filter((candidate, index) => candidates.indexOf(candidate) === index);
-  }, [logoUrl, resolvedLogo]);
+  }, [logoUrl, provider, resolvedLogo]);
   const [candidateIndex, setCandidateIndex] = useState(0);
 
   useEffect(() => setCandidateIndex(0), [provider, logoUrl, resolvedLogo]);
@@ -98,8 +101,6 @@ const ProviderLogo = memo(({ provider, logoUrl = '', className = '', fallbackMod
   return <span className={`sm-provider-fallback ${className}`} title={provider || 'Unknown provider'}>{provider || '—'}</span>;
 });
 
-const normalizeProviderName = (provider) => String(provider || '').trim().replace(/\s+/g, ' ');
-
 const findExistingProvider = (provider, providers) => {
   const candidate = normalizeProviderName(provider).toLowerCase();
   if (!candidate) return '';
@@ -123,74 +124,6 @@ const toProviderSlug = (provider) => normalizeProviderName(provider).toLowerCase
 const providerIdentityKey = (provider) => {
   const name = normalizeProviderName(provider);
   return getProviderIdentityKey(name) || toProviderSlug(name);
-};
-
-const providerDisplayScore = (provider) => {
-  const name = normalizeProviderName(provider);
-  const compact = name.replace(/[^a-z]/gi, '');
-  const allCapsPenalty = compact.length > 2 && compact === compact.toUpperCase() ? -20 : 0;
-  return name.length + (/[a-z]/.test(name) ? 12 : 0) + (/\s/.test(name) ? 8 : 0) + allCapsPenalty;
-};
-
-const buildProviderCatalog = (names) => {
-  const groups = new Map();
-
-  names.forEach(rawName => {
-    const name = normalizeProviderName(rawName);
-    if (!name || !toProviderSlug(name)) return;
-
-    const key = providerIdentityKey(name);
-    if (!key) return;
-
-    const current = groups.get(key) || { display: name, aliases: new Set() };
-    current.aliases.add(name);
-    if (providerDisplayScore(name) > providerDisplayScore(current.display)) {
-      current.display = name;
-    }
-    groups.set(key, current);
-  });
-
-  const aliases = {};
-  const providers = [...groups.values()]
-    .map(group => {
-      aliases[group.display] = [...group.aliases];
-      return group.display;
-    })
-    .sort((a, b) => a.localeCompare(b));
-
-  return { providers, aliases };
-};
-
-const mergeProviderRow = (groups, rawName, fields = {}) => {
-  const name = normalizeProviderName(rawName);
-  if (!name || !toProviderSlug(name)) return;
-
-  const key = providerIdentityKey(name);
-  if (!key) return;
-
-  const current = groups.get(key) || {
-    name,
-    slug: toProviderSlug(name),
-    logo_url: '',
-    website_url: '',
-    slot_count: 0,
-  };
-
-  const next = {
-    ...current,
-    ...fields,
-    name: current.id ? current.name : (
-      fields.id || providerDisplayScore(name) > providerDisplayScore(current.name)
-        ? name
-        : current.name
-    ),
-    slug: fields.slug || current.slug || toProviderSlug(name),
-    logo_url: fields.logo_url ?? current.logo_url,
-    website_url: fields.website_url ?? current.website_url,
-    slot_count: Math.max(Number(current.slot_count) || 0, Number(fields.slot_count) || 0),
-  };
-
-  groups.set(key, next);
 };
 
 const ProviderPicker = memo(({ providers, value, onChange, onCreateProvider }) => {
@@ -309,7 +242,7 @@ const DropdownFilter = memo(({ label, options, selected, onChange }) => {
               {opt.color && <span className="sm-dropdown-dot" style={{ background: opt.color }} />}
               {opt.provider ? (
                 <>
-                  {getProviderImage(opt.provider) && <ProviderLogo provider={opt.provider} className="sm-provider-logo--filter" />}
+                  <ProviderLogo provider={opt.provider} className="sm-provider-logo--filter" fallbackMode="initial" />
                   <span className="sm-provider-filter-name">{opt.label}</span>
                 </>
               ) : (
@@ -631,147 +564,129 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew, o
    PROVIDER MANAGER PANEL
    ═══════════════════════════════════════════════════════════════════ */
 
-const ProviderManager = memo(({ onClose }) => {
-  const [list, setList] = useState([]);
-  const [hasProvTable, setHasProvTable] = useState(false);
-  const [loading, setLoading] = useState(true);
+const ProviderManager = memo(({ catalog, loading, loadError, onRefresh, onClose, onChanged, selectedSlotIds = null }) => {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [showRemoved, setShowRemoved] = useState(false);
+  const [moving, setMoving] = useState(Boolean(selectedSlotIds));
+  const [targetName, setTargetName] = useState('');
+  const [removeSource, setRemoveSource] = useState(false);
+  const active = catalog.filter(provider => provider.is_active !== false);
+  const close = () => { if (!saving) onClose(); };
+  useEffect(() => {
+    const onKey = event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault(); event.stopPropagation();
+      if (!saving) onClose();
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [saving, onClose]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    const providerGroups = new Map();
-
-    try {
-      // Probe slot_providers table (may not exist yet)
-      const { data: provData, error: provErr } = await supabase.from('slot_providers').select('*').order('name').limit(1000);
-      if (!provErr && provData) {
-        setHasProvTable(true);
-        provData.forEach(provider => {
-          mergeProviderRow(providerGroups, provider.name, {
-            ...provider,
-            slot_count: Number(provider.slot_count) || 0,
-          });
-        });
-      }
-    } catch { /* table doesn't exist */ }
-
-    getLocalProviderNames().forEach(name => {
-      mergeProviderRow(providerGroups, name, {
-        logo_url: getProviderImage(name),
-        is_local_logo: true,
-      });
-    });
-
-    // Pull distinct providers from slots table too (paginated), even when slot_providers exists.
-    try {
-      let all = [];
-      let from = 0;
-      const step = 1000;
-      while (true) {
-        const { data } = await supabase.from('slots').select('provider').range(from, from + step - 1);
-        if (!data || data.length === 0) break;
-        all = all.concat(data);
-        if (data.length < step) break;
-        from += step;
-      }
-
-      const counts = new Map();
-      all.forEach(row => {
-        const name = normalizeProviderName(row.provider);
-        if (!name) return;
-        const key = providerIdentityKey(name) || toProviderSlug(name);
-        counts.set(key, {
-          name,
-          count: (counts.get(key)?.count || 0) + 1,
-        });
-      });
-
-      counts.forEach(({ name, count }) => {
-        mergeProviderRow(providerGroups, name, { slot_count: count });
-      });
-    } catch { /* noop */ }
-
-    setList([...providerGroups.values()].sort((a, b) => a.name.localeCompare(b.name)));
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const handleSave = async (prov) => {
-    if (!hasProvTable) {
-      alert('The slot_providers table has not been created yet. Run the migration SQL in Supabase first.');
-      return;
-    }
+  const run = async (operation, message) => {
     setSaving(true);
+    setError('');
     try {
-      if (prov.id) {
-        const { error } = await supabase.from('slot_providers').update({ name: prov.name, logo_url: prov.logo_url, website_url: prov.website_url }).eq('id', prov.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('slot_providers').insert([{ name: prov.name, slug: prov.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), logo_url: prov.logo_url, website_url: prov.website_url }]);
-        if (error) throw error;
-      }
+      const result = await operation();
+      await onChanged(typeof message === 'function' ? message(result) : message);
       setEditing(null);
-      load();
+      setMoving(false);
+      setTargetName('');
+      setRemoveSource(false);
+      if (selectedSlotIds) onClose();
     } catch (err) {
-      alert('Error: ' + getErrorMessage(err, 'Could not save provider.'));
+      setError(getErrorMessage(err, 'Could not update provider.'));
     } finally {
       setSaving(false);
     }
   };
-
-  const filtered = list.filter(p => (p.name || '').toLowerCase().includes(search.toLowerCase()));
+  const edit = provider => {
+    setEditing({ ...provider, originalName: provider.name });
+    setError(''); setMoving(false); setTargetName(''); setRemoveSource(false);
+  };
+  const move = () => run(async () => {
+    const destination = active.find(provider => provider.name === targetName);
+    if (!destination) throw new Error('Choose a destination provider.');
+    const target = await ensureManagedProvider(destination);
+    const source = selectedSlotIds ? null : await ensureManagedProvider({ ...editing, name: editing.originalName });
+    return moveSlotProviderSlots({ sourceId: source?.id, sourceAliases: editing?.aliases, targetId: target.id, slotIds: selectedSlotIds, removeSource });
+  }, result => `${result.slots_updated} slots moved to ${result.provider}`);
+  const remove = () => {
+    if (editing.slot_count > 0) { setMoving(true); setRemoveSource(true); return; }
+    if (!window.confirm(`Remove ${editing.originalName} from the provider catalog? No slots will be deleted.`)) return;
+    run(async () => {
+      const provider = await ensureManagedProvider({ ...editing, name: editing.originalName });
+      await removeSlotProvider(provider.id);
+    }, 'Provider removed');
+  };
+  const filtered = catalog.filter(provider => (provider.is_active === false) === showRemoved
+    && provider.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <>
-      <div className="sm-overlay" onClick={onClose} />
-      <div className="sm-editor sm-editor--providers">
+      <div className="sm-overlay" onClick={close} />
+      <div className="sm-editor sm-editor--providers" role="dialog" aria-modal="true" aria-label={selectedSlotIds ? 'Move selected slots' : 'Providers'}>
         <div className="sm-editor-head">
-          <h3>Providers</h3>
-          <button className="sm-btn-close" onClick={onClose}>
-            <svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-          </button>
+          <h3>{selectedSlotIds ? `Move ${selectedSlotIds.length} slots` : 'Providers'}</h3>
+          <button type="button" className="sm-btn-close" title="Refresh providers" aria-label="Refresh providers" disabled={saving || loading} onClick={onRefresh}><RefreshCw size={16} /></button>
+          <button type="button" className="sm-btn-close" title="Close providers" aria-label="Close providers" disabled={saving} onClick={close}><X size={16} /></button>
         </div>
-        <div className="sm-prov-toolbar">
-          <input placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />
-          <button className="sm-btn-sm" onClick={() => setEditing({ name: '', logo_url: '', website_url: '' })}>+ Add</button>
-        </div>
-
-        {editing && (
-          <div className="sm-prov-form">
-            <label className="sm-field"><span>Name</span><input value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} /></label>
-            <label className="sm-field"><span>Logo URL</span><input value={editing.logo_url || ''} onChange={e => setEditing({ ...editing, logo_url: e.target.value })} /></label>
-            {editing.logo_url && <img className="sm-prov-logo-preview" src={editing.logo_url} alt="" onError={e => (e.target.style.display = 'none')} />}
-            <label className="sm-field"><span>Website</span><input value={editing.website_url || ''} onChange={e => setEditing({ ...editing, website_url: e.target.value })} /></label>
-            <div className="sm-prov-form-actions">
-              <button className="sm-btn-ghost" onClick={() => setEditing(null)}>Cancel</button>
-              <button className="sm-btn-primary" onClick={() => handleSave(editing)} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-            </div>
-          </div>
-        )}
-
         <div className="sm-editor-body">
-          {loading ? (
-            <div className="sm-empty"><div className="sm-spinner" /><p>Loading…</p></div>
-          ) : (
-            <div className="sm-prov-grid">
-              {filtered.map((p, i) => (
-                <button key={p.id || i} className="sm-prov-card" onClick={() => setEditing({ ...p })}>
-                  <ProviderLogo
-                    provider={p.name}
-                    logoUrl={p.logo_url}
-                    className="sm-provider-logo--provider-card"
-                    fallbackMode="initial"
-                  />
-                  <span className="sm-prov-name">{p.name}</span>
-                  {p.slot_count > 0 && <span className="sm-prov-count">{p.slot_count}</span>}
+          {(error || loadError) && <p className="sm-provider-error" role="alert">{error || loadError}</p>}
+          {loading && <p className="sm-provider-notice" role="status">Loading providers...</p>}
+          {!selectedSlotIds && <div className="sm-prov-toolbar">
+            <input aria-label="Search providers" placeholder="Search providers..." value={search} onChange={e => setSearch(e.target.value)} />
+            <button type="button" className="sm-btn-sm" disabled={saving || Boolean(loadError)} onClick={() => edit({ name: '', logo_url: '', website_url: '', aliases: [] })}><Plus size={14} /> Add</button>
+            <label className="sm-provider-removed"><input type="checkbox" checked={showRemoved} onChange={e => setShowRemoved(e.target.checked)} /> Removed</label>
+          </div>}
+          {editing && !moving && <form className="sm-prov-form" onSubmit={event => {
+            event.preventDefault();
+            run(() => saveSlotProvider(editing), result => `Provider saved${result.slots_updated ? `; ${result.slots_updated} slots updated` : ''}`);
+          }}>
+            <label className="sm-field"><span>Provider name</span><input required maxLength={120} disabled={saving} value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} /></label>
+            {editing.originalName && editing.name !== editing.originalName && <p className="sm-provider-notice">{editing.slot_count} slots will use this name.</p>}
+            <label className="sm-field"><span>Logo URL</span><input maxLength={2048} disabled={saving} value={editing.logo_url || ''} onChange={e => setEditing({ ...editing, logo_url: e.target.value })} /></label>
+            <div className="sm-provider-preview">
+              <ProviderLogo provider={editing.name} logoUrl={editing.logo_url} className="sm-provider-logo--provider-card" fallbackMode="initial" />
+              <button type="button" className="sm-btn-ghost" disabled={saving} onClick={() => setEditing({ ...editing, logo_url: '' })}><ImageOff size={14} /> Remove logo</button>
+              <button type="button" className="sm-btn-ghost" disabled={saving} onClick={() => setEditing({ ...editing, logo_url: null })}><RotateCcw size={14} /> Default logo</button>
+            </div>
+            <label className="sm-field"><span>Website</span><input type="url" maxLength={2048} disabled={saving} value={editing.website_url || ''} onChange={e => setEditing({ ...editing, website_url: e.target.value })} /></label>
+            <div className="sm-prov-form-actions">
+              {editing.originalName && editing.is_active !== false && <>
+                <button type="button" className="sm-btn-danger" disabled={saving} onClick={remove}><Trash2 size={14} /> Remove provider</button>
+                <button type="button" className="sm-btn-ghost" disabled={saving || !editing.slot_count} onClick={() => setMoving(true)}><ArrowRightLeft size={14} /> Move slots</button>
+              </>}
+              <button type="button" className="sm-btn-ghost" disabled={saving} onClick={() => setEditing(null)}>Cancel</button>
+              <button type="submit" className="sm-btn-primary" disabled={saving || loading || Boolean(loadError)}><Save size={14} /> {saving ? 'Saving...' : editing.is_active === false ? 'Restore provider' : 'Save provider'}</button>
+            </div>
+          </form>}
+          {moving && <div className="sm-prov-form">
+            <p className="sm-provider-notice">{selectedSlotIds ? `${selectedSlotIds.length} selected slots` : `${editing.slot_count} slots from ${editing.originalName}`}</p>
+            <label className="sm-field"><span>Destination provider</span>
+              <select value={targetName} disabled={saving} onChange={e => setTargetName(e.target.value)}>
+                <option value="">Select provider</option>
+                {active.filter(provider => provider.name !== editing?.originalName).map(provider => <option key={provider.id || provider.name} value={provider.name}>{provider.name}</option>)}
+              </select>
+            </label>
+            {!selectedSlotIds && <label className="sm-provider-removed"><input type="checkbox" disabled={saving} checked={removeSource} onChange={e => setRemoveSource(e.target.checked)} /> Remove source provider after moving all slots</label>}
+            <div className="sm-prov-form-actions">
+              <button type="button" className="sm-btn-ghost" disabled={saving} onClick={() => selectedSlotIds ? close() : setMoving(false)}>Cancel</button>
+              <button type="button" className="sm-btn-primary" disabled={saving || !targetName || Boolean(loadError)} onClick={move}><ArrowRightLeft size={14} /> {saving ? 'Moving...' : 'Move slots'}</button>
+            </div>
+          </div>}
+          {!selectedSlotIds && <div className="sm-prov-grid">
+              {filtered.map(provider => (
+                <button type="button" key={provider.id || provider.name} className="sm-prov-card" disabled={saving} onClick={() => edit(provider)}>
+                  <ProviderLogo provider={provider.name} logoUrl={provider.logo_url} className="sm-provider-logo--provider-card" fallbackMode="initial" />
+                  <span className="sm-prov-name">{provider.name}</span>
+                  <span className="sm-prov-count">{provider.slot_count} slots</span>
                 </button>
               ))}
               {filtered.length === 0 && <p className="sm-no-results">No providers found</p>}
-            </div>
-          )}
+          </div>}
         </div>
       </div>
     </>
@@ -787,6 +702,9 @@ const SlotManagerV2 = () => {
   const [slots, setSlots] = useState([]);
   const [providers, setProviders] = useState([]);
   const [providerAliases, setProviderAliases] = useState({});
+  const [providerCatalog, setProviderCatalog] = useState([]);
+  const [providerLoadError, setProviderLoadError] = useState('');
+  const [providerLoading, setProviderLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -808,6 +726,7 @@ const SlotManagerV2 = () => {
   const [editorSlot, setEditorSlot] = useState(null);
   const [isNewSlot, setIsNewSlot] = useState(false);
   const [showProviders, setShowProviders] = useState(false);
+  const [movingSlotIds, setMovingSlotIds] = useState(null);
   const [notification, setNotification] = useState(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -820,47 +739,22 @@ const SlotManagerV2 = () => {
   }, []);
 
   /* ── Load providers ────────────────────────────────────────── */
-  const loadProviders = useCallback(async () => {
+  const loadProviders = useCallback(async (force = false) => {
+    setProviderLoading(true);
     try {
-      const providerNames = [];
-
-      try {
-        const { data: managedProviders, error: providerError } = await supabase
-          .from('slot_providers')
-          .select('name')
-          .order('name')
-          .limit(1000);
-        if (!providerError && Array.isArray(managedProviders)) {
-          managedProviders.forEach(row => {
-            const name = normalizeProviderName(row.name);
-            if (name) providerNames.push(name);
-          });
-        }
-      } catch { /* slot_providers may not exist in older databases */ }
-
-      // Paginate to get ALL slot-used providers — Supabase defaults to 1000 row limit.
-      let all = [];
-      let from = 0;
-      const step = 1000;
-      let done = false;
-      while (!done) {
-        const { data, error } = await supabase.from('slots').select('provider').range(from, from + step - 1);
-        if (error) throw error;
-        if (!data || data.length === 0) { done = true; break; }
-        all = all.concat(data);
-        if (data.length < step) done = true;
-        from += step;
-      }
-      all.forEach(row => {
-        const name = normalizeProviderName(row.provider);
-        if (name) providerNames.push(name);
-      });
-      providerNames.push(...getLocalProviderNames());
-      const catalog = buildProviderCatalog(providerNames);
-      setProviders(catalog.providers);
-      setProviderAliases(catalog.aliases);
+      const catalog = await fetchSlotProviderCatalog({ force });
+      const active = catalog.filter(provider => provider.is_active !== false);
+      setProviderCatalog(catalog);
+      setProviders(active.map(provider => provider.name));
+      setProviderAliases(Object.fromEntries(active.map(provider => [provider.name, provider.aliases])));
+      setProviderLoadError('');
+      return catalog;
     } catch (e) {
       console.error('loadProviders:', e);
+      setProviderLoadError(getErrorMessage(e, 'Could not load providers.'));
+      return null;
+    } finally {
+      setProviderLoading(false);
     }
   }, []);
 
@@ -927,15 +821,8 @@ const SlotManagerV2 = () => {
     const slug = toProviderSlug(name);
     if (!slug) throw new Error('Provider name must include letters or numbers.');
 
-    const { data, error } = await supabase
-      .from('slot_providers')
-      .insert([{ name, slug }])
-      .select('name')
-      .single();
-
-    if (error) throw error;
-
-    const createdName = normalizeProviderName(data?.name) || name;
+    const { provider } = await saveSlotProvider({ name });
+    const createdName = provider.name;
     setProviders(prev => {
       const next = new Set(prev);
       next.add(createdName);
@@ -1572,6 +1459,7 @@ const SlotManagerV2 = () => {
           </select>
           <button className="sm-btn-sm" onClick={() => bulkFeature(true)}>★ Feature</button>
           <button className="sm-btn-sm" onClick={() => bulkFeature(false)}>☆ Unfeature</button>
+          <button type="button" className="sm-btn-sm" disabled={Boolean(providerLoadError)} onClick={() => setMovingSlotIds([...selectedIds])}><ArrowRightLeft size={14} /> Move provider</button>
           <button className="sm-btn-sm danger" onClick={bulkDelete}>Delete</button>
           <button className="sm-btn-close-sm" onClick={clearSelection}>×</button>
         </div>
@@ -1589,7 +1477,23 @@ const SlotManagerV2 = () => {
           onCreateProvider={handleCreateProvider}
         />
       )}
-      {showProviders && <ProviderManager onClose={() => setShowProviders(false)} />}
+      {(showProviders || movingSlotIds) && <ProviderManager
+        catalog={providerCatalog}
+        loading={providerLoading}
+        loadError={providerLoadError}
+        onRefresh={() => loadProviders(true)}
+        selectedSlotIds={movingSlotIds}
+        onClose={() => { setShowProviders(false); setMovingSlotIds(null); }}
+        onChanged={async message => {
+          const catalog = await loadProviders();
+          if (!catalog) throw new Error('Saved, but the catalog could not refresh. Reload before making another change.');
+          setProviderFilter(current => [...new Set(current.map(name => findCatalogProvider(catalog, name))
+            .filter(provider => provider && provider.is_active !== false).map(provider => provider.name))]);
+          clearSelection();
+          await loadSlots();
+          notify(message);
+        }}
+      />}
 
       {/* ── Shortcuts hint ───────────────────────────────── */}
       <div className="sm-shortcuts">

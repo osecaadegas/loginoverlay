@@ -18,7 +18,7 @@ import { calculateBonusMultiplier, calculateHuntStatistics, roundMoney } from '.
 import { formatDate, formatMaxWin, formatMoney, formatMultiplier, formatRtp, formatSignedMoney, formatVolatility } from './format';
 import { formatAutoDecimalInput } from './inputFormat';
 import { huntDetailCacheKey, readPlayerCache, removePlayerCache, writePlayerCache } from './clientCache';
-import { getProviderImage } from '../../utils/gameProviders';
+import { useProviderLogo } from '../../hooks/useProviderLogo';
 import './PlayerBonusHunt.css';
 
 const BONUS_TYPE_OPTIONS = [
@@ -114,12 +114,13 @@ function BonusTypePill({ type }) {
 
 function ProviderLogo({ provider, className = '' }) {
   const [failed, setFailed] = useState(false);
-  const logo = !failed ? getProviderImage(provider) : null;
+  const resolvedLogo = useProviderLogo(provider);
+  const logo = !failed ? resolvedLogo : null;
   const label = provider || 'Unknown provider';
 
   useEffect(() => {
     setFailed(false);
-  }, [provider]);
+  }, [provider, resolvedLogo]);
 
   if (logo) {
     return (

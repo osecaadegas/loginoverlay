@@ -5,7 +5,7 @@ import SlotThumb from './SlotThumb';
 import { formatMaxWin, formatRtp, formatVolatility } from './format';
 import { formatAutoDecimalInput } from './inputFormat';
 import { readPlayerCache, removePlayerCache, writePlayerCache } from './clientCache';
-import { getProviderImage } from '../../utils/gameProviders';
+import { useProviderLogo } from '../../hooks/useProviderLogo';
 
 const EMPTY = {
   slot_name: '',
@@ -24,11 +24,12 @@ const EMPTY = {
 function LockedProvider({ provider }) {
   const [failed, setFailed] = useState(false);
   const label = provider || 'Select a library slot';
-  const logo = provider && !failed ? getProviderImage(provider) : null;
+  const resolvedLogo = useProviderLogo(provider);
+  const logo = provider && !failed ? resolvedLogo : null;
 
   useEffect(() => {
     setFailed(false);
-  }, [provider]);
+  }, [provider, resolvedLogo]);
 
   return (
     <div className={`pbh-provider-locked${provider ? '' : ' pbh-provider-locked--empty'}`} aria-label={`Provider: ${label}`}>
