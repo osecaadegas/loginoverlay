@@ -17,12 +17,17 @@ export async function verifyStreamElementsCommunity(user, connection, fetcher = 
   if (String(channel._id) !== channelId || channel.provider !== 'twitch' || String(channel.providerId) !== twitchId) {
     throw new Error('These credentials belong to a different community than your signed-in Twitch account.');
   }
-  const points = await fetcher(`${SE_BASE}/points/${channelId}/${encodeURIComponent(channel.username)}`, { headers, signal: AbortSignal.timeout(8000) });
-  if (!points.ok) {
-    const pointsBody = await points.text().catch(() => '');
-    throw new Error(`StreamElements points access is unavailable (HTTP ${points.status}). Enable Loyalty in SE Dashboard → Loyalty → Enable. SE: ${pointsBody.slice(0, 200)}`);
+  // The broadcaster's own username may have no loyalty record (they rarely chat in their own
+  // channel), so a failed self-check here does not prove Loyalty is disabled for real viewers.
+  // Credential ownership above is the real security gate; only warn, never block saving on this.
+  let pointsWarning = null;
+  try {
+    const points = await fetcher(`${SE_BASE}/points/${channelId}/${encodeURIComponent(channel.username)}`, { headers, signal: AbortSignal.timeout(8000) });
+    if (!points.ok) pointsWarning = `Could not confirm Loyalty points access (HTTP ${points.status}). Make sure Loyalty is enabled in SE Dashboard → Loyalty.`;
+  } catch {
+    pointsWarning = 'Could not confirm Loyalty points access. Make sure Loyalty is enabled in SE Dashboard → Loyalty.';
   }
-  return { se_channel_id: channelId, se_jwt_token: token, se_username: channel.username, verified_twitch_id: twitchId, verified_at: new Date().toISOString() };
+  return { se_channel_id: channelId, se_jwt_token: token, se_username: channel.username, verified_twitch_id: twitchId, verified_at: new Date().toISOString(), pointsWarning };
 }
 
 export async function loadVerifiedCommunity(supabase, user, fetcher = fetch) {

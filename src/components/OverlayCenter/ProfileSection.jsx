@@ -1562,16 +1562,16 @@ export default function ProfileSection({ widgets, saveWidget }) {
                   setSeSaving(true);
                   setSeTestMsg("");
                   try {
-                    await manageStreamElementsConnection({ se_channel_id: profile.seChannelId, se_jwt_token: profile.seJwtToken });
+                    const result = await manageStreamElementsConnection({ se_channel_id: profile.seChannelId, se_jwt_token: profile.seJwtToken });
                     setSeVerified(true);
-                    setSeTestMsg("Verified and saved");
+                    setSeTestMsg(result.pointsWarning ? `Saved. ${result.pointsWarning}` : "Verified and saved");
                   } catch (err) {
                     console.error("[ProfileSection] SE save error:", err);
                     setSeVerified(false);
                     setSeTestMsg(err.message || "Failed to save");
                   }
                   setSeSaving(false);
-                  setTimeout(() => setSeTestMsg(""), 4000);
+                  setTimeout(() => setSeTestMsg(""), 6000);
                 }}
               >
                 {seSaving ? "⏳ Saving..." : "💾 Save Credentials"}
@@ -1589,11 +1589,11 @@ export default function ProfileSection({ widgets, saveWidget }) {
                     setSeTestMsg("⏳ Testing...");
                     try {
                       const result = await manageStreamElementsConnection({ se_channel_id: profile.seChannelId, se_jwt_token: profile.seJwtToken, test_only: true });
-                      setSeTestMsg(`Verified as ${result.username}. Save credentials to enable points.`);
-                    } catch {
-                      setSeTestMsg("❌ Connection failed");
+                      setSeTestMsg(result.pointsWarning ? `Verified as ${result.username}. ${result.pointsWarning}` : `Verified as ${result.username}. Save credentials to enable points.`);
+                    } catch (err) {
+                      setSeTestMsg(err.message || "❌ Connection failed");
                     }
-                    setTimeout(() => setSeTestMsg(""), 5000);
+                    setTimeout(() => setSeTestMsg(""), 7000);
                   }}
                 >
                   🔍 Test

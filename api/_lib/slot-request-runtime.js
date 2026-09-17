@@ -195,10 +195,11 @@ export async function streamElementsConnectionHandler(req, res, dependencies = {
     let verified;
     try { verified = await verifyStreamElementsCommunity(user, connection, dependencies.fetcher || fetch); }
     catch (error) { throw fail(error.message, 409); }
+    const { pointsWarning, ...toStore } = verified;
     if (req.method === 'POST' && !connection.test_only) {
-      const { error } = await db.from('streamelements_connections').upsert({ ...verified, user_id: user.id, connected_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      const { error } = await db.from('streamelements_connections').upsert({ ...toStore, user_id: user.id, connected_at: new Date().toISOString() }, { onConflict: 'user_id' });
       if (error) throw fail('Verification passed, but saving failed. Please retry.', 503);
     }
-    return res.status(200).json({ success: true, username: verified.se_username, verified_at: verified.verified_at, verified_twitch_id: verified.verified_twitch_id });
+    return res.status(200).json({ success: true, username: verified.se_username, verified_at: verified.verified_at, verified_twitch_id: verified.verified_twitch_id, pointsWarning: verified.pointsWarning || null });
   } catch (error) { return res.status(error.statusCode || 503).json({ error: error.statusCode ? error.message : 'Connection verification is unavailable.' }); }
 }
