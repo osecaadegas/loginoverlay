@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertTriangle, Check, Loader2, Save } from 'lucide-react';
 import { supabase } from '../../config/supabaseClient';
 import './AdminSubscriptionsPage.css';
+import SubscriberReviewsAdmin from './SubscriberReviewsAdmin';
 
 function centsToMoney(cents, currency = 'EUR') {
   return new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format((Number(cents) || 0) / 100);
@@ -353,6 +354,7 @@ export default function AdminSubscriptionsPage() {
           ))}
         </div>
       </section>
+      <SubscriberReviewsAdmin />
     </main>
   );
 }

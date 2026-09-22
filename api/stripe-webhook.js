@@ -130,7 +130,7 @@ async function handleInvoiceEvent(supabase, invoice) {
   return syncSubscriptionById(supabase, invoice.subscription);
 }
 
-async function handleStripeEvent(supabase, event) {
+export async function handleStripeEvent(supabase, event) {
   const object = event.data?.object;
 
   switch (event.type) {
@@ -139,7 +139,9 @@ async function handleStripeEvent(supabase, event) {
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted':
-      return syncStripeSubscription(supabase, object);
+      // Events can arrive out of order. Read current state so a delayed event
+      // cannot overwrite a review extension or restore canceled access.
+      return syncSubscriptionById(supabase, object.id);
     case 'invoice.paid':
     case 'invoice.payment_succeeded':
     case 'invoice.payment_failed':

@@ -156,7 +156,7 @@ function stripeSecretKey() {
   return key;
 }
 
-export async function stripeRequest(path, { method = 'POST', params } = {}) {
+export async function stripeRequest(path, { method = 'POST', params, idempotencyKey } = {}) {
   const url = new URL(`https://api.stripe.com${path}`);
   const options = {
     method,
@@ -164,6 +164,8 @@ export async function stripeRequest(path, { method = 'POST', params } = {}) {
       Authorization: `Bearer ${stripeSecretKey()}`,
     },
   };
+
+  if (idempotencyKey) options.headers['Idempotency-Key'] = idempotencyKey;
 
   if (params && method !== 'GET') {
     const body = new URLSearchParams();

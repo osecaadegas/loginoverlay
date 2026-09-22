@@ -40,7 +40,10 @@ import {
   renderBetterWidgetInstance,
 } from "../OverlayCenter/editor/betterWidgetRegistry";
 import ContactFooter from "./ContactFooter";
+import LandingPlans from "./LandingPlans";
+import SubscriberReviews from "./SubscriberReviews";
 import "./LandingPage.css";
+import "./LandingModern.css";
 
 const FEATURED_PARTNERS = [
   {
@@ -290,20 +293,6 @@ const TRUST_POINTS = [
 
 const HOME_WIDGETS = [
   {
-    title: "RTP Stats",
-    widgetType: "rtp_stats",
-    layout: "wide",
-    width: 1245,
-    height: 57,
-  },
-  {
-    title: "Navbar",
-    widgetType: "navbar",
-    layout: "wide",
-    width: 1915,
-    height: 72,
-  },
-  {
     title: "Bets",
     widgetType: "bets",
     layout: "square",
@@ -365,6 +354,20 @@ const HOME_WIDGETS = [
     layout: "square",
     width: 369,
     height: 884,
+  },
+  {
+    title: "RTP Stats",
+    widgetType: "rtp_stats",
+    layout: "wide",
+    width: 1245,
+    height: 57,
+  },
+  {
+    title: "Navbar",
+    widgetType: "navbar",
+    layout: "wide",
+    width: 1915,
+    height: 72,
   },
 ];
 
@@ -1086,60 +1089,13 @@ const HOME_STEPS = [
   },
   {
     icon: Grid3X3,
-    title: "Choose Widgets",
-    desc: "Pick interactive overlays and stream tools.",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Customize",
-    desc: "Adjust style, colors, triggers and behavior.",
+    title: "Make it yours",
+    desc: "Choose your widgets, then adjust their layout and style.",
   },
   {
     icon: MonitorPlay,
     title: "Add to OBS",
     desc: "Add the browser source and go live.",
-  },
-];
-
-const HOME_PRICING = [
-  {
-    name: "Gambler Monthly",
-    category: "Gambler",
-    image: "/player3eur.webp",
-    to: "/premium?type=player",
-    tone: "player",
-  },
-  {
-    name: "Gambler Yearly",
-    category: "Gambler",
-    image: "/player25eur.webp",
-    to: "/premium?type=player",
-    tone: "player",
-    badge: "Best Value",
-    badgeTone: "player",
-  },
-  {
-    name: "Streamer Monthly",
-    category: "Streamer",
-    image: "/25.webp",
-    to: "/premium?type=streamer",
-    tone: "streamer",
-  },
-  {
-    name: "Streamer 6 Months",
-    category: "Streamer",
-    image: "/130.webp",
-    to: "/premium?type=streamer",
-    tone: "streamer",
-  },
-  {
-    name: "Streamer Yearly",
-    category: "Streamer",
-    image: "/250.webp",
-    to: "/premium?type=streamer",
-    tone: "streamer",
-    badge: "Best Value",
-    badgeTone: "streamer",
   },
 ];
 
@@ -1586,10 +1542,11 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
     <main className="lp-home">
       <header className="lp-home-nav lp-home-nav--secondary">
         <nav className="lp-home-nav__links" aria-label="Main navigation">
+          <a href="#features">Features</a>
           <a href="#widgets">Widgets</a>
           <Link to="/offers">Deals</Link>
           <a href="#pricing">Pricing</a>
-          <a href="#demo">Demo</a>
+          <a href="#reviews">Reviews</a>
         </nav>
         <div className="lp-home-nav__actions">
           {!user && (
@@ -1602,21 +1559,20 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             className="lp-home-nav__primary"
             onClick={onStreamerCta}
           >
-            Start Free Trial
+            {user ? 'Continue to your account' : 'Get started'}
           </button>
         </div>
       </header>
 
       <section className="lp-home-hero" id="demo">
         <div className="lp-home-hero__copy">
+          <span className="lp-eyebrow">Your stream. All together.</span>
           <h1>
-            Turn your stream{" "}
-            <span className="lp-home-hero__nowrap">into an</span>{" "}
-            <strong>interactive experience</strong>
+            Less managing.<br /><strong>More streaming.</strong>
           </h1>
           <p>
-            Interactive iGaming overlays, bonus hunts, tournaments, giveaways,
-            slot requests, bets, chat tools and games, all in one place.
+            Bring your overlays, bonus hunts and community into one workspace.
+            Make it your own, connect to OBS and keep your next stream moving.
           </p>
           <div className="lp-home-hero__ctas">
             <button
@@ -1624,10 +1580,10 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
               className="lp-btn lp-btn--streamer"
               onClick={onStreamerCta}
             >
-              Start Free Trial <ArrowRight size={18} />
+              {user ? 'Open your workspace' : 'Start your free trial'} <ArrowRight size={18} />
             </button>
             <a className="lp-btn lp-btn--ghost" href="#widgets">
-              View Demo <Play size={18} />
+              Explore the widgets <Play size={18} />
             </a>
           </div>
           <div className="lp-home-platforms" aria-label="Supported workflow">
@@ -1650,34 +1606,38 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             )}
           </div>
         </div>
-        <div className="lp-home-hero__media">
-          <img
-            src="/streamer.webp"
-            alt="Streamers Center overlay tools preview"
-            loading="eager"
-            decoding="async"
-          />
+        <div className="lp-home-hero__media lp-product-preview">
+          <div className="lp-product-preview__bar"><span><i /><i /><i /></span><span>Streamers Center / Widget preview</span><Grid3X3 size={15} aria-hidden="true" /></div>
+          <div className="lp-product-preview__heading"><div><small>MADE FOR YOUR COMMUNITY</small><h2>A stream they can be part of.</h2></div><MonitorPlay size={26} aria-hidden="true" /></div>
+          <div className="lp-product-preview__canvas">
+            <div><span className="lp-product-preview__label">Chat & community</span><HomeWidgetMedia widget={HOME_WIDGETS.find((widget) => widget.widgetType === 'chat')} carousel /></div>
+            <div><span className="lp-product-preview__label">Give viewers a reason to join in</span><HomeWidgetMedia widget={HOME_WIDGETS.find((widget) => widget.widgetType === 'giveaway')} carousel /></div>
+          </div>
+          <div className="lp-product-preview__footer"><ShieldCheck size={16} aria-hidden="true" /><span>Your layout. Your colours. Ready for OBS.</span><a href="#widgets" aria-label="Explore all widget previews"><ArrowRight size={18} /></a></div>
         </div>
       </section>
 
-      <section className="lp-home-section lp-home-audiences">
-        <h2>Built for Streamers and Gamblers</h2>
+      <section className="lp-home-section lp-home-audiences" id="features">
+        <span className="lp-eyebrow">Built around your workflow</span>
+        <h2>On stream or behind the scenes.</h2>
+        <p className="lp-modern-intro">Pick the tools you need. Keep everything in one place.</p>
         <div className="lp-home-audience-grid">
           <button
             type="button"
             className="lp-home-audience lp-home-audience--streamer"
             onClick={onStreamerCta}
           >
-            <span className="lp-home-audience__badge">Most Popular</span>
+            <span className="lp-home-audience__badge">Create & connect</span>
             <MonitorPlay size={34} />
             <h3>For Streamers</h3>
-            <p>Engage your audience and grow your channel.</p>
+            <p>Run the show. Bring your community into it.</p>
             <ul>
               <li>Bonus hunts, slot requests, giveaways</li>
-              <li>Tournaments, chat games, interactive polls</li>
+              <li>Tournaments, bets and Connect 4</li>
               <li>OBS-ready overlays and alerts</li>
               <li>All-in-one dashboard, easy to customize</li>
             </ul>
+            <span className="lp-audience-action">Explore Streamer tools <ArrowRight size={17} /></span>
           </button>
           <button
             type="button"
@@ -1685,14 +1645,15 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             onClick={onPlayerCta}
           >
             <Users size={34} />
-            <h3>For Gamblers</h3>
-            <p>Track your activity and measure results.</p>
+            <h3>For Players</h3>
+            <p>A clear picture of your sessions. Just for you.</p>
             <ul>
               <li>Track deposits, withdrawals and sessions</li>
               <li>Best wins, biggest losses, profit/loss</li>
               <li>Detailed history and stats over time</li>
               <li>Personal dashboard and insights</li>
             </ul>
+            <span className="lp-audience-action">Explore Player tools <ArrowRight size={17} /></span>
           </button>
         </div>
       </section>
@@ -1700,8 +1661,8 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
       <section className="lp-home-section lp-home-widgets" id="widgets">
         <div className="lp-home-widgets__heading">
           <div>
-            <span className="lp-eyebrow">Live previews</span>
-            <h2>See the widgets in action</h2>
+            <span className="lp-eyebrow">Built in. Ready to make yours.</span>
+            <h2>Small details. A better stream.</h2>
           </div>
           <span className="lp-home-widget-counter" aria-live="polite">
             {widgetStartIndex + 1} / {HOME_WIDGETS.length}
@@ -1739,7 +1700,8 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
       </section>
 
       <section className="lp-home-section lp-home-steps">
-        <h2>How it works</h2>
+        <span className="lp-eyebrow">A simpler start</span>
+        <h2>From your first login to your next stream.</h2>
         <div className="lp-home-step-grid">
           {HOME_STEPS.map(({ icon: Icon, title, desc }, index) => (
             <article key={title} className="lp-home-step">
@@ -1755,47 +1717,18 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
         </div>
       </section>
 
-      <section className="lp-home-section lp-home-pricing" id="pricing">
-        <h2>Simple, transparent pricing</h2>
-        <div className="lp-home-price-groups">
-          {["Gambler", "Streamer"].map((category, categoryIndex) => (
-            <div
-              key={category}
-              className={`lp-home-price-group lp-home-price-group--${category.toLowerCase()}`}
-            >
-              <h3>{category}s</h3>
-              <div className="lp-home-price-grid">
-                {HOME_PRICING.filter((plan) => plan.category === category).map(
-                  (plan) => (
-                    <Link
-                      key={plan.name}
-                      to={plan.to}
-                      className={`lp-home-price lp-home-price--image lp-home-price--${plan.tone}${plan.badge ? " lp-home-price--featured" : ""}`}
-                      aria-label={`${plan.name} pricing`}
-                    >
-                      {plan.badge && (
-                        <span
-                          className={`lp-home-price__badge lp-home-price__badge--${plan.badgeTone || plan.tone}`}
-                        >
-                          {plan.badge}
-                        </span>
-                      )}
-                      <img
-                        src={plan.image}
-                        alt={`${plan.name} subscription card`}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </Link>
-                  ),
-                )}
-              </div>
-              {categoryIndex === 0 && (
-                <span className="lp-home-price-divider" aria-hidden="true" />
-              )}
-            </div>
-          ))}
-        </div>
+      <LandingPlans />
+      <SubscriberReviews user={user} onLogin={onLogin} />
+      <section className="lp-home-section lp-home-faq" aria-labelledby="home-faq-heading">
+        <span className="lp-eyebrow">Good to know</span><h2 id="home-faq-heading">A few answers before you start.</h2>
+        <details><summary>Do I need to know how to code?</summary><p>No. Use the visual editor to choose widgets and adjust their appearance. Quick setup guides you through your first overlay and the OBS browser source.</p></details>
+        <details><summary>Do I need to stream to use the tools?</summary><p>No. The Player plan is for private session and bonus hunt tracking. Choose Streamer when you also want overlays and tools for your audience.</p></details>
+        <details><summary>Can I use my existing OBS setup?</summary><p>Yes. Add your overlay as a browser source in your existing scene. You can customise the layout and keep your other sources.</p></details>
+        <details><summary>How do the three free review days work?</summary><p>Sign in with an active Player or Streamer subscription and publish your first review. All ratings qualify. We extend your subscription period by three days, once per account. Free signup trials do not qualify. Reviews display the incentive so readers have the full context.</p></details>
+      </section>
+      <section className="lp-home-section lp-home-final">
+        <div><span className="lp-eyebrow">Make it yours</span><h2>Your next stream starts here.</h2><p>Choose your tools. Find your style. Bring your community along.</p></div>
+        <button type="button" className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>{user ? 'Open your workspace' : 'Get started'} <ArrowRight size={18} /></button>
       </section>
     </main>
   );

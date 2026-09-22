@@ -1,5 +1,9 @@
 # Migration Catalog
 
+## Subscriber reviews
+
+`20260922014434_subscriber_reviews.sql` adds the private subscriber review and three-day reward ledger, unique account constraint, server-only grants, RLS and aggregate review summary. Apply before deploying the review API. See `DOCs/LANDING_REVIEWS_AUDIT.md` for eligibility, retry behaviour and verification.
+
 The `migrations/` folder has been reduced to a numbered baseline that keeps only the active schema needed by the current app and the two explicit cleanup passes for older databases.
 
 ## Ordered baseline

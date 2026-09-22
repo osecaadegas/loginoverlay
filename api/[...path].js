@@ -9,6 +9,7 @@ import contactMessagesHandler from "./_lib/routes/contact-messages.js";
 import createBillingPortalSessionHandler from "./_lib/routes/create-billing-portal-session.js";
 import playerSubscriptionHandler from "./_lib/routes/player-subscription.js";
 import premiumHandler from "./_lib/routes/premium.js";
+import reviewsHandler from "./_lib/routes/reviews.js";
 import publicSlotCountHandler from "./_lib/routes/public-slot-count.js";
 import serviceReadinessHandler from "./_lib/routes/service-readiness.js";
 import streamerDataHandler from "./_lib/streamer-data.js";
@@ -26,6 +27,7 @@ const ROUTES = {
   "create-billing-portal-session": createBillingPortalSessionHandler,
   "player-subscription": playerSubscriptionHandler,
   premium: premiumHandler,
+  reviews: reviewsHandler,
   "public-slot-count": publicSlotCountHandler,
   "service-readiness": serviceReadinessHandler,
   "streamer-data": streamerDataHandler,

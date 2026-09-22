@@ -33,7 +33,9 @@
     "test:analytics": "node scripts/test-analytics.mjs",
     "test:affiliate": "node scripts/test-affiliate-system.mjs",
     "test:stripe-trials": "node scripts/test-stripe-trials.mjs",
-    "test:onboarding": "node scripts/test-onboarding.mjs"
+    "test:onboarding": "node scripts/test-onboarding.mjs",
+    "test:subscriber-reviews": "node scripts/test-subscriber-reviews.mjs",
+    "test:subscriber-reviews-browser": "node scripts/test-subscriber-reviews-browser.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
