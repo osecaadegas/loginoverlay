@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { createReviewsHandler, applyReviewReward } from '../api/_lib/routes/reviews.js';
 import { validateReview, rewardPlan, rewardUpdateParams, verifyReviewSubscription, REVIEW_REWARD_SECONDS } from '../api/_lib/review-rewards.js';
 import { handleStripeEvent } from '../api/stripe-webhook.js';
@@ -189,5 +190,22 @@ await test('delayed subscription webhooks sync current Stripe dates and cancella
     globalThis.fetch = originalFetch;
     if (originalSecret === undefined) delete process.env.STRIPE_SECRET_KEY; else process.env.STRIPE_SECRET_KEY = originalSecret;
   }
+});
+await test('premium catches asynchronous authentication failures and returns JSON 401', () => {
+  execFileSync(process.execPath, ['--input-type=module', '-e', `
+    import assert from 'node:assert/strict';
+    const {default:handler}=await import('./api/_lib/routes/premium.js');
+    const res={setHeader(){},status(code){this.code=code;return this},json(body){this.body=body;return this}};
+    await handler({method:'GET',query:{action:'status'},headers:{}},res);
+    assert.equal(res.code,401);assert.equal(res.body.error,'Authentication required');
+  `], { env: { ...process.env, SUPABASE_URL: 'https://test-only.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'test-only-key' }, stdio: 'pipe' });
+});
+await test('upstream database timeouts return retryable JSON without upstream HTML', async () => {
+  const f = fixture();
+  f.db.rpc = async () => ({ status: 522, error: { message: '<html>Connection timed out</html>' } });
+  const response = await f.request('GET', 'public', null, null);
+  assert.equal(response.statusCode, 503);
+  assert.match(response.body.error, /temporarily unavailable/);
+  assert.doesNotMatch(response.body.error, /html/);
 });
 console.log(`${checks} subscriber review and reward checks passed.`);

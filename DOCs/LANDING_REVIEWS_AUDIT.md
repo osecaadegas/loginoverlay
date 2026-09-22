@@ -28,6 +28,7 @@ Modified:
 - `api/[...path].js`
 - `api/_lib/stripe-billing.js` (optional idempotency header; existing callers unchanged)
 - `api/stripe-webhook.js` (retrieve current subscription state before processing subscription events, avoiding stale event snapshots overwriting extensions/cancellations)
+- `api/_lib/routes/premium.js` (await asynchronous handlers so authentication and upstream errors return controlled JSON; do not expose upstream HTML in responses)
 - `package.json`
 - `migrations/README.md`
 
@@ -57,7 +58,7 @@ No new environment variables. Production Vercel configuration contains the exist
 ## Validation
 
 - `npm.cmd run build` — passed; existing large-bundle advisory remains.
-- `npm.cmd run test:subscriber-reviews` — 16 behavioural checks passed: validation, ownership, exact duration, eligibility, low ratings, duplicate/concurrent submission, billing failure, sync/DB recovery, stale cancellation state, receipt verification, public field privacy, moderation, Player access, invalid requests and delayed webhook state.
+- `npm.cmd run test:subscriber-reviews` — 18 behavioural checks passed: validation, ownership, exact duration, eligibility, low ratings, duplicate/concurrent submission, billing failure, sync/DB recovery, stale cancellation state, receipt verification, public field privacy, moderation, Player access, invalid requests, delayed webhook state, asynchronous Premium authentication errors and upstream timeout responses.
 - `npm.cmd run test:subscriber-reviews-browser` — passed with controlled browser-only API fixtures: actual form submission, pending/retry/success, one-star rating, escaped HTML, incentive disclosure, mobile layout, non-subscribers, signed-out users and load-error recovery.
 - `node scripts/test-subscriber-reviews-db.mjs` — passed in isolated PGlite PostgreSQL: migration SQL, uniqueness, checks, grants, RLS, summary and retained ledger. No test reviews were inserted into production. To reproduce, install PGlite temporarily with `npm.cmd install --prefix .codex-dev/review-test-deps --no-save --package-lock=false @electric-sql/pglite`.
 - Existing `test:landing-widget-carousel`, `test:stripe-trials`, `test:global-navigation`, `test:contact-messages` — passed.
@@ -65,6 +66,8 @@ No new environment variables. Production Vercel configuration contains the exist
 - Browser inspection at 1264px and 390px: real catalogue prices/features rendered, no horizontal overflow, no Vite error overlay or page runtime errors. Existing navigation, widgets and consent controls remain present. Local screenshots are under `.codex-dev/` and excluded from the commit.
 
 ## Verification limits
+
+Production smoke checks encountered intermittent Supabase REST connection timeouts (Cloudflare 522), also visible on existing pricing and slot-count APIs. Database SQL checks remained responsive. The review API returned 200 on successful reads and safely rejected unauthenticated requests. Public read failures present retry controls; server-side review failures report 503 for upstream unavailability. The Premium handler was corrected to await its asynchronous branches so errors are caught rather than becoming unhandled function failures. An upstream timeout is distinct from completed billing verification.
 
 The connected Stripe account is live-only. No real customer was charged, extended or canceled as a test. Billing mutations are covered by behavioural fixtures and the existing Stripe API contract, not a completed live renewal. A controlled Stripe sandbox lifecycle remains the appropriate follow-up for external billing verification. The implementation follows [Stripe's subscription update API](https://docs.stripe.com/api/subscriptions/update) and [existing-subscription free periods](https://docs.stripe.com/billing/subscriptions/trials/free-trials).
 

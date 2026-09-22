@@ -7,7 +7,12 @@ import {
 } from '../review-rewards.js';
 
 function checked(result) {
-  if (result.error) throw result.error;
+  if (result.error) {
+    if (result.status === 0 || result.status >= 500) {
+      throw Object.assign(reviewError('The review database is temporarily unavailable.', 503), { code: `database_${result.status}` });
+    }
+    throw result.error;
+  }
   return result.data;
 }
 
@@ -78,9 +83,13 @@ export function createReviewsHandler(overrides = {}) {
       if (req.method === 'GET' && action === 'public') {
         const offset = Number(req.query?.offset || 0);
         if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) throw reviewError('Invalid review page.');
-        const reviews = checked(await db.from('service_reviews').select(PUBLIC_REVIEW_FIELDS)
-          .eq('published', true).order('created_at', { ascending: false }).order('id').range(offset, offset + 5));
-        const summary = checked(await db.rpc('service_review_summary'));
+        const [reviewResult, summaryResult] = await Promise.all([
+          db.from('service_reviews').select(PUBLIC_REVIEW_FIELDS)
+            .eq('published', true).order('created_at', { ascending: false }).order('id').range(offset, offset + 5),
+          db.rpc('service_review_summary'),
+        ]);
+        const reviews = checked(reviewResult);
+        const summary = checked(summaryResult);
         return res.status(200).json({ reviews, summary, nextOffset: reviews.length === 6 && offset + 6 <= 1000000 ? offset + 6 : null });
       }
       if (!['GET', 'POST', 'PATCH'].includes(req.method)) return res.status(405).json({ error: 'Method not allowed' });

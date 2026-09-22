@@ -96,7 +96,9 @@ async function handleStatus(req, res, supabase) {
 
 function errorResponse(res, err) {
   return res.status(err.statusCode || 500).json({
-    error: err.message || "Premium request failed",
+    error: (err.statusCode || 500) >= 500
+      ? "Subscription details are temporarily unavailable. Please try again."
+      : err.message || "Premium request failed",
     code: err.code || null,
     trial: err.trial || null,
   });
@@ -113,11 +115,11 @@ export default async function handler(req, res) {
       req.query.action || body.action || (req.method === "GET" ? "page" : "");
 
     if (req.method === "GET" && action === "page")
-      return handlePage(req, res, supabase);
+      return await handlePage(req, res, supabase);
     if (req.method === "GET" && action === "status")
-      return handleStatus(req, res, supabase);
+      return await handleStatus(req, res, supabase);
     if (req.method === "POST" && action === "start_trial")
-      return handleStartTrial(req, res, supabase, body);
+      return await handleStartTrial(req, res, supabase, body);
     return res.status(404).json({ error: "Unknown premium action" });
   } catch (err) {
     console.error("[premium]", err);
