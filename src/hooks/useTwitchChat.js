@@ -9,7 +9,7 @@
  * @param {object}   [options]
  * @param {boolean}  [options.parseRaids=false] – Also emit raid USERNOTICE events
  */
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 function parseIrcTags(tagString = "") {
   return Object.fromEntries(
@@ -42,149 +42,169 @@ function parseTwitchEmotes(value = "") {
 }
 
 export default function useTwitchChat(channel, onMessage, options = {}) {
-  const { parseRaids = false, onRoomState } = options;
-  const wsRef = useRef(null);
-  const reconnectTimer = useRef(null);
-
-  const connect = useCallback(() => {
-    if (!channel) return;
-    const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      ws.send("PASS SCHMOOPIIE");
-      ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
-      ws.send("NICK justinfan" + Math.floor(Math.random() * 99999));
-      ws.send("JOIN #" + channel.toLowerCase().trim());
-    };
-
-    ws.onmessage = (evt) => {
-      const lines = evt.data.split("\r\n");
-      for (const line of lines) {
-        if (line.startsWith("PING")) {
-          ws.send("PONG :tmi.twitch.tv");
-          continue;
-        }
-
-        if (line.includes(" ROOMSTATE #")) {
-          const tagStr = line.match(/@([^ ]+)/)?.[1] || "";
-          const tags = parseIrcTags(tagStr);
-          const connectedChannel =
-            line.match(/ ROOMSTATE #([^ ]+)/)?.[1] || channel;
-          onRoomState?.({
-            channel: connectedChannel,
-            channelId: tags["room-id"] || "",
-            tags,
-          });
-          continue;
-        }
-
-        /* ── Raid USERNOTICE (opt-in) ── */
-        if (
-          parseRaids &&
-          line.includes("USERNOTICE") &&
-          line.includes("msg-id=raid")
-        ) {
-          const tagStr = line.match(/@([^ ]+)/)?.[1] || "";
-          const tags = parseIrcTags(tagStr);
-          const raider =
-            tags["msg-param-displayName"] ||
-            tags["display-name"] ||
-            tags["login"] ||
-            "Someone";
-          const viewerCount = parseInt(
-            tags["msg-param-viewerCount"] || "0",
-            10,
-          );
-          let avatar = (tags["msg-param-profileImageURL"] || "").replace(
-            /%s/g,
-            "",
-          );
-          if (avatar && !avatar.startsWith("http")) avatar = "";
-
-          onMessage({
-            id: tags["id"] || "raid-" + Date.now(),
-            platform: "twitch",
-            login: tags["login"] || raider,
-            username: raider,
-            message: `is raiding with ${viewerCount} viewer${viewerCount !== 1 ? "s" : ""}!`,
-            color: tags["color"] || "#a855f7",
-            timestamp: Date.now(),
-            isRaid: true,
-            raidViewers: viewerCount,
-            raidAvatar: avatar || "",
-            avatarUrl: avatar || "",
-            profileImageUrl: avatar || "",
-          });
-          continue;
-        }
-
-        /* ── Normal PRIVMSG ── */
-        const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
-        if (!m) continue;
-        const tags = parseIrcTags(m[1]);
-
-        /* Parse Twitch badges string e.g. "broadcaster/1,subscriber/12,premium/1" */
-        const badgeStr = tags["badges"] || "";
-        const badgeEntries = badgeStr
-          ? badgeStr.split(",").map((b) => {
-              const [n, v] = b.split("/");
-              return [n, v];
-            })
-          : [];
-        const badgeMap = Object.fromEntries(badgeEntries);
-
-        const isMod = tags["mod"] === "1" || "moderator" in badgeMap;
-        const isSub = tags["subscriber"] === "1" || "subscriber" in badgeMap;
-        const isVip = "vip" in badgeMap;
-        const isBroadcaster = "broadcaster" in badgeMap;
-        const isFirstMsg = tags["first-msg"] === "1";
-        const subMonths = parseInt(
-          tags["badge-info"]?.split("subscriber/")?.[1] ||
-            badgeMap["subscriber"] ||
-            "0",
-          10,
-        );
-
-        onMessage({
-          id: tags["id"] || Date.now().toString() + Math.random(),
-          platform: "twitch",
-          login: tags["login"] || m[2],
-          username: tags["display-name"] || m[2],
-          twitchUserId: tags["user-id"] || "",
-          broadcasterId: tags["room-id"] || "",
-          message: m[3],
-          color: tags["color"] || "",
-          timestamp: Date.now(),
-          /* Twitch badges */
-          badges: badgeMap,
-          isMod,
-          isSub,
-          isVip,
-          isBroadcaster,
-          isFirstMsg,
-          subMonths,
-          twitchEmotes: parseTwitchEmotes(tags["emotes"]),
-          bits: Math.max(0, parseInt(tags["bits"], 10) || 0),
-        });
-      }
-    };
-
-    ws.onclose = () => {
-      // Only schedule a reconnect if this is still the active connection.
-      // If the channel changed (effect re-ran) a new ws is already open —
-      // the old ws closing must not spawn a second concurrent connection.
-      if (wsRef.current === ws) {
-        reconnectTimer.current = setTimeout(connect, 3000);
-      }
-    };
-  }, [channel, onMessage, onRoomState, parseRaids]);
+  const callbacks = useRef({ onMessage, ...options });
+  const normalizedChannel = String(channel || "").trim().replace(/^#/, "").toLowerCase();
+  useEffect(() => {
+    callbacks.current = { onMessage, ...options };
+  });
 
   useEffect(() => {
-    connect();
-    return () => {
-      clearTimeout(reconnectTimer.current);
-      if (wsRef.current) wsRef.current.close();
+    if (!normalizedChannel) return;
+    let disposed = false;
+    let activeSocket;
+    let reconnectTimer;
+    const connect = () => {
+      if (disposed) return;
+      const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+      activeSocket = ws;
+
+      ws.onopen = () => {
+        if (disposed) { ws.close(); return; }
+        ws.send("PASS SCHMOOPIIE");
+        ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
+        ws.send("NICK justinfan" + Math.floor(Math.random() * 99999));
+        ws.send("JOIN #" + normalizedChannel);
+      };
+
+      ws.onmessage = (evt) => {
+        if (disposed) return;
+        const lines = evt.data.split("\r\n");
+        for (const line of lines) {
+          if (line.startsWith("PING")) {
+            ws.send("PONG :tmi.twitch.tv");
+            continue;
+          }
+
+          if (line.includes(" ROOMSTATE #")) {
+            const tagStr = line.match(/@([^ ]+)/)?.[1] || "";
+            const tags = parseIrcTags(tagStr);
+            const connectedChannel =
+              line.match(/ ROOMSTATE #([^ ]+)/)?.[1] || normalizedChannel;
+            callbacks.current.onRoomState?.({
+              channel: connectedChannel,
+              channelId: tags["room-id"] || "",
+              tags,
+            });
+            continue;
+          }
+
+          /* ── Raid USERNOTICE (opt-in) ── */
+          if (
+            callbacks.current.parseRaids &&
+            line.includes("USERNOTICE") &&
+            line.includes("msg-id=raid")
+          ) {
+            const tagStr = line.match(/@([^ ]+)/)?.[1] || "";
+            const tags = parseIrcTags(tagStr);
+            const raider =
+              tags["msg-param-displayName"] ||
+              tags["display-name"] ||
+              tags["login"] ||
+              "Someone";
+            const viewerCount = parseInt(
+              tags["msg-param-viewerCount"] || "0",
+              10,
+            );
+            let avatar = (tags["msg-param-profileImageURL"] || "").replace(
+              /%s/g,
+              "",
+            );
+            if (avatar && !avatar.startsWith("http")) avatar = "";
+
+            callbacks.current.onMessage?.({
+              id: tags["id"] || "raid-" + Date.now(),
+              platform: "twitch",
+              login: tags["login"] || raider,
+              username: raider,
+              message: `is raiding with ${viewerCount} viewer${viewerCount !== 1 ? "s" : ""}!`,
+              color: tags["color"] || "#a855f7",
+              timestamp: Date.now(),
+              isRaid: true,
+              raidViewers: viewerCount,
+              raidAvatar: avatar || "",
+              avatarUrl: avatar || "",
+              profileImageUrl: avatar || "",
+            });
+            continue;
+          }
+
+          /* ── Normal PRIVMSG ── */
+          const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
+          if (!m) continue;
+          const tags = parseIrcTags(m[1]);
+
+          /* Parse Twitch badges string e.g. "broadcaster/1,subscriber/12,premium/1" */
+          const badgeStr = tags["badges"] || "";
+          const badgeEntries = badgeStr
+            ? badgeStr.split(",").map((b) => {
+                const [n, v] = b.split("/");
+                return [n, v];
+              })
+            : [];
+          const badgeMap = Object.fromEntries(badgeEntries);
+
+          const isMod = tags["mod"] === "1" || "moderator" in badgeMap;
+          const isSub = tags["subscriber"] === "1" || "subscriber" in badgeMap;
+          const isVip = "vip" in badgeMap;
+          const isBroadcaster = "broadcaster" in badgeMap;
+          const isFirstMsg = tags["first-msg"] === "1";
+          const subMonths = parseInt(
+            tags["badge-info"]?.split("subscriber/")?.[1] ||
+              badgeMap["subscriber"] ||
+              "0",
+            10,
+          );
+
+          callbacks.current.onMessage?.({
+            id: tags["id"] || Date.now().toString() + Math.random(),
+            platform: "twitch",
+            login: tags["login"] || m[2],
+            username: tags["display-name"] || m[2],
+            twitchUserId: tags["user-id"] || "",
+            broadcasterId: tags["room-id"] || "",
+            message: m[3],
+            color: tags["color"] || "",
+            timestamp: Date.now(),
+            /* Twitch badges */
+            badges: badgeMap,
+            isMod,
+            isSub,
+            isVip,
+            isBroadcaster,
+            isFirstMsg,
+            subMonths,
+            twitchEmotes: parseTwitchEmotes(tags["emotes"]),
+            bits: Math.max(0, parseInt(tags["bits"], 10) || 0),
+          });
+        }
+      };
+
+      ws.onclose = () => {
+        // Only schedule a reconnect if this is still the active connection.
+        // If the channel changed (effect re-ran) a new ws is already open —
+        // the old ws closing must not spawn a second concurrent connection.
+        if (!disposed && activeSocket === ws) {
+          reconnectTimer = setTimeout(connect, 3000);
+        }
+      };
     };
-  }, [connect]);
+
+    // Let a cancelled mount (including StrictMode's initial probe) finish before opening IRC.
+    reconnectTimer = setTimeout(connect, 0);
+    return () => {
+      disposed = true;
+      clearTimeout(reconnectTimer);
+      if (!activeSocket) return;
+      activeSocket.onmessage = null;
+      activeSocket.onclose = null;
+      // Closing during CONNECTING aborts the handshake and produces a browser error.
+      // Retire that socket as soon as it opens, without joining or delivering messages.
+      if (activeSocket.readyState === WebSocket.CONNECTING) {
+        const retiringSocket = activeSocket;
+        retiringSocket.onopen = () => retiringSocket.close();
+      } else if (activeSocket.readyState === WebSocket.OPEN) {
+        activeSocket.close();
+      }
+    };
+  }, [normalizedChannel]);
 }

@@ -1167,6 +1167,7 @@ export function renderBetterWidgetInstance({
   );
   const commonProps = {
     config: widget.config,
+    previewOnly: mode === "mock",
     allWidgets,
     widgetId: widget.id,
     userId,

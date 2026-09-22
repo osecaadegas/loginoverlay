@@ -31,6 +31,8 @@
     "test:slot-providers": "node scripts/test-slot-providers.mjs",
     "test:slot-providers-browser": "node scripts/test-slot-providers-browser.mjs",
     "test:analytics": "node scripts/test-analytics.mjs",
+    "test:analytics-runtime": "node scripts/test-analytics-runtime.mjs",
+    "test:client-runtime-browser": "node scripts/test-client-runtime-browser.mjs",
     "test:affiliate": "node scripts/test-affiliate-system.mjs",
     "test:stripe-trials": "node scripts/test-stripe-trials.mjs",
     "test:onboarding": "node scripts/test-onboarding.mjs",

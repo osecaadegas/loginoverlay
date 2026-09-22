@@ -74,18 +74,15 @@ export function StreamElementsProvider({ children }) {
         .from("streamelements_connections")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== "PGRST116") throw error;
 
       if (data?.verified_at && data.verified_twitch_id === user.identities?.find(i => i.provider === 'twitch')?.identity_data?.sub) {
         setSeAccount(data);
-        // Fetch current points using SE username
-        await fetchPoints(
-          data.se_channel_id,
-          data.se_jwt_token,
-          data.se_username,
-        );
+        // Connection consumers only need the verified account. A broadcaster may
+        // have no loyalty entry in their own channel. Read balances on explicit
+        // refresh, rather than requesting this unused value on every page load.
       } else {
         setSeAccount(null);
         setPoints(0);
@@ -100,12 +97,13 @@ export function StreamElementsProvider({ children }) {
     setError(null);
 
     try {
-      // Use username if provided, otherwise use user.id
-      const userId = username || user.id;
+      // StreamElements expects a Twitch login, never a Supabase user UUID.
+      const userId = String(username || '').trim();
+      if (!userId) throw new Error('Reconnect StreamElements to refresh your Twitch username.');
 
       // Call StreamElements API to get user points
       const response = await fetch(
-        `https://api.streamelements.com/kappa/v2/points/${channelId}/${userId}`,
+        `https://api.streamelements.com/kappa/v2/points/${channelId}/${encodeURIComponent(userId)}`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -114,7 +112,9 @@ export function StreamElementsProvider({ children }) {
         },
       );
 
-      if (!response.ok) throw new Error("Failed to fetch points");
+      if (!response.ok) throw new Error(response.status === 404
+        ? 'No loyalty record was found for this username. Check Loyalty settings in StreamElements.'
+        : `Could not fetch StreamElements points (HTTP ${response.status}).`);
 
       const data = await response.json();
       setPoints(data.points || 0);

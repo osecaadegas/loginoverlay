@@ -1,5 +1,9 @@
 # Migration Catalog
 
+## Analytics session counter
+
+`20260922025500_analytics_visitor_session_counter.sql` adds the service-only atomic visitor session counter. Apply before deploying the analytics runtime fix. It replaces the unavailable generic counter call; existing analytics records and permissions remain intact.
+
 ## Subscriber reviews
 
 `20260922014434_subscriber_reviews.sql` adds the private subscriber review and three-day reward ledger, unique account constraint, server-only grants, RLS and aggregate review summary. Apply before deploying the review API. See `DOCs/LANDING_REVIEWS_AUDIT.md` for eligibility, retry behaviour and verification.

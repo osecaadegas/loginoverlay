@@ -321,7 +321,7 @@ function SpinReel({
   );
 }
 
-function GiveawayWidget({ config, widgetId }) {
+function GiveawayWidget({ config, widgetId, previewOnly = false }) {
   const c = config || {};
   const st = c.displayStyle || "v1";
   const bgColor = subValue(
@@ -400,7 +400,7 @@ function GiveawayWidget({ config, widgetId }) {
 
   // Flush pending participants to Supabase every 2s
   useEffect(() => {
-    if (!widgetId) return;
+    if (!widgetId || previewOnly) return;
     const timer = setInterval(async () => {
       if (pendingRef.current.length === 0) return;
       const batch = [...pendingRef.current];
@@ -430,7 +430,7 @@ function GiveawayWidget({ config, widgetId }) {
       }
     }, 2000);
     return () => clearInterval(timer);
-  }, [widgetId]);
+  }, [widgetId, previewOnly]);
 
   // Chat message handler — use a stable ref to avoid WebSocket reconnects on keyword change
   const handleMessageRef = useRef(null);
@@ -453,8 +453,8 @@ function GiveawayWidget({ config, widgetId }) {
   // Always listen if channel is configured — no need for isActive or enabled flags
   const autoChannel = useTwitchChannel();
   const resolvedChannel = c.twitchChannel || autoChannel || "";
-  const listenTwitch = !isDone && !!keyword && !!resolvedChannel;
-  const listenKick = !isDone && !!keyword && !!c.kickChannelId;
+  const listenTwitch = !previewOnly && !isDone && !!keyword && !!resolvedChannel;
+  const listenKick = !previewOnly && !isDone && !!keyword && !!c.kickChannelId;
   useTwitchChat(listenTwitch ? resolvedChannel : "", handleMessage);
   useKickChat(listenKick ? c.kickChannelId : "", handleMessage);
 

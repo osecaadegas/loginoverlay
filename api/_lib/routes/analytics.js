@@ -65,9 +65,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server config error" });
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
   try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     switch (action) {
       // ── Tracking (public, no auth) ──
       case "track":
@@ -217,7 +216,7 @@ function mapIpApiGeo(ip, data) {
 
 async function fetchIpWhoGeo(ip) {
   try {
-    const resp = await fetch(`https://ipwho.is/${ip}`);
+    const resp = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(2000) });
     if (!resp.ok) return {};
     return mapIpWhoGeo(ip, await resp.json());
   } catch {
@@ -227,7 +226,7 @@ async function fetchIpWhoGeo(ip) {
 
 async function fetchIpApiGeo(ip) {
   try {
-    const resp = await fetch(`https://ipapi.co/${ip}/json/`);
+    const resp = await fetch(`https://ipapi.co/${ip}/json/`, { signal: AbortSignal.timeout(2000) });
     if (!resp.ok) return {};
     return mapIpApiGeo(ip, await resp.json());
   } catch {
@@ -1106,21 +1105,9 @@ async function handleSession(req, res, supabase) {
     visitor = { id: body.anonymous_id || fingerprint };
   }
 
-  if (!visitor)
-    return res.status(500).json({ error: "Failed to create visitor" });
-
-  // Increment total_sessions (best-effort, non-critical)
-  if (hasVisitorTable) {
-    await supabase
-      .rpc("increment_field", {
-        table_name: "analytics_visitors",
-        row_id: visitor.id,
-        field_name: "total_sessions",
-        amount: 1,
-      })
-      .catch(() => {
-        // If RPC doesn't exist, just skip increment (not critical)
-      });
+  if (!visitor) {
+    // Preserve diagnostics and use the handler's explicitly unpersisted fallback.
+    throw visitorError || new Error("Failed to create analytics visitor");
   }
 
   const sessionPayload = {
@@ -1214,6 +1201,11 @@ async function handleSession(req, res, supabase) {
   }
 
   const session = sessionResult.data;
+  if (hasVisitorTable) {
+    await bestEffortQuery(supabase.rpc("analytics_increment_visitor_sessions", {
+      p_visitor_id: visitor.id,
+    }));
+  }
   return res.status(200).json({
     session_id: session?.id,
     visitor_id: visitor.id,
@@ -1283,20 +1275,28 @@ async function insertAnalyticsEvent(supabase, row) {
   return result;
 }
 
+// PostgREST builders are thenables, not Promises: await them instead of calling .catch().
+async function bestEffortQuery(query) {
+  try {
+    const { error } = await query;
+    if (error) console.warn('[Analytics API] Optional persistence failed', error.code || error.message);
+  } catch (error) {
+    console.warn('[Analytics API] Optional persistence failed', error?.message);
+  }
+}
+
 async function updateTrackingCounters(supabase, normalized) {
-  await supabase
+  await bestEffortQuery(supabase
     .rpc("analytics_increment_session", {
       p_session_id: normalized.session_id,
       p_is_pageview: normalized.event_type === "pageview",
-    })
-    .catch(() => {});
+    }));
 
-  await supabase
+  await bestEffortQuery(supabase
     .rpc("analytics_increment_visitor_events", {
       p_visitor_id: normalized.visitor_id,
       p_amount: 1,
-    })
-    .catch(() => {});
+    }));
 }
 
 async function trackPayload(supabase, payload, req, ip, geo) {
@@ -2676,14 +2676,13 @@ async function handleConfig(req, res, supabase, user) {
       .single();
 
     if (error && isMissingRelationError(error)) {
-      await supabase
+      await bestEffortQuery(supabase
         .from("fraud_config")
         .insert({
           key: `analytics_config:${user.id}`,
           value: normalizedBody,
           description: "Analytics dashboard settings fallback",
-        })
-        .catch(() => {});
+        }));
       return res
         .status(200)
         .json({ config: { ...defaults, ...normalizedBody } });
@@ -2868,7 +2867,7 @@ async function handleDeleteData(req, res, supabase, user) {
   // Log deletion request
   const uuid =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  await supabase
+  await bestEffortQuery(supabase
     .from("analytics_deletion_requests")
     .insert({
       requester_id: user.id,
@@ -2878,8 +2877,7 @@ async function handleDeleteData(req, res, supabase, user) {
       status: "completed",
       completed_at: new Date().toISOString(),
       deleted_count: counts,
-    })
-    .catch(() => {});
+    }));
 
   return res.status(200).json({ ok: true, deleted: counts });
 }

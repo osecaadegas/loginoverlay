@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from "../config/supabaseClient";
+import { useAuth } from '../context/AuthContext';
 import { 
   loadUITranslations, 
   getSupportedLanguages, 
@@ -19,6 +20,8 @@ const LANGUAGE_STORAGE_KEY = 'preferred_language';
  * Wraps the app and provides language state and translation functions
  */
 export const LanguageProvider = ({ children }) => {
+  const { user } = useAuth();
+  const preferenceRevision = useRef(0);
   const [language, setLanguageState] = useState(() => {
     // Initialize from localStorage or default
     if (typeof window !== 'undefined') {
@@ -56,26 +59,31 @@ export const LanguageProvider = ({ children }) => {
 
   // Sync with user profile if logged in
   useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    const revision = preferenceRevision.current;
     const syncUserLanguage = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
+      try {
         // Get user's saved preference
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('user_profiles')
           .select('preferred_language')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
+        if (error) throw error;
 
-        if (profile?.preferred_language && profile.preferred_language !== language) {
+        if (!cancelled && revision === preferenceRevision.current && profile?.preferred_language) {
           setLanguageState(profile.preferred_language);
           localStorage.setItem(LANGUAGE_STORAGE_KEY, profile.preferred_language);
         }
+      } catch (error) {
+        if (!cancelled) console.error('Failed to load language preference:', error);
       }
     };
 
     syncUserLanguage();
-  }, []);
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   /**
    * Change the current language
@@ -84,6 +92,7 @@ export const LanguageProvider = ({ children }) => {
     if (newLanguage === language || isChanging) return;
     
     setIsChanging(true);
+    preferenceRevision.current += 1;
     
     try {
       // Update state and localStorage
@@ -93,10 +102,10 @@ export const LanguageProvider = ({ children }) => {
       // Update user profile if logged in
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase
+        const { error } = await supabase
           .from('user_profiles')
-          .update({ preferred_language: newLanguage })
-          .eq('user_id', user.id);
+          .upsert({ user_id: user.id, preferred_language: newLanguage }, { onConflict: 'user_id' });
+        if (error) throw error;
       }
     } catch (error) {
       console.error('Failed to change language:', error);
