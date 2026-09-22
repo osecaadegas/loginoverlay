@@ -238,6 +238,7 @@ registerWidget({
   styles: [
     { id: "better_chat", icon: "💬", label: "Better Chat" },
     { id: "broadcast_chat", icon: "💬", label: "Broadcast" },
+    { id: "community_chat", icon: "💬", label: "Community" },
   ],
   defaults: {
     chatStyle: "better_chat",

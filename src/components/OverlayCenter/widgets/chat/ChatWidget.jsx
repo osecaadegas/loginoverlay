@@ -29,9 +29,11 @@ import {
   BetterChatHeader,
   BetterChatMessage,
 } from "../shared/betterWidgetStyles";
+import { CommunityChatHeader, CommunityChatMessage } from "./CommunityChatParts";
 import RaidShoutoutWidget from "../raid-shoutout/RaidShoutoutWidget";
 import {
-  BROADCAST_CHAT_DEFAULTS,
+  chatStyleDefaults,
+  COMMUNITY_CHAT_STYLE,
   BROADCAST_CHAT_STYLE,
   isBetterChatStyle,
 } from "./chatStyles";
@@ -73,6 +75,7 @@ const HEADER_CHAT_STYLES = new Set([
   "bh_stats",
   "better_chat",
   "broadcast_chat",
+  "community_chat",
 ]);
 const BADGE_CHAT_STYLES = new Set([
   "classic",
@@ -82,6 +85,7 @@ const BADGE_CHAT_STYLES = new Set([
   "bh_stats",
   "better_chat",
   "broadcast_chat",
+  "community_chat",
 ]);
 const CHAT_PLATFORMS = ["twitch", "youtube", "kick"];
 const bttvEmoteCache = new Map();
@@ -627,7 +631,7 @@ function resolveBetterChatBackground(config = {}) {
   const panel = config.panel || "#0a1734";
   const panelLo = config.panelLo || "#081228";
   const mode = config.bg || "solid";
-  if (config.chatStyle === BROADCAST_CHAT_STYLE && mode === "solid") return panel;
+  if ([BROADCAST_CHAT_STYLE, COMMUNITY_CHAT_STYLE].includes(config.chatStyle) && mode === "solid") return panel;
   if (mode === "horizon") {
     return `linear-gradient(0deg, color-mix(in srgb, ${glow} 28%, transparent), transparent 32%), linear-gradient(180deg, color-mix(in srgb, ${panel} 62%, #000) 0%, ${panel} 100%)`;
   }
@@ -808,8 +812,7 @@ function ChatWidget({
   publicOverlayId,
 }) {
   const c = useMemo(
-    () => config?.chatStyle === BROADCAST_CHAT_STYLE
-      ? { ...BROADCAST_CHAT_DEFAULTS, ...config } : config || {},
+    () => ({ ...chatStyleDefaults(config?.chatStyle), ...config }),
     [config],
   );
   const partAttrs = (elementId) => ({
@@ -834,7 +837,8 @@ function ChatWidget({
   const isBH = chatStyle === "bh_stats";
   const isStyleSeca = chatStyle === "StyleSecaChat";
   const isBetterChat = isBetterChatStyle(chatStyle);
-  const isBroadcast = chatStyle === BROADCAST_CHAT_STYLE;
+  const isCommunity = chatStyle === COMMUNITY_CHAT_STYLE;
+  const isBroadcast = chatStyle === BROADCAST_CHAT_STYLE || isCommunity;
   const betterChatFlow = isBetterChat
     ? c.flow === "top-to-bottom" || c.entry === "top"
       ? "top-to-bottom"
@@ -957,7 +961,9 @@ function ChatWidget({
       ),
       STYLE_SECA.text,
     );
-  const fontFamily = subValue(
+  const fontFamily = isCommunity
+    ? subValue(c, "container", "fontFamily", c.font || c.fontFamily || "Arial")
+    : subValue(
     c,
     "container",
     "fontFamily",
@@ -976,7 +982,9 @@ function ChatWidget({
       ),
     ),
   );
-  const fontSize = subValue(
+  const fontSize = isCommunity
+    ? subValue(c, "container", "fontSize", c.fontSize || 20)
+    : subValue(
     c,
     "container",
     "fontSize",
@@ -1106,6 +1114,7 @@ function ChatWidget({
     bh_stats: "rgba(15, 23, 42, 0.9)",
     better_chat: resolveBetterChatBackground(c),
     broadcast_chat: resolveBetterChatBackground(c),
+    community_chat: resolveBetterChatBackground(c),
   };
   const bgColor =
     syncedSecondaryColor ||
@@ -1542,6 +1551,9 @@ function ChatWidget({
         @keyframes better-chat-lantern{0%{left:-100%}100%{left:100%}}
         .ov-chat-widget--better_chat .ov-chat-bttv-emote,.ov-chat-widget--better_chat .ov-chat-twitch-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:4em;line-height:1;user-select:none;filter:drop-shadow(0 0 5px rgba(0,195,255,.22))}
         .ov-chat-widget--better_chat .ov-chat-messages::-webkit-scrollbar{display:none}
+        .ov-chat-widget--community_chat *{box-sizing:border-box}
+        .ov-chat-widget--community_chat .ov-chat-messages::-webkit-scrollbar{display:none}
+        @media(prefers-reduced-motion:reduce){.ov-chat-widget--community_chat .community-chat-row{animation:none!important}}
         .ov-chat-widget--broadcast_chat .ov-chat-messages::-webkit-scrollbar{display:none}
         .ov-chat-widget--broadcast_chat .ov-chat-bttv-emote,.ov-chat-widget--broadcast_chat .ov-chat-twitch-emote{display:inline-block;vertical-align:middle;object-fit:contain;margin:0 2px;max-width:100%;line-height:1;user-select:none}
         .ov-chat-widget--broadcast_chat *{box-sizing:border-box}
@@ -1789,7 +1801,11 @@ function ChatWidget({
         </div>
       )}
 
-      {showHeader && isBetterChat && (
+      {showHeader && isCommunity && (
+        <CommunityChatHeader config={c} chatHeaderName={chatHeaderName}
+          recentBits={renderMessages.reduce((sum, msg) => sum + Math.max(0, Number(msg.bits) || 0), 0)} />
+      )}
+      {showHeader && isBetterChat && !isCommunity && (
         <BetterChatHeader
           config={c}
           chatHeaderName={chatHeaderName}
@@ -1901,12 +1917,13 @@ function ChatWidget({
 
           /* Shared live chat features, with style-specific presentation. */
           if (isBetterChat) {
+            const MessageComponent = isCommunity ? CommunityChatMessage : BetterChatMessage;
             const visible =
               betterChatFlow === "top-to-bottom"
                 ? msgIdx < visibleBetterChatCount
                 : msgIdx >= renderMessages.length - visibleBetterChatCount;
             return (
-              <BetterChatMessage
+              <MessageComponent
                 key={`${msg.id || msgIdx}-${c.replayNonce || 0}`}
                 msg={msg}
                 platform={plt}

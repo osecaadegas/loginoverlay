@@ -57,6 +57,12 @@ const STATUS_LABELS = {
   [READINESS_STATUSES.UNAVAILABLE]: "Unavailable",
 };
 
+const ServiceSection = React.forwardRef(function ServiceSection({ needsAttention, children, ...props }, ref) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => { if (needsAttention) setOpen(true); }, [needsAttention]);
+  return <details {...props} ref={ref} open={open} onToggle={event => setOpen(event.currentTarget.open)}>{children}</details>;
+});
+
 function ExternalAction({ href, children, ariaLabel }) {
   const safeHref = safeExternalDestination(href, "#") || "#";
   if (!safeHref || safeHref.startsWith("/")) {
@@ -212,6 +218,7 @@ export default function ConnectServicesStep({
     () => normalizeSetupDetails(details, integrations),
     [details, integrations],
   );
+  const readinessKey = JSON.stringify({ details: normalized, selectedTools });
   const [readiness, setReadiness] = useState({
     checks: [],
     summary: summarizeReadiness([]),
@@ -304,6 +311,7 @@ export default function ConnectServicesStep({
       const controller = new AbortController();
       abortRef.current = controller;
       setChecking(true);
+      setReadiness(prev => ({ ...prev, checkedAt: null }));
       setStatusMessage(
         reason === "focus"
           ? "Checking your updated settings..."
@@ -316,6 +324,7 @@ export default function ConnectServicesStep({
           widgets,
           signal: controller.signal,
         });
+        if (controller.signal.aborted) return;
         const nextChecks = result.checks || [];
         const nextSummary = result.summary || summarizeReadiness(nextChecks);
         setReadiness({
@@ -323,6 +332,7 @@ export default function ConnectServicesStep({
           summary: nextSummary,
           sections: {},
           checkedAt: result.checkedAt || new Date().toISOString(),
+          checkedKey: readinessKey,
         });
         setStatusMessage(
           nextSummary.canContinue
@@ -330,25 +340,25 @@ export default function ConnectServicesStep({
             : "Some required checks need attention.",
         );
       } catch (error) {
-        if (error.name === "AbortError") return;
+        if (controller.signal.aborted || error.name === "AbortError") return;
         setStatusMessage(
           error.message || "Readiness checks could not be completed.",
         );
       } finally {
-        setChecking(false);
+        if (!controller.signal.aborted) setChecking(false);
       }
     },
-    [normalized, selectedTools, widgets],
+    [normalized, selectedTools, widgets, readinessKey],
   );
 
   useEffect(() => {
-    onReadinessChange({ ...summary, sections, checks: mergedChecks });
-  }, [mergedChecks, onReadinessChange, sections, summary]);
+    onReadinessChange({ ...summary, canContinue: Boolean(readiness.checkedAt) && readiness.checkedKey === readinessKey && !checking && summary.canContinue, sections, checks: mergedChecks });
+  }, [mergedChecks, onReadinessChange, sections, summary, readiness.checkedAt, readiness.checkedKey, readinessKey, checking]);
 
   useEffect(() => {
-    runChecks("initial");
-    return () => abortRef.current?.abort();
-  }, []);
+    const timer = setTimeout(() => runChecks("initial"), 400);
+    return () => { clearTimeout(timer); abortRef.current?.abort(); };
+  }, [readinessKey]); // Same settings do not repeat checks on parent rerenders.
 
   useEffect(() => {
     const handler = () => {
@@ -366,6 +376,7 @@ export default function ConnectServicesStep({
   }, [runChecks]);
 
   const scrollToSection = (id) => {
+    if (sectionRefs.current[id]) sectionRefs.current[id].open = true;
     sectionRefs.current[id]?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -387,14 +398,14 @@ export default function ConnectServicesStep({
   return (
     <div className="oc2-connect-services">
       <div className="oc2-connect-main">
-        <section
+        <ServiceSection needsAttention={mergedChecks.some(check => check.service === SERVICE_IDS.TWITCH && check.blocking && ![READINESS_STATUSES.READY, READINESS_STATUSES.FALLBACK].includes(check.status))}
           ref={(node) => {
             sectionRefs.current[SERVICE_IDS.TWITCH] = node;
           }}
           id="twitch-chat"
           className="oc2-service-section"
         >
-          <header>
+          <summary>
             <StatusBadge
               status={
                 sections[SERVICE_IDS.TWITCH] ||
@@ -408,7 +419,7 @@ export default function ConnectServicesStep({
                 chat commands should listen to.
               </p>
             </div>
-          </header>
+          </summary>
           <div className="oc2-service-action-row">
             <ExternalAction
               href="/login"
@@ -560,16 +571,16 @@ export default function ConnectServicesStep({
             <code>Giveaway: {normalized.giveawayKeyword}</code>
           </div>
           <CheckList checks={mergedChecks} service={SERVICE_IDS.TWITCH} />
-        </section>
+        </ServiceSection>
 
-        <section
+        <ServiceSection needsAttention={mergedChecks.some(check => check.service === SERVICE_IDS.STREAMELEMENTS && check.blocking && ![READINESS_STATUSES.READY, READINESS_STATUSES.FALLBACK].includes(check.status))}
           ref={(node) => {
             sectionRefs.current[SERVICE_IDS.STREAMELEMENTS] = node;
           }}
           id="streamelements"
           className="oc2-service-section"
         >
-          <header>
+          <summary>
             <StatusBadge
               status={
                 sections[SERVICE_IDS.STREAMELEMENTS] ||
@@ -583,7 +594,7 @@ export default function ConnectServicesStep({
                 is required only if you choose StreamElements loyalty points.
               </p>
             </div>
-          </header>
+          </summary>
           <ChoiceGroup
             label="How should viewer interactions use points?"
             value={normalized.pointSource}
@@ -818,16 +829,16 @@ export default function ConnectServicesStep({
             checks={mergedChecks}
             service={SERVICE_IDS.STREAMELEMENTS}
           />
-        </section>
+        </ServiceSection>
 
-        <section
+        <ServiceSection needsAttention={mergedChecks.some(check => check.service === SERVICE_IDS.MUSIC && check.blocking && ![READINESS_STATUSES.READY, READINESS_STATUSES.FALLBACK].includes(check.status))}
           ref={(node) => {
             sectionRefs.current[SERVICE_IDS.MUSIC] = node;
           }}
           id="music"
           className="oc2-service-section"
         >
-          <header>
+          <summary>
             <StatusBadge
               status={
                 sections[SERVICE_IDS.MUSIC] || READINESS_STATUSES.OPTIONAL
@@ -840,7 +851,7 @@ export default function ConnectServicesStep({
                 music display intentionally.
               </p>
             </div>
-          </header>
+          </summary>
           <ChoiceGroup
             label="Music source"
             value={normalized.musicMode}
@@ -1010,16 +1021,16 @@ export default function ConnectServicesStep({
             </>
           )}
           <CheckList checks={mergedChecks} service={SERVICE_IDS.MUSIC} />
-        </section>
+        </ServiceSection>
 
-        <section
+        <ServiceSection needsAttention={mergedChecks.some(check => check.service === SERVICE_IDS.SLOT_DATA && check.blocking && ![READINESS_STATUSES.READY, READINESS_STATUSES.FALLBACK].includes(check.status))}
           ref={(node) => {
             sectionRefs.current[SERVICE_IDS.SLOT_DATA] = node;
           }}
           id="slot-data"
           className="oc2-service-section"
         >
-          <header>
+          <summary>
             <StatusBadge
               status={
                 sections[SERVICE_IDS.SLOT_DATA] ||
@@ -1033,7 +1044,7 @@ export default function ConnectServicesStep({
                 slot entry remains available as a fallback.
               </p>
             </div>
-          </header>
+          </summary>
           <ChoiceGroup
             label="Slot data source"
             value={normalized.slotSource}
@@ -1221,7 +1232,7 @@ export default function ConnectServicesStep({
             </Field>
           </div>
           <CheckList checks={mergedChecks} service={SERVICE_IDS.SLOT_DATA} />
-        </section>
+        </ServiceSection>
 
         <section className="oc2-service-section oc2-final-review">
           <header>
@@ -1361,7 +1372,7 @@ export default function ConnectServicesStep({
             type="button"
             className="oc2-btn oc2-btn--primary"
             onClick={onContinue}
-            disabled={saving || checking || !summary.canContinue}
+            disabled={saving || checking || !readiness.checkedAt || readiness.checkedKey !== readinessKey || !summary.canContinue}
           >
             Continue setup <ArrowRight size={15} />
           </button>

@@ -165,6 +165,7 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
           isFirstMsg,
           subMonths,
           twitchEmotes: parseTwitchEmotes(tags["emotes"]),
+          bits: Math.max(0, parseInt(tags["bits"], 10) || 0),
         });
       }
     };

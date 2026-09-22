@@ -107,6 +107,7 @@ export default function ChatConfig({ config, onChange }) {
   ];
   const styleOptions = [
     { id: "broadcast_chat", icon: "", label: "Broadcast" },
+    { id: "community_chat", icon: "💬", label: "Community" },
     { id: "better_chat", icon: "B", label: "Better" },
     { id: "classic", icon: "📺", label: "Classic" },
     { id: "glow_panel", icon: "💠", label: "Glow Panel" },

@@ -50,6 +50,7 @@ import SlotSubmissions from "./slots/SlotSubmissions";
 import SlotApprovals from "./slots/SlotApprovals";
 import ProfileSection from "./ProfileSection";
 import GuidedTutorial from "./GuidedTutorial";
+import { setupNavigation, shouldStartTutorial } from "../../../shared/overlayOnboarding";
 import { themeMap } from "../../data/appThemes";
 import { getAllWidgetDefs, getWidgetDef } from "./widgets/widgetRegistry";
 import {
@@ -306,6 +307,7 @@ function defaultSetupState(widgets = [], theme = null, instance = null) {
   const navbarConfig = configFor("navbar");
   return {
     status: completed ? "completed" : "not_started",
+    quickSetup: true,
     currentStep: 0,
     completedSteps: completed ? SETUP_STEPS.map((_, index) => index) : [],
     version: SETUP_VERSION,
@@ -426,6 +428,7 @@ function mergeSetupState(raw, widgets, theme, instance) {
     return {
       ...defaultSetupState(widgets, theme, instance),
       ...raw,
+      quickSetup: raw.quickSetup === true,
       details: {
         ...defaultSetupState(widgets, theme, instance).details,
         ...(raw.details || {}),
@@ -1712,17 +1715,18 @@ function WidgetDetail({
   );
 }
 
-function SetupWizard({
+export function SetupWizard({
   setup,
   widgets,
   theme,
   instance,
   integrations = {},
-  saveSetup,
+  saveSetup: persistSetup,
   saveTheme,
   addWidget,
   saveWidget,
   onFinish,
+  onExit,
 }) {
   const [draft, setDraft] = useState(setup);
   const [actionError, setActionError] = useState("");
@@ -1735,16 +1739,23 @@ function SetupWizard({
   });
   const serviceAutosaveRef = useRef(null);
   const lastServiceAutosaveSignatureRef = useRef("");
-  const step = Math.min(draft.currentStep || 0, SETUP_STEPS.length - 1);
+  const { steps, step, index: stepIndex, next: nextStepId, previous: previousStepId } = setupNavigation(draft);
+  const setupWriteRef = useRef(Promise.resolve());
+  const saveSetup = useCallback((next) => {
+    clearTimeout(serviceAutosaveRef.current);
+    const write = setupWriteRef.current.catch(() => {}).then(() => persistSetup(next));
+    setupWriteRef.current = write;
+    return write;
+  }, [persistSetup]);
   const selectedTools = draft.selectedTools || [];
   const details = draft.details || {};
 
-  useEffect(() => setDraft(setup), [setup]);
+  // Keep the local draft stable while widget creation and realtime saves update the parent.
 
   useEffect(() => () => clearTimeout(serviceAutosaveRef.current), []);
 
   useEffect(() => {
-    if (step !== 5) return undefined;
+    if (step !== 5 || saving) return undefined;
     const signature = JSON.stringify({
       details: draft.details || {},
       selectedTools: draft.selectedTools || [],
@@ -1764,7 +1775,7 @@ function SetupWizard({
       });
     }, 900);
     return () => clearTimeout(serviceAutosaveRef.current);
-  }, [draft, saveSetup, step]);
+  }, [draft, saveSetup, step, saving]);
 
   const patchDetails = (patch) => {
     setDraft((prev) => ({
@@ -1812,7 +1823,7 @@ function SetupWizard({
         return saveWidget({
           ...widget,
           config: { ...widget.config, ...cleanPatch },
-        });
+        }, { immediate: true });
       })
       .filter(Boolean);
     await Promise.all(updates);
@@ -1843,7 +1854,7 @@ function SetupWizard({
           });
         }
       }
-      if (step === 4) {
+      if (step === 4 || (draft.quickSetup && step === 0)) {
         for (const type of selectedTools) {
           const def = getWidgetDef(type);
           const existing = widgets.find(
@@ -1863,7 +1874,7 @@ function SetupWizard({
       }
       next = {
         ...next,
-        currentStep: Math.min(step + 1, SETUP_STEPS.length - 1),
+        currentStep: nextStepId,
       };
       await persist(next);
     } catch (error) {
@@ -1906,7 +1917,7 @@ function SetupWizard({
       status: errors.length ? "failed" : "completed",
       validationErrors: errors,
       currentStep: SETUP_STEPS.length - 1,
-      completedSteps: SETUP_STEPS.map((_, index) => index),
+      completedSteps: errors.length ? draft.completedSteps : [...steps],
       updatedAt: new Date().toISOString(),
       version: SETUP_VERSION,
     };
@@ -1916,7 +1927,7 @@ function SetupWizard({
         trackEvent(ANALYTICS_EVENTS.OVERLAY_SETUP_COMPLETED, {
           selected_tools: selectedTools.length,
         });
-        onFinish();
+        await onFinish();
       }
       setDraft(finalState);
     } catch (error) {
@@ -1933,15 +1944,16 @@ function SetupWizard({
     <section className="oc2-setup">
       <div className="oc2-setup-header">
         <span className="oc2-eyebrow">
-          Step {step + 1} of {SETUP_STEPS.length}
+          Step {stepIndex + 1} of {steps.length}
         </span>
-        <h1>{SETUP_STEPS[step]}</h1>
+        <h1>{draft.quickSetup && step === 0 ? "Choose your tools" : SETUP_STEPS[step]}</h1>
+        <p>Choose tools, connect only what they need, then copy your OBS source. You can change everything later.</p>
         <div
           className="oc2-progress"
-          aria-label={`Setup progress step ${step + 1} of ${SETUP_STEPS.length}`}
+          aria-label={`Setup progress step ${stepIndex + 1} of ${steps.length}`}
         >
           <span
-            style={{ width: `${((step + 1) / SETUP_STEPS.length) * 100}%` }}
+            style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
           />
         </div>
       </div>
@@ -1997,6 +2009,13 @@ function SetupWizard({
             />
           </Field>
         </div>
+      )}
+
+      {step === 0 && (
+        <label className="oc2-tool-check">
+          <input type="checkbox" checked={!draft.quickSetup} onChange={event => setDraft(prev => ({ ...prev, quickSetup: !event.target.checked }))} />
+          <span>Include optional style and branding steps</span>
+        </label>
       )}
 
       {step === 1 && (
@@ -2080,7 +2099,7 @@ function SetupWizard({
         </div>
       )}
 
-      {step === 3 && (
+      {(step === 3 || (draft.quickSetup && step === 0)) && (
         <div className="oc2-select-tools">
           {PRIMARY_TOOLS.filter((type) => getWidgetDef(type)).map((type) => (
             <label key={type} className="oc2-tool-check">
@@ -2185,7 +2204,7 @@ function SetupWizard({
           onClick={() =>
             setDraft((prev) => ({
               ...prev,
-              currentStep: Math.max(0, step - 1),
+              currentStep: previousStepId,
             }))
           }
         >
@@ -2195,13 +2214,16 @@ function SetupWizard({
           type="button"
           className="oc2-btn"
           disabled={saving}
-          onClick={() =>
-            saveSetup({
-              ...draft,
-              status: "in_progress",
-              updatedAt: new Date().toISOString(),
-            })
-          }
+          onClick={async () => {
+            setSaving(true);
+            setActionError("");
+            try {
+              await saveSetup({ ...draft, status: "in_progress", updatedAt: new Date().toISOString() });
+              onExit();
+            } catch (error) {
+              setActionError(error?.message || "Could not save progress. Please try again.");
+            } finally { setSaving(false); }
+          }}
         >
           Save and exit
         </button>
@@ -2402,10 +2424,6 @@ export default function OverlayControlCenter() {
     () => mergeSetupState(overlayState?.overlaySetup, widgets, theme, instance),
     [overlayState?.overlaySetup, widgets, theme, instance],
   );
-  const tutorial = overlayState?.overlayTutorial || {
-    status: "not_started",
-    completed: false,
-  };
   const setupComplete = setup.status === "completed";
   const currentPanel = useMemo(() => {
     if (location.pathname.startsWith("/overlay-center/widgets/"))
@@ -2466,20 +2484,6 @@ export default function OverlayControlCenter() {
   }, [location.pathname, navigate]);
 
   useEffect(() => {
-    const firstRunPanels = new Set(["integrations", "setup", "tutorial"]);
-    if (
-      !loading &&
-      user &&
-      !setupComplete &&
-      widgets.length === 0 &&
-      !firstRunPanels.has(currentPanel)
-    ) {
-      navigate("/overlay-center/integrations", { replace: true });
-      trackEvent(ANALYTICS_EVENTS.OVERLAY_SETUP_STARTED, {});
-    }
-  }, [loading, user, setupComplete, widgets.length, currentPanel, navigate]);
-
-  useEffect(() => {
     if (!overlayUrl) return undefined;
     const channel = new BroadcastChannel("streamers-center-preview");
     previewChannelRef.current = channel;
@@ -2536,14 +2540,18 @@ export default function OverlayControlCenter() {
 
   const closeGuidedTutorial = useCallback(async () => {
     setGuidedTutorialActive(false);
-    await saveTutorial({
-      status: "completed",
-      completed: true,
-      currentStep: 0,
-      updatedAt: new Date().toISOString(),
-    });
+    try {
+      await saveTutorial({
+        status: "completed",
+        completed: true,
+        currentStep: 0,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("[OverlayTutorial] Could not save completion", error);
+    }
     if (location.pathname === "/overlay-center/tutorial")
-      navigate("/overlay-center/integrations", { replace: true });
+      navigate("/overlay-center", { replace: true });
   }, [location.pathname, navigate, saveTutorial]);
 
   useEffect(() => {
@@ -2561,18 +2569,8 @@ export default function OverlayControlCenter() {
   }, [location.pathname, navigate]);
 
   useEffect(() => {
-    if (currentPanel === "tutorial") setGuidedTutorialActive(true);
+    if (shouldStartTutorial(currentPanel)) setGuidedTutorialActive(true);
   }, [currentPanel]);
-
-  useEffect(() => {
-    if (
-      setupComplete &&
-      !tutorial.completed &&
-      tutorial.status === "in_progress"
-    ) {
-      setGuidedTutorialActive(true);
-    }
-  }, [setupComplete, tutorial.completed, tutorial.status]);
 
   const copyUrl = useCallback(() => {
     if (!overlayUrl) return;
@@ -2830,19 +2828,22 @@ export default function OverlayControlCenter() {
             saveTheme={saveTheme}
             addWidget={addWidget}
             saveWidget={saveWidget}
-            onFinish={() => {
-              saveTutorial({
-                status: "in_progress",
-                completed: false,
-                currentStep: 0,
-                updatedAt: new Date().toISOString(),
-              });
-              setGuidedTutorialActive(true);
-              navigate("/overlay-center/integrations");
-            }}
+            onExit={() => navigate("/overlay-center")}
+            onFinish={() => navigate("/overlay-center/preview")}
           />
         )}
 
+        {currentPanel === "home" && !setupComplete && (
+          <section className="oc2-panel" aria-label="Quick start">
+            <h1>Get your overlay ready</h1>
+            <p>{setup.quickSetup ? "Three steps: choose tools, connect services, and add your source to OBS." : "Continue your saved setup, or open any tool below."}</p>
+            <div className="oc2-setup-actions">
+              <Link className="oc2-btn oc2-btn--primary" to="/overlay-center/setup">{setup.status === "not_started" ? "Start quick setup" : "Continue setup"}</Link>
+              <Link className="oc2-btn" to="/overlay-center/tutorial">Optional quick tour</Link>
+            </div>
+            <p>Or start with any tool below. Setup is always available from the navigation.</p>
+          </section>
+        )}
         {currentPanel === "home" && (
           <ToolWorkspace
             widgets={widgets}

@@ -1196,6 +1196,19 @@ export const widgetAppearanceRegistry = Object.freeze({
         capabilities: { rows: true, images: true, animations: true },
         elementIds: ["container", "header", "messageList", "message", "username", "messageText", "avatar", "badge", "highlightedMessage", "emptyState"],
       }),
+      makeRuntimeStyle("community_chat", "Community", "Inline community chat, compact counters and colourful event cards.", {
+        capabilities: { rows: true, images: true, animations: true },
+        elementIds: ["container", "header", "headerName", "bitsCounter", "viewerCounter", "messageList", "message", "username", "messageText", "avatar", "badge", "highlightedMessage", "emptyState"],
+        elements: {
+          header: { controls: CHAT_SURFACE_CONTROLS },
+          headerName: { label: "Channel name", kind: "text", capabilities: ["typography"], controls: CHAT_TEXT_CONTROLS },
+          bitsCounter: { label: "Recent bits counter", kind: "badge", capabilities: ["surface", "border", "shape", "typography", "spacing"], controls: CHAT_BADGE_CONTROLS.filter(id => id !== "accentColor") },
+          viewerCounter: { label: "Platform and viewer counter", kind: "badge", capabilities: ["surface", "border", "shape", "typography", "spacing"], controls: CHAT_BADGE_CONTROLS.filter(id => id !== "accentColor") },
+          avatar: { label: "Event avatar", controls: CHAT_BADGE_CONTROLS.filter(id => id !== "accentColor") },
+          badge: { label: "Role badge", controls: CHAT_BADGE_CONTROLS.filter(id => id !== "accentColor") },
+          highlightedMessage: { controls: CHAT_BOX_CONTROLS },
+        },
+      }),
       makeRuntimeStyle("broadcast_chat", "Broadcast", "Compact broadcast chat with readable message rows and restrained highlights.", {
         capabilities: { rows: true, images: true, animations: true },
         elementIds: ["container", "header", "messageList", "message", "username", "messageText", "avatar", "badge", "highlightedMessage", "emptyState"],
@@ -1397,6 +1410,9 @@ export const widgetAppearanceRegistry = Object.freeze({
       maxHeight: 1080,
     },
     elements: {
+      headerName: Object.freeze({ label: "Channel name", kind: "text", capabilities: ["typography"], controls: CHAT_TEXT_CONTROLS }),
+      bitsCounter: Object.freeze({ label: "Recent bits counter", kind: "badge", capabilities: ["surface", "border", "shape", "typography", "spacing"], controls: CHAT_BADGE_CONTROLS.filter(id => id !== "accentColor") }),
+      viewerCounter: Object.freeze({ label: "Platform and viewer counter", kind: "badge", capabilities: ["surface", "border", "shape", "typography", "spacing"], controls: CHAT_BADGE_CONTROLS.filter(id => id !== "accentColor") }),
       container: Object.freeze({
         ...BASIC_WIDGET_ELEMENTS.container,
         label: "Chat widget surface",

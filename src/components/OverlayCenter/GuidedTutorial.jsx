@@ -1,7 +1,7 @@
 /**
  * GuidedTutorial.jsx — Step-by-step onboarding tour with spotlight + tooltip.
  *
- * Shows once on first visit, or when triggered from the Overlay Center menu.
+ * Starts only when requested from the Overlay Center menu or quick-start card.
  * Steps attach to DOM elements by `data-tour="stepKey"` attributes.
  * Steps can specify a `page` field — the tour will auto-navigate between pages.
  * Persists completion in localStorage.
@@ -11,132 +11,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 const STORAGE_KEY = 'oc_tutorial_done';
 
 const STEPS = [
-  {
-    target: null,
-    title: 'Start with integrations',
-    body: 'The first stop is Integrations. Connect identity, platforms, music, StreamElements and preferences before building the overlay tools.',
-    position: 'center',
-    page: 'integrations',
-  },
-  {
-    target: '[data-tour="integrations-overview"]',
-    title: 'Required services',
-    body: 'This area shows which services matter for your selected tools, so you can set up only what the overlay actually needs.',
-    position: 'bottom',
-    page: 'integrations',
-  },
-  {
-    target: '[data-tour="profile-identity"]',
-    title: 'Identity and branding',
-    body: 'Set the display name, avatar and identity information that widgets can reuse across the overlay.',
-    position: 'bottom',
-    page: 'integrations',
-  },
-  {
-    target: '[data-tour="profile-platforms"]',
-    title: 'Platform accounts',
-    body: 'Add your Twitch, Kick, YouTube and Discord details here. Connected platform data powers chat, requests and viewer-facing widgets.',
-    position: 'right',
-    page: 'integrations',
-  },
-  {
-    target: '[data-tour="profile-spotify"]',
-    title: 'Spotify connection',
-    body: 'Connect Spotify when you want music data in Navbar or Spotify Now Playing widgets.',
-    position: 'left',
-    page: 'integrations',
-  },
-  {
-    target: '[data-tour="profile-streamelements"]',
-    title: 'StreamElements connection',
-    body: 'Add StreamElements credentials when chat commands, points or request tools need them.',
-    position: 'left',
-    page: 'integrations',
-  },
-  {
-    target: '[data-tour="profile-sync"]',
-    title: 'Sync connected information',
-    body: 'After updating profile and integration details, sync them into matching widgets so every tool uses the same source information.',
-    position: 'top',
-    page: 'integrations',
-  },
-  {
-    target: '[data-tour="tools-page"]',
-    title: 'Choose overlay tools',
-    body: 'Tools are the widgets that appear on stream. Open an existing tool or add a new one from this page.',
-    position: 'bottom',
-    page: 'tools',
-  },
-  {
-    target: '[data-tour="your-tools"]',
-    title: 'Your active tools',
-    body: 'Enabled tools are listed here with readiness status. Use each card to open setup, enable, disable or remove that tool.',
-    position: 'bottom',
-    page: 'tools',
-  },
-  {
-    target: '[data-tour="add-tools"]',
-    title: 'Add more tools',
-    body: 'Install new overlay tools from this section. Any missing setup will show as a status warning after the tool is added.',
-    position: 'top',
-    page: 'tools',
-  },
-  {
-    target: '[data-tour="widget-detail-page"]',
-    title: 'Configure one tool at a time',
-    body: 'Each tool opens directly to its setup page. Any extra tool-specific sections are shown inside that tool when needed.',
-    position: 'float-top',
-    page: 'bonus_hunt',
-  },
-  {
-    target: '[data-tour="appearance-page"]',
-    title: 'Appearance Center',
-    body: 'Use Appearance to edit exact widget instances and style variants without opening a separate Layout page.',
-    position: 'float-top',
-    page: 'appearance',
-  },
-  {
-    target: '[data-tour="preview-page"]',
-    title: 'Preview and OBS',
-    body: 'Preview uses the same browser-source route as OBS. Open it, focus it or copy the source URL from this page.',
-    position: 'float-top',
-    page: 'preview',
-  },
-  {
-    target: '[data-tour="obs-url"]',
-    title: 'Copy OBS URL',
-    body: 'Copy this URL into OBS as a Browser Source when you are ready to go live.',
-    position: 'left',
-    page: 'preview',
-  },
-  {
-    target: '[data-tour="presets-page"]',
-    title: 'Presets',
-    body: 'Save and reuse complete overlay presets once you have a setup you want to keep.',
-    position: 'float-top',
-    page: 'presets',
-  },
-  {
-    target: '[data-tour="slots-page"]',
-    title: 'Submit slots',
-    body: 'Submit missing slot metadata here so Bonus Hunt, Current Slot and request tools can use accurate game data.',
-    position: 'bottom',
-    page: 'slots',
-  },
-  {
-    target: '[data-tour="approvals-page"]',
-    title: 'Approvals',
-    body: 'Admins can review and approve submitted slot metadata from this page.',
-    position: 'float-top',
-    page: 'approvals',
-  },
-  {
-    target: null,
-    title: 'Tutorial complete',
-    body: 'The tour has moved across the actual pages. Restart it any time from More, then Restart tutorial.',
-    position: 'center',
-    page: 'integrations',
-  },
+  { target: '[data-tour="tools-page"]', title: 'Start with one tool', body: 'Choose a tool below, or use Quick setup to choose your tools and connect the services they need. You can add more later.', position: 'center', page: 'tools' },
+  { target: '[data-tour="your-tools"]', title: 'Set up and manage your tools', body: 'Open a tool to configure it. Its status tells you what is missing. Enable, disable and remove tools from the same page.', position: 'bottom', page: 'tools' },
+  { target: '[data-tour="integrations-overview"]', title: 'Connect only what you use', body: 'Connect your streaming platform here. Music, points and other integrations are optional unless one of your tools needs them.', position: 'bottom', page: 'integrations' },
+  { target: '[data-tour="obs-url"]', title: 'Add your overlay to OBS', body: 'Copy the browser-source URL and add it as a Browser Source in OBS. The preview lets you check the result before going live.', position: 'center', page: 'preview' },
+  { target: null, title: 'You are ready to start', body: 'Open the Editor when you want to change styles and layout. Presets and all other tools remain available in the navigation. You can replay this optional tour any time.', position: 'center', page: 'tools' },
 ];
 
 export default function GuidedTutorial({ active, onClose, goToPage }) {
@@ -161,7 +40,7 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     }
   }, [active, step]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const TOOLTIP_W = 396; // matches CSS .gt-tooltip width
+  const TOOLTIP_W = Math.min(396, window.innerWidth - 32); // matches CSS .gt-tooltip width
   const TOOLTIP_H_EST = 260; // rough max height
   const EDGE_PAD = 16; // min distance from viewport edge
 
@@ -277,10 +156,10 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
 
   const handleNext = useCallback(() => {
     if (isLast) {
-      localStorage.setItem(STORAGE_KEY, 'true');
+      try { localStorage.setItem(STORAGE_KEY, 'true'); } catch { /* Storage is optional. */ }
       onClose();
     } else {
-      setStep(s => s + 1);
+      setStep(s => Math.min(STEPS.length - 1, s + 1));
     }
   }, [isLast, onClose]);
 
@@ -289,17 +168,17 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
   }, [isFirst]);
 
   const handleSkip = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    try { localStorage.setItem(STORAGE_KEY, 'true'); } catch { /* Storage is optional. */ }
     onClose();
-    // Return to the onboarding start page on skip.
-    if (goToPage) goToPage('integrations');
+    if (goToPage) goToPage('tools');
   }, [onClose, goToPage]);
 
   /* Keyboard navigation */
   useEffect(() => {
     if (!active) return;
     function onKey(e) {
-      if (e.key === 'Escape') handleSkip();
+      if (e.key === 'Escape') { e.preventDefault(); handleSkip(); return; }
+      if (e.target instanceof HTMLElement && e.target.closest('input, textarea, select, button, a, [contenteditable]')) return;
       if (e.key === 'ArrowRight' || e.key === 'Enter') handleNext();
       if (e.key === 'ArrowLeft') handlePrev();
     }
@@ -349,7 +228,7 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
       )}
 
       {/* Tooltip card */}
-      <div className={`gt-tooltip gt-tooltip--${current.position || 'bottom'}${waitingForPage ? ' gt-tooltip--waiting' : ''}`} style={tooltipStyle}>
+      <div role="dialog" aria-modal="true" aria-label="Quick tour" className={`gt-tooltip gt-tooltip--${current.position || 'bottom'}${waitingForPage ? ' gt-tooltip--waiting' : ''}`} style={tooltipStyle}>
         <div className="gt-tooltip-header">
           <div className="gt-tooltip-badges">
             <span className="gt-tooltip-step">{step + 1} / {totalSteps}</span>

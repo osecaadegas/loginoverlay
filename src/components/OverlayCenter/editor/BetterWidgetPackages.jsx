@@ -49,8 +49,7 @@ import {
 import ChatWidget from "../widgets/chat/ChatWidget";
 import {
   BETTER_CHAT_STYLES,
-  BROADCAST_CHAT_DEFAULTS,
-  BROADCAST_CHAT_STYLE,
+  chatStyleDefaults,
   isBetterChatStyle,
   switchChatStyle,
 } from "../widgets/chat/chatStyles";
@@ -1487,8 +1486,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   const defaults = DEFAULT_BETTER_CONFIG[type] || {};
   const merged = {
     ...defaults,
-    ...(type === "chat" && config.chatStyle === BROADCAST_CHAT_STYLE
-      ? BROADCAST_CHAT_DEFAULTS : {}),
+    ...(type === "chat" ? chatStyleDefaults(config.chatStyle) : {}),
     ...config,
     ...(meta && type !== "tournament" &&
       !(type === "chat" && isBetterChatStyle(config.chatStyle))
@@ -3107,7 +3105,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
   const resetChat = () => {
     const next = ensureBetterWidgetConfig("chat", {
       ...DEFAULT_BETTER_CONFIG.chat,
-      ...(c.chatStyle === BROADCAST_CHAT_STYLE ? BROADCAST_CHAT_DEFAULTS : {}),
+      ...chatStyleDefaults(c.chatStyle),
       chatStyle: c.chatStyle,
     });
     if (typeof onWidgetChange === "function") {
@@ -3248,6 +3246,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
               />
             ))}
           </div>
+          {c.chatStyle === "community_chat" && <ColorRow label="Event border" value={c.raidBorderColor} onChange={raidBorderColor => set({ raidBorderColor })} />}
           <div className="bp-chat-presets">
             {CHAT_PRESETS.map((preset) => (
               <button
@@ -3266,6 +3265,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
           </div>
         </Section>
         <Section title="Display" icon={<Eye size={13} />} category="layout">
+          {c.chatStyle === "community_chat" && <p>💎 counts Bits in recent chat messages. Viewer count below is set manually.</p>}
           <ToggleRow
             label="Show name text"
             checked={c.showHeaderName !== false}
@@ -3282,7 +3282,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
             onChange={(showViewerCount) => set({ showViewerCount })}
           />
           <SliderRow
-            label="Viewer count"
+            label="Viewer count (manual)"
             value={c.viewerCount}
             min={0}
             max={100000}
@@ -3367,6 +3367,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
             checked={c.showRoleBadges !== false}
             onChange={(showRoleBadges) => set({ showRoleBadges })}
           />
+          {c.chatStyle !== "community_chat" && <>
           <ToggleRow
             label="Role message effects"
             checked={c.roleEffects?.enabled !== false}
@@ -3422,6 +3423,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
               />
             ))}
           </div>
+          </>}
         </Section>
         <Section
           title="In-Chat Shoutout"

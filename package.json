@@ -32,7 +32,8 @@
     "test:slot-providers-browser": "node scripts/test-slot-providers-browser.mjs",
     "test:analytics": "node scripts/test-analytics.mjs",
     "test:affiliate": "node scripts/test-affiliate-system.mjs",
-    "test:stripe-trials": "node scripts/test-stripe-trials.mjs"
+    "test:stripe-trials": "node scripts/test-stripe-trials.mjs",
+    "test:onboarding": "node scripts/test-onboarding.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

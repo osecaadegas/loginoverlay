@@ -93,7 +93,7 @@ try {
       const errors = [], panel = host.querySelector('.ov-chat-widget');
       const contains = (a, b) => b.left >= a.left - 1 && b.right <= a.right + 1 && b.top >= a.top - 1 && b.bottom <= a.bottom + 1;
       if (!panel || !contains(host.getBoundingClientRect(), panel.getBoundingClientRect())) return ['Panel outside widget'];
-      const rows = [...panel.querySelectorAll('.broadcast-chat-row[aria-hidden="false"]')];
+      const rows = [...panel.querySelectorAll('.broadcast-chat-row[aria-hidden="false"], .community-chat-row[aria-hidden="false"]')];
       if (!rows.length) errors.push('No visible messages');
       for (const row of rows) {
         if (!contains(panel.querySelector('.ov-chat-messages').getBoundingClientRect(), row.getBoundingClientRect())) errors.push(`Clipped row ${row.textContent}`);
@@ -211,6 +211,59 @@ try {
   await geometry('oversized message stays inside short frame');
   assert.equal(await page.$eval('[data-appearance-part="messageText"]', el => el.textContent), 'A long message with no missing text. '.repeat(40));
 
+  // Community shares the runtime, but owns its appearance and inline structure.
+  for (const runtime of ['editor', 'obs']) {
+    await mount(layouts.map(([width, height]) => ({ width, height, runtime, config: { chatStyle: 'community_chat', showHeaderName: false } })));
+    await geometry('Community ' + runtime);
+  }
+  for (const controls of ['simple', 'advanced', 'legacy']) {
+    await mount([{ width: 360, height: 720, controls }]);
+    if (controls === 'legacy') {
+      const styleButton = await page.$('aside button[title="Community"]');
+      if (styleButton) await styleButton.click();
+      else await page.evaluate(() => [...document.querySelectorAll('aside button')].find(button => button.textContent.includes('Community')).click());
+    } else {
+      for (const select of await page.$$('aside select')) {
+        if (await select.evaluate(el => [...el.options].some(option => option.value === 'community_chat'))) { await select.select('community_chat'); break; }
+      }
+    }
+    await settle();
+    assert.equal(await page.evaluate(() => window.chatTest.lastConfig.chatStyle), 'community_chat');
+  }
+  const communityPersistence = await page.evaluate(() => {
+    const t = window.chatTest;
+    let config = t.switchChatStyle(t.ensureBetterWidgetConfig('chat', { twitchChannel: 'preserved', shoutoutInChat: true }), 'community_chat');
+    config = t.scoped(config, 'bitsCounter', 'background', '#ff0000');
+    config = t.scoped(config, 'messageText', 'fontSize', 19);
+    const other = t.switchChatStyle(config, 'broadcast_chat');
+    const restored = t.ensureBetterWidgetConfig('chat', JSON.parse(JSON.stringify(t.switchChatStyle(other, 'community_chat'))));
+    return { config, other, restored, elements: t.getWidgetStyleElements('chat', 'community_chat').map(e => e.id) };
+  });
+  assert(communityPersistence.elements.includes('bitsCounter'));
+  assert(communityPersistence.elements.includes('viewerCounter'));
+  assert.equal(communityPersistence.restored.__appearanceExplicitSubElements.bitsCounter.background, '#ff0000');
+  assert.equal(communityPersistence.other.__appearanceExplicitSubElements, undefined);
+  assert.equal(communityPersistence.restored.twitchChannel, 'preserved');
+  await mount([{ width: 373, height: 412, config: { chatStyle: 'community_chat', showHeaderName: false, showLiveLabel: false, showViewerCount: true, viewerCount: 541, twitchEnabled: true, youtubeEnabled: true, kickEnabled: true }, messages: [
+    { id: 'c1', username: 'CommunityHost', color: '#ee4444', message: 'Welcome to the stream!', bits: 335 },
+    { id: 'c2', username: 'Moderator', color: '#42bd35', isMod: true, message: 'Enjoy the chat 💜' },
+    { id: 'c3', username: 'StreamFan', color: '#ff9254', message: '💜 💜 💜 💜 💜' },
+    { id: 'c4', username: 'RaidLeader', isRaid: true, raidViewers: 2, avatarUrl: '/player.webp' },
+  ] }]);
+  await geometry('Community reference layout');
+  assert.match(await page.$eval('[data-appearance-part="bitsCounter"]', el => el.textContent), /335/);
+  assert.match(await page.$eval('[data-appearance-part="highlightedMessage"]', el => el.textContent), /raided with 2 viewers/);
+  if (process.env.TEST_COMMUNITY_SCREENSHOT_PATH) await (await page.$('[data-case]')).screenshot({ path: process.env.TEST_COMMUNITY_SCREENSHOT_PATH });
+  await mount([{ width: 360, height: 720, config: { ...communityPersistence.restored, live: true, twitchChannel: '' } }, { width: 360, height: 720, config: { chatStyle: 'community_chat' } }]);
+  const counters = await page.$$eval('[data-appearance-part="bitsCounter"]', elements => elements.map(el => getComputedStyle(el).backgroundColor));
+  assert.equal(counters[0], 'rgb(255, 0, 0)');
+  const textSizes = await page.$$eval('[data-appearance-part="messageText"]', elements => elements.map(el => getComputedStyle(el).fontSize));
+  assert.equal(textSizes[0], '19px');
+  const counterSizes = await page.$$eval('[data-appearance-part="bitsCounter"]', elements => elements.map(el => getComputedStyle(el).fontSize));
+  assert.equal(counterSizes[0], counterSizes[1], 'Message typography must not leak to header counters');
+  assert.notEqual(counters[1], counters[0]);
+  assert.notEqual(await page.$eval('[data-case="0"] [data-appearance-part="viewerCounter"]', el => getComputedStyle(el).backgroundColor), counters[0]);
+
   // Drive the real IRC parser locally; no account connection or outbound chat writes.
   await page.evaluate(() => {
     const NativeWebSocket = window.WebSocket;
@@ -262,8 +315,13 @@ try {
   await settle();
   assert.equal(await page.$eval('[data-appearance-part="messageText"]', el => el.textContent), 'is raiding with 50 viewers!');
   await geometry('IRC raid');
+  await mount([{ ...liveCase, config: { ...liveCase.config, chatStyle: 'community_chat' } }]);
+  await page.evaluate(text => window.sendIrc(text), irc('bits-live', 'Cheerer', 'Cheer100', 'bits=100;'));
+  await settle();
+  assert.match(await page.$eval('[data-appearance-part="bitsCounter"]', el => el.textContent), /100/);
+  await geometry('Community IRC');
   assert.deepEqual(errors, []);
-  console.log('Broadcast chat: responsive layouts, editor/OBS parity, controls, isolated persistence, IRC, emotes, roles, raids, filtering, message limits, auto-fade, empty states and reduced motion passed.');
+  console.log('Broadcast and Community chat: responsive layouts, editor/OBS parity, controls, isolated persistence, IRC, emotes, roles, raids, filtering, message limits, auto-fade, empty states and reduced motion passed.');
 } finally {
   await browser.close();
 }

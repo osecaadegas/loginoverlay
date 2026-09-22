@@ -29631,3 +29631,15 @@ body.wm-resizing {
     width: 100%;
   }
 }
+/* Service connections start compact; checks open only sections needing action. */
+.oc2-service-section > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  list-style: none;
+}
+.oc2-service-section > summary::after { content: "+"; margin-left: auto; }
+.oc2-service-section[open] > summary::after { content: "−"; }
+.oc2-service-section[open] > summary { margin-bottom: 16px; }
+.oc2-service-section > summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
