@@ -80,6 +80,7 @@ import {
   reorderBetterWidgetLayers,
 } from "./betterWidgetGeometry";
 import { downloadWidgetControlsPreset } from "./widgetControlsPreset";
+import "../OverlayRenderer.css";
 import "./BetterWidgetPackages.css";
 import "./WidgetEditorPage.css";
 import "./EditorWorkspace.css";

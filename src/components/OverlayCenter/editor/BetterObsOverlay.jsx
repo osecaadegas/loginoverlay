@@ -13,6 +13,7 @@ import {
   normalizeBetterLayout,
   renderBetterWidgetInstance,
 } from "./betterWidgetRegistry";
+import "../OverlayRenderer.css";
 import "./BetterObsOverlay.css";
 
 const FALLBACK_REFRESH_MS = 30000;

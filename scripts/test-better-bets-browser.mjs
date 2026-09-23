@@ -2,6 +2,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
 
+for (const entryPath of [
+  '../src/components/OverlayCenter/editor/WidgetEditorPage.jsx',
+  '../src/components/OverlayCenter/editor/BetterObsOverlay.jsx',
+]) {
+  const entrySource = readFileSync(new URL(entryPath, import.meta.url), 'utf8');
+  assert.match(entrySource, /import\s+["']\.\.\/OverlayRenderer\.css["'];/, `${entryPath} loads the shared widget renderer styles`);
+}
+
 const baseUrl = process.env.TEST_BASE_URL || 'http://127.0.0.1:3010';
 const browser = await puppeteer.launch({
   headless: true,
@@ -42,7 +50,10 @@ try {
     const { default: BetsWidget } = await import('/src/components/OverlayCenter/widgets/bets/BetsWidget.jsx');
     const { getWidgetStyleElements, getWidgetStyleOptionsForQuickEditor } = await import('/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js');
     const routing = await import('/src/components/OverlayCenter/appearance/v2/appearanceRouting.js');
-    await import('/src/components/OverlayCenter/OverlayRenderer.css');
+    await Promise.all([
+      import('/src/components/OverlayCenter/editor/WidgetEditorPage.jsx'),
+      import('/src/components/OverlayCenter/editor/BetterObsOverlay.jsx'),
+    ]);
     await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.css');
     const root = ReactDOM.createRoot(document.getElementById('root'));
     window.betsTest = {
@@ -306,6 +317,24 @@ try {
       assert.equal(item.cardCount, 6, `${displayStyle}: ${['editor', 'obs', 'preview'][runtimeIndex]} renders all six live choices`);
       assert.ok(item.insideFrame && item.cardsInside, `${displayStyle}: ${['editor', 'obs', 'preview'][runtimeIndex]} stays inside its widget frame (${JSON.stringify(item)})`);
     }
+    const visualIdentity = await page.$eval('[data-case="0"]', (host) => {
+      const root = host.querySelector('.bets-ov');
+      const card = root.querySelector('.bets-ov__card, .bets-ov__row');
+      return {
+        rootShadow: getComputedStyle(root).boxShadow,
+        rowMetaDisplay: getComputedStyle(root.querySelector('.bets-ov__row-meta') || root).display,
+        cardClipPath: getComputedStyle(card).clipPath,
+        cardBodyDisplay: getComputedStyle(root.querySelector('.bets-ov__card-body') || root).display,
+        statsDisplay: getComputedStyle(root.querySelector('.bets-ov__stats')).display,
+        hasSecaScaleFrame: Boolean(host.querySelector('.seca-bets-resize-container .seca-bets-design')),
+      };
+    });
+    assert.notEqual(visualIdentity.rootShadow, 'none', `${displayStyle}: shared renderer CSS is loaded by the real editor entry point`);
+    if (displayStyle === 'v1_list') assert.equal(visualIdentity.rowMetaDisplay, 'grid', 'List uses its market-ledger row grid');
+    if (displayStyle === 'v2_grid') assert.match(visualIdentity.cardClipPath, /polygon/, 'Grid uses arcade tile geometry');
+    if (displayStyle === 'v3_grid_2x3') assert.equal(visualIdentity.cardBodyDisplay, 'grid', 'Grid 2x3 uses the sportsbook card layout');
+    if (displayStyle === 'compact_scoreboard') assert.equal(visualIdentity.statsDisplay, 'none', 'Compact Scoreboard removes the stats strip');
+    if (displayStyle === 'StyleSecaBets') assert.equal(visualIdentity.hasSecaScaleFrame, true, 'StyleSeca keeps its fixed design scale frame');
   }
 
   await mount(legacyStyleCases.map(({ displayStyle, width, height }) => ({ width, height, runtime: 'obs', config: { displayStyle } })));
@@ -315,7 +344,6 @@ try {
     const card = root.querySelector('.bets-ov__card, .bets-ov__row');
     const body = root.querySelector('.bets-ov__card-body');
     return [
-      root.dataset.betsStyle,
       getComputedStyle(root).boxShadow,
       card ? getComputedStyle(card).clipPath : 'list-row',
       body ? getComputedStyle(body).display : getComputedStyle(root.querySelector('.bets-ov__row-meta')).display,
