@@ -4,6 +4,7 @@ import {
 } from "../../widgets/editorReadyWidgetRegistry.js";
 
 export const APPEARANCE_ENGINE_V2_WIDGETS = Object.freeze([
+  "slot_bingo",
   "bh_stats",
   "current_slot",
   "tournament",
@@ -724,6 +725,114 @@ function makeBasicWidgetCapability({
 }
 
 export const widgetAppearanceRegistry = Object.freeze({
+  slot_bingo: makeBasicWidgetCapability({
+    id: "slot_bingo",
+    label: "Slot Bingo",
+    category: "casino",
+    defaultStyleId: "premium_slot_bingo",
+    defaultAppearance: {
+      material: "glass",
+      primaryColor: "#ffbf3f",
+      accentColor: "#a855f7",
+      shape: "rounded",
+      density: "compact",
+    },
+    styles: [
+      makeRuntimeStyle(
+        "premium_slot_bingo",
+        "Premium Casino",
+        "Dark glass Bingo board with gold and purple neon accents.",
+        {
+          recommended: true,
+          capabilities: {
+            colours: true,
+            multipleColours: true,
+            fonts: true,
+            fontSizes: true,
+            fontWeights: true,
+            containers: true,
+            containerShapes: true,
+            borderRadius: true,
+            borders: true,
+            shadows: true,
+            glow: true,
+            glowIntensity: true,
+            spacing: true,
+            cardGap: true,
+            statCards: true,
+            animations: true,
+            transparentBackground: true,
+          },
+          elementIds: [
+            "container", "header", "title", "progressBadge", "board",
+            "square", "incompleteSquare", "completedSquare", "freeSquare",
+            "squareLabel", "completionIcon", "footer", "footerValue",
+          ],
+        },
+      ),
+    ],
+    responsive: {
+      minWidth: 340,
+      minHeight: 420,
+      maxWidth: 1000,
+      maxHeight: 1080,
+    },
+    elements: {
+      container: BASIC_WIDGET_ELEMENTS.container,
+      header: BASIC_WIDGET_ELEMENTS.header,
+      title: BASIC_WIDGET_ELEMENTS.title,
+      progressBadge: Object.freeze({
+        label: "Progress badge",
+        kind: "badge",
+        capabilities: ["surface", "border", "shadow", "shape", "spacing", "typography", "stateColor"],
+      }),
+      board: Object.freeze({
+        label: "Bingo grid",
+        kind: "surface",
+        capabilities: ["surface", "border", "shape", "spacing"],
+      }),
+      square: Object.freeze({
+        label: "All squares",
+        kind: "surface",
+        capabilities: ["surface", "border", "shadow", "shape", "spacing", "typography"],
+      }),
+      incompleteSquare: Object.freeze({
+        label: "Incomplete squares",
+        kind: "surface",
+        capabilities: ["surface", "border", "shadow", "shape", "typography", "stateColor"],
+      }),
+      completedSquare: Object.freeze({
+        label: "Completed squares",
+        kind: "surface",
+        capabilities: ["surface", "border", "shadow", "shape", "typography", "stateColor"],
+      }),
+      freeSquare: Object.freeze({
+        label: "FREE square",
+        kind: "surface",
+        capabilities: ["surface", "border", "shadow", "shape", "typography", "stateColor"],
+      }),
+      squareLabel: Object.freeze({
+        label: "Square labels",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+      completionIcon: Object.freeze({
+        label: "Check and star icons",
+        kind: "badge",
+        capabilities: ["surface", "border", "shadow", "shape", "spacing", "typography", "stateColor"],
+      }),
+      footer: Object.freeze({
+        label: "Footer",
+        kind: "surface",
+        capabilities: ["surface", "border", "shadow", "shape", "spacing"],
+      }),
+      footerValue: Object.freeze({
+        label: "Footer value",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+    },
+  }),
   bh_stats: Object.freeze({
     id: "bh_stats",
     widgetType: "bh_stats",

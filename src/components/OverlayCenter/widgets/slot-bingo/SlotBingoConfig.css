@@ -1,0 +1,19 @@
+.slot-bingo-config { display: grid; gap: 14px; color: #e8edf6; }
+.slot-bingo-config section { display: grid; gap: 10px; padding: 14px; border: 1px solid rgba(148,163,184,.2); border-radius: 12px; background: rgba(7,12,24,.58); }
+.slot-bingo-config h3 { margin: 0; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+.slot-bingo-config label { display: grid; gap: 5px; font-size: 12px; color: #aeb9cc; }
+.slot-bingo-config input:not([type="checkbox"]):not([type="color"]), .slot-bingo-config select { width: 100%; min-width: 0; padding: 8px 9px; color: #f8fafc; border: 1px solid rgba(148,163,184,.24); border-radius: 8px; background: #080f1d; }
+.slot-bingo-config__toggles { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.slot-bingo-config__toggles label, .slot-bingo-config__check { display: flex; align-items: center; gap: 7px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,.035); }
+.slot-bingo-config__grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 5px; }
+.slot-bingo-config__grid button { display: grid; place-items: center; align-content: center; gap: 2px; min-width: 0; aspect-ratio: 1; padding: 4px 2px; overflow: hidden; color: #9ba8bc; border: 1px solid rgba(148,163,184,.18); border-radius: 7px; background: #0b1322; cursor: pointer; }
+.slot-bingo-config__grid button.is-complete { color: #ffd76a; border-color: rgba(245,179,1,.55); background: rgba(116,67,7,.38); }
+.slot-bingo-config__grid button.is-free { color: #e9c8ff; border-color: rgba(168,85,247,.72); background: rgba(88,28,135,.42); }
+.slot-bingo-config__grid button.is-selected { outline: 2px solid #22d3ee; outline-offset: 1px; }
+.slot-bingo-config__grid svg { width: 13px; height: 13px; }
+.slot-bingo-config__grid span { max-width: 100%; overflow: hidden; font-size: 8px; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+.slot-bingo-config__square-editor { display: grid; gap: 8px; padding: 10px; border-radius: 9px; background: rgba(255,255,255,.035); }
+.slot-bingo-config__colors { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.slot-bingo-config__colors label { grid-template-columns: minmax(0,1fr) 34px; align-items: center; padding: 7px; border-radius: 8px; background: rgba(255,255,255,.03); }
+.slot-bingo-config__colors input { width: 34px; height: 28px; padding: 0; border: 0; background: none; }
+.slot-bingo-config__reset { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px; color: #f8fafc; border: 1px solid rgba(148,163,184,.25); border-radius: 9px; background: rgba(30,41,59,.7); cursor: pointer; }

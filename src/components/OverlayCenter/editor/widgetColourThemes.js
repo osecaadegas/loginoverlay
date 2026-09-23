@@ -6,6 +6,17 @@ import {
 } from "../appearance/v2/appearanceRouting";
 
 const COLOUR_KEYS = {
+  slot_bingo: {
+    backgroundColor: "background",
+    panelColor: "surface",
+    cardColor: "raised",
+    borderColor: "border",
+    accentColor: "accent",
+    secondaryColor: "secondary",
+    completedColor: "accent",
+    textColor: "text",
+    mutedColor: "muted",
+  },
   connect_four: { boardColor: "surface", boardBorderColor: "border", titleColor: "accent", textColor: "text", mutedColor: "muted" },
   raid_shoutout: { backgroundColor: "background", accentColor: "accent", secondaryColor: "secondary", textColor: "text", mutedColor: "muted" },
   slideshow_frame: { frameColor: "border", accentColor: "accent", backgroundColor: "surface", panelHi: "raised", panelLo: "background" },
@@ -31,6 +42,21 @@ const COLOUR_KEYS = {
 
 // Explicit existing element targets, not a global recolour of arbitrary descendants.
 const ELEMENT_COLOURS = {
+  slot_bingo: {
+    container: { background: "background", borderColor: "border", textColor: "text" },
+    header: { background: "surface", borderColor: "border" },
+    title: { textColor: "accent" },
+    progressBadge: { background: "raised", borderColor: "secondary", textColor: "text" },
+    board: { background: "background" },
+    square: { background: "raised", borderColor: "border" },
+    incompleteSquare: { background: "raised", borderColor: "border", textColor: "muted" },
+    completedSquare: { background: "surface", borderColor: "accent", textColor: "text", accentColor: "accent" },
+    freeSquare: { background: "surface", borderColor: "secondary", textColor: "text", accentColor: "accent" },
+    squareLabel: { textColor: "text" },
+    completionIcon: { textColor: "accent", borderColor: "accent" },
+    footer: { background: "surface", borderColor: "secondary" },
+    footerValue: { textColor: "accent" },
+  },
   chat: {
     container: { background: "surface", borderColor: "border" },
     header: { background: "surface", textColor: "accent", borderColor: "border" },

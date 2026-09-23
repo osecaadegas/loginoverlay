@@ -1,4 +1,5 @@
 const STYLE_KEY_BY_WIDGET_TYPE = Object.freeze({
+  slot_bingo: "displayStyle",
   bonus_hunt: "displayStyle",
   giveaway: "displayStyle",
   navbar: "displayStyle",

@@ -1,5 +1,12 @@
 // Navigation metadata only. The existing widget controls own validation and updates.
 const WIDGET_METADATA = {
+  slot_bingo: {
+    category: "Community",
+    keywords: "slot bingo board milestones challenges lines",
+    source: "Slot Bingo",
+    route: "/overlay-center/widgets/slot-bingo",
+    simpleSections: ["Content", "Board", "Layout", "Colours"],
+  },
   bonus_hunt: {
     category: "Hunt",
     keywords: "bonus slots requests carousel tracker",

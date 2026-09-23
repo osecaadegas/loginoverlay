@@ -1016,6 +1016,69 @@ function applyContainerGenericPatch(patch, tokens) {
   };
 }
 
+function applySlotBingoGenericPatch(patch, tokens) {
+  patch.backgroundColor = tokens.colors.surface;
+  patch.panelColor = tokens.colors.elevatedSurface;
+  patch.cardColor = tokens.colors.secondarySurface;
+  patch.accentColor = tokens.colors.primary;
+  patch.secondaryColor = tokens.colors.accent;
+  patch.completedColor = tokens.colors.primary;
+  patch.textColor = tokens.colors.text;
+  patch.mutedColor = tokens.colors.mutedText;
+  patch.borderColor = tokens.colors.border;
+  patch.borderRadius = tokens.shape.rootRadius;
+  patch.cardRadius = tokens.shape.cardRadius;
+  patch.cardGap = tokens.spacing.itemGap;
+  patch.padding = tokens.spacing.rootPadding;
+  patch.subElements = {
+    ...patch.subElements,
+    container: surfaceSubElement(tokens, "container"),
+    header: surfaceSubElement(tokens, "header"),
+    title: textSubElement(tokens, "accent", {
+      fontFamily: tokens.typography.headerFont,
+      fontSize: tokens.typography.headerSize,
+      fontWeight: tokens.typography.headerWeight,
+    }),
+    progressBadge: surfaceSubElement(tokens, "badge", {
+      textColor: tokens.colors.text,
+      borderColor: tokens.colors.accent,
+    }),
+    board: {
+      background: "transparent",
+      gap: tokens.spacing.itemGap,
+    },
+    square: surfaceSubElement(tokens, "card"),
+    incompleteSquare: surfaceSubElement(tokens, "card", {
+      textColor: tokens.colors.mutedText,
+    }),
+    completedSquare: surfaceSubElement(tokens, "card", {
+      textColor: tokens.colors.text,
+      accentColor: tokens.colors.primary,
+      borderColor: tokens.colors.primary,
+    }),
+    freeSquare: surfaceSubElement(tokens, "card", {
+      textColor: tokens.colors.text,
+      accentColor: tokens.colors.primary,
+      borderColor: tokens.colors.accent,
+    }),
+    squareLabel: textSubElement(tokens, "text", {
+      fontWeight: tokens.typography.valueWeight,
+    }),
+    completionIcon: surfaceSubElement(tokens, "badge", {
+      background: "transparent",
+      textColor: tokens.colors.primary,
+      borderColor: tokens.colors.primary,
+    }),
+    footer: surfaceSubElement(tokens, "header", {
+      borderColor: tokens.colors.accent,
+    }),
+    footerValue: textSubElement(tokens, "accent", {
+      fontFamily: tokens.typography.headerFont,
+      fontWeight: tokens.typography.headerWeight,
+    }),
+  };
+}
+
 const GENERIC_WIDGET_PATCH_APPLIERS = Object.freeze({
   bonus_buys: applyBonusBuysGenericPatch,
   chat: applyChatGenericPatch,
@@ -1023,6 +1086,7 @@ const GENERIC_WIDGET_PATCH_APPLIERS = Object.freeze({
   current_slot: applyCurrentSlotGenericPatch,
   image_slideshow: applyImageSlideshowGenericPatch,
   raid_shoutout: applyRaidShoutoutGenericPatch,
+  slot_bingo: applySlotBingoGenericPatch,
   tournament: applyTournamentGenericPatch,
 });
 
@@ -2852,6 +2916,7 @@ function buildPatchForWidget(widgetType, tokens, styleId) {
       "chat",
       "image_slideshow",
       "raid_shoutout",
+      "slot_bingo",
       "bonus_buys",
       "container",
     ].includes(widgetType)

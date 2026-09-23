@@ -112,6 +112,11 @@ const SETUP_STEPS = [
 ];
 
 const FEATURE_COPY = {
+  slot_bingo: {
+    title: "Slot Bingo",
+    description: "Track 25 slot milestones on a live 5 x 5 Bingo board.",
+    action: "Configure Slot Bingo",
+  },
   bonus_hunt: {
     title: "Bonus Hunt",
     description: "Track bonuses, payouts and hunt progress live.",
@@ -192,6 +197,7 @@ const FEATURE_COPY = {
 };
 
 const PRIMARY_TOOLS = [
+  "slot_bingo",
   "bonus_hunt",
   "bets",
   "connect_four",

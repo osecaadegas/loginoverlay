@@ -11,6 +11,7 @@ import SlideshowFrameWidget from "../widgets/slideshow-frame/SlideshowFrameWidge
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
 import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
+import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -219,6 +220,7 @@ const MOCK_TOURNAMENT_BRACKET = [
 ];
 
 const MOCK_WIDGET_CONFIGS = {
+  slot_bingo: {},
   raid_shoutout: {
     __previewAlert: {
       id: "mock-shoutout-alert",
@@ -330,6 +332,7 @@ const MOCK_WIDGET_CONFIGS = {
 };
 
 const LIVE_DATA_KEYS = Object.freeze({
+  slot_bingo: ["title", "footerMode", "showProgress", "showFooter", "squares"],
   tournament: [
     "bracketName",
     "bracketType",
@@ -523,6 +526,7 @@ const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
+  slot_bingo: SlotBingoWidget,
   connect_four: ConnectFourWidget,
   tournament: TournamentWidget,
   bonus_hunt: BonusHuntWidget,
@@ -537,6 +541,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
+  slot_bingo: ["content", "board", "layout", "colours"],
   connect_four: ["content", "players", "board", "motion"],
   tournament: ["surface", "layout", "cards", "typography", "palette"],
   bonus_hunt: [
@@ -582,6 +587,12 @@ const CONTROL_SCHEMAS = {
 };
 
 const SIZE_CONSTRAINTS = {
+  slot_bingo: {
+    minWidth: 340,
+    minHeight: 420,
+    maxWidth: 1000,
+    maxHeight: 1080,
+  },
   connect_four: {
     minWidth: 280,
     minHeight: 360,

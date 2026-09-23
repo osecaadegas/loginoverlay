@@ -6,6 +6,7 @@ import { pickGiveawayAppearance, resolveEmbeddedGiveawayConfig, updateGiveawayAp
 import {
   ArrowDown,
   ArrowUp,
+  Check,
   ChevronDown,
   Coins,
   Crown,
@@ -33,6 +34,7 @@ import {
   SlidersHorizontal,
   Snowflake,
   Sparkles,
+  Star,
   Sunset,
   Timer,
   Type,
@@ -61,6 +63,11 @@ import { WIDGET_COLOUR_THEMES, getWidgetColourTheme } from "../widgets/shared/co
 import { applyWidgetColourTheme, getSelectedWidgetColourTheme } from "./widgetColourThemes";
 import { getWidgetStyleOptionsForQuickEditor } from "../appearance/v2/widgetAppearanceRegistry";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
+import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
+import {
+  SLOT_BINGO_DEFAULT_CONFIG,
+  normalizeSlotBingoConfig,
+} from "../widgets/slot-bingo/slotBingoModel";
 import {
   BetterBackgroundStyle,
   BetterGiveawayStyle,
@@ -150,6 +157,7 @@ const BETS_STYLE_OPTIONS = getWidgetStyleOptionsForQuickEditor("bets").map(
 const COLOUR_THEME_ICONS = {
   neon: Zap, metallic: Layers, sunset: Sunset, cyberpunk: Zap, crimson: Flame, emerald: Waves,
   gold: Coins, violet: Sparkles, rose: Heart, arctic: Snowflake, lime: Leaf,
+  luxe: Crown, gladiator: Flame, old_rome: Coins,
 };
 
 const FILL_STYLES = [
@@ -1057,6 +1065,9 @@ const BASE_BETTER_CONFIG = {
     orientation: "vertical",
     cardColors: DEFAULT_CARD_COLORS,
   },
+  slot_bingo: {
+    ...SLOT_BINGO_DEFAULT_CONFIG,
+  },
   connect_four: {
     displayStyle: "chat_connect_four",
     title: "CHAT CONNECT 4",
@@ -1093,6 +1104,17 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  {
+    type: "slot_bingo",
+    label: "Slot Bingo",
+    styleKey: "displayStyle",
+    styleId: "premium_slot_bingo",
+    icon: "▦",
+    defaultSize: {
+      width: STANDARD_BETTER_WIDGET_GEOMETRY.slot_bingo.width,
+      height: STANDARD_BETTER_WIDGET_GEOMETRY.slot_bingo.height,
+    },
+  },
   {
     type: "connect_four",
     label: "Chat Connect 4",
@@ -1517,6 +1539,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
       : {}),
   };
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
+  if (type === "slot_bingo") return normalizeSlotBingoConfig(merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
   if (type === "chat") return normalizeBetterChatConfig(merged);
   if (type === "slideshow_frame") return normalizeBetterSlideshowConfig(merged);
@@ -2003,6 +2026,8 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case "slot_bingo":
+      return <SlotBingoWidget config={config} widgetId={widget?.id || widget?.instanceId} />;
     case "tournament":
       return <TournamentWidget config={config} />;
     case "bets":
@@ -6785,6 +6810,119 @@ function BetterConnectFourControls({ config, onChange }) {
   );
 }
 
+function BetterSlotBingoControls({ config, onChange }) {
+  const c = normalizeSlotBingoConfig(config);
+  const [tab, setTab] = useTab("content");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedSquare = c.squares[selectedIndex] || c.squares[0];
+  const set = (patch) => onChange(normalizeSlotBingoConfig({ ...c, ...patch }));
+  const updateSquare = (patch) => {
+    const squares = c.squares.map((square, index) =>
+      index === selectedIndex ? { ...square, ...patch } : square,
+    );
+    set({ squares });
+  };
+  const tabs = [
+    ["content", <Type key="content" size={12} />, "Content"],
+    ["board", <Gamepad2 key="board" size={12} />, "Board"],
+    ["layout", <SlidersHorizontal key="layout" size={12} />, "Layout"],
+    ["colours", <Palette key="colours" size={12} />, "Colours"],
+  ];
+
+  return (
+    <div className="bp-controls bp-controls--slot-bingo">
+      <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
+
+      {matchesControlTab(tab, "content") && (
+        <Section title="Content" icon={<Type size={13} />}>
+          <TextRow label="Title" value={c.title} onChange={(title) => set({ title: title.slice(0, 32) })} />
+          <Segmented
+            value={c.footerMode}
+            options={[{ key: "bingo", name: "BINGO x3" }, { key: "lines", name: "Lines: 3" }]}
+            onChange={(footerMode) => set({ footerMode })}
+          />
+          <ToggleRow label="Show progress" checked={c.showProgress} onChange={(showProgress) => set({ showProgress })} />
+          <ToggleRow label="Show footer" checked={c.showFooter} onChange={(showFooter) => set({ showFooter })} />
+        </Section>
+      )}
+
+      {matchesControlTab(tab, "board") && (
+        <Section title="Board" icon={<Gamepad2 size={13} />}>
+          <div className="bp-bingo-grid" role="list" aria-label="Slot Bingo squares">
+            {c.squares.map((square, index) => (
+              <button
+                key={square.id}
+                type="button"
+                className={`${selectedIndex === index ? "is-selected" : ""}${square.completed ? " is-complete" : ""}${square.free ? " is-free" : ""}`}
+                aria-label={`Edit ${square.label}`}
+                onClick={() => setSelectedIndex(index)}
+              >
+                {square.free ? <Star aria-hidden="true" /> : square.completed ? <Check aria-hidden="true" /> : null}
+                <span>{square.label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="bp-bingo-square-editor">
+            <strong>Square {selectedIndex + 1}</strong>
+            <TextRow
+              label="Label"
+              value={selectedSquare.label}
+              onChange={(label) => {
+                if (!selectedSquare.free) updateSquare({ label: label.slice(0, 18) });
+              }}
+            />
+            <ToggleRow
+              label={selectedSquare.free ? "Free square is always complete" : "Completed"}
+              checked={selectedSquare.completed}
+              onChange={(completed) => {
+                if (!selectedSquare.free) updateSquare({ completed });
+              }}
+            />
+          </div>
+          <button
+            className="bp-reset"
+            type="button"
+            onClick={() => set({ squares: SLOT_BINGO_DEFAULT_CONFIG.squares })}
+          >
+            <RotateCcw size={13} /> Reset board
+          </button>
+        </Section>
+      )}
+
+      {matchesControlTab(tab, "layout") && (
+        <Section title="Layout" icon={<SlidersHorizontal size={13} />}>
+          <SliderRow label="Panel corners" value={c.borderRadius} min={0} max={72} unit="px" onChange={(borderRadius) => set({ borderRadius })} />
+          <SliderRow label="Square corners" value={c.cardRadius} min={0} max={40} unit="px" onChange={(cardRadius) => set({ cardRadius })} />
+          <SliderRow label="Square gap" value={c.cardGap} min={2} max={24} unit="px" onChange={(cardGap) => set({ cardGap })} />
+          <SliderRow label="Panel padding" value={c.padding} min={8} max={40} unit="px" onChange={(padding) => set({ padding })} />
+          <SliderRow label="Glow" value={c.glowIntensity} min={0} max={100} unit="%" onChange={(glowIntensity) => set({ glowIntensity })} />
+          <SliderRow label="Title size" value={c.titleSize} min={18} max={56} unit="px" onChange={(titleSize) => set({ titleSize })} />
+          <SliderRow label="Square text" value={c.squareTextSize} min={9} max={28} unit="px" onChange={(squareTextSize) => set({ squareTextSize })} />
+          <SliderRow label="Footer size" value={c.footerSize} min={16} max={44} unit="px" onChange={(footerSize) => set({ footerSize })} />
+        </Section>
+      )}
+
+      {matchesControlTab(tab, "colours") && (
+        <Section title="Colours" icon={<Palette size={13} />}>
+          {[
+            ["backgroundColor", "Background"], ["panelColor", "Glass panel"],
+            ["cardColor", "Incomplete squares"], ["borderColor", "Border"],
+            ["accentColor", "Gold accent"], ["secondaryColor", "Purple accent"],
+            ["completedColor", "Completed glow"], ["textColor", "Text"],
+            ["mutedColor", "Muted text"],
+          ].map(([key, label]) => (
+            <ColorRow key={key} label={label} value={c[key]} onChange={(value) => set({ [key]: value })} />
+          ))}
+        </Section>
+      )}
+
+      <button className="bp-reset" type="button" onClick={() => onChange(normalizeSlotBingoConfig(SLOT_BINGO_DEFAULT_CONFIG))}>
+        <RotateCcw size={13} /> Reset Slot Bingo
+      </button>
+    </div>
+  );
+}
+
 export function BetterWidgetControls({
   type,
   config,
@@ -6804,6 +6942,7 @@ export function BetterWidgetControls({
                 <button
                   key={theme.key}
                   type="button"
+                  data-colour-theme-key={theme.key}
                   className={selected === theme.key ? "is-active" : ""}
                   aria-pressed={selected === theme.key}
                   onClick={() => onChange(applyWidgetColourTheme(type, c, theme.key))}
@@ -6833,6 +6972,9 @@ function WidgetSpecificControls({
   allWidgets,
   appearanceOnly,
 }) {
+  if (type === "slot_bingo") {
+    return <BetterSlotBingoControls config={config} onChange={onChange} />;
+  }
   if (type === "connect_four") {
     return <BetterConnectFourControls config={config} onChange={onChange} />;
   }

@@ -27,8 +27,31 @@ import TournamentConfig from "./tournament/TournamentConfig";
 import TournamentWidget from "./tournament/TournamentWidget";
 import RaidShoutoutConfig from "./raid-shoutout/RaidShoutoutConfig";
 import RaidShoutoutWidget from "./raid-shoutout/RaidShoutoutWidget";
+import SlotBingoConfig from "./slot-bingo/SlotBingoConfig";
+import SlotBingoWidget from "./slot-bingo/SlotBingoWidget";
+import { SLOT_BINGO_DEFAULT_CONFIG } from "./slot-bingo/slotBingoModel";
 
 const CURRENCY = "EUR ";
+
+registerWidget({
+  type: "slot_bingo",
+  label: "Slot Bingo",
+  icon: "▦",
+  description: "Track slot milestones on a configurable 5 x 5 Bingo board.",
+  category: "better",
+  component: SlotBingoWidget,
+  configPanel: SlotBingoConfig,
+  styleConfigKey: "displayStyle",
+  styles: [
+    {
+      id: "premium_slot_bingo",
+      icon: "▦",
+      label: "Premium Casino",
+      defaultSize: { width: 600, height: 700 },
+    },
+  ],
+  defaults: { ...SLOT_BINGO_DEFAULT_CONFIG },
+});
 
 registerWidget({
   type: "connect_four",

@@ -55,6 +55,21 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
     background: "#13170c", surface: "#202914", raised: "#303c1d", border: "#728b3a",
     accent: "#d5f68a", secondary: "#98bf42", text: "#f6ffe7", muted: "#c4d5a6", hue: 82,
   },
+  {
+    key: "luxe", name: "Luxe", icon: "luxe", swatches: ["#050505", "#f0cd70", "#aeb4bd"],
+    background: "#050505", surface: "#0e0e0f", raised: "#1a1a1c", border: "#8f7840",
+    accent: "#f0cd70", secondary: "#aeb4bd", text: "#f7f3e8", muted: "#c5c0b5", hue: 43,
+  },
+  {
+    key: "gladiator", name: "Gladiator", icon: "gladiator", swatches: ["#d9ae43", "#7b3d1e", "#650d18"],
+    background: "#c99524", surface: "#d9ae43", raised: "#efcf76", border: "#6f321d",
+    accent: "#650d18", secondary: "#7b3d1e", text: "#24140c", muted: "#4d2b1d", hue: 352,
+  },
+  {
+    key: "old_rome", name: "Old Rome", icon: "old_rome", swatches: ["#f1e1bb", "#ad8645", "#5a3520"],
+    background: "#e7d3a3", surface: "#f1e1bb", raised: "#faedcf", border: "#ad8645",
+    accent: "#76500d", secondary: "#5a3520", text: "#2c1b12", muted: "#624b36", hue: 38,
+  },
 ].map((theme) => Object.freeze({ ...theme, swatches: Object.freeze(theme.swatches) })));
 
 // Retired selector choices still render saved overlay builds without recolouring them.

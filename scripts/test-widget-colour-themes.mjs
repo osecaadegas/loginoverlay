@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme, getHuntColourTheme } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
 
-const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime'];
+const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome'];
 assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
 for (const [key, surface] of [['gradient', '#131a4a'], ['matte', '#181d24']]) {
   assert.equal(getWidgetColourTheme(key).surface, surface, `${key}: retain saved palette`);
@@ -112,7 +112,7 @@ try {
   };
   const types = await page.evaluate(() => window.themeTest.types);
   const themes = await page.evaluate(() => window.themeTest.themes);
-  assert.equal(types.length, 11);
+  assert.equal(types.length, 12);
   const unit = await page.evaluate(() => {
     const t = window.themeTest, failures = [];
     const freeze = obj => { if (obj && typeof obj === 'object') { Object.freeze(obj); Object.values(obj).forEach(freeze); } return obj; };
@@ -151,6 +151,8 @@ try {
       const colors = t.resolveBonusHuntSyncedColors(linked, [{ widget_type: 'bonus_hunt', config: hunt }]);
       if (colors.primaryColor !== hunt.headerAccent || colors.secondaryColor !== hunt.headerColor) failures.push(`${type}: linked colours no longer follow the Hunt theme`);
     }
+    const bingo = t.base('slot_bingo');
+    if (bingo.squares.length !== 25 || bingo.squares[12].label !== 'FREE' || !bingo.squares[12].completed) failures.push('Slot Bingo default board');
     return failures;
   });
   assert.deepEqual(unit, []);
@@ -159,9 +161,9 @@ try {
     for (const theme of themes) {
       await mount(type);
       assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), themes.length, `${type}: all themes`);
-      await page.evaluate(theme => [...document.querySelectorAll('.bp-theme-grid button')].find(button => button.textContent.trim().toLowerCase() === theme).click(), theme);
+      await page.evaluate(theme => [...document.querySelectorAll('.bp-theme-grid button')].find(button => button.dataset.colourThemeKey === theme).click(), theme);
       await settle();
-      const result = await page.evaluate(() => ({ config: window.themeTest.lastConfig, style: window.themeTest.appearance(), selected: document.querySelector('.bp-theme-grid [aria-pressed="true"]')?.textContent.trim().toLowerCase() }));
+      const result = await page.evaluate(() => ({ config: window.themeTest.lastConfig, style: window.themeTest.appearance(), selected: document.querySelector('.bp-theme-grid [aria-pressed="true"]')?.dataset.colourThemeKey }));
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
       if (type === 'bets') assert.equal(await page.$eval('.better-bets-stage', stage => stage.dataset.theme), theme, `${theme}: Bets must not fall back to Neon`);
