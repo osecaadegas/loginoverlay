@@ -75,7 +75,7 @@ try {
             React.createElement('div', { 'data-case': index, style: { width: item.width, height: item.height, flexShrink: 0 } }, widget),
             item.controls ? React.createElement('aside', { style: { width: 320 } },
               item.controls === 'legacy' ? React.createElement(ChatConfig, { config, onChange: update }) :
-                React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: '__all', simpleSections: EDITOR_WIDGET_METADATA.chat.simpleSections, sections: { 'Chat Style': true } } },
+                React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: '__all', simpleSections: EDITOR_WIDGET_METADATA.chat.simpleSections, sections: { 'Chat Style': true, Display: true } } },
                   React.createElement(BetterWidgetControls, { type: 'chat', config, onChange: update }))) : null);
         })));
       },
@@ -217,7 +217,7 @@ try {
     await geometry('Community ' + runtime);
   }
   for (const controls of ['simple', 'advanced', 'legacy']) {
-    await mount([{ width: 360, height: 720, controls }]);
+    await mount([{ width: 360, height: 720, controls, config: { twitchEnabled: true } }]);
     if (controls === 'legacy') {
       const styleButton = await page.$('aside button[title="Community"]');
       if (styleButton) await styleButton.click();
@@ -229,6 +229,37 @@ try {
     }
     await settle();
     assert.equal(await page.evaluate(() => window.chatTest.lastConfig.chatStyle), 'community_chat');
+    for (const [label, key, selector] of [
+      ['Show diamond / Bits counter', 'showBitsCounter', '[data-case] [data-appearance-part="bitsCounter"]'],
+      ['Show platform emblems', 'showPlatformEmblems', '[data-case] [data-appearance-part="viewerCounter"] svg[aria-label="Twitch"]'],
+    ]) {
+      assert(await page.$(selector), `${controls}: ${key} defaults on`);
+      for (const expected of [false, true]) {
+        await page.evaluate(label => {
+          const button = [...document.querySelectorAll('aside button.bp-toggle')].find(el => el.textContent.includes(label));
+          const checkbox = [...document.querySelectorAll('aside label')].find(el => el.textContent.includes(label))?.querySelector('input');
+          if (!button && !checkbox) throw new Error(`Missing Display control: ${label}`);
+          (button || checkbox).click();
+        }, label);
+        await settle();
+        assert.equal(await page.evaluate(key => window.chatTest.lastConfig[key], key), expected);
+        assert.equal(Boolean(await page.$(selector)), expected, `${controls}: ${key} updates preview`);
+      }
+    }
+  }
+  for (const runtime of ['editor', 'obs']) {
+    const hidden = await page.evaluate(() => {
+      const t = window.chatTest;
+      const config = t.ensureBetterWidgetConfig('chat', { chatStyle: 'community_chat', showBitsCounter: false, showPlatformEmblems: false, showHeaderName: false, showLiveLabel: false, showViewerCount: false, twitchEnabled: true });
+      return t.ensureBetterWidgetConfig('chat', JSON.parse(JSON.stringify(t.switchChatStyle(t.switchChatStyle(config, 'broadcast_chat'), 'community_chat'))));
+    });
+    assert.equal(hidden.showBitsCounter, false);
+    assert.equal(hidden.showPlatformEmblems, false);
+    await mount([{ width: 360, height: 720, runtime, config: hidden }]);
+    assert.equal(await page.$('[data-case] [data-appearance-part="header"]'), null, `${runtime}: empty header collapses after reload/style switch`);
+    await mount([{ width: 360, height: 720, runtime, config: { ...hidden, showViewerCount: true, viewerCount: 1250 } }]);
+    assert.match(await page.$eval('[data-case] [data-appearance-part="viewerCounter"]', el => el.textContent), /1,250/);
+    assert.equal(await page.$('[data-case] [data-appearance-part="viewerCounter"] svg'), null, 'Viewer text is independent of emblems');
   }
   const communityPersistence = await page.evaluate(() => {
     const t = window.chatTest;

@@ -46,6 +46,8 @@ export const COMMUNITY_CHAT_DEFAULTS = Object.freeze({
   text: "#f1f3f5",
   raidBorderColor: "#f06b24",
   useNativeColors: true,
+  showBitsCounter: true,
+  showPlatformEmblems: true,
 });
 
 export function chatStyleDefaults(styleId) {

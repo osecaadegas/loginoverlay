@@ -186,6 +186,8 @@ export const NAVBAR_STYLE_KEYS = [
 
 /* ── Chat ── */
 export const CHAT_STYLE_KEYS = [
+  "showBitsCounter",
+  "showPlatformEmblems",
   "bonusHuntColorSync",
   "bgColor",
   "textColor",

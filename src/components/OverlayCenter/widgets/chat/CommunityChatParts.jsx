@@ -13,17 +13,21 @@ const attrs = (config, elementId) => ({
 });
 
 export function CommunityChatHeader({ config: c, chatHeaderName, recentBits }) {
+  const visiblePlatforms = c.showPlatformEmblems !== false
+    ? platforms.filter(p => c[`${p.key}Enabled`]) : [];
+  const showCounter = visiblePlatforms.length > 0 || c.showViewerCount || c.showLiveLabel !== false;
+  if (c.showBitsCounter === false && !showCounter && c.showHeaderName === false) return null;
   const pill = { display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 10px", border: `2px solid ${c.borderColor}`, borderRadius: 16, fontWeight: 800, minWidth: 0, flexWrap: "wrap" };
   return <div {...attrs(c, "header")} style={subElementStyle(c, "header", {
     display: "flex", flex: "0 0 auto", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between",
     gap: 6, padding: 7, color: c.text, fontSize: "0.9em", minWidth: 0,
   })}>
-    <span {...attrs(c, "bitsCounter")} title="Bits in recent chat messages" style={subElementStyle(c, "bitsCounter", pill)}>💎 {recentBits.toLocaleString()}</span>
-    <span {...attrs(c, "viewerCounter")} style={subElementStyle(c, "viewerCounter", pill)}>
-      {platforms.filter(p => c[`${p.key}Enabled`]).map(({ key, Icon, color, label }) => <Icon key={key} aria-label={label} style={{ color, flexShrink: 0 }} />)}
+    {c.showBitsCounter !== false && <span {...attrs(c, "bitsCounter")} title="Bits in recent chat messages" style={subElementStyle(c, "bitsCounter", pill)}>💎 {recentBits.toLocaleString()}</span>}
+    {showCounter && <span {...attrs(c, "viewerCounter")} style={subElementStyle(c, "viewerCounter", { ...pill, marginLeft: "auto" })}>
+      {visiblePlatforms.map(({ key, Icon, color, label }) => <Icon key={key} aria-label={label} style={{ color, flexShrink: 0 }} />)}
       {c.showViewerCount ? <span title="Configured viewer count">{Math.max(0, Number(c.viewerCount) || 0).toLocaleString()}</span> : null}
       {c.showLiveLabel !== false ? <span style={{ fontSize: "0.7em" }}>{c.live ? "LIVE" : "CHAT"}</span> : null}
-    </span>
+    </span>}
     {c.showHeaderName !== false ? <strong {...attrs(c, "headerName")} style={subElementStyle(c, "headerName", { width: "100%", fontSize: "0.65em", opacity: 0.6, overflowWrap: "anywhere" })}>{chatHeaderName}</strong> : null}
   </div>;
 }

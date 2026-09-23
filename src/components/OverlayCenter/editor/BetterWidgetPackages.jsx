@@ -3224,6 +3224,19 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
         </Section>
         <Section title="Display" icon={<Eye size={13} />} category="layout">
           {c.chatStyle === "community_chat" && <p>💎 counts Bits in recent chat messages. Viewer count below is set manually.</p>}
+          {c.chatStyle === "community_chat" && <>
+            <ToggleRow
+              label="Show diamond / Bits counter"
+              checked={c.showBitsCounter !== false}
+              onChange={(showBitsCounter) => set({ showBitsCounter })}
+            />
+            <ToggleRow
+              label="Show platform emblems"
+              hint="Twitch, Kick and YouTube icons"
+              checked={c.showPlatformEmblems !== false}
+              onChange={(showPlatformEmblems) => set({ showPlatformEmblems })}
+            />
+          </>}
           <ToggleRow
             label="Show name text"
             checked={c.showHeaderName !== false}

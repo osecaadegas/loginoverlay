@@ -297,6 +297,18 @@ export default function ChatConfig({ config, onChange }) {
             </select>
           </label>
           <h4 className="nb-subtitle">Display</h4>
+          {c.chatStyle === "community_chat" && <>
+            <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+              <input type="checkbox" checked={c.showBitsCounter !== false}
+                onChange={(e) => set("showBitsCounter", e.target.checked)} />
+              <span>Show diamond / Bits counter</span>
+            </label>
+            <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+              <input type="checkbox" checked={c.showPlatformEmblems !== false}
+                onChange={(e) => set("showPlatformEmblems", e.target.checked)} />
+              <span>Show platform emblems</span>
+            </label>
+          </>}
           {(c.chatStyle || "classic") === "classic" && (
             <>
               <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
