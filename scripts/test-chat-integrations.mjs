@@ -233,7 +233,6 @@ try {
   await changeField('Title colour', '#ff00aa');
   await changeField('Renderer background', '#123456');
   await changeField('Giveaway height in chat', 310);
-  await changeField('Giveaway width in chat', 90);
   await page.evaluate(() => [...document.querySelectorAll('aside [data-level="secondary"] button')].find(button => button.textContent === 'Edges').click());
   await settle();
   await changeField('Corner units', '%');
@@ -257,6 +256,7 @@ try {
       radius: getComputedStyle(card).borderTopLeftRadius,
       border: getComputedStyle(card).borderTopWidth,
       avatar: getComputedStyle(card.querySelector('.better-gw-avatar-bubble')).width,
+      fillsChat: Math.abs(card.getBoundingClientRect().width - document.querySelector('#edited-chat .ov-chat-giveaway').getBoundingClientRect().width) < 1,
       animation: getComputedStyle(track).animationName,
       standaloneAnimation: getComputedStyle(document.querySelector('#standalone-giveaway .better-gw-roulette-track')).animationName,
       centered: Math.abs(winner.x + winner.width / 2 - viewport.x - viewport.width / 2) < 2,
@@ -269,6 +269,7 @@ try {
   assert.equal(custom.radius, '35%');
   assert.equal(custom.border, '4px');
   assert.equal(custom.avatar, '48px');
+  assert.equal(custom.fillsChat, true, 'Embedded giveaway always fills the chat width');
   assert.equal(custom.animation, 'better-gw-reel-spin');
   assert.equal(custom.animation, custom.standaloneAnimation, 'Embedded roulette matches the standalone animation');
   assert.equal(custom.centered, true, 'Roll lands on the selected winner');
@@ -276,7 +277,6 @@ try {
   assert.equal(custom.saved.giveawayAppearance.participants, undefined, 'Appearance controls never store live entrants');
   assert.equal(custom.saved.giveawayAppearance.keyword, undefined, 'Appearance controls never replace the live keyword');
   assert.equal(custom.saved.giveawayHeight, 310);
-  assert.equal(custom.saved.giveawayWidth, 90);
   if (process.env.CHAT_GIVEAWAY_SCREENSHOT) await (await page.$('#edited-chat')).screenshot({ path: process.env.CHAT_GIVEAWAY_SCREENSHOT });
   await page.evaluate(() => window.mountChat({ style: 'community_chat', sample: true, width: 480, height: 900 }));
   await new Promise(resolve => setTimeout(resolve, 900));

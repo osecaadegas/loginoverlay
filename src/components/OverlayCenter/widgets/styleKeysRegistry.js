@@ -189,7 +189,6 @@ export const CHAT_STYLE_KEYS = [
   "giveawayCustomAppearance",
   "giveawayAppearance",
   "giveawayHeight",
-  "giveawayWidth",
   "giveawayMaxHeight",
   "giveawayMargin",
   "showBitsCounter",

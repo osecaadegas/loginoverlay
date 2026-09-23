@@ -3043,7 +3043,6 @@ export function ChatGiveawayAppearanceControls({ config, onChange, allWidgets = 
   const set = patch => onChange({ ...config, ...patch });
   return <div className="chat-giveaway-appearance-controls">
     <SliderRow label="Giveaway height in chat" value={config.giveawayHeight ?? 250} min={80} max={600} unit="px" onChange={giveawayHeight => set({ giveawayHeight })} />
-    <SliderRow label="Giveaway width in chat" value={config.giveawayWidth ?? 100} min={30} max={100} unit="%" onChange={giveawayWidth => set({ giveawayWidth })} />
     <SliderRow label="Maximum chat space" value={config.giveawayMaxHeight ?? 60} min={20} max={80} unit="%" onChange={giveawayMaxHeight => set({ giveawayMaxHeight })} />
     <SliderRow label="Space around giveaway" value={config.giveawayMargin ?? 4} min={0} max={30} unit="px" onChange={giveawayMargin => set({ giveawayMargin })} />
     <ToggleRow label="Custom giveaway appearance" checked={config.giveawayCustomAppearance === true}

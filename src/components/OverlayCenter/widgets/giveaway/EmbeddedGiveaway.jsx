@@ -24,13 +24,15 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  const scale = Math.min(size.width / width, size.height / height, 1);
+  // The embedded card follows the chat width so it reads as one continuous panel.
+  // Height remains independently configurable and clips only when deliberately reduced.
+  const scale = size.width > 0 ? size.width / width : 1;
   return (
     <section ref={frameRef} className="ov-chat-giveaway" aria-label="Giveaway" style={{
       position: "relative", minWidth: 0, minHeight: 0, flex: `0 1 ${frameHeight}px`,
       height: frameHeight, maxHeight: `${bounded(layout.giveawayMaxHeight, 20, 80, 60)}%`,
-      overflow: "hidden", margin: `${margin}px 0`, alignSelf: "center",
-      width: `${bounded(layout.giveawayWidth, 30, 100, 100)}%`,
+      overflow: "hidden", margin: `${margin}px 0`, alignSelf: "stretch",
+      width: "100%",
     }}>
       <div className="ov-chat-giveaway-canvas" style={{
         position: "absolute", width, height, top: "50%", left: "50%",
