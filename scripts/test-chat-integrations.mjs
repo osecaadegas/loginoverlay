@@ -100,17 +100,17 @@ try {
       send() {} close() { this.readyState = 3; this.onclose?.(); }
     };
     window.irc = (text, moderator = true) => window.sockets.filter(socket => socket.readyState === 1).forEach(socket => socket.onmessage?.({ data: `@id=event-${Date.now()};display-name=Viewer;mod=${moderator ? 1 : 0};badges= :viewer!v@v.tmi.twitch.tv PRIVMSG #fixture :${text}\r\n` }));
-    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false } = {}) => {
+    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true } = {}) => {
       const config = {
         chatStyle: style, live: true, bttvEnabled: false, twitchEnabled: live, twitchChannel: 'fixture',
-        giveawayInChat: enabled, giveawayPosition: position, shoutoutInChat: true,
+        giveawayInChat: enabled, giveawayPosition: position, shoutoutInChat: shoutout,
         shoutoutPosition: position, shoutoutHeight: 180, shoutoutDuration: 10,
         __appearancePreviewMessages: [{ id: 'sample', username: 'StreamFan', message: 'Enjoy the stream!' }],
         ...(live ? {} : { __previewShoutoutAlert: { raider_username: 'preview', raider_display_name: 'Preview Streamer' } }),
         ...(sample ? withChatPreviewSamples() : {}),
       };
       const restored = switchChatStyle(switchChatStyle(config, 'community_chat'), style);
-      if (restored.giveawayInChat !== enabled || restored.shoutoutInChat !== true || restored.giveawayPosition !== position) throw new Error('Integration settings lost on style switch');
+      if (restored.giveawayInChat !== enabled || restored.shoutoutInChat !== shoutout || restored.giveawayPosition !== position) throw new Error('Integration settings lost on style switch');
       window.giveawayConfig = {
         title: 'Community Giveaway', prize: 'Channel reward', keyword: 'join',
         participants: state === 'empty' ? [] : [{ name: 'First Viewer' }, 'SecondViewer'],
@@ -150,16 +150,16 @@ try {
   const settle = () => new Promise(resolve => setTimeout(resolve, 150));
   for (const style of styles) {
     for (const [state, position, width, height] of [['open', 'top', 320, 600], ['drawing', 'bottom', 600, 480], ['winner', 'top', 240, 400], ['open', 'bottom', 150, 150]]) {
-      await page.evaluate(options => window.mountChat(options), { style, state, position, width, height });
+      await page.evaluate(options => window.mountChat(options), { style, state, position, width, height, shoutout: false });
       await settle();
       const result = await page.evaluate(() => {
         const host = document.getElementById('host').getBoundingClientRect();
         const giveaway = document.querySelector('.ov-chat-giveaway');
         const rect = giveaway.getBoundingClientRect();
         const messages = document.querySelector('.ov-chat-messages').getBoundingClientRect();
-        return { text: giveaway.textContent, fits: rect.left >= host.left - 1 && rect.right <= host.right + 1 && rect.bottom <= host.bottom + 1, bounds: { host: host.toJSON(), giveaway: rect.toJSON() }, messageHeight: messages.height, shoutout: !!document.querySelector('.better-shoutout-card') };
+        return { text: giveaway.textContent, fits: rect.left >= host.left - 1 && rect.right <= host.right + 1 && rect.bottom <= host.bottom + 1, bounds: { host: host.toJSON(), giveaway: rect.toJSON() }, messageHeight: messages.height };
       });
-      assert.ok(result.fits && result.messageHeight > 0 && result.shoutout, `${style}/${state}/${width}x${height}: giveaway, shoutout and messages fit: ${JSON.stringify(result)}`);
+      assert.ok(result.fits && result.messageHeight > 0, `${style}/${state}/${width}x${height}: giveaway and messages fit: ${JSON.stringify(result)}`);
       assert.match(result.text, state === 'open' ? /!join/ : state === 'drawing' ? /Drawing/ : /SecondViewer/);
     }
   }
@@ -169,10 +169,30 @@ try {
     await page.evaluate(style => window.mountChat({ style, sample: true, height: 900 }), style);
     await settle();
     const text = await page.$eval('#host', element => element.textContent);
-    for (const expected of ['ChannelOwner', 'LoyalSub', 'CommunityVIP', 'ChatModerator', '!so RaidLeader', '!join', 'Giveaway #1']) {
+    for (const expected of ['ChannelOwner', 'LoyalSub', 'CommunityVIP', 'ChatModerator', '!so RaidLeader', '!join']) {
       assert.ok(text.includes(expected), `${style}: sample displays ${expected}`);
     }
     assert.match(await page.$eval('.better-shoutout-card', element => element.textContent), /RaidLeader/);
+    assert.equal(await page.$('.ov-chat-giveaway'), null, `${style}: active !so temporarily removes the giveaway`);
+    assert.equal(await page.$eval('.ov-chat-shoutout', element => element.dataset.chatSlot), 'giveaway', `${style}: active !so occupies the giveaway slot`);
+    await page.evaluate(style => window.mountChat({ style, sample: true, height: 900, shoutout: false }), style);
+    await settle();
+    assert.match(await page.$eval('.ov-chat-giveaway', element => element.textContent), /Giveaway #1/, `${style}: giveaway returns when !so is inactive`);
+  }
+  for (const style of styles) {
+    await page.evaluate(style => window.mountChat({ style, state: 'empty', height: 600, shoutout: false }), style);
+    await settle();
+    const availableChatHeight = await page.$eval('.ov-chat-messages', element => element.getBoundingClientRect().height);
+    await page.evaluate(style => window.mountChat({ style, state: 'empty', height: 600, shoutout: true }), style);
+    await settle();
+    const standaloneShoutout = await page.evaluate(() => ({
+      slot: document.querySelector('.ov-chat-shoutout')?.dataset.chatSlot,
+      animation: document.querySelector('.better-shoutout-card')?.className || '',
+      chatHeight: document.querySelector('.ov-chat-messages')?.getBoundingClientRect().height || 0,
+    }));
+    assert.equal(standaloneShoutout.slot, 'messages', `${style}: !so uses chat space when no giveaway is visible`);
+    assert.match(standaloneShoutout.animation, /anim-slide-left/, `${style}: standalone !so keeps its animation`);
+    assert.ok(standaloneShoutout.chatHeight < availableChatHeight, `${style}: standalone !so temporarily reduces visible chat space`);
   }
   assert.equal(await page.evaluate(() => window.sockets.length), 0, 'Previews never connect giveaway listeners to Twitch, even without previewOnly');
   assert.equal(await page.evaluate(() => window.writes.length), 0, 'Previews never write giveaway entries or consume alerts');
@@ -197,7 +217,7 @@ try {
   await settle();
   await page.evaluate(() => window.irc('!join', false));
   await page.waitForFunction(() => window.writes.some(write => write.table === 'overlay_widgets' && write.value.config.participants.includes('Viewer')), { timeout: 5000 });
-  await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'winner' }));
+  await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'winner', shoutout: false }));
   await settle();
   assert.match(await page.$eval('.ov-chat-giveaway', element => element.textContent), /SecondViewer/, 'A chat-only layout receives the live giveaway source');
   await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'empty' }));
@@ -206,7 +226,7 @@ try {
   await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', enabled: false }));
   await settle();
   assert.equal(await page.$('.ov-chat-giveaway'), null, 'Toggle disables giveaway display');
-  await page.evaluate(() => window.mountChat({ registry: true, mode: 'mock', style: 'community_chat' }));
+  await page.evaluate(() => window.mountChat({ registry: true, mode: 'mock', style: 'community_chat', shoutout: false }));
   await settle();
   assert.match(await page.$eval('.ov-chat-giveaway', element => element.textContent), /Giveaway #1/, 'Sample mode uses giveaway sample data');
   await page.evaluate(() => window.mountGiveawayEditor());

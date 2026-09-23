@@ -1490,8 +1490,9 @@ function ChatWidget({
   const giveawayConfig = giveawaySource?.config && resolveEmbeddedGiveawayConfig(c, giveawaySource.config, giveawayAppearanceSource || giveawaySource.config);
   const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
     (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
+  const embeddedShoutoutActive = c.shoutoutInChat === true && shoutoutActive;
   const giveawayPosition = c.giveawayPosition === "bottom" ? "bottom" : "top";
-  const embeddedGiveaway = giveawayVisible ? (
+  const embeddedGiveaway = giveawayVisible && !embeddedShoutoutActive ? (
     <GiveawayWidget
       embedded
       config={giveawayConfig}
@@ -1502,18 +1503,32 @@ function ChatWidget({
   ) : null;
   const shoutoutPosition = c.shoutoutPosition === "bottom" ? "bottom" : "top";
   const shoutoutHeight = Math.max(120, Math.min(360, Number(c.shoutoutHeight) || 180));
+  const shoutoutUsesGiveawaySlot = Boolean(giveawayVisible);
+  const embeddedShoutoutPosition = shoutoutUsesGiveawaySlot ? giveawayPosition : shoutoutPosition;
+  const requestedGiveawayHeight = Number(c.giveawayHeight);
+  const requestedGiveawayMargin = Number(c.giveawayMargin);
+  const embeddedShoutoutHeight = shoutoutUsesGiveawaySlot
+    ? Math.max(80, Math.min(600, Number.isFinite(requestedGiveawayHeight) ? requestedGiveawayHeight : 250))
+    : shoutoutHeight;
   const embeddedShoutout = c.shoutoutInChat === true ? (
     <div
-      className="ov-chat-shoutout"
+      className={`ov-chat-shoutout${shoutoutUsesGiveawaySlot ? " ov-chat-shoutout--giveaway-slot" : ""}`}
+      data-chat-slot={shoutoutUsesGiveawaySlot ? "giveaway" : "messages"}
       style={{
         position: "relative",
         zIndex: 4,
-        display: shoutoutActive ? "block" : "none",
-        flex: `0 1 ${shoutoutHeight}px`,
-        maxHeight: "40%",
-        height: shoutoutHeight,
+        display: embeddedShoutoutActive ? "block" : "none",
+        flex: `0 1 ${embeddedShoutoutHeight}px`,
+        maxHeight: shoutoutUsesGiveawaySlot
+          ? `${Math.max(20, Math.min(80, Number(c.giveawayMaxHeight) || 60))}%`
+          : "40%",
+        height: embeddedShoutoutHeight,
         minHeight: 0,
-        margin: "4px 9px",
+        margin: shoutoutUsesGiveawaySlot
+          ? `${Math.max(0, Math.min(30, Number.isFinite(requestedGiveawayMargin) ? requestedGiveawayMargin : 4))}px 0`
+          : "4px 9px",
+        alignSelf: shoutoutUsesGiveawaySlot ? "stretch" : undefined,
+        width: shoutoutUsesGiveawaySlot ? "100%" : undefined,
         overflow: "hidden",
         borderRadius: Math.max(8, Number(borderRadius) || 12),
       }}
@@ -1879,7 +1894,7 @@ function ChatWidget({
           </div>
         )}
 
-      {shoutoutPosition === "top" ? embeddedShoutout : null}
+      {embeddedShoutoutPosition === "top" ? embeddedShoutout : null}
       {giveawayPosition === "top" ? embeddedGiveaway : null}
 
       <div
@@ -1901,7 +1916,7 @@ function ChatWidget({
             padding: isBroadcast ? "4px 6px 6px" : "7px 9px 10px",
             scrollbarWidth: "none",
           }),
-          ...((giveawayVisible || shoutoutActive) && { minHeight: "20%" }),
+          ...((giveawayVisible || embeddedShoutoutActive) && { minHeight: "20%" }),
         })}
       >
         {renderMessages.length === 0 &&
@@ -2108,7 +2123,7 @@ function ChatWidget({
         })}
       </div>
 
-      {shoutoutPosition === "bottom" ? embeddedShoutout : null}
+      {embeddedShoutoutPosition === "bottom" ? embeddedShoutout : null}
       {giveawayPosition === "bottom" ? embeddedGiveaway : null}
 
       {showLegend && (
