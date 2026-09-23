@@ -2108,8 +2108,8 @@ function BetterStyleSheet() {
       .better-hunt-root[data-finish="gradient"] .better-hunt-panel::after{background:linear-gradient(140deg,color-mix(in srgb,var(--bh-ice) 7%,transparent) 0%,transparent 38%,color-mix(in srgb,var(--bh-ice-deep) 10%,transparent) 92%)}
       .better-hunt-vertical{max-width:min(100%,var(--bh-panel-width,402px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto auto minmax(0,1fr) auto auto;gap:10px;padding:12px}
       .better-hunt-vertical--no-requests{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}
-      .better-hunt-mainstream{max-width:min(100%,var(--bh-panel-width,372px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto;gap:0;padding:0}
-      .better-hunt-mainstream--no-requests{grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto}
+      .better-hunt-mainstream{max-width:min(100%,var(--bh-panel-width,372px));height:var(--bh-panel-height,auto);display:grid;grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto;gap:0;padding:0}
+      .better-hunt-mainstream--no-requests{grid-template-rows:auto auto auto auto minmax(0,1fr) auto}
       .better-hunt-main-head{display:flex;align-items:center;gap:12px;min-width:0;padding:14px 16px 12px}
       .better-hunt-main-avatar-wrap{position:relative;display:grid;place-items:center;flex:0 0 auto;width:calc(var(--bh-avatar) + 10px);height:calc(var(--bh-avatar) + 10px);overflow:hidden;border:2px solid var(--bh-line-hi);border-radius:50%;background:var(--bh-inset);box-shadow:0 0 14px color-mix(in srgb,var(--bh-line-hi) 40%,transparent)}
       .better-hunt-main-avatar-wrap img{width:var(--bh-avatar);height:var(--bh-avatar);display:block;border-radius:50%;object-fit:cover}
@@ -2144,6 +2144,7 @@ function BetterStyleSheet() {
       .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-footer{margin:8px 12px 12px}
       .better-hunt-main-tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:8px 12px 0;min-width:0}
       .better-hunt-main-tiers>.better-hunt-main-count,.better-hunt-main-tiers>.better-hunt-main-tier{display:grid;justify-content:stretch;align-content:center;gap:4px;min-width:0;margin:0;padding:5px 6px;box-shadow:none}
+      .better-hunt-main-tiers>.better-hunt-main-tier{border:1px solid color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:var(--bh-stat-radius,7px)}
       .better-hunt-main-tiers span{font-size:.6em;letter-spacing:0;gap:3px;min-width:0}
       .better-hunt-main-tiers strong{font-size:.9em;line-height:1.1}
       .better-hunt-main-tiers svg{width:10px;flex-shrink:0}
@@ -2304,6 +2305,12 @@ function BetterStyleSheet() {
       .better-hunt-row--image{min-height:100px;overflow:hidden;padding:6px}
       .better-hunt-row-bg{position:absolute;inset:0}.better-hunt-row-bg img{filter:saturate(1.08) contrast(1.02)}
       .better-hunt-row-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.38),transparent)}
+      .better-hunt-mainstream .better-hunt-row--image{grid-template-columns:104px minmax(0,1fr);min-height:168px;gap:10px;padding:6px}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-bg{position:relative;inset:auto;height:154px;overflow:hidden;border-radius:max(0px,calc(var(--bh-stat-radius,7px) - 6px));background:var(--bh-inset)}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-bg::after{content:none}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-content{grid-template-columns:minmax(0,1fr);align-content:center;gap:12px;min-width:0;padding:24px 4px 4px}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-id{left:4px;top:0;transform:none}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-mini-stats{min-width:0;gap:7px}
       .better-hunt-row-content{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;padding-left:20px}
       .better-hunt-row-id{position:absolute;left:3px;top:50%;z-index:3;width:18px;height:20px;min-width:18px;display:grid;place-items:center;transform:translateY(-50%);border:1px solid rgba(255,255,255,.16);border-radius:5px;background:rgba(0,0,0,.5);color:var(--bh-steel-hi);font-size:.68em;font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.8)}
       .better-hunt-row-main{min-width:0}.better-hunt-row-main .better-hunt-slot-marquee{display:block;overflow:hidden;color:#fff;font-size:1em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-slot-marquee-track{display:inline-flex;width:max-content;gap:28px;will-change:transform}.better-hunt-slot-marquee-track>span{display:block;flex:0 0 auto}.better-hunt-slot-marquee.is-scrolling{text-overflow:clip}.better-hunt-slot-marquee.is-scrolling .better-hunt-slot-marquee-track{animation:better-hunt-slot-marquee var(--bh-slot-marquee-duration,8s) linear infinite}.better-hunt-row-main em{display:block;overflow:hidden;color:#c4d7f7;font-style:normal;font-size:.76em;font-weight:700;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}
@@ -3053,7 +3060,10 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const visibleRows = Math.max(3, Math.min(8, Number(c.visibleRows) || 5));
   const rowHeight =
     BETTER_HUNT_ROW_HEIGHT[listMode] || BETTER_HUNT_ROW_HEIGHT.compact;
-  const listHeight = visibleRows * rowHeight + 6;
+  const listRowHeight = orientation === "mainstream" && listMode === "image"
+    ? 174
+    : rowHeight;
+  const listHeight = visibleRows * listRowHeight + 6;
   const uiScale = Math.max(0.75, Math.min(1.35, Number(c.uiScale) || 1));
   const barHeight = Math.max(3, Math.min(10, Number(c.barHeight) || 6));
   const avatarSize = Math.max(20, Math.min(44, Number(c.avatarSize) || 28));
@@ -3951,7 +3961,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           }}
         />
       </div>
-      <div className="better-hunt-counts" aria-label="Bonus tiers">
+      {orientation !== "mainstream" && <div className="better-hunt-counts" aria-label="Bonus tiers">
         <span
           className="is-extreme"
           aria-label={`${extremeCount} extreme bonuses`}
@@ -3963,7 +3973,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           <Star size={12} fill="currentColor" strokeWidth={2.5} />
           {superCount}
         </span>
-      </div>
+      </div>}
     </div>
   );
 
@@ -4213,7 +4223,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
           )}
         >
           <div className="better-hunt-row-bg">
-            <SlotImage src={bonusImage(bonus)} alt="" />
+            <SlotImage src={bonusImage(bonus)} alt="" fit={orientation === "mainstream" ? "contain" : "cover"} />
           </div>
           <div className="better-hunt-row-content">
             <span
@@ -4687,20 +4697,6 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
       <div className="better-hunt-main-carousel">{renderCarousel()}</div>
       {renderRequests()}
       <div className="better-hunt-main-list-wrap">{renderList()}</div>
-      <div className="better-hunt-main-bottom">
-        <div className="better-hunt-main-stat-pair">
-          {renderMainstreamStat(
-            "Average",
-            avgMulti > 0 ? formatMultiplier(avgMulti) : "-",
-            Scale,
-          )}
-          {renderMainstreamStat(
-            "Breakeven",
-            displayBreakEven > 0 ? formatMultiplier(displayBreakEven, 0) : "-",
-            TrendingUp,
-          )}
-        </div>
-      </div>
       {renderBonusFooter()}
       {previewWin ? (
         <BetterHuntWinOverlay
