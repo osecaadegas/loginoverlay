@@ -1,3 +1,4 @@
+import { withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 const SAMPLE_BETS_OPTIONS = [
   { label: "0 - 99" },
   { label: "100 - 199" },
@@ -170,34 +171,6 @@ const SAMPLE_SLOT_REQUESTS = [
   },
 ];
 
-const SAMPLE_CHAT_MESSAGES = [
-  {
-    id: "preview-chat-1",
-    platform: "twitch",
-    username: "brutuspolus",
-    message: "This chat preview uses the saved widget style.",
-    color: "#a78bfa",
-    timestamp: Date.now() - 15000,
-    isBroadcaster: true,
-  },
-  {
-    id: "preview-chat-2",
-    platform: "kick",
-    username: "nightowl",
-    message: "Edit header, message row, name, badges and text separately.",
-    color: "#22c55e",
-    timestamp: Date.now() - 9000,
-    isVip: true,
-  },
-  {
-    id: "preview-chat-3",
-    platform: "youtube",
-    username: "viewer_42",
-    message: "Nothing here is shared with the live chat feed.",
-    color: "#ef4444",
-    timestamp: Date.now() - 3000,
-  },
-];
 
 const SAMPLE_BONUS_HUNT_BONUSES = [
   {
@@ -510,14 +483,7 @@ function applySlotRequestsPreviewSample(config = {}, slotCatalog) {
 }
 
 function applyChatPreviewSample(config = {}) {
-  if (Array.isArray(config.__appearancePreviewMessages)) {
-    return { ...config, __appearancePreviewSample: true };
-  }
-  return {
-    ...config,
-    __appearancePreviewMessages: SAMPLE_CHAT_MESSAGES,
-    __appearancePreviewSample: true,
-  };
+  return withChatPreviewSamples(config);
 }
 
 function applyBonusHuntPreviewSample(config = {}, slotCatalog) {

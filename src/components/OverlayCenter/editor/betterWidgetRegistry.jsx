@@ -1,3 +1,4 @@
+import { withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React from "react";
 import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
 import GiveawayWidget from "../widgets/giveaway/GiveawayWidget";
@@ -278,17 +279,11 @@ const MOCK_WIDGET_CONFIGS = {
       album: "Better Editor",
     },
   },
-  chat: {
+  chat: withChatPreviewSamples({
     twitchEnabled: false,
     youtubeEnabled: false,
     kickEnabled: false,
-    __appearancePreviewMessages: [
-      { user: "streamfan", text: "the hunt is live" },
-      { user: "arena", text: "!bet 2" },
-      { user: "nightowl", text: "good luck everyone" },
-      { user: "chat", text: "that rtp bar is clean" },
-    ],
-  },
+  }),
   rtp_stats: {
     previewMode: true,
     slotName: "Medusas Madness",
@@ -1174,6 +1169,12 @@ export function renderBetterWidgetInstance({
     theme,
     runtime,
     publicOverlayId,
+    ...(instance.widgetType === "chat" ? {
+      giveawayWidget: mode === "mock"
+        ? { config: MOCK_WIDGET_CONFIGS.giveaway }
+        : resolveBetterLiveSourceWidget("giveaway", liveSourceContext) ||
+          allWidgets.find((item) => item.widget_type === "giveaway"),
+    } : {}),
   };
   return <WidgetComponent {...commonProps} />;
 }

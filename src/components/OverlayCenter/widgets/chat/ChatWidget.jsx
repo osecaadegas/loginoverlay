@@ -31,6 +31,7 @@ import {
 } from "../shared/betterWidgetStyles";
 import { CommunityChatHeader, CommunityChatMessage } from "./CommunityChatParts";
 import RaidShoutoutWidget from "../raid-shoutout/RaidShoutoutWidget";
+import GiveawayWidget from "../giveaway/GiveawayWidget";
 import {
   chatStyleDefaults,
   COMMUNITY_CHAT_STYLE,
@@ -810,6 +811,8 @@ function ChatWidget({
   userId,
   runtime = "editor",
   publicOverlayId,
+  overlayToken,
+  giveawayWidget,
   previewOnly = false,
 }) {
   const c = useMemo(
@@ -1142,11 +1145,12 @@ function ChatWidget({
       if (
         c.shoutoutInChat === true &&
         runtime === "obs" &&
-        publicOverlayId
+        !previewOnly &&
+        (publicOverlayId || overlayToken)
       ) {
         const command = parseShoutoutChatCommand(stampedMessage);
         if (command) {
-          triggerShoutoutChatCommand({ publicOverlayId, command }).catch(
+          triggerShoutoutChatCommand({ publicOverlayId, overlayToken, command }).catch(
             (error) => {
               console.error("[ChatWidget] !so command failed:", error);
             },
@@ -1166,6 +1170,8 @@ function ChatWidget({
       maxMessages,
       messageTtlMs,
       publicOverlayId,
+      overlayToken,
+      previewOnly,
       runtime,
       shouldExpireMessages,
     ],
@@ -1476,6 +1482,22 @@ function ChatWidget({
     renderMessageContent: isBetterChat ? renderBetterChatMessage : null,
   };
 
+  const sampleGiveaway = (previewOnly || runtime !== "obs") && c.__previewGiveawayConfig;
+  const giveawaySource = sampleGiveaway ? { config: sampleGiveaway } :
+    giveawayWidget || allWidgets?.find((widget) => widget.widget_type === "giveaway");
+  const giveawayConfig = giveawaySource?.config;
+  const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
+    (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
+  const giveawayPosition = c.giveawayPosition === "bottom" ? "bottom" : "top";
+  const embeddedGiveaway = giveawayVisible ? (
+    <GiveawayWidget
+      embedded
+      config={giveawayConfig}
+      widgetId={giveawaySource.id}
+      previewOnly={previewOnly || runtime !== "obs"}
+      palette={{ background: messageBg, text: textColor, accent: usernameColor, border: borderColor, radius: borderRadius }}
+    />
+  ) : null;
   const shoutoutPosition = c.shoutoutPosition === "bottom" ? "bottom" : "top";
   const shoutoutHeight = Math.max(120, Math.min(360, Number(c.shoutoutHeight) || 180));
   const embeddedShoutout = c.shoutoutInChat === true ? (
@@ -1485,10 +1507,11 @@ function ChatWidget({
         position: "relative",
         zIndex: 4,
         display: shoutoutActive ? "block" : "none",
-        flex: `0 0 ${shoutoutHeight}px`,
+        flex: `0 1 ${shoutoutHeight}px`,
+        maxHeight: "40%",
         height: shoutoutHeight,
         minHeight: 0,
-        margin: "7px 9px",
+        margin: "4px 9px",
         overflow: "hidden",
         borderRadius: Math.max(8, Number(borderRadius) || 12),
       }}
@@ -1521,8 +1544,9 @@ function ChatWidget({
           __previewAlert: c.__previewShoutoutAlert,
         }}
         userId={userId}
-        runtime={runtime}
+        runtime={previewOnly ? "editor" : runtime}
         publicOverlayId={publicOverlayId}
+        overlayToken={overlayToken}
         onActiveChange={setShoutoutActive}
         allowFallbackPreview={false}
       />
@@ -1854,6 +1878,7 @@ function ChatWidget({
         )}
 
       {shoutoutPosition === "top" ? embeddedShoutout : null}
+      {giveawayPosition === "top" ? embeddedGiveaway : null}
 
       <div
         className="ov-chat-messages"
@@ -1874,6 +1899,7 @@ function ChatWidget({
             padding: isBroadcast ? "4px 6px 6px" : "7px 9px 10px",
             scrollbarWidth: "none",
           }),
+          ...((giveawayVisible || shoutoutActive) && { minHeight: "20%" }),
         })}
       >
         {renderMessages.length === 0 &&
@@ -2081,6 +2107,7 @@ function ChatWidget({
       </div>
 
       {shoutoutPosition === "bottom" ? embeddedShoutout : null}
+      {giveawayPosition === "bottom" ? embeddedGiveaway : null}
 
       {showLegend && (
         <div

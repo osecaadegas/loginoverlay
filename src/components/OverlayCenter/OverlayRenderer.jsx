@@ -77,6 +77,7 @@ const WidgetSlot = memo(function WidgetSlot({
   exiting,
   userId,
   overlayToken,
+  runtime = "obs",
   suppressAnimations = false,
 }) {
   const def = getWidgetDef(widget.widget_type);
@@ -203,6 +204,8 @@ const WidgetSlot = memo(function WidgetSlot({
             widgetId={widget.id}
             userId={userId}
             overlayToken={overlayToken}
+            runtime={runtime}
+            previewOnly={runtime !== "obs"}
           />
         </div>
       ) : (
@@ -213,6 +216,8 @@ const WidgetSlot = memo(function WidgetSlot({
           widgetId={widget.id}
           userId={userId}
           overlayToken={overlayToken}
+          runtime={runtime}
+          previewOnly={runtime !== "obs"}
         />
       )}
     </div>
@@ -565,6 +570,7 @@ export default function OverlayRenderer() {
           exiting={false}
           userId={userId}
           suppressAnimations={isPreviewMode}
+          runtime={isPreviewMode ? "editor" : "obs"}
           overlayToken={token}
         />
       ))}
@@ -582,6 +588,7 @@ export default function OverlayRenderer() {
           exiting={true}
           userId={userId}
           suppressAnimations={isPreviewMode}
+          runtime={isPreviewMode ? "editor" : "obs"}
           overlayToken={token}
         />
       ))}

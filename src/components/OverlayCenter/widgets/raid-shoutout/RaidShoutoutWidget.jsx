@@ -276,13 +276,15 @@ export default function RaidShoutoutWidget({
   userId,
   runtime = "editor",
   publicOverlayId,
+  overlayToken,
   onActiveChange,
   allWidgets = [],
   allowFallbackPreview = true,
 }) {
   const hostedInChat = allWidgets.some(
     (widget) =>
-      widget?.widget_type === "chat" && widget?.config?.shoutoutInChat === true,
+      widget?.widget_type === "chat" && widget?.is_visible !== false &&
+      widget?.config?.shoutoutInChat === true,
   );
   const previewAlert = useMemo(
     () =>
@@ -307,20 +309,20 @@ export default function RaidShoutoutWidget({
     (message) => {
       const command = parseShoutoutChatCommand(message);
       if (!command) return;
-      triggerShoutoutChatCommand({ publicOverlayId, command }).catch(
+      triggerShoutoutChatCommand({ publicOverlayId, overlayToken, command }).catch(
         (error) => {
           console.error("[RaidShoutoutWidget] !so command failed:", error);
         },
       );
     },
-    [publicOverlayId],
+    [publicOverlayId, overlayToken],
   );
 
   useTwitchChat(
     runtime === "obs" &&
       !hostedInChat &&
       config.chatCommandEnabled !== false &&
-      publicOverlayId
+      (publicOverlayId || overlayToken)
       ? twitchChannel
       : "",
     handleChatMessage,

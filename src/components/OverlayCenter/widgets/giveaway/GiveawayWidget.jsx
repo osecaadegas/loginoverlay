@@ -11,6 +11,7 @@ import useTwitchChannel from "../../../../hooks/useTwitchChannel";
 import { supabase } from "../../../../config/supabaseClient";
 import { subElementStyle, subValue } from "../shared/appearanceStyles";
 import { BetterGiveawayStyle } from "../shared/betterWidgetStyles";
+import EmbeddedGiveaway, { giveawayParticipantName } from "./EmbeddedGiveaway";
 
 /* ─── Confetti burst generator ─── */
 function ConfettiBurst({ count = 60, accentColor }) {
@@ -321,7 +322,7 @@ function SpinReel({
   );
 }
 
-function GiveawayWidget({ config, widgetId, previewOnly = false }) {
+function GiveawayWidget({ config, widgetId, previewOnly = false, embedded = false, palette }) {
   const c = config || {};
   const st = c.displayStyle || "v1";
   const bgColor = subValue(
@@ -388,14 +389,14 @@ function GiveawayWidget({ config, widgetId, previewOnly = false }) {
     elementStyle("statusBadge", fallback, statusState);
 
   /* ─── Chat listener: detect keyword → add participants ─── */
-  const participantsRef = useRef(new Set(participants));
+  const participantsRef = useRef(new Set(participants.map(giveawayParticipantName)));
   const pendingRef = useRef([]);
   const configRef = useRef(c);
   configRef.current = c;
 
   // Keep the Set in sync when config changes (e.g. admin clears entries)
   useEffect(() => {
-    participantsRef.current = new Set(c.participants || []);
+    participantsRef.current = new Set((c.participants || []).map(giveawayParticipantName));
   }, [c.participants]);
 
   // Flush pending participants to Supabase every 2s
@@ -414,7 +415,9 @@ function GiveawayWidget({ config, widgetId, previewOnly = false }) {
           .single();
         if (!data) return;
         const current = data.config?.participants || [];
-        const merged = [...new Set([...current, ...batch])];
+        if (embedded && !data.config?.isActive) return;
+        const known = new Set(current.map(giveawayParticipantName));
+        const merged = [...current, ...batch.filter((name) => !known.has(name))];
         if (merged.length === current.length) return; // nothing new
         await supabase
           .from("overlay_widgets")
@@ -430,12 +433,12 @@ function GiveawayWidget({ config, widgetId, previewOnly = false }) {
       }
     }, 2000);
     return () => clearInterval(timer);
-  }, [widgetId, previewOnly]);
+  }, [widgetId, previewOnly, embedded]);
 
   // Chat message handler — use a stable ref to avoid WebSocket reconnects on keyword change
   const handleMessageRef = useRef(null);
   handleMessageRef.current = (msg) => {
-    if (!keyword) return;
+    if (!keyword || (embedded && !isActive)) return;
     const text = (msg.message || "").trim().toLowerCase();
     if (text === `!${keyword}` || text.startsWith(`!${keyword} `)) {
       const name = msg.username;
@@ -453,8 +456,10 @@ function GiveawayWidget({ config, widgetId, previewOnly = false }) {
   // Always listen if channel is configured — no need for isActive or enabled flags
   const autoChannel = useTwitchChannel();
   const resolvedChannel = c.twitchChannel || autoChannel || "";
-  const listenTwitch = !previewOnly && !isDone && !!keyword && !!resolvedChannel;
-  const listenKick = !previewOnly && !isDone && !!keyword && !!c.kickChannelId;
+  const listenTwitch = !previewOnly && !isDone && !!keyword && !!resolvedChannel &&
+    (!embedded || (isActive && c.twitchEnabled !== false));
+  const listenKick = !previewOnly && !isDone && !!keyword && !!c.kickChannelId &&
+    (!embedded || (isActive && c.kickEnabled !== false));
   useTwitchChat(listenTwitch ? resolvedChannel : "", handleMessage);
   useKickChat(listenKick ? c.kickChannelId : "", handleMessage);
 
@@ -494,6 +499,22 @@ function GiveawayWidget({ config, widgetId, previewOnly = false }) {
       50%{transform:translateX(0)}
     }
   `;
+
+  if (embedded) {
+    return (
+      <EmbeddedGiveaway config={c} palette={palette}>
+        <style>{kf}</style>
+        <SpinReel
+          key={giveawayParticipantName(spinningWinner)}
+          participants={participants.map(giveawayParticipantName)}
+          winnerName={giveawayParticipantName(spinningWinner)}
+          accentColor={palette.accent}
+          textColor={palette.text}
+          mutedColor={palette.text}
+        />
+      </EmbeddedGiveaway>
+    );
+  }
 
   if (st === "better_giveaway") {
     return <BetterGiveawayStyle config={c} />;

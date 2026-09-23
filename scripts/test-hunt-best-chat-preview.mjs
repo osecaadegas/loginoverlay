@@ -44,10 +44,12 @@ try {
     const instance = createBetterInstance('chat', { config: { chatStyle, live: false } });
     const layout = { instances: [instance] };
     const sample = renderToStaticMarkup(renderBetterWidgetInstance({ instance, layout, mode: 'mock' }));
-    assert.match(sample, /the hunt is live|good luck everyone|that rtp bar is clean/, `${chatStyle}: sample mode contains chat messages`);
+    assert.match(sample, /!so RaidLeader/, `${chatStyle}: sample mode contains a moderator shoutout command`);
+    assert.match(sample, /CommunityVIP/, `${chatStyle}: sample mode contains VIP messages`);
+    assert.match(sample, /LoyalSub/, `${chatStyle}: sample mode contains subscriber messages`);
     for (const runtime of ['editor', 'obs']) {
       const live = renderToStaticMarkup(renderBetterWidgetInstance({ instance, layout, mode: 'live', runtime }));
-      assert.doesNotMatch(live, /the hunt is live|good luck everyone|that rtp bar is clean/, `${chatStyle}: ${runtime} live mode has no sample messages`);
+      assert.doesNotMatch(live, /!so RaidLeader|CommunityVIP|LoyalSub/, `${chatStyle}: ${runtime} live mode has no sample messages`);
     }
     assert.equal(instance.config.__appearancePreviewMessages, undefined, 'Sample messages are not persisted to the widget');
   }

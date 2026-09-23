@@ -1,6 +1,7 @@
 const SHOUTOUT_COMMAND_PATTERN = /^!so\s+["']?@?([a-z0-9_]{1,25})["']?\s*$/i;
 
 export function parseShoutoutChatCommand(message = {}) {
+  if (message.platform && message.platform !== "twitch") return null;
   if (!message.isBroadcaster && !message.isMod) return null;
   const match = String(message.message || "").match(SHOUTOUT_COMMAND_PATTERN);
   if (!match) return null;
@@ -13,14 +14,14 @@ export function parseShoutoutChatCommand(message = {}) {
   };
 }
 
-export async function triggerShoutoutChatCommand({ publicOverlayId, command }) {
-  if (!publicOverlayId || !command) return null;
+export async function triggerShoutoutChatCommand({ publicOverlayId, overlayToken, command }) {
+  if ((!publicOverlayId && !overlayToken) || !command) return null;
   const response = await fetch("/api/raid-shoutout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       ...command,
-      publicOverlayId,
+      ...(publicOverlayId ? { publicOverlayId } : { overlayToken }),
       triggeredBy: "chat_command",
     }),
   });

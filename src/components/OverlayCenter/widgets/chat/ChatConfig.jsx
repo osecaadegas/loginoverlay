@@ -271,6 +271,31 @@ export default function ChatConfig({ config, onChange }) {
               </p>
             )}
 
+          <h4 className="nb-subtitle">Giveaway & Shoutout</h4>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <input type="checkbox" checked={c.giveawayInChat === true}
+              onChange={(e) => set("giveawayInChat", e.target.checked)} />
+            <span>Show giveaway inside chat</span>
+          </label>
+          <p className="oc-config-hint">Run entries and draw winners from the Giveaway controls. You can remove the separate giveaway box from your overlay.</p>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <span>Giveaway position</span>
+            <select value={c.giveawayPosition || "top"} onChange={(e) => set("giveawayPosition", e.target.value)}>
+              <option value="top">Top</option><option value="bottom">Bottom</option>
+            </select>
+          </label>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <input type="checkbox" checked={c.shoutoutInChat === true}
+              onChange={(e) => set("shoutoutInChat", e.target.checked)} />
+            <span>Play !so inside chat</span>
+          </label>
+          <p className="oc-config-hint">Broadcasters and Twitch moderators can use !so username. Available with every chat style.</p>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <span>Shoutout position</span>
+            <select value={c.shoutoutPosition || "top"} onChange={(e) => set("shoutoutPosition", e.target.value)}>
+              <option value="top">Top</option><option value="bottom">Bottom</option>
+            </select>
+          </label>
           <h4 className="nb-subtitle">Display</h4>
           {(c.chatStyle || "classic") === "classic" && (
             <>

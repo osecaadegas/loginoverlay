@@ -27,16 +27,18 @@ function normalizeTwitchLogin(value) {
   return TWITCH_LOGIN_PATTERN.test(login) ? login : "";
 }
 
-async function resolveChatCommandOwner(supabase, publicOverlayId) {
-  if (!/^bo_[a-f0-9]{48}$/i.test(String(publicOverlayId || ""))) return null;
-  const { data, error } = await supabase
-    .from("better_overlay_publications")
-    .select("owner_user_id")
-    .eq("public_overlay_id", publicOverlayId)
-    .is("revoked_at", null)
-    .maybeSingle();
+export async function resolveChatCommandOwner(supabase, publicOverlayId, overlayToken) {
+  const publication = /^bo_[a-f0-9]{48}$/i.test(String(publicOverlayId || "")) && !overlayToken;
+  const legacy = /^[a-f0-9]{48}$/i.test(String(overlayToken || "")) && !publicOverlayId;
+  if (!publication && !legacy) return null;
+  const query = publication
+    ? supabase.from("better_overlay_publications").select("owner_user_id")
+        .eq("public_overlay_id", publicOverlayId).is("revoked_at", null)
+    : supabase.from("overlay_instances").select("user_id")
+        .eq("overlay_token", overlayToken).eq("is_active", true);
+  const { data, error } = await query.maybeSingle();
   if (error) throw error;
-  return data?.owner_user_id || null;
+  return data?.owner_user_id || data?.user_id || null;
 }
 
 // ─── Twitch App Access Token (Client Credentials) ───
@@ -254,7 +256,7 @@ export default async function handler(req, res) {
   try {
     // Support both POST body and GET query params (for SE webhook)
     let raiderUsername, userId, triggeredBy, secret;
-    let publicOverlayId, sourceEventId, requesterRole;
+    let publicOverlayId, overlayToken, sourceEventId, requesterRole;
 
     if (req.method === "POST") {
       ({
@@ -262,6 +264,7 @@ export default async function handler(req, res) {
         userId,
         triggeredBy,
         publicOverlayId,
+        overlayToken,
         sourceEventId,
         requesterRole,
       } = req.body || {});
@@ -296,7 +299,7 @@ export default async function handler(req, res) {
       if (!TWITCH_EVENT_PATTERN.test(String(sourceEventId || ""))) {
         return res.status(400).json({ error: "Missing Twitch source event" });
       }
-      userId = await resolveChatCommandOwner(supabaseAdmin, publicOverlayId);
+      userId = await resolveChatCommandOwner(supabaseAdmin, publicOverlayId, overlayToken);
       if (!userId) {
         return res
           .status(403)

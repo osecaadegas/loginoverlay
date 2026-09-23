@@ -1,3 +1,4 @@
+import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React, { useMemo, useState } from "react";
 import BackgroundLibraryPicker from "./BackgroundLibraryPicker";
 import { matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
@@ -13,6 +14,7 @@ import {
   Frame,
   Gamepad2,
   Gauge,
+  Gift,
   Heart,
   ImagePlus,
   Layers,
@@ -910,6 +912,8 @@ const BASE_BETTER_CONFIG = {
       raidColor: "#ff2d8d",
     },
     shoutoutInChat: false,
+    giveawayInChat: false,
+    giveawayPosition: "top",
     shoutoutPosition: "top",
     shoutoutHeight: 180,
     shoutoutDuration: 45,
@@ -1464,6 +1468,8 @@ function normalizeBetterChatConfig(merged = {}) {
     defaults.roleEffects.intensity,
   );
   next.shoutoutInChat = next.shoutoutInChat === true;
+  next.giveawayInChat = next.giveawayInChat === true;
+  next.giveawayPosition = next.giveawayPosition === "bottom" ? "bottom" : "top";
   next.shoutoutPosition = next.shoutoutPosition === "bottom" ? "bottom" : "top";
   next.shoutoutHeight = clampNumber(
     next.shoutoutHeight,
@@ -1866,7 +1872,7 @@ function BetterBetsPreview({ config }) {
   return <BetsWidget config={c} />;
 }
 
-function BetterChatPreview({ config, widget }) {
+function BetterChatPreview({ config, widget, allWidgets }) {
   const c = ensureBetterWidgetConfig("chat", config);
   const width = clampNumber(
     c.width ?? widget?.width,
@@ -1883,59 +1889,7 @@ function BetterChatPreview({ config, widget }) {
   const sourceMessages =
     Array.isArray(c.previewMessages) && c.previewMessages.length
       ? c.previewMessages
-      : [
-          {
-            id: "better-chat-preview-raid",
-            platform: "twitch",
-            username: "RaidLeader",
-            message: "RAID CHEGOU! 50 pessoas!",
-            type: "raid",
-            isRaid: true,
-            raidViewers: 50,
-            color: c.glow,
-          },
-          {
-            id: "better-chat-preview-sub",
-            platform: "twitch",
-            username: "LoyalSub",
-            message: "Acabei de assinar! PogChamp",
-            type: "sub",
-            isSub: true,
-            color: c.username,
-          },
-          {
-            id: "better-chat-preview-owner",
-            platform: "twitch",
-            username: "ChannelOwner",
-            message: "Welcome to the stream!",
-            isBroadcaster: true,
-            color: c.roleEffects?.ownerColor,
-          },
-          {
-            id: "better-chat-preview-vip",
-            platform: "twitch",
-            username: "CommunityVIP",
-            message: "That was a huge win!",
-            isVip: true,
-            color: c.roleEffects?.vipColor,
-          },
-          {
-            id: "better-chat-preview-gift",
-            platform: "twitch",
-            username: "GiftBoss",
-            message: "Gifted 5 subs to the chat",
-            type: "gift",
-            giftCount: 5,
-            color: c.glow,
-          },
-          {
-            id: "better-chat-preview-chat",
-            platform: "twitch",
-            username: "ChatMaster",
-            message: "PogChamp esse overlay esta incrivel",
-            color: "#7dd3fc",
-          },
-        ];
+      : SAMPLE_CHAT_MESSAGES;
   const maxPreviewMessages = clampNumber(c.maxMessages, 2, 40, 10);
   const previewMessages = sourceMessages
     .slice(-maxPreviewMessages)
@@ -1952,20 +1906,24 @@ function BetterChatPreview({ config, widget }) {
       isMod: Boolean(message.isMod),
       isVip: Boolean(message.isVip),
       giftCount: message.giftCount || message.metadata?.giftCount || 0,
+      raidViewers: message.raidViewers || 0,
+      bits: message.bits || 0,
       metadata: message.metadata || {},
     }));
   return (
     <div className="bp-chat-stage bp-chat-stage--renderer">
       <div style={{ width, height }}>
         <ChatWidget
+          runtime="preview"
+          allWidgets={allWidgets}
           key={c.replayNonce || "better-chat-preview"}
-          config={{
+          config={withChatPreviewSamples({
             ...c,
             twitchEnabled: false,
             youtubeEnabled: false,
             kickEnabled: false,
             __appearancePreviewMessages: previewMessages,
-          }}
+          })}
         />
       </div>
     </div>
@@ -2032,7 +1990,7 @@ export function BetterWidgetPreview({
     case "bets":
       return <BetterBetsPreview config={config} />;
     case "chat":
-      return <BetterChatPreview config={config} widget={widget} />;
+      return <BetterChatPreview config={config} widget={widget} allWidgets={allWidgets} />;
     case "navbar":
       return (
         <BetterNavbarPreview
@@ -3424,6 +3382,23 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
             ))}
           </div>
           </>}
+        </Section>
+        <Section
+          title="In-Chat Giveaway"
+          icon={<Gift size={13} />}
+          category="behavior"
+        >
+          <ToggleRow
+            label="Show giveaway inside chat"
+            checked={c.giveawayInChat === true}
+            onChange={(giveawayInChat) => set({ giveawayInChat })}
+          />
+          <Segmented
+            value={c.giveawayPosition}
+            options={[{ key: "top", name: "Top" }, { key: "bottom", name: "Bottom" }]}
+            onChange={(giveawayPosition) => set({ giveawayPosition })}
+          />
+          <p>Uses the Giveaway controls for entries, drawing and winners. A separate giveaway box is not needed in your overlay.</p>
         </Section>
         <Section
           title="In-Chat Shoutout"
