@@ -5053,6 +5053,68 @@
   }
 }
 
+@keyframes bets-result-card-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    filter: blur(5px);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.015);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes bets-result-number-reveal {
+  0% {
+    opacity: 0;
+    transform: perspective(180px) rotateX(-92deg) scale(0.65);
+    filter: blur(8px) brightness(2.2);
+  }
+  45% {
+    opacity: 1;
+    transform: perspective(180px) rotateX(12deg) scale(1.16);
+    filter: blur(0) brightness(1.65);
+  }
+  72% {
+    transform: perspective(180px) rotateX(-4deg) scale(0.98);
+    filter: brightness(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(180px) rotateX(0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes bets-result-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.42);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@keyframes bets-result-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-18deg);
+  }
+  48%,
+  100% {
+    transform: translateX(360%) skewX(-18deg);
+  }
+}
+
 /* ── Root ── */
 /* border-radius / box-shadow removed — slot clipPath + drop-shadow handle these */
 .bets-ov {
@@ -5218,6 +5280,228 @@
   text-transform: uppercase;
   transform: rotate(-5deg);
 }
+
+/* Persistent completed state. It replaces compressed option rows after payout. */
+.bets-result {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: stretch;
+  padding: clamp(5px, 2cqh, 10px);
+  overflow: hidden;
+}
+
+.bets-result__card {
+  --winner-color: var(--bets-accent, #f5c451);
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-columns: minmax(62px, 0.62fr) minmax(92px, 1.5fr) minmax(70px, 0.9fr);
+  align-items: center;
+  gap: clamp(7px, 2.2cqw, 16px);
+  padding: clamp(7px, 2.4cqh, 15px) clamp(9px, 2.8cqw, 20px);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--winner-color) 70%, white 30%);
+  border-left-width: clamp(3px, 0.8cqw, 7px);
+  border-radius: max(6px, var(--bets-card-radius, 12px));
+  background:
+    radial-gradient(circle at 14% 50%, color-mix(in srgb, var(--winner-color) 18%, transparent), transparent 36%),
+    linear-gradient(115deg, color-mix(in srgb, var(--bets-card-bg, #111827) 90%, black 10%), color-mix(in srgb, var(--winner-color) 10%, var(--bets-bg, #080d16)));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 0 32px color-mix(in srgb, var(--winner-color) 8%, transparent),
+    0 0 22px color-mix(in srgb, var(--winner-color) 24%, transparent);
+  animation: bets-result-card-in 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
+  isolation: isolate;
+}
+
+.bets-result__card::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.022) 3px 4px);
+  pointer-events: none;
+}
+
+.bets-result__card::after {
+  position: absolute;
+  inset: -30% auto -30% -22%;
+  width: 14%;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
+  filter: blur(2px);
+  animation: bets-result-sweep 1.9s ease-out 0.35s both;
+  pointer-events: none;
+}
+
+.bets-result__burst {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 16%;
+  width: min(34cqh, 112px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--winner-color) 24%, transparent), transparent 70%);
+  filter: blur(6px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.bets-result__number-block {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-width: 0;
+  height: 100%;
+  padding-right: clamp(7px, 2cqw, 15px);
+  border-right: 1px solid color-mix(in srgb, var(--winner-color) 35%, transparent);
+}
+
+.bets-result__number-kicker,
+.bets-result__copy > span,
+.bets-result__copy > small,
+.bets-result__stats small {
+  font-size: clamp(7px, 2.3cqh, 10px);
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.bets-result__number-kicker,
+.bets-result__copy > span {
+  color: color-mix(in srgb, var(--winner-color) 78%, white 22%);
+}
+
+.bets-result__number-shell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  margin-top: clamp(2px, 1cqh, 5px);
+}
+
+.bets-result__number-shell i {
+  position: absolute;
+  width: clamp(42px, 18cqh, 80px);
+  aspect-ratio: 1;
+  border: 1px solid var(--winner-color);
+  border-radius: 50%;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--winner-color) 65%, transparent);
+  animation: bets-result-ring 1.25s ease-out 0.18s both;
+}
+
+.bets-result__number {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  color: var(--winner-color);
+  background: transparent;
+  box-shadow: none;
+  font-family: "Arial Black", sans-serif;
+  font-size: clamp(30px, 16cqh, 68px);
+  font-weight: 950;
+  letter-spacing: -0.07em;
+  line-height: 0.9;
+  text-shadow: 0 0 17px color-mix(in srgb, var(--winner-color) 62%, transparent);
+  transform-origin: center;
+  animation: bets-result-number-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+.bets-result__copy {
+  display: grid;
+  min-width: 0;
+  align-content: center;
+  gap: clamp(3px, 1.3cqh, 7px);
+}
+
+.bets-result__copy > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--bets-text, #ffffff);
+  font-size: clamp(14px, 6.8cqh, 28px);
+  font-weight: 950;
+  letter-spacing: 0.01em;
+  line-height: 1.02;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.65);
+  white-space: nowrap;
+}
+
+.bets-result__copy > small,
+.bets-result__stats small {
+  color: color-mix(in srgb, var(--bets-text, #d4dce8) 58%, transparent);
+}
+
+.bets-result__stats {
+  display: grid;
+  min-width: 0;
+  gap: clamp(4px, 1.4cqh, 8px);
+}
+
+.bets-result__stats > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  padding: clamp(4px, 1.4cqh, 7px) clamp(5px, 1.6cqw, 10px);
+  border: 1px solid color-mix(in srgb, var(--winner-color) 24%, var(--bets-border, transparent));
+  border-radius: max(4px, calc(var(--bets-card-radius, 10px) * 0.62));
+  background: color-mix(in srgb, var(--winner-color) 7%, rgba(0, 0, 0, 0.2));
+}
+
+.bets-result__stats strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--bets-text, #ffffff);
+  font-size: clamp(10px, 4.5cqh, 16px);
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bets-result--static *,
+.bets-result--static *::before,
+.bets-result--static *::after {
+  animation: none !important;
+}
+
+@container (max-width: 300px) {
+  .bets-result__card {
+    grid-template-columns: minmax(56px, 0.65fr) minmax(88px, 1.35fr);
+  }
+
+  .bets-result__stats {
+    display: none;
+  }
+}
+
+@container (max-height: 115px) {
+  .bets-result {
+    padding: 3px;
+  }
+
+  .bets-result__card {
+    gap: 5px;
+    padding: 4px 7px;
+  }
+
+  .bets-result__copy > small,
+  .bets-result__stats small {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bets-victory {
     animation-duration: 2.6s;
@@ -5229,6 +5513,11 @@
   }
   .bets-victory__plate {
     animation: bets-victory-scene 2.6s ease-out both;
+  }
+  .bets-result *,
+  .bets-result *::before,
+  .bets-result *::after {
+    animation: none !important;
   }
 }
 
@@ -6006,11 +6295,11 @@
   isolation: isolate;
 }
 
-.bets-ov--market-list > *,
-.bets-ov--arcade-grid > *,
-.bets-ov--grid-2x3 > *,
-.bets-ov--compact-scoreboard > *,
-.bets-ov--styleseca > * {
+.bets-ov--market-list > :not(.bets-victory),
+.bets-ov--arcade-grid > :not(.bets-victory),
+.bets-ov--grid-2x3 > :not(.bets-victory),
+.bets-ov--compact-scoreboard > :not(.bets-victory),
+.bets-ov--styleseca > :not(.bets-victory) {
   position: relative;
   z-index: 1;
 }

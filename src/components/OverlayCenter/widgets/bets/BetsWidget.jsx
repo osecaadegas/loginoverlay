@@ -494,9 +494,109 @@ function BetsVictoryBroadcast({ winnerLabel, winnerNumber, accentColor }) {
       </span>
       <div className="bets-victory__plate">
         <span className="bets-victory__eyebrow">Result confirmed</span>
-        <span className="bets-victory__number">0{winnerNumber}</span>
+        <span className="bets-victory__number">
+          {String(winnerNumber).padStart(2, "0")}
+        </span>
         <strong className="bets-victory__label">{winnerLabel}</strong>
         <span className="bets-victory__stamp">Winner</span>
+      </div>
+    </div>
+  );
+}
+
+function BetsWinnerResult({
+  config,
+  winnerLabel,
+  winnerNumber,
+  winnerAmount,
+  winnerPercent,
+  accentColor,
+  animations = true,
+}) {
+  const stateId = "winner";
+  const panelStyle = elementStyle(
+    config,
+    "individualBetCard",
+    {},
+    undefined,
+    stateId,
+  );
+  const numberStyle = elementStyle(
+    config,
+    "cardNumberBadge",
+    {},
+    "optionNumber",
+    stateId,
+  );
+  const labelStyle = elementStyle(
+    config,
+    "cardRangeText",
+    {},
+    "optionLabel",
+    stateId,
+  );
+  const percentageStyle = elementStyle(
+    config,
+    "cardPercentageText",
+    {},
+    "percentage",
+    stateId,
+  );
+
+  return (
+    <div
+      className={`bets-result${animations ? "" : " bets-result--static"}`}
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        className="bets-result__card"
+        {...partAttrs("individualBetCard", stateId, config)}
+        style={{ "--winner-color": accentColor, ...panelStyle }}
+      >
+        <span className="bets-result__burst" aria-hidden="true" />
+        <div className="bets-result__number-block">
+          <span className="bets-result__number-kicker">Winning no.</span>
+          <span className="bets-result__number-shell">
+            <i aria-hidden="true" />
+            <strong
+              className="bets-result__number"
+              {...partAttrs("cardNumberBadge", stateId, config)}
+              style={numberStyle}
+            >
+              {String(winnerNumber).padStart(2, "0")}
+            </strong>
+          </span>
+        </div>
+
+        <div className="bets-result__copy">
+          <span>Result confirmed</span>
+          <strong
+            {...partAttrs("cardRangeText", stateId, config)}
+            style={labelStyle}
+          >
+            {winnerLabel}
+          </strong>
+          <small>Winning option</small>
+        </div>
+
+        <div className="bets-result__stats">
+          <span>
+            <strong
+              {...partAttrs("cardPercentageText", stateId, config)}
+              style={percentageStyle}
+            >
+              {winnerPercent}%
+            </strong>
+            <small>Pool share</small>
+          </span>
+          <span>
+            <strong {...partAttrs("cardAmountText", stateId, config)}>
+              {Number(winnerAmount || 0).toLocaleString()} pts
+            </strong>
+            <small>Backed</small>
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -1468,8 +1568,19 @@ function BetsWidget({ config, allWidgets }) {
         </div>
       </div>
 
-      {/* ── Options ── */}
-      {isGrid ? (
+      {/* ── Options / completed result ── */}
+      {showVictory ? (
+        <BetsWinnerResult
+          key={`winner-result-${winnerIdx}`}
+          config={c}
+          winnerLabel={winnerLabel}
+          winnerNumber={winnerIdx + 1}
+          winnerAmount={bets[`opt_${winnerIdx}`] || 0}
+          winnerPercent={pcts[winnerIdx] || 0}
+          accentColor={getOptColor(winnerIdx)}
+          animations={c.animations !== false}
+        />
+      ) : isGrid ? (
         <div className="bets-ov__grid" {...partAttrs("betCards", undefined, c)}>
           {visibleOptions.map((opt, i) => (
             <BetsGridOptionCard
@@ -1656,8 +1767,9 @@ function BetsWidget({ config, allWidgets }) {
           {isCompactScoreboard ? "" : " to bet"}
         </div>
       )}
-      {showVictory && (
+      {showVictory && c.animations !== false && (
         <BetsVictoryBroadcast
+          key={`winner-broadcast-${winnerIdx}`}
           winnerLabel={winnerLabel}
           winnerNumber={winnerIdx + 1}
           accentColor={getOptColor(winnerIdx)}
