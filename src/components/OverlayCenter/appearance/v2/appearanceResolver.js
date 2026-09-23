@@ -1064,6 +1064,12 @@ function applySlotBingoGenericPatch(patch, tokens) {
     squareLabel: textSubElement(tokens, "text", {
       fontWeight: tokens.typography.valueWeight,
     }),
+    squareMultiplier: surfaceSubElement(tokens, "badge", {
+      background: tokens.colors.background,
+      textColor: tokens.colors.primary,
+      borderColor: tokens.colors.primary,
+      fontWeight: tokens.typography.valueWeight,
+    }),
     completionIcon: surfaceSubElement(tokens, "badge", {
       background: "transparent",
       textColor: tokens.colors.primary,

@@ -53,6 +53,7 @@ const ELEMENT_COLOURS = {
     completedSquare: { background: "surface", borderColor: "accent", textColor: "text", accentColor: "accent" },
     freeSquare: { background: "surface", borderColor: "secondary", textColor: "text", accentColor: "accent" },
     squareLabel: { textColor: "text" },
+    squareMultiplier: { background: "background", borderColor: "accent", textColor: "accent" },
     completionIcon: { textColor: "accent", borderColor: "accent" },
     footer: { background: "surface", borderColor: "secondary" },
     footerValue: { textColor: "accent" },

@@ -2839,6 +2839,17 @@
   white-space: nowrap;
 }
 
+.bp-bingo-grid small {
+  max-width: 100%;
+  overflow: hidden;
+  color: #f7c95d;
+  font-size: 7px;
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bp-bingo-square-editor {
   display: grid;
   gap: 8px;

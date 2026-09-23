@@ -6,6 +6,17 @@ export const SLOT_BINGO_LABELS = Object.freeze([
   "WILD LINE", "BIG MULTI", "FEATURE", "DEAD SPIN", "COLLECT",
 ]);
 
+export const SLOT_BINGO_COLUMNS = 5;
+export const SLOT_BINGO_ROW_OPTIONS = Object.freeze([3, 5]);
+
+export const SLOT_BINGO_DEFAULT_MULTIPLIERS = Object.freeze([
+  100, 10, 25, 20, 500,
+  15, 5, 200, 25, 50,
+  50, 10, 0, 1000, 5,
+  10, 25, 10, 5000, 50,
+  50, 100, 25, 5, 50,
+]);
+
 const DEFAULT_COMPLETED = new Set([
   0, 1, 3, 5, 6, 7, 10, 11, 12, 13, 15, 16, 17, 18, 19, 21, 24,
 ]);
@@ -14,6 +25,7 @@ export const DEFAULT_SLOT_BINGO_SQUARES = Object.freeze(
   SLOT_BINGO_LABELS.map((label, index) => Object.freeze({
     id: index === 12 ? "free" : `square-${index + 1}`,
     label,
+    multiplier: SLOT_BINGO_DEFAULT_MULTIPLIERS[index],
     completed: DEFAULT_COMPLETED.has(index),
     free: index === 12,
   })),
@@ -22,6 +34,7 @@ export const DEFAULT_SLOT_BINGO_SQUARES = Object.freeze(
 export const SLOT_BINGO_DEFAULT_CONFIG = Object.freeze({
   displayStyle: "premium_slot_bingo",
   title: "SLOT BINGO",
+  boardRows: 5,
   footerMode: "bingo",
   showProgress: true,
   showFooter: true,
@@ -46,29 +59,48 @@ export const SLOT_BINGO_DEFAULT_CONFIG = Object.freeze({
   footerSize: 28,
 });
 
-const BINGO_LINES = Object.freeze([
-  [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14],
-  [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
-  [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22],
-  [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
-  [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
-]);
-
 function clampNumber(value, min, max, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 }
 
-export function normalizeSlotBingoSquares(squares) {
+export function normalizeSlotBingoRows(value) {
+  return Number(value) === 3 ? 3 : 5;
+}
+
+export function getSlotBingoSquareCount(boardRows = 5) {
+  return normalizeSlotBingoRows(boardRows) * SLOT_BINGO_COLUMNS;
+}
+
+export function normalizeSlotBingoSquares(squares, boardRows = 5) {
+  const rows = normalizeSlotBingoRows(boardRows);
   const source = Array.isArray(squares) ? squares : [];
-  return DEFAULT_SLOT_BINGO_SQUARES.map((fallback, index) => {
-    const square = source[index] && typeof source[index] === "object" ? source[index] : {};
-    const isFree = index === 12;
+  const targetFreeIndex = Math.floor(getSlotBingoSquareCount(rows) / 2);
+  const defaultSquares = DEFAULT_SLOT_BINGO_SQUARES.map((square) => ({ ...square }));
+  if (targetFreeIndex !== 12) {
+    [defaultSquares[targetFreeIndex], defaultSquares[12]] = [defaultSquares[12], defaultSquares[targetFreeIndex]];
+  }
+  const working = defaultSquares.map((fallback, index) => ({
+    ...fallback,
+    ...(source[index] && typeof source[index] === "object" ? source[index] : {}),
+  }));
+  let currentFreeIndex = working.findIndex((square) => square.free === true);
+  if (currentFreeIndex < 0) {
+    currentFreeIndex = working.findIndex((square) => String(square.label || "").trim().toUpperCase() === "FREE");
+  }
+  if (currentFreeIndex >= 0 && currentFreeIndex !== targetFreeIndex) {
+    [working[currentFreeIndex], working[targetFreeIndex]] = [working[targetFreeIndex], working[currentFreeIndex]];
+  }
+
+  return working.map((square, index) => {
+    const isFree = index === targetFreeIndex;
+    const fallback = defaultSquares[index];
     return {
-      id: fallback.id,
+      id: isFree ? "free" : `square-${index + 1}`,
       label: isFree
         ? "FREE"
         : String(square.label ?? fallback.label).trim().slice(0, 18) || fallback.label,
+      multiplier: clampNumber(square.multiplier, 0, 100000, fallback.multiplier),
       completed: isFree || square.completed === true,
       free: isFree,
     };
@@ -77,14 +109,16 @@ export function normalizeSlotBingoSquares(squares) {
 
 export function normalizeSlotBingoConfig(config = {}) {
   const merged = { ...SLOT_BINGO_DEFAULT_CONFIG, ...config };
+  const boardRows = normalizeSlotBingoRows(merged.boardRows);
   return {
     ...merged,
     displayStyle: "premium_slot_bingo",
     title: String(merged.title || "SLOT BINGO").trim().slice(0, 32) || "SLOT BINGO",
+    boardRows,
     footerMode: merged.footerMode === "lines" ? "lines" : "bingo",
     showProgress: merged.showProgress !== false,
     showFooter: merged.showFooter !== false,
-    squares: normalizeSlotBingoSquares(merged.squares),
+    squares: normalizeSlotBingoSquares(merged.squares, boardRows),
     borderRadius: clampNumber(merged.borderRadius, 0, 72, 26),
     cardRadius: clampNumber(merged.cardRadius, 0, 40, 12),
     cardGap: clampNumber(merged.cardGap, 2, 24, 8),
@@ -96,11 +130,32 @@ export function normalizeSlotBingoConfig(config = {}) {
   };
 }
 
-export function countSlotBingoLines(squares) {
-  const normalized = normalizeSlotBingoSquares(squares);
-  return BINGO_LINES.filter((line) => line.every((index) => normalized[index].completed)).length;
+function getSlotBingoLines(boardRows = 5) {
+  const rows = normalizeSlotBingoRows(boardRows);
+  const horizontal = Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: SLOT_BINGO_COLUMNS }, (_, column) => row * SLOT_BINGO_COLUMNS + column),
+  );
+  const vertical = Array.from({ length: SLOT_BINGO_COLUMNS }, (_, column) =>
+    Array.from({ length: rows }, (_, row) => row * SLOT_BINGO_COLUMNS + column),
+  );
+  const diagonals = rows === 3
+    ? [[0, 7, 14], [4, 7, 10]]
+    : [[0, 6, 12, 18, 24], [4, 8, 12, 16, 20]];
+  return [...horizontal, ...vertical, ...diagonals];
 }
 
-export function countCompletedSlotBingoSquares(squares) {
-  return normalizeSlotBingoSquares(squares).filter((square) => square.completed).length;
+export function countSlotBingoLines(squares, boardRows = 5) {
+  const normalized = normalizeSlotBingoSquares(squares, boardRows);
+  return getSlotBingoLines(boardRows).filter((line) => line.every((index) => normalized[index].completed)).length;
+}
+
+export function countCompletedSlotBingoSquares(squares, boardRows = 5) {
+  return normalizeSlotBingoSquares(squares, boardRows)
+    .slice(0, getSlotBingoSquareCount(boardRows))
+    .filter((square) => square.completed).length;
+}
+
+export function formatSlotBingoMultiplier(value) {
+  const multiplier = clampNumber(value, 0, 100000, 0);
+  return `${Number.isInteger(multiplier) ? multiplier : Number(multiplier.toFixed(2))}x`;
 }

@@ -12,6 +12,7 @@
 .slot-bingo-config__grid button.is-selected { outline: 2px solid #22d3ee; outline-offset: 1px; }
 .slot-bingo-config__grid svg { width: 13px; height: 13px; }
 .slot-bingo-config__grid span { max-width: 100%; overflow: hidden; font-size: 8px; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+.slot-bingo-config__grid small { max-width: 100%; overflow: hidden; color: #f7c95d; font-size: 7px; font-weight: 800; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
 .slot-bingo-config__square-editor { display: grid; gap: 8px; padding: 10px; border-radius: 9px; background: rgba(255,255,255,.035); }
 .slot-bingo-config__colors { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
 .slot-bingo-config__colors label { grid-template-columns: minmax(0,1fr) 34px; align-items: center; padding: 7px; border-radius: 8px; background: rgba(255,255,255,.03); }

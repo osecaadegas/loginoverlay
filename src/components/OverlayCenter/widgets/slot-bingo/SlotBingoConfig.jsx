@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Check, RotateCcw, Star } from "lucide-react";
 import {
+  formatSlotBingoMultiplier,
+  getSlotBingoSquareCount,
   SLOT_BINGO_DEFAULT_CONFIG,
   normalizeSlotBingoConfig,
 } from "./slotBingoModel";
@@ -17,11 +19,14 @@ const COLOR_FIELDS = [
 export default function SlotBingoConfig({ config = {}, onChange }) {
   const c = normalizeSlotBingoConfig(config);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const selected = c.squares[selectedIndex] || c.squares[0];
+  const squareCount = getSlotBingoSquareCount(c.boardRows);
+  const visibleSquares = c.squares.slice(0, squareCount);
+  const safeSelectedIndex = Math.min(selectedIndex, squareCount - 1);
+  const selected = visibleSquares[safeSelectedIndex] || visibleSquares[0];
   const set = (patch) => onChange(normalizeSlotBingoConfig({ ...c, ...patch }));
   const updateSquare = (patch) => {
     const squares = c.squares.map((square, index) =>
-      index === selectedIndex ? { ...square, ...patch } : square,
+      index === safeSelectedIndex ? { ...square, ...patch } : square,
     );
     set({ squares });
   };
@@ -31,6 +36,7 @@ export default function SlotBingoConfig({ config = {}, onChange }) {
       <section>
         <h3>Widget content</h3>
         <label><span>Title</span><input value={c.title} maxLength={32} onChange={(event) => set({ title: event.target.value })} /></label>
+        <label><span>Board size</span><select value={c.boardRows} onChange={(event) => { setSelectedIndex(0); set({ boardRows: Number(event.target.value) }); }}><option value={3}>3 rows × 5 columns</option><option value={5}>5 rows × 5 columns</option></select></label>
         <label><span>Footer</span><select value={c.footerMode} onChange={(event) => set({ footerMode: event.target.value })}><option value="bingo">BINGO x3</option><option value="lines">Lines: 3</option></select></label>
         <div className="slot-bingo-config__toggles">
           <label><input type="checkbox" checked={c.showProgress} onChange={(event) => set({ showProgress: event.target.checked })} /><span>Show progress</span></label>
@@ -39,24 +45,26 @@ export default function SlotBingoConfig({ config = {}, onChange }) {
       </section>
 
       <section>
-        <h3>5 x 5 board</h3>
+        <h3>{c.boardRows} × 5 board · {squareCount} options</h3>
         <div className="slot-bingo-config__grid" role="list" aria-label="Bingo squares">
-          {c.squares.map((square, index) => (
+          {visibleSquares.map((square, index) => (
             <button
               key={square.id}
               type="button"
-              className={`${selectedIndex === index ? "is-selected" : ""}${square.completed ? " is-complete" : ""}${square.free ? " is-free" : ""}`}
+              className={`${safeSelectedIndex === index ? "is-selected" : ""}${square.completed ? " is-complete" : ""}${square.free ? " is-free" : ""}`}
               onClick={() => setSelectedIndex(index)}
               aria-label={`Edit ${square.label}`}
             >
               {square.free ? <Star aria-hidden="true" /> : square.completed ? <Check aria-hidden="true" /> : null}
               <span>{square.label}</span>
+              {!square.free && <small>{formatSlotBingoMultiplier(square.multiplier)}</small>}
             </button>
           ))}
         </div>
         <div className="slot-bingo-config__square-editor">
-          <strong>Square {selectedIndex + 1}</strong>
+          <strong>Square {safeSelectedIndex + 1}</strong>
           <label><span>Label</span><input value={selected.label} maxLength={18} disabled={selected.free} onChange={(event) => updateSquare({ label: event.target.value })} /></label>
+          <label><span>Payout multiplier</span><input type="number" min="0" max="100000" step="0.1" value={selected.multiplier} disabled={selected.free} onChange={(event) => updateSquare({ multiplier: Number(event.target.value) })} /></label>
           <label className="slot-bingo-config__check"><input type="checkbox" checked={selected.completed} disabled={selected.free} onChange={(event) => updateSquare({ completed: event.target.checked })} /><span>Completed</span></label>
         </div>
       </section>

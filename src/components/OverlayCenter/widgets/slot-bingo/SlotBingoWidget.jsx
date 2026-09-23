@@ -6,14 +6,18 @@ import {
 import {
   countCompletedSlotBingoSquares,
   countSlotBingoLines,
+  formatSlotBingoMultiplier,
+  getSlotBingoSquareCount,
   normalizeSlotBingoConfig,
 } from "./slotBingoModel";
 import "./SlotBingoWidget.css";
 
 export default function SlotBingoWidget({ config = {}, widgetId }) {
   const c = normalizeSlotBingoConfig(config);
-  const completed = countCompletedSlotBingoSquares(c.squares);
-  const lines = countSlotBingoLines(c.squares);
+  const squareCount = getSlotBingoSquareCount(c.boardRows);
+  const visibleSquares = c.squares.slice(0, squareCount);
+  const completed = countCompletedSlotBingoSquares(c.squares, c.boardRows);
+  const lines = countSlotBingoLines(c.squares, c.boardRows);
   const footer = c.footerMode === "lines" ? `Lines: ${lines}` : `BINGO x${lines}`;
   const rootStyle = {
     "--sb-bg": c.backgroundColor,
@@ -34,6 +38,7 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
     "--sb-square-size": `${c.squareTextSize}px`,
     "--sb-footer-size": `${c.footerSize}px`,
     "--sb-font": c.fontFamily,
+    "--sb-rows": c.boardRows,
     ...subElementStyle(c, "container", {}),
   };
 
@@ -58,11 +63,11 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
         {c.showProgress && (
           <div
             className="slot-bingo-widget__progress"
-            aria-label={`${completed} of 25 squares complete`}
+            aria-label={`${completed} of ${squareCount} squares complete`}
             style={subElementStyle(c, "progressBadge", {})}
             {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId: "progressBadge" })}
           >
-            <strong>{completed}</strong><span>/ 25</span>
+            <strong>{completed}</strong><span>/ {squareCount}</span>
           </div>
         )}
       </header>
@@ -72,7 +77,7 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
         style={subElementStyle(c, "board", {})}
         {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId: "board" })}
       >
-        {c.squares.map((square, index) => {
+        {visibleSquares.map((square, index) => {
           const elementId = square.free
             ? "freeSquare"
             : square.completed
@@ -86,7 +91,7 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
             <div
               key={square.id}
               className={`slot-bingo-widget__square${square.completed ? " is-complete" : ""}${square.free ? " is-free" : ""}`}
-              aria-label={`${square.label}${square.completed ? ", complete" : ", incomplete"}`}
+              aria-label={`${square.label}${square.free ? "" : `, pays ${formatSlotBingoMultiplier(square.multiplier)}`}${square.completed ? ", complete" : ", incomplete"}`}
               style={squareStyle}
               data-square-index={index}
               {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId })}
@@ -99,11 +104,21 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
                 {square.free ? <Star aria-hidden="true" /> : square.completed ? <Check aria-hidden="true" /> : null}
               </span>
               <strong
+                className="slot-bingo-widget__label"
                 style={subElementStyle(c, "squareLabel", {})}
                 {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId: "squareLabel" })}
               >
                 {square.label}
               </strong>
+              {!square.free && (
+                <span
+                  className="slot-bingo-widget__multiplier"
+                  style={subElementStyle(c, "squareMultiplier", {})}
+                  {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId: "squareMultiplier" })}
+                >
+                  {formatSlotBingoMultiplier(square.multiplier)}
+                </span>
+              )}
             </div>
           );
         })}

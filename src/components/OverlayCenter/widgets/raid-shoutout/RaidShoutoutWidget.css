@@ -1,3 +1,8 @@
+.better-shoutout-stage,
+.better-shoutout-stage * {
+  box-sizing: border-box;
+}
+
 .better-shoutout-stage {
   width: 100%;
   height: 100%;

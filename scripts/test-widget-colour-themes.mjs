@@ -2,6 +2,22 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme, getHuntColourTheme } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
+import {
+  countCompletedSlotBingoSquares,
+  getSlotBingoSquareCount,
+  normalizeSlotBingoConfig,
+} from '../src/components/OverlayCenter/widgets/slot-bingo/slotBingoModel.js';
+
+const defaultBingo = normalizeSlotBingoConfig({});
+const compactBingo = normalizeSlotBingoConfig({ ...defaultBingo, boardRows: 3 });
+const restoredBingo = normalizeSlotBingoConfig({ ...compactBingo, boardRows: 5 });
+assert.equal(getSlotBingoSquareCount(compactBingo.boardRows), 15, '3 x 5 board has 15 visible options');
+assert.equal(compactBingo.squares[7].free, true, '3 x 5 board moves FREE to its center');
+assert.equal(compactBingo.squares[12].label, defaultBingo.squares[7].label, 'hidden square data survives compact mode');
+assert.equal(restoredBingo.squares[12].free, true, '5 x 5 board restores FREE to its center');
+assert.equal(restoredBingo.squares[7].label, defaultBingo.squares[7].label, 'layout switching preserves square labels');
+assert.equal(countCompletedSlotBingoSquares(compactBingo.squares, 3) <= 15, true, 'compact progress only counts visible squares');
+assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multiplier)), true, 'every Bingo option has a payout multiplier');
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome'];
 assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
@@ -152,7 +168,7 @@ try {
       if (colors.primaryColor !== hunt.headerAccent || colors.secondaryColor !== hunt.headerColor) failures.push(`${type}: linked colours no longer follow the Hunt theme`);
     }
     const bingo = t.base('slot_bingo');
-    if (bingo.squares.length !== 25 || bingo.squares[12].label !== 'FREE' || !bingo.squares[12].completed) failures.push('Slot Bingo default board');
+    if (bingo.squares.length !== 25 || bingo.squares[12].label !== 'FREE' || !bingo.squares[12].completed || !bingo.squares.every(square => Number.isFinite(square.multiplier))) failures.push('Slot Bingo default board');
     return failures;
   });
   assert.deepEqual(unit, []);

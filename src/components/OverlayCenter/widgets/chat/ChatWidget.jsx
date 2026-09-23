@@ -1505,11 +1505,8 @@ function ChatWidget({
   const shoutoutHeight = Math.max(120, Math.min(360, Number(c.shoutoutHeight) || 180));
   const shoutoutUsesGiveawaySlot = Boolean(giveawayVisible);
   const embeddedShoutoutPosition = shoutoutUsesGiveawaySlot ? giveawayPosition : shoutoutPosition;
-  const requestedGiveawayHeight = Number(c.giveawayHeight);
   const requestedGiveawayMargin = Number(c.giveawayMargin);
-  const embeddedShoutoutHeight = shoutoutUsesGiveawaySlot
-    ? Math.max(80, Math.min(600, Number.isFinite(requestedGiveawayHeight) ? requestedGiveawayHeight : 250))
-    : shoutoutHeight;
+  const embeddedShoutoutHeight = shoutoutHeight;
   const embeddedShoutout = c.shoutoutInChat === true ? (
     <div
       className={`ov-chat-shoutout${shoutoutUsesGiveawaySlot ? " ov-chat-shoutout--giveaway-slot" : ""}`}
@@ -1518,10 +1515,8 @@ function ChatWidget({
         position: "relative",
         zIndex: 4,
         display: embeddedShoutoutActive ? "block" : "none",
-        flex: `0 1 ${embeddedShoutoutHeight}px`,
-        maxHeight: shoutoutUsesGiveawaySlot
-          ? `${Math.max(20, Math.min(80, Number(c.giveawayMaxHeight) || 60))}%`
-          : "40%",
+        flex: `0 0 ${embeddedShoutoutHeight}px`,
+        maxHeight: "calc(100% - 48px)",
         height: embeddedShoutoutHeight,
         minHeight: 0,
         margin: shoutoutUsesGiveawaySlot
@@ -1916,7 +1911,7 @@ function ChatWidget({
             padding: isBroadcast ? "4px 6px 6px" : "7px 9px 10px",
             scrollbarWidth: "none",
           }),
-          ...((giveawayVisible || embeddedShoutoutActive) && { minHeight: "20%" }),
+          ...(giveawayVisible && !embeddedShoutoutActive && { minHeight: "20%" }),
         })}
       >
         {renderMessages.length === 0 &&

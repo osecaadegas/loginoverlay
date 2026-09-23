@@ -104,11 +104,12 @@ try {
       send() {} close() { this.readyState = 3; this.onclose?.(); }
     };
     window.irc = (text, moderator = true) => window.sockets.filter(socket => socket.readyState === 1).forEach(socket => socket.onmessage?.({ data: `@id=event-${Date.now()};display-name=Viewer;mod=${moderator ? 1 : 0};badges= :viewer!v@v.tmi.twitch.tv PRIVMSG #fixture :${text}\r\n` }));
-    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '' } = {}) => {
+    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '', giveawayHeight, shoutoutHeight = 180 } = {}) => {
       const config = {
         chatStyle: style, live: true, bttvEnabled: false, twitchEnabled: live, twitchChannel: 'fixture',
         giveawayInChat: enabled, giveawayPosition: position, shoutoutInChat: shoutout,
-        shoutoutPosition: position, shoutoutHeight: 180, shoutoutDuration: 10,
+        shoutoutPosition: position, shoutoutHeight, shoutoutDuration: 10,
+        ...(giveawayHeight == null ? {} : { giveawayHeight }),
         __appearancePreviewMessages: [{ id: 'sample', username: 'StreamFan', message: 'Enjoy the stream!' }],
         ...(live ? {} : { __previewShoutoutAlert: { raider_username: 'preview', raider_display_name: 'Preview Streamer' } }),
         ...(sample ? withChatPreviewSamples() : {}),
@@ -184,7 +185,7 @@ try {
   await page.evaluate(() => window.mountChat({ editorPreview: true }));
   await settle();
   for (const style of styles) {
-    await page.evaluate(style => window.mountChat({ style, sample: true, height: 900 }), style);
+    await page.evaluate(style => window.mountChat({ style, sample: true, height: 900, giveawayHeight: 90, shoutoutHeight: 220 }), style);
     await settle();
     const text = await page.$eval('#host', element => element.textContent);
     for (const expected of ['ChannelOwner', 'LoyalSub', 'CommunityVIP', 'ChatModerator', '!so RaidLeader', '!join']) {
@@ -193,6 +194,15 @@ try {
     assert.match(await page.$eval('.better-shoutout-card', element => element.textContent), /RaidLeader/);
     assert.equal(await page.$('.ov-chat-giveaway'), null, `${style}: active !so temporarily removes the giveaway`);
     assert.equal(await page.$eval('.ov-chat-shoutout', element => element.dataset.chatSlot), 'giveaway', `${style}: active !so occupies the giveaway slot`);
+    await new Promise(resolve => setTimeout(resolve, 700));
+    const shoutoutLayout = await page.evaluate(() => {
+      const slot = document.querySelector('.ov-chat-shoutout').getBoundingClientRect();
+      const card = document.querySelector('.better-shoutout-card').getBoundingClientRect();
+      const footer = document.querySelector('.better-shoutout-footer').getBoundingClientRect();
+      return { height: slot.height, cardBottom: card.bottom, footerBottom: footer.bottom, slotBottom: slot.bottom };
+    });
+    assert.ok(shoutoutLayout.height >= 219, `${style}: !so keeps its configured clip height when replacing a shorter giveaway`);
+    assert.ok(shoutoutLayout.cardBottom <= shoutoutLayout.slotBottom + 1 && shoutoutLayout.footerBottom <= shoutoutLayout.slotBottom + 1, `${style}: !so clip and footer are not trimmed at the bottom: ${JSON.stringify(shoutoutLayout)}`);
     await page.evaluate(style => window.mountChat({ style, sample: true, height: 900, shoutout: false }), style);
     await settle();
     assert.match(await page.$eval('.ov-chat-giveaway', element => element.textContent), /Giveaway #1/, `${style}: giveaway returns when !so is inactive`);

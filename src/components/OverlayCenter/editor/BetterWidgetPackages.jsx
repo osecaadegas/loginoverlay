@@ -65,6 +65,8 @@ import { getWidgetStyleOptionsForQuickEditor } from "../appearance/v2/widgetAppe
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
 import {
+  formatSlotBingoMultiplier,
+  getSlotBingoSquareCount,
   SLOT_BINGO_DEFAULT_CONFIG,
   normalizeSlotBingoConfig,
 } from "../widgets/slot-bingo/slotBingoModel";
@@ -1733,6 +1735,23 @@ function TextRow({ label, value, onChange }) {
       <input
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function NumberRow({ label, value, onChange, min = 0, max = 100000, step = 1, disabled = false }) {
+  return (
+    <label className={`bp-text${disabled ? " is-disabled" : ""}`}>
+      <span>{label}</span>
+      <input
+        type="number"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
+        onChange={(event) => onChange(Number(event.target.value))}
       />
     </label>
   );
@@ -6814,11 +6833,14 @@ function BetterSlotBingoControls({ config, onChange }) {
   const c = normalizeSlotBingoConfig(config);
   const [tab, setTab] = useTab("content");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const selectedSquare = c.squares[selectedIndex] || c.squares[0];
+  const squareCount = getSlotBingoSquareCount(c.boardRows);
+  const visibleSquares = c.squares.slice(0, squareCount);
+  const safeSelectedIndex = Math.min(selectedIndex, squareCount - 1);
+  const selectedSquare = visibleSquares[safeSelectedIndex] || visibleSquares[0];
   const set = (patch) => onChange(normalizeSlotBingoConfig({ ...c, ...patch }));
   const updateSquare = (patch) => {
     const squares = c.squares.map((square, index) =>
-      index === selectedIndex ? { ...square, ...patch } : square,
+      index === safeSelectedIndex ? { ...square, ...patch } : square,
     );
     set({ squares });
   };
@@ -6836,6 +6858,18 @@ function BetterSlotBingoControls({ config, onChange }) {
       {matchesControlTab(tab, "content") && (
         <Section title="Content" icon={<Type size={13} />}>
           <TextRow label="Title" value={c.title} onChange={(title) => set({ title: title.slice(0, 32) })} />
+          <SelectRow
+            label="Board size"
+            value={String(c.boardRows)}
+            options={[
+              { value: "3", label: "3 rows × 5 columns" },
+              { value: "5", label: "5 rows × 5 columns" },
+            ]}
+            onChange={(boardRows) => {
+              setSelectedIndex(0);
+              set({ boardRows: Number(boardRows) });
+            }}
+          />
           <Segmented
             value={c.footerMode}
             options={[{ key: "bingo", name: "BINGO x3" }, { key: "lines", name: "Lines: 3" }]}
@@ -6847,28 +6881,40 @@ function BetterSlotBingoControls({ config, onChange }) {
       )}
 
       {matchesControlTab(tab, "board") && (
-        <Section title="Board" icon={<Gamepad2 size={13} />}>
+        <Section title={`${c.boardRows} × 5 board · ${squareCount} options`} icon={<Gamepad2 size={13} />}>
           <div className="bp-bingo-grid" role="list" aria-label="Slot Bingo squares">
-            {c.squares.map((square, index) => (
+            {visibleSquares.map((square, index) => (
               <button
                 key={square.id}
                 type="button"
-                className={`${selectedIndex === index ? "is-selected" : ""}${square.completed ? " is-complete" : ""}${square.free ? " is-free" : ""}`}
+                className={`${safeSelectedIndex === index ? "is-selected" : ""}${square.completed ? " is-complete" : ""}${square.free ? " is-free" : ""}`}
                 aria-label={`Edit ${square.label}`}
                 onClick={() => setSelectedIndex(index)}
               >
                 {square.free ? <Star aria-hidden="true" /> : square.completed ? <Check aria-hidden="true" /> : null}
                 <span>{square.label}</span>
+                {!square.free && <small>{formatSlotBingoMultiplier(square.multiplier)}</small>}
               </button>
             ))}
           </div>
           <div className="bp-bingo-square-editor">
-            <strong>Square {selectedIndex + 1}</strong>
+            <strong>Square {safeSelectedIndex + 1}</strong>
             <TextRow
               label="Label"
               value={selectedSquare.label}
               onChange={(label) => {
                 if (!selectedSquare.free) updateSquare({ label: label.slice(0, 18) });
+              }}
+            />
+            <NumberRow
+              label="Payout multiplier (x)"
+              value={selectedSquare.multiplier}
+              min={0}
+              max={100000}
+              step={0.1}
+              disabled={selectedSquare.free}
+              onChange={(multiplier) => {
+                if (!selectedSquare.free) updateSquare({ multiplier });
               }}
             />
             <ToggleRow

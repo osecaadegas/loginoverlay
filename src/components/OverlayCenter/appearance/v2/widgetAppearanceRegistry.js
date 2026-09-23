@@ -766,7 +766,7 @@ export const widgetAppearanceRegistry = Object.freeze({
           elementIds: [
             "container", "header", "title", "progressBadge", "board",
             "square", "incompleteSquare", "completedSquare", "freeSquare",
-            "squareLabel", "completionIcon", "footer", "footerValue",
+            "squareLabel", "squareMultiplier", "completionIcon", "footer", "footerValue",
           ],
         },
       ),
@@ -815,6 +815,11 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: "Square labels",
         kind: "text",
         capabilities: ["typography", "stateColor"],
+      }),
+      squareMultiplier: Object.freeze({
+        label: "Payout multipliers",
+        kind: "text",
+        capabilities: ["surface", "border", "shadow", "shape", "spacing", "typography", "stateColor"],
       }),
       completionIcon: Object.freeze({
         label: "Check and star icons",
