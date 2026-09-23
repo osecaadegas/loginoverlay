@@ -38,6 +38,7 @@ import {
   getErrorMessage,
   isDuplicateError,
 } from "../../../../utils/errorUtils";
+import { getProviderIdentityKey } from "../../../../utils/gameProviders";
 import { useProviderLogo } from "../../../../hooks/useProviderLogo";
 import SlotImage from "../SlotImage";
 
@@ -99,11 +100,16 @@ function BonusHuntProviderLogo({ provider }) {
   const resolvedLogo = useProviderLogo(provider);
   useEffect(() => setFailed(false), [provider, resolvedLogo]);
   const logo = !failed ? resolvedLogo : null;
+  const providerIdentity = getProviderIdentityKey(provider);
+  const pragmaticClass =
+    providerIdentity === "pragmaticplay"
+      ? " bh-list-provider--pragmatic"
+      : "";
 
   if (logo) {
     return (
       <span
-        className="bh-list-provider bh-list-provider--logo"
+        className={`bh-list-provider bh-list-provider--logo${pragmaticClass}`}
         title={provider}
       >
         <img

@@ -6742,6 +6742,8 @@ body.wm-resizing {
   display: block;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -6749,6 +6751,21 @@ body.wm-resizing {
   background: transparent;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.72))
     drop-shadow(0 0 9px rgba(226, 246, 255, 0.1));
+}
+
+.bh-list-provider--pragmatic {
+  width: 118px;
+  height: 34px;
+  margin-top: -2px;
+  padding: 0 2px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.bh-list-provider--pragmatic img {
+  object-position: left center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.78))
+    drop-shadow(0 0 10px rgba(245, 158, 11, 0.14));
 }
 
 /* --- Super badge inline --- */
