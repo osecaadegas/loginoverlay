@@ -35,6 +35,7 @@ import {
   getHorizontalRequestPitch,
   getHorizontalRequestRows,
 } from "../bonus-hunt/shared/betterHuntSizing";
+import { normalizeGiveawaySubtitle } from "../giveaway/giveawayText";
 
 function attrs(widgetType, config, elementId, stateId) {
   const style = subElementStyle(config, elementId, undefined, stateId);
@@ -4934,6 +4935,7 @@ export function BetterBonusHuntStyle({
 
 export function BetterGiveawayStyle({ config }) {
   const c = config || {};
+  const subtitle = normalizeGiveawaySubtitle(c.subtitle);
   const participants = safeArray(c.participants).map(giveawayParticipant);
   const winnerName =
     typeof c.winner === "object"
@@ -5115,7 +5117,7 @@ export function BetterGiveawayStyle({ config }) {
           {...attrs("giveaway", c, "prize")}
         >
           <strong>{c.prize || "Giveaway prize"}</strong>
-          {c.subtitle ? <span>{c.subtitle}</span> : null}
+          {subtitle ? <span>{subtitle}</span> : null}
         </div>
 
         <div

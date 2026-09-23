@@ -5,6 +5,7 @@ import useTwitchChannel from "../../../../hooks/useTwitchChannel";
 import { makePerStyleSetters } from "../shared/perStyleConfig";
 import { GIVEAWAY_STYLE_KEYS } from "../styleKeysRegistry";
 import { SectionHeader } from "../../ui";
+import { normalizeGiveawaySubtitle } from "./giveawayText";
 import {
   CirclePlay,
   CircleStop,
@@ -127,6 +128,7 @@ export default function GiveawayConfig({ config, onChange }) {
     Number(!!resolvedChannel && !!c.twitchEnabled) +
     Number(!!c.kickChannelId && !!c.kickEnabled);
   const canStart = !!keyword && configuredPlatformCount > 0;
+  const subtitle = normalizeGiveawaySubtitle(c.subtitle);
 
   // Chat message handler — check for keyword match
   const handleMessage = useCallback(
@@ -233,6 +235,14 @@ export default function GiveawayConfig({ config, onChange }) {
                   value={c.prize || ""}
                   onChange={(event) => set("prize", event.target.value)}
                   placeholder="500 bonus spins"
+                />
+              </label>
+              <label className="nb-field giveaway-field">
+                <span>Details line (optional)</span>
+                <input
+                  value={subtitle}
+                  onChange={(event) => set("subtitle", event.target.value)}
+                  placeholder="Optional giveaway details"
                 />
               </label>
               <label className="nb-field giveaway-field giveaway-field--command">

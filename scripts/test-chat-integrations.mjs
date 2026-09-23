@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { createServer } from 'vite';
 import puppeteer from 'puppeteer';
 import { resolveChatCommandOwner } from '../api/raid-shoutout.js';
+import { normalizeGiveawaySubtitle } from '../src/components/OverlayCenter/widgets/giveaway/giveawayText.js';
+
+assert.equal(normalizeGiveawaySubtitle('(min 30 Participants)'), '');
+assert.equal(normalizeGiveawaySubtitle('  Winners drawn live  '), 'Winners drawn live');
 
 const publicOverlayId = `bo_${'a'.repeat(48)}`;
 const overlayToken = 'b'.repeat(48);
@@ -100,7 +104,7 @@ try {
       send() {} close() { this.readyState = 3; this.onclose?.(); }
     };
     window.irc = (text, moderator = true) => window.sockets.filter(socket => socket.readyState === 1).forEach(socket => socket.onmessage?.({ data: `@id=event-${Date.now()};display-name=Viewer;mod=${moderator ? 1 : 0};badges= :viewer!v@v.tmi.twitch.tv PRIVMSG #fixture :${text}\r\n` }));
-    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true } = {}) => {
+    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '' } = {}) => {
       const config = {
         chatStyle: style, live: true, bttvEnabled: false, twitchEnabled: live, twitchChannel: 'fixture',
         giveawayInChat: enabled, giveawayPosition: position, shoutoutInChat: shoutout,
@@ -112,7 +116,7 @@ try {
       const restored = switchChatStyle(switchChatStyle(config, 'community_chat'), style);
       if (restored.giveawayInChat !== enabled || restored.shoutoutInChat !== shoutout || restored.giveawayPosition !== position) throw new Error('Integration settings lost on style switch');
       window.giveawayConfig = {
-        title: 'Community Giveaway', prize: 'Channel reward', keyword: 'join',
+        title: 'Community Giveaway', prize: 'Channel reward', subtitle: giveawaySubtitle, keyword: 'join',
         participants: state === 'empty' ? [] : [{ name: 'First Viewer' }, 'SecondViewer'],
         isActive: state === 'open', spinningWinner: state === 'drawing' ? 'SecondViewer' : '',
         winner: state === 'winner' ? 'SecondViewer' : '', twitchChannel: 'fixture', twitchEnabled: live || editorPreview,
@@ -163,6 +167,20 @@ try {
       assert.match(result.text, state === 'open' ? /!join/ : state === 'drawing' ? /Drawing/ : /SecondViewer/);
     }
   }
+  await page.evaluate(() => window.mountChat({ style: 'community_chat', shoutout: false, giveawaySubtitle: '(min 30 Participants)' }));
+  await settle();
+  assert.doesNotMatch(
+    await page.$eval('.ov-chat-giveaway', element => element.textContent),
+    /min\s*30\s*participants/i,
+    'Legacy minimum-participant copy is removed from an existing embedded giveaway',
+  );
+  await page.evaluate(() => window.mountChat({ style: 'community_chat', shoutout: false, giveawaySubtitle: 'Winners drawn live' }));
+  await settle();
+  assert.match(
+    await page.$eval('.ov-chat-giveaway', element => element.textContent),
+    /Winners drawn live/,
+    'A custom details line remains visible',
+  );
   await page.evaluate(() => window.mountChat({ editorPreview: true }));
   await settle();
   for (const style of styles) {
