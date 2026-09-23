@@ -6877,6 +6877,8 @@ function BetterSlotBingoControls({ config, onChange }) {
           />
           <ToggleRow label="Show progress" checked={c.showProgress} onChange={(showProgress) => set({ showProgress })} />
           <ToggleRow label="Show footer" checked={c.showFooter} onChange={(showFooter) => set({ showFooter })} />
+          <ToggleRow label="Show payout multipliers" checked={c.showMultipliers} onChange={(showMultipliers) => set({ showMultipliers })} />
+          <ToggleRow label="Show completion icons" checked={c.showCompletionIcons} onChange={(showCompletionIcons) => set({ showCompletionIcons })} />
         </Section>
       )}
 
@@ -6944,6 +6946,7 @@ function BetterSlotBingoControls({ config, onChange }) {
           <SliderRow label="Glow" value={c.glowIntensity} min={0} max={100} unit="%" onChange={(glowIntensity) => set({ glowIntensity })} />
           <SliderRow label="Title size" value={c.titleSize} min={18} max={56} unit="px" onChange={(titleSize) => set({ titleSize })} />
           <SliderRow label="Square text" value={c.squareTextSize} min={9} max={28} unit="px" onChange={(squareTextSize) => set({ squareTextSize })} />
+          <SliderRow label="Payout text" value={c.multiplierTextSize} min={7} max={22} unit="px" onChange={(multiplierTextSize) => set({ multiplierTextSize })} />
           <SliderRow label="Footer size" value={c.footerSize} min={16} max={44} unit="px" onChange={(footerSize) => set({ footerSize })} />
         </Section>
       )}

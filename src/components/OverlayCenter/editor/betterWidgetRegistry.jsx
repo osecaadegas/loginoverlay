@@ -332,7 +332,10 @@ const MOCK_WIDGET_CONFIGS = {
 };
 
 const LIVE_DATA_KEYS = Object.freeze({
-  slot_bingo: ["title", "boardRows", "footerMode", "showProgress", "showFooter", "squares"],
+  slot_bingo: [
+    "title", "boardRows", "footerMode", "showProgress", "showFooter",
+    "showMultipliers", "showCompletionIcons", "squares",
+  ],
   tournament: [
     "bracketName",
     "bracketType",

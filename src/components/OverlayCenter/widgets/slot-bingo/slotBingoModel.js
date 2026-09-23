@@ -38,6 +38,8 @@ export const SLOT_BINGO_DEFAULT_CONFIG = Object.freeze({
   footerMode: "bingo",
   showProgress: true,
   showFooter: true,
+  showMultipliers: true,
+  showCompletionIcons: true,
   squares: DEFAULT_SLOT_BINGO_SQUARES,
   backgroundColor: "#07050d",
   panelColor: "#110c1e",
@@ -56,6 +58,7 @@ export const SLOT_BINGO_DEFAULT_CONFIG = Object.freeze({
   fontFamily: "'Rajdhani', sans-serif",
   titleSize: 34,
   squareTextSize: 17,
+  multiplierTextSize: 12,
   footerSize: 28,
 });
 
@@ -118,6 +121,8 @@ export function normalizeSlotBingoConfig(config = {}) {
     footerMode: merged.footerMode === "lines" ? "lines" : "bingo",
     showProgress: merged.showProgress !== false,
     showFooter: merged.showFooter !== false,
+    showMultipliers: merged.showMultipliers !== false,
+    showCompletionIcons: merged.showCompletionIcons !== false,
     squares: normalizeSlotBingoSquares(merged.squares, boardRows),
     borderRadius: clampNumber(merged.borderRadius, 0, 72, 26),
     cardRadius: clampNumber(merged.cardRadius, 0, 40, 12),
@@ -126,6 +131,7 @@ export function normalizeSlotBingoConfig(config = {}) {
     glowIntensity: clampNumber(merged.glowIntensity, 0, 100, 46),
     titleSize: clampNumber(merged.titleSize, 18, 56, 34),
     squareTextSize: clampNumber(merged.squareTextSize, 9, 28, 17),
+    multiplierTextSize: clampNumber(merged.multiplierTextSize, 7, 22, 12),
     footerSize: clampNumber(merged.footerSize, 16, 44, 28),
   };
 }

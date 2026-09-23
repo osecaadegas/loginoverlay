@@ -36,6 +36,7 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
     "--sb-glow": c.glowIntensity / 100,
     "--sb-title-size": `${c.titleSize}px`,
     "--sb-square-size": `${c.squareTextSize}px`,
+    "--sb-multiplier-size": `${c.multiplierTextSize}px`,
     "--sb-footer-size": `${c.footerSize}px`,
     "--sb-font": c.fontFamily,
     "--sb-rows": c.boardRows,
@@ -101,7 +102,13 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
                 style={subElementStyle(c, "completionIcon", {})}
                 {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId: "completionIcon" })}
               >
-                {square.free ? <Star aria-hidden="true" /> : square.completed ? <Check aria-hidden="true" /> : null}
+                {c.showCompletionIcons
+                  ? square.free
+                    ? <Star aria-hidden="true" />
+                    : square.completed
+                      ? <Check aria-hidden="true" />
+                      : null
+                  : null}
               </span>
               <strong
                 className="slot-bingo-widget__label"
@@ -110,7 +117,7 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
               >
                 {square.label}
               </strong>
-              {!square.free && (
+              {!square.free && c.showMultipliers && (
                 <span
                   className="slot-bingo-widget__multiplier"
                   style={subElementStyle(c, "squareMultiplier", {})}

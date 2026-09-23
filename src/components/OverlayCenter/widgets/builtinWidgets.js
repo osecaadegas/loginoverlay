@@ -37,7 +37,7 @@ registerWidget({
   type: "slot_bingo",
   label: "Slot Bingo",
   icon: "▦",
-  description: "Track slot milestones on a configurable 5 x 5 Bingo board.",
+  description: "Track slot milestones and payouts on a configurable 3 x 5 or 5 x 5 Bingo board.",
   category: "better",
   component: SlotBingoWidget,
   configPanel: SlotBingoConfig,
