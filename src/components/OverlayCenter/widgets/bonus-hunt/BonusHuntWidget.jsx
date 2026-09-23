@@ -265,6 +265,8 @@ function BonusHuntWidget({
   widgetId,
   allWidgets = [],
   publicOverlayId,
+  overlayToken,
+  previewOnly = false,
   runtime,
 }) {
   const baseConfig = config || {};
@@ -470,6 +472,11 @@ function BonusHuntWidget({
     );
     return (
       <BetterBonusHuntStyle
+        userId={userId}
+        allWidgets={allWidgets}
+        publicOverlayId={publicOverlayId}
+        overlayToken={overlayToken}
+        previewOnly={previewOnly}
         config={{
           ...sortedConfig,
           avatarUrl: streamerProfile.avatarUrl,

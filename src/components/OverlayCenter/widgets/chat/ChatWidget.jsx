@@ -810,6 +810,7 @@ function ChatWidget({
   userId,
   runtime = "editor",
   publicOverlayId,
+  previewOnly = false,
 }) {
   const c = useMemo(
     () => ({ ...chatStyleDefaults(config?.chatStyle), ...config }),
@@ -1186,25 +1187,27 @@ function ChatWidget({
   }, [messageTtlMs, shouldExpireMessages]);
 
   /* Connect to enabled platforms */
-  useTwitchChat(c.twitchEnabled !== false ? resolvedTwitchChannel : "", handleMessage, {
-    parseRaids: true,
-    onRoomState: handleTwitchRoomState,
-  });
+  useTwitchChat(
+    !previewOnly && c.twitchEnabled !== false ? resolvedTwitchChannel : "",
+    handleMessage,
+    { parseRaids: true, onRoomState: handleTwitchRoomState },
+  );
   useYoutubeChat(
-    c.youtubeEnabled ? c.youtubeVideoId : "",
-    c.youtubeEnabled ? c.youtubeApiKey : "",
+    !previewOnly && c.youtubeEnabled ? c.youtubeVideoId : "",
+    !previewOnly && c.youtubeEnabled ? c.youtubeApiKey : "",
     handleMessage,
   );
-  useKickChat(c.kickEnabled ? c.kickChannelId : "", handleMessage);
+  useKickChat(!previewOnly && c.kickEnabled ? c.kickChannelId : "", handleMessage);
 
   /* Auto-scroll */
   const previewMessages = Array.isArray(c.__appearancePreviewMessages)
     ? c.__appearancePreviewMessages
     : [];
   const simulatedPreviewMessages =
-    isBetterChat && c.live === false ? [] : previewMessages;
-  const renderMessageSource =
-    messages.length > 0 ? messages : simulatedPreviewMessages;
+    isBetterChat && c.live === false && !previewOnly ? [] : previewMessages;
+  const renderMessageSource = previewOnly
+    ? simulatedPreviewMessages
+    : messages.length > 0 ? messages : simulatedPreviewMessages;
   const limitedRenderMessages =
     renderMessageSource.length > maxMessages
       ? renderMessageSource.slice(-maxMessages)

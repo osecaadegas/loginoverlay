@@ -20,6 +20,12 @@ import {
   Zap,
 } from "lucide-react";
 import SlotImage from "../SlotImage";
+import useSlotPersonalBest from "../../../../hooks/useSlotPersonalBest";
+import {
+  pickBestWinRecord,
+  resolveConfigBestWin,
+  resolveCurrentHuntBestWin,
+} from "../../../../utils/slotPersonalBestDisplay";
 import "../background/BackgroundWidget.css";
 import ChromaKeySmoke from "../background/ChromaKeySmoke";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
@@ -3001,7 +3007,17 @@ export function BetterBetsStyle({ config, countdown }) {
   );
 }
 
-export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
+export function BetterBonusHuntStyle({
+  config,
+  bonuses,
+  stats,
+  currency,
+  userId,
+  allWidgets = [],
+  publicOverlayId,
+  overlayToken,
+  previewOnly = false,
+}) {
   const c = config || {};
   const rows = safeArray(safeArray(bonuses).length ? bonuses : c.bonuses);
   const opened = rows.filter(bonusOpened);
@@ -3023,7 +3039,37 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
   const activeIndex =
     rows.length && sessionState !== "hunt" ? lockedIndex : rotatingIndex;
   const current = rows[activeIndex] || rows[initialIndex] || rows[0] || null;
+  // Bonus row IDs are not catalogue slot IDs. Match the selected carousel slot.
+  const activeSlot = {
+    id: current?.slot?.id || current?.slot_id || current?.slotId || "",
+    name: current ? bonusSlotName(current, activeIndex) : "",
+    provider: current ? bonusProvider(current) : "",
+  };
+  const showsPersonalBest = c.orientation === "horizontal" ||
+    ["imagestats", "stats"].includes(c.carouselMode);
+  const personalBest = useSlotPersonalBest({
+    userId: !previewOnly && showsPersonalBest ? userId : undefined,
+    slot: activeSlot,
+    publicOverlayId,
+    overlayToken,
+  });
+  const rtpConfig = allWidgets.find((widget) => widget.widget_type === "rtp_stats")?.config;
+  const displayBestWin = pickBestWinRecord([
+    personalBest,
+    !previewOnly &&
+      resolveConfigBestWin({
+        slotName: activeSlot.name,
+        activeSlot,
+        userId,
+        cached: rtpConfig?._cachedBestWin,
+        allWidgets,
+      }),
+    resolveCurrentHuntBestWin({ activeSlot, bonuses: rows, isLive: true }),
+  ]);
   const money = currency || c.currency || "€";
+  const bestWinValue = displayBestWin
+    ? `${formatMoney(displayBestWin.best_win, money)}${displayBestWin.best_multiplier > 0 ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : ""}`
+    : "-";
   const skin = normalizeBetterHuntSkin(c.skin);
   const theme = getHuntColourTheme(c.colour) || (
     skin !== "modern"
@@ -4003,12 +4049,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
         <BetterHuntVolatilityBars value={bonusVolatility(current)} />,
       ],
       ["Max Win", bonusMaxWin(current)],
-      [
-        "Best",
-        bonusMultiplierValue(current) > 0
-          ? formatMultiplier(bonusMultiplierValue(current))
-          : "-",
-      ],
+      ["Best", bestWinValue],
     ];
     if (carouselMode === "imagestats") {
       return (
@@ -4728,12 +4769,7 @@ export function BetterBonusHuntStyle({ config, bonuses, stats, currency }) {
             />,
           ],
           ["Max Win", bonusMaxWin(current)],
-          [
-            "Best",
-            bonusMultiplierValue(current) > 0
-              ? formatMultiplier(bonusMultiplierValue(current))
-              : "-",
-          ],
+          ["Best", bestWinValue],
         ]
       : [];
     const horizontalResultsReady = sessionState !== "hunt" && resultDrawerReady;
