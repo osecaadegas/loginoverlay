@@ -4,8 +4,9 @@ import { makePerStyleSetters } from "../shared/perStyleConfig";
 import { CHAT_STYLE_KEYS } from "../styleKeysRegistry";
 import useTwitchChannel from "../../../../hooks/useTwitchChannel";
 import { BROADCAST_CHAT_DEFAULTS, switchChatStyle } from "./chatStyles";
+import { ChatGiveawayAppearanceControls } from "../../editor/BetterWidgetPackages";
 
-export default function ChatConfig({ config, onChange }) {
+export default function ChatConfig({ config, onChange, allWidgets }) {
   const c = config || {};
   const currentStyle = c.chatStyle || "classic";
   const { set, setMulti } = makePerStyleSetters(
@@ -278,6 +279,7 @@ export default function ChatConfig({ config, onChange }) {
             <span>Show giveaway inside chat</span>
           </label>
           <p className="oc-config-hint">Run entries and draw winners from the Giveaway controls. You can remove the separate giveaway box from your overlay.</p>
+          {c.giveawayInChat && <ChatGiveawayAppearanceControls config={c} onChange={onChange} allWidgets={allWidgets} />}
           <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
             <span>Giveaway position</span>
             <select value={c.giveawayPosition || "top"} onChange={(e) => set("giveawayPosition", e.target.value)}>

@@ -322,7 +322,7 @@ function SpinReel({
   );
 }
 
-function GiveawayWidget({ config, widgetId, previewOnly = false, embedded = false, palette }) {
+function GiveawayWidget({ config, widgetId, previewOnly = false, embedded = false, embeddedLayout }) {
   const c = config || {};
   const st = c.displayStyle || "v1";
   const bgColor = subValue(
@@ -502,16 +502,8 @@ function GiveawayWidget({ config, widgetId, previewOnly = false, embedded = fals
 
   if (embedded) {
     return (
-      <EmbeddedGiveaway config={c} palette={palette}>
-        <style>{kf}</style>
-        <SpinReel
-          key={giveawayParticipantName(spinningWinner)}
-          participants={participants.map(giveawayParticipantName)}
-          winnerName={giveawayParticipantName(spinningWinner)}
-          accentColor={palette.accent}
-          textColor={palette.text}
-          mutedColor={palette.text}
-        />
+      <EmbeddedGiveaway config={c} layout={embeddedLayout}>
+        <BetterGiveawayStyle config={c} />
       </EmbeddedGiveaway>
     );
   }

@@ -32,6 +32,7 @@ import {
 import { CommunityChatHeader, CommunityChatMessage } from "./CommunityChatParts";
 import RaidShoutoutWidget from "../raid-shoutout/RaidShoutoutWidget";
 import GiveawayWidget from "../giveaway/GiveawayWidget";
+import { resolveEmbeddedGiveawayConfig } from "../giveaway/embeddedGiveawayConfig";
 import {
   chatStyleDefaults,
   COMMUNITY_CHAT_STYLE,
@@ -1485,7 +1486,8 @@ function ChatWidget({
   const sampleGiveaway = (previewOnly || runtime !== "obs") && c.__previewGiveawayConfig;
   const giveawaySource = sampleGiveaway ? { config: sampleGiveaway } :
     giveawayWidget || allWidgets?.find((widget) => widget.widget_type === "giveaway");
-  const giveawayConfig = giveawaySource?.config;
+  const giveawayAppearanceSource = allWidgets?.find((widget) => widget.widget_type === "giveaway")?.config || giveawayWidget?.config;
+  const giveawayConfig = giveawaySource?.config && resolveEmbeddedGiveawayConfig(c, giveawaySource.config, giveawayAppearanceSource || giveawaySource.config);
   const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
     (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
   const giveawayPosition = c.giveawayPosition === "bottom" ? "bottom" : "top";
@@ -1495,7 +1497,7 @@ function ChatWidget({
       config={giveawayConfig}
       widgetId={giveawaySource.id}
       previewOnly={previewOnly || runtime !== "obs"}
-      palette={{ background: messageBg, text: textColor, accent: usernameColor, border: borderColor, radius: borderRadius }}
+      embeddedLayout={c}
     />
   ) : null;
   const shoutoutPosition = c.shoutoutPosition === "bottom" ? "bottom" : "top";

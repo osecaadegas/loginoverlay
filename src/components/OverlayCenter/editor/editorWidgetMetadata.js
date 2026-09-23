@@ -39,7 +39,7 @@ const WIDGET_METADATA = {
     keywords: "twitch messages emotes",
     source: "Chat",
     route: "/overlay-center/widgets/chat",
-    simpleSections: ["Chat Style", "Typography", "Colours", "Display", "Emotes"],
+    simpleSections: ["Chat Style", "Typography", "Colours", "Display", "Emotes", "In-Chat Giveaway", "In-Chat Shoutout"],
   },
   navbar: {
     category: "Stream",

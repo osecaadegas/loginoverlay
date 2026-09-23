@@ -186,6 +186,12 @@ export const NAVBAR_STYLE_KEYS = [
 
 /* ── Chat ── */
 export const CHAT_STYLE_KEYS = [
+  "giveawayCustomAppearance",
+  "giveawayAppearance",
+  "giveawayHeight",
+  "giveawayWidth",
+  "giveawayMaxHeight",
+  "giveawayMargin",
   "showBitsCounter",
   "showPlatformEmblems",
   "bonusHuntColorSync",

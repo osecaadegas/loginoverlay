@@ -1972,6 +1972,17 @@ function BetterStyleSheet() {
       .better-gw-roulette-status{display:flex;justify-content:center;min-height:16px;margin-top:7px;color:#7fb2cf;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}.better-gw-status-spin{color:#6fdcff;text-shadow:0 0 8px rgba(0,180,255,.6);animation:better-gw-status-blink 900ms ease-in-out infinite}.better-gw-status-win{display:inline-flex;align-items:center;gap:6px;color:#ffd877;text-shadow:0 0 8px rgba(255,187,0,.5)}
       @container (max-width:520px){.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
       @media (max-width:520px){.better-giveaway-stage{padding:8px}.better-giveaway-widget{width:100%;height:min(100%,var(--w-height,270px));padding:max(10px,calc(var(--w-pad-y,22px) * .72)) max(12px,calc(var(--w-pad-x,31px) * .66))}.better-gw-prize{align-items:center;flex-direction:column;gap:3px}.better-gw-metrics{gap:max(6px,calc(var(--w-tile-gap,12px) * .6))}.better-gw-reel-zone{top:54px;right:14px;bottom:12px;left:14px}}
+      .better-giveaway-widget{border-radius:var(--w-corners,var(--w-radius,12px))}
+      .better-gw-name{color:var(--w-title-color,#e4f1ff)}
+      .better-gw-prize,.better-gw-prize span{color:var(--w-prize-color,#f4f8ff)}
+      .better-gw-metric-label{color:var(--w-label-color,rgba(255,255,255,.88))}
+      .better-gw-metric-value,.better-gw-keyword-value{color:var(--w-value-color,#fff)}
+      .better-gw-winner-name{color:var(--w-winner-color,#fff)}.better-gw-winner-kicker,.better-gw-status-win{color:var(--w-winner-color,#ffd877)}
+      .better-gw-roulette-viewport{height:var(--w-reel-height,122px);background:var(--w-reel-color,rgba(1,8,20,.6))}
+      .better-gw-avatar-chip,.better-gw-avatar-bubble{width:var(--w-avatar-size,66px)}
+      .better-gw-avatar-bubble{height:var(--w-avatar-size,66px)}
+      .better-gw-avatar-name{top:calc(50% + var(--w-avatar-size,66px) / 2 + 7px)}
+      .better-gw-chip-crown{top:calc(50% - var(--w-avatar-size,66px) / 2 - 13px)}
       .better-bets-stage{width:100%;height:100%;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;box-sizing:border-box;background:transparent;font-family:var(--font-body,"Rajdhani",Arial,sans-serif)}
       .better-bets-stage *{box-sizing:border-box}
       .better-bets-fit{width:var(--bets-width,100%);min-width:0;flex-shrink:0;transform:scale(var(--bets-fit,1));transform-origin:center;container:better-bets / inline-size}
@@ -4946,7 +4957,19 @@ export function BetterGiveawayStyle({ config }) {
   const width = clampNumber(c.width, 240, 1600, 700);
   const height = clampNumber(c.height, 140, 900, 270);
   const letterSpacing = `${Math.max(0, numberValue(c.letterSpacing, 1)) / 100}em`;
+  const cornerUnit = c.cornerUnit === "%" ? "%" : "px";
+  const corners = ["cornerTopLeft", "cornerTopRight", "cornerBottomRight", "cornerBottomLeft"];
   const vars = {
+    "--w-corners": c.cornerUnit === "%" || corners.some(key => c[key] !== undefined)
+      ? corners.map(key => `${clampNumber(c[key] ?? c.radius, 0, cornerUnit === "%" ? 100 : 120, 12)}${cornerUnit}`).join(" ") : undefined,
+    "--w-title-color": c.titleColor || "#e4f1ff",
+    "--w-prize-color": c.prizeColor || "#f4f8ff",
+    "--w-label-color": c.labelColor || "rgba(255,255,255,.88)",
+    "--w-value-color": c.valueColor || "#ffffff",
+    "--w-winner-color": c.winnerColor || undefined,
+    "--w-reel-color": c.reelColor || "rgba(1,8,20,.6)",
+    "--w-reel-height": `${clampNumber(c.reelHeight, 80, 180, 122)}px`,
+    "--w-avatar-size": `${clampNumber(c.avatarSize, 28, 90, 66)}px`,
     "--w-width": `${width}px`,
     "--w-height": `${height}px`,
     "--w-pad-x": cssPx(clampNumber(c.padX, 0, 140, 31)),

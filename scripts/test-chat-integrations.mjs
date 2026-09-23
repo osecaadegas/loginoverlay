@@ -57,6 +57,9 @@ try {
     const { createBetterInstance, renderBetterWidgetInstance } = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
     const { switchChatStyle } = await import('/src/components/OverlayCenter/widgets/chat/chatStyles.js');
     const { withChatPreviewSamples } = await import('/src/components/OverlayCenter/widgets/chat/chatPreviewSamples.js');
+    const { ChatGiveawayAppearanceControls } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
+    const { resolveEmbeddedGiveawayConfig } = await import('/src/components/OverlayCenter/widgets/giveaway/embeddedGiveawayConfig.js');
+    const { default: GiveawayWidget } = await import('/src/components/OverlayCenter/widgets/giveaway/GiveawayWidget.jsx');
     const { supabase } = await import('/src/config/supabaseClient.js');
     await import('/src/components/OverlayCenter/OverlayRenderer.css');
     const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -121,6 +124,28 @@ try {
         : h(ChatWidget, { key: `${style}-${live}-${legacy}`, config, allWidgets: [giveawayWidget], previewOnly: !live && !editorPreview, runtime: live ? 'obs' : 'editor', userId: 'owner-a', ...(legacy ? { overlayToken: 'b'.repeat(48) } : { publicOverlayId: `bo_${'a'.repeat(48)}` }) });
       root.render(h('div', { id: 'host', style: { width, height, margin: 12 } }, content));
     };
+    window.mountGiveawayEditor = (initialConfig = {}, state = 'open') => {
+      const live = { title: 'Matching giveaway', prize: 'Channel reward', keyword: 'join', participants: ['First Viewer', 'SecondViewer'], isActive: state === 'open', spinningWinner: state === 'drawing' ? 'SecondViewer' : '', winner: state === 'winner' ? 'SecondViewer' : '', twitchEnabled: false, kickEnabled: false, durationSec: 1.2 };
+      const source = resolveEmbeddedGiveawayConfig({}, live, { panelHi: '#363d46', bgColor: '#20252d', panelLo: '#14181c', cardHi: '#363d46', cardLo: '#252a31', lineColor: '#64748b', __appearanceExplicitSubElements: { container: { borderRadius: 24 } } });
+      window.sourceAppearanceBefore = JSON.stringify(source);
+      window.sourceAppearance = source;
+      function EditorFixture() {
+        const [config, setConfig] = React.useState({ chatStyle: 'community_chat', live: true, twitchEnabled: false, giveawayInChat: true, shoutoutInChat: false, __appearancePreviewMessages: [{ username: 'Viewer', message: 'Still chatting' }], ...initialConfig });
+        window.savedGiveawayChat = config;
+        const allWidgets = [{ id: 'source', widget_type: 'giveaway', config: source }];
+        return h('main', { style: { display: 'flex', gap: 16 } },
+          h('div', { id: 'edited-chat', style: { width: 420, height: 720 } }, h(ChatWidget, { config, allWidgets, runtime: 'obs', previewOnly: true })),
+          h('div', { id: 'standalone-giveaway', style: { width: 420, height: 270 } }, h(GiveawayWidget, { config: source, previewOnly: true })),
+          h('aside', { style: { width: 360 } }, h(ChatGiveawayAppearanceControls, { config, onChange: setConfig, allWidgets })));
+      }
+      root.render(h(EditorFixture, { key: Math.random() }));
+    };
+    window.restoreGiveawayChat = () => {
+      const config = JSON.parse(JSON.stringify(window.savedGiveawayChat));
+      const switched = switchChatStyle(config, 'broadcast_chat');
+      if (switched.giveawayAppearance) throw new Error('Giveaway appearance leaked to another chat style');
+      window.mountGiveawayEditor(switchChatStyle(switched, 'community_chat'), 'drawing');
+    };
   });
   const settle = () => new Promise(resolve => setTimeout(resolve, 150));
   for (const style of styles) {
@@ -184,6 +209,75 @@ try {
   await page.evaluate(() => window.mountChat({ registry: true, mode: 'mock', style: 'community_chat' }));
   await settle();
   assert.match(await page.$eval('.ov-chat-giveaway', element => element.textContent), /Giveaway #1/, 'Sample mode uses giveaway sample data');
+  await page.evaluate(() => window.mountGiveawayEditor());
+  await settle();
+  const matching = await page.evaluate(() => {
+    const properties = ['backgroundImage', 'borderRadius', 'borderColor', 'fontFamily'];
+    const styles = ['#edited-chat', '#standalone-giveaway'].map(root => getComputedStyle(document.querySelector(`${root} .better-giveaway-widget`)));
+    return properties.every(property => styles[0][property] === styles[1][property]);
+  });
+  assert.equal(matching, true, 'Embedded card uses the standalone giveaway appearance');
+  await page.evaluate(() => [...document.querySelectorAll('aside button')].find(button => button.textContent.includes('Custom giveaway appearance')).click());
+  await settle();
+  const changeField = async (label, value) => {
+    await page.evaluate(({ label, value }) => {
+      const field = [...document.querySelectorAll('aside label')].find(element => element.querySelector('em')?.textContent === label || element.querySelector('strong')?.textContent === label || element.querySelector('span')?.textContent === label);
+      const input = field?.querySelector('input,select');
+      if (!input) throw new Error(`Missing control: ${label}`);
+      const prototype = input.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+      Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, String(value));
+      input.dispatchEvent(new Event(input.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
+    }, { label, value });
+    await settle();
+  };
+  await changeField('Title colour', '#ff00aa');
+  await changeField('Renderer background', '#123456');
+  await changeField('Giveaway height in chat', 310);
+  await changeField('Giveaway width in chat', 90);
+  await page.evaluate(() => [...document.querySelectorAll('aside [data-level="secondary"] button')].find(button => button.textContent === 'Edges').click());
+  await settle();
+  await changeField('Corner units', '%');
+  await changeField('Top left', 35);
+  await changeField('Bottom right', 15);
+  await changeField('Border width', 4);
+  await page.evaluate(() => [...document.querySelectorAll('aside [data-level="secondary"] button')].find(button => button.textContent === 'Typography').click());
+  await settle();
+  await changeField('Title', 32);
+  await changeField('Roll avatar size', 48);
+  await page.evaluate(() => window.restoreGiveawayChat());
+  await new Promise(resolve => setTimeout(resolve, 1800));
+  const custom = await page.evaluate(() => {
+    const card = document.querySelector('#edited-chat .better-giveaway-widget');
+    const track = card.querySelector('.better-gw-roulette-track');
+    const viewport = card.querySelector('.better-gw-roulette-viewport').getBoundingClientRect();
+    const winner = card.querySelector('[data-giveaway-winner="true"]').getBoundingClientRect();
+    return {
+      colour: getComputedStyle(card.querySelector('.better-gw-name')).color,
+      size: getComputedStyle(card.querySelector('.better-gw-name')).fontSize,
+      radius: getComputedStyle(card).borderTopLeftRadius,
+      border: getComputedStyle(card).borderTopWidth,
+      avatar: getComputedStyle(card.querySelector('.better-gw-avatar-bubble')).width,
+      animation: getComputedStyle(track).animationName,
+      standaloneAnimation: getComputedStyle(document.querySelector('#standalone-giveaway .better-gw-roulette-track')).animationName,
+      centered: Math.abs(winner.x + winner.width / 2 - viewport.x - viewport.width / 2) < 2,
+      sourceUnchanged: window.sourceAppearanceBefore === JSON.stringify(window.sourceAppearance),
+      saved: window.savedGiveawayChat,
+    };
+  });
+  assert.equal(custom.colour, 'rgb(255, 0, 170)');
+  assert.equal(custom.size, '32px');
+  assert.equal(custom.radius, '35%');
+  assert.equal(custom.border, '4px');
+  assert.equal(custom.avatar, '48px');
+  assert.equal(custom.animation, 'better-gw-reel-spin');
+  assert.equal(custom.animation, custom.standaloneAnimation, 'Embedded roulette matches the standalone animation');
+  assert.equal(custom.centered, true, 'Roll lands on the selected winner');
+  assert.equal(custom.sourceUnchanged, true);
+  assert.equal(custom.saved.giveawayAppearance.participants, undefined, 'Appearance controls never store live entrants');
+  assert.equal(custom.saved.giveawayAppearance.keyword, undefined, 'Appearance controls never replace the live keyword');
+  assert.equal(custom.saved.giveawayHeight, 310);
+  assert.equal(custom.saved.giveawayWidth, 90);
+  if (process.env.CHAT_GIVEAWAY_SCREENSHOT) await (await page.$('#edited-chat')).screenshot({ path: process.env.CHAT_GIVEAWAY_SCREENSHOT });
   await page.evaluate(() => window.mountChat({ style: 'community_chat', sample: true, width: 480, height: 900 }));
   await new Promise(resolve => setTimeout(resolve, 900));
   if (process.env.CHAT_INTEGRATIONS_SCREENSHOT) await (await page.$('#host')).screenshot({ path: process.env.CHAT_INTEGRATIONS_SCREENSHOT });

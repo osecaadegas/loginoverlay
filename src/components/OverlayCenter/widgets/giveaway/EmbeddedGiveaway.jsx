@@ -1,38 +1,41 @@
-import React from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 
 export function giveawayParticipantName(value) {
   return typeof value === "string" ? value :
     value?.name || value?.username || value?.displayName || value?.login || "";
 }
 
-// The parent GiveawayWidget owns entry collection; this is only its chat layout.
-export default function EmbeddedGiveaway({ config, palette, children }) {
-  const c = config || {};
-  const participants = Array.isArray(c.participants) ? c.participants : [];
-  const winner = giveawayParticipantName(c.winner);
-  const drawing = !winner && Boolean(c.spinningWinner);
-  const keyword = String(c.keyword || "").trim().replace(/^!+/, "");
+const bounded = (value, min, max, fallback) => Number.isFinite(Number(value))
+  ? Math.min(max, Math.max(min, Number(value))) : fallback;
+
+// Fit the actual giveaway canvas, including its roulette, without cropping it.
+export default function EmbeddedGiveaway({ config, layout = {}, children }) {
+  const frameRef = useRef(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const width = bounded(config.width, 240, 1600, 420);
+  const height = bounded(config.height, 140, 900, 270);
+  const frameHeight = bounded(layout.giveawayHeight, 80, 600, 250);
+  const margin = bounded(layout.giveawayMargin, 0, 30, 4);
+  useLayoutEffect(() => {
+    const element = frameRef.current;
+    const measure = () => setSize({ width: element.clientWidth, height: element.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const scale = Math.min(size.width / width, size.height / height, 1);
   return (
-    <section className="ov-chat-giveaway" aria-label="Giveaway" style={{
-      position: "relative", minWidth: 0, minHeight: 0, flex: "0 1 auto",
-      maxHeight: "40%", overflow: "auto", margin: "4px 9px", padding: 8,
-      border: `1px solid ${palette.border}`, borderRadius: palette.radius,
-      background: palette.background, color: palette.text, fontFamily: "inherit",
-      fontSize: "clamp(11px, .9em, 17px)", lineHeight: 1.3,
+    <section ref={frameRef} className="ov-chat-giveaway" aria-label="Giveaway" style={{
+      position: "relative", minWidth: 0, minHeight: 0, flex: `0 1 ${frameHeight}px`,
+      height: frameHeight, maxHeight: `${bounded(layout.giveawayMaxHeight, 20, 80, 60)}%`,
+      overflow: "hidden", margin: `${margin}px 0`, alignSelf: "center",
+      width: `${bounded(layout.giveawayWidth, 30, 100, 100)}%`,
     }}>
-      <div style={{ display: "flex", gap: 8, justifyContent: "space-between", flexWrap: "wrap" }}>
-        <strong style={{ overflowWrap: "anywhere", color: palette.accent }}>{c.title || "Giveaway"}</strong>
-        <span>{winner ? "Winner" : drawing ? "Drawing" : c.isActive ? "Open" : "Paused"}</span>
-      </div>
-      {c.prize && <div style={{ marginTop: 5, overflowWrap: "anywhere" }}>{c.prize}</div>}
-      {drawing ? children : winner ? (
-        <div role="status" style={{ marginTop: 6, fontWeight: 900, fontSize: "1.25em", overflowWrap: "anywhere", color: palette.accent }}>
-          🏆 {winner}
-        </div>
-      ) : keyword && c.isActive ? (
-        <div style={{ marginTop: 6 }}>Type <strong>!{keyword}</strong> to enter</div>
-      ) : null}
-      <div style={{ marginTop: 6 }}>{participants.length} {participants.length === 1 ? "entry" : "entries"}</div>
+      <div className="ov-chat-giveaway-canvas" style={{
+        position: "absolute", width, height, top: "50%", left: "50%",
+        transform: `translate(-50%, -50%) scale(${scale})`, transformOrigin: "center",
+      }}>{children}</div>
     </section>
   );
 }

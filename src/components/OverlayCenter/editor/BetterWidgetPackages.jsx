@@ -1,7 +1,8 @@
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React, { useMemo, useState } from "react";
 import BackgroundLibraryPicker from "./BackgroundLibraryPicker";
-import { matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
+import { EditorControlContext, matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
+import { pickGiveawayAppearance, resolveEmbeddedGiveawayConfig, updateGiveawayAppearance } from "../widgets/giveaway/embeddedGiveawayConfig";
 import {
   ArrowDown,
   ArrowUp,
@@ -3036,7 +3037,28 @@ function PanelTabs({ tabs, active, onChange }) {
   );
 }
 
-function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
+export function ChatGiveawayAppearanceControls({ config, onChange, allWidgets = [] }) {
+  const source = allWidgets.find(item => item.widget_type === "giveaway")?.config || {};
+  const appearance = resolveEmbeddedGiveawayConfig(config, source);
+  const set = patch => onChange({ ...config, ...patch });
+  return <div className="chat-giveaway-appearance-controls">
+    <SliderRow label="Giveaway height in chat" value={config.giveawayHeight ?? 250} min={80} max={600} unit="px" onChange={giveawayHeight => set({ giveawayHeight })} />
+    <SliderRow label="Giveaway width in chat" value={config.giveawayWidth ?? 100} min={30} max={100} unit="%" onChange={giveawayWidth => set({ giveawayWidth })} />
+    <SliderRow label="Maximum chat space" value={config.giveawayMaxHeight ?? 60} min={20} max={80} unit="%" onChange={giveawayMaxHeight => set({ giveawayMaxHeight })} />
+    <SliderRow label="Space around giveaway" value={config.giveawayMargin ?? 4} min={0} max={30} unit="px" onChange={giveawayMargin => set({ giveawayMargin })} />
+    <ToggleRow label="Custom giveaway appearance" checked={config.giveawayCustomAppearance === true}
+      onChange={giveawayCustomAppearance => set({ giveawayCustomAppearance, giveawayAppearance: config.giveawayAppearance || pickGiveawayAppearance(appearance) })} />
+    <p className="bp-hint">When off, follows your Giveaway widget. Custom colours, shape and typography affect only this chat style. Entries and the winner stay connected to Giveaway controls.</p>
+    {config.giveawayCustomAppearance && <EditorControlContext.Provider value={null}>
+      <ControlCategoryContext.Provider value={null}>
+        <BetterWidgetControls type="giveaway" appearanceOnly config={appearance}
+          onChange={next => set({ giveawayAppearance: updateGiveawayAppearance(appearance, next) })} />
+      </ControlCategoryContext.Provider>
+    </EditorControlContext.Provider>}
+  </div>;
+}
+
+function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidgets }) {
   const c = ensureBetterWidgetConfig("chat", config);
   const set = (patch) => onChange({ ...c, ...patch });
   const commitSize = (patch) => {
@@ -3412,6 +3434,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange }) {
             onChange={(giveawayPosition) => set({ giveawayPosition })}
           />
           <p>Uses the Giveaway controls for entries, drawing and winners. A separate giveaway box is not needed in your overlay.</p>
+          {c.giveawayInChat && <ChatGiveawayAppearanceControls config={c} onChange={onChange} allWidgets={allWidgets} />}
         </Section>
         <Section
           title="In-Chat Shoutout"
@@ -3620,6 +3643,7 @@ function SimpleThemedControls({
   onChange,
   onWidgetChange,
   widget,
+  appearanceOnly = false,
 }) {
   const c = ensureBetterWidgetConfig(type, config);
   const renderedConfig =
@@ -4586,7 +4610,7 @@ function SimpleThemedControls({
       ["size", <Maximize2 size={12} />, "Size"],
       ["edges", <Layers size={12} />, "Edges"],
       ["type", <Type size={12} />, "Type"],
-      ["content", <Pipette size={12} />, "Text"],
+      ...(!appearanceOnly ? [["content", <Pipette size={12} />, "Text"]] : []),
     ];
     const current = activeTab(tabs);
     return (
@@ -4675,6 +4699,14 @@ function SimpleThemedControls({
                 value={c.bgColor}
                 onChange={(bgColor) => set({ bgColor })}
               />
+              {[
+                ["panelHi", "Panel top", "#0c1c40"], ["panelLo", "Panel bottom", "#081228"],
+                ["cardHi", "Tile top", "#0d2049"], ["cardLo", "Tile bottom", "#0a1836"],
+                ["lineColor", "Outline", "#2f63c9"], ["titleColor", "Title colour", "#e4f1ff"],
+                ["prizeColor", "Prize colour", "#f4f8ff"], ["labelColor", "Label colour", "#e0e0e0"],
+                ["valueColor", "Value colour", "#ffffff"], ["winnerColor", "Winner colour", "#ffd877"],
+                ["reelColor", "Reel background", "#010814"],
+              ].map(([key, label, fallback]) => <ColorRow key={key} label={label} value={c[key] || fallback} onChange={value => set({ [key]: value })} />)}
             </Section>
           </>
         )}
@@ -4683,7 +4715,7 @@ function SimpleThemedControls({
             <SliderRow
               label="Width"
               value={c.width}
-              min={420}
+              min={appearanceOnly ? 240 : 420}
               max={900}
               unit="px"
               onChange={(width) => setGiveawaySize({ width })}
@@ -4757,7 +4789,7 @@ function SimpleThemedControls({
                 min={0}
                 max={60}
                 unit="px"
-                onChange={(radius) => set({ radius, borderRadius: radius })}
+                onChange={(radius) => set({ radius, borderRadius: radius, cornerUnit: "px", cornerTopLeft: undefined, cornerTopRight: undefined, cornerBottomLeft: undefined, cornerBottomRight: undefined })}
               />
               <SliderRow
                 label="Border width"
@@ -4784,6 +4816,10 @@ function SimpleThemedControls({
                 unit="px"
                 onChange={(tileRadius) => set({ tileRadius })}
               />
+              <SelectRow label="Corner units" value={c.cornerUnit || "px"} options={[{ value: "px", label: "Pixels" }, { value: "%", label: "Percent" }]} onChange={cornerUnit => set({ cornerUnit })} />
+              {[["cornerTopLeft", "Top left"], ["cornerTopRight", "Top right"], ["cornerBottomRight", "Bottom right"], ["cornerBottomLeft", "Bottom left"]].map(([key, label]) => (
+                <SliderRow key={key} label={label} value={c[key] ?? c.radius} min={0} max={c.cornerUnit === "%" ? 100 : 120} unit={c.cornerUnit || "px"} onChange={value => set({ [key]: value })} />
+              ))}
             </Section>
             <Section title="Frame details" icon={<Frame size={13} />}>
               <ToggleRow
@@ -4919,6 +4955,8 @@ function SimpleThemedControls({
               unit="px"
               onChange={(valueSize) => set({ valueSize })}
             />
+            <SliderRow label="Roll height" value={c.reelHeight ?? 122} min={80} max={180} unit="px" onChange={reelHeight => set({ reelHeight })} />
+            <SliderRow label="Roll avatar size" value={c.avatarSize ?? 66} min={28} max={90} unit="px" onChange={avatarSize => set({ avatarSize })} />
             <SliderRow
               label="Letter spacing"
               value={c.letterSpacing}
@@ -4948,7 +4986,7 @@ function SimpleThemedControls({
             />
           </Section>
         )}
-        {matchesControlTab(current, "content") && (
+        {!appearanceOnly && matchesControlTab(current, "content") && (
           <Section title="Card copy" icon={<Type size={13} />}>
             {["title", "prize", "subtitle", "keyword"].map((key) => (
               <TextRow
@@ -6768,6 +6806,8 @@ function WidgetSpecificControls({
   user,
   widget,
   onWidgetChange,
+  allWidgets,
+  appearanceOnly,
 }) {
   if (type === "connect_four") {
     return <BetterConnectFourControls config={config} onChange={onChange} />;
@@ -6822,6 +6862,7 @@ function WidgetSpecificControls({
         onChange={onChange}
         widget={widget}
         onWidgetChange={onWidgetChange}
+        allWidgets={allWidgets}
       />
     );
   }
@@ -6832,6 +6873,7 @@ function WidgetSpecificControls({
       onChange={onChange}
       onWidgetChange={onWidgetChange}
       widget={widget}
+      appearanceOnly={appearanceOnly}
     />
   );
 }
