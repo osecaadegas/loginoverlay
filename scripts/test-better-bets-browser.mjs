@@ -50,6 +50,7 @@ try {
     const { default: BetsWidget } = await import('/src/components/OverlayCenter/widgets/bets/BetsWidget.jsx');
     const { getWidgetStyleElements, getWidgetStyleOptionsForQuickEditor } = await import('/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js');
     const routing = await import('/src/components/OverlayCenter/appearance/v2/appearanceRouting.js');
+    const { applyWidgetColourTheme } = await import('/src/components/OverlayCenter/editor/widgetColourThemes.js');
     await Promise.all([
       import('/src/components/OverlayCenter/editor/WidgetEditorPage.jsx'),
       import('/src/components/OverlayCenter/editor/BetterObsOverlay.jsx'),
@@ -68,6 +69,9 @@ try {
           config = routing.setScopedAppearanceConfigValue(config, { widgetType: 'bets', widgetVariant: 'better_bets', elementId, propertyId: 'textColor' }, '#eeccaa');
         }
         return JSON.parse(JSON.stringify(config));
+      },
+      themedConfig(config, theme) {
+        return JSON.parse(JSON.stringify(applyWidgetColourTheme('bets', config, theme)));
       },
       mount(cases) {
         root.render(React.createElement('main', { style: { display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap' } }, cases.map((item, index) => {
@@ -94,7 +98,7 @@ try {
           if (!item.controls) return React.cloneElement(frame, { key: index });
           return React.createElement(React.Fragment, { key: index }, frame,
             React.createElement('aside', { style: { width: 300 } },
-              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: 'layout', simpleSections: item.simpleSections || ['Orientation'], sections: { Orientation: true, 'Bets Style': true }, onTab() {}, onSection() {} } },
+              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: 'layout', simpleSections: item.simpleSections || ['Orientation'], sections: { Orientation: true, 'Bets Style': true, 'Colour Theme': true }, onTab() {}, onSection() {} } },
                 React.createElement(BetterWidgetControls, { type: 'bets', config: instance.config, onChange(nextConfig) {
                   window.betsTest.updatedCases = cases.map((current, i) => i === index ? { ...current, config: nextConfig } : current);
                   window.betsTest.mount(window.betsTest.updatedCases);
@@ -136,7 +140,9 @@ try {
         const rect = element.getBoundingClientRect();
         if (getComputedStyle(element).display === 'none' || !rect.width || !rect.height) result.push(`${host.dataset.case}: hidden ${element.className}`);
         if (rect.left < p.left - 1 || rect.right > p.right + 1 || rect.top < p.top - 1 || rect.bottom > p.bottom + 1) result.push(`${host.dataset.case}: content clips ${element.className}`);
-        if (element.scrollWidth > element.clientWidth + 2 || element.scrollHeight > element.clientHeight + 2) result.push(`${host.dataset.case}: text overflow ${element.className} ${element.textContent}`);
+        const style = getComputedStyle(element);
+        const intentionallyEllipsized = style.textOverflow === 'ellipsis' && style.overflow === 'hidden';
+        if (!intentionallyEllipsized && (element.scrollWidth > element.clientWidth + 2 || element.scrollHeight > element.clientHeight + 2)) result.push(`${host.dataset.case}: text overflow ${element.className} ${element.textContent}`);
       }
       for (const card of panel.querySelectorAll('.bet-option, .bet-bar')) {
         const leaves = [...card.querySelectorAll('.option-number, .option-range, .option-details, .option-command, .bar-num, .bar-range, .bar-detail, .bar-pct, .bar-amount, .bar-track')];
@@ -196,12 +202,45 @@ try {
   const orientationWidths = await page.$$eval('.bet-widget', (els) => els.map((el) => el.getBoundingClientRect().width));
   assert.ok(orientationWidths[1] > orientationWidths[0] * 1.5, 'Orientation still changes the board layout');
   await checkGeometry();
+  await mount(['editor', 'obs', 'preview'].map((runtime) => ({ width: 320, height: 300, runtime, config: { orientation: 'horizontal', layoutMode: 'bars', columns: 2, fontScale: 100 } })));
+  const horizontalBarReadability = await page.$$eval('[data-case]', (hosts) => hosts.map((host) => {
+    const fit = host.querySelector('.better-bets-fit');
+    const scale = fit.getBoundingClientRect().width / fit.offsetWidth;
+    const visibleSize = (selector) => Number.parseFloat(getComputedStyle(host.querySelector(selector)).fontSize) * scale;
+    const track = host.querySelector('.bar-track');
+    return {
+      scale,
+      fitSize: [fit.offsetWidth, fit.offsetHeight],
+      widgetSize: [fit.firstElementChild?.scrollWidth || 0, fit.firstElementChild?.scrollHeight || 0],
+      gridColumns: getComputedStyle(host.querySelector('.bars-grid')).gridTemplateColumns,
+      barHeights: [...host.querySelectorAll('.bet-bar')].map((bar) => bar.getBoundingClientRect().height / scale),
+      firstLabelFits: (() => { const label = host.querySelector('.bar-range'); return label.scrollWidth <= label.clientWidth + 2; })(),
+      label: visibleSize('.bar-range'),
+      percent: visibleSize('.bar-pct'),
+      detail: visibleSize('.bet-entry'),
+      amount: visibleSize('.bar-amount'),
+      track: track.getBoundingClientRect().height,
+      commandVisible: host.querySelector('.bet-entry')?.textContent.includes('!pick <number> <amount>') || false,
+    };
+  }));
+  for (const [runtimeIndex, metrics] of horizontalBarReadability.entries()) {
+    const runtime = ['editor', 'obs', 'preview'][runtimeIndex];
+    assert.ok(metrics.scale >= 0.66, `${runtime}: horizontal progress bars avoid excessive whole-widget downscaling (${JSON.stringify(metrics)})`);
+    assert.ok(metrics.label >= 12, `${runtime}: horizontal progress-bar labels remain readable (${JSON.stringify(metrics)})`);
+    assert.ok(metrics.percent >= 16, `${runtime}: horizontal progress-bar percentages remain prominent (${JSON.stringify(metrics)})`);
+    assert.ok(metrics.detail >= 10, `${runtime}: horizontal progress-bar command instruction remains readable (${JSON.stringify(metrics)})`);
+    assert.equal(metrics.commandVisible, true, `${runtime}: horizontal mode keeps the full betting command visible in its footer (${JSON.stringify(metrics)})`);
+    assert.ok(metrics.amount >= 10, `${runtime}: horizontal progress-bar amounts remain readable (${JSON.stringify(metrics)})`);
+    assert.ok(metrics.track >= 5, `${runtime}: horizontal progress bars remain visibly thick (${JSON.stringify(metrics)})`);
+    assert.equal(metrics.firstLabelFits, true, `${runtime}: the standard option label remains fully visible (${JSON.stringify(metrics)})`);
+  }
+  await checkGeometry();
   await mount([{ ...base, runtime: 'editor' }, { ...base, runtime: 'obs' }, { ...base, runtime: 'preview' }]);
   assert.equal(await page.$$eval('.better-bets-stage', (els) => els.length), 3, 'Package preview, editor and OBS share Better Bets');
   const text = await page.$$eval('.bet-widget', (els) => els.map((el) => el.textContent));
   assert.equal(text[0], text[1]);
   assert.equal(text[0], text[2]);
-  assert.match(text[0], /!pick 1 <amount>/, 'Option command persists even after receiving points');
+  assert.match(text[0], /!pick <number> <amount>/, 'Horizontal progress bars keep the complete betting command in the readable footer');
   assert.match(text[0], /Pool share/);
   assert.match(text[0], /2:1[345]/, 'Uses real elapsed countdown');
   assert.equal(await page.$('.bet-entry input'), null, 'OBS hint is not a fake input');
@@ -209,7 +248,7 @@ try {
   await page.waitForFunction((before) => document.querySelector('[data-appearance-part="timerStat"] strong').textContent !== before, {}, timerBefore);
   await mount([{ ...base, config: { ...base.config, betterVisibleOptions: 2 }, live: { bets: { opt_0: 100, opt_1: 100, opt_2: 800 } } }]);
   assert.deepEqual(await page.$$eval('.bar-pct', (els) => els.map((el) => el.textContent)), ['10%', '10%'], 'Pool share includes points on options outside the visible limit');
-  assert.match(await page.$eval('.bar-detail', (el) => el.textContent), /!pick 1 <amount>/, 'Live pool updates keep the command visible');
+  assert.match(await page.$eval('.bet-entry', (el) => el.textContent), /!pick <number> <amount>/, 'Live pool updates keep the command visible');
   await mount([{ ...base, live: { gameStatus: 'locked' } }]);
   assert.equal(await page.$eval('.bet-entry', (el) => el.textContent), 'Bets closed');
   assert.equal(await page.$('.bet-entry strong').then((el) => el !== null), true);
@@ -261,6 +300,29 @@ try {
     assert.equal(compactSavedCases[0].config.displayStyle, 'compact_scoreboard', `${controls}: style selection persists in widget config`);
     await mount(compactSavedCases.map((item) => ({ ...item, controls: undefined, runtime: 'obs' })));
     assert.ok(await page.$('[data-case="0"] .bets-ov--compact-scoreboard'), `${controls}: saved Compact Scoreboard renders in OBS`);
+
+    await mount([{ width: 320, height: 300, controls, simpleSections: ['Bets Style', 'Colour Theme'], config: { displayStyle: 'compact_scoreboard', theme: 'neon' } }]);
+    if (!(await page.$('.bp-controls--colour-theme .bp-theme-grid'))) {
+      await page.click('[data-control-section="Colour Theme"] .bp-section__head');
+      await page.waitForSelector('.bp-controls--colour-theme .bp-theme-grid');
+    }
+    const emeraldThemeButton = await page.$('.bp-controls--colour-theme .bp-theme-grid button:nth-child(6)');
+    assert.ok(emeraldThemeButton, `${controls}: exposes shared colour themes for Compact Scoreboard`);
+    await emeraldThemeButton.click();
+    await page.waitForFunction(() => window.betsTest.updatedCases?.[0]?.config?.theme === 'emerald');
+    const themedSavedCases = await page.evaluate(() => JSON.parse(JSON.stringify(window.betsTest.updatedCases)));
+    assert.equal(themedSavedCases[0].config.colourTheme, 'emerald', `${controls}: colour theme selection persists in widget config`);
+    assert.equal(
+      await page.$eval('[data-case="0"] .bets-ov', (root) => root.style.getPropertyValue('--bets-bar-fill').trim()),
+      '#6ee7b7',
+      `${controls}: selected colour theme updates the editor preview`,
+    );
+    await mount(themedSavedCases.map((item) => ({ ...item, controls: undefined, runtime: 'obs' })));
+    assert.equal(
+      await page.$eval('[data-case="0"] .bets-ov', (root) => root.style.getPropertyValue('--bets-bar-fill').trim()),
+      '#6ee7b7',
+      `${controls}: selected colour theme survives reload in OBS`,
+    );
   }
 
   for (const fillStyle of ['liquid', 'solid', 'pulse', 'scanline', 'plasma']) {
@@ -282,6 +344,33 @@ try {
     { displayStyle: 'compact_scoreboard', className: 'bets-ov--compact-scoreboard', width: 260, height: 190 },
     { displayStyle: 'StyleSecaBets', className: 'bets-ov--styleseca', width: 400, height: 510 },
   ];
+  for (const { displayStyle, width, height } of legacyStyleCases) {
+    const emeraldConfig = await page.evaluate(
+      ({ displayStyle }) => window.betsTest.themedConfig({ displayStyle }, 'emerald'),
+      { displayStyle },
+    );
+    assert.equal(emeraldConfig.theme, 'emerald', `${displayStyle}: shared theme selection is saved`);
+    assert.equal(emeraldConfig.bgColor, '#04120d', `${displayStyle}: shared background colour is saved`);
+    assert.equal(emeraldConfig.barFill, '#6ee7b7', `${displayStyle}: shared accent colour is saved`);
+    await mount(['editor', 'obs', 'preview'].map((runtime) => ({ width, height, runtime, config: emeraldConfig })));
+    const emeraldSignatures = await page.$$eval('.bets-ov', (roots) => roots.map((root) => [
+      root.style.getPropertyValue('--bets-bg').trim(),
+      root.style.getPropertyValue('--bets-hdr-bg').trim(),
+      root.style.getPropertyValue('--bets-bar-fill').trim(),
+      root.style.getPropertyValue('--bets-text').trim(),
+      root.style.getPropertyValue('--bets-border').trim(),
+    ]));
+    assert.equal(new Set(emeraldSignatures.map(JSON.stringify)).size, 1, `${displayStyle}: editor, OBS and preview share the selected theme`);
+    assert.deepEqual(emeraldSignatures[0], ['#04120d', '#062719', '#6ee7b7', '#edfff7', '#15845b'], `${displayStyle}: Emerald colours reach its renderer`);
+
+    const crimsonConfig = await page.evaluate(
+      ({ displayStyle }) => window.betsTest.themedConfig({ displayStyle }, 'crimson'),
+      { displayStyle },
+    );
+    await mount([{ width, height, runtime: 'obs', config: crimsonConfig }]);
+    const crimsonSignature = await page.$eval('.bets-ov', (root) => root.style.getPropertyValue('--bets-bg').trim());
+    assert.equal(crimsonSignature, '#100408', `${displayStyle}: changing the theme changes the rendered palette`);
+  }
   for (const { displayStyle, className, width, height } of legacyStyleCases) {
     await mount([{ ...base, runtime: 'legacy', config: { displayStyle } }]);
     assert.equal(await page.$('.better-bets-stage'), null, `${displayStyle} keeps its renderer`);

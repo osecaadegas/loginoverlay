@@ -20,6 +20,7 @@ import {
 } from "../shared/styleSecaTheme";
 import { resolveBonusHuntSyncedColors } from "../shared/bonusHuntColorSync";
 import { BetterBetsStyle } from "../shared/betterWidgetStyles";
+import { getWidgetColourTheme } from "../shared/colourThemePalettes";
 
 const STYLE_SECA_BETS_DESIGN_WIDTH = 400;
 const STYLE_SECA_BETS_DESIGN_HEIGHT = 510;
@@ -84,6 +85,21 @@ const THEME_PRESETS = {
     accentColor: "#475569",
   },
 };
+
+function sharedThemeToBetsPreset(theme) {
+  if (!theme) return null;
+  return {
+    bgColor: theme.background,
+    headerBg: theme.surface,
+    headerText: theme.text,
+    barBg: theme.raised,
+    barFill: theme.accent,
+    textColor: theme.text,
+    accentColor: theme.accent,
+    borderColor: theme.border,
+    cardBg: theme.surface,
+  };
+}
 
 const TEXT_STYLE_KEYS = [
   "color",
@@ -779,7 +795,10 @@ function BetsWidget({ config, allWidgets }) {
   const defaultLetterSpacing = resolveDefaultLetterSpacing(c.letterSpacing);
   const defaultTextTransform = c.textTransform || "none";
   const defaultTextAlign = c.textAlign || undefined;
-  const colorTheme = c.colorTheme || "dark";
+  const sharedColourTheme = getWidgetColourTheme(
+    c.theme || c.betTheme || c.colourTheme,
+  );
+  const colorTheme = sharedColourTheme?.key || c.colorTheme || "dark";
   const barColorMode = resolveBetsBarColorMode(c, isStyleSeca);
   const syncedBonusHuntColors = resolveBonusHuntSyncedColors(c, allWidgets);
   const syncedPrimaryColor = syncedBonusHuntColors?.primaryColor;
@@ -799,7 +818,10 @@ function BetsWidget({ config, allWidgets }) {
       : "";
   const showVictory = status === "result" && winnerLabel;
 
-  const preset = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
+  const preset =
+    sharedThemeToBetsPreset(sharedColourTheme) ||
+    THEME_PRESETS[colorTheme] ||
+    THEME_PRESETS.dark;
   const bgColor =
     syncedSecondaryColor ||
     styleSecaValue(
@@ -831,6 +853,7 @@ function BetsWidget({ config, allWidgets }) {
         "widgetBackground",
         "borderColor",
         c.borderColor ||
+          preset.borderColor ||
           styleSecaOr(isStyleSeca, STYLE_SECA.border, "rgba(148,163,184,0.12)"),
         "container",
       ),
@@ -931,7 +954,12 @@ function BetsWidget({ config, allWidgets }) {
           c,
           "optionCard",
           "background",
-          c.cardBg || styleSecaOr(isStyleSeca, STYLE_SECA.cardSurface, barBg),
+          c.cardBg ||
+            styleSecaOr(
+              isStyleSeca,
+              STYLE_SECA.cardSurface,
+              preset.cardBg || barBg,
+            ),
         ),
         "optionRow",
       ),

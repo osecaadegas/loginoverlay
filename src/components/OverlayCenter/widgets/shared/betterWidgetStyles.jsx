@@ -2057,6 +2057,22 @@ function BetterStyleSheet() {
       .better-bets-stage .bar-amount{grid-area:amount;text-align:right}
       .better-bets-stage .bar-track{grid-area:track;position:relative;height:5px;margin-top:3px;overflow:hidden;border-radius:3px;background:color-mix(in srgb,var(--accent) 12%,rgba(0,0,0,.45))}
       .better-bets-stage .bar-pct{grid-area:percent;min-width:0;color:var(--text-bright);font-family:var(--font-display);font-size:calc(18px * var(--fs));line-height:1.2;font-weight:700;text-align:right;overflow-wrap:anywhere}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal{padding:12px}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .widget-header{min-height:32px;font-size:calc(19px * var(--fs))}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .open-status{min-height:25px;font-size:calc(12px * var(--fs));padding:4px 8px}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .event-meta{min-height:52px}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .meta-item{font-size:calc(19px * var(--fs));padding:6px}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .meta-item span{font-size:calc(12px * var(--fs));font-weight:700}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bets-grid-heading{font-size:calc(13px * var(--fs));font-weight:700}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bet-bar{height:68px;min-height:68px;grid-template-columns:24px minmax(0,1fr) auto;grid-template-rows:25px 18px 8px;gap:2px 6px;padding:4px 6px}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-num{width:22px;height:22px;font-size:calc(12px * var(--fs))}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-range{font-size:clamp(16px,calc(17px * var(--fs)),17px);line-height:1.15;letter-spacing:-.01em;text-shadow:var(--hard-shadow)}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-pct{font-size:clamp(22px,calc(23px * var(--fs)),25px);line-height:1}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-detail,.better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-amount{font-size:clamp(13px,calc(15px * var(--fs)),14px);font-weight:700;line-height:1.2;text-shadow:var(--hard-shadow)}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-range,.better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-detail,.better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-amount,.better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-pct{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-amount{grid-column:2/4;grid-row:2;display:flex;align-items:center;gap:4px;text-align:left}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bar-track{min-height:8px;margin-top:5px}
+      .better-bets-stage[data-layout="bars"] .bet-widget.is-horizontal .bet-entry{min-height:32px;font-size:calc(14px * var(--fs));font-weight:600}
       .better-bets-stage .bf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
       .better-bets-stage .bf-core{position:absolute;top:0;bottom:0;left:0;width:var(--pct);border-radius:6px 2px 2px 6px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 52%,transparent),var(--accent),var(--accent-2));transition:width 700ms cubic-bezier(.22,1,.36,1)}
       .better-bets-stage .bf-core::after{content:"";position:absolute;top:0;right:0;left:0;height:45%;border-radius:6px 0 0 0;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent)}
@@ -2670,10 +2686,14 @@ export function BetterBetsStyle({ config, countdown }) {
     "--glow-mult": glowIntensity,
     "--widget-opacity": opacity,
     "--fill-dur": `${3.2 * (100 / fillSpeed)}s`,
-    "--cols": columns,
+    "--cols": orientation === "horizontal" ? Math.max(2, columns) : columns,
     // Lay out horizontal content before fitting it; a narrow frame must not turn it vertical.
     "--bets-width":
-      orientation === "horizontal" ? "max(640px, 100%)" : "min(360px, 100%)",
+      orientation === "horizontal"
+        ? layoutMode === "bars"
+          ? "max(430px, 100%)"
+          : "max(640px, 100%)"
+        : "min(360px, 100%)",
     ...(fontFamily
       ? { "--font-body": fontFamily, "--font-display": fontFamily }
       : {}),
@@ -2872,17 +2892,25 @@ export function BetterBetsStyle({ config, countdown }) {
                     >
                       {optionLabel}
                     </span>
-                    <span
-                      className="bar-detail"
-                      {...attrs("bets", c, "cardLabel", stateId)}
-                    >
-                      {isWinner && <Trophy size={12} aria-hidden="true" />}
-                      {detailLabel}
-                    </span>
+                    {orientation !== "horizontal" ? (
+                      <span
+                        className="bar-detail"
+                        {...attrs("bets", c, "cardLabel", stateId)}
+                      >
+                        {isWinner && <Trophy size={12} aria-hidden="true" />}
+                        {detailLabel}
+                      </span>
+                    ) : null}
                     <span
                       className="bar-amount"
                       {...attrs("bets", c, "cardAmountText", stateId)}
                     >
+                      {orientation === "horizontal" && isWinner ? (
+                        <Trophy size={12} aria-hidden="true" />
+                      ) : null}
+                      {orientation === "horizontal" && isWinner
+                        ? "Winner · "
+                        : ""}
                       {formatCompactNumber(amount)} pts
                     </span>
                     <span

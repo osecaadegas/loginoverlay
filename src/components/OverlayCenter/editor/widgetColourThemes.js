@@ -16,7 +16,17 @@ const COLOUR_KEYS = {
   rtp_stats: { cBarTop: "raised", cBarMid: "surface", cBarBot: "background", cRim: "border", cValue: "text", cLabel: "muted", cBolt: "accent", cBrand: "muted", cEmA: "accent", cEmB: "secondary", cEmBase: "surface" },
   background: { color1: "background", color2: "secondary", color3: "accent", overlayColor: "background", fxParticleColor: "accent", fxGlimpseColor: "accent" },
   tournament: { bgColor: "surface", panelHi: "raised", panelLo: "background", borderColor: "border", cardBg: "raised", cardBorder: "border", nameColor: "text", slotNameColor: "muted", multiColor: "accent", swordColor: "accent", xIconColor: "muted", emptyTextColor: "muted", sbTextColor: "text", sbPayColor: "muted", sbMultiColor: "accent" },
-  bets: {},
+  bets: {
+    bgColor: "background",
+    headerBg: "surface",
+    headerText: "text",
+    barBg: "raised",
+    barFill: "accent",
+    textColor: "text",
+    accentColor: "accent",
+    borderColor: "border",
+    cardBg: "surface",
+  },
 };
 
 // Explicit existing element targets, not a global recolour of arbitrary descendants.
@@ -65,6 +75,22 @@ const ELEMENT_COLOURS = {
     participantCard: { background: "raised", borderColor: "border", textColor: "text" },
     playerName: { textColor: "text" }, scoreValue: { textColor: "accent" },
     score: { textColor: "accent" }, label: { textColor: "muted" },
+  },
+  bets: {
+    widgetBackground: { background: "background", borderColor: "border", textColor: "text" },
+    header: { background: "surface", borderColor: "border", textColor: "text" },
+    status: { background: "accent", borderColor: "secondary", textColor: "background" },
+    poolStat: { background: "raised", borderColor: "border", textColor: "text" },
+    timerStat: { background: "raised", borderColor: "border", textColor: "text" },
+    betsStat: { background: "raised", borderColor: "border", textColor: "text" },
+    betCards: { background: "surface", borderColor: "border", textColor: "text" },
+    individualBetCard: { background: "surface", borderColor: "border", textColor: "text", accentColor: "accent" },
+    cardNumberBadge: { background: "accent", borderColor: "secondary", textColor: "background" },
+    cardRangeText: { textColor: "text" },
+    cardPercentageText: { textColor: "text" },
+    cardLabel: { textColor: "muted" },
+    progressBar: { background: "raised", fillColor: "accent", borderColor: "border" },
+    footerInstruction: { textColor: "muted", borderColor: "border" },
   },
 };
 
