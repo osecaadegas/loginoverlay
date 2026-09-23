@@ -1240,6 +1240,8 @@ function BetsWidget({ config, allWidgets }) {
     );
   }
 
+  const isListLedger = layout === "v1_list";
+  const isArcadeGrid = layout === "v2_grid";
   const isGrid2x3 = layout === "v3_grid_2x3";
   const isGrid = layout === "v2_grid" || isGrid2x3 || isStyleSeca || isCompactScoreboard;
   const gridCols = getGridCols(visibleOptions.length, layout);
@@ -1343,6 +1345,8 @@ function BetsWidget({ config, allWidgets }) {
         `bets-ov--${status}`,
         `bets-ov--theme-${colorTheme}`,
         isGrid && "bets-ov--grid",
+        isListLedger && "bets-ov--market-list",
+        isArcadeGrid && "bets-ov--arcade-grid",
         isGrid2x3 && "bets-ov--grid-2x3",
         isStyleSeca && "bets-ov--styleseca",
         isCompactScoreboard && "bets-ov--compact-scoreboard",
@@ -1350,6 +1354,7 @@ function BetsWidget({ config, allWidgets }) {
         .filter(Boolean)
         .join(" ")}
       data-widget-type="bets"
+      data-bets-style={layout}
       {...partAttrs("widgetBackground", undefined, c)}
       style={{ ...cssVars, ...containerStyle }}
     >

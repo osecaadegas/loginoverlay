@@ -264,10 +264,71 @@ try {
   assert.equal(await page.$eval('.bet-widget', (el) => el.getAnimations({ subtree: true }).length), 0, 'Reduced motion stops fills and entrance effects');
   assert.equal(await page.$eval('.bets-victory', (el) => getComputedStyle(el).display), 'none');
   await page.emulateMediaFeatures([]);
-  for (const displayStyle of ['v1_list', 'v2_grid', 'v3_grid_2x3', 'compact_scoreboard', 'StyleSecaBets']) {
+  const legacyStyleCases = [
+    { displayStyle: 'v1_list', className: 'bets-ov--market-list', width: 430, height: 500 },
+    { displayStyle: 'v2_grid', className: 'bets-ov--arcade-grid', width: 430, height: 500 },
+    { displayStyle: 'v3_grid_2x3', className: 'bets-ov--grid-2x3', width: 600, height: 360 },
+    { displayStyle: 'compact_scoreboard', className: 'bets-ov--compact-scoreboard', width: 260, height: 190 },
+    { displayStyle: 'StyleSecaBets', className: 'bets-ov--styleseca', width: 400, height: 510 },
+  ];
+  for (const { displayStyle, className, width, height } of legacyStyleCases) {
     await mount([{ ...base, runtime: 'legacy', config: { displayStyle } }]);
     assert.equal(await page.$('.better-bets-stage'), null, `${displayStyle} keeps its renderer`);
     assert.ok(await page.$('.bets-ov'), `${displayStyle} still renders`);
+    assert.ok(await page.$(`.${className}`), `${displayStyle} has its own visual identity class`);
+    assert.equal(await page.$eval('.bets-ov', (root) => root.dataset.betsStyle), displayStyle, `${displayStyle} is identifiable in editor and OBS diagnostics`);
+
+    await mount(['editor', 'obs', 'preview'].map((runtime) => ({ width, height, runtime, config: { displayStyle } })));
+    await new Promise((resolve) => setTimeout(resolve, 650));
+    const runtimeStyles = await page.$$eval('[data-case]', (hosts) => hosts.map((host) => {
+      const root = host.querySelector('.bets-ov');
+      const rootBox = root?.getBoundingClientRect();
+      const hostBox = host.getBoundingClientRect();
+      const cards = root ? [...root.querySelectorAll('.bets-ov__card, .bets-ov__row')] : [];
+      return {
+        style: root?.dataset.betsStyle,
+        classes: root?.className || '',
+        cardCount: cards.length,
+        rootBox: rootBox ? { left: rootBox.left, top: rootBox.top, right: rootBox.right, bottom: rootBox.bottom, width: rootBox.width, height: rootBox.height } : null,
+        hostBox: { left: hostBox.left, top: hostBox.top, right: hostBox.right, bottom: hostBox.bottom, width: hostBox.width, height: hostBox.height },
+        insideFrame: Boolean(rootBox) && rootBox.left >= hostBox.left - 1 && rootBox.right <= hostBox.right + 1
+          && rootBox.top >= hostBox.top - 1 && rootBox.bottom <= hostBox.bottom + 1,
+        cardsInside: cards.every((card) => {
+          const box = card.getBoundingClientRect();
+          return box.left >= rootBox.left - 1 && box.right <= rootBox.right + 1
+            && box.top >= rootBox.top - 1 && box.bottom <= rootBox.bottom + 1;
+        }),
+      };
+    }));
+    for (const [runtimeIndex, item] of runtimeStyles.entries()) {
+      assert.equal(item.style, displayStyle, `${displayStyle}: ${['editor', 'obs', 'preview'][runtimeIndex]} keeps the saved style`);
+      assert.match(item.classes, new RegExp(className), `${displayStyle}: ${['editor', 'obs', 'preview'][runtimeIndex]} uses the dedicated class`);
+      assert.equal(item.cardCount, 6, `${displayStyle}: ${['editor', 'obs', 'preview'][runtimeIndex]} renders all six live choices`);
+      assert.ok(item.insideFrame && item.cardsInside, `${displayStyle}: ${['editor', 'obs', 'preview'][runtimeIndex]} stays inside its widget frame (${JSON.stringify(item)})`);
+    }
+  }
+
+  await mount(legacyStyleCases.map(({ displayStyle, width, height }) => ({ width, height, runtime: 'obs', config: { displayStyle } })));
+  await new Promise((resolve) => setTimeout(resolve, 650));
+  const identitySignatures = await page.$$eval('[data-case]', (hosts) => hosts.map((host) => {
+    const root = host.querySelector('.bets-ov');
+    const card = root.querySelector('.bets-ov__card, .bets-ov__row');
+    const body = root.querySelector('.bets-ov__card-body');
+    return [
+      root.dataset.betsStyle,
+      getComputedStyle(root).boxShadow,
+      card ? getComputedStyle(card).clipPath : 'list-row',
+      body ? getComputedStyle(body).display : getComputedStyle(root.querySelector('.bets-ov__row-meta')).display,
+    ].join('|');
+  }));
+  assert.equal(new Set(identitySignatures).size, legacyStyleCases.length, 'Every non-Better Bets style has a distinct computed visual signature');
+  if (process.env.BETS_STYLES_SCREENSHOT) {
+    await page.evaluate(() => {
+      document.body.style.background = '#070a11';
+      document.body.style.padding = '16px';
+      document.querySelector('main').style.gap = '16px';
+    });
+    await page.screenshot({ path: process.env.BETS_STYLES_SCREENSHOT, fullPage: true });
   }
   const compactCases = ['editor', 'obs', 'preview'].map((runtime) => ({
     width: 230,

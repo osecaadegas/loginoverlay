@@ -1830,7 +1830,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       freezeStyle({
         id: "v1_list",
         label: "List",
-        description: "Horizontal betting rows with progress bars.",
+        description: "Live market ledger with full-width betting rows.",
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
           progressBar: true,
@@ -1859,7 +1859,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       freezeStyle({
         id: "v2_grid",
         label: "Grid",
-        description: "Card grid with vertical fill progress.",
+        description: "Luminous arcade tiles with vertical pool fills.",
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
           progressBar: true,
@@ -1890,7 +1890,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       freezeStyle({
         id: "v3_grid_2x3",
         label: "Grid 2x3",
-        description: "Compact two-row bet card board for six options.",
+        description: "Sportsbook broadcast board with six result panels.",
         recommended: true,
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
@@ -1923,7 +1923,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         id: "compact_scoreboard",
         label: "Compact Scoreboard",
         description:
-          "High-legibility two-column bet board for small overlay panels.",
+          "Digital split-flap scoreboard for small overlay panels.",
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
           progressBar: true,
@@ -1950,7 +1950,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         id: "StyleSecaBets",
         label: "StyleSeca Bets",
         description:
-          "Fixed 2-column by 3-row hunt betting board that scales cleanly with drag resizing.",
+          "Premium gold broadcast ticket that scales cleanly with drag resizing.",
         capabilities: {
           ...BASE_QUICK_CAPABILITIES,
           progressBar: true,
