@@ -2324,11 +2324,18 @@ function BetterStyleSheet() {
       .better-hunt-row--image{min-height:100px;overflow:hidden;padding:6px}
       .better-hunt-row-bg{position:absolute;inset:0}.better-hunt-row-bg img{filter:saturate(1.08) contrast(1.02)}
       .better-hunt-row-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.38),transparent)}
+      .better-hunt-mainstream .better-hunt-row--compact{padding-left:8px}
+      .better-hunt-mainstream .better-hunt-row--names{padding-left:8px}
+      .better-hunt-mainstream .better-hunt-row--super{border-color:color-mix(in srgb,var(--bh-super-color) 76%,white 8%);background:linear-gradient(120deg,color-mix(in srgb,var(--bh-super-color) 24%,var(--bh-card-hi)),color-mix(in srgb,var(--bh-super-color) 8%,var(--bh-card-lo)));box-shadow:inset 4px 0 0 var(--bh-super-color),inset 0 1px 0 rgba(255,255,255,.13),0 0 12px color-mix(in srgb,var(--bh-super-color) 22%,transparent)}
+      .better-hunt-mainstream .better-hunt-row--extreme{border-color:color-mix(in srgb,var(--bh-extreme-color) 78%,white 7%);background:linear-gradient(120deg,color-mix(in srgb,var(--bh-extreme-color) 25%,var(--bh-card-hi)),color-mix(in srgb,var(--bh-extreme-color) 9%,var(--bh-card-lo)));box-shadow:inset 4px 0 0 var(--bh-extreme-color),inset 0 1px 0 rgba(255,255,255,.13),0 0 12px color-mix(in srgb,var(--bh-extreme-color) 24%,transparent)}
+      .better-hunt-mainstream .better-hunt-row--super .better-hunt-row-main .better-hunt-slot-marquee{color:color-mix(in srgb,var(--bh-super-color) 72%,white)}
+      .better-hunt-mainstream .better-hunt-row--extreme .better-hunt-row-main .better-hunt-slot-marquee{color:color-mix(in srgb,var(--bh-extreme-color) 62%,white)}
+      .better-hunt-mainstream .better-hunt-row--super .better-hunt-thumb,.better-hunt-mainstream .better-hunt-row--super .better-hunt-row-bg{border-color:var(--bh-super-color)}
+      .better-hunt-mainstream .better-hunt-row--extreme .better-hunt-thumb,.better-hunt-mainstream .better-hunt-row--extreme .better-hunt-row-bg{border-color:var(--bh-extreme-color)}
       .better-hunt-mainstream .better-hunt-row--image{grid-template-columns:104px minmax(0,1fr);min-height:168px;gap:10px;padding:6px}
       .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-bg{position:relative;inset:auto;height:154px;overflow:hidden;border-radius:max(0px,calc(var(--bh-stat-radius,7px) - 6px));background:var(--bh-inset)}
       .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-bg::after{content:none}
-      .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-content{grid-template-columns:minmax(0,1fr);align-content:center;gap:12px;min-width:0;padding:24px 4px 4px}
-      .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-id{left:4px;top:0;transform:none}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-content{grid-template-columns:minmax(0,1fr);align-content:center;gap:12px;min-width:0;padding:4px}
       .better-hunt-mainstream .better-hunt-row--image .better-hunt-mini-stats{min-width:0;gap:7px}
       .better-hunt-row-content{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;padding-left:20px}
       .better-hunt-row-id{position:absolute;left:3px;top:50%;z-index:3;width:18px;height:20px;min-width:18px;display:grid;place-items:center;transform:translateY(-50%);border:1px solid rgba(255,255,255,.16);border-radius:5px;background:rgba(0,0,0,.5);color:var(--bh-steel-hi);font-size:.68em;font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.8)}
@@ -3418,6 +3425,8 @@ export function BetterBonusHuntStyle({
     "--bh-ice-mid": theme.iceMid,
     "--bh-ember": winAccents.ember,
     "--bh-tangerine": winAccents.tangerine,
+    "--bh-super-color": c.superBadgeColor || "#eab308",
+    "--bh-extreme-color": c.extremeBadgeColor || "#ef4444",
     "--bh-glow-a": theme.glowA,
     "--bh-glow-b": theme.glowB,
     "--bh-font": font,
@@ -4267,11 +4276,24 @@ export function BetterBonusHuntStyle({
     const payout = bonusPayout(bonus);
     const bet = bonusBet(bonus);
     const multi = bonusMultiplierValue(bonus);
+    const tier = bonusTier(bonus);
+    const tierClass =
+      tier === "normal" ? "" : ` better-hunt-row--${tier}`;
+    const positionNumber =
+      orientation === "mainstream" ? null : (
+        <span
+          className="better-hunt-row-id"
+          {...attrs("bonus_hunt", c, "slotPositionNumber")}
+        >
+          {index + 1}
+        </span>
+      );
     if (mode === "image") {
       return (
         <div
           key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`}
-          className="better-hunt-row better-hunt-row--image"
+          className={`better-hunt-row better-hunt-row--image${tierClass}`}
+          data-bonus-tier={tier}
           {...attrs(
             "bonus_hunt",
             c,
@@ -4283,12 +4305,7 @@ export function BetterBonusHuntStyle({
             <SlotImage src={bonusImage(bonus)} alt="" fit={orientation === "mainstream" ? "contain" : "cover"} />
           </div>
           <div className="better-hunt-row-content">
-            <span
-              className="better-hunt-row-id"
-              {...attrs("bonus_hunt", c, "slotPositionNumber")}
-            >
-              {index + 1}
-            </span>
+            {positionNumber}
             <span className="better-hunt-row-main">
               <BetterHuntSlotMarquee
                 config={c}
@@ -4345,7 +4362,8 @@ export function BetterBonusHuntStyle({
       return (
         <div
           key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`}
-          className="better-hunt-row better-hunt-row--names"
+          className={`better-hunt-row better-hunt-row--names${tierClass}`}
+          data-bonus-tier={tier}
           {...attrs(
             "bonus_hunt",
             c,
@@ -4353,12 +4371,7 @@ export function BetterBonusHuntStyle({
             openedState ? "opened" : "unopened",
           )}
         >
-          <span
-            className="better-hunt-row-id"
-            {...attrs("bonus_hunt", c, "slotPositionNumber")}
-          >
-            {index + 1}
-          </span>
+          {positionNumber}
           <span className="better-hunt-row-main">
             <BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>
               {bonusSlotName(bonus, index)}
@@ -4376,7 +4389,8 @@ export function BetterBonusHuntStyle({
     return (
       <div
         key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`}
-        className="better-hunt-row better-hunt-row--compact"
+        className={`better-hunt-row better-hunt-row--compact${tierClass}`}
+        data-bonus-tier={tier}
         {...attrs(
           "bonus_hunt",
           c,
@@ -4384,12 +4398,7 @@ export function BetterBonusHuntStyle({
           openedState ? "opened" : "unopened",
         )}
       >
-        <span
-          className="better-hunt-row-id"
-          {...attrs("bonus_hunt", c, "slotPositionNumber")}
-        >
-          {index + 1}
-        </span>
+        {positionNumber}
         <BetterHuntThumb bonus={bonus} size={38} />
         <span className="better-hunt-row-main">
           <BetterHuntSlotMarquee config={c} enabled={c.animations !== false}>

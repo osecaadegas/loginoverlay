@@ -120,6 +120,7 @@ try {
     const contents = backdrop.querySelectorAll('.better-hunt-image-stats-copy, .better-hunt-image-row, .better-hunt-stats-title, .better-hunt-stats-title h3, .better-hunt-stat-strip');
     const list = panel.querySelector('.better-hunt-list');
     const listTrack = list.querySelector('.better-hunt-list-inner');
+    const firstGroupRows = [...list.querySelector('.better-hunt-list-group').querySelectorAll('.better-hunt-row')];
     return {
       index: Number(host.dataset.case),
       panel: bounds(panel),
@@ -136,6 +137,14 @@ try {
       listGroups: list.querySelectorAll('.better-hunt-list-group').length,
       listAnimation: getComputedStyle(listTrack).animationName,
       listIterations: getComputedStyle(listTrack).animationIterationCount,
+      positionNumberCount: list.querySelectorAll('.better-hunt-row-id').length,
+      tierRows: firstGroupRows.map((row) => ({
+        tier: row.dataset.bonusTier,
+        className: row.className,
+        borderColor: getComputedStyle(row).borderColor,
+        backgroundImage: getComputedStyle(row).backgroundImage,
+        titleColor: getComputedStyle(row.querySelector('.better-hunt-slot-marquee')).color,
+      })),
     };
   }));
   for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
@@ -156,6 +165,19 @@ try {
       assert.equal(item.listGroups, 2, `${label}: looping list duplicates its rows for a seamless handoff`);
       assert.match(item.listAnimation, /better-hunt-marquee-up/, `${label}: list uses the vertical carousel animation`);
       assert.equal(item.listIterations, 'infinite', `${label}: list animation never stops`);
+      assert.equal(item.positionNumberCount, 0, `${label}: Main Stream list does not render position numbers`);
+      const normalRow = item.tierRows.find((row) => row.tier === 'normal');
+      const superRow = item.tierRows.find((row) => row.tier === 'super');
+      const extremeRow = item.tierRows.find((row) => row.tier === 'extreme');
+      assert.ok(normalRow && superRow && extremeRow, `${label}: normal, Super, and Extreme rows render tier metadata`);
+      assert.match(superRow.className, /better-hunt-row--super/, `${label}: Super row receives its tier class`);
+      assert.match(extremeRow.className, /better-hunt-row--extreme/, `${label}: Extreme row receives its tier class`);
+      assert.notEqual(superRow.borderColor, normalRow.borderColor, `${label}: Super row uses its gold border colour`);
+      assert.notEqual(extremeRow.borderColor, normalRow.borderColor, `${label}: Extreme row uses its red border colour`);
+      assert.notEqual(superRow.titleColor, normalRow.titleColor, `${label}: Super title uses its gold colour`);
+      assert.notEqual(extremeRow.titleColor, normalRow.titleColor, `${label}: Extreme title uses its red colour`);
+      assert.notEqual(superRow.backgroundImage, normalRow.backgroundImage, `${label}: Super row has a tier-coloured background`);
+      assert.notEqual(extremeRow.backgroundImage, normalRow.backgroundImage, `${label}: Extreme row has a tier-coloured background`);
     }
   }
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
