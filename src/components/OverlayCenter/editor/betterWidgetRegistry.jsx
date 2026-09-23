@@ -811,6 +811,12 @@ function normalizeZIndexes(instances) {
 
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
+  if (
+    instance.widgetType === "bets" &&
+    instance.config?.displayStyle === "compact_scoreboard"
+  ) {
+    return { ...constraints, minWidth: 200, minHeight: 150 };
+  }
   return instance.widgetType === "bonus_hunt" &&
     instance.config?.orientation === "horizontal"
     ? { ...constraints, minHeight: getHorizontalHuntMinHeight(instance.config), maxHeight: 980 }

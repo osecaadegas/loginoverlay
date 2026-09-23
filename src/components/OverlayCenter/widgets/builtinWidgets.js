@@ -426,7 +426,10 @@ registerWidget({
   component: BetsWidget,
   configPanel: BetsConfig,
   styleConfigKey: "displayStyle",
-  styles: [{ id: "better_bets", icon: "💎", label: "Better Bets" }],
+  styles: [
+    { id: "better_bets", icon: "💎", label: "Better Bets" },
+    { id: "compact_scoreboard", icon: "▦", label: "Compact Scoreboard" },
+  ],
   defaults: {
     displayStyle: "better_bets",
     gameStatus: "idle",

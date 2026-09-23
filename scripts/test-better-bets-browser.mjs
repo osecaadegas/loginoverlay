@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
 
 const baseUrl = process.env.TEST_BASE_URL || 'http://127.0.0.1:3010';
-const browser = await puppeteer.launch({ headless: true });
+const browser = await puppeteer.launch({
+  headless: true,
+  ...(process.env.PUPPETEER_USER_DATA_DIR
+    ? { userDataDir: process.env.PUPPETEER_USER_DATA_DIR }
+    : {}),
+});
 try {
   const page = await browser.newPage();
   const errors = [];
@@ -35,7 +40,7 @@ try {
     if (!scopeUrl) throw new Error('Editor control context was not loaded');
     const { EditorControlContext } = await import(scopeUrl);
     const { default: BetsWidget } = await import('/src/components/OverlayCenter/widgets/bets/BetsWidget.jsx');
-    const { getWidgetStyleElements } = await import('/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js');
+    const { getWidgetStyleElements, getWidgetStyleOptionsForQuickEditor } = await import('/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js');
     const routing = await import('/src/components/OverlayCenter/appearance/v2/appearanceRouting.js');
     await import('/src/components/OverlayCenter/OverlayRenderer.css');
     await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.css');
@@ -44,6 +49,7 @@ try {
       schema: {
         better: getWidgetStyleElements('bets', 'better_bets').map((element) => element.id),
         legacy: getWidgetStyleElements('bets', 'StyleSecaBets').map((element) => element.id),
+        styles: getWidgetStyleOptionsForQuickEditor('bets').map((style) => style.id),
       },
       scopedConfig() {
         let config = { displayStyle: 'better_bets' };
@@ -217,6 +223,7 @@ try {
   assert.notEqual(styles[0][0], styles[2][0], 'Instance appearance does not leak');
   await checkGeometry();
   const schema = await page.evaluate(() => window.betsTest.schema);
+  assert.ok(schema.styles.includes('compact_scoreboard'), 'Compact Scoreboard is available in the quick style picker');
   for (const id of ['cardAmountText', 'poolShareLabel']) {
     assert.ok(schema.better.includes(id), `${id} is editable in Better Bets`);
     assert.ok(!schema.legacy.includes(id), `${id} is not offered in unrelated styles`);
@@ -237,10 +244,58 @@ try {
   assert.equal(await page.$eval('.bet-widget', (el) => el.getAnimations({ subtree: true }).length), 0, 'Reduced motion stops fills and entrance effects');
   assert.equal(await page.$eval('.bets-victory', (el) => getComputedStyle(el).display), 'none');
   await page.emulateMediaFeatures([]);
-  for (const displayStyle of ['v1_list', 'v2_grid', 'v3_grid_2x3', 'StyleSecaBets']) {
+  for (const displayStyle of ['v1_list', 'v2_grid', 'v3_grid_2x3', 'compact_scoreboard', 'StyleSecaBets']) {
     await mount([{ ...base, runtime: 'legacy', config: { displayStyle } }]);
     assert.equal(await page.$('.better-bets-stage'), null, `${displayStyle} keeps its renderer`);
     assert.ok(await page.$('.bets-ov'), `${displayStyle} still renders`);
+  }
+  const compactCases = ['editor', 'obs', 'preview'].map((runtime) => ({
+    width: 230,
+    height: 190,
+    runtime,
+    config: { displayStyle: 'compact_scoreboard', showTimer: true, showFooter: true },
+  }));
+  await mount(compactCases);
+  await new Promise((resolve) => setTimeout(resolve, 650));
+  const compactMeasurements = await page.$$eval('[data-case]', (hosts) => hosts.map((host) => {
+    const root = host.querySelector('.bets-ov--compact-scoreboard');
+    const hostBox = host.getBoundingClientRect();
+    const rootBox = root?.getBoundingClientRect();
+    const cards = root ? [...root.querySelectorAll('.bets-ov__card')] : [];
+    const label = root?.querySelector('.bets-ov__card-label');
+    const percentage = root?.querySelector('.bets-ov__card-pct');
+    const footer = root?.querySelector('.bets-ov__hint');
+    if (!root) return { hasRoot: false, html: host.innerHTML.slice(0, 600) };
+    return {
+      hasRoot: Boolean(root),
+      cardCount: cards.length,
+      statsHidden: getComputedStyle(root.querySelector('.bets-ov__stats')).display,
+      insideFrame: rootBox.left >= hostBox.left - 1 && rootBox.right <= hostBox.right + 1
+        && rootBox.top >= hostBox.top - 1 && rootBox.bottom <= hostBox.bottom + 1,
+      cardsInside: cards.every((card) => {
+        const box = card.getBoundingClientRect();
+        return box.left >= rootBox.left - 1 && box.right <= rootBox.right + 1
+          && box.top >= rootBox.top - 1 && box.bottom <= rootBox.bottom + 1;
+      }),
+      labelFontSize: Number.parseFloat(getComputedStyle(label).fontSize),
+      percentageFontSize: Number.parseFloat(getComputedStyle(percentage).fontSize),
+      footerText: footer?.textContent || '',
+      text: root.textContent,
+    };
+  }));
+  for (const [index, item] of compactMeasurements.entries()) {
+    assert.ok(item.hasRoot, `${compactCases[index].runtime}: compact scoreboard renderer is selected`);
+    assert.equal(item.cardCount, 6, `${compactCases[index].runtime}: all six live choices remain visible`);
+    assert.equal(item.statsHidden, 'none', `${compactCases[index].runtime}: redundant stats do not consume small-screen space`);
+    assert.ok(item.insideFrame && item.cardsInside, `${compactCases[index].runtime}: compact scoreboard fits 230x190 (${JSON.stringify(item)})`);
+    assert.ok(item.labelFontSize >= 11, `${compactCases[index].runtime}: choice labels remain readable`);
+    assert.ok(item.percentageFontSize >= 15, `${compactCases[index].runtime}: percentages remain readable`);
+    assert.match(item.footerText, /Bet: !pick <number>/, `${compactCases[index].runtime}: compact command hint remains available`);
+  }
+  assert.equal(compactMeasurements[0].text, compactMeasurements[1].text, 'Compact editor and OBS use the same live data');
+  assert.equal(compactMeasurements[0].text, compactMeasurements[2].text, 'Compact preview matches the live renderer');
+  if (process.env.BETS_COMPACT_SCREENSHOT) {
+    await (await page.$('[data-case="0"]')).screenshot({ path: process.env.BETS_COMPACT_SCREENSHOT });
   }
   await mount([{ width: 360, height: 510, config: { layoutMode: 'cards', columns: 2 } }, base, { ...base, live: { gameStatus: 'result', winnerOption: 2 } }]);
   await checkGeometry();

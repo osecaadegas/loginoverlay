@@ -1215,6 +1215,15 @@ export function getBetterWidgetMeta(type) {
   return BETTER_WIDGETS.find((item) => item.type === type) || null;
 }
 
+const BETS_DISPLAY_STYLES = new Set([
+  "v1_list",
+  "v2_grid",
+  "v3_grid_2x3",
+  "compact_scoreboard",
+  "StyleSecaBets",
+  "better_bets",
+]);
+
 function normalizeBetterNavbarConfig(config = {}, merged = {}) {
   const defaults = DEFAULT_BETTER_CONFIG.navbar;
   const originalCasinoCommand = String(config.casinoCommand || "").trim();
@@ -1495,9 +1504,12 @@ export function ensureBetterWidgetConfig(type, config = {}) {
     ...defaults,
     ...(type === "chat" ? chatStyleDefaults(config.chatStyle) : {}),
     ...config,
-    ...(meta && type !== "tournament" &&
-      !(type === "chat" && isBetterChatStyle(config.chatStyle))
-      ? { [meta.styleKey]: meta.styleId } : {}),
+    ...(meta &&
+      type !== "tournament" &&
+      !(type === "chat" && isBetterChatStyle(config.chatStyle)) &&
+      !(type === "bets" && BETS_DISPLAY_STYLES.has(config.displayStyle))
+      ? { [meta.styleKey]: meta.styleId }
+      : {}),
   };
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);

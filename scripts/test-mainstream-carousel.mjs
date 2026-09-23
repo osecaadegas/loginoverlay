@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import puppeteer from 'puppeteer';
@@ -20,7 +19,7 @@ try {
   const { createBetterInstance, renderBetterWidgetInstance } = await server.ssrLoadModule(
     '/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx',
   );
-  const art = `data:image/webp;base64,${readFileSync(new URL('../public/player.webp', import.meta.url)).toString('base64')}`;
+  const art = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="96" height="144"%3E%3Crect width="96" height="144" fill="%230b87a0"/%3E%3C/svg%3E';
   const bonuses = Array.from({ length: 6 }, (_, index) => ({
     id: `containment-${index}`,
     slot_name: index ? `Bonus ${index + 1}` : 'A Very Long Bonus Hunt Slot Name',
@@ -88,7 +87,13 @@ try {
     return `<div data-case="${index}" style="width:${width}px;height:1000px">${renderToStaticMarkup(widget)}</div>`;
   }).join('');
 
-  browser = await puppeteer.launch({ headless: true });
+  browser = await puppeteer.launch({
+    headless: true,
+    args: ['--disable-gpu'],
+    ...(process.env.PUPPETEER_USER_DATA_DIR
+      ? { userDataDir: process.env.PUPPETEER_USER_DATA_DIR }
+      : {}),
+  });
   const page = await browser.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -113,6 +118,8 @@ try {
       return { x, y, width, height, right, bottom };
     };
     const contents = backdrop.querySelectorAll('.better-hunt-image-stats-copy, .better-hunt-image-row, .better-hunt-stats-title, .better-hunt-stats-title h3, .better-hunt-stat-strip');
+    const list = panel.querySelector('.better-hunt-list');
+    const listTrack = list.querySelector('.better-hunt-list-inner');
     return {
       index: Number(host.dataset.case),
       panel: bounds(panel),
@@ -125,6 +132,10 @@ try {
         parentMinWidth: getComputedStyle(element.parentElement).minWidth,
       })),
       imageLoaded: [...backdrop.querySelectorAll('img')].every((img) => img.naturalWidth > 0),
+      listLoop: list.dataset.loop,
+      listGroups: list.querySelectorAll('.better-hunt-list-group').length,
+      listAnimation: getComputedStyle(listTrack).animationName,
+      listIterations: getComputedStyle(listTrack).animationIterationCount,
     };
   }));
   for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
@@ -141,8 +152,19 @@ try {
         `${label}: slot text and every stat row fit inside their backdrop (${JSON.stringify({ content, backdrop: item.backdrop })})`);
       }
       assert.ok(item.imageLoaded, `${label}: slot artwork renders`);
+      assert.equal(item.listLoop, 'infinite', `${label}: overflowing Main Stream list enables its infinite loop`);
+      assert.equal(item.listGroups, 2, `${label}: looping list duplicates its rows for a seamless handoff`);
+      assert.match(item.listAnimation, /better-hunt-marquee-up/, `${label}: list uses the vertical carousel animation`);
+      assert.equal(item.listIterations, 'infinite', `${label}: list animation never stops`);
     }
   }
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  assert.deepEqual(
+    await page.$$eval('.better-hunt-list-inner', (tracks) => tracks.map((track) => getComputedStyle(track).animationName)),
+    Array(cases.length).fill('none'),
+    'Reduced motion disables every Main Stream list animation',
+  );
+  await page.emulateMediaFeatures([]);
   assert.deepEqual(errors, [], 'No browser runtime errors');
   if (process.env.CAROUSEL_SCREENSHOT) {
     await page.setViewport({ width: 1440, height: 1000 });

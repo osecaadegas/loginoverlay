@@ -539,6 +539,8 @@ function applyTournamentPreviewSample(config = {}, slotCatalog) {
 function getBetsPreviewFrame(config) {
   if (config.displayStyle === "StyleSecaBets")
     return { width: 400, height: 510 };
+  if (config.displayStyle === "compact_scoreboard")
+    return { width: 260, height: 190 };
   const isGrid = ["v2_grid", "v3_grid_2x3", "StyleSecaBets"].includes(
     config.displayStyle,
   );

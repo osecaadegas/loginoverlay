@@ -244,7 +244,7 @@ try {
     slot_requests: ["v1_minimal", "v2_card_stack", "v3_compact"],
     bh_stats: ["default", "metal", "glass"],
     bonus_buys: ["v1", "v2_neon", "v3_minimal"],
-    bets: ["v1_list", "v2_grid", "v3_grid_2x3", "StyleSecaBets"],
+    bets: ["v1_list", "v2_grid", "v3_grid_2x3", "compact_scoreboard", "StyleSecaBets"],
     container: ["default"],
   };
   for (const [widgetType, styleIds] of Object.entries(runtimeStyleCoverage)) {

@@ -3,6 +3,7 @@
  *
  * Three themes: dark glass · grey · white
  * Layouts: v1_list (horizontal bars) · v2_grid (vertical fill cards) · v3_grid_2x3 (wide 2x3 cards)
+ *          compact_scoreboard (small-screen, high-legibility score rows)
  * Animations: entry stagger · bar shimmer · leading pulse · winner pop
  */
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -32,6 +33,7 @@ const BETS_VICTORY_SHARDS = Array.from({ length: 18 }, (_, index) => ({
 
 function getGridCols(count, layout) {
   if (layout === "StyleSecaBets") return 2;
+  if (layout === "compact_scoreboard") return 2;
   if (layout === "v3_grid_2x3") return 3;
   if (count <= 6) return 2;
   if (count <= 9) return 3;
@@ -419,15 +421,22 @@ function resolveBetsCardTextStyle({ isStyleSeca, optionRowStyle }) {
 
 function resolveBetsCardFillStyle({
   displayFillH,
+  isCompactScoreboard,
   isStyleSeca,
   progressFill,
   progressStyle,
 }) {
   const styleSecaBackground = `linear-gradient(180deg, rgba(242,184,75,0.10) 0%, ${progressFill} 76%, ${progressFill} 100%)`;
   const regularBackground = `linear-gradient(180deg, transparent 0%, ${progressFill} 100%)`;
+  const compactBackground = `linear-gradient(90deg, color-mix(in srgb, ${progressFill} 38%, transparent), transparent)`;
   return {
-    height: `${displayFillH}%`,
-    background: isStyleSeca ? styleSecaBackground : regularBackground,
+    width: isCompactScoreboard ? `${displayFillH}%` : undefined,
+    height: isCompactScoreboard ? "100%" : `${displayFillH}%`,
+    background: isCompactScoreboard
+      ? compactBackground
+      : isStyleSeca
+        ? styleSecaBackground
+        : regularBackground,
     borderRadius: progressStyle.borderRadius,
     opacity: isStyleSeca ? 0.86 : undefined,
     boxShadow: isStyleSeca ? `0 -10px 22px ${progressFill}44` : undefined,
@@ -640,6 +649,7 @@ function BetsGridOptionCard({ option, index, context }) {
         {...context.partAttrs("progressBar", progressStateId)}
         style={resolveBetsCardFillStyle({
           displayFillH: displayFillHeight,
+          isCompactScoreboard: context.isCompactScoreboard,
           isStyleSeca: context.isStyleSeca,
           progressFill,
           progressStyle,
@@ -708,46 +718,58 @@ function BetsWidget({ config, allWidgets }) {
   const layout = c.displayStyle || "v1_list";
   const scopedPartAttrs = (partId, stateId) => partAttrs(partId, stateId, c);
   const isStyleSeca = layout === "StyleSecaBets";
+  const isCompactScoreboard = layout === "compact_scoreboard";
   const font = resolveBetsFont(c, isStyleSeca);
   const headingFont = c.headingFont || font;
   const numberFont = c.numberFont || font;
   const baseFontSize = Number(c.fontSize) || 14;
   const headingScale = Number(c.headingScale) || 1.16;
-  const compactHeadingScale = styleSecaOr(
-    isStyleSeca,
-    Math.min(headingScale, 0.96),
-    headingScale,
-  );
-  const titleFontSize = Math.round(baseFontSize * compactHeadingScale);
-  const statusFontSize = scaledFontSize(
+  const compactHeadingScale = isCompactScoreboard
+    ? Math.min(headingScale, 1.05)
+    : styleSecaOr(isStyleSeca, Math.min(headingScale, 0.96), headingScale);
+  const titleFontSize = isCompactScoreboard
+    ? Math.max(13, Math.round(baseFontSize * compactHeadingScale))
+    : Math.round(baseFontSize * compactHeadingScale);
+  const resolvedStatusFontSize = scaledFontSize(
     baseFontSize,
     styleSecaOr(isStyleSeca, 0.66, 0.76),
     9,
   );
+  const statusFontSize = isCompactScoreboard
+    ? Math.max(10, resolvedStatusFontSize)
+    : resolvedStatusFontSize;
   const statFontSize = scaledFontSize(
     baseFontSize,
     styleSecaOr(isStyleSeca, 0.78, 0.92),
     10,
   );
-  const footerFontSize = scaledFontSize(
+  const resolvedFooterFontSize = scaledFontSize(
     baseFontSize,
     styleSecaOr(isStyleSeca, 0.6, 0.76),
     8,
   );
-  const cardNumberFontSize = scaledFontSize(
+  const footerFontSize = isCompactScoreboard
+    ? Math.max(9, resolvedFooterFontSize)
+    : resolvedFooterFontSize;
+  const resolvedCardNumberFontSize = scaledFontSize(
     baseFontSize,
     styleSecaOr(isStyleSeca, 0.72, 0.92),
     10,
   );
+  const cardNumberFontSize = isCompactScoreboard
+    ? Math.max(11, resolvedCardNumberFontSize)
+    : resolvedCardNumberFontSize;
   const cardRangeFontSize = scaledFontSize(baseFontSize, 0.8, 10);
-  const cardRangeFontCss = styleSecaOr(
-    isStyleSeca,
-    `${cardRangeFontSize}px`,
-    `${baseFontSize}px`,
-  );
-  const cardPercentageFontSize = Math.round(
-    baseFontSize * styleSecaOr(isStyleSeca, 1.02, 1.2),
-  );
+  const cardRangeFontCss = isCompactScoreboard
+    ? `${Math.max(11, cardRangeFontSize)}px`
+    : styleSecaOr(
+        isStyleSeca,
+        `${cardRangeFontSize}px`,
+        `${baseFontSize}px`,
+      );
+  const cardPercentageFontSize = isCompactScoreboard
+    ? Math.max(15, Math.round(baseFontSize * 1.05))
+    : Math.round(baseFontSize * styleSecaOr(isStyleSeca, 1.02, 1.2));
   const cardCommandFontSize = scaledFontSize(
     baseFontSize,
     styleSecaOr(isStyleSeca, 0.56, 0.7),
@@ -1219,7 +1241,7 @@ function BetsWidget({ config, allWidgets }) {
   }
 
   const isGrid2x3 = layout === "v3_grid_2x3";
-  const isGrid = layout === "v2_grid" || isGrid2x3 || isStyleSeca;
+  const isGrid = layout === "v2_grid" || isGrid2x3 || isStyleSeca || isCompactScoreboard;
   const gridCols = getGridCols(visibleOptions.length, layout);
 
   const getOptColor = (i) =>
@@ -1231,6 +1253,7 @@ function BetsWidget({ config, allWidgets }) {
     pcts,
     maxBet,
     isStyleSeca,
+    isCompactScoreboard,
     winnerIdx,
     leadingIdx,
     status,
@@ -1322,6 +1345,7 @@ function BetsWidget({ config, allWidgets }) {
         isGrid && "bets-ov--grid",
         isGrid2x3 && "bets-ov--grid-2x3",
         isStyleSeca && "bets-ov--styleseca",
+        isCompactScoreboard && "bets-ov--compact-scoreboard",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -1594,7 +1618,9 @@ function BetsWidget({ config, allWidgets }) {
           {...scopedPartAttrs("footerInstruction")}
           style={footerStyle}
         >
-          Type <strong>{cmd} &lt;number&gt;</strong> to bet
+          {isCompactScoreboard ? "Bet: " : "Type "}
+          <strong>{cmd} &lt;number&gt;</strong>
+          {isCompactScoreboard ? "" : " to bet"}
         </div>
       )}
       {showVictory && (

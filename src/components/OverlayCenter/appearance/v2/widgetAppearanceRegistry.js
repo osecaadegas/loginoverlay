@@ -1920,6 +1920,33 @@ export const widgetAppearanceRegistry = Object.freeze({
         previewStateIds: ["default", "leading", "winner", "loser", "closed"],
       }),
       freezeStyle({
+        id: "compact_scoreboard",
+        label: "Compact Scoreboard",
+        description:
+          "High-legibility two-column bet board for small overlay panels.",
+        capabilities: {
+          ...BASE_QUICK_CAPABILITIES,
+          progressBar: true,
+          positiveNegativeColours: true,
+          columns: true,
+          rows: true,
+          barDimensions: true,
+        },
+        elementIds: [
+          "widgetBackground",
+          "header",
+          "status",
+          "betCards",
+          "individualBetCard",
+          "cardNumberBadge",
+          "cardRangeText",
+          "cardPercentageText",
+          "progressBar",
+          "footerInstruction",
+        ],
+        previewStateIds: ["default", "leading", "winner", "loser", "closed"],
+      }),
+      freezeStyle({
         id: "StyleSecaBets",
         label: "StyleSeca Bets",
         description:
