@@ -59,6 +59,7 @@ import {
 import BetsWidget from "../widgets/bets/BetsWidget";
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme } from "../widgets/shared/colourThemePalettes";
 import { applyWidgetColourTheme, getSelectedWidgetColourTheme } from "./widgetColourThemes";
+import { getWidgetStyleOptionsForQuickEditor } from "../appearance/v2/widgetAppearanceRegistry";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import {
   BetterBackgroundStyle,
@@ -141,6 +142,10 @@ const QUICK_COLORS = [
   "#64748b",
   "#1e293b",
 ];
+
+const BETS_STYLE_OPTIONS = getWidgetStyleOptionsForQuickEditor("bets").map(
+  ({ id, label }) => ({ value: id, label }),
+);
 
 const COLOUR_THEME_ICONS = {
   neon: Zap, metallic: Layers, sunset: Sunset, cyberpunk: Zap, crimson: Flame, emerald: Waves,
@@ -2637,6 +2642,14 @@ function BetterBetsControls({ config, onChange }) {
       />
       {matchesControlTab(tab, "theme") && (
         <>
+          <Section title="Bets Style" icon={<Layers size={12} />}>
+            <SelectRow
+              label="Style"
+              value={c.displayStyle}
+              options={BETS_STYLE_OPTIONS}
+              onChange={(displayStyle) => set({ displayStyle })}
+            />
+          </Section>
           <Section title="Widget Opacity" icon={<Eye size={12} />}>
             <SliderRow
               label="Opacity"

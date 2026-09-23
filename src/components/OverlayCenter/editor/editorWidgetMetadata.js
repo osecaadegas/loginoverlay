@@ -32,7 +32,7 @@ const WIDGET_METADATA = {
     keywords: "bets prediction results",
     source: "Bets",
     route: "/overlay-center/widgets/bets",
-    simpleSections: ["Colour Theme", "Display Mode", "Orientation", "Toggles"],
+    simpleSections: ["Bets Style", "Colour Theme", "Display Mode", "Orientation", "Toggles"],
   },
   chat: {
     category: "Community",

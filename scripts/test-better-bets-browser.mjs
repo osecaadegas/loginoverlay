@@ -83,7 +83,7 @@ try {
           if (!item.controls) return React.cloneElement(frame, { key: index });
           return React.createElement(React.Fragment, { key: index }, frame,
             React.createElement('aside', { style: { width: 300 } },
-              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: 'layout', simpleSections: ['Orientation'], sections: { Orientation: true } } },
+              React.createElement(EditorControlContext.Provider, { value: { mode: item.controls, tab: 'layout', simpleSections: item.simpleSections || ['Orientation'], sections: { Orientation: true, 'Bets Style': true }, onTab() {}, onSection() {} } },
                 React.createElement(BetterWidgetControls, { type: 'bets', config: instance.config, onChange(nextConfig) {
                   window.betsTest.updatedCases = cases.map((current, i) => i === index ? { ...current, config: nextConfig } : current);
                   window.betsTest.mount(window.betsTest.updatedCases);
@@ -231,6 +231,26 @@ try {
   const scopedConfig = await page.evaluate(() => window.betsTest.scopedConfig());
   await mount([{ ...base, config: { ...base.config, ...scopedConfig } }]);
   assert.deepEqual(await page.$$eval('.bar-amount, .bets-grid-heading', (els) => [...new Set(els.map((el) => getComputedStyle(el).color))]), ['rgb(238, 204, 170)'], 'Canonical scoped appearance edits survive save/reload and render');
+
+  const styleSelector = '[data-control-section="Bets Style"] select';
+  for (const controls of ['simple', 'advanced']) {
+    await mount([{ width: 320, height: 300, controls, simpleSections: ['Bets Style'], config: { displayStyle: 'better_bets' } }]);
+    if (controls === 'advanced' && !(await page.$(styleSelector))) {
+      await page.click('.bp-controls--bets .bp-panel-tabs[data-level="primary"] button[title="Appearance"]');
+      await page.waitForSelector(styleSelector);
+    }
+    assert.ok(await page.$(styleSelector), `${controls}: exposes the Bets style selector`);
+    assert.ok(
+      await page.$eval(styleSelector, (select) => [...select.options].some((option) => option.value === 'compact_scoreboard' && option.textContent === 'Compact Scoreboard')),
+      `${controls}: lists Compact Scoreboard by name`,
+    );
+    await page.select(styleSelector, 'compact_scoreboard');
+    await page.waitForSelector('[data-case="0"] .bets-ov--compact-scoreboard');
+    const compactSavedCases = await page.evaluate(() => JSON.parse(JSON.stringify(window.betsTest.updatedCases)));
+    assert.equal(compactSavedCases[0].config.displayStyle, 'compact_scoreboard', `${controls}: style selection persists in widget config`);
+    await mount(compactSavedCases.map((item) => ({ ...item, controls: undefined, runtime: 'obs' })));
+    assert.ok(await page.$('[data-case="0"] .bets-ov--compact-scoreboard'), `${controls}: saved Compact Scoreboard renders in OBS`);
+  }
 
   for (const fillStyle of ['liquid', 'solid', 'pulse', 'scanline', 'plasma']) {
     await mount([{ ...base, config: { ...base.config, animations: true, fillStyle } }]);
