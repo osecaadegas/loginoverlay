@@ -68,7 +68,7 @@ const VISUAL_KEYS = [...new Set([
   ...Object.keys(BROADCAST_CHAT_DEFAULTS),
   ...Object.keys(COMMUNITY_CHAT_DEFAULTS),
   "textureStrength", "subElements", "elements", "appearanceV2",
-  "colourTheme",
+  "colourTheme", "themeEffects",
   "__appearanceExplicitSubElements",
 ])];
 

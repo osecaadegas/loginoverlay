@@ -79,6 +79,7 @@ import {
   normalizeBetterCoordinate,
   reorderBetterWidgetLayers,
 } from "./betterWidgetGeometry";
+import { ThemeEffectsLayer } from "../../../effects/ThemeEffects";
 import { downloadWidgetControlsPreset } from "./widgetControlsPreset";
 import "../OverlayRenderer.css";
 import "./BetterWidgetPackages.css";
@@ -2040,6 +2041,12 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
                 }}
                 onPointerDown={() => setSelectedInstanceId("")}
               >
+                <ThemeEffectsLayer
+                  instances={layout.instances}
+                  width={BETTER_CANVAS.width}
+                  height={BETTER_CANVAS.height}
+                  runtime="editor"
+                />
                 {gridVisible && (
                   <>
                     <span className="better-editor-canvas-line better-editor-canvas-line--x" />
@@ -2058,6 +2065,8 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
                       <div
                         key={instance.instanceId}
                         className={`better-editor-canvas-instance${selected ? " is-selected" : ""}${instance.locked ? " is-locked" : ""}${isBackground ? " is-background" : ""}`}
+                        data-effect-target-id={instance.instanceId}
+                        data-effect-widget-type={instance.widgetType}
                         style={{
                           left: instance.x,
                           top: instance.y,

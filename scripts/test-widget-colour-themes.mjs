@@ -21,6 +21,12 @@ assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multipl
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome'];
 assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
+assert.deepEqual(
+  [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
+  ['#071018', '#d8a43a', '#7e1518', '#f4e3ba'],
+  'Gladiator keeps its dark Roman background, antique gold face, crimson accent and warm ivory text',
+);
+assert.equal(getHuntColourTheme('theme_gladiator').steelHi, '#f4e3ba', 'Gladiator Bonus Hunt uses warm ivory on dark surfaces');
 for (const [key, surface] of [['gradient', '#131a4a'], ['matte', '#181d24']]) {
   assert.equal(getWidgetColourTheme(key).surface, surface, `${key}: retain saved palette`);
   assert.equal(getHuntColourTheme(`theme_${key}`).panelMid, surface, `${key}: retain saved Hunt appearance`);
@@ -29,7 +35,7 @@ const luminance = color => color.slice(1).match(/../g).map(hex => {
   const channel = parseInt(hex, 16) / 255;
   return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
-for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'sunset', 'cyberpunk'].includes(theme.key))) {
+for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'sunset', 'cyberpunk'].includes(theme.key) && theme.key !== 'gladiator')) {
   for (const token of ['text', 'muted', 'accent']) {
     for (const surface of ['background', 'surface', 'raised']) {
       const values = [luminance(theme[token]), luminance(theme[surface])].sort((a, b) => b - a);
@@ -37,6 +43,13 @@ for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'sunset'
     }
   }
 }
+const gladiator = getWidgetColourTheme('gladiator');
+const contrast = (a, b) => {
+  const values = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+};
+assert(contrast(gladiator.text, gladiator.background) >= 4.5, 'Gladiator ivory text is readable on its dark background');
+assert(contrast('#21130c', gladiator.raised) >= 4.5, 'Gladiator dark text is readable on antique gold');
 
 const baseUrl = process.env.TEST_BASE_URL || 'http://127.0.0.1:3010';
 const browser = await puppeteer.launch({ headless: true });
@@ -182,6 +195,21 @@ try {
       const result = await page.evaluate(() => ({ config: window.themeTest.lastConfig, style: window.themeTest.appearance(), selected: document.querySelector('.bp-theme-grid [aria-pressed="true"]')?.dataset.colourThemeKey }));
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
+      if (theme === 'gladiator') {
+        const typography = await page.$$eval(
+          '.better-widget-colour-scope[data-colour-theme="gladiator"] *:not(svg):not(path)',
+          elements => elements
+            .filter(element => [...element.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()))
+            .filter(element => {
+              const bounds = element.getBoundingClientRect();
+              return bounds.width > 0 && bounds.height > 0;
+            })
+            .map(element => getComputedStyle(element).color),
+        );
+        assert(typography.length > 0 || ['background', 'slideshow_frame'].includes(type), `${type}: Gladiator has rendered typography`);
+        const allowed = new Set(['rgb(33, 19, 12)', 'rgb(244, 227, 186)']);
+        assert(typography.every(color => allowed.has(color)), `${type}: Gladiator typography uses contextual dark or ivory text`);
+      }
       if (type === 'bets') assert.equal(await page.$eval('.better-bets-stage', stage => stage.dataset.theme), theme, `${theme}: Bets must not fall back to Neon`);
       appearances.add(JSON.stringify(result.style));
       await mount(type, result.config);

@@ -5,7 +5,6 @@ import {
 } from "../shared/appearanceStyles";
 import {
   countCompletedSlotBingoSquares,
-  countSlotBingoLines,
   formatSlotBingoMultiplier,
   getSlotBingoSquareCount,
   normalizeSlotBingoConfig,
@@ -17,8 +16,6 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
   const squareCount = getSlotBingoSquareCount(c.boardRows);
   const visibleSquares = c.squares.slice(0, squareCount);
   const completed = countCompletedSlotBingoSquares(c.squares, c.boardRows);
-  const lines = countSlotBingoLines(c.squares, c.boardRows);
-  const footer = c.footerMode === "lines" ? `Lines: ${lines}` : `BINGO x${lines}`;
   const rootStyle = {
     "--sb-bg": c.backgroundColor,
     "--sb-panel": c.panelColor,
@@ -37,7 +34,6 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
     "--sb-title-size": `${c.titleSize}px`,
     "--sb-square-size": `${c.squareTextSize}px`,
     "--sb-multiplier-size": `${c.multiplierTextSize}px`,
-    "--sb-footer-size": `${c.footerSize}px`,
     "--sb-font": c.fontFamily,
     "--sb-rows": c.boardRows,
     ...subElementStyle(c, "container", {}),
@@ -130,23 +126,6 @@ export default function SlotBingoWidget({ config = {}, widgetId }) {
           );
         })}
       </div>
-
-      {c.showFooter && (
-        <footer
-          className="slot-bingo-widget__footer"
-          style={subElementStyle(c, "footer", {})}
-          {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId: "footer" })}
-        >
-          <span aria-hidden="true" />
-          <strong
-            style={subElementStyle(c, "footerValue", {})}
-            {...appearanceAttrs({ config: c, widgetId, widgetType: "slot_bingo", elementId: "footerValue" })}
-          >
-            {footer}
-          </strong>
-          <span aria-hidden="true" />
-        </footer>
-      )}
     </section>
   );
 }

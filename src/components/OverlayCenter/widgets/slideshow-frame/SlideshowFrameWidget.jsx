@@ -127,6 +127,8 @@ export default function SlideshowFrameWidget({
     "--bsf-panel-hi": c.panelHi || "#0c1c40",
     "--bsf-bg": c.backgroundColor || "#0a1734",
     "--bsf-panel-lo": c.panelLo || "#081228",
+    "--bsf-text": c.textColor || "#f8fafc",
+    "--bsf-muted": c.mutedColor || "#9dbdf2",
     "--bsf-radius": `${clampNumber(c.radius, 0, 80, 12)}px`,
     "--bsf-border": `${clampNumber(c.borderWidth, 0, 10, 1)}px`,
     "--bsf-pad": `${clampNumber(c.padding, 0, 60, 8)}px`,
@@ -141,6 +143,7 @@ export default function SlideshowFrameWidget({
       data-fit={fit}
       data-transition={transition}
       data-connect-four={connectFourActive ? "active" : "idle"}
+      data-colour-theme={c.colourTheme || undefined}
       style={rootStyle}
     >
       <span className="better-slideshow-frame__sheen" />

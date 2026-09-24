@@ -766,14 +766,14 @@ export const widgetAppearanceRegistry = Object.freeze({
           elementIds: [
             "container", "header", "title", "progressBadge", "board",
             "square", "incompleteSquare", "completedSquare", "freeSquare",
-            "squareLabel", "squareMultiplier", "completionIcon", "footer", "footerValue",
+            "squareLabel", "squareMultiplier", "completionIcon",
           ],
         },
       ),
     ],
     responsive: {
       minWidth: 340,
-      minHeight: 420,
+      minHeight: 260,
       maxWidth: 1000,
       maxHeight: 1080,
     },
@@ -825,16 +825,6 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: "Check and star icons",
         kind: "badge",
         capabilities: ["surface", "border", "shadow", "shape", "spacing", "typography", "stateColor"],
-      }),
-      footer: Object.freeze({
-        label: "Footer",
-        kind: "surface",
-        capabilities: ["surface", "border", "shadow", "shape", "spacing"],
-      }),
-      footerValue: Object.freeze({
-        label: "Footer value",
-        kind: "text",
-        capabilities: ["typography", "stateColor"],
       }),
     },
   }),

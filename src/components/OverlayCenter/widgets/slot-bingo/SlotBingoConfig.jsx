@@ -13,7 +13,6 @@ import {
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme } from "../shared/colourThemePalettes";
 import {
   countCompletedSlotBingoSquares,
-  countSlotBingoLines,
   formatSlotBingoMultiplier,
   getSlotBingoSquareCount,
   SLOT_BINGO_DEFAULT_CONFIG,
@@ -41,7 +40,6 @@ const TYPE_FIELDS = [
   ["titleSize", "Title", 18, 56, "px"],
   ["squareTextSize", "Square label", 9, 28, "px"],
   ["multiplierTextSize", "Payout multiplier", 7, 22, "px"],
-  ["footerSize", "Footer", 16, 44, "px"],
 ];
 
 const FONT_OPTIONS = [
@@ -64,7 +62,6 @@ export default function SlotBingoConfig({ config = {}, onChange }) {
   const squareCount = getSlotBingoSquareCount(c.boardRows);
   const visibleSquares = c.squares.slice(0, squareCount);
   const completed = countCompletedSlotBingoSquares(c.squares, c.boardRows);
-  const lines = countSlotBingoLines(c.squares, c.boardRows);
   const set = (patch) => onChange(normalizeSlotBingoConfig({ ...c, ...patch }));
 
   const updateSquare = (index, patch) => {
@@ -204,13 +201,9 @@ export default function SlotBingoConfig({ config = {}, onChange }) {
       {activeTab === "display" && (
         <div className="slot-bingo-config__tab-panel slot-bingo-config__display-grid" role="tabpanel">
           <section className="slot-bingo-config__section">
-            <div className="slot-bingo-config__section-head"><div><span>Content</span><h3>Labels and footer</h3></div></div>
+            <div className="slot-bingo-config__section-head"><div><span>Content</span><h3>Title and typeface</h3></div></div>
             <label className="slot-bingo-config__field"><span>Widget title</span><input value={c.title} maxLength={32} onChange={(event) => set({ title: event.target.value })} /></label>
             <label className="slot-bingo-config__field"><span>Typeface</span><select value={c.fontFamily} onChange={(event) => set({ fontFamily: event.target.value })}>{!FONT_OPTIONS.some(([value]) => value === c.fontFamily) && <option value={c.fontFamily}>Custom font</option>}{FONT_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-            <div className="slot-bingo-config__choice-cards" role="group" aria-label="Footer format">
-              <button type="button" className={c.footerMode === "bingo" ? "is-active" : ""} onClick={() => set({ footerMode: "bingo" })}><span>Footer format</span><strong>BINGO x{lines}</strong></button>
-              <button type="button" className={c.footerMode === "lines" ? "is-active" : ""} onClick={() => set({ footerMode: "lines" })}><span>Footer format</span><strong>Lines: {lines}</strong></button>
-            </div>
           </section>
 
           <section className="slot-bingo-config__section">
@@ -218,7 +211,6 @@ export default function SlotBingoConfig({ config = {}, onChange }) {
             <div className="slot-bingo-config__toggle-list">
               {[
                 ["showProgress", "Progress counter", `Show ${completed} / ${squareCount} in the header`],
-                ["showFooter", "Bingo footer", "Show the calculated completed-line total"],
                 ["showMultipliers", "Payout multipliers", "Show the editable x value on every challenge"],
                 ["showCompletionIcons", "Completion icons", "Show checks and the FREE star inside squares"],
               ].map(([key, label, hint]) => (

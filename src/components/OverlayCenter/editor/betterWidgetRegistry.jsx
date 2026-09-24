@@ -333,7 +333,7 @@ const MOCK_WIDGET_CONFIGS = {
 
 const LIVE_DATA_KEYS = Object.freeze({
   slot_bingo: [
-    "title", "boardRows", "footerMode", "showProgress", "showFooter",
+    "title", "boardRows", "showProgress",
     "showMultipliers", "showCompletionIcons", "squares",
   ],
   tournament: [
@@ -592,7 +592,7 @@ const CONTROL_SCHEMAS = {
 const SIZE_CONSTRAINTS = {
   slot_bingo: {
     minWidth: 340,
-    minHeight: 420,
+    minHeight: 260,
     maxWidth: 1000,
     maxHeight: 1080,
   },
@@ -1196,5 +1196,19 @@ export function renderBetterWidgetInstance({
           allWidgets.find((item) => item.widget_type === "giveaway"),
     } : {}),
   };
-  return <WidgetComponent {...commonProps} />;
+  const colourThemeKey = String(
+    widget.config.colourTheme ||
+    (instance.widgetType === "bets" ? widget.config.theme || widget.config.betTheme : "") ||
+    (instance.widgetType === "bonus_hunt" ? widget.config.colour : "") ||
+    "",
+  ).replace(/^theme_/, "");
+  return (
+    <div
+      className="better-widget-colour-scope"
+      data-colour-theme={colourThemeKey || undefined}
+      data-widget-type={instance.widgetType}
+    >
+      <WidgetComponent {...commonProps} />
+    </div>
+  );
 }

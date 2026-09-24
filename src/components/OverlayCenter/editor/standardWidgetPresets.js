@@ -38,7 +38,7 @@ export const STANDARD_BETTER_WIDGET_GEOMETRY = Object.freeze({
     height: 203.13432835820896,
     zIndex: 60,
   },
-  slot_bingo: { x: 650, y: 170, width: 600, height: 700, zIndex: 64 },
+  slot_bingo: { x: 650, y: 170, width: 600, height: 560, zIndex: 64 },
   connect_four: { x: 650, y: 135, width: 620, height: 790, zIndex: 65 },
   raid_shoutout: { x: 640, y: 360, width: 640, height: 360, zIndex: 70 },
 });

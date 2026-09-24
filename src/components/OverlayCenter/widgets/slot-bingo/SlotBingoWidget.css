@@ -8,8 +8,8 @@
   isolation: isolate;
   container-type: size;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: clamp(8px, 1.5cqw, 14px);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(5px, 1.2cqw, 12px);
   width: 100%;
   height: 100%;
   min-width: 0;
@@ -61,7 +61,7 @@
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
-  padding: clamp(4px, 1cqw, 9px) clamp(4px, 1.3cqw, 12px);
+  padding: clamp(2px, min(1cqw, 1.2cqh), 9px) clamp(4px, 1.3cqw, 12px);
   border-bottom: 1px solid color-mix(in srgb, var(--sb-border) 52%, transparent);
 }
 
@@ -69,7 +69,7 @@
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  font-size: clamp(18px, 5.1cqw, var(--sb-title-size));
+  font-size: clamp(14px, min(5.1cqw, 6cqh), var(--sb-title-size));
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.055em;
@@ -88,10 +88,10 @@
   justify-content: center;
   gap: 5px;
   flex: 0 0 auto;
-  min-width: clamp(78px, 17cqw, 126px);
-  padding: clamp(6px, 1.2cqw, 10px) clamp(10px, 2cqw, 18px);
+  min-width: clamp(64px, 17cqw, 126px);
+  padding: clamp(4px, min(1.2cqw, 1.4cqh), 10px) clamp(8px, 2cqw, 18px);
   color: var(--sb-muted);
-  font-size: clamp(12px, 2.8cqw, 20px);
+  font-size: clamp(10px, min(2.8cqw, 4cqh), 20px);
   font-weight: 800;
   line-height: 1;
   border: 1px solid color-mix(in srgb, var(--sb-secondary) 78%, var(--sb-border));
@@ -121,10 +121,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(3px, .8cqh, 8px);
+  gap: clamp(1px, .65cqh, 8px);
   min-width: 0;
   min-height: 0;
-  padding: clamp(4px, 1.1cqw, 10px);
+  padding: clamp(2px, min(1.1cqw, 1.2cqh), 10px);
   overflow: hidden;
   color: var(--sb-muted);
   text-align: center;
@@ -176,8 +176,8 @@
 .slot-bingo-widget__status-icon {
   display: grid;
   place-items: center;
-  width: clamp(18px, 4.2cqw, 34px);
-  height: clamp(18px, 4.2cqw, 34px);
+  width: clamp(12px, min(4.2cqw, 5.2cqh), 34px);
+  height: clamp(12px, min(4.2cqw, 5.2cqh), 34px);
   flex: 0 0 auto;
   color: #fff4c2;
   border: 1px solid currentColor;
@@ -207,7 +207,7 @@
   display: -webkit-box;
   max-width: 100%;
   overflow: hidden;
-  font-size: clamp(8px, 2.45cqw, var(--sb-square-size));
+  font-size: clamp(8px, min(2.45cqw, 3.3cqh), var(--sb-square-size));
   font-weight: 850;
   line-height: 1.05;
   letter-spacing: .025em;
@@ -224,10 +224,10 @@
   z-index: 1;
   flex: 0 0 auto;
   max-width: 100%;
-  padding: clamp(2px, .35cqw, 4px) clamp(5px, .8cqw, 9px);
+  padding: clamp(1px, min(.35cqw, .5cqh), 4px) clamp(3px, .8cqw, 9px);
   overflow: hidden;
   color: color-mix(in srgb, var(--sb-accent) 86%, white);
-  font-size: clamp(7px, 1.75cqw, var(--sb-multiplier-size));
+  font-size: clamp(7px, min(1.75cqw, 2.5cqh), var(--sb-multiplier-size));
   font-weight: 850;
   line-height: 1;
   letter-spacing: .04em;
@@ -246,38 +246,18 @@
   background: color-mix(in srgb, var(--sb-completed) 18%, rgba(0,0,0,.46));
 }
 
-.slot-bingo-widget__footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(10px, 2cqw, 22px);
-  min-height: clamp(38px, 8cqh, 72px);
-  padding: clamp(6px, 1.1cqw, 10px) clamp(12px, 2cqw, 20px);
-  border: 1px solid color-mix(in srgb, var(--sb-secondary) 56%, var(--sb-border));
-  border-radius: max(10px, calc(var(--sb-card-radius) + 4px));
-  background: linear-gradient(100deg, color-mix(in srgb, var(--sb-secondary) 15%, var(--sb-bg)), color-mix(in srgb, var(--sb-panel) 94%, transparent), color-mix(in srgb, var(--sb-accent) 10%, var(--sb-bg)));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 0 16px color-mix(in srgb, var(--sb-secondary) 24%, transparent);
-}
+@container (max-height: 360px) {
+  .slot-bingo-widget__status-icon {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: clamp(10px, 3.4cqw, 18px);
+    height: clamp(10px, 3.4cqw, 18px);
+  }
 
-.slot-bingo-widget__footer span {
-  width: clamp(20px, 8cqw, 60px);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--sb-accent));
-  box-shadow: 0 0 6px var(--sb-accent);
-}
-
-.slot-bingo-widget__footer span:last-child {
-  transform: scaleX(-1);
-}
-
-.slot-bingo-widget__footer strong {
-  color: var(--sb-accent);
-  font-size: clamp(16px, 4.4cqw, var(--sb-footer-size));
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 0 #5a2b00, 0 0 12px color-mix(in srgb, var(--sb-accent) 66%, transparent);
+  .slot-bingo-widget__square .slot-bingo-widget__label {
+    line-height: 1;
+  }
 }
 
 @keyframes slot-bingo-sheen {

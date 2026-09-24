@@ -61,9 +61,9 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
     accent: "#f0cd70", secondary: "#aeb4bd", text: "#f7f3e8", muted: "#c5c0b5", hue: 43,
   },
   {
-    key: "gladiator", name: "Gladiator", icon: "gladiator", swatches: ["#d9ae43", "#7b3d1e", "#650d18"],
-    background: "#c99524", surface: "#d9ae43", raised: "#efcf76", border: "#6f321d",
-    accent: "#650d18", secondary: "#7b3d1e", text: "#24140c", muted: "#4d2b1d", hue: 352,
+    key: "gladiator", name: "Gladiator", icon: "gladiator", swatches: ["#c48a24", "#8a531d", "#7e1518"],
+    background: "#071018", surface: "#0d141a", raised: "#d8a43a", border: "#8a531d",
+    accent: "#7e1518", secondary: "#c48a24", text: "#f4e3ba", muted: "#f0c75e", hue: 356,
   },
   {
     key: "old_rome", name: "Old Rome", icon: "old_rome", swatches: ["#f1e1bb", "#ad8645", "#5a3520"],

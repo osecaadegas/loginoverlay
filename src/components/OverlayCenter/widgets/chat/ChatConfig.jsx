@@ -35,6 +35,7 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
     "__appearanceExplicitSubElements",
     "subElements",
     "colourTheme",
+    "themeEffects",
     "chatStyle",
     "bonusHuntColorSync",
     "bgColor",

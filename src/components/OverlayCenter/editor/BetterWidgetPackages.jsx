@@ -61,6 +61,12 @@ import {
 import BetsWidget from "../widgets/bets/BetsWidget";
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme } from "../widgets/shared/colourThemePalettes";
 import { applyWidgetColourTheme, getSelectedWidgetColourTheme } from "./widgetColourThemes";
+import {
+  getThemeEffectDefinition,
+  getWidgetEffectsThemeKey,
+  normalizeThemeEffectsConfig,
+  patchThemeEffectsConfig,
+} from "../../../effects/ThemeEffects";
 import { getWidgetStyleOptionsForQuickEditor } from "../appearance/v2/widgetAppearanceRegistry";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
@@ -6870,13 +6876,7 @@ function BetterSlotBingoControls({ config, onChange }) {
               set({ boardRows: Number(boardRows) });
             }}
           />
-          <Segmented
-            value={c.footerMode}
-            options={[{ key: "bingo", name: "BINGO x3" }, { key: "lines", name: "Lines: 3" }]}
-            onChange={(footerMode) => set({ footerMode })}
-          />
           <ToggleRow label="Show progress" checked={c.showProgress} onChange={(showProgress) => set({ showProgress })} />
-          <ToggleRow label="Show footer" checked={c.showFooter} onChange={(showFooter) => set({ showFooter })} />
           <ToggleRow label="Show payout multipliers" checked={c.showMultipliers} onChange={(showMultipliers) => set({ showMultipliers })} />
           <ToggleRow label="Show completion icons" checked={c.showCompletionIcons} onChange={(showCompletionIcons) => set({ showCompletionIcons })} />
         </Section>
@@ -6947,7 +6947,6 @@ function BetterSlotBingoControls({ config, onChange }) {
           <SliderRow label="Title size" value={c.titleSize} min={18} max={56} unit="px" onChange={(titleSize) => set({ titleSize })} />
           <SliderRow label="Square text" value={c.squareTextSize} min={9} max={28} unit="px" onChange={(squareTextSize) => set({ squareTextSize })} />
           <SliderRow label="Payout text" value={c.multiplierTextSize} min={7} max={22} unit="px" onChange={(multiplierTextSize) => set({ multiplierTextSize })} />
-          <SliderRow label="Footer size" value={c.footerSize} min={16} max={44} unit="px" onChange={(footerSize) => set({ footerSize })} />
         </Section>
       )}
 
@@ -6980,6 +6979,7 @@ export function BetterWidgetControls({
 }) {
   const c = ensureBetterWidgetConfig(type, config);
   const selected = getSelectedWidgetColourTheme(type, c);
+  const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
       <div className="bp-controls bp-controls--colour-theme">
@@ -7006,8 +7006,106 @@ export function BetterWidgetControls({
           </div>
         </Section>
       </div>
+      <ThemeEffectsControls
+        themeKey={effectsThemeKey}
+        config={c.themeEffects}
+        onChange={(themeEffects) => onChange({ ...c, themeEffects })}
+      />
       <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />
     </>
+  );
+}
+
+const EFFECT_QUALITY_OPTIONS = [
+  { key: "low", name: "Low" },
+  { key: "balanced", name: "Balanced" },
+  { key: "ultra", name: "Ultra" },
+];
+
+function ThemeEffectsControls({ themeKey, config, onChange }) {
+  const definition = getThemeEffectDefinition(themeKey);
+  const c = normalizeThemeEffectsConfig(themeKey, config);
+  if (!definition?.supportsEffects || !c) return null;
+  const set = (patch) => onChange(patchThemeEffectsConfig(themeKey, c, patch));
+  const percent = (value) => Math.round(Number(value || 0) * 100);
+  const family = definition.family;
+
+  return (
+    <div className="bp-controls bp-controls--theme-effects" data-effects-theme={family}>
+      <Section title={`${definition.label} Effects`} icon={<Sparkles size={12} />}>
+        <ToggleRow
+          label="Animated effects"
+          checked={c.enabled !== false}
+          hint="The CSS theme remains active if GPU effects are disabled or unavailable."
+          onChange={(enabled) => set({ enabled })}
+        />
+        <SliderRow
+          label="Particle intensity"
+          value={percent(c.particleIntensity)}
+          min={0}
+          max={100}
+          unit="%"
+          onChange={(value) => set({ particleIntensity: value / 100 })}
+        />
+        <SliderRow
+          label="Glow intensity"
+          value={percent(c.glowIntensity)}
+          min={0}
+          max={100}
+          unit="%"
+          onChange={(value) => set({ glowIntensity: value / 100 })}
+        />
+        <SliderRow
+          label="Animation speed"
+          value={Math.round(c.animationSpeed * 100)}
+          min={25}
+          max={200}
+          unit="%"
+          onChange={(value) => set({ animationSpeed: value / 100 })}
+        />
+      </Section>
+
+      <Section title="Performance" icon={<Gauge size={12} />}>
+        <Segmented
+          value={c.quality}
+          options={EFFECT_QUALITY_OPTIONS}
+          columns={3}
+          onChange={(quality) => set({ quality })}
+        />
+      </Section>
+
+      {family === "ice" && (
+        <Section title="Ice Details" icon={<Snowflake size={12} />}>
+          <SliderRow label="Snow" value={percent(c.ice.snow)} min={0} max={100} unit="%" onChange={(value) => set({ ice: { snow: value / 100 } })} />
+          <SliderRow label="Frost" value={percent(c.ice.frost)} min={0} max={100} unit="%" onChange={(value) => set({ ice: { frost: value / 100 } })} />
+          <SliderRow label="Fog" value={percent(c.ice.fog)} min={0} max={100} unit="%" onChange={(value) => set({ ice: { fog: value / 100 } })} />
+          <SliderRow label="Ice glow" value={percent(c.ice.glow)} min={0} max={100} unit="%" onChange={(value) => set({ ice: { glow: value / 100 } })} />
+          <ToggleRow label="Ice cracks" checked={c.ice.cracks} onChange={(cracks) => set({ ice: { cracks } })} />
+          <ToggleRow label="Icicles" checked={c.ice.icicles} onChange={(icicles) => set({ ice: { icicles } })} />
+          <ToggleRow label="Animated shimmer" checked={c.ice.shimmer} onChange={(shimmer) => set({ ice: { shimmer } })} />
+        </Section>
+      )}
+
+      {family === "gladiator" && (
+        <Section title="Gladiator Details" icon={<Flame size={12} />}>
+          <SliderRow label="Embers" value={percent(c.gladiator.embers)} min={0} max={100} unit="%" onChange={(value) => set({ gladiator: { embers: value / 100 } })} />
+          <SliderRow label="Smoke" value={percent(c.gladiator.smoke)} min={0} max={100} unit="%" onChange={(value) => set({ gladiator: { smoke: value / 100 } })} />
+          <SliderRow label="Gold particles" value={percent(c.gladiator.goldParticles)} min={0} max={100} unit="%" onChange={(value) => set({ gladiator: { goldParticles: value / 100 } })} />
+          <ToggleRow label="Metal shimmer" checked={c.gladiator.metalShimmer} onChange={(metalShimmer) => set({ gladiator: { metalShimmer } })} />
+          <ToggleRow label="Heat distortion" checked={c.gladiator.heatDistortion} onChange={(heatDistortion) => set({ gladiator: { heatDistortion } })} />
+        </Section>
+      )}
+
+      {family === "greek" && (
+        <Section title="Greek / Stoic Details" icon={<Leaf size={12} />}>
+          <SliderRow label="Dust" value={percent(c.greek.dust)} min={0} max={100} unit="%" onChange={(value) => set({ greek: { dust: value / 100 } })} />
+          <SliderRow label="Fog" value={percent(c.greek.fog)} min={0} max={100} unit="%" onChange={(value) => set({ greek: { fog: value / 100 } })} />
+          <SliderRow label="Torch flicker" value={percent(c.greek.torchFlicker)} min={0} max={100} unit="%" onChange={(value) => set({ greek: { torchFlicker: value / 100 } })} />
+          <ToggleRow label="Light rays" checked={c.greek.lightRays} onChange={(lightRays) => set({ greek: { lightRays } })} />
+          <ToggleRow label="Marble shimmer" checked={c.greek.marbleShimmer} onChange={(marbleShimmer) => set({ greek: { marbleShimmer } })} />
+        </Section>
+      )}
+    </div>
   );
 }
 

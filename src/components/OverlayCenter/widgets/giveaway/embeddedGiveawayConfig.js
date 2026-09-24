@@ -8,7 +8,7 @@ const LIVE_KEYS = new Set([
 ]);
 const APPEARANCE_KEYS = new Set([
   ...Object.keys(STANDARD_BETTER_WIDGET_CONTROLS.giveaway).filter(key => !LIVE_KEYS.has(key)),
-  "colourTheme", "subElements", "elements", "appearanceV2", "__appearanceExplicitSubElements", "__appearanceScopedState",
+  "colourTheme", "themeEffects", "subElements", "elements", "appearanceV2", "__appearanceExplicitSubElements", "__appearanceScopedState",
   "titleColor", "prizeColor", "labelColor", "valueColor", "winnerColor", "reelColor",
   "cornerUnit", "cornerTopLeft", "cornerTopRight", "cornerBottomLeft", "cornerBottomRight",
   "reelHeight", "avatarSize",

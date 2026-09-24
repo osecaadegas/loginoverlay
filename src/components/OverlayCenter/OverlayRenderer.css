@@ -9596,3 +9596,301 @@
 .bht11-stack-section--complete .bht-stack-card--right {
   animation: none !important;
 }
+.better-widget-colour-scope {
+  display: contents;
+}
+
+/* Gladiator: dark Roman metal, antique gold faces and crimson active states. */
+.better-widget-colour-scope[data-colour-theme="gladiator"] {
+  --gladiator-bg: #071018;
+  --gladiator-charcoal: #0d141a;
+  --gladiator-gold: #c48a24;
+  --gladiator-gold-mid: #d8a43a;
+  --gladiator-gold-hi: #f0c75e;
+  --gladiator-bronze: #8a531d;
+  --gladiator-bronze-dark: #5c3518;
+  --gladiator-red: #7e1518;
+  --gladiator-crimson: #5b0d12;
+  --gladiator-dark-text: #21130c;
+  --gladiator-light-text: #f4e3ba;
+  --gladiator-gold-face:
+    radial-gradient(circle at 24% -20%, rgba(255, 242, 184, 0.32), transparent 42%),
+    linear-gradient(104deg, transparent 0 22%, rgba(70, 32, 9, 0.08) 22.3% 22.7%, transparent 23% 54%, rgba(255, 236, 163, 0.08) 54.2% 54.5%, transparent 54.8%),
+    repeating-linear-gradient(117deg, rgba(255,255,255,.034) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(7deg, transparent 0 18px, rgba(67, 31, 9, 0.035) 19px, transparent 20px 31px),
+    linear-gradient(180deg, #f0c75e 0%, #d8a43a 35%, #c48a24 70%, #8a531d 100%);
+  --gladiator-bronze-face:
+    radial-gradient(circle at 18% 0%, rgba(240, 199, 94, 0.16), transparent 38%),
+    radial-gradient(ellipse at 72% 105%, rgba(23, 8, 3, 0.38), transparent 52%),
+    linear-gradient(112deg, transparent 0 31%, rgba(240, 199, 94, 0.08) 31.3% 31.6%, transparent 31.9% 64%, rgba(34, 12, 4, 0.14) 64.2% 64.5%, transparent 64.8%),
+    repeating-linear-gradient(133deg, rgba(255,255,255,.022) 0 1px, transparent 1px 8px),
+    linear-gradient(135deg, #9a6025 0%, #6f401c 50%, #4b2915 100%);
+  --gladiator-dark-face:
+    radial-gradient(circle at 22% 0%, rgba(196, 138, 36, 0.11), transparent 34%),
+    radial-gradient(circle at 82% 110%, rgba(126, 21, 24, 0.1), transparent 42%),
+    linear-gradient(118deg, transparent 0 28%, rgba(196, 138, 36, 0.055) 28.25% 28.45%, transparent 28.7% 71%, rgba(240, 199, 94, 0.035) 71.2% 71.35%, transparent 71.6%),
+    repeating-linear-gradient(38deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
+    linear-gradient(145deg, #0d141a 0%, #071018 72%, #05090d 100%);
+  --gladiator-red-face:
+    radial-gradient(circle at 28% 0%, rgba(240, 199, 94, 0.14), transparent 38%),
+    linear-gradient(104deg, transparent 0 36%, rgba(240, 199, 94, 0.07) 36.3% 36.6%, transparent 36.9% 74%, rgba(31, 2, 4, 0.22) 74.2% 74.6%, transparent 74.9%),
+    repeating-linear-gradient(124deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
+    linear-gradient(180deg, #931d22 0%, #6c1116 55%, #46090d 100%);
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"] > *,
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is([data-widget-element="container"], .better-hunt-panel, .better-shoutout-card, .better-giveaway-widget, .tw-root, .connect-four-widget, .ov-chat-widget) {
+  color: var(--gladiator-light-text) !important;
+  background-image: var(--gladiator-dark-face) !important;
+  border-color: var(--gladiator-bronze) !important;
+  box-shadow:
+    0 0 0 1px rgba(3, 6, 9, 0.9),
+    0 14px 34px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(240, 199, 94, 0.24),
+    inset 0 -2px 0 rgba(55, 25, 8, 0.7),
+    inset 0 0 28px rgba(0, 0, 0, 0.24) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :where(*:not(svg):not(path)) {
+  color: var(--gladiator-light-text) !important;
+  -webkit-text-fill-color: var(--gladiator-light-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(
+    [data-widget-element="header"],
+    [data-widget-element="progressBadge"],
+    [data-widget-element="statCard"],
+    [data-widget-element="poolStat"],
+    [data-widget-element="timerStat"],
+    [data-widget-element="betsStat"],
+    [data-widget-element="betCards"],
+    [data-widget-element="individualBetCard"],
+    [data-widget-element="matchCard"],
+    [data-widget-element="participantCard"],
+    [data-widget-element="incompleteSquare"],
+    .slot-bingo-widget__square:not(.is-complete):not(.is-free),
+    .better-hunt-header,
+    .better-hunt-main-head,
+    .bets-ov__card,
+    .bets-ov__row,
+    .bets-ov__stat,
+    .better-hunt-stat,
+    .better-hunt-main-stat,
+    .better-hunt-row:not(.better-hunt-row--image):not(:has(.better-hunt-row-bg)),
+    .connect-four-info
+  ) {
+  color: var(--gladiator-dark-text) !important;
+  background-image: var(--gladiator-gold-face) !important;
+  border-color: var(--gladiator-bronze-dark) !important;
+  box-shadow:
+    0 0 0 1px rgba(240, 199, 94, 0.24),
+    0 4px 12px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 242, 184, 0.62),
+    inset 0 -3px 0 rgba(92, 53, 24, 0.52),
+    inset 0 0 14px rgba(90, 45, 10, 0.13) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(
+    [data-widget-element="header"],
+    [data-widget-element="progressBadge"],
+    [data-widget-element="statCard"],
+    [data-widget-element="poolStat"],
+    [data-widget-element="timerStat"],
+    [data-widget-element="betsStat"],
+    [data-widget-element="betCards"],
+    [data-widget-element="individualBetCard"],
+    [data-widget-element="matchCard"],
+    [data-widget-element="participantCard"],
+    [data-widget-element="incompleteSquare"],
+    .slot-bingo-widget__square:not(.is-complete):not(.is-free),
+    .better-hunt-header,
+    .better-hunt-main-head,
+    .bets-ov__card,
+    .bets-ov__row,
+    .bets-ov__stat,
+    .better-hunt-stat,
+    .better-hunt-main-stat,
+    .better-hunt-row:not(.better-hunt-row--image):not(:has(.better-hunt-row-bg)),
+    .connect-four-info
+  ) :where(*) {
+  color: var(--gladiator-dark-text) !important;
+  -webkit-text-fill-color: var(--gladiator-dark-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(
+    [data-widget-element="completedSquare"],
+    [data-widget-element="freeSquare"],
+    [data-widget-element="statusBadge"],
+    [data-widget-state="active"],
+    [aria-pressed="true"],
+    .is-active,
+    .is-current,
+    .is-complete,
+    .is-free,
+    .is-win,
+    .bets-ov__status,
+    .bets-result__number-shell,
+    .connect-four-winner-card
+  ) {
+  color: var(--gladiator-light-text) !important;
+  background-image: var(--gladiator-red-face) !important;
+  border-color: var(--gladiator-gold-mid) !important;
+  box-shadow:
+    0 0 0 1px rgba(64, 7, 10, 0.92),
+    0 0 18px rgba(126, 21, 24, 0.34),
+    inset 0 1px 0 rgba(240, 199, 94, 0.35),
+    inset 0 -3px 0 rgba(45, 4, 7, 0.62) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(
+    [data-widget-element="completedSquare"],
+    [data-widget-element="freeSquare"],
+    [data-widget-element="statusBadge"],
+    [data-widget-state="active"],
+    [aria-pressed="true"],
+    .is-active,
+    .is-current,
+    .is-complete,
+    .is-free,
+    .is-win,
+    .bets-ov__status,
+    .bets-result__number-shell,
+    .connect-four-winner-card
+  ) :where(*) {
+  color: var(--gladiator-light-text) !important;
+  -webkit-text-fill-color: var(--gladiator-light-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(input, select, textarea, button, [role="button"], [role="option"], [role="tooltip"], [role="dialog"]) {
+  border-color: var(--gladiator-bronze) !important;
+  background-color: var(--gladiator-charcoal) !important;
+  box-shadow: inset 0 1px 0 rgba(240, 199, 94, 0.14), 0 3px 10px rgba(0,0,0,.34) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(input, select, textarea) {
+  color: var(--gladiator-light-text) !important;
+  -webkit-text-fill-color: var(--gladiator-light-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(.better-slideshow-frame, .better-hunt-drawer, .better-hunt-stats-panel, .better-hunt-empty, .ov-chat-empty, .better-shoutout-media-empty, [data-widget-element="emptyState"]) {
+  background-image: var(--gladiator-bronze-face) !important;
+  border-color: var(--gladiator-gold) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(240, 199, 94, 0.22),
+    inset 0 0 44px rgba(0, 0, 0, 0.38),
+    0 8px 22px rgba(0, 0, 0, 0.42) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="navbar"]
+  [data-widget-element="container"],
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="navbar"] > *,
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="rtp_stats"] > *,
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(.rtp-stats-bar, .better-navbar) {
+  color: var(--gladiator-dark-text) !important;
+  background-image: var(--gladiator-gold-face) !important;
+  border-color: var(--gladiator-bronze-dark) !important;
+  box-shadow:
+    0 0 0 1px rgba(240, 199, 94, 0.28),
+    0 5px 15px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,242,184,.7),
+    inset 0 -3px 0 rgba(92,53,24,.58) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="navbar"]
+  [data-widget-element="container"] :where(*),
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="navbar"] > * :where(*),
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="rtp_stats"] > * :where(*),
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(.rtp-stats-bar, .better-navbar) :where(*) {
+  color: var(--gladiator-dark-text) !important;
+  -webkit-text-fill-color: var(--gladiator-dark-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="navbar"]
+  [data-widget-element="sponsor"],
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="rtp_stats"]
+  [data-widget-element="personalBest"],
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="rtp_stats"]
+  .rtp-stats-item--bestwin {
+  color: var(--gladiator-light-text) !important;
+  background: var(--gladiator-red-face) !important;
+  border-color: var(--gladiator-gold-mid) !important;
+  box-shadow:
+    0 0 0 1px rgba(64, 7, 10, 0.92),
+    0 0 14px rgba(126, 21, 24, 0.28),
+    inset 0 1px 0 rgba(240, 199, 94, 0.32),
+    inset 0 -3px 0 rgba(45, 4, 7, 0.62) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="navbar"]
+  [data-widget-element="sponsor"] :where(*),
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="rtp_stats"]
+  [data-widget-element="personalBest"] :where(*),
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="rtp_stats"]
+  .rtp-stats-item--bestwin :where(*) {
+  color: var(--gladiator-light-text) !important;
+  -webkit-text-fill-color: var(--gladiator-light-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"] .better-hunt-row--image,
+.better-widget-colour-scope[data-colour-theme="gladiator"] .better-hunt-row:has(.better-hunt-row-bg) {
+  background: var(--gladiator-bronze-face) !important;
+  border-color: var(--gladiator-gold) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="bonus_hunt"]
+  .better-hunt-row.better-hunt-row--image > *,
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="bonus_hunt"]
+  .better-hunt-row.better-hunt-row--image > * *,
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="bonus_hunt"]
+  .better-hunt-row:has(.better-hunt-row-bg) > *,
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="bonus_hunt"]
+  .better-hunt-row:has(.better-hunt-row-bg) > * * {
+  color: var(--gladiator-light-text) !important;
+  -webkit-text-fill-color: var(--gladiator-light-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="chat"]
+  :is(.ov-chat-msg, .ov-cards-msg, [data-widget-element="message"], .ov-chat-messages > div) {
+  background: var(--gladiator-bronze-face) !important;
+  border-color: var(--gladiator-bronze) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(240,199,94,.2),
+    inset 0 -2px 0 rgba(52,25,9,.48),
+    0 5px 14px rgba(0,0,0,.38) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="chat"]
+  :is(.ov-chat-msg, .ov-cards-msg, [data-widget-element="message"], .ov-chat-messages > div) :where(*) {
+  color: var(--gladiator-light-text) !important;
+  -webkit-text-fill-color: var(--gladiator-light-text) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"][data-widget-type="chat"]
+  :is(.ov-chat-badge, .ov-cards-badge, [data-widget-element="badge"]) {
+  background: var(--gladiator-red-face) !important;
+  border-color: var(--gladiator-gold-mid) !important;
+  color: var(--gladiator-light-text) !important;
+  box-shadow: inset 0 1px 0 rgba(240,199,94,.24), 0 0 8px rgba(126,21,24,.34) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(.bets-ov__row-fill, .better-hunt-track > span, .better-hunt-main-progress-track span, [data-widget-element="progressBarFill"]) {
+  background-image: linear-gradient(90deg, #5b0d12 0%, #7e1518 52%, #c48a24 100%) !important;
+  box-shadow: 0 0 10px rgba(126, 21, 24, 0.38), inset 0 1px 0 rgba(240,199,94,.28) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="gladiator"]
+  :is(.slot-bingo-widget, .better-hunt-panel, .better-slideshow-frame, .tw-root, .better-shoutout-card)::after {
+  opacity: 0.52;
+}

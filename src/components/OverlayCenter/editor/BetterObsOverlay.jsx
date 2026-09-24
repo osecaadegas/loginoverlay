@@ -13,6 +13,7 @@ import {
   normalizeBetterLayout,
   renderBetterWidgetInstance,
 } from "./betterWidgetRegistry";
+import { ThemeEffectsLayer } from "../../../effects/ThemeEffects";
 import "../OverlayRenderer.css";
 import "./BetterObsOverlay.css";
 
@@ -283,9 +284,18 @@ export default function BetterObsOverlay() {
               transform: `translate3d(0, 0, 0) scale(${obsScale})`,
             }}
           >
+            <ThemeEffectsLayer
+              instances={[targetInstance]}
+              width={targetWidth}
+              height={targetHeight}
+              singleInstanceId={targetInstance.instanceId}
+              runtime="obs-single"
+            />
             {targetInstance.visible !== false && (
               <div
                 className="better-obs-instance"
+                data-effect-target-id={targetInstance.instanceId}
+                data-effect-widget-type={targetInstance.widgetType}
                 style={{
                   left: 0,
                   top: 0,
@@ -332,6 +342,12 @@ export default function BetterObsOverlay() {
             transform: `translate3d(0, 0, 0) scale(${obsScale})`,
           }}
         >
+          <ThemeEffectsLayer
+            instances={layout.instances}
+            width={BETTER_CANVAS.width}
+            height={BETTER_CANVAS.height}
+            runtime="obs-full"
+          />
           {layout.instances
             .filter((instance) => instance.visible !== false)
             .sort((a, b) => Number(a.zIndex) - Number(b.zIndex))
@@ -339,6 +355,8 @@ export default function BetterObsOverlay() {
               <div
                 key={instance.instanceId}
                 className="better-obs-instance"
+                data-effect-target-id={instance.instanceId}
+                data-effect-widget-type={instance.widgetType}
                 style={{
                   left: instance.x,
                   top: instance.y,

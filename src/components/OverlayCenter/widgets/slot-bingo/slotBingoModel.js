@@ -35,9 +35,7 @@ export const SLOT_BINGO_DEFAULT_CONFIG = Object.freeze({
   displayStyle: "premium_slot_bingo",
   title: "SLOT BINGO",
   boardRows: 5,
-  footerMode: "bingo",
   showProgress: true,
-  showFooter: true,
   showMultipliers: true,
   showCompletionIcons: true,
   squares: DEFAULT_SLOT_BINGO_SQUARES,
@@ -59,7 +57,6 @@ export const SLOT_BINGO_DEFAULT_CONFIG = Object.freeze({
   titleSize: 34,
   squareTextSize: 17,
   multiplierTextSize: 12,
-  footerSize: 28,
 });
 
 function clampNumber(value, min, max, fallback) {
@@ -118,9 +115,7 @@ export function normalizeSlotBingoConfig(config = {}) {
     displayStyle: "premium_slot_bingo",
     title: String(merged.title || "SLOT BINGO").trim().slice(0, 32) || "SLOT BINGO",
     boardRows,
-    footerMode: merged.footerMode === "lines" ? "lines" : "bingo",
     showProgress: merged.showProgress !== false,
-    showFooter: merged.showFooter !== false,
     showMultipliers: merged.showMultipliers !== false,
     showCompletionIcons: merged.showCompletionIcons !== false,
     squares: normalizeSlotBingoSquares(merged.squares, boardRows),
@@ -132,7 +127,6 @@ export function normalizeSlotBingoConfig(config = {}) {
     titleSize: clampNumber(merged.titleSize, 18, 56, 34),
     squareTextSize: clampNumber(merged.squareTextSize, 9, 28, 17),
     multiplierTextSize: clampNumber(merged.multiplierTextSize, 7, 22, 12),
-    footerSize: clampNumber(merged.footerSize, 16, 44, 28),
   };
 }
 
