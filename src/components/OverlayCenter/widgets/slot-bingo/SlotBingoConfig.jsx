@@ -13,6 +13,7 @@ import {
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme } from "../shared/colourThemePalettes";
 import {
   countCompletedSlotBingoSquares,
+  countSlotBingoLines,
   formatSlotBingoMultiplier,
   getSlotBingoSquareCount,
   SLOT_BINGO_DEFAULT_CONFIG,
@@ -62,6 +63,7 @@ export default function SlotBingoConfig({ config = {}, onChange }) {
   const squareCount = getSlotBingoSquareCount(c.boardRows);
   const visibleSquares = c.squares.slice(0, squareCount);
   const completed = countCompletedSlotBingoSquares(c.squares, c.boardRows);
+  const lines = countSlotBingoLines(c.squares, c.boardRows);
   const set = (patch) => onChange(normalizeSlotBingoConfig({ ...c, ...patch }));
 
   const updateSquare = (index, patch) => {

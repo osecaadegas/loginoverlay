@@ -24,6 +24,7 @@
     "test:better-bets": "node scripts/test-better-bets-browser.mjs",
     "test:broadcast-chat": "node scripts/test-broadcast-chat.mjs",
     "test:widget-colour-themes": "node scripts/test-widget-colour-themes.mjs",
+    "test:slot-bingo-config": "node scripts/test-slot-bingo-config.mjs",
     "test:theme-effects": "node scripts/test-theme-effects.mjs",
     "test:slot-personal-best": "node scripts/test-slot-personal-best.mjs",
     "test:editor-builds": "node scripts/test-editor-builds.mjs",
