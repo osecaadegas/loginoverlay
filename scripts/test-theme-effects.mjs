@@ -112,6 +112,7 @@ try {
   );
   await page.waitForSelector(".theme-effects-layer__canvas");
   await page.waitForFunction(() => document.querySelector("canvas")?.width >= 640);
+  await page.waitForFunction(() => document.querySelector(".theme-effects-layer__debug")?.textContent.includes("BALANCED"));
   const first = await page.evaluate(() => ({
     canvases: document.querySelectorAll(".theme-effects-layer__canvas").length,
     pointerEvents: getComputedStyle(document.querySelector(".theme-effects-layer")).pointerEvents,

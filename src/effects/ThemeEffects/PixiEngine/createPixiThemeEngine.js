@@ -33,9 +33,45 @@ const TARGET_WEIGHT = Object.freeze({
   slideshow_frame: 0.35,
   background: 0.65,
 });
+const ICE_PRIMARY_WEIGHT = Object.freeze({
+  slot_bingo: 1,
+  bonus_hunt: 0.78,
+  slideshow_frame: 0.7,
+  navbar: 0.62,
+  rtp_stats: 0.58,
+  bets: 0.46,
+  chat: 0.44,
+  background: 0.32,
+});
+const ICE_ICICLE_TARGETS = new Set(["navbar", "bonus_hunt", "slot_bingo", "slideshow_frame"]);
+const ICE_MIST_TARGETS = new Set(["background", "bonus_hunt", "slot_bingo", "slideshow_frame"]);
+const ICE_SHIMMER_TARGETS = new Set(["navbar", "slot_bingo", "rtp_stats", "slideshow_frame"]);
+const ICE_BURST_TARGETS = new Set(["bonus_hunt", "slot_bingo"]);
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-const randomRange = (min, max) => min + Math.random() * (max - min);
+
+function hashString(value) {
+  let hash = 2166136261;
+  const source = String(value || "theme-effects");
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function createSeededRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const randomRange = (random, min, max) => min + random() * (max - min);
 
 function targetSignature(targets) {
   return JSON.stringify(
@@ -83,12 +119,35 @@ function setSpriteBounds(sprite, width, height) {
   sprite.height = Math.max(1, height);
 }
 
-function drawTargetFrame(graphics, target, alphaMultiplier = 1) {
+function drawTargetFrame(node, target, alphaMultiplier = 1) {
   const radius = clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
   const familyGlow = target.theme.family === "ice" ? target.effects.ice.glow : 1;
   const glow = target.effects.glowIntensity * familyGlow;
-  graphics.clear();
-  graphics
+  node.frameBack.clear();
+  node.frame.clear();
+  node.frameHighlight.clear();
+  if (target.theme.family === "ice") {
+    const hierarchy = ICE_PRIMARY_WEIGHT[target.widgetType] || 0.48;
+    node.frameBack
+      .roundRect(0.5, 0.5, Math.max(1, target.width - 1), Math.max(1, target.height - 1), radius)
+      .stroke({ width: 3, color: 0x020913, alpha: (0.44 + hierarchy * 0.2) * alphaMultiplier });
+    node.frame
+      .roundRect(2, 2, Math.max(1, target.width - 4), Math.max(1, target.height - 4), Math.max(3, radius - 1))
+      .stroke({
+        width: glow > 0.62 ? 2 : 1,
+        color: target.theme.colors.primary,
+        alpha: (0.08 + glow * 0.14 + hierarchy * 0.05) * alphaMultiplier,
+      });
+    node.frameHighlight
+      .moveTo(radius, 2.5)
+      .lineTo(Math.max(radius, target.width - radius), 2.5)
+      .stroke({ width: 1, color: target.theme.colors.highlight, alpha: (0.24 + glow * 0.2) * alphaMultiplier })
+      .moveTo(2.5, radius)
+      .lineTo(2.5, Math.max(radius, target.height * 0.42))
+      .stroke({ width: 1, color: target.theme.colors.highlight, alpha: (0.13 + glow * 0.12) * alphaMultiplier });
+    return;
+  }
+  node.frame
     .roundRect(1, 1, Math.max(1, target.width - 2), Math.max(1, target.height - 2), radius)
     .stroke({
       width: glow > 0.65 ? 2 : 1,
@@ -105,12 +164,15 @@ function resolveFogAmount(target) {
 
 function resolveShimmer(target, preset) {
   if (!preset.shimmer) return false;
-  if (target.theme.family === "ice") return target.effects.ice.shimmer;
+  if (target.theme.family === "ice") {
+    return target.effects.ice.shimmer && ICE_SHIMMER_TARGETS.has(target.widgetType);
+  }
   if (target.theme.family === "gladiator") return target.effects.gladiator.metalShimmer;
   return target.effects.greek.marbleShimmer;
 }
 
 async function createTargetNode(target, layer, preset) {
+  const random = createSeededRandom(hashString(`${target.id}:${target.widgetType}:${target.theme.id}`));
   const node = {
     id: target.id,
     target,
@@ -120,36 +182,57 @@ async function createTargetNode(target, layer, preset) {
     edge: null,
     detail: null,
     decor: null,
+    corners: null,
+    clipMask: null,
     fog: null,
     fogSecondary: null,
     lightRay: null,
     shimmer: null,
     aura: null,
+    burstSprites: [],
+    frameBack: new Graphics(),
     frame: new Graphics(),
+    frameHighlight: new Graphics(),
     pulse: new Graphics(),
-    elapsed: Math.random() * 10,
+    elapsed: randomRange(random, 0, 12),
+    shimmerPeriod: randomRange(random, 11, 16),
+    shimmerPhase: randomRange(random, 0, 8),
   };
   node.container.label = `theme-fx:${target.id}`;
   node.container.eventMode = "none";
   layer.addChild(node.container);
 
-  const [panelTexture, edgeTexture, detailTexture, decorTexture, fogTexture, particleTexture] = await Promise.all([
+  const [
+    panelTexture,
+    edgeTexture,
+    detailTexture,
+    decorTexture,
+    fogTexture,
+    particleTexture,
+    cornerTexture,
+    specularTexture,
+    burstTexture,
+  ] = await Promise.all([
     loadTexture(target.theme.textures.panel),
     loadTexture(target.theme.textures.edge),
     loadTexture(target.theme.textures.detail),
     loadTexture(target.theme.textures.decor),
     loadTexture(target.theme.textures.fog),
     loadTexture(target.theme.textures.particle),
+    loadTexture(target.theme.textures.corners),
+    loadTexture(target.theme.textures.specular),
+    loadTexture(target.theme.textures.burst),
   ]);
 
   node.texture = new Sprite(panelTexture);
-  node.texture.alpha = target.theme.family === "ice" ? 0.085 : 0.065;
+  const iceHierarchy = ICE_PRIMARY_WEIGHT[target.widgetType] || 0.48;
+  node.texture.alpha = target.theme.family === "ice" ? 0.045 + iceHierarchy * 0.07 : 0.065;
   node.texture.blendMode = target.theme.family === "gladiator" ? "overlay" : "screen";
   node.container.addChild(node.texture);
 
   node.edge = new Sprite(edgeTexture);
   node.edge.alpha = target.theme.family === "ice"
-    ? 0.13 + target.effects.ice.frost * 0.12
+    ? 0.1 + target.effects.ice.frost * (0.13 + iceHierarchy * 0.08)
     : 0.075;
   node.edge.blendMode = "screen";
   node.container.addChild(node.edge);
@@ -157,21 +240,38 @@ async function createTargetNode(target, layer, preset) {
   const showDetail = target.theme.family !== "ice" || target.effects.ice.cracks;
   if (showDetail) {
     node.detail = new Sprite(detailTexture);
-    node.detail.alpha = target.theme.family === "ice" ? 0.11 : 0.055;
-    node.detail.blendMode = target.theme.family === "gladiator" ? "overlay" : "multiply";
+    const iceCrackAlpha = target.widgetType === "slideshow_frame"
+      ? 0.12
+      : target.widgetType === "slot_bingo"
+        ? 0.045
+        : 0.065;
+    node.detail.alpha = target.theme.family === "ice" ? iceCrackAlpha : 0.055;
+    node.detail.blendMode = target.theme.family === "ice"
+      ? "screen"
+      : target.theme.family === "gladiator" ? "overlay" : "multiply";
     node.container.addChild(node.detail);
   }
 
-  const showDecor = target.theme.family === "ice" && target.effects.ice.icicles;
+  if (target.theme.family === "ice" && target.effects.ice.frost > 0.01) {
+    node.corners = new Sprite(cornerTexture);
+    node.corners.alpha = (0.07 + target.effects.ice.frost * 0.15) * (0.7 + iceHierarchy * 0.3);
+    node.corners.blendMode = "screen";
+    node.container.addChild(node.corners);
+  }
+
+  const showDecor = target.theme.family === "ice"
+    && target.effects.ice.icicles
+    && ICE_ICICLE_TARGETS.has(target.widgetType);
   if (showDecor) {
     node.decor = new Sprite(decorTexture);
-    node.decor.alpha = 0.22;
+    node.decor.alpha = target.widgetType === "navbar" ? 0.26 : 0.13 + iceHierarchy * 0.06;
     node.decor.blendMode = "screen";
     node.container.addChild(node.decor);
   }
 
   const fogAmount = resolveFogAmount(target);
-  if (fogAmount > 0.01) {
+  const allowFog = target.theme.family !== "ice" || ICE_MIST_TARGETS.has(target.widgetType);
+  if (fogAmount > 0.01 && allowFog) {
     node.fog = new Sprite(fogTexture);
     node.fog.alpha = fogAmount * (target.theme.family === "gladiator" ? 0.1 : 0.13);
     node.fog.blendMode = "screen";
@@ -185,7 +285,7 @@ async function createTargetNode(target, layer, preset) {
   }
 
   if (resolveShimmer(target, preset)) {
-    node.shimmer = new Sprite(Texture.WHITE);
+    node.shimmer = new Sprite(target.theme.family === "ice" ? specularTexture : Texture.WHITE);
     node.shimmer.tint = target.theme.colors.highlight;
     node.shimmer.alpha = 0.035 + target.effects.glowIntensity * 0.035;
     node.shimmer.rotation = 0.23;
@@ -206,8 +306,18 @@ async function createTargetNode(target, layer, preset) {
     node.aura = new Graphics();
     node.container.addChild(node.aura);
   }
+  node.container.addChild(node.frameBack);
   node.container.addChild(node.frame);
+  node.container.addChild(node.frameHighlight);
   node.container.addChild(node.pulse);
+
+  node.clipMask = new Graphics();
+  node.container.addChild(node.clipMask);
+  [node.texture, node.detail, node.fog, node.fogSecondary, node.shimmer, node.lightRay]
+    .filter(Boolean)
+    .forEach((displayObject) => {
+      displayObject.mask = node.clipMask;
+    });
 
   const particleCount = Math.max(
     0,
@@ -224,17 +334,36 @@ async function createTargetNode(target, layer, preset) {
     ) {
       sprite.tint = target.theme.colors.highlight;
     }
+    const tierRoll = random();
+    const tier = tierRoll < 0.66 ? "background" : tierRoll < 0.96 ? "midground" : "foreground";
     const particle = {
       sprite,
-      xRatio: Math.random(),
-      yRatio: Math.random(),
-      speed: randomRange(0.6, 1.25),
-      drift: randomRange(-0.35, 0.35),
-      phase: randomRange(0, Math.PI * 2),
-      scale: randomRange(0.35, 1),
+      tier,
+      xRatio: random(),
+      yRatio: random(),
+      speed: tier === "background"
+        ? randomRange(random, 0.38, 0.7)
+        : tier === "midground" ? randomRange(random, 0.72, 1.05) : randomRange(random, 1.02, 1.28),
+      drift: randomRange(random, -0.35, 0.35),
+      phase: randomRange(random, 0, Math.PI * 2),
+      scale: tier === "background"
+        ? randomRange(random, 0.2, 0.48)
+        : tier === "midground" ? randomRange(random, 0.5, 0.82) : randomRange(random, 0.88, 1.2),
     };
     node.particles.push(particle);
     node.container.addChild(sprite);
+  }
+
+  if (target.theme.family === "ice" && ICE_BURST_TARGETS.has(target.widgetType)) {
+    const burstCount = target.effects.quality === "low" ? 4 : target.effects.quality === "ultra" ? 9 : 7;
+    for (let index = 0; index < burstCount; index += 1) {
+      const sprite = new Sprite(burstTexture);
+      sprite.anchor.set(0.5);
+      sprite.alpha = 0;
+      sprite.blendMode = "screen";
+      node.burstSprites.push(sprite);
+      node.container.addChild(sprite);
+    }
   }
   return node;
 }
@@ -245,12 +374,18 @@ function resizeTargetNode(node, target) {
   setSpriteBounds(node.texture, target.width, target.height);
   setSpriteBounds(node.edge, target.width, target.height);
   if (node.detail) setSpriteBounds(node.detail, target.width, target.height);
+  if (node.corners) setSpriteBounds(node.corners, target.width, target.height);
   if (node.decor) {
-    setSpriteBounds(node.decor, target.width, Math.min(target.height * 0.22, 72));
-    node.decor.position.set(0, 0);
+    const isNavbar = target.widgetType === "navbar";
+    setSpriteBounds(
+      node.decor,
+      target.width,
+      isNavbar ? Math.min(52, Math.max(24, target.height * 0.86)) : Math.min(target.height * 0.12, 48),
+    );
+    node.decor.position.set(0, isNavbar ? Math.max(0, target.height - 7) : 0);
   }
   if (node.fog) {
-    setSpriteBounds(node.fog, target.width * 1.12, target.height * 0.64);
+    setSpriteBounds(node.fog, target.width * 1.18, target.height * 0.7);
     node.fog.position.set(-target.width * 0.06, target.height * 0.28);
   }
   if (node.fogSecondary) {
@@ -258,7 +393,7 @@ function resizeTargetNode(node, target) {
     node.fogSecondary.position.set(-target.width * 0.1, target.height * 0.04);
   }
   if (node.shimmer) {
-    setSpriteBounds(node.shimmer, Math.max(24, target.width * 0.12), target.height * 1.25);
+    setSpriteBounds(node.shimmer, Math.max(42, target.width * 0.22), target.height * 1.32);
     node.shimmer.pivot.set(node.shimmer.width / 2, node.shimmer.height / 2);
     node.shimmer.y = target.height * 0.5;
   }
@@ -267,7 +402,11 @@ function resizeTargetNode(node, target) {
     node.lightRay.pivot.set(node.lightRay.width / 2, node.lightRay.height / 2);
     node.lightRay.position.set(target.width * 0.68, target.height * 0.42);
   }
-  drawTargetFrame(node.frame, target);
+  const radius = clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
+  node.clipMask.clear()
+    .roundRect(2, 2, Math.max(1, target.width - 4), Math.max(1, target.height - 4), Math.max(3, radius - 1))
+    .fill({ color: 0xffffff });
+  drawTargetFrame(node, target);
   if (node.aura) {
     const radius = clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
     node.aura.clear().roundRect(3, 3, Math.max(1, target.width - 6), Math.max(1, target.height - 6), radius)
@@ -287,7 +426,16 @@ function resizeTargetNode(node, target) {
     particle.sprite.height = size;
     particle.sprite.x = particle.xRatio * target.width;
     particle.sprite.y = particle.yRatio * target.height;
-    particle.sprite.alpha = 0.08 + particle.scale * 0.2;
+    particle.sprite.alpha = particle.tier === "background"
+      ? 0.06 + particle.scale * 0.09
+      : particle.tier === "midground" ? 0.1 + particle.scale * 0.14 : 0.14 + particle.scale * 0.13;
+  });
+  node.burstSprites.forEach((sprite, index) => {
+    const size = clamp(Math.min(target.width, target.height) * (0.023 + index * 0.0015), 7, 20);
+    sprite.width = size;
+    sprite.height = size * 1.7;
+    sprite.position.set(target.width / 2, target.height / 2);
+    sprite.alpha = 0;
   });
 }
 
@@ -300,8 +448,18 @@ function updateTargetNode(node, ticker) {
   node.elapsed += seconds * speed;
 
   if (node.shimmer) {
-    const travel = target.width + node.shimmer.width * 2;
-    node.shimmer.x = -node.shimmer.width + ((node.elapsed * target.width * 0.08) % travel);
+    if (family === "ice") {
+      const sweepDuration = 1.8;
+      const progress = (node.elapsed + node.shimmerPhase) % node.shimmerPeriod;
+      const sweepRatio = clamp(progress / sweepDuration, 0, 1);
+      node.shimmer.x = -node.shimmer.width + sweepRatio * (target.width + node.shimmer.width * 2);
+      node.shimmer.alpha = progress < sweepDuration
+        ? Math.sin(sweepRatio * Math.PI) * (0.024 + target.effects.glowIntensity * 0.026)
+        : 0;
+    } else {
+      const travel = target.width + node.shimmer.width * 2;
+      node.shimmer.x = -node.shimmer.width + ((node.elapsed * target.width * 0.08) % travel);
+    }
   }
   if (node.fog) {
     node.fog.x = -target.width * 0.06 + (qualityRank > QUALITY_RANK.low ? Math.sin(node.elapsed * 0.18) * target.width * 0.035 : 0);
@@ -411,6 +569,7 @@ export async function createPixiThemeEngine({ canvas, width, height, targets = [
       targetNodes.forEach((node) => {
         gsap.killTweensOf(node.pulse);
         gsap.killTweensOf(node.pulse.scale);
+        node.burstSprites.forEach((sprite) => gsap.killTweensOf(sprite));
         node.container.destroy({ children: true, texture: false, textureSource: false });
       });
       targetNodes = new Map();
@@ -494,13 +653,33 @@ export async function createPixiThemeEngine({ canvas, width, height, targets = [
     node.pulse.scale.set(0.96);
     gsap.to(node.pulse, { alpha: 0, duration: 0.58, ease: "power2.out" });
     gsap.to(node.pulse.scale, { x: 1.035, y: 1.035, duration: 0.58, ease: "power2.out" });
-    node.particles.slice(0, Math.min(12, node.particles.length)).forEach((particle, index) => {
-      const angle = (Math.PI * 2 * index) / 12;
-      particle.xRatio = 0.5 + Math.cos(angle) * 0.08;
-      particle.yRatio = 0.5 + Math.sin(angle) * 0.08;
-      particle.sprite.alpha = 0.65;
-      gsap.to(particle.sprite, { alpha: 0.12, duration: 0.7, ease: "power2.out" });
-    });
+    if (node.burstSprites.length) {
+      node.burstSprites.forEach((sprite, index) => {
+        const angle = (Math.PI * 2 * index) / node.burstSprites.length - Math.PI / 2;
+        const distance = Math.min(node.target.width, node.target.height) * (0.12 + (index % 3) * 0.035);
+        gsap.killTweensOf(sprite);
+        sprite.position.set(node.target.width / 2, node.target.height / 2);
+        sprite.rotation = angle + Math.PI / 2;
+        sprite.alpha = 0.82;
+        sprite.scale.set(0.7);
+        gsap.to(sprite, {
+          x: node.target.width / 2 + Math.cos(angle) * distance,
+          y: node.target.height / 2 + Math.sin(angle) * distance,
+          rotation: sprite.rotation + (index % 2 ? 0.7 : -0.7),
+          alpha: 0,
+          duration: 0.54 + (index % 3) * 0.06,
+          ease: "power2.out",
+        });
+      });
+    } else {
+      node.particles.slice(0, Math.min(12, node.particles.length)).forEach((particle, index) => {
+        const angle = (Math.PI * 2 * index) / 12;
+        particle.xRatio = 0.5 + Math.cos(angle) * 0.08;
+        particle.yRatio = 0.5 + Math.sin(angle) * 0.08;
+        particle.sprite.alpha = 0.65;
+        gsap.to(particle.sprite, { alpha: 0.12, duration: 0.7, ease: "power2.out" });
+      });
+    }
   }
 
   function setVisible(visible) {
@@ -534,6 +713,7 @@ export async function createPixiThemeEngine({ canvas, width, height, targets = [
     targetNodes.forEach((node) => {
       gsap.killTweensOf(node.pulse);
       gsap.killTweensOf(node.pulse.scale);
+      node.burstSprites.forEach((sprite) => gsap.killTweensOf(sprite));
     });
     targetNodes.clear();
     app.destroy({ removeView: false }, { children: true, texture: false, textureSource: false });
