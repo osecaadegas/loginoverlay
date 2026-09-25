@@ -19,14 +19,22 @@ function buildEffectTargets(instances, singleInstanceId) {
       y: singleInstanceId ? 0 : Number(instance.y || 0),
       width: Math.max(1, Number(instance.width || 1)),
       height: Math.max(1, Number(instance.height || 1)),
+      opacity: Math.min(1, Math.max(0, Number(instance.opacity ?? 1))),
+      zIndex: Number(instance.zIndex || 0),
       ...resolved,
     }];
   });
 }
 
-function readDebugFlag() {
-  if (!import.meta.env.DEV || typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).get("fxDebug") === "1";
+function readDebugOptions() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return { enabled: false, effect: "" };
+  }
+  const params = new URLSearchParams(window.location.search);
+  return {
+    enabled: params.get("fxDebug") === "1",
+    effect: String(params.get("fxDebugEffect") || "").toLowerCase(),
+  };
 }
 
 function countTargetEvents(element) {
@@ -49,7 +57,7 @@ export default function ThemeEffectsLayer({
   const eventCountsRef = useRef(new Map());
   const [failed, setFailed] = useState(false);
   const [debugStats, setDebugStats] = useState(null);
-  const debug = useMemo(readDebugFlag, []);
+  const debug = useMemo(readDebugOptions, []);
   const targets = useMemo(
     () => buildEffectTargets(instances, singleInstanceId),
     [instances, singleInstanceId],
@@ -68,6 +76,7 @@ export default function ThemeEffectsLayer({
         width: dimensionsRef.current.width,
         height: dimensionsRef.current.height,
         targets: targetsRef.current,
+        debugEffect: debug.effect,
       }))
       .then((createdEngine) => {
         if (!alive) {
@@ -96,7 +105,7 @@ export default function ThemeEffectsLayer({
     // The engine lifecycle is tied to this canvas. Geometry and theme changes
     // are handled by the update effect below without creating a new renderer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(targets.length)]);
+  }, [Boolean(targets.length), debug.effect]);
 
   useEffect(() => {
     const engine = engineRef.current;
@@ -146,12 +155,12 @@ export default function ThemeEffectsLayer({
   }, [targets.length]);
 
   useEffect(() => {
-    if (!debug || !targets.length) return undefined;
+    if (!debug.enabled || !targets.length) return undefined;
     const timer = window.setInterval(() => {
       setDebugStats(engineRef.current?.getStats() || null);
     }, 500);
     return () => window.clearInterval(timer);
-  }, [debug, targets.length]);
+  }, [debug.enabled, targets.length]);
 
   if (!targets.length) return null;
   return (
@@ -162,9 +171,23 @@ export default function ThemeEffectsLayer({
       aria-hidden="true"
     >
       <canvas ref={canvasRef} className="theme-effects-layer__canvas" />
-      {debug && debugStats && (
+      {debug.enabled && targets.map((target) => (
+        <span
+          key={target.id}
+          className="theme-effects-layer__target-debug"
+          style={{
+            left: target.x,
+            top: target.y,
+            width: target.width,
+            height: target.height,
+          }}
+        >
+          {target.widgetType} · z {target.zIndex} · {Math.round(target.width)}×{Math.round(target.height)}
+        </span>
+      ))}
+      {debug.enabled && debugStats && (
         <output className="theme-effects-layer__debug">
-          FX {debugStats.quality.toUpperCase()} · {debugStats.fps} FPS · {debugStats.particles} particles · {debugStats.targets} targets · DPR {debugStats.resolution}
+          FX {debugStats.quality.toUpperCase()} · {debugStats.fps} FPS · {debugStats.particles} particles · {debugStats.targets} targets · DPR {debugStats.resolution}{debugStats.debugEffect ? ` · FORCE ${debugStats.debugEffect.toUpperCase()}` : ""}
         </output>
       )}
     </div>

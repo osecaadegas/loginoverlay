@@ -34,6 +34,8 @@ assert(packageJson.dependencies["pixi.js"], "PixiJS is a runtime dependency");
 assert(packageJson.dependencies.gsap, "GSAP is a runtime dependency");
 const css = readFileSync(new URL("../src/effects/ThemeEffects/ThemeEffects.css", import.meta.url), "utf8");
 assert.match(css, /pointer-events:\s*none/);
+const engineSource = readFileSync(new URL("../src/effects/ThemeEffects/PixiEngine/createPixiThemeEngine.js", import.meta.url), "utf8");
+assert.match(engineSource, /pixi\.js\/unsafe-eval/, "strict-CSP overlays load Pixi's static shader synchronizers");
 const obsOverlaySource = readFileSync(new URL("../src/components/OverlayCenter/editor/BetterObsOverlay.jsx", import.meta.url), "utf8");
 const editorSource = readFileSync(new URL("../src/components/OverlayCenter/editor/WidgetEditorPage.jsx", import.meta.url), "utf8");
 assert.match(obsOverlaySource, /runtime="obs-full"/, "full OBS route uses the shared effects renderer");
@@ -62,6 +64,9 @@ try {
     if (url.pathname === "/__theme-effects") {
       await request.respond({
         contentType: "text/html",
+        headers: {
+          "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws:;",
+        },
         body: '<html><body style="margin:0"><div id="root"></div><script type="module">import RefreshRuntime from "/@react-refresh"; RefreshRuntime.injectIntoGlobalHook(window); window.$RefreshReg$=()=>{}; window.$RefreshSig$=()=>type=>type; window.__vite_plugin_react_preamble_installed__=true;</script></body></html>',
       });
     } else {
@@ -118,8 +123,17 @@ try {
     pointerEvents: getComputedStyle(document.querySelector(".theme-effects-layer")).pointerEvents,
     alpha: document.querySelector("canvas").getContext("webgl2", { alpha: true })?.getContextAttributes().alpha ?? true,
     bufferWidth: document.querySelector("canvas").width,
+    fallback: document.querySelector(".theme-effects-layer").dataset.effectsFallback || "",
+    zIndex: getComputedStyle(document.querySelector(".theme-effects-layer")).zIndex,
   }));
-  assert.deepEqual(first, { canvases: 1, pointerEvents: "none", alpha: true, bufferWidth: 800 });
+  assert.deepEqual(first, {
+    canvases: 1,
+    pointerEvents: "none",
+    alpha: true,
+    bufferWidth: 800,
+    fallback: "",
+    zIndex: "1000000",
+  });
 
   await page.evaluate(() => window.fxTest.render("gladiator", "ultra"));
   await page.waitForFunction(() => document.querySelector(".theme-effects-layer__debug")?.textContent.includes("ULTRA"));

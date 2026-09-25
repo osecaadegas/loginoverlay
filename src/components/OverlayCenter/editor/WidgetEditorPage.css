@@ -589,7 +589,7 @@ body.better-editor-document #root {
 
 .better-editor-canvas-line {
   position: absolute;
-  z-index: 3;
+  z-index: 1000001;
   pointer-events: none;
   background: rgba(20, 216, 216, 0.34);
 }
@@ -623,6 +623,7 @@ body.better-editor-document #root {
 }
 
 .better-editor-canvas-instance.is-selected {
+  z-index: 1000002 !important;
   border-color: rgba(20, 216, 216, 0.9);
   box-shadow:
     inset 0 0 0 1px rgba(20, 216, 216, 0.62),

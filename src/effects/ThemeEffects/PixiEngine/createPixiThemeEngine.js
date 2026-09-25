@@ -6,6 +6,7 @@ import {
   Sprite,
   Texture,
 } from "pixi.js";
+import "pixi.js/unsafe-eval";
 import { gsap } from "gsap";
 import {
   getEffectQualityPreset,
@@ -14,15 +15,6 @@ import {
 } from "../presets/performancePresets";
 
 const QUALITY_RANK = Object.freeze({ low: 0, balanced: 1, ultra: 2 });
-const TARGET_LAYER = Object.freeze({
-  background: "backgroundFX",
-  navbar: "navbarFX",
-  bonus_hunt: "bonusHuntFX",
-  slot_bingo: "bingoFX",
-  bets: "betsFX",
-  chat: "chatFX",
-  slideshow_frame: "mediaFX",
-});
 const TARGET_WEIGHT = Object.freeze({
   slot_bingo: 1.35,
   bonus_hunt: 0.9,
@@ -49,6 +41,10 @@ const ICE_SHIMMER_TARGETS = new Set(["navbar", "slot_bingo", "rtp_stats", "slide
 const ICE_BURST_TARGETS = new Set(["bonus_hunt", "slot_bingo"]);
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+function isForcedEffect(debugEffect, effect) {
+  return debugEffect === "all" || debugEffect === effect;
+}
 
 function hashString(value) {
   let hash = 2166136261;
@@ -171,12 +167,15 @@ function resolveShimmer(target, preset) {
   return target.effects.greek.marbleShimmer;
 }
 
-async function createTargetNode(target, layer, preset) {
+async function createTargetNode(target, layers, preset, debugEffect = "") {
   const random = createSeededRandom(hashString(`${target.id}:${target.widgetType}:${target.theme.id}`));
   const node = {
     id: target.id,
     target,
-    container: new Container(),
+    behind: new Container(),
+    inside: new Container(),
+    foreground: new Container(),
+    particleLayer: new Container(),
     particles: [],
     texture: null,
     edge: null,
@@ -197,10 +196,22 @@ async function createTargetNode(target, layer, preset) {
     elapsed: randomRange(random, 0, 12),
     shimmerPeriod: randomRange(random, 11, 16),
     shimmerPhase: randomRange(random, 0, 8),
+    debugEffect,
   };
-  node.container.label = `theme-fx:${target.id}`;
-  node.container.eventMode = "none";
-  layer.addChild(node.container);
+  const targetLabel = `theme-fx:${target.id}`;
+  const targetZIndex = Number(target.zIndex || 0);
+  [
+    [node.behind, "behind", target.widgetType === "background" ? layers.backgroundFX : layers.behindWidgetFX],
+    [node.inside, "inside", target.widgetType === "background" ? layers.backgroundFX : layers.insideWidgetFX],
+    [node.foreground, "foreground", target.widgetType === "background" ? layers.backgroundFX : layers.foregroundWidgetFX],
+    [node.particleLayer, "particles", layers.globalParticles],
+  ].forEach(([container, label, layer]) => {
+    container.label = `${targetLabel}:${label}`;
+    container.eventMode = "none";
+    container.zIndex = targetZIndex;
+    layer.addChild(container);
+  });
+  node.containers = [node.behind, node.inside, node.foreground, node.particleLayer];
 
   const [
     panelTexture,
@@ -226,16 +237,18 @@ async function createTargetNode(target, layer, preset) {
 
   node.texture = new Sprite(panelTexture);
   const iceHierarchy = ICE_PRIMARY_WEIGHT[target.widgetType] || 0.48;
-  node.texture.alpha = target.theme.family === "ice" ? 0.045 + iceHierarchy * 0.07 : 0.065;
+  node.texture.alpha = target.theme.family === "ice" ? 0.07 + iceHierarchy * 0.08 : 0.065;
   node.texture.blendMode = target.theme.family === "gladiator" ? "overlay" : "screen";
-  node.container.addChild(node.texture);
+  node.inside.addChild(node.texture);
 
   node.edge = new Sprite(edgeTexture);
-  node.edge.alpha = target.theme.family === "ice"
-    ? 0.1 + target.effects.ice.frost * (0.13 + iceHierarchy * 0.08)
+  node.edge.alpha = isForcedEffect(debugEffect, "frost")
+    ? 1
+    : target.theme.family === "ice"
+      ? 0.17 + target.effects.ice.frost * (0.2 + iceHierarchy * 0.1)
     : 0.075;
   node.edge.blendMode = "screen";
-  node.container.addChild(node.edge);
+  node.foreground.addChild(node.edge);
 
   const showDetail = target.theme.family !== "ice" || target.effects.ice.cracks;
   if (showDetail) {
@@ -245,18 +258,22 @@ async function createTargetNode(target, layer, preset) {
       : target.widgetType === "slot_bingo"
         ? 0.045
         : 0.065;
-    node.detail.alpha = target.theme.family === "ice" ? iceCrackAlpha : 0.055;
+    node.detail.alpha = isForcedEffect(debugEffect, "cracks")
+      ? 1
+      : target.theme.family === "ice" ? iceCrackAlpha * 1.55 : 0.055;
     node.detail.blendMode = target.theme.family === "ice"
       ? "screen"
       : target.theme.family === "gladiator" ? "overlay" : "multiply";
-    node.container.addChild(node.detail);
+    node.inside.addChild(node.detail);
   }
 
   if (target.theme.family === "ice" && target.effects.ice.frost > 0.01) {
     node.corners = new Sprite(cornerTexture);
-    node.corners.alpha = (0.07 + target.effects.ice.frost * 0.15) * (0.7 + iceHierarchy * 0.3);
+    node.corners.alpha = isForcedEffect(debugEffect, "frost")
+      ? 1
+      : (0.11 + target.effects.ice.frost * 0.22) * (0.72 + iceHierarchy * 0.36);
     node.corners.blendMode = "screen";
-    node.container.addChild(node.corners);
+    node.foreground.addChild(node.corners);
   }
 
   const showDecor = target.theme.family === "ice"
@@ -264,33 +281,39 @@ async function createTargetNode(target, layer, preset) {
     && ICE_ICICLE_TARGETS.has(target.widgetType);
   if (showDecor) {
     node.decor = new Sprite(decorTexture);
-    node.decor.alpha = target.widgetType === "navbar" ? 0.26 : 0.13 + iceHierarchy * 0.06;
+    node.decor.alpha = isForcedEffect(debugEffect, "icicles")
+      ? 1
+      : target.widgetType === "navbar" ? 0.44 : 0.22 + iceHierarchy * 0.1;
     node.decor.blendMode = "screen";
-    node.container.addChild(node.decor);
+    node.foreground.addChild(node.decor);
   }
 
   const fogAmount = resolveFogAmount(target);
   const allowFog = target.theme.family !== "ice" || ICE_MIST_TARGETS.has(target.widgetType);
   if (fogAmount > 0.01 && allowFog) {
     node.fog = new Sprite(fogTexture);
-    node.fog.alpha = fogAmount * (target.theme.family === "gladiator" ? 0.1 : 0.13);
-    node.fog.blendMode = "screen";
-    node.container.addChild(node.fog);
+    node.fog.alpha = isForcedEffect(debugEffect, "fog")
+      ? 0.8
+      : fogAmount * (target.theme.family === "gladiator" ? 0.1 : 0.2);
+    node.fog.blendMode = target.theme.family === "ice" ? "normal" : "screen";
+    node.inside.addChild(node.fog);
     if (preset.fogLayers > 1) {
       node.fogSecondary = new Sprite(fogTexture);
       node.fogSecondary.alpha = node.fog.alpha * 0.55;
-      node.fogSecondary.blendMode = "screen";
-      node.container.addChild(node.fogSecondary);
+      node.fogSecondary.blendMode = target.theme.family === "ice" ? "normal" : "screen";
+      node.inside.addChild(node.fogSecondary);
     }
   }
 
   if (resolveShimmer(target, preset)) {
     node.shimmer = new Sprite(target.theme.family === "ice" ? specularTexture : Texture.WHITE);
-    node.shimmer.tint = target.theme.colors.highlight;
-    node.shimmer.alpha = 0.035 + target.effects.glowIntensity * 0.035;
+    node.shimmer.tint = 0xffffff;
+    node.shimmer.alpha = isForcedEffect(debugEffect, "shimmer")
+      ? 1
+      : 0.065 + target.effects.glowIntensity * 0.055;
     node.shimmer.rotation = 0.23;
     node.shimmer.blendMode = "screen";
-    node.container.addChild(node.shimmer);
+    node.foreground.addChild(node.shimmer);
   }
 
   if (target.theme.family === "greek" && target.effects.greek.lightRays) {
@@ -299,29 +322,34 @@ async function createTargetNode(target, layer, preset) {
     node.lightRay.alpha = 0.026;
     node.lightRay.rotation = -0.28;
     node.lightRay.blendMode = "screen";
-    node.container.addChild(node.lightRay);
+    node.inside.addChild(node.lightRay);
   }
 
   if (preset.bloom && target.effects.glowIntensity > 0.05) {
     node.aura = new Graphics();
-    node.container.addChild(node.aura);
+    node.behind.addChild(node.aura);
   }
-  node.container.addChild(node.frameBack);
-  node.container.addChild(node.frame);
-  node.container.addChild(node.frameHighlight);
-  node.container.addChild(node.pulse);
+  node.behind.addChild(node.frameBack);
+  node.foreground.addChild(node.frame);
+  node.foreground.addChild(node.frameHighlight);
+  node.foreground.addChild(node.pulse);
 
   node.clipMask = new Graphics();
-  node.container.addChild(node.clipMask);
-  [node.texture, node.detail, node.fog, node.fogSecondary, node.shimmer, node.lightRay]
+  node.inside.addChild(node.clipMask);
+  [node.texture, node.detail, node.fog, node.fogSecondary, node.lightRay]
     .filter(Boolean)
     .forEach((displayObject) => {
       displayObject.mask = node.clipMask;
     });
+  if (node.shimmer) {
+    node.foregroundMask = new Graphics();
+    node.foreground.addChild(node.foregroundMask);
+    node.shimmer.mask = node.foregroundMask;
+  }
 
   const particleCount = Math.max(
     0,
-    Math.round(preset.maxParticles * getParticleAmount(target)),
+    Math.round(preset.maxParticles * (isForcedEffect(debugEffect, "snow") ? 1 : getParticleAmount(target))),
   );
   for (let index = 0; index < particleCount; index += 1) {
     const sprite = new Sprite(particleTexture);
@@ -351,7 +379,7 @@ async function createTargetNode(target, layer, preset) {
         : tier === "midground" ? randomRange(random, 0.5, 0.82) : randomRange(random, 0.88, 1.2),
     };
     node.particles.push(particle);
-    node.container.addChild(sprite);
+    node.particleLayer.addChild(sprite);
   }
 
   if (target.theme.family === "ice" && ICE_BURST_TARGETS.has(target.widgetType)) {
@@ -362,7 +390,7 @@ async function createTargetNode(target, layer, preset) {
       sprite.alpha = 0;
       sprite.blendMode = "screen";
       node.burstSprites.push(sprite);
-      node.container.addChild(sprite);
+      node.particleLayer.addChild(sprite);
     }
   }
   return node;
@@ -370,7 +398,11 @@ async function createTargetNode(target, layer, preset) {
 
 function resizeTargetNode(node, target) {
   node.target = target;
-  node.container.position.set(target.x, target.y);
+  node.containers.forEach((container) => {
+    container.position.set(target.x, target.y);
+    container.zIndex = Number(target.zIndex || 0);
+    container.alpha = clamp(Number(target.opacity ?? 1), 0, 1);
+  });
   setSpriteBounds(node.texture, target.width, target.height);
   setSpriteBounds(node.edge, target.width, target.height);
   if (node.detail) setSpriteBounds(node.detail, target.width, target.height);
@@ -406,11 +438,20 @@ function resizeTargetNode(node, target) {
   node.clipMask.clear()
     .roundRect(2, 2, Math.max(1, target.width - 4), Math.max(1, target.height - 4), Math.max(3, radius - 1))
     .fill({ color: 0xffffff });
-  drawTargetFrame(node, target);
+  if (node.foregroundMask) {
+    node.foregroundMask.clear()
+      .roundRect(2, 2, Math.max(1, target.width - 4), Math.max(1, target.height - 4), Math.max(3, radius - 1))
+      .fill({ color: 0xffffff });
+  }
+  drawTargetFrame(node, target, isForcedEffect(node.debugEffect, "glow") ? 2.4 : 1);
   if (node.aura) {
     const radius = clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
     node.aura.clear().roundRect(3, 3, Math.max(1, target.width - 6), Math.max(1, target.height - 6), radius)
-      .stroke({ width: 6, color: target.theme.colors.primary, alpha: target.effects.glowIntensity * 0.055 });
+      .stroke({
+        width: isForcedEffect(node.debugEffect, "glow") ? 10 : 6,
+        color: target.theme.colors.primary,
+        alpha: isForcedEffect(node.debugEffect, "glow") ? 0.9 : target.effects.glowIntensity * 0.08,
+      });
   }
   node.pulse.clear();
   node.pulse
@@ -426,9 +467,11 @@ function resizeTargetNode(node, target) {
     particle.sprite.height = size;
     particle.sprite.x = particle.xRatio * target.width;
     particle.sprite.y = particle.yRatio * target.height;
-    particle.sprite.alpha = particle.tier === "background"
-      ? 0.06 + particle.scale * 0.09
-      : particle.tier === "midground" ? 0.1 + particle.scale * 0.14 : 0.14 + particle.scale * 0.13;
+    particle.sprite.alpha = isForcedEffect(node.debugEffect, "snow")
+      ? 1
+      : particle.tier === "background"
+        ? 0.09 + particle.scale * 0.11
+        : particle.tier === "midground" ? 0.14 + particle.scale * 0.17 : 0.19 + particle.scale * 0.16;
   });
   node.burstSprites.forEach((sprite, index) => {
     const size = clamp(Math.min(target.width, target.height) * (0.023 + index * 0.0015), 7, 20);
@@ -454,7 +497,11 @@ function updateTargetNode(node, ticker) {
       const sweepRatio = clamp(progress / sweepDuration, 0, 1);
       node.shimmer.x = -node.shimmer.width + sweepRatio * (target.width + node.shimmer.width * 2);
       node.shimmer.alpha = progress < sweepDuration
-        ? Math.sin(sweepRatio * Math.PI) * (0.024 + target.effects.glowIntensity * 0.026)
+        ? Math.sin(sweepRatio * Math.PI) * (
+          isForcedEffect(node.debugEffect, "shimmer")
+            ? 1
+            : 0.06 + target.effects.glowIntensity * 0.055
+        )
         : 0;
     } else {
       const travel = target.width + node.shimmer.width * 2;
@@ -463,11 +510,15 @@ function updateTargetNode(node, ticker) {
   }
   if (node.fog) {
     node.fog.x = -target.width * 0.06 + (qualityRank > QUALITY_RANK.low ? Math.sin(node.elapsed * 0.18) * target.width * 0.035 : 0);
-    node.fog.alpha = resolveFogAmount(target) * (qualityRank > QUALITY_RANK.low ? 0.08 + Math.sin(node.elapsed * 0.24) * 0.015 : 0.07);
+    node.fog.alpha = isForcedEffect(node.debugEffect, "fog")
+      ? 0.8
+      : resolveFogAmount(target) * (qualityRank > QUALITY_RANK.low ? 0.17 + Math.sin(node.elapsed * 0.24) * 0.025 : 0.11);
   }
   if (node.fogSecondary) {
     node.fogSecondary.x = -target.width * 0.1 - Math.sin(node.elapsed * 0.12) * target.width * 0.028;
-    node.fogSecondary.alpha = resolveFogAmount(target) * (0.035 + Math.cos(node.elapsed * 0.17) * 0.008);
+    node.fogSecondary.alpha = isForcedEffect(node.debugEffect, "fog")
+      ? 0.58
+      : resolveFogAmount(target) * (0.07 + Math.cos(node.elapsed * 0.17) * 0.012);
   }
 
   if (
@@ -508,7 +559,13 @@ function updateTargetNode(node, ticker) {
   });
 }
 
-export async function createPixiThemeEngine({ canvas, width, height, targets = [] }) {
+export async function createPixiThemeEngine({
+  canvas,
+  width,
+  height,
+  targets = [],
+  debugEffect = "",
+}) {
   const quality = getHighestQuality(targets);
   const preset = getEffectQualityPreset(quality);
   const app = new Application();
@@ -530,21 +587,20 @@ export async function createPixiThemeEngine({ canvas, width, height, targets = [
   const layers = {};
   [
     "backgroundFX",
-    "navbarFX",
-    "bonusHuntFX",
-    "bingoFX",
-    "betsFX",
-    "chatFX",
-    "mediaFX",
-    "foregroundFX",
+    "behindWidgetFX",
+    "insideWidgetFX",
+    "foregroundWidgetFX",
     "globalParticles",
-  ].forEach((name) => {
+  ].forEach((name, index) => {
     const layer = new Container();
     layer.label = name;
     layer.eventMode = "none";
+    layer.sortableChildren = true;
+    layer.zIndex = index * 10;
     layers[name] = layer;
     app.stage.addChild(layer);
   });
+  app.stage.sortableChildren = true;
 
   let destroyed = false;
   let viewportWidth = Math.max(1, width);
@@ -570,7 +626,9 @@ export async function createPixiThemeEngine({ canvas, width, height, targets = [
         gsap.killTweensOf(node.pulse);
         gsap.killTweensOf(node.pulse.scale);
         node.burstSprites.forEach((sprite) => gsap.killTweensOf(sprite));
-        node.container.destroy({ children: true, texture: false, textureSource: false });
+        node.containers.forEach((container) => {
+          container.destroy({ children: true, texture: false, textureSource: false });
+        });
       });
       targetNodes = new Map();
     };
@@ -599,15 +657,18 @@ export async function createPixiThemeEngine({ canvas, width, height, targets = [
     app.ticker.maxFPS = nextPreset.fps;
     const created = await Promise.all(
       nextTargets.map(async (target) => {
-        const layer = layers[TARGET_LAYER[target.widgetType] || "foregroundFX"];
         const targetPreset = getEffectQualityPreset(target.effects.quality);
-        const node = await createTargetNode(target, layer, targetPreset);
+        const node = await createTargetNode(target, layers, targetPreset, debugEffect);
         resizeTargetNode(node, target);
         return [target.id, node];
       }),
     );
     if (destroyed || token !== rebuildToken) {
-      created.forEach(([, node]) => node.container.destroy({ children: true, texture: false, textureSource: false }));
+      created.forEach(([, node]) => {
+        node.containers.forEach((container) => {
+          container.destroy({ children: true, texture: false, textureSource: false });
+        });
+      });
       return;
     }
     targetNodes = new Map(created);
@@ -701,6 +762,8 @@ export async function createPixiThemeEngine({ canvas, width, height, targets = [
       resolution: app.renderer.resolution,
       targets: activeTargets.length,
       quality: currentQuality,
+      debugEffect,
+      layerOrder: app.stage.children.map((layer) => layer.label),
     };
   }
 
