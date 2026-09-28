@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, mkdirSync } from "node:fs";
+import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import puppeteer from "puppeteer";
 import { createServer } from "vite";
 import {
@@ -87,9 +87,20 @@ try {
     }
   });
   await page.goto(`${baseUrl}/__theme-effects?fxDebug=1`, { waitUntil: "networkidle0" });
-  await page.evaluate(async () => {
+  if (process.env.ICE_PERF_REPORT) await page.evaluate(() => {
+    window.fxCounters = { rectReads: 0, draws: 0 };
+    const rect = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function (...args) { window.fxCounters.rectReads++; return rect.apply(this, args); };
+    for (const name of ['drawElements', 'drawArrays', 'drawElementsInstanced', 'drawArraysInstanced']) {
+      const original = WebGL2RenderingContext.prototype[name];
+      WebGL2RenderingContext.prototype[name] = function (...args) { window.fxCounters.draws++; return original.apply(this, args); };
+    }
+  });
+  const initialDependencyHash = JSON.parse(readFileSync(new URL('../node_modules/.vite/deps/_metadata.json', import.meta.url), 'utf8')).browserHash;
+  await page.evaluate(async (dependencyHash) => {
     const React = (await import("/node_modules/.vite/deps/react.js")).default;
     const ReactDOM = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;
+    const { gsap } = await import(`/node_modules/.vite/deps/gsap.js?v=${dependencyHash}`);
     const ThemeEffectsLayer = (await import("/src/effects/ThemeEffects/ThemeEffectsLayer.jsx")).default;
     const registry = await import("/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx");
     const { switchChatStyle } = await import("/src/components/OverlayCenter/widgets/chat/chatStyles.js");
@@ -106,19 +117,39 @@ try {
       return { ...created, instanceId: "bingo-fx-test", visible: true };
     };
     window.fxTest = {
-      renderScene({ quality = "balanced", scale = 1, moved = false, single = "", theme = "arctic" } = {}) {
+      eventSpeed(speed) { gsap.globalTimeline.timeScale(speed); },
+      renderScene({ quality = "balanced", scale = 1, moved = false, single = "", theme = "arctic", tournamentLayout = "esports", winner = null, media = false, chatEvent = "", results = false } = {}) {
         const specifications = [
+          ["background", 0, 0, 1920, 1080, { backgroundStyle: "better", texture: "none" }],
           ["navbar", 12, 8, 1896, 74, { navbarStyle: "better", showNowPlaying: false, showCrypto: false }],
-          ["bonus_hunt", moved ? 75 : 10, moved ? 120 : 88, moved ? 410 : 360, moved ? 800 : 900, { bonusHuntStyle: "better", orientation: "mainstream", widgetHeight: moved ? 800 : 900, bonuses: [], showRequests: false }],
+          ["bonus_hunt", moved ? 75 : 10, moved ? 120 : 88, moved ? 410 : 360, moved ? 800 : 900, { bonusHuntStyle: "better", orientation: "mainstream", widgetHeight: moved ? 800 : 900, bonuses: single === 'bonus_hunt' ? [
+            { id: 'ice-normal', slotName: 'Ice review normal', betSize: 1, payout: 25, opened: true },
+            { id: 'ice-super', slotName: 'Ice review super', betSize: 1, payout: 50, opened: true, isSuperBonus: true },
+            { id: 'ice-extreme', slotName: 'Ice review extreme', betSize: 1, payout: 75, opened: true, isExtremeBonus: true },
+          ] : [], showRequests: false, ...(results ? { sessionState: "ended", drawerAlwaysVisible: true } : {}) }],
           ["slot_bingo", 470, 320, 870, 380, { boardRows: 3 }],
-          ["slideshow_frame", 1500, 94, 402, 278, { mediaText: "" }],
-          ["chat", 1500, 388, 402, 624, { twitchEnabled: false, kickEnabled: false, youtubeEnabled: false, bttvEnabled: false, messages: [] }],
+          ["slideshow_frame", 1500, 94, 402, 278, { mediaText: media ? "/player.webp" : "" }],
+          ["chat", 1500, 388, 402, 624, { live: true, twitchEnabled: false, kickEnabled: false, youtubeEnabled: false, bttvEnabled: false, animation: "none",
+            giveawayInChat: chatEvent === "giveaway", shoutoutInChat: chatEvent === "shoutout",
+            __previewGiveawayConfig: { title: "Frozen giveaway", prize: "Channel points", keyword: "join", participants: [{ name: "North", avatarUrl: "/player.webp" }, { name: "Frost", avatarUrl: "/player.webp" }], isActive: true },
+            __previewShoutoutAlert: chatEvent === "shoutout" ? { id: "ice-shoutout", raider_username: "north", raider_display_name: "North", game_name: "Just Chatting" } : undefined,
+            __appearancePreviewMessages: [
+            { id: 'ice-mod', username: 'Moderator', isMod: true, message: 'Welcome! Enjoy the stream.', platform: 'twitch', avatarUrl: '/player.webp' },
+            { id: 'ice-sub', username: 'Subscriber', isSub: true, message: 'That FREE tile looks promising!', platform: 'twitch', avatarUrl: '/player.webp' },
+            { id: 'ice-vip', username: 'CommunityVIP', isVip: true, message: 'Good luck with the next bonus.', platform: 'twitch', avatarUrl: '/player.webp' },
+            { id: 'ice-request', username: 'SlotFan', message: '!sr Stormforged', platform: 'twitch', avatarUrl: '/player.webp' },
+          ] }],
           ["rtp_stats", 392, 814, 1068, 64, {}],
+          ["tournament", 0, 0, 1000, 620, {
+            ...registry.resolveBetterWidgetConfig("tournament", {}, "mock"),
+            layout: tournamentLayout,
+            data: { currentMatchIdx: 0, matches: [{ id: "ice-match", player1: "North", player2: "Frost", type: "bonus", status: "in_progress", winner, config: {}, rounds: [{ player1: { bonusCost: 20, bonusPayout: 45 }, player2: { bonusCost: 20, bonusPayout: 30 } }], slot1: { name: "Frozen glass", image: "/theme-effects/ice/ice-glass.webp" }, slot2: { name: "Cold crystal", image: "/theme-effects/ice/ice-glass.webp" } }] },
+          }],
         ];
-        const widgets = specifications.filter(([type]) => !single || type === single).map(([type, x, y, w, h, config]) => ({
+        const widgets = specifications.filter(([type]) => single ? type === single : type !== "tournament").map(([type, x, y, w, h, config]) => ({
           ...registry.createBetterInstance(type),
           instanceId: `ice-${type}`, widgetType: type, visible: true,
-          x: single ? 0 : x, y: single ? 0 : y, width: w, height: h, opacity: 1, zIndex: 10,
+          x: single ? 0 : x, y: single ? 0 : y, width: w, height: h, opacity: 1, zIndex: type === "background" ? 0 : 10,
           config: { ...registry.getBetterWidgetDefinition(type).defaultConfig, ...config, colourTheme: theme, colour: `theme_${theme}`, themeEffects: { quality } },
         }));
         const width = single ? widgets[0].width : 1920;
@@ -171,7 +202,7 @@ try {
       },
     };
     window.fxTest.render("arctic", "balanced");
-  });
+  }, initialDependencyHash);
   assert.deepEqual(
     await page.evaluate(() => window.fxTest.preservedChatEffects),
     { enabled: false, quality: "low" },
@@ -204,7 +235,7 @@ try {
   assert.deepEqual(errors, [], `browser errors: ${errors.join(" | ")}`);
   await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
   await page.evaluate(() => window.fxTest.renderScene());
-  await page.waitForFunction(() => document.querySelectorAll('.theme-effects-layer__target-debug').length === 6);
+  await page.waitForFunction(() => document.querySelectorAll('.theme-effects-layer__target-debug').length === 7);
   await new Promise((resolve) => setTimeout(resolve, 1200));
   const checkBounds = async () => {
     const mismatches = await page.evaluate(async () => {
@@ -220,6 +251,31 @@ try {
     assert.deepEqual(mismatches, [], 'FX match the painted DOM surface, including fitted Bonus Hunt');
   };
   await checkBounds();
+  if (process.env.ICE_PERF_REPORT) {
+    const samples = [];
+    for (const scenario of ['idle', 'child-animation']) {
+      await page.evaluate((scenario) => {
+        window.fxCounters.rectReads = window.fxCounters.draws = 0;
+        if (scenario === 'child-animation') {
+          const child = document.createElement('span');
+          document.querySelector('.slot-bingo-widget__header').append(child);
+          window.fxChurn = setInterval(() => { child.style.opacity = String(performance.now() % 100 / 100); }, 16);
+          window.fxChurnElement = child;
+        }
+      }, scenario);
+      const before = await page.metrics();
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      const after = await page.metrics();
+      samples.push({ scenario, seconds: after.Timestamp - before.Timestamp,
+        taskMs: (after.TaskDuration - before.TaskDuration) * 1000,
+        scriptMs: (after.ScriptDuration - before.ScriptDuration) * 1000,
+        layoutMs: (after.LayoutDuration - before.LayoutDuration) * 1000,
+        heapBytes: after.JSHeapUsedSize,
+        ...await page.evaluate(() => ({ ...window.fxCounters, stats: document.querySelector('.theme-effects-layer__debug')?.textContent })) });
+      await page.evaluate(() => { clearInterval(window.fxChurn); window.fxChurnElement?.remove(); });
+    }
+    writeFileSync(process.env.ICE_PERF_REPORT, JSON.stringify(samples, null, 2));
+  }
   const shotDirectory = process.env.ICE_SCREENSHOTS;
   if (shotDirectory) mkdirSync(shotDirectory, { recursive: true });
   const screenshot = async (name, clip) => {
@@ -233,8 +289,12 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 750));
     await screenshot(`ice-full-${quality}`);
     if (quality === 'balanced') {
+      const chatMaterial = await page.$eval('[data-widget-type="chat"] [data-better-element="highlightedMessage"]', element => getComputedStyle(element).backgroundImage);
+      assert(chatMaterial.includes('ice-glass.webp'), 'role-highlighted chat cards use the Ice material');
       await screenshot('ice-bonus-hunt', { x: 0, y: 80, width: 385, height: 930 });
       await screenshot('ice-topbar', { x: 0, y: 0, width: 1920, height: 112 });
+      await screenshot('ice-bingo', { x: 465, y: 315, width: 880, height: 390 });
+      await screenshot('ice-chat', { x: 1495, y: 383, width: 412, height: 634 });
     }
   }
   await page.evaluate(() => window.fxTest.renderScene({ moved: true, scale: 0.65 }));
@@ -242,7 +302,7 @@ try {
   await checkBounds();
   await page.setViewport({ width: 1400, height: 900 });
   await checkBounds();
-  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame']) {
+  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame', 'chat', 'tournament']) {
     await page.evaluate((single) => window.fxTest.renderScene({ single }), type);
     await new Promise((resolve) => setTimeout(resolve, 750));
     await checkBounds();
@@ -253,6 +313,62 @@ try {
     await page.evaluate((theme) => window.fxTest.renderScene({ theme }), theme);
     await new Promise((resolve) => setTimeout(resolve, 750));
   }
+  await page.evaluate(() => window.fxTest.renderScene({ single: 'slideshow_frame', media: true }));
+  await page.waitForSelector('.better-slideshow-frame__media');
+  await page.waitForFunction(() => { const image = document.querySelector('.better-slideshow-frame__media'); return image?.complete && image.naturalWidth > 0; });
+  await screenshot('ice-media-loaded');
+  for (const chatEvent of ['giveaway', 'shoutout']) {
+    await page.evaluate(chatEvent => window.fxTest.renderScene({ single: 'chat', chatEvent }), chatEvent);
+    await page.waitForSelector(chatEvent === 'giveaway' ? '.better-giveaway-widget' : '.better-shoutout-card');
+    await new Promise(resolve => setTimeout(resolve, 500));
+    assert.equal(await page.$$eval('canvas', nodes => nodes.length), 1, 'embedded events reuse the shared renderer');
+    await screenshot(`ice-chat-${chatEvent}`);
+  }
+  await page.evaluate(() => window.fxTest.renderScene({ single: 'tournament' }));
+  await new Promise(resolve => setTimeout(resolve, 800));
+  await page.evaluate(() => {
+    window.iceEvents = [];
+    document.addEventListener('theme-effects:burst', event => window.iceEvents.push(event.detail.kind));
+    window.fxTest.eventSpeed(0.15);
+    window.fxTest.renderScene({ single: 'tournament', winner: 'player1' });
+  });
+  await page.waitForFunction(() => window.iceEvents.includes('tournament'));
+  await page.waitForFunction(() => document.querySelector('.theme-effects-layer__debug')?.dataset.lastEvent === 'tournament');
+  assert.equal(await page.$$eval('canvas', nodes => nodes.length), 1, 'Ice tournament does not allocate a second canvas');
+  await screenshot('ice-tournament-impact');
+  await page.evaluate(() => window.fxTest.eventSpeed(1));
+  await new Promise(resolve => setTimeout(resolve, 3600));
+  assert.equal(await page.$('.tw-ice-impact'), null, 'tournament impact cleans up after hand-off');
+  await page.evaluate(() => window.fxTest.renderScene({ single: 'bonus_hunt' }));
+  await new Promise(resolve => setTimeout(resolve, 800));
+  await page.evaluate(() => window.__boTriggerWin(1000));
+  await page.waitForSelector('.better-hunt-win-badge');
+  assert.equal(await page.$$eval('.better-hunt-win-confetti', nodes => nodes.length), 0, 'Ice wins use pooled shards instead of DOM confetti');
+  await screenshot('ice-hunt-event');
+  // Intersection pausing prevents offscreen previews consuming a full ticker.
+  await page.evaluate(() => { document.querySelector('.better-obs-canvas').style.transform = 'translateY(5000px)'; });
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  const pausedFrame = await page.$eval('.theme-effects-layer__debug', node => node.dataset.frames);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  assert.equal(await page.$eval('.theme-effects-layer__debug', node => node.dataset.frames), pausedFrame);
+  await page.evaluate(() => { document.querySelector('.better-obs-canvas').style.transform = ''; });
+  await page.waitForFunction(frame => document.querySelector('.theme-effects-layer__debug')?.dataset.frames !== frame, {}, pausedFrame);
+  await page.evaluate(() => window.fxTest.renderScene({ single: 'bonus_hunt', results: true }));
+  await page.waitForSelector('.better-hunt-result');
+  await page.waitForSelector('.better-hunt-win-badge', { hidden: true });
+  await page.setViewport({ width: 1400, height: 1200 });
+  await new Promise(resolve => setTimeout(resolve, 700));
+  await screenshot('ice-best-worst');
+  await page.setViewport({ width: 1400, height: 900 });
+  for (const tournamentLayout of ['vertical', 'minimal', 'arena', 'scoreboard', 'grid']) {
+    await page.evaluate((tournamentLayout) => window.fxTest.renderScene({ single: 'tournament', tournamentLayout }), tournamentLayout);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await checkBounds();
+    assert(await page.$eval('.tw-root', element => getComputedStyle(element).backgroundImage.includes('ice-glass.webp')));
+    await screenshot(`ice-tournament-${tournamentLayout}`);
+  }
+  await page.evaluate(() => window.fxTest.renderScene());
+  await new Promise((resolve) => setTimeout(resolve, 750));
   await checkBounds();
   const { browserHash } = JSON.parse(readFileSync(new URL('../node_modules/.vite/deps/_metadata.json', import.meta.url), 'utf8'));
   await page.evaluate((version) => window.fxTest.mountEditor(version), browserHash);

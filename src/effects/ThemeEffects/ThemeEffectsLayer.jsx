@@ -53,6 +53,7 @@ export default function ThemeEffectsLayer({
 }) {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
+  const visibleRef = useRef(true);
   const targetsRef = useRef([]);
   const dimensionsRef = useRef({ width, height });
   const eventCountsRef = useRef(new Map());
@@ -73,13 +74,29 @@ export default function ThemeEffectsLayer({
     let frame = 0;
     let previous = "";
     const observed = new Set();
+    const geometryElements = new Set();
     const measure = () => {
       frame = 0;
+      geometryElements.clear();
+      const surfaces = new Set();
       targets.forEach((target) => {
         const surface = findEffectSurface(host, target);
+        if (surface) surfaces.add(surface);
+        // Only transforms on the surface or its ancestors affect its bounds.
+        // Animating confetti/messages below it must not remeasure every widget.
+        for (let element = surface; element; element = element.parentElement) {
+          geometryElements.add(element);
+          if (element === host) break;
+        }
         if (surface && !observed.has(surface)) {
           observed.add(surface);
           resizeObserver.observe(surface);
+        }
+      });
+      observed.forEach((surface) => {
+        if (!surfaces.has(surface)) {
+          resizeObserver.unobserve(surface);
+          observed.delete(surface);
         }
       });
       const next = measureEffectTargets(host, canvas, targets, width, height);
@@ -97,7 +114,12 @@ export default function ThemeEffectsLayer({
     resizeObserver.observe(host);
     resizeObserver.observe(canvas);
     const mutationObserver = new MutationObserver((records) => {
-      if (records.some((record) => !record.target.closest?.(".theme-effects-layer"))) schedule();
+      if (records.some((record) => {
+        if (record.target.closest?.(".theme-effects-layer")) return false;
+        if (record.type === "attributes") return geometryElements.has(record.target);
+        return geometryElements.has(record.target) || [...record.addedNodes, ...record.removedNodes]
+          .some((node) => node.nodeType === 1 && (node.matches?.("[data-effect-target-id]") || node.querySelector?.("[data-effect-target-id]")));
+      })) schedule();
     });
     mutationObserver.observe(host, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class"] });
     window.addEventListener("resize", schedule);
@@ -131,7 +153,7 @@ export default function ThemeEffectsLayer({
         }
         engine = createdEngine;
         engineRef.current = createdEngine;
-        createdEngine.setVisible(document.visibilityState === "visible");
+        createdEngine.setVisible(visibleRef.current && document.visibilityState === "visible");
         createdEngine.resize(dimensionsRef.current.width, dimensionsRef.current.height);
         createdEngine.updateTargets(targetsRef.current, { transition: false }).catch((error) => {
           console.error("[ThemeEffects] Failed to synchronize initial targets:", error);
@@ -165,12 +187,22 @@ export default function ThemeEffectsLayer({
 
   useEffect(() => {
     if (!targets.length) return undefined;
+    let intersects = true;
     const onVisibility = () => {
-      engineRef.current?.setVisible(document.visibilityState === "visible");
+      visibleRef.current = intersects && document.visibilityState === "visible";
+      engineRef.current?.setVisible(visibleRef.current);
     };
+    const observer = new IntersectionObserver(([entry]) => {
+      intersects = entry.isIntersecting;
+      onVisibility();
+    });
+    if (canvasRef.current) observer.observe(canvasRef.current);
     document.addEventListener("visibilitychange", onVisibility);
     onVisibility();
-    return () => document.removeEventListener("visibilitychange", onVisibility);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [targets.length]);
 
   useEffect(() => {
@@ -180,6 +212,8 @@ export default function ThemeEffectsLayer({
     let frame = 0;
     const inspect = () => {
       frame = 0;
+      const activeIds = new Set(targetsRef.current.map((target) => target.id));
+      eventCountsRef.current.forEach((_, id) => { if (!activeIds.has(id)) eventCountsRef.current.delete(id); });
       targetsRef.current.forEach((target) => {
         const element = host.querySelector(`[data-effect-target-id="${CSS.escape(target.id)}"]`);
         if (!element) return;
@@ -193,10 +227,32 @@ export default function ThemeEffectsLayer({
       if (!frame) frame = window.requestAnimationFrame(inspect);
     };
     inspect();
-    const observer = new MutationObserver(scheduleInspect);
-    observer.observe(host, { attributes: true, childList: true, subtree: true });
+    const eventSelector = '[data-widget-state], .slot-bingo-widget__square';
+    const observer = new MutationObserver((records) => {
+      if (records.some((record) => record.target.matches?.(eventSelector)
+        || (record.type === "childList" && [...record.addedNodes, ...record.removedNodes]
+          .some((node) => node.nodeType === 1 && (node.matches?.(eventSelector) || node.querySelector?.(eventSelector)))))) scheduleInspect();
+    });
+    observer.observe(host, { attributes: true, attributeFilter: ["class", "data-widget-state"], childList: true, subtree: true });
+    const onEffect = (event) => {
+      const wrapper = event.target.closest?.("[data-effect-target-id]");
+      if (!wrapper || !host.contains(wrapper)) return;
+      const id = wrapper.dataset.effectTargetId;
+      const target = targetsRef.current.find((entry) => entry.id === id);
+      if (!target || target.theme.family !== "ice") return;
+      const surface = findEffectSurface(host, target);
+      const bounds = surface?.getBoundingClientRect();
+      const source = event.detail?.source?.getBoundingClientRect?.();
+      engineRef.current?.burst(id, {
+        kind: event.detail?.kind,
+        x: source && bounds?.width ? (source.left + source.width / 2 - bounds.left) / bounds.width : 0.5,
+        y: source && bounds?.height ? (source.top + source.height / 2 - bounds.top) / bounds.height : 0.5,
+      });
+    };
+    host.addEventListener("theme-effects:burst", onEffect);
     return () => {
       observer.disconnect();
+      host.removeEventListener("theme-effects:burst", onEffect);
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, [targets.length]);
@@ -233,7 +289,7 @@ export default function ThemeEffectsLayer({
         </span>
       ))}
       {debug.enabled && debugStats && (
-        <output className="theme-effects-layer__debug">
+        <output className="theme-effects-layer__debug" data-frames={debugStats.frames} data-last-event={debugStats.lastEvent}>
           FX {debugStats.quality.toUpperCase()} · {debugStats.fps} FPS · {debugStats.particles} particles · {debugStats.targets} targets · DPR {debugStats.resolution}{debugStats.debugEffect ? ` · FORCE ${debugStats.debugEffect.toUpperCase()}` : ""}
         </output>
       )}

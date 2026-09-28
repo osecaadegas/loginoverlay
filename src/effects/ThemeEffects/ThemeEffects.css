@@ -371,9 +371,130 @@
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="background"] [data-appearance-part="texture"] {
-  background-image: radial-gradient(ellipse at 47% 38%, rgba(4, 17, 29, 0.91), rgba(1, 5, 10, 0.98) 85%), url("/theme-effects/ice/ice-glass.webp") !important;
-  background-size: cover, 680px 680px !important;
+  background-image:
+    radial-gradient(ellipse at 36% 62%, rgba(99, 168, 188, 0.065), transparent 48%),
+    radial-gradient(ellipse at 72% 24%, rgba(118, 184, 203, 0.055), transparent 42%),
+    radial-gradient(ellipse at 47% 38%, rgba(4, 17, 29, 0.87), rgba(1, 5, 10, 0.97) 85%),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, cover, cover, 790px 670px !important;
   box-shadow: inset 0 0 180px #01050b;
+}
+
+/* Static material stays below DOM text. No new sizing, positioning or animation. */
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-panel {
+  background-position: center, center, center, 83px 127px, 17px 9px;
+  background-size: cover, cover, cover, 370px 510px, 180px 180px;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-autoscroll-card, .better-hunt-row):not(.better-hunt-row--super, .better-hunt-row--extreme, .better-hunt-autoscroll-card--super, .better-hunt-autoscroll-card--extreme) {
+  background-image:
+    linear-gradient(164deg, rgba(14, 36, 48, 0.84), rgba(2, 12, 22, 0.95)),
+    url("/theme-effects/ice/ice-glass.webp");
+  background-size: cover, 310px 245px;
+  box-shadow: inset 0 1px 0 rgba(218, 240, 247, 0.24), inset 0 -7px 12px rgba(0, 5, 12, 0.38);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  .better-hunt-autoscroll-card:nth-child(even) {
+  background-position: center, 113px 67px;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget {
+  background-position: center, center, center, 67px 113px, 29px 17px;
+  box-shadow: inset 0 2px 1px rgba(235, 251, 255, 0.68),
+    inset 2px 0 1px rgba(173, 218, 232, 0.32),
+    inset 0 -4px 3px rgba(1, 7, 14, 0.9),
+    inset 0 0 23px rgba(175, 219, 230, 0.17),
+    inset 0 -24px 35px rgba(0, 4, 10, 0.48),
+    0 9px 20px rgba(0, 3, 8, 0.46);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"]
+  .slot-bingo-widget__square.is-free {
+  background-image:
+    radial-gradient(ellipse at 48% 12%, rgba(196, 238, 248, 0.33), transparent 55%),
+    linear-gradient(180deg, rgba(5, 32, 46, 0.25), rgba(1, 13, 25, 0.88)),
+    url("/theme-effects/ice/frost-corners.png"),
+    url("/theme-effects/ice/ice-glass.webp");
+  background-size: cover, cover, 100% 100%, 247px 211px;
+  background-position: center, center, center, 39px 81px;
+  background-blend-mode: screen, normal, screen, normal;
+  border-color: #daf5fc;
+  text-shadow: 0 2px 3px #000b13;
+  box-shadow: inset 0 2px 1px rgba(246, 254, 255, 0.65),
+    inset 0 -4px 9px rgba(0, 7, 17, 0.74),
+    inset 0 0 12px rgba(150, 220, 238, 0.23),
+    0 0 calc(14px * var(--sb-glow)) rgba(150, 220, 238, 0.32);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"]
+  .slot-bingo-widget__square.is-complete .slot-bingo-widget__multiplier {
+  color: #f4fcff;
+  background: rgba(0, 10, 20, 0.88);
+  border-color: rgba(185, 233, 245, 0.6);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  :is(.ov-chat-msg, .ov-cards-msg, [data-better-element="message"], [data-better-element="highlightedMessage"], [data-widget-element="message"], [data-widget-element="highlightedMessage"]:has([data-widget-element="username"])):not(:has([data-widget-element="message"], [data-better-element="message"])) {
+  background-image: linear-gradient(155deg, rgba(17, 40, 53, 0.94), rgba(3, 15, 25, 0.97)),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, 295px 235px !important;
+  border-color: rgba(147, 201, 219, 0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(215, 242, 249, 0.16), inset 0 -4px 10px rgba(0, 5, 12, 0.34) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  :is([data-widget-element="messageText"], [data-better-element="messageText"]) {
+  color: #edf6fa;
+  text-shadow: 0 1px 2px #010b13;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] :is([data-widget-element="container"], [data-appearance-part="container"]) {
+  background-image:
+    linear-gradient(180deg, rgba(222, 243, 250, 0.28), transparent 17%, rgba(0, 7, 15, 0.72) 68%, rgba(156, 199, 214, 0.17) 95%, rgba(0, 6, 12, 0.85)),
+    radial-gradient(ellipse at 23% 0%, rgba(186, 229, 239, 0.16), transparent 42%),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, cover, 613px 319px !important;
+  background-position: center, center, 79px 131px !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slideshow_frame"] .better-slideshow-frame__empty {
+  background-image: radial-gradient(ellipse at 26% 16%, rgba(164, 219, 233, 0.13), transparent 60%),
+    linear-gradient(145deg, rgba(4, 19, 31, 0.83), rgba(0, 7, 15, 0.94)),
+    url("/theme-effects/ice/ice-glass.webp");
+  background-size: cover, cover, 397px 319px;
+  background-position: center, center, 101px 43px;
+  box-shadow: inset 0 -18px 35px rgba(0, 4, 10, 0.44);
+}
+
+/* Tournament uses its existing element tokens, across its layout variants. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] .tw-root[data-material-surface="panel"] {
+  background-image: radial-gradient(ellipse at 23% 0%, rgba(147, 209, 226, 0.13), transparent 55%),
+    linear-gradient(150deg, rgba(4, 19, 30, 0.74), rgba(1, 8, 16, 0.94)),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, cover, 467px 391px;
+  background-position: center, center, 131px 73px;
+  background-blend-mode: normal;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] .tw-root[data-material-surface="transparent"] {
+  background-image: none;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] {
+  --widget-surface: #071722;
+  --widget-participant-card-background: linear-gradient(155deg, rgba(17, 43, 56, 0.91), rgba(3, 14, 24, 0.96)), url("/theme-effects/ice/ice-glass.webp");
+  --widget-participant-card-border-color: rgba(151, 207, 225, 0.4);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"]
+  :is([data-widget-element="matchCard"], .tw-ice-material-card) {
+  background-image: linear-gradient(155deg, rgba(17, 43, 56, 0.91), rgba(3, 14, 24, 0.96)), url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, 337px 271px;
+  background-blend-mode: normal;
+  border-color: rgba(151, 207, 225, 0.4);
+  /* Keep winner/loser borders, shadows and animations from the widget. */
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"]
@@ -384,7 +505,120 @@
   background-size: cover, 220px 220px !important;
 }
 
+/* Ice event/inset surfaces share one material; business state and layout stay DOM. */
+.better-widget-colour-scope[data-colour-theme="arctic"] {
+  --ice-inset-material: linear-gradient(155deg, rgba(24, 49, 61, .92), rgba(3, 15, 25, .97)), url("/theme-effects/ice/ice-glass.webp");
+  --ice-inset-edge: rgba(185, 222, 235, .42);
+  --ice-inset-depth: inset 0 1px 0 rgba(231, 248, 253, .24), inset 0 -7px 16px rgba(0, 5, 13, .52);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-result, .better-hunt-request-card, .better-gw-metric-panel, .better-gw-roulette-viewport, .better-shoutout-card) {
+  background-image: var(--ice-inset-material) !important;
+  background-size: cover, 337px 271px;
+  border-color: var(--ice-inset-edge) !important;
+  box-shadow: var(--ice-inset-depth) !important;
+  backdrop-filter: none;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-result--worst {
+  border-color: rgba(181, 163, 184, .48) !important;
+  background-position: center, 113px 67px;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-result-head em, .better-gw-name, .better-shoutout-heading, .better-gw-winner-name) {
+  color: #e7f5fb;
+  text-shadow: 0 1px 3px #020a12;
+}
+
+/* An embedded giveaway is a section of the chat slab, without a second shell. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-giveaway-widget {
+  background: linear-gradient(180deg, rgba(31, 60, 74, .58), rgba(5, 19, 29, .24)) !important;
+  border-color: transparent !important;
+  box-shadow: inset 0 -1px 0 rgba(183, 221, 233, .3) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-gw-edge, .better-gw-edge-light, .better-gw-side-dash, .better-gw-sheen, .better-shoutout-scanline, .better-shoutout-corners) {
+  display: none;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-shoutout-header, .better-shoutout-footer) {
+  background: linear-gradient(110deg, rgba(178, 221, 235, .08), rgba(2, 12, 22, .3));
+  border-color: rgba(173, 216, 233, .24);
+}
+
+/* Edge-only media veil: content remains clear, including the center of clips. */
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-slideshow-frame__viewport, .better-shoutout-media)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: url("/theme-effects/ice/frost-corners.png") center / 100% 100%;
+  opacity: .22;
+  box-shadow: inset 0 1px 1px #dff6ff, inset 0 -10px 16px #020b17, inset 0 0 12px #08202e;
+  mask-image: linear-gradient(90deg, #000, transparent 13%, transparent 87%, #000), linear-gradient(#000, transparent 15%, transparent 85%, #000);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win {
+  --bh-win-color: #d8f2fa !important;
+  --bh-win-glow: rgba(159, 215, 235, .3) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-win-rays, .better-hunt-win-cannon, .better-hunt-win-border) { display: none; }
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-badge {
+  background-image: linear-gradient(160deg, rgba(18, 48, 64, .92), rgba(1, 12, 23, .97)), url("/theme-effects/ice/ice-glass.webp");
+  border-color: #c9e9f5;
+  box-shadow: var(--ice-inset-depth), 0 0 18px rgba(146, 211, 232, .2);
+  animation: ice-badge-arrive .6s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-win-label, .better-hunt-win-badge strong) { text-shadow: 0 2px 3px #020b16; }
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-main-active--super, .better-hunt-main-active--extreme, .better-hunt-card--center, .better-hunt-card--extreme .better-hunt-card-img) {
+  animation: ice-material-impact .65s ease-out both !important;
+  border-style: solid;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-panel--shake { animation: none !important; }
+.better-widget-colour-scope[data-colour-theme="arctic"] .tw-ice-impact { animation: ice-material-impact .7s ease-out both !important; }
+
+/* Quiet tile centers make the polished slab and the selected tile distinct. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget__square {
+  background-image: linear-gradient(160deg, rgba(13, 35, 49, .86), rgba(2, 12, 23, .94)), url("/theme-effects/ice/ice-glass.webp");
+  background-blend-mode: normal;
+  background-size: cover, 263px 221px;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget__square.is-complete {
+  background-image: linear-gradient(160deg, rgba(36, 79, 95, .76), rgba(4, 24, 37, .92)), url("/theme-effects/ice/ice-glass.webp");
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget__square.is-free {
+  background-image: radial-gradient(ellipse at 50% 0, rgba(193, 235, 246, .32), transparent 62%), linear-gradient(160deg, rgba(27, 64, 82, .84), rgba(2, 19, 34, .91)), url("/theme-effects/ice/frost-corners.png"), url("/theme-effects/ice/ice-glass.webp");
+  background-size: cover, cover, 100% 100%, 263px 221px;
+  border-color: #e4f8ff;
+}
+
+@keyframes ice-material-impact {
+  0% { filter: brightness(1); }
+  20% { filter: brightness(1.22); }
+  100% { filter: brightness(1); }
+}
+@keyframes ice-badge-arrive {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(.94); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .better-widget-colour-scope[data-colour-theme="arctic"] :is(.tw-ice-impact, .better-hunt-win-badge) { animation: none !important; }
   .theme-effects-layer__canvas {
     opacity: 0.55;
   }

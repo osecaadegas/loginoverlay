@@ -20,6 +20,8 @@ import {
   Zap,
 } from "lucide-react";
 import SlotImage from "../SlotImage";
+import { emitIceEvent } from "../../../../effects/ThemeEffects/emitIceEvent";
+import { getWidgetEffectsThemeKey } from "../../../../effects/ThemeEffects/themeEffectsConfig";
 import useSlotPersonalBest from "../../../../hooks/useSlotPersonalBest";
 import {
   pickBestWinRecord,
@@ -1777,10 +1779,22 @@ const BETTER_HUNT_WIN_TIERS = {
   },
 };
 
-function BetterHuntWinOverlay({ win, onDone }) {
+function BetterHuntWinOverlay({ win, onDone, ice = false }) {
+  const rootRef = useRef(null);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  useEffect(() => {
+    if (ice && win) emitIceEvent(rootRef.current, win.tier);
+  }, [ice, win?.id]);
   const tier = win ? BETTER_HUNT_WIN_TIERS[win.tier] : null;
+  useEffect(() => {
+    if (!ice || !tier) return undefined;
+    // Animation-off settings suppress animationend; the event must still expire.
+    const timer = window.setTimeout(() => onDoneRef.current(), tier.duration + 100);
+    return () => window.clearTimeout(timer);
+  }, [ice, tier, win?.id]);
   const pieces = useMemo(() => {
-    if (!tier) return [];
+    if (!tier || ice) return [];
     return Array.from({ length: tier.count }, (_, index) => ({
       id: index,
       left: ((index * 37) % 100) + ((index * 13) % 7) / 10,
@@ -1797,10 +1811,11 @@ function BetterHuntWinOverlay({ win, onDone }) {
       ][index % 5],
       sway: ((index * 19) % 60) - 30,
     }));
-  }, [tier, win?.id]);
+  }, [tier, win?.id, ice]);
   if (!win || !tier) return null;
   return (
     <div
+      ref={rootRef}
       className={`better-hunt-win better-hunt-win--${win.tier}`}
       style={{
         "--bh-win-duration": `${tier.duration}ms`,
@@ -1814,7 +1829,7 @@ function BetterHuntWinOverlay({ win, onDone }) {
       <span className="better-hunt-win-border" />
       <span className="better-hunt-win-flash" />
       <span className="better-hunt-win-rays" />
-      {Array.from({ length: tier.rings }, (_, index) => (
+      {Array.from({ length: ice ? 0 : tier.rings }, (_, index) => (
         <span
           key={index}
           className="better-hunt-win-ring"
@@ -3567,6 +3582,16 @@ export function BetterBonusHuntStyle({
   };
   const rootRef = useRef(null);
   const resultDrawerRef = useRef(null);
+  const previousIceSlot = useRef(null);
+  const iceSlotKey = current ? `${activeSlotLabel}:${bonusTier(current)}` : "";
+  useEffect(() => {
+    if (previousIceSlot.current !== null && previousIceSlot.current !== iceSlotKey
+      && sessionState === "opening" && current && bonusTier(current) !== "normal" && c.animations !== false) {
+      const source = rootRef.current?.querySelector(".better-hunt-main-active, .better-hunt-card--center");
+      emitIceEvent(rootRef.current, bonusTier(current), source || rootRef.current);
+    }
+    previousIceSlot.current = iceSlotKey;
+  }, [iceSlotKey, sessionState, c.animations]);
   useLayoutEffect(() => {
     const root = rootRef.current;
     const drawer = resultDrawerRef.current;
@@ -4796,6 +4821,7 @@ export function BetterBonusHuntStyle({
       {renderBonusFooter()}
       {previewWin ? (
         <BetterHuntWinOverlay
+          ice={getWidgetEffectsThemeKey("bonus_hunt", c) === "arctic"}
           key={previewWin.id}
           win={previewWin}
           onDone={() => setPreviewWin(null)}
@@ -4903,6 +4929,7 @@ export function BetterBonusHuntStyle({
 
         {previewWin ? (
           <BetterHuntWinOverlay
+            ice={getWidgetEffectsThemeKey("bonus_hunt", c) === "arctic"}
             key={previewWin.id}
             win={previewWin}
             onDone={() => setPreviewWin(null)}
@@ -4932,6 +4959,7 @@ export function BetterBonusHuntStyle({
         {renderBonusFooter()}
         {previewWin ? (
           <BetterHuntWinOverlay
+            ice={getWidgetEffectsThemeKey("bonus_hunt", c) === "arctic"}
             key={previewWin.id}
             win={previewWin}
             onDone={() => setPreviewWin(null)}
@@ -4963,6 +4991,7 @@ export function BetterBonusHuntStyle({
 
 export function BetterGiveawayStyle({ config }) {
   const c = config || {};
+  const iceEventRef = useRef(null);
   const subtitle = normalizeGiveawaySubtitle(c.subtitle);
   const participants = safeArray(c.participants).map(giveawayParticipant);
   const winnerName =
@@ -4978,6 +5007,9 @@ export function BetterGiveawayStyle({ config }) {
       : String(c.spinningWinner || "");
   const keyword = stripBang(c.keyword);
   const hasWinner = Boolean(winnerName);
+  useEffect(() => {
+    if (winnerName) emitIceEvent(iceEventRef.current, "giveaway");
+  }, [winnerName]);
   const isLive = c.isActive !== false && !hasWinner;
   const phase = hasWinner ? "winner" : spinningWinner ? "spinning" : "idle";
   const reelOpen = phase !== "idle";
@@ -5072,7 +5104,7 @@ export function BetterGiveawayStyle({ config }) {
     .join(" ");
 
   return (
-    <div className="better-giveaway-stage" style={vars}>
+    <div className="better-giveaway-stage" style={vars} ref={iceEventRef}>
       <BetterStyleSheet />
       <section
         className={className}

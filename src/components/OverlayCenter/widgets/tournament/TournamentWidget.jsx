@@ -11,6 +11,8 @@ import {
 import ShatterEffect from "./ShatterEffect";
 import { subValue } from "../shared/appearanceStyles";
 import SlotImage from "../SlotImage";
+import { THEME_EFFECT_DEFINITIONS } from "../../../../effects/ThemeEffects/themes/themeDefinitions";
+import { getWidgetEffectsThemeKey } from "../../../../effects/ThemeEffects/themeEffectsConfig";
 
 function widgetToken(property) {
   return `var(--widget-${property})`;
@@ -60,6 +62,7 @@ function partAttrs(partId) {
  */
 function TournamentWidget({ config, theme }) {
   const c = config || {};
+  const iceEvents = getWidgetEffectsThemeKey("tournament", c) === "arctic" ? THEME_EFFECT_DEFINITIONS.arctic.eventColors : null;
   const tData = c.data || {};
 
   /* Filter out future bracket matches where both players are still TBD */
@@ -496,6 +499,7 @@ function TournamentWidget({ config, theme }) {
     return (
       <div
         className="tw-root tw-empty"
+        data-material-surface={showBg ? "panel" : "transparent"}
         {...partAttrs("container")}
         style={{
           width: "100%",
@@ -898,6 +902,7 @@ function TournamentWidget({ config, theme }) {
       return (
         <div
           {...partAttrs("bracketLine")}
+          className="tw-ice-material-card"
           style={{
             flex: 1,
             display: "flex",
@@ -1257,7 +1262,7 @@ function TournamentWidget({ config, theme }) {
      ESPORTS — Cyberpunk 3D glass panels, bracket grid + current match
      ═══════════════════════════════════════════════════════════════ */
   const renderEsports = () => {
-    const esCyan = c.esCyan || "#00e5ff";
+    const esCyan = iceEvents?.accent || c.esCyan || "#00e5ff";
     const esPurple = c.esPurple || "#64748b";
     const esGold = c.esGold || "#fbbf24";
     const esBorder = c.esBorder || "rgba(0,229,255,0.18)";
@@ -1320,8 +1325,8 @@ function TournamentWidget({ config, theme }) {
       return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
     };
 
-    const esGreen = "#39ff14";
-    const esRed = "#ff3b5c";
+    const esGreen = iceEvents?.success || "#39ff14";
+    const esRed = iceEvents?.loss || "#ff3b5c";
 
     /* Bo3 pip system for esports */
     const renderEsPips = (match, playerKey) => {
@@ -1397,6 +1402,7 @@ function TournamentWidget({ config, theme }) {
 
       return (
         <div
+          className="tw-ice-material-card"
           style={{
             width: "100%",
             height: "100%",
@@ -1827,6 +1833,7 @@ function TournamentWidget({ config, theme }) {
               {/* Shatter overlay */}
               {layout === "esports" && shatterInfo && (
                 <ShatterEffect
+                  ice={Boolean(iceEvents)}
                   imageUrl={shatterInfo.imageUrl}
                   side={shatterInfo.side}
                   accentColor={esCyan}
@@ -1948,6 +1955,7 @@ function TournamentWidget({ config, theme }) {
 
       return (
         <div
+          className="tw-ice-material-card"
           style={{
             display: "flex",
             flexDirection: "column",
@@ -2391,13 +2399,13 @@ function TournamentWidget({ config, theme }) {
      Groups matches by bracket phase (Quarters / Semis / Final)
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
-    const gCyan = c.esCyan || "#00e5ff";
+    const gCyan = iceEvents?.accent || c.esCyan || "#00e5ff";
     const gPurple = c.esPurple || "#64748b";
     const gGold = c.esGold || "#fbbf24";
     const gBorder = c.esBorder || "rgba(0,229,255,0.18)";
     const gFont = fontFamily;
-    const gGreen = "#39ff14";
-    const gRed = "#ff3b5c";
+    const gGreen = iceEvents?.success || "#39ff14";
+    const gRed = iceEvents?.loss || "#ff3b5c";
 
     /* ── Match classification (same as esports) ── */
     const isShatterHolding = shatterMatchIdx != null && shatterInfo;
@@ -2569,6 +2577,7 @@ function TournamentWidget({ config, theme }) {
 
       return (
         <div
+          className="tw-ice-material-card"
           style={{
             width: "100%",
             height: "100%",
@@ -3314,6 +3323,7 @@ function TournamentWidget({ config, theme }) {
               {/* Shatter overlay */}
               {layout === "grid" && shatterInfo && (
                 <ShatterEffect
+                  ice={Boolean(iceEvents)}
                   imageUrl={shatterInfo.imageUrl}
                   side={shatterInfo.side}
                   accentColor={gCyan}
@@ -3534,6 +3544,7 @@ function TournamentWidget({ config, theme }) {
   return (
     <div
       className={`tw-root${isMinimalLayout ? " tw-root--minimal" : ""}`}
+      data-material-surface={showBg ? "panel" : "transparent"}
       {...partAttrs("container")}
       style={{
         width: "100%",

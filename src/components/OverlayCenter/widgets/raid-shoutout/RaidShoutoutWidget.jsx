@@ -12,6 +12,7 @@ import {
   triggerShoutoutChatCommand,
 } from "../../../../services/shoutoutCommandService";
 import "./RaidShoutoutWidget.css";
+import { emitIceEvent } from "../../../../effects/ThemeEffects/emitIceEvent";
 
 const EXIT_MS = 650;
 
@@ -140,6 +141,8 @@ function ShoutoutMedia({ alert, videoUrl, embedUrl, mediaFailed, onMediaEnded, o
 }
 
 function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
+  const iceEventRef = useRef(null);
+  useEffect(() => { emitIceEvent(iceEventRef.current, "shoutout"); }, [alert.id]);
   const [mediaFailed, setMediaFailed] = useState(false);
   const preset = FRAME_PRESETS[config.frameStyle] || FRAME_PRESETS.neon;
   const accent = config.accentColor || preset.accent;
@@ -169,6 +172,7 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
 
   return (
     <article
+      ref={iceEventRef}
       className={`better-shoutout-card is-${config.frameStyle || "neon"} is-${phase} anim-${config.animation || "slide-left"}`}
       style={style}
       data-widget-element="container"

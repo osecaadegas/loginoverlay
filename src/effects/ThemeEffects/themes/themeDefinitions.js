@@ -12,6 +12,7 @@ export const THEME_EFFECT_DEFINITIONS = Object.freeze({
       shadow: 0x143844,
       particle: 0xe8fbff,
     }),
+    eventColors: Object.freeze({ success: "#c2ece4", loss: "#bf9ba9", accent: "#b9dfea" }),
     textures: Object.freeze({
       panel: `${ROOT}/ice/frozen-glass.webp`,
       edge: `${ROOT}/ice/frost-edge.png`,

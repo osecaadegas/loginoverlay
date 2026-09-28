@@ -1,4 +1,5 @@
 import React from 'react';
+import { emitIceEvent } from '../../../../effects/ThemeEffects/emitIceEvent';
 
 /* ══════════════════════════════════════════════════════════
    ShatterEffect — cinematic glass shatter on a canvas
@@ -154,13 +155,28 @@ function drawSparkles(ctx, cx, cy, t, color, count) {
 /* ═══════════════════════════════════════════════════════════
    Main React Component
    ═══════════════════════════════════════════════════════════ */
-export default function ShatterEffect({ imageUrl, side, onComplete, accentColor = '#00e5ff' }) {
+export default function ShatterEffect({ imageUrl, side, onComplete, accentColor = '#00e5ff', ice = false }) {
   const canvasRef = React.useRef(null);
   const animRef = React.useRef(null);
+  const completeRef = React.useRef(onComplete);
+  completeRef.current = onComplete;
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    if (ice) {
+      const cards = canvas.parentElement.querySelectorAll('.tw-ice-material-card');
+      const source = cards[side === 'left' ? 0 : cards.length - 1] || canvas.parentElement;
+      source.classList.add('tw-ice-impact');
+      emitIceEvent(canvas, 'tournament', source);
+      // Preserve the existing match hand-off interval; the finite burst settles
+      // early, leaving the winner readable instead of a sustained white flash.
+      const timer = window.setTimeout(() => completeRef.current?.(), 3500);
+      return () => {
+        window.clearTimeout(timer);
+        source.classList.remove('tw-ice-impact');
+      };
+    }
 
     const parent = canvas.parentElement;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -341,7 +357,7 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
         }
 
         if (t < 1) animRef.current = requestAnimationFrame(frame);
-        else onComplete?.();
+        else completeRef.current?.();
       };
 
       animRef.current = requestAnimationFrame(frame);
@@ -355,9 +371,14 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
       run(null);
     }
 
-    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+    };
+  }, [ice, imageUrl, side, accentColor]);
 
+  if (ice) return <span ref={canvasRef} aria-hidden="true" style={{ display: 'none' }} />;
   return (
     <canvas ref={canvasRef} style={{
       position: 'absolute', inset: 0, width: '100%', height: '100%',

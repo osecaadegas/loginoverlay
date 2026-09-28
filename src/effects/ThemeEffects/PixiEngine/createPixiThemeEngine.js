@@ -42,7 +42,7 @@ const ICE_PRIMARY_WEIGHT = Object.freeze({
 const ICE_ICICLE_TARGETS = new Set(["navbar", "bonus_hunt", "slot_bingo", "slideshow_frame"]);
 const ICE_MIST_TARGETS = new Set(["background", "bonus_hunt", "slot_bingo", "slideshow_frame"]);
 const ICE_SHIMMER_TARGETS = new Set(["navbar", "slot_bingo", "rtp_stats", "slideshow_frame"]);
-const ICE_BURST_TARGETS = new Set(["bonus_hunt", "slot_bingo"]);
+const ICE_BURST_TARGETS = new Set(["bonus_hunt", "slot_bingo", "tournament", "chat", "giveaway", "raid_shoutout"]);
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -128,24 +128,8 @@ function drawTargetFrame(node, target, alphaMultiplier = 1) {
   node.frameHighlight.clear();
   if (target.widgetType === "background" && target.theme.family === "ice") return;
   if (target.theme.family === "ice") {
-    const hierarchy = ICE_PRIMARY_WEIGHT[target.widgetType] || 0.48;
-    node.frameBack
-      .roundRect(0.5, 0.5, Math.max(1, target.width - 1), Math.max(1, target.height - 1), radius)
-      .stroke({ width: 3, color: 0x020913, alpha: (0.44 + hierarchy * 0.2) * alphaMultiplier });
-    node.frame
-      .roundRect(2, 2, Math.max(1, target.width - 4), Math.max(1, target.height - 4), Math.max(3, radius - 1))
-      .stroke({
-        width: glow > 0.62 ? 2 : 1,
-        color: target.theme.colors.primary,
-        alpha: (0.08 + glow * 0.14 + hierarchy * 0.05) * alphaMultiplier,
-      });
-    node.frameHighlight
-      .moveTo(radius, 2.5)
-      .lineTo(Math.max(radius, target.width - radius), 2.5)
-      .stroke({ width: 1, color: target.theme.colors.highlight, alpha: (0.24 + glow * 0.2) * alphaMultiplier })
-      .moveTo(2.5, radius)
-      .lineTo(2.5, Math.max(radius, target.height * 0.42))
-      .stroke({ width: 1, color: target.theme.colors.highlight, alpha: (0.13 + glow * 0.12) * alphaMultiplier });
+    // DOM owns the precise border/radius. Extra inset Pixi strokes produced
+    // parallel seams at fractional editor scales; frost supplies irregular light.
     return;
   }
   node.frame
@@ -174,6 +158,8 @@ function resolveShimmer(target, preset) {
 
 async function createTargetNode(target, layers, preset, debugEffect = "") {
   const random = createSeededRandom(hashString(`${target.id}:${target.widgetType}:${target.theme.id}`));
+  // Independent stream keeps material variations stable without changing particles.
+  const materialRandom = createSeededRandom(hashString(`${target.id}:ice-material`));
   const node = {
     id: target.id,
     target,
@@ -204,6 +190,14 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     shimmerPeriod: randomRange(random, 11, 16),
     shimmerPhase: randomRange(random, 0, 8),
     debugEffect,
+    material: {
+      flipX: materialRandom() > 0.5,
+      flipY: materialRandom() > 0.5,
+      scale: randomRange(materialRandom, 1.04, 1.18),
+      x: materialRandom(),
+      y: materialRandom(),
+      frost: randomRange(materialRandom, 0.86, 1.08),
+    },
   };
   const targetLabel = `theme-fx:${target.id}`;
   const targetZIndex = Number(target.zIndex || 0);
@@ -252,7 +246,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
   node.edge.alpha = isForcedEffect(debugEffect, "frost")
     ? 1
     : target.theme.family === "ice"
-      ? target.effects.ice.frost * (0.56 + iceHierarchy * 0.22)
+      ? target.effects.ice.frost * (0.56 + iceHierarchy * 0.22) * node.material.frost
     : 0.075;
   node.edge.blendMode = "screen";
   node.foreground.addChild(node.edge);
@@ -278,9 +272,15 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     node.corners = new Sprite(cornerTexture);
     node.corners.alpha = isForcedEffect(debugEffect, "frost")
       ? 1
-      : target.effects.ice.frost * (0.38 + iceHierarchy * 0.24);
+      : target.effects.ice.frost * (0.38 + iceHierarchy * 0.24) * (1.94 - node.material.frost);
     node.corners.blendMode = "screen";
     node.foreground.addChild(node.corners);
+  }
+
+  // A scene background is cold atmosphere, not another framed glass widget.
+  if (target.theme.family === "ice" && target.widgetType === "background") {
+    [node.edge, node.corners, node.detail].filter(Boolean).forEach((sprite) => { sprite.visible = false; });
+    node.texture.alpha = 0.055;
   }
 
   const showDecor = target.theme.family === "ice"
@@ -290,10 +290,16 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     const count = target.widgetType === "navbar" ? 4 : 2;
     for (let index = 0; index < count; index += 1) {
       const sprite = new Sprite(decorTexture);
-      sprite.alpha = isForcedEffect(debugEffect, "icicles") ? 1 : 0.52;
+      sprite.alpha = isForcedEffect(debugEffect, "icicles") ? 1 : randomRange(materialRandom, 0.42, 0.64);
       sprite.blendMode = "normal";
       node.foreground.addChild(sprite);
-      node.icicleClusters.push({ sprite, position: (index + 0.35 + random() * 0.25) / count, length: randomRange(random, 0.7, 1) });
+      node.icicleClusters.push({
+        sprite,
+        position: (index + randomRange(materialRandom, 0.08, 0.7)) / count,
+        length: randomRange(materialRandom, 0.5, 1),
+        widthScale: randomRange(materialRandom, 0.65, 1.15),
+        mirror: materialRandom() > 0.5,
+      });
     }
   }
 
@@ -334,7 +340,8 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     node.inside.addChild(node.lightRay);
   }
 
-  if (preset.bloom && target.effects.glowIntensity > 0.05) {
+  if (preset.bloom && target.effects.glowIntensity > 0.05
+    && !(target.theme.family === "ice" && target.widgetType === "background")) {
     node.aura = new Graphics();
     node.behind.addChild(node.aura);
   }
@@ -345,11 +352,10 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
 
   node.clipMask = new Graphics();
   node.inside.addChild(node.clipMask);
-  [node.texture, node.detail, node.fog, node.fogSecondary, node.lightRay]
-    .filter(Boolean)
-    .forEach((displayObject) => {
-      displayObject.mask = node.clipMask;
-    });
+  // One stencil boundary for the material group, rather than one per sprite.
+  if (target.theme.family === "ice") node.inside.mask = node.clipMask;
+  else [node.texture, node.detail, node.fog, node.fogSecondary, node.lightRay].filter(Boolean)
+    .forEach((sprite) => { sprite.mask = node.clipMask; });
   if (node.shimmer) {
     node.foregroundMask = new Graphics();
     node.foreground.addChild(node.foregroundMask);
@@ -359,12 +365,16 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     // Keep branching edge frost away from labels and stat values.
     node.edgeMask = new Graphics();
     node.foreground.addChild(node.edgeMask);
-    [node.edge, node.corners].filter(Boolean).forEach((sprite) => { sprite.mask = node.edgeMask; });
+    const frostLayer = new Container();
+    node.foreground.addChildAt(frostLayer, 0);
+    [node.edge, node.corners].filter(Boolean).forEach((sprite) => frostLayer.addChild(sprite));
+    frostLayer.mask = node.edgeMask;
   }
 
   const particleCount = Math.max(
     0,
-    Math.round(preset.maxParticles * (isForcedEffect(debugEffect, "snow") ? 1 : getParticleAmount(target))),
+    Math.round(preset.maxParticles * (isForcedEffect(debugEffect, "snow") ? 1 : getParticleAmount(target))
+      * (target.theme.family === "ice" ? clamp(Math.sqrt(target.width * target.height / 360000), 0.2, 1) : 1)),
   );
   for (let index = 0; index < particleCount; index += 1) {
     const sprite = new Sprite(particleTexture);
@@ -398,7 +408,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
   }
 
   if (target.theme.family === "ice" && ICE_BURST_TARGETS.has(target.widgetType)) {
-    const burstCount = target.effects.quality === "low" ? 4 : target.effects.quality === "ultra" ? 9 : 7;
+    const burstCount = target.effects.quality === "low" ? 5 : target.effects.quality === "ultra" ? 14 : 10;
     for (let index = 0; index < burstCount; index += 1) {
       const sprite = new Sprite(burstTexture);
       sprite.anchor.set(0.5);
@@ -425,9 +435,26 @@ function resizeTargetNode(node, target) {
   setSpriteBounds(node.edge, target.width, target.height);
   if (node.detail) setSpriteBounds(node.detail, target.width, target.height);
   if (node.corners) setSpriteBounds(node.corners, target.width, target.height);
-  node.icicleClusters.forEach(({ sprite, position, length }) => {
+  if (target.theme.family === "ice") {
+    const { flipX, flipY, scale, x, y } = node.material;
+    [node.texture, node.detail, node.edge, node.corners].filter(Boolean).forEach((sprite, index) => {
+      // Keep edge accumulation attached to the frame; crop only interior material.
+      const interior = sprite === node.texture || sprite === node.detail;
+      const factor = interior ? scale : 1;
+      const w = target.width * factor;
+      const h = target.height * factor;
+      const mirrorX = index % 2 ? !flipX : flipX;
+      const mirrorY = index % 2 ? !flipY : flipY;
+      sprite.anchor.set(mirrorX ? 1 : 0, mirrorY ? 1 : 0);
+      sprite.scale.set((mirrorX ? -1 : 1) * w / sprite.texture.width, (mirrorY ? -1 : 1) * h / sprite.texture.height);
+      sprite.position.set(interior ? -(w - target.width) * x : 0, interior ? -(h - target.height) * y : 0);
+    });
+  }
+  node.icicleClusters.forEach(({ sprite, position, length, widthScale, mirror }) => {
     const navbar = target.widgetType === "navbar";
-    setSpriteBounds(sprite, Math.min(navbar ? 110 : 65, target.width * 0.22) * length, (navbar ? 28 : 17) * length);
+    setSpriteBounds(sprite, Math.min(navbar ? 110 : 65, target.width * 0.22) * widthScale, (navbar ? 28 : 17) * length);
+    sprite.anchor.x = mirror ? 1 : 0;
+    sprite.scale.x = Math.abs(sprite.scale.x) * (mirror ? -1 : 1);
     sprite.position.set(Math.min(target.width - sprite.width - 3, target.width * position), navbar ? target.height - 3 : 1);
   });
   if (node.decor) {
@@ -544,7 +571,8 @@ function updateTargetNode(node, ticker) {
     node.fog.x = -target.width * 0.06 + (qualityRank > QUALITY_RANK.low ? Math.sin(node.elapsed * 0.18) * target.width * 0.035 : 0);
     node.fog.alpha = isForcedEffect(node.debugEffect, "fog")
       ? 0.8
-      : resolveFogAmount(target) * (qualityRank > QUALITY_RANK.low ? 0.17 + Math.sin(node.elapsed * 0.24) * 0.025 : 0.11);
+      : resolveFogAmount(target) * (qualityRank > QUALITY_RANK.low ? 0.17 + Math.sin(node.elapsed * 0.24) * 0.025 : 0.11)
+        * (family === "ice" && target.widgetType === "background" ? 1.45 : 1);
   }
   if (node.fogSecondary) {
     node.fogSecondary.x = -target.width * 0.1 - Math.sin(node.elapsed * 0.12) * target.width * 0.028;
@@ -644,9 +672,17 @@ export async function createPixiThemeEngine({
   let transition = null;
   let activeTargets = targets;
   let pendingUpdate = null;
+  let renderedFrames = 0;
+  let lastEvent = "";
 
   const tickerHandler = (ticker) => {
-    targetNodes.forEach((node) => updateTargetNode(node, ticker));
+    renderedFrames += 1;
+    targetNodes.forEach((node) => {
+      const { x, y, width: w, height: h, opacity } = node.target;
+      const visible = opacity > 0 && x < viewportWidth && y < viewportHeight && x + w > 0 && y + h > 0;
+      node.containers.forEach((container) => { container.visible = visible; });
+      if (visible) updateTargetNode(node, ticker);
+    });
   };
   app.ticker.add(tickerHandler);
 
@@ -659,6 +695,7 @@ export async function createPixiThemeEngine({
         gsap.killTweensOf(node.pulse);
         gsap.killTweensOf(node.pulse.scale);
         node.burstSprites.forEach((sprite) => gsap.killTweensOf(sprite));
+        node.particles.forEach(({ sprite }) => gsap.killTweensOf(sprite));
         node.containers.forEach((container) => {
           container.destroy({ children: true, texture: false, textureSource: false });
         });
@@ -749,36 +786,45 @@ export async function createPixiThemeEngine({
 
   function resize(nextWidth, nextHeight) {
     if (destroyed) return;
+    if (viewportWidth === Math.max(1, nextWidth) && viewportHeight === Math.max(1, nextHeight)) return;
     viewportWidth = Math.max(1, nextWidth);
     viewportHeight = Math.max(1, nextHeight);
     app.renderer.resize(viewportWidth, viewportHeight);
   }
 
-  function burst(targetId) {
+  function burst(targetId, event = {}) {
     const node = targetNodes.get(targetId);
-    if (!node || destroyed) return;
+    if (!node || destroyed || document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    lastEvent = event.kind || "completion";
     gsap.killTweensOf(node.pulse);
     gsap.killTweensOf(node.pulse.scale);
-    node.pulse.alpha = 0.92;
-    node.pulse.scale.set(0.96);
+    const ice = node.target.theme.family === "ice";
+    node.pulse.alpha = ice ? 0.65 : 0.92;
+    node.pulse.scale.set(ice ? 1 : 0.96);
     gsap.to(node.pulse, { alpha: 0, duration: 0.58, ease: "power2.out" });
-    gsap.to(node.pulse.scale, { x: 1.035, y: 1.035, duration: 0.58, ease: "power2.out" });
+    if (!ice) gsap.to(node.pulse.scale, { x: 1.035, y: 1.035, duration: .58, ease: "power2.out" });
+    const originX = node.target.width * clamp(event.x ?? 0.5, 0.08, 0.92);
+    const originY = node.target.height * clamp(event.y ?? 0.5, 0.08, 0.92);
     if (node.burstSprites.length) {
       node.burstSprites.forEach((sprite, index) => {
-        const angle = (Math.PI * 2 * index) / node.burstSprites.length - Math.PI / 2;
-        const distance = Math.min(node.target.width, node.target.height) * (0.12 + (index % 3) * 0.035);
+        const angle = (Math.PI * 2 * index) / node.burstSprites.length - Math.PI / 2 + Math.sin(index * 7) * 0.22;
+        const distance = Math.min(node.target.width, node.target.height) * (0.1 + (index % 4) * 0.032);
         gsap.killTweensOf(sprite);
-        sprite.position.set(node.target.width / 2, node.target.height / 2);
+        sprite.position.set(originX, originY);
         sprite.rotation = angle + Math.PI / 2;
-        sprite.alpha = 0.82;
-        sprite.scale.set(0.7);
+        sprite.alpha = 0.64 + (index % 3) * 0.09;
+        // Preserve pixel sizing from resizeTargetNode; texture-scale 0.7 used
+        // to expand tiny shards to the source bitmap's dimensions.
+        const size = 5 + (index % 4) * 2.4;
+        sprite.width = size;
+        sprite.height = size * (1.35 + (index % 3) * 0.3);
         gsap.to(sprite, {
-          x: node.target.width / 2 + Math.cos(angle) * distance,
-          y: node.target.height / 2 + Math.sin(angle) * distance,
+          x: clamp(originX + Math.cos(angle) * distance, size, node.target.width - size),
+          y: clamp(originY + Math.sin(angle) * distance + distance * 0.16, size, node.target.height - size),
           rotation: sprite.rotation + (index % 2 ? 0.7 : -0.7),
           alpha: 0,
-          duration: 0.54 + (index % 3) * 0.06,
-          ease: "power2.out",
+          duration: (event.kind === "tournament" ? 0.85 : 0.52) + (index % 3) * 0.07,
+          ease: "power3.out",
         });
       });
     } else {
@@ -812,6 +858,8 @@ export async function createPixiThemeEngine({
       targets: activeTargets.length,
       quality: currentQuality,
       debugEffect,
+      frames: renderedFrames,
+      lastEvent,
       layerOrder: app.stage.children.map((layer) => layer.label),
     };
   }
@@ -826,6 +874,7 @@ export async function createPixiThemeEngine({
       gsap.killTweensOf(node.pulse);
       gsap.killTweensOf(node.pulse.scale);
       node.burstSprites.forEach((sprite) => gsap.killTweensOf(sprite));
+      node.particles.forEach(({ sprite }) => gsap.killTweensOf(sprite));
     });
     targetNodes.clear();
     app.destroy({ removeView: false }, { children: true, texture: false, textureSource: false });
