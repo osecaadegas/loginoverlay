@@ -389,11 +389,13 @@
   outline-offset: 2px;
 }
 
-.bp-background-library img {
+.bp-background-library img,
+.bp-background-library video {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: contain;
+  background: #05090d;
 }
 
 .bp-background-library span {

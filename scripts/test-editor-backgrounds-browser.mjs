@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import puppeteer from "puppeteer";
-import { BACKGROUND_LIBRARY } from "../src/components/OverlayCenter/widgets/background/backgroundLibrary.js";
+import {
+  BACKGROUND_IMAGE_LIBRARY,
+  BACKGROUND_VIDEO_LIBRARY,
+} from "../src/components/OverlayCenter/widgets/background/backgroundLibrary.js";
 
 const baseUrl = process.env.TEST_BASE_URL || "http://127.0.0.1:3010";
 const publicId = `bo_${"c".repeat(48)}`;
 const selector = 'img[data-better-element="media"]';
-const libraryFiles = BACKGROUND_LIBRARY.map(({ url }) => decodeURIComponent(url.split("/").pop()));
-assert.deepEqual(libraryFiles.toSorted(), readdirSync(new URL("../public/backgrounds/", import.meta.url)).filter(file => /\.(png|jpe?g|webp|avif)$/i.test(file)).toSorted());
-for (const { url } of BACKGROUND_LIBRARY) {
+const mediaLibrary = [...BACKGROUND_IMAGE_LIBRARY, ...BACKGROUND_VIDEO_LIBRARY];
+const libraryFiles = mediaLibrary.map(({ url }) => decodeURIComponent(url.split("/").pop()));
+assert.deepEqual(libraryFiles.toSorted(), readdirSync(new URL("../public/backgrounds/", import.meta.url)).filter(file => /\.(png|jpe?g|gif|webp|avif|mp4|webm)$/i.test(file)).toSorted());
+for (const { url } of mediaLibrary) {
   assert.ok(existsSync(new URL(`../public${url}`, import.meta.url)), `Bundled asset exists: ${url}`);
 }
 
@@ -97,6 +101,24 @@ try {
       throw error;
     });
   };
+  const waitVideo = async (url, scope = ".better-editor-canvas") => {
+    await page.waitForFunction(({ url, scope }) => {
+      const video = document.querySelector(`${scope} video[data-better-element="media"]`);
+      return video?.getAttribute("src") === url && video.readyState >= 1 && video.videoWidth > 0;
+    }, {}, { url, scope }).catch(async error => {
+      console.error(await page.evaluate(() => ({
+        videos: [...document.querySelectorAll(".better-editor-canvas video")].map(video => ({
+          src: video.getAttribute("src"),
+          readyState: video.readyState,
+          width: video.videoWidth,
+          error: video.error?.message || null,
+        })),
+        config: window.backgroundTest.state.tables.better_editor_overlays[0].draft_layout.instances[0].config,
+      })));
+      console.error(errors);
+      throw error;
+    });
+  };
   const tables = () => page.evaluate(() => window.backgroundTest.state.tables);
 
   await mount();
@@ -125,13 +147,13 @@ try {
   await page.click('.better-editor-widget-row__main:has([title="Backdrop"])');
   await page.type('[aria-label="Search settings"]', "Background source");
   await clickText("image", ".editor-scoped-controls");
-  assert.equal(await page.$$eval(".bp-background-library button", buttons => buttons.length), BACKGROUND_LIBRARY.length);
-  for (const { label, url } of BACKGROUND_LIBRARY) {
+  assert.equal(await page.$$eval(".bp-background-library button", buttons => buttons.length), BACKGROUND_IMAGE_LIBRARY.length);
+  for (const { label, url } of BACKGROUND_IMAGE_LIBRARY) {
     await page.click(`[aria-label="${label}"]`);
     await waitImage(url);
     assert.equal(await page.$eval(`[aria-label="${label}"]`, button => button.getAttribute("aria-pressed")), "true");
   }
-  const chosenUrl = BACKGROUND_LIBRARY.at(-1).url;
+  const chosenUrl = BACKGROUND_IMAGE_LIBRARY.at(-1).url;
   await page.waitForFunction(url => window.backgroundTest.state.tables.better_editor_overlays[0].draft_layout.instances[0].config.imageUrl === url, {}, chosenUrl);
   assert.equal((await tables()).better_editor_overlays[1].draft_layout.instances[0].config.imageUrl, "", "Other builds are unchanged");
   await reload(await tables());
@@ -140,7 +162,21 @@ try {
   await page.click('.better-editor-widget-row__main:has([title="Backdrop"])');
   await page.type('[aria-label="Search settings"]', "Background source");
   await clickText("Advanced", ".editor-inspector");
-  assert.equal(await page.$$eval(".bp-background-library button", buttons => buttons.length), 8, "Library also works in Advanced mode");
+  assert.equal(await page.$$eval(".bp-background-library button", buttons => buttons.length), BACKGROUND_IMAGE_LIBRARY.length, "Library also works in Advanced mode");
+
+  await clickText("video", ".editor-scoped-controls");
+  assert.equal(await page.$$eval('.bp-background-library[data-media-type="video"] button', buttons => buttons.length), BACKGROUND_VIDEO_LIBRARY.length);
+  for (const { label, url } of BACKGROUND_VIDEO_LIBRARY) {
+    await page.click(`[aria-label="${label}"]`);
+    await waitVideo(url);
+    assert.equal(await page.$eval(`[aria-label="${label}"]`, button => button.getAttribute("aria-pressed")), "true");
+  }
+  const chosenVideoUrl = BACKGROUND_VIDEO_LIBRARY.at(-1).url;
+  await page.waitForFunction(url => window.backgroundTest.state.tables.better_editor_overlays[0].draft_layout.instances[0].config.videoUrl === url, {}, chosenVideoUrl);
+  await reload(await tables());
+  await waitVideo(chosenVideoUrl);
+  await page.click('.better-editor-widget-row__main:has([title="Backdrop"])');
+  await page.type('[aria-label="Search settings"]', "Background source");
 
   for (const width of [1440, 1024, 390, 320]) {
     await page.setViewport({ width, height: 900 });
@@ -161,14 +197,16 @@ try {
   await page.waitForFunction(() => window.backgroundTest.state.tables.better_overlay_publications?.length === 1);
   const saved = await tables();
   assert.equal(saved.better_overlay_publications[0].published_layout.instances[0].config.imageUrl, chosenUrl);
+  assert.equal(saved.better_overlay_publications[0].published_layout.instances[0].config.videoUrl, chosenVideoUrl);
+  assert.equal(saved.better_overlay_publications[0].published_layout.instances[0].config.bgMode, "video");
   assert.equal(JSON.stringify(saved.better_overlay_publications).includes("showGrid"), false, "Grid preference is never published");
   await reload(saved, "background-user", true);
-  await waitImage(chosenUrl, ".better-obs-canvas");
+  await waitVideo(chosenVideoUrl, ".better-obs-canvas");
   assert.equal(await page.$$(".better-editor-canvas-line").then(elements => elements.length), 0);
   await reload(undefined, "different-user");
   await assertGrid(true);
   assert.deepEqual(errors, []);
-  console.log("Editor grid persistence, account/build isolation, all 8 backgrounds, responsive picker, save/reload and OBS publication passed.");
+  console.log(`Editor grid persistence, account/build isolation, all ${BACKGROUND_IMAGE_LIBRARY.length} image and ${BACKGROUND_VIDEO_LIBRARY.length} video backgrounds, responsive picker, save/reload and OBS publication passed.`);
 } finally {
   await browser.close();
 }

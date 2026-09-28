@@ -2192,11 +2192,10 @@ function BetterStyleSheet() {
       .better-hunt-main-active-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;flex:1;border-top:1px solid rgba(255,255,255,.18);padding:10px 14px}.better-hunt-main-active-row:first-child{border-top:0}
       .better-hunt-main-active-row span{display:flex;align-items:center;gap:7px;min-width:0;color:rgba(255,255,255,.68);font-size:.7em;font-weight:950;letter-spacing:.2em;text-transform:uppercase}.better-hunt-main-active-row strong{overflow:hidden;color:#fff;font-size:1.5em;font-weight:950;line-height:1;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)}
       .better-hunt-mainstream .better-hunt-requests{margin:10px 12px 0}.better-hunt-main-list-wrap{min-height:0;padding:10px 12px 0}.better-hunt-main-bottom{padding:12px 0 0}.better-hunt-mainstream .better-hunt-footer{margin:8px 12px 12px}
-      .better-hunt-main-tiers{display:grid;grid-template-columns:repeat(var(--bh-tier-count,2),minmax(0,1fr));gap:7px;padding:8px 12px 0;min-width:0}
-      .better-hunt-main-tiers>.better-hunt-stat{min-height:42px;padding:5px 7px;gap:3px}
-      .better-hunt-main-tiers .better-hunt-stat-label{font-size:.62em;letter-spacing:.08em;gap:4px}
-      .better-hunt-main-tiers strong{font-size:.92em;line-height:1.1}
-      .better-hunt-main-tiers svg{width:10px;height:10px;flex-shrink:0}
+      .better-hunt-main-tiers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px 12px 0;min-width:0}
+      .better-hunt-main-tiers>.better-hunt-stat{min-width:0}
+      .better-hunt-main-tiers .better-hunt-stat-label{gap:6px}
+      .better-hunt-main-tiers svg{width:1em;height:1em;flex:0 0 1em}
       .better-hunt-mainstream>.better-hunt-stat-grid{margin:0 12px}
       .better-hunt-mainstream .better-hunt-image-stats-copy{padding:9px 10px;line-height:1.15}
       .better-hunt-mainstream .better-hunt-image-row{padding:3px 0}
@@ -2368,12 +2367,14 @@ function BetterStyleSheet() {
       .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-bg::after{content:none}
       .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-content{height:154px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-content:start;gap:5px;min-width:0;padding:1px 4px 4px}
       .better-hunt-mainstream .better-hunt-row--image .better-hunt-row-main{align-self:start}
-      .better-hunt-mainstream .better-hunt-row--image .better-hunt-mini-stats{min-width:0;align-self:end;gap:5px}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-mini-stats{min-width:0;align-self:start;gap:6px;margin-top:10px}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-mini-stat{font-size:.86em;line-height:1.1}
+      .better-hunt-mainstream .better-hunt-row--image .better-hunt-mini-label{font-size:.72em}
       .better-hunt-row-content{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;padding-left:20px}
       .better-hunt-row-id{position:absolute;left:3px;top:50%;z-index:3;width:18px;height:20px;min-width:18px;display:grid;place-items:center;transform:translateY(-50%);border:1px solid rgba(255,255,255,.16);border-radius:5px;background:rgba(0,0,0,.5);color:var(--bh-steel-hi);font-size:.68em;font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.8)}
       .better-hunt-row-main{min-width:0}.better-hunt-row-main .better-hunt-slot-marquee{display:block;overflow:hidden;color:#fff;font-size:1em;font-weight:900;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap}.better-hunt-slot-marquee-track{display:inline-flex;width:max-content;gap:28px;will-change:transform}.better-hunt-slot-marquee-track>span{display:block;flex:0 0 auto}.better-hunt-slot-marquee.is-scrolling{text-overflow:clip}.better-hunt-slot-marquee.is-scrolling .better-hunt-slot-marquee-track{animation:better-hunt-slot-marquee var(--bh-slot-marquee-duration,8s) linear infinite}.better-hunt-row-main em{display:block;overflow:hidden;color:#c4d7f7;font-style:normal;font-size:.76em;font-weight:700;letter-spacing:0;line-height:1.12;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.9);white-space:nowrap}
       .better-hunt-mini-stats{display:grid;gap:2px;min-width:76px}.better-hunt-mini-stat{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;font-size:.78em;font-weight:900;line-height:1.08;text-shadow:0 1px 3px rgba(0,0,0,.95)}.better-hunt-mini-label{color:#b9cbed;font-size:.64em;letter-spacing:.08em;opacity:1;text-shadow:0 1px 2px rgba(0,0,0,.85)}
-      .better-hunt-mini-best-value{display:flex;align-items:baseline;justify-content:flex-end;gap:5px;min-width:0}.better-hunt-mini-best-value small{color:var(--bh-ice);font-size:.78em;font-weight:950;white-space:nowrap}
+      .better-hunt-mini-best-value{display:flex;align-items:baseline;justify-content:flex-end;gap:5px;min-width:0}.better-hunt-mini-best-value small{color:var(--bh-ice);font-size:1em;font-weight:950;white-space:nowrap}
       .better-hunt-empty{display:grid;place-items:center;min-height:80px;border:1px dashed color-mix(in srgb,var(--bh-line-hi) 45%,transparent);border-radius:10px;background:rgba(0,0,0,.16);color:var(--bh-steel-dim);font-weight:800;text-align:center}
       .better-hunt-requests{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--bh-line-hi) 38%,transparent);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--bh-card-hi) 62%,transparent),color-mix(in srgb,var(--bh-card-lo) 70%,transparent));padding:8px}
       .better-hunt-requests-head{display:grid;min-width:74px;align-content:center;gap:4px;border-right:1px solid rgba(255,255,255,.1);padding-right:8px}.better-hunt-requests-head span{color:var(--bh-steel-dim);font-size:.62em;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.better-hunt-requests-head strong{color:var(--bh-ice);font-size:1.35em;font-weight:950;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 40%,transparent)}
@@ -4853,8 +4854,7 @@ export function BetterBonusHuntStyle({
       {renderStatBoxes()}
       {superCount > 0 || extremeCount > 0 ? (
         <div
-          className="better-hunt-main-tiers"
-          style={{ "--bh-tier-count": Number(superCount > 0) + Number(extremeCount > 0) }}
+          className={`better-hunt-main-tiers better-hunt-stat-grid--${statsLayout}`}
         >
           {superCount > 0
             ? renderMainstreamTierTracker(

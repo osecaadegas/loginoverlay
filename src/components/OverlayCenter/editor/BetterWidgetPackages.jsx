@@ -4341,11 +4341,18 @@ function SimpleThemedControls({
                 </>
               )}
               {sourceMode === "video" && (
-                <TextRow
-                  label="Video URL"
-                  value={c.videoUrl}
-                  onChange={(videoUrl) => set({ videoUrl })}
-                />
+                <>
+                  <BackgroundLibraryPicker
+                    type="video"
+                    value={c.videoUrl}
+                    onChange={(videoUrl) => set({ videoUrl })}
+                  />
+                  <TextRow
+                    label="Video URL"
+                    value={c.videoUrl}
+                    onChange={(videoUrl) => set({ videoUrl })}
+                  />
+                </>
               )}
               {isMediaSource && (
                 <>
