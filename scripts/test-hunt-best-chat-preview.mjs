@@ -33,13 +33,46 @@ try {
       config: { orientation, carouselMode: 'imagestats', sessionState: 'opening', animations: false, showRequests: false },
       bonuses, stats: {}, currency: '€', userId: 'owner-a', allWidgets,
     }));
-    assert.match(html, /€8[,.]450\s*\/\s*845x/, `${orientation}: image stats uses the saved personal best amount and multiplier`);
+    assert.match(html, />Best<[^]*€8[,.]450[^]*>Best X<[^]*845x/, `${orientation}: image stats separates the saved personal best amount and multiplier`);
     const withoutHistory = renderToStaticMarkup(createElement(BetterBonusHuntStyle, {
       config: { orientation, carouselMode: 'imagestats', sessionState: 'opening', animations: false, showRequests: false },
       bonuses, stats: {}, currency: '€',
     }));
-    assert.match(withoutHistory, /€600\s*\/\s*300x/, `${orientation}: queued slot retains its earlier win in this hunt`);
+    assert.match(withoutHistory, />Best<[^]*€600[^]*>Best X<[^]*300x/, `${orientation}: queued slot retains its earlier win in this hunt`);
   }
+  const listMarkup = renderToStaticMarkup(createElement(BetterBonusHuntStyle, {
+    config: {
+      orientation: 'mainstream', carouselMode: '3d', listMode: 'image',
+      sessionState: 'opening', animations: false, showRequests: false,
+    },
+    bonuses: [{
+      id: 'viewer-card', slot_name: 'Viewer Slot', provider: 'Hidden Provider',
+      requestedBy: 'ViewerOne', bet: 2, payout: 500, opened: true,
+    }],
+    stats: {}, currency: '€', previewOnly: true,
+  }));
+  assert.match(listMarkup, /better-hunt-mini-stat--best[^]*€500[^]*250x/,
+    'Image list cards show the slot personal best amount and multiplier');
+  assert.match(listMarkup, /class="is-viewer-request">ViewerOne</,
+    'Viewer requests use the provider metadata line for the viewer name');
+  assert.doesNotMatch(listMarkup, /Hidden Provider/,
+    'Viewer request cards do not also render the provider name');
+  assert.doesNotMatch(listMarkup, /<div class="better-hunt-main-count"|>Bonuses</,
+    'Mainstream removes the redundant Bonuses summary box');
+  assert.doesNotMatch(listMarkup, /<div class="better-hunt-main-tiers"/,
+    'Mainstream hides Super and Hidden stats when neither tier exists');
+  const tierMarkup = renderToStaticMarkup(createElement(BetterBonusHuntStyle, {
+    config: { orientation: 'mainstream', carouselMode: '3d', animations: false, showRequests: false },
+    bonuses: [
+      { id: 'normal', slot_name: 'Normal Slot', bet: 1 },
+      { id: 'super', slot_name: 'Super Slot', bet: 1, isSuperBonus: true },
+    ],
+    stats: {}, currency: '€', previewOnly: true,
+  }));
+  assert.match(tierMarkup, /<div class="better-hunt-main-tiers"[^]*better-hunt-main-tier-stat--super/,
+    'Mainstream shows the Super stat when a Super bonus exists');
+  assert.doesNotMatch(tierMarkup, /<div class="better-hunt-stat better-hunt-main-tier-stat--extreme"/,
+    'Mainstream keeps Hidden absent when no hidden bonus exists');
   for (const chatStyle of ['classic', 'better_chat', 'broadcast_chat', 'community_chat']) {
     const instance = createBetterInstance('chat', { config: { chatStyle, live: false } });
     const layout = { instances: [instance] };

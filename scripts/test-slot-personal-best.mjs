@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildResultFromBonus, getSlotIdentity, queryUserSlotRecord, readSlotPersonalBest, recordMatchesSlot } from '../shared/slotPersonalBest.js';
-import handler, { loadOverlayPersonalBest } from '../api/_lib/routes/slot-personal-best.js';
+import handler, { loadOverlayPersonalBest, loadOverlayPersonalBests } from '../api/_lib/routes/slot-personal-best.js';
 
 const slotId = '11111111-1111-4111-8111-111111111111';
 const slot = { id: slotId, name: 'Mad Blast', provider: 'Reel Gaming' };
@@ -99,6 +99,13 @@ response = await loadOverlayPersonalBest(request({ publicOverlayId: publicB }), 
 assert.equal(response.body.best.best_win, 900);
 response = await loadOverlayPersonalBest(request({ overlayToken: legacyB }), client);
 assert.equal(response.body.best.best_win, 900, 'Legacy token resolves the same owner');
+response = await loadOverlayPersonalBests({ body: {
+  publicOverlayId: publicB,
+  slots: [slot, { name: 'Fresh Slot' }],
+} }, client);
+assert.equal(response.status, 200);
+assert.deepEqual(response.body.bests.map((best) => best?.best_win || null), [900, null],
+  'Batch lookup resolves one owner and preserves the requested slot order');
 const freshRequest = request({ publicOverlayId: publicB, slotName: 'Fresh Slot', slotId: '' });
 assert.equal((await loadOverlayPersonalBest(freshRequest, client)).body.best, null);
 tables.user_slot_records.push(record('owner-b', 700, { slot_id: null, slot_name: 'Fresh Slot' }));
@@ -114,7 +121,7 @@ for (const query of [{ userId: 'owner-a' }, { publicOverlayId: 'invalid' }, { pu
 }
 assert.equal(client.reads.length, beforeInvalid);
 const res = { setHeader() {}, status(code) { this.code = code; return this; }, json(body) { this.body = body; }, end() {} };
-await handler({ method: 'POST' }, res);
+await handler({ method: 'PUT' }, res);
 assert.equal(res.code, 405);
 await handler({ method: 'OPTIONS' }, res);
 assert.equal(res.code, 204);
