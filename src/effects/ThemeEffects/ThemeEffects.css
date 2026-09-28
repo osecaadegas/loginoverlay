@@ -75,12 +75,11 @@
   background-image:
     linear-gradient(180deg, rgba(214, 249, 255, 0.11) 0%, rgba(96, 193, 224, 0.035) 12%, transparent 32%),
     radial-gradient(circle at 18% -8%, rgba(99, 204, 235, 0.15), transparent 38%),
-    linear-gradient(152deg, rgba(8, 29, 44, 0.42), rgba(2, 8, 17, 0.76)),
-    url("/theme-effects/ice/ice-glass.webp"),
-    url("/theme-effects/ice/ice-noise.webp");
-  background-blend-mode: screen, screen, normal, normal, normal;
-  background-position: center, center, center, center, 17px 9px;
-  background-size: cover, cover, cover, 420px 420px, 180px 180px;
+    radial-gradient(ellipse at 50% 48%, rgba(3, 17, 29, 0.82), rgba(9, 29, 41, 0.36)),
+    url("/theme-effects/ice/ice-glass.webp");
+  background-blend-mode: screen, screen, normal, normal;
+  background-position: center;
+  background-size: cover, cover, cover, 420px 420px;
   box-shadow:
     0 0 0 1px rgba(1, 7, 14, 0.94),
     0 11px 30px rgba(0, 3, 8, 0.48),
@@ -121,11 +120,10 @@
   background-image:
     linear-gradient(180deg, rgba(233, 253, 255, 0.13), transparent 13%),
     radial-gradient(circle at 50% -12%, rgba(101, 211, 241, 0.22), transparent 46%),
-    linear-gradient(150deg, rgba(9, 38, 56, 0.36), rgba(2, 10, 20, 0.65)),
-    url("/theme-effects/ice/ice-glass.webp"),
-    url("/theme-effects/ice/ice-noise.webp");
-  background-blend-mode: screen, screen, normal, normal, normal;
-  background-size: cover, cover, cover, 360px 360px, 160px 160px;
+    radial-gradient(ellipse at 50% 46%, rgba(5, 22, 36, 0.84), rgba(12, 39, 54, 0.38)),
+    url("/theme-effects/ice/ice-glass.webp");
+  background-blend-mode: screen, screen, normal, normal;
+  background-size: cover, cover, cover, 360px 360px;
   box-shadow:
     0 0 calc(25px * var(--sb-glow)) rgba(84, 201, 235, 0.3),
     0 16px 42px rgba(0, 3, 9, 0.54),
@@ -137,12 +135,9 @@
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"]
   .slot-bingo-widget::before {
   z-index: 0;
-  border-color: rgba(166, 231, 247, 0.28);
-  background: url("/theme-effects/ice/frost-edge.png") center / 100% 100% no-repeat;
-  opacity: 0.24;
-  box-shadow:
-    inset 0 1px 0 rgba(234, 253, 255, 0.12),
-    inset 0 0 22px rgba(65, 182, 215, 0.06);
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"]
@@ -284,17 +279,15 @@
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slideshow_frame"]
   .better-slideshow-frame__inner {
-  border-color: rgba(142, 222, 242, 0.31);
+  border-color: transparent;
   background-image:
     url("/theme-effects/ice/frost-corners.png"),
     url("/theme-effects/ice/ice-cracks.png");
   background-position: center;
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  box-shadow:
-    inset 0 1px 0 rgba(237, 254, 255, 0.12),
-    inset 0 0 24px rgba(68, 177, 208, 0.07);
-  opacity: 0.42;
+  box-shadow: none;
+  opacity: 0.24;
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bonus_hunt"]
@@ -437,8 +430,9 @@
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
   :is(.ov-chat-msg, .ov-cards-msg, [data-better-element="message"], [data-better-element="highlightedMessage"], [data-widget-element="message"], [data-widget-element="highlightedMessage"]:has([data-widget-element="username"])):not(:has([data-widget-element="message"], [data-better-element="message"])) {
-  background-image: linear-gradient(155deg, rgba(17, 40, 53, 0.94), rgba(3, 15, 25, 0.97)),
-    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-image: linear-gradient(155deg, rgba(24, 49, 63, 0.76), rgba(3, 15, 25, 0.9)),
+    url("/theme-effects/ice/mist.png") !important;
+  background-color: transparent !important;
   background-size: cover, 295px 235px !important;
   border-color: rgba(147, 201, 219, 0.3) !important;
   box-shadow: inset 0 1px 0 rgba(215, 242, 249, 0.16), inset 0 -4px 10px rgba(0, 5, 12, 0.34) !important;
@@ -534,9 +528,83 @@
 
 /* An embedded giveaway is a section of the chat slab, without a second shell. */
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-giveaway-widget {
-  background: linear-gradient(180deg, rgba(31, 60, 74, .58), rgba(5, 19, 29, .24)) !important;
+  background: linear-gradient(160deg, rgba(178, 222, 235, .08), transparent 45%), linear-gradient(180deg, rgba(9, 28, 40, .46), rgba(4, 16, 26, .3)) !important;
   border-color: transparent !important;
-  box-shadow: inset 0 -1px 0 rgba(183, 221, 233, .3) !important;
+  box-shadow: none !important;
+}
+
+/* The embedded module shares chat's frame. These decorative pseudo-elements
+   previously retained the standalone inset box even after its border was cleared. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-giveaway-widget::before,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-giveaway-widget::after { content: none; }
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-gw-header {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-gw-rule {
+  background: linear-gradient(90deg, rgba(203, 232, 242, .25), transparent);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-gw-rule::before,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-gw-rule::after { content: none; }
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-gw-metric-panel {
+  background: linear-gradient(160deg, rgba(153, 202, 220, .08), rgba(2, 12, 21, .56)) !important;
+  border-color: rgba(166, 207, 223, .2) !important;
+  box-shadow: inset 0 1px 0 rgba(228, 246, 253, .1) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-gift-icon { filter: none; }
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-gw-gift-box, .better-gw-gift-lid, .better-gw-gift-bow) { fill: #badfe9; stroke: #749fae; }
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-gift-ribbon { stroke: #416677; }
+
+/* Preserve configured type sizes; remove small-viewport caps that made the key
+   entry instruction illegible. This changes typography, never widget bounds. */
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-metric-label {
+  font-size: var(--w-label-size, 10px);
+  color: #c5dce6;
+  text-shadow: 0 1px 2px #020a12;
+  letter-spacing: .05em;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-metric-value {
+  color: #f4fbff;
+  text-shadow: 0 1px 2px #020a12;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-keyword-value {
+  font-size: max(var(--w-value-size, 20px), calc(var(--w-label-size, 10px) * 1.25));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-prize {
+  text-shadow: 0 1px 2px #020a12;
+}
+
+/* Information surfaces need a dark reading zone, not another opaque shell.
+   Existing alpha mist supplies cloudy depth without a backdrop blur/filter. */
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-result, .better-hunt-request-card, .better-gw-roulette-viewport, .better-shoutout-card) {
+  background-color: transparent !important;
+  background-image: linear-gradient(155deg, rgba(27, 51, 64, .8), rgba(3, 15, 25, .93)), url("/theme-effects/ice/mist.png") !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"]
+  :is([data-widget-element="matchCard"], .tw-ice-material-card) {
+  background-color: transparent !important;
+  background-image: linear-gradient(155deg, rgba(20, 45, 59, .82), rgba(3, 14, 24, .94)), url("/theme-effects/ice/mist.png") !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .slot-bingo-widget {
+  backdrop-filter: none;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-stat, .rtp-stats-bar, .better-gw-metric-value) {
+  text-shadow: 0 1px 2px #01070d;
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"]
@@ -600,11 +668,27 @@
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget__square.is-complete {
   background-image: linear-gradient(160deg, rgba(36, 79, 95, .76), rgba(4, 24, 37, .92)), url("/theme-effects/ice/ice-glass.webp");
+  background-blend-mode: normal;
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget__square.is-free {
   background-image: radial-gradient(ellipse at 50% 0, rgba(193, 235, 246, .32), transparent 62%), linear-gradient(160deg, rgba(27, 64, 82, .84), rgba(2, 19, 34, .91)), url("/theme-effects/ice/frost-corners.png"), url("/theme-effects/ice/ice-glass.webp");
   background-size: cover, cover, 100% 100%, 263px 221px;
+  background-blend-mode: normal;
   border-color: #e4f8ff;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .slot-bingo-widget__square .slot-bingo-widget__label {
+  font-size: clamp(9px, min(3.5cqw, 5cqh), var(--sb-square-size));
+  color: #edf7fb;
+  letter-spacing: .015em;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .slot-bingo-widget__multiplier {
+  font-size: clamp(7px, min(2.6cqw, 3.8cqh), var(--sb-multiplier-size));
+}
+/* The shared engine already supplies the completion pulse. Avoid one permanent
+   composited shine animation per completed square on an information-dense grid. */
+.better-widget-colour-scope[data-colour-theme="arctic"] .slot-bingo-widget__square.is-complete::after {
+  animation: none;
 }
 
 @keyframes ice-material-impact {

@@ -3,6 +3,7 @@ import {
   Assets,
   Container,
   Graphics,
+  Rectangle,
   Sprite,
   Texture,
   loadTextures,
@@ -43,6 +44,21 @@ const ICE_ICICLE_TARGETS = new Set(["navbar", "bonus_hunt", "slot_bingo", "slide
 const ICE_MIST_TARGETS = new Set(["background", "bonus_hunt", "slot_bingo", "slideshow_frame"]);
 const ICE_SHIMMER_TARGETS = new Set(["navbar", "slot_bingo", "rtp_stats", "slideshow_frame"]);
 const ICE_BURST_TARGETS = new Set(["bonus_hunt", "slot_bingo", "tournament", "chat", "giveaway", "raid_shoutout"]);
+const iceCornerViews = new WeakMap();
+
+// Four atlas views share the existing GPU source. Cache metadata with the source
+// texture instead of allocating/copying bitmaps for every target or resize.
+function getIceCornerViews(texture) {
+  if (!iceCornerViews.has(texture)) {
+    const width = texture.width / 2;
+    const height = texture.height / 2;
+    iceCornerViews.set(texture, Array.from({ length: 4 }, (_, index) => new Texture({
+      source: texture.source,
+      frame: new Rectangle((index % 2) * width, Math.floor(index / 2) * height, width, height),
+    })));
+  }
+  return iceCornerViews.get(texture);
+}
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -173,7 +189,8 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     detail: null,
     decor: null,
     icicleClusters: [],
-    corners: null,
+    edgeShards: [],
+    frostCorners: [],
     clipMask: null,
     edgeMask: null,
     fog: null,
@@ -226,7 +243,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     burstTexture,
   ] = await Promise.all([
     loadTexture(target.theme.textures.panel),
-    loadTexture(target.theme.textures.edge),
+    target.theme.family === "ice" ? null : loadTexture(target.theme.textures.edge),
     loadTexture(target.theme.textures.detail),
     loadTexture(target.theme.textures.decor),
     loadTexture(target.theme.textures.fog),
@@ -242,14 +259,14 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
   node.texture.blendMode = target.theme.family === "gladiator" ? "overlay" : "screen";
   node.inside.addChild(node.texture);
 
-  node.edge = new Sprite(edgeTexture);
-  node.edge.alpha = isForcedEffect(debugEffect, "frost")
-    ? 1
-    : target.theme.family === "ice"
-      ? target.effects.ice.frost * (0.56 + iceHierarchy * 0.22) * node.material.frost
-    : 0.075;
-  node.edge.blendMode = "screen";
-  node.foreground.addChild(node.edge);
+  // Ice's old edge bitmap contains nested rectangular strokes. Corner frost has
+  // a natural alpha falloff and does not compete with the DOM's single border.
+  node.edge = target.theme.family === "ice" ? null : new Sprite(edgeTexture);
+  if (node.edge) {
+    node.edge.alpha = isForcedEffect(debugEffect, "frost") ? 1 : 0.075;
+    node.edge.blendMode = "screen";
+    node.foreground.addChild(node.edge);
+  }
 
   const showDetail = target.theme.family !== "ice" || target.effects.ice.cracks;
   if (showDetail) {
@@ -268,24 +285,43 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     node.inside.addChild(node.detail);
   }
 
-  if (target.theme.family === "ice" && target.effects.ice.frost > 0.01) {
-    node.corners = new Sprite(cornerTexture);
-    node.corners.alpha = isForcedEffect(debugEffect, "frost")
-      ? 1
-      : target.effects.ice.frost * (0.38 + iceHierarchy * 0.24) * (1.94 - node.material.frost);
-    node.corners.blendMode = "screen";
-    node.foreground.addChild(node.corners);
+  if (target.theme.family === "ice" && target.effects.ice.frost > 0.01 && target.widgetType !== "background") {
+    getIceCornerViews(cornerTexture).forEach((texture, index) => {
+      const sprite = new Sprite(texture);
+      sprite.alpha = isForcedEffect(debugEffect, "frost") ? 1
+        : target.effects.ice.frost * (0.68 + iceHierarchy * 0.24) * randomRange(materialRandom, 0.8, 1.1);
+      sprite.blendMode = "screen";
+      node.foreground.addChild(sprite);
+      node.frostCorners.push({ sprite, index, scale: randomRange(materialRandom, 0.8, 1.1) });
+    });
   }
 
   // A scene background is cold atmosphere, not another framed glass widget.
   if (target.theme.family === "ice" && target.widgetType === "background") {
-    [node.edge, node.corners, node.detail].filter(Boolean).forEach((sprite) => { sprite.visible = false; });
+    [node.edge, node.detail].filter(Boolean).forEach((sprite) => { sprite.visible = false; });
     node.texture.alpha = 0.055;
   }
 
   const showDecor = target.theme.family === "ice"
     && target.effects.ice.icicles
     && ICE_ICICLE_TARGETS.has(target.widgetType);
+  // Static edge facets reuse the event texture; no ticker, filters or new atlas.
+  // Two small groups occupy only the top/bottom material rim, away from labels.
+  if (target.theme.family === "ice" && target.effects.ice.icicles
+    && ["navbar", "rtp_stats"].includes(target.widgetType)) {
+    const count = target.effects.quality === "low" ? 4 : 6;
+    for (let index = 0; index < count; index += 1) {
+      const sprite = new Sprite(burstTexture);
+      sprite.anchor.set(0.5);
+      sprite.alpha = randomRange(materialRandom, 0.38, 0.58);
+      sprite.tint = 0xe4f4fa;
+      sprite.rotation = randomRange(materialRandom, -0.8, 0.8);
+      node.foreground.addChild(sprite);
+      node.edgeShards.push({ sprite, position: index < count / 2 ? 0.14 : 0.76,
+        offset: (index % (count / 2)) * 8, length: randomRange(materialRandom, 12, 18),
+        bottom: index >= count / 2 });
+    }
+  }
   if (showDecor) {
     const count = target.widgetType === "navbar" ? 4 : 2;
     for (let index = 0; index < count; index += 1) {
@@ -367,7 +403,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     node.foreground.addChild(node.edgeMask);
     const frostLayer = new Container();
     node.foreground.addChildAt(frostLayer, 0);
-    [node.edge, node.corners].filter(Boolean).forEach((sprite) => frostLayer.addChild(sprite));
+    node.frostCorners.forEach(({ sprite }) => frostLayer.addChild(sprite));
     frostLayer.mask = node.edgeMask;
   }
 
@@ -432,12 +468,18 @@ function resizeTargetNode(node, target) {
     container.alpha = clamp(Number(target.opacity ?? 1), 0, 1);
   });
   setSpriteBounds(node.texture, target.width, target.height);
-  setSpriteBounds(node.edge, target.width, target.height);
+  if (node.edge) setSpriteBounds(node.edge, target.width, target.height);
   if (node.detail) setSpriteBounds(node.detail, target.width, target.height);
-  if (node.corners) setSpriteBounds(node.corners, target.width, target.height);
+  node.frostCorners.forEach(({ sprite, index, scale }) => {
+    // A tall sidebar must not stretch its frost across stat labels. Each corner
+    // retains its physical proportions and fades naturally into the clear glass.
+    const size = Math.min(82, target.width * 0.22, target.height * 0.46) * scale;
+    setSpriteBounds(sprite, size, size);
+    sprite.position.set(index % 2 ? target.width - size : 0, index > 1 ? target.height - size : 0);
+  });
   if (target.theme.family === "ice") {
     const { flipX, flipY, scale, x, y } = node.material;
-    [node.texture, node.detail, node.edge, node.corners].filter(Boolean).forEach((sprite, index) => {
+    [node.texture, node.detail, node.edge].filter(Boolean).forEach((sprite, index) => {
       // Keep edge accumulation attached to the frame; crop only interior material.
       const interior = sprite === node.texture || sprite === node.detail;
       const factor = interior ? scale : 1;
@@ -456,6 +498,11 @@ function resizeTargetNode(node, target) {
     sprite.anchor.x = mirror ? 1 : 0;
     sprite.scale.x = Math.abs(sprite.scale.x) * (mirror ? -1 : 1);
     sprite.position.set(Math.min(target.width - sprite.width - 3, target.width * position), navbar ? target.height - 3 : 1);
+  });
+  node.edgeShards.forEach(({ sprite, position, offset, length, bottom }) => {
+    const height = Math.min(length, target.height * 0.22);
+    setSpriteBounds(sprite, height * 0.48, height);
+    sprite.position.set(target.width * position + offset, bottom ? target.height - height * 0.7 - 1 : height * 0.7 + 1);
   });
   if (node.decor) {
     const isNavbar = target.widgetType === "navbar";
@@ -495,12 +542,11 @@ function resizeTargetNode(node, target) {
       .fill({ color: 0xffffff });
   }
   if (node.edgeMask) {
-    const inset = Math.min(24, target.width * 0.06, target.height * 0.15);
+    // Clip only the outside. Cutting a rectangular hole through translucent
+    // frost creates a visible inner box; the texture already clears its center.
     node.edgeMask.clear()
-      .roundRect(1, 1, Math.max(1, target.width - 2), Math.max(1, target.height - 2), radius)
-      .fill(0xffffff)
-      .roundRect(inset, inset, Math.max(1, target.width - inset * 2), Math.max(1, target.height - inset * 2), Math.max(0, radius - inset))
-      .cut();
+      .roundRect(1, 1, Math.max(1, target.width - 2), Math.max(1, target.height - 2), Math.max(0, radius - 1))
+      .fill(0xffffff);
   }
   drawTargetFrame(node, target, isForcedEffect(node.debugEffect, "glow") ? 2.4 : 1);
   if (node.aura) {

@@ -118,11 +118,11 @@ try {
     };
     window.fxTest = {
       eventSpeed(speed) { gsap.globalTimeline.timeScale(speed); },
-      renderScene({ quality = "balanced", scale = 1, moved = false, single = "", theme = "arctic", tournamentLayout = "esports", winner = null, media = false, chatEvent = "", results = false } = {}) {
+      renderScene({ quality = "balanced", scale = 1, moved = false, single = "", theme = "arctic", tournamentLayout = "esports", winner = null, media = false, chatEvent = "", results = false, dense = false } = {}) {
         const specifications = [
           ["background", 0, 0, 1920, 1080, { backgroundStyle: "better", texture: "none" }],
           ["navbar", 12, 8, 1896, 74, { navbarStyle: "better", showNowPlaying: false, showCrypto: false }],
-          ["bonus_hunt", moved ? 75 : 10, moved ? 120 : 88, moved ? 410 : 360, moved ? 800 : 900, { bonusHuntStyle: "better", orientation: "mainstream", widgetHeight: moved ? 800 : 900, bonuses: single === 'bonus_hunt' ? [
+          ["bonus_hunt", moved ? 75 : 10, moved ? 120 : 88, moved ? 410 : 360, moved ? 800 : 900, { bonusHuntStyle: "better", orientation: "mainstream", widgetHeight: moved ? 800 : 900, bonuses: single === 'bonus_hunt' || dense ? [
             { id: 'ice-normal', slotName: 'Ice review normal', betSize: 1, payout: 25, opened: true },
             { id: 'ice-super', slotName: 'Ice review super', betSize: 1, payout: 50, opened: true, isSuperBonus: true },
             { id: 'ice-extreme', slotName: 'Ice review extreme', betSize: 1, payout: 75, opened: true, isExtremeBonus: true },
@@ -140,13 +140,13 @@ try {
             { id: 'ice-request', username: 'SlotFan', message: '!sr Stormforged', platform: 'twitch', avatarUrl: '/player.webp' },
           ] }],
           ["rtp_stats", 392, 814, 1068, 64, {}],
-          ["tournament", 0, 0, 1000, 620, {
+          ["tournament", dense ? 470 : 0, dense ? 90 : 0, dense ? 870 : 1000, dense ? 215 : 620, {
             ...registry.resolveBetterWidgetConfig("tournament", {}, "mock"),
             layout: tournamentLayout,
             data: { currentMatchIdx: 0, matches: [{ id: "ice-match", player1: "North", player2: "Frost", type: "bonus", status: "in_progress", winner, config: {}, rounds: [{ player1: { bonusCost: 20, bonusPayout: 45 }, player2: { bonusCost: 20, bonusPayout: 30 } }], slot1: { name: "Frozen glass", image: "/theme-effects/ice/ice-glass.webp" }, slot2: { name: "Cold crystal", image: "/theme-effects/ice/ice-glass.webp" } }] },
           }],
         ];
-        const widgets = specifications.filter(([type]) => single ? type === single : type !== "tournament").map(([type, x, y, w, h, config]) => ({
+        const widgets = specifications.filter(([type]) => single ? type === single : dense || type !== "tournament").map(([type, x, y, w, h, config]) => ({
           ...registry.createBetterInstance(type),
           instanceId: `ice-${type}`, widgetType: type, visible: true,
           x: single ? 0 : x, y: single ? 0 : y, width: w, height: h, opacity: 1, zIndex: type === "background" ? 0 : 10,
@@ -290,13 +290,46 @@ try {
     await screenshot(`ice-full-${quality}`);
     if (quality === 'balanced') {
       const chatMaterial = await page.$eval('[data-widget-type="chat"] [data-better-element="highlightedMessage"]', element => getComputedStyle(element).backgroundImage);
-      assert(chatMaterial.includes('ice-glass.webp'), 'role-highlighted chat cards use the Ice material');
+      assert(chatMaterial.includes('mist.png'), 'role-highlighted chat cards use alpha mist, not an opaque nested shell');
+      const tile = await page.$eval('.slot-bingo-widget__square.is-complete', element => ({
+        blend: getComputedStyle(element).backgroundBlendMode,
+        animation: getComputedStyle(element, '::after').animationName,
+        labelSize: parseFloat(getComputedStyle(element.querySelector('.slot-bingo-widget__label')).fontSize),
+      }));
+      assert(!tile.blend.includes('screen'), 'completed tiles keep a dark reading zone');
+      assert.equal(tile.animation, 'none', 'completed Ice tiles do not run permanent DOM sheen loops');
+      assert(tile.labelSize >= 16, 'reference Bingo uses its readable configured label size');
       await screenshot('ice-bonus-hunt', { x: 0, y: 80, width: 385, height: 930 });
       await screenshot('ice-topbar', { x: 0, y: 0, width: 1920, height: 112 });
       await screenshot('ice-bingo', { x: 465, y: 315, width: 880, height: 390 });
       await screenshot('ice-chat', { x: 1495, y: 383, width: 412, height: 634 });
     }
   }
+  for (const width of [1920, 1280, 960]) {
+    await page.setViewport({ width, height: Math.round(width * 9 / 16) });
+    await page.evaluate(scale => window.fxTest.renderScene({ dense: true, chatEvent: 'giveaway', media: true, scale }), width / 1920);
+    await page.waitForSelector('.better-giveaway-widget');
+    await new Promise(resolve => setTimeout(resolve, 750));
+    await checkBounds();
+    const embedded = await page.evaluate(() => {
+      const card = document.querySelector('.better-giveaway-widget');
+      const header = card.querySelector('.better-gw-header');
+      const label = card.querySelector('.better-gw-keyword-value');
+      const rect = label.getBoundingClientRect();
+      const frame = card.closest('.ov-chat-giveaway').getBoundingClientRect();
+      return { inset: getComputedStyle(card, '::before').content,
+        dividerDot: getComputedStyle(card.querySelector('.better-gw-rule'), '::before').content,
+        headerImage: getComputedStyle(header).backgroundImage,
+        keyword: label.textContent, fits: rect.top >= frame.top && rect.bottom <= frame.bottom && rect.left >= frame.left && rect.right <= frame.right };
+    });
+    assert.equal(embedded.inset, 'none', 'embedded giveaway has no standalone inset frame');
+    assert.equal(embedded.dividerDot, 'none', 'embedded divider has no standalone neon endpoints');
+    assert.equal(embedded.headerImage, 'none', 'giveaway header inherits the chat material');
+    assert.equal(embedded.keyword, '!join');
+    assert(embedded.fits, 'giveaway entry instruction remains inside the visible module');
+    await screenshot(`ice-dense-${width}`);
+  }
+  await page.setViewport({ width: 1920, height: 1080 });
   await page.evaluate(() => window.fxTest.renderScene({ moved: true, scale: 0.65 }));
   await new Promise((resolve) => setTimeout(resolve, 750));
   await checkBounds();
