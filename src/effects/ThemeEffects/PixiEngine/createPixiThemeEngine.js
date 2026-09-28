@@ -5,6 +5,7 @@ import {
   Graphics,
   Sprite,
   Texture,
+  loadTextures,
 } from "pixi.js";
 import "pixi.js/unsafe-eval";
 import { gsap } from "gsap";
@@ -15,6 +16,9 @@ import {
 } from "../presets/performancePresets";
 
 const QUALITY_RANK = Object.freeze({ low: 0, balanced: 1, ultra: 2 });
+// OBS CSP disallows blob workers. Decode cached textures asynchronously on the
+// main thread instead; a blocked worker otherwise leaves Assets.load pending.
+loadTextures.config.preferWorkers = false;
 const TARGET_WEIGHT = Object.freeze({
   slot_bingo: 1.35,
   bonus_hunt: 0.9,
@@ -116,12 +120,13 @@ function setSpriteBounds(sprite, width, height) {
 }
 
 function drawTargetFrame(node, target, alphaMultiplier = 1) {
-  const radius = clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
+  const radius = target.radius ?? clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
   const familyGlow = target.theme.family === "ice" ? target.effects.ice.glow : 1;
   const glow = target.effects.glowIntensity * familyGlow;
   node.frameBack.clear();
   node.frame.clear();
   node.frameHighlight.clear();
+  if (target.widgetType === "background" && target.theme.family === "ice") return;
   if (target.theme.family === "ice") {
     const hierarchy = ICE_PRIMARY_WEIGHT[target.widgetType] || 0.48;
     node.frameBack
@@ -181,8 +186,10 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     edge: null,
     detail: null,
     decor: null,
+    icicleClusters: [],
     corners: null,
     clipMask: null,
+    edgeMask: null,
     fog: null,
     fogSecondary: null,
     lightRay: null,
@@ -245,7 +252,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
   node.edge.alpha = isForcedEffect(debugEffect, "frost")
     ? 1
     : target.theme.family === "ice"
-      ? 0.17 + target.effects.ice.frost * (0.2 + iceHierarchy * 0.1)
+      ? target.effects.ice.frost * (0.56 + iceHierarchy * 0.22)
     : 0.075;
   node.edge.blendMode = "screen";
   node.foreground.addChild(node.edge);
@@ -260,7 +267,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
         : 0.065;
     node.detail.alpha = isForcedEffect(debugEffect, "cracks")
       ? 1
-      : target.theme.family === "ice" ? iceCrackAlpha * 1.55 : 0.055;
+      : target.theme.family === "ice" ? iceCrackAlpha * 2.5 : 0.055;
     node.detail.blendMode = target.theme.family === "ice"
       ? "screen"
       : target.theme.family === "gladiator" ? "overlay" : "multiply";
@@ -271,7 +278,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     node.corners = new Sprite(cornerTexture);
     node.corners.alpha = isForcedEffect(debugEffect, "frost")
       ? 1
-      : (0.11 + target.effects.ice.frost * 0.22) * (0.72 + iceHierarchy * 0.36);
+      : target.effects.ice.frost * (0.38 + iceHierarchy * 0.24);
     node.corners.blendMode = "screen";
     node.foreground.addChild(node.corners);
   }
@@ -280,12 +287,14 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     && target.effects.ice.icicles
     && ICE_ICICLE_TARGETS.has(target.widgetType);
   if (showDecor) {
-    node.decor = new Sprite(decorTexture);
-    node.decor.alpha = isForcedEffect(debugEffect, "icicles")
-      ? 1
-      : target.widgetType === "navbar" ? 0.44 : 0.22 + iceHierarchy * 0.1;
-    node.decor.blendMode = "screen";
-    node.foreground.addChild(node.decor);
+    const count = target.widgetType === "navbar" ? 4 : 2;
+    for (let index = 0; index < count; index += 1) {
+      const sprite = new Sprite(decorTexture);
+      sprite.alpha = isForcedEffect(debugEffect, "icicles") ? 1 : 0.52;
+      sprite.blendMode = "normal";
+      node.foreground.addChild(sprite);
+      node.icicleClusters.push({ sprite, position: (index + 0.35 + random() * 0.25) / count, length: randomRange(random, 0.7, 1) });
+    }
   }
 
   const fogAmount = resolveFogAmount(target);
@@ -346,6 +355,12 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
     node.foreground.addChild(node.foregroundMask);
     node.shimmer.mask = node.foregroundMask;
   }
+  if (target.theme.family === "ice") {
+    // Keep branching edge frost away from labels and stat values.
+    node.edgeMask = new Graphics();
+    node.foreground.addChild(node.edgeMask);
+    [node.edge, node.corners].filter(Boolean).forEach((sprite) => { sprite.mask = node.edgeMask; });
+  }
 
   const particleCount = Math.max(
     0,
@@ -397,6 +412,9 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
 }
 
 function resizeTargetNode(node, target) {
+  const geometry = [target.x, target.y, target.width, target.height, target.radius, target.opacity, target.zIndex].join(":");
+  if (node.geometry === geometry) return;
+  node.geometry = geometry;
   node.target = target;
   node.containers.forEach((container) => {
     container.position.set(target.x, target.y);
@@ -407,6 +425,11 @@ function resizeTargetNode(node, target) {
   setSpriteBounds(node.edge, target.width, target.height);
   if (node.detail) setSpriteBounds(node.detail, target.width, target.height);
   if (node.corners) setSpriteBounds(node.corners, target.width, target.height);
+  node.icicleClusters.forEach(({ sprite, position, length }) => {
+    const navbar = target.widgetType === "navbar";
+    setSpriteBounds(sprite, Math.min(navbar ? 110 : 65, target.width * 0.22) * length, (navbar ? 28 : 17) * length);
+    sprite.position.set(Math.min(target.width - sprite.width - 3, target.width * position), navbar ? target.height - 3 : 1);
+  });
   if (node.decor) {
     const isNavbar = target.widgetType === "navbar";
     setSpriteBounds(
@@ -426,7 +449,8 @@ function resizeTargetNode(node, target) {
   }
   if (node.shimmer) {
     setSpriteBounds(node.shimmer, Math.max(42, target.width * 0.22), target.height * 1.32);
-    node.shimmer.pivot.set(node.shimmer.width / 2, node.shimmer.height / 2);
+    if (target.theme.family === "ice") node.shimmer.anchor.set(0.5);
+    else node.shimmer.pivot.set(node.shimmer.width / 2, node.shimmer.height / 2);
     node.shimmer.y = target.height * 0.5;
   }
   if (node.lightRay) {
@@ -434,7 +458,7 @@ function resizeTargetNode(node, target) {
     node.lightRay.pivot.set(node.lightRay.width / 2, node.lightRay.height / 2);
     node.lightRay.position.set(target.width * 0.68, target.height * 0.42);
   }
-  const radius = clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
+  const radius = target.radius ?? clamp(Math.min(target.width, target.height) * 0.045, 5, 28);
   node.clipMask.clear()
     .roundRect(2, 2, Math.max(1, target.width - 4), Math.max(1, target.height - 4), Math.max(3, radius - 1))
     .fill({ color: 0xffffff });
@@ -442,6 +466,14 @@ function resizeTargetNode(node, target) {
     node.foregroundMask.clear()
       .roundRect(2, 2, Math.max(1, target.width - 4), Math.max(1, target.height - 4), Math.max(3, radius - 1))
       .fill({ color: 0xffffff });
+  }
+  if (node.edgeMask) {
+    const inset = Math.min(24, target.width * 0.06, target.height * 0.15);
+    node.edgeMask.clear()
+      .roundRect(1, 1, Math.max(1, target.width - 2), Math.max(1, target.height - 2), radius)
+      .fill(0xffffff)
+      .roundRect(inset, inset, Math.max(1, target.width - inset * 2), Math.max(1, target.height - inset * 2), Math.max(0, radius - inset))
+      .cut();
   }
   drawTargetFrame(node, target, isForcedEffect(node.debugEffect, "glow") ? 2.4 : 1);
   if (node.aura) {
@@ -611,6 +643,7 @@ export async function createPixiThemeEngine({
   let rebuildToken = 0;
   let transition = null;
   let activeTargets = targets;
+  let pendingUpdate = null;
 
   const tickerHandler = (ticker) => {
     targetNodes.forEach((node) => updateTargetNode(node, ticker));
@@ -641,6 +674,7 @@ export async function createPixiThemeEngine({
           duration: 0.2,
           ease: "power1.out",
           onComplete: resolve,
+          onInterrupt: resolve,
         });
       });
     }
@@ -686,6 +720,15 @@ export async function createPixiThemeEngine({
     if (destroyed) return;
     activeTargets = nextTargets;
     const signature = targetSignature(nextTargets);
+    if (signature === currentSignature && pendingUpdate) {
+      await pendingUpdate;
+      if (destroyed || signature !== currentSignature) return;
+      activeTargets.forEach((target) => {
+        const node = targetNodes.get(target.id);
+        if (node) resizeTargetNode(node, target);
+      });
+      return;
+    }
     if (signature === currentSignature && targetNodes.size === nextTargets.length) {
       nextTargets.forEach((target) => {
         const node = targetNodes.get(target.id);
@@ -695,7 +738,13 @@ export async function createPixiThemeEngine({
     }
     const animate = currentSignature !== "" && options.transition !== false;
     currentSignature = signature;
-    await rebuild(nextTargets, animate);
+    const pending = rebuild(nextTargets, animate);
+    pendingUpdate = pending;
+    try {
+      await pending;
+    } finally {
+      if (pendingUpdate === pending) pendingUpdate = null;
+    }
   }
 
   function resize(nextWidth, nextHeight) {

@@ -14,9 +14,9 @@ export const THEME_EFFECT_DEFINITIONS = Object.freeze({
     }),
     textures: Object.freeze({
       panel: `${ROOT}/ice/frozen-glass.webp`,
-      edge: `${ROOT}/ice/frost-corners.png`,
+      edge: `${ROOT}/ice/frost-edge.png`,
       detail: `${ROOT}/ice/ice-cracks.png`,
-      decor: `${ROOT}/ice/icicles.png`,
+      decor: `${ROOT}/ice/icicle-cluster.webp`,
       noise: `${ROOT}/ice/ice-noise.webp`,
       fog: `${ROOT}/ice/mist.png`,
       particle: `${ROOT}/ice/snow-particle.png`,

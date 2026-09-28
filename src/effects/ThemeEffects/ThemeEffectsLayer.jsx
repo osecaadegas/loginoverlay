@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { resolveInstanceThemeEffects } from "./themeEffectsConfig";
+import { findEffectSurface, measureEffectTargets } from "./targetBounds";
 import "./ThemeEffects.css";
 
 function buildEffectTargets(instances, singleInstanceId) {
@@ -57,13 +58,58 @@ export default function ThemeEffectsLayer({
   const eventCountsRef = useRef(new Map());
   const [failed, setFailed] = useState(false);
   const [debugStats, setDebugStats] = useState(null);
+  const [measuredTargets, setMeasuredTargets] = useState([]);
   const debug = useMemo(readDebugOptions, []);
   const targets = useMemo(
     () => buildEffectTargets(instances, singleInstanceId),
     [instances, singleInstanceId],
   );
-  targetsRef.current = targets;
   dimensionsRef.current = { width, height };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const host = canvas?.parentElement?.parentElement;
+    if (!host) return undefined;
+    let frame = 0;
+    let previous = "";
+    const observed = new Set();
+    const measure = () => {
+      frame = 0;
+      targets.forEach((target) => {
+        const surface = findEffectSurface(host, target);
+        if (surface && !observed.has(surface)) {
+          observed.add(surface);
+          resizeObserver.observe(surface);
+        }
+      });
+      const next = measureEffectTargets(host, canvas, targets, width, height);
+      const signature = JSON.stringify(next);
+      if (signature === previous) return;
+      previous = signature;
+      targetsRef.current = next;
+      if (debug.enabled) setMeasuredTargets(next);
+      engineRef.current?.updateTargets(next).catch((error) => {
+        console.error("[ThemeEffects] Failed to update surface bounds:", error);
+      });
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(measure); };
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(host);
+    resizeObserver.observe(canvas);
+    const mutationObserver = new MutationObserver((records) => {
+      if (records.some((record) => !record.target.closest?.(".theme-effects-layer"))) schedule();
+    });
+    mutationObserver.observe(host, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class"] });
+    window.addEventListener("resize", schedule);
+    engineRef.current?.resize(width, height);
+    measure();
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      window.removeEventListener("resize", schedule);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [targets, width, height, debug.enabled]);
 
   useEffect(() => {
     if (!targets.length || !canvasRef.current) return undefined;
@@ -85,6 +131,7 @@ export default function ThemeEffectsLayer({
         }
         engine = createdEngine;
         engineRef.current = createdEngine;
+        createdEngine.setVisible(document.visibilityState === "visible");
         createdEngine.resize(dimensionsRef.current.width, dimensionsRef.current.height);
         createdEngine.updateTargets(targetsRef.current, { transition: false }).catch((error) => {
           console.error("[ThemeEffects] Failed to synchronize initial targets:", error);
@@ -111,7 +158,7 @@ export default function ThemeEffectsLayer({
     const engine = engineRef.current;
     if (!engine) return;
     engine.resize(width, height);
-    engine.updateTargets(targets).catch((error) => {
+    engine.updateTargets(targetsRef.current).catch((error) => {
       console.error("[ThemeEffects] Failed to update targets:", error);
     });
   }, [height, targets, width]);
@@ -171,7 +218,7 @@ export default function ThemeEffectsLayer({
       aria-hidden="true"
     >
       <canvas ref={canvasRef} className="theme-effects-layer__canvas" />
-      {debug.enabled && targets.map((target) => (
+      {debug.enabled && measuredTargets.map((target) => (
         <span
           key={target.id}
           className="theme-effects-layer__target-debug"

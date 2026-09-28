@@ -2062,72 +2062,84 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
                       !previewing && instance.instanceId === selectedInstanceId;
                     const isBackground = instance.widgetType === "background";
                     return (
-                      <div
-                        key={instance.instanceId}
-                        className={`better-editor-canvas-instance${selected ? " is-selected" : ""}${instance.locked ? " is-locked" : ""}${isBackground ? " is-background" : ""}`}
-                        data-effect-target-id={instance.instanceId}
-                        data-effect-widget-type={instance.widgetType}
-                        style={{
-                          left: instance.x,
-                          top: instance.y,
-                          width: instance.width,
-                          height: instance.height,
-                          opacity: instance.opacity,
-                          zIndex: instance.zIndex,
-                          pointerEvents:
-                            isBackground || previewing || operation
-                              ? "none"
-                              : "auto",
-                          borderRadius: getEditorInstanceBorderRadius(instance),
-                        }}
-                        onPointerDown={(event) =>
-                          beginInteraction(event, instance, "drag")
-                        }
-                      >
-                        {!isBackground && !previewing && (
-                          <span className="better-editor-canvas-instance__tag">
-                            <MousePointer2 size={12} />
-                            {instance.label}
-                          </span>
-                        )}
-                        <div className="better-editor-canvas-instance__content">
-                          <BetterEditorWidgetBoundary
-                            instanceId={instance.instanceId}
-                          >
-                            {renderBetterWidgetInstance({
-                              instance,
-                              layout,
-                              mode: dataMode,
-                              userId: user?.id,
-                              theme: liveSource.theme,
-                              liveWidgets: liveSource.widgets,
-                            })}
-                          </BetterEditorWidgetBoundary>
+                      <React.Fragment key={instance.instanceId}>
+                        <div
+                          className={`better-editor-canvas-instance${selected ? " is-selected" : ""}${instance.locked ? " is-locked" : ""}${isBackground ? " is-background" : ""}`}
+                          data-effect-target-id={instance.instanceId}
+                          data-effect-widget-type={instance.widgetType}
+                          style={{
+                            left: instance.x,
+                            top: instance.y,
+                            width: instance.width,
+                            height: instance.height,
+                            opacity: instance.opacity,
+                            zIndex: instance.zIndex,
+                            pointerEvents:
+                              isBackground || previewing || operation
+                                ? "none"
+                                : "auto",
+                            borderRadius: getEditorInstanceBorderRadius(instance),
+                          }}
+                          onPointerDown={(event) =>
+                            beginInteraction(event, instance, "drag")
+                          }
+                        >
+                          <div className="better-editor-canvas-instance__content">
+                            <BetterEditorWidgetBoundary
+                              instanceId={instance.instanceId}
+                            >
+                              {renderBetterWidgetInstance({
+                                instance,
+                                layout,
+                                mode: dataMode,
+                                userId: user?.id,
+                                theme: liveSource.theme,
+                                liveWidgets: liveSource.widgets,
+                              })}
+                            </BetterEditorWidgetBoundary>
+                          </div>
                         </div>
-                        {selected &&
-                          !instance.locked &&
-                          !isBackground &&
-                          !operation && (
-                            <div className="better-editor-resize-handles">
-                              {RESIZE_HANDLES.map((handle) => (
-                                <button
-                                  key={handle}
-                                  type="button"
-                                  className={`better-editor-resize-handle better-editor-resize-handle--${handle}`}
-                                  aria-label={`Resize ${handle}`}
-                                  onPointerDown={(event) =>
-                                    beginInteraction(
-                                      event,
-                                      instance,
-                                      "resize",
-                                      handle,
-                                    )
-                                  }
-                                />
-                              ))}
-                            </div>
-                          )}
-                      </div>
+                        {selected && (
+                          <div
+                            className="better-editor-selection-layer"
+                            style={{
+                              left: instance.x, top: instance.y,
+                              width: instance.width, height: instance.height,
+                              borderRadius: getEditorInstanceBorderRadius(instance),
+                            }}
+                          >
+                            {!isBackground && !previewing && (
+                              <span className="better-editor-canvas-instance__tag">
+                                <MousePointer2 size={12} />
+                                {instance.label}
+                              </span>
+                            )}
+                            {selected &&
+                              !instance.locked &&
+                              !isBackground &&
+                              !operation && (
+                                <div className="better-editor-resize-handles">
+                                  {RESIZE_HANDLES.map((handle) => (
+                                    <button
+                                      key={handle}
+                                      type="button"
+                                      className={`better-editor-resize-handle better-editor-resize-handle--${handle}`}
+                                      aria-label={`Resize ${handle}`}
+                                      onPointerDown={(event) =>
+                                        beginInteraction(
+                                          event,
+                                          instance,
+                                          "resize",
+                                          handle,
+                                        )
+                                      }
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                          </div>
+                        )}
+                      </React.Fragment>
                     );
                   })}
               </div>
