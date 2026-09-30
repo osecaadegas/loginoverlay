@@ -308,10 +308,21 @@ try {
   for (const width of [1920, 1280, 960]) {
     await page.setViewport({ width, height: Math.round(width * 9 / 16) });
     await page.evaluate(scale => window.fxTest.renderScene({ dense: true, chatEvent: 'giveaway', media: true, scale }), width / 1920);
-    await page.waitForSelector('.better-giveaway-widget');
+    await page.waitForSelector(':is(.better-gw-result-card,.better-giveaway-widget)');
     await new Promise(resolve => setTimeout(resolve, 750));
     await checkBounds();
     const embedded = await page.evaluate(() => {
+      const winnerCard = document.querySelector('.better-gw-result-card');
+      if (winnerCard) {
+        const frame = winnerCard.closest('.ov-chat-giveaway').getBoundingClientRect();
+        const rect = winnerCard.getBoundingClientRect();
+        return {
+          winner: true,
+          message: winnerCard.querySelector('.better-gw-result-message')?.textContent,
+          hasAvatar: Boolean(winnerCard.querySelector('.better-gw-result-avatar')),
+          fits: rect.top >= frame.top && rect.bottom <= frame.bottom && rect.left >= frame.left && rect.right <= frame.right,
+        };
+      }
       const card = document.querySelector('.better-giveaway-widget');
       const header = card.querySelector('.better-gw-header');
       const label = card.querySelector('.better-gw-keyword-value');
@@ -322,6 +333,13 @@ try {
         headerImage: getComputedStyle(header).backgroundImage,
         keyword: label.textContent, fits: rect.top >= frame.top && rect.bottom <= frame.bottom && rect.left >= frame.left && rect.right <= frame.right };
     });
+    if (embedded.winner) {
+      assert.equal(embedded.message, 'won the giveaway');
+      assert(embedded.hasAvatar, 'completed giveaway keeps the winner avatar');
+      assert(embedded.fits, 'winner popup remains inside the compact chat slot');
+      await screenshot(`ice-dense-${width}`);
+      continue;
+    }
     assert.equal(embedded.inset, 'none', 'embedded giveaway has no standalone inset frame');
     assert.equal(embedded.dividerDot, 'none', 'embedded divider has no standalone neon endpoints');
     assert.equal(embedded.headerImage, 'none', 'giveaway header inherits the chat material');
@@ -352,7 +370,7 @@ try {
   await screenshot('ice-media-loaded');
   for (const chatEvent of ['giveaway', 'shoutout']) {
     await page.evaluate(chatEvent => window.fxTest.renderScene({ single: 'chat', chatEvent }), chatEvent);
-    await page.waitForSelector(chatEvent === 'giveaway' ? '.better-giveaway-widget' : '.better-shoutout-card');
+    await page.waitForSelector(chatEvent === 'giveaway' ? ':is(.better-gw-result-card,.better-giveaway-widget)' : '.better-shoutout-card');
     await new Promise(resolve => setTimeout(resolve, 500));
     assert.equal(await page.$$eval('canvas', nodes => nodes.length), 1, 'embedded events reuse the shared renderer');
     await screenshot(`ice-chat-${chatEvent}`);

@@ -14,7 +14,11 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const [size, setSize] = useState({ width: 0, height: 0 });
   const width = bounded(config.width, 240, 1600, 420);
   const height = bounded(config.height, 140, 900, 270);
-  const frameHeight = bounded(layout.giveawayHeight, 80, 600, 250);
+  const hasWinner = Boolean(config.winner);
+  const regularFrameHeight = bounded(layout.giveawayHeight, 80, 600, 250);
+  const winnerFrameHeight = bounded(layout.giveawayWinnerHeight, 110, 320, 180);
+  const frameHeight = hasWinner ? winnerFrameHeight : regularFrameHeight;
+  const canvasHeight = hasWinner ? 190 : height;
   const margin = bounded(layout.giveawayMargin, 0, 30, 4);
   useLayoutEffect(() => {
     const element = frameRef.current;
@@ -28,14 +32,14 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   // Height remains independently configurable and clips only when deliberately reduced.
   const scale = size.width > 0 ? size.width / width : 1;
   return (
-    <section ref={frameRef} className="ov-chat-giveaway" aria-label="Giveaway" style={{
+    <section ref={frameRef} className="ov-chat-giveaway" data-giveaway-state={hasWinner ? "winner" : "active"} aria-label="Giveaway" style={{
       position: "relative", minWidth: 0, minHeight: 0, flex: `0 1 ${frameHeight}px`,
       height: frameHeight, maxHeight: `${bounded(layout.giveawayMaxHeight, 20, 80, 60)}%`,
       overflow: "hidden", margin: `${margin}px 0`, alignSelf: "stretch",
       width: "100%",
     }}>
       <div className="ov-chat-giveaway-canvas" style={{
-        position: "absolute", width, height, top: "50%", left: "50%",
+        position: "absolute", width, height: canvasHeight, top: "50%", left: "50%",
         transform: `translate(-50%, -50%) scale(${scale})`, transformOrigin: "center",
       }}>{children}</div>
     </section>

@@ -12,6 +12,7 @@ import { supabase } from "../../../../config/supabaseClient";
 import { subElementStyle, subValue } from "../shared/appearanceStyles";
 import { BetterGiveawayStyle } from "../shared/betterWidgetStyles";
 import EmbeddedGiveaway, { giveawayParticipantName } from "./EmbeddedGiveaway";
+import GiveawayWinnerCard from "./GiveawayWinnerCard";
 
 /* ─── Confetti burst generator ─── */
 function ConfettiBurst({ count = 60, accentColor }) {
@@ -503,13 +504,21 @@ function GiveawayWidget({ config, widgetId, previewOnly = false, embedded = fals
   if (embedded) {
     return (
       <EmbeddedGiveaway config={c} layout={embeddedLayout}>
-        <BetterGiveawayStyle config={c} />
+        {st === "better_giveaway" && isDone ? (
+          <GiveawayWinnerCard config={c} />
+        ) : (
+          <BetterGiveawayStyle config={c} />
+        )}
       </EmbeddedGiveaway>
     );
   }
 
   if (st === "better_giveaway") {
-    return <BetterGiveawayStyle config={c} />;
+    return isDone ? (
+      <GiveawayWinnerCard config={c} />
+    ) : (
+      <BetterGiveawayStyle config={c} />
+    );
   }
 
   const isMetal = st === "metal";
