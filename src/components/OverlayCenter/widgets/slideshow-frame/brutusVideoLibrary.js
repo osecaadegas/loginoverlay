@@ -2,11 +2,9 @@ const BRUTUS_VIDEO_DIRECTORY = "/Banners%20Videos";
 
 const BRUTUS_VIDEO_FILES = [
   ["!bacana.mp4", "Bacana"],
-  ["!betclic.mp4", "Betclic"],
   ["!betclic2.mp4", "Betclic 2"],
   ["!casino.mp4", "Casino"],
   ["!CP.mp4", "CP"],
-  ["!CP2.mp4", "CP 2"],
   ["!discord.mp4", "Discord"],
   ["!IG.mp4", "Instagram"],
   ["!lebull.mp4", "LeBull"],
@@ -16,14 +14,6 @@ const BRUTUS_VIDEO_FILES = [
   ["!overlay.mp4", "Overlay"],
   ["!solverde.mp4", "Solverde"],
   ["!ultima.mp4", "Ultima"],
-  ["others/1785376308363-CvBAZObJ-0.mp4", "Banner 1"],
-  ["others/1785377076122-wktfNaXq-0.mp4", "Banner 2"],
-  ["others/1785377712173-blizgNZK-0.mp4", "Banner 3"],
-  ["others/b_make_the_golden_rock (online-video-cutter.com) (1).mp4", "Golden Rock 1"],
-  ["others/b_make_the_golden_rock (online-video-cutter.com) (2).mp4", "Golden Rock 2"],
-  ["others/hailuo-2.3-fast_a_make_the_golden_rock.mp4", "Golden Rock 3"],
-  ["others/minimax-h3_a_Create_a_seamless_lo.mp4", "Seamless Loop 1"],
-  ["others/wan2.6-i2v_b_Create_a_seamless_lo.mp4", "Seamless Loop 2"],
 ];
 
 export const BRUTUS_SLIDESHOW_ROLE = "brutus";
