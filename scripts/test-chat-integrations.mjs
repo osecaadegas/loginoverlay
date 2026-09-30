@@ -3,9 +3,14 @@ import { createServer } from 'vite';
 import puppeteer from 'puppeteer';
 import { resolveChatCommandOwner } from '../api/raid-shoutout.js';
 import { normalizeGiveawaySubtitle } from '../src/components/OverlayCenter/widgets/giveaway/giveawayText.js';
+import { resolveGiveawayRevealDelayMs, resolveGiveawaySpinDurationSeconds } from '../src/components/OverlayCenter/widgets/giveaway/giveawayTiming.js';
 
 assert.equal(normalizeGiveawaySubtitle('(min 30 Participants)'), '');
 assert.equal(normalizeGiveawaySubtitle('  Winners drawn live  '), 'Winners drawn live');
+assert.equal(resolveGiveawaySpinDurationSeconds({}), 5.2);
+assert.equal(resolveGiveawaySpinDurationSeconds({ durationSec: 6.4 }), 6.4);
+assert.equal(resolveGiveawaySpinDurationSeconds({ duration: 3500 }), 3.5, 'legacy millisecond durations are normalized');
+assert.equal(resolveGiveawayRevealDelayMs({ durationSec: 5.2 }), 5520, 'winner reveal follows the reel landing');
 
 const publicOverlayId = `bo_${'a'.repeat(48)}`;
 const overlayToken = 'b'.repeat(48);
@@ -104,11 +109,12 @@ try {
       send() {} close() { this.readyState = 3; this.onclose?.(); }
     };
     window.irc = (text, moderator = true) => window.sockets.filter(socket => socket.readyState === 1).forEach(socket => socket.onmessage?.({ data: `@id=event-${Date.now()};display-name=Viewer;mod=${moderator ? 1 : 0};badges= :viewer!v@v.tmi.twitch.tv PRIVMSG #fixture :${text}\r\n` }));
-    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '', giveawayHeight, shoutoutHeight = 180 } = {}) => {
+    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '', giveawayHeight, shoutoutHeight = 180, colourTheme, spinDurationSec = 1.2 } = {}) => {
       const config = {
         chatStyle: style, live: true, bttvEnabled: false, twitchEnabled: live, twitchChannel: 'fixture',
         giveawayInChat: enabled, giveawayPosition: position, shoutoutInChat: shoutout,
         shoutoutPosition: position, shoutoutHeight, shoutoutDuration: 10,
+        ...(colourTheme ? { colourTheme } : {}),
         ...(giveawayHeight == null ? {} : { giveawayHeight }),
         __appearancePreviewMessages: [{ id: 'sample', username: 'StreamFan', message: 'Enjoy the stream!' }],
         ...(live ? {} : { __previewShoutoutAlert: { raider_username: 'preview', raider_display_name: 'Preview Streamer' } }),
@@ -121,6 +127,7 @@ try {
         participants: state === 'empty' ? [] : [{ name: 'First Viewer' }, 'SecondViewer'],
         isActive: state === 'open', spinningWinner: state === 'drawing' ? 'SecondViewer' : '',
         winner: state === 'winner' ? 'SecondViewer' : '', twitchChannel: 'fixture', twitchEnabled: live || editorPreview,
+        durationSec: spinDurationSec,
       };
       const giveawayWidget = { id: 'giveaway-source', widget_type: 'giveaway', is_visible: false, config: window.giveawayConfig };
       const instance = createBetterInstance('chat', { config });
@@ -248,6 +255,32 @@ try {
   await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'winner', shoutout: false }));
   await settle();
   assert.match(await page.$eval('.ov-chat-giveaway', element => element.textContent), /SecondViewer/, 'A chat-only layout receives the live giveaway source');
+  await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'drawing', shoutout: false, colourTheme: 'arctic', spinDurationSec: 1.2 }));
+  await page.waitForSelector('.better-gw-roulette-stage--spinning.is-measured');
+  await new Promise(resolve => setTimeout(resolve, 1280));
+  const landedOffset = await page.$eval('.better-gw-roulette-track', element => new DOMMatrixReadOnly(getComputedStyle(element).transform).m41);
+  await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'winner', shoutout: false, colourTheme: 'arctic', spinDurationSec: 1.2 }));
+  await new Promise(resolve => setTimeout(resolve, 80));
+  const arcticWinner = await page.evaluate(() => {
+    const card = document.querySelector('.better-giveaway-widget');
+    const track = card.querySelector('.better-gw-roulette-track');
+    const banner = card.querySelector('.better-gw-winner-banner');
+    const bubble = card.querySelector('.better-gw-avatar-chip.is-winner .better-gw-avatar-bubble');
+    const kicker = card.querySelector('.better-gw-winner-kicker');
+    return {
+      offset: new DOMMatrixReadOnly(getComputedStyle(track).transform).m41,
+      cardBorder: getComputedStyle(card).borderColor,
+      cardShadow: getComputedStyle(card).boxShadow,
+      bannerBackground: getComputedStyle(banner).backgroundImage,
+      bubbleBorder: getComputedStyle(bubble).borderColor,
+      kickerColor: getComputedStyle(kicker).color,
+    };
+  });
+  assert(Math.abs(arcticWinner.offset - landedOffset) < 0.5, `winner hand-off stays on the landed reel position: ${landedOffset} -> ${arcticWinner.offset}`);
+  assert(!arcticWinner.bubbleBorder.includes('255, 197, 27'), `Arctic winner ring has no gold accent: ${arcticWinner.bubbleBorder}`);
+  assert(!arcticWinner.kickerColor.includes('255, 216, 119'), `Arctic winner label has no gold accent: ${arcticWinner.kickerColor}`);
+  assert(!arcticWinner.cardShadow.includes('255, 176, 0'), 'Arctic winner shell has no gold glow');
+  assert(arcticWinner.bannerBackground.includes('rgba(28, 65, 81'), 'Arctic winner banner uses frozen glass');
   await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'empty' }));
   await settle();
   assert.equal(await page.$('.ov-chat-giveaway'), null, 'Idle giveaway collapses');

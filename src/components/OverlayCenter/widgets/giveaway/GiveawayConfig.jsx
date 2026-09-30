@@ -6,6 +6,7 @@ import { makePerStyleSetters } from "../shared/perStyleConfig";
 import { GIVEAWAY_STYLE_KEYS } from "../styleKeysRegistry";
 import { SectionHeader } from "../../ui";
 import { normalizeGiveawaySubtitle } from "./giveawayText";
+import { resolveGiveawayRevealDelayMs } from "./giveawayTiming";
 import {
   CirclePlay,
   CircleStop,
@@ -178,15 +179,15 @@ export default function GiveawayConfig({ config, onChange }) {
     // Show spin reel first, then reveal winner after animation
     setMulti({ spinningWinner: winnerName, winner: "" });
     setTimeout(() => {
-      // Use refs to get latest config/onChange — avoids stale closure
-      // 5s spin + 2s hold on winner before revealing = 7s total
+      // Keep the visual reel and persisted winner hand-off on the same clock.
+      // The reel already rests on the winner, so this state change is seamless.
       const latest = configRef.current;
       onChangeRef.current({
         ...latest,
         winner: winnerName,
         spinningWinner: "",
       });
-    }, 7000);
+    }, resolveGiveawayRevealDelayMs(c));
   };
 
   // Remove a single participant

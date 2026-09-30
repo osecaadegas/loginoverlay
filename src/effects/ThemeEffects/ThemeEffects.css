@@ -651,6 +651,70 @@
 .better-widget-colour-scope[data-colour-theme="arctic"]
   :is(.better-hunt-win-label, .better-hunt-win-badge strong) { text-shadow: 0 2px 3px #020b16; }
 
+/* Arctic giveaway wins stay inside the frozen material language. */
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-winner-flash {
+  background: radial-gradient(circle at 50% 56%, rgba(208, 247, 255, .35), rgba(94, 193, 219, .1) 44%, transparent 72%);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-giveaway-widget.has-winner {
+  border-color: rgba(196, 237, 248, .72);
+  box-shadow:
+    0 0 0 1px rgba(1, 10, 18, .86),
+    0 0 0 3px rgba(126, 205, 226, .1),
+    0 0 18px rgba(124, 211, 234, .3),
+    inset 0 1px 0 rgba(238, 252, 255, .2),
+    inset 0 -18px 30px rgba(0, 6, 14, .38);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-confetti i {
+  width: 6px;
+  height: 15px;
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 72%, 58% 100%, 0 61%);
+  background: linear-gradient(135deg, #f5feff, #91d9eb 48%, #236b88) !important;
+  box-shadow: 0 0 6px rgba(180, 235, 248, .5);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-winner-banner {
+  border-color: rgba(202, 240, 249, .72);
+  background: linear-gradient(180deg, rgba(28, 65, 81, .97), rgba(2, 15, 26, .98)), url("/theme-effects/ice/ice-glass.webp");
+  background-size: cover, 211px 137px;
+  box-shadow: inset 0 1px 0 rgba(244, 254, 255, .34), inset 0 -5px 11px rgba(0, 4, 11, .48), 0 0 16px rgba(144, 218, 236, .28);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-gw-winner-crown, .better-gw-winner-kicker, .better-gw-status-win) {
+  color: #dff8ff;
+  filter: none;
+  text-shadow: 0 1px 3px #010812;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-avatar-chip.is-winner .better-gw-avatar-bubble {
+  border-color: #e3faff;
+  background: radial-gradient(circle at 50% 35%, rgba(205, 245, 253, .22), rgba(18, 75, 96, .2) 50%, rgba(1, 13, 23, .62));
+  box-shadow: inset 0 -7px 14px rgba(0, 4, 11, .5), 0 0 0 2px rgba(173, 231, 244, .38), 0 0 22px rgba(126, 216, 238, .54);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-avatar-chip.is-winner .better-gw-avatar-name,
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-winner-name {
+  color: #f5fdff;
+  font-weight: 800;
+  text-shadow: 0 2px 4px #01060c, 0 0 8px rgba(159, 224, 241, .28);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-chip-crown {
+  color: #e7faff;
+  border-color: rgba(193, 237, 248, .68);
+  background: rgba(2, 18, 30, .96);
+  filter: drop-shadow(0 2px 5px rgba(112, 202, 226, .42));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-roulette-viewport {
+  border-color: rgba(166, 219, 233, .34) !important;
+  background-image: linear-gradient(180deg, rgba(16, 42, 55, .74), rgba(1, 11, 20, .94)), url("/theme-effects/ice/ice-glass.webp") !important;
+  box-shadow: inset 0 1px 0 rgba(229, 249, 254, .16), inset 0 -8px 15px rgba(0, 4, 10, .42) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-avatar-name {
+  color: #d8edf4;
+  font-weight: 700;
+  text-shadow: 0 1px 3px #01070d;
+}
+@media (prefers-reduced-motion: reduce) {
+  .better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-confetti i { animation: none !important; }
+}
+
 .better-widget-colour-scope[data-colour-theme="arctic"]
   :is(.better-hunt-main-active--super, .better-hunt-main-active--extreme, .better-hunt-card--center, .better-hunt-card--extreme .better-hunt-card-img) {
   animation: ice-material-impact .65s ease-out both !important;

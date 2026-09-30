@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import SlotImage from "../SlotImage";
 import { emitIceEvent } from "../../../../effects/ThemeEffects/emitIceEvent";
+import { resolveGiveawaySpinDurationSeconds } from "../giveaway/giveawayTiming";
 import { getWidgetEffectsThemeKey } from "../../../../effects/ThemeEffects/themeEffectsConfig";
 import useSlotPersonalBest from "../../../../hooks/useSlotPersonalBest";
 import useSlotPersonalBests, {
@@ -596,6 +597,7 @@ function BetterGiveawayRoulette({
   const stageRef = useRef(null);
   const viewportRef = useRef(null);
   const [winnerOffset, setWinnerOffset] = useState(0);
+  const [reelMeasured, setReelMeasured] = useState(false);
   const crowd = participants.length
     ? participants
     : [{ id: "waiting", name: "Waiting", hue: 208 }];
@@ -614,6 +616,7 @@ function BetterGiveawayRoulette({
     if (!viewport) return undefined;
 
     let animationFrame = 0;
+    setReelMeasured(false);
     const measureWinnerOffset = () => {
       const winnerChip = viewport.querySelector(
         '[data-giveaway-winner="true"]',
@@ -623,6 +626,7 @@ function BetterGiveawayRoulette({
         viewport.clientWidth / 2 -
         (winnerChip.offsetLeft + winnerChip.offsetWidth / 2);
       setWinnerOffset(nextOffset);
+      setReelMeasured(true);
     };
     const updateWinnerOffset = () => {
       cancelAnimationFrame(animationFrame);
@@ -649,7 +653,7 @@ function BetterGiveawayRoulette({
 
   return (
     <div
-      className={`better-gw-roulette-stage better-gw-roulette-stage--${phase}`}
+      className={`better-gw-roulette-stage better-gw-roulette-stage--${phase}${reelMeasured ? " is-measured" : ""}`}
       ref={stageRef}
     >
       {phase === "winner" ? <BetterGiveawayConfetti /> : null}
@@ -1933,7 +1937,7 @@ function BetterStyleSheet() {
       @keyframes better-gw-crown-sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
       @keyframes better-gw-status-blink{0%,100%{opacity:1}50%{opacity:.45}}
       @keyframes better-gw-flash-fade{0%{opacity:0}16%{opacity:1}100%{opacity:0}}
-      @keyframes better-gw-reel-spin{0%{transform:translate3d(0,0,0)}72%{transform:translate3d(calc(var(--gw-winner-offset) + 90px),0,0)}88%{transform:translate3d(calc(var(--gw-winner-offset) - 20px),0,0)}100%{transform:translate3d(var(--gw-winner-offset),0,0)}}
+      @keyframes better-gw-reel-spin{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(var(--gw-winner-offset),0,0)}}
       @keyframes better-gw-confetti-fall{0%{opacity:0;transform:translate3d(0,-18px,0) rotate(0deg)}10%{opacity:1}100%{opacity:0;transform:translate3d(var(--gw-confetti-drift),150px,0) rotate(var(--gw-confetti-rotation))}}
       .better-giveaway-stage{width:100%;height:100%;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;padding:clamp(8px,2vmin,28px);box-sizing:border-box;container-type:size;background:transparent;font-family:var(--w-font-body,"Rajdhani",Arial,sans-serif)}
       .better-giveaway-stage *{box-sizing:border-box}
@@ -1983,7 +1987,7 @@ function BetterStyleSheet() {
       .better-gw-winner-banner{position:absolute;top:0;left:50%;z-index:4;display:flex;align-items:center;gap:8px;padding:5px 16px;border:1px solid rgba(255,197,27,.8);border-radius:999px;background:linear-gradient(180deg,rgba(64,42,0,.95),rgba(26,16,0,.96));box-shadow:0 0 18px rgba(255,176,0,.5),inset 0 1px 0 rgba(255,224,130,.35);opacity:0;transform:translate(-50%,-10px) scale(.8);filter:blur(4px);pointer-events:none;transition:opacity 320ms ease,transform 460ms cubic-bezier(.2,1.4,.35,1),filter 320ms ease}.better-gw-winner-banner.is-shown{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0)}
       .better-gw-winner-crown{color:#ffc51b;filter:drop-shadow(0 0 5px rgba(255,187,0,.8));animation:better-gw-crown-sway 2.4s ease-in-out infinite}.better-gw-winner-kicker{color:#ffd877;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase}.better-gw-winner-name{color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:13px;font-weight:800;letter-spacing:.05em;text-shadow:0 0 10px rgba(255,205,60,.75)}
       .better-gw-roulette-viewport{position:relative;height:122px;overflow:hidden;border:1px solid rgba(16,86,145,.55);border-radius:7px;background:rgba(1,8,20,.6);box-shadow:inset 0 0 16px rgba(0,68,138,.22);mask-image:linear-gradient(90deg,transparent,black 8%,black 92%,transparent)}
-      .better-gw-roulette-track{display:flex;align-items:center;gap:14px;height:100%;width:max-content;padding:0 6px;transform:translate3d(var(--gw-winner-offset),0,0);will-change:transform}.better-gw-roulette-stage--spinning .better-gw-roulette-track{animation:better-gw-reel-spin var(--gw-spin-duration,5.2s) cubic-bezier(.12,.68,.18,1) both}
+      .better-gw-roulette-track{display:flex;align-items:center;gap:14px;height:100%;width:max-content;padding:0 6px;transform:translate3d(var(--gw-winner-offset),0,0);backface-visibility:hidden;will-change:transform}.better-gw-roulette-stage--spinning:not(.is-measured) .better-gw-roulette-track{opacity:0}.better-gw-roulette-stage--spinning.is-measured .better-gw-roulette-track{animation:better-gw-reel-spin var(--gw-spin-duration,5.2s) cubic-bezier(.08,.72,.12,1) both}
       .better-gw-avatar-chip{position:relative;display:flex;width:66px;height:100%;flex:none;align-items:center;justify-content:center;transition:opacity 420ms ease,filter 420ms ease}.better-gw-avatar-bubble{display:grid;width:66px;height:66px;overflow:hidden;place-items:center;border:2px solid rgba(150,226,255,.6);border-radius:50%;color:#fff;font-family:var(--w-font-title,"Orbitron",sans-serif);font-size:19px;font-weight:800;letter-spacing:.03em;text-shadow:0 1px 4px rgba(0,0,0,.6);box-shadow:inset 0 -7px 14px rgba(0,0,0,.35),0 0 10px rgba(0,110,200,.4);transition:transform 300ms cubic-bezier(.2,1.3,.4,1),box-shadow 300ms ease,border-color 300ms ease}.better-gw-avatar-bubble img{display:block;width:100%;height:100%;object-fit:cover}.better-gw-avatar-name{position:absolute;top:calc(50% + 40px);max-width:100%;overflow:hidden;color:#9fd8f2;font-size:12px;font-weight:600;letter-spacing:.02em;text-overflow:ellipsis;white-space:nowrap}
       .better-gw-roulette-stage--winner .better-gw-avatar-chip:not(.is-winner){opacity:.28;filter:saturate(.35) brightness(.7)}.better-gw-avatar-chip.is-winner .better-gw-avatar-bubble{border-color:#ffc51b;box-shadow:inset 0 -7px 14px rgba(0,0,0,.35),0 0 0 3px rgba(255,197,27,.4),0 0 26px rgba(255,178,0,.8);transform:scale(1.2);animation:better-gw-winner-pop 900ms cubic-bezier(.2,1.5,.4,1) both}.better-gw-avatar-chip.is-winner .better-gw-avatar-name{color:#ffe08a;font-weight:700;text-shadow:0 0 8px rgba(255,190,0,.55)}
       .better-gw-chip-crown{position:absolute;top:calc(50% - 46px);z-index:2;padding:1px 4px;border:1px solid rgba(255,197,27,.72);border-radius:999px;background:rgba(32,20,0,.94);color:#ffd877;font-size:8px;font-weight:900;letter-spacing:.08em;line-height:1;filter:drop-shadow(0 2px 6px rgba(255,150,0,.85));animation:better-gw-crown-drop 560ms cubic-bezier(.2,1.6,.4,1) both}
@@ -5256,7 +5260,7 @@ export function BetterGiveawayStyle({ config }) {
             participants={participants}
             phase={phase}
             winnerName={winnerName || spinningWinner}
-            durationSec={c.durationSec || c.duration || 5.2}
+            durationSec={resolveGiveawaySpinDurationSeconds(c)}
           />
         </div>
 
