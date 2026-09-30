@@ -1,5 +1,6 @@
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { getUserRoles } from "../../../utils/adminUtils";
 import BackgroundLibraryPicker from "./BackgroundLibraryPicker";
 import { EditorControlContext, matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
 import { pickGiveawayAppearance, resolveEmbeddedGiveawayConfig, updateGiveawayAppearance } from "../widgets/giveaway/embeddedGiveawayConfig";
@@ -84,6 +85,14 @@ import {
   STANDARD_BETTER_WIDGET_CONTROLS,
   STANDARD_BETTER_WIDGET_GEOMETRY,
 } from "./standardWidgetPresets";
+import {
+  BRUTUS_VIDEO_LIBRARY,
+  BRUTUS_SLIDESHOW_ROLE,
+  addAllBrutusMedia,
+  filterBrutusMediaText,
+  hasMediaLine,
+  toggleBrutusMediaLine,
+} from "../widgets/slideshow-frame/brutusVideoLibrary";
 
 const DEFAULT_CARD_COLORS = [
   { accent: "#45c8ff", accent2: "#1e5ad6" },
@@ -5647,12 +5656,45 @@ function SimpleThemedControls({
   );
 }
 
+function useBrutusMediaAccess(userId) {
+  const [state, setState] = useState({ allowed: false, loading: Boolean(userId) });
+
+  useEffect(() => {
+    let active = true;
+    if (!userId) {
+      setState({ allowed: false, loading: false });
+      return () => {
+        active = false;
+      };
+    }
+
+    setState((current) => ({ ...current, loading: true }));
+    getUserRoles(userId).then(({ data }) => {
+      if (!active) return;
+      const now = Date.now();
+      const allowed = (data || []).some((role) => {
+        if (role.role !== BRUTUS_SLIDESHOW_ROLE || role.is_active === false) return false;
+        return !role.access_expires_at || new Date(role.access_expires_at).getTime() > now;
+      });
+      setState({ allowed, loading: false });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  return state;
+}
+
 function BetterSlideshowFrameControls({
   config,
   onChange,
   widget,
   onWidgetChange,
+  userId,
 }) {
+  const { allowed: isBrutus, loading: roleLoading } = useBrutusMediaAccess(userId);
   const c = ensureBetterWidgetConfig("slideshow_frame", config);
   const [tab, setTab] = useTab("media");
   const tabs = [
@@ -5665,14 +5707,27 @@ function BetterSlideshowFrameControls({
   const widgetWidth = clampNumber(widget?.width, 240, 1920, 960);
   const widgetHeight = clampNumber(widget?.height, 120, 1080, 360);
 
+  const protectBrutusMedia = (patch) => {
+    if (roleLoading || isBrutus || typeof patch?.mediaText !== "string") return patch;
+    return {
+      ...patch,
+      mediaText: filterBrutusMediaText(patch.mediaText, false),
+    };
+  };
+
   const set = (patch) => {
-    onChange(ensureBetterWidgetConfig("slideshow_frame", { ...c, ...patch }));
+    onChange(
+      ensureBetterWidgetConfig("slideshow_frame", {
+        ...c,
+        ...protectBrutusMedia(patch),
+      }),
+    );
   };
 
   const setWidget = (layoutPatch = {}, configPatch = {}) => {
     const nextConfig = ensureBetterWidgetConfig("slideshow_frame", {
       ...c,
-      ...configPatch,
+      ...protectBrutusMedia(configPatch),
     });
     if (typeof onWidgetChange === "function") {
       onWidgetChange({ ...layoutPatch, config: nextConfig });
@@ -5711,6 +5766,49 @@ function BetterSlideshowFrameControls({
             <p className="bp-hint">
               Supported lines: URL, URL|image|Label, or URL|video|Label.
             </p>
+            {isBrutus ? (
+              <div className="bp-brutus-video-library">
+                <div className="bp-brutus-video-library__head">
+                  <span>
+                    <MonitorPlay size={13} />
+                    Brutus video library
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => set({ mediaText: addAllBrutusMedia(c.mediaText) })}
+                  >
+                    Add all
+                  </button>
+                </div>
+                <div className="bp-brutus-video-library__grid">
+                  {BRUTUS_VIDEO_LIBRARY.map((item) => {
+                    const selected = hasMediaLine(c.mediaText, item);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={selected ? "is-selected" : ""}
+                        aria-pressed={selected}
+                        title={`${selected ? "Remove" : "Add"} ${item.label}`}
+                        onClick={() =>
+                          set({
+                            mediaText: toggleBrutusMediaLine(c.mediaText, item),
+                          })
+                        }
+                      >
+                        <MonitorPlay size={12} />
+                        <span>{item.label}</span>
+                        {selected ? <Check size={12} /> : <strong>+</strong>}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="bp-hint">
+                  Available to accounts with the Brutus role. Selected videos play
+                  normally in editor previews and OBS.
+                </p>
+              </div>
+            ) : null}
             <div className="bp-preset-row">
               <button
                 type="button"
@@ -7159,6 +7257,7 @@ function WidgetSpecificControls({
         onChange={onChange}
         widget={widget}
         onWidgetChange={onWidgetChange}
+        userId={user?.id}
       />
     );
   }

@@ -21,6 +21,7 @@ function buildAccessState({
     isAdmin: hasAdminAccess,
     isModerator: roleNames.has("moderator") || hasAdminAccess,
     isSlotModder: roleNames.has("slot_modder") || hasAdminAccess,
+    isBrutus: roleNames.has("brutus"),
     isPremium: hasStreamerEntitlement || roleNames.has("premium") || hasAdminAccess,
     isAffiliate: roleNames.has("affiliate") || hasAdminAccess,
   };

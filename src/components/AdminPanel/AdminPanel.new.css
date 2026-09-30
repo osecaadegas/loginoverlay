@@ -1705,6 +1705,11 @@
   color: #67e8f9;
 }
 
+.role-tag.role-brutus {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c4b5fd;
+}
+
 .role-tag.role-none {
   color: #475569;
   background: none;
@@ -3065,6 +3070,13 @@
   color: #bae6fd;
   border-color: rgba(103, 232, 249, 0.34);
   background: rgba(8, 145, 178, 0.2);
+}
+
+.admin-panel.admin-panel-modern .role-brutus,
+.admin-panel.admin-panel-modern .role-chip.role-brutus {
+  color: #ddd6fe;
+  border-color: rgba(167, 139, 250, 0.38);
+  background: rgba(91, 33, 182, 0.2);
 }
 
 .admin-panel.admin-panel-modern .empty-state,

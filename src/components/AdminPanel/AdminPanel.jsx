@@ -1726,6 +1726,7 @@ export default function AdminPanel() {
                                     {roleObj.role === "slot_modder" && "🎰"}
                                     {roleObj.role === "moderator" && "🔧"}
                                     {roleObj.role === "affiliate" && "AF"}
+                                    {roleObj.role === "brutus" && "🎬"}
                                     {roleObj.role.replaceAll("_", " ")}
                                   </span>
                                 ))
@@ -1986,6 +1987,7 @@ export default function AdminPanel() {
                             {roleObj.role === "premium" && "⭐"}
                             {roleObj.role === "slot_modder" && "🎰"}
                             {roleObj.role === "moderator" && "🔧"}
+                            {roleObj.role === "brutus" && "🎬"}
                           </span>
                           {roleObj.role === "affiliate" && "AF"}
                           <span className="role-chip-name">
@@ -2046,6 +2048,7 @@ export default function AdminPanel() {
                       <option value="moderator">🔧 Moderator</option>
                       <option value="admin">🛡️ Admin</option>
                       <option value="affiliate">Affiliate</option>
+                      <option value="brutus">🎬 Brutus video library</option>
                     </select>
 
                     {editingUser.newRole === "moderator" && (

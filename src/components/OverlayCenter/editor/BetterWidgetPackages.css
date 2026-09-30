@@ -588,6 +588,94 @@
   line-height: 1.45;
 }
 
+.bp-brutus-video-library {
+  display: grid;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, rgba(76, 29, 149, 0.16), rgba(4, 18, 44, 0.72));
+  box-shadow: inset 0 1px 0 rgba(221, 214, 254, 0.08);
+}
+
+.bp-brutus-video-library__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bp-brutus-video-library__head > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ede9fe;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.bp-brutus-video-library__head > button {
+  min-height: 27px;
+  padding: 4px 8px;
+  border: 1px solid rgba(167, 139, 250, 0.34);
+  border-radius: 7px;
+  background: rgba(91, 33, 182, 0.24);
+  color: #ddd6fe;
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.bp-brutus-video-library__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  max-height: 190px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.bp-brutus-video-library__grid button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 31px;
+  padding: 5px 7px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(3, 12, 31, 0.62);
+  color: #b8c7dc;
+  cursor: pointer;
+  font-size: 0.68rem;
+  text-align: left;
+}
+
+.bp-brutus-video-library__grid button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bp-brutus-video-library__grid button strong {
+  color: #a78bfa;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.bp-brutus-video-library__grid button:hover,
+.bp-brutus-video-library__grid button.is-selected {
+  border-color: rgba(167, 139, 250, 0.56);
+  background: rgba(91, 33, 182, 0.24);
+  color: #f5f3ff;
+}
+
+.bp-brutus-video-library__grid button.is-selected svg:last-child {
+  color: #a7f3d0;
+}
+
 /* Bets package surface */
 .bp-bets-stage {
   --stage-bg:
