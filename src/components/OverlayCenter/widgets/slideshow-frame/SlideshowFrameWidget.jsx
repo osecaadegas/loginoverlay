@@ -1,5 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ConnectFourWidget from "../connect-four/ConnectFourWidget";
+import {
+  shouldAdvanceCompletedVideo,
+  shouldLoopVideo,
+  shouldUseSlideTimer,
+} from "./slideshowPlayback";
 import "./SlideshowFrameWidget.css";
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|ogg|ogv|mov|m4v)(?:[?#].*)?$/i;
@@ -73,6 +78,7 @@ export default function SlideshowFrameWidget({
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [connectFourActive, setConnectFourActive] = useState(false);
+  const videoRef = useRef(null);
   const connectFourEnabled = c.showConnectFour === true;
   const slideMs = clampNumber(c.slideMs, 1000, 60000, 5000);
   const transitionMs = clampNumber(
@@ -98,24 +104,51 @@ export default function SlideshowFrameWidget({
     ? c.transition
     : "fade";
   const active = mediaItems[activeIndex % Math.max(mediaItems.length, 1)];
+  const advanceSlide = useCallback(() => {
+    setActiveIndex((index) => (index + 1) % Math.max(mediaItems.length, 1));
+  }, [mediaItems.length]);
 
   useEffect(() => {
     setActiveIndex(0);
   }, [mediaItems.length]);
 
   useEffect(() => {
-    if (connectFourActive || c.autoplay === false || mediaItems.length <= 1) {
+    if (
+      !shouldUseSlideTimer({
+        autoplay: c.autoplay,
+        connectFourActive,
+        itemCount: mediaItems.length,
+        activeType: active?.type,
+      })
+    ) {
       return undefined;
     }
-    const timer = window.setInterval(() => {
-      setActiveIndex((index) => (index + 1) % mediaItems.length);
-    }, slideMs);
-    return () => window.clearInterval(timer);
-  }, [c.autoplay, connectFourActive, mediaItems.length, slideMs]);
+    const timer = window.setTimeout(advanceSlide, slideMs);
+    return () => window.clearTimeout(timer);
+  }, [
+    active?.id,
+    active?.type,
+    activeIndex,
+    advanceSlide,
+    c.autoplay,
+    connectFourActive,
+    mediaItems.length,
+    slideMs,
+  ]);
 
   useEffect(() => {
     if (!connectFourEnabled) setConnectFourActive(false);
   }, [connectFourEnabled]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (connectFourActive) {
+      video.pause();
+      return;
+    }
+    video.play().catch(() => {});
+  }, [active?.id, connectFourActive]);
 
   const handleConnectFourVisibility = useCallback((visible) => {
     setConnectFourActive(visible);
@@ -153,23 +186,28 @@ export default function SlideshowFrameWidget({
           {active ? (
             active.type === "video" ? (
               <video
+                ref={videoRef}
                 key={`${active.id}-${activeIndex}`}
                 className="better-slideshow-frame__media"
                 src={active.url}
                 autoPlay
                 muted={c.videoMuted !== false}
-                loop={c.videoLoop !== false}
+                loop={shouldLoopVideo({
+                  itemCount: mediaItems.length,
+                  videoLoop: c.videoLoop,
+                })}
                 playsInline
                 controls={c.showVideoControls === true}
                 preload="auto"
                 onEnded={() => {
                   if (
-                    !connectFourActive &&
-                    c.videoLoop === false &&
-                    mediaItems.length > 1
-                  ) {
-                    setActiveIndex((index) => (index + 1) % mediaItems.length);
-                  }
+                    shouldAdvanceCompletedVideo({
+                      autoplay: c.autoplay,
+                      connectFourActive,
+                      itemCount: mediaItems.length,
+                    })
+                  )
+                    advanceSlide();
                 }}
               />
             ) : (

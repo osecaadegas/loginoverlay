@@ -5966,10 +5966,14 @@ function BetterSlideshowFrameControls({
               onChange={(videoMuted) => set({ videoMuted })}
             />
             <ToggleRow
-              label="Loop videos"
+              label="Loop a single video"
               checked={c.videoLoop}
               onChange={(videoLoop) => set({ videoLoop })}
             />
+            <p className="bp-hint">
+              With multiple banners, every video plays fully before the next
+              banner appears. The slideshow repeats after the complete list.
+            </p>
             <ToggleRow
               label="Show video controls"
               checked={c.showVideoControls}

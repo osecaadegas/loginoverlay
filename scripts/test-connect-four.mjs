@@ -239,7 +239,11 @@ assert.match(
 );
 assert.match(
   slideshowSource,
-  /connectFourActive \|\|[\s\S]*?window\.setInterval/,
+  /shouldUseSlideTimer\([\s\S]*?connectFourActive[\s\S]*?window\.setTimeout/,
+);
+assert.match(
+  slideshowSource,
+  /if \(connectFourActive\)[\s\S]*?video\.pause\(\)[\s\S]*?video\.play\(\)/,
 );
 assert.match(
   slideshowSource,

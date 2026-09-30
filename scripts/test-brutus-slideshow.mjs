@@ -15,6 +15,11 @@ import {
   reconcileEditingUser,
   removeUserRoleFromState,
 } from "../src/components/AdminPanel/userRoleState.js";
+import {
+  shouldAdvanceCompletedVideo,
+  shouldLoopVideo,
+  shouldUseSlideTimer,
+} from "../src/components/OverlayCenter/widgets/slideshow-frame/slideshowPlayback.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const videoDirectory = fileURLToPath(new URL("../public/Banners Videos/", import.meta.url));
@@ -92,5 +97,35 @@ assert.deepEqual(
   },
   "refreshing the user table must also refresh roles in the open side panel",
 );
+
+assert.equal(
+  shouldUseSlideTimer({
+    autoplay: true,
+    connectFourActive: false,
+    itemCount: 23,
+    activeType: "video",
+  }),
+  false,
+  "video banners must not be cut off by the image-duration timer",
+);
+assert.equal(
+  shouldUseSlideTimer({
+    autoplay: true,
+    connectFourActive: false,
+    itemCount: 23,
+    activeType: "image",
+  }),
+  true,
+);
+assert.equal(
+  shouldAdvanceCompletedVideo({
+    autoplay: true,
+    connectFourActive: false,
+    itemCount: 23,
+  }),
+  true,
+);
+assert.equal(shouldLoopVideo({ itemCount: 23, videoLoop: true }), false);
+assert.equal(shouldLoopVideo({ itemCount: 1, videoLoop: true }), true);
 
 console.log(`Brutus slideshow library validated (${BRUTUS_VIDEO_LIBRARY.length} videos).`);
