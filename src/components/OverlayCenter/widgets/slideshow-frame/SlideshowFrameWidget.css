@@ -62,6 +62,26 @@
     filter 450ms ease;
 }
 
+.better-slideshow-frame__slide {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.better-slideshow-frame__slide.is-current {
+  z-index: 2;
+}
+
+.better-slideshow-frame__slide.is-entering,
+.better-slideshow-frame__slide.is-leaving {
+  animation-duration: var(--bsf-transition);
+  animation-timing-function: cubic-bezier(0.22, 0.82, 0.24, 1);
+  animation-fill-mode: both;
+}
+
 .better-slideshow-frame[data-connect-four="active"]
   .better-slideshow-frame__media-layer {
   opacity: 0;
@@ -93,9 +113,6 @@
   height: 100%;
   display: block;
   object-position: center;
-  animation-duration: var(--bsf-transition);
-  animation-timing-function: cubic-bezier(0.22, 0.9, 0.3, 1);
-  animation-fill-mode: both;
 }
 
 .better-slideshow-frame[data-fit="cover"] .better-slideshow-frame__media {
@@ -114,20 +131,105 @@
   object-fit: scale-down;
 }
 
-.better-slideshow-frame[data-transition="fade"] .better-slideshow-frame__media {
-  animation-name: better-slideshow-fade;
+.better-slideshow-frame[data-transition="fade"]
+  .better-slideshow-frame__slide.is-entering {
+  animation-name: better-slideshow-fade-in;
 }
 
 .better-slideshow-frame[data-transition="slide"]
+  .better-slideshow-frame__slide.is-entering {
+  animation-name: better-slideshow-slide-in;
+}
+
+.better-slideshow-frame[data-transition="zoom"]
+  .better-slideshow-frame__slide.is-entering {
+  animation-name: better-slideshow-zoom-in;
+}
+
+.better-slideshow-frame[data-transition="cut"]
+  :is(.better-slideshow-frame__slide.is-entering, .better-slideshow-frame__slide.is-leaving) {
+  animation-name: none;
+}
+
+.better-slideshow-frame:not([data-transition="cut"])
+  .better-slideshow-frame__slide.is-leaving {
+  animation-name: better-slideshow-out;
+}
+
+/* Arctic media is seated inside one frozen slab. The vignette and corner frost
+   touch only the perimeter, so banners remain clear while their edges merge
+   naturally into the frame. */
+.better-slideshow-frame[data-colour-theme="arctic"] {
+  clip-path: none;
+  border-color: rgba(192, 232, 244, 0.68);
+  background:
+    linear-gradient(180deg, rgba(234, 252, 255, 0.2), transparent 13%, rgba(0, 7, 15, 0.64) 82%),
+    radial-gradient(ellipse at 24% 0%, rgba(174, 228, 242, 0.18), transparent 48%),
+    url("/theme-effects/ice/ice-glass.webp"),
+    linear-gradient(145deg, #102e3d, #020d17 72%);
+  background-size: cover, cover, 389px 307px, cover;
+  box-shadow:
+    0 0 0 1px rgba(0, 7, 14, 0.9),
+    0 0 18px rgba(117, 206, 231, calc(0.22 * var(--bsf-glow))),
+    inset 0 1px 0 rgba(243, 254, 255, 0.52),
+    inset 0 -8px 18px rgba(0, 4, 10, 0.58);
+}
+
+.better-slideshow-frame[data-colour-theme="arctic"]
+  .better-slideshow-frame__viewport {
+  border: 1px solid rgba(198, 235, 245, 0.26);
+  background: #020b13;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 5, 12, 0.8),
+    inset 0 0 22px rgba(0, 7, 15, 0.62);
+}
+
+.better-slideshow-frame[data-colour-theme="arctic"]
+  .better-slideshow-frame__viewport::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(2, 13, 22, 0.42), transparent 9%, transparent 91%, rgba(2, 13, 22, 0.42)),
+    linear-gradient(180deg, rgba(218, 247, 253, 0.1), transparent 12%, transparent 82%, rgba(0, 5, 12, 0.42));
+  box-shadow:
+    inset 0 1px 0 rgba(239, 253, 255, 0.3),
+    inset 0 -7px 13px rgba(0, 5, 12, 0.48),
+    inset 7px 0 13px rgba(1, 10, 18, 0.22),
+    inset -7px 0 13px rgba(1, 10, 18, 0.22);
+  pointer-events: none;
+}
+
+.better-slideshow-frame[data-colour-theme="arctic"]
+  .better-slideshow-frame__inner {
+  inset: max(2px, calc(var(--bsf-pad) * 0.32));
+  border-color: rgba(221, 246, 252, 0.32);
+  background: url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat;
+  opacity: 0.48;
+  box-shadow:
+    inset 0 0 12px rgba(187, 233, 245, 0.12),
+    0 0 8px rgba(123, 207, 228, 0.12);
+}
+
+.better-slideshow-frame[data-colour-theme="arctic"]
   .better-slideshow-frame__media {
-  animation-name: better-slideshow-slide;
+  filter: saturate(0.96) contrast(1.025);
 }
 
-.better-slideshow-frame[data-transition="zoom"] .better-slideshow-frame__media {
-  animation-name: better-slideshow-zoom;
+.better-slideshow-frame[data-colour-theme="arctic"]
+  .better-slideshow-frame__slide.is-entering {
+  animation-name: better-slideshow-ice-in;
 }
 
-.better-slideshow-frame[data-transition="cut"] .better-slideshow-frame__media {
+.better-slideshow-frame[data-colour-theme="arctic"]
+  .better-slideshow-frame__slide.is-leaving {
+  animation-name: better-slideshow-ice-out;
+}
+
+.better-slideshow-frame[data-transition="cut"][data-colour-theme="arctic"]
+  :is(.better-slideshow-frame__slide.is-entering, .better-slideshow-frame__slide.is-leaving) {
   animation-name: none;
 }
 
@@ -295,7 +397,7 @@
   display: none;
 }
 
-@keyframes better-slideshow-fade {
+@keyframes better-slideshow-fade-in {
   from {
     opacity: 0;
     filter: blur(8px);
@@ -306,7 +408,7 @@
   }
 }
 
-@keyframes better-slideshow-slide {
+@keyframes better-slideshow-slide-in {
   from {
     opacity: 0;
     transform: translateX(5%);
@@ -317,7 +419,7 @@
   }
 }
 
-@keyframes better-slideshow-zoom {
+@keyframes better-slideshow-zoom-in {
   from {
     opacity: 0;
     transform: scale(1.05);
@@ -325,6 +427,47 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes better-slideshow-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    filter: blur(3px);
+    transform: scale(0.992);
+  }
+}
+
+@keyframes better-slideshow-ice-in {
+  from {
+    opacity: 0;
+    filter: blur(4px) saturate(0.78) brightness(1.15);
+    transform: scale(1.018);
+  }
+  45% {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 1;
+    filter: blur(0) saturate(1) brightness(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes better-slideshow-ice-out {
+  from {
+    opacity: 1;
+    filter: blur(0) brightness(1);
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(3px) brightness(0.72);
+    transform: scale(0.99);
   }
 }
 
@@ -347,6 +490,7 @@
 @media (prefers-reduced-motion: reduce) {
   .better-slideshow-frame__media-layer,
   .better-slideshow-frame__connect-four,
+  .better-slideshow-frame__slide,
   .better-slideshow-frame__media,
   .better-slideshow-frame__sheen {
     animation: none !important;

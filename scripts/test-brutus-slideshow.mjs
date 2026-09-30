@@ -16,6 +16,8 @@ import {
   removeUserRoleFromState,
 } from "../src/components/AdminPanel/userRoleState.js";
 import {
+  DEFAULT_VIDEO_END_HOLD_MS,
+  resolveVideoEndHoldMs,
   shouldAdvanceCompletedVideo,
   shouldLoopVideo,
   shouldUseSlideTimer,
@@ -127,5 +129,16 @@ assert.equal(
 );
 assert.equal(shouldLoopVideo({ itemCount: 23, videoLoop: true }), false);
 assert.equal(shouldLoopVideo({ itemCount: 1, videoLoop: true }), true);
+assert.equal(resolveVideoEndHoldMs(), DEFAULT_VIDEO_END_HOLD_MS);
+assert.equal(resolveVideoEndHoldMs(5000), 5000);
+assert.equal(resolveVideoEndHoldMs(-50), 0);
+assert.equal(resolveVideoEndHoldMs(45_000), 30_000);
+
+const slideshowSource = readFileSync(
+  new URL("../src/components/OverlayCenter/widgets/slideshow-frame/SlideshowFrameWidget.jsx", import.meta.url),
+  "utf8",
+);
+assert.match(slideshowSource, /window\.setTimeout\(advanceSlide, videoEndHoldMs\)/);
+assert.match(slideshowSource, /className="better-slideshow-frame__slide is-leaving"/);
 
 console.log(`Brutus slideshow library validated (${BRUTUS_VIDEO_LIBRARY.length} videos).`);

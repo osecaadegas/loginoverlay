@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ConnectFourWidget from "../connect-four/ConnectFourWidget";
 import {
+  resolveVideoEndHoldMs,
   shouldAdvanceCompletedVideo,
   shouldLoopVideo,
   shouldUseSlideTimer,
@@ -77,7 +78,10 @@ export default function SlideshowFrameWidget({
     [c.mediaItems, c.mediaText, c.mediaUrls],
   );
   const [activeIndex, setActiveIndex] = useState(0);
+  const [outgoingSlide, setOutgoingSlide] = useState(null);
+  const [videoEnded, setVideoEnded] = useState(false);
   const [connectFourActive, setConnectFourActive] = useState(false);
+  const activeIndexRef = useRef(0);
   const videoRef = useRef(null);
   const connectFourEnabled = c.showConnectFour === true;
   const slideMs = clampNumber(c.slideMs, 1000, 60000, 5000);
@@ -87,6 +91,7 @@ export default function SlideshowFrameWidget({
     Math.min(2500, slideMs - 100),
     650,
   );
+  const videoEndHoldMs = resolveVideoEndHoldMs(c.videoEndHoldMs);
   const frameStyle = [
     "neon",
     "glass",
@@ -105,12 +110,38 @@ export default function SlideshowFrameWidget({
     : "fade";
   const active = mediaItems[activeIndex % Math.max(mediaItems.length, 1)];
   const advanceSlide = useCallback(() => {
-    setActiveIndex((index) => (index + 1) % Math.max(mediaItems.length, 1));
+    if (mediaItems.length <= 1) return;
+    const currentIndex = activeIndexRef.current % mediaItems.length;
+    const nextIndex = (currentIndex + 1) % mediaItems.length;
+    setOutgoingSlide({
+      item: mediaItems[currentIndex],
+      index: currentIndex,
+      key: `${mediaItems[currentIndex]?.id || "media"}-${currentIndex}`,
+    });
+    activeIndexRef.current = nextIndex;
+    setActiveIndex(nextIndex);
+  }, [mediaItems]);
+
+  useEffect(() => {
+    activeIndexRef.current = 0;
+    setActiveIndex(0);
+    setOutgoingSlide(null);
+    setVideoEnded(false);
   }, [mediaItems.length]);
 
   useEffect(() => {
-    setActiveIndex(0);
-  }, [mediaItems.length]);
+    activeIndexRef.current = activeIndex;
+    setVideoEnded(false);
+  }, [active?.id, activeIndex]);
+
+  useEffect(() => {
+    if (!outgoingSlide) return undefined;
+    const timer = window.setTimeout(
+      () => setOutgoingSlide(null),
+      Math.max(0, transitionMs),
+    );
+    return () => window.clearTimeout(timer);
+  }, [outgoingSlide, transitionMs]);
 
   useEffect(() => {
     if (
@@ -137,6 +168,28 @@ export default function SlideshowFrameWidget({
   ]);
 
   useEffect(() => {
+    if (
+      !videoEnded ||
+      !shouldAdvanceCompletedVideo({
+        autoplay: c.autoplay,
+        connectFourActive,
+        itemCount: mediaItems.length,
+      })
+    ) {
+      return undefined;
+    }
+    const timer = window.setTimeout(advanceSlide, videoEndHoldMs);
+    return () => window.clearTimeout(timer);
+  }, [
+    advanceSlide,
+    c.autoplay,
+    connectFourActive,
+    mediaItems.length,
+    videoEndHoldMs,
+    videoEnded,
+  ]);
+
+  useEffect(() => {
     if (!connectFourEnabled) setConnectFourActive(false);
   }, [connectFourEnabled]);
 
@@ -147,8 +200,9 @@ export default function SlideshowFrameWidget({
       video.pause();
       return;
     }
+    if (videoEnded) return;
     video.play().catch(() => {});
-  }, [active?.id, connectFourActive]);
+  }, [active?.id, connectFourActive, videoEnded]);
 
   const handleConnectFourVisibility = useCallback((visible) => {
     setConnectFourActive(visible);
@@ -167,6 +221,38 @@ export default function SlideshowFrameWidget({
     "--bsf-pad": `${clampNumber(c.padding, 0, 60, 8)}px`,
     "--bsf-glow": clampNumber(c.glow, 0, 160, 35) / 100,
     "--bsf-transition": `${transitionMs}ms`,
+    "--bsf-video-hold": `${videoEndHoldMs}ms`,
+  };
+
+  const renderMedia = (item, index, current = false) => {
+    if (!item) return null;
+    if (item.type === "video") {
+      return (
+        <video
+          ref={current ? videoRef : undefined}
+          className="better-slideshow-frame__media"
+          src={item.url}
+          autoPlay={current}
+          muted={c.videoMuted !== false}
+          loop={shouldLoopVideo({
+            itemCount: mediaItems.length,
+            videoLoop: c.videoLoop,
+          })}
+          playsInline
+          controls={current && c.showVideoControls === true}
+          preload="auto"
+          onEnded={current ? () => setVideoEnded(true) : undefined}
+        />
+      );
+    }
+    return (
+      <img
+        className="better-slideshow-frame__media"
+        src={item.url}
+        alt={item.label || "Slideshow media"}
+        draggable={false}
+      />
+    );
   };
 
   return (
@@ -175,8 +261,11 @@ export default function SlideshowFrameWidget({
       data-frame={frameStyle}
       data-fit={fit}
       data-transition={transition}
+      data-playback-state={videoEnded ? "holding" : "playing"}
       data-connect-four={connectFourActive ? "active" : "idle"}
-      data-colour-theme={c.colourTheme || undefined}
+      data-colour-theme={
+        String(c.colourTheme || "").replace(/^theme_/, "") || undefined
+      }
       style={rootStyle}
     >
       <span className="better-slideshow-frame__sheen" />
@@ -184,41 +273,23 @@ export default function SlideshowFrameWidget({
       <div className="better-slideshow-frame__viewport">
         <div className="better-slideshow-frame__media-layer">
           {active ? (
-            active.type === "video" ? (
-              <video
-                ref={videoRef}
+            <>
+              {outgoingSlide ? (
+                <div
+                  key={outgoingSlide.key}
+                  className="better-slideshow-frame__slide is-leaving"
+                  aria-hidden="true"
+                >
+                  {renderMedia(outgoingSlide.item, outgoingSlide.index, false)}
+                </div>
+              ) : null}
+              <div
                 key={`${active.id}-${activeIndex}`}
-                className="better-slideshow-frame__media"
-                src={active.url}
-                autoPlay
-                muted={c.videoMuted !== false}
-                loop={shouldLoopVideo({
-                  itemCount: mediaItems.length,
-                  videoLoop: c.videoLoop,
-                })}
-                playsInline
-                controls={c.showVideoControls === true}
-                preload="auto"
-                onEnded={() => {
-                  if (
-                    shouldAdvanceCompletedVideo({
-                      autoplay: c.autoplay,
-                      connectFourActive,
-                      itemCount: mediaItems.length,
-                    })
-                  )
-                    advanceSlide();
-                }}
-              />
-            ) : (
-              <img
-                key={`${active.id}-${activeIndex}`}
-                className="better-slideshow-frame__media"
-                src={active.url}
-                alt={active.label || "Slideshow media"}
-                draggable={false}
-              />
-            )
+                className={`better-slideshow-frame__slide is-current${outgoingSlide ? " is-entering" : ""}`}
+              >
+                {renderMedia(active, activeIndex, true)}
+              </div>
+            </>
           ) : (
             <div className="better-slideshow-frame__empty">
               <strong>Slideshow Frame</strong>

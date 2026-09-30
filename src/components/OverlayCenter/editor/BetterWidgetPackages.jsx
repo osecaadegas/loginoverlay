@@ -1053,6 +1053,7 @@ const BASE_BETTER_CONFIG = {
     transition: "fade",
     slideMs: 5000,
     transitionMs: 650,
+    videoEndHoldMs: 5000,
     autoplay: true,
     videoMuted: true,
     videoLoop: true,
@@ -1429,6 +1430,12 @@ function normalizeBetterSlideshowConfig(merged = {}) {
     0,
     Math.max(0, Math.min(2500, next.slideMs - 100)),
     defaults.transitionMs,
+  );
+  next.videoEndHoldMs = clampNumber(
+    next.videoEndHoldMs,
+    0,
+    30000,
+    defaults.videoEndHoldMs,
   );
   next.radius = clampNumber(next.radius, 0, 80, defaults.radius);
   next.borderWidth = clampNumber(next.borderWidth, 0, 10, defaults.borderWidth);
@@ -5960,6 +5967,17 @@ function BetterSlideshowFrameControls({
             />
           </Section>
           <Section title="Video playback" icon={<MonitorPlay size={13} />}>
+            <SliderRow
+              label="Last frame hold"
+              value={c.videoEndHoldMs}
+              min={0}
+              max={15000}
+              step={250}
+              format={(value) =>
+                `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 2)}s`
+              }
+              onChange={(videoEndHoldMs) => set({ videoEndHoldMs })}
+            />
             <ToggleRow
               label="Muted"
               checked={c.videoMuted}
@@ -5971,8 +5989,8 @@ function BetterSlideshowFrameControls({
               onChange={(videoLoop) => set({ videoLoop })}
             />
             <p className="bp-hint">
-              With multiple banners, every video plays fully before the next
-              banner appears. The slideshow repeats after the complete list.
+              With multiple banners, every video plays fully, holds its final
+              frame for 5 seconds by default, then transitions to the next.
             </p>
             <ToggleRow
               label="Show video controls"
