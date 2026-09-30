@@ -409,7 +409,28 @@ try {
   await page.waitForSelector('.better-hunt-win-badge', { hidden: true });
   await page.setViewport({ width: 1400, height: 1200 });
   await new Promise(resolve => setTimeout(resolve, 700));
-  await screenshot('ice-best-worst');
+  const bestResult = await page.$eval('.better-hunt-result-flipper', element => ({
+    face: element.dataset.face,
+    label: element.getAttribute('aria-label'),
+    activeText: element.querySelector('.better-hunt-result-face:not([aria-hidden="true"])')?.textContent,
+  }));
+  assert.equal(bestResult.face, 'best', 'Mainstream results begin on the Best slot');
+  assert.match(bestResult.label, /Best slot/i);
+  assert.match(bestResult.activeText, /Best/i);
+  await screenshot('ice-best-slot');
+  await page.waitForFunction(
+    () => document.querySelector('.better-hunt-result-flipper')?.dataset.face === 'worst',
+    { timeout: 12000 },
+  );
+  const worstResult = await page.$eval('.better-hunt-result-flipper', element => ({
+    face: element.dataset.face,
+    label: element.getAttribute('aria-label'),
+    activeText: element.querySelector('.better-hunt-result-face:not([aria-hidden="true"])')?.textContent,
+  }));
+  assert.equal(worstResult.face, 'worst', 'Mainstream results flip to the Worst slot');
+  assert.match(worstResult.label, /Worst slot/i);
+  assert.match(worstResult.activeText, /Worst/i);
+  await screenshot('ice-worst-slot');
   await page.setViewport({ width: 1400, height: 900 });
   for (const tournamentLayout of ['vertical', 'minimal', 'arena', 'scoreboard', 'grid']) {
     await page.evaluate((tournamentLayout) => window.fxTest.renderScene({ single: 'tournament', tournamentLayout }), tournamentLayout);

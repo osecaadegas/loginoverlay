@@ -731,6 +731,7 @@ const BASE_BETTER_CONFIG = {
     drawerAlwaysVisible: false,
     drawerRevealSeconds: 30,
     drawerHoldSeconds: 15,
+    resultFlipSeconds: 10,
     statsLayout: "row",
     showRequests: true,
     winEffects: true,
@@ -5149,6 +5150,10 @@ function SimpleThemedControls({
     12,
     Math.min(30, Number(c.drawerHoldSeconds) || 15),
   );
+  const resultFlipSeconds = Math.max(
+    5,
+    Math.min(30, Number(c.resultFlipSeconds) || 10),
+  );
   const drawerHint =
     normalizedDrawerMode === "expand"
       ? "The best / worst card expands only the bottom of the panel on the configured timer."
@@ -5605,6 +5610,17 @@ function SimpleThemedControls({
           icon={<Layers size={13} />}
           category="content"
         >
+          {c.orientation === "mainstream" ? (
+            <SliderRow
+              label="Flip every"
+              value={resultFlipSeconds}
+              min={5}
+              max={30}
+              step={1}
+              unit="s"
+              onChange={(resultFlipSeconds) => set({ resultFlipSeconds })}
+            />
+          ) : null}
           <ToggleRow
             label="Always visible"
             checked={drawerAlwaysVisible}
