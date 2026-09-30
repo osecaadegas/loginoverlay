@@ -16,6 +16,11 @@ import ApiKeysAdmin from "./ApiKeysAdmin";
 import ContactMessagesAdmin from "./ContactMessagesAdmin";
 import { CasinoOfferModal } from "./modals";
 import { SidePanel, StatsCard, StatsGrid, ConfirmButton } from "./components";
+import {
+  mergeUserRole,
+  reconcileEditingUser,
+  removeUserRoleFromState,
+} from "./userRoleState";
 
 // Valid tab IDs for URL deep linking
 const DEFAULT_ADMIN_TAB = "users";
@@ -436,7 +441,11 @@ export default function AdminPanel() {
     if (error) {
       setError("Failed to load users: " + error.message);
     } else {
-      setUsers(data || []);
+      const refreshedUsers = data || [];
+      setUsers(refreshedUsers);
+      setEditingUser((current) =>
+        reconcileEditingUser(current, refreshedUsers),
+      );
     }
     setLoading(false);
   };
@@ -498,7 +507,7 @@ export default function AdminPanel() {
         ? editingUser.newRoleModeratorPermissions
         : null;
 
-    const { error } = await addUserRole(
+    const { data: savedRole, error } = await addUserRole(
       editingUser.id,
       editingUser.newRole,
       expiresAt,
@@ -509,13 +518,13 @@ export default function AdminPanel() {
       setError("Failed to add role: " + error.message);
     } else {
       setSuccess("Role added successfully!");
-      loadUsers();
-      setEditingUser({
-        ...editingUser,
+      setEditingUser((current) => ({
+        ...mergeUserRole(current, savedRole),
         newRole: "",
         newRoleExpiryDays: "",
         newRoleModeratorPermissions: {},
-      });
+      }));
+      await loadUsers();
     }
   };
 
@@ -531,7 +540,10 @@ export default function AdminPanel() {
       setError("Failed to remove role: " + error.message);
     } else {
       setSuccess("Role removed successfully!");
-      loadUsers();
+      setEditingUser((current) =>
+        removeUserRoleFromState(current, roleToRemove),
+      );
+      await loadUsers();
     }
   };
 

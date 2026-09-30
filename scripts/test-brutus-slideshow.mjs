@@ -10,6 +10,11 @@ import {
   isBrutusVideoUrl,
   toggleBrutusMediaLine,
 } from "../src/components/OverlayCenter/widgets/slideshow-frame/brutusVideoLibrary.js";
+import {
+  mergeUserRole,
+  reconcileEditingUser,
+  removeUserRoleFromState,
+} from "../src/components/AdminPanel/userRoleState.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const videoDirectory = fileURLToPath(new URL("../public/Banners Videos/", import.meta.url));
@@ -60,5 +65,32 @@ assert.match(editorSource, /isBrutus\s*\?/);
 assert.match(editorSource, /filterBrutusMediaText/);
 assert.match(editorSource, /role\.role !== BRUTUS_SLIDESHOW_ROLE/);
 assert.match(adminSource, /option value="brutus"/);
+
+const adminUser = {
+  id: "user-1",
+  roles: [{ id: "role-admin", role: "admin", is_active: true }],
+};
+const brutusRole = { id: "role-brutus", role: "brutus", is_active: true };
+const withBrutus = mergeUserRole(adminUser, brutusRole);
+assert.deepEqual(withBrutus.roles, [adminUser.roles[0], brutusRole]);
+assert.equal(
+  mergeUserRole(withBrutus, { ...brutusRole, access_expires_at: "2030-01-01" }).roles.length,
+  2,
+  "saving an existing role must replace it instead of creating a duplicate",
+);
+assert.deepEqual(removeUserRoleFromState(withBrutus, "brutus").roles, [adminUser.roles[0]]);
+assert.deepEqual(
+  reconcileEditingUser(
+    { ...adminUser, newRole: "brutus", newRoleExpiryDays: "30" },
+    [withBrutus],
+  ),
+  {
+    ...withBrutus,
+    newRole: "brutus",
+    newRoleExpiryDays: "30",
+    newRoleModeratorPermissions: {},
+  },
+  "refreshing the user table must also refresh roles in the open side panel",
+);
 
 console.log(`Brutus slideshow library validated (${BRUTUS_VIDEO_LIBRARY.length} videos).`);
