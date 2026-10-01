@@ -23,8 +23,9 @@
   --greek-gold-texture: url("/theme-effects/greek-premium/materials/aged-gold.webp");
   --greek-key: url("/theme-effects/greek-premium/ornaments/greek-key-horizontal.webp");
   --greek-scenario: url("/theme-effects/greek-premium/background/scenario-architecture.webp");
-  --greek-bevel: inset 0 2px 0 rgba(255,250,222,.9), inset 0 -7px 12px rgba(74,37,12,.28);
-  --greek-structural-shadow: 0 5px 0 #321808, 0 9px 0 #9a6427, 0 13px 24px rgba(0,0,0,.62);
+  --greek-bevel: inset 0 2px 0 rgba(255,250,222,.9), inset 0 -1px 0 rgba(104,58,20,.64), inset 0 -8px 13px rgba(65,31,10,.3);
+  --greek-structural-shadow: 0 2px 0 #e4bc70, 0 5px 0 #321808, 0 9px 0 #86521f, 0 14px 26px rgba(0,0,0,.64);
+  --greek-recess: inset 0 2px 7px rgba(49,23,7,.5), inset 0 -1px 0 rgba(255,244,207,.62), inset 0 0 0 1px rgba(85,43,14,.46);
   width: 100%;
   height: 100%;
   color: var(--greek-ink);
@@ -849,7 +850,318 @@
   color: #650e13 !important;
 }
 
-/* Make panel content sit inside carved recesses instead of floating on beige. */
+/* Final material pass: carved hierarchy, aged metal and architectural embedding. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"] .oc-bg-widget::before {
+  background:
+    radial-gradient(ellipse at 50% 63%, rgba(223,155,56,.1), transparent 29%),
+    radial-gradient(ellipse at 50% 40%, transparent 22%, rgba(2,7,11,.2) 72%, rgba(2,5,8,.58) 100%),
+    radial-gradient(circle at 78% 24%, rgba(222,156,57,.1), transparent 22%),
+    radial-gradient(circle at 20% 72%, rgba(222,156,57,.09), transparent 20%),
+    url("/theme-effects/greek-premium/background/temple-environment.webp") center / cover no-repeat;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"] {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.46), transparent 16%, rgba(103,60,24,.17) 76%, rgba(50,25,9,.34)),
+    linear-gradient(90deg, rgba(104,57,20,.32), transparent 14%, transparent 86%, rgba(104,57,20,.32)),
+    var(--greek-key) center / auto 34px repeat-x,
+    var(--greek-marble-texture) center / 690px 690px repeat !important;
+  box-shadow:
+    0 2px 0 #f0c76a,
+    0 5px 0 #311708,
+    0 8px 0 #89551f,
+    0 14px 30px rgba(0,0,0,.68),
+    inset 0 2px 0 rgba(255,251,226,.92),
+    inset 0 -9px 15px rgba(68,33,10,.38),
+    inset 0 0 0 2px rgba(104,56,19,.62) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="clock"] {
+  border: 2px solid #714116 !important;
+  background:
+    linear-gradient(180deg, rgba(255,251,230,.9), rgba(197,151,80,.56)),
+    var(--greek-warm-marble) center / 300px 300px repeat !important;
+  box-shadow: 0 0 0 2px #b47a2d, 0 0 0 3px #3a1d09, inset 0 2px 0 #fff1c6, inset 0 -5px 8px rgba(77,38,12,.3), 0 5px 9px rgba(0,0,0,.4) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] :is([data-widget-element="separator"],[data-widget-element="casino"]) {
+  border-color: #6b3b14 !important;
+  background:
+    linear-gradient(180deg, rgba(240,199,106,.48), rgba(124,78,32,.12) 24%, rgba(46,24,9,.5) 78%, rgba(215,164,69,.28)),
+    var(--greek-bronze-texture) center / 260px 260px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(240,199,106,.5), inset 0 -3px 5px rgba(31,15,5,.52), 0 3px 7px rgba(0,0,0,.34) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="casino"] :is(span,strong) {
+  color: #f6e8ca !important;
+  text-shadow: 0 1px 2px #190c04 !important;
+}
+
+/* The left monument has distinct structural stone, primary recesses and quieter history. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-panel {
+  background:
+    linear-gradient(90deg, rgba(58,28,9,.34), transparent 10%, transparent 90%, rgba(58,28,9,.34)),
+    linear-gradient(180deg, rgba(255,255,255,.38), transparent 14%, rgba(86,45,14,.25)),
+    var(--greek-warm-marble) 37% 19% / 710px 710px repeat !important;
+  box-shadow: var(--greek-structural-shadow), var(--greek-bevel), inset 0 0 0 3px rgba(95,49,15,.52), inset 0 0 34px rgba(75,39,13,.2) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-header {
+  border-top: 1px solid rgba(240,199,106,.72) !important;
+  border-bottom: 5px double #704016 !important;
+  background:
+    var(--greek-key) center bottom / auto 19px repeat-x,
+    linear-gradient(180deg, rgba(255,247,211,.38), rgba(101,56,18,.16)) !important;
+  box-shadow: inset 0 1px 0 #fff1c7, 0 5px 8px rgba(61,29,8,.18) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-stat,.better-hunt-stats-panel,.better-hunt-main-active,.better-hunt-total,.better-hunt-requests,.better-hunt-result) {
+  border: 2px solid #754619 !important;
+  background:
+    linear-gradient(180deg, rgba(255,247,213,.16), rgba(83,43,13,.22)),
+    var(--greek-warm-marble) 61% 42% / 390px 390px repeat !important;
+  box-shadow: 0 0 0 1px rgba(215,164,69,.52), var(--greek-recess) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-active:not(.better-hunt-empty) {
+  border-color: #c38a37 !important;
+  background:
+    linear-gradient(90deg, rgba(17,12,8,.9), rgba(65,39,19,.92) 48%, rgba(27,17,10,.94)),
+    var(--greek-bronze-texture) center / 320px 320px repeat !important;
+  box-shadow: 0 0 0 1px #412309, inset 0 1px 0 rgba(240,199,106,.52), inset 0 -10px 18px rgba(0,0,0,.42), 0 5px 12px rgba(48,22,5,.42) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-active:not(.better-hunt-empty) :is(.better-hunt-main-active-row span,.better-hunt-main-active-row strong) {
+  color: #f6e8ca !important;
+  text-shadow: 0 1px 3px #120904 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-active-row {
+  border-top-color: rgba(215,164,69,.32) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-row,.better-hunt-list-group > *) {
+  border-color: rgba(113,67,24,.68) !important;
+  background:
+    linear-gradient(180deg, rgba(255,249,225,.24), rgba(94,50,15,.13)),
+    var(--greek-marble-texture) 19% 57% / 430px 430px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255,246,214,.62), inset 0 -4px 7px rgba(68,34,10,.2), 0 2px 4px rgba(43,20,6,.2) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-divider,.better-hunt-stat-strip) {
+  border-color: #65401d !important;
+  background:
+    linear-gradient(180deg, rgba(240,199,106,.2), rgba(28,16,8,.18)),
+    var(--greek-bronze-texture) center / 280px 280px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(240,199,106,.38), inset 0 -2px 4px rgba(28,13,4,.42) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-stat-strip :is(span,strong) {
+  color: #f6e8ca !important;
+  text-shadow: 0 1px 2px #140a04 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-card {
+  border-color: #704018 !important;
+  background:
+    linear-gradient(180deg, rgba(240,199,106,.14), rgba(16,10,6,.38)),
+    var(--greek-bronze-texture) center / 300px 300px repeat !important;
+  box-shadow: 0 0 0 1px #241105, inset 0 1px 0 rgba(240,199,106,.44), inset 0 -9px 14px rgba(0,0,0,.44), 0 7px 16px rgba(0,0,0,.52) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-card--center {
+  border-color: #d7a445 !important;
+  box-shadow: 0 0 0 2px #5b3010, inset 0 1px 0 #f0c76a, inset 0 -10px 16px rgba(0,0,0,.45), 0 8px 18px rgba(0,0,0,.58) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-card-name {
+  color: #f6e8ca !important;
+  background: linear-gradient(0deg, rgba(30,15,6,.96), rgba(75,43,17,.8), transparent) !important;
+  text-shadow: 0 1px 3px #000 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-track {
+  border: 1px solid #5b3212 !important;
+  background: rgba(49,25,8,.42) !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.46), 0 1px 0 rgba(255,239,194,.58) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-track > span {
+  background:
+    linear-gradient(180deg, rgba(255,227,143,.42), rgba(92,48,14,.28)),
+    var(--greek-gold-texture) center / 240px 240px repeat !important;
+  box-shadow: inset 0 1px 0 #f8d47e, inset 0 -2px 4px rgba(62,28,6,.36) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary :is(span,strong) {
+  color: #543019 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.68) !important;
+}
+
+/* The long status slab is a carved ledge with inset data plaques. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-bar {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.42), transparent 30%, rgba(76,38,11,.27)),
+    var(--greek-marble-texture) 44% 63% / 690px 690px repeat !important;
+  box-shadow: 0 2px 0 #edc36f, 0 6px 0 #351908, 0 11px 0 #84501c, 0 18px 31px rgba(0,0,0,.66), var(--greek-bevel), inset 0 0 0 2px rgba(99,52,16,.5) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-bar :is(.rtp-stats-item,.rtp-stats-slot) {
+  min-width: 0;
+  padding-block: 5px !important;
+  padding-inline: clamp(8px, 1.15vw, 17px) !important;
+  border: 1px solid rgba(117,70,25,.58) !important;
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, rgba(255,250,226,.42), rgba(119,69,25,.12)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.66), inset 0 -3px 5px rgba(66,32,9,.16) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin {
+  border: 2px solid #714116 !important;
+  background:
+    linear-gradient(180deg, rgba(255,249,219,.82), rgba(186,135,61,.5)),
+    var(--greek-gold-texture) center / 260px 260px repeat !important;
+  box-shadow: 0 0 0 1px #c28b38, inset 0 1px 0 #fff0bd, inset 0 -4px 7px rgba(61,29,8,.24), 0 4px 8px rgba(49,23,7,.3) !important;
+}
+
+/* Bets share the same stone plinth rather than floating beneath the monument. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bet-widget,.seca-bets-design) {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.32), transparent 26%, rgba(73,36,10,.24)),
+    var(--greek-key) center top / auto 17px repeat-x,
+    var(--greek-warm-marble) 28% 73% / 520px 520px repeat !important;
+  box-shadow: 0 2px 0 #e6b85f, 0 5px 0 #351909, 0 10px 0 #80501f, 0 16px 27px rgba(0,0,0,.62), var(--greek-bevel), inset 0 0 0 2px rgba(99,51,15,.5) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bets-ov__header,.bets-ov__stats,.bets-ov__card,.bets-ov__row,.bet-option,.bet-entry) {
+  border-color: #754718 !important;
+  background:
+    linear-gradient(180deg, rgba(255,248,217,.3), rgba(91,47,14,.14)),
+    var(--greek-marble-texture) center / 360px 360px repeat !important;
+  box-shadow: var(--greek-recess) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bets-ov__title,.bets-ov__stat-val,.bets-ov__row-pct,.bets-ov__card-pct) {
+  color: #2c1a10 !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.7) !important;
+}
+
+/* Right wall remains purposeful before any live card arrives. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget {
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(255,247,211,.2), transparent 54%),
+    url("/theme-effects/greek-premium/ornaments/laurel-left.webp") left 10% bottom 6% / 34% auto no-repeat,
+    url("/theme-effects/greek-premium/ornaments/laurel-right.webp") right 10% bottom 6% / 34% auto no-repeat,
+    linear-gradient(90deg, rgba(65,31,9,.25), transparent 11%, transparent 89%, rgba(65,31,9,.25)),
+    var(--greek-warm-marble) 72% 31% / 710px 710px repeat !important;
+  background-blend-mode: normal, soft-light, soft-light, normal, normal !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is(.ov-chat-messages,[data-better-element="messages"]) {
+  box-shadow: inset 0 8px 18px rgba(69,34,10,.18), inset 0 -10px 20px rgba(64,31,9,.2) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-giveaway-widget {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.24), transparent 28%, rgba(74,37,11,.2)),
+    var(--greek-marble-texture) 23% 38% / 570px 570px repeat !important;
+  box-shadow: 0 2px 0 #d5a047, 0 5px 0 #321707, 0 9px 0 #82501e, 0 13px 22px rgba(0,0,0,.52), var(--greek-bevel), inset 0 0 0 2px rgba(102,55,18,.48) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-card {
+  border-width: 11px !important;
+  border-image-width: 11px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.22), transparent 32%, rgba(78,39,12,.2)),
+    var(--greek-warm-marble) 67% 21% / 470px 470px repeat !important;
+  box-shadow: 0 0 0 2px #6f4117, inset 0 5px 12px rgba(72,35,10,.2), inset 0 -1px 0 rgba(255,242,202,.65), 0 5px 11px rgba(45,20,5,.34) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-name {
+  font-size: clamp(1.2rem, 6cqw, 2rem) !important;
+  line-height: 1 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-prize {
+  font-weight: 900 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame,
+.better-slideshow-frame[data-colour-theme="old_rome"] {
+  background:
+    linear-gradient(90deg, rgba(66,32,9,.28), transparent 12%, transparent 88%, rgba(66,32,9,.28)),
+    linear-gradient(180deg, rgba(255,250,224,.24), transparent 34%, rgba(74,36,10,.19)),
+    var(--greek-marble-texture) 16% 74% / 670px 670px repeat !important;
+  box-shadow: var(--greek-structural-shadow), var(--greek-bevel), inset 0 0 0 3px rgba(91,46,14,.54) !important;
+}
+
+/* Tournament content uses a dark ceremonial arena recessed into marble. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root {
+  color: #f6e8ca !important;
+  border: 10px solid transparent !important;
+  border-image: var(--greek-panel-frame) 56 fill / 10px / 0 stretch !important;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(215,164,69,.13), transparent 46%),
+    linear-gradient(180deg, rgba(50,29,14,.96), rgba(12,10,8,.97)),
+    url("/theme-effects/greek-premium/materials/dark-stone.webp") center / 360px 360px repeat !important;
+  box-shadow: 0 2px 0 #d7a445, 0 5px 0 #301607, 0 11px 24px rgba(0,0,0,.68), inset 0 0 0 2px rgba(124,78,32,.56), inset 0 1px 0 rgba(240,199,106,.38) !important;
+  backdrop-filter: none !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] :is([data-widget-element="matchCard"],[data-widget-element="bracketLine"],.tw-ice-material-card) {
+  color: #f6e8ca !important;
+  border-color: #8f5d23 !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(180deg, rgba(215,164,69,.16), rgba(20,13,8,.38)),
+    var(--greek-bronze-texture) center / 320px 320px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(240,199,106,.4), inset 0 -8px 13px rgba(0,0,0,.42), 0 4px 9px rgba(0,0,0,.45) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] [data-widget-element="header"] {
+  color: #f6e8ca !important;
+  border-color: #6e3d13 !important;
+  background:
+    linear-gradient(180deg, rgba(240,199,106,.25), rgba(39,20,8,.34)),
+    var(--greek-bronze-texture) center / 260px 260px repeat !important;
+  text-shadow: 0 1px 3px #000 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] :is([data-widget-element="playerName"],[data-widget-element="label"],[data-widget-element="scoreValue"]) {
+  color: #f6e8ca !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  text-shadow: 0 1px 3px #000 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] [data-widget-element="statusBadge"] {
+  color: #2c1a10 !important;
+  border-color: #6f4015 !important;
+  background:
+    linear-gradient(180deg, rgba(255,241,187,.56), rgba(112,66,21,.2)),
+    var(--greek-gold-texture) center / 220px 220px repeat !important;
+  box-shadow: inset 0 1px 0 #ffe6a1, inset 0 -3px 5px rgba(51,23,5,.3), 0 3px 7px rgba(0,0,0,.36) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.56) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] [data-widget-element="connector"] {
+  color: #f0c76a !important;
+  border-color: #6f4117 !important;
+  background: #2b190c !important;
+  box-shadow: 0 0 0 2px #a36b29, inset 0 1px 0 rgba(240,199,106,.34), 0 4px 9px rgba(0,0,0,.5) !important;
+}
+
+@media (max-width: 1280px) {
+  .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-stat-label,.better-hunt-row-label,.better-hunt-mini-label) {
+    font-size: max(.68em, 10px) !important;
+  }
+  .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] :is(.rtp-stats-label,.rtp-stats-value) {
+    font-size: max(.76em, 11px) !important;
+  }
+}
+
+/* Recess depth is carried by borders and inset shadows; avoid doubled 1px outlines. */
 .better-widget-colour-scope[data-colour-theme="old_rome"] :is(
   .better-hunt-stat,
   .better-hunt-row,
@@ -862,8 +1174,8 @@
   [data-better-element="highlightedMessage"],
   .ov-chat-message
 ) {
-  outline: 1px solid rgba(255,241,198,.42);
-  outline-offset: -3px;
+  outline: 0 !important;
+  background-clip: padding-box !important;
 }
 
 @media (max-width: 960px) {
