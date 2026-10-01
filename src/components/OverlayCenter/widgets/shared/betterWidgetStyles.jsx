@@ -1818,11 +1818,25 @@ function BetterHuntWinOverlay({ win, onDone, ice = false }) {
       sway: ((index * 19) % 60) - 30,
     }));
   }, [tier, win?.id, ice]);
+  const iceShards = useMemo(() => {
+    if (!tier || !ice) return [];
+    const count = 9 + Math.min(6, tier.rings * 2);
+    return Array.from({ length: count }, (_, index) => ({
+      id: index,
+      left: 6 + ((index * 37) % 88),
+      top: 8 + ((index * 29) % 78),
+      delay: ((index * 7) % 11) * 0.025,
+      rotate: -42 + ((index * 31) % 84),
+      scale: 0.68 + (index % 5) * 0.12,
+      driftX: ((index * 19) % 62) - 31,
+      driftY: -18 - ((index * 13) % 38),
+    }));
+  }, [tier, win?.id, ice]);
   if (!win || !tier) return null;
   return (
     <div
       ref={rootRef}
-      className={`better-hunt-win better-hunt-win--${win.tier}`}
+      className={`better-hunt-win better-hunt-win--${win.tier}${ice ? " better-hunt-win--ice" : ""}`}
       style={{
         "--bh-win-duration": `${tier.duration}ms`,
         "--bh-win-color": tier.color,
@@ -1835,6 +1849,28 @@ function BetterHuntWinOverlay({ win, onDone, ice = false }) {
       <span className="better-hunt-win-border" />
       <span className="better-hunt-win-flash" />
       <span className="better-hunt-win-rays" />
+      {ice ? (
+        <>
+          <span className="better-hunt-win-ice-cracks" aria-hidden="true" />
+          <span className="better-hunt-win-ice-frost" aria-hidden="true" />
+          {iceShards.map((shard) => (
+            <i
+              key={shard.id}
+              className="better-hunt-win-ice-shard"
+              aria-hidden="true"
+              style={{
+                left: `${shard.left}%`,
+                top: `${shard.top}%`,
+                "--bh-ice-delay": `${shard.delay}s`,
+                "--bh-ice-rotate": `${shard.rotate}deg`,
+                "--bh-ice-scale": shard.scale,
+                "--bh-ice-drift-x": `${shard.driftX}px`,
+                "--bh-ice-drift-y": `${shard.driftY}px`,
+              }}
+            />
+          ))}
+        </>
+      ) : null}
       {Array.from({ length: ice ? 0 : tier.rings }, (_, index) => (
         <span
           key={index}
@@ -2662,6 +2698,11 @@ export function BetterBetsStyle({ config, countdown }) {
   const totalBetters = Object.keys(betters).length;
   const winnerIdx = c.winnerOption ?? null;
   const status = c.gameStatus || "idle";
+  useEffect(() => {
+    if (status === "result" && winnerIdx !== null) {
+      emitIceEvent(stageRef.current, "bets");
+    }
+  }, [status, winnerIdx, stageRef]);
   const pcts = visibleOptions.map((_, index) =>
     totalPool > 0
       ? Math.round(((Number(bets[`opt_${index}`]) || 0) / totalPool) * 100)

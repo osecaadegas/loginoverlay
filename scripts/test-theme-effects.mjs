@@ -131,7 +131,7 @@ try {
           ["slideshow_frame", 1500, 94, 402, 278, { mediaText: media ? "/player.webp" : "" }],
           ["chat", 1500, 388, 402, 624, { live: true, twitchEnabled: false, kickEnabled: false, youtubeEnabled: false, bttvEnabled: false, animation: "none",
             giveawayInChat: chatEvent === "giveaway", shoutoutInChat: chatEvent === "shoutout",
-            __previewGiveawayConfig: { title: "Frozen giveaway", prize: "Channel points", keyword: "join", participants: [{ name: "North", avatarUrl: "/player.webp" }, { name: "Frost", avatarUrl: "/player.webp" }], isActive: true },
+            __previewGiveawayConfig: { title: "Frozen giveaway", prize: "Channel points", keyword: "join", participants: [{ name: "North", avatarUrl: "/player.webp" }, { name: "Frost", avatarUrl: "/player.webp" }], winner: chatEvent === "giveaway" ? "North" : "", isActive: chatEvent !== "giveaway" },
             __previewShoutoutAlert: chatEvent === "shoutout" ? { id: "ice-shoutout", raider_username: "north", raider_display_name: "North", game_name: "Just Chatting" } : undefined,
             __appearancePreviewMessages: [
             { id: 'ice-mod', username: 'Moderator', isMod: true, message: 'Welcome! Enjoy the stream.', platform: 'twitch', avatarUrl: '/player.webp' },
@@ -140,6 +140,14 @@ try {
             { id: 'ice-request', username: 'SlotFan', message: '!sr Stormforged', platform: 'twitch', avatarUrl: '/player.webp' },
           ] }],
           ["rtp_stats", 392, 814, 1068, 64, {}],
+          ["bets", 392, 890, 620, 176, {
+            displayStyle: "better_bets", theme, betTheme: theme,
+            orientation: "horizontal", layoutMode: "bars", columns: 2,
+            question: "Where will the bonus land?", gameStatus: "result", winnerOption: 2,
+            options: ["0 - 99x", "100 - 199x", "200 - 299x", "300x+"],
+            bets: { opt_0: 120, opt_1: 260, opt_2: 540, opt_3: 80 },
+            betters: { north: { option: 2, amount: 300 }, frost: { option: 1, amount: 200 } },
+          }],
           ["tournament", dense ? 470 : 0, dense ? 90 : 0, dense ? 870 : 1000, dense ? 215 : 620, {
             ...registry.resolveBetterWidgetConfig("tournament", {}, "mock"),
             layout: tournamentLayout,
@@ -235,7 +243,7 @@ try {
   assert.deepEqual(errors, [], `browser errors: ${errors.join(" | ")}`);
   await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
   await page.evaluate(() => window.fxTest.renderScene());
-  await page.waitForFunction(() => document.querySelectorAll('.theme-effects-layer__target-debug').length === 7);
+  await page.waitForFunction(() => document.querySelectorAll('.theme-effects-layer__target-debug').length === 8);
   await new Promise((resolve) => setTimeout(resolve, 1200));
   const checkBounds = async () => {
     const mismatches = await page.evaluate(async () => {
@@ -353,7 +361,7 @@ try {
   await checkBounds();
   await page.setViewport({ width: 1400, height: 900 });
   await checkBounds();
-  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame', 'chat', 'tournament']) {
+  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame', 'chat', 'bets', 'tournament']) {
     await page.evaluate((single) => window.fxTest.renderScene({ single }), type);
     await new Promise((resolve) => setTimeout(resolve, 750));
     await checkBounds();
@@ -390,11 +398,16 @@ try {
   await page.evaluate(() => window.fxTest.eventSpeed(1));
   await new Promise(resolve => setTimeout(resolve, 3600));
   assert.equal(await page.$('.tw-ice-impact'), null, 'tournament impact cleans up after hand-off');
+  await page.evaluate(() => window.fxTest.renderScene({ single: 'bets' }));
+  await page.waitForFunction(() => window.iceEvents.includes('bets'));
+  assert.equal(await page.$$eval('canvas', nodes => nodes.length), 1, 'Ice Bets result reuses the shared renderer');
+  await screenshot('ice-bets-result');
   await page.evaluate(() => window.fxTest.renderScene({ single: 'bonus_hunt' }));
   await new Promise(resolve => setTimeout(resolve, 800));
   await page.evaluate(() => window.__boTriggerWin(1000));
   await page.waitForSelector('.better-hunt-win-badge');
   assert.equal(await page.$$eval('.better-hunt-win-confetti', nodes => nodes.length), 0, 'Ice wins use pooled shards instead of DOM confetti');
+  assert.ok(await page.$('.better-hunt-win-ice-cracks'), 'Ice wins expose the finite crack layer');
   await screenshot('ice-hunt-event');
   // Intersection pausing prevents offscreen previews consuming a full ticker.
   await page.evaluate(() => { document.querySelector('.better-obs-canvas').style.transform = 'translateY(5000px)'; });

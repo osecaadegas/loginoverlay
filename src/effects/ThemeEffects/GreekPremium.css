@@ -1194,3 +1194,310 @@
   .better-widget-colour-scope[data-colour-theme="old_rome"] * { scroll-behavior: auto; }
   .better-widget-colour-scope[data-colour-theme="old_rome"] :is(.better-slideshow-frame__sheen) { animation: none !important; }
 }
+
+/* Greek corrective finish: a strict ink/oxblood foreground palette and clean,
+   softly rounded architectural shells. This is intentionally old_rome-only. */
+.better-widget-colour-scope[data-colour-theme="old_rome"] {
+  --greek-text-primary: #1a120d;
+  --greek-text-secondary: #2a1b14;
+  --greek-text-accent: #651616;
+  --greek-text-accent-strong: #5b1111;
+  --greek-radius-lg: 20px;
+  --greek-radius-md: 12px;
+  --greek-radius-sm: 8px;
+  color: var(--greek-text-primary) !important;
+}
+
+/* The widget packages carry theme-independent light foreground defaults. Set a
+   strict Greek reading colour at the final cascade layer, then opt headings and
+   states into oxblood below. Decorative backgrounds, borders and icons remain
+   bronze/gold. */
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(
+  h1, h2, h3, h4, h5, h6,
+  p, span, strong, em, small, label, button,
+  [data-widget-element], [data-better-element]
+) {
+  color: var(--greek-text-primary) !important;
+  -webkit-text-fill-color: var(--greek-text-primary) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(
+  .better-hunt-main-title,
+  .better-hunt-title strong,
+  .better-hunt-main-status,
+  .better-hunt-pill,
+  .better-hunt-total-head > span,
+  .slot-bingo-widget__header h2,
+  .slot-bingo-widget__square.is-free .slot-bingo-widget__label,
+  .slot-bingo-widget__square.is-complete .slot-bingo-widget__label,
+  .better-gw-name,
+  .better-gw-result-kicker,
+  .better-gw-result-prize,
+  .better-gw-winner-name,
+  [data-widget-type="tournament"] [data-widget-element="header"],
+  [data-widget-type="tournament"] [data-widget-element="statusBadge"]
+) {
+  color: var(--greek-text-accent) !important;
+  -webkit-text-fill-color: var(--greek-text-accent) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.3) !important;
+}
+
+/* Navbar: one clipped marble slab. The previous layered border/texture could
+   expose square corners beneath the ornament at fractional overlay scales. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"] {
+  overflow: clip !important;
+  border: 3px solid #6d401b !important;
+  border-image: none !important;
+  border-radius: var(--greek-radius-lg) !important;
+  background-clip: padding-box !important;
+  clip-path: inset(0 round var(--greek-radius-lg));
+  box-shadow:
+    0 0 0 1px #b47a2d,
+    0 7px 0 #43240d,
+    0 13px 27px rgba(0,0,0,.58),
+    inset 0 2px 0 rgba(255,251,226,.9),
+    inset 0 -8px 14px rgba(68,33,10,.3),
+    inset 0 0 0 2px rgba(122,73,28,.42) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] :is(
+  [data-widget-element="casino"],
+  [data-widget-element="clock"],
+  [data-widget-element="sponsor"]
+) {
+  color: var(--greek-text-primary) !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, rgba(255,251,230,.88), rgba(201,160,95,.42)),
+    var(--greek-warm-marble) center / 300px 300px repeat !important;
+  border-color: #704117 !important;
+  background-clip: padding-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), inset 0 -3px 7px rgba(81,39,12,.24) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="casino"] :is(span,strong) {
+  color: var(--greek-text-primary) !important;
+  -webkit-text-fill-color: var(--greek-text-primary) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+/* Rounded monument and right wall. Standard borders replace square border-image
+   joins; inset bronze rings retain the architectural depth without double lines. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-panel,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget {
+  overflow: clip !important;
+  border: 5px solid #704117 !important;
+  border-image: none !important;
+  border-radius: var(--greek-radius-lg) !important;
+  background-clip: padding-box !important;
+  clip-path: inset(0 round var(--greek-radius-lg));
+  box-shadow:
+    0 0 0 2px #c08a37,
+    0 0 0 4px #351909,
+    0 14px 28px rgba(0,0,0,.6),
+    var(--greek-bevel),
+    inset 0 0 0 2px rgba(104,56,19,.45) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-header,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is([data-better-element="header"],.ov-chat-header) {
+  border-radius: var(--greek-radius-md) var(--greek-radius-md) var(--greek-radius-sm) var(--greek-radius-sm) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is([data-better-element="header"],.ov-chat-header) {
+  color: var(--greek-text-accent) !important;
+  background:
+    linear-gradient(180deg, rgba(255,250,226,.58), rgba(185,137,72,.26)),
+    var(--greek-warm-marble) center / 320px 320px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -3px 6px rgba(88,45,15,.18), 0 3px 7px rgba(0,0,0,.24) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is(
+  [data-better-element="message"],
+  [data-better-element="highlightedMessage"],
+  .ov-chat-message
+) {
+  overflow: hidden;
+  border-radius: var(--greek-radius-sm) !important;
+  background-clip: padding-box !important;
+}
+
+/* Bonus information previously used cream text over dark bronze. Preserve the
+   recess, but use a lighter carved surface so the strict dark foreground works. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(
+  .better-hunt-main-active:not(.better-hunt-empty),
+  .better-hunt-stat-strip,
+  .better-hunt-card
+) {
+  background:
+    linear-gradient(180deg, rgba(255,248,217,.34), rgba(116,69,25,.16)),
+    var(--greek-warm-marble) center / 390px 390px repeat !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(
+  .better-hunt-main-active-row span,
+  .better-hunt-main-active-row strong,
+  .better-hunt-stat-strip span,
+  .better-hunt-stat-strip strong,
+  .better-hunt-card-name
+) {
+  color: var(--greek-text-primary) !important;
+  -webkit-text-fill-color: var(--greek-text-primary) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-card-name {
+  background: linear-gradient(0deg, rgba(226,200,153,.97), rgba(226,200,153,.76), transparent) !important;
+}
+
+/* Bingo active states retain oxblood emphasis as ink and border rather than a
+   dark red fill that required a forbidden light foreground. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slot_bingo"] .slot-bingo-widget__square.is-free {
+  color: var(--greek-text-accent) !important;
+  border-color: var(--greek-text-accent) !important;
+  background:
+    url("/theme-effects/greek-premium/ornaments/laurel-left.webp") left 4px center / 36% 88% no-repeat,
+    url("/theme-effects/greek-premium/ornaments/laurel-right.webp") right 4px center / 36% 88% no-repeat,
+    linear-gradient(180deg, rgba(117,27,27,.12), rgba(101,22,22,.04)),
+    var(--greek-marble-texture) center / 300px 300px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.74), inset 0 -5px 9px rgba(93,48,15,.16), 0 0 0 1px rgba(101,22,22,.38), 0 3px 7px rgba(55,25,7,.3) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slot_bingo"] .slot-bingo-widget__square.is-free :is(.slot-bingo-widget__label,.slot-bingo-widget__status-icon,.slot-bingo-widget__multiplier) {
+  color: var(--greek-text-accent) !important;
+  -webkit-text-fill-color: var(--greek-text-accent) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.3) !important;
+}
+
+/* RTP is a rounded carved ledge; nested data plaques use matched radii and do
+   not expose square transparent corners. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-bar {
+  overflow: clip !important;
+  border: 4px solid #704117 !important;
+  border-image: none !important;
+  border-radius: var(--greek-radius-lg) !important;
+  background-clip: padding-box !important;
+  clip-path: inset(0 round var(--greek-radius-lg));
+  box-shadow:
+    0 0 0 2px #c08a37,
+    0 7px 0 #3b1d09,
+    0 15px 27px rgba(0,0,0,.56),
+    var(--greek-bevel),
+    inset 0 0 0 2px rgba(99,52,16,.42) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-bar :is(.rtp-stats-item,.rtp-stats-slot) {
+  border-radius: var(--greek-radius-sm) !important;
+  background-clip: padding-box !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin {
+  border-radius: 999px !important;
+}
+
+/* Giveaway/results stay ceremonial while using only ink and oxblood text. */
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(.better-giveaway-widget,.better-gw-result-card) {
+  overflow: clip !important;
+  border: 4px solid #704117 !important;
+  border-image: none !important;
+  border-radius: var(--greek-radius-md) !important;
+  background-clip: padding-box !important;
+  clip-path: inset(0 round var(--greek-radius-md));
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-winner-banner {
+  color: var(--greek-text-accent) !important;
+  border-color: var(--greek-text-accent) !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, rgba(255,250,226,.9), rgba(195,148,82,.48)),
+    var(--greek-warm-marble) center / 260px 260px repeat !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-avatar {
+  color: var(--greek-text-primary) !important;
+  background: radial-gradient(circle at 34% 25%, #ead5a9, #b98d4c 72%) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-avatar i {
+  color: var(--greek-text-accent) !important;
+  background: #e7d0a0 !important;
+}
+
+/* Tournament cards are light stone recesses so every label/value can follow the
+   same dark foreground rule without reducing contrast. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root {
+  color: var(--greek-text-primary) !important;
+  border-radius: var(--greek-radius-md) !important;
+  background:
+    linear-gradient(180deg, rgba(255,248,219,.34), rgba(106,59,20,.16)),
+    var(--greek-warm-marble) center / 520px 520px repeat !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] :is(
+  [data-widget-element="matchCard"],
+  [data-widget-element="bracketLine"],
+  .tw-ice-material-card,
+  [data-widget-element="header"]
+) {
+  color: var(--greek-text-primary) !important;
+  border-radius: var(--greek-radius-sm) !important;
+  background:
+    linear-gradient(180deg, rgba(255,250,226,.48), rgba(146,96,42,.14)),
+    var(--greek-marble-texture) center / 300px 300px repeat !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] [data-widget-element="connector"] {
+  color: var(--greek-text-accent) !important;
+  background: #e7d0a0 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] :is(
+  [data-widget-element="header"],
+  [data-widget-element="statusBadge"]
+) {
+  color: var(--greek-text-accent) !important;
+  -webkit-text-fill-color: var(--greek-text-accent) !important;
+}
+
+/* Some tournament formats build their player/result bands as anonymous inline
+   elements. Their generic near-black glass becomes illegible once Greek text
+   follows the required ink palette, so convert only those exact tournament
+   material bands into carved marble. This leaves every other theme and the
+   tournament layout/logic untouched. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root div[style*="background: rgba(0, 0, 0, 0.75)"],
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root div[style*="background: rgba(0, 0, 0, 0.65)"],
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root div[style*="background: rgba(0, 0, 0, 0.3)"],
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root div[style*="background: rgba(0, 0, 0, 0.25)"],
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root div[style*="background: rgba(255, 255, 255, 0.04)"] {
+  background:
+    linear-gradient(180deg, rgba(255,250,226,.52), rgba(151,99,43,.16)),
+    var(--greek-marble-texture) center / 300px 300px repeat !important;
+  border-color: rgba(101,22,22,.34) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-clip: padding-box !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] .tw-root div {
+  color: var(--greek-text-primary) !important;
+  -webkit-text-fill-color: var(--greek-text-primary) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+/* Secondary shells share the same clean radius scale without changing layout. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bet-widget,.seca-bets-design),
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame,
+.better-slideshow-frame[data-colour-theme="old_rome"] {
+  overflow: clip !important;
+  border-radius: var(--greek-radius-md, 12px) !important;
+  background-clip: padding-box !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bets-ov__header,.bets-ov__stats,.bets-ov__card,.bets-ov__row,.bet-option,.bet-entry),
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame__viewport,
+.better-slideshow-frame[data-colour-theme="old_rome"] .better-slideshow-frame__viewport {
+  border-radius: var(--greek-radius-sm, 8px) !important;
+  background-clip: padding-box !important;
+}

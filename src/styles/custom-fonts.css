@@ -3,6 +3,24 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Bebas+Neue&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
+/* Display face supplied for themed overlay identity. Keep information text on the
+   UI stack so small stats and chat remain readable at stream scale. */
+@font-face {
+  font-family: 'SC Norse';
+  src: url('/fonts/norse/Norse.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SC Norse';
+  src: url('/fonts/norse/Norsebold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'SC Custom Ancient Ad';
   src: url('/fonts/custom/ancient-ad-ancient-ad.ttf') format('truetype');

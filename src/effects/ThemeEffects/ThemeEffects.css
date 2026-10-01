@@ -545,6 +545,12 @@
   background: none;
   border-color: transparent;
   box-shadow: none;
+  transition: opacity 220ms ease, transform 260ms ease;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
+  .better-giveaway-widget.is-tall .better-gw-header {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"]
@@ -651,7 +657,155 @@
 .better-widget-colour-scope[data-colour-theme="arctic"]
   :is(.better-hunt-win-label, .better-hunt-win-badge strong) { text-shadow: 0 2px 3px #020b16; }
 
-/* Arctic giveaway wins stay inside the frozen material language. */
+/* Arctic wins fracture the frozen hunt surface instead of replaying the
+   generic rainbow celebration. The DOM shards are finite and the larger
+   burst still comes from the shared pooled Pixi layer. */
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win--ice {
+  background: radial-gradient(circle at 50% 48%, rgba(187, 235, 247, .14), rgba(4, 19, 31, .18) 44%, rgba(0, 6, 13, .48));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win--ice .better-hunt-win-flash {
+  background: radial-gradient(ellipse at 50% 50%, rgba(225, 251, 255, .48), rgba(91, 186, 215, .13) 38%, transparent 72%);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-ice-cracks,
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-ice-frost {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-ice-cracks {
+  z-index: 1;
+  background: url("/theme-effects/ice/ice-cracks.png") center / cover no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: ice-win-crack 1.45s cubic-bezier(.16,.78,.2,1) both;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-ice-frost {
+  z-index: 2;
+  background: url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 0 7px rgba(189, 236, 247, .28));
+  opacity: 0;
+  animation: ice-win-frost 1.2s ease-out both;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-ice-shard {
+  position: absolute;
+  z-index: 3;
+  width: 7px;
+  height: 21px;
+  clip-path: polygon(50% 0, 100% 72%, 63% 100%, 0 63%);
+  background: linear-gradient(135deg, rgba(248, 255, 255, .96), rgba(143, 218, 238, .72) 38%, rgba(30, 105, 135, .2));
+  box-shadow: 0 0 7px rgba(182, 235, 248, .52);
+  opacity: 0;
+  transform: rotate(var(--bh-ice-rotate)) scale(var(--bh-ice-scale));
+  animation: ice-win-shard .78s cubic-bezier(.12,.72,.22,1) var(--bh-ice-delay) both;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win--ice .better-hunt-win-clip {
+  color: #e8faff;
+  border-color: rgba(192, 235, 247, .56);
+  background: rgba(1, 12, 22, .88);
+  text-shadow: 0 1px 3px #010912;
+}
+
+/* Bets uses the same frozen-slab material as the rest of the Arctic suite.
+   The reading zones remain dark and opaque enough for small OBS sources. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bet-widget {
+  border-color: rgba(158, 218, 235, .5) !important;
+  background-color: rgba(3, 15, 25, .94) !important;
+  background-image:
+    linear-gradient(180deg, rgba(230, 252, 255, .16), transparent 17%, rgba(0, 6, 14, .38) 82%),
+    radial-gradient(ellipse at 18% 0%, rgba(135, 215, 237, .14), transparent 45%),
+    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, cover, 100% 100%, 357px 283px !important;
+  background-position: center, center, center, 73px 41px !important;
+  background-blend-mode: screen, screen, screen, normal;
+  box-shadow: inset 0 1px 0 rgba(239, 253, 255, .36), inset 0 -12px 22px rgba(0, 4, 11, .62), inset 0 0 19px rgba(119, 205, 228, .08), 0 7px 18px rgba(0, 3, 8, .46) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.widget-header, .event-meta, .bets-grid-heading) {
+  border-color: rgba(164, 216, 232, .23) !important;
+  color: #eff9fc;
+  text-shadow: 0 1px 3px #010912;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.meta-item, .bet-option, .bet-bar) {
+  border-color: rgba(143, 202, 220, .31) !important;
+  background-color: rgba(4, 18, 29, .88) !important;
+  background-image: linear-gradient(155deg, rgba(37, 72, 87, .48), rgba(2, 12, 21, .91)), url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, 243px 197px !important;
+  box-shadow: inset 0 1px 0 rgba(226, 249, 255, .16), inset 0 -6px 12px rgba(0, 4, 11, .42) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.bet-option, .bet-bar):nth-child(even) {
+  background-position: center, 97px 53px !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.bet-option.is-winner, .bet-bar.is-winner) {
+  border-color: rgba(220, 250, 255, .86) !important;
+  background-image: radial-gradient(ellipse at 50% 0, rgba(186, 239, 250, .25), transparent 58%), linear-gradient(155deg, rgba(38, 90, 108, .76), rgba(2, 18, 31, .94)), url("/theme-effects/ice/ice-glass.webp") !important;
+  box-shadow: inset 0 1px 0 rgba(250, 255, 255, .42), inset 0 -7px 14px rgba(0, 5, 12, .5), 0 0 15px rgba(140, 218, 237, .26) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.option-range, .bar-range, .option-details strong, .bar-pct, .bar-amount, .meta-item strong) {
+  color: #f2fbff;
+  text-shadow: 0 1px 3px #01070d;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.option-command, .bar-detail, .meta-item span) {
+  color: #bcd7e1;
+  text-shadow: 0 1px 2px #01070d;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory--arctic {
+  background: radial-gradient(ellipse at 50% 50%, rgba(154, 224, 241, .11), rgba(1, 8, 16, .62) 72%);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory--arctic .bets-victory__orbit {
+  display: none;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory--arctic .bets-victory__flash {
+  border-radius: 22%;
+  background: radial-gradient(circle, rgba(224, 251, 255, .64), rgba(101, 202, 226, .16) 34%, transparent 70%);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.bets-victory__ice-cracks, .bets-victory__ice-frost) {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory__ice-cracks {
+  background: url("/theme-effects/ice/ice-cracks.png") center / cover no-repeat;
+  mix-blend-mode: screen;
+  animation: ice-win-crack 1.45s cubic-bezier(.16,.78,.2,1) both;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory__ice-frost {
+  background: url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat;
+  animation: ice-win-frost 1.2s ease-out both;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory--arctic .bets-victory__shards i {
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 72%, 58% 100%, 0 62%);
+  background: linear-gradient(135deg, #f7feff, #91ddec 48%, #246c87);
+  box-shadow: 0 0 7px rgba(180, 235, 248, .48);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory--arctic .bets-victory__plate {
+  border-color: rgba(211, 245, 252, .78);
+  border-left-color: #e5faff;
+  background-image: linear-gradient(105deg, rgba(2, 13, 23, .98), rgba(26, 63, 78, .94) 58%, rgba(2, 13, 23, .98)), url("/theme-effects/ice/ice-glass.webp");
+  background-size: cover, 289px 211px;
+  box-shadow: 0 15px 38px rgba(0, 2, 7, .68), 0 0 26px rgba(137, 218, 238, .3), inset 0 1px 0 rgba(241, 254, 255, .34), inset 0 -8px 18px rgba(0, 4, 11, .5);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.bets-victory__eyebrow, .bets-victory__number, .bets-victory__stamp) {
+  color: #e7faff;
+  border-color: rgba(190, 235, 247, .54);
+  text-shadow: 0 2px 4px #01060c;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-victory__label {
+  color: #f8feff;
+  text-shadow: 0 2px 4px #01060c, 0 0 8px rgba(149, 222, 240, .22);
+}
+
+/* In chat, the winner remains part of the single frozen slab. Gold confetti is
+   reshaped into a small crystal fall and every label gets a stable dark read zone. */
 .better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-winner-flash {
   background: radial-gradient(circle at 50% 56%, rgba(208, 247, 255, .35), rgba(94, 193, 219, .1) 44%, transparent 72%);
 }
@@ -711,8 +865,22 @@
   font-weight: 700;
   text-shadow: 0 1px 3px #01070d;
 }
-@media (prefers-reduced-motion: reduce) {
-  .better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-confetti i { animation: none !important; }
+
+@keyframes ice-win-crack {
+  0% { opacity: 0; transform: scale(.985); }
+  18% { opacity: .72; }
+  58% { opacity: .46; transform: scale(1); }
+  100% { opacity: .16; transform: scale(1.006); }
+}
+@keyframes ice-win-frost {
+  0% { opacity: 0; filter: brightness(1.7); }
+  28% { opacity: .68; }
+  100% { opacity: .26; filter: brightness(1); }
+}
+@keyframes ice-win-shard {
+  0% { opacity: 0; transform: translate3d(0, 8px, 0) rotate(var(--bh-ice-rotate)) scale(.2); }
+  26% { opacity: .92; }
+  100% { opacity: 0; transform: translate3d(var(--bh-ice-drift-x), var(--bh-ice-drift-y), 0) rotate(calc(var(--bh-ice-rotate) + 42deg)) scale(var(--bh-ice-scale)); }
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"]
@@ -766,7 +934,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .better-widget-colour-scope[data-colour-theme="arctic"] :is(.tw-ice-impact, .better-hunt-win-badge) { animation: none !important; }
+  .better-widget-colour-scope[data-colour-theme="arctic"]
+    :is(.tw-ice-impact, .better-hunt-win-badge, .better-hunt-win-ice-cracks, .better-hunt-win-ice-frost, .better-hunt-win-ice-shard, .better-gw-confetti i, .bets-victory__ice-cracks, .bets-victory__ice-frost) {
+    animation: none !important;
+  }
+  .better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-ice-cracks { opacity: .18; }
+  .better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-win-ice-frost { opacity: .22; }
   .theme-effects-layer__canvas {
     opacity: 0.55;
   }

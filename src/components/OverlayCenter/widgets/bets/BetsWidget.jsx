@@ -470,16 +470,22 @@ function betsCardClasses({ isWin, isLose, isLead }) {
     .join(" ");
 }
 
-function BetsVictoryBroadcast({ winnerLabel, winnerNumber, accentColor }) {
+function BetsVictoryBroadcast({ winnerLabel, winnerNumber, accentColor, arctic = false }) {
   return (
     <div
-      className="bets-victory"
+      className={`bets-victory${arctic ? " bets-victory--arctic" : ""}`}
       style={{ "--victory-accent": accentColor }}
       role="status"
       aria-live="polite"
     >
       <span className="bets-victory__flash" aria-hidden="true" />
       <span className="bets-victory__orbit" aria-hidden="true" />
+      {arctic ? (
+        <>
+          <span className="bets-victory__ice-cracks" aria-hidden="true" />
+          <span className="bets-victory__ice-frost" aria-hidden="true" />
+        </>
+      ) : null}
       <span className="bets-victory__shards" aria-hidden="true">
         {BETS_VICTORY_SHARDS.map((shard, index) => (
           <i
@@ -1362,6 +1368,7 @@ function BetsWidget({ config, allWidgets }) {
             winnerLabel={winnerLabel}
             winnerNumber={winnerIdx + 1}
             accentColor={barFill}
+            arctic={sharedColourTheme?.key === "arctic"}
           />
         )}
       </div>
@@ -1773,6 +1780,7 @@ function BetsWidget({ config, allWidgets }) {
           winnerLabel={winnerLabel}
           winnerNumber={winnerIdx + 1}
           accentColor={getOptColor(winnerIdx)}
+          arctic={sharedColourTheme?.key === "arctic"}
         />
       )}
     </div>

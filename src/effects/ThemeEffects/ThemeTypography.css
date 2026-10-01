@@ -1,0 +1,415 @@
+/* Theme-aware typography for DOM widgets. Norse is intentionally limited to
+   identity and section headings; information stays on the legible UI stack. */
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) {
+  --theme-font-display: "SC Norse", "Barlow Condensed", "Segoe UI", sans-serif;
+  --theme-font-ui: Inter, "Segoe UI", Arial, sans-serif;
+  --theme-heading-tracking: .075em;
+  --theme-heading-line-height: 1.06;
+  --theme-ui-line-height: 1.28;
+  font-family: var(--theme-font-ui);
+  font-variant-numeric: tabular-nums lining-nums;
+  text-rendering: optimizeLegibility;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"]
+) {
+  --theme-text-primary: #2a1a10;
+  --theme-text-secondary: #4b3525;
+  --theme-text-muted: #72583e;
+  --theme-text-accent: #b88632;
+  --theme-text-accent-light: #d9af58;
+  --theme-text-on-dark: #f4e9d1;
+  --theme-text-on-dark-muted: #cfc1a3;
+  --theme-text-critical: #7c1718;
+  --theme-heading-shadow: 0 1px 0 rgba(255,255,255,.32), 0 2px 2px rgba(42,26,16,.34);
+  --theme-dark-text-shadow: 0 1px 0 rgba(255,255,255,.25);
+  --theme-light-text-shadow: 0 1px 2px rgba(0,0,0,.75);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] {
+  --theme-text-primary: #f2fbff;
+  --theme-text-secondary: #bfd9e6;
+  --theme-text-muted: #89a9ba;
+  --theme-text-accent: #69d9ff;
+  --theme-text-on-dark: #f2fbff;
+  --theme-text-on-dark-muted: #bfd9e6;
+  --theme-heading-shadow: 0 2px 2px rgba(0,4,10,.74), 0 0 8px rgba(105,217,255,.15);
+  --theme-dark-text-shadow: 0 1px 2px rgba(0,0,0,.72);
+  --theme-light-text-shadow: 0 1px 2px rgba(0,0,0,.78);
+}
+
+/* Reusable tokens for current widgets and future themed headings. */
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) :is(.theme-heading, .theme-heading-lg, .theme-heading-sm) {
+  color: var(--theme-heading-color, var(--theme-text-primary));
+  font-family: var(--theme-font-display);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--theme-heading-line-height);
+  text-transform: uppercase;
+  text-shadow: var(--theme-heading-shadow);
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) .theme-heading { letter-spacing: var(--theme-heading-tracking); }
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) .theme-heading-lg {
+  font-size: clamp(21px, 2.1cqw, 36px);
+  letter-spacing: .11em;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) .theme-heading-sm {
+  font-size: clamp(13px, 1.45cqw, 19px);
+  letter-spacing: .055em;
+}
+
+/* Branding and major section headings. */
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+):is([data-widget-type="navbar"], [data-widget-type="bonus_hunt"], [data-widget-type="slot_bingo"], [data-widget-type="tournament"], [data-widget-type="giveaway"], [data-widget-type="chat"], [data-widget-type="slideshow_frame"], [data-widget-type="raid_shoutout"])
+  :is(
+  [data-widget-element="displayName"],
+  .better-hunt-main-title,
+  .better-hunt-title strong,
+  .slot-bingo-widget__header h2,
+  [data-widget-element="header"],
+  .better-gw-name,
+  .better-gw-result-kicker,
+  .better-shoutout-heading,
+  .better-slideshow-frame__empty strong
+) {
+  font-family: var(--theme-font-display) !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  line-height: var(--theme-heading-line-height) !important;
+  letter-spacing: var(--theme-heading-tracking) !important;
+  text-transform: uppercase;
+  text-shadow: var(--theme-heading-shadow) !important;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+)[data-widget-type="navbar"] [data-widget-element="displayName"] {
+  font-size: clamp(17px, 1.35cqw, 27px) !important;
+  letter-spacing: .1em !important;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+)[data-widget-type="slot_bingo"] .slot-bingo-widget__header h2 {
+  font-size: clamp(22px, 3.25cqw, 38px) !important;
+  letter-spacing: .085em !important;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+)[data-widget-type="bonus_hunt"] :is(.better-hunt-main-title, .better-hunt-title strong) {
+  font-size: clamp(16px, 5.2cqw, 25px) !important;
+  letter-spacing: .07em !important;
+}
+
+/* UI copy and live values stay crisp. This also overrides theme sheets that
+   previously inherited decorative serif/display faces into every child. */
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) :is(.better-hunt-panel, .slot-bingo-widget, .rtp-stats-bar, .bet-widget, .ov-chat-widget, .tw-root, .better-slideshow-frame) {
+  font-family: var(--theme-font-ui) !important;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) .better-giveaway-stage {
+  --w-font-title: var(--theme-font-display) !important;
+  --w-font-body: var(--theme-font-ui) !important;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) :is(
+  button, input, select, textarea,
+  [data-widget-element="clock"],
+  [data-widget-element="balance"],
+  [data-widget-element="crypto"],
+  [data-widget-element="casino"],
+  [data-widget-element="motto"],
+  [data-widget-element="startBalance"],
+  [data-widget-element="playerName"],
+  [data-widget-element="label"],
+  [data-widget-element="scoreValue"],
+  [data-widget-element="statusBadge"],
+  .slot-bingo-widget__label,
+  .slot-bingo-widget__multiplier,
+  .slot-bingo-widget__progress,
+  .better-hunt-stat-label,
+  .better-hunt-stat strong,
+  .better-hunt-card-name,
+  .better-hunt-row,
+  .better-hunt-result,
+  .better-hunt-total,
+  .better-hunt-main-progress-count,
+  .rtp-stats-label,
+  .rtp-stats-value,
+  .rtp-stats-slot-name,
+  .rtp-stats-provider,
+  .bets-ov__stat-lbl,
+  .bets-ov__stat-val,
+  .bets-ov__row-label,
+  .bets-ov__row-pct,
+  .bets-ov__card-label,
+  .bets-ov__card-pct,
+  .better-gw-prize,
+  .better-gw-metric-label,
+  .better-gw-metric-value,
+  .better-gw-result-name,
+  .better-gw-result-message,
+  .better-gw-result-prize,
+  [data-better-element="username"],
+  [data-better-element="messageText"],
+  .ov-chat-username,
+  .ov-chat-text,
+  .better-shoutout-header [data-widget-element="subtitle"],
+  .better-shoutout-footer
+) {
+  font-family: var(--theme-font-ui) !important;
+  line-height: var(--theme-ui-line-height);
+}
+
+/* Fast-scanning statistics: quiet labels, stronger tabular values. */
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) :is(
+  .better-hunt-stat-label,
+  .better-hunt-row-label,
+  .better-hunt-mini-label,
+  .rtp-stats-label,
+  .bets-ov__stat-lbl
+) {
+  font-size: clamp(10px, 1.25cqw, 14px) !important;
+  font-weight: 700 !important;
+  letter-spacing: .045em !important;
+  line-height: 1.2 !important;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) :is(
+  .better-hunt-stat strong,
+  .rtp-stats-value,
+  .bets-ov__stat-val,
+  [data-widget-element="scoreValue"]
+) {
+  font-size: clamp(13px, 1.65cqw, 19px) !important;
+  font-weight: 800 !important;
+  letter-spacing: .005em !important;
+  line-height: 1.12 !important;
+}
+
+/* Chat is deliberately the least decorative reading surface. */
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) :is([data-better-element="username"], .ov-chat-username) {
+  font-size: clamp(12px, 3.5cqw, 17px) !important;
+  font-weight: 800 !important;
+  letter-spacing: .01em !important;
+  line-height: 1.3 !important;
+}
+
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+) :is([data-better-element="messageText"], .ov-chat-text) {
+  font-size: clamp(12px, 3.45cqw, 17px) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.4 !important;
+}
+
+/* Greek/Spartan colour hierarchy. */
+.better-widget-colour-scope[data-colour-theme="old_rome"]
+  :is(.better-hunt-stat-label, .better-hunt-row-label, .better-hunt-mini-label, .rtp-stats-label, .bets-ov__stat-lbl) {
+  color: var(--theme-text-secondary) !important;
+  text-shadow: var(--theme-dark-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"]
+  :is(.better-hunt-stat strong, .rtp-stats-value, .bets-ov__stat-val, .slot-bingo-widget__label) {
+  color: var(--theme-text-primary) !important;
+  text-shadow: var(--theme-dark-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"]
+  :is([data-better-element="username"], .ov-chat-username) {
+  color: #684018 !important;
+  text-shadow: var(--theme-dark-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"]
+  :is([data-better-element="messageText"], .ov-chat-text) {
+  color: var(--theme-text-primary) !important;
+  text-shadow: var(--theme-dark-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"]
+  :is(.better-gw-result-name, .better-gw-metric-value) {
+  color: var(--theme-text-primary) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"]
+  :is(.better-gw-result-prize, .better-gw-winner-name) {
+  color: var(--theme-text-critical) !important;
+  font-weight: 800 !important;
+}
+
+/* Ice uses cold white for information and cyan only for identity/accent. */
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-stat-label, .better-hunt-row-label, .better-hunt-mini-label, .rtp-stats-label, .bets-ov__stat-lbl, .better-gw-metric-label) {
+  color: var(--theme-text-secondary) !important;
+  text-shadow: var(--theme-light-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is(.better-hunt-stat strong, .rtp-stats-value, .bets-ov__stat-val, .slot-bingo-widget__label, .better-gw-metric-value, .better-gw-result-name) {
+  color: var(--theme-text-primary) !important;
+  text-shadow: var(--theme-light-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is([data-better-element="username"], .ov-chat-username) {
+  color: var(--theme-text-accent) !important;
+  text-shadow: var(--theme-light-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"]
+  :is([data-better-element="messageText"], .ov-chat-text) {
+  color: var(--theme-text-primary) !important;
+  text-shadow: var(--theme-light-text-shadow) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .slot-bingo-widget__square.is-free {
+  --theme-active-text: #ffffff;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] .slot-bingo-widget__square.is-free .slot-bingo-widget__label {
+  color: var(--theme-active-text) !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 2px rgba(0,3,9,.92), 0 0 7px rgba(105,217,255,.24) !important;
+}
+
+/* Small thematic labels can carry the display face; their changing values do
+   not, so BEST WIN / TOTAL PAY remain immediately scannable as label + value. */
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+)[data-widget-type="rtp_stats"] .rtp-stats-item--bestwin .rtp-stats-label,
+.better-widget-colour-scope:is(
+  [data-colour-theme="old_rome"],
+  [data-colour-theme="gladiator"],
+  [data-colour-theme="arctic"]
+)[data-widget-type="bonus_hunt"] .better-hunt-total-head > span {
+  font-family: var(--theme-font-display) !important;
+  font-weight: 700 !important;
+  letter-spacing: .055em !important;
+  line-height: 1.08 !important;
+  text-transform: uppercase;
+}
+
+/* Greek foreground contract. ThemeTypography loads after the material sheet,
+   so this final scoped layer also neutralizes widget-level light/gold defaults
+   without changing Gladiator or Ice. */
+.better-widget-colour-scope[data-colour-theme="old_rome"] {
+  --theme-text-primary: #1a120d;
+  --theme-text-secondary: #2a1b14;
+  --theme-text-muted: #2a1b14;
+  --theme-text-accent: #651616;
+  --theme-heading-color: #651616;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(
+  h1, h2, h3, h4, h5, h6,
+  p, span, strong, em, small, label, button,
+  [data-widget-element], [data-better-element]
+) {
+  color: var(--theme-text-primary) !important;
+  -webkit-text-fill-color: var(--theme-text-primary) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] svg text {
+  fill: var(--theme-text-primary) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(
+  .theme-heading,
+  .theme-heading-lg,
+  .theme-heading-sm,
+  .better-hunt-main-title,
+  .better-hunt-title strong,
+  .better-hunt-main-status,
+  .better-hunt-pill,
+  .better-hunt-total-head > span,
+  .slot-bingo-widget__header h2,
+  .slot-bingo-widget__square.is-free .slot-bingo-widget__label,
+  .slot-bingo-widget__square.is-complete .slot-bingo-widget__label,
+  .better-gw-name,
+  .better-gw-result-kicker,
+  .better-gw-result-prize,
+  .better-gw-winner-name,
+  [data-widget-type="tournament"] [data-widget-element="header"],
+  [data-widget-type="tournament"] [data-widget-element="statusBadge"]
+) {
+  color: var(--theme-text-accent) !important;
+  -webkit-text-fill-color: var(--theme-text-accent) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.3) !important;
+}
+
+@media (max-width: 1280px) {
+  .better-widget-colour-scope:is(
+    [data-colour-theme="old_rome"],
+    [data-colour-theme="gladiator"],
+    [data-colour-theme="arctic"]
+  ) {
+    --theme-heading-tracking: .06em;
+  }
+}
