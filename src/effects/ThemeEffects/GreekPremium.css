@@ -473,6 +473,12 @@
   filter: drop-shadow(0 1px 0 #fff0c8);
 }
 
+/* Provider artwork is commonly supplied as a white monochrome logo. Render it
+   as carved dark ink on the light Old Rome marble without changing the asset. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-provider-logo {
+  filter: brightness(0) saturate(100%) drop-shadow(0 1px 0 rgba(255,255,255,.38)) !important;
+}
+
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin {
   padding: 6px 16px !important;
   border: 1px solid #8b5722 !important;
@@ -858,6 +864,17 @@
     radial-gradient(circle at 78% 24%, rgba(222,156,57,.1), transparent 22%),
     radial-gradient(circle at 20% 72%, rgba(222,156,57,.09), transparent 20%),
     url("/theme-effects/greek-premium/background/temple-environment.webp") center / cover no-repeat;
+}
+
+/* A chosen image or video replaces the final environment artwork while the
+   transparent architectural foreground remains part of the scenario. Keep
+   this after the final material rule so the selected source always wins. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"]
+  .oc-bg-widget:is([data-background-source="image"], [data-background-source="video"])::before {
+  background:
+    radial-gradient(ellipse at 50% 40%, transparent 22%, rgba(2, 7, 11, .14) 74%, rgba(2, 5, 8, .42) 100%),
+    radial-gradient(circle at 78% 24%, rgba(222, 156, 57, .06), transparent 22%),
+    radial-gradient(circle at 20% 72%, rgba(222, 156, 57, .05), transparent 20%);
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"] {

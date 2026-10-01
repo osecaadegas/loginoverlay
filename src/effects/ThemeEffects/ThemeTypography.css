@@ -413,6 +413,44 @@
   letter-spacing: .015em !important;
 }
 
+/* The current Bonus Hunt style renders its summary through this heading rather
+   than the legacy bht footer. Keep the label readable after full-overlay scale. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"]
+  .better-hunt-total-head > span {
+  font-family: var(--theme-font-display) !important;
+  font-size: max(1.05em, 18px) !important;
+  font-weight: 900 !important;
+  letter-spacing: .025em !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Old Rome uses Norse for identity and short display copy. Numeric values and
+   provider/supporting text retain the UI face for fast stream-scale reading. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(
+  .better-hunt-main-title,
+  .better-hunt-main-name,
+  .better-hunt-main-status,
+  .better-hunt-pill,
+  .better-hunt-stat-label,
+  .better-hunt-main-active-row > span,
+  .better-hunt-result-row > span,
+  .better-hunt-mini-label,
+  .better-hunt-card-name,
+  .better-hunt-slot-marquee,
+  .better-hunt-result-slot,
+  .better-hunt-image-stats-title h3,
+  .better-hunt-stats-title h3,
+  .better-hunt-hstrip-title > strong,
+  .better-hunt-hstrip-slot-art > strong,
+  .better-hunt-progress-summary > span,
+  .better-hunt-win-clip
+) {
+  font-family: var(--theme-font-display) !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+}
+
 @media (max-width: 1280px) {
   .better-widget-colour-scope:is(
     [data-colour-theme="old_rome"],

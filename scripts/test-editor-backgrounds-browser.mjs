@@ -62,7 +62,7 @@ try {
     const { default: Editor } = await import("/src/components/OverlayCenter/editor/WidgetEditorPage.jsx");
     const { default: Obs } = await import("/src/components/OverlayCenter/editor/BetterObsOverlay.jsx");
     const layout = normalizeBetterLayout({ name: "Background Build", instances: [createBetterInstance("background", {
-      label: "Backdrop", config: { fxSmoke: false, fxParticles: "none", fxScanlines: false, fxVignette: false },
+      label: "Backdrop", config: { colourTheme: "old_rome", fxSmoke: false, fxParticles: "none", fxScanlines: false, fxVignette: false },
     }), createBetterInstance("bets", { visible: false })] });
     const defaults = {
       better_editor_overlays: [
@@ -131,6 +131,21 @@ try {
       throw error;
     });
   };
+  const assertGreekMediaReplacesEnvironment = async (sourceMode, scope = ".better-editor-canvas") => {
+    const state = await page.$eval(
+      `${scope} .better-widget-colour-scope[data-colour-theme="old_rome"] .oc-bg-widget`,
+      element => ({
+        source: element.dataset.backgroundSource,
+        environmentLayer: getComputedStyle(element, "::before").backgroundImage,
+      }),
+    );
+    assert.equal(state.source, sourceMode);
+    assert.equal(
+      state.environmentLayer.includes("temple-environment"),
+      false,
+      `Selected ${sourceMode} replaces the fixed Old Rome environment artwork`,
+    );
+  };
   const tables = () => page.evaluate(() => window.backgroundTest.state.tables);
 
   await mount();
@@ -163,6 +178,7 @@ try {
   for (const { label, url } of BACKGROUND_IMAGE_LIBRARY) {
     await page.click(`[aria-label="${label}"]`);
     await waitImage(url);
+    await assertGreekMediaReplacesEnvironment("image");
     assert.equal(await page.$eval(`[aria-label="${label}"]`, button => button.getAttribute("aria-pressed")), "true");
   }
   const chosenUrl = BACKGROUND_IMAGE_LIBRARY.at(-1).url;
@@ -181,6 +197,7 @@ try {
   for (const { label, url } of BACKGROUND_VIDEO_LIBRARY) {
     await page.click(`[aria-label="${label}"]`);
     await waitVideo(url);
+    await assertGreekMediaReplacesEnvironment("video");
     assert.equal(await page.$eval(`[aria-label="${label}"]`, button => button.getAttribute("aria-pressed")), "true");
   }
   const chosenVideoUrl = BACKGROUND_VIDEO_LIBRARY.at(-1).url;

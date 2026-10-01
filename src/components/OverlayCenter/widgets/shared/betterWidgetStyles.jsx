@@ -6908,6 +6908,7 @@ export function BetterBackgroundStyle({ config }) {
   return (
     <div
       className="oc-bg-widget oc-bg-widget--better"
+      data-background-source={sourceMode}
       style={subElementStyle(c, "canvas", {
         width: "100%",
         height: "100%",

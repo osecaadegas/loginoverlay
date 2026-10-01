@@ -271,7 +271,12 @@ function BackgroundWidget({ config, theme }) {
   };
 
   return (
-    <div className="oc-bg-widget" style={rootStyle} {...partAttrs("canvas")}>
+    <div
+      className="oc-bg-widget"
+      data-background-source={bgMode}
+      style={rootStyle}
+      {...partAttrs("canvas")}
+    >
       {/* ── Texture / Solid background ── */}
       {bgMode === "texture" && (
         <div
