@@ -225,6 +225,34 @@ try {
     assert.equal(await page.$eval('.bp-theme-grid', grid => grid.scrollWidth <= grid.clientWidth + 1 && [...grid.querySelectorAll('button')].every(button => button.scrollWidth <= button.clientWidth + 1)), true, `${type}: narrow controls fit`);
     console.log(`${type}: all ${themes.length} themes, reload and available runtime rendering passed`);
   }
+  const oldRomeRtp = await page.evaluate(() => window.themeTest.applyWidgetColourTheme(
+    'rtp_stats',
+    {
+      ...window.themeTest.base('rtp_stats'),
+      previewMode: true,
+      providerMode: 'image',
+      providerLogoUrl: '/player.webp',
+      __appearanceExplicitSubElements: {
+        provider: { imageUrl: '/player.webp' },
+      },
+    },
+    'old_rome',
+  ));
+  await mount('rtp_stats', oldRomeRtp);
+  const oldRomeProviderLogo = await page.$eval('[data-better-element="provider"] > img, .rtp-stats-provider-logo', image => {
+    const imageStyle = getComputedStyle(image);
+    const wrapperStyle = getComputedStyle(image.closest('[data-better-element="provider"], .rtp-stats-provider--logo'));
+    return {
+      imageFilter: imageStyle.filter,
+      imageBlend: imageStyle.mixBlendMode,
+      wrapperFilter: wrapperStyle.filter,
+      wrapperBlend: wrapperStyle.mixBlendMode,
+    };
+  });
+  assert.match(oldRomeProviderLogo.imageFilter, /brightness\(0\)/, 'Old Rome provider image is rendered as black ink');
+  assert.match(oldRomeProviderLogo.wrapperFilter, /brightness\(0\)/, 'Old Rome provider mark enforces the black treatment');
+  assert.equal(oldRomeProviderLogo.imageBlend, 'multiply');
+  assert.equal(oldRomeProviderLogo.wrapperBlend, 'multiply');
   for (const theme of ['gradient', 'matte']) {
     const legacy = await page.evaluate(theme => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), theme), theme);
     await mount('bets', legacy, { runtime: 'obs' });

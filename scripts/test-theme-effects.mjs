@@ -21,6 +21,11 @@ const legacy = normalizeThemeEffectsConfig("arctic", undefined);
 assert.equal(legacy.enabled, true, "old saved widgets receive safe defaults");
 assert.equal(legacy.quality, "balanced");
 assert.equal(legacy.ice.cracks, true);
+assert.equal(legacy.greek.architecture, true);
+assert.equal(
+  normalizeThemeEffectsConfig("old_rome", { greek: { architecture: false } }).greek.architecture,
+  false,
+);
 assert.equal(normalizeThemeEffectsConfig("arctic", { particleIntensity: 8 }).particleIntensity, 1);
 assert.equal(normalizeThemeEffectsConfig("arctic", { animationSpeed: 0 }).animationSpeed, 0.25);
 assert.equal(patchThemeEffectsConfig("arctic", legacy, { ice: { snow: 0.2 } }).ice.frost, legacy.ice.frost);

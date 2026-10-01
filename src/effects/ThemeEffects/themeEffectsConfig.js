@@ -38,6 +38,7 @@ export const DEFAULT_THEME_EFFECTS_CONFIG = Object.freeze({
     torchFlicker: 0.18,
     lightRays: false,
     marbleShimmer: true,
+    architecture: true,
   }),
 });
 
@@ -89,6 +90,7 @@ export function normalizeThemeEffectsConfig(themeKey, source = {}) {
       torchFlicker: clamp(greek.torchFlicker, 0, 1, DEFAULT_THEME_EFFECTS_CONFIG.greek.torchFlicker),
       lightRays: greek.lightRays === true,
       marbleShimmer: greek.marbleShimmer !== false,
+      architecture: greek.architecture !== false,
     },
   };
 }

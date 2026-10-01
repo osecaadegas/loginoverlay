@@ -1202,10 +1202,13 @@ export function renderBetterWidgetInstance({
     (instance.widgetType === "bonus_hunt" ? widget.config.colour : "") ||
     "",
   ).replace(/^theme_/, "");
+  const greekArchitectureEnabled =
+    widget.config.themeEffects?.greek?.architecture !== false;
   return (
     <div
       className="better-widget-colour-scope"
       data-colour-theme={colourThemeKey || undefined}
+      data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
     >
       <WidgetComponent {...commonProps} />

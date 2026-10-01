@@ -68,6 +68,10 @@
   background-blend-mode: normal, normal;
 }
 
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"][data-greek-architecture="off"] .oc-bg-widget::after {
+  display: none;
+}
+
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"] :is(.oc-bg-texture, .oc-bg-overlay) {
   display: none !important;
 }
@@ -475,8 +479,22 @@
 
 /* Provider artwork is commonly supplied as a white monochrome logo. Render it
    as carved dark ink on the light Old Rome marble without changing the asset. */
-.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-provider-logo {
-  filter: brightness(0) saturate(100%) drop-shadow(0 1px 0 rgba(255,255,255,.38)) !important;
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] :is(
+  .rtp-stats-provider--logo,
+  [data-better-element="provider"]
+) {
+  filter: brightness(0) saturate(100%) !important;
+  mix-blend-mode: multiply;
+  opacity: 1 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] :is(
+  .rtp-stats-provider-logo,
+  [data-better-element="provider"] > img
+) {
+  filter: brightness(0) saturate(100%) !important;
+  mix-blend-mode: multiply;
+  opacity: 1 !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin {

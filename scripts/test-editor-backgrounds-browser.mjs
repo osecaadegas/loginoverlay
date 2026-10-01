@@ -62,7 +62,14 @@ try {
     const { default: Editor } = await import("/src/components/OverlayCenter/editor/WidgetEditorPage.jsx");
     const { default: Obs } = await import("/src/components/OverlayCenter/editor/BetterObsOverlay.jsx");
     const layout = normalizeBetterLayout({ name: "Background Build", instances: [createBetterInstance("background", {
-      label: "Backdrop", config: { colourTheme: "old_rome", fxSmoke: false, fxParticles: "none", fxScanlines: false, fxVignette: false },
+      label: "Backdrop", config: {
+        colourTheme: "old_rome",
+        themeEffects: { greek: { architecture: false } },
+        fxSmoke: false,
+        fxParticles: "none",
+        fxScanlines: false,
+        fxVignette: false,
+      },
     }), createBetterInstance("bets", { visible: false })] });
     const defaults = {
       better_editor_overlays: [
@@ -137,9 +144,13 @@ try {
       element => ({
         source: element.dataset.backgroundSource,
         environmentLayer: getComputedStyle(element, "::before").backgroundImage,
+        architecture: element.closest(".better-widget-colour-scope")?.dataset.greekArchitecture,
+        architectureDisplay: getComputedStyle(element, "::after").display,
       }),
     );
     assert.equal(state.source, sourceMode);
+    assert.equal(state.architecture, "off");
+    assert.equal(state.architectureDisplay, "none");
     assert.equal(
       state.environmentLayer.includes("temple-environment"),
       false,

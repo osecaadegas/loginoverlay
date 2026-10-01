@@ -7244,6 +7244,7 @@ function ThemeEffectsControls({ themeKey, config, onChange }) {
           <SliderRow label="Dust" value={percent(c.greek.dust)} min={0} max={100} unit="%" onChange={(value) => set({ greek: { dust: value / 100 } })} />
           <SliderRow label="Fog" value={percent(c.greek.fog)} min={0} max={100} unit="%" onChange={(value) => set({ greek: { fog: value / 100 } })} />
           <SliderRow label="Torch flicker" value={percent(c.greek.torchFlicker)} min={0} max={100} unit="%" onChange={(value) => set({ greek: { torchFlicker: value / 100 } })} />
+          <ToggleRow label="Architectural frame" checked={c.greek.architecture} onChange={(architecture) => set({ greek: { architecture } })} />
           <ToggleRow label="Light rays" checked={c.greek.lightRays} onChange={(lightRays) => set({ greek: { lightRays } })} />
           <ToggleRow label="Marble shimmer" checked={c.greek.marbleShimmer} onChange={(marbleShimmer) => set({ greek: { marbleShimmer } })} />
         </Section>
