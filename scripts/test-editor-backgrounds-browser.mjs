@@ -10,8 +10,15 @@ const baseUrl = process.env.TEST_BASE_URL || "http://127.0.0.1:3010";
 const publicId = `bo_${"c".repeat(48)}`;
 const selector = 'img[data-better-element="media"]';
 const mediaLibrary = [...BACKGROUND_IMAGE_LIBRARY, ...BACKGROUND_VIDEO_LIBRARY];
-const libraryFiles = mediaLibrary.map(({ url }) => decodeURIComponent(url.split("/").pop()));
-assert.deepEqual(libraryFiles.toSorted(), readdirSync(new URL("../public/backgrounds/", import.meta.url)).filter(file => /\.(png|jpe?g|gif|webp|avif|mp4|webm)$/i.test(file)).toSorted());
+const listBundledMedia = (directory, prefix = "") => readdirSync(directory, { withFileTypes: true })
+  .flatMap(entry => {
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    return entry.isDirectory()
+      ? listBundledMedia(new URL(`${encodeURIComponent(entry.name)}/`, directory), relativePath)
+      : (/\.(png|jpe?g|gif|webp|avif|mp4|webm)$/i.test(entry.name) ? [relativePath] : []);
+  });
+const libraryFiles = mediaLibrary.map(({ url }) => decodeURIComponent(url).replace(/^\/backgrounds\//, ""));
+assert.deepEqual(libraryFiles.toSorted(), listBundledMedia(new URL("../public/backgrounds/", import.meta.url)).toSorted());
 for (const { url } of mediaLibrary) {
   assert.ok(existsSync(new URL(`../public${url}`, import.meta.url)), `Bundled asset exists: ${url}`);
 }

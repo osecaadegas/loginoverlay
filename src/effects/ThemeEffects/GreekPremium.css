@@ -1351,6 +1351,79 @@
   background: linear-gradient(0deg, rgba(226,200,153,.97), rgba(226,200,153,.76), transparent) !important;
 }
 
+/* Keep the full BONUS heading readable in the narrow mainstream monument.
+   The state remains explicit, but its chip no longer consumes title space. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-head {
+  gap: 8px !important;
+  padding-inline: 11px !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-title-wrap {
+  min-width: 5.5ch !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-status {
+  gap: 3px !important;
+  padding: 4px 6px !important;
+  font-size: .66em !important;
+  letter-spacing: .075em !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-status .better-hunt-dot {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+/* Compact Best/Worst cards had inherited the generic .56em information scale.
+   Use the available copy column so Payout, Multi and Bet remain legible after
+   the full overlay is reduced to a normal stream-player size. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"]
+  .better-hunt-result--compact :is(.better-hunt-result-payout,.better-hunt-result-row) > span {
+  font-size: max(.72em, 10px) !important;
+  font-weight: 850 !important;
+  line-height: 1.05 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"]
+  .better-hunt-result--compact .better-hunt-result-payout > strong {
+  font-size: max(1.08em, 14px) !important;
+  line-height: 1.05 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"]
+  .better-hunt-result--compact .better-hunt-result-row > strong {
+  font-size: max(.98em, 13px) !important;
+  line-height: 1.05 !important;
+}
+
+/* These labels sit in roomy summary surfaces, so retain their hierarchy when
+   the complete overlay is scaled down inside a stream player. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .bht-footer-label {
+  font-size: max(1.08em, 15px) !important;
+  font-weight: 900 !important;
+  letter-spacing: .065em !important;
+  line-height: 1.1 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-kicker {
+  margin-bottom: 6px !important;
+  font-family: Inter, Arial, sans-serif !important;
+  font-size: clamp(14px, 4cqi, 18px) !important;
+  font-weight: 900 !important;
+  letter-spacing: .07em !important;
+  line-height: 1.1 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"]
+  [data-widget-element="displayName"] > div > span:last-child {
+  max-width: 300px !important;
+  margin-top: 2px !important;
+  font-size: clamp(12px, .72vw, 14px) !important;
+  font-weight: 900 !important;
+  letter-spacing: .1em !important;
+  line-height: 1.2 !important;
+}
+
 /* Bingo active states retain oxblood emphasis as ink and border rather than a
    dark red fill that required a forbidden light foreground. */
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slot_bingo"] .slot-bingo-widget__square.is-free {
@@ -1491,13 +1564,33 @@
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame,
 .better-slideshow-frame[data-colour-theme="old_rome"] {
   overflow: clip !important;
-  border-radius: var(--greek-radius-md, 12px) !important;
+  border-radius: var(--greek-radius-lg, 20px) !important;
   background-clip: padding-box !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame,
+.better-slideshow-frame[data-colour-theme="old_rome"] {
+  /* A radius alone does not crop border-image corners. Clip the complete
+     architectural frame so its marble, bronze and media share one curve. */
+  clip-path: inset(0 round var(--greek-radius-lg, 20px)) !important;
+  filter: drop-shadow(0 9px 13px rgba(35, 16, 5, .42));
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bets-ov__header,.bets-ov__stats,.bets-ov__card,.bets-ov__row,.bet-option,.bet-entry),
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame__viewport,
 .better-slideshow-frame[data-colour-theme="old_rome"] .better-slideshow-frame__viewport {
-  border-radius: var(--greek-radius-sm, 8px) !important;
+  border-radius: var(--greek-radius-md, 12px) !important;
   background-clip: padding-box !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"]
+  :is(.better-slideshow-frame__media-layer,.better-slideshow-frame__slide,.better-slideshow-frame__media,.better-slideshow-frame__empty,.better-slideshow-frame__connect-four),
+.better-slideshow-frame[data-colour-theme="old_rome"]
+  :is(.better-slideshow-frame__media-layer,.better-slideshow-frame__slide,.better-slideshow-frame__media,.better-slideshow-frame__empty,.better-slideshow-frame__connect-four) {
+  border-radius: inherit;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame__inner,
+.better-slideshow-frame[data-colour-theme="old_rome"] .better-slideshow-frame__inner {
+  border-radius: calc(var(--greek-radius-lg, 20px) - 4px) !important;
 }
