@@ -10,6 +10,11 @@ const baseUrl = process.env.TEST_BASE_URL || "http://127.0.0.1:3010";
 const publicId = `bo_${"c".repeat(48)}`;
 const selector = 'img[data-better-element="media"]';
 const mediaLibrary = [...BACKGROUND_IMAGE_LIBRARY, ...BACKGROUND_VIDEO_LIBRARY];
+assert.deepEqual(
+  BACKGROUND_VIDEO_LIBRARY.slice(0, 2).map(({ label }) => label),
+  ["Old Rome video 1", "Old Rome video 2"],
+  "Old Rome videos remain immediately visible at the top of the video picker",
+);
 const listBundledMedia = (directory, prefix = "") => readdirSync(directory, { withFileTypes: true })
   .flatMap(entry => {
     const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;

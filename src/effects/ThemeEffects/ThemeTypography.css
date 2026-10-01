@@ -404,6 +404,15 @@
   text-shadow: 0 1px 0 rgba(255,255,255,.3) !important;
 }
 
+/* The compact completed-giveaway panel is information-dense at stream scale.
+   Keep its status line thematic through colour while using the stronger UI
+   face; the generic display-heading rule above otherwise makes it too thin. */
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-kicker {
+  font-family: var(--theme-font-ui) !important;
+  font-weight: 900 !important;
+  letter-spacing: .015em !important;
+}
+
 @media (max-width: 1280px) {
   .better-widget-colour-scope:is(
     [data-colour-theme="old_rome"],

@@ -22,12 +22,12 @@ const imageFiles = [
 ];
 
 const videoFiles = [
+  ["OldRome/happyhorse-1.1_a_can_you_make_the_ref.mp4", "Old Rome video 1"],
+  ["OldRome/R2V [@happyhorse-1.1_a_c_10-01_06_45_46.mp4", "Old Rome video 2"],
   "700 F 535601524 S Kh Gd Em Wb 1 Ow 8 Lx P Ll N 7 N 9 Tj Ug NZ Xc 3 I ST (online-video-cutter.com).mp4",
   "Abstract Neon Colored Pink And Blue Liquid Motion Light Effect Animation This Trippy Psychedelic Motion Background Is Full Hd And Looping Free Video.mp4",
   ["Artic/minimax-h3_a_Create_a_seamless_lo.mp4", "Arctic video 1"],
   ["Artic/wan2.6-i2v_b_Create_a_seamless_lo.mp4", "Arctic video 2"],
-  ["OldRome/happyhorse-1.1_a_can_you_make_the_ref.mp4", "Old Rome video 1"],
-  ["OldRome/R2V [@happyhorse-1.1_a_c_10-01_06_45_46.mp4", "Old Rome video 2"],
 ];
 
 const makeLibrary = (files, type, labelPrefix) => Object.freeze(
