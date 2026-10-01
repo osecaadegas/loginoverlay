@@ -22,6 +22,9 @@
   --greek-bronze-texture: url("/theme-effects/greek-premium/materials/antique-bronze.webp");
   --greek-gold-texture: url("/theme-effects/greek-premium/materials/aged-gold.webp");
   --greek-key: url("/theme-effects/greek-premium/ornaments/greek-key-horizontal.webp");
+  --greek-scenario: url("/theme-effects/greek-premium/background/scenario-architecture.webp");
+  --greek-bevel: inset 0 2px 0 rgba(255,250,222,.9), inset 0 -7px 12px rgba(74,37,12,.28);
+  --greek-structural-shadow: 0 5px 0 #321808, 0 9px 0 #9a6427, 0 13px 24px rgba(0,0,0,.62);
   width: 100%;
   height: 100%;
   color: var(--greek-ink);
@@ -56,9 +59,12 @@
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"] .oc-bg-widget::after {
-  opacity: .23;
-  background: url("/theme-effects/greek-premium/materials/dark-stone.webp") center / 520px 520px repeat;
-  mix-blend-mode: soft-light;
+  z-index: 2;
+  opacity: 1;
+  background:
+    var(--greek-scenario) center / 100% 100% no-repeat,
+    radial-gradient(ellipse at 50% 48%, transparent 35%, rgba(1,4,7,.28) 82%, rgba(1,3,5,.58) 100%);
+  background-blend-mode: normal, normal;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"] :is(.oc-bg-texture, .oc-bg-overlay) {
@@ -83,21 +89,26 @@
   position: relative !important;
   isolation: isolate;
   overflow: visible !important;
-  padding: 6px 16px !important;
+  min-height: 66px;
+  padding: 9px 22px !important;
   color: var(--greek-ink) !important;
   border: 0 !important;
   border-radius: 0 !important;
   background:
     linear-gradient(180deg, rgba(255,255,255,.4), transparent 18%, rgba(103,60,24,.14) 78%, rgba(66,34,15,.28)),
-    var(--greek-key) center / auto 32px repeat-x,
-    var(--greek-marble-texture) center / 420px 420px repeat !important;
+    linear-gradient(90deg, rgba(104,57,20,.28), transparent 14%, transparent 86%, rgba(104,57,20,.28)),
+    var(--greek-key) center / auto 34px repeat-x,
+    var(--greek-marble-texture) center / 580px 580px repeat !important;
   box-shadow:
     0 3px 0 #2d1709,
     0 6px 0 #a36b29,
     0 8px 0 rgba(29,13,4,.9),
     0 13px 28px rgba(0,0,0,.64),
     inset 0 2px 0 rgba(255,249,222,.85),
-    inset 0 -5px 10px rgba(91,48,18,.28) !important;
+    inset 0 2px 0 rgba(255,249,222,.9),
+    inset 0 -8px 13px rgba(91,48,18,.34),
+    inset 0 0 0 2px rgba(124,78,32,.5) !important;
+  background-blend-mode: normal, normal, soft-light, normal !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"]::before,
@@ -185,9 +196,10 @@
   border-image: var(--greek-panel-frame) 56 fill / 20px / 0 stretch !important;
   border-radius: 0 !important;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.2), transparent 18%, rgba(104,61,26,.18)),
-    var(--greek-warm-marble) center / 420px 420px repeat !important;
-  box-shadow: 0 18px 34px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,250,222,.72) !important;
+    linear-gradient(90deg, rgba(91,46,15,.24), transparent 8%, transparent 92%, rgba(91,46,15,.24)),
+    linear-gradient(180deg, rgba(255,255,255,.38), transparent 16%, rgba(104,61,26,.22)),
+    var(--greek-warm-marble) center / 620px 620px repeat !important;
+  box-shadow: var(--greek-structural-shadow), var(--greek-bevel), inset 0 0 0 2px rgba(124,78,32,.46) !important;
   font-family: Georgia, "Times New Roman", serif !important;
 }
 
@@ -199,7 +211,7 @@
   bottom: -16px;
   width: 58%;
   height: 38%;
-  opacity: .28;
+  opacity: .46;
   pointer-events: none;
   background: url("/theme-effects/greek-premium/ornaments/philosopher-bust.webp") right bottom / contain no-repeat;
   filter: sepia(.16) contrast(.9);
@@ -275,8 +287,8 @@
   border-radius: 0 !important;
   background:
     linear-gradient(180deg, rgba(255,255,255,.24), transparent 19%, rgba(89,48,18,.14)),
-    var(--greek-marble-texture) center / 410px 410px repeat !important;
-  box-shadow: 0 20px 46px rgba(0,0,0,.66), inset 0 1px 0 rgba(255,250,224,.74) !important;
+    var(--greek-marble-texture) center / 620px 620px repeat !important;
+  box-shadow: 0 6px 0 #311708, 0 11px 0 #9c6528, 0 24px 52px rgba(0,0,0,.72), var(--greek-bevel), inset 0 0 0 2px rgba(124,78,32,.42) !important;
   backdrop-filter: none;
 }
 
@@ -342,7 +354,7 @@
   border-radius: 6px;
   background:
     linear-gradient(180deg, rgba(255,255,255,.3), transparent 38%, rgba(94,51,18,.12)),
-    var(--greek-marble-texture) center / 260px 260px repeat;
+    var(--greek-marble-texture) center / 410px 410px repeat;
   box-shadow: inset 0 1px 0 rgba(255,250,224,.9), inset 0 -5px 9px rgba(93,48,15,.16), 0 3px 5px rgba(58,27,8,.35);
 }
 
@@ -424,8 +436,10 @@
   border: 16px solid transparent !important;
   border-image: var(--greek-frame) 56 fill / 16px / 0 stretch !important;
   border-radius: 0 !important;
-  background: var(--greek-marble-texture) center / 430px 430px repeat !important;
-  box-shadow: 0 10px 26px rgba(0,0,0,.56), inset 0 1px 0 rgba(255,251,226,.76) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.34), transparent 34%, rgba(99,54,19,.2)),
+    var(--greek-marble-texture) center / 620px 620px repeat !important;
+  box-shadow: 0 5px 0 #321808, 0 9px 0 #9b6326, 0 16px 28px rgba(0,0,0,.6), var(--greek-bevel) !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] .rtp-stats-bar > * {
@@ -476,8 +490,10 @@
   border-image: url("/theme-effects/greek-premium/frames/media-frame-9slice.png") 56 fill / 25px / 0 stretch !important;
   border-radius: 0 !important;
   clip-path: none;
-  background: var(--greek-marble-texture) center / 390px 390px repeat !important;
-  box-shadow: 0 18px 38px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,250,224,.76) !important;
+  background:
+    linear-gradient(90deg, rgba(83,41,13,.2), transparent 11%, transparent 89%, rgba(83,41,13,.2)),
+    var(--greek-marble-texture) center / 580px 580px repeat !important;
+  box-shadow: var(--greek-structural-shadow), var(--greek-bevel), inset 0 0 0 2px rgba(124,78,32,.4) !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame::before,
@@ -522,7 +538,6 @@
 .better-slideshow-frame[data-colour-theme="old_rome"] .better-slideshow-frame__empty strong {
   color: #3b2112;
   font-family: Georgia, "Times New Roman", serif;
-  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(16px, 4.4cqw, 30px);
   text-shadow: 0 1px 0 #fff1cb;
 }
@@ -544,8 +559,11 @@
   border: 12px solid transparent !important;
   border-image: var(--greek-panel-frame) 56 fill / 12px / 0 stretch !important;
   border-radius: 0 !important;
-  background: var(--greek-warm-marble) center / 330px 330px repeat !important;
-  box-shadow: 0 12px 26px rgba(0,0,0,.56), inset 0 1px 0 rgba(255,250,224,.74) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.32), transparent 30%, rgba(95,51,18,.2)),
+    var(--greek-key) center top / auto 18px repeat-x,
+    var(--greek-warm-marble) center / 520px 520px repeat !important;
+  box-shadow: 0 4px 0 #351a09, 0 8px 0 #966026, 0 14px 24px rgba(0,0,0,.58), var(--greek-bevel) !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] .better-bets-stage {
@@ -565,8 +583,27 @@
   border: 22px solid transparent !important;
   border-image: var(--greek-panel-frame) 56 fill / 22px / 0 stretch !important;
   border-radius: 0 !important;
-  background: var(--greek-warm-marble) center / 420px 420px repeat !important;
-  box-shadow: 0 16px 34px rgba(0,0,0,.58), inset 0 1px 0 rgba(255,250,224,.75) !important;
+  background:
+    linear-gradient(90deg, rgba(87,44,14,.2), transparent 10%, transparent 90%, rgba(87,44,14,.2)),
+    var(--greek-warm-marble) center / 620px 620px repeat !important;
+  box-shadow: var(--greek-structural-shadow), var(--greek-bevel), inset 0 0 0 2px rgba(124,78,32,.4) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is([data-better-element="header"],.ov-chat-header) {
+  color: #f6e8ca !important;
+  border-bottom: 3px double #c08a37 !important;
+  background:
+    linear-gradient(90deg, rgba(215,164,69,.16), transparent 18%, transparent 82%, rgba(215,164,69,.16)),
+    linear-gradient(180deg, #3a2618, #17110d 68%, #0d0907) !important;
+  box-shadow: inset 0 1px 0 rgba(240,199,106,.5), inset 0 -1px 0 #5e3515, 0 3px 7px rgba(0,0,0,.42) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  letter-spacing: .08em !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is([data-better-element="header"],.ov-chat-header) > span:first-child > span:first-child {
+  background: #d7a445 !important;
+  box-shadow: 0 0 7px rgba(215,164,69,.55) !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is([data-better-element="message"],[data-better-element="highlightedMessage"],.ov-chat-message) {
@@ -596,6 +633,244 @@
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bet-header,.bet-widget strong,.bet-widget span) {
   text-shadow: 0 1px 0 rgba(255,255,255,.62) !important;
+}
+
+/* The side modules use the same load-bearing column language as the scene. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget {
+  isolation: isolate;
+  overflow: visible !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::before,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::after,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget::before,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -18px;
+  bottom: -18px;
+  width: clamp(24px, 10%, 52px);
+  pointer-events: none;
+  background: url("/theme-effects/greek-premium/ornaments/column-left.webp") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 8px 7px rgba(0,0,0,.68));
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::before,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget::before { left: -18px; }
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::after,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget::after {
+  right: -18px;
+  transform: scaleX(-1);
+}
+
+/* Ceremonial giveaway: marble announcement mounted in the communication wall. */
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-giveaway-stage {
+  --w-title-color: #4b2913 !important;
+  --w-prize-color: #2c1a10 !important;
+  --w-label-color: #6b421f !important;
+  --w-value-color: #2c1a10 !important;
+  --w-winner-color: #f6e8ca !important;
+  --w-accent: #a36b29 !important;
+  --w-accent-2: #650e13 !important;
+  --w-line: #7c4e20 !important;
+  --w-font-title: Georgia, "Times New Roman", serif !important;
+  --w-font-body: Georgia, "Times New Roman", serif !important;
+  padding: 4px !important;
+  background: transparent !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-giveaway-widget {
+  color: var(--greek-ink) !important;
+  border: 18px solid transparent !important;
+  border-image: var(--greek-panel-frame) 56 fill / 18px / 0 stretch !important;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255,248,213,.32), transparent 52%),
+    linear-gradient(180deg, rgba(255,255,255,.3), transparent 30%, rgba(92,48,16,.16)),
+    var(--greek-marble-texture) center / 520px 520px repeat !important;
+  box-shadow: 0 5px 0 #331808, 0 9px 0 #956027, 0 18px 32px rgba(0,0,0,.62), var(--greek-bevel) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.58) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-header {
+  padding-bottom: 8px !important;
+  border-bottom: 4px double #87531f !important;
+  background: var(--greek-key) center bottom / auto 17px repeat-x !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-name,
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-prize,
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-prize span,
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-metric-label,
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-metric-value {
+  color: var(--greek-ink) !important;
+  filter: none !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.68) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-name {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 900 !important;
+  letter-spacing: .09em !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(.better-gw-edge-light,.better-gw-side-dash,.better-gw-sheen) {
+  display: none !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-edge {
+  border-color: #8b5722 !important;
+  filter: drop-shadow(0 1px 0 #f0c76a) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-metric-panel {
+  border: 1px solid #8d5924 !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(104,58,20,.12)), var(--greek-warm-marble) center / 320px 320px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), inset 0 -4px 7px rgba(81,42,14,.18) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-roulette-viewport {
+  border: 2px solid #7c4e20 !important;
+  border-radius: 3px !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(126,79,31,.32), transparent 58%),
+    url("/theme-effects/greek-premium/materials/dark-stone.webp") center / 360px 360px repeat !important;
+  box-shadow: inset 0 0 0 2px rgba(215,164,69,.28), inset 0 0 24px rgba(0,0,0,.72) !important;
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-avatar-bubble {
+  border-color: #c28b38 !important;
+  color: #f6e8ca !important;
+  background: #21140d !important;
+  box-shadow: inset 0 -7px 14px rgba(0,0,0,.48), 0 0 0 2px rgba(240,199,106,.2), 0 5px 11px rgba(0,0,0,.42) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-avatar-name,
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-roulette-status {
+  color: #ead6a8 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(.better-gw-pointer-line,.better-gw-pointer-crossline) {
+  background: linear-gradient(180deg, #f0c76a, #7c4e20 52%, #f0c76a) !important;
+  box-shadow: 0 0 7px rgba(215,164,69,.55) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(.better-gw-pointer-top,.better-gw-pointer-bottom) {
+  border-top-color: #f0c76a !important;
+  border-bottom-color: #f0c76a !important;
+  filter: drop-shadow(0 0 4px rgba(215,164,69,.58)) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-winner-banner {
+  color: #f6e8ca !important;
+  border: 2px solid #d7a445 !important;
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, #85171c, #650e13 64%, #3f070a) !important;
+  box-shadow: inset 0 1px 0 rgba(255,220,139,.42), 0 5px 14px rgba(0,0,0,.54) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-winner-flash {
+  background: radial-gradient(circle at 50% 56%, rgba(240,199,106,.28), rgba(133,23,28,.09) 48%, transparent 72%) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-confetti i {
+  border-radius: 0 !important;
+  background: #d7a445 !important;
+  box-shadow: none !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-confetti i:nth-child(3n) { background: #650e13 !important; }
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-card {
+  border: 14px solid transparent !important;
+  border-image: var(--greek-panel-frame) 56 fill / 14px / 0 stretch !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.28), transparent 34%, rgba(91,47,15,.2)),
+    var(--greek-warm-marble) center / 440px 440px repeat !important;
+  box-shadow: 0 4px 0 #341908, 0 8px 0 #956027, 0 16px 28px rgba(0,0,0,.58), var(--greek-bevel) !important;
+  color: var(--greek-ink) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-card::before {
+  inset: 2px !important;
+  border: 1px solid rgba(124,78,32,.56) !important;
+  border-radius: 0 !important;
+  background:
+    url("/theme-effects/greek-premium/ornaments/laurel-left.webp") left center / 28% 88% no-repeat,
+    linear-gradient(90deg, rgba(215,164,69,.12), transparent 36%) !important;
+  background-blend-mode: normal !important;
+  opacity: .62 !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(.better-gw-result-frost,.better-gw-result-crystal) {
+  display: none !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-avatar {
+  border-color: #d7a445 !important;
+  background: radial-gradient(circle at 34% 25%, #a36b29, #2c170b 70%) !important;
+  box-shadow: 0 0 0 3px rgba(124,78,32,.3), 0 7px 14px rgba(0,0,0,.48), inset 0 -10px 16px rgba(0,0,0,.4) !important;
+  color: #f6e8ca !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-avatar i {
+  border-color: #d7a445 !important;
+  border-radius: 3px !important;
+  background: #650e13 !important;
+  color: #f6e8ca !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,.5) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(
+  .better-gw-result-kicker,
+  .better-gw-result-name,
+  .better-gw-result-message,
+  .better-gw-result-prize
+) {
+  color: var(--greek-ink) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.68) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-kicker {
+  color: #75481f !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-prize {
+  color: #650e13 !important;
+}
+
+/* Make panel content sit inside carved recesses instead of floating on beige. */
+.better-widget-colour-scope[data-colour-theme="old_rome"] :is(
+  .better-hunt-stat,
+  .better-hunt-row,
+  .better-hunt-total,
+  .better-hunt-requests,
+  .better-hunt-stats-panel,
+  .better-hunt-main-active,
+  .better-hunt-result,
+  [data-better-element="message"],
+  [data-better-element="highlightedMessage"],
+  .ov-chat-message
+) {
+  outline: 1px solid rgba(255,241,198,.42);
+  outline-offset: -3px;
+}
+
+@media (max-width: 960px) {
+  .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::before,
+  .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::after,
+  .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget::before,
+  .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget::after { width: 28px; }
 }
 
 /* Static ornament hierarchy shared by the reference surfaces. */
