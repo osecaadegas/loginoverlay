@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { resolveInstanceThemeEffects } from "./themeEffectsConfig";
 import { findEffectSurface, measureEffectTargets } from "./targetBounds";
 import "./ThemeEffects.css";
+import "./GreekPremium.css";
 
 function buildEffectTargets(instances, singleInstanceId) {
   return (instances || []).flatMap((instance) => {

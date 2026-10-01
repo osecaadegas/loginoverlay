@@ -255,7 +255,9 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
 
   node.texture = new Sprite(panelTexture);
   const iceHierarchy = ICE_PRIMARY_WEIGHT[target.widgetType] || 0.48;
-  node.texture.alpha = target.theme.family === "ice" ? 0.07 + iceHierarchy * 0.08 : 0.065;
+  node.texture.alpha = target.theme.family === "ice"
+    ? 0.07 + iceHierarchy * 0.08
+    : target.theme.family === "greek" ? 0.022 : 0.065;
   node.texture.blendMode = target.theme.family === "gladiator" ? "overlay" : "screen";
   node.inside.addChild(node.texture);
 
@@ -263,7 +265,9 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
   // a natural alpha falloff and does not compete with the DOM's single border.
   node.edge = target.theme.family === "ice" ? null : new Sprite(edgeTexture);
   if (node.edge) {
-    node.edge.alpha = isForcedEffect(debugEffect, "frost") ? 1 : 0.075;
+    node.edge.alpha = isForcedEffect(debugEffect, "frost")
+      ? 1
+      : target.theme.family === "greek" ? 0.04 : 0.075;
     node.edge.blendMode = "screen";
     node.foreground.addChild(node.edge);
   }
@@ -278,7 +282,9 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
         : 0.065;
     node.detail.alpha = isForcedEffect(debugEffect, "cracks")
       ? 1
-      : target.theme.family === "ice" ? iceCrackAlpha * 2.5 : 0.055;
+      : target.theme.family === "ice"
+        ? iceCrackAlpha * 2.5
+        : target.theme.family === "greek" ? 0.032 : 0.055;
     node.detail.blendMode = target.theme.family === "ice"
       ? "screen"
       : target.theme.family === "gladiator" ? "overlay" : "multiply";
