@@ -39,6 +39,9 @@ assert.match(pricingSource, /Plan cards below open paid Stripe checkout/);
 assert.match(pricingSource, /you will not be charged automatically/);
 assert.match(pricingSource, /never converts automatically/);
 assert.doesNotMatch(pricingSource, /subscription or trial/);
+assert.match(pricingSource, /pageData\?\.plans/);
+assert.match(pricingSource, /\/pricing\/streamer-plan-frame\.webp/);
+assert.doesNotMatch(pricingSource, /\/(?:25|130|250)\.webp/);
 assert.match(cardlessContentMigration, /without adding payment information/);
 assert.match(
   cardlessContentMigration,

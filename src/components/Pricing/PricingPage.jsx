@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
+  ArrowRight,
   CheckCircle2,
   CreditCard,
   Loader2,
@@ -17,20 +18,20 @@ import "./PricingPage.css";
 const STREAMER_PLAN_CARDS = [
   {
     id: "streamer_monthly",
-    image: "/25.webp",
     title: "Monthly",
+    badge: "Most flexible",
     accent: "cyan",
   },
   {
     id: "streamer_6_months",
-    image: "/130.webp",
     title: "Half year",
+    badge: "Better value",
     accent: "violet",
   },
   {
     id: "streamer_annual",
-    image: "/250.webp",
     title: "Full year",
+    badge: "Best value",
     accent: "pink",
   },
 ];
@@ -38,17 +39,59 @@ const STREAMER_PLAN_CARDS = [
 const PLAYER_PLAN_CARDS = [
   {
     id: "player_monthly",
-    image: "/player3eur.webp",
     title: "Player monthly",
+    badge: "Flexible",
     accent: "cyan",
   },
   {
     id: "player_annual",
-    image: "/player25eur.webp",
     title: "Player annual",
+    badge: "Best value",
     accent: "pink",
   },
 ];
+
+const FALLBACK_FEATURES = {
+  streamer: [
+    "Premium overlay widgets",
+    "Full customization tools",
+    "Bonus Hunt tracker",
+    "Community games and tools",
+    "Regular updates",
+    "Streamer focused toolkit",
+  ],
+  player: [
+    "Bonus Hunt tracking",
+    "Session and result history",
+    "Personal best records",
+    "Private player dashboard",
+  ],
+};
+
+function formatPlanPrice(plan) {
+  if (!Number.isFinite(Number(plan?.priceCents))) return "Price unavailable";
+  const amount = Number(plan.priceCents) / 100;
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: plan.currency || "EUR",
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function formatPlanPeriod(plan) {
+  const months = Number(plan?.intervalMonths || 1);
+  if (months === 1) return "month";
+  if (months === 12) return "year";
+  return `${months} months`;
+}
+
+function formatBillingLine(plan) {
+  const months = Number(plan?.intervalMonths || 1);
+  if (months === 1) return "Billed monthly";
+  if (months === 12) return "Billed every 12 months";
+  return `Billed every ${months} months`;
+}
 
 const PRODUCT_COPY = {
   streamer: {
@@ -106,7 +149,26 @@ export default function PricingPage() {
   const canceled = searchParams.get("canceled") === "true";
   const productType = normalizeProductType(searchParams.get("type"));
   const activeCopy = PRODUCT_COPY[productType];
-  const productCards = activeCopy.cards;
+  const productCards = activeCopy.cards
+    .map((presentation) => ({
+      ...presentation,
+      ...(pageData?.plans || []).find((plan) => plan.id === presentation.id),
+      displayTitle: presentation.title,
+      presentationBadge: presentation.badge,
+    }))
+    .filter((plan) => Number.isFinite(Number(plan.priceCents)));
+  const liveFeatures = (pageData?.features || [])
+    .filter((feature) =>
+      productType === "streamer"
+        ? feature.streamerAvailable
+        : feature.playerAvailable,
+    )
+    .map((feature) => feature.title)
+    .filter(Boolean)
+    .slice(0, 6);
+  const planFeatures = liveFeatures.length
+    ? liveFeatures
+    : FALLBACK_FEATURES[productType];
 
   const getAccessToken = async () => {
     const { data, error: sessionError } = await supabase.auth.getSession();
@@ -473,7 +535,61 @@ export default function PricingPage() {
                 aria-label={`Start ${card.title} checkout`}
               >
                 <span className="premium-card-frame">
-                  <img src={card.image} alt={`${card.title} premium plan`} />
+                  <img
+                    className="premium-card-art"
+                    src="/pricing/streamer-plan-frame.webp"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span className="premium-card-content">
+                    <span className="premium-card-brand" aria-hidden="true">
+                      <span className="premium-card-monogram">SC</span>
+                      <span>
+                        <strong>Streamers</strong>
+                        <small>Center</small>
+                      </span>
+                    </span>
+                    <span className="premium-card-badge">
+                      <Sparkles aria-hidden="true" />
+                      {card.badge || card.presentationBadge || "Premium"}
+                    </span>
+                    <span className="premium-card-title">
+                      {card.displayTitle}
+                    </span>
+                    <span className="premium-card-price-row">
+                      <strong>{formatPlanPrice(card)}</strong>
+                      <span>/ {formatPlanPeriod(card)}</span>
+                    </span>
+                    <span className="premium-card-billing">
+                      {formatBillingLine(card)}
+                    </span>
+                    {card.savingsLabel && (
+                      <span className="premium-card-saving">
+                        {card.savingsLabel}
+                      </span>
+                    )}
+                    <span className="premium-card-features">
+                      {planFeatures.map((feature) => (
+                        <span className="premium-card-feature" key={feature}>
+                          <CheckCircle2 aria-hidden="true" />
+                          <span>{feature}</span>
+                        </span>
+                      ))}
+                    </span>
+                    <span className="premium-card-cta">
+                      {checkoutPlanId === card.id ? (
+                        <Loader2 className="premium-spin" aria-hidden="true" />
+                      ) : (
+                        <CreditCard aria-hidden="true" />
+                      )}
+                      {checkoutPlanId === card.id
+                        ? "Opening checkout..."
+                        : "Get started"}
+                      {checkoutPlanId !== card.id && (
+                        <ArrowRight aria-hidden="true" />
+                      )}
+                    </span>
+                  </span>
                 </span>
               </button>
             );
