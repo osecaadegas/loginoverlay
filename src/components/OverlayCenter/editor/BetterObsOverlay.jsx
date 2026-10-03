@@ -14,21 +14,18 @@ import {
   renderBetterWidgetInstance,
 } from "./betterWidgetRegistry";
 import { ThemeEffectsLayer } from "../../../effects/ThemeEffects";
+import {
+  getObsRenderGeometry,
+  normalizeObsScaleMode,
+} from "./obsRenderGeometry";
 import "../OverlayRenderer.css";
 import "./BetterObsOverlay.css";
 
 const FALLBACK_REFRESH_MS = 30000;
-const OBS_SCALE_MODES = new Set(["fit", "fill", "native"]);
-
 function getObsScaleMode() {
-  if (typeof window === "undefined") return "auto";
+  if (typeof window === "undefined") return "fit";
   const mode = new URLSearchParams(window.location.search).get("scale");
-  if (OBS_SCALE_MODES.has(mode)) return mode;
-  return "fit";
-}
-
-function normalizeScale(value) {
-  return Number.isFinite(value) && value > 0 ? value : 1;
+  return normalizeObsScaleMode(mode);
 }
 
 class BetterObsWidgetBoundary extends React.Component {
@@ -243,52 +240,68 @@ export default function BetterObsOverlay() {
   const targetHeight = isSingleWidget
     ? Number(targetInstance?.height || 0)
     : BETTER_CANVAS.height;
-  const scale =
-    isSingleWidget || !targetWidth || !targetHeight
-      ? 1
-      : Math.min(viewport.width / targetWidth, viewport.height / targetHeight);
   const scaleMode = getObsScaleMode();
-  const fitScale =
-    !targetWidth || !targetHeight
-      ? 1
-      : Math.min(viewport.width / targetWidth, viewport.height / targetHeight);
-  const fillScale =
-    !targetWidth || !targetHeight
-      ? 1
-      : Math.max(viewport.width / targetWidth, viewport.height / targetHeight);
-  const obsScale = normalizeScale(
-    scaleMode === "fit" ? fitScale : scaleMode === "fill" ? fillScale : scale,
-  );
-  const scaledWidth = Math.max(1, targetWidth * obsScale);
-  const scaledHeight = Math.max(1, targetHeight * obsScale);
+  const geometry = getObsRenderGeometry({
+    viewportWidth: viewport.width,
+    viewportHeight: viewport.height,
+    targetWidth,
+    targetHeight,
+    scaleMode,
+    standalone: isSingleWidget,
+  });
 
   if (!loaded || !layout || (isSingleWidget && !targetInstance)) {
     return <main className="better-obs-overlay better-obs-overlay--empty" />;
   }
 
   if (isSingleWidget) {
+    const renderInstance = {
+      ...targetInstance,
+      x: 0,
+      y: 0,
+      width: geometry.layoutWidth,
+      height: geometry.layoutHeight,
+    };
+    const renderLayout = {
+      ...layout,
+      instances: layout.instances.map((instance) =>
+        instance.instanceId === renderInstance.instanceId
+          ? renderInstance
+          : instance,
+      ),
+    };
     return (
-      <main className="better-obs-overlay better-obs-overlay--single">
+      <main
+        className="better-obs-overlay better-obs-overlay--single"
+        data-render-mode="native"
+        data-scale-mode={geometry.mode}
+        data-render-scale={geometry.renderScale.toFixed(4)}
+        data-logical-compact={targetWidth <= 640 ? "true" : "false"}
+        data-logical-narrow={targetWidth <= 520 ? "true" : "false"}
+        data-logical-small={targetWidth <= 400 ? "true" : "false"}
+        data-logical-short={targetHeight <= 360 ? "true" : "false"}
+      >
         <div
           className="better-obs-frame"
           style={{
-            width: scaledWidth,
-            height: scaledHeight,
+            width: geometry.displayWidth,
+            height: geometry.displayHeight,
           }}
         >
           <div
             className="better-obs-canvas better-obs-canvas--single"
             style={{
-              width: targetWidth,
-              height: targetHeight,
-              transform: `translate3d(0, 0, 0) scale(${obsScale})`,
+              width: geometry.layoutWidth,
+              height: geometry.layoutHeight,
+              transform: "none",
+              "--obs-render-scale": geometry.renderScale,
             }}
           >
             <ThemeEffectsLayer
-              instances={[targetInstance]}
-              width={targetWidth}
-              height={targetHeight}
-              singleInstanceId={targetInstance.instanceId}
+              instances={[renderInstance]}
+              width={geometry.layoutWidth}
+              height={geometry.layoutHeight}
+              singleInstanceId={renderInstance.instanceId}
               runtime="obs-single"
             />
             {targetInstance.visible !== false && (
@@ -299,18 +312,19 @@ export default function BetterObsOverlay() {
                 style={{
                   left: 0,
                   top: 0,
-                  width: targetInstance.width,
-                  height: targetInstance.height,
+                  width: renderInstance.width,
+                  height: renderInstance.height,
                   opacity: targetInstance.opacity,
                   zIndex: 1,
                 }}
               >
                 <BetterObsWidgetBoundary instanceId={targetInstance.instanceId}>
                   {renderBetterWidgetInstance({
-                    instance: targetInstance,
-                    layout,
+                    instance: renderInstance,
+                    layout: renderLayout,
                     mode: "live",
                     runtime: "obs",
+                    renderScale: geometry.renderScale,
                     userId: publication.ownerUserId,
                     theme: liveSource.theme,
                     liveWidgets: liveSource.widgets,
@@ -330,8 +344,8 @@ export default function BetterObsOverlay() {
       <div
         className="better-obs-frame"
         style={{
-          width: scaledWidth,
-          height: scaledHeight,
+          width: geometry.displayWidth,
+          height: geometry.displayHeight,
         }}
       >
         <div
@@ -339,7 +353,7 @@ export default function BetterObsOverlay() {
           style={{
             width: BETTER_CANVAS.width,
             height: BETTER_CANVAS.height,
-            transform: `translate3d(0, 0, 0) scale(${obsScale})`,
+            transform: geometry.transform,
           }}
         >
           <ThemeEffectsLayer

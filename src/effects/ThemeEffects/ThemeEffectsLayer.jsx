@@ -147,6 +147,7 @@ export default function ThemeEffectsLayer({
         height: dimensionsRef.current.height,
         targets: targetsRef.current,
         debugEffect: debug.effect,
+        runtime,
       }))
       .then((createdEngine) => {
         if (!alive) {
@@ -176,7 +177,7 @@ export default function ThemeEffectsLayer({
     // The engine lifecycle is tied to this canvas. Geometry and theme changes
     // are handled by the update effect below without creating a new renderer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(targets.length), debug.effect]);
+  }, [Boolean(targets.length), debug.effect, runtime]);
 
   useEffect(() => {
     const engine = engineRef.current;

@@ -33,6 +33,8 @@ assert.equal(getEffectQualityPreset("low").fps, 30);
 assert.equal(getEffectResolution("low", 3), 1);
 assert.equal(getEffectResolution("balanced", 3), 1.25);
 assert.equal(getEffectResolution("ultra", 3), 1.5);
+assert.equal(getEffectResolution("balanced", 3, "obs-single"), 2);
+assert.equal(getEffectResolution("ultra", 3, "obs-single"), 2);
 
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 assert(packageJson.dependencies["pixi.js"], "PixiJS is a runtime dependency");

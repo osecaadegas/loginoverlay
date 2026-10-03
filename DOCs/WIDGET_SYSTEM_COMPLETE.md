@@ -1,5 +1,8 @@
 # Widget System Complete - 25 Production Widgets Built
 
+For standalone OBS Browser Source resolution and Lanczos setup, see
+[OBS_HIGH_DPI_WIDGETS.md](./OBS_HIGH_DPI_WIDGETS.md).
+
 ## Executive Summary
 Built **25 production-ready widgets** (exceeding minimum viable set from original 41-widget audit). All widgets include:
 - ✅ Full React components (JSX)

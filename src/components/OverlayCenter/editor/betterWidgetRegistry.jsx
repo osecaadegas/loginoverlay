@@ -1117,6 +1117,74 @@ export function createDefaultBetterLayout() {
   };
 }
 
+const OBS_PIXEL_CONFIG_KEYS = new Set([
+  "avatarSize",
+  "badgeSize",
+  "barHeight",
+  "barPadX",
+  "barPadY",
+  "bodySize",
+  "borderRadius",
+  "borderWidth",
+  "bracketSize",
+  "bracketWidth",
+  "cardGap",
+  "cardRadius",
+  "containerPadding",
+  "edgeRadius",
+  "fontSize",
+  "headerSize",
+  "innerInset",
+  "labelSize",
+  "logoHeight",
+  "logoMaxW",
+  "logoOffsetX",
+  "logoOffsetY",
+  "logoPadX",
+  "logoPadY",
+  "mainCardPadding",
+  "mainShadowBlur",
+  "messageSize",
+  "multiSize",
+  "nameSize",
+  "padX",
+  "padY",
+  "padding",
+  "prizeSize",
+  "radius",
+  "reelHeight",
+  "slotImageRadius",
+  "slotNameSize",
+  "statRadius",
+  "subSize",
+  "subtitleSize",
+  "swordSize",
+  "tileGap",
+  "tileRadius",
+  "timestampSize",
+  "titleSize",
+  "usernameSize",
+  "valueSize",
+]);
+
+function scaleStandaloneWidgetConfig(widgetType, config, instance, renderScale) {
+  const scale = Number(renderScale) || 1;
+  if (scale === 1 || widgetType === "bonus_hunt") return config;
+
+  const next = { ...config };
+  OBS_PIXEL_CONFIG_KEYS.forEach((key) => {
+    const value = Number(config[key]);
+    if (Number.isFinite(value)) next[key] = value * scale;
+  });
+
+  if (widgetType === "giveaway") {
+    next.width = instance.width;
+    next.height = instance.height;
+  }
+
+  return next;
+}
+
 export function betterInstanceToLegacyWidget(
   instance,
   mode = "live",
@@ -1135,12 +1203,21 @@ export function betterInstanceToLegacyWidget(
       liveWidget,
     },
   );
+  const renderedConfig = scaleStandaloneWidgetConfig(
+    instance.widgetType,
+    config,
+    instance,
+    context.renderScale,
+  );
   const instanceConfig = {
-    ...config,
+    ...renderedConfig,
     ...(instance.widgetType === "bonus_hunt" && config.orientation === "horizontal"
       ? { horizontalHeight: instance.height }
       : {}),
     __betterInstanceId: instance.instanceId,
+    __betterInstanceWidth: instance.width,
+    __betterInstanceHeight: instance.height,
+    __obsRenderScale: Number(context.renderScale) || 1,
   };
   return {
     id: liveWidget?.id || instance.instanceId,
@@ -1166,12 +1243,13 @@ export function renderBetterWidgetInstance({
   theme,
   liveWidgets = [],
   publicOverlayId,
+  renderScale = 1,
 }) {
   const definition = getBetterWidgetDefinition(instance?.widgetType);
   if (!definition?.component || !instance) return null;
   const WidgetComponent = definition.component;
   const normalizedLayout = normalizeBetterLayout(layout);
-  const liveSourceContext = { liveWidgets };
+  const liveSourceContext = { liveWidgets, renderScale };
   const allWidgets = normalizedLayout.instances.map((item) =>
     betterInstanceToLegacyWidget(item, mode, liveSourceContext),
   );
@@ -1210,6 +1288,8 @@ export function renderBetterWidgetInstance({
       data-colour-theme={colourThemeKey || undefined}
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
+      data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
+      style={{ "--obs-render-scale": renderScale }}
     >
       <WidgetComponent {...commonProps} />
     </div>

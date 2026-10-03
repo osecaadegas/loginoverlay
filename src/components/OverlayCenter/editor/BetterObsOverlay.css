@@ -38,6 +38,102 @@
   transform-origin: top left;
 }
 
+.better-obs-canvas--single {
+  width: 100%;
+  height: 100%;
+  transform: none;
+  contain: layout paint style;
+}
+
+.better-obs-overlay--single .better-obs-instance {
+  inset: 0;
+}
+
+/* Keep responsive variants tied to the saved widget geometry. A 2x Browser
+   Source must increase raster detail without switching to a desktop layout. */
+.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-shell {
+  padding: calc(10px * var(--obs-render-scale, 1));
+}
+
+.better-obs-overlay--single .better-hunt-root[data-drawer-mode="contain"] .better-hunt-panel {
+  height: 100%;
+  max-height: 100%;
+}
+
+.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-left {
+  border-right: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.better-obs-overlay--single[data-logical-compact="true"] :is(.better-hunt-stat-grid, .better-hunt-stat-strip) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-stat-strip div {
+  border-left: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-requests {
+  grid-template-columns: 1fr;
+}
+
+.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-requests-head {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border-right: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 0 calc(7px * var(--obs-render-scale, 1));
+}
+
+.better-obs-overlay--single .better-hunt-image-stats-panel {
+  height: calc(210px * var(--obs-render-scale, 1));
+}
+
+.better-obs-overlay--single .better-hunt-list-group {
+  gap: calc(6px * var(--obs-render-scale, 1));
+  padding-bottom: calc(6px * var(--obs-render-scale, 1));
+}
+
+.better-obs-overlay--single .better-hunt-main-list-wrap {
+  padding: calc(10px * var(--obs-render-scale, 1))
+    calc(12px * var(--obs-render-scale, 1)) 0;
+}
+
+.better-obs-overlay--single[data-logical-narrow="true"] .better-giveaway-stage {
+  padding: calc(8px * var(--obs-render-scale, 1));
+}
+
+.better-obs-overlay--single[data-logical-narrow="true"] .better-giveaway-widget {
+  width: 100%;
+  height: min(100%, var(--w-height, 270px));
+}
+
+.better-obs-overlay--single[data-logical-narrow="true"] .better-gw-prize {
+  align-items: center;
+  flex-direction: column;
+}
+
+.better-obs-overlay--single[data-logical-narrow="true"] :is(.better-bets-stage .bars-grid, .better-bets-stage .bets-grid) {
+  grid-template-columns: repeat(min(var(--cols), 2), minmax(0, 1fr));
+}
+
+.better-obs-overlay--single[data-logical-small="true"] .better-bets-stage .bars-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.better-obs-overlay--single[data-logical-small="true"] .ov-chat-widget--broadcast_chat .broadcast-chat-row {
+  --chat-avatar-size: calc(22px * var(--obs-render-scale, 1));
+  --chat-row-gap: calc(6px * var(--obs-render-scale, 1));
+  --chat-row-padding: calc(7px * var(--obs-render-scale, 1));
+}
+
+.better-obs-overlay--single[data-logical-short="true"] .slot-bingo-widget__status-icon {
+  position: absolute;
+  top: calc(3px * var(--obs-render-scale, 1));
+  right: calc(3px * var(--obs-render-scale, 1));
+}
+
 .better-obs-instance {
   position: absolute;
   overflow: hidden;

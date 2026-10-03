@@ -677,6 +677,7 @@ export async function createPixiThemeEngine({
   height,
   targets = [],
   debugEffect = "",
+  runtime = "",
 }) {
   const quality = getHighestQuality(targets);
   const preset = getEffectQualityPreset(quality);
@@ -688,7 +689,7 @@ export async function createPixiThemeEngine({
     backgroundAlpha: 0,
     antialias: quality !== "low",
     autoDensity: true,
-    resolution: getEffectResolution(quality, window.devicePixelRatio),
+    resolution: getEffectResolution(quality, window.devicePixelRatio, runtime),
     preference: "webgl",
     powerPreference: "high-performance",
     clearBeforeRender: true,
@@ -773,7 +774,7 @@ export async function createPixiThemeEngine({
       app.renderer.resize(
         viewportWidth,
         viewportHeight,
-        getEffectResolution(nextQuality, window.devicePixelRatio),
+        getEffectResolution(nextQuality, window.devicePixelRatio, runtime),
       );
     }
     currentQuality = nextQuality;

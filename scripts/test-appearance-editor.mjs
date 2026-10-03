@@ -512,13 +512,10 @@ try {
     "editor preview cannot subscribe to or consume production shoutout alerts",
   );
   assert.ok(
-    betterObsOverlaySource.includes(
-      "isSingleWidget || !targetWidth || !targetHeight",
-    ) &&
-      betterObsOverlaySource.includes(
-        "Math.min(viewport.width / targetWidth, viewport.height / targetHeight)",
-      ),
-    "individual OBS widget URLs preserve saved pixel dimensions while full overlays still scale to the viewport",
+    betterObsOverlaySource.includes('data-render-mode="native"') &&
+      betterObsOverlaySource.includes("renderScale: geometry.renderScale") &&
+      betterObsOverlaySource.includes("transform: geometry.transform"),
+    "individual OBS widget URLs use native Browser Source layout dimensions while full overlays preserve canonical canvas scaling",
   );
   assert.ok(
     betterWidgetRegistrySource.includes(

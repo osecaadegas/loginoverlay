@@ -44,8 +44,15 @@ export function getEffectQualityPreset(value) {
   return EFFECT_QUALITY_PRESETS[normalizeEffectQuality(value)];
 }
 
-export function getEffectResolution(value, devicePixelRatio = 1) {
+export function getEffectResolution(
+  value,
+  devicePixelRatio = 1,
+  runtime = "",
+) {
   const preset = getEffectQualityPreset(value);
   const safeDpr = Number.isFinite(devicePixelRatio) ? devicePixelRatio : 1;
-  return Math.max(0.75, Math.min(safeDpr, preset.resolutionCap));
+  const resolutionCap = runtime === "obs-single" && value !== EFFECT_QUALITY.LOW
+    ? 2
+    : preset.resolutionCap;
+  return Math.max(0.75, Math.min(safeDpr, resolutionCap));
 }

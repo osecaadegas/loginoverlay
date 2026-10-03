@@ -26,6 +26,7 @@
     "test:widget-colour-themes": "node scripts/test-widget-colour-themes.mjs",
     "test:slot-bingo-config": "node scripts/test-slot-bingo-config.mjs",
     "test:theme-effects": "node scripts/test-theme-effects.mjs",
+    "test:obs-high-dpi": "node scripts/test-obs-high-dpi.mjs",
     "test:slot-personal-best": "node scripts/test-slot-personal-best.mjs",
     "test:brutus-slideshow": "node scripts/test-brutus-slideshow.mjs",
     "test:editor-builds": "node scripts/test-editor-builds.mjs",
