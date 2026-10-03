@@ -6,6 +6,7 @@ import {
 } from "../appearance/v2/appearanceRouting";
 
 const COLOUR_KEYS = {
+  current_slot: { panelColor: 'surface', badgeColor: 'raised', coverColor: 'background', backgroundColor: 'background', accentColor: 'accent', borderColor: 'border', textColor: 'text', mutedColor: 'muted' },
   slot_bingo: {
     backgroundColor: "background",
     panelColor: "surface",
@@ -42,6 +43,20 @@ const COLOUR_KEYS = {
 
 // Explicit existing element targets, not a global recolour of arbitrary descendants.
 const ELEMENT_COLOURS = {
+  current_slot: {
+    container: { background: 'background', borderColor: 'border', textColor: 'text' },
+    coverFrame: { background: 'background', borderColor: 'accent' },
+    slotImage: { borderColor: 'accent' },
+    slotTitle: { textColor: 'text' }, provider: { textColor: 'muted' },
+    badge: { background: 'raised', borderColor: 'border', textColor: 'accent' },
+    info: { borderColor: 'border' }, records: { borderColor: 'border' },
+    infoTitle: { textColor: 'text' }, recordsTitle: { textColor: 'text' },
+    ...Object.fromEntries(['potential', 'rtp', 'volatility', 'bestWin', 'bestMulti', 'averageWin'].flatMap(id => [
+      [id, { background: 'surface', borderColor: 'border' }],
+      [id + 'Label', { textColor: 'muted' }],
+      [id + 'Value', { textColor: ['rtp', 'volatility'].includes(id) ? 'text' : 'accent' }],
+    ])),
+  },
   slot_bingo: {
     container: { background: "background", borderColor: "border", textColor: "text" },
     header: { background: "surface", borderColor: "border" },

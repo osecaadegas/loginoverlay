@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildResultFromBonus, getSlotIdentity, queryUserSlotRecord, readSlotPersonalBest, recordMatchesSlot } from '../shared/slotPersonalBest.js';
+import { buildCurrentGameResult, persistCurrentGameResult, combineSlotResults, buildResultFromBonus, getSlotIdentity, queryUserSlotRecord, readSlotPersonalBest, recordMatchesSlot } from '../shared/slotPersonalBest.js';
 import handler, { loadOverlayPersonalBest, loadOverlayPersonalBests } from '../api/_lib/routes/slot-personal-best.js';
 
 const slotId = '11111111-1111-4111-8111-111111111111';
@@ -129,3 +129,54 @@ assert.match(readFileSync(new URL('../api/[...path].js', import.meta.url), 'utf8
 console.log('Personal best data and API tests passed: owner isolation, tokens, history, legacy records, read-only fallback.');
 
 if (process.env.TEST_BASE_URL) await import('./test-rtp-personal-best-browser.mjs');
+
+// Current Game uses the same owner-scoped result ledger as Bonus Hunt.
+const currentResult = buildCurrentGameResult('owner-a', slot, 2, 800, '22222222-2222-4222-8222-222222222222');
+const ledgerTables = {
+  user_slot_records: [record('owner-a', 1000, { best_multiplier: 100 })],
+  user_slot_results: [
+    { ...currentResult, created_at: '2026-10-03' },
+    { ...currentResult, id: 'zero', payout: 0, multiplier: 0 },
+    { ...currentResult, id: 'hunt', hunt_name: 'Friday hunt', bet_size: 10, payout: 1000, multiplier: 100 },
+    { ...currentResult, id: 'other-owner', user_id: 'owner-b', payout: 99999 },
+    { ...currentResult, id: 'other-provider', slot_provider: 'Other', payout: 99999 },
+  ],
+};
+const merged = await readSlotPersonalBest(database(ledgerTables), 'owner-a', slot);
+assert.equal(merged.best_win, 1000);
+assert.equal(merged.best_multiplier, 400);
+assert.equal(merged.best_win_bet, 10);
+assert.equal(merged.best_multiplier_bet, 2);
+assert.equal(merged.average_win, 600);
+assert.equal(merged.result_count, 3);
+assert.equal(combineSlotResults(null, [{ ...currentResult, payout: 0, multiplier: 0 }], slot).average_win, 0);
+for (const [bet, pay] of [[0, 1], [0.001, 1], [2.001, 5], [1, -1], ['', 2], [2, ''], [Infinity, 1], [1, NaN]]) {
+  assert.throws(() => buildCurrentGameResult('owner-a', slot, bet, pay, currentResult.id));
+}
+let inserted = null, insertCount = 0;
+const writeClient = {
+  from(table) {
+    assert.equal(table, 'user_slot_results');
+    return {
+      async insert(value) {
+        insertCount++;
+        if (inserted) return { error: { code: '23505' } };
+        inserted = value;
+        // Simulate a committed insert whose response was lost.
+        throw new Error('Network disconnected');
+      },
+      select() { return this; },
+      eq(key, value) { assert.equal(inserted[key], value); return this; },
+      async maybeSingle() { return { data: inserted, error: null }; },
+    };
+  },
+};
+await assert.rejects(persistCurrentGameResult(writeClient, currentResult), /Network/);
+await persistCurrentGameResult(writeClient, currentResult);
+assert.equal(insertCount, 2);
+await assert.rejects(persistCurrentGameResult(writeClient, { ...currentResult, payout: 801 }), /already been used/);
+const { pickBestWinRecord } = await import('../src/utils/slotPersonalBestDisplay.js');
+assert.deepEqual(pickBestWinRecord([{ best_win: 1000, best_multiplier: 100 }, { best_win: 800, best_multiplier: 400 }]), {
+  slot_id: null, slot_name: '', slot_provider: null, best_win: 1000, best_multiplier: 400,
+});
+console.log('Current Game checks passed: shared ledger, independent records, averages, validation and idempotent retries.');

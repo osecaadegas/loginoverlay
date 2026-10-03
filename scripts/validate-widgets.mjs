@@ -19,6 +19,7 @@ const builtinSource = readFileSync(
 );
 
 const expectedTypes = [
+  "current_slot",
   "slot_bingo",
   "bonus_hunt",
   "giveaway",
@@ -36,19 +37,18 @@ const errors = [];
 
 for (const type of expectedTypes) {
   const quoted = `"${type}"`;
-  if (!packagesSource.includes(`type: ${quoted}`)) {
+  if (!packagesSource.includes(`type: ${quoted}`) && !packagesSource.includes(`type: '${type}'`)) {
     errors.push(`BetterWidgetPackages is missing ${type}`);
   }
   if (!registrySource.includes(`${type}:`)) {
     errors.push(`betterWidgetRegistry is missing ${type}`);
   }
-  if (!builtinSource.includes(`type: ${quoted}`)) {
+  if (!builtinSource.includes(`type: ${quoted}`) && !builtinSource.includes(`type: '${type}'`)) {
     errors.push(`builtinWidgets is missing ${type}`);
   }
 }
 
 const removedTypes = [
-  "current_slot",
   "image_slideshow",
   "spotify_now_playing",
   "slot_requests",

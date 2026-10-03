@@ -1,9 +1,8 @@
 import { createSupabaseAdmin, setCors } from '../api-auth.js';
-import { findSlotPersonalBestInHistory, getSlotIdentity, queryUserSlotRecord, recordMatchesSlot } from '../../../shared/slotPersonalBest.js';
+import { getSlotIdentity, readSlotPersonalBest } from '../../../shared/slotPersonalBest.js';
 
 const PUBLIC_ID = /^bo_[a-f0-9]{48}$/i;
 const LEGACY_TOKEN = /^[a-f0-9]{48}$/i;
-const historyCache = new Map();
 
 function validOverlayReference(publicOverlayId, overlayToken) {
   const isPublication = PUBLIC_ID.test(publicOverlayId) && !overlayToken;
@@ -37,19 +36,7 @@ function validSlot(slot) {
 }
 
 async function loadOwnerPersonalBest(client, ownerId, slot) {
-  let best = await queryUserSlotRecord(client, ownerId, slot,
-    'slot_id, slot_name, slot_provider, best_win, best_multiplier');
-  if (!(Number(best?.best_win) > 0 && recordMatchesSlot(best, slot))) {
-    const key = JSON.stringify([ownerId, slot.id, slot.name, slot.provider]);
-    const cached = historyCache.get(key);
-    best = cached?.expiresAt > Date.now() ? cached.best : undefined;
-    if (best === undefined) {
-      best = await findSlotPersonalBestInHistory(client, ownerId, slot);
-      if (historyCache.size >= 500) historyCache.delete(historyCache.keys().next().value);
-      historyCache.set(key, { best, expiresAt: Date.now() + 300_000 });
-    }
-  }
-  return best;
+  return readSlotPersonalBest(client, ownerId, slot);
 }
 
 export async function loadOverlayPersonalBest(req, client) {

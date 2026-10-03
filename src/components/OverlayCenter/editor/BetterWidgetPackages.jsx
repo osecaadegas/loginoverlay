@@ -1,3 +1,6 @@
+import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
+import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
+import { CURRENT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React, { useEffect, useMemo, useState } from "react";
 import { getUserRoles } from "../../../utils/adminUtils";
@@ -1086,6 +1089,7 @@ const BASE_BETTER_CONFIG = {
     orientation: "vertical",
     cardColors: DEFAULT_CARD_COLORS,
   },
+  current_slot: { ...CURRENT_SLOT_DEFAULTS },
   slot_bingo: {
     ...SLOT_BINGO_DEFAULT_CONFIG,
   },
@@ -1125,6 +1129,7 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  { type: 'current_slot', label: 'Current Game', styleKey: 'displayStyle', styleId: 'immersive_current', icon: '▶', defaultSize: { width: 1320, height: 290 } },
   {
     type: "slot_bingo",
     label: "Slot Bingo",
@@ -2070,6 +2075,7 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case 'current_slot': return <CurrentSlotWidget config={config} userId={userId} widgetId={widget?.id} />;
     case "slot_bingo":
       return <SlotBingoWidget config={config} widgetId={widget?.id || widget?.instanceId} />;
     case "tournament":
@@ -3819,6 +3825,7 @@ function SimpleThemedControls({
   const activeTab = (tabs) =>
     tab === "__all" || tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0];
 
+  if (type === 'current_slot') return <CurrentSlotAppearanceControls config={c} onChange={onChange} />;
   if (type === "navbar") {
     return (
       <div className="bp-controls">

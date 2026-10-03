@@ -996,138 +996,262 @@ export const widgetAppearanceRegistry = Object.freeze({
     }),
   }),
   current_slot: makeBasicWidgetCapability({
-    id: "current_slot",
-    label: "Current Slot",
-    category: "casino",
-    defaultStyleId: "v1",
-    defaultAppearance: {
-      primaryColor: "#f59e0b",
-      accentColor: "#22d3ee",
-    },
-    styles: [
-      makeRuntimeStyle(
-        "v1",
-        "Classic",
-        "Classic current-slot card with image, provider and stake details.",
-        {
-          recommended: true,
-          capabilities: {
-            ...IMAGE_QUICK_CAPABILITIES,
-            statCards: true,
-            positiveNegativeColours: true,
-          },
-          elementIds: [
-            "container",
-            "slotImage",
-            "slotTitle",
-            "provider",
-            "stake",
-            "stat",
-          ],
-        },
-      ),
-      makeRuntimeStyle(
-        "v2",
-        "Neon",
-        "Current-slot card with stronger glow and neon borders.",
-        {
-          capabilities: {
-            ...IMAGE_QUICK_CAPABILITIES,
-            statCards: true,
-            positiveNegativeColours: true,
-            glow: true,
-            glowIntensity: true,
-          },
-          elementIds: [
-            "container",
-            "slotImage",
-            "slotTitle",
-            "provider",
-            "stake",
-            "stat",
-          ],
-        },
-      ),
-      makeRuntimeStyle(
-        "v3",
-        "Minimal",
-        "Small low-noise current-slot label for compact scenes.",
-        {
-          capabilities: {
-            ...IMAGE_QUICK_CAPABILITIES,
-            transparentBackground: true,
-          },
-          elementIds: [
-            "container",
-            "slotImage",
-            "slotTitle",
-            "provider",
-            "stake",
-            "stat",
-          ],
-        },
-      ),
-      makeRuntimeStyle(
-        "v4",
-        "Compact Bar",
-        "Horizontal current-slot bar for lower-third placement.",
-        {
-          capabilities: {
-            ...IMAGE_QUICK_CAPABILITIES,
-            barDimensions: true,
-            rows: true,
-          },
-          elementIds: [
-            "container",
-            "slotImage",
-            "slotTitle",
-            "provider",
-            "stake",
-            "stat",
-          ],
-        },
-      ),
-    ],
-    responsive: {
-      minWidth: 180,
-      minHeight: 90,
-      maxWidth: 1200,
-      maxHeight: 720,
-    },
+    id: 'current_slot', label: 'Current Game', category: 'casino', defaultStyleId: 'immersive_current',
+    defaultAppearance: { primaryColor: '#28edac', accentColor: '#28edac' },
+    styles: [makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
+      recommended: true, capabilities: { colours: true, fonts: true, fontSizes: true, containers: true, borders: true, images: true, imageFit: true, spacing: true, statCards: true },
+      elementIds: ["container","identity","coverFrame","slotImage","backdrop","titleImage","slotTitle","provider","badge","info","infoTitle","records","recordsTitle","potential","potentialLabel","potentialValue","rtp","rtpLabel","rtpValue","volatility","volatilityLabel","volatilityValue","bestWin","bestWinLabel","bestWinValue","bestMulti","bestMultiLabel","bestMultiValue","averageWin","averageWinLabel","averageWinValue"],
+    })],
+    responsive: { minWidth: 680, minHeight: 140, maxWidth: 1920, maxHeight: 600 },
     elements: {
-      container: BASIC_WIDGET_ELEMENTS.container,
-      slotImage: Object.freeze({
-        label: "Slot image",
-        kind: "image",
-        capabilities: ["image", "border", "shape", "spacing"],
-      }),
-      slotTitle: Object.freeze({
-        label: "Slot title",
-        kind: "text",
-        capabilities: ["typography", "stateColor"],
-      }),
-      provider: Object.freeze({
-        label: "Provider label",
-        kind: "text",
-        capabilities: ["typography", "stateColor"],
-      }),
-      stake: Object.freeze({
-        label: "Stake value",
-        kind: "badge",
-        capabilities: [
-          "surface",
-          "border",
-          "shape",
-          "typography",
-          "stateColor",
-        ],
-      }),
-      stat: Object.freeze({
-        label: "RTP/stat value",
-        kind: "text",
-        capabilities: ["typography", "stateColor"],
-      }),
-    },
+  "container": {
+    "label": "Current Game frame",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "shadow",
+      "spacing"
+    ]
+  },
+  "identity": {
+    "label": "Game identity",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "coverFrame": {
+    "label": "Cover frame",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "shape",
+      "spacing"
+    ]
+  },
+  "slotImage": {
+    "label": "Slot cover",
+    "kind": "image",
+    "capabilities": [
+      "image",
+      "border",
+      "shape"
+    ]
+  },
+  "backdrop": {
+    "label": "Immersive backdrop",
+    "kind": "image",
+    "capabilities": [
+      "image",
+      "surface"
+    ]
+  },
+  "titleImage": {
+    "label": "Title artwork",
+    "kind": "image",
+    "capabilities": [
+      "image"
+    ]
+  },
+  "slotTitle": {
+    "label": "Slot title",
+    "kind": "text",
+    "capabilities": [
+      "typography",
+      "spacing"
+    ]
+  },
+  "provider": {
+    "label": "Provider",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "badge": {
+    "label": "Current game badge",
+    "kind": "badge",
+    "capabilities": [
+      "surface",
+      "border",
+      "typography"
+    ]
+  },
+  "info": {
+    "label": "Information panel",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "infoTitle": {
+    "label": "Information heading",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "records": {
+    "label": "Personal records panel",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "recordsTitle": {
+    "label": "Records heading",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "potential": {
+    "label": "potential row",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "potentialLabel": {
+    "label": "potential label",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "potentialValue": {
+    "label": "potential value",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "rtp": {
+    "label": "rtp row",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "rtpLabel": {
+    "label": "rtp label",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "rtpValue": {
+    "label": "rtp value",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "volatility": {
+    "label": "volatility row",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "volatilityLabel": {
+    "label": "volatility label",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "volatilityValue": {
+    "label": "volatility value",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "bestWin": {
+    "label": "bestWin row",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "bestWinLabel": {
+    "label": "bestWin label",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "bestWinValue": {
+    "label": "bestWin value",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "bestMulti": {
+    "label": "bestMulti row",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "bestMultiLabel": {
+    "label": "bestMulti label",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "bestMultiValue": {
+    "label": "bestMulti value",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "averageWin": {
+    "label": "averageWin row",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "spacing"
+    ]
+  },
+  "averageWinLabel": {
+    "label": "averageWin label",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  },
+  "averageWinValue": {
+    "label": "averageWin value",
+    "kind": "text",
+    "capabilities": [
+      "typography"
+    ]
+  }
+},
   }),
   tournament: makeBasicWidgetCapability({
     id: "tournament",

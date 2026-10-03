@@ -31,6 +31,10 @@ import SlotBingoConfig from "./slot-bingo/SlotBingoConfig";
 import SlotBingoWidget from "./slot-bingo/SlotBingoWidget";
 import { SLOT_BINGO_DEFAULT_CONFIG } from "./slot-bingo/slotBingoModel";
 
+import CurrentSlotWidget from './current-slot/CurrentSlotWidget';
+import CurrentSlotConfig from './current-slot/CurrentSlotConfig';
+import { CURRENT_SLOT_DEFAULTS } from './current-slot/currentSlotModel';
+registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', description: 'Current slot, catalog stats and shared personal records.', category: 'better', component: CurrentSlotWidget, configPanel: CurrentSlotConfig, styleConfigKey: 'displayStyle', styles: [{ id: 'immersive_current', label: 'Immersive', defaultSize: { width: 1320, height: 290 } }], defaults: { ...CURRENT_SLOT_DEFAULTS } });
 const CURRENCY = "EUR ";
 
 registerWidget({

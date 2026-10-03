@@ -797,11 +797,13 @@ function resolveActiveRtpSlot({
   bonusOpening,
   currentBonusSlot,
   tournamentSlotName,
+  currentGameSlot,
 }) {
   if (previewSlotName) return getSlotIdentity({ slotName: previewSlotName });
   if (bonusOpening && currentBonusSlot?.name) return currentBonusSlot;
   if (tournamentSlotName)
     return getSlotIdentity({ slotName: tournamentSlotName });
+  if (currentGameSlot?.name) return currentGameSlot;
   if (currentBonusSlot?.name) return currentBonusSlot;
   return getSlotIdentity({});
 }
@@ -1289,6 +1291,10 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId, publicOve
     [currentBonus],
   );
 
+  const currentGameSlot = useMemo(() => {
+    const source = (allWidgets || []).find(widget => widget.widget_type === 'current_slot');
+    return getSlotIdentity(source?.config || {});
+  }, [allWidgets]);
   const activeSlot = useMemo(
     () =>
       resolveActiveRtpSlot({
@@ -1296,12 +1302,14 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId, publicOve
         bonusOpening,
         currentBonusSlot,
         tournamentSlotName,
+        currentGameSlot,
       }),
     [
       bhConfig.previewSlotName,
       bonusOpening,
       currentBonusSlot,
       tournamentSlotName,
+      currentGameSlot,
     ],
   );
 

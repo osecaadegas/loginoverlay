@@ -201,7 +201,7 @@ try {
   );
   const runtimeStyleCoverage = {
     bonus_hunt: ["v3", "v5_horizontal", "v11_fever", "v12_classic_sr"],
-    current_slot: ["v1", "v2", "v3", "v4"],
+    current_slot: ["immersive_current"],
     tournament: [
       "grid",
       "showcase",

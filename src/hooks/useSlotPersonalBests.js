@@ -1,3 +1,4 @@
+import { readSlotPersonalBest } from '../../shared/slotPersonalBest.js';
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../config/supabaseClient";
 import {
@@ -5,9 +6,6 @@ import {
   pickPersonalBest,
   recordMatchesSlot,
 } from "../../shared/slotPersonalBest.js";
-
-const BEST_COLUMNS =
-  "slot_id, slot_name, slot_provider, best_win, best_multiplier";
 
 export function slotPersonalBestKey(slotLike) {
   const slot = getSlotIdentity(slotLike);
@@ -90,12 +88,11 @@ export default function useSlotPersonalBests({
           const payload = await response.json();
           bests = matchBests(identities, payload.bests);
         } else {
-          const { data, error } = await supabase
-            .from("user_slot_records")
-            .select(BEST_COLUMNS)
-            .eq("user_id", userId);
-          if (error) throw error;
-          bests = matchBests(identities, data);
+          const data = [];
+          for (let offset = 0; offset < identities.length && !cancelled; offset += 4) {
+            data.push(...await Promise.all(identities.slice(offset, offset + 4).map(slot => readSlotPersonalBest(supabase, userId, slot))));
+          }
+          bests = matchBests(identities, data.filter(Boolean));
         }
         if (!cancelled) setResult({ requestScope, bests });
       } catch (error) {
@@ -105,8 +102,9 @@ export default function useSlotPersonalBests({
       }
     }
 
+    window.addEventListener('slot-result-saved', refresh);
     refresh();
-    const timer = isPublic ? setInterval(refresh, 60_000) : null;
+    const timer = setInterval(refresh, 60_000);
     const channel = isPublic
       ? null
       : supabase
@@ -121,9 +119,11 @@ export default function useSlotPersonalBests({
             },
             refresh,
           )
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'user_slot_results', filter: `user_id=eq.${userId}` }, refresh)
           .subscribe();
 
     return () => {
+      window.removeEventListener('slot-result-saved', refresh);
       cancelled = true;
       controller.abort();
       if (timer) clearInterval(timer);

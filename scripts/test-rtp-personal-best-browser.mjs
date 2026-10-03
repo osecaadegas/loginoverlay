@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
 
 const baseUrl = process.env.TEST_BASE_URL || 'http://127.0.0.1:3010';
@@ -49,6 +48,8 @@ try {
       requests.private += 1;
       const owner = url.searchParams.get('user_id')?.replace(/^eq\./, '');
       await json([{ slot_name: 'Mad Blast', slot_provider: 'Reel Gaming', best_win: records[owner] || 0, best_multiplier: 60 }]);
+    } else if (url.pathname === '/rest/v1/user_slot_results') {
+      await json([]);
     } else if (url.pathname === '/rest/v1/slots') {
       await json({ id: '11111111-1111-4111-8111-111111111111', name: 'Mad Blast', provider: 'Reel Gaming', rtp: 96, volatility: 'high', max_win_multiplier: 10000 });
     } else if (url.pathname === '/rest/v1/overlay_widgets') {
@@ -61,10 +62,11 @@ try {
     }
   });
   await page.goto(`${baseUrl}/__rtp-best-test`, { waitUntil: 'networkidle0' });
-  const { browserHash } = JSON.parse(readFileSync(new URL('../node_modules/.vite/deps/_metadata.json', import.meta.url), 'utf8'));
-  await page.evaluate(async (version) => {
-    const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
-    const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
+  const entry = await (await fetch(baseUrl + '/src/main.jsx')).text();
+  const dependencies = { react: entry.match(/from "([^"\n]*\/react.js\?[^"\n]*)"/)[1], dom: entry.match(/from "([^"\n]*\/react-dom_client.js\?[^"\n]*)"/)[1] };
+  await page.evaluate(async (dependencies) => {
+    const { default: React } = await import(dependencies.react);
+    const { default: ReactDOM } = await import(dependencies.dom);
     const { default: Widget } = await import('/src/components/OverlayCenter/widgets/rtp-stats/RtpStatsWidget.jsx');
     const { supabase } = await import('/src/config/supabaseClient.js');
     const timers = new Set();
@@ -95,7 +97,7 @@ try {
       emit: () => onRecordChange?.({ eventType: 'UPDATE', new: { slot_name: 'Mad Blast', slot_provider: 'Reel Gaming' } }),
       unmount: () => root.unmount(),
     };
-  }, browserHash);
+  }, dependencies);
 
   const render = (props) => page.evaluate((value) => window.rtpTest.render(value), props);
   const waitBest = async (value) => {

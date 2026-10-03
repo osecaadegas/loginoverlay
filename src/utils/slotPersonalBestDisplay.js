@@ -18,16 +18,10 @@ function normalizeBestWinRecord(record) {
 }
 
 export function pickBestWinRecord(records) {
-  return (
-    records
-      .map(normalizeBestWinRecord)
-      .filter((record) => record?.best_win > 0)
-      .sort(
-        (a, b) =>
-          Number(b.best_win || 0) - Number(a.best_win || 0) ||
-          Number(b.best_multiplier || 0) - Number(a.best_multiplier || 0),
-      )[0] || null
-  );
+  const valid = records.map(normalizeBestWinRecord).filter(Boolean);
+  if (!valid.length) return null;
+  const win = valid.reduce((a, b) => b.best_win > a.best_win ? b : a);
+  return { ...win, best_multiplier: Math.max(...valid.map(record => record.best_multiplier)) };
 }
 
 function cachedBestWinRecord(cached, userId, activeSlot) {

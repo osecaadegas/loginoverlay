@@ -1,3 +1,4 @@
+import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
 import { withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React from "react";
 import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
@@ -332,6 +333,7 @@ const MOCK_WIDGET_CONFIGS = {
 };
 
 const LIVE_DATA_KEYS = Object.freeze({
+  current_slot: ['slot', 'slotId', 'slotName', 'provider', 'imageUrl', 'artworkBySlot', 'currency'],
   slot_bingo: [
     "title", "boardRows", "showProgress",
     "showMultipliers", "showCompletionIcons", "squares",
@@ -529,6 +531,7 @@ const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
+  current_slot: CurrentSlotWidget,
   slot_bingo: SlotBingoWidget,
   connect_four: ConnectFourWidget,
   tournament: TournamentWidget,
@@ -544,6 +547,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
+  current_slot: ['display', 'colours'],
   slot_bingo: ["content", "board", "layout", "colours"],
   connect_four: ["content", "players", "board", "motion"],
   tournament: ["surface", "layout", "cards", "typography", "palette"],
@@ -617,6 +621,7 @@ const SIZE_CONSTRAINTS = {
   giveaway: { minWidth: 240, minHeight: 180, maxWidth: 1100, maxHeight: 520 },
   navbar: { minWidth: 720, minHeight: 46, maxWidth: 1920, maxHeight: 160 },
   chat: { minWidth: 180, minHeight: 220, maxWidth: 720, maxHeight: 900 },
+  current_slot: { minWidth: 680, minHeight: 140, maxWidth: 1920, maxHeight: 600 },
   rtp_stats: { minWidth: 680, minHeight: 52, maxWidth: 1920, maxHeight: 160 },
   background: {
     minWidth: 1920,
@@ -1277,6 +1282,10 @@ export function renderBetterWidgetInstance({
   const allWidgets = normalizedLayout.instances.map((item) =>
     betterInstanceToLegacyWidget(item, mode, liveSourceContext),
   );
+  if (mode === 'live' && !allWidgets.some(item => item.widget_type === 'current_slot')) {
+    const currentGame = liveWidgets.find(item => item.widget_type === 'current_slot');
+    if (currentGame) allWidgets.push(currentGame);
+  }
   const widget = betterInstanceToLegacyWidget(
     instance,
     mode,

@@ -168,9 +168,9 @@ const FEATURE_COPY = {
     action: "Configure Tournament",
   },
   current_slot: {
-    title: "Current Slot",
+    title: "Current Game",
     description: "Show the active slot, provider and stake.",
-    action: "Configure Current Slot",
+    action: "Configure Current Game",
   },
   chat: {
     title: "Chat",
@@ -1539,7 +1539,7 @@ function WidgetDetail({
   };
 
   const status = resolveToolStatus({ type: widgetType, widget, integrations });
-  const useFullWidthConfig = ["slot_requests", "tournament"].includes(
+  const useFullWidthConfig = ["slot_requests", "tournament", "current_slot"].includes(
     widgetType,
   );
   const detailModifier = `oc2-detail--${widgetType.replace(/_/g, "-")}`;

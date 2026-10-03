@@ -8,7 +8,7 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    if (!userId || (!id && !name)) return undefined;
+    if ((!userId && !publicOverlayId && !overlayToken) || (!id && !name)) return undefined;
     const activeSlot = { id, name, provider };
     const isPublic = Boolean(publicOverlayId || overlayToken);
     let cancelled = false;
@@ -43,17 +43,19 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
       }
     }
 
+    window.addEventListener('slot-result-saved', refresh);
     refresh();
     // Anonymous OBS sources cannot receive private-table realtime events.
-    const timer = isPublic ? setInterval(refresh, 60_000) : null;
+    const timer = setInterval(refresh, 60_000);
     const channel = isPublic ? null : supabase.channel(`bestwin_${scope}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'user_slot_records', filter: `user_id=eq.${userId}`,
       }, (payload) => {
         if (payload.eventType === 'DELETE' || recordMatchesSlot(payload.new, activeSlot)) refresh();
-      }).subscribe();
+      }).on('postgres_changes', { event: '*', schema: 'public', table: 'user_slot_results', filter: `user_id=eq.${userId}` }, refresh).subscribe();
 
     return () => {
+      window.removeEventListener('slot-result-saved', refresh);
       cancelled = true;
       controller.abort();
       clearTimeout(retryTimer);

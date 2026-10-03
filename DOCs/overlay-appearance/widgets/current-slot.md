@@ -1,67 +1,18 @@
-# Current Slot
+# Current Game (`current_slot`)
 
-## Identity
+The current implementation uses the `immersive_current` style in the existing Better editor. The earlier `v1`–`v4` renderer was removed before this feature; those layouts are not advertised by the new style registry.
 
-| Field | Value |
-| --- | --- |
-| Widget ID | `current_slot` |
-| Name | Current Slot |
-| Registry | `src/components/OverlayCenter/widgets/builtinWidgets.js:47` |
-| Main component | `src/components/OverlayCenter/widgets/CurrentSlotWidget.jsx:7` |
-| Config panel | `src/components/OverlayCenter/widgets/CurrentSlotConfig.jsx` |
-| Styles | `v1`, `v2`, `v3`, `v4` through `displayStyle` |
-| Data source | `overlay_widgets.config`, active slot updates from `useOverlay.js` |
-| Persistence | `overlay_widgets.config`, appearance draft/published tokens |
+- Renderer: `src/components/OverlayCenter/widgets/current-slot/CurrentSlotWidget.jsx`
+- Management: `src/components/OverlayCenter/widgets/current-slot/CurrentSlotConfig.jsx`
+- Controls: `src/components/OverlayCenter/widgets/current-slot/CurrentSlotAppearanceControls.jsx`
+- Route: `/overlay-center/widgets/current-slot`
+- Configuration: existing `overlay_widgets.config` and per-instance Better layout config.
+- Records: existing `user_slot_results`, combined with legacy `user_slot_records` / Bonus Hunt history through `shared/slotPersonalBest.js`.
 
-## Rendering structure
+The horizontal layout contains a slot cover, separate title/provider, catalog information, and personal records. The catalog image supplies the immersive backdrop unless a per-slot background URL is configured. Separate title artwork is optional; otherwise the name is rendered as text.
 
-- `CurrentSlotWidget`
-  - root surface
-  - slot image area
-  - slot title
-  - provider line
-  - bet/RTP/metadata fields depending on style
+Appearance elements are declared for `immersive_current` in `appearance/v2/widgetAppearanceRegistry.js`. The renderer binds stable element IDs using `appearanceAttrs`, `subElementStyle`, and `subValue`. Individual rows, labels and values have separate scopes; image URL overrides update the actual image source. The same component renders in editor preview and OBS.
 
-## Visual layers
+Default frame: 1320 × 290. Editor bounds: 680–1920 wide and 140–600 high. Typography scales with widget width. Page previews fit the available viewport. Empty selections, missing metadata and unavailable images have explicit fallbacks.
 
-- Root background.
-- Slot image.
-- Title and provider text.
-- Metadata badges.
-- Border and shadow.
-
-## Styling method
-
-- Mostly inline styles.
-- Some `subValue` access for appearance-aware values.
-- No broad `data-widget-element` markers.
-- Registry declares basic custom appearance tokens.
-
-## Hardcoded values and risks
-
-- Inline dimensions and typography in `CurrentSlotWidget.jsx`.
-- Style variants have different structure; compact bar is not the same layout as card styles.
-- Image sizing is constrained by slot dimensions and should not be freely edited.
-
-## Animation model
-
-- No major internal keyframe system found in the component.
-- Renderer shell animations still apply.
-
-## Layout model
-
-- Fixed widget slot, usually card or compact bar.
-- Image and text layout are tightly coupled for compact style.
-
-## State variants
-
-- Empty/no current slot.
-- Active slot with image.
-- Missing image fallback.
-
-## Customization safety
-
-- Safe: surface color, text color, muted color, border color, simple radius, font family.
-- Constrained: font size, image size, padding, widget scale.
-- Dangerous: arbitrary width/height without style-specific minimums.
-- Not customizable: active slot detection and slot metadata resolution.
+See [Current Game implementation and validation](../../CURRENT_GAME_WIDGET.md) for record semantics, checks and limitations.
