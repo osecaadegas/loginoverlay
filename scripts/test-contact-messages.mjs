@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const footerSource = read("../src/components/LandingPage/ContactFooter.jsx");
 const landingSource = read("../src/components/LandingPage/LandingPage.jsx");
+const landingHeaderSource = read("../src/components/LandingPage/LandingHeader.jsx");
 const toolLandingSource = read(
   "../src/components/LandingPage/ToolLandingPage.jsx",
 );
@@ -25,7 +26,8 @@ assert.match(footerSource, /aria-controls="footer-contact-form"/);
 assert.match(footerSource, /\{contactOpen && \(/);
 assert.match(footerSource, /streamerscentertracker@gmail\.com/);
 assert.match(footerSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
-assert.match(landingSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
+assert.match(landingHeaderSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
+assert.match(landingSource, /<LandingHeader /);
 assert.match(toolLandingSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
 assert.match(privacySource, /streamerscentertracker@gmail\.com/);
 assert.match(privacySource, /https:\/\/discord\.gg\/bkxAyTn73Y/);

@@ -114,8 +114,9 @@ function LayoutWrapper({ children }) {
   const isEditorRoute = location.pathname === "/editor";
   const isPremiumRoute = location.pathname === "/premium";
   const isSystemRoute = location.pathname === "/spotify-callback";
+  const isMarketingHome = location.pathname === "/";
   const showTopNavigation =
-    !isWidgetRoute && !isOBSOverlay && !isBetterOBSOverlay && !isSystemRoute;
+    !isWidgetRoute && !isOBSOverlay && !isBetterOBSOverlay && !isSystemRoute && !isMarketingHome;
 
   useEffect(() => {
     applyRouteSeo(location.pathname);

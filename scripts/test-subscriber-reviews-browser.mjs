@@ -38,7 +38,9 @@ try {
     const source = await (await fetch('/src/components/LandingPage/SubscriberReviews.jsx')).text();
     const dependency = (name) => source.match(new RegExp('"([^"\\n]*' + name + '\\.js[^"\\n]*)"'))[1];
     const { default: React } = await import(dependency('/react'));
-    const { default: ReactDOM } = await import('/node_modules/.vite/deps/react-dom_client.js');
+    const entry = await (await fetch('/src/main.jsx')).text();
+    const clientUrl = entry.match(/"([^"\n]*react-dom_client\.js[^"\n]*)"/)[1];
+    const { default: ReactDOM } = await import(clientUrl);
     const { BrowserRouter } = await import(dependency('react-router-dom'));
     const { QueryClient, QueryClientProvider } = await import(dependency('@tanstack_react-query'));
     const { default: Reviews } = await import('/src/components/LandingPage/SubscriberReviews.jsx');
@@ -55,6 +57,9 @@ try {
     };
     window.mountReviews();
   });
+  await page.waitForSelector('.sr-compact');
+  assert.equal(await page.$('.sr-form'), null, 'Empty feed keeps its review form collapsed');
+  await page.click('.sr-write button');
   await page.waitForSelector('.sr-form');
   await page.click('input[name="review-rating"][value="1"]');
   await page.type('input[autocomplete="nickname"]', 'Browser test');
@@ -65,7 +70,7 @@ try {
   assert.equal(postCount, 1);
   await page.waitForSelector('.sr-card');
   assert.equal(await page.$('.sr-card img'), null, 'Review text is escaped, never interpreted as HTML');
-  assert.match(await page.$eval('.sr-card', el => el.textContent), /3-day incentive/);
+  assert.match(await page.$eval('.sr-card', el => el.textContent), /3-day review reward program/);
   await page.click('.sr-own button');
   await page.waitForFunction(() => document.querySelector('.sr-own')?.textContent.includes('three free days have been added'));
   assert.equal(postCount, 2);
@@ -74,10 +79,12 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   saved = null; eligible = false;
   await page.evaluate(() => window.mountReviews());
-  await page.waitForFunction(() => document.querySelector('.sr-write')?.textContent.includes('An active Player or Streamer subscription is needed'));
+  await page.waitForSelector('.sr-compact');
+  await page.click('.sr-write button');
+  await page.waitForFunction(() => document.querySelector('.sr-compact-form')?.textContent.includes('An active Player or Streamer subscription is needed'));
   assert.equal(await page.$('.sr-form'), null);
   await page.evaluate(() => window.mountReviews(false));
-  await page.waitForFunction(() => document.querySelector('.sr-write button')?.textContent.includes('Sign in'));
+  await page.waitForFunction(() => document.querySelector('.sr-write button')?.textContent.includes('first verified review'));
   await page.click('.sr-write button'); assert.equal(await page.evaluate(() => window.loginClicked), true);
   failPublic = true;
   await page.evaluate(() => window.mountReviews(false));

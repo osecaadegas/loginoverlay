@@ -20,8 +20,8 @@ const overlayCenterSource = readSource(
 
 assert.match(
   appSource,
-  /const showTopNavigation\s*=\s*!isWidgetRoute\s*&&\s*!isOBSOverlay\s*&&\s*!isBetterOBSOverlay\s*&&\s*!isSystemRoute;/,
-  "Shared navigation renders on every normal page while broadcast and OAuth callback routes stay chrome-free",
+  /const showTopNavigation\s*=\s*!isWidgetRoute\s*&&\s*!isOBSOverlay\s*&&\s*!isBetterOBSOverlay\s*&&\s*!isSystemRoute\s*&&\s*!isMarketingHome;/,
+  "Shared navigation stays on app pages; the homepage owns its marketing navigation and broadcast routes remain chrome-free",
 );
 assert.ok(
   navigationSource.includes('to="/"') &&
@@ -42,4 +42,7 @@ assert.ok(
   "Page-local headers do not duplicate the shared navigation controls",
 );
 
+const headerSource = readSource('../src/components/LandingPage/LandingHeader.jsx');
+assert.ok(landingSource.includes('<LandingHeader') && headerSource.includes('StreamerCenterLogo.png'), 'Homepage owns one branded marketing header');
+assert.match(appSource, /const isMarketingHome = location.pathname === ["']\/["'];/);
 console.log("global navigation tests passed");

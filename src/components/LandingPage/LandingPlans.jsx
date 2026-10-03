@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
 import PricingCardContent, { STREAMER_PLAN_CARDS, PLAYER_PLAN_CARDS, getPlanFeatures } from '../Pricing/PricingCardContent';
 import useLandingSubscriptions from './useLandingSubscriptions';
+import { formatCurrency, planSavings } from './pricingPresentation';
 
 export default function LandingPlans() {
   const { data, isPending, isError, refetch } = useLandingSubscriptions();
@@ -22,7 +23,7 @@ export default function LandingPlans() {
     {trialAvailable && <div className="lp-trial-banner">
       <span className="lp-trial-banner__icon"><Sparkles size={30} aria-hidden="true" /></span>
       <div><span className="lp-eyebrow">For eligible new accounts</span><h3>{data.trialDays} days to make it yours. Free.</h3>
-        <p>{data.trialRequiresPaymentMethod === false ? 'No card needed. ' : ''}Explore your tools, build your setup and see how it feels.</p>
+        <p>{data.trialRequiresPaymentMethod === false ? 'No credit card required. ' : ''}No automatic renewal. Choose a paid plan only when you’re ready.</p>
       </div>
       <Link className="lp-btn lp-btn--streamer" to={`/premium?type=${type}`}>Start free trial <ArrowRight size={18} aria-hidden="true" /></Link>
     </div>}
@@ -37,9 +38,10 @@ export default function LandingPlans() {
       <div className="lp-pricing-cards" aria-live="polite" aria-label={`${product?.title || type} subscriptions`}>
         {plans.map((plan, index) => {
           const presentation = presentations.find(item => item.id === plan.id);
-          const card = { ...plan, accent: presentation?.accent || ['cyan', 'violet', 'pink'][index % 3], displayTitle: presentation?.title || plan.title, presentationBadge: presentation?.badge };
-          return <Link className={`premium-image-card premium-image-card--${card.accent}`} key={plan.id} to={`/premium?type=${type}`} aria-label={`View ${plan.title} plan`}>
-            <PricingCardContent card={card} planFeatures={features} actionLabel="View plan" />
+          const saving = planSavings(plan, data.plans);
+          const card = { ...plan, savingsLabel: saving > 0 ? `Save ${formatCurrency(saving, plan.currency)}` : plan.savingsLabel, accent: presentation?.accent || ['cyan', 'violet', 'pink'][index % 3], displayTitle: presentation?.title || plan.title, presentationBadge: presentation?.badge };
+          return <Link className={`premium-image-card premium-image-card--${card.accent}${plan.intervalMonths === 12 ? ' lp-plan-best-value' : ''}`} key={plan.id} to={`/premium?type=${type}`} aria-label={`View ${plan.title} plan`}>
+            <PricingCardContent card={card} planFeatures={features} actionLabel="View plan" showMonthlyEquivalent />
           </Link>;
         })}
       </div>

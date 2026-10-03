@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -7,7 +7,6 @@ import {
   ChevronRight,
   CircleDollarSign,
   Clapperboard,
-  Code2,
   Database,
   Gauge,
   Grid3X3,
@@ -42,10 +41,6 @@ import {
   dropConnectFourCoin,
   findConnectFourWin,
 } from "../../features/connectFour/engine";
-import {
-  createBetterInstance,
-  renderBetterWidgetInstance,
-} from "../OverlayCenter/editor/betterWidgetRegistry";
 import ContactFooter from "./ContactFooter";
 import LandingPlans from "./LandingPlans";
 import useLandingSubscriptions from "./useLandingSubscriptions";
@@ -53,10 +48,13 @@ import SubscriberReviews from "./SubscriberReviews";
 import "./LandingPage.css";
 import "./LandingModern.css";
 import useLandingMotion from "./useLandingMotion";
-import { applyWidgetColourTheme } from "../OverlayCenter/editor/widgetColourThemes";
+import LandingHeader from "./LandingHeader";
+import { formatCurrency } from "./pricingPresentation";
 import { WIDGET_COLOUR_THEMES } from "../OverlayCenter/widgets/shared/colourThemePalettes";
+import { BACKGROUND_IMAGE_LIBRARY } from "../OverlayCenter/widgets/background/backgroundLibrary";
 
 const LandingMotionContext = createContext(false);
+const LandingWidgetRuntime = lazy(() => import("./LandingWidgetRuntime"));
 
 const FEATURED_PARTNERS = [
   {
@@ -216,14 +214,6 @@ const STREAMER_ANSWERS = [
   },
 ];
 
-const HOME_PLATFORM_BADGES = [
-  { label: "OBS Ready", icon: SiObsstudio, tone: "obs" },
-  { label: "Twitch", icon: SiTwitch, tone: "twitch" },
-  { label: "Kick", icon: SiKick, tone: "kick" },
-  { label: "YouTube", icon: SiYoutube, tone: "youtube" },
-  { label: "No Coding", icon: Code2, tone: "code" },
-];
-
 const STREAMER_DEMOS = [
   {
     id: "bonus",
@@ -306,62 +296,6 @@ const TRUST_POINTS = [
 
 const HOME_WIDGETS = [
   {
-    title: "Bets",
-    widgetType: "bets",
-    layout: "square",
-    width: 778,
-    height: 520,
-  },
-  {
-    title: "Connect 4 Game",
-    widgetType: "connect_four",
-    layout: "square",
-    width: 620,
-    height: 790,
-  },
-  {
-    title: "Giveaway",
-    widgetType: "giveaway",
-    layout: "square",
-    width: 420,
-    height: 270,
-  },
-  {
-    title: "Chat",
-    widgetType: "chat",
-    layout: "square",
-    width: 330,
-    height: 457,
-  },
-  {
-    title: "Shoutout",
-    widgetType: "raid_shoutout",
-    layout: "square",
-    width: 640,
-    height: 360,
-  },
-  {
-    title: "Tournament",
-    widgetType: "tournament",
-    layout: "square",
-    width: 960,
-    height: 480,
-  },
-  {
-    title: "Slideshow Frame",
-    widgetType: "slideshow_frame",
-    layout: "square",
-    width: 336,
-    height: 227,
-  },
-  {
-    title: "Animated Background",
-    widgetType: "background",
-    layout: "square",
-    width: 1920,
-    height: 1080,
-  },
-  {
     title: "Bonus Hunt",
     widgetType: "bonus_hunt",
     layout: "square",
@@ -376,11 +310,67 @@ const HOME_WIDGETS = [
     height: 57,
   },
   {
+    title: "Bets",
+    widgetType: "bets",
+    layout: "square",
+    width: 778,
+    height: 520,
+  },
+  {
+    title: "Giveaway",
+    widgetType: "giveaway",
+    layout: "square",
+    width: 420,
+    height: 270,
+  },
+  {
+    title: "Tournament",
+    widgetType: "tournament",
+    layout: "square",
+    width: 960,
+    height: 480,
+  },
+  {
+    title: "Chat",
+    widgetType: "chat",
+    layout: "square",
+    width: 330,
+    height: 457,
+  },
+  {
+    title: "Connect 4 Game",
+    widgetType: "connect_four",
+    layout: "square",
+    width: 620,
+    height: 790,
+  },
+  {
+    title: "Shoutout",
+    widgetType: "raid_shoutout",
+    layout: "square",
+    width: 640,
+    height: 360,
+  },
+  {
     title: "Navbar",
     widgetType: "navbar",
     layout: "wide",
     width: 1915,
     height: 72,
+  },
+  {
+    title: "Slideshow Frame",
+    widgetType: "slideshow_frame",
+    layout: "square",
+    width: 336,
+    height: 227,
+  },
+  {
+    title: "Animated Background",
+    widgetType: "background",
+    layout: "square",
+    width: 1920,
+    height: 1080,
   },
 ];
 
@@ -844,12 +834,12 @@ const BONUS_HUNT_PREVIEW_OPTIONS = Object.freeze({
   listMode: ["compact", "image", "names"],
 });
 
-function getBonusHuntPreviewState(cycle) {
+function getBonusHuntPreviewState(cycle, selectedOrientation) {
   const pick = (key) => {
     const options = BONUS_HUNT_PREVIEW_OPTIONS[key];
     return options[cycle % options.length];
   };
-  const orientation = pick("orientation");
+  const orientation = selectedOrientation || pick("orientation");
   const isHorizontal = orientation === "horizontal";
   const isMainstream = orientation === "mainstream";
   const width = isHorizontal ? 1080 : isMainstream ? 372 : 402;
@@ -860,7 +850,7 @@ function getBonusHuntPreviewState(cycle) {
     height,
     config: {
       orientation,
-      skin: pick("skin"),
+      skin: selectedOrientation ? "modern" : pick("skin"),
       sessionState: pick("sessionState"),
       carouselMode: pick("carouselMode"),
       listMode: pick("listMode"),
@@ -879,7 +869,7 @@ function getBonusHuntPreviewState(cycle) {
   };
 }
 
-function LiveWidgetShowcase({ widget, scaleMultiplier = 1, colourTheme, inactive = false }) {
+function LiveWidgetShowcase({ widget, scaleMultiplier = 1, colourTheme, inactive = false, bonusOrientation }) {
   const landingPaused = useContext(LandingMotionContext);
   const motionPaused = landingPaused || inactive;
   const [previewCycle, setPreviewCycle] = useState(0);
@@ -969,9 +959,9 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1, colourTheme, inactive
   const bonusHuntPreview = useMemo(
     () =>
       widget.widgetType === "bonus_hunt"
-        ? getBonusHuntPreviewState(previewCycle)
+        ? getBonusHuntPreviewState(previewCycle, bonusOrientation)
         : null,
-    [previewCycle, widget.widgetType],
+    [previewCycle, widget.widgetType, bonusOrientation],
   );
   const previewWidth = bonusHuntPreview?.width || widget.width;
   const previewHeight = bonusHuntPreview?.height || widget.height;
@@ -998,7 +988,7 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1, colourTheme, inactive
     return () => observer.disconnect();
   }, [previewHeight, previewWidth, scaleMultiplier]);
 
-  const preview = useMemo(() => {
+  const previewConfig = useMemo(() => {
     const chatConfig =
       widget.widgetType === "chat"
         ? getLandingChatConfig(previewCycle, previewShoutout)
@@ -1015,27 +1005,16 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1, colourTheme, inactive
       widget.widgetType === "tournament"
         ? getLandingTournamentConfig(previewCycle, tournamentCatalogSlots)
         : undefined;
-    const instance = createBetterInstance(widget.widgetType, {
-      instanceId: `landing-${widget.widgetType}`,
-      width: previewWidth,
-      height: previewHeight,
-      config:
-        bonusHuntPreview?.config ||
-        chatConfig ||
-        betsConfig ||
-        connectFourConfig ||
-        tournamentConfig,
-    });
-    if (instance && colourTheme) instance.config = applyWidgetColourTheme(widget.widgetType, instance.config, colourTheme);
-    return {
-      instance,
-      layout: {
-        canvas: { width: previewWidth, height: previewHeight },
-        instances: instance ? [instance] : [],
-      },
-    };
+    const slideshowConfig = widget.widgetType === "slideshow_frame" ? {
+      mediaItems: BACKGROUND_IMAGE_LIBRARY.slice(0, 3).map(({ url, label }) => ({ url, label, type: "image" })),
+      autoplay: !motionPaused,
+      showConnectFour: false,
+      showCounter: true,
+    } : undefined;
+    return bonusHuntPreview?.config || chatConfig || betsConfig || connectFourConfig || tournamentConfig || slideshowConfig;
   }, [
     colourTheme,
+    motionPaused,
     bonusHuntPreview,
     connectFourPreview,
     previewCycle,
@@ -1046,7 +1025,6 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1, colourTheme, inactive
     widget.widgetType,
   ]);
 
-  if (!preview.instance) return null;
 
   return (
     <div ref={runtimeRef} className="lp-home-widget-runtime" aria-hidden="true">
@@ -1063,22 +1041,15 @@ function LiveWidgetShowcase({ widget, scaleMultiplier = 1, colourTheme, inactive
           transform: `scale(${frameGeometry.scale})`,
         }}
       >
-        {renderBetterWidgetInstance({
-          instance: preview.instance,
-          layout: preview.layout,
-          mode: ["bets", "chat", "connect_four", "tournament"].includes(
-            widget.widgetType,
-          )
-            ? "live"
-            : "mock",
-          runtime: "editor",
-        })}
+        <Suspense fallback={<span className="lp-preview-loading">Loading widget…</span>}>
+          <LandingWidgetRuntime widgetType={widget.widgetType} width={previewWidth} height={previewHeight} config={previewConfig} colourTheme={colourTheme} />
+        </Suspense>
       </div>
     </div>
   );
 }
 
-function HomeWidgetMedia({ widget, floating = false, carousel = false, colourTheme }) {
+function HomeWidgetMedia({ widget, floating = false, carousel = false, colourTheme, bonusOrientation }) {
   const containerRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [activated, setActivated] = useState(false);
@@ -1104,6 +1075,7 @@ function HomeWidgetMedia({ widget, floating = false, carousel = false, colourThe
       {activated && <LiveWidgetShowcase
         widget={widget}
         colourTheme={colourTheme}
+        bonusOrientation={bonusOrientation}
         inactive={!visible}
         scaleMultiplier={
           widget.widgetType === "tournament" && !floating ? 0.84 : 1
@@ -1114,21 +1086,9 @@ function HomeWidgetMedia({ widget, floating = false, carousel = false, colourThe
 }
 
 const HOME_STEPS = [
-  {
-    icon: Radio,
-    title: "Connect",
-    desc: "Link your streaming platform in a few clicks.",
-  },
-  {
-    icon: Grid3X3,
-    title: "Make it yours",
-    desc: "Choose your widgets, then adjust their layout and style.",
-  },
-  {
-    icon: MonitorPlay,
-    title: "Add to OBS",
-    desc: "Add the browser source and go live.",
-  },
+  { icon: Palette, title: "Customise", desc: "Choose your widgets, layout, colours and themes." },
+  { icon: Radio, title: "Connect", desc: "Connect the supported streaming and chat services you use." },
+  { icon: MonitorPlay, title: "Add to OBS", desc: "Copy your Browser Source URL into OBS and go live." },
 ];
 
 const STREAMER_PRICING = [
@@ -1519,12 +1479,18 @@ const HOME_SHOWCASE_WIDGETS = [
   { type: "chat", label: "Chat", icon: MessageSquare },
   { type: "bets", label: "Bets", icon: Trophy },
   { type: "connect_four", label: "Connect 4", icon: Grid3X3 },
+  { type: "bonus_hunt", label: "Bonus Hunt", icon: CircleDollarSign },
+  { type: "rtp_stats", label: "RTP Bar", icon: Gauge },
+  { type: "navbar", label: "Navbar", icon: LayoutDashboard },
+  { type: "tournament", label: "Tournaments", icon: Swords },
+  { type: "slideshow_frame", label: "Slideshow", icon: Clapperboard },
 ];
 const HOME_SHOWCASE_THEMES = WIDGET_COLOUR_THEMES.filter(({ key }) => ["neon", "arctic", "rose", "gold"].includes(key));
 
 function InteractiveHomeShowcase() {
   const [selected, setSelected] = useState("giveaway");
   const [theme, setTheme] = useState("neon");
+  const [bonusOrientation, setBonusOrientation] = useState("vertical");
   const widget = HOME_WIDGETS.find(({ widgetType }) => widgetType === selected);
   return <div className="lp-studio-scene">
     <div className="lp-studio-halo" aria-hidden="true" />
@@ -1532,13 +1498,17 @@ function InteractiveHomeShowcase() {
     <div className="lp-studio-float lp-studio-float--bottom" aria-hidden="true"><Palette /><span>Your colours.<br /><strong>Your kind of stream.</strong></span></div>
     <div className="lp-studio lp-motion-surface" data-tilt>
       <div className="lp-studio-bar"><span><Grid3X3 size={17} /> Streamers Center</span><span className="lp-studio-status"><i /> Widget preview</span></div>
-      <div className="lp-studio-title"><div><span className="lp-eyebrow">A little taste of your next stream</span><h2>Go on. Make it yours.</h2></div><Sparkles aria-hidden="true" /></div>
+      <div className="lp-studio-title"><div><span className="lp-eyebrow">TRY IT LIVE · SELECT A WIDGET</span><h2>Go on. Make it yours.</h2></div><Sparkles aria-hidden="true" /></div>
       <div className="lp-studio-tools" role="group" aria-label="Preview a widget">
         {HOME_SHOWCASE_WIDGETS.map(({ type, label, icon: Icon }) => <button type="button" key={type} aria-pressed={selected === type} onClick={() => setSelected(type)}><Icon size={16} aria-hidden="true" />{label}</button>)}
       </div>
-      <div className="lp-studio-stage" data-preview-widget={selected} data-preview-theme={theme}>
+      {selected === "bonus_hunt" && <div className="lp-studio-formats">
+        <span>Bonus Hunt format</span>
+        <div role="group" aria-label="Bonus Hunt format">{BONUS_HUNT_PREVIEW_OPTIONS.orientation.map(format => <button type="button" key={format} aria-pressed={bonusOrientation === format} onClick={() => setBonusOrientation(format)}>{format[0].toUpperCase() + format.slice(1)}</button>)}</div>
+      </div>}
+      <div className="lp-studio-stage" data-preview-widget={selected} data-preview-theme={theme} data-preview-format={selected === "bonus_hunt" ? bonusOrientation : undefined}>
         <div className="lp-studio-grid" aria-hidden="true" />
-        <HomeWidgetMedia key={selected} widget={widget} colourTheme={theme} carousel />
+        <HomeWidgetMedia key={selected} widget={widget} colourTheme={theme} bonusOrientation={bonusOrientation} carousel />
       </div>
       <div className="lp-studio-palette"><span><Palette size={15} aria-hidden="true" /> Try a colour theme</span><div role="group" aria-label="Preview colour theme">{HOME_SHOWCASE_THEMES.map(({ key, name, swatches }) => <button type="button" key={key} aria-label={name} title={name} aria-pressed={theme === key} onClick={() => setTheme(key)} style={{ "--swatch": swatches[1] }}><span /></button>)}</div></div>
       <p className="lp-studio-caption">Real Streamers Center widgets · example data · changes stay in this preview</p>
@@ -1551,6 +1521,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
   const { data: subscriptionContent } = useLandingSubscriptions();
   const [widgetStartIndex, setWidgetStartIndex] = useState(0);
   const [slotCount, setSlotCount] = useState(null);
+  const monthlyStreamerPlan = subscriptionContent?.plans?.filter(plan => plan.productType === "streamer" && plan.active !== false && Number(plan.intervalMonths) === 1).sort((a, b) => a.priceCents - b.priceCents)[0];
   const visibleWidgets = useMemo(
     () =>
       Array.from(
@@ -1608,36 +1579,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
     <LandingMotionContext.Provider value={paused}>
     <main className="lp-home" ref={rootRef} data-motion={paused ? "off" : "on"}>
       <div className="lp-ambient" aria-hidden="true"><i /><i /></div>
-      <header className="lp-home-nav lp-home-nav--secondary">
-        <nav className="lp-home-nav__links" aria-label="Main navigation">
-          <a href="#features">Features</a>
-          <a href="#widgets">Widgets</a>
-          <Link to="/offers">Deals</Link>
-          <a href="#pricing">Pricing</a>
-          <a href="#reviews">Reviews</a>
-          <a
-            href="https://discord.gg/bkxAyTn73Y"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            Discord
-          </a>
-        </nav>
-        <div className="lp-home-nav__actions">
-          {!user && (
-            <button type="button" onClick={onLogin}>
-              Login
-            </button>
-          )}
-          <button
-            type="button"
-            className="lp-home-nav__primary"
-            onClick={onStreamerCta}
-          >
-            {user ? 'Continue to your account' : 'Start free trial'}
-          </button>
-        </div>
-      </header>
+      <LandingHeader user={user} onLogin={onLogin} onStart={onStreamerCta} />
 
       <section className="lp-home-hero" id="demo">
         <div className="lp-home-hero__copy">
@@ -1646,7 +1588,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             Your stream.<br />Their favourite<br /><strong>place to be.</strong>
           </h1>
           <p>
-            Turn a stream into a shared experience. Bring chat, giveaways, bonus hunts and your own style together — right inside your OBS scene.
+            Interactive iGaming overlays, bonus hunts, giveaways, viewer games and chat tools, all controlled from one place and added directly to your OBS scene.
           </p>
           <div className="lp-home-hero__ctas">
             <button
@@ -1660,81 +1602,40 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
               Try the widgets <Play size={18} />
             </a>
           </div>
-          {!user && <div className="lp-hero-trial"><span><Check size={15} aria-hidden="true" />{Number(subscriptionContent?.trialDays) > 0 ? `${subscriptionContent.trialDays} days free` : 'Explore the free trial'}</span>{subscriptionContent?.trialRequiresPaymentMethod === false && <span><Check size={15} aria-hidden="true" />No credit card needed</span>}<a href="#pricing">See plans <ArrowRight size={13} aria-hidden="true" /></a></div>}
+          {!user && <div className="lp-hero-trial"><span>{Number(subscriptionContent?.trialDays) > 0 ? subscriptionContent.trialDays + ' days free' : 'Free trial'}</span>{subscriptionContent?.trialRequiresPaymentMethod === false && <><span>No credit card</span><span>No automatic subscription</span></>}</div>}
+          <p className="lp-hero-price">{monthlyStreamerPlan && <>Streamer plans from <strong>{formatCurrency(monthlyStreamerPlan.priceCents, monthlyStreamerPlan.currency)}/month</strong></>}</p>
           {!reduced && <button type="button" className="lp-motion-toggle" aria-pressed={paused} onClick={toggleMotion}>{paused ? <Play size={13} /> : <Pause size={13} />}{paused ? "Resume motion" : "Pause motion"}</button>}
-          <div className="lp-home-platforms" aria-label="Supported workflow">
-            {HOME_PLATFORM_BADGES.map(({ label, icon: Icon, tone }) => (
-              <span
-                key={label}
-                className={`lp-home-platforms__badge lp-home-platforms__badge--${tone}`}
-              >
-                <Icon aria-hidden="true" />
-                {label}
-              </span>
-            ))}
-            {slotCount !== null && (
-              <span className="lp-home-platforms__badge lp-home-platforms__badge--database">
-                <Database aria-hidden="true" />
-                {slotCount.toLocaleString()}{" "}
-                {slotCount === 1 ? "slot" : "slots"}
-                {" in database"}
-              </span>
-            )}
-          </div>
+
         </div>
         <div className="lp-home-hero__media" id="playground"><InteractiveHomeShowcase /></div>
       </section>
 
+
+      <div className="lp-proof-strip" aria-label="Streamers Center product facts">
+        {slotCount !== null && <span><Database size={19} aria-hidden="true" /><strong>{slotCount.toLocaleString()}</strong> slots in database</span>}
+        <span><Layers size={19} aria-hidden="true" /><strong>{HOME_WIDGETS.length}</strong> stream widgets</span>
+        <span><SiObsstudio size={20} aria-hidden="true" /> OBS ready</span>
+        <span className="lp-proof-platforms"><SiTwitch aria-hidden="true" />Twitch <SiKick aria-hidden="true" />Kick <SiYoutube aria-hidden="true" />YouTube</span>
+      </div>
 
       <section className="lp-home-section lp-home-benefits" aria-label="Your streaming toolkit">
         {[
           { icon: Layers, title: "An overlay that feels like you.", text: "Pick your widgets. Shape your layout. Bring your colours to every scene.", href: "#widgets", action: "Explore the widgets" },
           { icon: MessageSquare, title: "Give chat a part to play.", text: "Requests, giveaways, predictions and games. More ways to be in the moment.", href: "/chat-games", action: "Explore community tools" },
           { icon: MonitorPlay, title: "At home in your OBS setup.", text: "Add a browser source to the scene you already use. Keep your stream your own.", href: "/streamer-overlays", action: "Explore OBS overlays" },
-        ].map(({ icon: Icon, title, text, href, action }) => <Link key={title} to={href} onClick={(event) => { if (href.startsWith("#")) { event.preventDefault(); document.querySelector(href)?.scrollIntoView({ behavior: paused ? "instant" : "smooth" }); } }} className="lp-benefit lp-motion-surface" data-tilt><span className="lp-benefit-icon"><Icon size={30} aria-hidden="true" /></span><h3>{title}</h3><p>{text}</p><span className="lp-benefit-action">{action}<ArrowRight size={16} /></span></Link>)}
+        ].map(({ icon: Icon, title, text, href, action }) => <Link key={title} to={href} onClick={(event) => { if (href.startsWith("#")) { event.preventDefault(); document.querySelector(href)?.scrollIntoView({ behavior: paused ? "instant" : "smooth" }); } }} className="lp-benefit lp-motion-surface" data-tilt><span className="lp-benefit-icon"><Icon size={30} aria-hidden="true" /></span>{href === "/streamer-overlays" && <span className="lp-obs-flow"><SiObsstudio aria-hidden="true" />OBS <ArrowRight size={13} aria-hidden="true" /><span>Browser Source</span><ArrowRight size={13} aria-hidden="true" /><span>SC Overlay</span></span>}<h3>{title}</h3><p>{text}</p><span className="lp-benefit-action">{action}<ArrowRight size={16} /></span></Link>)}
       </section>
 
       <section className="lp-home-section lp-home-audiences" id="features">
-        <span className="lp-eyebrow">Built around your workflow</span>
-        <h2>On stream or behind the scenes.</h2>
-        <p className="lp-modern-intro">Pick the tools you need. Keep everything in one place.</p>
-        <div className="lp-home-audience-grid">
-          <button
-            type="button"
-            className="lp-home-audience lp-home-audience--streamer lp-motion-surface"
-            data-tilt
-            onClick={onStreamerCta}
-          >
-            <span className="lp-home-audience__badge">Create & connect</span>
-            <MonitorPlay size={34} />
-            <h3>For Streamers</h3>
-            <p>Run the show. Bring your community into it.</p>
-            <ul>
-              <li>Bonus hunts, slot requests, giveaways</li>
-              <li>Tournaments, bets and Connect 4</li>
-              <li>OBS-ready overlays and alerts</li>
-              <li>All-in-one dashboard, easy to customize</li>
-            </ul>
-            <span className="lp-audience-action">Explore Streamer tools <ArrowRight size={17} /></span>
-          </button>
-          <button
-            type="button"
-            className="lp-home-audience lp-home-audience--player lp-motion-surface"
-            data-tilt
-            onClick={onPlayerCta}
-          >
-            <Users size={34} />
-            <h3>For Players</h3>
-            <p>A clear picture of your sessions. Just for you.</p>
-            <ul>
-              <li>Track deposits, withdrawals and sessions</li>
-              <li>Best wins, biggest losses, profit/loss</li>
-              <li>Detailed history and stats over time</li>
-              <li>Personal dashboard and insights</li>
-            </ul>
-            <span className="lp-audience-action">Explore Player tools <ArrowRight size={17} /></span>
-          </button>
+        <div className="lp-streamer-feature">
+          <div><span className="lp-eyebrow">Your control room for every live moment</span><h2>Built for streamers.</h2>
+            <p className="lp-modern-intro">Keep the tools that run your show together. Set up your scene, manage the action and make every widget feel like your channel.</p>
+            <ul className="lp-feature-list">{['Bonus Hunts', 'Slot Requests', 'Giveaways', 'Tournaments', 'Bets', 'Chat Games', 'Multi-chat', 'OBS overlays', 'Alerts', 'Custom themes'].map(feature => <li key={feature}><Check size={16} aria-hidden="true" />{feature}</li>)}</ul>
+            <button className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>{user ? 'Open your workspace' : 'Explore Streamer Center'}<ArrowRight size={17} /></button>
+          </div>
+          <div className="lp-feature-visual"><div className="lp-scene-label"><span><i />Bonus Hunt · OBS preview</span><span>Example data</span></div><HomeWidgetMedia widget={HOME_WIDGETS.find(widget => widget.widgetType === 'bonus_hunt')} bonusOrientation="horizontal" colourTheme="neon" carousel /><p>Follow the hunt. Reveal the results. Keep viewers in the moment.</p></div>
         </div>
+        <div className="lp-player-alternative"><Users size={25} aria-hidden="true" /><div><h3>Not a streamer?</h3><p>Track your own bonus hunts, deposits, withdrawals and session history with Player Center.</p></div><button className="lp-player-link" onClick={onPlayerCta}>Explore Player Center <ArrowRight size={16} /></button></div>
       </section>
 
       <section className="lp-home-section lp-home-widgets" id="widgets">
@@ -1779,6 +1680,15 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
         </div>
       </section>
 
+      <section className="lp-home-section lp-use-cases" aria-labelledby="use-cases-title">
+        <span className="lp-eyebrow">Real tools. Real stream moments.</span><h2 id="use-cases-title">Made for what happens live.</h2>
+        <div className="lp-use-case-grid">{[
+          { type: 'bonus_hunt', title: 'Keep the hunt on screen.', text: 'Follow bonuses and reveal results alongside the action in your OBS scene.', format: 'horizontal' },
+          { type: 'giveaway', title: 'Give chat a reason to join.', text: 'Bring a viewer giveaway into the stream and let the winner reveal become a shared moment.' },
+          { type: 'tournament', title: 'Make every round an event.', text: 'Show the tournament as it unfolds, with matchups and results your audience can follow.' },
+        ].map(item => <article key={item.type}><div className="lp-use-case-scene"><div className="lp-scene-label"><span><SiObsstudio />OBS scene</span><span>Example data</span></div><HomeWidgetMedia widget={HOME_WIDGETS.find(widget => widget.widgetType === item.type)} bonusOrientation={item.format} colourTheme="neon" carousel /></div><h3>{item.title}</h3><p>{item.text}</p></article>)}</div>
+      </section>
+
       <section className="lp-home-section lp-home-steps">
         <span className="lp-eyebrow">A simpler start</span>
         <h2>From your first login to your next stream.</h2>
@@ -1803,13 +1713,17 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
         <span className="lp-eyebrow">Good to know</span><h2 id="home-faq-heading">A few answers before you start.</h2>
         {Number(subscriptionContent?.trialDays) > 0 && <details><summary>How does the free trial work?</summary><p>Eligible new accounts can try the tools for {subscriptionContent.trialDays} days.{subscriptionContent.trialRequiresPaymentMethod === false ? ' No credit card is required.' : ''} Choose your workspace on the subscription page, sign in, and start your trial there. You can review the paid plans whenever you’re ready.</p></details>}
         <details><summary>Do I need to know how to code?</summary><p>No. Use the visual editor to choose widgets and adjust their appearance. Quick setup guides you through your first overlay and the OBS browser source.</p></details>
-        <details><summary>Do I need to stream to use the tools?</summary><p>No. The Player plan is for private session and bonus hunt tracking. Choose Streamer when you also want overlays and tools for your audience.</p></details>
+        <details><summary>Do I need to stream to use the tools?</summary><p>No. Player Center is for private session and bonus hunt tracking. Choose Streamer when you also want overlays and tools for your audience.</p></details>
         <details><summary>Can I use my existing OBS setup?</summary><p>Yes. Add your overlay as a browser source in your existing scene. You can customise the layout and keep your other sources.</p></details>
         <details><summary>How do the three free review days work?</summary><p>Sign in with an active Player or Streamer subscription and publish your first review. All ratings qualify. We extend your subscription period by three days, once per account. Free signup trials do not qualify. Reviews display the incentive so readers have the full context.</p></details>
       </section>
+      <section className="lp-home-section lp-trust" aria-label="Built for your streaming workflow">
+        <div className="lp-trust-facts"><span><SiObsstudio />OBS browser sources</span><span><MessageSquare size={18} />Twitch · Kick · YouTube workflows</span><span><ShieldCheck size={18} />Stripe billing</span>{subscriptionContent?.trialRequiresPaymentMethod === false && <span><Check size={18} />No card for your free trial</span>}</div>
+        <p>Streaming software, built around your workflow. Streamers Center does not operate gambling services, accept deposits or process wagers. Account data is kept separate between Streamer and Player product areas.</p>
+      </section>
       <section className="lp-home-section lp-home-final">
-        <div><span className="lp-eyebrow">Make it yours</span><h2>Your next stream starts here.</h2><p>Choose your tools. Find your style. Bring your community along.</p></div>
-        <button type="button" className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>{user ? 'Open your workspace' : 'Start free trial'} <ArrowRight size={18} /></button>
+        <div><span className="lp-eyebrow">Make it yours</span><h2>Your next stream starts here.</h2><p>Build your overlay, connect your community and see how Streamers Center fits your stream.</p></div>
+        <div className="lp-final-action"><button type="button" className="lp-btn lp-btn--streamer" onClick={onStreamerCta}>{user ? 'Open your workspace' : Number(subscriptionContent?.trialDays) > 0 ? `Start ${subscriptionContent.trialDays}-day free trial` : 'Start free trial'} <ArrowRight size={18} /></button>{subscriptionContent?.trialRequiresPaymentMethod === false && <small>No card · No automatic renewal</small>}</div>
       </section>
     </main>
     </LandingMotionContext.Provider>

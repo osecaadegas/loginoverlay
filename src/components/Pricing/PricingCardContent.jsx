@@ -1,5 +1,6 @@
 import { ArrowRight, CheckCircle2, CreditCard, Loader2, Sparkles } from 'lucide-react';
 import './PricingPage.css';
+import { formatCurrency, monthlyEquivalent } from '../LandingPage/pricingPresentation';
 
 export const STREAMER_PLAN_CARDS = [
   {
@@ -72,7 +73,8 @@ function formatBillingLine(plan) {
 }
 
 
-export default function PricingCardContent({ card, planFeatures, loading = false, actionLabel = 'Get started', frameSrc = '/pricing/streamer-plan-frame.webp' }) {
+export default function PricingCardContent({ card, planFeatures, loading = false, actionLabel = 'Get started', frameSrc = '/pricing/streamer-plan-frame.webp', showMonthlyEquivalent = false }) {
+  const equivalent = showMonthlyEquivalent ? monthlyEquivalent(card) : null;
   return (
     <span className="premium-card-frame">
       <img
@@ -91,17 +93,17 @@ export default function PricingCardContent({ card, planFeatures, loading = false
         </span>
         <span className="premium-card-badge">
           <Sparkles aria-hidden="true" />
-          {card.badge || card.presentationBadge || "Premium"}
+          {showMonthlyEquivalent && card.intervalMonths === 12 ? 'Best value' : card.badge || card.presentationBadge || "Premium"}
         </span>
         <span className="premium-card-title">
           {card.displayTitle}
         </span>
         <span className="premium-card-price-row">
-          <strong>{formatPlanPrice(card)}</strong>
-          <span>/ {formatPlanPeriod(card)}</span>
+          <strong>{equivalent !== null ? formatCurrency(equivalent, card.currency) : formatPlanPrice(card)}</strong>
+          <span>/ {equivalent !== null ? 'month' : formatPlanPeriod(card)}</span>
         </span>
         <span className="premium-card-billing">
-          {formatBillingLine(card)}
+          {equivalent !== null ? `Billed ${formatPlanPrice(card)} ${card.intervalMonths === 12 ? 'yearly' : card.intervalMonths === 1 ? 'monthly' : `every ${card.intervalMonths} months`}` : formatBillingLine(card)}
         </span>
         {card.savingsLabel && (
           <span className="premium-card-saving">
