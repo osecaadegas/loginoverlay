@@ -23,6 +23,7 @@ try {
         payload = { review: saved, message: postCount === 1 ? 'Your review is saved. Retry to finish applying your reward.' : undefined };
         status = postCount === 1 ? 202 : 200;
       } else if (url.searchParams.get('action') === 'mine') payload = { review: saved, eligible, productCode: 'streamer_premium' };
+      else if (failPublic === 'malformed') payload = {};
       else if (failPublic) { status = 503; payload = { error: 'Test unavailable' }; }
       else payload = { reviews: saved ? [{ id: saved.id, display_name: saved.displayName, rating: saved.rating, body: saved.body, product_code: saved.productCode, created_at: '2026-09-22T00:00:00Z' }] : [], summary: { count: saved ? 1 : 0, average: saved ? saved.rating : null }, nextOffset: null };
       return request.respond({ status, contentType: 'application/json', body: JSON.stringify(payload) });
@@ -84,8 +85,15 @@ try {
   failPublic = false;
   await page.click('.sr-feed button');
   await page.waitForSelector('.sr-empty');
+  failPublic = 'malformed';
+  await page.evaluate(() => window.mountReviews(false));
+  await page.waitForFunction(() => document.querySelector('.sr-feed')?.textContent.includes('couldn’t load'));
+  assert.ok(await page.$('.sr-write'), 'Malformed review payload must not crash the page');
+  failPublic = false;
+  await page.click('.sr-feed button');
+  await page.waitForSelector('.sr-empty');
   assert.deepEqual(errors, []);
-  console.log('Review browser checks passed: eligible form, one-star submission, pending/retry, success, escaped content, disclosure, mobile, non-subscriber, signed-out and network failure/retry.');
+  console.log('Review browser checks passed: eligible form, one-star submission, pending/retry, success, escaped content, disclosure, mobile, non-subscriber, signed-out and network failure/retry and malformed-response recovery.');
 } catch (error) {
   console.error({ browserErrors: errors, pageText: await page?.evaluate(() => document.body.innerText).catch(() => '') });
   throw error;

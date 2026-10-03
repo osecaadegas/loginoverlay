@@ -4248,7 +4248,7 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: "Background source",
         kind: "surface",
         capabilities: ["surface"],
-        controls: ["bgMode"],
+        controls: ["bgMode", "chromaKeyColor"],
       }),
       texture: Object.freeze({
         label: "Visible texture and colours",

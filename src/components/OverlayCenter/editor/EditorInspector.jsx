@@ -166,7 +166,10 @@ export default function EditorInspector({
           </Link>
         </div>
       )}
-      {!search && (
+      <p className="bp-help" style={{ padding: "0 16px" }}>
+        {mode === "simple" ? "Essential settings. Switch to Advanced for detailed controls." : "Fine-tune each part. Search finds settings across all sections."}
+      </p>
+      {!search && instance.widgetType !== "background" && (
         <details
           className="editor-geometry"
           open={preferences.geometryOpen !== false}

@@ -1,6 +1,8 @@
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React, { useEffect, useMemo, useState } from "react";
 import { getUserRoles } from "../../../utils/adminUtils";
+import { BACKGROUND_SOURCE_OPTIONS, isExternalBackgroundSource, normalizeChromaKeyColor, downloadChromaKeyImage, updateBackgroundSource } from "../widgets/background/backgroundSource";
+import { subValue } from "../widgets/shared/appearanceStyles";
 import BackgroundLibraryPicker from "./BackgroundLibraryPicker";
 import { EditorControlContext, matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
 import { pickGiveawayAppearance, resolveEmbeddedGiveawayConfig, updateGiveawayAppearance } from "../widgets/giveaway/embeddedGiveawayConfig";
@@ -1657,9 +1659,9 @@ function CategorizedControls({ tabs, defaultCategory, children }) {
   );
 }
 
-function Section({ title, icon, children, defaultOpen = true, category }) {
+function Section({ title, icon, children, defaultOpen = true, category, simple = false }) {
   const activeCategory = React.useContext(ControlCategoryContext);
-  const editorSection = useEditorControlSection(title, children, defaultOpen);
+  const editorSection = useEditorControlSection(title, children, defaultOpen, simple);
   const [localOpen, setOpen] = useState(defaultOpen);
   const open = editorSection.scope ? editorSection.open : localOpen;
   if (!editorSection.visible) return null;
@@ -3070,9 +3072,10 @@ function RawPanelTabs({
   );
 }
 
-function PanelTabs({ tabs, active, onChange }) {
+function PanelTabs({ tabs, active, onChange, flat = false }) {
   const scope = useEditorControlScope();
   if (scope && (scope.mode === "simple" || scope.search)) return null;
+  if (flat) return <RawPanelTabs active={active} onChange={onChange} tabs={tabs} />;
   const isCanonical =
     tabs.length === STANDARD_CONTROL_CATEGORIES.length &&
     tabs.every(([key], index) => key === STANDARD_CONTROL_CATEGORIES[index][0]);
@@ -3737,6 +3740,8 @@ function SimpleThemedControls({
   appearanceOnly = false,
 }) {
   const c = ensureBetterWidgetConfig(type, config);
+  const controlScope = useEditorControlScope();
+  const simpleBackground = controlScope?.mode === "simple" && !controlScope.search;
   const renderedConfig =
     type === "bonus_hunt" && widget?.config
       ? ensureBetterWidgetConfig(type, widget.config)
@@ -3749,7 +3754,7 @@ function SimpleThemedControls({
     ) {
       nextPatch[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] = true;
     }
-    onChange({ ...c, ...nextPatch });
+    onChange(type === "background" ? updateBackgroundSource(c, nextPatch) : { ...c, ...nextPatch });
   };
   const setGiveawaySize = (patch) => {
     const next = { ...c, ...patch };
@@ -4233,8 +4238,10 @@ function SimpleThemedControls({
   }
 
   if (type === "background") {
-    const sourceMode = c.bgMode || "texture";
+    const sourceMode = subValue(c, "source", "bgMode", c.bgMode || "texture");
+    const chromaKeyColor = normalizeChromaKeyColor(subValue(c, "source", "chromaKeyColor", c.chromaKeyColor));
     const isTextureSource = sourceMode === "texture";
+    const externalBackground = isExternalBackgroundSource(sourceMode);
     const isMediaSource = sourceMode === "image" || sourceMode === "video";
     const texture = c.textureType || c.texture || "aurora";
     const particleEffect =
@@ -4242,9 +4249,9 @@ function SimpleThemedControls({
     const fogEffect = c.fxFog || "none";
     const glimpseEffect = c.fxGlimpse || "none";
     const tabs = [
-      ["presets", <Sparkles key="presets" size={12} />, "Presets"],
-      ["colors", <Palette key="colors" size={12} />, "Colors"],
       ["source", <ImagePlus key="source" size={12} />, "Source"],
+      ...(!externalBackground ? [["colors", <Palette key="colors" size={12} />, "Colours"]] : []),
+      ["presets", <Sparkles key="presets" size={12} />, "Presets"],
       ...(isTextureSource
         ? [["textures", <Layers key="textures" size={12} />, "Texture"]]
         : []),
@@ -4253,9 +4260,9 @@ function SimpleThemedControls({
     const current = activeTab(tabs);
     return (
       <div className="bp-controls">
-        <PanelTabs active={current} onChange={setTab} tabs={tabs} />
+        <PanelTabs active={current} onChange={setTab} tabs={tabs} flat />
         {matchesControlTab(current, "presets") && (
-          <Section title="Curated Atmospheres" icon={<Sparkles size={13} />}>
+          <Section title="Background presets" icon={<Sparkles size={13} />}>
             <div className="bp-preset-row">
               {BACKGROUND_PRESETS.map((preset) => (
                 <button
@@ -4307,7 +4314,7 @@ function SimpleThemedControls({
                 />
               </Section>
             )}
-            <Section title="Scene finish" icon={<Layers size={13} />}>
+            {!externalBackground && <Section title="Scene finish" icon={<Layers size={13} />}>
               <ColorRow
                 label="Tint color"
                 value={c.overlayColor || "#020611"}
@@ -4329,21 +4336,27 @@ function SimpleThemedControls({
                 unit="%"
                 onChange={(opacity) => set({ opacity })}
               />
-            </Section>
+            </Section>}
           </>
         )}
         {matchesControlTab(current, "source") && (
           <>
             <Section title="Background source" icon={<ImagePlus size={13} />}>
-              <Segmented
+              <SelectRow
+                label="Background source"
                 value={sourceMode}
-                columns={3}
-                options={["texture", "image", "video"].map((key) => ({
-                  key,
-                  name: key,
-                }))}
+                options={BACKGROUND_SOURCE_OPTIONS}
                 onChange={(bgMode) => set({ bgMode })}
               />
+              {externalBackground && <p className="bp-help">
+                {sourceMode === "transparent"
+                  ? "Place this browser source above your own background in OBS. Theme effects stay visible; no chroma filter is needed."
+                  : "Add a Chroma Key filter to this browser source in OBS and match the key colour below. Choose a colour absent from your effects. Transparency keeps soft glows cleaner."}
+              </p>}
+              {sourceMode === "chroma" && <>
+                <ColorRow label="Key colour" value={chromaKeyColor} onChange={(chromaKeyColor) => set({ chromaKeyColor: normalizeChromaKeyColor(chromaKeyColor) })} />
+                <button type="button" className="bp-download" onClick={() => downloadChromaKeyImage(chromaKeyColor)}>Download key image (1920 × 1080 PNG)</button>
+              </>}
               {sourceMode === "image" && (
                 <>
                   <BackgroundLibraryPicker
@@ -4468,7 +4481,7 @@ function SimpleThemedControls({
           </>
         )}
         {matchesControlTab(current, "textures") && isTextureSource && (
-          <Section title="Tactile Texture Layers" icon={<Waves size={13} />}>
+          <Section title="Texture details" icon={<Waves size={13} />}>
             <Segmented
               value={texture}
               columns={3}
@@ -4560,7 +4573,7 @@ function SimpleThemedControls({
         )}
         {matchesControlTab(current, "effects") && (
           <>
-            <Section title="Particles" icon={<Sparkles size={13} />}>
+            <Section title="Particles" icon={<Sparkles size={13} />} simple>
               <Segmented
                 value={particleEffect}
                 columns={3}
@@ -4574,7 +4587,7 @@ function SimpleThemedControls({
                 ].map((key) => ({ key, name: key }))}
                 onChange={(fxParticles) => set({ fxParticles })}
               />
-              {particleEffect !== "none" && (
+              {particleEffect !== "none" && !simpleBackground && (
                 <>
                   <ColorRow
                     label="Particle color"
@@ -4607,13 +4620,13 @@ function SimpleThemedControls({
                 </>
               )}
             </Section>
-            <Section title="Atmosphere" icon={<Waves size={13} />}>
+            <Section title="Atmosphere" icon={<Waves size={13} />} simple defaultOpen={false}>
               <ToggleRow
                 label="Smoke"
                 checked={c.fxSmoke === true}
                 onChange={(fxSmoke) => set({ fxSmoke })}
               />
-              {c.fxSmoke === true && (
+              {c.fxSmoke === true && !simpleBackground && (
                 <>
                   <SliderRow
                     label="Smoke opacity"
@@ -7125,8 +7138,9 @@ export function BetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
+      {type === "background" && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       <div className="bp-controls bp-controls--colour-theme">
-        <Section title="Colour Theme" icon={<Palette size={12} />}>
+        <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           <div className="bp-theme-grid" role="group" aria-label="Colour theme">
             {WIDGET_COLOUR_THEMES.map((theme) => {
               const Icon = COLOUR_THEME_ICONS[theme.icon];
@@ -7151,10 +7165,11 @@ export function BetterWidgetControls({
       </div>
       <ThemeEffectsControls
         themeKey={effectsThemeKey}
+        simple={type === "background"}
         config={c.themeEffects}
         onChange={(themeEffects) => onChange({ ...c, themeEffects })}
       />
-      <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />
+      {type !== "background" && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
     </>
   );
 }
@@ -7165,7 +7180,7 @@ const EFFECT_QUALITY_OPTIONS = [
   { key: "ultra", name: "Ultra" },
 ];
 
-function ThemeEffectsControls({ themeKey, config, onChange }) {
+function ThemeEffectsControls({ themeKey, config, onChange, simple = false }) {
   const definition = getThemeEffectDefinition(themeKey);
   const c = normalizeThemeEffectsConfig(themeKey, config);
   if (!definition?.supportsEffects || !c) return null;
@@ -7175,13 +7190,14 @@ function ThemeEffectsControls({ themeKey, config, onChange }) {
 
   return (
     <div className="bp-controls bp-controls--theme-effects" data-effects-theme={family}>
-      <Section title={`${definition.label} Effects`} icon={<Sparkles size={12} />}>
+      <Section title={`${definition.label} Effects`} icon={<Sparkles size={12} />} simple={simple}>
         <ToggleRow
           label="Animated effects"
           checked={c.enabled !== false}
-          hint="The CSS theme remains active if GPU effects are disabled or unavailable."
+          hint="Toggle animated particles and glow. The colour theme stays selected."
           onChange={(enabled) => set({ enabled })}
         />
+        {c.enabled !== false && <>
         <SliderRow
           label="Particle intensity"
           value={percent(c.particleIntensity)}
@@ -7206,18 +7222,19 @@ function ThemeEffectsControls({ themeKey, config, onChange }) {
           unit="%"
           onChange={(value) => set({ animationSpeed: value / 100 })}
         />
+        </>}
       </Section>
 
-      <Section title="Performance" icon={<Gauge size={12} />}>
+      {c.enabled !== false && <Section title="Performance" icon={<Gauge size={12} />}>
         <Segmented
           value={c.quality}
           options={EFFECT_QUALITY_OPTIONS}
           columns={3}
           onChange={(quality) => set({ quality })}
         />
-      </Section>
+      </Section>}
 
-      {family === "ice" && (
+      {family === "ice" && c.enabled !== false && (
         <Section title="Ice Details" icon={<Snowflake size={12} />}>
           <SliderRow label="Snow" value={percent(c.ice.snow)} min={0} max={100} unit="%" onChange={(value) => set({ ice: { snow: value / 100 } })} />
           <SliderRow label="Frost" value={percent(c.ice.frost)} min={0} max={100} unit="%" onChange={(value) => set({ ice: { frost: value / 100 } })} />
@@ -7229,7 +7246,7 @@ function ThemeEffectsControls({ themeKey, config, onChange }) {
         </Section>
       )}
 
-      {family === "gladiator" && (
+      {family === "gladiator" && c.enabled !== false && (
         <Section title="Gladiator Details" icon={<Flame size={12} />}>
           <SliderRow label="Embers" value={percent(c.gladiator.embers)} min={0} max={100} unit="%" onChange={(value) => set({ gladiator: { embers: value / 100 } })} />
           <SliderRow label="Smoke" value={percent(c.gladiator.smoke)} min={0} max={100} unit="%" onChange={(value) => set({ gladiator: { smoke: value / 100 } })} />

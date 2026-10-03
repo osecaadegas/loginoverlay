@@ -272,6 +272,7 @@ export const RTP_STATS_STYLE_KEYS = [
 /* ── Background ── */
 export const BACKGROUND_STYLE_KEYS = [
   "bgMode",
+  "chromaKeyColor",
   "textureType",
   "color1",
   "color2",

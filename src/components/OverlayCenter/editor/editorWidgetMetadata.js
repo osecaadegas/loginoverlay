@@ -59,7 +59,6 @@ const WIDGET_METADATA = {
     category: "Stream",
     keywords: "background media image video texture",
     simpleSections: [
-      "Curated Atmospheres",
       "Background source",
       "Texture palette",
     ],

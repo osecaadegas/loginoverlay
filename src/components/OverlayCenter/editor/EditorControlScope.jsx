@@ -24,14 +24,14 @@ export function controlSearchText(node) {
     .join(" ");
 }
 
-export function useEditorControlSection(title, children, defaultOpen = true) {
+export function useEditorControlSection(title, children, defaultOpen = true, simple = false) {
   const scope = useEditorControlScope();
   const search = scope?.search?.trim().toLowerCase() || "";
   const text = `${title} ${controlSearchText(children)}`.toLowerCase();
   const visible = search
     ? search.split(/\s+/).every((word) => text.includes(word))
     : scope?.mode === "simple"
-      ? scope.simpleSections.includes(title)
+      ? simple || scope.simpleSections.includes(title)
       : true;
   const open = search
     ? true

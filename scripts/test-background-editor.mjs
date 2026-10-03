@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { updateBackgroundSource, normalizeChromaKeyColor } from "../src/components/OverlayCenter/widgets/background/backgroundSource.js";
 import { existsSync, readFileSync } from "node:fs";
 import { getWidgetAppearanceV2Elements } from "../src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js";
 import { STANDARD_BETTER_WIDGET_CONTROLS } from "../src/components/OverlayCenter/editor/standardWidgetPresets.js";
@@ -26,7 +27,7 @@ const smokeRendererSource = readFileSync(
 );
 
 assert.ok(
-  controlsSource.includes('const sourceMode = c.bgMode || "texture";') &&
+  controlsSource.includes('const sourceMode = subValue(c, "source", "bgMode", c.bgMode || "texture");') &&
     controlsSource.includes('sourceMode === "image"') &&
     controlsSource.includes('sourceMode === "video"') &&
     controlsSource.includes("isMediaSource &&"),
@@ -154,3 +155,15 @@ assert.ok(
 );
 
 console.log("Background editor controls and shared renderer checks passed.");
+
+for (const sourceKey of ["subElements", "__appearanceExplicitSubElements"]) {
+  const config = { bgMode: "image", imageUrl: "saved.png", [sourceKey]: { source: { bgMode: "image" }, effects: { fxFog: "mist" } } };
+  const next = updateBackgroundSource(config, { bgMode: "chroma", chromaKeyColor: "#ff00ff" });
+  assert.equal(next[sourceKey].source.bgMode, "chroma");
+  assert.equal(next[sourceKey].source.chromaKeyColor, "#ff00ff");
+  assert.equal(config[sourceKey].source.bgMode, "image", "Source update must not mutate an existing widget");
+  assert.equal(next.imageUrl, "saved.png", "Media survives source changes");
+  assert.equal(next[sourceKey].effects, config[sourceKey].effects, "Other elements remain unchanged");
+}
+assert.equal(normalizeChromaKeyColor("invalid"), "#00ff00");
+console.log("Background source overrides, key validation and isolation passed.");

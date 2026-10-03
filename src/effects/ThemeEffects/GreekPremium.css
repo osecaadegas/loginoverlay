@@ -37,7 +37,7 @@
 }
 
 /* Environment */
-.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"] .oc-bg-widget {
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"] .oc-bg-widget:not([data-background-source="transparent"]):not([data-background-source="chroma"]) {
   isolation: isolate;
   background: var(--greek-night) !important;
 }
@@ -1638,4 +1638,10 @@
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame__inner,
 .better-slideshow-frame[data-colour-theme="old_rome"] .better-slideshow-frame__inner {
   border-radius: calc(var(--greek-radius-lg, 20px) - 4px) !important;
+}
+
+/* OBS supplies the backdrop in effects-only and keyed output. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"]
+  .oc-bg-widget:is([data-background-source="transparent"], [data-background-source="chroma"])::before {
+  content: none;
 }

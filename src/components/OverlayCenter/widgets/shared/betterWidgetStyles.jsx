@@ -32,6 +32,7 @@ import {
   resolveCurrentHuntBestWin,
 } from "../../../../utils/slotPersonalBestDisplay";
 import "../background/BackgroundWidget.css";
+import { isExternalBackgroundSource, normalizeChromaKeyColor } from "../background/backgroundSource";
 import ChromaKeySmoke from "../background/ChromaKeySmoke";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
 import { getHuntColourTheme, WIDGET_COLOUR_THEMES } from "./colourThemePalettes";
@@ -6715,6 +6716,8 @@ export function BetterBackgroundStyle({ config }) {
   const videoUrl = subValue(c, "media", "videoUrl", c.videoUrl || "");
   const imageFit = subValue(c, "media", "imageFit", c.imageFit || "cover");
   const sourceMode = subValue(c, "source", "bgMode", c.bgMode || "texture");
+  const externalBackground = isExternalBackgroundSource(sourceMode);
+  const keyColor = normalizeChromaKeyColor(subValue(c, "source", "chromaKeyColor", c.chromaKeyColor));
   const opacity =
     Math.max(
       0,
@@ -6933,7 +6936,7 @@ export function BetterBackgroundStyle({ config }) {
     <div
       className="oc-bg-widget oc-bg-widget--better"
       data-background-source={sourceMode}
-      style={subElementStyle(c, "canvas", {
+      style={{ ...subElementStyle(c, "canvas", {
         width: "100%",
         height: "100%",
         borderRadius: cssPx(c.borderRadius ?? 0, "0px"),
@@ -6941,11 +6944,11 @@ export function BetterBackgroundStyle({ config }) {
         opacity,
         position: "relative",
         background: color1,
-      })}
+      }), ...(externalBackground ? { background: sourceMode === "chroma" ? keyColor : "transparent", opacity: 1 } : {}) }}
       {...attrs("background", c, "canvas")}
     >
       <BetterStyleSheet />
-      <div
+      {!externalBackground && <div
         style={subElementStyle(c, "texture", {
           ...layerBase,
           inset: blur > 0 ? -Math.ceil(blur * 2) : 0,
@@ -6953,7 +6956,7 @@ export function BetterBackgroundStyle({ config }) {
           filter: mediaFilter,
         })}
         {...attrs("background", c, "texture")}
-      />
+      />}
       {sourceMode === "image" && imageUrl ? (
         <img
           src={imageUrl}
@@ -6985,7 +6988,7 @@ export function BetterBackgroundStyle({ config }) {
           {...attrs("background", c, "media")}
         />
       ) : null}
-      <div
+      {!externalBackground && <div
         style={subElementStyle(c, "tint", {
           ...layerBase,
           background: tintColor,
@@ -6993,7 +6996,7 @@ export function BetterBackgroundStyle({ config }) {
           pointerEvents: "none",
         })}
         {...attrs("background", c, "tint")}
-      />
+      />}
       <div
         style={subElementStyle(c, "effects", {
           ...layerBase,

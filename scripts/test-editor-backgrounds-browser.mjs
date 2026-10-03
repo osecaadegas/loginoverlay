@@ -175,6 +175,23 @@ try {
       `Selected ${sourceMode} replaces the fixed Old Rome environment artwork`,
     );
   };
+  const assertExternalSource = async (mode, scope = ".better-editor-canvas") => {
+    await page.waitForSelector(`${scope} [data-background-source="${mode}"]`);
+    const state = await page.$eval(`${scope} .oc-bg-widget`, element => ({
+      background: getComputedStyle(element).backgroundColor,
+      texture: Boolean(element.querySelector('[data-better-element="texture"]')),
+      tint: Boolean(element.querySelector('[data-better-element="tint"]')),
+      media: Boolean(element.querySelector('[data-better-element="media"]')),
+      effects: Boolean(element.querySelector('[data-better-element="effects"]')),
+      before: getComputedStyle(element, "::before").content,
+    }));
+    assert.equal(state.background, mode === "chroma" ? "rgb(0, 255, 0)" : "rgba(0, 0, 0, 0)");
+    assert.equal(state.texture, false);
+    assert.equal(state.tint, false);
+    assert.equal(state.media, false);
+    assert.equal(state.effects, true);
+    assert.ok(["none", "normal"].includes(state.before), "Opaque theme scenery is removed");
+  };
   const tables = () => page.evaluate(() => window.backgroundTest.state.tables);
 
   await mount();
@@ -202,7 +219,7 @@ try {
   await page.click('[aria-label="Show editor grid"]');
   await page.click('.better-editor-widget-row__main:has([title="Backdrop"])');
   await page.type('[aria-label="Search settings"]', "Background source");
-  await clickText("image", ".editor-scoped-controls");
+  await page.select('[data-control-section="Background source"] select', "image");
   assert.equal(await page.$$eval(".bp-background-library button", buttons => buttons.length), BACKGROUND_IMAGE_LIBRARY.length);
   for (const { label, url } of BACKGROUND_IMAGE_LIBRARY) {
     await page.click(`[aria-label="${label}"]`);
@@ -221,7 +238,7 @@ try {
   await clickText("Advanced", ".editor-inspector");
   assert.equal(await page.$$eval(".bp-background-library button", buttons => buttons.length), BACKGROUND_IMAGE_LIBRARY.length, "Library also works in Advanced mode");
 
-  await clickText("video", ".editor-scoped-controls");
+  await page.select('[data-control-section="Background source"] select', "video");
   assert.equal(await page.$$eval('.bp-background-library[data-media-type="video"] button', buttons => buttons.length), BACKGROUND_VIDEO_LIBRARY.length);
   for (const { label, url } of BACKGROUND_VIDEO_LIBRARY) {
     await page.click(`[aria-label="${label}"]`);
@@ -261,10 +278,60 @@ try {
   await reload(saved, "background-user", true);
   await waitVideo(chosenVideoUrl, ".better-obs-canvas");
   assert.equal(await page.$$(".better-editor-canvas-line").then(elements => elements.length), 0);
+  // Exercise both external-background modes through the real editor save/publish path.
+  let externalSaved = saved;
+  for (const mode of ["transparent", "chroma"]) {
+    await reload(externalSaved);
+    await page.click('.better-editor-widget-row__main:has([title="Backdrop"])');
+    await clickText("Simple", ".editor-inspector");
+    assert.equal(await page.$('.editor-inspector .editor-geometry'), null, "Fixed background has no disabled frame controls");
+    await page.type('[aria-label="Search settings"]', "Background source");
+    await page.select('[data-control-section="Background source"] select', mode);
+    await assertExternalSource(mode);
+    await page.click('[aria-label="Clear settings search"]');
+    await page.type('[aria-label="Search settings"]', "Colour Theme");
+    const themeKeys = await page.$$eval('[data-colour-theme-key]', buttons => buttons.map(button => button.dataset.colourThemeKey));
+    assert.equal(themeKeys.length, 14);
+    for (const themeKey of themeKeys) {
+      await page.click(`[data-colour-theme-key="${themeKey}"]`);
+      await assertExternalSource(mode);
+    }
+    await page.click('[aria-label="Clear settings search"]');
+    await page.type('[aria-label="Search settings"]', "Background source");
+    if (mode === "chroma") {
+      await page.waitForSelector(".bp-download", { visible: true });
+      const png = await page.evaluate(async () => {
+        const original = HTMLAnchorElement.prototype.click;
+        let downloaded;
+        HTMLAnchorElement.prototype.click = function () { downloaded = { name: this.download, url: this.href }; };
+        try {
+          [...document.querySelectorAll('button')].find(button => button.textContent.includes('Download key image')).click();
+        } finally { HTMLAnchorElement.prototype.click = original; }
+        const image = new Image(); image.src = downloaded.url; await image.decode();
+        const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+        const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
+        return { width: image.width, height: image.height, pixel: [...ctx.getImageData(0, 0, 1, 1).data], name: downloaded.name };
+      });
+      assert.equal(png.width, 1920); assert.equal(png.height, 1080);
+      assert.deepEqual(png.pixel, [0, 255, 0, 255]);
+      assert.ok(png.name.endsWith('.png'));
+    }
+    await page.waitForFunction(mode => window.backgroundTest.state.tables.better_editor_overlays[0].draft_layout.instances[0].config.bgMode === mode, {}, mode);
+    if (process.env.TEST_SCREENSHOT_DIR) await page.screenshot({ path: `${process.env.TEST_SCREENSHOT_DIR}/editor-background-${mode}.png` });
+    externalSaved = await tables();
+    assert.equal(externalSaved.better_editor_overlays[0].draft_layout.instances[0].config.videoUrl, chosenVideoUrl, "Switching source preserves media settings");
+    await reload(externalSaved);
+    await assertExternalSource(mode);
+    await clickText("Publish to OBS", ".editor-publish-actions");
+    await page.waitForFunction(mode => window.backgroundTest.state.tables.better_overlay_publications[0].published_layout.instances[0].config.bgMode === mode, {}, mode);
+    externalSaved = await tables();
+    await reload(externalSaved, "background-user", true);
+    await assertExternalSource(mode, ".better-obs-canvas");
+  }
   await reload(undefined, "different-user");
   await assertGrid(true);
   assert.deepEqual(errors, []);
-  console.log(`Editor grid persistence, account/build isolation, all ${BACKGROUND_IMAGE_LIBRARY.length} image and ${BACKGROUND_VIDEO_LIBRARY.length} video backgrounds, responsive picker, save/reload and OBS publication passed.`);
+  console.log(`Editor grid persistence, account/build isolation, all ${BACKGROUND_IMAGE_LIBRARY.length} image and ${BACKGROUND_VIDEO_LIBRARY.length} video backgrounds, responsive picker, save/reload, both external background modes across all 14 themes, key PNG and OBS publication passed.`);
 } finally {
   await browser.close();
 }

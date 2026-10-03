@@ -1051,6 +1051,9 @@ export const CONTROL_DEFINITIONS = {
     simple: true,
     group: "Background",
   },
+  chromaKeyColor: {
+    id: "chromaKeyColor", label: "Key colour", type: "color", group: "Background",
+  },
   bgMode: {
     id: "bgMode",
     label: "Source",
@@ -1059,6 +1062,8 @@ export const CONTROL_DEFINITIONS = {
       { value: "texture", label: "Texture" },
       { value: "image", label: "Image URL" },
       { value: "video", label: "Video URL" },
+      { value: "transparent", label: "Transparent — effects only" },
+      { value: "chroma", label: "Chroma key" },
       { value: "special", label: "Animated" },
     ],
     simple: true,

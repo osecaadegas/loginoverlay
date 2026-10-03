@@ -1,39 +1,50 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Sparkles } from 'lucide-react';
+import PricingCardContent, { STREAMER_PLAN_CARDS, PLAYER_PLAN_CARDS, getPlanFeatures } from '../Pricing/PricingCardContent';
+import useLandingSubscriptions from './useLandingSubscriptions';
 
 export default function LandingPlans() {
-  const { data, isPending, isError, refetch } = useQuery({
-    queryKey: ['public', 'landing-subscriptions'],
-    queryFn: async ({ signal }) => {
-      const response = await fetch('/api/premium?action=page', { signal });
-      if (!response.ok) throw new Error('Pricing unavailable');
-      return response.json();
-    },
-    staleTime: 60000, retry: false,
-  });
-  return <section className="lp-home-section lp-home-pricing" id="pricing">
-    <span className="lp-eyebrow">Choose what you need</span><h2>One platform. Your kind of plan.</h2>
-    <p className="lp-modern-intro">Start with a trial, then choose the subscription that fits your workflow. Manage your plan from your account.</p>
-    {isPending ? <p role="status">Loading current plans…</p> : isError ? <div className="lp-plans-fallback"><p>Current prices couldn’t be loaded.</p><button className="sr-button sr-button--quiet" onClick={() => refetch()}>Try again</button> <Link to="/premium">View subscriptions</Link></div> : <>
-      {data.trialDays > 0 && <p className="lp-trial-note"><Check size={16} aria-hidden="true" />{data.trialDays}-day trial for eligible new accounts{data.trialRequiresPaymentMethod === false ? ' · No card needed to start' : ''}</p>}
-      <div className="lp-plan-products">{['player', 'streamer'].map((type) => {
-        const product = data.productTypes?.find((item) => item.code === type);
-        const plans = (data.plans || []).filter((plan) => plan.productType === type && plan.active);
-        if (!product || !plans.length) return null;
-        return <article className={`lp-plan-product lp-plan-product--${type}`} key={type}>
-          <span className="lp-eyebrow">{type === 'streamer' ? 'For creators' : 'For personal tracking'}</span>
-          <h3>{product.title}</h3><p>{product.description}</p>
-          <ul>{(data.features || []).filter((feature) => feature.active && (type === 'streamer' ? feature.streamerAvailable : feature.playerAvailable)).sort((a, b) => type === 'streamer' ? Number(a.playerAvailable) - Number(b.playerAvailable) : 0).slice(0, 5).map((feature) => <li key={feature.id}><Check size={16} aria-hidden="true" />{feature.title}</li>)}</ul>
-          <div className="lp-plan-options">{plans.map((plan) => <Link to={`/premium?type=${type}`} className="lp-plan-option" key={plan.id}>
-            <span><strong>{plan.title}</strong>{plan.badge && <small>{plan.badge}</small>}</span>
-            <span><b>{new Intl.NumberFormat('en-IE', { style: 'currency', currency: plan.currency }).format(plan.priceCents / 100)}</b><small> / {plan.intervalCount > 1 ? `${plan.intervalCount} ${plan.billingInterval}s` : plan.billingInterval}</small></span>
-            <ArrowRight size={17} aria-hidden="true" />
-          </Link>)}</div>
-          <Link className="lp-plan-details" to={`/premium?type=${type}`}>Compare plan details <ArrowRight size={16} aria-hidden="true" /></Link>
-        </article>;
-      })}</div>
-      {!data.plans?.length && <p>No subscription plans are currently available. Please check back shortly.</p>}
+  const { data, isPending, isError, refetch } = useLandingSubscriptions();
+  const [type, setType] = useState('streamer');
+  const product = data?.productTypes.find(item => item.code === type);
+  const presentations = type === 'streamer' ? STREAMER_PLAN_CARDS : PLAYER_PLAN_CARDS;
+  const plans = (data?.plans || []).filter(plan => plan.productType === type && plan.active !== false);
+  const features = getPlanFeatures(data?.features, type);
+  const trialAvailable = Number(data?.trialDays) > 0;
+
+  return <section className="lp-home-section lp-home-pricing" id="pricing" aria-labelledby="landing-pricing-title">
+    <div className="lp-pricing-heading">
+      <span className="lp-eyebrow">Your first step is free</span>
+      <h2 id="landing-pricing-title">Find your style.<br /><em>Then find your plan.</em></h2>
+      <p className="lp-modern-intro">Try the tools before you choose a subscription. Start with the workspace that fits you.</p>
+    </div>
+    {trialAvailable && <div className="lp-trial-banner">
+      <span className="lp-trial-banner__icon"><Sparkles size={30} aria-hidden="true" /></span>
+      <div><span className="lp-eyebrow">For eligible new accounts</span><h3>{data.trialDays} days to make it yours. Free.</h3>
+        <p>{data.trialRequiresPaymentMethod === false ? 'No card needed. ' : ''}Explore your tools, build your setup and see how it feels.</p>
+      </div>
+      <Link className="lp-btn lp-btn--streamer" to={`/premium?type=${type}`}>Start free trial <ArrowRight size={18} aria-hidden="true" /></Link>
+    </div>}
+    {isPending ? <p role="status">Loading current plans…</p> : isError ? <div className="lp-plans-fallback"><p>Current prices couldn’t be loaded.</p><button className="sr-button sr-button--quiet" onClick={() => refetch()}>Try again</button> <Link to="/premium">View plans & free trial</Link></div> : <>
+      <div className="lp-pricing-choice">
+        <div role="group" aria-label="Choose plan type" className="lp-plan-toggle">{['streamer', 'player'].map(value => {
+          const option = data.productTypes.find(item => item.code === value && item.active !== false);
+          return option && <button type="button" key={value} aria-pressed={type === value} onClick={() => setType(value)}>{option.title}</button>;
+        })}</div>
+        <p>{trialAvailable ? 'After your trial, subscribe only when you’re ready.' : 'Choose the subscription that fits your workflow.'}</p>
+      </div>
+      <div className="lp-pricing-cards" aria-live="polite" aria-label={`${product?.title || type} subscriptions`}>
+        {plans.map((plan, index) => {
+          const presentation = presentations.find(item => item.id === plan.id);
+          const card = { ...plan, accent: presentation?.accent || ['cyan', 'violet', 'pink'][index % 3], displayTitle: presentation?.title || plan.title, presentationBadge: presentation?.badge };
+          return <Link className={`premium-image-card premium-image-card--${card.accent}`} key={plan.id} to={`/premium?type=${type}`} aria-label={`View ${plan.title} plan`}>
+            <PricingCardContent card={card} planFeatures={features} actionLabel="View plan" />
+          </Link>;
+        })}
+      </div>
+      {!plans.length && <p>No plans are currently available for this workspace. Please check back shortly.</p>}
+      <p className="lp-pricing-footnote"><Check size={16} aria-hidden="true" />Prices and billing periods match our subscription page. Review your plan before checkout.</p>
     </>}
   </section>;
 }

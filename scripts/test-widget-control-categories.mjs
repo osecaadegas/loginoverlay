@@ -35,6 +35,12 @@ try {
       }),
     );
 
+    if (widgetDefinition.type === "background") {
+      assert.ok(markup.includes('role="tablist"') && markup.includes('>Source</span>'));
+      assert.ok(!markup.includes('data-level="secondary"'), "Background uses one row of relevant tabs");
+      assert.ok(!markup.includes('disabled=""'), "Background has no empty category tabs");
+      continue;
+    }
     assert.ok(
       markup.includes('role="tablist"') &&
         markup.includes('aria-label="Widget control categories"') &&

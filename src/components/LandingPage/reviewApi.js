@@ -12,6 +12,8 @@ export async function reviewRequest(action = 'public', { method = 'GET', body, s
     method, headers, signal, ...(body ? { body: JSON.stringify(body) } : {}),
   });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || 'Reviews are unavailable. Please try again.');
+  if (!response.ok || (action === 'public' && method === 'GET' && !Array.isArray(payload?.reviews))) {
+    throw new Error(payload?.error || 'Reviews are unavailable. Please try again.');
+  }
   return payload;
 }
