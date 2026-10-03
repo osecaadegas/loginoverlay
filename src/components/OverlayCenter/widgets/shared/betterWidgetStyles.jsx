@@ -6746,8 +6746,8 @@ export function BetterBackgroundStyle({ config }) {
     32,
   );
   const mediaOpacityRaw = numberValue(
-    subValue(c, "media", "opacity", c.mediaOpacity ?? 88),
-    88,
+    subValue(c, "media", "opacity", c.mediaOpacity ?? 100),
+    100,
   );
   const mediaOpacity =
     mediaOpacityRaw > 1 ? mediaOpacityRaw / 100 : mediaOpacityRaw;

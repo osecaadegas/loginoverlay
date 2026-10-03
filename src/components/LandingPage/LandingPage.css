@@ -2666,6 +2666,95 @@
   width: 100%;
 }
 
+.lp-footer__support {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: min(960px, 100%);
+  margin-top: 22px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(88, 101, 242, 0.16), rgba(8, 15, 32, 0.78));
+  border: 1px solid rgba(129, 140, 248, 0.38);
+  border-radius: 12px;
+  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.28);
+}
+
+.lp-footer__support-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lp-footer__support-copy strong {
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.lp-footer .lp-footer__support-copy span {
+  color: #cbd5e1;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.lp-footer__support-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.lp-footer .lp-footer__discord,
+.lp-footer .lp-footer__email {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.lp-footer .lp-footer__discord {
+  color: #fff;
+  background: #5865f2;
+  border: 1px solid #818cf8;
+  box-shadow: 0 8px 22px rgba(88, 101, 242, 0.32);
+}
+
+.lp-footer .lp-footer__discord:hover {
+  color: #fff;
+  background: #6875f5;
+}
+
+.lp-footer .lp-footer__email {
+  color: #dbeafe;
+  background: rgba(15, 23, 42, 0.76);
+  border: 1px solid rgba(125, 211, 252, 0.34);
+}
+
+.lp-footer .lp-footer__email:hover {
+  color: #fff;
+  border-color: rgba(125, 211, 252, 0.72);
+}
+
+.lp-footer__discord svg,
+.lp-footer__email svg {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+}
+
+.lp-footer__discord svg:last-child {
+  width: 14px;
+  height: 14px;
+  opacity: 0.8;
+}
+
 .lp-footer span {
   color: #f8fafc;
   font-weight: 900;
@@ -3433,6 +3522,22 @@
 
   .lp-footer-contact__actions button {
     justify-content: center;
+    width: 100%;
+  }
+
+  .lp-footer__support {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .lp-footer__support-links {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lp-footer .lp-footer__discord,
+  .lp-footer .lp-footer__email {
     width: 100%;
   }
 }

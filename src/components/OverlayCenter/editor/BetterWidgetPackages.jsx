@@ -1011,12 +1011,12 @@ const BASE_BETTER_CONFIG = {
     animSpeed: 10,
     opacity: 100,
     overlayColor: "#020611",
-    overlayOpacity: 18,
+    overlayOpacity: 0,
     imageUrl: "",
     videoUrl: "",
     imageFit: "cover",
     imagePosition: "center",
-    mediaOpacity: 88,
+    mediaOpacity: 100,
     brightness: 100,
     contrast: 100,
     saturation: 100,
@@ -4315,7 +4315,7 @@ function SimpleThemedControls({
               />
               <SliderRow
                 label="Tint opacity"
-                value={c.overlayOpacity ?? 18}
+                value={c.overlayOpacity ?? 0}
                 min={0}
                 max={100}
                 unit="%"
@@ -4396,7 +4396,7 @@ function SimpleThemedControls({
                   />
                   <SliderRow
                     label="Media opacity"
-                    value={c.mediaOpacity ?? 88}
+                    value={c.mediaOpacity ?? 100}
                     min={0}
                     max={100}
                     unit="%"

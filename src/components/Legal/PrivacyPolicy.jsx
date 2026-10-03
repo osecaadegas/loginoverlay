@@ -227,7 +227,20 @@ export default function PrivacyPolicy() {
           </p>
           <ul>
             <li>Website: <strong>https://streamerscenter.com</strong></li>
-            <li>Email: <strong>privacy@streamerscenter.com</strong></li>
+            <li>
+              Discord (preferred):{" "}
+              <strong>
+                <a href="https://discord.gg/bkxAyTn73Y">discord.gg/bkxAyTn73Y</a>
+              </strong>
+            </li>
+            <li>
+              Email:{" "}
+              <strong>
+                <a href="mailto:streamerscentertracker@gmail.com">
+                  streamerscentertracker@gmail.com
+                </a>
+              </strong>
+            </li>
           </ul>
         </section>
       </div>

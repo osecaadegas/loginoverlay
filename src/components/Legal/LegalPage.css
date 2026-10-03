@@ -77,6 +77,16 @@
   color: #d1d5db;
 }
 
+.legal-section a {
+  color: #7dd3fc;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.legal-section a:hover {
+  color: #bae6fd;
+}
+
 /* ═══════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════ */

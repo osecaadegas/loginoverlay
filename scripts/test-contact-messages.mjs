@@ -7,6 +7,8 @@ const landingSource = read("../src/components/LandingPage/LandingPage.jsx");
 const toolLandingSource = read(
   "../src/components/LandingPage/ToolLandingPage.jsx",
 );
+const privacySource = read("../src/components/Legal/PrivacyPolicy.jsx");
+const termsSource = read("../src/components/Legal/TermsOfService.jsx");
 const adminSource = read("../src/components/AdminPanel/AdminPanel.jsx");
 const inboxSource = read(
   "../src/components/AdminPanel/ContactMessagesAdmin.jsx",
@@ -21,6 +23,15 @@ assert.match(footerSource, /name="website"/);
 assert.match(footerSource, /aria-expanded=\{contactOpen\}/);
 assert.match(footerSource, /aria-controls="footer-contact-form"/);
 assert.match(footerSource, /\{contactOpen && \(/);
+assert.match(footerSource, /streamerscentertracker@gmail\.com/);
+assert.match(footerSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
+assert.match(landingSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
+assert.match(toolLandingSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
+assert.match(privacySource, /streamerscentertracker@gmail\.com/);
+assert.match(privacySource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
+assert.match(termsSource, /streamerscentertracker@gmail\.com/);
+assert.match(termsSource, /https:\/\/discord\.gg\/bkxAyTn73Y/);
+assert.doesNotMatch(`${footerSource}${privacySource}${termsSource}`, /privacy@streamerscenter\.com/);
 assert.match(landingSource, /<ContactFooter \/>/);
 assert.match(toolLandingSource, /<ContactFooter \/>/);
 

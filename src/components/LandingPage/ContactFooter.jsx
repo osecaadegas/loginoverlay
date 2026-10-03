@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, Loader2, Mail, Send } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Mail,
+  MessageCircle,
+  Send,
+} from "lucide-react";
+
+const SUPPORT_EMAIL = "streamerscentertracker@gmail.com";
+const DISCORD_INVITE_URL = "https://discord.gg/bkxAyTn73Y";
 
 const INITIAL_FORM = {
   name: "",
@@ -66,6 +76,29 @@ export default function ContactFooter() {
         </nav>
       </div>
 
+      <aside className="lp-footer__support" aria-label="Streamers Center support">
+        <div className="lp-footer__support-copy">
+          <strong>Need help or want to join the community?</strong>
+          <span>Discord is the fastest way to contact Streamers Center.</span>
+        </div>
+        <div className="lp-footer__support-links">
+          <a
+            className="lp-footer__discord"
+            href={DISCORD_INVITE_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <MessageCircle aria-hidden="true" />
+            Join our Discord
+            <ExternalLink aria-hidden="true" />
+          </a>
+          <a className="lp-footer__email" href={`mailto:${SUPPORT_EMAIL}`}>
+            <Mail aria-hidden="true" />
+            {SUPPORT_EMAIL}
+          </a>
+        </div>
+      </aside>
+
       {contactOpen && (
         <form
           id="footer-contact-form"
@@ -76,7 +109,10 @@ export default function ContactFooter() {
             <Mail aria-hidden="true" />
             <div>
               <strong>Contact us</strong>
-              <p>Send a message directly to the Streamers Center admin team.</p>
+              <p>
+                Use Discord for the fastest help, or send a message directly to
+                the Streamers Center admin team.
+              </p>
             </div>
           </div>
           <div className="lp-footer-contact__fields">

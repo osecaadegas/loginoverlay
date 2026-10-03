@@ -1000,6 +1000,27 @@ function migrateLegacyShoutoutConfig(widgetType, rawConfig) {
   };
 }
 
+function migrateLegacyBackgroundMediaDefaults(widgetType, rawConfig) {
+  if (
+    widgetType !== BACKGROUND_TYPE ||
+    Number(rawConfig.mediaOpacity) !== 88 ||
+    Number(rawConfig.overlayOpacity) !== 18 ||
+    !["#020611", "#1c1c1c"].includes(
+      String(rawConfig.overlayColor || "").toLowerCase(),
+    )
+  ) {
+    return rawConfig;
+  }
+
+  // These values were the old untouched defaults and compounded into a visibly
+  // dark image/video. Explicitly customized opacity or tint values are retained.
+  return {
+    ...rawConfig,
+    mediaOpacity: 100,
+    overlayOpacity: 0,
+  };
+}
+
 function migrateLegacyConnectFourConfig(widgetType, rawConfig) {
   if (
     widgetType !== "connect_four" ||
@@ -1027,9 +1048,12 @@ export function normalizeBetterInstance(rawInstance = {}) {
   const rawConfig = rawInstance.config || definition.defaultConfig;
   const config = validateBetterWidgetConfig(
     widgetType,
-    migrateLegacyConnectFourConfig(
+    migrateLegacyBackgroundMediaDefaults(
       widgetType,
-      migrateLegacyShoutoutConfig(widgetType, rawConfig),
+      migrateLegacyConnectFourConfig(
+        widgetType,
+        migrateLegacyShoutoutConfig(widgetType, rawConfig),
+      ),
     ),
   );
   const geometry = normalizeInstanceGeometry(

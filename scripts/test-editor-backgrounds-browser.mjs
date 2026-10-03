@@ -58,7 +58,7 @@ try {
     const { AuthProvider } = await import("/src/context/AuthContext.jsx");
     const { supabase } = await import("/src/config/supabaseClient.js");
     const { createOverlayTestDatabase } = await import("/scripts/helpers/overlay-build-test-db.mjs");
-    const { createBetterInstance, normalizeBetterLayout } = await import("/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx");
+    const { createBetterInstance, normalizeBetterInstance, normalizeBetterLayout } = await import("/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx");
     const { default: Editor } = await import("/src/components/OverlayCenter/editor/WidgetEditorPage.jsx");
     const { default: Obs } = await import("/src/components/OverlayCenter/editor/BetterObsOverlay.jsx");
     const layout = normalizeBetterLayout({ name: "Background Build", instances: [createBetterInstance("background", {
@@ -71,6 +71,24 @@ try {
         fxVignette: false,
       },
     }), createBetterInstance("bets", { visible: false })] });
+    const backgroundConfig = layout.instances.find(instance => instance.widgetType === "background")?.config;
+    if (backgroundConfig?.mediaOpacity !== 100 || backgroundConfig?.overlayOpacity !== 0) {
+      throw new Error(`Background media defaults are not neutral: ${JSON.stringify(backgroundConfig)}`);
+    }
+    const legacyBackground = normalizeBetterInstance({
+      widgetType: "background",
+      config: { mediaOpacity: 88, overlayOpacity: 18, overlayColor: "#020611" },
+    });
+    if (legacyBackground.config.mediaOpacity !== 100 || legacyBackground.config.overlayOpacity !== 0) {
+      throw new Error(`Legacy background defaults were not migrated: ${JSON.stringify(legacyBackground.config)}`);
+    }
+    const customizedBackground = normalizeBetterInstance({
+      widgetType: "background",
+      config: { mediaOpacity: 76, overlayOpacity: 23, overlayColor: "#020611" },
+    });
+    if (customizedBackground.config.mediaOpacity !== 76 || customizedBackground.config.overlayOpacity !== 23) {
+      throw new Error(`Customized background values were not preserved: ${JSON.stringify(customizedBackground.config)}`);
+    }
     const defaults = {
       better_editor_overlays: [
         { id: "background-a", user_id: userId, public_overlay_id: publicId, draft_layout: layout, draft_version: 1, published_version: 0 },

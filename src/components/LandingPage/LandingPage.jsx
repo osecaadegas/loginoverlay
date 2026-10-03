@@ -1547,6 +1547,13 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
           <Link to="/offers">Deals</Link>
           <a href="#pricing">Pricing</a>
           <a href="#reviews">Reviews</a>
+          <a
+            href="https://discord.gg/bkxAyTn73Y"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Discord
+          </a>
         </nav>
         <div className="lp-home-nav__actions">
           {!user && (

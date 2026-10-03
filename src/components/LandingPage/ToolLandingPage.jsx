@@ -218,6 +218,13 @@ export default function ToolLandingPage() {
       <header className="lp-tool-nav lp-tool-nav--secondary">
         <nav aria-label="Tool landing navigation">
           <Link to="/premium">Pricing</Link>
+          <a
+            href="https://discord.gg/bkxAyTn73Y"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Discord
+          </a>
         </nav>
       </header>
 
