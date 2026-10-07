@@ -12,7 +12,14 @@ const SURFACES = {
 export function findEffectSurface(host, target) {
   const wrapper = host.querySelector(`[data-effect-target-id="${CSS.escape(target.id)}"]`);
   if (!wrapper) return null;
-  if (target.theme.family !== "ice") return wrapper;
+  if (target.theme.family === 'orbital') {
+    const selectors = target.widgetType === 'background' ? '[data-orbital-environment]'
+      : target.widgetType === 'connect_four' ? '.connect-four-board'
+      : target.widgetType === 'bets' ? '.bet-widget, [data-widget-element="widgetBackground"]'
+        : SURFACES[target.widgetType] || '[data-widget-element="container"], [data-appearance-part="container"]';
+    return wrapper.querySelector(selectors);
+  }
+  if (!['ice', 'orbital'].includes(target.theme.family)) return wrapper;
   return wrapper.querySelector(SURFACES[target.widgetType] || '[data-widget-element="container"], [data-appearance-part="container"]') || wrapper;
 }
 
@@ -23,9 +30,9 @@ export function measureEffectTargets(host, canvas, targets, width, height) {
   const scaleY = height / viewport.height;
   return targets.map((target) => {
     // Keep other themes unchanged while Ice is being refined.
-    if (target.theme.family !== "ice") return target;
+    if (!['ice', 'orbital'].includes(target.theme.family)) return target;
     const surface = findEffectSurface(host, target);
-    if (!surface) return target;
+    if (!surface) return target.theme.family === 'orbital' ? { ...target, opacity: 0 } : target;
     const rect = surface.getBoundingClientRect();
     const style = getComputedStyle(surface);
     if (!rect.width || !rect.height) return { ...target, opacity: 0 };

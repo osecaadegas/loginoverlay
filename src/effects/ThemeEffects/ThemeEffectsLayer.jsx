@@ -67,7 +67,7 @@ export default function ThemeEffectsLayer({
     () => buildEffectTargets(instances, singleInstanceId),
     [instances, singleInstanceId],
   );
-  dimensionsRef.current = { width, height };
+  dimensionsRef.current = { width, height, runtime };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -77,12 +77,18 @@ export default function ThemeEffectsLayer({
     let previous = "";
     const observed = new Set();
     const geometryElements = new Set();
+    const unpaintedWrappers = new Set();
     const measure = () => {
       frame = 0;
       geometryElements.clear();
+      unpaintedWrappers.clear();
       const surfaces = new Set();
       targets.forEach((target) => {
         const surface = findEffectSurface(host, target);
+        if (!surface && target.theme.family === 'orbital') {
+          const wrapper = host.querySelector(`[data-effect-target-id="${CSS.escape(target.id)}"]`);
+          if (wrapper) unpaintedWrappers.add(wrapper);
+        }
         if (surface) surfaces.add(surface);
         // Only transforms on the surface or its ancestors affect its bounds.
         // Animating confetti/messages below it must not remeasure every widget.
@@ -118,6 +124,7 @@ export default function ThemeEffectsLayer({
     const mutationObserver = new MutationObserver((records) => {
       if (records.some((record) => {
         if (record.target.closest?.(".theme-effects-layer")) return false;
+        if (record.type === 'childList' && [...unpaintedWrappers].some(wrapper => wrapper.contains(record.target))) return true;
         if (record.type === "attributes") return geometryElements.has(record.target);
         return geometryElements.has(record.target) || [...record.addedNodes, ...record.removedNodes]
           .some((node) => node.nodeType === 1 && (node.matches?.("[data-effect-target-id]") || node.querySelector?.("[data-effect-target-id]")));
@@ -157,6 +164,7 @@ export default function ThemeEffectsLayer({
         engine = createdEngine;
         engineRef.current = createdEngine;
         createdEngine.setVisible(visibleRef.current && document.visibilityState === "visible");
+        createdEngine.setRuntime(dimensionsRef.current.runtime);
         createdEngine.resize(dimensionsRef.current.width, dimensionsRef.current.height);
         createdEngine.updateTargets(targetsRef.current, { transition: false }).catch((error) => {
           console.error("[ThemeEffects] Failed to synchronize initial targets:", error);
@@ -177,16 +185,17 @@ export default function ThemeEffectsLayer({
     // The engine lifecycle is tied to this canvas. Geometry and theme changes
     // are handled by the update effect below without creating a new renderer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(targets.length), debug.effect, runtime]);
+  }, [Boolean(targets.length), debug.effect]);
 
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine) return;
+    engine.setRuntime(runtime);
     engine.resize(width, height);
     engine.updateTargets(targetsRef.current).catch((error) => {
       console.error("[ThemeEffects] Failed to update targets:", error);
     });
-  }, [height, targets, width]);
+  }, [height, targets, width, runtime]);
 
   useEffect(() => {
     if (!targets.length) return undefined;
@@ -242,7 +251,7 @@ export default function ThemeEffectsLayer({
       if (!wrapper || !host.contains(wrapper)) return;
       const id = wrapper.dataset.effectTargetId;
       const target = targetsRef.current.find((entry) => entry.id === id);
-      if (!target || target.theme.family !== "ice") return;
+      if (!target || !['ice', 'orbital'].includes(target.theme.family)) return;
       const surface = findEffectSurface(host, target);
       const bounds = surface?.getBoundingClientRect();
       const source = event.detail?.source?.getBoundingClientRect?.();
@@ -292,7 +301,7 @@ export default function ThemeEffectsLayer({
         </span>
       ))}
       {debug.enabled && debugStats && (
-        <output className="theme-effects-layer__debug" data-frames={debugStats.frames} data-last-event={debugStats.lastEvent}>
+        <output className="theme-effects-layer__debug" data-frames={debugStats.frames} data-running={String(debugStats.running)} data-ready={debugStats.pending ? 'false' : 'true'} data-last-event={debugStats.lastEvent}>
           FX {debugStats.quality.toUpperCase()} · {debugStats.fps} FPS · {debugStats.particles} particles · {debugStats.targets} targets · DPR {debugStats.resolution}{debugStats.debugEffect ? ` · FORCE ${debugStats.debugEffect.toUpperCase()}` : ""}
         </output>
       )}

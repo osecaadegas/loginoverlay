@@ -1,6 +1,11 @@
 const ROOT = "/theme-effects";
 
 export const THEME_EFFECT_DEFINITIONS = Object.freeze({
+  orbital: Object.freeze({
+    id: 'orbital', family: 'orbital', label: 'Space / Orbital', supportsEffects: true,
+    colors: Object.freeze({ primary: 0x27c7ff, highlight: 0x9deaff, shadow: 0x071426, particle: 0xeaf8ff }),
+    textures: Object.freeze({ earth: `${ROOT}/orbital/earth-orbit.webp` }),
+  }),
   arctic: Object.freeze({
     id: "arctic",
     family: "ice",
@@ -72,6 +77,7 @@ export const THEME_EFFECT_DEFINITIONS = Object.freeze({
 });
 
 const THEME_ALIASES = Object.freeze({
+  space: 'orbital',
   ice: "arctic",
   frozen: "arctic",
   greek: "old_rome",

@@ -1,0 +1,120 @@
+/* Scoped materials only. Existing inline element overrides retain precedence. */
+.better-widget-colour-scope[data-colour-theme="orbital"] {
+  --orbital-metal: repeating-linear-gradient(176deg, #ffffff03 0 1px, transparent 1px 4px);
+  --orbital-reflection: linear-gradient(165deg, #9deaff16, transparent 22%, #0004 80%, #27c7ff0a);
+  --orbital-glass: linear-gradient(160deg, color-mix(in srgb, var(--orbital-surface) 94%, transparent), color-mix(in srgb, var(--orbital-background) 97%, transparent));
+  --orbital-hud-shadow: inset 0 1px 0 #eaf8ff24, inset 0 -1px 0 #0009, 0 0 calc(16px * var(--orbital-hud-glow)) #27c7ff30;
+  color: var(--orbital-text);
+}
+
+/* Root surfaces differ by widget; frame geometry is measured from these same
+   surfaces by targetBounds.js. No transforms or layout dimensions are changed. */
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(
+  .better-hunt-panel, .cg-widget, .rtp-stats-bar, .slot-bingo-widget,
+  .better-slideshow-frame, .ov-chat-widget, .connect-four-board, [data-widget-element="container"],
+  [data-widget-element="widgetBackground"]
+) {
+  background-image: var(--orbital-reflection), var(--orbital-metal), var(--orbital-glass);
+  border-color: var(--orbital-border);
+  border-radius: 12px;
+  box-shadow: var(--orbital-hud-shadow);
+}
+
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(
+  [data-widget-element="header"], .cg-info h3, .cg-records h3,
+  .better-hunt-main-header, .better-hunt-head
+) {
+  background-image: linear-gradient(90deg, #27c7ff0e, transparent 65%);
+  border-bottom: 1px solid color-mix(in srgb, var(--orbital-border) 55%, transparent);
+  letter-spacing: .06em;
+}
+
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(
+  .cg-stat, .better-hunt-card, .better-hunt-autoscroll-card, .better-hunt-request,
+  [data-widget-element="statCard"], [data-widget-element="matchCard"],
+  [data-widget-element="participantCard"], [data-widget-element="individualBetCard"]
+) {
+  background-image: linear-gradient(150deg, #9deaff09, #0003);
+  box-shadow: inset 0 1px 0 #9deaff13;
+  border-radius: 10px;
+}
+
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(.cg-info, .cg-records) {
+  border-color: color-mix(in srgb, var(--orbital-border) 65%, transparent);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] .cg-cover { box-shadow: inset 0 0 0 1px #9deaff22; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .cg-stat strong { font-variant-numeric: tabular-nums; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .cg-records [data-widget-element="bestWinValue"] { color: var(--orbital-success); }
+.better-widget-colour-scope[data-colour-theme="orbital"] [data-widget-element="separator"] {
+  background: linear-gradient(transparent, var(--orbital-border), transparent);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="container"] {
+  background-image: linear-gradient(90deg, #020711bb, transparent 20% 80%, #020711bb), var(--orbital-reflection), var(--orbital-metal);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(.better-hunt-main-stat-value, [data-widget-element="statValue"], [data-widget-element="scoreValue"]) {
+  font-variant-numeric: tabular-nums;
+}
+/* Positive result colours and individual prediction range colours stay owned
+   by the widgets. Never recolour avatars, cover art or provider logos. */
+.better-widget-colour-scope[data-colour-theme="orbital"] .better-slideshow-frame__empty {
+  background-image: linear-gradient(#07142666, #02071199), url('/theme-effects/orbital/preview.webp');
+  background-size: cover;
+  background-position: center;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] [data-widget-element="message"] {
+  background-image: linear-gradient(100deg, #27c7ff08, transparent 30%);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(.bet-bar, .bet-card) {
+  --badge-bg: linear-gradient(145deg, var(--accent), var(--accent-2));
+}
+
+.oc-bg-widget--orbital { pointer-events: none; isolation: isolate; }
+.orbital-environment, .orbital-environment > div,
+.orbital-environment__planet > *, .orbital-environment__atmosphere > div {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+}
+.orbital-environment { overflow: hidden; }
+.orbital-environment__void { background: var(--orbital-background); }
+.orbital-environment__nebula {
+  background: radial-gradient(ellipse at 72% 24%, #49375c20, transparent 40%), radial-gradient(ellipse at 40% 40%, #178cff18, transparent 60%);
+  opacity: var(--orbital-environment-intensity);
+}
+.orbital-environment__earth { object-fit: cover; transform: scale(1.035); }
+.orbital-environment__clouds {
+  background: url('/theme-effects/orbital/earth-orbit.webp') center / cover;
+  opacity: .085;
+  mask-image: linear-gradient(transparent 38%, #0009 62%, #000 100%);
+  transform: scale(1.04);
+}
+.orbital-environment__atmosphere { background: radial-gradient(ellipse 65% 4% at 50% 41%, #27c7ff33, transparent); }
+.orbital-environment__atmosphere > div { background: radial-gradient(ellipse 75% 8% at 50% 42%, #9deaff66, transparent); opacity: 0; }
+.orbital-environment__shade { background: #020711; opacity: 0; }
+.orbital-environment__sunrise { background: radial-gradient(ellipse 14% 9% at 92% 45%, #eaf8ff90, #9deaff20 35%, transparent 75%); }
+.orbital-environment__stars { position: absolute; inset: 0; width: 100%; height: 100%; fill: var(--orbital-text); }
+[data-orbital-environment="earth_night"] .orbital-environment__earth { filter: brightness(.52) saturate(.7); }
+[data-orbital-environment="earth_night"] .orbital-environment__clouds { opacity: .04; }
+[data-orbital-environment="earth_sunrise"] .orbital-environment__earth { filter: brightness(.86) saturate(.8); }
+
+/* Orbital event motion belongs to the pooled engine, including the win event.
+   Suppress the legacy confetti/rays without removing live win information. */
+.better-widget-colour-scope[data-colour-theme="orbital"] .better-hunt-win {
+  animation: none;
+  background: linear-gradient(160deg, #071426e8, #020711f2);
+  border: 1px solid var(--orbital-border);
+  border-radius: 12px;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] .better-hunt-win > :is(
+  .better-hunt-win-border, .better-hunt-win-flash, .better-hunt-win-rays,
+  .better-hunt-win-ring, .better-hunt-win-cannon, .better-hunt-win-confetti
+) { display: none; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .better-hunt-win :is(.better-hunt-win-badge, .better-hunt-win-label, .better-hunt-win-amount, .better-hunt-win-multi) {
+  animation: none; text-shadow: 0 0 12px #27c7ff30;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] .better-hunt-win-badge strong { animation: none; color: var(--orbital-text); text-shadow: 0 0 18px #27c7ff30; }
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(.widget-sheen, .better-hunt-request-live)::before { animation: none; }
+.better-widget-colour-scope[data-colour-theme="orbital"] :is(.widget-sheen, .better-hunt-request-live) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .better-widget-colour-scope[data-colour-theme="orbital"] *,
+  .better-widget-colour-scope[data-colour-theme="orbital"] *::before,
+  .better-widget-colour-scope[data-colour-theme="orbital"] *::after { animation: none !important; transition: none !important; }
+}

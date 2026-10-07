@@ -26,6 +26,7 @@
     "test:widget-colour-themes": "node scripts/test-widget-colour-themes.mjs",
     "test:slot-bingo-config": "node scripts/test-slot-bingo-config.mjs",
     "test:theme-effects": "node scripts/test-theme-effects.mjs",
+    "test:orbital-theme": "node scripts/test-orbital-theme.mjs",
     "test:obs-high-dpi": "node scripts/test-obs-high-dpi.mjs",
     "test:current-game": "node scripts/test-current-game-browser.mjs",
     "test:hunt-personal-bests": "node scripts/test-hunt-personal-bests-browser.mjs",

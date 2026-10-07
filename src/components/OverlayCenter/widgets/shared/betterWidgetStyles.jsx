@@ -19,6 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import SlotImage from "../SlotImage";
+import OrbitalEnvironment from '../../../../effects/ThemeEffects/orbital/OrbitalEnvironment';
 import { emitIceEvent } from "../../../../effects/ThemeEffects/emitIceEvent";
 import { resolveGiveawaySpinDurationSeconds } from "../giveaway/giveawayTiming";
 import { getWidgetEffectsThemeKey } from "../../../../effects/ThemeEffects/themeEffectsConfig";
@@ -1786,22 +1787,22 @@ const BETTER_HUNT_WIN_TIERS = {
   },
 };
 
-function BetterHuntWinOverlay({ win, onDone, ice = false }) {
+function BetterHuntWinOverlay({ win, onDone, ice = false, orbital = false }) {
   const rootRef = useRef(null);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
   useEffect(() => {
-    if (ice && win) emitIceEvent(rootRef.current, win.tier);
-  }, [ice, win?.id]);
+    if ((ice || orbital) && win) emitIceEvent(rootRef.current, win.tier);
+  }, [ice, orbital, win?.id]);
   const tier = win ? BETTER_HUNT_WIN_TIERS[win.tier] : null;
   useEffect(() => {
-    if (!ice || !tier) return undefined;
+    if ((!ice && !orbital) || !tier) return undefined;
     // Animation-off settings suppress animationend; the event must still expire.
-    const timer = window.setTimeout(() => onDoneRef.current(), tier.duration + 100);
+    const timer = window.setTimeout(() => onDoneRef.current(), orbital ? 2400 : tier.duration + 100);
     return () => window.clearTimeout(timer);
-  }, [ice, tier, win?.id]);
+  }, [ice, orbital, tier, win?.id]);
   const pieces = useMemo(() => {
-    if (!tier || ice) return [];
+    if (!tier || ice || orbital) return [];
     return Array.from({ length: tier.count }, (_, index) => ({
       id: index,
       left: ((index * 37) % 100) + ((index * 13) % 7) / 10,
@@ -1818,7 +1819,7 @@ function BetterHuntWinOverlay({ win, onDone, ice = false }) {
       ][index % 5],
       sway: ((index * 19) % 60) - 30,
     }));
-  }, [tier, win?.id, ice]);
+  }, [tier, win?.id, ice, orbital]);
   const iceShards = useMemo(() => {
     if (!tier || !ice) return [];
     const count = 9 + Math.min(6, tier.rings * 2);
@@ -1834,6 +1835,11 @@ function BetterHuntWinOverlay({ win, onDone, ice = false }) {
     }));
   }, [tier, win?.id, ice]);
   if (!win || !tier) return null;
+  if (orbital) return <div ref={rootRef} className={`better-hunt-win better-hunt-win--${win.tier}`}>
+    <div className="better-hunt-win-badge"><span className="better-hunt-win-label">{tier.label}</span>
+      <strong>{Number(win.mult || 0).toLocaleString()}x</strong>{win.slot && <em>{win.slot}</em>}
+    </div>
+  </div>;
   return (
     <div
       ref={rootRef}
@@ -5075,6 +5081,7 @@ export function BetterBonusHuntStyle({
       {previewWin ? (
         <BetterHuntWinOverlay
           ice={getWidgetEffectsThemeKey("bonus_hunt", c) === "arctic"}
+          orbital={getWidgetEffectsThemeKey("bonus_hunt", c) === "orbital"}
           key={previewWin.id}
           win={previewWin}
           onDone={() => setPreviewWin(null)}
@@ -5183,6 +5190,7 @@ export function BetterBonusHuntStyle({
         {previewWin ? (
           <BetterHuntWinOverlay
             ice={getWidgetEffectsThemeKey("bonus_hunt", c) === "arctic"}
+            orbital={getWidgetEffectsThemeKey("bonus_hunt", c) === "orbital"}
             key={previewWin.id}
             win={previewWin}
             onDone={() => setPreviewWin(null)}
@@ -5213,6 +5221,7 @@ export function BetterBonusHuntStyle({
         {previewWin ? (
           <BetterHuntWinOverlay
             ice={getWidgetEffectsThemeKey("bonus_hunt", c) === "arctic"}
+            orbital={getWidgetEffectsThemeKey("bonus_hunt", c) === "orbital"}
             key={previewWin.id}
             win={previewWin}
             onDone={() => setPreviewWin(null)}
@@ -6708,6 +6717,19 @@ function betterBackgroundTextureStyle({
 }
 
 export function BetterBackgroundStyle({ config }) {
+  const c = config || {};
+  if (getWidgetEffectsThemeKey('background', c) === 'orbital') {
+    return <OrbitalEnvironment config={c} canvasAttrs={attrs('background', c, 'canvas')}
+      canvasStyle={subElementStyle(c, 'canvas', {
+        width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
+        borderRadius: cssPx(c.borderRadius ?? 0, '0px'),
+        opacity: clampNumber(c.opacity ?? 100, 0, 100, 100) / 100,
+      })} />;
+  }
+  return <LegacyBetterBackgroundStyle config={c} />;
+}
+
+function LegacyBetterBackgroundStyle({ config }) {
   const c = config || {};
   const color1 = subValue(c, "texture", "background", c.color1 || "#030712");
   const color2 = subValue(c, "texture", "accentColor", c.color2 || "#1d4ed8");

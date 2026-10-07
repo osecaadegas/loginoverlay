@@ -146,11 +146,32 @@ export function buildWidgetColourThemePatch(type, config, key) {
   return patch;
 }
 
+// Material tokens follow the widget's existing Simple/Advanced colour fields.
+// Element-level inline styles still win over these inherited defaults.
+export function getWidgetColourThemeTokens(type, config, key) {
+  const palette = { ...getWidgetColourTheme(key) };
+  const assigned = new Set();
+  for (const [property, token] of Object.entries(COLOUR_KEYS[type] || {})) {
+    if (!assigned.has(token) && typeof config[property] === 'string' && config[property]) {
+      palette[token] = config[property];
+      assigned.add(token);
+    }
+  }
+  return palette;
+}
+
 function syncElementOverrides(config, type, theme) {
   let next = config;
   const widgetVariant = config.chatStyle || config.displayStyle || config.layout;
   for (const [elementId, properties] of Object.entries(ELEMENT_COLOURS[type] || {})) {
     for (const [propertyId, token] of Object.entries(properties)) {
+      // Prediction ranges are semantic colours, including users' per-element
+      // overrides. Orbital changes the tile material, not those colours.
+      if (theme.key === 'orbital' && type === 'bets' && (
+        (elementId === 'individualBetCard' && propertyId === 'accentColor') ||
+        (elementId === 'cardNumberBadge' && ['background', 'borderColor', 'textColor'].includes(propertyId)) ||
+        (elementId === 'progressBar' && propertyId === 'fillColor')
+      )) continue;
       const value = theme[token];
       for (const bucket of ["subElements", "elements", "__appearanceExplicitSubElements"]) {
         const element = next[bucket]?.[elementId];

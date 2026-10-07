@@ -1,4 +1,5 @@
 import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
+import { ORBITAL_ENVIRONMENTS } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
 import { CURRENT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
@@ -33,6 +34,7 @@ import {
   MonitorPlay,
   Music,
   Palette,
+  Orbit,
   Pipette,
   RotateCcw,
   Settings,
@@ -179,7 +181,7 @@ const BETS_STYLE_OPTIONS = getWidgetStyleOptionsForQuickEditor("bets").map(
 const COLOUR_THEME_ICONS = {
   neon: Zap, metallic: Layers, sunset: Sunset, cyberpunk: Zap, crimson: Flame, emerald: Waves,
   gold: Coins, violet: Sparkles, rose: Heart, arctic: Snowflake, lime: Leaf,
-  luxe: Crown, gladiator: Flame, old_rome: Coins,
+  luxe: Crown, gladiator: Flame, old_rome: Coins, orbital: Orbit,
 };
 
 const FILL_STYLES = [
@@ -7145,7 +7147,7 @@ export function BetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
-      {type === "background" && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type === "background" && effectsThemeKey !== 'orbital' && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           <div className="bp-theme-grid" role="group" aria-label="Colour theme">
@@ -7158,6 +7160,7 @@ export function BetterWidgetControls({
                   data-colour-theme-key={theme.key}
                   className={selected === theme.key ? "is-active" : ""}
                   aria-pressed={selected === theme.key}
+                  style={theme.thumbnail ? { backgroundImage: `linear-gradient(0deg, #020711 5%, transparent 100%), url(${theme.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
                   onClick={() => onChange(applyWidgetColourTheme(type, c, theme.key))}
                 >
                   <span aria-hidden="true">
@@ -7171,6 +7174,7 @@ export function BetterWidgetControls({
         </Section>
       </div>
       <ThemeEffectsControls
+        widgetType={type}
         themeKey={effectsThemeKey}
         simple={type === "background"}
         config={c.themeEffects}
@@ -7187,13 +7191,44 @@ const EFFECT_QUALITY_OPTIONS = [
   { key: "ultra", name: "Ultra" },
 ];
 
-function ThemeEffectsControls({ themeKey, config, onChange, simple = false }) {
+function ThemeEffectsControls({ themeKey, config, onChange, simple = false, widgetType }) {
   const definition = getThemeEffectDefinition(themeKey);
   const c = normalizeThemeEffectsConfig(themeKey, config);
   if (!definition?.supportsEffects || !c) return null;
   const set = (patch) => onChange(patchThemeEffectsConfig(themeKey, c, patch));
   const percent = (value) => Math.round(Number(value || 0) * 100);
   const family = definition.family;
+
+  if (family === 'orbital') {
+    const space = c.orbital;
+    const setSpace = (patch) => set({ orbital: patch });
+    const slider = (label, key) => <SliderRow key={key} label={label} value={percent(space[key])} min={0} max={100} unit="%" onChange={value => setSpace({ [key]: value / 100 })} />;
+    return <div className="bp-controls bp-controls--theme-effects" data-effects-theme="orbital">
+      {widgetType === 'background' && <Section title="Space Environment" icon={<Orbit size={12} />} simple>
+        <Segmented value={space.environment} options={ORBITAL_ENVIRONMENTS} columns={2} onChange={environment => setSpace({ environment })} />
+        <p className="bp-hint">Keep this background beneath your game capture in OBS. Off leaves a truly transparent background.</p>
+        {space.environment !== 'off' && <>
+          {slider('Environment intensity', 'intensity')}
+          {space.environment !== 'deep_space' && <>{slider('Earth visibility', 'earthVisibility')}{slider('Atmosphere glow', 'atmosphereGlow')}</>}
+          <ToggleRow label="Stars" checked={space.stars} onChange={stars => setSpace({ stars })} />
+          {space.stars && slider('Stars intensity', 'starsIntensity')}
+          <ToggleRow label="Background animation" checked={space.backgroundAnimation} onChange={backgroundAnimation => setSpace({ backgroundAnimation })} />
+        </>}
+      </Section>}
+      <Section title="Orbital Effects" icon={<Sparkles size={12} />} simple>
+        <ToggleRow label="Animated effects" checked={c.enabled} onChange={enabled => set({ enabled })} hint="Pause orbital motion and event effects. The static material and environment remain." />
+        {widgetType !== 'background' && <>
+          {slider('HUD glow', 'hudGlow')}
+          <ToggleRow label="Particles" checked={space.particles} onChange={particles => setSpace({ particles })} />
+        </>}
+        <div role="group" aria-label="Effect quality"><p className="bp-help">Quality</p>
+          <Segmented value={c.quality} options={[{ key: 'low', name: 'Low' }, { key: 'balanced', name: 'Medium' }, { key: 'ultra', name: 'High' }]} columns={3} onChange={quality => set({ quality })} />
+        </div>
+        <p className="bp-hint">Lower quality uses fewer particles. Motion pauses in hidden tabs and respects reduced motion.</p>
+        {widgetType !== 'background' && <p className="bp-hint">Choose Space / Orbital on your Overlay Background widget to configure Earth and stars.</p>}
+      </Section>
+    </div>;
+  }
 
   return (
     <div className="bp-controls bp-controls--theme-effects" data-effects-theme={family}>

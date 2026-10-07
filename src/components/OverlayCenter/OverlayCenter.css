@@ -27661,7 +27661,7 @@ body.wm-resizing {
 .oc2-preview-tool-card:not(.oc-dedup-27503) {
   min-width: 0;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   gap: 9px;
   align-items: center;
   min-height: 92px;
@@ -27712,6 +27712,38 @@ body.wm-resizing {
   color: var(--oc-text-bluegray-soft);
   font-size: 0.72rem;
   font-weight: 800;
+}
+
+.oc2-preview-tool-card__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.oc2-preview-tool-card__icon-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  border-radius: 7px;
+  background: rgba(2, 6, 23, 0.5);
+  color: var(--oc-text-bluegray-soft);
+  cursor: pointer;
+}
+
+.oc2-preview-tool-card__icon-button:hover,
+.oc2-preview-tool-card__icon-button:focus-visible {
+  border-color: rgba(94, 234, 212, 0.62);
+  color: var(--oc-text-teal-pale);
+  outline: none;
+}
+
+.oc2-preview-tool-card__icon-button--danger:hover,
+.oc2-preview-tool-card__icon-button--danger:focus-visible {
+  border-color: rgba(248, 113, 113, 0.7);
+  color: #fecaca;
 }
 
 .oc2-preview-tool-card__action:not(.oc-dedup-27559) {

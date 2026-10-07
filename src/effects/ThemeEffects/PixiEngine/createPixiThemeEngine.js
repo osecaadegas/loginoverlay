@@ -10,6 +10,8 @@ import {
 } from "pixi.js";
 import "pixi.js/unsafe-eval";
 import { gsap } from "gsap";
+import { orbitalParticleBudgets } from '../orbital/orbitalTheme.js';
+import { createOrbitalNode, resizeOrbitalNode, updateOrbitalNode, burstOrbitalNode, disposeOrbitalNode } from '../orbital/orbitalNode.js';
 import {
   getEffectQualityPreset,
   getEffectResolution,
@@ -96,8 +98,9 @@ function targetSignature(targets) {
 }
 
 function getHighestQuality(targets) {
+  const orbitalBudgets = orbitalParticleBudgets(targets, typeof navigator === 'undefined' ? {} : navigator);
   return targets.reduce((best, target) => {
-    const quality = normalizeEffectQuality(target.effects?.quality);
+    const quality = orbitalBudgets.get(target.id)?.quality || normalizeEffectQuality(target.effects?.quality);
     return QUALITY_RANK[quality] > QUALITY_RANK[best] ? quality : best;
   }, "low");
 }
@@ -464,6 +467,7 @@ async function createTargetNode(target, layers, preset, debugEffect = "") {
 }
 
 function resizeTargetNode(node, target) {
+  if (target.theme.family === 'orbital') return resizeOrbitalNode(node, target);
   const geometry = [target.x, target.y, target.width, target.height, target.radius, target.opacity, target.zIndex].join(":");
   if (node.geometry === geometry) return;
   node.geometry = geometry;
@@ -593,7 +597,8 @@ function resizeTargetNode(node, target) {
   });
 }
 
-function updateTargetNode(node, ticker) {
+function updateTargetNode(node, ticker, reducedMotion) {
+  if (node.target.theme.family === 'orbital') return updateOrbitalNode(node, ticker, reducedMotion);
   const target = node.target;
   const family = target.theme.family;
   const qualityRank = QUALITY_RANK[target.effects.quality];
@@ -720,6 +725,7 @@ export async function createPixiThemeEngine({
   let viewportHeight = Math.max(1, height);
   let currentSignature = "";
   let currentQuality = quality;
+  let currentRuntime = runtime;
   let targetNodes = new Map();
   let rebuildToken = 0;
   let transition = null;
@@ -727,6 +733,34 @@ export async function createPixiThemeEngine({
   let pendingUpdate = null;
   let renderedFrames = 0;
   let lastEvent = "";
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Update from media events so animation and ticker playback share one state.
+  let reducedMotion = reducedMotionQuery.matches;
+  let viewportVisible = !document.hidden;
+
+  function syncPlayback() {
+    if (destroyed) return;
+    const hasMotion = activeTargets.some(target => target.theme.family !== 'orbital'
+      || (target.effects.enabled && !reducedMotion
+        && (target.widgetType !== 'background' || target.effects.orbital.backgroundAnimation)));
+    if (viewportVisible && hasMotion) app.ticker.start();
+    else {
+      app.ticker.stop();
+      if (viewportVisible) {
+        transition?.kill();
+        app.stage.alpha = 1;
+        targetNodes.forEach(node => {
+          if (node.target.theme.family === 'orbital') updateOrbitalNode(node, { deltaMS: 0 }, reducedMotion);
+        });
+        app.render();
+      }
+    }
+  }
+  function onReducedMotionChange(event) {
+    reducedMotion = event.matches;
+    syncPlayback();
+  }
+  reducedMotionQuery.addEventListener('change', onReducedMotionChange);
 
   const tickerHandler = (ticker) => {
     renderedFrames += 1;
@@ -734,17 +768,21 @@ export async function createPixiThemeEngine({
       const { x, y, width: w, height: h, opacity } = node.target;
       const visible = opacity > 0 && x < viewportWidth && y < viewportHeight && x + w > 0 && y + h > 0;
       node.containers.forEach((container) => { container.visible = visible; });
-      if (visible) updateTargetNode(node, ticker);
+      if (visible) updateTargetNode(node, ticker, reducedMotion);
     });
   };
   app.ticker.add(tickerHandler);
 
   async function rebuild(nextTargets, animate) {
+    if (nextTargets.every(target => target.theme.family === 'orbital') &&
+      (reducedMotion || !nextTargets.some(target => target.effects.enabled &&
+        (target.widgetType !== 'background' || target.effects.orbital.backgroundAnimation)))) animate = false;
     const token = ++rebuildToken;
     const nextQuality = getHighestQuality(nextTargets);
     const nextPreset = getEffectQualityPreset(nextQuality);
     const removeNodes = () => {
       targetNodes.forEach((node) => {
+        if (node.target.theme.family === 'orbital') disposeOrbitalNode(node);
         gsap.killTweensOf(node.pulse);
         gsap.killTweensOf(node.pulse.scale);
         node.burstSprites.forEach((sprite) => gsap.killTweensOf(sprite));
@@ -774,21 +812,26 @@ export async function createPixiThemeEngine({
       app.renderer.resize(
         viewportWidth,
         viewportHeight,
-        getEffectResolution(nextQuality, window.devicePixelRatio, runtime),
+        getEffectResolution(nextQuality, window.devicePixelRatio, currentRuntime),
       );
     }
     currentQuality = nextQuality;
     app.ticker.maxFPS = nextPreset.fps;
+    const orbitalBudgets = orbitalParticleBudgets(nextTargets, navigator);
+    const host = canvas.parentElement?.parentElement;
     const created = await Promise.all(
       nextTargets.map(async (target) => {
         const targetPreset = getEffectQualityPreset(target.effects.quality);
-        const node = await createTargetNode(target, layers, targetPreset, debugEffect);
+        const node = target.theme.family === 'orbital'
+          ? createOrbitalNode(target, layers, host, orbitalBudgets.get(target.id))
+          : await createTargetNode(target, layers, targetPreset, debugEffect);
         resizeTargetNode(node, target);
         return [target.id, node];
       }),
     );
     if (destroyed || token !== rebuildToken) {
       created.forEach(([, node]) => {
+        if (node.target.theme.family === 'orbital') disposeOrbitalNode(node);
         node.containers.forEach((container) => {
           container.destroy({ children: true, texture: false, textureSource: false });
         });
@@ -817,6 +860,7 @@ export async function createPixiThemeEngine({
         const node = targetNodes.get(target.id);
         if (node) resizeTargetNode(node, target);
       });
+      syncPlayback();
       return;
     }
     if (signature === currentSignature && targetNodes.size === nextTargets.length) {
@@ -824,6 +868,7 @@ export async function createPixiThemeEngine({
         const node = targetNodes.get(target.id);
         if (node) resizeTargetNode(node, target);
       });
+      syncPlayback();
       return;
     }
     const animate = currentSignature !== "" && options.transition !== false;
@@ -835,6 +880,7 @@ export async function createPixiThemeEngine({
     } finally {
       if (pendingUpdate === pending) pendingUpdate = null;
     }
+    syncPlayback();
   }
 
   function resize(nextWidth, nextHeight) {
@@ -845,10 +891,28 @@ export async function createPixiThemeEngine({
     app.renderer.resize(viewportWidth, viewportHeight);
   }
 
+  // A browser canvas cannot safely acquire another context after Pixi destroys
+  // its WebGL context. Preview mode changes reuse the renderer and only resize.
+  function setRuntime(nextRuntime) {
+    if (destroyed || currentRuntime === nextRuntime) return;
+    currentRuntime = nextRuntime;
+    app.renderer.resize(viewportWidth, viewportHeight,
+      getEffectResolution(currentQuality, window.devicePixelRatio, currentRuntime));
+  }
+
   function burst(targetId, event = {}) {
     const node = targetNodes.get(targetId);
     if (!node || destroyed || document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     lastEvent = event.kind || "completion";
+    if (node.target.theme.family === 'orbital') {
+      burstOrbitalNode(node, lastEvent);
+      if (['super', 'extreme', 'max', 'insane'].includes(lastEvent)) {
+        targetNodes.forEach(other => {
+          if (other !== node && other.target.theme.family === 'orbital') burstOrbitalNode(other, lastEvent);
+        });
+      }
+      return;
+    }
     gsap.killTweensOf(node.pulse);
     gsap.killTweensOf(node.pulse.scale);
     const ice = node.target.theme.family === "ice";
@@ -893,14 +957,14 @@ export async function createPixiThemeEngine({
 
   function setVisible(visible) {
     if (destroyed) return;
-    if (visible) app.ticker.start();
-    else app.ticker.stop();
+    viewportVisible = visible;
+    syncPlayback();
   }
 
   function getStats() {
     let particleCount = 0;
     targetNodes.forEach((node) => {
-      particleCount += node.particles.length;
+      particleCount += node.particles.length + (node.starCount || 0);
     });
     return {
       fps: Math.round(app.ticker.FPS || 0),
@@ -912,6 +976,8 @@ export async function createPixiThemeEngine({
       quality: currentQuality,
       debugEffect,
       frames: renderedFrames,
+      pending: Boolean(pendingUpdate),
+      running: app.ticker.started,
       lastEvent,
       layerOrder: app.stage.children.map((layer) => layer.label),
     };
@@ -922,8 +988,10 @@ export async function createPixiThemeEngine({
     destroyed = true;
     rebuildToken += 1;
     transition?.kill();
+    reducedMotionQuery.removeEventListener('change', onReducedMotionChange);
     app.ticker.remove(tickerHandler);
     targetNodes.forEach((node) => {
+      if (node.target.theme.family === 'orbital') disposeOrbitalNode(node);
       gsap.killTweensOf(node.pulse);
       gsap.killTweensOf(node.pulse.scale);
       node.burstSprites.forEach((sprite) => gsap.killTweensOf(sprite));
@@ -934,5 +1002,5 @@ export async function createPixiThemeEngine({
   }
 
   await updateTargets(targets, { transition: false });
-  return { updateTargets, resize, burst, setVisible, getStats, destroy };
+  return { updateTargets, resize, setRuntime, burst, setVisible, getStats, destroy };
 }

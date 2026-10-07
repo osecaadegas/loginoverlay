@@ -1,4 +1,7 @@
 import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
+import { orbitalStyleVariables } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
+import { getWidgetColourThemeTokens } from './widgetColourThemes.js';
+import '../../../effects/ThemeEffects/orbital/OrbitalTheme.css';
 import { withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React from "react";
 import BonusHuntWidget from "../widgets/bonus-hunt/BonusHuntWidget";
@@ -1322,7 +1325,7 @@ export function renderBetterWidgetInstance({
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
       data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
-      style={{ "--obs-render-scale": renderScale }}
+      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
       <WidgetComponent {...commonProps} />
     </div>

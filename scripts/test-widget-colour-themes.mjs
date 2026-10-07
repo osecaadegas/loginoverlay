@@ -19,7 +19,7 @@ assert.equal(restoredBingo.squares[7].label, defaultBingo.squares[7].label, 'lay
 assert.equal(countCompletedSlotBingoSquares(compactBingo.squares, 3) <= 15, true, 'compact progress only counts visible squares');
 assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multiplier)), true, 'every Bingo option has a payout multiplier');
 
-const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome'];
+const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
 assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
 assert.deepEqual(
   [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
@@ -141,7 +141,7 @@ try {
   };
   const types = await page.evaluate(() => window.themeTest.types);
   const themes = await page.evaluate(() => window.themeTest.themes);
-  assert.equal(types.length, 12);
+  assert.equal(types.length, 13);
   const unit = await page.evaluate(() => {
     const t = window.themeTest, failures = [];
     const freeze = obj => { if (obj && typeof obj === 'object') { Object.freeze(obj); Object.values(obj).forEach(freeze); } return obj; };

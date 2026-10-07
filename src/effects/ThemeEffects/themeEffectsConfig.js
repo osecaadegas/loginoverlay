@@ -1,4 +1,5 @@
 import { normalizeEffectQuality } from "./presets/performancePresets.js";
+import { ORBITAL_DEFAULTS, normalizeOrbitalSettings } from './orbital/orbitalTheme.js';
 import {
   getThemeEffectDefinition,
   normalizeEffectsThemeKey,
@@ -11,6 +12,7 @@ const clamp = (value, min, max, fallback) => {
 };
 
 export const DEFAULT_THEME_EFFECTS_CONFIG = Object.freeze({
+  orbital: ORBITAL_DEFAULTS,
   enabled: true,
   quality: "balanced",
   particleIntensity: 0.5,
@@ -64,6 +66,7 @@ export function normalizeThemeEffectsConfig(themeKey, source = {}) {
 
   return {
     enabled: raw.enabled !== false,
+    orbital: normalizeOrbitalSettings(raw.orbital),
     quality: normalizeEffectQuality(raw.quality),
     particleIntensity: clamp(raw.particleIntensity, 0, 1, DEFAULT_THEME_EFFECTS_CONFIG.particleIntensity),
     glowIntensity: clamp(raw.glowIntensity, 0, 1, DEFAULT_THEME_EFFECTS_CONFIG.glowIntensity),
@@ -100,7 +103,7 @@ export function resolveInstanceThemeEffects(instance) {
   const themeKey = getWidgetEffectsThemeKey(instance.widgetType, instance.config);
   if (!supportsThemeEffects(themeKey)) return null;
   const effects = normalizeThemeEffectsConfig(themeKey, instance.config.themeEffects);
-  if (!effects?.enabled) return null;
+  if (!effects?.enabled && themeKey !== 'orbital') return null;
   return { themeKey, theme: getThemeEffectDefinition(themeKey), effects };
 }
 
@@ -113,5 +116,6 @@ export function patchThemeEffectsConfig(themeKey, source, patch) {
     ice: { ...normalized.ice, ...(patch.ice || {}) },
     gladiator: { ...normalized.gladiator, ...(patch.gladiator || {}) },
     greek: { ...normalized.greek, ...(patch.greek || {}) },
+    orbital: normalizeOrbitalSettings({ ...normalized.orbital, ...(patch.orbital || {}) }),
   };
 }

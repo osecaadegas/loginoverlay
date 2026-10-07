@@ -164,6 +164,12 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
   React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    if (canvas.closest('.better-widget-colour-scope[data-colour-theme="orbital"]')) {
+      emitIceEvent(canvas, 'tournament', canvas.parentElement);
+      // Keep match timing, but use the overlay's shared renderer for Orbital.
+      const timer = window.setTimeout(() => completeRef.current?.(), 3500);
+      return () => window.clearTimeout(timer);
+    }
     if (ice) {
       const cards = canvas.parentElement.querySelectorAll('.tw-ice-material-card');
       const source = cards[side === 'left' ? 0 : cards.length - 1] || canvas.parentElement;

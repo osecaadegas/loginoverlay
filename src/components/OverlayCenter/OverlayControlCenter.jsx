@@ -13,6 +13,7 @@ import React, {
   useState,
 } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { ThemeEffectsLayer } from '../../effects/ThemeEffects';
 import {
   ArrowLeft,
   AlertTriangle,
@@ -20,6 +21,8 @@ import {
   CheckCircle2,
   Copy,
   ExternalLink,
+  Eye,
+  EyeOff,
   Grid3X3,
   Link2,
   Lock,
@@ -32,6 +35,7 @@ import {
   Shield,
   Sparkles,
   Wand2,
+  X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useOverlay } from "../../hooks/useOverlay";
@@ -859,16 +863,38 @@ function ToolSection({ title, subtitle, tools, emptyText, children, tourId }) {
   );
 }
 
-function PreviewToolRailCard({ tool, side, onOpen }) {
+function PreviewToolRailCard({ tool, side, onOpen, onToggle, onRemove }) {
   const { type, def, copy, status } = tool;
+  const isVisible = tool.widget?.is_visible !== false;
+  const title = copy.title || def.label;
   return (
     <article className={`oc2-preview-tool-card oc2-preview-tool-card--${side}`}>
       <div className="oc2-preview-tool-card__icon" aria-hidden="true">
         <span>{def.icon || "SC"}</span>
       </div>
       <div className="oc2-preview-tool-card__body">
-        <strong>{copy.title || def.label}</strong>
+        <strong>{title}</strong>
         <small>{status.label}</small>
+      </div>
+      <div className="oc2-preview-tool-card__controls">
+        <button
+          type="button"
+          className="oc2-preview-tool-card__icon-button"
+          onClick={() => onToggle(tool.widget)}
+          aria-label={`${isVisible ? "Hide" : "Show"} ${title} on overlay`}
+          title={`${isVisible ? "Hide" : "Show"} on overlay`}
+        >
+          {isVisible ? <Eye size={15} aria-hidden="true" /> : <EyeOff size={15} aria-hidden="true" />}
+        </button>
+        <button
+          type="button"
+          className="oc2-preview-tool-card__icon-button oc2-preview-tool-card__icon-button--danger"
+          onClick={() => onRemove(tool.widget.id)}
+          aria-label={`Remove ${title} from overlay`}
+          title="Remove from overlay"
+        >
+          <X size={15} aria-hidden="true" />
+        </button>
       </div>
       <button
         type="button"
@@ -1088,6 +1114,7 @@ function BetterEditorInlinePreview({ userId, active, onStatusChange }) {
             <div
               key={instance.instanceId}
               className="oc2-better-preview-instance"
+              data-effect-target-id={instance.instanceId}
               style={{
                 left: instance.x,
                 top: instance.y,
@@ -1109,6 +1136,7 @@ function BetterEditorInlinePreview({ userId, active, onStatusChange }) {
               </BetterPreviewWidgetBoundary>
             </div>
           ))}
+        <ThemeEffectsLayer instances={layout.instances} width={BETTER_CANVAS.width} height={BETTER_CANVAS.height} runtime="editor" />
       </div>
     </div>
   );
@@ -1122,6 +1150,8 @@ function ToolsLivePreviewDock({
   leftTools,
   rightTools,
   onOpenTool,
+  onToggleTool,
+  onRemoveTool,
   onStatusChange,
 }) {
   const toggleInlinePreview = (event) => {
@@ -1137,6 +1167,8 @@ function ToolsLivePreviewDock({
       tool={tool}
       side={side}
       onOpen={onOpenTool}
+      onToggle={onToggleTool}
+      onRemove={onRemoveTool}
     />
   );
 
@@ -1334,6 +1366,8 @@ function ToolWorkspace({
         leftTools={leftPreviewTools}
         rightTools={rightPreviewTools}
         onOpenTool={onOpenTool}
+        onToggleTool={onToggleTool}
+        onRemoveTool={onRemoveTool}
         onStatusChange={onPreviewStatusChange}
       />
 

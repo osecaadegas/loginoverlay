@@ -1,3 +1,4 @@
+import { ORBITAL_TOKENS } from '../../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 // Shared colour choices. Rendering options and live data are not part of a palette.
 export const WIDGET_COLOUR_THEMES = Object.freeze([
   {
@@ -69,6 +70,11 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
     key: "old_rome", name: "Old Rome", icon: "old_rome", swatches: ["#f1e1bb", "#ad8645", "#5a3520"],
     background: "#e7d3a3", surface: "#f1e1bb", raised: "#faedcf", border: "#ad8645",
     accent: "#76500d", secondary: "#5a3520", text: "#2c1b12", muted: "#624b36", hue: 38,
+  },
+  {
+    key: 'orbital', name: 'Space / Orbital', icon: 'orbital',
+    swatches: [ORBITAL_TOKENS.background, ORBITAL_TOKENS.secondary, ORBITAL_TOKENS.light],
+    thumbnail: '/theme-effects/orbital/preview.webp', ...ORBITAL_TOKENS, hue: 196,
   },
 ].map((theme) => Object.freeze({ ...theme, swatches: Object.freeze(theme.swatches) })));
 
