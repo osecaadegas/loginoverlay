@@ -3200,7 +3200,13 @@ export function BetterBonusHuntStyle({
   const listPersonalBests = useSlotPersonalBests({
     enabled: !previewOnly && c.listMode === "image",
     userId,
-    slots: rows,
+    // Use the exact identities used to render cards; a bonus row's ID is
+    // not a catalogue slot ID, and legacy provider fields need the same mapping.
+    slots: rows.map((bonus, index) => ({
+      id: bonus?.slot?.id || bonus?.slot_id || bonus?.slotId || "",
+      name: bonusSlotName(bonus, index),
+      provider: bonusProvider(bonus),
+    })),
     publicOverlayId,
     overlayToken,
   });

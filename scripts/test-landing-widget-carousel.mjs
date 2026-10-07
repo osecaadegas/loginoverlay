@@ -9,6 +9,10 @@ const styleSource = readFileSync(
   new URL("../src/components/LandingPage/LandingPage.css", import.meta.url),
   "utf8",
 );
+const plansSource = readFileSync(
+  new URL("../src/components/LandingPage/LandingPlans.jsx", import.meta.url),
+  "utf8",
+);
 
 assert.match(componentSource, /Math\.min\(3, HOME_WIDGETS\.length\)/);
 assert.match(componentSource, /visibleWidgets\.map\(\(widget\) =>/);
@@ -25,5 +29,14 @@ assert.match(styleSource, /\.lp-home-widget-carousel\s*\{/);
 assert.match(styleSource, /grid-template-columns: 48px minmax\(0, 1fr\) 48px/);
 assert.match(styleSource, /\.lp-home-widget-media--carousel/);
 assert.match(styleSource, /nth-child\(n \+ 2\)/);
+assert.match(
+  componentSource,
+  /const HOME_SHOWCASE_WIDGETS = \[\s*\{ type: "bonus_hunt"/,
+);
+assert.match(componentSource, /useState\("bonus_hunt"\)/);
+assert.match(componentSource, /useState\("horizontal"\)/);
+assert.doesNotMatch(componentSource, /Streamer plans from/);
+assert.match(componentSource, /No automatic renewal/);
+assert.match(plansSource, /Applicable taxes are added at checkout/);
 
 console.log("Landing widget carousel checks passed.");

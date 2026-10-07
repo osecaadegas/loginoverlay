@@ -49,7 +49,6 @@ import "./LandingPage.css";
 import "./LandingModern.css";
 import useLandingMotion from "./useLandingMotion";
 import LandingHeader from "./LandingHeader";
-import { formatCurrency } from "./pricingPresentation";
 import { WIDGET_COLOUR_THEMES } from "../OverlayCenter/widgets/shared/colourThemePalettes";
 import { BACKGROUND_IMAGE_LIBRARY } from "../OverlayCenter/widgets/background/backgroundLibrary";
 
@@ -1475,11 +1474,11 @@ function RootOverview() {
 }
 
 const HOME_SHOWCASE_WIDGETS = [
+  { type: "bonus_hunt", label: "Bonus Hunt", icon: CircleDollarSign },
   { type: "giveaway", label: "Giveaway", icon: Gift },
   { type: "chat", label: "Chat", icon: MessageSquare },
   { type: "bets", label: "Bets", icon: Trophy },
   { type: "connect_four", label: "Connect 4", icon: Grid3X3 },
-  { type: "bonus_hunt", label: "Bonus Hunt", icon: CircleDollarSign },
   { type: "rtp_stats", label: "RTP Bar", icon: Gauge },
   { type: "navbar", label: "Navbar", icon: LayoutDashboard },
   { type: "tournament", label: "Tournaments", icon: Swords },
@@ -1488,9 +1487,9 @@ const HOME_SHOWCASE_WIDGETS = [
 const HOME_SHOWCASE_THEMES = WIDGET_COLOUR_THEMES.filter(({ key }) => ["neon", "arctic", "rose", "gold"].includes(key));
 
 function InteractiveHomeShowcase() {
-  const [selected, setSelected] = useState("giveaway");
+  const [selected, setSelected] = useState("bonus_hunt");
   const [theme, setTheme] = useState("neon");
-  const [bonusOrientation, setBonusOrientation] = useState("vertical");
+  const [bonusOrientation, setBonusOrientation] = useState("horizontal");
   const widget = HOME_WIDGETS.find(({ widgetType }) => widgetType === selected);
   return <div className="lp-studio-scene">
     <div className="lp-studio-halo" aria-hidden="true" />
@@ -1521,7 +1520,8 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
   const { data: subscriptionContent } = useLandingSubscriptions();
   const [widgetStartIndex, setWidgetStartIndex] = useState(0);
   const [slotCount, setSlotCount] = useState(null);
-  const monthlyStreamerPlan = subscriptionContent?.plans?.filter(plan => plan.productType === "streamer" && plan.active !== false && Number(plan.intervalMonths) === 1).sort((a, b) => a.priceCents - b.priceCents)[0];
+  const trialDays = Number(subscriptionContent?.trialDays);
+  const trialTitle = trialDays > 0 ? `${trialDays} days to make it yours. Free.` : "Try Streamers Center free.";
   const visibleWidgets = useMemo(
     () =>
       Array.from(
@@ -1602,8 +1602,13 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
               Try the widgets <Play size={18} />
             </a>
           </div>
-          {!user && <div className="lp-hero-trial"><span>{Number(subscriptionContent?.trialDays) > 0 ? subscriptionContent.trialDays + ' days free' : 'Free trial'}</span>{subscriptionContent?.trialRequiresPaymentMethod === false && <><span>No credit card</span><span>No automatic subscription</span></>}</div>}
-          <p className="lp-hero-price">{monthlyStreamerPlan && <>Streamer plans from <strong>{formatCurrency(monthlyStreamerPlan.priceCents, monthlyStreamerPlan.currency)}/month</strong></>}</p>
+          {!user && <div className="lp-hero-trial">
+            <span className="lp-hero-trial__icon"><Sparkles size={18} aria-hidden="true" /></span>
+            <span className="lp-hero-trial__copy">
+              <strong>{trialTitle}</strong>
+              <small>{subscriptionContent?.trialRequiresPaymentMethod === false ? 'No credit card required. ' : ''}No automatic renewal. Choose a paid plan only when you’re ready.</small>
+            </span>
+          </div>}
           {!reduced && <button type="button" className="lp-motion-toggle" aria-pressed={paused} onClick={toggleMotion}>{paused ? <Play size={13} /> : <Pause size={13} />}{paused ? "Resume motion" : "Pause motion"}</button>}
 
         </div>

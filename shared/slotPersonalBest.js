@@ -1,3 +1,5 @@
+export const SLOT_PERSONAL_BEST_BATCH_SIZE = 40;
+
 const cleanText = (value) => (value ?? '').toString().trim();
 const normaliseText = (value) => cleanText(value).replace(/\s+/g, ' ').toLowerCase();
 const escapeIlikePattern = (value) => cleanText(value).replace(/[\\%_]/g, '\\$&');

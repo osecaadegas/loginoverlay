@@ -46,7 +46,7 @@ export default function LandingPlans() {
         })}
       </div>
       {!plans.length && <p>No plans are currently available for this workspace. Please check back shortly.</p>}
-      <p className="lp-pricing-footnote"><Check size={16} aria-hidden="true" />Prices and billing periods match our subscription page. Review your plan before checkout.</p>
+      <p className="lp-pricing-footnote"><Check size={16} aria-hidden="true" /><span><strong>Applicable taxes are added at checkout</strong> based on your billing location. Prices and billing periods match our subscription page.</span></p>
     </>}
   </section>;
 }

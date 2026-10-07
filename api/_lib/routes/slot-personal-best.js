@@ -1,5 +1,5 @@
 import { createSupabaseAdmin, setCors } from '../api-auth.js';
-import { getSlotIdentity, readSlotPersonalBest } from '../../../shared/slotPersonalBest.js';
+import { getSlotIdentity, readSlotPersonalBest, SLOT_PERSONAL_BEST_BATCH_SIZE } from '../../../shared/slotPersonalBest.js';
 
 const PUBLIC_ID = /^bo_[a-f0-9]{48}$/i;
 const LEGACY_TOKEN = /^[a-f0-9]{48}$/i;
@@ -60,7 +60,7 @@ export async function loadOverlayPersonalBests(req, client) {
   const publicOverlayId = String(body.publicOverlayId || '');
   const overlayToken = String(body.overlayToken || '');
   const slots = Array.isArray(body.slots) ? body.slots.map(getSlotIdentity) : [];
-  if (slots.length === 0 || slots.length > 40 || slots.some((slot) => !validSlot(slot))) {
+  if (slots.length === 0 || slots.length > SLOT_PERSONAL_BEST_BATCH_SIZE || slots.some((slot) => !validSlot(slot))) {
     return { status: 400, body: { error: 'Invalid overlay or slots' } };
   }
   const owner = await resolveOverlayOwner(client, publicOverlayId, overlayToken);

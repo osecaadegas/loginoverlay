@@ -1,4 +1,4 @@
-import { readSlotPersonalBest } from '../../shared/slotPersonalBest.js';
+import { readSlotPersonalBest, SLOT_PERSONAL_BEST_BATCH_SIZE } from '../../shared/slotPersonalBest.js';
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../config/supabaseClient";
 import {
@@ -45,7 +45,10 @@ export default function useSlotPersonalBests({
     ]),
   );
   const identities = useMemo(
-    () => JSON.parse(scope).map(([id, name, provider]) => ({ id, name, provider })),
+    () => [...new Map(JSON.parse(scope).map(([id, name, provider]) => {
+      const slot = { id, name, provider };
+      return [slotPersonalBestKey(slot), slot];
+    })).values()].filter(slot => slot.id || slot.name),
     [scope],
   );
   const requestScope = JSON.stringify([
@@ -72,29 +75,38 @@ export default function useSlotPersonalBests({
     if (!isPublic && !userId) return undefined;
 
     let cancelled = false;
+    let revision = 0;
     const controller = new AbortController();
 
     async function refresh() {
+      const requestRevision = ++revision;
       try {
         let bests;
         if (isPublic) {
-          const response = await fetch("/api/slot-personal-best", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ publicOverlayId, overlayToken, slots: identities }),
-            signal: controller.signal,
-          });
-          if (!response.ok) throw new Error("Personal best list lookup failed");
-          const payload = await response.json();
-          bests = matchBests(identities, payload.bests);
+          const records = [];
+          // Large hunts must respect the same API limit as small lookups. Never
+          // truncate the hunt: every unique slot gets its own all-time record.
+          for (let offset = 0; offset < identities.length; offset += SLOT_PERSONAL_BEST_BATCH_SIZE) {
+            if (cancelled || revision !== requestRevision) return;
+            const response = await fetch("/api/slot-personal-best", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ publicOverlayId, overlayToken, slots: identities.slice(offset, offset + SLOT_PERSONAL_BEST_BATCH_SIZE) }),
+              signal: controller.signal,
+            });
+            if (!response.ok) throw new Error("Personal best list lookup failed");
+            const payload = await response.json();
+            records.push(...(payload.bests || []));
+          }
+          bests = matchBests(identities, records);
         } else {
           const data = [];
-          for (let offset = 0; offset < identities.length && !cancelled; offset += 4) {
+          for (let offset = 0; offset < identities.length && !cancelled && revision === requestRevision; offset += 4) {
             data.push(...await Promise.all(identities.slice(offset, offset + 4).map(slot => readSlotPersonalBest(supabase, userId, slot))));
           }
           bests = matchBests(identities, data.filter(Boolean));
         }
-        if (!cancelled) setResult({ requestScope, bests });
+        if (!cancelled && revision === requestRevision) setResult({ requestScope, bests });
       } catch (error) {
         if (!cancelled && error?.name !== "AbortError") {
           console.warn("Personal best list lookup failed:", error?.message);

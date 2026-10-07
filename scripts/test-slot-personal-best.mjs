@@ -106,6 +106,8 @@ response = await loadOverlayPersonalBests({ body: {
 assert.equal(response.status, 200);
 assert.deepEqual(response.body.bests.map((best) => best?.best_win || null), [900, null],
   'Batch lookup resolves one owner and preserves the requested slot order');
+assert.equal((await loadOverlayPersonalBests({ body: { publicOverlayId: publicB, slots: Array.from({length: 40}, () => slot) } }, client)).status, 200, 'A full batch is accepted');
+assert.equal((await loadOverlayPersonalBests({ body: { publicOverlayId: publicB, slots: Array.from({length: 41}, () => slot) } }, client)).status, 400, 'Oversized batches remain rejected; the client must split them');
 const freshRequest = request({ publicOverlayId: publicB, slotName: 'Fresh Slot', slotId: '' });
 assert.equal((await loadOverlayPersonalBest(freshRequest, client)).body.best, null);
 tables.user_slot_records.push(record('owner-b', 700, { slot_id: null, slot_name: 'Fresh Slot' }));

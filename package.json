@@ -28,6 +28,7 @@
     "test:theme-effects": "node scripts/test-theme-effects.mjs",
     "test:obs-high-dpi": "node scripts/test-obs-high-dpi.mjs",
     "test:current-game": "node scripts/test-current-game-browser.mjs",
+    "test:hunt-personal-bests": "node scripts/test-hunt-personal-bests-browser.mjs",
     "test:slot-personal-best": "node scripts/test-slot-personal-best.mjs",
     "test:brutus-slideshow": "node scripts/test-brutus-slideshow.mjs",
     "test:editor-builds": "node scripts/test-editor-builds.mjs",
