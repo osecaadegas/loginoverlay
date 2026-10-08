@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { resolveInstanceThemeEffects } from "./themeEffectsConfig";
 import { findEffectSurface, measureEffectTargets } from "./targetBounds";
+import OrbitalStructure from "./orbital/OrbitalStructure.jsx";
 import "./ThemeEffects.css";
 import "./GreekPremium.css";
 import "./ThemeTypography.css";
@@ -112,7 +113,7 @@ export default function ThemeEffectsLayer({
       if (signature === previous) return;
       previous = signature;
       targetsRef.current = next;
-      if (debug.enabled) setMeasuredTargets(next);
+      setMeasuredTargets(previous => debug.enabled || next.some(target => target.theme.family === 'orbital') ? next : previous.length ? [] : previous);
       engineRef.current?.updateTargets(next).catch((error) => {
         console.error("[ThemeEffects] Failed to update surface bounds:", error);
       });
@@ -286,6 +287,7 @@ export default function ThemeEffectsLayer({
       aria-hidden="true"
     >
       <canvas ref={canvasRef} className="theme-effects-layer__canvas" />
+      <OrbitalStructure targets={measuredTargets} width={width} height={height} singleInstanceId={singleInstanceId} />
       {debug.enabled && measuredTargets.map((target) => (
         <span
           key={target.id}

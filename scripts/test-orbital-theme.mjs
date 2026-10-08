@@ -5,6 +5,19 @@ import puppeteer from 'puppeteer';
 import { normalizeOrbitalSettings, orbitalParticleBudgets } from '../src/effects/ThemeEffects/orbital/orbitalTheme.js';
 import { normalizeThemeEffectsConfig, patchThemeEffectsConfig } from '../src/effects/ThemeEffects/themeEffectsConfig.js';
 import { getThemeEffectDefinition } from '../src/effects/ThemeEffects/themes/themeDefinitions.js';
+import { orbitalStructure } from '../src/effects/ThemeEffects/orbital/orbitalStructureGeometry.js';
+
+const structuralTargets = [
+  ['navbar', 14, 10, 1892, 65], ['bonus_hunt', 14, 88, 340, 975],
+  ['rtp_stats', 370, 746, 1115, 68], ['slideshow_frame', 1504, 88, 402, 260],
+  ['giveaway', 1504, 366, 402, 230], ['chat', 1504, 614, 402, 449],
+  ['background', 0, 0, 1920, 1080],
+].map(([widgetType, x, y, width, height]) => ({ id: widgetType, widgetType, x, y, width, height, opacity: 1, theme: { family: 'orbital' }, effects: { orbital: { environment: 'earth_orbit' } } }));
+assert.equal(orbitalStructure(structuralTargets, 1920, 1080).length, 2, 'aligned scene has connected comms and window frames');
+assert.equal(orbitalStructure(structuralTargets.map(t => ({ ...t, theme: { family: 'ice' } })), 1920, 1080).length, 0, 'no structure on other themes');
+assert(!orbitalStructure(structuralTargets.map(t => t.widgetType === 'giveaway' ? { ...t, x: 900 } : t), 1920, 1080).some(f => f.id === 'comms-column'), 'detached widgets are never enclosed in a shared column');
+assert(!orbitalStructure([...structuralTargets, { ...structuralTargets[1], id: 'obstruction', widgetType: 'bets', x: 355, width: 90 }], 1920, 1080).some(f => f.id === 'gameplay-window'), 'rails never cross another widget');
+assert(!orbitalStructure(structuralTargets.map(t => t.widgetType === 'background' ? { ...t, effects: { orbital: { environment: 'off' } } } : t), 1920, 1080).some(f => f.id === 'gameplay-window'), 'transparent background has no gameplay frame');
 
 assert.equal(getThemeEffectDefinition('space').id, 'orbital');
 assert.equal(normalizeOrbitalSettings({ environment: 'invalid', intensity: 4, hudGlow: -2 }).environment, 'earth_orbit');
@@ -113,6 +126,9 @@ try {
   await page.waitForSelector('.theme-effects-layer__debug', { visible: false });
   await page.waitForFunction(() => Number(document.querySelector('.theme-effects-layer__debug')?.dataset.frames) > 3);
   assert.equal(await page.$$eval('.theme-effects-layer__canvas', list => list.length), 1);
+  await page.waitForSelector('[data-orbital-structure="gameplay-window"]');
+  assert.equal(await page.$$eval('[data-orbital-structure="comms-column"]', nodes => nodes.length), 1);
+  assert(await page.$eval('.better-slideshow-frame__inner', el => getComputedStyle(el).maskComposite.includes('exclude')), 'observation housing leaves media aperture transparent');
   await page.screenshot({ path: `${out}/orbital-1920.png` });
   for (const [width, height] of [[2560, 1440], [1366, 768], [1920, 1080]]) {
     await page.setViewport({ width, height });
@@ -134,6 +150,7 @@ try {
     await page.evaluate(type => window.orbital.scene({ single: type, runtime: ['connect_four', 'raid_shoutout'].includes(type) ? 'editor' : 'obs-single' }), type);
     await wait();
     assert.equal(await page.$eval('[data-colour-theme]', el => el.dataset.colourTheme), 'orbital', type);
+    assert.equal(await page.$$eval('.orbital-structure', nodes => nodes.length), 0, `${type}: individual browser source never gets scene-wide rails`);
     assert.equal(await page.$$eval('.theme-effects-layer__canvas', nodes => nodes.length), 1, `${type}: single renderer`);
     if (type !== 'background') {
       const frames=await page.$$eval('[data-colour-theme="orbital"] *',nodes=>nodes.filter(el=>{
