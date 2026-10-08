@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { emitIceEvent } from '../../../../effects/ThemeEffects/emitIceEvent.js';
 import "./GiveawayWinnerCard.css";
 
 function participantName(value) {
@@ -67,13 +68,24 @@ export function resolveGiveawayWinner(config = {}) {
 export default function GiveawayWinnerCard({ config = {} }) {
   const winner = useMemo(() => resolveGiveawayWinner(config), [config]);
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const cardRef = useRef(null);
 
   useEffect(() => setAvatarFailed(false), [winner?.avatarUrl]);
+  useEffect(() => {
+    if (!winner?.name || !cardRef.current?.closest('[data-colour-theme="orbital"]')) return;
+    // Let the shared effect layer measure the result card after the reel exits.
+    // This is a finite notification, not a widget animation loop.
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => emitIceEvent(cardRef.current, 'giveaway'));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [winner?.name]);
   if (!winner) return null;
 
   return (
     <div className="better-gw-result-stage">
       <section
+        ref={cardRef}
         className="better-gw-result-card"
         data-widget-element="winnerArea"
         role="status"

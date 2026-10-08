@@ -1,0 +1,139 @@
+/* Static observation surfaces share the existing compressed Earth texture.
+   These layers paint only inside widgets; frames, geometry and media stay put. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] {
+  --orbital-earth-texture: url('/theme-effects/orbital/earth-orbit.webp');
+  --orbital-glass-reflection: linear-gradient(135deg,rgba(255,255,255,.035),transparent 35%);
+  --orbital-star-field: radial-gradient(circle at 22% 30%,#badfff24 0 .7px,transparent 1.2px),radial-gradient(circle at 76% 62%,#9deaff1c 0 .8px,transparent 1.3px);
+}
+
+/* Comms: the horizon sits low, under a dark scrim and readable message cards. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .ov-chat-messages {
+  background: var(--orbital-glass-reflection),
+    var(--orbital-star-field),
+    linear-gradient(180deg,#020a16f5 20%,#020a16cf 68%,#020a16cc),
+    var(--orbital-earth-texture) 62% 32% / cover no-repeat,#020a16;
+  background-size: auto,113px 149px,179px 211px,auto,cover,auto;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-shoutout-card,.better-shoutout-media-empty) {
+  background: var(--orbital-glass-reflection),linear-gradient(180deg,#020a16ed,#020a16c9),
+    var(--orbital-earth-texture) 80% 62% / cover no-repeat,#020a16;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-shoutout-media:has(.better-shoutout-media-empty) { background: transparent; }
+
+/* The empty monitor uses a side crop. Reflections leave active media clear. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-slideshow-frame__empty {
+  background: var(--orbital-glass-reflection),linear-gradient(130deg,#020a16b8,#020a1666 60%,#020a16b8),
+    var(--orbital-earth-texture) 90% 58% / 175% auto no-repeat,#020a16;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-slideshow-frame__viewport::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: var(--orbital-glass-reflection); border-radius: inherit;
+}
+
+/* Transmission deck: mostly stars, a partial orbital arc, quiet node rings. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-giveaway-widget {
+  background: var(--orbital-glass-reflection),var(--orbital-star-field),
+    radial-gradient(ellipse 85% 60% at 88% 115%,transparent 98%,#74cfff24 99%,transparent 100%),
+    linear-gradient(180deg,#020a16f0,#020a16de),
+    var(--orbital-earth-texture) 12% 66% / 220% auto no-repeat,#020a16;
+  background-size: auto,113px 149px,179px 211px,auto,auto,220% auto,auto;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-gw-reel-zone {
+  background: radial-gradient(circle at 50% 50%,transparent 0 48px,#77bddd0d 49px 50px,transparent 51px 73px,#77bddd09 74px 75px,transparent 76px),
+    repeating-conic-gradient(from 0deg at 50% 50%,#8ddcff04 0deg 1deg,transparent 1deg 45deg);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-giveaway-widget.has-winner {
+  border-color: #38677d; box-shadow: var(--orbital-hud-shadow);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-gw-avatar-chip.is-winner .better-gw-avatar-bubble {
+  animation: none; transform: none; border-color: #85c9de;
+  box-shadow: 0 0 0 3px #020711,0 0 0 4px #476477,0 0 0 7px #071727,0 0 0 8px #66b4d080;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-gw-winner-banner,.better-gw-result) {
+  background: var(--orbital-glass-reflection),var(--orbital-star-field),var(--orbital-recess);
+  border-color: #47798e; box-shadow: inset 0 -1px 0 #67c7df55,inset 0 1px 0 #a0d8ef20;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-gw-winner-crown,.better-gw-winner-name,.better-gw-winner-kicker,.better-gw-avatar-chip.is-winner .better-gw-avatar-name) {
+  animation: none; filter: none; color: var(--orbital-light); text-shadow: none;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-gw-winner-flash,.better-gw-confetti) { display: none; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-gw-result-card {
+  animation: none; border-color: #47697e;
+  background: var(--orbital-glass-reflection),var(--orbital-star-field),linear-gradient(#020a16eb,#020a16dc),var(--orbital-earth-texture) 10% 68% / 220% auto;
+  box-shadow: inset 0 1px 0 #8db7ce55,inset 0 0 0 3px #030b14,inset 0 0 0 4px #294a60,inset 0 -8px 16px #0009,0 5px 12px #0005;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-gw-result-card::before {
+  background: linear-gradient(90deg,transparent,#67c7df66,transparent) center bottom / 70% 1px no-repeat,var(--orbital-glass-reflection);
+  opacity: 1; border-color: #75b8d124;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-gw-result-frost,.better-gw-result-crystal) { display: none; }
+
+/* Database: a single night-side crop is visible through the three glass bays. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget {
+  background: var(--orbital-glass-reflection),linear-gradient(180deg,#020a16ed,#020a16e0),
+    var(--orbital-earth-texture) 45% 78% / cover no-repeat,#020a16;
+}
+/* Localise the decorative art to its bay; its existing visibility, image and
+   opacity controls still work. The actual cover is untouched. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-backdrop { mask-image: linear-gradient(90deg,#0003,transparent 37%); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.cg-identity,.cg-info,.cg-records) {
+  background-image: var(--orbital-glass-reflection),linear-gradient(180deg,#07142455,#02081244);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.cg-info h3,.cg-records h3) {
+  box-shadow: inset 0 1px 0 #7dcee64d,inset 0 -2px 0 #010711;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-cover { position: relative; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-cover::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(#86cfe4,#367b99) left center / 2px 22% no-repeat,
+    linear-gradient(#86cfe4,#367b99) right center / 2px 22% no-repeat,var(--orbital-glass-reflection);
+  box-shadow: inset 0 2px 5px #0008;
+}
+
+/* Mission deck uses sparse stars/grid, not another full planet. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-mainstream {
+  background: radial-gradient(ellipse at 75% 12%,#32719712,transparent 42%),var(--orbital-star-field),
+    repeating-linear-gradient(90deg,#80c2de04 0 1px,transparent 1px 28px);
+  background-size: auto,113px 149px,179px 211px,auto;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-image-stats-copy,.better-hunt-main-active-stats) {
+  background: var(--orbital-glass-reflection),radial-gradient(ellipse at 0% 40%,#28638322,transparent 65%),var(--orbital-star-field),var(--orbital-recess);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-row {
+  box-shadow: inset 2px 0 0 #47809966,inset 0 1px 0 #99c4dd28,inset 0 -4px 8px #0006,0 2px 3px #0008;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-row:is(:hover,[data-widget-state="active"]) { border-color: #578297; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-total-head {
+  background-image: radial-gradient(ellipse at 85% 50%,#2786a833,transparent 60%),var(--orbital-header);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-result-face--worst,.better-hunt-result--worst) {
+  background-image: linear-gradient(120deg,#9d39471c,transparent 55%),var(--orbital-recess);
+  border-color: #633946; box-shadow: inset 3px 0 0 #934556,inset 0 0 0 1px #93455633;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-win {
+  background: radial-gradient(ellipse at 50% 60%,#268db322,transparent 60%),linear-gradient(#020a16e6,#020a16d9),
+    var(--orbital-earth-texture) 40% 80% / cover;
+}
+
+/* Instrument lighting uses the existing semantic compartments and icons. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-bar [data-better-element="statCard"]:has([data-better-element="rtpValue"]) { background-image: linear-gradient(120deg,#27c7ff16,transparent 65%),var(--orbital-recess); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-bar [data-better-element="statCard"]:has([data-better-element="maxWin"]) { background-image: linear-gradient(120deg,#178cff1a,transparent 65%),var(--orbital-recess); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-bar [data-better-element="personalBest"] { background-image: linear-gradient(120deg,#d1a84c19,transparent 65%),var(--orbital-recess); border-color: #92794960; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-bar [data-better-element="provider"] { box-shadow: inset 0 3px 6px #000b,inset 0 -1px 0 #66a5be70,0 0 0 1px #213e51; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="container"] {
+  background: repeating-linear-gradient(90deg,#7dbbd44d 0 1px,transparent 1px 7px) 72% 8px / 80px 3px no-repeat,var(--orbital-reflection),var(--orbital-metal-grain),var(--orbital-glass);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="clock"] {
+  background: linear-gradient(90deg,transparent,#75bdd280,transparent) center bottom / 65% 1px no-repeat,var(--orbital-glass-reflection),linear-gradient(#01060d,#081828);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="avatar"] { border-radius: 50%; box-shadow: 0 0 0 2px #07111d,0 0 0 3px #4b829b,inset 0 0 0 1px #a1d5e5; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="clock"] { position: relative; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="clock"]::after {
+  content: ''; position: absolute; inset: 2px; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 2px 4px #0009,inset 0 -1px 0 #75bdd259;
+  background: repeating-linear-gradient(90deg,#7dbbd44d 0 1px,transparent 1px 5px) center bottom / 32px 2px no-repeat,var(--orbital-glass-reflection);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="displayName"]::after {
+  content: ''; position: absolute; right: 5px; top: 9px; width: 17px; height: 3px; pointer-events: none;
+  background: repeating-linear-gradient(90deg,#67a7be80 0 3px,transparent 3px 7px);
+}

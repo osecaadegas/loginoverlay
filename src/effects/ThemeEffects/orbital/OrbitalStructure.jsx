@@ -34,6 +34,11 @@ export default function OrbitalStructure({ targets, width, height, singleInstanc
           <path d={`M ${cut + 32} 3 H ${cut} L 3 ${cut} V ${cut + 30}`} fill="none" stroke="#299ecc" strokeWidth="2"/>
           <path d={`M ${cut + 16} 3 H ${cut}`} stroke="#b5efff" strokeWidth="2"/>
           <circle cx={cut + 44} cy="5" r="2" fill="#01060c" stroke="#47657b"/>
+          {frame.id === 'gameplay-window' && <g data-orbital-hull-detail="vent" opacity=".75">
+            <path d={`M ${cut + 43} 5 h 2 M ${cut + 54} 3 v 9`} stroke="#07111b" strokeWidth="1"/>
+            {[0, 1, 2, 3].map(i => <path key={i} d={`M ${cut + 64 + i * 6} 7 l -2 4`} stroke="#020812" strokeWidth="2"/>)}
+            <path d={`M ${cut + 92} 9 h 8`} stroke="#679eb3" strokeWidth="2"/>
+          </g>}
         </g>))}
       </g>;
     })}

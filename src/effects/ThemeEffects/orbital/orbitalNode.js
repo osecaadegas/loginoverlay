@@ -14,11 +14,14 @@ export function createOrbitalNode(target, layers, host, budget) {
   const frame = new Graphics();
   const pulse = new Graphics();
   const scan = new Graphics();
-  foreground.addChild(frame, pulse, scan);
+  const transmissionRing = new Graphics();
+  const transmissionScan = new Graphics();
+  foreground.addChild(frame, pulse, scan, transmissionRing, transmissionScan);
+  transmissionRing.alpha = transmissionScan.alpha = 0;
   pulse.alpha = 0;
   scan.alpha = 0;
   const node = {
-    target, id: target.id, foreground, frame, pulse, scan, containers: [foreground],
+    target, id: target.id, foreground, frame, pulse, scan, transmissionRing, transmissionScan, containers: [foreground],
     particles: [], burstSprites: [], starCount: 0, elapsed: 0,
     ambient: gsap.timeline({ paused: true, repeat: -1, yoyo: true }),
     eventTimeline: null, eventTime: 0, budget,
@@ -71,7 +74,7 @@ export function createOrbitalNode(target, layers, host, budget) {
       sprite.width = index % 3 === 0 ? 2 : 1;
       sprite.height = 1;
       sprite.tint = target.theme.colors.highlight;
-      sprite.alpha = .12 + (index % 3) * .04;
+      sprite.alpha = .05 + (index % 3) * .04;
       foreground.addChild(sprite);
       node.particles.push({ sprite, phase: (index * .6180339) % 1 });
     }
@@ -110,9 +113,13 @@ export function resizeOrbitalNode(node, target) {
 function placeParticles(node) {
   const { width, height } = node.target;
   node.particles.forEach(({ sprite, phase }, index) => {
-    const t = (phase + node.elapsed * .006) % 1;
+    const t = (phase + node.elapsed * .0004) % 1;
     sprite.x = 5 + t * Math.max(1, width - 10);
     sprite.y = index % 2 ? height - 5 : 5;
+    // Comms dust drifts just three pixels; it never travels across messages.
+    if (['chat', 'raid_shoutout'].includes(node.target.widgetType)) {
+      sprite.x = 5 + phase * Math.max(1, width - 13) + Math.sin(node.elapsed / 18 + phase) * 3;
+    }
   });
 }
 
@@ -158,6 +165,34 @@ export function burstOrbitalNode(node, kind) {
     const glow = node.target.effects.orbital.hudGlow;
     timeline.to(node.pulse, { alpha: .2 + glow * .65, duration: .18, ease: 'sine.out' }, 0)
       .to(node.pulse, { alpha: 0, duration: majorEvent(kind) ? 1.9 : .65, ease: 'sine.inOut' }, .18);
+    if (kind === 'giveaway') {
+      const avatar = node.root?.querySelector('.better-gw-result-avatar, .is-winner .better-gw-avatar-bubble');
+      const surface = node.root?.querySelector(node.target.widgetType === 'chat' ? '.ov-chat-widget' : '.better-gw-result-card, .better-giveaway-widget');
+      if (avatar && surface) {
+        const a = avatar.getBoundingClientRect();
+        const s = surface.getBoundingClientRect();
+        if (s.width && s.height) {
+          // Map the real selected participant into the shared canvas, including
+          // editor zoom. No DOM transforms or persistent winner animation.
+          const sx = node.target.width / s.width, sy = node.target.height / s.height;
+          const cx = (a.left + a.width / 2 - s.left) * sx;
+          const cy = (a.top + a.height / 2 - s.top) * sy;
+          const radius = Math.min(a.width * sx, a.height * sy) / 2 + 3;
+          const ring = node.transmissionRing, sweep = node.transmissionScan;
+          ring.clear().circle(0, 0, radius).stroke({ color: node.target.theme.colors.highlight, width: 1.5, alpha: .65 });
+          ring.position.set(cx, cy); ring.scale.set(1); ring.alpha = 0;
+          const span = Math.min(radius * 2.4, node.target.width - 24);
+          sweep.clear().rect(-span / 2, 0, span, 1).fill({ color: node.target.theme.colors.primary, alpha: .4 });
+          sweep.position.set(cx, Math.max(12, cy - radius)); sweep.alpha = 0;
+          timeline.to(ring, { alpha: .7, duration: .15 }, 0)
+            .to(ring.scale, { x: 1.3, y: 1.3, duration: 1, ease: 'sine.out' }, 0)
+            .to(ring, { alpha: 0, duration: .85 }, .15)
+            .to(sweep, { alpha: .7, duration: .15 }, 0)
+            .to(sweep, { y: Math.min(node.target.height - 12, cy + radius), duration: 1, ease: 'sine.inOut' }, 0)
+            .to(sweep, { alpha: 0, duration: .3 }, .7);
+        }
+      }
+    }
   }
 }
 

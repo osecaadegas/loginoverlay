@@ -91,7 +91,7 @@ try {
         const c = registry.resolveBetterWidgetConfig(type, registry.getBetterWidgetDefinition(type).defaultConfig, 'mock');
         return themes.applyWidgetColourTheme(type, { ...c, ...extra, live: true, showCrypto: false, showNowPlaying: false, showSocials: false, twitchEnabled: false, kickEnabled: false, youtubeEnabled: false, bttvEnabled: false, animations: false }, extra.colourTheme || 'orbital');
       },
-      scene({ single = '', environment = 'earth_orbit', quality = 'balanced', runtime = 'editor', effects = true, stars = true, animation = true, theme = 'orbital', glow = .45, seed = '' } = {}) {
+      scene({ single = '', environment = 'earth_orbit', quality = 'balanced', runtime = 'editor', effects = true, stars = true, animation = true, theme = 'orbital', glow = .45, seed = '', winner = '' } = {}) {
         const specs = [
           ['background', 0, 0, 1920, 1080, {}],
           ['navbar', 14, 10, 1892, 65, {}],
@@ -103,7 +103,7 @@ try {
           ['rtp_stats', 370, 746, 1115, 68, {}],
           ['current_slot', 370, 823, 1115, 240, { slot: { name: 'Le Vampire', provider: 'Hacksaw Gaming', image: '/player.webp', rtp: 96.51, volatility: 'High', max_win_multiplier: 15000 }, bestWin: 150, bestMultiplier: 300 }],
           ['slideshow_frame', 1504, 88, 402, 260, { mediaText: '' }],
-          ['giveaway', 1504, 366, 402, 230, {}],
+          ['giveaway', 1504, 366, 402, 230, { winner }],
           ['chat', 1504, 614, 402, 449, {}],
           ['bets', 660, 410, 540, 320, { orientation: 'horizontal', layoutMode: 'bars', columns: 2, gameStatus: 'open', options: ['0 - 99x', '100 - 199x', '200 - 299x', '300x+'], bets: { opt_0: 100, opt_1: 50 }, betters: {} }],
           ['tournament', 0, 0, 1000, 600, {}], ['connect_four', 0, 0, 900, 600, {}],
@@ -153,6 +153,10 @@ try {
   assert(compositionSizes.game.height >= 285 && compositionSizes.telemetry.height >= 78, 'bottom modules use their enlarged editor dimensions');
   assert(compositionSizes.header.bottom <= compositionSizes.reel.top + 1, 'giveaway header remains clear of spinning reel');
   assert(await page.$eval('.better-slideshow-frame__inner', el => getComputedStyle(el).maskComposite.includes('exclude')), 'observation housing leaves media aperture transparent');
+  for (const selector of ['.ov-chat-messages', '.better-shoutout-media-empty', '.better-slideshow-frame__empty', '.better-giveaway-widget', '.cg-widget']) {
+    assert(await page.$eval(selector, el => getComputedStyle(el).backgroundImage.includes('earth-orbit.webp')), `${selector}: shared Earth texture reaches the real visible surface`);
+  }
+  assert.equal(await page.$$eval('[data-orbital-hull-detail="vent"]', els => els.length), 4, 'sparse detail stays at the four structural corners');
   await page.screenshot({ path: `${out}/orbital-1920.png` });
   for (const [width, height] of [[2560, 1440], [1366, 768], [1920, 1080]]) {
     await page.setViewport({ width, height });
@@ -185,6 +189,31 @@ try {
     }
     await page.screenshot({ path: `${out}/widget-${type}.png` });
   }
+  await page.evaluate(() => window.orbital.scene({ single: 'giveaway' })); await wait();
+  await page.evaluate(() => window.orbital.scene({ single: 'giveaway', winner: 'nightowl' })); await wait();
+  await page.waitForFunction(() => document.querySelector('.theme-effects-layer__debug')?.dataset.lastEvent === 'giveaway');
+  await page.waitForSelector('.better-gw-result-avatar');
+  assert.equal(await page.$eval('.better-gw-result-card', el => getComputedStyle(el).animationName), 'none', 'transmission uses the shared engine instead of legacy entrance motion');
+  assert.equal(await page.$eval('.better-gw-result-frost', el => getComputedStyle(el).display), 'none', 'ice assets do not leak into Orbital winner cards');
+  const transmission = await page.evaluate(async version => {
+    const { Container } = await import(`/node_modules/.vite/deps/pixi__js.js?v=${version}`);
+    const { createOrbitalNode, resizeOrbitalNode, burstOrbitalNode, disposeOrbitalNode } = await import('/src/effects/ThemeEffects/orbital/orbitalNode.js');
+    const root = document.querySelector('[data-effect-target-id]');
+    const surface = root.querySelector('.better-gw-result-card').getBoundingClientRect();
+    const target = { id: root.dataset.effectTargetId, widgetType: 'giveaway', x: 0, y: 0, width: surface.width, height: surface.height, opacity: 1, theme: { colors: { primary: 0x27c7ff, highlight: 0x9deaff } }, effects: { enabled: true, orbital: { particles: false, hudGlow: .45 } } };
+    const layer = new Container();
+    const node = createOrbitalNode(target, { foregroundWidgetFX: layer }, document, { count: 0, quality: 'low' });
+    resizeOrbitalNode(node, target); burstOrbitalNode(node, 'giveaway');
+    node.eventTimeline.time(.4);
+    const active = node.transmissionRing.alpha > 0 && node.transmissionScan.alpha > 0;
+    const duration = node.eventTimeline.duration();
+    node.eventTimeline.time(1.2);
+    const settled = node.transmissionRing.alpha === 0 && node.transmissionScan.alpha === 0 && node.pulse.alpha === 0;
+    disposeOrbitalNode(node); layer.destroy({ children: true });
+    return { active, duration, settled };
+  }, browserHash);
+  assert(transmission.active && transmission.settled && transmission.duration >= .8 && transmission.duration <= 1.2, 'shared GSAP winner ring and sweep finish once within 800–1200ms');
+  await page.screenshot({ path: `${out}/giveaway-winner.png` });
   await page.evaluate(() => window.orbital.scene({single:'current_slot',theme:'emerald'})); await wait();
   assert.equal(await page.$eval('.cg-widget',el=>getComputedStyle(el,'::after').content),'none','Orbital casing never leaks into another theme');
   for (const environment of ['earth_orbit', 'earth_night', 'earth_sunrise', 'deep_space', 'off']) {

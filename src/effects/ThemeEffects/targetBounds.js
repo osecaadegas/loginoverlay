@@ -14,6 +14,7 @@ export function findEffectSurface(host, target) {
   if (!wrapper) return null;
   if (target.theme.family === 'orbital') {
     const selectors = target.widgetType === 'background' ? '[data-orbital-environment]'
+      : target.widgetType === 'giveaway' ? '.better-giveaway-widget, .better-gw-result-card'
       : target.widgetType === 'connect_four' ? '.connect-four-board'
       : target.widgetType === 'bets' ? '.bet-widget, [data-widget-element="widgetBackground"]'
         : SURFACES[target.widgetType] || '[data-widget-element="container"], [data-appearance-part="container"]';
