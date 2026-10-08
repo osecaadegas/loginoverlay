@@ -15,6 +15,9 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const width = bounded(config.width, 240, 1600, 420);
   const height = bounded(config.height, 140, 900, 270);
   const hasWinner = Boolean(config.winner);
+  // Orbital winners have a module header as well as the result card. Lay them
+  // out in the actual chat bay instead of clipping a fixed 190px canvas.
+  const nativeWinner = hasWinner && (config.colourTheme === 'orbital' || layout.colourTheme === 'orbital');
   const regularFrameHeight = bounded(layout.giveawayHeight, 80, 600, 250);
   const winnerFrameHeight = bounded(layout.giveawayWinnerHeight, 110, 320, 180);
   const frameHeight = hasWinner ? winnerFrameHeight : regularFrameHeight;
@@ -38,7 +41,9 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
       overflow: "hidden", margin: `${margin}px 0`, alignSelf: "stretch",
       width: "100%",
     }}>
-      <div className="ov-chat-giveaway-canvas" style={{
+      <div className="ov-chat-giveaway-canvas" data-native-winner={nativeWinner || undefined} style={nativeWinner ? {
+        position: 'absolute', inset: 0, width: '100%', height: '100%', containerType: 'size',
+      } : {
         position: "absolute", width, height: canvasHeight, top: "50%", left: "50%",
         transform: `translate(-50%, -50%) scale(${scale})`, transformOrigin: "center",
       }}>{children}</div>

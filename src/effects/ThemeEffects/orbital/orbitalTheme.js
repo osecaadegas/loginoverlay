@@ -17,13 +17,14 @@ export const ORBITAL_DEFAULTS = Object.freeze({
   environment: 'earth_orbit', intensity: 0.7, earthVisibility: 1,
   stars: true, starsIntensity: 0.55, atmosphereGlow: 0.5,
   particles: true, hudGlow: 0.45, backgroundAnimation: true,
+  spacecraftInterior: false,
 });
 
 export function normalizeOrbitalSettings(source = {}) {
   const raw = source && typeof source === 'object' ? source : {};
   return Object.fromEntries(Object.entries(ORBITAL_DEFAULTS).map(([key, fallback]) => [key,
     key === 'environment' ? (ORBITAL_ENVIRONMENTS.some(item => item.key === raw[key]) ? raw[key] : fallback)
-      : typeof fallback === 'boolean' ? raw[key] !== false
+      : typeof fallback === 'boolean' ? (typeof raw[key] === 'boolean' ? raw[key] : fallback)
         : typeof raw[key] === 'number' && Number.isFinite(raw[key]) ? Math.max(0, Math.min(1, raw[key])) : fallback,
   ]));
 }

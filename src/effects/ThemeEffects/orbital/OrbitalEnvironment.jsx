@@ -21,6 +21,7 @@ export default function OrbitalEnvironment({ config, canvasStyle, canvasAttrs })
       </div>}
       {c.stars && <svg className="orbital-environment__stars" data-orbital-stars viewBox="0 0 1920 1080" preserveAspectRatio="none" style={{ opacity: c.starsIntensity * c.intensity }} />}
       <div className="orbital-environment__shade" data-orbital-shade />
+      {c.spacecraftInterior && <img className="orbital-environment__interior" src="/theme-effects/orbital/spacecraft-interior.webp" alt="" draggable="false" />}
     </div>}
   </div>;
 }

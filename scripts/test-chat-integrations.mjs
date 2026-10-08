@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { mkdirSync } from 'node:fs';
 import { createServer } from 'vite';
 import puppeteer from 'puppeteer';
 import { resolveChatCommandOwner } from '../api/raid-shoutout.js';
@@ -109,13 +110,14 @@ try {
       send() {} close() { this.readyState = 3; this.onclose?.(); }
     };
     window.irc = (text, moderator = true) => window.sockets.filter(socket => socket.readyState === 1).forEach(socket => socket.onmessage?.({ data: `@id=event-${Date.now()};display-name=Viewer;mod=${moderator ? 1 : 0};badges= :viewer!v@v.tmi.twitch.tv PRIVMSG #fixture :${text}\r\n` }));
-    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '', giveawayHeight, shoutoutHeight = 180, colourTheme, spinDurationSec = 1.2 } = {}) => {
+    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '', giveawayHeight, giveawayWinnerHeight, shoutoutHeight = 180, colourTheme, spinDurationSec = 1.2 } = {}) => {
       const config = {
         chatStyle: style, live: true, bttvEnabled: false, twitchEnabled: live, twitchChannel: 'fixture',
         giveawayInChat: enabled, giveawayPosition: position, shoutoutInChat: shoutout,
         shoutoutPosition: position, shoutoutHeight, shoutoutDuration: 10,
         ...(colourTheme ? { colourTheme } : {}),
         ...(giveawayHeight == null ? {} : { giveawayHeight }),
+        ...(giveawayWinnerHeight == null ? {} : { giveawayWinnerHeight }),
         __appearancePreviewMessages: [{ id: 'sample', username: 'StreamFan', message: 'Enjoy the stream!' }],
         ...(live ? {} : { __previewShoutoutAlert: { raider_username: 'preview', raider_display_name: 'Preview Streamer' } }),
         ...(sample ? withChatPreviewSamples() : {}),
@@ -260,27 +262,29 @@ try {
   await new Promise(resolve => setTimeout(resolve, 1280));
   const landedOffset = await page.$eval('.better-gw-roulette-track', element => new DOMMatrixReadOnly(getComputedStyle(element).transform).m41);
   await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'winner', shoutout: false, colourTheme: 'arctic', spinDurationSec: 1.2 }));
-  await new Promise(resolve => setTimeout(resolve, 80));
+  await page.waitForSelector('.better-gw-result-card');
   const arcticWinner = await page.evaluate(() => {
-    const card = document.querySelector('.better-giveaway-widget');
-    const track = card.querySelector('.better-gw-roulette-track');
-    const banner = card.querySelector('.better-gw-winner-banner');
-    const bubble = card.querySelector('.better-gw-avatar-chip.is-winner .better-gw-avatar-bubble');
-    const kicker = card.querySelector('.better-gw-winner-kicker');
+    const card = document.querySelector('.better-gw-result-card');
+    const bubble = card.querySelector('.better-gw-result-avatar');
+    const kicker = card.querySelector('.better-gw-result-kicker');
     return {
-      offset: new DOMMatrixReadOnly(getComputedStyle(track).transform).m41,
-      cardBorder: getComputedStyle(card).borderColor,
+      reelGone: !document.querySelector('.better-gw-roulette-track'),
+      name: card.querySelector('.better-gw-result-name').textContent,
+      prize: card.querySelector('.better-gw-result-prize').textContent,
       cardShadow: getComputedStyle(card).boxShadow,
-      bannerBackground: getComputedStyle(banner).backgroundImage,
+      frost: getComputedStyle(card.querySelector('.better-gw-result-frost')).backgroundImage,
       bubbleBorder: getComputedStyle(bubble).borderColor,
       kickerColor: getComputedStyle(kicker).color,
     };
   });
-  assert(Math.abs(arcticWinner.offset - landedOffset) < 0.5, `winner hand-off stays on the landed reel position: ${landedOffset} -> ${arcticWinner.offset}`);
+  assert(Number.isFinite(landedOffset) && landedOffset < 0, 'reel travels to the selected winner before result hand-off');
+  assert(arcticWinner.reelGone, 'completed giveaway replaces the reel with its dedicated result card');
+  assert.equal(arcticWinner.name, 'SecondViewer');
+  assert.equal(arcticWinner.prize, 'Channel reward');
   assert(!arcticWinner.bubbleBorder.includes('255, 197, 27'), `Arctic winner ring has no gold accent: ${arcticWinner.bubbleBorder}`);
   assert(!arcticWinner.kickerColor.includes('255, 216, 119'), `Arctic winner label has no gold accent: ${arcticWinner.kickerColor}`);
   assert(!arcticWinner.cardShadow.includes('255, 176, 0'), 'Arctic winner shell has no gold glow');
-  assert(arcticWinner.bannerBackground.includes('rgba(28, 65, 81'), 'Arctic winner banner uses frozen glass');
+  assert(arcticWinner.frost.includes('frost-corners.png'), 'Arctic winner keeps its frozen glass artwork');
   await page.evaluate(() => window.mountChat({ registry: true, style: 'community_chat', state: 'empty' }));
   await settle();
   assert.equal(await page.$('.ov-chat-giveaway'), null, 'Idle giveaway collapses');
@@ -362,6 +366,22 @@ try {
   await page.evaluate(() => window.mountChat({ style: 'community_chat', sample: true, width: 480, height: 900 }));
   await new Promise(resolve => setTimeout(resolve, 900));
   if (process.env.CHAT_INTEGRATIONS_SCREENSHOT) await (await page.$('#host')).screenshot({ path: process.env.CHAT_INTEGRATIONS_SCREENSHOT });
+  mkdirSync('.codex-dev/orbital-verification', { recursive: true });
+  for (const [width, height, giveawayWinnerHeight, live, position] of [[240,400,180,false,'top'], [360,600,180,true,'bottom'], [360,600,110,false,'top']]) {
+    await page.evaluate(options => window.mountChat(options), { style: 'better_chat', state: 'winner', colourTheme: 'orbital', registry: true, shoutout: false, width, height, giveawayWinnerHeight, live, position });
+    await settle();
+    const bounds = await page.evaluate(() => {
+      const rect = selector => document.querySelector(selector).getBoundingClientRect();
+      const bay = rect('.ov-chat-giveaway'), card = rect('.better-gw-result-card');
+      const elements = ['.better-gw-transmission-header','.better-gw-result-avatar','.better-gw-result-name','.better-gw-result-message','.better-gw-result-prize'];
+      return { native: document.querySelector('[data-native-winner]') !== null,
+        fits: elements.every(selector => { const r = rect(selector); return r.left >= bay.left && r.right <= bay.right + 1 && r.top >= bay.top && r.bottom <= bay.bottom + 1; }),
+        contentFits: ['.better-gw-result-avatar','.better-gw-result-copy'].every(selector => { const r = rect(selector); return r.top >= card.top + 4 && r.bottom <= card.bottom - 4; }),
+        messageHeight: rect('.ov-chat-messages').height };
+    });
+    assert(bounds.native && bounds.fits && bounds.contentFits && bounds.messageHeight > 0, `Orbital embedded winner fits ${width}/${giveawayWinnerHeight}: ${JSON.stringify(bounds)}`);
+    await (await page.$('#host')).screenshot({ path: `.codex-dev/orbital-verification/chat-winner-${width}-${giveawayWinnerHeight}.png` });
+  }
   assert.deepEqual(errors, []);
   console.log(`Combined chat verified across ${styles.length} styles: giveaway states, sizing, live entry collection, chat-only source, previews, moderator commands, legacy and published OBS tokens.`);
 } finally {

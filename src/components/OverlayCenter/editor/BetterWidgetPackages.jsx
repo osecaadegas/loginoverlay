@@ -7208,6 +7208,7 @@ function ThemeEffectsControls({ themeKey, config, onChange, simple = false, widg
         <Segmented value={space.environment} options={ORBITAL_ENVIRONMENTS} columns={2} onChange={environment => setSpace({ environment })} />
         <p className="bp-hint">Keep this background beneath your game capture in OBS. Off leaves a truly transparent background.</p>
         {space.environment !== 'off' && <>
+          <ToggleRow label="Spacecraft interior" checked={space.spacecraftInterior} onChange={spacecraftInterior => setSpace({ spacecraftInterior })} hint="View Earth through a spacecraft window, with metal walls behind your widgets. Included in the background Browser Source; keep it beneath your gameplay capture in OBS." />
           {slider('Environment intensity', 'intensity')}
           {space.environment !== 'deep_space' && <>{slider('Earth visibility', 'earthVisibility')}{slider('Atmosphere glow', 'atmosphereGlow')}</>}
           <ToggleRow label="Stars" checked={space.stars} onChange={stars => setSpace({ stars })} />

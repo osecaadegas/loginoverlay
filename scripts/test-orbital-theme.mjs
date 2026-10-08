@@ -38,6 +38,8 @@ assert.equal(normalizeOrbitalSettings({ environment: 'invalid', intensity: 4, hu
 assert.equal(normalizeOrbitalSettings({ intensity: 4 }).intensity, 1);
 assert.equal(normalizeOrbitalSettings({ hudGlow: -2 }).hudGlow, 0);
 assert.equal(normalizeOrbitalSettings({ intensity: null }).intensity, .7);
+assert.equal(normalizeOrbitalSettings({}).spacecraftInterior, false, 'existing layouts keep the original background');
+assert.equal(normalizeOrbitalSettings({ spacecraftInterior: true }).spacecraftInterior, true);
 const preserved = patchThemeEffectsConfig('orbital', { orbital: { stars: false, earthVisibility: .3 }, ice: { frost: .2 } }, { orbital: { environment: 'off' } });
 assert.equal(preserved.orbital.stars, false);
 assert.equal(preserved.orbital.earthVisibility, .3);
@@ -91,7 +93,7 @@ try {
         const c = registry.resolveBetterWidgetConfig(type, registry.getBetterWidgetDefinition(type).defaultConfig, 'mock');
         return themes.applyWidgetColourTheme(type, { ...c, ...extra, live: true, showCrypto: false, showNowPlaying: false, showSocials: false, twitchEnabled: false, kickEnabled: false, youtubeEnabled: false, bttvEnabled: false, animations: false }, extra.colourTheme || 'orbital');
       },
-      scene({ single = '', environment = 'earth_orbit', quality = 'balanced', runtime = 'editor', effects = true, stars = true, animation = true, theme = 'orbital', glow = .45, seed = '', winner = '' } = {}) {
+      scene({ single = '', environment = 'earth_orbit', quality = 'balanced', runtime = 'editor', effects = true, stars = true, animation = true, theme = 'orbital', glow = .45, seed = '', winner = '', spacecraftInterior = false } = {}) {
         const specs = [
           ['background', 0, 0, 1920, 1080, {}],
           ['navbar', 14, 10, 1892, 65, {}],
@@ -111,7 +113,7 @@ try {
         ];
         const originalWidgets = specs.filter(([type], index) => single ? type === single : index < 9).map(([type, x, y, width, height, extra], index) => registry.createBetterInstance(type, {
           instanceId: `orbital-${type}${seed}`, x: single ? 0 : x, y: single ? 0 : y, width, height, zIndex: index,
-          config: this.config(type, { ...extra, colourTheme: theme, themeEffects: { enabled: effects, quality, orbital: { environment, stars, hudGlow: glow, backgroundAnimation: animation } } }),
+          config: this.config(type, { ...extra, colourTheme: theme, themeEffects: { enabled: effects, quality, orbital: { environment, stars, hudGlow: glow, backgroundAnimation: animation, spacecraftInterior } } }),
         }));
         const widgets = single ? originalWidgets : registry.normalizeBetterLayout(applyOrbitalComposition({ instances: originalWidgets })).instances;
         this.widgets = widgets;
@@ -237,10 +239,27 @@ try {
   assert.equal(await page.$$eval('[data-orbital-structure="gameplay-window"]', els => els.length), 1, 'winner transition never removes the observation window');
   assert(await page.$eval('.better-gw-transmission-header', el => el.clientHeight > 0), 'Orbital winner has a proper transmission header');
   await page.screenshot({ path: `${out}/orbital-winner-scene.png` });
+  for (const runtime of ['editor', 'obs']) {
+    await page.evaluate(runtime => window.orbital.scene({ spacecraftInterior: true, runtime }), runtime); await wait();
+    assert(await page.$eval('.orbital-environment__interior', img => img.complete && img.naturalWidth > 0), 'station image loads in both render paths');
+    assert.equal(await page.$eval('.orbital-environment__interior', img => getComputedStyle(img).opacity), '1', 'Earth does not bleed through the metal at reduced intensity');
+    assert.equal(await page.evaluate(() => {
+      const saved = JSON.parse(JSON.stringify(window.orbital.widgets));
+      return window.orbital.normalizeBetterLayout({ instances: saved }).instances.find(w => w.widgetType === 'background').config.themeEffects.orbital.spacecraftInterior;
+    }), true, 'interior persists through saved layout reload');
+    await page.screenshot({ path: `${out}/spacecraft-${runtime}.png` });
+  }
+  assert(await page.$eval('.orbital-environment__interior', img => {
+    const canvas = document.createElement('canvas'); canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0);
+    return ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data[3] === 0;
+  }), 'the image window is genuinely transparent so existing Earth remains visible');
+  await page.evaluate(() => window.orbital.scene({ spacecraftInterior: false })); await wait();
+  assert.equal(await page.$('.orbital-environment__interior'), null, 'toggle off removes the image');
   await page.evaluate(() => window.orbital.scene({single:'current_slot',theme:'emerald'})); await wait();
   assert.equal(await page.$eval('.cg-widget',el=>getComputedStyle(el,'::after').content),'none','Orbital casing never leaks into another theme');
   for (const environment of ['earth_orbit', 'earth_night', 'earth_sunrise', 'deep_space', 'off']) {
-    await page.evaluate(environment => window.orbital.scene({ single: 'background', environment, runtime: 'obs-single' }), environment);
+    await page.evaluate(environment => window.orbital.scene({ single: 'background', environment, runtime: 'obs-single', spacecraftInterior: true }), environment);
     await wait();
     assert.equal(await page.$eval('[data-orbital-environment]', el => el.dataset.orbitalEnvironment), environment);
     assert.equal(await page.$$eval('.orbital-environment__earth', els => els.length), ['deep_space', 'off'].includes(environment) ? 0 : 1);
@@ -279,6 +298,10 @@ try {
   assert.equal(await page.$eval('[data-orbital-drift="earth"]', el => el.style.transform), hiddenBefore, 'hidden tab pauses shared motion');
   await secondPage.close(); await page.bringToFront();
   await page.evaluate(() => window.orbital.controls('background')); await wait();
+  await page.click('.bp-toggle::-p-text(Spacecraft interior)');
+  assert.equal(await page.evaluate(() => window.orbital.controlConfig.themeEffects.orbital.spacecraftInterior), true);
+  await page.click('.bp-toggle::-p-text(Spacecraft interior)');
+  assert.equal(await page.evaluate(() => window.orbital.controlConfig.themeEffects.orbital.spacecraftInterior), false);
   for (const [label, property] of [['Environment intensity', 'intensity'], ['Earth visibility', 'earthVisibility'], ['Atmosphere glow', 'atmosphereGlow'], ['Stars intensity', 'starsIntensity']]) {
     await page.evaluate(label => {
       const input = [...document.querySelectorAll('.bp-slider')].find(el => el.querySelector('em')?.textContent === label).querySelector('input');

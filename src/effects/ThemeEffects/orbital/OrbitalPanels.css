@@ -295,6 +295,25 @@
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-gw-transmission-header :is(svg,small) { color: var(--orbital-light); flex-shrink: 0; }
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-gw-result-card { width: 100%; height: 100%; max-height: 100%; box-sizing: border-box; border-radius: 6px; }
 
+/* A transmission embedded in chat has a much shorter bay than the standalone
+   widget. Reserve the header first, then fit avatar and all result text inside. */
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-result-stage {
+  width: calc(100% - 8px); height: calc(100% - 8px); margin: 4px; padding: 8px;
+  gap: 4px; --orbital-frame-depth: 5px;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-transmission-header { padding: 4px; font-size: 10px; gap: 5px; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-transmission-header svg { width: 12px; height: 12px; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-result-card {
+  min-height: 0; padding: 8px; gap: 10px; grid-template-columns: auto minmax(0,1fr);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-result-avatar {
+  width: clamp(32px,min(20cqi,calc(100cqb - 64px)),68px); max-height: 100%; box-sizing: border-box;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-result-kicker { display: none; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-result-name { font-size: clamp(14px,min(5cqi,16cqb),22px); line-height: 1.15; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-result-message { font-size: clamp(10px,min(3.4cqi,12cqb),13px); margin-top: 3px; line-height: 1.15; letter-spacing: 0; }
+.better-widget-colour-scope[data-colour-theme="orbital"] .ov-chat-giveaway .better-gw-result-prize { font-size: clamp(10px,min(3.4cqi,12cqb),13px); margin-top: 4px; line-height: 1.15; }
+
 /* Floating prediction terminal: reserve real interior space for the housing,
    so its corners/caps never paint over the header or the selectable cells. */
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-bets-fit {
