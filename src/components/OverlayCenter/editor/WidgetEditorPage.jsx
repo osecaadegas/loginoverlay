@@ -42,6 +42,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { applyOrbitalComposition, isOrbitalCompositionWidget } from './orbitalComposition';
 import { useAuth } from "../../../context/AuthContext";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
@@ -1682,6 +1683,17 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
+          {layout.instances.some(isOrbitalCompositionWidget) && (
+            <button
+              type="button"
+              disabled={Boolean(operation) || previewing}
+              title="Fit visible, unlocked Space widgets to the larger Orbital composition. Undo is available."
+              onClick={() => commitLayout(applyOrbitalComposition)}
+            >
+              <Scan size={16} />
+              <span>Orbital composition</span>
+            </button>
+          )}
           <button
             type="button"
             aria-pressed={previewing}

@@ -6,6 +6,20 @@ import { normalizeOrbitalSettings, orbitalParticleBudgets } from '../src/effects
 import { normalizeThemeEffectsConfig, patchThemeEffectsConfig } from '../src/effects/ThemeEffects/themeEffectsConfig.js';
 import { getThemeEffectDefinition } from '../src/effects/ThemeEffects/themes/themeDefinitions.js';
 import { orbitalStructure } from '../src/effects/ThemeEffects/orbital/orbitalStructureGeometry.js';
+import { applyOrbitalComposition } from '../src/components/OverlayCenter/editor/orbitalComposition.js';
+
+const compositionInput = { instances: ['background', 'navbar', 'bonus_hunt', 'current_slot', 'giveaway'].map((widgetType, index) => ({ instanceId: String(index), widgetType, x: 30, y: 40, width: 300, height: 200, config: { colourTheme: 'orbital', bonuses: [{ payout: 240 }], subElements: { slotTitle: { color: '#fff' } } } })) };
+const originalComposition = structuredClone(compositionInput);
+const composed = applyOrbitalComposition(compositionInput);
+assert.deepEqual(compositionInput, originalComposition, 'composition is undoable without mutating history');
+assert.deepEqual(applyOrbitalComposition(composed), composed, 'reapplying composition never compounds scale');
+assert.deepEqual(composed.instances[0], compositionInput.instances[0], 'background is untouched');
+assert.deepEqual(composed.instances[2].config.bonuses, compositionInput.instances[2].config.bonuses, 'slot data survives composition');
+assert.deepEqual(composed.instances[3].config.subElements, compositionInput.instances[3].config.subElements, 'custom appearance overrides survive composition');
+for (const patch of [{ locked: true }, { visible: false }, { config: { colourTheme: 'arctic' } }]) {
+  const protectedInstance = { ...compositionInput.instances[1], ...patch };
+  assert.deepEqual(applyOrbitalComposition({ instances: [protectedInstance] }).instances[0], protectedInstance);
+}
 
 const structuralTargets = [
   ['navbar', 14, 10, 1892, 65], ['bonus_hunt', 14, 88, 340, 975],
@@ -62,6 +76,7 @@ try {
     const ReactDOM = (await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`)).default;
     const registry = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
     const themes = await import('/src/components/OverlayCenter/editor/widgetColourThemes.js');
+    const { applyOrbitalComposition } = await import('/src/components/OverlayCenter/editor/orbitalComposition.js');
     const { BetterWidgetControls } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
     const { default: FX } = await import('/src/effects/ThemeEffects/ThemeEffectsLayer.jsx');
     const { emitIceEvent } = await import('/src/effects/ThemeEffects/emitIceEvent.js');
@@ -94,10 +109,11 @@ try {
           ['tournament', 0, 0, 1000, 600, {}], ['connect_four', 0, 0, 900, 600, {}],
           ['slot_bingo', 0, 0, 600, 600, {}], ['raid_shoutout', 0, 0, 800, 450, {}],
         ];
-        const widgets = specs.filter(([type], index) => single ? type === single : index < 9).map(([type, x, y, width, height, extra], index) => registry.createBetterInstance(type, {
+        const originalWidgets = specs.filter(([type], index) => single ? type === single : index < 9).map(([type, x, y, width, height, extra], index) => registry.createBetterInstance(type, {
           instanceId: `orbital-${type}${seed}`, x: single ? 0 : x, y: single ? 0 : y, width, height, zIndex: index,
           config: this.config(type, { ...extra, colourTheme: theme, themeEffects: { enabled: effects, quality, orbital: { environment, stars, hudGlow: glow, backgroundAnimation: animation } } }),
         }));
+        const widgets = single ? originalWidgets : registry.normalizeBetterLayout(applyOrbitalComposition({ instances: originalWidgets })).instances;
         this.widgets = widgets;
         const width = single ? widgets[0].width : 1920, height = single ? widgets[0].height : 1080;
         const scale = single ? Math.min(1, innerWidth / width, innerHeight / height) : innerWidth / 1920;
@@ -128,6 +144,14 @@ try {
   assert.equal(await page.$$eval('.theme-effects-layer__canvas', list => list.length), 1);
   await page.waitForSelector('[data-orbital-structure="gameplay-window"]');
   assert.equal(await page.$$eval('[data-orbital-structure="comms-column"]', nodes => nodes.length), 1);
+  const compositionSizes = await page.evaluate(() => {
+    const size = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { width: r.width, height: r.height, top: r.top, bottom: r.bottom }; };
+    return { hunt: size('.better-hunt-panel'), game: size('.cg-widget'), telemetry: size('.rtp-stats-bar'), giveaway: size('.better-giveaway-widget'), header: size('.better-gw-header'), reel: size('.better-gw-reel-zone') };
+  });
+  assert(compositionSizes.hunt.width >= 1920 * .17 && compositionSizes.hunt.width <= 1920 * .19, 'painted left module occupies 17–19% of the screen');
+  assert(compositionSizes.giveaway.width >= 1920 * .17, 'giveaway fills its sidebar instead of shrinking into a floating card');
+  assert(compositionSizes.game.height >= 285 && compositionSizes.telemetry.height >= 78, 'bottom modules use their enlarged editor dimensions');
+  assert(compositionSizes.header.bottom <= compositionSizes.reel.top + 1, 'giveaway header remains clear of spinning reel');
   assert(await page.$eval('.better-slideshow-frame__inner', el => getComputedStyle(el).maskComposite.includes('exclude')), 'observation housing leaves media aperture transparent');
   await page.screenshot({ path: `${out}/orbital-1920.png` });
   for (const [width, height] of [[2560, 1440], [1366, 768], [1920, 1080]]) {

@@ -16,14 +16,20 @@ export default function OrbitalStructure({ targets, width, height, singleInstanc
     </defs>
     {frames.map(frame => {
       const { x, y, width: w, height: h, depth: d } = frame;
-      const cut = Math.min(22, w / 8, h / 8);
+      const cut = Math.min(frame.id === 'gameplay-window' ? 42 : 22, w / 8, h / 8);
       const path = inset => `M ${x + cut} ${y + inset} H ${x + w - cut} L ${x + w - inset} ${y + cut} V ${y + h - cut} L ${x + w - cut} ${y + h - inset} H ${x + cut} L ${x + inset} ${y + h - cut} V ${y + cut} Z`;
       return <g key={frame.id} data-orbital-structure={frame.id}>
         <path d={path(d / 2)} fill="none" stroke="#01060d" strokeWidth={d}/>
         <path d={path(d / 2)} fill="none" stroke={`url(#${id}-metal)`} strokeWidth={d - 2}/>
         <path d={path(d - 1)} fill="none" stroke="#40647e" strokeWidth="1"/>
+        <path d={path(d - 4)} fill="none" stroke="#020812" strokeWidth="3"/>
+        <path d={path(d - 5)} fill="none" stroke="#468da9" strokeWidth="1"/>
         <path d={path(1)} fill="none" stroke="#7591a5" strokeOpacity=".4" strokeWidth="1"/>
         {[0, 1].flatMap(row => [0, 1].map(col => <g key={`${row}-${col}`} transform={`translate(${col ? x + w : x},${row ? y + h : y}) scale(${col ? -1 : 1},${row ? -1 : 1})`}>
+          {frame.id === 'gameplay-window' && <>
+            <path d={`M 2 ${cut + 28} V ${cut} L ${cut} 2 H ${cut + 48} L ${cut + 36} 12 H ${cut + 5} L 12 ${cut + 5} V ${cut + 36} Z`} fill={`url(#${id}-metal)`} stroke="#4b687e" strokeWidth="1"/>
+            <path d={`M 16 ${cut + 12} V ${cut + 2} L ${cut + 2} 16 H ${cut + 22}`} fill="none" stroke="#75b9d0" strokeWidth="2"/>
+          </>}
           <path d={`M ${cut + 32} 3 H ${cut} L 3 ${cut} V ${cut + 30}`} fill="none" stroke="#020711" strokeWidth="7"/>
           <path d={`M ${cut + 32} 3 H ${cut} L 3 ${cut} V ${cut + 30}`} fill="none" stroke="#299ecc" strokeWidth="2"/>
           <path d={`M ${cut + 16} 3 H ${cut}`} stroke="#b5efff" strokeWidth="2"/>

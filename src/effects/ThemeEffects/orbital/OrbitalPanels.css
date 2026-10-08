@@ -1,11 +1,11 @@
 /* Orbital module construction. No viewport geometry, positioning state or
    runtime data is changed. Surface decorations never intercept input. */
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] {
-  --orbital-frame-depth: 10px;
+  --orbital-frame-depth: 13px;
   --orbital-metal-grain: repeating-linear-gradient(93deg,#b9deff02 0 1px,transparent 1px 4px);
   --orbital-shell: linear-gradient(180deg,#486278,#122a40 12%,#06101c 48%,#102439 85%,#030a12);
   --orbital-reflection: linear-gradient(165deg,#c5e7ff12,transparent 30%,#0005);
-  --orbital-glass: linear-gradient(180deg,#10253bf5,#040d19fa);
+  --orbital-glass: linear-gradient(180deg,#0f263df7 0%,#05101efa 60%,#020912fc);
   --orbital-recess: linear-gradient(180deg,#020812,#08192af5);
   --orbital-header: linear-gradient(180deg,#263f54,#0b1e30 30%,#040d19 90%,#142e43);
   --orbital-hud-shadow: 0 6px 12px #0006,inset 0 1px 0 #d3efff66,inset 0 0 0 3px #030912,inset 0 0 0 4px #49627a,inset 0 0 0 8px #091521,inset 0 0 0 9px #1f465e,inset 0 -14px 24px #0009;
@@ -180,7 +180,7 @@
 /* Material finishing stays inside each existing surface. No geometry, scale,
    artwork fit or editor overrides are shared with any other colour theme. */
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-panel {
-  --orbital-frame-depth: 11px;
+  --orbital-frame-depth: 14px;
   background-image: linear-gradient(90deg,#48627955,#030912 5px,#1a334b 9px,transparent 12px calc(100% - 12px),#1a334b calc(100% - 9px),#030912 calc(100% - 5px),#48627955),var(--orbital-metal-grain),var(--orbital-glass);
 }
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-mainstream {
@@ -281,3 +281,47 @@
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .ov-chat-widget { box-shadow: var(--orbital-hud-shadow),inset 12px 0 20px #02071188,inset -12px 0 20px #02071188; }
 
 .orbital-structure { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* Foreground scale: all dimensions remain inside the configured widget box.
+   These surfaces also work independently, without the scene composition. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-main-head { min-height: calc(76px * var(--bh-obs-scale,1)); padding-block: 14px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-main-name { font-size: 1.22em; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-stats-panel { height: calc(258px * var(--bh-obs-scale,1)); grid-template-columns: 43% minmax(0,1fr); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-stats-title h3 { font-size: 1.16em; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-mainstream .better-hunt-image-row { padding-block: calc(5px * var(--bh-obs-scale,1)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-mainstream .better-hunt-row--image { grid-template-columns: 38% minmax(0,1fr); min-height: calc(202px * var(--bh-obs-scale,1)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-mainstream .better-hunt-row--image :is(.better-hunt-row-bg,.better-hunt-row-content) { height: calc(188px * var(--bh-obs-scale,1)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-row-main strong { font-size: 1.08em; }
+
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget {
+  width: 100%; height: 100%; --orbital-frame-depth: calc(13 * var(--cg-px));
+  padding: calc(20 * var(--cg-px)); gap: calc(10 * var(--cg-px));
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-cover {
+  width: calc(162 * var(--cg-px)); height: min(100%,calc(236 * var(--cg-px)));
+  box-shadow: 0 0 0 calc(2 * var(--cg-px)) #030812,0 0 0 calc(3 * var(--cg-px)) #557189,0 0 0 calc(6 * var(--cg-px)) #0a1828,calc(7 * var(--cg-px)) 0 calc(8 * var(--cg-px)) #348ca728;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-name-block h2 { font-size: calc(30 * var(--cg-px)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.cg-info,.cg-records) { grid-template-rows: minmax(0,.7fr) repeat(3,minmax(0,1fr)); gap: calc(8 * var(--cg-px)); padding-block: calc(5 * var(--cg-px)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-stat strong { font-size: calc(23 * var(--cg-px)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget h3 { font-size: calc(19 * var(--cg-px)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] { --orbital-frame-depth: 12px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="clock"] {
+  min-width: 166px; padding: 12px 24px;
+  border: 1px solid #4f6c83; border-radius: 6px 14px 6px 14px;
+  background-image: linear-gradient(180deg,#789bb525,transparent 26%),var(--orbital-recess);
+  box-shadow: 0 0 0 3px #020812,0 0 0 5px #213b50,inset 0 -2px 0 #4fa6c06b;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="navbar"] [data-widget-element="displayName"] { padding-block: 9px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="rtp_stats"] { --orbital-frame-depth: 11px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-bar [data-better-element="statCard"] { padding-block: 12px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="bets"] { --orbital-frame-depth: 13px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="bets"] .widget-header { padding-block: 12px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-gw-result-avatar { outline: 4px solid #0b1b2b; outline-offset: 3px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type="giveaway"] .better-giveaway-stage { padding: 8px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-giveaway-widget.is-tall .better-gw-header { position: absolute; top: 14px; left: 14px; right: 14px; min-height: 38px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-giveaway-widget.is-tall .better-gw-reel-zone { top: 66px; bottom: 14px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .ov-chat-widget {
+  background-image: radial-gradient(ellipse at 85% 65%,#49627e24,transparent 55%),radial-gradient(circle at 18% 34%,#9deaff28 0 1px,transparent 1.5px),radial-gradient(circle at 80% 70%,#9deaff20 0 1px,transparent 1.5px),linear-gradient(115deg,transparent 30%,#467d9920 49%,transparent 62%),var(--orbital-glass);
+  background-size: auto,107px 131px,173px 191px,auto,auto;
+}

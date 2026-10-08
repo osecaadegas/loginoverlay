@@ -27,12 +27,12 @@ export function orbitalStructure(targets, width, height) {
   const nav = modules.find(t => t.widgetType === 'navbar');
   const telemetry = modules.find(t => t.widgetType === 'rtp_stats' && t.width > width / 3);
   const environment = visible.find(t => t.widgetType === 'background' && t.effects?.orbital?.environment !== 'off');
-  if (hunt && nav && telemetry && environment && sidebar.length >= 2) {
+  if (hunt && nav && telemetry && environment && structures.some(frame => frame.id === 'comms-column')) {
     const x = right(hunt) + 7;
     const end = Math.min(...sidebar.map(t => t.x)) - 8;
     const y = bottom(nav) + 7;
     const endY = telemetry.y - 6;
-    add('gameplay-window', x, y, end - x, endY - y, [], 12);
+    add('gameplay-window', x, y, end - x, endY - y, [], 20);
   }
   return structures;
 }
