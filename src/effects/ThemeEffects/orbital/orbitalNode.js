@@ -91,19 +91,11 @@ export function resizeOrbitalNode(node, target) {
   node.foreground.position.set(target.x, target.y);
   node.foreground.alpha = target.opacity;
   if (target.widgetType === 'background') return;
-  const glow = target.effects.orbital.hudGlow;
   const radius = Math.min(16, Math.max(4, target.radius || 12), h / 3);
-  const edge = Math.min(w * .13, 40, h * .4);
   const cyan = target.theme.colors.primary;
   node.frame.clear();
-  node.frame.roundRect(1.5, 1.5, Math.max(1, w - 3), Math.max(1, h - 3), radius)
-    .stroke({ color: cyan, width: 1, alpha: .14 + glow * .25 });
-  // Four recessed hull rails and tiny fasteners, within the widget boundary.
-  [[4, 5, 1], [w - 4, 5, -1], [4, h - 5, 1], [w - 4, h - 5, -1]].forEach(([x, y, direction]) => {
-    node.frame.moveTo(x, y).lineTo(x + direction * edge, y)
-      .stroke({ color: cyan, width: 2, alpha: .2 + glow * .6 });
-    node.frame.circle(x + direction * (edge + 5), y, .85).fill({ color: 0xeaf8ff, alpha: .42 });
-  });
+  // Static metal/corners belong to the DOM casing. A second Pixi outline
+  // produced crossing corners and detached rails on fitted widget surfaces.
   node.pulse.clear().roundRect(2, 2, Math.max(1, w - 4), Math.max(1, h - 4), radius)
     .stroke({ color: target.theme.colors.highlight, alpha: .9, width: 2 });
   node.scan.clear().rect(4, 0, Math.max(1, w - 8), 1).fill({ color: cyan, alpha: .12 });
@@ -167,7 +159,7 @@ export function burstOrbitalNode(node, kind) {
       .to(node.pulse, { alpha: 0, duration: majorEvent(kind) ? 1.9 : .65, ease: 'sine.inOut' }, .18);
     if (kind === 'giveaway') {
       const avatar = node.root?.querySelector('.better-gw-result-avatar, .is-winner .better-gw-avatar-bubble');
-      const surface = node.root?.querySelector(node.target.widgetType === 'chat' ? '.ov-chat-widget' : '.better-gw-result-card, .better-giveaway-widget');
+      const surface = node.root?.querySelector(node.target.widgetType === 'chat' ? '.ov-chat-widget' : '.better-gw-result-stage, .better-giveaway-widget');
       if (avatar && surface) {
         const a = avatar.getBoundingClientRect();
         const s = surface.getBoundingClientRect();

@@ -14,14 +14,20 @@ export function orbitalStructure(targets, width, height) {
       { x, y, width: depth, height: h }, { x: x + w - depth, y, width: depth, height: h },
     ];
     if (modules.some(t => !members.includes(t.id) && rails.some(r => overlaps(r, t)))) return;
-    structures.push({ id, x, y, width: w, height: h, depth });
+    const frame = { id, x, y, width: w, height: h, depth };
+    structures.push(frame);
+    return frame;
   };
   const sidebar = modules.filter(t => ['slideshow_frame', 'giveaway', 'chat'].includes(t.widgetType) && t.x > width / 2).sort((a, b) => a.y - b.y);
   // An enclosing shell is only appropriate for one aligned, non-overlapping stack.
   if (sidebar.length >= 2 && sidebar.every((t, i) => !i || (t.y >= bottom(sidebar[i - 1]) && t.y - bottom(sidebar[i - 1]) < 100 && Math.abs(t.x - sidebar[0].x) < 32 && Math.abs(right(t) - right(sidebar[0])) < 32))) {
     const x = Math.min(...sidebar.map(t => t.x));
     const end = Math.max(...sidebar.map(right));
-    add('comms-column', x - 6, sidebar[0].y - 6, end - x + 12, bottom(sidebar.at(-1)) - sidebar[0].y + 12, sidebar.map(t => t.id), 6);
+    const frame = add('comms-column', x - 6, sidebar[0].y - 6, end - x + 12, bottom(sidebar.at(-1)) - sidebar[0].y + 12, sidebar.map(t => t.id), 6);
+    if (frame) frame.dividers = sidebar.slice(1).flatMap((t, i) => {
+      const gap = t.y - bottom(sidebar[i]);
+      return gap >= 6 ? [{ y: bottom(sidebar[i]) + gap / 2, depth: Math.min(8, gap - 2) }] : [];
+    });
   }
   const hunt = modules.find(t => t.widgetType === 'bonus_hunt' && right(t) < width / 2);
   const nav = modules.find(t => t.widgetType === 'navbar');

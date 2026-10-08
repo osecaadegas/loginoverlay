@@ -5555,6 +5555,9 @@ export function BetterChatHeader({
           }}
           {...(broadcast ? { "aria-hidden": true } : attrs("chat", c, "badge"))}
         />
+        {!showHeaderName && c.colourTheme === 'orbital' ? (
+          <span className="orbital-comms-label"><MessageSquare size={13} aria-hidden="true" /> CHAT / ALERTS</span>
+        ) : null}
         {showHeaderName ? (
           <strong
             style={{

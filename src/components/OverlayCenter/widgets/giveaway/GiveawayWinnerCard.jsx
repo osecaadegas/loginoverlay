@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { emitIceEvent } from '../../../../effects/ThemeEffects/emitIceEvent.js';
+import { Radio } from 'lucide-react';
 import "./GiveawayWinnerCard.css";
 
 function participantName(value) {
@@ -84,6 +85,11 @@ export default function GiveawayWinnerCard({ config = {} }) {
 
   return (
     <div className="better-gw-result-stage">
+      <header className="better-gw-transmission-header">
+        <Radio size={17} aria-hidden="true" />
+        <span>{config.title || 'Giveaway'}</span>
+        <small>Winner</small>
+      </header>
       <section
         ref={cardRef}
         className="better-gw-result-card"

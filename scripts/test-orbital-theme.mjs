@@ -157,6 +157,24 @@ try {
     assert(await page.$eval(selector, el => getComputedStyle(el).backgroundImage.includes('earth-orbit.webp')), `${selector}: shared Earth texture reaches the real visible surface`);
   }
   assert.equal(await page.$$eval('[data-orbital-hull-detail="vent"]', els => els.length), 4, 'sparse detail stays at the four structural corners');
+  assert.equal(await page.$$eval('[data-orbital-structure-divider="comms"]', els => els.length), 2, 'aligned comms sections share structural dividers');
+  const containment = await page.evaluate(() => {
+    const terminal = document.querySelector('.better-bets-fit');
+    const header = terminal.querySelector('.widget-header');
+    const box = terminal.getBoundingClientRect(), inner = header.getBoundingClientRect();
+    const nav = document.querySelector('[data-widget-type="navbar"] [data-widget-element="container"]');
+    const beam = nav.getBoundingClientRect();
+    return {
+      terminalInsets: [inner.left - box.left, box.right - inner.right, inner.top - box.top],
+      terminalPadding: getComputedStyle(terminal).padding,
+      terminal: inner.left >= box.left + 14 && inner.right <= box.right - 14 && inner.top >= box.top + 14,
+      instruments: [...nav.querySelectorAll('[data-widget-element="clock"],[data-widget-element="sponsor"],[data-widget-element="displayName"]')].every(el => {
+        const r = el.getBoundingClientRect(); return r.top >= beam.top + 4 && r.bottom <= beam.bottom - 4;
+      }),
+    };
+  });
+  assert(containment.terminal, `floating terminal reserves space for its casing: ${JSON.stringify(containment)}`);
+  assert(containment.instruments, 'command instruments remain inside the beam');
   await page.screenshot({ path: `${out}/orbital-1920.png` });
   for (const [width, height] of [[2560, 1440], [1366, 768], [1920, 1080]]) {
     await page.setViewport({ width, height });
@@ -199,7 +217,7 @@ try {
     const { Container } = await import(`/node_modules/.vite/deps/pixi__js.js?v=${version}`);
     const { createOrbitalNode, resizeOrbitalNode, burstOrbitalNode, disposeOrbitalNode } = await import('/src/effects/ThemeEffects/orbital/orbitalNode.js');
     const root = document.querySelector('[data-effect-target-id]');
-    const surface = root.querySelector('.better-gw-result-card').getBoundingClientRect();
+    const surface = root.querySelector('.better-gw-result-stage').getBoundingClientRect();
     const target = { id: root.dataset.effectTargetId, widgetType: 'giveaway', x: 0, y: 0, width: surface.width, height: surface.height, opacity: 1, theme: { colors: { primary: 0x27c7ff, highlight: 0x9deaff } }, effects: { enabled: true, orbital: { particles: false, hudGlow: .45 } } };
     const layer = new Container();
     const node = createOrbitalNode(target, { foregroundWidgetFX: layer }, document, { count: 0, quality: 'low' });
@@ -214,6 +232,11 @@ try {
   }, browserHash);
   assert(transmission.active && transmission.settled && transmission.duration >= .8 && transmission.duration <= 1.2, 'shared GSAP winner ring and sweep finish once within 800–1200ms');
   await page.screenshot({ path: `${out}/giveaway-winner.png` });
+  await page.evaluate(() => window.orbital.scene({ winner: 'nightowl' })); await wait();
+  assert.equal(await page.$$eval('[data-orbital-structure="comms-column"]', els => els.length), 1, 'winner remains inside the connected comms stack');
+  assert.equal(await page.$$eval('[data-orbital-structure="gameplay-window"]', els => els.length), 1, 'winner transition never removes the observation window');
+  assert(await page.$eval('.better-gw-transmission-header', el => el.clientHeight > 0), 'Orbital winner has a proper transmission header');
+  await page.screenshot({ path: `${out}/orbital-winner-scene.png` });
   await page.evaluate(() => window.orbital.scene({single:'current_slot',theme:'emerald'})); await wait();
   assert.equal(await page.$eval('.cg-widget',el=>getComputedStyle(el,'::after').content),'none','Orbital casing never leaks into another theme');
   for (const environment of ['earth_orbit', 'earth_night', 'earth_sunrise', 'deep_space', 'off']) {

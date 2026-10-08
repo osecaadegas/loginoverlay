@@ -1174,6 +1174,19 @@ function NavbarWidget({
   const isMetal = c.displayStyle === "metallic";
   const isStyleSeca = c.displayStyle === "StyleSecaNav";
   const isBetterNavbar = c.displayStyle === "better_navbar";
+  const isOrbitalNavbar = isBetterNavbar && c.colourTheme === "orbital";
+  // Theme defaults are applied before subElementStyle/withElementOffset, so
+  // saved per-element appearance and offsets retain precedence.
+  const orbitalInstrument = isOrbitalNavbar ? {
+    boxSizing: 'border-box',
+    background: 'var(--orbital-recess)',
+    boxShadow: 'inset 0 2px 5px #000b,inset 0 -1px 0 #52788e,0 0 0 1px #243e51',
+    borderRadius: 6,
+    padding: '7px 14px',
+  } : {};
+  const orbitalPartStyle = (part, style) => isOrbitalNavbar
+    ? withElementOffset(c, part, { ...style, ...orbitalInstrument })
+    : style;
   const isMetalSurface = isMetal || isStyleSeca || isBetterNavbar;
   const styleSecaValue = (value, fallback) =>
     resolveNavbarStyleSecaValue(isStyleSeca, value, fallback);
@@ -1741,7 +1754,7 @@ function NavbarWidget({
         style={withElementOffset(
           c,
           "clock",
-          buildNavbarClockStyle({
+          { ...buildNavbarClockStyle({
             isMetalSurface,
             isGlass,
             isRetro,
@@ -1757,7 +1770,9 @@ function NavbarWidget({
             clockShadow,
             accentColor,
             accentColorRGB,
-          }),
+          }), ...orbitalInstrument,
+            ...(isOrbitalNavbar ? { padding: '9px 26px', border: '1px solid #496c82', fontVariantNumeric: 'tabular-nums', letterSpacing: '.14em' } : {}),
+          },
         )}
       >
         {time || "--:--:--"}
@@ -2005,7 +2020,7 @@ function NavbarWidget({
         style={withElementOffset(
           c,
           "sponsor",
-          buildNavbarSponsorStyle({
+          { ...buildNavbarSponsorStyle({
             isStyleSeca,
             isMetal,
             isGlass,
@@ -2022,7 +2037,9 @@ function NavbarWidget({
             sponsorAccentColor,
             ctaColor,
             ctaColorRGB,
-          }),
+          }), ...orbitalInstrument,
+            ...(isOrbitalNavbar ? { border: '1px solid #3f829e', color: 'var(--orbital-light)', padding: '8px 18px' } : {}),
+          },
         )}
       >
         <span
@@ -2316,6 +2333,7 @@ function NavbarWidget({
             position: "relative",
             zIndex: 1,
             flexShrink: 1,
+            ...orbitalInstrument,
           })}
         >
           {showPackageAvatarImage ? (
@@ -2419,7 +2437,7 @@ function NavbarWidget({
       showStart ? (
         <div
           {...partAttrs("balance")}
-          style={{
+          style={orbitalPartStyle("balance", {
             display: "flex",
             alignItems: "center",
             gap: 8,
@@ -2428,7 +2446,7 @@ function NavbarWidget({
             position: "relative",
             zIndex: 1,
             flexShrink: 0,
-          }}
+          })}
         >
           {renderBolt()}
           <span
@@ -2463,6 +2481,7 @@ function NavbarWidget({
             display: "flex",
             alignItems: "center",
             gap: 8,
+            ...orbitalInstrument,
             minWidth: 0,
             height: "100%",
             position: "relative",
@@ -2594,6 +2613,7 @@ function NavbarWidget({
       return (
         <div
           key={zone}
+          className={`better-navbar-zone better-navbar-zone--${zone}`}
           style={{
             display: "flex",
             alignItems: "center",
@@ -2641,6 +2661,7 @@ function NavbarWidget({
           @keyframes nbTextScroll{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(calc(-50% - 24px))}}
         `}</style>
         <div
+          className="better-navbar-ambient"
           aria-hidden="true"
           style={{
             position: "absolute",
@@ -2663,6 +2684,7 @@ function NavbarWidget({
             maxHeight: "100%",
             maxWidth: `${packageMaxWidth}px`,
             boxSizing: "border-box",
+            ...(isOrbitalNavbar ? { padding: '9px 12px' } : {}),
             display: "flex",
             alignItems: "center",
             border: `${Math.max(1, Number(borderWidth) || 1)}px solid ${alphaColor(packageBorder, 0.5)}`,
@@ -2675,7 +2697,7 @@ function NavbarWidget({
             zIndex: 1,
             boxShadow:
               containerShadow ||
-              `0 0 25px ${alphaColor(packageBlue, 0.25)}, inset 0 1px 0 rgba(255,255,255,0.06)`,
+              (isOrbitalNavbar ? 'var(--orbital-hud-shadow)' : `0 0 25px ${alphaColor(packageBlue, 0.25)}, inset 0 1px 0 rgba(255,255,255,0.06)`),
             filter: needsFilter ? filterStr : "none",
             transform: `scale(${widgetScale})`,
             transformOrigin: "center",
@@ -2698,6 +2720,7 @@ function NavbarWidget({
             }}
           />
           <div
+            className="better-navbar-sheen"
             aria-hidden="true"
             style={{
               position: "absolute",
@@ -2710,6 +2733,7 @@ function NavbarWidget({
           />
 
           <div
+            className="better-navbar-content"
             style={{
               display: "flex",
               alignItems: "center",
