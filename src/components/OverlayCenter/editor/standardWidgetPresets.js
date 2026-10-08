@@ -1,5 +1,5 @@
 export const STANDARD_BETTER_WIDGET_GEOMETRY = Object.freeze({
-  current_slot: { x: 300, y: 760, width: 1320, height: 290, zIndex: 65 },
+  current_slot: { x: 300, y: 760, width: 1100, height: 240, zIndex: 65 },
   background: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
   tournament: {
     x: 420,

@@ -22,7 +22,7 @@ try {
     const json = (body, status=200) => request.respond({ status, contentType:'application/json', headers:{'access-control-allow-origin':'*'}, body:JSON.stringify(body) });
     if (request.method() === 'OPTIONS') return request.respond({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':request.headers()['access-control-request-headers'] || '*'}});
     if (url.pathname === '/__current-game-test') return request.respond({contentType:'text/html',body:`<html><body style="margin:0;padding:20px;background:#071019;font-family:Arial"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>`});
-    if (url.pathname === '/rest/v1/slots') return json(url.searchParams.get('name')?.startsWith('ilike.') ? [slot] : slot);
+    if (url.pathname === '/rest/v1/slots') return json(url.searchParams.get('name')?.startsWith('ilike.') ? [slot] : { ...slot, name: url.searchParams.get('name')?.replace(/^eq\./, '') || slot.name });
     if (url.pathname === '/rest/v1/user_slot_records') return json([legacy]);
     if (url.pathname === '/rest/v1/bonus_hunt_history') return json([]);
     if (url.pathname === '/rest/v1/user_slot_results') {
@@ -84,6 +84,7 @@ try {
       mount:()=>root.render(React.createElement(MemoryRouter,null,React.createElement(AuthProvider,null,React.createElement(App)))),
       obs:()=>root.render(React.createElement('div',{style:{height:290,width:1320}},registry.renderBetterWidgetInstance({instance:registry.createBetterInstance('current_slot'),layout:{instances:[]},userId:owner,publicOverlayId:'bo_'+'a'.repeat(48),liveWidgets:[{id:'source',widget_type:'current_slot',config:JSON.parse(localStorage.getItem('test-current-config'))}],runtime:'obs'}))),
       styled:()=>root.render(React.createElement('div',{style:{height:290,width:1320}},React.createElement(Widget,{widgetId:'appearance-test',userId:owner,config:styledConfig}))),
+      layout:(width,height,config={},runtime='editor')=>root.render(React.createElement('div',{style:{width,height}},registry.renderBetterWidgetInstance({instance:registry.createBetterInstance('current_slot',{width,height,config:{slot,...config}}),layout:{instances:[]},userId:owner,runtime}))),
       unmount:()=>root.render(null),
     };
     window.currentTest.mount();
@@ -150,8 +151,56 @@ try {
       assert.equal(state.config.__appearanceExplicitSubElements.slotImage.imageUrl,'/favicon.ico','Theme preserves artwork');
     }
   }
-  assert.equal(palette.length,14);
+  assert.ok(palette.length >= 14);
+  for (const runtime of ['editor','obs']) {
+    for (const [width,height] of [[1100,240],[2048,446],[1320,290],[680,140],[1920,420],[1100,180],[680,400]]) {
+      await page.setViewport({width:Math.max(1440,width+40),height:1000,deviceScaleFactor:1});
+      await page.evaluate(({width,height,runtime})=>window.currentTest.layout(width,height,{},runtime),{width,height,runtime});
+      await page.waitForFunction(()=>document.querySelector('.cg-widget')?.clientWidth > 0);
+      const dimensions=await page.evaluate(()=>{
+        const widget=document.querySelector('.cg-widget'),box=widget.getBoundingClientRect();
+        const info=[...document.querySelectorAll('.cg-info .cg-stat')].map(e=>e.getBoundingClientRect().toJSON());
+        const records=[...document.querySelectorAll('.cg-records .cg-stat')].map(e=>e.getBoundingClientRect().toJSON());
+        const style=selector=>getComputedStyle(widget.querySelector(selector));
+        const cover=widget.querySelector('.cg-cover').getBoundingClientRect();
+        return {cover:{width:cover.width,height:cover.height},fonts:{title:parseFloat(style('h2').fontSize),heading:parseFloat(style('h3').fontSize),label:parseFloat(style('.cg-stat > span').fontSize),value:parseFloat(style('.cg-stat strong').fontSize),provider:parseFloat(style('.cg-name-block p').fontSize),badge:parseFloat(style('.cg-current').fontSize)},icon:parseFloat(style('h3 svg').width),gap:parseFloat(style('.cg-info').rowGap),radius:parseFloat(style('.cg-stat').borderRadius),padding:parseFloat(style('.cg-stat').paddingLeft),width:box.width,height:box.height,info,records,overflow:[...widget.querySelectorAll('.cg-stat,.cg-name-block,h3')].filter(e=>e.scrollWidth>e.clientWidth+1 || e.scrollHeight>e.clientHeight+1).map(e=>e.className || e.tagName),title:parseFloat(getComputedStyle(widget.querySelector('h2')).fontSize)};
+      });
+      const scale=Math.min(width/1100,height/240);
+      const near=(actual,expected,label)=>assert.ok(Math.abs(actual-expected)<.1,label+': '+actual+' expected '+expected);
+      near(dimensions.width,1100*scale,'Reference width');
+      near(dimensions.height,240*scale,'Reference height');
+      near(dimensions.cover.width,135*scale,'Artwork width');
+      near(dimensions.cover.height,205*scale,'Artwork height');
+      for(const [key,value] of Object.entries({title:27,heading:18,label:15,value:19,provider:12,badge:13})) near(dimensions.fonts[key],value*scale,key);
+      near(dimensions.icon,23*scale,'Header icon');
+      near(dimensions.gap,6*scale,'Row gap');
+      near(dimensions.radius,10*scale,'Card radius');
+      near(dimensions.padding,12*scale,'Card horizontal padding');
+      dimensions.info.forEach(row=>near(row.height,51*scale,'Card height'));
+      assert.deepEqual(dimensions.overflow,[],runtime+' overflow at '+width+'x'+height);
+      dimensions.info.forEach((row,i)=>{assert.ok(Math.abs(row.y-dimensions.records[i].y)<1);assert.ok(Math.abs(row.height-dimensions.records[i].height)<1);});
+      if((width===1100 && height===240) || width===2048) {
+        await (await page.$('.cg-viewport')).screenshot({path:'.codex-dev/current-slot-compact-'+width+'-'+runtime+'.png'});
+        if(width===1100) {
+          await page.setViewport({width:1440,height:1000,deviceScaleFactor:2});
+          const dpiSize=await page.$eval('.cg-widget',e=>({width:e.getBoundingClientRect().width,title:getComputedStyle(e.querySelector('h2')).fontSize}));
+          near(dpiSize.width,1100,'High DPI preserves CSS size');
+          near(parseFloat(dpiSize.title),27,'High DPI preserves font size');
+          await page.setViewport({width:1440,height:1000,deviceScaleFactor:1});
+        }
+      }
+    }
+    // Long names pass through the same config and catalog lookup as the normal selection.
+    await page.evaluate(runtime=>window.currentTest.layout(1100,240,{slot:{name:'Gates of Olympus 1000',provider:'Pragmatic Play'}},runtime),runtime);
+    await page.waitForFunction(()=>document.querySelector('.cg-name-block h2')?.textContent==='Gates of Olympus 1000');
+    const longTitle=await page.$eval('.cg-name-block',e=>({width:e.clientWidth,scroll:e.scrollWidth,height:e.getBoundingClientRect().height,parent:e.parentElement.getBoundingClientRect().height}));
+    assert.ok(longTitle.scroll<=longTitle.width+1 && longTitle.height<=longTitle.parent);
+    await (await page.$('.cg-widget')).screenshot({path:'.codex-dev/current-slot-long-title-'+runtime+'.png'});
+    await page.evaluate(runtime=>window.currentTest.layout(1100,240,{showArtwork:false,showPersonalRecords:false},runtime),runtime);
+    await page.waitForFunction(()=>!document.querySelector('.cg-records') && !document.querySelector('.cg-cover'));
+    assert.equal(await page.$$eval('.cg-widget > .cg-info',els=>els.length),1);
+  }
   assert.deepEqual(errors,[]);
-  console.log('All 14 Current Game themes passed through the real picker in editor and OBS, including saved element overrides and reload.');
+  console.log('All registered Current Game themes passed through the real picker in editor and OBS, including saved element overrides and reload.');
   console.log('Current Game browser checks passed: real catalog artwork, selection, shared records, payment retry, zero payout, reload, seven widths, OBS and independent appearance.');
 } finally {await browser.close();}

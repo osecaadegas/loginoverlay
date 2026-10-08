@@ -1,8 +1,8 @@
 export const CURRENT_SLOT_DEFAULTS = Object.freeze({
   displayStyle: 'immersive_current', currency: '€', slot: null,
-  artworkBySlot: {}, accentColor: '#28edac', backgroundColor: '#060d10',
-  panelColor: '#010806', badgeColor: '#06231b', coverColor: '#050b0d',
-  textColor: '#f3f6f5', mutedColor: '#94a6aa', borderColor: '#32695c',
+  artworkBySlot: {}, accentColor: '#00e6ae', backgroundColor: '#080d0f',
+  panelColor: '#050b0d', badgeColor: '#06231b', coverColor: '#050b0d',
+  textColor: '#f5f7fa', mutedColor: '#8ba8b5', borderColor: '#134d44',
   fontFamily: "'Rajdhani', sans-serif", backgroundOpacity: 0.24,
   showArtwork: true, showBackdrop: true, showPersonalRecords: true,
 });

@@ -1,0 +1,177 @@
+/* Orbital module construction. No viewport geometry, positioning state or
+   runtime data is changed. Surface decorations never intercept input. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] {
+  --orbital-frame-depth: 8px;
+  --orbital-shell: linear-gradient(180deg,#102942,#06101c 42%,#091827 80%,#203e54);
+  --orbital-reflection: linear-gradient(165deg,#ffffff0e,transparent 32%,#0004);
+  --orbital-glass: linear-gradient(180deg,#091b2eee,#030c17f5);
+  --orbital-recess: linear-gradient(180deg,#020912ed,#071625e8);
+  --orbital-header: linear-gradient(180deg,#173249,#071522 75%,#040c16);
+  --orbital-hud-shadow: inset 0 1px 0 #c3efff40,inset 0 0 0 3px #020711,inset 0 0 0 4px #35566b,inset 0 0 0 7px #08131f,inset 0 -14px 24px #0008;
+  color: var(--orbital-text);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-panel, .cg-widget, .rtp-stats-bar, .slot-bingo-widget, .better-slideshow-frame, .ov-chat-widget, .connect-four-board, .bet-widget, .tw-root, .better-shoutout-card, [data-widget-element="container"], [data-widget-element="widgetBackground"]) {
+  position: relative; isolation: isolate;
+  background-image: var(--orbital-reflection),var(--orbital-glass);
+  border-color: #42718b; border-radius: 12px;
+  box-shadow: var(--orbital-hud-shadow);
+}
+/* A masked metal bezel leaves the entire content aperture transparent.
+   Corner lamps and short light strips are embedded in the metal, not a halo. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-panel, .cg-widget, .rtp-stats-bar, .slot-bingo-widget, .better-slideshow-frame, .ov-chat-widget, .connect-four-board, .bet-widget, .tw-root, .better-shoutout-card, [data-widget-element="container"], [data-widget-element="widgetBackground"])::after {
+  content: ''; width: auto; height: auto; margin: 0; transform: none; filter: none; animation: none; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  opacity: 1; border: 0; box-sizing: border-box; border-radius: inherit; padding: var(--orbital-frame-depth);
+  background:
+    linear-gradient(var(--orbital-light),var(--orbital-accent)) 12px 3px / 32px 2px no-repeat,
+    linear-gradient(var(--orbital-light),var(--orbital-accent)) calc(100% - 12px) calc(100% - 3px) / 32px 2px no-repeat,
+    linear-gradient(135deg,#8ae8ff 0 2px,#148eff88 3px 5px,transparent 6px) top left / 22px 22px no-repeat,
+    linear-gradient(315deg,#8ae8ff 0 2px,#148eff88 3px 5px,transparent 6px) bottom right / 22px 22px no-repeat,
+    repeating-linear-gradient(90deg,transparent 0 7px,#020711 7px 9px) center top / 52px 4px no-repeat,
+    var(--orbital-shell);
+  mask: linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  box-shadow: inset 0 0 0 1px #8ae8ff55,inset 0 0 0 3px #020711,inset 0 0 0 4px #27c7ff66;
+}
+/* Integrated header trays retain the widget's own content and icons. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is([data-widget-element="header"], [data-appearance-part="headerContainer"], .better-gw-header, .slot-bingo-widget__header, .cg-info h3, .cg-records h3, .better-shoutout-header) {
+  background-image: var(--orbital-header);
+  border-bottom: 1px solid #27c7ff70;
+  box-shadow: inset 0 1px 0 #9deaff24,inset 0 -3px 0 #02071188;
+  text-transform: uppercase; letter-spacing: .09em;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is([data-widget-element="statValue"], [data-better-element="statValue"], .cg-stat strong, .rtp-stats-value) { font-variant-numeric: tabular-nums; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is([data-widget-element="statLabel"], [data-better-element="statLabel"]) { letter-spacing: .08em; font-weight: 600; }
+/* Bonus Hunt: one housing, inset readouts, then a database card stack. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="bonus_hunt"] .better-hunt-panel {
+  background-image: linear-gradient(90deg,#1b405e40,transparent 14px calc(100% - 14px),#1b405e40),var(--orbital-glass);
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-stat,.better-hunt-main-stat) {
+  background-image: var(--orbital-recess); border-color: #24465c;
+  border-radius: 5px; box-shadow: inset 0 2px 5px #000b,inset 0 -1px 0 #9deaff14;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-main-stat { display: grid; grid-template-columns: 1fr; gap: 3px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-main-stat-label,.better-hunt-stat-label) { font-weight: 600; letter-spacing: .08em; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-main-stat strong,.better-hunt-stat strong) { font-weight: 750; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-image-stats-panel,.better-hunt-main-active) {
+  background-image: var(--orbital-reflection),var(--orbital-recess);
+  border-color: #3f8eb0; border-radius: 8px;
+  box-shadow: inset 0 0 0 2px #020711,inset 0 0 0 3px #234a62,0 3px 8px #0005;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-image-stats-art,.better-hunt-main-active-art) { border-right: 2px solid #27c7ff50; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-image-stats-row,.better-hunt-main-active-row) { border-bottom: 1px solid #9deaff13; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-card,.better-hunt-autoscroll-card,.better-hunt-request) {
+  background-image: var(--orbital-recess); border-color: #24465c;
+  border-radius: 6px; box-shadow: inset 0 1px 0 #9deaff16,inset 3px 0 0 #102942;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-card--center { border-color: var(--orbital-accent); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-list-inner { gap: 8px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-total-head { background-image: var(--orbital-header); border-block: 1px solid #27c7ff35; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-total-head strong { color: var(--orbital-light); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-result-face--best,.better-hunt-result--best) {
+  background-image: linear-gradient(120deg,#2fffa312,transparent 50%),var(--orbital-recess);
+  box-shadow: inset 3px 0 0 var(--orbital-success),inset 0 0 0 1px #2fffa333;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-main-status--opening { color: var(--orbital-light); background: #27c7ff18; border-color: #27c7ff60; }
+/* Current Game: independent image housing and two recessed database bays. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget { --orbital-frame-depth: calc(7 * var(--cg-px)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.cg-info,.cg-records) {
+  background-image: linear-gradient(90deg,#27c7ff0c,transparent 18%);
+  border-color: #387395; box-shadow: inset 2px 0 0 #020711;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.cg-info h3,.cg-records h3) { padding-inline: calc(7 * var(--cg-px)); border-radius: calc(4 * var(--cg-px)); letter-spacing: .04em; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-cover { border-color: #4eb6df; box-shadow: 0 0 0 2px #020711,0 0 0 3px #244a62; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-stat { background-image: var(--orbital-recess); border-color: #294859; box-shadow: inset 0 2px 4px #0008; border-radius: calc(5 * var(--cg-px)); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-records [data-better-element="bestWinValue"] { color: var(--orbital-success); }
+/* Structural beam and telemetry: compact casing with embedded compartments. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type]:is([data-widget-type="navbar"],[data-widget-type="rtp_stats"]) { --orbital-frame-depth: 5px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="navbar"] [data-widget-element="container"] {
+  background-image: linear-gradient(90deg,#19364b99,transparent 25% 75%,#19364b99),var(--orbital-reflection),var(--orbital-glass);
+  border-radius: 8px;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="navbar"] :is([data-widget-element="timer"],[data-widget-element="balance"],[data-widget-element="startValue"],[data-widget-element="responsibleGambling"]) {
+  background-image: var(--orbital-recess); box-shadow: inset 0 2px 5px #000a,0 1px 0 #9deaff24; border-color: #2b5872;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-bar { border-radius: 9px; background-image: var(--orbital-reflection),var(--orbital-header); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-divider { background: linear-gradient(transparent,#27c7ff99,transparent); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-item--bestwin { background-image: var(--orbital-recess); box-shadow: inset 0 2px 5px #0009; border-radius: 6px; }
+/* Prediction terminal: never replace semantic range colours. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="bets"] { --orbital-frame-depth: 5px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="bets"] :is(.bet-card,.bet-bar,[data-widget-element="individualBetCard"]) {
+  background-image: var(--orbital-recess); border-radius: 5px;
+  box-shadow: inset 0 2px 5px #0009,inset 0 -1px 0 #9deaff12;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="bets"] :is(.bet-bar,.bet-card) { --badge-bg: linear-gradient(145deg,var(--accent),var(--accent-2)); }
+/* Observation/communications stack: matching rails and dark glass apertures. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type]:is([data-widget-type="slideshow_frame"],[data-widget-type="chat"],[data-widget-type="giveaway"]) { --orbital-frame-depth: 9px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-slideshow-frame { background-image: var(--orbital-shell); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-slideshow-frame__empty {
+  background: linear-gradient(#07142688,#020711bb),url('/theme-effects/orbital/preview.webp') center/cover;
+  box-shadow: inset 0 0 20px #000b;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .ov-chat-widget {
+  background-image: radial-gradient(circle at 18% 34%,#9deaff18 0 1px,transparent 2px),radial-gradient(circle at 80% 70%,#9deaff18 0 1px,transparent 2px),var(--orbital-glass);
+  background-size: 107px 131px,173px 191px,auto;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] [data-widget-element="message"] { background-image: linear-gradient(100deg,#27c7ff08,transparent 40%); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-gw-metric-panel,[data-widget-element="winnerArea"],[data-widget-element="participantCard"]) {
+  background-image: var(--orbital-recess); border-color: #284c65;
+  box-shadow: inset 0 2px 6px #0008,inset 0 1px 0 #9deaff20;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-gw-result-avatar,.better-shoutout-avatar-wrap) { box-shadow: 0 0 0 3px #020711,0 0 0 4px #27c7ff70,0 0 0 7px #143149; }
+/* Game terminals share the housing, with recessed playfields/match modules. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="tournament"] :is([data-widget-element="matchCard"],.tw-player-row) { background-image: var(--orbital-recess); box-shadow: inset 0 1px 0 #9deaff22,inset 3px 0 0 #24506a; border-radius: 6px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="slot_bingo"] .slot-bingo-widget__square { background-image: var(--orbital-recess); box-shadow: inset 0 2px 6px #0009; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="connect_four"] .connect-four-board { background-image: var(--orbital-reflection),var(--orbital-header); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="raid_shoutout"] :is(.better-shoutout-media,.better-shoutout-footer) { background-image: var(--orbital-recess); box-shadow: inset 0 1px 0 #27c7ff40; }
+/* Event panel: brighter only during a real win; idle panels remain quiet. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-win { background-image: radial-gradient(ellipse at 50% 60%,#27c7ff25,transparent 65%),var(--orbital-glass); box-shadow: inset 0 0 0 4px #071426,inset 0 0 0 5px #27c7ff99; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-win-multi { font-weight: 750; text-shadow: 0 0 18px #27c7ff40; }
+
+/* Machined shoulder plates: brighter bevels confined to the corners and
+   short edge sections. These are painted inside existing widget bounds. */
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-panel,.cg-widget,.rtp-stats-bar,.slot-bingo-widget,.better-slideshow-frame,.ov-chat-widget,.connect-four-board,.bet-widget,.tw-root,[data-widget-element="container"],[data-widget-element="widgetBackground"])::before {
+  content: ''; width: auto; height: auto; margin: 0; transform: none; filter: none; animation: none; position: absolute; inset: 1px; z-index: 6; pointer-events: none;
+  opacity: 1; border: 0; border-radius: inherit;
+  background:
+    linear-gradient(135deg,#91b8d0 0 2px,#20405a 3px 7px,#07121e 8px 11px,#26c9ff 12px 13px,transparent 14px) left top/30px 30px no-repeat,
+    linear-gradient(225deg,#91b8d0 0 2px,#20405a 3px 7px,#07121e 8px 11px,#26c9ff 12px 13px,transparent 14px) right top/30px 30px no-repeat,
+    linear-gradient(45deg,#91b8d0 0 2px,#20405a 3px 7px,#07121e 8px 11px,#26c9ff 12px 13px,transparent 14px) left bottom/30px 30px no-repeat,
+    linear-gradient(315deg,#91b8d0 0 2px,#20405a 3px 7px,#07121e 8px 11px,#26c9ff 12px 13px,transparent 14px) right bottom/30px 30px no-repeat,
+    linear-gradient(180deg,#325975,#081521 65%,#8ae8ff99) center top/18% 5px no-repeat,
+    linear-gradient(180deg,#325975,#081521 65%,#8ae8ff99) center bottom/18% 5px no-repeat;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-stat,.better-hunt-main-stat) { display: grid; grid-template-columns: minmax(0,1fr); justify-items: start; align-content: center; row-gap: 4px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-stat strong,.better-hunt-main-stat strong) { justify-self: end; font-size: 1.15em; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-hunt-main-tier-stat--super,.better-hunt-main-tier-stat--extreme) { display: flex; }
+
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] { font-family: Inter,Arial,sans-serif; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type][data-widget-type="navbar"] :is([data-widget-element="clock"],[data-widget-element="sponsor"],[data-appearance-part="clock"],[data-appearance-part="balance"]) {
+  background-image: var(--orbital-header); box-shadow: inset 0 0 0 2px #020711,inset 0 0 0 3px #25526d; border-radius: 5px;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .rtp-stats-bar :is([data-better-element="statCard"],[data-better-element="personalBest"]) {
+  background-image: var(--orbital-recess); border-radius: 5px; box-shadow: inset 0 1px 0 #9deaff18; border-left-color: #27c7ff66;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-stats-title h3 { font-weight: 750; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-row { border-bottom-color: #27c7ff20; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-row strong { font-weight: 700; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-stats-art::after { background: linear-gradient(90deg,transparent 80%,#02071155); inset: 0; }
+
+/* The environmental aperture has only a narrow perimeter beam. It lives in
+   the existing background source, below gameplay, and is absent when off. */
+.oc-bg-widget--orbital:not([data-orbital-environment="off"]) .orbital-environment::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  border: 5px solid #091827; box-shadow: inset 0 0 0 1px #42718b,inset 0 0 0 3px #020711;
+  background: linear-gradient(135deg,#31526b 0 7px,#071426 8px 14px,transparent 15px) top left/36px 36px no-repeat,
+    linear-gradient(225deg,#31526b 0 7px,#071426 8px 14px,transparent 15px) top right/36px 36px no-repeat,
+    linear-gradient(45deg,#31526b 0 7px,#071426 8px 14px,transparent 15px) bottom left/36px 36px no-repeat,
+    linear-gradient(315deg,#31526b 0 7px,#071426 8px 14px,transparent 15px) bottom right/36px 36px no-repeat;
+}
+
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-stats-title h3 {
+  white-space: normal; overflow-wrap: anywhere; line-height: 1.12; font-size: 1.05em;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-image-stats-copy { gap: 5px; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-result-head { background-image: var(--orbital-header); border-bottom: 1px solid #27c7ff30; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-result-body { background-image: var(--orbital-recess); }
+
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .better-hunt-main-name { font-size: 1.1em; letter-spacing: .08em; font-weight: 750; }

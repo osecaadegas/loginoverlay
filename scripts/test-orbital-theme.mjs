@@ -67,16 +67,17 @@ try {
         const specs = [
           ['background', 0, 0, 1920, 1080, {}],
           ['navbar', 14, 10, 1892, 65, {}],
-          ['bonus_hunt', 14, 88, 340, 975, { orientation: 'mainstream', widgetHeight: 975, showRequests: true, bonuses: [
+          ['bonus_hunt', 14, 88, 340, 975, { sessionState: 'opening', drawerMode: 'contain', drawerAlwaysVisible: false, orientation: 'mainstream', carouselMode: 'imagestats', widgetHeight: 975, showRequests: true, bonuses: [
             { id: '1', slotName: 'Le Vampire', provider: 'Hacksaw Gaming', image: '/player.webp', betSize: .5, payout: 150, opened: true },
+            { id: '3', slotName: 'Gates of Olympus 1000', provider: 'Pragmatic Play', image: '/player.webp', betSize: .5, payout: 50, opened: true },
             { id: '2', slotName: 'Wanted Dead or a Wild', provider: 'Hacksaw Gaming', image: '/player.webp', betSize: .5, opened: false, isSuperBonus: true },
           ] }],
-          ['rtp_stats', 370, 804, 1115, 68, {}],
-          ['current_slot', 370, 886, 1115, 177, { slot: { name: 'Le Vampire', provider: 'Hacksaw Gaming', image: '/player.webp', rtp: 96.51, volatility: 'High', max_win_multiplier: 15000 }, bestWin: 150, bestMultiplier: 300 }],
+          ['rtp_stats', 370, 746, 1115, 68, {}],
+          ['current_slot', 370, 823, 1115, 240, { slot: { name: 'Le Vampire', provider: 'Hacksaw Gaming', image: '/player.webp', rtp: 96.51, volatility: 'High', max_win_multiplier: 15000 }, bestWin: 150, bestMultiplier: 300 }],
           ['slideshow_frame', 1504, 88, 402, 260, { mediaText: '' }],
           ['giveaway', 1504, 366, 402, 230, {}],
           ['chat', 1504, 614, 402, 449, {}],
-          ['bets', 380, 570, 540, 200, { orientation: 'horizontal', layoutMode: 'bars', columns: 2, gameStatus: 'open', options: ['0 - 99x', '100 - 199x', '200 - 299x', '300x+'], bets: { opt_0: 100, opt_1: 50 }, betters: {} }],
+          ['bets', 660, 410, 540, 320, { orientation: 'horizontal', layoutMode: 'bars', columns: 2, gameStatus: 'open', options: ['0 - 99x', '100 - 199x', '200 - 299x', '300x+'], bets: { opt_0: 100, opt_1: 50 }, betters: {} }],
           ['tournament', 0, 0, 1000, 600, {}], ['connect_four', 0, 0, 900, 600, {}],
           ['slot_bingo', 0, 0, 600, 600, {}], ['raid_shoutout', 0, 0, 800, 450, {}],
         ];
@@ -89,7 +90,7 @@ try {
         const scale = single ? Math.min(1, innerWidth / width, innerHeight / height) : innerWidth / 1920;
         this.lastSize = { width, height, scale };
         root.render(h('div', { className: 'orbital-test-canvas', style: { position: 'relative', width, height, transform: `scale(${scale})`, transformOrigin: 'top left' } },
-          ...widgets.map(instance => h('div', { key: instance.instanceId, 'data-effect-target-id': instance.instanceId, style: { position: 'absolute', left: instance.x, top: instance.y, width: instance.width, height: instance.height, zIndex: instance.zIndex } }, registry.renderBetterWidgetInstance({ instance, layout: { instances: widgets }, mode: 'mock', runtime: runtime === 'editor' ? 'editor' : 'obs' }))),
+          ...widgets.map(instance => h('div', { key: instance.instanceId, 'data-effect-target-id': instance.instanceId, style: { position: 'absolute', left: instance.x, top: instance.y, width: instance.width, height: instance.height, zIndex: instance.zIndex } }, registry.renderBetterWidgetInstance({ instance, layout: { instances: widgets }, mode: 'live', runtime: runtime === 'editor' ? 'editor' : 'obs' }))),
           h(FX, { instances: widgets, width, height, singleInstanceId: single ? widgets[0].instanceId : '', runtime }),
         ));
       },
@@ -122,6 +123,7 @@ try {
     assert(bounds.every(box => box.x >= -1 && box.y >= -1 && box.x + box.width <= 1921 && box.y + box.height <= 1081), `effect bounds ${width}`);
     await page.screenshot({ path: `${out}/orbital-${width}.png` });
   }
+  writeFileSync(out+'/dom.json',JSON.stringify(await page.$$eval('[data-colour-theme]',nodes=>nodes.map(root=>({type:root.dataset.widgetType,elements:[...root.querySelectorAll('*')].filter(el=>el.className || el.dataset.widgetElement || el.dataset.appearancePart).map(el=>({tag:el.tagName,class:typeof el.className==='string'?el.className:'',part:el.dataset.widgetElement || el.dataset.appearancePart || el.dataset.betterElement}))}))),null,2));
   const serialized = await page.evaluate(() => {
     const first = window.orbital.widgets;
     const second = window.orbital.normalizeBetterLayout(JSON.parse(JSON.stringify({ instances: first })));
@@ -133,8 +135,17 @@ try {
     await wait();
     assert.equal(await page.$eval('[data-colour-theme]', el => el.dataset.colourTheme), 'orbital', type);
     assert.equal(await page.$$eval('.theme-effects-layer__canvas', nodes => nodes.length), 1, `${type}: single renderer`);
+    if (type !== 'background') {
+      const frames=await page.$$eval('[data-colour-theme="orbital"] *',nodes=>nodes.filter(el=>{
+        const skin=getComputedStyle(el,'::after');
+        return skin.content==='""' && skin.maskComposite.includes('exclude') && skin.pointerEvents==='none';
+      }).length);
+      assert(frames>0,type+': recessed metal frame reaches the actual rendered surface');
+    }
     await page.screenshot({ path: `${out}/widget-${type}.png` });
   }
+  await page.evaluate(() => window.orbital.scene({single:'current_slot',theme:'emerald'})); await wait();
+  assert.equal(await page.$eval('.cg-widget',el=>getComputedStyle(el,'::after').content),'none','Orbital casing never leaks into another theme');
   for (const environment of ['earth_orbit', 'earth_night', 'earth_sunrise', 'deep_space', 'off']) {
     await page.evaluate(environment => window.orbital.scene({ single: 'background', environment, runtime: 'obs-single' }), environment);
     await wait();

@@ -34,7 +34,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const number = value => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
   const money = value => value == null ? '—' : `${c.currency} ${number(value)}`;
   const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)}>{bet > 0 && <small>({money(bet)}) </small>}{value}</strong></div>;
-  return <section className="cg-widget" {...part('container')} style={{ '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) }} aria-label={slot.name ? `Current game: ${slot.name}` : 'Choose a current game'}>
+  return <div className="cg-viewport"><section className="cg-widget" data-records={c.showPersonalRecords ? 'visible' : 'hidden'} {...part('container')} style={{ '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) }} aria-label={slot.name ? `Current game: ${slot.name}` : 'Choose a current game'}>
     {c.showBackdrop && backdrop && !failed[backdrop] && <img className="cg-backdrop" src={backdrop} alt="" onError={() => setFailed(prev => ({ ...prev, [backdrop]: true }))} {...part('backdrop')} style={{ opacity: c.backgroundOpacity, ...subElementStyle(c, 'backdrop', {}) }} />}
     <div className="cg-identity" {...part('identity')}>
       {c.showArtwork && <div className="cg-cover" {...part('coverFrame')}>{cover && !failed[cover] ? <img src={cover} alt={slot.name} onError={() => setFailed(prev => ({ ...prev, [cover]: true }))} {...part('slotImage')} /> : <span>SC</span>}</div>}
@@ -53,5 +53,5 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
       {row('bestMulti', 'X', best?.best_multiplier != null ? `${number(best.best_multiplier)}x` : '—', best?.best_multiplier_bet)}
       {row('averageWin', 'Avg. win', money(best?.average_win))}
     </div>}
-  </section>;
+  </section></div>;
 }

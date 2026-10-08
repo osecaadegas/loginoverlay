@@ -1131,7 +1131,7 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
-  { type: 'current_slot', label: 'Current Game', styleKey: 'displayStyle', styleId: 'immersive_current', icon: '▶', defaultSize: { width: 1320, height: 290 } },
+  { type: 'current_slot', label: 'Current Game', styleKey: 'displayStyle', styleId: 'immersive_current', icon: '▶', defaultSize: { width: 1100, height: 240 } },
   {
     type: "slot_bingo",
     label: "Slot Bingo",
