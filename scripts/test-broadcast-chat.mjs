@@ -31,7 +31,7 @@ try {
     const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
     const { default: ChatWidget } = await import('/src/components/OverlayCenter/widgets/chat/ChatWidget.jsx');
     const { switchChatStyle } = await import('/src/components/OverlayCenter/widgets/chat/chatStyles.js');
-    const { ensureBetterWidgetConfig, BetterWidgetControls } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
+    const { ensureBetterWidgetConfig, BetterWidgetControls, updateBetterChatTypography } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
     const { createBetterInstance, normalizeBetterInstance, renderBetterWidgetInstance } = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
     const { getWidgetStyleElements } = await import('/src/components/OverlayCenter/appearance/v2/widgetAppearanceRegistry.js');
     const { setScopedAppearanceConfigValue } = await import('/src/components/OverlayCenter/appearance/v2/appearanceRouting.js');
@@ -53,7 +53,7 @@ try {
       { username: 'StreamFan', message: 'Kappa great stream!', twitchEmotes: [{ id: '25', indices: [[0, 4]] }] },
     ].map((message, index) => ({ ...message, id: `chat-${index}`, platform: message.twitchEmotes ? 'twitch' : ['twitch', 'youtube', 'kick'][index % 3], avatarUrl: index % 2 ? '/player.webp' : '/streamer.webp' }));
     window.chatTest = {
-      fixtures, switchChatStyle, ensureBetterWidgetConfig, getWidgetStyleElements,
+      fixtures, switchChatStyle, ensureBetterWidgetConfig, getWidgetStyleElements, updateBetterChatTypography,
       scoped(config, elementId, propertyId, value) {
         return setScopedAppearanceConfigValue(config, { widgetType: 'chat', widgetVariant: config.chatStyle, elementId, propertyId }, value);
       },
@@ -128,6 +128,55 @@ try {
   assert(persistence.elements.includes('emptyState') && persistence.elements.includes('avatar'));
   assert(!persistence.elements.includes('platformLegend'));
 
+  const quickTypography = await page.evaluate(() => {
+    const t = window.chatTest;
+    let config = t.ensureBetterWidgetConfig('chat', { chatStyle: 'better_chat', font: 'Arial, sans-serif', fontSize: 12, usernameSize: 11 });
+    config = t.scoped(config, 'container', 'fontFamily', 'Georgia, serif');
+    config = t.scoped(config, 'messageText', 'fontFamily', 'Georgia, serif');
+    config = t.scoped(config, 'messageText', 'fontSize', 10);
+    config = t.scoped(config, 'username', 'fontFamily', 'Georgia, serif');
+    config = t.scoped(config, 'username', 'fontSize', 9);
+    return t.updateBetterChatTypography(config, {
+      font: "Impact, 'Arial Black', sans-serif",
+      fontSize: 16,
+      usernameSize: 13,
+    });
+  });
+  assert.equal(quickTypography.font, "Impact, 'Arial Black', sans-serif");
+  assert.equal(quickTypography.fontSize, 16);
+  assert.equal(quickTypography.usernameSize, 13);
+  assert.equal(quickTypography.__appearanceExplicitSubElements.container.fontFamily, "Impact, 'Arial Black', sans-serif");
+  assert.equal(quickTypography.__appearanceExplicitSubElements.messageText.fontFamily, "Impact, 'Arial Black', sans-serif");
+  assert.equal(quickTypography.__appearanceExplicitSubElements.messageText.fontSize, 16);
+  assert.equal(quickTypography.__appearanceExplicitSubElements.username.fontFamily, "Impact, 'Arial Black', sans-serif");
+  assert.equal(quickTypography.__appearanceExplicitSubElements.username.fontSize, 13);
+  await mount([{ width: 360, height: 720, config: quickTypography }]);
+  const renderedTypography = await page.$eval('[data-case="0"]', host => {
+    const message = host.querySelector('[data-appearance-part="messageText"]');
+    const username = host.querySelector('[data-appearance-part="username"]');
+    return {
+      messageFamily: getComputedStyle(message).fontFamily,
+      messageSize: getComputedStyle(message).fontSize,
+      usernameFamily: getComputedStyle(username).fontFamily,
+      usernameSize: getComputedStyle(username).fontSize,
+    };
+  });
+  assert.match(renderedTypography.messageFamily, /Impact/i);
+  assert.equal(renderedTypography.messageSize, '16px');
+  assert.match(renderedTypography.usernameFamily, /Impact/i);
+  assert.equal(renderedTypography.usernameSize, '13px');
+  for (const runtime of ['editor', 'obs']) {
+    await mount([{ width: 360, height: 720, runtime, config: quickTypography }]);
+    const runtimeTypography = await page.$eval('[data-case="0"]', host => ({
+      messageFamily: getComputedStyle(host.querySelector('[data-appearance-part="messageText"]')).fontFamily,
+      messageSize: getComputedStyle(host.querySelector('[data-appearance-part="messageText"]')).fontSize,
+      usernameSize: getComputedStyle(host.querySelector('[data-appearance-part="username"]')).fontSize,
+    }));
+    assert.match(runtimeTypography.messageFamily, /Impact/i, `${runtime}: saved message font`);
+    assert.equal(runtimeTypography.messageSize, '16px', `${runtime}: saved message size`);
+    assert.equal(runtimeTypography.usernameSize, '13px', `${runtime}: saved username size`);
+  }
+
   const layouts = [[218, 457], [360, 720], [720, 220], [150, 150], [420, 360], [900, 900]];
   for (const flow of ['bottom-to-top', 'top-to-bottom']) {
     await mount(layouts.map(([width, height]) => ({ width, height, config: { flow, entry: flow === 'top-to-bottom' ? 'top' : 'bottom' } })));
@@ -158,6 +207,40 @@ try {
     assert.equal(await page.evaluate(() => window.chatTest.lastConfig.chatStyle), 'broadcast_chat');
     assert(await page.$('.ov-chat-widget--broadcast_chat'));
   }
+  await mount([{ width: 360, height: 720, controls: 'simple', config: {
+    chatStyle: 'better_chat',
+    __appearanceExplicitSubElements: {
+      container: { fontFamily: 'Georgia, serif' },
+      messageText: { fontFamily: 'Georgia, serif', fontSize: 10 },
+      username: { fontFamily: 'Georgia, serif', fontSize: 9 },
+    },
+  } }]);
+  const typographyControl = async (label, value) => {
+    const handle = await page.evaluateHandle(labelText => [...document.querySelectorAll('aside label')]
+      .find(label => label.textContent.includes(labelText))?.querySelector('select,input[type="range"]'), label);
+    const element = handle.asElement();
+    assert(element, `${label}: control missing`);
+    if (await element.evaluate(node => node.tagName === 'SELECT')) await element.select(String(value));
+    else await element.evaluate((node, nextValue) => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      setter.call(node, String(nextValue));
+      node.dispatchEvent(new Event('change', { bubbles: true }));
+    }, value);
+    await settle();
+  };
+  await typographyControl('Message font', "Impact, 'Arial Black', sans-serif");
+  await typographyControl('Message size', 16);
+  await typographyControl('Username size', 13);
+  const controlTypography = await page.$eval('[data-case="0"]', host => ({
+    messageFamily: getComputedStyle(host.querySelector('[data-appearance-part="messageText"]')).fontFamily,
+    messageSize: getComputedStyle(host.querySelector('[data-appearance-part="messageText"]')).fontSize,
+    usernameFamily: getComputedStyle(host.querySelector('[data-appearance-part="username"]')).fontFamily,
+    usernameSize: getComputedStyle(host.querySelector('[data-appearance-part="username"]')).fontSize,
+  }));
+  assert.match(controlTypography.messageFamily, /Impact/i);
+  assert.equal(controlTypography.messageSize, '16px');
+  assert.match(controlTypography.usernameFamily, /Impact/i);
+  assert.equal(controlTypography.usernameSize, '13px');
   await mount([{ width: 360, height: 720, controls: 'legacy', config: { chatStyle: 'better_chat' } }]);
   await page.evaluate(() => [...document.querySelectorAll('aside button')].find(el => el.textContent.trim() === 'Broadcast').click());
   await settle();

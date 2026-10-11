@@ -77,6 +77,7 @@ import {
   patchThemeEffectsConfig,
 } from "../../../effects/ThemeEffects";
 import { getWidgetStyleOptionsForQuickEditor } from "../appearance/v2/widgetAppearanceRegistry";
+import { setScopedAppearanceConfigValue } from "../appearance/v2/appearanceRouting";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
 import {
@@ -3170,9 +3171,40 @@ export function ChatGiveawayAppearanceControls({ config, onChange, allWidgets = 
   </div>;
 }
 
+export function updateBetterChatTypography(config = {}, patch = {}) {
+  let next = { ...config, ...patch };
+  const route = (elementId, propertyId, value) => {
+    next = setScopedAppearanceConfigValue(
+      next,
+      {
+        widgetType: "chat",
+        widgetVariant: next.chatStyle || "better_chat",
+        elementId,
+        propertyId,
+      },
+      value,
+    );
+  };
+
+  if (Object.hasOwn(patch, "font")) {
+    route("container", "fontFamily", patch.font);
+    route("messageText", "fontFamily", patch.font);
+    route("username", "fontFamily", patch.font);
+  }
+  if (Object.hasOwn(patch, "fontSize")) {
+    route("messageText", "fontSize", patch.fontSize);
+  }
+  if (Object.hasOwn(patch, "usernameSize")) {
+    route("username", "fontSize", patch.usernameSize);
+  }
+  return next;
+}
+
 function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidgets }) {
   const c = ensureBetterWidgetConfig("chat", config);
   const set = (patch) => onChange({ ...c, ...patch });
+  const setTypography = (patch) =>
+    onChange(updateBetterChatTypography(c, patch));
   const commitSize = (patch) => {
     const next = ensureBetterWidgetConfig("chat", { ...c, ...patch });
     const width = clampNumber(
@@ -3304,7 +3336,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             label="Message font"
             value={c.font}
             options={CHAT_FONTS}
-            onChange={(font) => set({ font })}
+            onChange={(font) => setTypography({ font })}
           />
           <SliderRow
             label="Message size"
@@ -3312,7 +3344,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             min={9}
             max={20}
             unit="px"
-            onChange={(fontSize) => set({ fontSize })}
+            onChange={(fontSize) => setTypography({ fontSize })}
           />
           <SliderRow
             label="Username size"
@@ -3320,7 +3352,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             min={9}
             max={20}
             unit="px"
-            onChange={(usernameSize) => set({ usernameSize })}
+            onChange={(usernameSize) => setTypography({ usernameSize })}
           />
         </Section>
         <Section
