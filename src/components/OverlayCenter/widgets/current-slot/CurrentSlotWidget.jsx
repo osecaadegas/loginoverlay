@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Award, Info, Play } from 'lucide-react';
 import { supabase } from '../../../../config/supabaseClient';
 import useSlotPersonalBest from '../../../../hooks/useSlotPersonalBest';
+import { getProviderImage } from '../../../../utils/gameProviders';
 import { appearanceAttrs, subElementStyle, subValue } from '../shared/appearanceStyles';
 import { currentSlotConfig, currentSlotIdentity, safeArtworkUrl } from './currentSlotModel';
 import './CurrentSlotWidget.css';
@@ -26,21 +27,28 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const slot = useMemo(() => ({ ...selected, ...(catalog?.key === key ? catalog.data : {}) }), [key, catalog, selected.image, selected.rtp, selected.volatility, selected.max_win_multiplier]);
   const best = useSlotPersonalBest({ userId: previewOnly ? null : userId, slot, publicOverlayId: previewOnly ? undefined : publicOverlayId, overlayToken: previewOnly ? undefined : overlayToken });
   const art = c.artworkBySlot?.[slot.id] || {};
+  const isArctic = String(c.colourTheme || '').replace(/^theme_/, '') === 'arctic';
   const cover = safeArtworkUrl(subValue(c, 'slotImage', 'imageUrl', art.coverUrl || slot.image || ''));
   const backdrop = safeArtworkUrl(subValue(c, 'backdrop', 'imageUrl', art.backgroundUrl || slot.image || ''));
   const logo = safeArtworkUrl(subValue(c, 'titleImage', 'imageUrl', art.titleUrl || ''));
+  const providerLogo = isArctic ? safeArtworkUrl(getProviderImage(slot.provider) || '') : '';
   const [failed, setFailed] = useState({});
+  const showProviderLogo = providerLogo && !failed[providerLogo];
   const part = elementId => ({ ...appearanceAttrs({ config: c, widgetId, widgetType: 'current_slot', elementId }), style: subElementStyle(c, elementId, {}) });
   const number = value => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
   const money = value => value == null ? '—' : `${c.currency} ${number(value)}`;
-  const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)}>{bet > 0 && <small>({money(bet)}) </small>}{value}</strong></div>;
+  const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)}>{bet > 0 && <small className="cg-record-bet">({money(bet)}) </small>}{value}</strong></div>;
   return <div className="cg-viewport"><section className="cg-widget" data-records={c.showPersonalRecords ? 'visible' : 'hidden'} {...part('container')} style={{ '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) }} aria-label={slot.name ? `Current game: ${slot.name}` : 'Choose a current game'}>
     {c.showBackdrop && backdrop && !failed[backdrop] && <img className="cg-backdrop" src={backdrop} alt="" onError={() => setFailed(prev => ({ ...prev, [backdrop]: true }))} {...part('backdrop')} style={{ opacity: c.backgroundOpacity, ...subElementStyle(c, 'backdrop', {}) }} />}
     <div className="cg-identity" {...part('identity')}>
       {c.showArtwork && <div className="cg-cover" {...part('coverFrame')}>{cover && !failed[cover] ? <img src={cover} alt={slot.name} onError={() => setFailed(prev => ({ ...prev, [cover]: true }))} {...part('slotImage')} /> : <span>SC</span>}</div>}
       <div className="cg-name-block"><span className="cg-current" {...part('badge')}><Play aria-hidden="true" /> Current game</span>
         {logo && !failed[logo] ? <img className="cg-title-art" src={logo} alt={slot.name} onError={() => setFailed(prev => ({ ...prev, [logo]: true }))} {...part('titleImage')} /> : <h2 {...part('slotTitle')}>{slot.name || 'Select a slot'}</h2>}
-        <p {...part('provider')}>{slot.provider || 'Your next game, on screen'}</p>
+        <p className={showProviderLogo ? 'cg-provider cg-provider--logo' : 'cg-provider'} {...part('provider')}>
+          {showProviderLogo
+            ? <img className="cg-provider-logo" src={providerLogo} alt={slot.provider || 'Provider'} onError={() => setFailed(prev => ({ ...prev, [providerLogo]: true }))} />
+            : slot.provider || 'Your next game, on screen'}
+        </p>
       </div>
     </div>
     <div className="cg-info" {...part('info')}><h3 {...part('infoTitle')}><Info aria-hidden="true" /> Info</h3>

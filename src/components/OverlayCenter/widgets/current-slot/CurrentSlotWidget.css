@@ -59,6 +59,7 @@
   margin: 0; color: var(--cg-muted); text-transform: uppercase; letter-spacing: .12em;
   font-size: calc(12 * var(--cg-px)); line-height: 1.4; overflow-wrap: anywhere;
 }
+.cg-provider-logo { display: block; width: auto; max-width: 100%; height: auto; object-fit: contain; object-position: left center; }
 .cg-info,.cg-records {
   min-width: 0; min-height: 0; padding-left: calc(20 * var(--cg-px));
   border-left: calc(1 * var(--cg-px)) solid color-mix(in srgb,var(--cg-border) 65%,transparent);
@@ -90,6 +91,28 @@
   font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
 }
 .cg-stat small { display: inline-block; margin-inline-end: .35em; font-size: .65em; font-weight: 500; white-space: nowrap; }
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-current {
+  position: relative; top: calc(-8 * var(--cg-px));
+  padding: calc(5 * var(--cg-px)) calc(9 * var(--cg-px));
+  font-size: calc(16 * var(--cg-px)); font-weight: 700;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-current svg {
+  width: calc(16 * var(--cg-px)); height: calc(16 * var(--cg-px));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-name-block h2 {
+  margin-top: calc(7 * var(--cg-px));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-provider--logo {
+  min-height: calc(24 * var(--cg-px)); display: flex; align-items: center;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-provider-logo {
+  width: auto; max-width: calc(112 * var(--cg-px)); height: calc(24 * var(--cg-px));
+  filter: brightness(0) invert(1) drop-shadow(0 0 calc(4 * var(--cg-px)) rgba(132, 224, 247, .28));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-record-bet {
+  margin-inline-end: .42em; color: #d9f6ff; font-size: .82em; font-weight: 700;
+  letter-spacing: .01em; text-shadow: 0 1px 2px rgba(0, 4, 10, .9);
+}
 .cg-info [data-better-element="volatilityValue"] { text-transform: uppercase; }
 .cg-records strong, .cg-info .cg-stat:first-of-type strong { color: var(--cg-accent); }
 .cg-page { min-width: 0; display: grid; gap: 24px; color: #e6edf6; }
