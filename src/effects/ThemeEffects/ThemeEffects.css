@@ -705,8 +705,147 @@
   text-shadow: 0 1px 3px #010912;
 }
 
+/* Current Slot and Bets share the same carved-ice shell as the surrounding
+   Arctic modules. The frost artwork stays on the frame, away from live text. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-widget {
+  border-color: rgba(203, 242, 251, .68) !important;
+  background-color: rgba(3, 15, 25, .96) !important;
+  background-image:
+    linear-gradient(180deg, rgba(235, 253, 255, .18), transparent 15%, rgba(0, 7, 15, .34) 76%, rgba(117, 190, 210, .1)),
+    radial-gradient(ellipse at 18% 0%, rgba(151, 226, 244, .18), transparent 38%),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, cover, 420px 320px !important;
+  background-position: center, center, 47px 31px !important;
+  box-shadow:
+    0 0 0 calc(1 * var(--cg-px)) rgba(1, 7, 14, .92),
+    0 calc(8 * var(--cg-px)) calc(24 * var(--cg-px)) rgba(0, 3, 8, .52),
+    inset 0 calc(2 * var(--cg-px)) calc(1 * var(--cg-px)) rgba(239, 253, 255, .48),
+    inset 0 calc(-5 * var(--cg-px)) calc(9 * var(--cg-px)) rgba(0, 5, 12, .72),
+    inset 0 0 calc(22 * var(--cg-px)) rgba(132, 213, 234, .11) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-widget::before {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  border-radius: inherit;
+  background: url("/theme-effects/ice/frost-edge.png") center / 100% 100% no-repeat;
+  content: "";
+  opacity: .62;
+  pointer-events: none;
+  filter: drop-shadow(0 0 calc(4 * var(--cg-px)) rgba(180, 235, 248, .24));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] :is(.cg-info, .cg-records) {
+  border-left-color: rgba(190, 232, 243, .44);
+  box-shadow: calc(-2 * var(--cg-px)) 0 calc(7 * var(--cg-px)) rgba(115, 207, 232, .07);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-stat {
+  border-color: rgba(161, 220, 235, .38);
+  background-color: rgba(3, 17, 28, .9);
+  background-image:
+    linear-gradient(180deg, rgba(229, 250, 255, .12), transparent 27%, rgba(0, 5, 12, .24)),
+    url("/theme-effects/ice/frozen-glass.webp");
+  background-size: cover, 210px 170px;
+  box-shadow:
+    inset 0 1px 0 rgba(239, 253, 255, .19),
+    inset 0 -5px 10px rgba(0, 4, 10, .45),
+    0 2px 5px rgba(0, 3, 8, .24);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-current {
+  border-color: rgba(200, 239, 248, .54);
+  background-image:
+    linear-gradient(180deg, rgba(231, 252, 255, .18), rgba(5, 29, 42, .84)),
+    url("/theme-effects/ice/frozen-glass.webp");
+  background-size: cover, 170px 120px;
+  box-shadow: inset 0 1px 0 rgba(244, 254, 255, .28), inset 0 -3px 6px rgba(0, 5, 12, .48);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-cover {
+  position: relative;
+  border-color: rgba(207, 244, 251, .72);
+  box-shadow:
+    0 0 0 calc(2 * var(--cg-px)) rgba(4, 20, 31, .9),
+    0 0 calc(10 * var(--cg-px)) rgba(153, 225, 243, .2),
+    inset 0 0 calc(10 * var(--cg-px)) rgba(0, 4, 10, .82);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-cover::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border-radius: inherit;
+  background: url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat;
+  content: "";
+  opacity: .48;
+  pointer-events: none;
+}
+
 /* Bets uses the same frozen-slab material as the rest of the Arctic suite.
    The reading zones remain dark and opaque enough for small OBS sources. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-ov {
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(190, 233, 244, .68) !important;
+  background-color: rgba(3, 15, 25, .96) !important;
+  background-image:
+    linear-gradient(180deg, rgba(232, 252, 255, .17), transparent 18%, rgba(0, 6, 14, .42) 82%),
+    radial-gradient(ellipse at 16% 0%, rgba(139, 218, 239, .16), transparent 42%),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, cover, 357px 283px !important;
+  background-position: center, center, 73px 41px !important;
+  box-shadow:
+    0 0 0 1px rgba(1, 7, 14, .92),
+    inset 0 2px 1px rgba(239, 253, 255, .44),
+    inset 0 -10px 20px rgba(0, 4, 11, .66),
+    inset 0 0 17px rgba(119, 205, 228, .1),
+    0 7px 18px rgba(0, 3, 8, .48) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-ov::before {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  border-radius: inherit;
+  background: url("/theme-effects/ice/frost-edge.png") center / 100% 100% no-repeat !important;
+  content: "";
+  opacity: .68;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(180, 235, 248, .22));
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-ov::after {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  right: 2%;
+  left: 2%;
+  height: 12px;
+  background: url("/theme-effects/ice/icicles.png") top center / 100% 100% no-repeat;
+  content: "";
+  opacity: .38;
+  pointer-events: none;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-ov__header {
+  border-bottom-color: rgba(188, 232, 243, .36) !important;
+  background-color: rgba(5, 23, 35, .82) !important;
+  background-image: linear-gradient(180deg, rgba(235, 252, 255, .14), rgba(5, 24, 37, .62)), url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: cover, 230px 145px !important;
+  box-shadow: inset 0 1px 0 rgba(242, 254, 255, .2), inset 0 -4px 8px rgba(0, 5, 12, .4);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
+  :is(.bets-ov__card, .bets-ov__row, .bets-ov__stat) {
+  border-color: rgba(151, 211, 228, .38) !important;
+  background-color: rgba(4, 18, 29, .9) !important;
+  background-image:
+    linear-gradient(155deg, rgba(43, 80, 96, .5), rgba(2, 12, 21, .92)),
+    url("/theme-effects/ice/frost-corners.png"),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, 100% 100%, 243px 197px !important;
+  background-blend-mode: normal, screen, normal !important;
+  box-shadow: inset 0 1px 0 rgba(235, 252, 255, .22), inset 0 -5px 10px rgba(0, 4, 11, .46), 0 2px 5px rgba(0, 3, 8, .22) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-ov--compact-scoreboard .bets-ov__card {
+  border-left-color: var(--opt-color, var(--bets-accent)) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bets-ov__status {
+  border-color: rgba(210, 243, 250, .62) !important;
+  box-shadow: inset 0 1px 0 rgba(247, 255, 255, .2), 0 0 7px rgba(130, 214, 236, .14);
+}
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bet-widget {
   border-color: rgba(158, 218, 235, .5) !important;
   background-color: rgba(3, 15, 25, .94) !important;
@@ -718,7 +857,34 @@
   background-size: cover, cover, 100% 100%, 357px 283px !important;
   background-position: center, center, center, 73px 41px !important;
   background-blend-mode: screen, screen, screen, normal;
-  box-shadow: inset 0 1px 0 rgba(239, 253, 255, .36), inset 0 -12px 22px rgba(0, 4, 11, .62), inset 0 0 19px rgba(119, 205, 228, .08), 0 7px 18px rgba(0, 3, 8, .46) !important;
+  box-shadow: 0 0 0 1px rgba(1, 7, 14, .92), inset 0 2px 1px rgba(239, 253, 255, .46), inset 0 -12px 22px rgba(0, 4, 11, .68), inset 0 0 19px rgba(119, 205, 228, .11), 0 7px 18px rgba(0, 3, 8, .5) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bet-widget::before {
+  z-index: 5;
+  inset: 0;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: inherit;
+  background: url("/theme-effects/ice/frost-edge.png") center / 100% 100% no-repeat;
+  opacity: .7;
+  filter: drop-shadow(0 0 4px rgba(180, 235, 248, .22));
+  pointer-events: none;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .bet-widget::after {
+  z-index: 5;
+  top: 0;
+  right: 2%;
+  bottom: auto;
+  left: 2%;
+  width: 96%;
+  height: 15px;
+  border: 0;
+  background: url("/theme-effects/ice/icicles.png") top center / 100% 100% no-repeat;
+  content: "";
+  opacity: .42;
+  filter: drop-shadow(0 2px 3px rgba(110, 205, 232, .2));
+  pointer-events: none;
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
   :is(.widget-header, .event-meta, .bets-grid-heading) {
@@ -726,13 +892,22 @@
   color: #eff9fc;
   text-shadow: 0 1px 3px #010912;
 }
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] .widget-header {
+  margin: -4px -4px 4px;
+  border-bottom: 1px solid rgba(180, 229, 242, .25);
+  border-radius: 5px 5px 2px 2px;
+  padding: 4px 7px 7px;
+  background: linear-gradient(180deg, rgba(221, 248, 254, .13), rgba(7, 27, 40, .32));
+  box-shadow: inset 0 1px 0 rgba(240, 253, 255, .18), 0 3px 8px rgba(0, 5, 12, .2);
+}
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
   :is(.meta-item, .bet-option, .bet-bar) {
   border-color: rgba(143, 202, 220, .31) !important;
   background-color: rgba(4, 18, 29, .88) !important;
-  background-image: linear-gradient(155deg, rgba(37, 72, 87, .48), rgba(2, 12, 21, .91)), url("/theme-effects/ice/ice-glass.webp") !important;
-  background-size: cover, 243px 197px !important;
-  box-shadow: inset 0 1px 0 rgba(226, 249, 255, .16), inset 0 -6px 12px rgba(0, 4, 11, .42) !important;
+  background-image: linear-gradient(155deg, rgba(45, 83, 98, .52), rgba(2, 12, 21, .92)), url("/theme-effects/ice/frost-corners.png"), url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, 100% 100%, 243px 197px !important;
+  background-blend-mode: normal, screen, normal !important;
+  box-shadow: inset 0 1px 0 rgba(235, 252, 255, .24), inset 0 -6px 12px rgba(0, 4, 11, .48), 0 2px 5px rgba(0, 3, 8, .24) !important;
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"]
   :is(.bet-option, .bet-bar):nth-child(even) {
