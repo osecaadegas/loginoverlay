@@ -3278,7 +3278,11 @@ export function BetterBonusHuntStyle({
   const carouselMode = carouselModes.includes(c.carouselMode)
     ? c.carouselMode
     : "3d";
-  const drawerAlwaysVisible = c.drawerAlwaysVisible === true;
+  // Arctic Mainstream reserves the footer as a permanent results terminal.
+  // Other themes retain the user's reveal timing unless explicitly pinned.
+  const drawerAlwaysVisible =
+    c.drawerAlwaysVisible === true ||
+    (arcticTierEffects && orientation === "mainstream");
   const configuredDrawerMode = c.drawerMode === "expand" ? "expand" : "contain";
   const drawerMode = drawerAlwaysVisible ? "expand" : configuredDrawerMode;
   const drawerRevealSeconds = clampNumber(

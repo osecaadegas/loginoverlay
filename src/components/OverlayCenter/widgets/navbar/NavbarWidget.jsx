@@ -1175,6 +1175,7 @@ function NavbarWidget({
   const isStyleSeca = c.displayStyle === "StyleSecaNav";
   const isBetterNavbar = c.displayStyle === "better_navbar";
   const isOrbitalNavbar = isBetterNavbar && c.colourTheme === "orbital";
+  const isArcticNavbar = isBetterNavbar && c.colourTheme === "arctic";
   // Theme defaults are applied before subElementStyle/withElementOffset, so
   // saved per-element appearance and offsets retain precedence.
   const orbitalInstrument = isOrbitalNavbar ? {
@@ -1299,8 +1300,13 @@ function NavbarWidget({
   );
   const fontSize = subValue(c, "displayName", "fontSize", containerFontSize);
   const fontWeight = subValue(c, "displayName", "fontWeight", 700);
-  const mottoFontSize = Math.max(8, Number(fontSize) * 0.82);
-  const mottoFontWeight = subValue(c, "displayName", "fontWeight", 700);
+  const mottoFontSize = Math.max(isArcticNavbar ? 11 : 8, Number(fontSize) * 0.82);
+  const mottoFontWeight = subValue(
+    c,
+    "displayName",
+    "fontWeight",
+    isArcticNavbar ? 850 : 700,
+  );
   const containerShadow = subValue(c, "container", "shadow", undefined);
   const containerGlow = subValue(c, "container", "glow", undefined);
   const containerBlur = subValue(c, "container", "backdropBlur", 0);
@@ -2404,8 +2410,8 @@ function NavbarWidget({
                 style={{
                   overflow: "hidden",
                   color: alphaColor(mutedColor, 0.58),
-                  fontSize: 9,
-                  fontWeight: 800,
+                  fontSize: mottoFontSize,
+                  fontWeight: mottoFontWeight,
                   letterSpacing: "0.2em",
                   lineHeight: 1.15,
                   marginTop: 3,

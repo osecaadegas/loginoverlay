@@ -16,6 +16,9 @@ try {
   const { BETTER_WIDGETS, BetterWidgetControls } = await server.ssrLoadModule(
     "/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
   );
+  const { EditorControlContext } = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/EditorControlScope.jsx",
+  );
 
   for (const widgetDefinition of BETTER_WIDGETS) {
     const markup = renderToStaticMarkup(
@@ -39,6 +42,13 @@ try {
       assert.ok(markup.includes('role="tablist"') && markup.includes('>Source</span>'));
       assert.ok(!markup.includes('data-level="secondary"'), "Background uses one row of relevant tabs");
       assert.ok(!markup.includes('disabled=""'), "Background has no empty category tabs");
+      continue;
+    }
+    if (widgetDefinition.type === "current_slot") {
+      assert.ok(
+        markup.includes("Font family") && markup.includes("Background image strength"),
+        "Current Game exposes its supported font and backdrop controls",
+      );
       continue;
     }
     assert.ok(
@@ -108,6 +118,63 @@ try {
     "Chat opens on Layout and keeps other control categories out of the active panel",
   );
 
+  const renderAllChatControls = (config) => renderToStaticMarkup(
+    createElement(
+      EditorControlContext.Provider,
+      {
+        value: {
+          mode: "simple",
+          search: "",
+          simpleSections: [
+            "Header", "Emotes", "Celebrations", "Roles & Message Glaze",
+            "In-Chat Giveaway", "In-Chat Shoutout", "Backdrop", "Message Behaviour",
+          ],
+          sections: {},
+          onSection: () => {},
+          onTab: () => {},
+        },
+      },
+      createElement(BetterWidgetControls, {
+        type: "chat",
+        config,
+        onChange: () => {},
+        onWidgetChange: () => {},
+        widget: { width: 335, height: 468 },
+      }),
+    ),
+  );
+  const inactiveChatMarkup = renderAllChatControls({
+    showViewerCount: false,
+    bttvEnabled: false,
+    roleEffects: { enabled: false },
+    giveawayInChat: false,
+    shoutoutInChat: false,
+    texture: "none",
+    autoFade: false,
+  });
+  for (const hiddenLabel of [
+    "Viewer count (manual)", "Global BTTV emotes", "Glaze intensity",
+    "Giveaway height in chat", "Clip height", "Texture strength", "Fade after",
+  ]) {
+    assert.ok(
+      !inactiveChatMarkup.includes(hiddenLabel),
+      `Chat hides inactive ${hiddenLabel} control`,
+    );
+  }
+
+  const currentSlotWithoutBackdrop = renderToStaticMarkup(
+    createElement(BetterWidgetControls, {
+      type: "current_slot",
+      config: { showBackdrop: false },
+      onChange: () => {},
+    }),
+  );
+  assert.ok(
+    currentSlotWithoutBackdrop.includes("Font family") &&
+      !currentSlotWithoutBackdrop.includes("Background image strength"),
+    "Current Game keeps font selection and hides the unused backdrop strength",
+  );
+
   const bonusMarkup = renderToStaticMarkup(
     createElement(BetterWidgetControls, {
       type: "bonus_hunt",
@@ -144,6 +211,18 @@ try {
       ),
     "Primary categories use stable columns and colored wrapping subcategories",
   );
+
+  for (const stylesheet of ["ThemeTypography.css", "GreekPremium.css"]) {
+    const themeCss = readFileSync(
+      new URL(`../src/effects/ThemeEffects/${stylesheet}`, import.meta.url),
+      "utf8",
+    );
+    assert.doesNotMatch(
+      themeCss,
+      /(?:font-(?:size|family|weight|style)|letter-spacing|line-height)\s*:[^;{}]+!important/,
+      `${stylesheet} does not override saved typography controls`,
+    );
+  }
 
   console.log("Widget control category checks passed.");
 } finally {

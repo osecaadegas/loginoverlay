@@ -2434,6 +2434,7 @@ function BetterNavbarControls({
                 set({ showNowPlaying, musicSource: "spotify" })
               }
             />
+            {c.showNowPlaying !== false && <>
             <p className="bp-hint">
               {c.spotify_access_token
                 ? "Spotify connected."
@@ -2454,6 +2455,7 @@ function BetterNavbarControls({
               unit="px"
               onChange={(spotifyWidth) => set({ spotifyWidth })}
             />
+            </>}
           </Section>
         </>
       )}
@@ -2465,6 +2467,7 @@ function BetterNavbarControls({
             checked={!!c.showCrypto}
             onChange={(showCrypto) => set({ showCrypto })}
           />
+          {c.showCrypto && <>
           <SelectRow
             label="Transition"
             value={c.cryptoDisplayMode || "horizontal"}
@@ -2485,6 +2488,7 @@ function BetterNavbarControls({
             The ticker uses live CoinGecko prices and cycles the supported coins
             automatically.
           </p>
+          </>}
         </Section>
       )}
 
@@ -2495,6 +2499,7 @@ function BetterNavbarControls({
             checked={!!c.showSocials}
             onChange={(showSocials) => set({ showSocials })}
           />
+          {c.showSocials && <>
           <SelectRow
             label="Display"
             value={c.socialDisplayStyle || "handles"}
@@ -2528,6 +2533,7 @@ function BetterNavbarControls({
           <p className="bp-hint">
             Social handles and URLs come from the Navbar widget page.
           </p>
+          </>}
         </Section>
       )}
 
@@ -2539,6 +2545,7 @@ function BetterNavbarControls({
               checked={!!c.showCasino}
               onChange={(showCasino) => set({ showCasino })}
             />
+            {c.showCasino && <>
             <SliderRow
               label="Logo size"
               value={c.casinoImageSize ?? 100}
@@ -2550,6 +2557,7 @@ function BetterNavbarControls({
             <p className="bp-hint">
               Casino logo and command come from the Navbar widget page.
             </p>
+            </>}
           </Section>
         </>
       )}
@@ -2561,12 +2569,14 @@ function BetterNavbarControls({
             checked={!!c.showCTA}
             onChange={(showCTA) => set({ showCTA })}
           />
+          {c.showCTA && <>
           <ColorRow
             label="CTA colour"
             value={c.ctaColor || "#f97316"}
             onChange={(ctaColor) => set({ ctaColor })}
           />
           <p className="bp-hint">CTA text comes from the Navbar widget page.</p>
+          </>}
         </Section>
       )}
 
@@ -3376,15 +3386,14 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             checked={!!c.showViewerCount}
             onChange={(showViewerCount) => set({ showViewerCount })}
           />
-          <SliderRow
+          {c.showViewerCount && <SliderRow
             label="Viewer count (manual)"
             value={c.viewerCount}
             min={0}
             max={100000}
             step={10}
-            disabled={!c.showViewerCount}
             onChange={(viewerCount) => set({ viewerCount })}
-          />
+          />}
         </Section>
         <Section
           title="Emotes"
@@ -3396,6 +3405,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             checked={c.bttvEnabled !== false}
             onChange={(bttvEnabled) => set({ bttvEnabled })}
           />
+          {c.bttvEnabled !== false && <>
           <ToggleRow
             label="Global BTTV emotes"
             checked={c.bttvGlobal !== false}
@@ -3415,6 +3425,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             unit="x"
             onChange={(bttvSize) => set({ bttvSize })}
           />
+          </>}
         </Section>
         <Section
           title="Celebrations"
@@ -3470,6 +3481,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
               set({ roleEffects: { ...c.roleEffects, enabled } })
             }
           />
+          {c.roleEffects?.enabled !== false && <>
           {[
             ["ownerEnabled", "Owner colour"],
             ["ownerMovementEnabled", "Owner movement"],
@@ -3484,7 +3496,6 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
               key={key}
               label={label}
               checked={c.roleEffects?.[key] !== false}
-              disabled={c.roleEffects?.enabled === false}
               onChange={(enabled) =>
                 set({ roleEffects: { ...c.roleEffects, [key]: enabled } })
               }
@@ -3495,7 +3506,6 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             value={c.roleEffects?.intensity ?? 8}
             min={1}
             max={10}
-            disabled={c.roleEffects?.enabled === false}
             onChange={(intensity) =>
               set({ roleEffects: { ...c.roleEffects, intensity } })
             }
@@ -3519,6 +3529,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             ))}
           </div>
           </>}
+          </>}
         </Section>
         <Section
           title="In-Chat Giveaway"
@@ -3530,13 +3541,15 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             checked={c.giveawayInChat === true}
             onChange={(giveawayInChat) => set({ giveawayInChat })}
           />
+          {c.giveawayInChat && <>
           <Segmented
             value={c.giveawayPosition}
             options={[{ key: "top", name: "Top" }, { key: "bottom", name: "Bottom" }]}
             onChange={(giveawayPosition) => set({ giveawayPosition })}
           />
           <p>Uses the Giveaway controls for entries, drawing and winners. A separate giveaway box is not needed in your overlay.</p>
-          {c.giveawayInChat && <ChatGiveawayAppearanceControls config={c} onChange={onChange} allWidgets={allWidgets} />}
+          <ChatGiveawayAppearanceControls config={c} onChange={onChange} allWidgets={allWidgets} />
+          </>}
         </Section>
         <Section
           title="In-Chat Shoutout"
@@ -3548,6 +3561,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             checked={c.shoutoutInChat === true}
             onChange={(shoutoutInChat) => set({ shoutoutInChat })}
           />
+          {c.shoutoutInChat && <>
           <Segmented
             value={c.shoutoutPosition}
             options={[
@@ -3563,7 +3577,6 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             max={360}
             step={10}
             unit="px"
-            disabled={!c.shoutoutInChat}
             onChange={(shoutoutHeight) => set({ shoutoutHeight })}
           />
           <SliderRow
@@ -3572,17 +3585,16 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             min={10}
             max={120}
             unit="s"
-            disabled={!c.shoutoutInChat}
             onChange={(shoutoutDuration) => set({ shoutoutDuration })}
           />
           <ToggleRow
             label="Dismiss when clip ends"
             checked={c.shoutoutDismissOnClipEnd === true}
-            disabled={!c.shoutoutInChat}
             onChange={(shoutoutDismissOnClipEnd) =>
               set({ shoutoutDismissOnClipEnd })
             }
           />
+          </>}
         </Section>
         <Section
           title="Backdrop"
@@ -3615,16 +3627,15 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             ].map((key) => ({ key, name: key }))}
             onChange={(texture) => set({ texture })}
           />
-          <SliderRow
+          {c.texture !== "none" && <SliderRow
             label="Texture strength"
             value={c.textureStrength}
             min={5}
             max={80}
             step={5}
             unit="%"
-            disabled={c.texture === "none"}
             onChange={(textureStrength) => set({ textureStrength })}
-          />
+          />}
         </Section>
         <Section
           title="Message Behaviour"
@@ -3673,15 +3684,14 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
               set({ autoFade, lifespan: autoFade ? "timed" : "persistent" })
             }
           />
-          <SliderRow
+          {c.autoFade && <SliderRow
             label="Fade after"
             value={c.fadeAfter}
             min={2}
             max={15}
             unit="s"
-            disabled={!c.autoFade}
             onChange={(fadeAfter) => set({ fadeAfter })}
-          />
+          />}
           <SliderRow
             label="Max messages"
             value={c.maxMessages}
@@ -4069,6 +4079,7 @@ function SimpleThemedControls({
                 checked={c.showEmblem}
                 onChange={(showEmblem) => set({ showEmblem })}
               />
+              {c.showEmblem && <>
               <ToggleRow
                 label="Animate"
                 checked={c.emblemAnimate}
@@ -4106,8 +4117,9 @@ function SimpleThemedControls({
                 unit="px"
                 onChange={(emblemStroke) => set({ emblemStroke })}
               />
+              </>}
             </Section>
-            <Section title="Emblem colours" icon={<Palette size={13} />}>
+            {c.showEmblem && <Section title="Emblem colours" icon={<Palette size={13} />}>
               <ColorRow
                 label="Primary"
                 value={c.cEmA}
@@ -4123,7 +4135,7 @@ function SimpleThemedControls({
                 value={c.cEmBase}
                 onChange={(cEmBase) => set({ cEmBase })}
               />
-            </Section>
+            </Section>}
           </>
         )}
         {matchesControlTab(current, "colours") && (
@@ -4947,27 +4959,26 @@ function SimpleThemedControls({
                 checked={c.innerFrame}
                 onChange={(innerFrame) => set({ innerFrame })}
               />
-              <SliderRow
+              {c.innerFrame && <SliderRow
                 label="Frame inset"
                 value={c.innerInset}
                 min={2}
                 max={18}
                 unit="px"
-                disabled={!c.innerFrame}
                 onChange={(innerInset) => set({ innerInset })}
-              />
+              />}
               <ToggleRow
                 label="Corner brackets"
                 checked={c.brackets}
                 onChange={(brackets) => set({ brackets })}
               />
+              {c.brackets && <>
               <SliderRow
                 label="Bracket length"
                 value={c.bracketSize}
                 min={10}
                 max={80}
                 unit="px"
-                disabled={!c.brackets}
                 onChange={(bracketSize) => set({ bracketSize })}
               />
               <SliderRow
@@ -4977,9 +4988,9 @@ function SimpleThemedControls({
                 max={6}
                 step={0.5}
                 unit="px"
-                disabled={!c.brackets}
                 onChange={(bracketWidth) => set({ bracketWidth })}
               />
+              </>}
               <ToggleRow
                 label="Edge light bars"
                 checked={c.edgeLights}
@@ -7234,15 +7245,17 @@ function ThemeEffectsControls({ themeKey, config, onChange, simple = false, widg
       </Section>}
       <Section title="Orbital Effects" icon={<Sparkles size={12} />} simple>
         <ToggleRow label="Animated effects" checked={c.enabled} onChange={enabled => set({ enabled })} hint="Pause orbital motion and event effects. The static material and environment remain." />
-        {widgetType !== 'background' && <>
+        {c.enabled && widgetType !== 'background' && <>
           {slider('HUD glow', 'hudGlow')}
           <ToggleRow label="Particles" checked={space.particles} onChange={particles => setSpace({ particles })} />
         </>}
+        {c.enabled && <>
         <div role="group" aria-label="Effect quality"><p className="bp-help">Quality</p>
           <Segmented value={c.quality} options={[{ key: 'low', name: 'Low' }, { key: 'balanced', name: 'Medium' }, { key: 'ultra', name: 'High' }]} columns={3} onChange={quality => set({ quality })} />
         </div>
         <p className="bp-hint">Lower quality uses fewer particles. Motion pauses in hidden tabs and respects reduced motion.</p>
         {widgetType !== 'background' && <p className="bp-hint">Choose Space / Orbital on your Overlay Background widget to configure Earth and stars.</p>}
+        </>}
       </Section>
     </div>;
   }

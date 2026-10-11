@@ -336,10 +336,6 @@
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] .better-navbar-brand-subtitle {
   color: #c9e8f1 !important;
-  font-size: 11px !important;
-  font-weight: 850 !important;
-  letter-spacing: .12em !important;
-  line-height: 1.2 !important;
   text-shadow: 0 1px 3px #01070d, 0 0 7px rgba(157, 224, 241, .22) !important;
 }
 

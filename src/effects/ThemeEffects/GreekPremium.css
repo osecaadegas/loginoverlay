@@ -164,7 +164,7 @@
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] :is([data-widget-element="displayName"], [data-widget-element="clock"], strong) {
   color: var(--greek-ink) !important;
-  font-weight: 900 !important;
+  font-weight: 900 ;
   text-shadow: 0 1px 0 rgba(255,255,255,.62) !important;
 }
 
@@ -205,7 +205,7 @@
     linear-gradient(180deg, rgba(255,255,255,.38), transparent 16%, rgba(104,61,26,.22)),
     var(--greek-warm-marble) center / 620px 620px repeat !important;
   box-shadow: var(--greek-structural-shadow), var(--greek-bevel), inset 0 0 0 2px rgba(124,78,32,.46) !important;
-  font-family: Georgia, "Times New Roman", serif !important;
+  font-family: Georgia, "Times New Roman", serif ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-panel::before {
@@ -233,16 +233,16 @@
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-main-name, .better-hunt-main-title, .better-hunt-title strong) {
   color: #4a2912 !important;
-  font-family: Georgia, "Times New Roman", serif !important;
-  font-weight: 900 !important;
-  letter-spacing: .06em !important;
+  font-family: Georgia, "Times New Roman", serif ;
+  font-weight: 900 ;
+  letter-spacing: .06em ;
   text-shadow: 0 1px 0 #fff4d2, 0 2px 1px rgba(76,39,14,.28) !important;
 }
 
-.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-main-name,.better-hunt-main-title,.better-hunt-title strong) { font-size: 1.12em !important; }
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-main-name,.better-hunt-main-title,.better-hunt-title strong) { font-size: 1.12em ; }
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-stat { min-height: 42px; }
-.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-stat-label { font-size: .7em !important; letter-spacing: .08em !important; }
-.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-stat strong { font-size: 1.08em !important; }
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-stat-label { font-size: .7em ; letter-spacing: .08em ; }
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-stat strong { font-size: 1.08em ; }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(
   .better-hunt-stat,
@@ -456,7 +456,7 @@
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] :is(.rtp-stats-label,.rtp-stats-value,.rtp-stats-slot-name,.rtp-stats-provider) {
   color: #3a2112 !important;
-  font-weight: 900 !important;
+  font-weight: 900 ;
   text-shadow: 0 1px 0 rgba(255,255,255,.62) !important;
 }
 
@@ -621,8 +621,8 @@
     linear-gradient(90deg, rgba(215,164,69,.16), transparent 18%, transparent 82%, rgba(215,164,69,.16)),
     linear-gradient(180deg, #3a2618, #17110d 68%, #0d0907) !important;
   box-shadow: inset 0 1px 0 rgba(240,199,106,.5), inset 0 -1px 0 #5e3515, 0 3px 7px rgba(0,0,0,.42) !important;
-  font-family: Georgia, "Times New Roman", serif !important;
-  letter-spacing: .08em !important;
+  font-family: Georgia, "Times New Roman", serif ;
+  letter-spacing: .08em ;
   text-shadow: 0 1px 2px #000 !important;
 }
 
@@ -641,7 +641,7 @@
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is([data-better-element="username"],.ov-chat-username) {
   color: #6b401b !important;
-  font-weight: 900 !important;
+  font-weight: 900 ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] :is([data-better-element="messageText"],.ov-chat-text) {
@@ -737,9 +737,9 @@
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-name {
-  font-family: Georgia, "Times New Roman", serif !important;
-  font-weight: 900 !important;
-  letter-spacing: .09em !important;
+  font-family: Georgia, "Times New Roman", serif ;
+  font-weight: 900 ;
+  letter-spacing: .09em ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"] :is(.better-gw-edge-light,.better-gw-side-dash,.better-gw-sheen) {
@@ -778,7 +778,7 @@
 .better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-avatar-name,
 .better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-roulette-status {
   color: #ead6a8 !important;
-  font-family: Georgia, "Times New Roman", serif !important;
+  font-family: Georgia, "Times New Roman", serif ;
   text-shadow: 0 1px 2px #000 !important;
 }
 
@@ -844,7 +844,7 @@
   background: radial-gradient(circle at 34% 25%, #a36b29, #2c170b 70%) !important;
   box-shadow: 0 0 0 3px rgba(124,78,32,.3), 0 7px 14px rgba(0,0,0,.48), inset 0 -10px 16px rgba(0,0,0,.4) !important;
   color: #f6e8ca !important;
-  font-family: Georgia, "Times New Roman", serif !important;
+  font-family: Georgia, "Times New Roman", serif ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-avatar i {
@@ -862,7 +862,7 @@
   .better-gw-result-prize
 ) {
   color: var(--greek-ink) !important;
-  font-family: Georgia, "Times New Roman", serif !important;
+  font-family: Georgia, "Times New Roman", serif ;
   text-shadow: 0 1px 0 rgba(255,255,255,.68) !important;
 }
 
@@ -1078,7 +1078,7 @@
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bets"] :is(.bets-ov__title,.bets-ov__stat-val,.bets-ov__row-pct,.bets-ov__card-pct) {
   color: #2c1a10 !important;
-  font-weight: 900 !important;
+  font-weight: 900 ;
   text-shadow: 0 1px 0 rgba(255,255,255,.7) !important;
 }
 
@@ -1114,12 +1114,12 @@
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-name {
-  font-size: clamp(1.2rem, 6cqw, 2rem) !important;
-  line-height: 1 !important;
+  font-size: clamp(1.2rem, 6cqw, 2rem) ;
+  line-height: 1 ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-prize {
-  font-weight: 900 !important;
+  font-weight: 900 ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="slideshow_frame"] .better-slideshow-frame,
@@ -1166,7 +1166,7 @@
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="tournament"] :is([data-widget-element="playerName"],[data-widget-element="label"],[data-widget-element="scoreValue"]) {
   color: #f6e8ca !important;
-  font-family: Georgia, "Times New Roman", serif !important;
+  font-family: Georgia, "Times New Roman", serif ;
   text-shadow: 0 1px 3px #000 !important;
 }
 
@@ -1189,10 +1189,10 @@
 
 @media (max-width: 1280px) {
   .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] :is(.better-hunt-stat-label,.better-hunt-row-label,.better-hunt-mini-label) {
-    font-size: max(.68em, 10px) !important;
+    font-size: max(.68em, 10px) ;
   }
   .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="rtp_stats"] :is(.rtp-stats-label,.rtp-stats-value) {
-    font-size: max(.76em, 11px) !important;
+    font-size: max(.76em, 11px) ;
   }
 }
 
@@ -1400,8 +1400,8 @@
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-status {
   gap: 3px !important;
   padding: 4px 6px !important;
-  font-size: .66em !important;
-  letter-spacing: .075em !important;
+  font-size: .66em ;
+  letter-spacing: .075em ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-main-status .better-hunt-dot {
@@ -1414,46 +1414,46 @@
    the full overlay is reduced to a normal stream-player size. */
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"]
   .better-hunt-result--compact :is(.better-hunt-result-payout,.better-hunt-result-row) > span {
-  font-size: max(.72em, 10px) !important;
-  font-weight: 850 !important;
-  line-height: 1.05 !important;
+  font-size: max(.72em, 10px) ;
+  font-weight: 850 ;
+  line-height: 1.05 ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"]
   .better-hunt-result--compact .better-hunt-result-payout > strong {
-  font-size: max(1.08em, 14px) !important;
-  line-height: 1.05 !important;
+  font-size: max(1.08em, 14px) ;
+  line-height: 1.05 ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"]
   .better-hunt-result--compact .better-hunt-result-row > strong {
-  font-size: max(.98em, 13px) !important;
-  line-height: 1.05 !important;
+  font-size: max(.98em, 13px) ;
+  line-height: 1.05 ;
 }
 
 /* These labels sit in roomy summary surfaces, so retain their hierarchy when
    the complete overlay is scaled down inside a stream player. */
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .bht-footer-label {
-  font-size: max(1.38em, 22px) !important;
-  font-weight: 900 !important;
-  letter-spacing: .025em !important;
-  line-height: 1.1 !important;
+  font-size: max(1.38em, 22px) ;
+  font-weight: 900 ;
+  letter-spacing: .025em ;
+  line-height: 1.1 ;
   white-space: nowrap !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .bht-footer-value {
-  font-size: max(1.55em, 24px) !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
+  font-size: max(1.55em, 24px) ;
+  font-weight: 900 ;
+  line-height: 1 ;
 }
 
 .better-widget-colour-scope[data-colour-theme="old_rome"] .better-gw-result-kicker {
   margin-bottom: 7px !important;
-  font-family: Inter, Arial, sans-serif !important;
-  font-size: clamp(24px, 6cqi, 28px) !important;
-  font-weight: 900 !important;
-  letter-spacing: .015em !important;
-  line-height: 1.1 !important;
+  font-family: Inter, Arial, sans-serif ;
+  font-size: clamp(24px, 6cqi, 28px) ;
+  font-weight: 900 ;
+  letter-spacing: .015em ;
+  line-height: 1.1 ;
   white-space: nowrap !important;
 }
 
@@ -1463,10 +1463,10 @@
   margin-top: 2px !important;
   color: var(--greek-text-primary) !important;
   -webkit-text-fill-color: var(--greek-text-primary) !important;
-  font-size: clamp(18px, 1vw, 20px) !important;
-  font-weight: 900 !important;
-  letter-spacing: .035em !important;
-  line-height: 1.05 !important;
+  font-size: clamp(18px, 1vw, 20px) ;
+  font-weight: 900 ;
+  letter-spacing: .035em ;
+  line-height: 1.05 ;
 }
 
 /* Bingo active states retain oxblood emphasis as ink and border rather than a

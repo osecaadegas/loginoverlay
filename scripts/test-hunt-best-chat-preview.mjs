@@ -65,14 +65,31 @@ try {
     config: { orientation: 'mainstream', carouselMode: '3d', animations: false, showRequests: false },
     bonuses: [
       { id: 'normal', slot_name: 'Normal Slot', bet: 1 },
-      { id: 'super', slot_name: 'Super Slot', bet: 1, isSuperBonus: true },
+      { id: 'super', slot_name: 'Super Slot', bet: 1, bonusType: 'super', isSuperBonus: true },
     ],
     stats: {}, currency: '€', previewOnly: true,
   }));
-  assert.match(tierMarkup, /<div class="better-hunt-main-tiers"[^]*better-hunt-main-tier-stat--super/,
+  assert.match(tierMarkup, /<div class="better-hunt-main-tiers[^]*better-hunt-main-tier-stat--super/,
     'Mainstream shows the Super stat when a Super bonus exists');
   assert.doesNotMatch(tierMarkup, /<div class="better-hunt-stat better-hunt-main-tier-stat--extreme"/,
     'Mainstream keeps Hidden absent when no hidden bonus exists');
+  const arcticResultsMarkup = renderToStaticMarkup(createElement(BetterBonusHuntStyle, {
+    config: {
+      orientation: 'mainstream', carouselMode: '3d', colourTheme: 'arctic',
+      sessionState: 'ended', animations: false, showRequests: false,
+    },
+    bonuses: [
+      { id: 'best', slot_name: 'Best Slot', bet: 1, payout: 500, opened: true },
+      { id: 'worst', slot_name: 'Worst Slot', bet: 1, payout: 10, opened: true },
+    ],
+    stats: {}, currency: '€', previewOnly: true,
+  }));
+  assert.match(arcticResultsMarkup, /data-drawer-mode="expand"/,
+    'Arctic Mainstream reserves space for its result terminal');
+  assert.match(arcticResultsMarkup, /better-hunt-drawer better-hunt-drawer--mainstream is-open/,
+    'Arctic Mainstream keeps the best and worst slot result terminal visible');
+  assert.match(arcticResultsMarkup, /Best slot[^]*Worst slot/i,
+    'Arctic Mainstream renders both result faces');
   for (const chatStyle of ['classic', 'better_chat', 'broadcast_chat', 'community_chat']) {
     const instance = createBetterInstance('chat', { config: { chatStyle, live: false } });
     const layout = { instances: [instance] };

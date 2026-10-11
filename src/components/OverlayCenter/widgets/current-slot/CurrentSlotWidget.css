@@ -132,7 +132,7 @@
 .cg-panel h2 { font-size: 1.2rem; margin: 0 0 15px; }
 .cg-page > p,.cg-panel p,.cg-panel small { color: #a4b8c9; line-height: 1.6; }
 .cg-page label,.cg-appearance label { display: grid; gap: 7px; margin-block: 12px; font-size: .85rem; }
-.cg-page input,.cg-page select,.cg-appearance input { min-width: 0; width: 100%; min-height: 42px; padding: 9px 12px; color: #e6edf6; background: #05101b; border: 1px solid #38556c; border-radius: 7px; font: inherit; }
+.cg-page input,.cg-page select,.cg-appearance input,.cg-appearance select { min-width: 0; width: 100%; min-height: 42px; padding: 9px 12px; color: #e6edf6; background: #05101b; border: 1px solid #38556c; border-radius: 7px; font: inherit; }
 .cg-page button { min-height: 42px; border-radius: 8px; padding: 10px 16px; background: #124839; color: #b5ffde; border: 1px solid #31765a; cursor: pointer; }
 .cg-page button:disabled { opacity: .5; cursor: wait; }
 .cg-search-results { display: grid; gap: 8px; max-height: 300px; overflow: auto; }
