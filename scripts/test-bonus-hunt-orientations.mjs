@@ -85,6 +85,32 @@ try {
     "visible row count drives the vertical list and panel content height",
   );
 
+  const mainstreamCards = renderToStaticMarkup(
+    createElement(BetterBonusHuntStyle, {
+      config: {
+        orientation: "mainstream",
+        listMode: "image",
+        visibleRows: 5,
+        animations: true,
+        showRequests: false,
+      },
+      bonuses: Array.from({ length: 6 }, (_, index) => ({
+        id: `mainstream-card-${index}`,
+        slot_name: `Card ${index + 1}`,
+        bet: 1,
+      })),
+      stats: {},
+      currency: "EUR",
+    }),
+  );
+  assert.ok(
+    mainstreamCards.includes('data-loop="infinite"') &&
+      mainstreamCards.includes('data-row-count="6"') &&
+      mainstreamCards.includes('data-visible-rows="5"') &&
+      (mainstreamCards.match(/better-hunt-row--image/g) || []).length >= 12,
+    "mainstream cards keep all six rows and animate when one row overflows the five-row viewport",
+  );
+
   const baseline = getAutomaticBetterHuntWin(null, [
     { id: "win", slot_name: "Big Bass", bet: 1, payout: 0 },
   ]);

@@ -2395,7 +2395,11 @@ function BetterStyleSheet() {
       .better-hunt-list{min-height:0;overflow:hidden}
       .better-hunt-list-inner{display:flex;flex-direction:column;contain:layout paint}
       .better-hunt-list-group{display:flex;flex:0 0 auto;flex-direction:column;gap:calc(6px * var(--bh-obs-scale,1));padding-bottom:calc(6px * var(--bh-obs-scale,1))}
-      .better-hunt-list--scroll .better-hunt-list-inner{position:relative;height:100%;overflow:visible}
+      /* The list viewport is sized from visibleRows. Keep the animated track at
+         that same reference height so an overflowing list can always move,
+         even when its flex parent has an auto height (the mainstream cards
+         layout). The rows themselves are never clipped from the data set. */
+      .better-hunt-list--scroll .better-hunt-list-inner{position:relative;height:var(--bh-list-height);min-height:var(--bh-list-height);overflow:visible}
       .better-hunt-list--scroll .better-hunt-list-group{position:absolute;top:0;right:0;left:0;width:100%;backface-visibility:hidden;contain:layout paint;will-change:transform}
       .better-hunt-list--scroll .better-hunt-list-group:first-child{animation:better-hunt-marquee-up-primary calc(var(--bh-list-duration,26s) / var(--anim-speed,1)) linear infinite}
       .better-hunt-list--scroll .better-hunt-list-group:last-child{animation:better-hunt-marquee-up-secondary calc(var(--bh-list-duration,26s) / var(--anim-speed,1)) linear infinite}
@@ -3534,6 +3538,9 @@ export function BetterBonusHuntStyle({
     resultFlipMs,
     worstResultKey,
   ]);
+  // visibleRows controls only the viewport. Keep every bonus row in both
+  // copies so the carousel can scroll through the complete hunt without
+  // changing the amount of data the widget owns.
   const listRows = rows;
   const listShouldLoop =
     rows.length > visibleRows &&
@@ -4720,6 +4727,8 @@ export function BetterBonusHuntStyle({
       <div
         className={`better-hunt-list better-hunt-list--${listMode}${listShouldLoop ? " better-hunt-list--scroll" : ""}${skin !== "modern" ? " better-hunt-rails" : ""}`}
         data-loop={listShouldLoop ? "infinite" : "off"}
+        data-row-count={rows.length}
+        data-visible-rows={visibleRows}
         style={listStyle}
         {...attrs("bonus_hunt", c, "slotListContainer")}
       >
