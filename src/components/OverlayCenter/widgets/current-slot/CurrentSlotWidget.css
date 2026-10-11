@@ -116,7 +116,7 @@
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-provider-logo {
   width: auto; max-width: calc(168 * var(--cg-px)); height: calc(72 * var(--cg-px));
-  filter: brightness(0) invert(1) drop-shadow(0 0 calc(4 * var(--cg-px)) rgba(132, 224, 247, .28));
+  filter: drop-shadow(0 0 calc(4 * var(--cg-px)) rgba(132, 224, 247, .28));
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-record-bet {
   margin-inline-end: .42em; color: #d9f6ff; font-size: .82em; font-weight: 700;
