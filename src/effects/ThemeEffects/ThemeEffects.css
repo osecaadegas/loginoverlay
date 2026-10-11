@@ -324,7 +324,7 @@
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] [data-widget-element="container"],
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar {
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
   background-image:
     linear-gradient(180deg, rgba(222, 243, 250, 0.25), transparent 14%, rgba(0, 7, 15, 0.64) 68%, rgba(156, 199, 214, 0.13) 95%, rgba(0, 6, 12, 0.8)),
     url("/theme-effects/ice/ice-glass.webp") !important;

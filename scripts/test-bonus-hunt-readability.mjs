@@ -143,6 +143,22 @@ try {
     config: {
       orientation: 'mainstream',
       colourTheme: 'arctic',
+      sessionState: 'ended',
+      drawerAlwaysVisible: true,
+      animations: true,
+    },
+  }]);
+  assert.ok(await page.$('.better-hunt-drawer.is-open'), 'Enabled Best/Worst remains visible after the hunt ends');
+  assert.equal(await page.$eval('.better-hunt-drawer', drawer => drawer.getAttribute('aria-hidden')), 'false');
+
+  await mount([{
+    width: 402,
+    height: 980,
+    count: 3,
+    opened: 1,
+    config: {
+      orientation: 'mainstream',
+      colourTheme: 'arctic',
       sessionState: 'hunt',
       drawerAlwaysVisible: false,
       animations: true,

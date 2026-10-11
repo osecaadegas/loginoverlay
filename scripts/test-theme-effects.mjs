@@ -227,6 +227,41 @@ try {
           React.createElement(ThemeEffectsLayer, { instances: [widget], width: 640, height: 480, runtime: "test" }),
         ));
       },
+      renderRtpTypography(renderScale = 1) {
+        const width = 1080 * renderScale;
+        const height = 84 * renderScale;
+        const savedConfig = {
+          ...registry.getBetterWidgetDefinition('rtp_stats').defaultConfig,
+          colourTheme: 'arctic',
+          previewMode: true,
+          titleSize: 31,
+          valueSize: 23,
+          labelSize: 13,
+          subElements: {
+            container: { borderColor: '#9deaff' },
+            slotTitle: { fontSize: 19 },
+            rtpValue: { fontSize: 17 },
+            label: { fontSize: 11 },
+          },
+        };
+        const widget = {
+          ...registry.createBetterInstance('rtp_stats', { width, height, config: savedConfig }),
+          instanceId: 'rtp-font-test',
+          width,
+          height,
+          visible: true,
+        };
+        const layout = { instances: [widget] };
+        root.render(React.createElement('div', { style: { width, height } },
+          registry.renderBetterWidgetInstance({
+            instance: widget,
+            layout,
+            mode: 'live',
+            runtime: 'obs',
+            renderScale,
+          }),
+        ));
+      },
     };
     window.fxTest.render("arctic", "balanced");
   }, initialDependencyHash);
@@ -380,7 +415,7 @@ try {
   await checkBounds();
   await page.setViewport({ width: 1400, height: 900 });
   await checkBounds();
-  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame', 'chat', 'current_slot', 'bets', 'tournament']) {
+  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame', 'chat', 'rtp_stats', 'current_slot', 'bets', 'tournament']) {
     await page.evaluate((single) => window.fxTest.renderScene({ single }), type);
     await new Promise((resolve) => setTimeout(resolve, 750));
     await checkBounds();
@@ -470,6 +505,22 @@ try {
     await checkBounds();
     assert(await page.$eval('.tw-root', element => getComputedStyle(element).backgroundImage.includes('ice-glass.webp')));
     await screenshot(`ice-tournament-${tournamentLayout}`);
+  }
+  await page.evaluate(() => window.fxTest.renderScene());
+  await new Promise((resolve) => setTimeout(resolve, 750));
+  await checkBounds();
+  for (const [renderScale, expected] of [[1, [19, 17, 11]], [2, [38, 34, 22]]]) {
+    await page.evaluate((scale) => window.fxTest.renderRtpTypography(scale), renderScale);
+    await page.waitForSelector('.rtp-stats-bar--better');
+    const sizes = await page.evaluate(() => {
+      const size = selector => parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
+      return [
+        size('[data-better-element="slotTitle"]'),
+        size('[data-better-element="rtpValue"]'),
+        size('[data-better-element="label"]'),
+      ];
+    });
+    assert.deepEqual(sizes, expected, `RTP saved font sizes render at native OBS scale ${renderScale}`);
   }
   await page.evaluate(() => window.fxTest.renderScene());
   await new Promise((resolve) => setTimeout(resolve, 750));

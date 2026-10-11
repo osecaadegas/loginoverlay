@@ -6152,6 +6152,13 @@ export function BetterRtpStatsStyle({
   showBestWin = true,
 }) {
   const c = config || {};
+  const rtpAttrs = (elementId, style) => {
+    const part = attrs("rtp_stats", c, elementId);
+    return {
+      ...part,
+      style: { ...style, ...(part.style || {}) },
+    };
+  };
   const orbital = c.colourTheme === "orbital";
   const accent = c.cBolt || c.rtpIconColor || c.accentColor || "#f7a41d";
   const bgFrom = c.cBarTop || c.barBgFrom || "#0c2150";
@@ -6224,7 +6231,7 @@ export function BetterRtpStatsStyle({
   const bar = (
     <div
       className="oc-widget-inner rtp-stats-bar rtp-stats-bar--better"
-      style={{
+      {...rtpAttrs("container", {
         width: "100%",
         maxWidth: previewMode ? 1152 : "100%",
         height: previewMode ? barHeight : "100%",
@@ -6244,20 +6251,18 @@ export function BetterRtpStatsStyle({
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
-      }}
-      {...attrs("rtp_stats", c, "container")}
+      })}
     >
       <BetterStyleSheet />
       {hasProvider ? (
         <div
-          style={{
+          {...rtpAttrs("provider", {
             display: "flex",
             alignItems: "center",
             gap: 12,
             minWidth: 0,
             flexShrink: 0,
-          }}
-          {...attrs("rtp_stats", c, "provider")}
+          })}
         >
           {showProviderImage ? (
             <img
@@ -6304,7 +6309,7 @@ export function BetterRtpStatsStyle({
       ) : null}
       {c.showEmblem !== false ? <BetterRtpEmblem config={c} /> : null}
       <h1
-        style={{
+        {...rtpAttrs("slotTitle", {
           minWidth: 0,
           overflow: "hidden",
           flex: orbital ? "1 1 150px" : "1 1 220px",
@@ -6320,8 +6325,7 @@ export function BetterRtpStatsStyle({
           textShadow: `0 1px 10px ${bgTo}`,
           textTransform: "uppercase",
           whiteSpace: "nowrap",
-        }}
-        {...attrs("rtp_stats", c, "slotTitle")}
+        })}
       >
         {slotName}
       </h1>
@@ -6350,7 +6354,7 @@ export function BetterRtpStatsStyle({
           {statItems.map(([part, label, value, , delay]) => (
             <div
               key={part}
-              style={{
+              {...rtpAttrs("statCard", {
                 display: orbital ? "grid" : "flex",
                 gridTemplateColumns: orbital ? "16px minmax(0,1fr)" : undefined,
                 alignItems: "center",
@@ -6359,8 +6363,7 @@ export function BetterRtpStatsStyle({
                 flexShrink: 0,
                 minWidth: 0,
                 whiteSpace: "nowrap",
-              }}
-              {...attrs("rtp_stats", c, "statCard")}
+              })}
             >
               <Zap
                 size={Math.round(labelSize * 1.3)}
@@ -6375,7 +6378,7 @@ export function BetterRtpStatsStyle({
                 }}
               />
               <span
-                style={{
+                {...rtpAttrs("label", {
                   color: muted,
                   fontFamily: font,
                   fontSize: labelSize,
@@ -6383,13 +6386,12 @@ export function BetterRtpStatsStyle({
                   letterSpacing: orbital ? "0.025em" : "0.16em",
                   textTransform: "uppercase",
                   whiteSpace: "nowrap",
-                }}
-                {...attrs("rtp_stats", c, "label")}
+                })}
               >
                 {label}
               </span>
               <strong
-                style={{
+                {...rtpAttrs(part, {
                   color: text,
                   fontFamily: titleFont,
                   fontSize: valueSize,
@@ -6399,8 +6401,7 @@ export function BetterRtpStatsStyle({
                   letterSpacing: "0.04em",
                   lineHeight: 1,
                   whiteSpace: "nowrap",
-                }}
-                {...attrs("rtp_stats", c, part)}
+                })}
               >
                 {value}
               </strong>
@@ -6421,7 +6422,7 @@ export function BetterRtpStatsStyle({
       ) : null}
       {showBestWin ? (
         <div
-          style={{
+          {...rtpAttrs("personalBest", {
             display: orbital ? "grid" : "flex",
             gridTemplateColumns: orbital ? "16px minmax(0,1fr)" : undefined,
             alignItems: "center",
@@ -6435,8 +6436,7 @@ export function BetterRtpStatsStyle({
             background: `linear-gradient(180deg, ${alphaColor(bgFrom, 0.85)}, ${alphaColor(bgTo, 0.9)})`,
             boxShadow: `inset 0 0 12px ${alphaColor(c.cRim || accent, 0.26)}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.14)}`,
             minWidth: 0,
-          }}
-          {...attrs("rtp_stats", c, "personalBest")}
+          })}
         >
           <Trophy
             size={14}
@@ -6450,7 +6450,7 @@ export function BetterRtpStatsStyle({
             }}
           />
           <span
-            style={{
+            {...rtpAttrs("label", {
               color: muted,
               fontFamily: font,
               fontSize: labelSize,
@@ -6458,8 +6458,7 @@ export function BetterRtpStatsStyle({
               letterSpacing: orbital ? "0.035em" : "0.14em",
               textTransform: "uppercase",
               whiteSpace: "nowrap",
-            }}
-            {...attrs("rtp_stats", c, "label")}
+            })}
           >
             Best Win
           </span>
@@ -6467,7 +6466,7 @@ export function BetterRtpStatsStyle({
             {"\u2014"}
           </span>
           <strong
-            style={{
+            {...rtpAttrs("personalBest", {
               overflow: "hidden",
               color: text,
               fontFamily: font,
@@ -6479,8 +6478,7 @@ export function BetterRtpStatsStyle({
               maxWidth: 170,
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-            }}
-            {...attrs("rtp_stats", c, "personalBest")}
+            })}
           >
             {bestWinValue}
           </strong>

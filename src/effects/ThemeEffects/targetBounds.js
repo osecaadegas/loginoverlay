@@ -6,7 +6,7 @@ const SURFACES = {
   bets: ".bets-ov, .bet-widget",
   slot_bingo: ".slot-bingo-widget",
   slideshow_frame: ".better-slideshow-frame",
-  rtp_stats: '.rtp-stats-bar',
+  rtp_stats: '.rtp-stats-inner, .rtp-stats-bar--better, .rtp-stats-bar',
   navbar: '[data-widget-element="container"], [data-appearance-part="container"]',
   chat: '.ov-chat-widget',
 };

@@ -1210,6 +1210,42 @@ function scaleStandaloneWidgetConfig(widgetType, config, instance, renderScale) 
     if (Number.isFinite(value)) next[key] = value * scale;
   });
 
+  // Advanced appearance values are stored per element rather than on the
+  // widget root. Standalone OBS uses a larger native layout instead of a CSS
+  // transform, so RTP typography needs the same native-pixel scaling as its
+  // Simple Mode title/value/label controls.
+  if (widgetType === "rtp_stats") {
+    for (const bucket of [
+      "subElements",
+      "__appearanceExplicitSubElements",
+      "elements",
+    ]) {
+      if (!config[bucket] || typeof config[bucket] !== "object") continue;
+      next[bucket] = Object.fromEntries(
+        Object.entries(config[bucket]).map(([elementId, element]) => {
+          if (!element || typeof element !== "object") return [elementId, element];
+          const scaled = { ...element };
+          const fontSize = Number(element.fontSize);
+          if (Number.isFinite(fontSize)) scaled.fontSize = fontSize * scale;
+          if (element.states && typeof element.states === "object") {
+            scaled.states = Object.fromEntries(
+              Object.entries(element.states).map(([stateId, state]) => {
+                if (!state || typeof state !== "object") return [stateId, state];
+                const scaledState = { ...state };
+                const stateFontSize = Number(state.fontSize);
+                if (Number.isFinite(stateFontSize)) {
+                  scaledState.fontSize = stateFontSize * scale;
+                }
+                return [stateId, scaledState];
+              }),
+            );
+          }
+          return [elementId, scaled];
+        }),
+      );
+    }
+  }
+
   if (widgetType === "giveaway") {
     next.width = instance.width;
     next.height = instance.height;
