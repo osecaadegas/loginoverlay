@@ -195,6 +195,38 @@
     linear-gradient(165deg, rgba(14, 43, 58, 0.97), rgba(2, 13, 22, 0.99) 74%);
 }
 
+/* Embedded Arctic winners fill the available chat bay instead of retaining
+   the smaller legacy giveaway canvas. Keep the hierarchy readable in OBS. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-result-stage {
+  padding: clamp(5px, 1.8cqi, 9px);
+  place-items: start stretch;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-result-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  grid-template-columns: clamp(76px, 24cqi, 96px) minmax(0, 1fr);
+  gap: clamp(12px, 3.5cqi, 18px);
+  padding: clamp(12px, 3.5cqi, 17px);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-result-avatar {
+  width: clamp(76px, 24cqi, 96px);
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-result-kicker {
+  margin-bottom: 6px;
+  font-size: clamp(11px, 3.4cqi, 14px);
+  letter-spacing: 0.11em;
+  line-height: 1.1;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .better-gw-result-name {
+  font-size: clamp(16px, 5.6cqi, 23px);
+  line-height: 1.06;
+}
+
 @keyframes better-gw-result-enter {
   from {
     opacity: 0;

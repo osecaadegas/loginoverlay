@@ -2381,6 +2381,7 @@ function NavbarWidget({
             }}
           >
             <span
+              className="better-navbar-brand-name"
               style={{
                 overflow: "hidden",
                 color: textColor,
@@ -2399,6 +2400,7 @@ function NavbarWidget({
             </span>
             {siteText && (
               <span
+                className="better-navbar-brand-subtitle"
                 style={{
                   overflow: "hidden",
                   color: alphaColor(mutedColor, 0.58),
