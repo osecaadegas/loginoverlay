@@ -2538,16 +2538,17 @@ function BetterStyleSheet() {
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--super{animation:better-hunt-gold calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{animation:none;border-style:dashed}
       /* Super bonuses use a warm, snowy frame treatment in every carousel. */
-      .better-hunt-row--super .better-hunt-row-bg::after,.better-hunt-image-stats-panel--super .better-hunt-image-stats-art::before,.better-hunt-main-active--super .better-hunt-main-active-art::before,.better-hunt-card--super::before{content:"";position:absolute;inset:0;z-index:5;border:3px solid #ffe468;border-radius:inherit;padding:6px;background:radial-gradient(circle,#fff9c5 0 1.5px,transparent 2.5px) 0 0/18px 14px,radial-gradient(circle,#ffd64d 0 2px,transparent 3px) 8px 5px/27px 21px;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;box-shadow:inset 0 0 9px #ffd64d,0 0 10px rgba(255,209,50,.7);pointer-events:none;animation:better-hunt-super-snow calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}
-      .better-hunt-row--super .better-hunt-row-bg::after{border-width:2px;border-radius:6px}
-      .better-hunt-image-stats-panel--super .better-hunt-image-stats-art::before,.better-hunt-main-active--super .better-hunt-main-active-art::before{border-width:3px;border-radius:6px}
-      .better-hunt-card--super::before{inset:2px;border-radius:8px}
+      .better-hunt-tier-fx{position:absolute;inset:0;z-index:5;overflow:hidden;border-radius:inherit;pointer-events:none}
+      .better-hunt-tier-fx::before,.better-hunt-tier-fx::after{content:"";position:absolute;inset:0;pointer-events:none}
+      .better-hunt-tier-fx--super::before{border:3px solid #f5c83d;border-radius:inherit;box-shadow:inset 0 0 0 1px #fff4a9,inset 0 0 13px rgba(255,190,25,.5),0 0 8px #e8ab20;background:linear-gradient(135deg,rgba(255,245,170,.26),transparent 20%,transparent 78%,rgba(255,210,60,.23))}
+      .better-hunt-tier-fx--super::after{inset:2px;border:6px solid transparent;border-radius:inherit;background:radial-gradient(circle,#fff8c6 0 1.5px,transparent 2.5px) 0 0/15px 13px,radial-gradient(circle,#ffd24e 0 2px,transparent 3px) 8px 5px/23px 19px;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;filter:drop-shadow(0 0 3px #ffca2f);animation:better-hunt-super-snow calc(3.6s / var(--anim-speed,1)) ease-in-out infinite}
       /* The Hidden counter represents the extreme tier, not unopened slots. */
       .better-hunt-row--extreme .better-hunt-row-bg img,.better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art img,.better-hunt-main-active--extreme .better-hunt-main-active-art img,.better-hunt-card--extreme .better-hunt-card-img{filter:grayscale(.85) sepia(.14) hue-rotate(165deg) saturate(.55) brightness(.82);animation:none!important}
-      .better-hunt-row--extreme .better-hunt-row-bg::after,.better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art::before,.better-hunt-main-active--extreme .better-hunt-main-active-art::before,.better-hunt-card--extreme::after{content:"";position:absolute;inset:0;z-index:5;border:2px solid rgba(198,239,255,.76);border-radius:inherit;background:linear-gradient(135deg,rgba(220,246,255,.32),transparent 36%,rgba(72,151,196,.18) 70%,rgba(225,250,255,.35));box-shadow:inset 0 0 15px rgba(167,225,255,.55),0 0 8px rgba(132,205,255,.4);pointer-events:none}
-      .better-hunt-root[data-anim="off"] .better-hunt-row--super .better-hunt-row-bg::after,.better-hunt-root[data-anim="off"] .better-hunt-image-stats-panel--super .better-hunt-image-stats-art::before,.better-hunt-root[data-anim="off"] .better-hunt-main-active--super .better-hunt-main-active-art::before,.better-hunt-root[data-anim="off"] .better-hunt-card--super::before{animation:none!important}
+      .better-hunt-tier-fx--extreme::before{border:3px solid rgba(210,244,255,.88);border-radius:inherit;background:linear-gradient(140deg,rgba(221,249,255,.36),rgba(104,188,228,.07) 38%,rgba(10,53,94,.14) 72%,rgba(225,250,255,.3));box-shadow:inset 0 0 0 1px rgba(255,255,255,.64),inset 0 0 24px rgba(120,216,255,.5),0 0 10px rgba(127,204,246,.65)}
+      .better-hunt-tier-fx--extreme::after{background:linear-gradient(135deg,transparent 22%,rgba(237,252,255,.7) 22.3%,transparent 22.8%) 0 0/54px 61px,linear-gradient(43deg,transparent 42%,rgba(212,247,255,.45) 42.2%,transparent 42.7%) 9px 4px/67px 78px,radial-gradient(circle at 12% 8%,rgba(250,255,255,.8),transparent 23%),radial-gradient(circle at 88% 95%,rgba(225,249,255,.55),transparent 24%);opacity:.55}
+      .better-hunt-root[data-anim="off"] .better-hunt-tier-fx--super::after{animation:none!important}
       .better-hunt-root[data-anim="off"] .better-hunt-card--extreme .better-hunt-card-img{animation:none!important}
-      @media(prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-card--extreme .better-hunt-card-img,.better-hunt-root .better-hunt-main-active-shroud,.better-hunt-root .better-hunt-row--super .better-hunt-row-bg::after,.better-hunt-root .better-hunt-image-stats-panel--super .better-hunt-image-stats-art::before,.better-hunt-root .better-hunt-main-active--super .better-hunt-main-active-art::before,.better-hunt-root .better-hunt-card--super::before{animation:none!important}}
+      @media(prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-card--extreme .better-hunt-card-img,.better-hunt-root .better-hunt-main-active-shroud,.better-hunt-root .better-hunt-tier-fx--super::after{animation:none!important}}
       .better-hunt-root[data-anim="off"] .better-hunt-track>span,.better-hunt-root[data-anim="off"] .better-hunt-drawer,.better-hunt-root[data-anim="off"] .better-hunt-card,.better-hunt-root[data-anim="off"] .better-hunt-horizontal{transition:none}
       @media(prefers-reduced-motion:reduce){.better-hunt-track>span{transition:none}}
       .better-hunt-rails{position:relative;padding-left:14px;padding-right:14px}.better-hunt-rails::before,.better-hunt-rails::after{content:"";position:absolute;top:0;bottom:0;width:8px;border-radius:999px;background:linear-gradient(180deg,var(--bh-line-hi),var(--bh-line-mid),var(--bh-line-hi));box-shadow:inset 1px 0 0 rgba(255,255,255,.18),inset -1px 0 0 rgba(0,0,0,.55),0 0 8px color-mix(in srgb,var(--bh-line-hi) 30%,transparent)}.better-hunt-rails::before{left:0}.better-hunt-rails::after{right:0}
@@ -4336,6 +4337,7 @@ export function BetterBonusHuntStyle({
                 className="better-hunt-image-stats-img"
                 {...attrs("bonus_hunt", c, "slotImage")}
               />
+              {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
             </div>
             <div className="better-hunt-image-stats-copy">
               <div className="better-hunt-image-stats-title">
@@ -4484,6 +4486,7 @@ export function BetterBonusHuntStyle({
                         size={112}
                         className="better-hunt-card-img"
                       />
+                      {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
                       <span className="better-hunt-card-gloss" />
                     </div>
                   );
@@ -4567,6 +4570,7 @@ export function BetterBonusHuntStyle({
         >
           <div className="better-hunt-row-bg">
             <SlotImage src={bonusImage(bonus)} alt="" fit="cover" />
+            {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
           </div>
           <div className="better-hunt-row-content">
             {positionNumber}
@@ -5044,6 +5048,7 @@ export function BetterBonusHuntStyle({
             alt={bonusSlotName(current, activeIndex)}
             {...attrs("bonus_hunt", c, "slotImage")}
           />
+          {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
         </div>
         <div className="better-hunt-main-active-stats">
           {activeRows.map(([label, value, Icon]) => (
