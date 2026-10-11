@@ -2537,21 +2537,21 @@ function BetterStyleSheet() {
       .better-hunt-ring .better-hunt-card{animation:none}
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--super{animation:better-hunt-gold calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{animation:none;border-style:dashed}
-      /* Super bonuses use a warm, snowy frame treatment in every carousel. */
+      /* Only Arctic uses crystalline Hidden and gold-snow Super artwork. */
       .better-hunt-tier-fx{position:absolute;inset:0;z-index:5;overflow:hidden;border-radius:inherit;pointer-events:none}
       .better-hunt-tier-fx::before,.better-hunt-tier-fx::after{content:"";position:absolute;inset:0;pointer-events:none}
-      .better-hunt-tier-fx--super::before{background:url('/theme-effects/ice/bonus-frost-edge.webp') center/100% 100% no-repeat;filter:sepia(1) saturate(4.2) hue-rotate(344deg) brightness(1.12) drop-shadow(0 0 3px rgba(255,185,48,.42));opacity:.8}
-      .better-hunt-tier-fx--super::after{background:radial-gradient(ellipse at 2% 6%,rgba(255,226,125,.12),transparent 32%),radial-gradient(ellipse at 98% 95%,rgba(255,197,71,.1),transparent 36%);animation:better-hunt-super-snow calc(5s / var(--anim-speed,1)) ease-in-out infinite}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-tier-fx--super::before{background:url('/theme-effects/ice/bonus-frost-edge.webp') center/100% 100% no-repeat;filter:sepia(1) saturate(4.2) hue-rotate(344deg) brightness(1.12) drop-shadow(0 0 3px rgba(255,185,48,.42));opacity:.8}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-tier-fx--super::after{background:radial-gradient(ellipse at 2% 6%,rgba(255,226,125,.12),transparent 32%),radial-gradient(ellipse at 98% 95%,rgba(255,197,71,.1),transparent 36%);animation:better-hunt-super-snow calc(5s / var(--anim-speed,1)) ease-in-out infinite}
       /* The Hidden counter represents the extreme tier, not unopened slots. */
       /* The tier treatment lives on the artwork; keep the surrounding card restrained. */
-      .better-hunt-mainstream .better-hunt-row--super{border-color:rgba(241,195,85,.46);background:linear-gradient(120deg,rgba(60,45,25,.7),var(--bh-card-lo));box-shadow:inset 2px 0 0 rgba(243,202,107,.62),inset 0 1px 0 rgba(255,255,255,.08)}
-      .better-hunt-mainstream .better-hunt-row--extreme{border-color:rgba(153,212,238,.45);background:linear-gradient(120deg,rgba(26,51,71,.75),var(--bh-card-lo));box-shadow:inset 2px 0 0 rgba(174,226,245,.65),inset 0 1px 0 rgba(255,255,255,.08)}
-      .better-hunt-mainstream .better-hunt-row--extreme .better-hunt-row-main .better-hunt-slot-marquee{color:#cceaf4}
-      .better-hunt-image-stats-panel--extreme,.better-hunt-hstrip-slot-stats--extreme,.better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{border-style:solid;border-color:rgba(169,225,244,.6)}
-      .better-hunt-main-active--extreme{border-style:solid;border-color:rgba(169,225,244,.6);background:linear-gradient(90deg,#213f52,#0d283d)}
-      .better-hunt-row--extreme .better-hunt-row-bg img,.better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art img,.better-hunt-main-active--extreme .better-hunt-main-active-art img,.better-hunt-card--extreme .better-hunt-card-img{filter:grayscale(.42) sepia(.14) hue-rotate(165deg) saturate(.72) brightness(.88) contrast(1.07);animation:none!important}
-      .better-hunt-tier-fx--extreme::before{background:url('/theme-effects/ice/bonus-frost-edge.webp') center/100% 100% no-repeat;filter:drop-shadow(0 0 3px rgba(184,238,255,.42));opacity:.8}
-      .better-hunt-tier-fx--extreme::after{background:radial-gradient(ellipse at 0 0,rgba(226,250,255,.3),transparent 38%),radial-gradient(ellipse at 100% 100%,rgba(203,240,255,.25),transparent 36%),linear-gradient(132deg,rgba(225,247,255,.11),transparent 38%,rgba(128,197,229,.08) 70%,rgba(239,252,255,.09));opacity:.72}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-mainstream .better-hunt-row--super{border-color:rgba(241,195,85,.46);background:linear-gradient(120deg,rgba(60,45,25,.7),var(--bh-card-lo));box-shadow:inset 2px 0 0 rgba(243,202,107,.62),inset 0 1px 0 rgba(255,255,255,.08)}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-mainstream .better-hunt-row--extreme{border-color:rgba(153,212,238,.45);background:linear-gradient(120deg,rgba(26,51,71,.75),var(--bh-card-lo));box-shadow:inset 2px 0 0 rgba(174,226,245,.65),inset 0 1px 0 rgba(255,255,255,.08)}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-mainstream .better-hunt-row--extreme .better-hunt-row-main .better-hunt-slot-marquee{color:#cceaf4}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-image-stats-panel--extreme,.better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-hstrip-slot-stats--extreme,.better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{border-style:solid;border-color:rgba(169,225,244,.6)}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-main-active--extreme{border-style:solid;border-color:rgba(169,225,244,.6);background:linear-gradient(90deg,#213f52,#0d283d)}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-row--extreme .better-hunt-row-bg img,.better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-image-stats-panel--extreme .better-hunt-image-stats-art img,.better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-main-active--extreme .better-hunt-main-active-art img,.better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-card--extreme .better-hunt-card-img{filter:grayscale(.42) sepia(.14) hue-rotate(165deg) saturate(.72) brightness(.88) contrast(1.07);animation:none!important}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-tier-fx--extreme::before{background:url('/theme-effects/ice/bonus-frost-edge.webp') center/100% 100% no-repeat;filter:drop-shadow(0 0 3px rgba(184,238,255,.42));opacity:.8}
+      .better-hunt-root[data-arctic-tier-fx="true"] .better-hunt-tier-fx--extreme::after{background:radial-gradient(ellipse at 0 0,rgba(226,250,255,.3),transparent 38%),radial-gradient(ellipse at 100% 100%,rgba(203,240,255,.25),transparent 36%),linear-gradient(132deg,rgba(225,247,255,.11),transparent 38%,rgba(128,197,229,.08) 70%,rgba(239,252,255,.09));opacity:.72}
       .better-hunt-root[data-anim="off"] .better-hunt-tier-fx--super::after{animation:none!important}
       .better-hunt-root[data-anim="off"] .better-hunt-card--extreme .better-hunt-card-img{animation:none!important}
       @media(prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-card--extreme .better-hunt-card-img,.better-hunt-root .better-hunt-main-active-shroud,.better-hunt-root .better-hunt-tier-fx--super::after{animation:none!important}}
@@ -3190,6 +3190,7 @@ export function BetterBonusHuntStyle({
   previewOnly = false,
 }) {
   const c = config || {};
+  const arcticTierEffects = getWidgetEffectsThemeKey("bonus_hunt", c) === "arctic";
   const rows = safeArray(safeArray(bonuses).length ? bonuses : c.bonuses);
   const opened = rows.filter(bonusOpened);
   const firstUnopened = rows.findIndex((bonus) => !bonusOpened(bonus));
@@ -4343,7 +4344,7 @@ export function BetterBonusHuntStyle({
                 className="better-hunt-image-stats-img"
                 {...attrs("bonus_hunt", c, "slotImage")}
               />
-              {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
+              {arcticTierEffects && tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
             </div>
             <div className="better-hunt-image-stats-copy">
               <div className="better-hunt-image-stats-title">
@@ -4492,7 +4493,7 @@ export function BetterBonusHuntStyle({
                         size={112}
                         className="better-hunt-card-img"
                       />
-                      {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
+                      {arcticTierEffects && tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
                       <span className="better-hunt-card-gloss" />
                     </div>
                   );
@@ -4576,7 +4577,7 @@ export function BetterBonusHuntStyle({
         >
           <div className="better-hunt-row-bg">
             <SlotImage src={bonusImage(bonus)} alt="" fit="cover" />
-            {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
+            {arcticTierEffects && tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
           </div>
           <div className="better-hunt-row-content">
             {positionNumber}
@@ -5054,7 +5055,7 @@ export function BetterBonusHuntStyle({
             alt={bonusSlotName(current, activeIndex)}
             {...attrs("bonus_hunt", c, "slotImage")}
           />
-          {tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
+          {arcticTierEffects && tier !== "normal" && <span className={`better-hunt-tier-fx better-hunt-tier-fx--${tier}`} aria-hidden="true" />}
         </div>
         <div className="better-hunt-main-active-stats">
           {activeRows.map(([label, value, Icon]) => (
@@ -5265,6 +5266,7 @@ export function BetterBonusHuntStyle({
       data-finish={c.finish || "flat"}
       data-drawer-mode={drawerMode}
       data-orientation={orientation}
+      data-arctic-tier-fx={arcticTierEffects ? "true" : "false"}
       data-session={sessionState}
       data-skin={skin}
       data-stats-layout={statsLayout}
