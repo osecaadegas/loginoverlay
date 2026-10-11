@@ -64,6 +64,15 @@ try {
   await page.setRequestInterception(true);
   page.on('request', async request => {
     const url = new URL(request.url());
+    const json = body => request.respond({ contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(body) });
+    if (request.method() === 'OPTIONS') return request.respond({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET, OPTIONS', 'access-control-allow-headers': request.headers()['access-control-request-headers'] || '*' } });
+    if (url.pathname === '/api/crypto-prices') return json({ prices: { btc: { price: 62000, change: 1.2 } } });
+    // Populated fixtures exercise the real read path without production writes.
+    if (url.pathname === '/api/slot-personal-best') return json({ best: {
+      slot_name: url.searchParams.get('slotName'), slot_provider: url.searchParams.get('provider'),
+      best_win: 12540.5, best_win_bet: 5, best_multiplier: 2508.1, best_multiplier_bet: 5, average_win: 540.75,
+    } });
+    if (url.pathname === '/rest/v1/slots') return json({ name: url.searchParams.get('name')?.replace(/^eq\./, '') || 'Le Vampire', provider: 'Hacksaw Gaming', rtp: 96.51, volatility: 'High', max_win_multiplier: 15000 });
     if (url.pathname === '/__orbital') return request.respond({ contentType: 'text/html', body: `<html><head><style>html,body{margin:0;background:transparent} .theme-effects-layer__debug,.theme-effects-layer__target-debug{display:none!important}</style></head><body><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>` });
     if (url.origin === base && !url.pathname.startsWith('/api/')) return request.continue();
     if (['data:', 'blob:'].includes(url.protocol)) return request.continue();
@@ -91,12 +100,18 @@ try {
       ...registry, ...themes, root, types: registry.getBetterWidgetTypes(),
       config(type, extra = {}) {
         const c = registry.resolveBetterWidgetConfig(type, registry.getBetterWidgetDefinition(type).defaultConfig, 'mock');
-        return themes.applyWidgetColourTheme(type, { ...c, ...extra, live: true, showCrypto: false, showNowPlaying: false, showSocials: false, twitchEnabled: false, kickEnabled: false, youtubeEnabled: false, bttvEnabled: false, animations: false }, extra.colourTheme || 'orbital');
+        return themes.applyWidgetColourTheme(type, { ...c, ...extra, live: true, showCrypto: extra.showCrypto === true, showNowPlaying: false, showSocials: false, twitchEnabled: false, kickEnabled: false, youtubeEnabled: false, bttvEnabled: false, animations: false }, extra.colourTheme || 'orbital');
+      },
+      currentSlot(width, height, runtime = 'editor', extra = {}) {
+        const instance = registry.createBetterInstance('current_slot', { width, height, config: this.config('current_slot', {
+          slot: { name: 'Gates of Olympus 1000', provider: 'Pragmatic Play', image: '/player.webp', rtp: 96.51, volatility: 'High', max_win_multiplier: 15000 }, ...extra,
+        }) });
+        root.render(h('div', { style: { width, height } }, registry.renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime, publicOverlayId: 'bo_' + 'a'.repeat(48) })));
       },
       scene({ single = '', environment = 'earth_orbit', quality = 'balanced', runtime = 'editor', effects = true, stars = true, animation = true, theme = 'orbital', glow = .45, seed = '', winner = '', spacecraftInterior = false } = {}) {
         const specs = [
           ['background', 0, 0, 1920, 1080, {}],
-          ['navbar', 14, 10, 1892, 65, {}],
+          ['navbar', 14, 10, 1892, 65, { showCrypto: true }],
           ['bonus_hunt', 14, 88, 340, 975, { sessionState: 'opening', drawerMode: 'contain', drawerAlwaysVisible: false, orientation: 'mainstream', carouselMode: 'imagestats', widgetHeight: 975, showRequests: true, bonuses: [
             { id: '1', slotName: 'Le Vampire', provider: 'Hacksaw Gaming', image: '/player.webp', betSize: .5, payout: 150, opened: true },
             { id: '3', slotName: 'Gates of Olympus 1000', provider: 'Pragmatic Play', image: '/player.webp', betSize: .5, payout: 50, opened: true },
@@ -121,7 +136,7 @@ try {
         const scale = single ? Math.min(1, innerWidth / width, innerHeight / height) : innerWidth / 1920;
         this.lastSize = { width, height, scale };
         root.render(h('div', { className: 'orbital-test-canvas', style: { position: 'relative', width, height, transform: `scale(${scale})`, transformOrigin: 'top left' } },
-          ...widgets.map(instance => h('div', { key: instance.instanceId, 'data-effect-target-id': instance.instanceId, style: { position: 'absolute', left: instance.x, top: instance.y, width: instance.width, height: instance.height, zIndex: instance.zIndex } }, registry.renderBetterWidgetInstance({ instance, layout: { instances: widgets }, mode: 'live', runtime: runtime === 'editor' ? 'editor' : 'obs' }))),
+          ...widgets.map(instance => h('div', { key: instance.instanceId, 'data-effect-target-id': instance.instanceId, style: { position: 'absolute', left: instance.x, top: instance.y, width: instance.width, height: instance.height, zIndex: instance.zIndex } }, registry.renderBetterWidgetInstance({ instance, layout: { instances: widgets }, mode: 'live', publicOverlayId: 'bo_' + 'a'.repeat(48), runtime: runtime === 'editor' ? 'editor' : 'obs' }))),
           h(FX, { instances: widgets, width, height, singleInstanceId: single ? widgets[0].instanceId : '', runtime }),
         ));
       },
@@ -178,6 +193,26 @@ try {
   assert(containment.terminal, `floating terminal reserves space for its casing: ${JSON.stringify(containment)}`);
   assert(containment.instruments, 'command instruments remain inside the beam');
   await page.screenshot({ path: `${out}/orbital-1920.png` });
+  for (const runtime of ['editor', 'obs']) {
+    for (const [width, height] of [[1100,240],[1118,290],[760,220],[650,180],[480,280],[2048,446]]) {
+      await page.setViewport({ width: Math.max(width,800), height: Math.max(height,600) });
+      await page.evaluate(({width,height,runtime}) => window.orbital.currentSlot(width,height,runtime), {width,height,runtime});
+      await page.waitForFunction(() => document.querySelector('[data-better-element="bestWinValue"]')?.textContent.includes('12,540.5'));
+      const terminal = await page.evaluate(() => {
+        const root = document.querySelector('.cg-widget'), box = root.getBoundingClientRect();
+        const failures = [...root.querySelectorAll('.cg-stat,.cg-stat > span,.cg-stat > strong,.cg-cover,h3')].filter(el => {
+          const r=el.getBoundingClientRect();
+          return r.left < box.left || r.right > box.right+1 || r.top < box.top || r.bottom > box.bottom+1 || el.scrollWidth > el.clientWidth+2;
+        }).map(el => `${el.className}: ${el.textContent}`);
+        const rows = [...root.querySelectorAll('.cg-stat')].map(el=>el.getBoundingClientRect().height);
+        return { failures, rows, valueSize: parseFloat(getComputedStyle(root.querySelector('.cg-stat strong')).fontSize), transform: getComputedStyle(root).transform };
+      });
+      assert.deepEqual(terminal.failures,[],`${runtime} ${width}x${height}: terminal readouts fit`);
+      assert(Math.max(...terminal.rows)-Math.min(...terminal.rows)<1,'readout rows have equal height');
+      assert(terminal.valueSize >= 14 && terminal.transform === 'none','compact readouts remain native readable text');
+      await (await page.$('.cg-widget')).screenshot({ path: `${out}/current-slot-${width}-${height}-${runtime}.png` });
+    }
+  }
   for (const [width, height] of [[2560, 1440], [1366, 768], [1920, 1080]]) {
     await page.setViewport({ width, height });
     await page.evaluate(() => window.orbital.scene());

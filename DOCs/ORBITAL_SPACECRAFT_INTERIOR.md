@@ -6,7 +6,9 @@ The transparent window reveals the existing Earth, stars, and environment modes.
 
 Saved setting: `config.themeEffects.orbital.spacecraftInterior` (boolean).
 
-Asset: `public/theme-effects/orbital/spacecraft-interior.webp`, 1672 × 941 with alpha, approximately 184 KiB. Generated with the built-in imagegen tool, then encoded to WebP at quality 85 with lossless alpha. No widget text or live information is baked into the image.
+Asset: `public/theme-effects/orbital/spacecraft-interior.webp`, 1672 × 941 with alpha, approximately 141 KiB. Generated with the built-in imagegen tool, then encoded to WebP at quality 85 with lossless alpha. No widget text or live information is baked into the image.
+
+The Orbital Current Slot terminal uses native container queries. Wide terminals retain the three readout bays; below 760px wide (and above 180px high), the identity sits above two equally sized readout bays. Short terminals reduce decoration and use compact rows. No transform scales its text. Saved per-element appearance overrides still take precedence. Other themes retain their existing layout.
 
 ## Generation prompt
 
@@ -15,3 +17,7 @@ Create a premium photorealistic science-fiction orbital space-station interior B
 ## Final proportion refinement prompt
 
 Edit this spacecraft interior asset, preserving its realistic dark titanium material, restrained cyan lighting, wide 16:9 format, no text, and true alpha transparency inside the window. Change ONLY the architecture proportions: the current opening is too wide and its physical frame will be hidden behind software widgets. Make the panoramic transparent window notably SMALLER and inset into a thick station wall: the transparent opening should occupy ONLY the middle 54% of image width (from x=23% to x=77%) and from y=16% to y=68%. Build substantial beveled window jambs immediately around that opening, with deep 3D recesses, small cyan lights, visible top ceiling lintel and bottom observation sill. Left and right outer 23% should be dark station walls where software panels will be overlaid. All corners and materials stay realistic and premium. No Earth or stars painted into the aperture: the smaller central window must have fully transparent alpha so the existing Earth scene shows through. No furniture, no people, no UI graphics.
+
+## Slimmer sill and material refinement
+
+Refine this existing realistic orbital observation room image, not a redesign. Keep the same navy titanium palette, 16:9 composition, true transparent central window, and restrained blue-white lights. Make the large bottom metal sill much thinner: expand the clear central opening down to 74% image height, while preserving the sides at about 24% and 76% image width and upper opening near 18% height. Opening must be transparent alpha, never a black fill or painted Earth. Keep a slim believable metal lip beneath the opening instead of the present double heavy console bulk. Refine symmetrical left and right chamfered corner joints, subtle contact shadows, vary brushed metal panels so textures don't repeat, very fine blue-white illuminated seams and restrained sky-blue reflection on the window-facing bevels. No text, no UI, no people, no furniture, no icons. Keep most visible solid structure outside the transparent opening; this is a background layer behind existing streaming widgets.

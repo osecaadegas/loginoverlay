@@ -10,7 +10,7 @@
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .ov-chat-messages {
   background: var(--orbital-glass-reflection),
     var(--orbital-star-field),
-    linear-gradient(180deg,#020a16f5 20%,#020a16cf 68%,#020a16cc),
+    linear-gradient(180deg,#020a16f5 15%,#020a16cf 55%,#020a16a6),
     var(--orbital-earth-texture) 62% 32% / cover no-repeat,#020a16;
   background-size: auto,113px 149px,179px 211px,auto,cover,auto;
 }
@@ -66,6 +66,11 @@
   background: linear-gradient(90deg,transparent,#67c7df66,transparent) center bottom / 70% 1px no-repeat,var(--orbital-glass-reflection);
   opacity: 1; border-color: #75b8d124;
 }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .ov-chat-giveaway .better-gw-result-card {
+  border-color: var(--orbital-inner-border); border-radius: var(--orbital-cell-radius);
+  box-shadow: var(--orbital-inset),inset 0 -1px 0 #67c7df55;
+}
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .ov-chat-giveaway .better-gw-result-card::before { border: 0; }
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.better-gw-result-frost,.better-gw-result-crystal) { display: none; }
 
 /* Database: a single night-side crop is visible through the three glass bays. */

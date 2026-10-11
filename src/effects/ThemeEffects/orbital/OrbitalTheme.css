@@ -1,5 +1,6 @@
 @import "./OrbitalPanels.css";
 @import "./OrbitalEnvironmentSurfaces.css";
+@import "./OrbitalCurrentSlot.css";
 
 .oc-bg-widget--orbital { pointer-events: none; isolation: isolate; }
 .orbital-environment, .orbital-environment > div,

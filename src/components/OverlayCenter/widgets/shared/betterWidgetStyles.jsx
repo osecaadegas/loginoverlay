@@ -5711,6 +5711,12 @@ export function BetterChatMessage({
       animation: animationName === "none" ? "none"
         : `${animationName} 260ms ease-out ${enterDelay}ms both`,
     }),
+    ...(c.colourTheme === "orbital" && !emphasized && {
+      borderRadius: 5,
+      background: "linear-gradient(110deg,#143047c9,#030d19eb 65%)",
+      borderColor: "#618ca02e",
+      boxShadow: "inset 2px 0 0 #578ba16b,inset 0 1px 0 #c3e8fc0c",
+    }),
   });
   return (
     <div
@@ -6110,6 +6116,7 @@ export function BetterRtpStatsStyle({
   showBestWin = true,
 }) {
   const c = config || {};
+  const orbital = c.colourTheme === "orbital";
   const accent = c.cBolt || c.rtpIconColor || c.accentColor || "#f7a41d";
   const bgFrom = c.cBarTop || c.barBgFrom || "#0c2150";
   const bgMid = c.cBarMid || c.barBgMid || "#081735";
@@ -6189,7 +6196,7 @@ export function BetterRtpStatsStyle({
         boxSizing: "border-box",
         display: "flex",
         alignItems: "center",
-        gap: 16,
+        gap: orbital ? 10 : 16,
         padding: `${paddingY}px ${paddingX}px`,
         borderRadius: radius,
         background: `linear-gradient(180deg, ${bgFrom} 0%, ${bgMid} 46%, ${bgTo} 100%)`,
@@ -6241,7 +6248,7 @@ export function BetterRtpStatsStyle({
                 fontFamily: font,
                 fontSize: Math.max(7, labelSize - 2),
                 fontWeight: 900,
-                letterSpacing: "0.18em",
+                letterSpacing: orbital ? "0.04em" : "0.18em",
                 lineHeight: 1.15,
                 textTransform: "uppercase",
                 whiteSpace: "nowrap",
@@ -6264,14 +6271,14 @@ export function BetterRtpStatsStyle({
         style={{
           minWidth: 0,
           overflow: "hidden",
-          flex: "1 1 220px",
+          flex: orbital ? "1 1 150px" : "1 1 220px",
           maxWidth: "min(260px, 26vw)",
           margin: 0,
           color: text,
           fontFamily: titleFont,
           fontSize: titleSize,
           fontWeight: 850,
-          letterSpacing: `${numberValue(c.titleTracking, 0.08)}em`,
+          letterSpacing: `${numberValue(c.titleTracking, orbital ? 0.025 : 0.08)}em`,
           lineHeight: 1,
           textOverflow: "ellipsis",
           textShadow: `0 1px 10px ${bgTo}`,
@@ -6296,20 +6303,23 @@ export function BetterRtpStatsStyle({
       {statItems.length ? (
         <div
           style={{
-            display: "flex",
+            display: orbital ? "grid" : "flex",
+            gridTemplateColumns: orbital ? `repeat(${statItems.length},minmax(0,1fr))` : undefined,
             alignItems: "center",
-            gap: 14,
+            gap: orbital ? 8 : 14,
             minWidth: 0,
-            flex: "0 0 auto",
+            flex: orbital ? "1.5 1 360px" : "0 0 auto",
           }}
         >
           {statItems.map(([part, label, value, , delay]) => (
             <div
               key={part}
               style={{
-                display: "flex",
+                display: orbital ? "grid" : "flex",
+                gridTemplateColumns: orbital ? "16px minmax(0,1fr)" : undefined,
                 alignItems: "center",
-                gap: 7,
+                padding: orbital ? "5px 8px" : undefined,
+                gap: orbital ? "4px 5px" : 7,
                 flexShrink: 0,
                 minWidth: 0,
                 whiteSpace: "nowrap",
@@ -6323,7 +6333,7 @@ export function BetterRtpStatsStyle({
                 strokeWidth={1}
                 style={{
                   "--bolt-color": c.cBolt || accent,
-                  animation: "better-rtp-bolt 2.4s ease-in-out infinite",
+                  animation: orbital ? "none" : "better-rtp-bolt 2.4s ease-in-out infinite",
                   animationDelay: delay,
                   flexShrink: 0,
                 }}
@@ -6334,7 +6344,7 @@ export function BetterRtpStatsStyle({
                   fontFamily: font,
                   fontSize: labelSize,
                   fontWeight: 800,
-                  letterSpacing: "0.16em",
+                  letterSpacing: orbital ? "0.025em" : "0.16em",
                   textTransform: "uppercase",
                   whiteSpace: "nowrap",
                 }}
@@ -6347,6 +6357,8 @@ export function BetterRtpStatsStyle({
                   color: text,
                   fontFamily: titleFont,
                   fontSize: valueSize,
+                  gridColumn: orbital ? "1 / -1" : undefined,
+                  justifySelf: orbital ? "end" : undefined,
                   fontWeight: 850,
                   letterSpacing: "0.04em",
                   lineHeight: 1,
@@ -6374,9 +6386,10 @@ export function BetterRtpStatsStyle({
       {showBestWin ? (
         <div
           style={{
-            display: "flex",
+            display: orbital ? "grid" : "flex",
+            gridTemplateColumns: orbital ? "16px minmax(0,1fr)" : undefined,
             alignItems: "center",
-            gap: 8,
+            gap: orbital ? "4px 5px" : 8,
             flexShrink: 0,
             marginLeft: "auto",
             maxWidth: "min(300px, 30vw)",
@@ -6396,7 +6409,7 @@ export function BetterRtpStatsStyle({
             strokeWidth={1.2}
             style={{
               "--trophy-color": c.cGold || "#ffc01e",
-              animation: "better-rtp-trophy 3.2s ease-in-out infinite",
+              animation: orbital ? "none" : "better-rtp-trophy 3.2s ease-in-out infinite",
               flexShrink: 0,
             }}
           />
@@ -6406,7 +6419,7 @@ export function BetterRtpStatsStyle({
               fontFamily: font,
               fontSize: labelSize,
               fontWeight: 800,
-              letterSpacing: "0.14em",
+              letterSpacing: orbital ? "0.035em" : "0.14em",
               textTransform: "uppercase",
               whiteSpace: "nowrap",
             }}
@@ -6414,7 +6427,7 @@ export function BetterRtpStatsStyle({
           >
             Best Win
           </span>
-          <span style={{ color: muted, fontSize: labelSize, opacity: 0.5 }}>
+          <span style={{ display: orbital ? "none" : undefined, color: muted, fontSize: labelSize, opacity: 0.5 }}>
             {"\u2014"}
           </span>
           <strong
@@ -6422,7 +6435,8 @@ export function BetterRtpStatsStyle({
               overflow: "hidden",
               color: text,
               fontFamily: font,
-              fontSize: labelSize + 1,
+              fontSize: orbital ? valueSize : labelSize + 1,
+              gridColumn: orbital ? "1 / -1" : undefined,
               fontWeight: 700,
               lineHeight: 1,
               minWidth: 0,

@@ -1786,6 +1786,7 @@ function NavbarWidget({
       <div
         {...partAttrs("music")}
         style={withElementOffset(c, "music", {
+          ...orbitalInstrument,
           display: "flex",
           alignItems: "center",
           minWidth: 0,
@@ -1822,6 +1823,7 @@ function NavbarWidget({
       <div
         {...partAttrs("crypto")}
         style={withElementOffset(c, "crypto", {
+          ...orbitalInstrument,
           display: "flex",
           alignItems: "center",
           minWidth: 0,
