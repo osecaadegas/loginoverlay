@@ -2,6 +2,8 @@
 // painted surface, not that box (notably Bonus Hunt's fitted panel).
 const SURFACES = {
   bonus_hunt: ".better-hunt-panel",
+  current_slot: ".cg-widget",
+  bets: ".bets-ov, .bet-widget",
   slot_bingo: ".slot-bingo-widget",
   slideshow_frame: ".better-slideshow-frame",
   rtp_stats: '.rtp-stats-bar',

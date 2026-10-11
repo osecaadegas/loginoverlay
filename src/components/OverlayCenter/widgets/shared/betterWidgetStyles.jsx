@@ -3278,11 +3278,9 @@ export function BetterBonusHuntStyle({
   const carouselMode = carouselModes.includes(c.carouselMode)
     ? c.carouselMode
     : "3d";
-  // Arctic Mainstream reserves the footer as a permanent results terminal.
-  // Other themes retain the user's reveal timing unless explicitly pinned.
-  const drawerAlwaysVisible =
-    c.drawerAlwaysVisible === true ||
-    (arcticTierEffects && orientation === "mainstream");
+  // Keep the saved control authoritative. Themes may restyle the result
+  // terminal, but must not silently turn a user-disabled terminal back on.
+  const drawerAlwaysVisible = c.drawerAlwaysVisible === true;
   const configuredDrawerMode = c.drawerMode === "expand" ? "expand" : "contain";
   const drawerMode = drawerAlwaysVisible ? "expand" : configuredDrawerMode;
   const drawerRevealSeconds = clampNumber(
@@ -3473,8 +3471,12 @@ export function BetterBonusHuntStyle({
       const multi = bonusMultiplierValue(bonus);
       return !worst || multi < bonusMultiplierValue(worst) ? bonus : worst;
     }, null);
+  // A pinned result terminal is useful as soon as the first slot has opened.
+  // Timed Best/Worst reveals retain the two-result threshold so both states
+  // are meaningful before the automatic cycle starts.
   const resultDrawerReady =
-    opened.length >= 2 && Boolean(bestSlot || worstSlot);
+    Boolean(bestSlot || worstSlot) &&
+    (drawerAlwaysVisible || opened.length >= 2);
   const [resultPeekOpen, setResultPeekOpen] = useState(false);
   useEffect(() => {
     if (!resultDrawerReady) {
@@ -4882,7 +4884,7 @@ export function BetterBonusHuntStyle({
   };
 
   const renderBonusFooter = ({ horizontal = false } = {}) => {
-    if (sessionState === "hunt") return null;
+    if (sessionState === "hunt" && !drawerAlwaysVisible) return null;
 
     const showProfit = sessionState === "ended";
     const profitSign = totalProfit >= 0 ? "+" : "-";
@@ -5145,7 +5147,8 @@ export function BetterBonusHuntStyle({
           ["Best", bestWinValue],
         ]
       : [];
-    const horizontalResultsReady = sessionState !== "hunt" && resultDrawerReady;
+    const horizontalResultsReady =
+      (sessionState !== "hunt" || drawerAlwaysVisible) && resultDrawerReady;
     const currentTier = bonusTier(current);
 
     return (

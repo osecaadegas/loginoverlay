@@ -108,6 +108,13 @@ try {
     const React = (await import("/node_modules/.vite/deps/react.js")).default;
     const ReactDOM = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;
     const { gsap } = await import(`/node_modules/.vite/deps/gsap.js?v=${dependencyHash}`);
+    const { supabase } = await import('/src/config/supabaseClient.js');
+    // Permission discovery is covered by its own API tests. Keep this visual
+    // fixture local and deterministic so CSP/network state cannot remove all
+    // effect targets before their geometry is asserted.
+    supabase.rpc = async name => name === 'get_overlay_asset_access'
+      ? { data: [], error: null }
+      : { data: null, error: null };
     const ThemeEffectsLayer = (await import("/src/effects/ThemeEffects/ThemeEffectsLayer.jsx")).default;
     const registry = await import("/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx");
     const { switchChatStyle } = await import("/src/components/OverlayCenter/widgets/chat/chatStyles.js");
@@ -147,6 +154,9 @@ try {
             { id: 'ice-request', username: 'SlotFan', message: '!sr Stormforged', platform: 'twitch', avatarUrl: '/player.webp' },
           ] }],
           ["rtp_stats", 392, 814, 1068, 64, {}],
+          ["current_slot", 392, 814, 1068, 234, {
+            slot: { name: "Frozen Signal", provider: "Pragmatic Play", image: "/player.webp", rtp: 96.5, volatility: "High", max_win_multiplier: 15000 },
+          }],
           ["bets", 392, 890, 620, 176, {
             displayStyle: "better_bets", theme, betTheme: theme,
             orientation: "horizontal", layoutMode: "bars", columns: 2,
@@ -161,7 +171,9 @@ try {
             data: { currentMatchIdx: 0, matches: [{ id: "ice-match", player1: "North", player2: "Frost", type: "bonus", status: "in_progress", winner, config: {}, rounds: [{ player1: { bonusCost: 20, bonusPayout: 45 }, player2: { bonusCost: 20, bonusPayout: 30 } }], slot1: { name: "Frozen glass", image: "/theme-effects/ice/ice-glass.webp" }, slot2: { name: "Cold crystal", image: "/theme-effects/ice/ice-glass.webp" } }] },
           }],
         ];
-        const widgets = specifications.filter(([type]) => single ? type === single : dense || type !== "tournament").map(([type, x, y, w, h, config]) => ({
+        const widgets = specifications.filter(([type]) => single
+          ? type === single
+          : (dense || type !== "tournament") && type !== "current_slot").map(([type, x, y, w, h, config]) => ({
           ...registry.createBetterInstance(type),
           instanceId: `ice-${type}`, widgetType: type, visible: true,
           x: single ? 0 : x, y: single ? 0 : y, width: w, height: h, opacity: 1, zIndex: type === "background" ? 0 : 10,
@@ -368,7 +380,7 @@ try {
   await checkBounds();
   await page.setViewport({ width: 1400, height: 900 });
   await checkBounds();
-  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame', 'chat', 'bets', 'tournament']) {
+  for (const type of ['slot_bingo', 'bonus_hunt', 'slideshow_frame', 'chat', 'current_slot', 'bets', 'tournament']) {
     await page.evaluate((single) => window.fxTest.renderScene({ single }), type);
     await new Promise((resolve) => setTimeout(resolve, 750));
     await checkBounds();

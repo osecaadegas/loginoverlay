@@ -25,7 +25,10 @@ try {
     }
   });
   await page.setViewport({ width: 1600, height: 1000 });
-  await page.goto(`${baseUrl}/__hunt-readability-test`, { waitUntil: 'networkidle0' });
+  // Vite keeps an HMR connection open in local runs, so DOM readiness is the
+  // deterministic boundary; module imports below provide the real app-ready
+  // synchronization for this fixture.
+  await page.goto(`${baseUrl}/__hunt-readability-test`, { waitUntil: 'domcontentloaded' });
   const { browserHash } = JSON.parse(readFileSync(new URL('../node_modules/.vite/deps/_metadata.json', import.meta.url), 'utf8'));
   await page.evaluate(async version => {
     const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
@@ -110,6 +113,42 @@ try {
     await page.evaluate(() => Promise.all([...document.images].map(img => img.decode().catch(() => {}))));
     await settle();
   };
+
+  // A pinned Mainstream result terminal must remain rendered during the hunt
+  // and become useful after the first opened slot. This protects the saved
+  // "Always visible" control from session-state and result-count gating.
+  await mount([{
+    width: 402,
+    height: 980,
+    count: 3,
+    opened: 1,
+    config: {
+      orientation: 'mainstream',
+      colourTheme: 'arctic',
+      sessionState: 'hunt',
+      drawerAlwaysVisible: true,
+      animations: true,
+    },
+  }]);
+  assert.ok(await page.$('.better-hunt-drawer.is-open'), 'Pinned Arctic Mainstream results render after the first opened slot');
+  assert.equal(await page.$eval('.better-hunt-drawer', drawer => drawer.getAttribute('aria-hidden')), 'false');
+  await new Promise(resolve => setTimeout(resolve, 250));
+  assert.ok(await page.$('.better-hunt-drawer.is-open'), 'Pinned Arctic Mainstream results remain visible');
+
+  await mount([{
+    width: 402,
+    height: 980,
+    count: 3,
+    opened: 1,
+    config: {
+      orientation: 'mainstream',
+      colourTheme: 'arctic',
+      sessionState: 'hunt',
+      drawerAlwaysVisible: false,
+      animations: true,
+    },
+  }]);
+  assert.equal(await page.$('.better-hunt-drawer'), null, 'Arctic does not override a disabled Always visible setting');
   const checkGeometry = async label => {
     await page.evaluate(() => Promise.all(document.getAnimations()
       .filter(animation => animation.effect?.getTiming().iterations !== Infinity)
