@@ -2175,6 +2175,7 @@ function BetterStyleSheet() {
       @keyframes better-hunt-kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(1.5%,-1.5%)}}
       @keyframes better-hunt-cloak{0%,10%,90%,100%{opacity:1}45%,55%{opacity:.12}}
       @keyframes better-hunt-gold{0%,100%{box-shadow:0 0 16px rgba(255,190,40,.45),0 0 32px rgba(255,160,20,.25),inset 0 0 10px rgba(255,210,40,.3);border-color:#ffd23d}50%{box-shadow:0 0 26px rgba(255,210,50,.65),0 0 46px rgba(255,180,30,.45),inset 0 0 16px rgba(255,230,50,.5);border-color:#ffea7a}}
+      @keyframes better-hunt-super-snow{0%,100%{opacity:.72;background-position:0 0,14px 9px,3px 16px}50%{opacity:1;background-position:7px -4px,7px 14px,-4px 11px}}
       @keyframes better-hunt-hot-pulse{0%,100%{box-shadow:0 0 0 1px var(--bh-glow-a),0 0 22px color-mix(in srgb,var(--bh-ice) 64%,transparent),0 0 52px color-mix(in srgb,var(--bh-glow-b) 52%,transparent),inset 0 0 14px color-mix(in srgb,var(--bh-ice) 12%,transparent)}50%{box-shadow:0 0 0 1px var(--bh-ice-deep),0 0 38px color-mix(in srgb,var(--bh-ice) 86%,transparent),0 0 86px color-mix(in srgb,var(--bh-glow-a) 62%,transparent),inset 0 0 22px color-mix(in srgb,var(--bh-ice) 18%,transparent)}}
       @keyframes better-hunt-widget-shake{0%,100%{transform:translate(0,0)}12%{transform:translate(-5px,3px)}24%{transform:translate(5px,-4px)}36%{transform:translate(-4px,-3px)}48%{transform:translate(4px,3px)}62%{transform:translate(-3px,2px)}78%{transform:translate(2px,-1px)}}
       @keyframes better-hunt-win-life{0%{opacity:0}5%{opacity:1}86%{opacity:1}100%{opacity:0}}
@@ -2231,7 +2232,7 @@ function BetterStyleSheet() {
       .better-hunt-main-progress-track{height:var(--bh-bar-height);min-width:0;flex:1;overflow:hidden;border-radius:999px;background:var(--bh-track);box-shadow:inset 0 1px 2px rgba(0,0,0,.7)}
       .better-hunt-main-progress-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--bh-ice-deep),var(--bh-ice-mid),var(--bh-ice-deep));box-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 55%,transparent);transition:width .45s ease}
       .better-hunt-main-progress-count{color:var(--bh-steel-hi);font-size:.92em;font-weight:950;letter-spacing:.08em;line-height:1;white-space:nowrap}.better-hunt-main-progress-count strong{color:var(--bh-ice);text-shadow:0 0 10px color-mix(in srgb,var(--bh-ice) 55%,transparent)}
-      .better-hunt-main-active{display:flex;min-height:142px;overflow:hidden;margin:10px 12px 0;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.6);animation:better-hunt-stats-in calc(.6s / var(--anim-speed,1)) cubic-bezier(.22,.9,.3,1) both}
+      .better-hunt-main-active{position:relative;display:flex;min-height:142px;overflow:hidden;margin:10px 12px 0;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.6);animation:better-hunt-stats-in calc(.6s / var(--anim-speed,1)) cubic-bezier(.22,.9,.3,1) both}
       .better-hunt-main-active--normal{background:linear-gradient(90deg,#12b76a,#0a7a48)}.better-hunt-main-active--super{border-color:#ffd23d;background:linear-gradient(90deg,#e8b923,#a8760e);animation:better-hunt-stats-in calc(.6s / var(--anim-speed,1)) cubic-bezier(.22,.9,.3,1) both,better-hunt-gold calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}.better-hunt-main-active--extreme{border-color:rgba(255,84,112,.72);border-style:dashed;background:linear-gradient(90deg,#e8452a,#8f2110)}
       .better-hunt-main-active-art{position:relative;width:112px;min-height:142px;flex:0 0 112px;overflow:hidden;background:var(--bh-inset)}
       .better-hunt-main-active-art img{width:100%;height:100%;display:block;object-fit:cover;animation:better-hunt-kenburns calc(8s / var(--anim-speed,1)) ease-out both}
@@ -2536,8 +2537,17 @@ function BetterStyleSheet() {
       .better-hunt-ring .better-hunt-card{animation:none}
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--super{animation:better-hunt-gold calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}
       .better-hunt-ring .better-hunt-card--center.better-hunt-card--extreme{animation:none;border-style:dashed}
+      /* Super bonuses use a warm, snowy frame treatment in every carousel. */
+      .better-hunt-row--super::before,.better-hunt-image-stats-panel--super::before,.better-hunt-main-active--super::before,.better-hunt-card--super::before{content:"";position:absolute;inset:2px;z-index:8;border:2px solid transparent;border-radius:inherit;background:radial-gradient(circle at 12% 18%,#fff7b0 0 1px,transparent 2px),radial-gradient(circle at 76% 22%,#ffe56a 0 1px,transparent 2px),radial-gradient(circle at 38% 86%,#fff0a0 0 1px,transparent 2px);background-size:17px 13px,23px 17px,29px 19px;background-repeat:repeat;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;box-shadow:inset 0 0 10px rgba(255,214,61,.55),0 0 10px rgba(255,194,32,.42);pointer-events:none;animation:better-hunt-super-snow calc(2.4s / var(--anim-speed,1)) ease-in-out infinite}
+      .better-hunt-row--super::before{z-index:5;inset:3px;border-width:1px}
+      .better-hunt-card--super::before{z-index:4;inset:2px}
+      .better-hunt-image-stats-panel--super::before,.better-hunt-main-active--super::before{z-index:4}
+      /* Unopened/hidden bonuses are intentionally frozen and cool-toned. */
+      .better-hunt-row--hidden .better-hunt-row-bg img,.better-hunt-image-stats-panel--hidden .better-hunt-image-stats-art img,.better-hunt-main-active--hidden .better-hunt-main-active-art img,.better-hunt-card--hidden .better-hunt-card-img{filter:grayscale(.92) saturate(.28) brightness(.72) contrast(1.08);animation:none!important}
+      .better-hunt-row--hidden .better-hunt-row-bg::after,.better-hunt-image-stats-panel--hidden .better-hunt-image-stats-art::after,.better-hunt-main-active--hidden .better-hunt-main-active-art::after,.better-hunt-card--hidden::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(185,225,255,.16),rgba(30,74,108,.22) 48%,rgba(0,0,0,.38));mix-blend-mode:screen;pointer-events:none}
+      .better-hunt-root[data-anim="off"] .better-hunt-row--super::before,.better-hunt-root[data-anim="off"] .better-hunt-image-stats-panel--super::before,.better-hunt-root[data-anim="off"] .better-hunt-main-active--super::before,.better-hunt-root[data-anim="off"] .better-hunt-card--super::before{animation:none!important}
       .better-hunt-root[data-anim="off"] .better-hunt-card--extreme .better-hunt-card-img{animation:none!important}
-      @media(prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-card--extreme .better-hunt-card-img,.better-hunt-root .better-hunt-main-active-shroud{animation:none!important}}
+      @media(prefers-reduced-motion:reduce){.better-hunt-root .better-hunt-card--extreme .better-hunt-card-img,.better-hunt-root .better-hunt-main-active-shroud,.better-hunt-root .better-hunt-row--super::before,.better-hunt-root .better-hunt-image-stats-panel--super::before,.better-hunt-root .better-hunt-main-active--super::before,.better-hunt-root .better-hunt-card--super::before{animation:none!important}}
       .better-hunt-root[data-anim="off"] .better-hunt-track>span,.better-hunt-root[data-anim="off"] .better-hunt-drawer,.better-hunt-root[data-anim="off"] .better-hunt-card,.better-hunt-root[data-anim="off"] .better-hunt-horizontal{transition:none}
       @media(prefers-reduced-motion:reduce){.better-hunt-track>span{transition:none}}
       .better-hunt-rails{position:relative;padding-left:14px;padding-right:14px}.better-hunt-rails::before,.better-hunt-rails::after{content:"";position:absolute;top:0;bottom:0;width:8px;border-radius:999px;background:linear-gradient(180deg,var(--bh-line-hi),var(--bh-line-mid),var(--bh-line-hi));box-shadow:inset 1px 0 0 rgba(255,255,255,.18),inset -1px 0 0 rgba(0,0,0,.55),0 0 8px color-mix(in srgb,var(--bh-line-hi) 30%,transparent)}.better-hunt-rails::before{left:0}.better-hunt-rails::after{right:0}
@@ -4316,7 +4326,7 @@ export function BetterBonusHuntStyle({
           {...attrs("bonus_hunt", c, "slotCarouselContainer")}
         >
           <div
-            className={`better-hunt-image-stats-panel better-hunt-image-stats-panel--${tier}`}
+            className={`better-hunt-image-stats-panel better-hunt-image-stats-panel--${tier}${bonusOpened(current) ? "" : " better-hunt-image-stats-panel--hidden"}`}
             {...attrs("bonus_hunt", c, "carouselBackdrop")}
           >
             <div className="better-hunt-image-stats-art">
@@ -4446,7 +4456,7 @@ export function BetterBonusHuntStyle({
                   return (
                     <div
                       key={`${bonusSlotName(bonus, index)}-${index}`}
-                      className={`better-hunt-card better-hunt-card--${tier}${centered ? " better-hunt-card--center" : ""}`}
+                      className={`better-hunt-card better-hunt-card--${tier}${centered ? " better-hunt-card--center" : ""}${bonusOpened(bonus) ? "" : " better-hunt-card--hidden"}`}
                       {...attrs(
                         "bonus_hunt",
                         c,
@@ -4546,7 +4556,7 @@ export function BetterBonusHuntStyle({
       return (
         <div
           key={`${bonusSlotName(bonus, index)}-${index}-${keySuffix}`}
-          className={`better-hunt-row better-hunt-row--image${tierClass}`}
+          className={`better-hunt-row better-hunt-row--image${tierClass}${openedState ? "" : " better-hunt-row--hidden"}`}
           data-bonus-tier={tier}
           {...attrs(
             "bonus_hunt",
@@ -5025,7 +5035,7 @@ export function BetterBonusHuntStyle({
     return (
       <div
         key={`mainstream-active-${activeIndex}`}
-        className={`better-hunt-main-active better-hunt-main-active--${tier}`}
+        className={`better-hunt-main-active better-hunt-main-active--${tier}${bonusOpened(current) ? "" : " better-hunt-main-active--hidden"}`}
         {...attrs("bonus_hunt", c, "carouselBackdrop")}
       >
         <div className="better-hunt-main-active-art">
