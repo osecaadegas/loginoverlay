@@ -1,3 +1,4 @@
+import { useOverlayAssetAccess } from '../../../hooks/useOverlayAssetAccess';
 import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
 import { ORBITAL_ENVIRONMENTS } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
@@ -95,7 +96,6 @@ import {
 import {
   BRUTUS_VIDEO_LIBRARY,
   BRUTUS_SLIDESHOW_ROLE,
-  addAllBrutusMedia,
   filterBrutusMediaText,
   hasMediaLine,
   toggleBrutusMediaLine,
@@ -5740,6 +5740,16 @@ function BetterSlideshowFrameControls({
   userId,
 }) {
   const { allowed: isBrutus, loading: roleLoading } = useBrutusMediaAccess(userId);
+  const assetAccess = useOverlayAssetAccess(userId);
+  const managedBanners = (assetAccess.assets || []).filter(a => a.kind === 'banner');
+  const permittedBanners = [
+    ...BRUTUS_VIDEO_LIBRARY.filter(item => {
+      const managed = managedBanners.find(a => a.key === item.url);
+      return managed ? managed.allowed : isBrutus;
+    }),
+    ...managedBanners.filter(a => a.allowed && !BRUTUS_VIDEO_LIBRARY.some(b => b.url === a.key))
+      .map(a => ({ id: a.id, label: a.label, url: a.key, mediaLine: a.key + '|' + a.mediaType + '|' + a.label })),
+  ];
   const c = ensureBetterWidgetConfig("slideshow_frame", config);
   const [tab, setTab] = useTab("media");
   const tabs = [
@@ -5753,10 +5763,13 @@ function BetterSlideshowFrameControls({
   const widgetHeight = clampNumber(widget?.height, 120, 1080, 360);
 
   const protectBrutusMedia = (patch) => {
-    if (roleLoading || isBrutus || typeof patch?.mediaText !== "string") return patch;
+    if (roleLoading || assetAccess.loading || typeof patch?.mediaText !== "string") return patch;
     return {
       ...patch,
-      mediaText: filterBrutusMediaText(patch.mediaText, false),
+      mediaText: patch.mediaText.split(/\r?\n/).filter(line => {
+        const managed = managedBanners.find(a => line.split('|')[0].trim() === a.key);
+        return managed ? managed.allowed : Boolean(filterBrutusMediaText(line, isBrutus));
+      }).join('\n'),
     };
   };
 
@@ -5811,22 +5824,22 @@ function BetterSlideshowFrameControls({
             <p className="bp-hint">
               Supported lines: URL, URL|image|Label, or URL|video|Label.
             </p>
-            {isBrutus ? (
+            {permittedBanners.length ? (
               <div className="bp-brutus-video-library">
                 <div className="bp-brutus-video-library__head">
                   <span>
                     <MonitorPlay size={13} />
-                    Brutus video library
+                    Available banner library
                   </span>
                   <button
                     type="button"
-                    onClick={() => set({ mediaText: addAllBrutusMedia(c.mediaText) })}
+                    onClick={() => set({ mediaText: permittedBanners.reduce((text, item) => hasMediaLine(text, item) ? text : toggleBrutusMediaLine(text, item), c.mediaText) })}
                   >
                     Add all
                   </button>
                 </div>
                 <div className="bp-brutus-video-library__grid">
-                  {BRUTUS_VIDEO_LIBRARY.map((item) => {
+                  {permittedBanners.map((item) => {
                     const selected = hasMediaLine(c.mediaText, item);
                     return (
                       <button
@@ -5849,7 +5862,7 @@ function BetterSlideshowFrameControls({
                   })}
                 </div>
                 <p className="bp-hint">
-                  Available to accounts with the Brutus role. Selected videos play
+                  Media available through your overlay roles. Selected items play
                   normally in editor previews and OBS.
                 </p>
               </div>
@@ -7143,6 +7156,7 @@ export function BetterWidgetControls({
   ...props
 }) {
   const c = ensureBetterWidgetConfig(type, config);
+  const access = useOverlayAssetAccess(props.userId || props.user?.id);
   const selected = getSelectedWidgetColourTheme(type, c);
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
@@ -7150,8 +7164,10 @@ export function BetterWidgetControls({
       {type === "background" && effectsThemeKey !== 'orbital' && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
+          {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
+          {access.loading && <p role="status">Loading themes…</p>}
           <div className="bp-theme-grid" role="group" aria-label="Colour theme">
-            {WIDGET_COLOUR_THEMES.map((theme) => {
+            {WIDGET_COLOUR_THEMES.filter(theme => access.canUse("theme", theme.key)).map((theme) => {
               const Icon = COLOUR_THEME_ICONS[theme.icon];
               return (
                 <button

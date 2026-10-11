@@ -12,6 +12,7 @@ import {
 import { supabase } from "../../config/supabaseClient";
 import "./AdminPanel.css";
 import "./AdminPanel.new.css";
+import OverlayRolesAdmin, { OverlayRoleAssignments } from './OverlayRolesAdmin';
 import ApiKeysAdmin from "./ApiKeysAdmin";
 import ContactMessagesAdmin from "./ContactMessagesAdmin";
 import { CasinoOfferModal } from "./modals";
@@ -24,7 +25,7 @@ import {
 
 // Valid tab IDs for URL deep linking
 const DEFAULT_ADMIN_TAB = "users";
-const VALID_TABS = new Set(["users", "offers", "messages", "apikeys"]);
+const VALID_TABS = new Set(["users", "offers", "messages", "apikeys", "overlayroles"]);
 const getValidAdminTab = (tab) =>
   VALID_TABS.has(tab) ? tab : DEFAULT_ADMIN_TAB;
 const SLOT_CATALOG_SELECT =
@@ -1325,6 +1326,7 @@ export default function AdminPanel() {
   }
 
   const adminTabs = [
+    { id: "overlayroles", label: "Overlay roles", shortLabel: "Overlay roles", kicker: "Exclusive assets", description: "Custom roles, themes and media access" },
     {
       id: "users",
       label: "User Management",
@@ -1436,6 +1438,7 @@ export default function AdminPanel() {
             onChange={(e) => handleTabChange(e.target.value)}
           >
             {[
+              { id: "overlayroles", label: "Overlay roles", icon: "◈" },
               { id: "users", label: "User Management", icon: "👥" },
               { id: "offers", label: "Partnerships", icon: "🤝" },
               { id: "messages", label: "Contact Messages", icon: "✉️" },
@@ -1460,6 +1463,7 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      {activeTab === "overlayroles" && <OverlayRolesAdmin />}
       {/* User Management Tab */}
       <Show when={activeTab === "users"}>
         <>
@@ -1981,6 +1985,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
+                <OverlayRoleAssignments key={editingUser.id} userId={editingUser.id} />
                 {/* Roles Section */}
                 <div className="panel-section">
                   <div className="section-header">

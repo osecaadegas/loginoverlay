@@ -1,3 +1,5 @@
+import { useOverlayAssetAccess } from '../../hooks/useOverlayAssetAccess';
+import { blockedOverlayAsset } from '../../utils/overlayAssetAccess';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { resolveInstanceThemeEffects } from "./themeEffectsConfig";
 import { findEffectSurface, measureEffectTargets } from "./targetBounds";
@@ -49,11 +51,13 @@ function countTargetEvents(element) {
 
 export default function ThemeEffectsLayer({
   instances,
+  userId,
   width,
   height,
   singleInstanceId = "",
   runtime = "editor",
 }) {
+  const access = useOverlayAssetAccess(userId);
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const visibleRef = useRef(true);
@@ -65,8 +69,8 @@ export default function ThemeEffectsLayer({
   const [measuredTargets, setMeasuredTargets] = useState([]);
   const debug = useMemo(readDebugOptions, []);
   const targets = useMemo(
-    () => buildEffectTargets(instances, singleInstanceId),
-    [instances, singleInstanceId],
+    () => buildEffectTargets(access.assets ? instances.filter(i => !blockedOverlayAsset(i.config, access.assets)) : [], singleInstanceId),
+    [instances, singleInstanceId, access.assets],
   );
   dimensionsRef.current = { width, height, runtime };
 

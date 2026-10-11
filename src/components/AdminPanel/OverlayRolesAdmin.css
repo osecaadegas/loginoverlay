@@ -1,0 +1,19 @@
+.overlay-role-admin { color: #e5edf5; }
+.overlay-role-admin p, .overlay-role-admin small { color: #a5b8cb; line-height: 1.5; }
+.ora-columns { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(300px, 2fr); gap: 24px; }
+.ora-columns > section { min-width: 0; padding: 20px; background: #0b1725; border: 1px solid #263c51; border-radius: 14px; }
+.overlay-role-admin form > label { display: grid; gap: 8px; margin-bottom: 14px; }
+.overlay-role-admin input:not([type=checkbox]), .overlay-role-admin textarea, .overlay-role-admin select { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #37526a; border-radius: 7px; color: #edf6ff; background: #07121f; }
+.overlay-role-admin button { min-height: 38px; padding: 8px 13px; margin: 4px 6px 4px 0; border-radius: 7px; border: 1px solid #37526a; background: #142d44; color: #e5f6ff; cursor: pointer; }
+.overlay-role-admin button:disabled { opacity: .5; cursor: wait; }
+.overlay-role-admin button[aria-pressed=true] { border-color: #5ac9ee; background: #1b415d; }
+.ora-role { padding: 15px 0; border-bottom: 1px solid #263c51; }
+.ora-assets { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); max-height: 380px; overflow: auto; margin: 14px 0; }
+.ora-assets button { display: grid; gap: 5px; text-align: left; }
+.overlay-role-admin .ora-choice { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.ora-choice input { width: 18px; height: 18px; flex: 0 0 auto; }
+.ora-choice small { display: block; }
+.ora-asset-editor { border-top: 1px solid #37526a; margin-top: 18px; padding-top: 16px; }
+.ora-media-preview :is(img, video) { display: block; max-width: 100%; height: 180px; object-fit: contain; margin-bottom: 16px; border-radius: 8px; background: #050c15; }
+.overlay-role-admin .ora-error { color: #ffbac3; }
+@media(max-width:800px) { .ora-columns { grid-template-columns: 1fr; } }

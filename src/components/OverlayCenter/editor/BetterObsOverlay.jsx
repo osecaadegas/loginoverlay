@@ -297,7 +297,7 @@ export default function BetterObsOverlay() {
               "--obs-render-scale": geometry.renderScale,
             }}
           >
-            <ThemeEffectsLayer
+            <ThemeEffectsLayer userId={publication.ownerUserId}
               instances={[renderInstance]}
               width={geometry.layoutWidth}
               height={geometry.layoutHeight}
@@ -356,7 +356,7 @@ export default function BetterObsOverlay() {
             transform: geometry.transform,
           }}
         >
-          <ThemeEffectsLayer
+          <ThemeEffectsLayer userId={publication.ownerUserId}
             instances={layout.instances}
             width={BETTER_CANVAS.width}
             height={BETTER_CANVAS.height}

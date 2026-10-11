@@ -77,6 +77,11 @@ try {
     const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
     const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
     const { BetterWidgetControls, ensureBetterWidgetConfig } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
+    const { supabase } = await import('/src/config/supabaseClient.js');
+    const originalRpc = supabase.rpc.bind(supabase);
+    // This palette fixture has no restricted assets. Access/RLS has its own integration suite.
+    supabase.rpc = (name, args) => name === 'get_overlay_asset_access'
+      ? Promise.resolve({ data: [], error: null }) : originalRpc(name, args);
     const registry = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
     const themes = await import('/src/components/OverlayCenter/editor/widgetColourThemes.js');
     const { WIDGET_COLOUR_THEMES } = await import('/src/components/OverlayCenter/widgets/shared/colourThemePalettes.js');
@@ -135,6 +140,7 @@ try {
   const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve)))));
   const mount = async (type, config, options) => {
     await page.evaluate(({ type, config, options }) => window.themeTest.mount(type, config, options), { type, config, options });
+    await page.waitForSelector('.bp-theme-grid button');
     await settle();
     await page.evaluate(() => Promise.all([...document.images].map(img => img.decode().catch(() => {}))));
     await settle();

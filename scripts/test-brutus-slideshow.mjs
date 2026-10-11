@@ -68,7 +68,8 @@ assert.ok(
 
 const editorSource = readFileSync(`${root}/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx`, "utf8");
 const adminSource = readFileSync(`${root}/src/components/AdminPanel/AdminPanel.jsx`, "utf8");
-assert.match(editorSource, /isBrutus\s*\?/);
+assert.match(editorSource, /permittedBanners.length\s*\?/);
+assert.match(editorSource, /managed \? managed.allowed : isBrutus/);
 assert.match(editorSource, /filterBrutusMediaText/);
 assert.match(editorSource, /role\.role !== BRUTUS_SLIDESHOW_ROLE/);
 assert.match(adminSource, /option value="brutus"/);

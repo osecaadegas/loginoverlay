@@ -1,3 +1,4 @@
+import { useOverlayAssetAccess } from '../../../hooks/useOverlayAssetAccess';
 import React from "react";
 import {
   BACKGROUND_IMAGE_LIBRARY,
@@ -5,10 +6,12 @@ import {
 } from "../widgets/background/backgroundLibrary";
 
 export default function BackgroundLibraryPicker({ value, onChange, type = "image" }) {
-  const backgrounds = type === "video"
+  const access = useOverlayAssetAccess();
+  const defaults = type === "video"
     ? BACKGROUND_VIDEO_LIBRARY
     : BACKGROUND_IMAGE_LIBRARY;
 
+  const backgrounds = [...defaults, ...(access.assets || []).filter(a => a.kind === "background" && a.mediaType === type && !defaults.some(b => b.url === a.key)).map(a => ({ url: a.key, label: a.label }))].filter(b => access.canUse("background", b.url));
   return (
     <div
       className="bp-background-library"
@@ -16,6 +19,8 @@ export default function BackgroundLibraryPicker({ value, onChange, type = "image
       role="group"
       aria-label={`${type === "video" ? "Video background" : "Background"} library`}
     >
+      {access.loading && <p role="status">Loading backgrounds…</p>}
+      {access.error && <p role="alert">Could not load background access. <button type="button" onClick={access.retry}>Retry</button></p>}
       {backgrounds.map((background) => (
         <button
           key={background.url}

@@ -1,3 +1,4 @@
+import OverlayAssetGate from './editor/OverlayAssetGate';
 /**
  * OverlayRenderer.jsx — The OBS Browser Source page.
  *
@@ -156,6 +157,7 @@ const WidgetSlot = memo(function WidgetSlot({
     : null;
 
   return (
+    <OverlayAssetGate userId={userId} config={widget.config} runtime={runtime}>
     <div
       id={slotId}
       className={`or-widget-slot ${animClass}`}
@@ -220,7 +222,7 @@ const WidgetSlot = memo(function WidgetSlot({
           previewOnly={runtime !== "obs"}
         />
       )}
-    </div>
+    </div></OverlayAssetGate>
   );
 });
 

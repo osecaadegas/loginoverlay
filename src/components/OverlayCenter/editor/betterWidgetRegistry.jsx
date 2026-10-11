@@ -1,3 +1,4 @@
+import OverlayAssetGate from './OverlayAssetGate';
 import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
 import { orbitalStyleVariables } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 import { getWidgetColourThemeTokens } from './widgetColourThemes.js';
@@ -1319,6 +1320,7 @@ export function renderBetterWidgetInstance({
   const greekArchitectureEnabled =
     widget.config.themeEffects?.greek?.architecture !== false;
   return (
+    <OverlayAssetGate userId={userId} config={widget.config} runtime={runtime}>
     <div
       className="better-widget-colour-scope"
       data-colour-theme={colourThemeKey || undefined}
@@ -1329,5 +1331,6 @@ export function renderBetterWidgetInstance({
     >
       <WidgetComponent {...commonProps} />
     </div>
+    </OverlayAssetGate>
   );
 }
