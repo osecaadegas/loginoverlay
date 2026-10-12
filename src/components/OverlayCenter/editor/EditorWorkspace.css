@@ -417,6 +417,14 @@
   background: #35494e;
   color: #e3f8f2;
 }
+.editor-segmented button[aria-label="Community overlays"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-left: 1px solid #39464d;
+  padding-left: 12px;
+  color: #bdece1;
+}
 .editor-workspace .better-editor-canvas-shell {
   display: block;
   place-items: normal;
@@ -683,6 +691,194 @@
   background: #67dfc4;
   color: #102b23;
   border-color: #67dfc4;
+}
+.community-overlay-dialog {
+  width: min(860px, calc(100vw - 32px));
+}
+.community-overlay-dialog > header {
+  align-items: flex-start;
+}
+.community-overlay-dialog > header p {
+  margin: 5px 0 0;
+  color: #9fb5bd;
+}
+.community-overlay-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+.community-overlay-actions > button,
+.community-overlay-share-form button,
+.community-overlay-card-actions button,
+.community-overlay-error button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid #52646d;
+  background: #27363e;
+  color: #e0edf1;
+  cursor: pointer;
+}
+.community-overlay-actions > button.is-primary,
+.community-overlay-share-form button.is-primary,
+.community-overlay-card-actions button.is-primary {
+  border-color: #67dfc4;
+  background: #285c50;
+  color: #e9fff9;
+}
+.community-overlay-share-form {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: 12px;
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid #45635f;
+  border-radius: 6px;
+  background: #13201f;
+}
+.community-overlay-share-form label {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  color: #dcebea;
+  font-size: 12px;
+  font-weight: 700;
+}
+.community-overlay-share-form label span {
+  color: #87a09f;
+  font-weight: 500;
+}
+.community-overlay-share-form input,
+.community-overlay-share-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid #52646d;
+  border-radius: 4px;
+  background: #081013;
+  color: #f2f8fa;
+  font: inherit;
+  resize: vertical;
+}
+.community-overlay-share-form > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #9fb6b3;
+}
+.community-overlay-share-form > div {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.community-overlay-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(480px, 55dvh);
+  margin-top: 14px;
+  overflow: auto;
+}
+.community-overlay-list > article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+  padding: 11px;
+  border: 1px solid #3d5159;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #19262c, #111b20);
+}
+.community-overlay-copy {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+.community-overlay-copy > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.community-overlay-copy strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #f0f7f8;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.community-overlay-copy small {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #285348;
+  color: #c3f5e9;
+  font-size: 10px;
+}
+.community-overlay-copy p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #a9bdc4;
+  font-size: 12px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.community-overlay-copy ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.community-overlay-copy li {
+  padding: 3px 6px;
+  border: 1px solid #3d5e63;
+  border-radius: 3px;
+  color: #b9d0d5;
+  font-size: 10px;
+}
+.community-overlay-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.community-overlay-card-actions button.is-danger {
+  padding-inline: 9px;
+  border-color: #714b52;
+  color: #ffcbd2;
+}
+.community-overlay-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border: 1px solid #744b53;
+  border-radius: 5px;
+  color: #ffd7dc;
+  background: #311b20;
+}
+@media (max-width: 700px) {
+  .community-overlay-actions,
+  .community-overlay-share-form,
+  .community-overlay-list > article {
+    grid-template-columns: 1fr;
+  }
+  .community-overlay-actions > button,
+  .community-overlay-card-actions button.is-primary {
+    width: 100%;
+  }
+  .community-overlay-card-actions {
+    justify-content: stretch;
+  }
 }
 .editor-build-actions {
   display: flex;

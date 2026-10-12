@@ -773,6 +773,16 @@ function pickLiveDataPatch(widgetType, liveConfig = {}) {
   }, {});
 }
 
+export function stripBetterRuntimeData(widgetType, config = {}) {
+  const next = cloneJson(config || {});
+  const runtimeKeys = new Set([
+    ...(LIVE_DATA_KEYS[widgetType] || []),
+    ...(MOCK_DATA_KEYS[widgetType] || []),
+  ]);
+  runtimeKeys.forEach((key) => delete next[key]);
+  return next;
+}
+
 function pickMockDataPatch(widgetType) {
   const fixture = MOCK_WIDGET_CONFIGS[widgetType] || {};
   return (MOCK_DATA_KEYS[widgetType] || []).reduce((patch, key) => {

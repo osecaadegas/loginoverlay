@@ -18,6 +18,7 @@ export function createOverlayTestDatabase(initial = {}) {
         single() { single = true; return query; },
         update(value) { action = 'update'; payload = value; return query; },
         insert(value) { action = 'insert'; payload = value; return query; },
+        delete() { action = 'delete'; return query; },
         upsert(value, options = {}) { action = 'upsert'; payload = value; conflictKey = options.onConflict; return query; },
         async then(resolve, reject) {
           try {
@@ -37,6 +38,9 @@ export function createOverlayTestDatabase(initial = {}) {
               rows = [row];
             } else if (action === 'update') {
               rows.forEach((row) => Object.assign(row, structuredClone(payload)));
+            } else if (action === 'delete') {
+              const deleted = new Set(rows);
+              tables[table] = tables[table].filter((row) => !deleted.has(row));
             }
             const project = (row) => columns === '*' ? structuredClone(row) : Object.fromEntries(columns.split(',').map((key) => {
               if (key === 'name:draft_layout->>name') return ['name', row.draft_layout?.name];
@@ -48,6 +52,16 @@ export function createOverlayTestDatabase(initial = {}) {
         },
       };
       return query;
+    },
+    async rpc(name, args = {}) {
+      calls.push({ rpc: name, args: structuredClone(args) });
+      if (name === 'load_shared_overlay_template') {
+        const row = (tables.shared_overlay_templates || []).find((item) => item.id === args.p_template_id);
+        return row
+          ? { data: { id: row.id, name: row.name, layout: structuredClone(row.layout), schemaVersion: row.schema_version }, error: null }
+          : { data: null, error: new Error('This shared overlay is no longer available.') };
+      }
+      return { data: null, error: new Error(`Unsupported test RPC: ${name}`) };
     },
     channel() { const channel = { on: () => channel, subscribe: () => channel }; return channel; },
     removeChannel() {},

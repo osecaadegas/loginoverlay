@@ -26,7 +26,7 @@ try {
       await request.abort();
     }
   });
-  await page.goto(`${baseUrl}/__editor-build-test`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/__editor-build-test`, { waitUntil: 'domcontentloaded' });
   const { browserHash } = JSON.parse(readFileSync(new URL('../node_modules/.vite/deps/_metadata.json', import.meta.url), 'utf8'));
   const mount = (tables) => page.evaluate(async ({ version, tables }) => {
     await import('/src/index.css');
@@ -54,9 +54,18 @@ try {
       overlay_instances: [{ id: 'legacy', user_id: user.id, is_active: true }],
       overlay_themes: [{ user_id: user.id, overlay_id: 'legacy' }],
       overlay_widgets: [],
+      shared_overlay_templates: [{
+        id: 'shared-a', owner_id: 'community-author', name: 'Community Arctic',
+        description: 'A shared arctic command layout.',
+        layout: layout('Community Arctic', 'Shared Hunt'),
+        preview: layout('Community Arctic', 'Shared Hunt').preview,
+        widget_types: ['bonus_hunt'], schema_version: 1,
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      }],
     };
     const { client, state } = createOverlayTestDatabase(tables || defaults);
     supabase.from = client.from;
+    supabase.rpc = client.rpc;
     supabase.channel = client.channel;
     supabase.removeChannel = client.removeChannel;
     supabase.auth.getSession = async () => ({ data: { session: { user, access_token: 'test-fixture' } } });
@@ -135,7 +144,7 @@ try {
   assert.match(await selectedBuild(), /My Evening Build/);
   const tables = await page.evaluate(() => window.buildTest.state.tables);
   await page.evaluate(() => window.buildTest.unmount());
-  await page.reload({ waitUntil: 'networkidle0' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await mount(tables);
   await page.waitForSelector('[aria-label="My Live Hunt actions"]');
   assert.match(await selectedBuild(), /My Evening Build/);
@@ -311,7 +320,7 @@ try {
   await clickText('Content', '.bp-panel-tabs');
   const savedTables = await page.evaluate(() => window.buildTest.state.tables);
   await page.evaluate(() => window.buildTest.unmount());
-  await page.reload({ waitUntil: 'networkidle0' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await mount(savedTables);
   await page.waitForSelector('[aria-label="My Live Hunt actions"]');
   assert.equal(await page.$eval('.editor-inspector', (element) => element.dataset.mode), 'advanced', 'Control mode persists across reload');
@@ -359,9 +368,32 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `Editor fits ${width}px width`);
     if (process.env.EDITOR_SCREENSHOT) await page.screenshot({ path: process.env.EDITOR_SCREENSHOT.replace('.png', `-${width}.png`) });
   }
+
+  // Community templates load as independent builds and the current user can share/remove copies.
+  await page.click('[aria-label="Community overlays"]');
+  await page.waitForSelector('.community-overlay-dialog[open]');
+  assert.match(await page.$eval('.community-overlay-list', (element) => element.textContent), /Community Arctic/);
+  if (process.env.EDITOR_SCREENSHOT) await page.screenshot({ path: process.env.EDITOR_SCREENSHOT.replace('.png', '-community.png') });
+  await clickText('Load as new build', '.community-overlay-dialog');
+  await waitBuild('Community Arctic Copy');
+  await page.waitForSelector('[aria-label="Shared Hunt actions"]');
+  assert.equal(await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.filter((row) => row.user_id === 'build-user' && row.draft_layout.name === 'Community Arctic Copy').length), 1);
+  await page.click('[aria-label="Community overlays"]');
+  await page.waitForSelector('.community-overlay-dialog[open]');
+  await clickText('Share this overlay', '.community-overlay-dialog');
+  await enterName('.community-overlay-share-form input', 'My Community Copy');
+  await enterName('.community-overlay-share-form textarea', 'A safe reusable copy.');
+  await clickText('Share with community', '.community-overlay-share-form');
+  await page.waitForFunction(() => window.buildTest.state.tables.shared_overlay_templates.length === 2);
+  assert.match(await page.$eval('.community-overlay-list', (element) => element.textContent), /My Community Copy/);
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.click('[aria-label="Remove My Community Copy from community"]');
+  await page.waitForFunction(() => window.buildTest.state.tables.shared_overlay_templates.length === 1);
+  await page.click('[aria-label="Close community overlays"]');
+
   assert.deepEqual(errors, []);
   await page.evaluate(() => window.buildTest.unmount());
-  console.log('Editor UI checks passed: builds, publication isolation, settings search, local preferences, save recovery, geometry, history, visibility/locking, add/delete, preview and mobile drawers.');
+  console.log('Editor UI checks passed: builds, community sharing/loading, publication isolation, settings search, local preferences, save recovery, geometry, history, visibility/locking, add/delete, preview and mobile drawers.');
 } catch (error) {
   if (process.env.EDITOR_SCREENSHOT && page) await page.screenshot({ path: process.env.EDITOR_SCREENSHOT.replace('.png', '-failure.png') });
   throw error;

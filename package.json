@@ -35,6 +35,7 @@
     "test:slot-personal-best": "node scripts/test-slot-personal-best.mjs",
     "test:brutus-slideshow": "node scripts/test-brutus-slideshow.mjs",
     "test:editor-builds": "node scripts/test-editor-builds.mjs",
+    "test:shared-overlays": "node scripts/test-shared-overlays.mjs",
     "test:landing-widget-carousel": "node scripts/test-landing-widget-carousel.mjs",
     "test:slot-detector": "node scripts/test-slot-detector.mjs",
     "test:slot-providers": "node scripts/test-slot-providers.mjs",

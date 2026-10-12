@@ -74,6 +74,7 @@ import EditorInspector from "./EditorInspector";
 import EditorWidgetPicker from "./EditorWidgetPicker";
 import { readEditorPreferences, useEditorPreferences } from "./editorPreferences";
 import OverlayBuildFolders from "./OverlayBuildFolders";
+import CommunityOverlayLibrary from "./CommunityOverlayLibrary";
 import {
   getBetterWidgetNudge,
   moveBetterWidgetLayer,
@@ -1897,7 +1898,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <div
             className="editor-segmented"
             role="group"
-            aria-label="Preview data"
+            aria-label="Preview data and community overlays"
           >
             <button
               type="button"
@@ -1913,6 +1914,13 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
             >
               Live
             </button>
+            <CommunityOverlayLibrary
+              userId={user.id}
+              layout={layout}
+              onSave={flushDraft}
+              onSelect={onSelectBuild}
+              disabled={Boolean(operation) || previewing}
+            />
           </div>
           <div className="editor-zoom-tools">
             <button

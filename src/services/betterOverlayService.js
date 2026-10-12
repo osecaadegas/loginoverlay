@@ -4,6 +4,12 @@ import {
   normalizeBetterLayout,
 } from "../components/OverlayCenter/editor/betterWidgetRegistry";
 import {
+  cloneSharedBetterLayout,
+  createShareableBetterLayout,
+  SHARED_OVERLAY_TEMPLATE_VERSION,
+  summarizeSharedBetterLayout,
+} from "../components/OverlayCenter/editor/sharedOverlayTemplates";
+import {
   getOrCreateInstance,
   getTheme,
   getWidgets,
@@ -13,6 +19,7 @@ import {
 
 const EDITOR_TABLE = "better_editor_overlays";
 const PUBLIC_TABLE = "better_overlay_publications";
+const SHARED_TABLE = "shared_overlay_templates";
 
 export function selectBetterEditorOverlay(userId, overlayId) {
   try { localStorage.setItem(`better-editor-build:${userId}`, overlayId); } catch { /* Storage can be disabled in browser sources. */ }
@@ -94,6 +101,20 @@ function normalizeLiveSource({
     ownerUserId: ownerUserId || instance?.user_id || null,
     widgets: Array.isArray(widgets) ? widgets : [],
     theme: theme || null,
+  };
+}
+
+function normalizeSharedTemplate(row, userId = null) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description || "",
+    preview: Array.isArray(row.preview) ? row.preview : [],
+    widgetTypes: Array.isArray(row.widget_types) ? row.widget_types : [],
+    isMine: Boolean(userId && row.owner_id === userId),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
@@ -189,6 +210,73 @@ export async function createBetterEditorOverlay(userId, name, sourceLayout = nul
   if (!trimmedName || trimmedName.length > 80) throw new Error("Use a build name between 1 and 80 characters.");
   const layout = normalizeBetterLayout({ ...(sourceLayout || createDefaultBetterLayout()), name: trimmedName });
   return normalizeEditorRow(await createOwnedBetterOverlayRow(userId, layout));
+}
+
+export async function listSharedBetterOverlays(userId) {
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from(SHARED_TABLE)
+    .select(
+      "id,owner_id,name,description,preview,widget_types,created_at,updated_at",
+    )
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data || []).map((row) => normalizeSharedTemplate(row, userId));
+}
+
+export async function shareBetterOverlay(userId, layout, metadata = {}) {
+  if (!userId) throw new Error("Sign in to share an overlay.");
+  const name = String(metadata.name || layout?.name || "").trim();
+  const description = String(metadata.description || "").trim();
+  if (!name || name.length > 80)
+    throw new Error("Use a template name between 1 and 80 characters.");
+  if (description.length > 500)
+    throw new Error("Keep the description under 500 characters.");
+  const sharedLayout = createShareableBetterLayout({ ...layout, name });
+  const { preview, widgetTypes } = summarizeSharedBetterLayout(sharedLayout);
+  const { data, error } = await supabase
+    .from(SHARED_TABLE)
+    .insert({
+      owner_id: userId,
+      name,
+      description,
+      layout: sharedLayout,
+      preview,
+      widget_types: widgetTypes,
+      schema_version: SHARED_OVERLAY_TEMPLATE_VERSION,
+    })
+    .select(
+      "id,owner_id,name,description,preview,widget_types,created_at,updated_at",
+    )
+    .single();
+  if (error) throw error;
+  return normalizeSharedTemplate(data, userId);
+}
+
+export async function loadSharedBetterOverlay(userId, templateId) {
+  if (!userId) throw new Error("Sign in to load a community overlay.");
+  if (!templateId) throw new Error("Choose a community overlay to load.");
+  const { data, error } = await supabase.rpc("load_shared_overlay_template", {
+    p_template_id: templateId,
+  });
+  if (error) throw error;
+  if (!data?.layout) throw new Error("This shared overlay is no longer available.");
+  const layout = cloneSharedBetterLayout(data.layout, data.name);
+  return createBetterEditorOverlay(userId, layout.name, layout);
+}
+
+export async function unshareBetterOverlay(userId, templateId) {
+  if (!userId) throw new Error("Sign in to manage shared overlays.");
+  const { data, error } = await supabase
+    .from(SHARED_TABLE)
+    .delete()
+    .eq("id", templateId)
+    .eq("owner_id", userId)
+    .select("id")
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("This shared overlay is unavailable.");
+  return data.id;
 }
 
 export async function getBetterEditorLiveSource(userId) {
