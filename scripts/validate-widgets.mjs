@@ -21,6 +21,7 @@ const builtinSource = readFileSync(
 const expectedTypes = [
   "current_slot",
   "slot_bingo",
+  "connect_four",
   "bonus_hunt",
   "giveaway",
   "navbar",

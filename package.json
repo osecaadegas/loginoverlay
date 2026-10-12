@@ -9,6 +9,7 @@
     "validate:widgets": "node scripts/validate-widgets.mjs",
     "test:appearance-editor": "node scripts/test-appearance-editor.mjs",
     "test:widget-control-categories": "node scripts/test-widget-control-categories.mjs",
+    "test:overlay-editor-audit": "node scripts/test-overlay-editor-control-audit.mjs",
     "test:background-editor": "node scripts/test-background-editor.mjs",
     "test:editor-backgrounds": "node scripts/test-editor-backgrounds-browser.mjs",
     "test:global-navigation": "node scripts/test-global-navigation.mjs",

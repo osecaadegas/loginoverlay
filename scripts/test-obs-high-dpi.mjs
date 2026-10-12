@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getObsRenderGeometry } from "../src/components/OverlayCenter/editor/obsRenderGeometry.js";
+import { scaleStandaloneWidgetConfig } from "../src/components/OverlayCenter/editor/obsConfigScaling.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
@@ -66,5 +67,40 @@ const presetSource = fs.readFileSync(
 );
 assert.match(presetSource, /runtime === "obs-single"/);
 assert.match(presetSource, /\? 2/);
+
+for (const widgetType of ["chat", "giveaway", "navbar", "rtp_stats", "bets"]) {
+  const instance = { width: 720, height: 480 };
+  const rendered = scaleStandaloneWidgetConfig({
+    widgetType,
+    instance,
+    renderScale: 2,
+    config: {
+      fontSize: 14,
+      __appearanceExplicitSubElements: {
+        primary: {
+          fontSize: 13,
+          padding: 6,
+          borderWidth: 2,
+          radius: 7,
+          opacity: 0.7,
+          lineHeight: 1.25,
+          states: {
+            active: { fontSize: 15, glowSize: 8, opacity: 0.9 },
+          },
+        },
+      },
+    },
+  });
+  const primary = rendered.__appearanceExplicitSubElements.primary;
+  assert.equal(rendered.fontSize, 28, `${widgetType}: root font size scales`);
+  assert.equal(primary.fontSize, 26, `${widgetType}: scoped font size scales`);
+  assert.equal(primary.padding, 12, `${widgetType}: scoped padding scales`);
+  assert.equal(primary.borderWidth, 4, `${widgetType}: scoped border scales`);
+  assert.equal(primary.radius, 14, `${widgetType}: scoped radius scales`);
+  assert.equal(primary.states.active.fontSize, 30, `${widgetType}: state font size scales`);
+  assert.equal(primary.states.active.glowSize, 16, `${widgetType}: state glow scales`);
+  assert.equal(primary.opacity, 0.7, `${widgetType}: opacity remains unitless`);
+  assert.equal(primary.lineHeight, 1.25, `${widgetType}: line height remains unitless`);
+}
 
 console.log("OBS high-DPI geometry and renderer checks passed.");

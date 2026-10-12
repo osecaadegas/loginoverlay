@@ -80,6 +80,9 @@ import { getWidgetStyleOptionsForQuickEditor } from "../appearance/v2/widgetAppe
 import { setScopedAppearanceConfigValue } from "../appearance/v2/appearanceRouting";
 import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
+import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
+import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
+import SlideshowFrameWidget from "../widgets/slideshow-frame/SlideshowFrameWidget";
 import {
   formatSlotBingoMultiplier,
   getSlotBingoSquareCount,
@@ -1962,7 +1965,17 @@ function HuntSection({ title, icon, children, category }) {
 
 function BetterBetsPreview({ config }) {
   const c = ensureBetterWidgetConfig("bets", config);
-  return <BetsWidget config={c} />;
+  const previewConfig = c.gameStatus && c.gameStatus !== "idle"
+    ? c
+    : {
+        ...c,
+        question: "What will the bonus hunt return?",
+        options: ["0 - 99x", "100 - 199x", "200 - 299x", "300x+"],
+        bets: { opt_0: 120, opt_1: 260, opt_2: 80, opt_3: 40 },
+        gameStatus: "open",
+        timerSeconds: 180,
+      };
+  return <BetsWidget config={previewConfig} />;
 }
 
 function BetterChatPreview({ config, widget, allWidgets }) {
@@ -2081,6 +2094,12 @@ export function BetterWidgetPreview({
     case 'current_slot': return <CurrentSlotWidget config={config} userId={userId} widgetId={widget?.id} />;
     case "slot_bingo":
       return <SlotBingoWidget config={config} widgetId={widget?.id || widget?.instanceId} />;
+    case "connect_four":
+      return <ConnectFourWidget config={config} userId={userId} runtime="editor" previewWhenIdle />;
+    case "raid_shoutout":
+      return <RaidShoutoutWidget config={config} userId={userId} runtime="editor" allWidgets={allWidgets} />;
+    case "slideshow_frame":
+      return <SlideshowFrameWidget config={config} userId={userId} runtime="editor" />;
     case "tournament":
       return <TournamentWidget config={config} />;
     case "bets":
