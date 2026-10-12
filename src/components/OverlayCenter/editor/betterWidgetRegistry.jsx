@@ -1327,6 +1327,7 @@ export function renderBetterWidgetInstance({
   liveWidgets = [],
   publicOverlayId,
   renderScale = 1,
+  accessVerified = false,
 }) {
   const definition = getBetterWidgetDefinition(instance?.widgetType);
   if (!definition?.component || !instance) return null;
@@ -1370,7 +1371,7 @@ export function renderBetterWidgetInstance({
   const greekArchitectureEnabled =
     widget.config.themeEffects?.greek?.architecture !== false;
   return (
-    <OverlayAssetGate userId={userId} config={widget.config} runtime={runtime}>
+    <OverlayAssetGate userId={userId} config={widget.config} runtime={runtime} accessVerified={accessVerified}>
     <div
       className="better-widget-colour-scope"
       data-colour-theme={colourThemeKey || undefined}

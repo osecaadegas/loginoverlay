@@ -115,6 +115,7 @@ function normalizeSharedTemplate(row, userId = null) {
     isMine: Boolean(userId && row.owner_id === userId),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    ...(row.layout ? { layout: normalizeBetterLayout(row.layout) } : {}),
   };
 }
 
@@ -220,6 +221,13 @@ export async function listSharedBetterOverlays(userId) {
       "id,owner_id,name,description,preview,widget_types,created_at,updated_at",
     )
     .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data || []).map((row) => normalizeSharedTemplate(row, userId));
+}
+
+export async function listSharedBetterOverlayPreviews(userId) {
+  if (!userId) return [];
+  const { data, error } = await supabase.rpc("browse_shared_overlay_templates");
   if (error) throw error;
   return (data || []).map((row) => normalizeSharedTemplate(row, userId));
 }

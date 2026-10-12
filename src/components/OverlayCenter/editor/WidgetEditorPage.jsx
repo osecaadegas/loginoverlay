@@ -1915,10 +1915,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
               Live
             </button>
             <CommunityOverlayLibrary
-              userId={user.id}
-              layout={layout}
               onSave={flushDraft}
-              onSelect={onSelectBuild}
               disabled={Boolean(operation) || previewing}
             />
           </div>

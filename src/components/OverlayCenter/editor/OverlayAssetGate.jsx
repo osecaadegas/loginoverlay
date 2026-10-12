@@ -1,7 +1,7 @@
 import React from 'react';
 import { useOverlayAssetAccess } from '../../../hooks/useOverlayAssetAccess';
 
-export default function OverlayAssetGate({ userId, config, runtime, children }) {
+function CheckedOverlayAssetGate({ userId, config, runtime, children }) {
   const access = useOverlayAssetAccess(userId);
   const blocked = access.blocked(config);
   if (!blocked) return children;
@@ -10,4 +10,9 @@ export default function OverlayAssetGate({ userId, config, runtime, children }) 
     {access.error ? <><span>Overlay access could not be checked.</span> <button onClick={access.retry}>Retry</button></>
       : access.loading ? 'Checking overlay access…' : `${blocked.label} requires an exclusive overlay role. Choose another asset or contact an administrator.`}
   </div>;
+}
+
+export default function OverlayAssetGate(props) {
+  if (props.accessVerified) return props.children;
+  return <CheckedOverlayAssetGate {...props} />;
 }

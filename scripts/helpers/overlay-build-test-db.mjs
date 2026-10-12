@@ -55,6 +55,12 @@ export function createOverlayTestDatabase(initial = {}) {
     },
     async rpc(name, args = {}) {
       calls.push({ rpc: name, args: structuredClone(args) });
+      if (name === 'browse_shared_overlay_templates') {
+        return {
+          data: structuredClone(tables.shared_overlay_templates || []),
+          error: null,
+        };
+      }
       if (name === 'load_shared_overlay_template') {
         const row = (tables.shared_overlay_templates || []).find((item) => item.id === args.p_template_id);
         return row

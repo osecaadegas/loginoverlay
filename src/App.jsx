@@ -48,6 +48,9 @@ const OverlayControlCenter = lazy(
 const WidgetEditorPage = lazy(
   () => import("./components/OverlayCenter/editor/WidgetEditorPage"),
 );
+const CommunityOverlaysSharePage = lazy(
+  () => import("./components/OverlayCenter/editor/CommunityOverlaysSharePage"),
+);
 const BetterObsOverlay = lazy(
   () => import("./components/OverlayCenter/editor/BetterObsOverlay"),
 );
@@ -289,6 +292,18 @@ function App() {
                           redirectTo="/premium"
                         >
                           <WidgetEditorPage />
+                        </ProtectedAdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/community_overlays_share"
+                      element={
+                        <ProtectedAdminRoute
+                          allowPremium
+                          allowModerator
+                          redirectTo="/premium"
+                        >
+                          <CommunityOverlaysSharePage />
                         </ProtectedAdminRoute>
                       }
                     />

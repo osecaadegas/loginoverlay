@@ -35,12 +35,13 @@ try {
     await import('/src/styles/utilities.css');
     const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
     const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
-    const { MemoryRouter } = await import(`/node_modules/.vite/deps/react-router-dom.js?v=${version}`);
+    const { MemoryRouter, Routes, Route } = await import(`/node_modules/.vite/deps/react-router-dom.js?v=${version}`);
     const { AuthProvider } = await import('/src/context/AuthContext.jsx');
     const { supabase } = await import('/src/config/supabaseClient.js');
     const { createOverlayTestDatabase } = await import('/scripts/helpers/overlay-build-test-db.mjs');
     const { createBetterInstance, normalizeBetterLayout } = await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
     const { default: Editor } = await import('/src/components/OverlayCenter/editor/WidgetEditorPage.jsx');
+    const { default: Community } = await import('/src/components/OverlayCenter/editor/CommunityOverlaysSharePage.jsx');
     const user = { id: 'build-user', user_metadata: {} };
     const layout = (name, label) => normalizeBetterLayout({ name, instances: [
       createBetterInstance('background', { visible: false }),
@@ -72,7 +73,20 @@ try {
     supabase.auth.onAuthStateChange = () => ({ data: { subscription: { unsubscribe() {} } } });
     const root = ReactDOM.createRoot(document.getElementById('root'));
     window.buildTest = { state, unmount: () => root.unmount() };
-    root.render(React.createElement(AuthProvider, null, React.createElement(MemoryRouter, null, React.createElement(Editor))));
+    root.render(React.createElement(
+      AuthProvider,
+      null,
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/editor'] },
+        React.createElement(
+          Routes,
+          null,
+          React.createElement(Route, { path: '/editor', element: React.createElement(Editor) }),
+          React.createElement(Route, { path: '/community_overlays_share', element: React.createElement(Community) }),
+        ),
+      ),
+    ));
   }, { version: browserHash, tables });
   await mount();
   await page.waitForSelector('[aria-label="Original Hunt actions"]');
@@ -369,27 +383,31 @@ try {
     if (process.env.EDITOR_SCREENSHOT) await page.screenshot({ path: process.env.EDITOR_SCREENSHOT.replace('.png', `-${width}.png`) });
   }
 
-  // Community templates load as independent builds and the current user can share/remove copies.
+  // The editor opens the dedicated community route with exact previews and independent loading.
   await page.click('[aria-label="Community overlays"]');
-  await page.waitForSelector('.community-overlay-dialog[open]');
-  assert.match(await page.$eval('.community-overlay-list', (element) => element.textContent), /Community Arctic/);
+  await page.waitForSelector('.community-share-page');
+  assert.match(await page.$eval('.community-template-list', (element) => element.textContent), /Community Arctic/);
+  assert.ok(await page.$('.community-template-inspector .community-preview-canvas'));
+  assert.match(await page.$eval('.community-template-inspector__details', (element) => element.textContent), /Better Hunt/);
   if (process.env.EDITOR_SCREENSHOT) await page.screenshot({ path: process.env.EDITOR_SCREENSHOT.replace('.png', '-community.png') });
-  await clickText('Load as new build', '.community-overlay-dialog');
+  await clickText('Load into my editor', '.community-template-inspector');
   await waitBuild('Community Arctic Copy');
   await page.waitForSelector('[aria-label="Shared Hunt actions"]');
   assert.equal(await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.filter((row) => row.user_id === 'build-user' && row.draft_layout.name === 'Community Arctic Copy').length), 1);
   await page.click('[aria-label="Community overlays"]');
-  await page.waitForSelector('.community-overlay-dialog[open]');
-  await clickText('Share this overlay', '.community-overlay-dialog');
-  await enterName('.community-overlay-share-form input', 'My Community Copy');
-  await enterName('.community-overlay-share-form textarea', 'A safe reusable copy.');
-  await clickText('Share with community', '.community-overlay-share-form');
+  await page.waitForSelector('.community-share-page');
+  await clickText('Share current build', '.community-share-hero__actions');
+  await enterName('.community-share-form input', 'My Community Copy');
+  await enterName('.community-share-form textarea', 'A safe reusable copy.');
+  await clickText('Share overlay', '.community-share-form');
   await page.waitForFunction(() => window.buildTest.state.tables.shared_overlay_templates.length === 2);
-  assert.match(await page.$eval('.community-overlay-list', (element) => element.textContent), /My Community Copy/);
+  await page.waitForFunction(() => document.querySelector('.community-template-inspector h2')?.textContent === 'My Community Copy');
+  assert.match(await page.$eval('.community-template-list', (element) => element.textContent), /My Community Copy/);
   page.once('dialog', (dialog) => dialog.accept());
-  await page.click('[aria-label="Remove My Community Copy from community"]');
+  await clickText('Remove share', '.community-template-inspector');
   await page.waitForFunction(() => window.buildTest.state.tables.shared_overlay_templates.length === 1);
-  await page.click('[aria-label="Close community overlays"]');
+  await clickText('Back to editor', '.community-share-hero');
+  await page.waitForSelector('.editor-workspace');
 
   assert.deepEqual(errors, []);
   await page.evaluate(() => window.buildTest.unmount());

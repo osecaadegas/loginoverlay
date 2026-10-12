@@ -60,6 +60,11 @@ try {
   assert.ok(library[0].widgetTypes.includes('chat'));
   assert.equal(Object.hasOwn(library[0], 'layout'), false, 'Browse results do not expose full layouts');
 
+  const previews = await service.listSharedBetterOverlayPreviews('owner-b');
+  assert.equal(previews.length, 1);
+  assert.ok(previews[0].layout, 'Entitlement-aware browsing returns the sanitized layout');
+  assert.equal(JSON.stringify(previews[0].layout).includes('private-streamer'), false);
+
   const loaded = await service.loadSharedBetterOverlay('owner-b', shared.id);
   assert.equal(loaded.userId, 'owner-b');
   assert.equal(loaded.draftLayout.name, 'Arctic command deck Copy');
@@ -95,6 +100,14 @@ try {
   );
   assert.match(migration, /load_shared_overlay_template/i);
   assert.match(migration, /assert_access\(requester, template\.layout\)/i);
+
+  const previewMigration = readFileSync(
+    new URL('../migrations/20261012080707_browse_shared_overlay_previews.sql', import.meta.url),
+    'utf8',
+  );
+  assert.match(previewMigration, /browse_shared_overlay_templates/i);
+  assert.match(previewMigration, /assert_access\(requester, template\.layout\)/i);
+  assert.match(previewMigration, /when insufficient_privilege then\s+continue/i);
 
   console.log('Shared overlay checks passed: safe publishing, metadata-only browsing, independent loading, owner removal and RLS migration guards.');
 } finally {
