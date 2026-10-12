@@ -3338,7 +3338,7 @@ export function BetterBonusHuntStyle({
         ? 372
         : 402;
   const panelWidth = clampNumber(
-    obsRenderScale !== 1
+    Number(c.__betterInstanceWidth) > 0
       ? c.__betterInstanceWidth
       : c.widgetWidth ?? c.panelWidth,
     320,
@@ -3348,7 +3348,7 @@ export function BetterBonusHuntStyle({
   const configuredPanelHeight = clampNumber(
     orientation === "horizontal"
       ? getHorizontalHuntHeight(c)
-      : obsRenderScale !== 1
+      : Number(c.__betterInstanceHeight) > 0
         ? c.__betterInstanceHeight
         : c.widgetHeight ?? c.panelHeight,
     0,

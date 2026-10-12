@@ -831,12 +831,12 @@ const BASE_BETTER_CONFIG = {
   },
   navbar: {
     displayStyle: "better_navbar",
-    streamerName: "BRUTUSPOLUS",
+    streamerName: "YOUR CHANNEL",
     twitchUsername: "",
     kickChannelId: "",
     youtubeChannel: "",
     avatarUrl: "",
-    motto: "www.brutuspolus.com",
+    motto: "Your stream, your way",
     brandName: "",
     siteUrl: "",
     showAvatar: false,
@@ -2091,7 +2091,7 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
-    case 'current_slot': return <CurrentSlotWidget config={config} userId={userId} widgetId={widget?.id} />;
+    case 'current_slot': return <CurrentSlotWidget config={config} userId={userId} widgetId={widget?.id} previewOnly />;
     case "slot_bingo":
       return <SlotBingoWidget config={config} widgetId={widget?.id || widget?.instanceId} />;
     case "connect_four":

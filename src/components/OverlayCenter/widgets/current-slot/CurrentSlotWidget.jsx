@@ -14,6 +14,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const [catalog, setCatalog] = useState(null);
   useEffect(() => {
     let cancelled = false;
+    if (previewOnly) return undefined;
     if (!selected.id && !selected.name) return undefined;
     (async () => {
       let query = supabase.from('slots').select('id,name,provider,image,rtp,volatility,max_win_multiplier');
@@ -23,9 +24,12 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
       if (!cancelled && !error) setCatalog({ key, data });
     })().catch(() => {});
     return () => { cancelled = true; };
-  }, [key]);
+  }, [key, previewOnly]);
   const slot = useMemo(() => ({ ...selected, ...(catalog?.key === key ? catalog.data : {}) }), [key, catalog, selected.image, selected.rtp, selected.volatility, selected.max_win_multiplier]);
-  const best = useSlotPersonalBest({ userId: previewOnly ? null : userId, slot, publicOverlayId: previewOnly ? undefined : publicOverlayId, overlayToken: previewOnly ? undefined : overlayToken });
+  const liveBest = useSlotPersonalBest({ userId: previewOnly ? null : userId, slot, publicOverlayId: previewOnly ? undefined : publicOverlayId, overlayToken: previewOnly ? undefined : overlayToken });
+  const best = previewOnly && c.__previewPersonalBest
+    ? c.__previewPersonalBest
+    : liveBest;
   const art = c.artworkBySlot?.[slot.id] || {};
   const isArctic = String(c.colourTheme || '').replace(/^theme_/, '') === 'arctic';
   const cover = safeArtworkUrl(subValue(c, 'slotImage', 'imageUrl', art.coverUrl || slot.image || ''));

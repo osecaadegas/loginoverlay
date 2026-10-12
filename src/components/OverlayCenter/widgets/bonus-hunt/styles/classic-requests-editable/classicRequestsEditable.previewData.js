@@ -12,7 +12,7 @@ export const classicRequestsEditablePreviewData = Object.freeze({
       slot_name: "Gates of Olympus 1000",
       slot_image:
         "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
-      requested_by: "brutuspolus",
+      requested_by: "SampleViewer",
     }),
     Object.freeze({
       id: "bh-v12-request-2",

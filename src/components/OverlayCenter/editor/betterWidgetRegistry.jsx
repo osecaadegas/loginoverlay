@@ -226,12 +226,37 @@ const MOCK_TOURNAMENT_BRACKET = [
 ];
 
 const MOCK_WIDGET_CONFIGS = {
+  current_slot: {
+    slot: {
+      id: "sample-current-slot",
+      name: "Gates of Olympus 1000",
+      provider: "Pragmatic Play",
+      image:
+        "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+      rtp: 96.5,
+      volatility: "High",
+      max_win_multiplier: 15000,
+    },
+    slotId: "sample-current-slot",
+    slotName: "Gates of Olympus 1000",
+    provider: "Pragmatic Play",
+    imageUrl:
+      "https://images-cdn.softswiss.net/i/s2/pragmaticplay/GatesOfOlympus1000.png",
+    currency: "EUR",
+    __previewPersonalBest: {
+      best_win: 540,
+      best_win_bet: 5,
+      best_multiplier: 108,
+      best_multiplier_bet: 5,
+      average_win: 144.25,
+    },
+  },
   slot_bingo: {},
   raid_shoutout: {
     __previewAlert: {
       id: "mock-shoutout-alert",
-      raider_username: "streamerscenter",
-      raider_display_name: "Streamers Center",
+      raider_username: "sample_channel",
+      raider_display_name: "Sample Channel",
       raider_game: "Slots",
       clip_title: "An unforgettable stream highlight",
       clip_view_count: 12840,
@@ -239,7 +264,6 @@ const MOCK_WIDGET_CONFIGS = {
     },
   },
   tournament: {
-    layout: "esports",
     bracketPhase: "completed",
     bracketPlayerCount: 8,
     bracketData: MOCK_TOURNAMENT_BRACKET,
@@ -255,8 +279,6 @@ const MOCK_WIDGET_CONFIGS = {
     startMoney: 2000,
     stopLoss: 700,
     currency: "EUR ",
-    showRequests: false,
-    showSlotRequests: false,
     requests: [],
     slotRequests: [],
   },
@@ -265,19 +287,15 @@ const MOCK_WIDGET_CONFIGS = {
     prize: "10 EUR",
     subtitle: "42 players entered",
     keyword: "join",
-    participants: ["streamfan", "nightowl", "arena", "luckyspin"],
+    participants: ["SampleViewer", "LuckyViewer", "ChatGuest", "ReelFan"],
     entriesCount: 42,
     winner: "",
-    spinningWinner: "nightowl",
+    spinningWinner: "SampleViewer",
     isActive: false,
   },
   navbar: {
-    streamerName: "BRUTUSPOLUS",
-    motto: "streamerscenter.com",
-    nowPlayingLabel: "Now Playing",
-    showNowPlaying: true,
-    showCasino: true,
-    showStartBalance: true,
+    streamerName: "YOUR CHANNEL",
+    motto: "Your stream, your way",
     startValue: "EUR 2000",
     casinoName: "Demo Casino",
     casinoCommand: "!Casino",
@@ -312,7 +330,6 @@ const MOCK_WIDGET_CONFIGS = {
       "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4|video|Demo video",
       "/placeholder.webp|image|Placeholder",
     ].join("\n"),
-    showCounter: true,
   },
   bets: {
     question: "Bonus Hunt Result",
@@ -329,13 +346,95 @@ const MOCK_WIDGET_CONFIGS = {
       opt_4: 215,
     },
     betters: {
-      streamfan: { option: 1, amount: 300 },
-      arena: { option: 2, amount: 180 },
-      nightowl: { option: 1, amount: 220 },
-      chat: { option: 0, amount: 80 },
+      SampleViewer: { option: 1, amount: 300 },
+      LuckyViewer: { option: 2, amount: 180 },
+      ChatGuest: { option: 1, amount: 220 },
+      ReelFan: { option: 0, amount: 80 },
     },
   },
 };
+
+// Sample mode replaces runtime content only. Presentation always comes from the
+// saved widget instance so editor and OBS keep identical typography, edges,
+// colours, effects, layout and visibility settings.
+const MOCK_DATA_KEYS = Object.freeze({
+  current_slot: [
+    "slot",
+    "slotId",
+    "slotName",
+    "provider",
+    "imageUrl",
+    "currency",
+    "__previewPersonalBest",
+  ],
+  raid_shoutout: ["__previewAlert"],
+  tournament: [
+    "bracketPhase",
+    "bracketPlayerCount",
+    "bracketData",
+    "bracketActiveRound",
+    "bracketActiveMatch",
+    "data",
+  ],
+  bonus_hunt: [
+    "bonuses",
+    "startMoney",
+    "stopLoss",
+    "currency",
+    "requests",
+    "slotRequests",
+  ],
+  giveaway: [
+    "title",
+    "prize",
+    "subtitle",
+    "keyword",
+    "participants",
+    "entriesCount",
+    "winner",
+    "spinningWinner",
+    "isActive",
+  ],
+  navbar: [
+    "streamerName",
+    "motto",
+    "startValue",
+    "casinoName",
+    "casinoCommand",
+    "__mockNowPlaying",
+  ],
+  chat: [
+    "__appearancePreviewMessages",
+    "__previewShoutoutAlert",
+    "__previewGiveawayConfig",
+    "__appearancePreviewSample",
+  ],
+  rtp_stats: [
+    "previewMode",
+    "slotName",
+    "detectedSlotName",
+    "currentSlotName",
+    "provider",
+    "providerName",
+    "rtp",
+    "rtpValue",
+    "potential",
+    "maxWin",
+    "volatility",
+    "bestWin",
+  ],
+  slideshow_frame: ["mediaText"],
+  bets: [
+    "question",
+    "gameStatus",
+    "timerSeconds",
+    "_openedAt",
+    "chatCommand",
+    "options",
+    "bets",
+    "betters",
+  ],
+});
 
 const LIVE_DATA_KEYS = Object.freeze({
   current_slot: ['slot', 'slotId', 'slotName', 'provider', 'imageUrl', 'artworkBySlot', 'currency'],
@@ -674,6 +773,14 @@ function pickLiveDataPatch(widgetType, liveConfig = {}) {
   }, {});
 }
 
+function pickMockDataPatch(widgetType) {
+  const fixture = MOCK_WIDGET_CONFIGS[widgetType] || {};
+  return (MOCK_DATA_KEYS[widgetType] || []).reduce((patch, key) => {
+    if (hasOwnKey(fixture, key)) patch[key] = cloneJson(fixture[key]);
+    return patch;
+  }, {});
+}
+
 function firstLiveNumber(values, fallback = 0) {
   for (const value of values) {
     if (value === undefined || value === null || value === "") continue;
@@ -894,10 +1001,10 @@ function buildDefinition(meta) {
       if (mode !== "mock") {
         return mergeBetterLiveDataConfig(meta.type, baseConfig, liveWidget);
       }
-      return {
+      return ensureBetterWidgetConfig(meta.type, {
         ...baseConfig,
-        ...(MOCK_WIDGET_CONFIGS[meta.type] || {}),
-      };
+        ...pickMockDataPatch(meta.type),
+      });
     },
   };
 }

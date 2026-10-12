@@ -35,7 +35,10 @@ try {
   });
 
   await page.setViewport({ width: 1800, height: 1200 });
-  await page.goto(`${baseUrl}/__overlay-editor-control-audit`, { waitUntil: "networkidle0" });
+  await page.goto(`${baseUrl}/__overlay-editor-control-audit`, {
+    waitUntil: "domcontentloaded",
+    timeout: 60000,
+  });
   const { browserHash } = JSON.parse(
     readFileSync(new URL("../node_modules/.vite/deps/_metadata.json", import.meta.url), "utf8"),
   );
@@ -131,8 +134,8 @@ try {
           ),
         );
       },
-      mountRuntime(type, runtime, scale) {
-        const base = this.base(type);
+      mountRuntime(type, runtime, scale, config) {
+        const base = config || this.base(type);
         const original = registry.createBetterInstance(type, { config: base });
         const instance = {
           ...original,
@@ -166,6 +169,79 @@ try {
 
   const types = await page.evaluate(() => window.controlAudit.types);
   assert.equal(types.length, 13, "The audit covers every production editor widget");
+  const sampleParity = await page.evaluate(() => {
+    const sentinel = {
+      fontFamily: "Georgia, serif",
+      borderColor: "#123456",
+      borderRadius: 19,
+      colourTheme: "rose",
+      theme: "rose",
+      subElements: {
+        container: {
+          fontFamily: "Verdana, sans-serif",
+          borderColor: "#654321",
+          borderRadius: 23,
+        },
+      },
+      themeEffects: {
+        orbital: { hudGlow: 37 },
+      },
+    };
+    const preserveKeys = [
+      "fontFamily",
+      "borderColor",
+      "borderRadius",
+      "colourTheme",
+      "theme",
+      "subElements",
+      "themeEffects",
+    ];
+    return window.controlAudit.types.map((type) => {
+      const definition = window.controlAudit.registry.getBetterWidgetDefinition(type);
+      const liveConfig = window.controlAudit.packages.ensureBetterWidgetConfig(type, {
+        ...definition.defaultConfig,
+        ...sentinel,
+        layout: "compact",
+        showRequests: true,
+        showSlotRequests: true,
+        showNowPlaying: false,
+        showCounter: false,
+        twitchEnabled: true,
+      });
+      const sampleConfig = window.controlAudit.registry.resolveBetterWidgetConfig(
+        type,
+        liveConfig,
+        "mock",
+      );
+      return {
+        type,
+        preserved: preserveKeys.every((key) =>
+          JSON.stringify(sampleConfig[key]) === JSON.stringify(liveConfig[key])),
+        sampleConfig,
+      };
+    });
+  });
+  for (const result of sampleParity) {
+    assert.equal(
+      result.preserved,
+      true,
+      `${result.type}: sample data preserves live fonts, edges, colours and theme effects`,
+    );
+    assert.doesNotMatch(
+      JSON.stringify(result.sampleConfig),
+      /brutuspolus|www\.brutuspolus|osecaadegas95/i,
+      `${result.type}: sample data contains no streamer-specific fixture`,
+    );
+  }
+  const parityByType = Object.fromEntries(sampleParity.map((item) => [item.type, item.sampleConfig]));
+  assert.equal(parityByType.tournament.layout, "compact", "Tournament sample preserves the configured layout");
+  assert.equal(parityByType.bonus_hunt.showRequests, true, "Bonus Hunt sample preserves request visibility");
+  assert.equal(parityByType.bonus_hunt.showSlotRequests, true, "Bonus Hunt sample preserves slot-request visibility");
+  assert.equal(parityByType.navbar.showNowPlaying, false, "Navbar sample preserves section visibility");
+  assert.equal(parityByType.slideshow_frame.showCounter, false, "Slideshow sample preserves counter visibility");
+  assert.equal(parityByType.chat.twitchEnabled, true, "Chat sample preserves source configuration while previewOnly prevents connections");
+  assert.equal(parityByType.current_slot.slot?.name, "Gates of Olympus 1000", "Current Slot receives neutral sample game data");
+  assert.equal(parityByType.current_slot.__previewPersonalBest?.best_win, 540, "Current Slot receives sample personal-record data");
   const inventory = [];
   const descriptorsByType = new Map();
   for (const type of types) {
@@ -411,12 +487,16 @@ try {
         await settle();
         const result = await page.$eval("[data-runtime-preview]", (host) => ({
           nodes: host.querySelectorAll("*").length,
+          clientWidth: host.clientWidth,
+          clientHeight: host.clientHeight,
+          scrollWidth: host.scrollWidth,
+          scrollHeight: host.scrollHeight,
           horizontalOverflow: host.scrollWidth > host.clientWidth + 2,
           verticalOverflow: host.scrollHeight > host.clientHeight + 2,
         }));
         assert(result.nodes > 0, `${type}/${runtime}/${width}x${height}: renderer mounted`);
         assert.equal(result.horizontalOverflow, false, `${type}/${runtime}/${width}x${height}: no horizontal overflow`);
-        assert.equal(result.verticalOverflow, false, `${type}/${runtime}/${width}x${height}: no vertical overflow`);
+        assert.equal(result.verticalOverflow, false, `${type}/${runtime}/${width}x${height}: no vertical overflow (${JSON.stringify(result)})`);
         responsiveChecks.push(`${type}:${runtime}:${width}x${height}`);
       }
     }

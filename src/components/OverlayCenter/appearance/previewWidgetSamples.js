@@ -1,4 +1,4 @@
-import { withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
+import { withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples.js";
 const SAMPLE_BETS_OPTIONS = [
   { label: "0 - 99" },
   { label: "100 - 199" },
@@ -145,7 +145,7 @@ const SAMPLE_SLOT_REQUESTS = [
     id: "preview-sr-1",
     slot_name: "Gates of Olympus 1000",
     slot_image: "",
-    requested_by: "brutuspolus",
+    requested_by: "SampleViewer",
     created_at: "2026-07-16T10:00:00.000Z",
   },
   {
@@ -514,7 +514,6 @@ function applyTournamentPreviewSample(config = {}, slotCatalog) {
   const existingMatches = config.data?.matches;
   return {
     ...config,
-    layout: "esports",
     bracketName: config.bracketName || "Friday Night Showdown",
     bracketPhase: "completed",
     bracketPlayerCount: 8,

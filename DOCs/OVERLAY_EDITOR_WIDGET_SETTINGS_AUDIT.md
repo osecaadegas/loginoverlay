@@ -234,6 +234,8 @@ Each row represents the widget's complete currently visible setting surface unde
 | Connect Four, Twitch Shoutout, and Slideshow settings could show an empty shared configuration preview. | `BetterWidgetPreview` did not route those registered widget types to their existing renderers. | Added the three existing renderers to the shared preview switch with editor-safe preview props. | The control audit requires every registered widget preview to contain rendered output before any control test proceeds. |
 | Bets settings preview was blank while no live bet was open. | Bets intentionally returns no DOM in the idle state, but the editor preview passed the idle configuration unchanged. | Added editor-only representative bet data when the saved game state is idle; live data and runtime behavior remain unchanged. | Bets passed the full control, option, grouped-option, and responsive preview audit. |
 | Registry validation silently omitted Connect Four. | The expected production widget list in `validate-widgets.mjs` was stale. | Added Connect Four to the required registry/package/builtin consistency check. | `validate:widgets` passes with all 13 widgets. |
+| Sample mode could replace live presentation settings with a parallel mock configuration. | Mock fixtures were spread over the complete normalized widget config, including layout and visibility properties. | Added a strict data-only sample capability map. Sample content now overlays the saved instance config without changing fonts, edges, colours, themes, dimensions, sub-elements, effects, or compatible visibility choices. | `test:preview-data-parity` and `test:overlay-editor-audit` verify presentation preservation and editor/OBS rendering. |
+| Bonus Hunt could clip vertically when Sample mode preserved the live request-section setting. | At a 1x editor scale, the renderer ignored `__betterInstanceHeight` and allowed the panel's auto height to exceed its widget frame. | Instance width and height are now the sizing source at every render scale, including native 1x editor and OBS rendering. | All 78 responsive editor/OBS renders pass with request visibility preserved. |
 
 ## Hidden settings report
 
@@ -254,6 +256,7 @@ Run the complete setting audit with a local Vite server on port 3010:
 ```powershell
 npm.cmd run dev -- --host 127.0.0.1 --port 3010
 npm.cmd run test:overlay-editor-audit
+npm.cmd run test:preview-data-parity
 ```
 
 The reusable suite:
@@ -267,6 +270,8 @@ The reusable suite:
 - tests every inactive grouped preset/layout/theme choice;
 - confirms each action changes widget configuration or geometry;
 - confirms the preview survives every change;
+- confirms Sample mode preserves live typography, edges, themes, effects, layout, and visibility configuration;
+- rejects streamer-specific names in all audited sample configurations;
 - renders every widget in editor and OBS mode at 1920×1080, 2560×1440, and 1366×768;
 - fails on browser errors or horizontal/vertical widget overflow.
 
@@ -284,7 +289,7 @@ Related suites cover colour-theme parity, conditional visibility, publication/sa
 | Grouped option mutations | 322 |
 | Responsive editor/OBS renders | 78 |
 | Working setting mutations | 1,182 |
-| Bugs fixed | 4 |
+| Bugs fixed | 6 |
 | Unsupported settings newly hidden | 0 |
 | Failed audit tests remaining | 0 |
 | Unverified visible settings | 0 |
