@@ -2,15 +2,19 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Slot Detector</title>
+    <title>StreamersCenter Slot Capture</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <main>
-      <h1>Slot Detector</h1>
+      <h1>Slot Capture</h1>
       <p id="state">Loading...</p>
+      <div id="agent" class="status-card"></div>
+      <button id="selectSlot" class="primary">Selecionar slot</button>
+      <p class="hint">A seleção realça apenas regiões elegíveis. Prima Esc para cancelar.</p>
       <div id="last"></div>
-      <button id="openOptions">Setup</button>
+      <button id="openManager">Abrir gestor</button>
+      <button id="openOptions" class="secondary">Configurar extensão</button>
     </main>
     <script type="module" src="popup.js"></script>
   </body>

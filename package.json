@@ -41,6 +41,7 @@
     "test:shared-overlays": "node scripts/test-shared-overlays.mjs",
     "test:landing-widget-carousel": "node scripts/test-landing-widget-carousel.mjs",
     "test:slot-detector": "node scripts/test-slot-detector.mjs",
+    "test:slot-capture": "node scripts/test-slot-capture.mjs",
     "test:slot-providers": "node scripts/test-slot-providers.mjs",
     "test:slot-providers-browser": "node scripts/test-slot-providers-browser.mjs",
     "test:slot-image-health": "node scripts/test-slot-image-health.mjs",

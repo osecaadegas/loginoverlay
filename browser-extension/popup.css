@@ -1,5 +1,5 @@
 body {
-  width: 300px;
+  width: 340px;
   margin: 0;
   color: #f7fbff;
   background: #07101d;
@@ -23,7 +23,8 @@ small {
   color: #a9bed3;
 }
 
-#last {
+#last,
+.status-card {
   display: grid;
   gap: 4px;
   padding: 10px;
@@ -40,3 +41,12 @@ button {
   background: #178f83;
   font-weight: 900;
 }
+
+button.primary { background: linear-gradient(135deg, #0e7490, #0f9f92); }
+button.secondary { color: #b8cadb; background: #0b1525; border-color: #263c55; }
+button:disabled { opacity: .48; cursor: wait; }
+.hint { margin: -5px 0 0; font-size: 11px; }
+.status-card { color: #a9bed3; }
+.status-card strong { color: #f7fbff; }
+.status-card.connected { border-color: rgba(45, 212, 191, .55); }
+.status-card.disconnected { border-color: rgba(251, 113, 133, .5); }

@@ -14,14 +14,14 @@ function setStatus(text, tone = '') {
 async function load() {
   const settings = await chrome.storage.local.get(['apiBase', 'device']);
   apiBase.value = settings.apiBase || DEFAULT_API_BASE;
-  setStatus(settings.device ? `Paired as ${settings.device.device_name}` : 'Not paired');
+  setStatus(settings.device ? `Emparelhada como ${settings.device.device_name}` : 'Não emparelhada');
 }
 
 pair.addEventListener('click', async () => {
   const base = (apiBase.value || DEFAULT_API_BASE).replace(/\/$/, '');
   const code = pairingCode.value.trim();
   if (!code) {
-    setStatus('Enter the pairing code from Streamers Center.', 'error');
+    setStatus('Introduza o código de emparelhamento do StreamersCenter.', 'error');
     return;
   }
   pair.disabled = true;
@@ -39,7 +39,7 @@ pair.addEventListener('click', async () => {
     if (!response.ok) throw new Error(data.error || `Pairing failed (${response.status})`);
     await chrome.storage.local.set({ apiBase: base, detectorToken: data.token, device: data.device });
     pairingCode.value = '';
-    setStatus(`Paired as ${data.device.device_name}`, 'success');
+    setStatus(`Emparelhada como ${data.device.device_name}`, 'success');
   } catch (error) {
     setStatus(error.message, 'error');
   } finally {
@@ -49,7 +49,7 @@ pair.addEventListener('click', async () => {
 
 forget.addEventListener('click', async () => {
   await chrome.storage.local.remove(['detectorToken', 'device', 'lastSubmit']);
-  setStatus('Token removed from this browser.', 'success');
+  setStatus('Ligação removida deste browser.', 'success');
 });
 
 load();
