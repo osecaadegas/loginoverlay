@@ -38,7 +38,10 @@ import FreezeShatterWidget from './freeze-shatter/FreezeShatterWidget';
 import { DEFAULT_CONFIG as FREEZE_SHATTER_DEFAULTS } from './freeze-shatter/config';
 import MoneyExplosionWidget from './money-explosion/MoneyExplosionWidget';
 import { DEFAULT_MONEY_EXPLOSION_CONFIG } from './money-explosion/config';
-registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', description: 'Current slot, catalog stats and shared personal records.', category: 'better', component: CurrentSlotWidget, configPanel: CurrentSlotConfig, styleConfigKey: 'displayStyle', styles: [{ id: 'immersive_current', label: 'Immersive', defaultSize: { width: 1100, height: 240 } }], defaults: { ...CURRENT_SLOT_DEFAULTS } });
+registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', description: 'Current slot, catalog stats and shared personal records.', category: 'better', component: CurrentSlotWidget, configPanel: CurrentSlotConfig, styleConfigKey: 'displayStyle', styles: [
+  { id: 'immersive_current', label: 'Immersive', defaultSize: { width: 1100, height: 240 } },
+  { id: 'portrait_card', label: 'Portrait Card', defaultSize: { width: 225, height: 400 } },
+], defaults: { ...CURRENT_SLOT_DEFAULTS } });
 
 registerWidget({
   type: 'money_explosion',

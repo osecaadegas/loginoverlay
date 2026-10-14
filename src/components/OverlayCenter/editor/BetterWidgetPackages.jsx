@@ -193,6 +193,9 @@ const QUICK_COLORS = [
 const BETS_STYLE_OPTIONS = getWidgetStyleOptionsForQuickEditor("bets").map(
   ({ id, label }) => ({ value: id, label }),
 );
+const CURRENT_SLOT_DISPLAY_STYLES = new Set(
+  getWidgetStyleOptionsForQuickEditor("current_slot").map(({ id }) => id),
+);
 
 const COLOUR_THEME_ICONS = {
   neon: Zap, metallic: Layers, sunset: Sunset, cyberpunk: Zap, crimson: Flame, emerald: Waves,
@@ -1606,7 +1609,8 @@ export function ensureBetterWidgetConfig(type, config = {}) {
     ...(meta &&
       type !== "tournament" &&
       !(type === "chat" && isBetterChatStyle(config.chatStyle)) &&
-      !(type === "bets" && BETS_DISPLAY_STYLES.has(config.displayStyle))
+      !(type === "bets" && BETS_DISPLAY_STYLES.has(config.displayStyle)) &&
+      !(type === "current_slot" && CURRENT_SLOT_DISPLAY_STYLES.has(config.displayStyle))
       ? { [meta.styleKey]: meta.styleId }
       : {}),
   };

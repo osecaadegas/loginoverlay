@@ -73,9 +73,13 @@ export const BONUS_HUNT_STYLE_KEYS = [
 
 /* ── Current Slot ── */
 export const CURRENT_SLOT_STYLE_KEYS = [
-  "bgColor",
-  "cardBg",
+  "backgroundColor",
+  "panelColor",
+  "badgeColor",
+  "coverColor",
   "accentColor",
+  "portraitAccentColor",
+  "portraitPanelColor",
   "textColor",
   "mutedColor",
   "borderColor",

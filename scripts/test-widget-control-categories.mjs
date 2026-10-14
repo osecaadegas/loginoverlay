@@ -175,6 +175,34 @@ try {
     "Current Game keeps font selection and hides the unused backdrop strength",
   );
 
+  const portraitCurrentSlot = renderToStaticMarkup(
+    createElement(BetterWidgetControls, {
+      type: "current_slot",
+      config: { displayStyle: "portrait_card", showBackdrop: true },
+      onChange: () => {},
+    }),
+  );
+  for (const supportedControl of [
+    "Best multiplier row",
+    "portrait Accent Color",
+    "portrait Panel Color",
+  ]) {
+    assert.ok(
+      portraitCurrentSlot.includes(supportedControl),
+      `Portrait Current Game exposes ${supportedControl}`,
+    );
+  }
+  for (const unsupportedControl of [
+    "Immersive slot background",
+    "Background image strength",
+    "badge Color",
+  ]) {
+    assert.ok(
+      !portraitCurrentSlot.includes(unsupportedControl),
+      `Portrait Current Game hides ${unsupportedControl}`,
+    );
+  }
+
   const bonusMarkup = renderToStaticMarkup(
     createElement(BetterWidgetControls, {
       type: "bonus_hunt",

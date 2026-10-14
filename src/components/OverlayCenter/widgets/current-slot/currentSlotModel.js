@@ -3,6 +3,7 @@ export const CURRENT_SLOT_DEFAULTS = Object.freeze({
   artworkBySlot: {}, accentColor: '#00e6ae', backgroundColor: '#080d0f',
   panelColor: '#050b0d', badgeColor: '#06231b', coverColor: '#050b0d',
   textColor: '#f5f7fa', mutedColor: '#8ba8b5', borderColor: '#134d44',
+  portraitAccentColor: '#d7a847', portraitPanelColor: '#06162f',
   fontFamily: "'Rajdhani', sans-serif", backgroundOpacity: 0.24,
   showArtwork: true, showBackdrop: true, showPersonalRecords: true,
 });

@@ -975,6 +975,12 @@ function normalizeZIndexes(instances) {
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
   if (
+    instance.widgetType === "current_slot" &&
+    instance.config?.displayStyle === "portrait_card"
+  ) {
+    return { ...constraints, minWidth: 170, minHeight: 300, maxWidth: 720, maxHeight: 1080 };
+  }
+  if (
     instance.widgetType === "bets" &&
     instance.config?.displayStyle === "compact_scoreboard"
   ) {

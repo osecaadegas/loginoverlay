@@ -1001,6 +1001,9 @@ export const widgetAppearanceRegistry = Object.freeze({
     styles: [makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
       recommended: true, capabilities: { colours: true, fonts: true, fontSizes: true, containers: true, borders: true, images: true, imageFit: true, spacing: true, statCards: true },
       elementIds: ["container","identity","coverFrame","slotImage","backdrop","titleImage","slotTitle","provider","badge","info","infoTitle","records","recordsTitle","potential","potentialLabel","potentialValue","rtp","rtpLabel","rtpValue","volatility","volatilityLabel","volatilityValue","bestWin","bestWinLabel","bestWinValue","bestMulti","bestMultiLabel","bestMultiValue","averageWin","averageWinLabel","averageWinValue"],
+    }), makeRuntimeStyle('portrait_card', 'Portrait Card', 'Tall, artwork-led game card with compact broadcast statistics.', {
+      capabilities: { colours: true, fonts: true, fontSizes: true, containers: true, borders: true, images: true, imageFit: true, spacing: true, statCards: true },
+      elementIds: ["container","coverFrame","slotImage","fallback","info","potential","potentialLabel","potentialValue","rtp","rtpLabel","rtpValue","volatility","volatilityLabel","volatilityValue","bestMulti","bestMultiLabel","bestMultiValue"],
     })],
     responsive: { minWidth: 680, minHeight: 140, maxWidth: 1920, maxHeight: 600 },
     elements: {
@@ -1040,6 +1043,16 @@ export const widgetAppearanceRegistry = Object.freeze({
       "image",
       "border",
       "shape"
+    ]
+  },
+  "fallback": {
+    "label": "Missing artwork fallback",
+    "kind": "container",
+    "capabilities": [
+      "surface",
+      "border",
+      "typography",
+      "spacing"
     ]
   },
   "backdrop": {
