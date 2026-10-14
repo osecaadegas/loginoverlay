@@ -4,7 +4,7 @@ import { ORBITAL_ENVIRONMENTS } from '../../../effects/ThemeEffects/orbital/orbi
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
 import { CURRENT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getUserRoles } from "../../../utils/adminUtils";
 import { BACKGROUND_SOURCE_OPTIONS, isExternalBackgroundSource, normalizeChromaKeyColor, downloadChromaKeyImage, updateBackgroundSource } from "../widgets/background/backgroundSource";
 import { subValue } from "../widgets/shared/appearanceStyles";
@@ -7234,11 +7234,38 @@ function BetterSlotBingoControls({ config, onChange }) {
 function FreezeShatterControls({ config, onChange, widget }) {
   const c = normalizeFreezeShatterConfig(config);
   const [devices, setDevices] = useState([]);
+  const [effectFeedback, setEffectFeedback] = useState("");
+  const effectTestActiveRef = useRef(false);
   const [cameraPermission, setCameraPermission] = useState("prompt");
   const [cameraPermissionMessage, setCameraPermissionMessage] = useState(
     "Allow access once so StreamersCenter can list and use your camera.",
   );
   const set = (patch) => onChange(normalizeFreezeShatterConfig({ ...c, ...patch }));
+  const instanceId = widget?.instanceId || widget?.id || c.__betterInstanceId;
+
+  useEffect(() => {
+    const receiveStatus = (event) => {
+      const detail = event.detail || {};
+      if (detail.instanceId && String(detail.instanceId) !== String(instanceId || "")) return;
+      if (detail.type === "error") {
+        effectTestActiveRef.current = false;
+        setEffectFeedback(detail.kind === "chroma"
+          ? "Camera connected. Match Key colour to the background behind you, then test again."
+          : detail.message || "The effect could not run.");
+        return;
+      }
+      if (detail.type !== "state") return;
+      if (!effectTestActiveRef.current) return;
+      if (detail.state === "HIDDEN") setEffectFeedback("Shatter complete. Reconstructing camera…");
+      else if (detail.state === "VISIBLE") {
+        effectTestActiveRef.current = false;
+        setEffectFeedback("Effect test complete.");
+      }
+      else setEffectFeedback("Running the effect in the overlay…");
+    };
+    window.addEventListener("streamerscenter:freeze-shatter-status", receiveStatus);
+    return () => window.removeEventListener("streamerscenter:freeze-shatter-status", receiveStatus);
+  }, [instanceId]);
 
   useEffect(() => {
     let active = true;
@@ -7281,8 +7308,12 @@ function FreezeShatterControls({ config, onChange, widget }) {
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       const selectedDeviceId = stream.getVideoTracks()[0]?.getSettings?.().deviceId;
       const list = await navigator.mediaDevices.enumerateDevices();
-      setDevices(list.filter((device) => device.kind === "videoinput"));
-      if (selectedDeviceId) set({ source: selectedDeviceId });
+      const videoDevices = list.filter((device) => device.kind === "videoinput");
+      setDevices(videoDevices);
+      if (selectedDeviceId) {
+        const selectedDevice = videoDevices.find((device) => device.deviceId === selectedDeviceId);
+        set({ source: selectedDeviceId, sourceLabel: selectedDevice?.label || "" });
+      }
       setCameraPermission("granted");
       setCameraPermissionMessage("Camera access granted. Select Live data to check your real framing.");
     } catch (error) {
@@ -7298,13 +7329,20 @@ function FreezeShatterControls({ config, onChange, widget }) {
     }
   };
 
-  const instanceId = widget?.instanceId || widget?.id || c.__betterInstanceId;
-  const action = (name) =>
+  const action = (name) => {
+    if (name === "preview") {
+      effectTestActiveRef.current = true;
+      setEffectFeedback("Starting the effect in the overlay…");
+    } else if (name === "resetWebcamTransition") {
+      effectTestActiveRef.current = false;
+      setEffectFeedback("Effect reset.");
+    }
     window.dispatchEvent(
       new CustomEvent("streamerscenter:freeze-shatter", {
         detail: { action: name, instanceId },
       }),
     );
+  };
   const cameraOptions = [
     { value: "default", label: "Default camera" },
     ...devices.filter((device) => device.deviceId && device.deviceId !== "default").map((device, index) => ({
@@ -7327,13 +7365,14 @@ function FreezeShatterControls({ config, onChange, widget }) {
           Sample mode uses the supplied generic portrait. The published OBS overlay uses your selected camera locally.
         </p>
         <div className="bp-freeze-actions">
-          <button type="button" className="bp-reset" onClick={() => action("preview")}>
-            <Snowflake size={13} /> Preview full cycle
+          <button type="button" className="bp-freeze-actions__test" onClick={() => action("preview")}>
+            <Snowflake size={15} /> Test effect in overlay
           </button>
           <button type="button" className="bp-reset" onClick={() => action("resetWebcamTransition")}>
             <RotateCcw size={13} /> Reset
           </button>
         </div>
+        {effectFeedback && <p className="bp-freeze-test-feedback" role="status">{effectFeedback}</p>}
         <SelectRow
           label="OBS trigger"
           value={c.triggerMode}
@@ -7378,7 +7417,15 @@ function FreezeShatterControls({ config, onChange, widget }) {
                   : "Allow camera access"}
           </button>
         </div>
-        <SelectRow label="Camera source" value={c.source} options={cameraOptions} onChange={(source) => set({ source })} />
+        <SelectRow
+          label="Camera source"
+          value={c.source}
+          options={cameraOptions}
+          onChange={(source) => {
+            const selectedDevice = devices.find((device) => device.deviceId === source);
+            set({ source, sourceLabel: selectedDevice?.label || "" });
+          }}
+        />
         <p className="bp-hint">In OBS, open the Browser Source with Interact and press Allow camera access if permission is requested there.</p>
       </Section>
 

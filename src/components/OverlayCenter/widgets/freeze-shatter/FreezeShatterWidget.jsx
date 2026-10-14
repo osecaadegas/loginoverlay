@@ -5,6 +5,7 @@ import { WebcamTransitionRenderer } from "./renderer";
 import "./FreezeShatterWidget.css";
 
 const EVENT_NAME = "streamerscenter:freeze-shatter";
+const STATUS_EVENT_NAME = "streamerscenter:freeze-shatter-status";
 const ACTIONS = new Set([
   "freezeAndShatter",
   "reconstructWebcam",
@@ -12,6 +13,17 @@ const ACTIONS = new Set([
   "resetWebcamTransition",
   "preview",
 ]);
+
+function describeError(message) {
+  const text = String(message || "");
+  if (/transparent background|visible silhouette|chroma key/i.test(text)) {
+    return { kind: "chroma", title: "Adjust chroma key", action: "Dismiss" };
+  }
+  if (/camera|permission|selected source|capture requires/i.test(text)) {
+    return { kind: "camera", title: "Camera access needed", action: "Try camera again" };
+  }
+  return { kind: "renderer", title: "Effect needs attention", action: "Dismiss" };
+}
 
 function rendererConfig(config, previewOnly) {
   return sanitizeConfig({
@@ -66,6 +78,12 @@ export default function FreezeShatterWidget({
     if (timerRef.current) window.clearTimeout(timerRef.current);
     timerRef.current = null;
   }, []);
+
+  const emitStatus = useCallback((detail) => {
+    window.dispatchEvent(new CustomEvent(STATUS_EVENT_NAME, {
+      detail: { ...detail, instanceId },
+    }));
+  }, [instanceId]);
 
   const runAction = useCallback(
     (action) => {
@@ -122,6 +140,7 @@ export default function FreezeShatterWidget({
       onState: (nextState) => {
         if (cancelled) return;
         setState(nextState);
+        emitStatus({ type: "state", state: nextState });
         if (nextState === "HIDDEN" && previewCycleRef.current) {
           clearTimer();
           timerRef.current = window.setTimeout(() => {
@@ -156,10 +175,17 @@ export default function FreezeShatterWidget({
       },
       onProgress: () => undefined,
       onError: (message) => {
-        if (!cancelled) setError(message);
+        if (!cancelled) {
+          setError(message);
+          emitStatus({ type: "error", message, kind: describeError(message).kind });
+        }
       },
       onReady: () => {
-        if (!cancelled) setReady(true);
+        if (!cancelled) {
+          setReady(true);
+          setError("");
+          emitStatus({ type: "ready" });
+        }
       },
       onMetrics: () => undefined,
     });
@@ -174,7 +200,7 @@ export default function FreezeShatterWidget({
       rendererRef.current = null;
       renderer.destroy();
     };
-  }, [clearTimer, instanceId, previewOnly]);
+  }, [clearTimer, emitStatus, instanceId, previewOnly]);
 
   useEffect(() => {
     rendererRef.current?.updateConfig(normalized);
@@ -190,6 +216,9 @@ export default function FreezeShatterWidget({
     }, normalized.triggerDelay * 1000);
     return clearTimer;
   }, [clearTimer, normalized.triggerDelay, normalized.triggerMode, previewOnly, ready]);
+
+  const errorInfo = describeError(error);
+  const showError = Boolean(error) && errorInfo.kind === "camera";
 
   return (
     <div
@@ -207,14 +236,16 @@ export default function FreezeShatterWidget({
           <span>{ready ? state.replaceAll("_", " ") : "Preparing renderer"}</span>
         </div>
       )}
-      {error && (
-        <div className="freeze-shatter-widget__error" role="alert">
+      {showError && (
+        <div className="freeze-shatter-widget__error" data-error-kind={errorInfo.kind} role="alert">
           <TriangleAlert size={18} />
           <span className="freeze-shatter-widget__error-copy">
-            <strong>Camera access needed</strong>
+            <strong>{errorInfo.title}</strong>
             <span>{error}</span>
           </span>
-          <button type="button" onClick={retryCamera}>Allow camera</button>
+          <button type="button" onClick={errorInfo.kind === "camera" ? retryCamera : () => setError("")}>
+            {errorInfo.action}
+          </button>
         </div>
       )}
     </div>

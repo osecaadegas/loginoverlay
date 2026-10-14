@@ -789,7 +789,10 @@ export function stripBetterRuntimeData(widgetType, config = {}) {
     ...(MOCK_DATA_KEYS[widgetType] || []),
   ]);
   runtimeKeys.forEach((key) => delete next[key]);
-  if (widgetType === "freeze_shatter") delete next.source;
+  if (widgetType === "freeze_shatter") {
+    delete next.source;
+    delete next.sourceLabel;
+  }
   return next;
 }
 

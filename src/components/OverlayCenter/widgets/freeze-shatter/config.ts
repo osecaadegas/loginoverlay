@@ -10,6 +10,7 @@ export interface WidgetConfig {
   enabled: boolean;
   mode: IntegrationMode;
   source: string;
+  sourceLabel: string;
   mirror: boolean;
   chromaColor: string;
   tolerance: number;
@@ -60,7 +61,7 @@ export interface WidgetConfig {
 }
 
 export const DEFAULT_CONFIG: WidgetConfig = {
-  displayStyle: 'freeze_shatter', enabled: true, mode: 'browser', source: 'default', mirror: false,
+  displayStyle: 'freeze_shatter', enabled: true, mode: 'browser', source: 'default', sourceLabel: '', mirror: false,
   chromaColor: '#00ff00', tolerance: 0.28, softness: 0.12, spill: 0.85,
   duration: 2.5, freezeDuration: 0.5, fractureDelay: 0.6, shatterDuration: 0.95,
   reconstructionDuration: 2.5, easing: 'cinematic',

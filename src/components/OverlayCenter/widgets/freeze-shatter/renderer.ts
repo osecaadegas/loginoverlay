@@ -186,17 +186,54 @@ export class WebcamTransitionRenderer {
       this.sourceTexture = Texture.from(image);
     } else {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera capture requires HTTPS or localhost and a compatible browser.');
-      let stream: MediaStream;
+      let stream: MediaStream | undefined;
+      const videoConstraints = (deviceId?: string) => ({
+        ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60, max: 60 },
+      });
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { ...(source !== 'default' ? { deviceId: { exact: source } } : {}), width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60, max: 60 } },
+          video: videoConstraints(source !== 'default' ? source : undefined),
           audio: false,
         });
       } catch (error) {
         const name = error instanceof DOMException ? error.name : '';
-        this.finishHidden();
-        throw new Error(name === 'NotAllowedError' ? 'Camera permission was denied. Allow access in your browser, then select the camera again.' : name === 'NotReadableError' ? 'This camera is in use. Disable the other capture or select a virtual camera.' : 'The selected camera is unavailable. Reconnect it or choose another source.');
+        // Camera IDs are browser-profile specific. Resolve the saved camera inside OBS,
+        // then use its local default if Chrome's stored ID is unknown there.
+        const canUseLocalDefault = source !== 'default' && (name === 'NotFoundError' || name === 'OverconstrainedError');
+        if (canUseLocalDefault) {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints(), audio: false });
+            const savedLabel = this.config.sourceLabel.trim().toLowerCase();
+            if (savedLabel) {
+              const localDevices = await navigator.mediaDevices.enumerateDevices();
+              const matchingDevice = localDevices.find(device =>
+                device.kind === 'videoinput' && device.label.trim().toLowerCase() === savedLabel,
+              );
+              const localDeviceId = stream.getVideoTracks()[0]?.getSettings().deviceId;
+              if (matchingDevice?.deviceId && matchingDevice.deviceId !== localDeviceId) {
+                stream.getTracks().forEach(track => track.stop());
+                try {
+                  stream = await navigator.mediaDevices.getUserMedia({
+                    video: videoConstraints(matchingDevice.deviceId), audio: false,
+                  });
+                } catch {
+                  stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints(), audio: false });
+                }
+              }
+            }
+          } catch (fallbackError) {
+            error = fallbackError;
+            stream = undefined;
+          }
+        }
+        if (!stream) {
+          const fallbackName = error instanceof DOMException ? error.name : name;
+          this.finishHidden();
+          throw new Error(fallbackName === 'NotAllowedError' ? 'Camera permission was denied. Allow access in your browser, then select the camera again.' : fallbackName === 'NotReadableError' ? 'This camera is in use. Disable the other capture or select a virtual camera.' : 'The selected camera is unavailable. Reconnect it or choose another source.');
+        }
       }
+      if (!stream) throw new Error('The selected camera is unavailable. Reconnect it or choose another source.');
       if (this.disposed || version !== this.sourceVersion) { stream.getTracks().forEach(track => track.stop()); return; }
       this.stream = stream;
       const video = document.createElement('video');
