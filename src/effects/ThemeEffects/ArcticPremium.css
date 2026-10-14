@@ -1,0 +1,226 @@
+/* Premium Arctic material pass.
+   The frozen surface is built as a dark structural shell, translucent ice
+   depth, a restrained illuminated rim, and irregular frost at the corners.
+   Everything is scoped to the Arctic colour theme so saved widget layouts and
+   every other theme keep their own presentation. */
+
+.better-widget-colour-scope[data-colour-theme="arctic"] {
+  --arctic-shell: rgba(1, 8, 15, 0.96);
+  --arctic-glass-top: rgba(28, 66, 83, 0.88);
+  --arctic-glass-bottom: rgba(2, 12, 22, 0.97);
+  --arctic-rim: rgba(187, 232, 244, 0.6);
+  --arctic-rim-hot: rgba(235, 253, 255, 0.86);
+  --arctic-inner: rgba(104, 188, 213, 0.16);
+  --arctic-shadow: rgba(0, 3, 9, 0.72);
+  --arctic-frame-shadow:
+    0 0 0 1px var(--arctic-shell),
+    0 7px 20px rgba(0, 3, 9, 0.5),
+    inset 0 1px 0 rgba(244, 254, 255, 0.54),
+    inset 1px 0 0 rgba(188, 232, 244, 0.19),
+    inset -1px 0 0 rgba(73, 151, 178, 0.16),
+    inset 0 -3px 0 rgba(0, 5, 12, 0.82),
+    inset 0 -14px 26px rgba(0, 4, 11, 0.5),
+    inset 0 0 18px rgba(111, 201, 226, 0.09);
+}
+
+/* Major slabs use one shared edge language instead of a different luminous
+   rectangle on every widget. */
+.better-widget-colour-scope[data-colour-theme="arctic"] :is(
+  .better-hunt-panel,
+  .slot-bingo-widget,
+  .better-slideshow-frame,
+  .ov-chat-widget,
+  .cg-widget,
+  .bets-ov,
+  .bet-widget,
+  .rtp-stats-inner,
+  .rtp-stats-bar--better,
+  .tw-root[data-material-surface="panel"],
+  [data-widget-element="container"]
+) {
+  border-color: var(--arctic-rim) !important;
+  background-color: rgba(3, 15, 25, 0.96);
+  box-shadow: var(--arctic-frame-shadow) !important;
+}
+
+/* Primary modules carry a slightly thicker-looking dark casing, while the
+   visible line remains a crisp single pixel at OBS resolution. */
+.better-widget-colour-scope[data-colour-theme="arctic"] :is(
+  .better-hunt-panel,
+  .slot-bingo-widget,
+  .better-slideshow-frame,
+  .ov-chat-widget
+) {
+  border-color: rgba(205, 240, 249, 0.68) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 5, 11, 0.98),
+    0 0 0 3px rgba(35, 92, 112, 0.24),
+    0 10px 28px rgba(0, 3, 9, 0.62),
+    inset 0 1px 0 rgba(249, 255, 255, 0.7),
+    inset 2px 0 0 rgba(171, 222, 236, 0.18),
+    inset -2px 0 0 rgba(69, 148, 176, 0.15),
+    inset 0 -4px 0 rgba(0, 5, 12, 0.88),
+    inset 0 -20px 34px rgba(0, 4, 11, 0.52),
+    inset 0 0 24px rgba(118, 208, 231, 0.1) !important;
+}
+
+/* Frost is accumulated at irregular corners and ledges. It no longer paints a
+   uniformly bright border over the widget content. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-widget::before,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov, .bet-widget)::before {
+  inset: 1px !important;
+  border: 0 !important;
+  border-radius: inherit;
+  width: auto !important;
+  height: auto !important;
+  background:
+    url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat,
+    linear-gradient(90deg, rgba(226, 250, 255, 0.3), transparent 10%, transparent 90%, rgba(184, 230, 242, 0.2)) !important;
+  opacity: 0.34 !important;
+  filter: drop-shadow(0 0 3px rgba(180, 235, 248, 0.14)) !important;
+  mix-blend-mode: screen;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov, .bet-widget)::after {
+  right: 6% !important;
+  left: 6% !important;
+  width: 88% !important;
+  height: clamp(7px, 7%, 13px) !important;
+  opacity: 0.28 !important;
+  filter: drop-shadow(0 2px 2px rgba(55, 133, 159, 0.2)) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bonus_hunt"] .better-hunt-panel::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 5;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat,
+    linear-gradient(180deg, rgba(238, 253, 255, 0.12), transparent 8%, transparent 92%, rgba(55, 131, 157, 0.1));
+  opacity: 0.3;
+  mix-blend-mode: screen;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 3;
+  border: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat,
+    linear-gradient(90deg, rgba(226, 250, 255, 0.16), transparent 8%, transparent 92%, rgba(168, 220, 235, 0.13));
+  opacity: 0.25;
+  mix-blend-mode: screen;
+}
+
+/* Headers and information cells are recessed into the shell. Their edge is
+   intentionally darker than the outer frame to preserve visual hierarchy. */
+.better-widget-colour-scope[data-colour-theme="arctic"] :is(
+  .better-hunt-header,
+  .better-hunt-stat,
+  .better-hunt-row,
+  .better-hunt-result,
+  .better-hunt-request-card,
+  .slot-bingo-widget__header,
+  .slot-bingo-widget__square,
+  .cg-stat,
+  .bets-ov__header,
+  .bets-ov__card,
+  .bets-ov__row,
+  .bets-ov__stat,
+  .widget-header,
+  .meta-item,
+  .bet-option,
+  .bet-bar,
+  .better-gw-metric-panel,
+  .better-gw-winner-banner,
+  .ov-chat-msg,
+  .ov-cards-msg
+) {
+  border-color: rgba(125, 195, 216, 0.3) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(232, 251, 255, 0.16),
+    inset 0 -5px 11px rgba(0, 4, 11, 0.5),
+    inset 0 0 10px rgba(94, 183, 209, 0.055),
+    0 2px 5px rgba(0, 3, 8, 0.28) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"] :is(
+  .better-hunt-header,
+  .slot-bingo-widget__header,
+  .bets-ov__header,
+  .widget-header,
+  .ov-chat-header
+) {
+  background-image:
+    linear-gradient(180deg, rgba(232, 251, 255, 0.12), transparent 34%),
+    linear-gradient(90deg, rgba(26, 63, 78, 0.86), rgba(3, 16, 27, 0.93) 62%, rgba(16, 43, 57, 0.76)),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: cover, cover, 220px 150px !important;
+}
+
+/* Ice reads as transparent material: bright top lip, blue subsurface and a
+   dark lower bevel. These highlights are deliberately local, not neon. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] [data-widget-element="container"],
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
+  border-color: rgba(193, 234, 245, 0.62) !important;
+  background-image:
+    linear-gradient(180deg, rgba(239, 253, 255, 0.26), rgba(111, 189, 211, 0.06) 16%, rgba(0, 7, 15, 0.68) 68%, rgba(80, 151, 173, 0.14) 91%, rgba(0, 5, 11, 0.86)),
+    radial-gradient(ellipse at 12% 0%, rgba(192, 235, 246, 0.17), transparent 32%),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-size: cover, cover, 470px 280px !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 5, 11, 0.95),
+    0 6px 16px rgba(0, 3, 8, 0.46),
+    inset 0 1px 0 rgba(248, 255, 255, 0.72),
+    inset 0 -3px 0 rgba(0, 5, 12, 0.82),
+    inset 0 -9px 16px rgba(0, 4, 11, 0.55),
+    inset 0 0 15px rgba(109, 198, 224, 0.09) !important;
+}
+
+/* Recess media and artwork rather than drawing another bright frame on top. */
+.better-widget-colour-scope[data-colour-theme="arctic"] :is(
+  .better-slideshow-frame__viewport,
+  .cg-cover,
+  .better-hunt-main-image,
+  .better-hunt-card-img,
+  .better-hunt-row-image,
+  .better-gw-avatar-bubble
+) {
+  border-color: rgba(178, 224, 237, 0.5) !important;
+  box-shadow:
+    0 0 0 2px rgba(1, 9, 16, 0.82),
+    inset 0 0 0 1px rgba(222, 249, 255, 0.12),
+    inset 0 0 12px rgba(0, 4, 10, 0.78),
+    0 0 9px rgba(120, 207, 230, 0.1) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slideshow_frame"] .better-slideshow-frame__inner {
+  inset: max(2px, calc(var(--bsf-pad) * 0.28));
+  opacity: 0.31;
+  filter: drop-shadow(0 0 2px rgba(199, 240, 250, 0.16));
+}
+
+/* Corner cracks remain fine and sparse. Large stretched crack overlays made
+   every widget look like the same bitmap. */
+.better-widget-colour-scope[data-colour-theme="arctic"] :is(
+  .better-hunt-empty,
+  .better-hunt-main-empty,
+  .better-hunt-main-active-empty,
+  .better-slideshow-frame__empty
+) {
+  background-size: cover, 122% 122%, 360px 430px !important;
+  background-position: center, 37% 43%, 29px 61px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .better-widget-colour-scope[data-colour-theme="arctic"] * {
+    transition-duration: 0.01ms !important;
+  }
+}

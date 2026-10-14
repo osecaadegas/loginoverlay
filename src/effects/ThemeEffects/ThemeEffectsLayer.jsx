@@ -7,6 +7,7 @@ import OrbitalStructure from "./orbital/OrbitalStructure.jsx";
 import "./ThemeEffects.css";
 import "./GreekPremium.css";
 import "./ThemeTypography.css";
+import "./ArcticPremium.css";
 
 function buildEffectTargets(instances, singleInstanceId) {
   return (instances || []).flatMap((instance) => {

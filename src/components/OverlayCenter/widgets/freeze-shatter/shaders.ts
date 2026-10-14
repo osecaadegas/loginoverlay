@@ -66,6 +66,17 @@ float noise(vec2 p) {
   vec2 i = floor(p); vec2 f = fract(p); vec2 u = f*f*(3.0-2.0*f);
   return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
 }
+float fbm(vec2 p) {
+  float value = 0.0;
+  float amplitude = 0.55;
+  mat2 turn = mat2(0.80, -0.60, 0.60, 0.80);
+  for (int i=0; i<4; i++) {
+    value += noise(p) * amplitude;
+    p = turn * p * 2.03 + vec2(13.7, 9.2);
+    amplitude *= 0.48;
+  }
+  return value;
+}
 vec3 voronoi(vec2 p) {
   vec2 cell = floor(p); vec2 f = fract(p); float a = 9.0; float b = 9.0; float facet = 0.0;
   for (int y=-1; y<=1; y++) { for (int x=-1; x<=1; x++) {
@@ -78,39 +89,70 @@ vec3 voronoi(vec2 p) {
 void main() {
   vec4 source = texture(uTexture,vTextureCoord);
   if(source.a < 0.002) { finalColor=vec4(0); return; }
-  vec3 original = source.rgb/max(source.a,0.001);
+  vec2 texel = uInputSize.zw;
   vec2 p = vLocal * vec2(1.7778,1.0);
+  float grain = fbm(p*7.0 + vec2(-uTime*0.018, uTime*0.011));
+  vec2 refractionNormal = vec2(
+    fbm(p*19.0+vec2(7.1,1.8))-fbm(p*19.0+vec2(7.17,1.8)),
+    fbm(p*19.0+vec2(4.4,9.2))-fbm(p*19.0+vec2(4.4,9.27))
+  );
+  vec2 refractedUv = vTextureCoord + refractionNormal * texel * (24.0 + uFrost*18.0) * uProgress;
+  vec4 refractedSource = texture(uTexture, refractedUv);
+  vec3 original = source.rgb/max(source.a,0.001);
+  vec3 refracted = refractedSource.rgb/max(refractedSource.a,0.001);
+  original = mix(original,refracted,0.18*uProgress);
   vec3 surface = texture(uSurfaceTexture,fract(p*1.15)).rgb;
   float surfaceFrost = dot(surface,vec3(0.2126,0.7152,0.0722));
-  float n = noise(p*11.0) * 0.6 + noise(p*37.0)*0.3 + noise(p*117.0)*0.1;
-  float edge = 0.0;
-  vec2 stepSize = uInputSize.zw * 3.0;
-  edge += 1.0-texture(uTexture,vTextureCoord+vec2(stepSize.x,0)).a;
-  edge += 1.0-texture(uTexture,vTextureCoord-vec2(stepSize.x,0)).a;
-  edge += 1.0-texture(uTexture,vTextureCoord+vec2(0,stepSize.y)).a;
-  float growth = (1.0-vLocal.y)*0.64 + n*0.28 - edge*0.04;
-  float ice = smoothstep(growth-0.12,growth+0.12,uProgress*1.22);
+  float n = grain*0.58 + noise(p*39.0)*0.28 + noise(p*123.0)*0.14;
+  float edgeNear = 0.0;
+  float edgeWide = 0.0;
+  vec2 nearStep = texel * 3.0;
+  vec2 wideStep = texel * 9.0;
+  edgeNear += 1.0-texture(uTexture,vTextureCoord+vec2(nearStep.x,0)).a;
+  edgeNear += 1.0-texture(uTexture,vTextureCoord-vec2(nearStep.x,0)).a;
+  edgeNear += 1.0-texture(uTexture,vTextureCoord+vec2(0,nearStep.y)).a;
+  edgeNear += 1.0-texture(uTexture,vTextureCoord-vec2(0,nearStep.y)).a;
+  edgeWide += 1.0-texture(uTexture,vTextureCoord+vec2(wideStep.x,wideStep.y)).a;
+  edgeWide += 1.0-texture(uTexture,vTextureCoord+vec2(-wideStep.x,wideStep.y)).a;
+  edgeWide += 1.0-texture(uTexture,vTextureCoord+vec2(wideStep.x,-wideStep.y)).a;
+  edgeWide += 1.0-texture(uTexture,vTextureCoord-vec2(wideStep.x,wideStep.y)).a;
+  edgeNear = clamp(edgeNear*0.38,0.0,1.0);
+  edgeWide = clamp(edgeWide*0.24,0.0,1.0);
+  float growth = (0.67-vLocal.y)*0.44 + n*0.33 - edgeNear*0.31 - edgeWide*0.16 + 0.22;
+  float ice = smoothstep(growth-0.105,growth+0.105,uProgress*1.18);
   if(uProgress <= 0.001) ice=0.0;
   vec3 crystal = voronoi(p*(15.0+uCrystals*30.0));
-  float fine = pow(max(0.0,1.0-crystal.y*15.0),5.0)*uCrystals;
-  float roughness = noise(p*280.0)*0.5+noise(p*550.0)*0.25;
-  vec3 bigCrystal = voronoi(p*11.0);
-  float crack = (1.0-smoothstep(0.004,0.026,bigCrystal.y))*uCracks*(0.48+uFracture*0.52);
-  float crackRim = (smoothstep(0.008,0.016,bigCrystal.y)-smoothstep(0.016,0.045,bigCrystal.y))*uCracks;
-  float branch = (1.0-smoothstep(0.0,0.016,crystal.y))*(0.12+uFracture*0.5)*uCracks;
+  float fine = pow(max(0.0,1.0-crystal.y*14.0),4.0)*uCrystals;
+  float roughness = noise(p*280.0)*0.48+noise(p*550.0)*0.27;
+  vec3 bigCrystal = voronoi(p*10.0+vec2(1.7,-2.3));
+  vec3 offsetCrystal = voronoi(mat2(0.82,-0.57,0.57,0.82)*p*17.0+vec2(4.8,2.1));
+  float crackCore = 1.0-smoothstep(0.006,0.022,bigCrystal.y);
+  float secondaryCore = 1.0-smoothstep(0.002,0.011,offsetCrystal.y);
+  vec2 radial = p-vec2(0.89,0.47);
+  float angle = atan(radial.y,radial.x)/6.2831853+0.5;
+  float rayField = abs(fract(angle*13.0 + noise(vec2(length(radial)*5.0,angle*3.0))*0.42)-0.5);
+  float radialCrack = (1.0-smoothstep(0.468,0.498,rayField))*smoothstep(0.035,0.16,length(radial))*smoothstep(0.9,0.16,length(radial));
+  float fractureAmount = smoothstep(0.03,0.82,uFracture);
+  float crack = max(crackCore,secondaryCore*0.46)*uCracks*(0.3+fractureAmount*0.7);
+  crack = max(crack,radialCrack*fractureAmount*uCracks*0.76);
+  float crackRim = (smoothstep(0.007,0.018,bigCrystal.y)-smoothstep(0.018,0.048,bigCrystal.y))*uCracks;
+  float branch = secondaryCore*(0.11+fractureAmount*0.62)*uCracks;
   float luminance = dot(original,vec3(0.2126,0.7152,0.0722));
-  vec3 base = mix(original,vec3(luminance),0.74);
-  base = mix(base,uIceColor*(0.18+luminance*0.92),0.40+uFrost*0.29);
-  base += uIceColor*(roughness*0.12+fine*0.33)*uFrost;
-  float facetedLight = (bigCrystal.z-0.5)*0.23+(crystal.z-0.5)*0.09;
-  base += vec3(0.35,0.75,0.92)*facetedLight*uCrystals;
-  base += (surface-vec3(0.36,0.43,0.48))*uFrost*0.32;
-  base = mix(base,uIceColor*(0.7+luminance*0.5),smoothstep(0.48,0.82,surfaceFrost)*uFrost*0.32);
-  float reflection = pow(max(0.0,sin(p.x*13.0+p.y*5.0-uTime*0.36)),26.0);
-  float glint = pow(max(0.0,1.0-bigCrystal.x),10.0)*0.5;
-  base += vec3(0.65,0.88,1.0)*(reflection*0.25+glint)*uReflections;
-  base = mix(base,vec3(0.015,0.10,0.16),crack*0.78);
-  base += (crackRim*0.24+branch*0.26+edge*0.14)*uIceColor*(0.65+uGlow);
+  vec3 base = mix(original,vec3(luminance),0.66);
+  base = mix(base,uIceColor*(0.14+luminance*0.82),0.38+uFrost*0.32);
+  float frozenBloom = smoothstep(0.5,0.96,grain+surfaceFrost*0.37);
+  base += uIceColor*(roughness*0.13+fine*0.31+frozenBloom*0.13)*uFrost;
+  float facetedLight = (bigCrystal.z-0.5)*0.27+(crystal.z-0.5)*0.12+(offsetCrystal.z-0.5)*0.08;
+  base += vec3(0.34,0.73,0.91)*facetedLight*uCrystals;
+  base += (surface-vec3(0.39,0.46,0.50))*uFrost*0.38;
+  base = mix(base,uIceColor*(0.68+luminance*0.46),smoothstep(0.47,0.8,surfaceFrost)*uFrost*0.36);
+  float reflection = pow(max(0.0,sin(p.x*11.0+p.y*4.0-uTime*0.29)),31.0);
+  float glint = pow(max(0.0,1.0-bigCrystal.x),11.0)*0.46;
+  float rimLight = clamp(edgeNear*0.74+edgeWide*0.26,0.0,1.0);
+  base += vec3(0.68,0.90,1.0)*(reflection*0.24+glint+rimLight*0.31)*uReflections;
+  base = mix(base,vec3(0.008,0.052,0.086),crack*0.86);
+  base += (crackRim*0.36+branch*0.31+rimLight*0.3)*uIceColor*(0.63+uGlow);
+  base += radialCrack*fractureAmount*vec3(0.55,0.88,1.0)*0.33;
   finalColor=vec4(mix(original,base,ice)*source.a,source.a);
 }`;
 

@@ -21,8 +21,16 @@ export interface RendererCallbacks {
   onMetrics: (metrics: RendererMetrics) => void;
 }
 
-interface Fragment { mesh: Mesh<MeshGeometry> | Graphics; cell: Cell }
-interface Dust { graphic: Graphics; x: number; y: number; seed: number }
+interface Fragment {
+  container: Container;
+  face: Mesh<MeshGeometry> | Graphics;
+  rim: Mesh<MeshGeometry> | Graphics;
+  shadow: Mesh<MeshGeometry> | Graphics;
+  cell: Cell;
+  depth: number;
+  phase: number;
+}
+interface Dust { graphic: Graphics; x: number; y: number; seed: number; size: number }
 
 export class WebcamTransitionRenderer {
   private app = new Application();
@@ -120,6 +128,7 @@ export class WebcamTransitionRenderer {
     this.fractureLines.setMask({ mask: this.fractureMask, channel: 'alpha' });
     this.statueLayer.addChild(this.frozen, this.fractureLines, this.fractureMask);
     this.app.stage.addChild(this.cameraLayer, this.statueLayer, this.fragmentLayer, this.dustLayer);
+    this.fragmentLayer.sortableChildren = true;
     this.app.ticker.maxFPS = 60;
     this.app.ticker.add(this.tick);
     try {
@@ -369,20 +378,47 @@ export class WebcamTransitionRenderer {
       this.app.renderer.render({ container: this.statueLayer, target: this.statueTexture, clear: true });
     }
     this.fragments = this.cells.map(cell => {
-      let mesh: Mesh<MeshGeometry> | Graphics;
+      const localPoints = cell.polygon.map(point => ({ x: point.x - cell.center.x, y: point.y - cell.center.y }));
+      const points = localPoints.flatMap(point => [point.x, point.y]);
+      const container = new Container();
+      let face: Mesh<MeshGeometry> | Graphics;
+      let rim: Mesh<MeshGeometry> | Graphics;
+      let shadow: Mesh<MeshGeometry> | Graphics;
       if (this.config.mode === 'browser' && this.statueTexture) {
-        const positions = new Float32Array(cell.polygon.flatMap(point => [point.x - cell.center.x, point.y - cell.center.y]));
+        const positions = new Float32Array(points);
         const uvs = new Float32Array(cell.polygon.flatMap(point => [point.x / WIDTH, point.y / HEIGHT]));
         const indices = new Uint32Array(Array.from({ length: cell.polygon.length - 2 }, (_, i) => [0, i + 1, i + 2]).flat());
         const geometry = new MeshGeometry({ positions, uvs, indices });
-        mesh = new Mesh({ geometry, texture: this.statueTexture });
+        face = new Mesh({ geometry, texture: this.statueTexture });
+        // Texture-backed layers keep the chroma-key alpha. This gives the
+        // shard a dark physical edge and a cold glass reflection without ever
+        // outlining the transparent portion of a boundary Voronoi cell.
+        shadow = new Mesh({ geometry, texture: this.statueTexture });
+        shadow.tint = 0x082a3a;
+        shadow.alpha = 0.68;
+        rim = new Mesh({ geometry, texture: this.statueTexture });
+        rim.tint = 0xd7f8ff;
+        rim.alpha = 0.11;
+        rim.blendMode = 'screen';
       } else {
         const size = 3 + cell.seed * 12;
-        mesh = new Graphics().poly([0, -size, size * 0.45, size * 0.7, -size * 0.75, size * 0.4]).fill({ color: this.config.iceColor, alpha: 0.8 });
+        face = new Graphics()
+          .poly([0, -size, size * 0.45, size * 0.7, -size * 0.75, size * 0.4], true)
+          .fill({ color: this.config.iceColor, alpha: 0.86 });
+        shadow = new Graphics().poly(points, true).fill({ color: 0x03111c, alpha: 0.72 });
+        rim = new Graphics()
+          .poly(points, true)
+          .fill({ color: 0xbdefff, alpha: 0.045 })
+          .stroke({ width: 1.05 + cell.seed * 0.75, color: 0xcaf5ff, alpha: 0.78 });
+        rim.blendMode = 'screen';
       }
-      mesh.position.set(cell.center.x, cell.center.y);
-      this.fragmentLayer.addChild(mesh);
-      return { mesh, cell };
+      shadow.position.set(2.4 + cell.seed * 2.8, 3.2 + cell.seed * 3.6);
+      container.addChild(shadow, face, rim);
+      container.position.set(cell.center.x, cell.center.y);
+      const depth = 0.72 + cell.seed * 0.74;
+      container.zIndex = Math.round(depth * 100);
+      this.fragmentLayer.addChild(container);
+      return { container, face, rim, shadow, cell, depth, phase: cell.seed * Math.PI * 2 };
     });
     this.reportMetrics();
   }
@@ -393,10 +429,13 @@ export class WebcamTransitionRenderer {
     for (let i = 0; i < count && this.cells.length; i++) {
       const point = this.cells[Math.floor(random() * this.cells.length)].center;
       const size = 0.8 + random() * 2.5;
-      const graphic = new Graphics().poly([0, -size, size * 0.6, size * 0.8, -size, size * 0.3]).fill({ color: this.config.iceColor, alpha: 0.65 });
+      const graphic = new Graphics()
+        .poly([0, -size, size * 0.5, size * 0.68, size * 0.12, size, -size * 0.82, size * 0.28], true)
+        .fill({ color: i % 4 === 0 ? 0xe8fbff : this.config.iceColor, alpha: 0.72 })
+        .stroke({ width: Math.max(0.35, size * 0.16), color: 0xeaffff, alpha: 0.52 });
       graphic.visible = false;
       this.dustLayer.addChild(graphic);
-      this.dust.push({ graphic, x: point.x, y: point.y, seed: random() });
+      this.dust.push({ graphic, x: point.x, y: point.y, seed: random(), size });
     }
   }
 
@@ -406,8 +445,30 @@ export class WebcamTransitionRenderer {
       particle.graphic.visible = progress > 0 && progress < 1;
       particle.graphic.position.set(particle.x + Math.sin(particle.seed * 20) * t * 100, particle.y - t * (30 + particle.seed * 100) + (shattering ? t * t * 40 : 0));
       particle.graphic.rotation = t * (particle.seed - 0.5) * 5;
-      particle.graphic.alpha = Math.sin(progress * Math.PI) * this.config.mist;
+      const tumble = Math.abs(Math.cos(t * (6 + particle.seed * 13)));
+      particle.graphic.scale.set(0.28 + tumble * 0.72, 0.72 + particle.seed * 0.58);
+      particle.graphic.alpha = Math.sin(progress * Math.PI) * this.config.mist * (0.58 + particle.size * 0.12);
     });
+  }
+
+  private poseFragment(fragment: Fragment, progress: number, alpha?: number) {
+    const body = sampleBody(fragment.cell, progress, WIDTH, HEIGHT, this.config);
+    const tumble = Math.cos(progress * (8.5 + fragment.cell.seed * 15) + fragment.phase);
+    const pitch = Math.sin(progress * (6.5 + fragment.cell.seed * 11) + fragment.phase * 0.73);
+    const perspectiveX = 0.12 + Math.abs(tumble) * 0.88;
+    fragment.container.position.set(body.x, body.y);
+    fragment.container.rotation = body.rotation + pitch * 0.18;
+    fragment.container.skew.set(pitch * 0.12, tumble * 0.075);
+    fragment.container.scale.set(body.scale * perspectiveX * fragment.depth, body.scale * (0.86 + fragment.depth * 0.14));
+    fragment.container.alpha = alpha ?? body.alpha;
+    fragment.shadow.position.set(
+      (2.4 + fragment.cell.seed * 2.8) * Math.sign(tumble || 1),
+      3.2 + fragment.cell.seed * 3.6,
+    );
+    fragment.shadow.alpha = 0.38 + (1 - Math.abs(tumble)) * 0.42;
+    fragment.rim.alpha = fragment.rim instanceof Mesh
+      ? 0.055 + Math.abs(tumble) * 0.14
+      : 0.34 + Math.abs(tumble) * 0.62;
   }
 
   private setState(state: TransitionState, preview = false) {
@@ -455,9 +516,7 @@ export class WebcamTransitionRenderer {
       const p = Math.min(1, (seconds - phases.fracture) / Math.max(0.01, phases.shatter - phases.fracture));
       const eased = this.easeProgress(p);
       this.fragments.forEach(fragment => {
-        const body = sampleBody(fragment.cell, eased, WIDTH, HEIGHT, this.config);
-        fragment.mesh.position.set(body.x, body.y); fragment.mesh.rotation = body.rotation;
-        fragment.mesh.scale.set(body.scale); fragment.mesh.alpha = body.alpha;
+        this.poseFragment(fragment, eased);
       });
       this.renderDust(p, true);
       if (!preview && !this.playedShatter) { this.audio.play('shatter', this.config); this.playedShatter = true; }
@@ -523,9 +582,7 @@ export class WebcamTransitionRenderer {
           this.fractureLines.visible = false;
           const amount = 1 - this.easeProgress(p / 0.64);
           this.fragments.forEach(fragment => {
-            const body = sampleBody(fragment.cell, amount * 0.94, WIDTH, HEIGHT, this.config);
-            fragment.mesh.position.set(body.x, body.y); fragment.mesh.rotation = body.rotation;
-            fragment.mesh.scale.set(body.scale); fragment.mesh.alpha = Math.min(1, p * 8);
+            this.poseFragment(fragment, amount * 0.94, Math.min(1, p * 8));
           });
           this.renderDust(p / 0.64, true);
         } else {
@@ -599,9 +656,9 @@ export class WebcamTransitionRenderer {
   }
 
   private clearFragments() {
-    this.fragments.forEach(({ mesh }) => {
-      if (mesh instanceof Mesh) mesh.geometry.destroy();
-      mesh.destroy();
+    this.fragments.forEach(({ container, face }) => {
+      if (face instanceof Mesh) face.geometry.destroy();
+      container.destroy({ children: true });
     });
     this.dust.forEach(({ graphic }) => graphic.destroy());
     this.fragments = []; this.dust = []; this.cells = [];

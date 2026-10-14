@@ -24,7 +24,7 @@ try {
   page.on("console", (message) => {
     const text = message.text();
     const isViteTransportNoise =
-      text.includes("WebSocket connection to 'ws://127.0.0.1:3011") ||
+      text.includes("WebSocket connection to 'ws://127.0.0.1:") ||
       text.includes("[vite] failed to connect to websocket");
     if (message.type() === "error" && !isViteTransportNoise) errors.push(text);
   });
@@ -218,6 +218,8 @@ try {
   await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget")?.dataset.state !== "visible");
   await new Promise((resolve) => setTimeout(resolve, 230));
   await page.screenshot({ path: ".codex-dev/freeze-shatter-editor.png" });
+  await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget")?.dataset.state === "shattering");
+  await page.screenshot({ path: ".codex-dev/freeze-shatter-editor-shards.png" });
   await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget")?.dataset.state === "visible", { timeout: 5000 });
   await page.waitForFunction(() => document.querySelector(".bp-freeze-test-feedback")?.textContent.includes("complete"));
 
@@ -256,6 +258,8 @@ try {
   });
   await new Promise((resolve) => setTimeout(resolve, 230));
   await page.screenshot({ path: ".codex-dev/freeze-shatter-obs.png" });
+  await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget")?.dataset.state === "shattering");
+  await page.screenshot({ path: ".codex-dev/freeze-shatter-obs-shards.png" });
   assert.equal(await page.$eval("#stage .freeze-shatter-widget", (widget) => widget.dataset.runtime), "obs");
   assert.equal(await page.$("#stage .freeze-shatter-widget__error"), null, "OBS output has no stale camera or setup notification");
   assert.ok(

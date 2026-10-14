@@ -46,7 +46,18 @@ export function createSilhouetteCells(
     points.push(point);
   }
   return points.map((point, index) => {
-    let polygon: Point[] = [{ x: 0, y: 0 }, { x: width, y: 0 }, { x: width, y: height }, { x: 0, y: height }];
+    // Seeds only exist inside the keyed silhouette. Starting every Voronoi
+    // cell at the full viewport made boundary cells stretch into enormous
+    // transparent triangles whose lit rims crossed the entire OBS source.
+    // A local clipping envelope keeps fragments physically believable while
+    // still overlapping enough to cover the captured body.
+    const reach = Math.max(44, Math.min(132, Math.sqrt(width * height / Math.max(count, 1)) * 1.08));
+    let polygon: Point[] = [
+      { x: Math.max(0, point.x - reach), y: Math.max(0, point.y - reach) },
+      { x: Math.min(width, point.x + reach), y: Math.max(0, point.y - reach) },
+      { x: Math.min(width, point.x + reach), y: Math.min(height, point.y + reach) },
+      { x: Math.max(0, point.x - reach), y: Math.min(height, point.y + reach) },
+    ];
     for (let j = 0; j < points.length && polygon.length; j++) {
       if (index === j) continue;
       const other = points[j];
